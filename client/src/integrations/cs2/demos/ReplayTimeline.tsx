@@ -114,9 +114,7 @@ export function ReplayTimeline({
   const near = hover
     ? marks.filter((m) => Math.abs(((m.tick - first) / span) * hover.width - hover.x) <= 6)
     : [];
-  const hoverRound = hover
-    ? roundAt(rounds, hover.tick)
-    : undefined;
+  const hoverRound = hover ? roundAt(rounds, hover.tick) : undefined;
   const clock = (t: number) => {
     const s = Math.max(0, Math.round(t / tickrate));
     return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;

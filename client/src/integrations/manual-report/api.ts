@@ -206,10 +206,7 @@ export interface ApiResult<T> {
   error: string | null;
 }
 
-async function request<T>(
-  path: string,
-  init: RequestInit = {}
-): Promise<ApiResult<T>> {
+async function request<T>(path: string, init: RequestInit = {}): Promise<ApiResult<T>> {
   let response: Response;
   try {
     response = await fetch(path, {
@@ -338,8 +335,7 @@ export const manualReportApi = {
     }),
 
   /** Put a settled match back to `live` so it can be reported again. */
-  reopen: (slug: string) =>
-    request(`/api/game/manual/matches/${slug}/reopen`, { method: 'POST' }),
+  reopen: (slug: string) => request(`/api/game/manual/matches/${slug}/reopen`, { method: 'POST' }),
 };
 
 /** A status that means "this panel is not for you", rather than a failure. */
