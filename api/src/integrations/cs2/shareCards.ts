@@ -47,7 +47,7 @@ const mapLabel = (name: string | null | undefined) => {
   return bare.charAt(0).toUpperCase() + bare.slice(1);
 };
 
-function versionOf(...parts: unknown[]): string {
+function versionOf(...parts: Array<string | number | null | undefined>): string {
   return Buffer.from(JSON.stringify(parts)).toString('base64url').slice(-16);
 }
 
@@ -205,7 +205,7 @@ const playerReelKind: ShareKind = {
     const [slug, map, player] = key.split('~');
     const reel = await playerReelView(slug, Number(map), player);
     if (!reel) return null;
-    const chapters = (reel as { chapters?: unknown[] }).chapters ?? [];
+    const chapters = reel.chapters;
     return {
       title: `${reel.playerName} · Highlights`,
       description: [plays(chapters.length), mapLabel((reel as { map?: string | null }).map)]
@@ -249,7 +249,7 @@ const teamReelKind: ShareKind = {
     const [slug, team] = key.split('~');
     const reel = await teamReelView(slug, team);
     if (!reel) return null;
-    const r = reel as { team?: string | null; chapters?: unknown[]; video?: string | null };
+    const r = reel;
     return {
       title: `${r.team ?? 'Team'} · Team reel`,
       description: plays(r.chapters?.length ?? 0),

@@ -32,6 +32,7 @@
 import { db } from '../../config/database';
 import { isKnifeRound } from './demos/moments';
 import { isDevBotId } from './fleet/normalize';
+import type { SqlValue } from '../../config/database';
 
 const STEAM_ID = /^\d{17}$/;
 const KNIFE = /^(knife|bayonet)/i;
@@ -126,7 +127,7 @@ export interface SeriesInput {
   feeds: Map<number, FeedKill[]>;
 }
 
-const num = (v: unknown) => {
+const num = (v: number | string | null | undefined) => {
   const n = Number(v);
   return Number.isFinite(n) ? n : 0;
 };
@@ -345,7 +346,7 @@ export interface StatTotalsResult {
 /** A match with bots in it: a simulation or a bot-filled one. */
 function hasBots(config: string | null): boolean {
   try {
-    const c = JSON.parse(config ?? '{}') as { simulation?: unknown; bot_fill?: unknown };
+    const c = JSON.parse(config ?? '{}') as { simulation?: boolean; bot_fill?: boolean };
     return c.simulation === true || c.bot_fill === true;
   } catch {
     return false;
@@ -355,7 +356,7 @@ function hasBots(config: string | null): boolean {
 /** Read the scope's finished series and sum them (`sumPlayerStats`). */
 export async function playerStatTotals(scope: StatScope): Promise<StatTotalsResult> {
   const where: string[] = [];
-  const params: unknown[] = [];
+  const params: SqlValue[] = [];
   if (scope.tournaments?.length) {
     where.push(
       '(m.tournament_id = ANY(?::int[]) OR (m.tournament_id IS NULL AND m.played_in_id = ANY(?::int[])))'
@@ -429,7 +430,7 @@ export async function playerStatTotals(scope: StatScope): Promise<StatTotalsResu
   ]);
 
   let updatedAt = 0;
-  const seen = (t: unknown) => {
+  const seen = (t: number | string | null) => {
     const n = Number(t);
     if (Number.isFinite(n) && n > updatedAt) updatedAt = n;
   };
@@ -459,9 +460,9 @@ export async function playerStatTotals(scope: StatScope): Promise<StatTotalsResu
   for (const r of seriesLines) bySlug.get(r.match_slug)?.seriesLines.push(r);
   for (const j of jobs) {
     try {
-      const kills = JSON.parse(j.kills ?? 'null') as unknown;
+      const kills = JSON.parse(j.kills ?? 'null') as FeedKill[] | null;
       if (!Array.isArray(kills)) continue;
-      bySlug.get(j.match_slug)?.feeds.set(Number(j.map_number), kills as FeedKill[]);
+      bySlug.get(j.match_slug)?.feeds.set(Number(j.map_number), kills);
       seen(j.finished_at);
     } catch {
       // An unreadable kill feed: that map has none.
