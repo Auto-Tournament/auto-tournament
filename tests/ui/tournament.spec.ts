@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { setupTestContext, configureWebhook } from '../helpers/setup';
+import { setupTestContext } from '../helpers/setup';
 import { getAuthHeader } from '../helpers/auth';
 import { createTestTeams } from '../helpers/teams';
 import { createTestServer } from '../helpers/servers';
@@ -40,8 +40,7 @@ test.describe.serial('Tournament UI', () => {
   let teamIds: string[] = [];
 
   test.beforeEach(async ({ page, request }) => {
-    const context = await setupTestContext(page, request);
-    await configureWebhook(request, context.baseUrl);
+    await setupTestContext(page, request);
   });
 
   test(

@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { setupTestContext, configureWebhook } from '../helpers/setup';
+import { setupTestContext } from '../helpers/setup';
 import { getAuthHeader } from '../helpers/auth';
 
 /**
@@ -26,9 +26,8 @@ function teamCardId(name: string): string {
 
 test.describe.serial('Teams UI', () => {
   test.beforeEach(async ({ page, request }) => {
-    const context = await setupTestContext(page, request);
+    await setupTestContext(page, request);
     // A missing webhook URL raises a banner that can sit over the page actions.
-    await configureWebhook(request, context.baseUrl);
   });
 
   test(
@@ -44,10 +43,7 @@ test.describe.serial('Teams UI', () => {
       // There is always a way to add a team: the header action once teams
       // exist, or the empty-state call to action when none do.
       await expect(
-        page
-          .getByTestId('add-team-button')
-          .or(page.getByTestId('empty-state-action'))
-          .first()
+        page.getByTestId('add-team-button').or(page.getByTestId('empty-state-action')).first()
       ).toBeVisible();
     }
   );

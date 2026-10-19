@@ -5,7 +5,6 @@ import {
   type APIRequestContext,
 } from '@playwright/test';
 import { getAuthHeader, signInAsPlayerViaRequest, signInViaRequest } from '../helpers/auth';
-import { configureWebhook } from '../helpers/setup';
 
 /**
  * Teams in a tournament with sign-up open (Vikunja 1865): players per team
@@ -49,7 +48,6 @@ test.describe.serial('Tournament teams: sign-up and admin-added', () => {
     TAGS,
     async ({ request }) => {
       expect(await signInViaRequest(request)).toBe(true);
-      expect(await configureWebhook(request, 'http://localhost:3069')).toBe(true);
       const created = await request.post('/api/tournaments', {
         headers: getAuthHeader(),
         data: {

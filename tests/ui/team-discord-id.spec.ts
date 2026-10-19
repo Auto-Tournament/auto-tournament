@@ -1,5 +1,5 @@
 import { test, expect, type APIRequestContext, type Page } from '@playwright/test';
-import { setupTestContext, configureWebhook } from '../helpers/setup';
+import { setupTestContext } from '../helpers/setup';
 import { getAuthHeader } from '../helpers/auth';
 import { createTeam } from '../helpers/teams';
 
@@ -39,9 +39,7 @@ function uniqueSteamId(offset = 0): string {
 }
 
 /** Discord IDs by Steam ID, from the admin player list. */
-async function discordIdsByPlayer(
-  request: APIRequestContext
-): Promise<Map<string, string | null>> {
+async function discordIdsByPlayer(request: APIRequestContext): Promise<Map<string, string | null>> {
   const response = await request.get('/api/players', { headers: getAuthHeader() });
   expect(response.ok(), 'GET /api/players should succeed').toBe(true);
   const body = (await response.json()) as {
@@ -76,9 +74,8 @@ async function openImportModal(page: Page) {
 
 test.describe.serial('Team Discord IDs UI', () => {
   test.beforeEach(async ({ page, request }) => {
-    const context = await setupTestContext(page, request);
+    await setupTestContext(page, request);
     // A missing webhook URL raises a banner that can sit over the page actions.
-    await configureWebhook(request, context.baseUrl);
   });
 
   test(

@@ -1,7 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { getAuthHeader, signInViaRequest } from '../helpers/auth';
 import { createTestTeams } from '../helpers/teams';
-import { configureWebhook } from '../helpers/setup';
 import { findMatchByTeams } from '../helpers/matches';
 
 /**
@@ -34,8 +33,6 @@ test.describe.serial('Tournament archive', () => {
       expect(
         (await request.post('/api/tournament/archive', { headers: as(999999) })).status()
       ).toBe(404);
-
-      expect(await configureWebhook(request, 'http://localhost:3069')).toBe(true);
       const teams = await createTestTeams(request, 'archive');
       expect(teams).toBeTruthy();
       const [team1, team2] = teams!;
