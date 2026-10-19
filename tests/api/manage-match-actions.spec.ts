@@ -1,6 +1,5 @@
 import { test, expect, type APIRequestContext } from '@playwright/test';
 import { getAuthHeader, signInViaRequest } from '../helpers/auth';
-import { configureWebhook } from '../helpers/setup';
 import { createTeam, type Team } from '../helpers/teams';
 import { getOk, postOk, resetDatabaseForGolden } from '../helpers/golden';
 import { createTestServer } from '../helpers/servers';
@@ -61,7 +60,6 @@ test.describe.serial('admin match page actions', () => {
     expect(await signInViaRequest(request)).toBe(true);
     await resetDatabaseForGolden(request);
     expect(await signInViaRequest(request)).toBe(true);
-    expect(await configureWebhook(request, 'http://localhost:3069')).toBe(true);
     for (const team of TEAMS) {
       expect(await createTeam(request, team), `create ${team.id}`).toBeTruthy();
     }

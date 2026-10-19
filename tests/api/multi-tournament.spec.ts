@@ -1,7 +1,6 @@
 import { test, expect, type APIRequestContext } from '@playwright/test';
 import { getAuthHeader, signInViaRequest } from '../helpers/auth';
 import { createTestTeams } from '../helpers/teams';
-import { configureWebhook } from '../helpers/setup';
 
 /**
  * Several tournaments at once (Vikunja 1840): creating another never
@@ -46,7 +45,6 @@ test.describe.serial('Multiple tournaments', () => {
     { tag: ['@api'] },
     async ({ request, playwright, baseURL }) => {
       await signInViaRequest(request);
-      expect(await configureWebhook(request, 'http://localhost:3069')).toBe(true);
       const teams = await createTestTeams(request, 'multi');
       expect(teams).toBeTruthy();
       const teamIds = teams!.map((t) => t.id);

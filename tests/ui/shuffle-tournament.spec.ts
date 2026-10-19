@@ -87,9 +87,8 @@ test.describe.serial('Shuffle Tournament UI', () => {
     },
     async ({ page }) => {
       await page.goto('/manage/tournament');
-      await page.waitForLoadState('networkidle');
 
-      // Verify tournament page loaded
+      // Verify tournament page loaded (not networkidle: the live socket keeps polling)
       await expect(page.getByTestId('tournament-page')).toBeVisible({ timeout: 15000 });
       expect(page.url()).toContain('/manage/tournament');
     }
@@ -123,17 +122,19 @@ test.describe.serial('Shuffle Tournament UI', () => {
       await expect(strip).not.toContainText('Finals');
 
       // Bracket list: opening the match opens its match room (it used to blank the page).
+      // /manage/bracket redirects to the tournament's own bracket (a shuffle
+      // tournament always shows the list). A click while that redirect re-renders
+      // the list was lost, so wait for it, then click until the match room opens.
       await page.goto('/manage/bracket');
-      const list = page.getByRole('button', { name: 'List' });
-      if (await list.count()) await list.first().click();
-      await page
-        .getByRole('listitem')
-        .filter({ hasText: '#1 · Map 1' })
-        .first()
-        .click({ force: true });
-      await expect(page).toHaveURL(/\/manage\/tournaments\/\d+\/matches\/[^/]+$/, {
-        timeout: 10000,
-      });
+      await expect(page).toHaveURL(/\/manage\/tournaments\/\d+\/bracket/, { timeout: 15000 });
+      const first = page.getByRole('listitem').filter({ hasText: '#1 · Map 1' }).first();
+      await expect(first).toBeVisible({ timeout: 15000 });
+      await expect(async () => {
+        await first.click();
+        await expect(page).toHaveURL(/\/manage\/tournaments\/\d+\/matches\/[^/]+$/, {
+          timeout: 3000,
+        });
+      }).toPass({ timeout: 20000 });
       await expect(page.getByTestId('manage-match-page')).toBeVisible({ timeout: 10000 });
       expect(errors).toEqual([]);
     }

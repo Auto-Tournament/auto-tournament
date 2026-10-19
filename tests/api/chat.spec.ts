@@ -6,7 +6,6 @@ import {
 } from '@playwright/test';
 import { io, type Socket } from 'socket.io-client';
 import { getAuthHeader, signInAsPlayerViaRequest, signInViaRequest } from '../helpers/auth';
-import { configureWebhook } from '../helpers/setup';
 import { findMatchByTeams } from '../helpers/matches';
 
 /**
@@ -67,7 +66,6 @@ test.describe.serial('Chat', () => {
 
   test.beforeAll(async ({ request }) => {
     expect(await signInViaRequest(request)).toBe(true);
-    expect(await configureWebhook(request, 'http://localhost:3069')).toBe(true);
     [a1, a2, b1, outsider] = await Promise.all([
       player('Ada'),
       player('Abe'),

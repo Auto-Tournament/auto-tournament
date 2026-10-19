@@ -121,7 +121,7 @@ test.describe.serial('Disputes, from the team page to the admin queue', () => {
   test.beforeEach(async ({ request, baseURL }) => {
     expect(await signInViaRequest(request)).toBe(true);
     await request.put('/api/settings', {
-      data: { webhookUrl: baseURL ?? 'http://localhost:3069', simulateMatches: false },
+      data: { simulateMatches: false },
     });
   });
 

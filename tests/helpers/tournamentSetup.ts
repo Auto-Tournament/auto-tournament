@@ -10,7 +10,7 @@ import {
 
 /**
  * Comprehensive tournament setup helper
- * Handles all prerequisites: webhook URL, servers, teams, and tournament creation
+ * Handles all prerequisites: servers, teams, and tournament creation
  */
 
 export interface TournamentSetupOptions {
@@ -26,8 +26,6 @@ export interface TournamentSetupOptions {
   teamCount?: number;
   /** Number of servers to create (defaults to 1) */
   serverCount?: number;
-  /** Webhook URL to configure (defaults to http://localhost:3069 to match test base URL) */
-  webhookUrl?: string;
   /** Prefix for generated resources (defaults to 'test') */
   prefix?: string;
   /** Tournament settings passthrough (seedingMethod, grandFinalMode, ...) */
@@ -38,7 +36,6 @@ export interface TournamentSetupResult {
   tournament: Tournament;
   teams: Team[];
   servers: Server[];
-  webhookUrl: string;
 }
 
 const DEFAULT_MAPS = [
@@ -50,34 +47,6 @@ const DEFAULT_MAPS = [
   'de_nuke',
   'de_vertigo',
 ];
-
-/**
- * Set webhook URL in settings
- */
-async function setWebhookUrl(request: APIRequestContext, webhookUrl: string): Promise<boolean> {
-  try {
-    const response = await request.put('/api/settings', {
-      headers: getAuthHeader(),
-      data: { webhookUrl },
-    });
-
-    if (!response.ok()) {
-      const errorText = await response.text();
-      console.error('Failed to set webhook URL:', {
-        status: response.status(),
-        statusText: response.statusText(),
-        error: errorText,
-        webhookUrl,
-      });
-      return false;
-    }
-
-    return true;
-  } catch (error) {
-    console.error('Failed to set webhook URL:', error);
-    return false;
-  }
-}
 
 /**
  * Get existing teams or create new ones
@@ -243,33 +212,24 @@ export async function setupTournament(
     maps = DEFAULT_MAPS,
     teamCount = 2,
     serverCount = 1,
-    webhookUrl = 'http://localhost:3069',
     prefix = 'test',
     settings,
   } = options;
 
-  // Step 1: Set webhook URL (non-blocking - warn but continue)
-  const webhookSet = await setWebhookUrl(request, webhookUrl);
-  if (!webhookSet) {
-    console.warn(`Failed to set webhook URL to ${webhookUrl}, continuing anyway...`);
-    // Don't fail the test setup if webhook URL setting fails
-    // It's not strictly required for all test scenarios
-  }
-
-  // Step 2: Ensure teams exist
+  // Step 1: Ensure teams exist
   const teams = await ensureTeams(request, teamCount, prefix);
   if (teams.length < teamCount) {
     console.error(`Failed to create ${teamCount} teams (only got ${teams.length})`);
     return null;
   }
 
-  // Step 3: Ensure servers exist
+  // Step 2: Ensure servers exist
   const servers = await ensureServers(request, serverCount, prefix);
   if (servers.length < serverCount) {
     console.warn(`Warning: Only created ${servers.length} servers (requested ${serverCount})`);
   }
 
-  // Step 4: Create and start tournament
+  // Step 3: Create and start tournament
   const tournamentName = name || `${prefix} Tournament ${Date.now()}`;
   const tournamentInput: CreateTournamentInput = {
     name: tournamentName,
@@ -290,6 +250,5 @@ export async function setupTournament(
     tournament,
     teams,
     servers,
-    webhookUrl,
   };
 }

@@ -183,7 +183,7 @@ test.describe.serial('A manually reported tournament, wizard to champion', () =>
   test.beforeEach(async ({ request, baseURL }) => {
     expect(await signInViaRequest(request)).toBe(true);
     await request.put('/api/settings', {
-      data: { webhookUrl: baseURL ?? 'http://localhost:3069', simulateMatches: false },
+      data: { simulateMatches: false },
     });
     await request.delete('/api/tournament');
   });
