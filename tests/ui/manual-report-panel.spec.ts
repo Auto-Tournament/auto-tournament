@@ -118,7 +118,7 @@ test.describe.serial('Manual reporting on the team page', () => {
   test.beforeEach(async ({ request, baseURL }) => {
     expect(await signInViaRequest(request)).toBe(true);
     await request.put('/api/settings', {
-      data: { webhookUrl: baseURL ?? 'http://localhost:3069', simulateMatches: false },
+      data: { simulateMatches: false },
     });
   });
 

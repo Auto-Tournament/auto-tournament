@@ -372,7 +372,6 @@ export interface ShuffleTournamentSetupOptions {
   maxRounds?: number;
   overtimeMode?: 'enabled' | 'disabled';
   serverCount?: number;
-  webhookUrl?: string;
   prefix?: string;
   startTournament?: boolean;
 }
@@ -381,23 +380,6 @@ export interface ShuffleTournamentSetupResult {
   tournament: ShuffleTournament;
   players: Player[];
   servers: Server[];
-  webhookUrl: string;
-}
-
-/**
- * Set webhook URL in settings
- */
-async function setWebhookUrl(request: APIRequestContext, webhookUrl: string): Promise<boolean> {
-  try {
-    const response = await request.put('/api/settings', {
-      headers: getAuthHeader(),
-      data: { webhookUrl },
-    });
-    return response.ok();
-  } catch (error) {
-    console.error('Failed to set webhook URL:', error);
-    return false;
-  }
 }
 
 /**
@@ -414,15 +396,11 @@ export async function setupShuffleTournament(
     maxRounds = 24,
     overtimeMode = 'enabled',
     serverCount = 1,
-    webhookUrl = 'http://localhost:3069',
     prefix = 'shuffle-test',
     startTournament = false,
   } = options;
 
-  // Step 1: Set webhook URL
-  await setWebhookUrl(request, webhookUrl);
-
-  // Step 2: Create servers
+  // Step 1: Create servers
   const servers: Server[] = [];
   for (let i = 0; i < serverCount; i++) {
     const server = await createTestServer(request, `${prefix}-server-${i}`);
@@ -431,7 +409,7 @@ export async function setupShuffleTournament(
     }
   }
 
-  // Step 3: Create players (Skill Rating defaults around 1500)
+  // Step 2: Create players (Skill Rating defaults around 1500)
   const players = await createTestPlayers(request, playerCount, prefix, 1500);
   if (!players) {
     console.error(`Failed to create players (got null)`);
@@ -443,7 +421,7 @@ export async function setupShuffleTournament(
     // Don't fail if we got some players, just warn
   }
 
-  // Step 4: Create shuffle tournament
+  // Step 3: Create shuffle tournament
   const tournament = await createShuffleTournament(request, {
     name: name || `${prefix} Tournament ${Date.now()}`,
     mapSequence,
@@ -456,7 +434,7 @@ export async function setupShuffleTournament(
     return null;
   }
 
-  // Step 5: Register players
+  // Step 4: Register players
   const playerIds = players.map((p) => p.id);
   const registration = await registerPlayers(request, playerIds);
   if (!registration || registration.registered < playerCount) {
@@ -468,7 +446,7 @@ export async function setupShuffleTournament(
     return null;
   }
 
-  // Step 6: Start tournament if requested
+  // Step 5: Start tournament if requested
   if (startTournament) {
     const started = await startShuffleTournament(request);
     if (!started) {
@@ -481,6 +459,5 @@ export async function setupShuffleTournament(
     tournament,
     players,
     servers,
-    webhookUrl,
   };
 }
