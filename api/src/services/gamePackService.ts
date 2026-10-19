@@ -75,6 +75,7 @@ import {
   type PackSource,
   type PackStatField,
 } from './packCache';
+import type { Untrusted } from '../utils/untrusted';
 
 // The read side moved to `./packCache` so an integration can import it
 // without reaching the registry. Re-exported so nothing that already imports
@@ -298,7 +299,11 @@ function rasterSize(bytes: Buffer): { type: AppIconType; width: number; height: 
     if (chunk === 'VP8L') {
       if (bytes[20] !== 0x2f) return null;
       const bits = bytes.readUInt32LE(21);
-      return { type: 'image/webp', width: (bits & 0x3fff) + 1, height: ((bits >>> 14) & 0x3fff) + 1 };
+      return {
+        type: 'image/webp',
+        width: (bits & 0x3fff) + 1,
+        height: ((bits >>> 14) & 0x3fff) + 1,
+      };
     }
     if (chunk === 'VP8X') {
       return {
@@ -337,13 +342,13 @@ export function checkAppIcon(bytes: Buffer): AppIcon | string {
 const SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const KEY_RE = /^[a-z][a-z0-9_]*$/;
 
-function asRecord(value: unknown): Record<string, unknown> | null {
+function asRecord(value: Untrusted): Record<string, Untrusted> | null {
   return value && typeof value === 'object' && !Array.isArray(value)
-    ? (value as Record<string, unknown>)
+    ? (value as Record<string, Untrusted>)
     : null;
 }
 
-function validateStats(value: unknown): { fields: PackStatField[] } | string {
+function validateStats(value: Untrusted): { fields: PackStatField[] } | string {
   if (value === undefined) return { fields: [] };
   if (!Array.isArray(value)) return 'stats must be a list';
   if (value.length > MAX_STAT_FIELDS) return `stats holds more than ${MAX_STAT_FIELDS} fields`;
@@ -382,7 +387,7 @@ function validateStats(value: unknown): { fields: PackStatField[] } | string {
  * than it says.
  */
 export function validatePack(
-  input: unknown
+  input: Untrusted
 ): { ok: true; pack: GamePackDefinition } | { ok: false; error: string } {
   const fail = (error: string) => ({ ok: false as const, error });
 
@@ -451,7 +456,7 @@ export function validatePack(
       raw.igdbId < 1 ||
       raw.igdbId > 2_147_483_647
     ) {
-      return fail('igdbId must be a positive whole number (the id on the game\'s igdb.com page)');
+      return fail("igdbId must be a positive whole number (the id on the game's igdb.com page)");
     }
   }
 
@@ -480,7 +485,8 @@ export function validatePack(
   }
 
   if (raw.appIcon !== undefined) {
-    if (typeof raw.appIcon !== 'string') return fail('appIcon must be a path to a PNG or WebP file');
+    if (typeof raw.appIcon !== 'string')
+      return fail('appIcon must be a path to a PNG or WebP file');
     const problem = checkAppIconPath(raw.appIcon);
     if (problem) return fail(problem);
   }
@@ -549,11 +555,9 @@ export function validatePack(
 // ---------------------------------------------------------------------------
 
 export async function packIcon(slug: string): Promise<string | null> {
-  const row = await db.getOneAsync<{ icon: string | null }>(
-    'game_packs',
-    'slug = ?',
-    [slug.trim().toLowerCase()]
-  );
+  const row = await db.getOneAsync<{ icon: string | null }>('game_packs', 'slug = ?', [
+    slug.trim().toLowerCase(),
+  ]);
   return row?.icon ?? null;
 }
 
@@ -710,7 +714,7 @@ export interface SeedReport {
 async function readSeen(): Promise<Set<string>> {
   try {
     const raw = await db.getAppSettingAsync(SEEN_SETTING);
-    const parsed = raw ? (JSON.parse(raw) as unknown) : [];
+    const parsed = raw ? (JSON.parse(raw) as Untrusted) : [];
     return new Set(Array.isArray(parsed) ? parsed.filter((v) => typeof v === 'string') : []);
   } catch {
     return new Set();
@@ -783,7 +787,7 @@ export async function resolvePackAppIcon(slug: string): Promise<AppIcon | null> 
  * ships no games, it is not broken.
  */
 export async function bundledPackEntries(): Promise<BundledPackEntry[]> {
-  let index: { schema?: unknown; packs?: Array<Record<string, unknown>> };
+  let index: { schema?: Untrusted; packs?: Array<Record<string, Untrusted>> };
   try {
     index = JSON.parse(await fs.readFile(path.join(BUNDLED_PACKS_DIR, 'index.json'), 'utf8'));
   } catch (error) {
@@ -794,7 +798,7 @@ export async function bundledPackEntries(): Promise<BundledPackEntry[]> {
     log.warn('[PACKS] Bundled index.json is not a schema 1 index');
     return [];
   }
-  const text = (value: unknown): string | null =>
+  const text = (value: Untrusted): string | null =>
     typeof value === 'string' && value.trim() ? value.trim() : null;
   const entries: BundledPackEntry[] = [];
   for (const row of index.packs) {
@@ -816,7 +820,9 @@ export async function bundledPackEntries(): Promise<BundledPackEntry[]> {
           : null,
     });
   }
-  bundledAppIconSlugs = new Set(entries.filter((entry) => entry.appIcon).map((entry) => entry.slug));
+  bundledAppIconSlugs = new Set(
+    entries.filter((entry) => entry.appIcon).map((entry) => entry.slug)
+  );
   bundledIgdbIds = new Map(
     entries.flatMap((entry) => (entry.igdbId ? [[entry.slug, entry.igdbId] as const] : []))
   );

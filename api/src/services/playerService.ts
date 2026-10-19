@@ -18,8 +18,10 @@ import {
   type ImportedDiscordId,
   type ImportedOidcSubject,
 } from '../utils/discordId';
+import type { SqlValue } from '../config/database';
+import type { Untrusted } from '../utils/untrusted';
 
-function isAdminRow(row: unknown): boolean {
+function isAdminRow(row: Untrusted): boolean {
   const flag = (row as { is_admin?: number | boolean } | null)?.is_admin;
   return flag === 1 || flag === true;
 }
@@ -55,6 +57,8 @@ export interface PlayerRecord {
   ban_reason?: string | null;
   /** Epoch seconds of the last sign-in; null when never recorded. Admin-only. */
   last_sign_in_at?: number | null;
+  /** 1 for a platform admin (SELECT * reads it; most typed reads don't). */
+  is_admin?: number | boolean;
 }
 
 export interface CreatePlayerInput {
@@ -68,9 +72,9 @@ export interface CreatePlayerInput {
    * validates it (and throws `InvalidDiscordIdError`); `bulkImportPlayers`
    * applies the import rule instead.
    */
-  discordId?: unknown;
+  discordId?: Untrusted;
   /** Imports only: an OpenID Connect login's `sub` (see applyImportedOidcSubjects). */
-  oidcSubject?: unknown;
+  oidcSubject?: Untrusted;
 }
 
 export interface UpdatePlayerInput {
@@ -81,7 +85,7 @@ export interface UpdatePlayerInput {
   game?: string;
   isAdmin?: boolean;
   /** Raw, unvalidated. A string sets it, `null`/`""` clears it, absent leaves it. */
-  discordId?: unknown;
+  discordId?: Untrusted;
 }
 
 export interface PlayerResponse {
@@ -155,7 +159,7 @@ export class InvalidDiscordIdError extends Error {
  * something about the ID. When someone last signed in is admin-only as well.
  */
 function withoutDiscordId<
-  T extends { discord_id?: unknown; discord_id_edited_at?: unknown; last_sign_in_at?: unknown },
+  T extends { discord_id?: SqlValue; discord_id_edited_at?: SqlValue; last_sign_in_at?: SqlValue },
 >(row: T): Omit<T, 'discord_id' | 'discord_id_edited_at' | 'last_sign_in_at'> {
   const rest: Partial<T> = { ...row };
   delete rest.discord_id;
@@ -187,7 +191,7 @@ class PlayerService {
       matchCount: player.match_count,
       createdAt: player.created_at,
       updatedAt: player.updated_at,
-      isAdmin: (player as unknown as { is_admin?: number | boolean }).is_admin === 1,
+      isAdmin: player.is_admin === 1,
       ...(player.deleted_at != null ? { deleted: true as const } : {}),
       ...(player.banned_at != null ? { banned: true as const } : {}),
     };
@@ -615,7 +619,7 @@ class PlayerService {
     // Convert Skill Rating to OpenSkill rating
     const openskillRating = eloToOpenSkill(elo, 0); // New player, 0 matches
 
-    const playerData: Omit<PlayerRecord, 'id'> & { is_admin?: number } = {
+    const playerData: Omit<PlayerRecord, 'id'> = {
       name: input.name,
       avatar_url: input.avatar || undefined,
       current_elo: elo,
