@@ -24,6 +24,7 @@ import { createHash } from 'crypto';
 import { db } from '../../../config/database';
 import { settingsService } from '../../../services/settingsService';
 import { ACTIVE_MATCH_STATUSES } from '../../../utils/serverAttribution';
+import type { Untrusted } from '../../../utils/untrusted';
 
 /** A match MAT considers to be running on a server right now. */
 export interface ActiveMatchRow {
@@ -206,7 +207,7 @@ function isFreeKey(key: string): boolean {
     const part = key.split('.')[1];
     if (!part) return false;
     return (
-      (JSON.parse(Buffer.from(part, 'base64url').toString('utf8')) as { kind?: unknown }).kind ===
+      (JSON.parse(Buffer.from(part, 'base64url').toString('utf8')) as { kind?: string }).kind ===
       'free'
     );
   } catch {
@@ -240,12 +241,13 @@ async function checkinState(): Promise<ServerLicenseHandoff['state'] | null> {
     const lic = raw
       ? (
           JSON.parse(raw) as {
-            license?: { status?: unknown; stopsOn?: unknown; validUntil?: unknown };
+            license?: { status?: Untrusted; stopsOn?: Untrusted; validUntil?: Untrusted };
           }
         ).license
       : undefined;
     if (!lic || typeof lic.status !== 'string') return null;
-    const day = (v: unknown) => (typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v) ? v : null);
+    const day = (v: Untrusted) =>
+      typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v) ? v : null;
     return { status: lic.status, stops_on: day(lic.stopsOn), valid_until: day(lic.validUntil) };
   } catch {
     return null;
@@ -261,7 +263,7 @@ async function checkinState(): Promise<ServerLicenseHandoff['state'] | null> {
 async function consentUse(): Promise<'noncommercial' | 'commercial' | undefined> {
   try {
     const raw = await settingsService.getSetting('license_consent');
-    const use = raw ? (JSON.parse(raw) as { use?: unknown }).use : undefined;
+    const use = raw ? (JSON.parse(raw) as { use?: string }).use : undefined;
     return use === 'noncommercial' || use === 'commercial' ? use : undefined;
   } catch {
     return undefined;

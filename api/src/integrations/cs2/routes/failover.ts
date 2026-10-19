@@ -51,6 +51,7 @@ import { pickReserved } from '../fleet/failoverPlan';
 import { liveStateStore } from '../fleet/state';
 import { getAssignment } from '../fleet/driver';
 import { db } from '../../../config/database';
+import type { Untrusted } from '../../../utils/untrusted';
 
 const SLUG_RE = /^[A-Za-z0-9_.-]{1,128}$/;
 const ID_RE = /^[0-9A-Za-z]{10,40}$/;
@@ -148,7 +149,7 @@ failoverMatchRouter.post(
     const { slug, id } = req.params;
     if (!SLUG_RE.test(slug) || !ID_RE.test(id))
       return res.status(400).json({ success: false, error: 'Invalid request' });
-    const body = (req.body ?? {}) as { targetServerId?: unknown; round?: unknown };
+    const body = (req.body ?? {}) as { targetServerId?: Untrusted; round?: Untrusted };
     if (
       body.targetServerId !== undefined &&
       body.targetServerId !== null &&
@@ -190,7 +191,7 @@ failoverMatchRouter.post(
     const { slug } = req.params;
     if (!SLUG_RE.test(slug))
       return res.status(400).json({ success: false, error: 'Invalid match slug' });
-    const body = (req.body ?? {}) as { targetServerId?: unknown; round?: unknown };
+    const body = (req.body ?? {}) as { targetServerId?: Untrusted; round?: Untrusted };
     if (
       body.targetServerId !== undefined &&
       body.targetServerId !== null &&
@@ -283,7 +284,7 @@ failoverSettingsRouter.put(
   '/failover/settings',
   requireAuth,
   async (req: Request, res: Response) => {
-    const body = (req.body ?? {}) as { auto?: unknown; reserve?: unknown; csm?: unknown };
+    const body = (req.body ?? {}) as { auto?: Untrusted; reserve?: Untrusted; csm?: Untrusted };
     if (body.auto !== undefined && typeof body.auto !== 'boolean') {
       return res
         .status(400)

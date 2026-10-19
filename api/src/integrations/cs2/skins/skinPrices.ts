@@ -96,6 +96,7 @@ async function download(): Promise<Record<string, number>> {
       headers: { 'Accept-Encoding': 'br' },
       compress: false,
       // node-fetch 2 declares its own AbortSignal type; Node's has the same shape.
+      // eslint-disable-next-line no-restricted-syntax -- node-fetch 2's AbortSignal type does not overlap Node's for tsc
       signal: controller.signal as unknown as NonNullable<Parameters<typeof fetch>[1]>['signal'],
     });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
