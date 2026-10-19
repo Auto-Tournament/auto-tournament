@@ -448,15 +448,4 @@ export const OBJECT_LITERAL_ASSERTION = [
 ];
 
 /** @typescript-eslint/consistent-type-imports */
-export const TYPE_IMPORTS = [
-  'api/src/integrations/cs2/index.ts',
-  'api/src/integrations/cs2/routes/highlights.ts',
-  'api/src/integrations/fake/index.ts',
-  'api/src/integrations/manual-report/index.ts',
-  'api/src/integrations/types.ts',
-  'api/src/services/playerModeration.ts',
-  'api/src/services/socketService.ts',
-  'api/src/services/steamService.ts',
-  'api/src/utils/logger.ts',
-  'client/src/components/layout/Layout.tsx',
-];
+export const TYPE_IMPORTS = ['api/src/integrations/cs2/routes/highlights.ts'];

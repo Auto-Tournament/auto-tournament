@@ -24,6 +24,7 @@ import { holdMatch, releaseMatch, type Actor } from './matchHolds';
 import { notificationService } from './notificationService';
 import { playerService } from './playerService';
 import type { SqlValue } from '../config/database';
+import type { NextFunction, Request as ExpressRequest, Response as ExpressResponse } from 'express';
 
 /** How long a team gets to pick a sub after losing a starter. */
 export const LINEUP_GAP_MINUTES = 15;
@@ -346,19 +347,15 @@ export async function deletePlayer(playerId: string, by: Actor): Promise<boolean
  */
 export function blockedViewerMiddleware(
   cookieName: string,
-  viewerOf: (req: import('express').Request) => string | null
+  viewerOf: (req: ExpressRequest) => string | null
 ) {
-  return async (
-    req: import('express').Request,
-    res: import('express').Response,
-    next: import('express').NextFunction
-  ) => {
+  return async (req: ExpressRequest, res: ExpressResponse, next: NextFunction) => {
     try {
       const id = viewerOf(req);
       if (id) {
         const state = await moderationOf(id);
         if (state.banned || state.deleted) {
-          const r = req as import('express').Request & {
+          const r = req as ExpressRequest & {
             user?: object;
             session?: { destroy?: (cb: (err?: unknown) => void) => void };
           };

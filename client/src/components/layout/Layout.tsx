@@ -17,6 +17,7 @@ import { RAIL_COLUMN_MIN_WIDTH, railColumnSx } from '../../constants/adminLayout
 import { paths } from '../../paths';
 import { UpdateBanner } from '../system/UpdateBanner';
 import { useTopic } from '../../hooks/useTopic';
+import type { SnackbarKey } from 'notistack';
 
 /**
  * Set for the rest of the browser session once an admin closes the Steam
@@ -72,9 +73,9 @@ function AdminShell() {
   const location = useLocation();
   const { headerActions } = usePageHeader();
   const { showPersistentError, closeSnackbar } = useSnackbar();
-  const [steamHealthSnackbarKey, setSteamHealthSnackbarKey] = React.useState<
-    import('notistack').SnackbarKey | null
-  >(null);
+  const [steamHealthSnackbarKey, setSteamHealthSnackbarKey] = React.useState<SnackbarKey | null>(
+    null
+  );
   // True while the shell itself closes the Steam warning (Steam recovered, or
   // the shell unmounts), so that close is not taken for the admin's dismissal.
   const closingSteamWarningRef = React.useRef(false);
