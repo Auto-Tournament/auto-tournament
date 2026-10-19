@@ -10,6 +10,7 @@ import { useTranslation } from 'react-i18next';
 import { api, apiErrorMessage } from '../../utils/api';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 import { SettingsCardHead, SettingsRow } from './SettingsRow';
+import type { Untrusted } from '../../utils/untrusted';
 
 type Security = 'tls' | 'starttls' | 'none';
 
@@ -83,7 +84,7 @@ export function EmailSettingsCard() {
     void load();
   }, [load]);
 
-  const save = async (body: Record<string, unknown>, done: string) => {
+  const save = async (body: Record<string, Untrusted>, done: string) => {
     setBusy(true);
     try {
       apply((await api.put<{ settings: EmailSettings }>('/api/email-settings', body)).settings);
@@ -99,7 +100,7 @@ export function EmailSettingsCard() {
 
   const saveServer = () => {
     if (!draft) return;
-    const body: Record<string, unknown> = {
+    const body: Record<string, Untrusted> = {
       host: draft.host,
       port: draft.port.trim() ? Number(draft.port) : null,
       security: draft.security,

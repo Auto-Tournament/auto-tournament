@@ -4,6 +4,7 @@
  * for SHOW_MS after its last event, or until that person's message comes.
  */
 
+import type { Untrusted } from '../../utils/untrusted';
 export const SEND_EVERY_MS = 2000;
 export const SHOW_MS = 4000;
 
@@ -54,7 +55,7 @@ export function shouldSendTyping(last: number, now: number): boolean {
 /** The line: one name, two names, or how many. */
 export function typingLine(
   typists: Typist[],
-  t: (key: string, params?: Record<string, unknown>) => string
+  t: (key: string, params?: Record<string, Untrusted>) => string
 ): string {
   if (typists.length === 0) return '';
   if (typists.length === 1) return t('chat.typing.one', { name: typists[0].name });

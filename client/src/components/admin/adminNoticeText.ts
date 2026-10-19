@@ -3,13 +3,14 @@
  * No React here: tests load it directly.
  */
 
+import type { Untrusted } from '../../utils/untrusted';
 export type AdminNoticeSeverity = 'error' | 'warn' | 'info';
 
 export interface AdminNotice {
   id: number;
   kind: string;
   severity: AdminNoticeSeverity;
-  data: Record<string, unknown>;
+  data: Record<string, Untrusted>;
   dedupeKey: string;
   count: number;
   createdAt: number;
@@ -43,7 +44,7 @@ export const NOTICE_GROUPS: Record<string, string[]> = {
   platform: ['beta_available', 'license_problem', 'demos_failing'],
 };
 
-const str = (v: unknown) => (typeof v === 'string' ? v : typeof v === 'number' ? String(v) : '');
+const str = (v: Untrusted) => (typeof v === 'string' ? v : typeof v === 'number' ? String(v) : '');
 
 /** The i18n params a notice's line uses: every data field as text. */
 export function noticeParams(

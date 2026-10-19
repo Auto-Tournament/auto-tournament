@@ -19,6 +19,7 @@ import { describeNotice, noticeLine } from './noticeText';
 import { browserNotify } from '../../utils/browserNotify';
 import { NOTICE_FILTERS, matchesFilter, type NoticeFilter } from './noticeFilters';
 import { SegmentedControl } from '../common/SegmentedControl';
+import type { Untrusted } from '../../utils/untrusted';
 
 export { NOTICE_FILTERS, matchesFilter, type NoticeFilter };
 
@@ -236,9 +237,9 @@ const URGENT_TOURNAMENT_EVENTS = new Set([
 ]);
 
 /** Whether a notice is worth a system notification (see the effect above). */
-function isUrgentNotice(notice: { kind: string; data?: unknown }): boolean {
+function isUrgentNotice(notice: { kind: string; data?: Untrusted }): boolean {
   if (notice.kind === 'party_invite') return true;
   if (notice.kind !== 'tournament') return false;
-  const event = (notice.data as { event?: unknown } | null | undefined)?.event;
+  const event = (notice.data as { event?: Untrusted } | null | undefined)?.event;
   return typeof event === 'string' && URGENT_TOURNAMENT_EVENTS.has(event);
 }

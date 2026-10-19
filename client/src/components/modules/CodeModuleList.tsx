@@ -44,6 +44,7 @@ import type {
 import { useModuleState } from '../../module-loader/useModuleState';
 import type { ModuleState } from '../../module-loader/moduleState';
 import { radii } from '../../theme/tokens';
+import type { Untrusted } from '../../utils/untrusted';
 
 const STATUS_COLOR: Record<ModuleServerStatus, 'success' | 'warning' | 'error' | 'default'> = {
   ok: 'success',
@@ -105,7 +106,7 @@ function effectiveStatus(
 function reasonOf(error: unknown, fallback: string): string {
   if (!(error instanceof Error)) return fallback;
   try {
-    const body = JSON.parse(error.message) as { error?: unknown };
+    const body = JSON.parse(error.message) as { error?: Untrusted };
     if (typeof body.error === 'string' && body.error.trim()) return body.error;
   } catch {
     // Not JSON.

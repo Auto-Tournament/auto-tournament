@@ -1,5 +1,6 @@
 import type { TFunction } from 'i18next';
 import { getMapDisplayName } from '../../constants/maps';
+import type { Untrusted } from '../../utils/untrusted';
 
 /**
  * A platform line in a match's chat, in the viewer's language. The API stores
@@ -11,9 +12,9 @@ export function systemLineText(body: string, t: TFunction): string {
   try {
     const { key, params = {} } = JSON.parse(body.slice(5)) as {
       key: string;
-      params?: Record<string, unknown>;
+      params?: Record<string, Untrusted>;
     };
-    const values: Record<string, unknown> = { ...params };
+    const values: Record<string, Untrusted> = { ...params };
     if (typeof params.map === 'string')
       values.map = params.map ? getMapDisplayName(params.map) : '';
     if (Array.isArray(params.maps))

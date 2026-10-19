@@ -10,6 +10,7 @@ import { useTranslation } from 'react-i18next';
 import { tokens } from '../../theme/tokens';
 import { matchPagePath } from '../../paths';
 import { presenceStatus, usePresence, type Presence } from './presenceStore';
+import type { Untrusted } from '../../utils/untrusted';
 
 const { color } = tokens;
 
@@ -27,7 +28,7 @@ function dotKind(p: Presence): string {
 
 export function presenceText(
   p: Presence,
-  t: (k: string, o?: Record<string, unknown>) => string
+  t: (k: string, o?: Record<string, Untrusted>) => string
 ): string {
   const a = p.activity;
   if (a?.kind === 'searching') return t('presence.searching', { mode: a.mode });

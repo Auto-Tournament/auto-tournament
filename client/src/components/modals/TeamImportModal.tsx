@@ -28,6 +28,7 @@ import { useTranslation } from 'react-i18next';
 import { NoDiscordChip } from '../player/NoDiscordChip';
 import { isValidDiscordId, normalizeDiscordId } from '../../utils/discordId';
 import { ExternalLink } from '../common/ExternalLink';
+import type { Untrusted } from '../../utils/untrusted';
 
 interface Player {
   name: string;
@@ -115,7 +116,7 @@ export const TeamImportModal: React.FC<TeamImportModalProps> = ({ open, onClose,
     for (const team of teams) {
       for (const player of team.players) {
         if (!('discordId' in player)) continue;
-        const raw: unknown = (player as { discordId?: unknown }).discordId;
+        const raw: Untrusted = (player as { discordId?: Untrusted }).discordId;
         const normalized = normalizeDiscordId(raw);
 
         if (isValidDiscordId(normalized)) {

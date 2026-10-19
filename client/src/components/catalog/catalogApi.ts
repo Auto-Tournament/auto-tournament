@@ -4,6 +4,7 @@
  */
 
 import { api } from '../../utils/api';
+import type { Untrusted } from '../../utils/untrusted';
 
 export type CatalogKind = 'pack' | 'module';
 
@@ -76,7 +77,7 @@ export function fetchRestartSupport(): Promise<{ supported: boolean; reason: str
 }
 
 /** Ask the server to restart. Answers 202 before it goes down. */
-export function requestRestart(): Promise<unknown> {
+export function requestRestart(): Promise<Untrusted> {
   return api.post('/api/system/restart', {});
 }
 

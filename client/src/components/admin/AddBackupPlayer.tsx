@@ -17,6 +17,7 @@ import { UserPlusIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../../utils/api';
 import { normalizeConfigPlayers } from '../../utils/playerUtils';
+import type { Untrusted } from '../../utils/untrusted';
 
 interface Player {
   steamId: string;
@@ -30,8 +31,8 @@ interface AddBackupPlayerProps {
   serverId: string;
   team1Name: string;
   team2Name: string;
-  existingTeam1Players: unknown;
-  existingTeam2Players: unknown;
+  existingTeam1Players: Untrusted;
+  existingTeam2Players: Untrusted;
   onSuccess?: (message: string) => void;
   onError?: (message: string) => void;
 }

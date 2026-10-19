@@ -19,6 +19,7 @@ import type { EventPagePrize, EventPageScheduleItem, TournamentSettings } from '
 import { TournamentBannerField } from './TournamentBannerField';
 import { FALLBACK_ART_MAPS } from '../../utils/tournamentArt';
 import { SwitchRow } from '../../components/common/ui';
+import type { Untrusted } from '../../utils/untrusted';
 
 const MAX_RULES = 20;
 const MAX_PRIZES = 5;
@@ -46,7 +47,7 @@ interface EventPageSettingsCardProps {
   settings: EventPageFields | undefined;
   saving: boolean;
   /** Saves straight to the tournament. Not used when `onDraftChange` is set. */
-  onSave?: (patch: Record<string, unknown>) => Promise<unknown>;
+  onSave?: (patch: Record<string, Untrusted>) => Promise<Untrusted>;
   /**
    * Draft mode, before the tournament exists: every edit is reported here and
    * the fields are sent with the create request. No Save button.

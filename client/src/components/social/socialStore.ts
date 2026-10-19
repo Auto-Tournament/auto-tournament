@@ -13,6 +13,7 @@ import { useEffect, useSyncExternalStore } from 'react';
 import { io, type Socket } from 'socket.io-client';
 import { apiErrorMessage } from '../../utils/api';
 import { refreshMatchmaking } from '../matchmaking/matchmakingStore';
+import type { Untrusted } from '../../utils/untrusted';
 
 export interface Person {
   id: string;
@@ -56,7 +57,7 @@ export interface Notice {
     | 'tournament'
     | 'news'
     | 'report';
-  data: Record<string, unknown>;
+  data: Record<string, Untrusted>;
   createdAt: number;
   read: boolean;
   /** On a new one only: the player's settings ring this kind. */
@@ -217,10 +218,10 @@ export function useSocial(enabled = true): State {
 }
 
 /** A social write: same-site JSON; reads friends and notices again after. */
-export async function socialAction<T = unknown>(
+export async function socialAction<T = Untrusted>(
   method: 'POST' | 'DELETE',
   path: string,
-  body: unknown = {}
+  body: Untrusted = {}
 ): Promise<T> {
   const res = await fetch(`/api${path}`, {
     method,

@@ -25,6 +25,7 @@ import {
 import { useSnackbar } from '../../contexts/SnackbarContext';
 import type { EloTemplateWeights } from '../../types/elo.types';
 import { useTranslation } from 'react-i18next';
+import type { Untrusted } from '../../utils/untrusted';
 
 interface ImportTemplate {
   id?: string;
@@ -63,12 +64,12 @@ export const EloTemplateImportModal: React.FC<EloTemplateImportModalProps> = ({
     onClose();
   };
 
-  const validateTemplate = (template: unknown, index: number): string | null => {
+  const validateTemplate = (template: Untrusted, index: number): string | null => {
     if (!template || typeof template !== 'object' || template === null) {
       return `Template ${index + 1}: Must be an object`;
     }
 
-    const typed = template as { [key: string]: unknown };
+    const typed = template as { [key: string]: Untrusted };
 
     if (!typed.name || typeof typed.name !== 'string' || typed.name.trim() === '') {
       return `Template ${index + 1}: Missing or invalid "name"`;
@@ -94,7 +95,7 @@ export const EloTemplateImportModal: React.FC<EloTemplateImportModalProps> = ({
       ) {
         return `Template "${typed.name}": "weights" must be an object if provided`;
       }
-      for (const [key, value] of Object.entries(typed.weights as Record<string, unknown>)) {
+      for (const [key, value] of Object.entries(typed.weights as Record<string, Untrusted>)) {
         if (value !== undefined && typeof value !== 'number') {
           return `Template "${typed.name}": Weight "${key}" must be a number`;
         }

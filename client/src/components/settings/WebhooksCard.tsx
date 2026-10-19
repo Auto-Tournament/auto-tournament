@@ -41,6 +41,7 @@ import { useSnackbar } from '../../contexts/SnackbarContext';
 import { tokens, radii } from '../../theme/tokens';
 import { SettingsCardHead, SettingsRow } from './SettingsRow';
 import { SwitchRow } from '../../components/common/ui';
+import type { Untrusted } from '../../utils/untrusted';
 
 interface EventTypeInfo {
   type: string;
@@ -81,7 +82,7 @@ interface Delivery {
   lastResponse: string | null;
   createdAt: number;
   nextAttemptAt: number | null;
-  payload: unknown;
+  payload: Untrusted;
 }
 
 interface EndpointForm {

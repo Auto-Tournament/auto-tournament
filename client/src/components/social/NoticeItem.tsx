@@ -24,10 +24,11 @@ import {
 } from './socialStore';
 import { asPerson, describeNotice } from './noticeText';
 import { useTimeAgo } from './timeAgo';
+import type { Untrusted } from '../../utils/untrusted';
 
 const { color } = tokens;
 
-const str = (v: unknown) => (typeof v === 'string' ? v : '');
+const str = (v: Untrusted) => (typeof v === 'string' ? v : '');
 
 interface Props {
   notice: Notice;
@@ -47,7 +48,7 @@ export function NoticeItem({ notice, viewerId, onNavigate }: Props) {
   const person = asPerson(d.from) ?? asPerson(d.by);
   const answer = str(d.answer);
 
-  const act = async (fn: () => Promise<unknown>) => {
+  const act = async (fn: () => Promise<Untrusted>) => {
     setBusy(true);
     try {
       await fn();

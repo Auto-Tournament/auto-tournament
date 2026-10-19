@@ -13,6 +13,7 @@ import { ArrowCounterClockwiseIcon, HourglassMediumIcon, PlayIcon } from '@phosp
 import { useTranslation } from 'react-i18next';
 import { api } from '../../utils/api';
 import { useTopic } from '../../hooks/useTopic';
+import type { Untrusted } from '../../utils/untrusted';
 
 interface HoldState {
   heldUntil: number | null;
@@ -57,7 +58,7 @@ export function MatchHoldPanel({
   // Holds, releases and countdown restarts go out as bracket updates.
   useTopic([], load, { events: ['bracket:update', 'match:update', 'tournament:update'] });
 
-  const run = async (action: () => Promise<unknown>, done: string) => {
+  const run = async (action: () => Promise<Untrusted>, done: string) => {
     setBusy(true);
     try {
       await action();

@@ -13,12 +13,13 @@ import { PlayerAvatar } from '../player/PlayerAvatar';
 import { useTranslation } from 'react-i18next';
 import { PlayerName } from '../player/PlayerName';
 import { radii } from '../../theme/tokens';
+import type { Untrusted } from '../../utils/untrusted';
 
 interface PlayerRosterProps {
   team1Name: string;
   team2Name: string;
-  team1Players: unknown;
-  team2Players: unknown;
+  team1Players: Untrusted;
+  team2Players: Untrusted;
   connectedPlayers: ConnectedPlayer[];
   isTeam1?: boolean; // If viewing from team perspective
   /** A simulated match: bots play, so nobody is "offline". */

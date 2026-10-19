@@ -17,6 +17,7 @@ import {
   useSocial,
   type Relation,
 } from './socialStore';
+import type { Untrusted } from '../../utils/untrusted';
 
 export function ProfileSocialButtons({ playerId, name }: { playerId: string; name: string }) {
   const { t } = useTranslation();
@@ -40,7 +41,7 @@ export function ProfileSocialButtons({ playerId, name }: { playerId: string; nam
 
   if (!enabled || !relation || relation === 'self') return null;
 
-  const run = async (fn: () => Promise<unknown>, done?: string) => {
+  const run = async (fn: () => Promise<Untrusted>, done?: string) => {
     setBusy(true);
     try {
       await fn();

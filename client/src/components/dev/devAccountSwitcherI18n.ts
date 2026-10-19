@@ -1,4 +1,5 @@
 import i18n from '../../i18n';
+import type { Untrusted } from '../../utils/untrusted';
 
 import en from '../../locales/en/translation/devAccountSwitcher.json';
 import zhCN from '../../locales/zh-CN/translation/devAccountSwitcher.json';
@@ -24,7 +25,7 @@ import nb from '../../locales/nb/translation/devAccountSwitcher.json';
  * already showing.
  */
 export function registerDevAccountSwitcherTranslations(): void {
-  const bundles: Record<string, Record<string, unknown>> = {
+  const bundles: Record<string, Record<string, Untrusted>> = {
     en,
     'zh-CN': zhCN,
     fr,

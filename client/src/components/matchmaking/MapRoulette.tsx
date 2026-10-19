@@ -31,7 +31,7 @@ function blip(frequency: number, duration: number, volume: number) {
   try {
     const Ctx =
       window.AudioContext ??
-      (window as unknown as { webkitAudioContext?: typeof globalThis.AudioContext })
+      (window as typeof window & { webkitAudioContext?: typeof globalThis.AudioContext })
         .webkitAudioContext;
     if (!Ctx) return;
     audio ??= new Ctx();

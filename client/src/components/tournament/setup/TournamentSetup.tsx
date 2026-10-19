@@ -52,6 +52,7 @@ import { GroupsFields, type GroupsForm } from './GroupsFields';
 import { ScheduleStep, type MatchTimesForm } from './ScheduleStep';
 import { SwitchRow } from '../../../components/common/ui';
 import { FormField } from '../../common/ui';
+import type { Untrusted } from '../../../utils/untrusted';
 
 export interface SetupFormValues {
   name: string;
@@ -67,7 +68,7 @@ export interface SetupFormValues {
    * core never reads them; the module's steps and setup model
    * (`tournamentSetup`) are the only things that know the shape (item 8b).
    */
-  gameSettings: Record<string, unknown>;
+  gameSettings: Record<string, Untrusted>;
   type: string;
   format: string;
   selectedTeams: string[];
@@ -89,7 +90,7 @@ export interface SetupFormValues {
 export interface SetupFormHandlers {
   onNameChange: (name: string) => void;
   onGameChange: (game: string) => void;
-  onGameSettingsChange: (patch: Record<string, unknown>) => void;
+  onGameSettingsChange: (patch: Record<string, Untrusted>) => void;
   onTypeChange: (type: string) => void;
   onFormatChange: (format: string) => void;
   onTeamsChange: (teamIds: string[]) => void;
@@ -141,7 +142,7 @@ interface TournamentSetupProps {
   onRegenerate: () => void;
   onBulkCreateShuffleMatches: () => void;
   onPlayersUpdated: () => void;
-  onSaveEventPage: (patch: Record<string, unknown>) => Promise<unknown>;
+  onSaveEventPage: (patch: Record<string, Untrusted>) => Promise<Untrusted>;
 }
 
 /**
@@ -833,7 +834,7 @@ export function TournamentSetup(props: TournamentSetupProps) {
 
       case 'maps': {
         const customVeto = (
-          tournament?.settings?.customVetoOrder as Record<string, unknown> | undefined
+          tournament?.settings?.customVetoOrder as Record<string, Untrusted> | undefined
         )?.[form.format];
         return (
           <>

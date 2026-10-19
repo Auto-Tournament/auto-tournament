@@ -15,6 +15,7 @@ import { api } from '../../utils/api';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 import type { TournamentSettings } from '../../types/tournament.types';
 import { useTranslation } from 'react-i18next';
+import type { Untrusted } from '../../utils/untrusted';
 
 interface SaveTemplateModalProps {
   open: boolean;
@@ -30,7 +31,7 @@ interface SaveTemplateModalProps {
      * The game module's own settings (CS2: `cs2`, with its pool, maps and
      * round rules), saved into the template's settings as they are.
      */
-    gameSettings?: Record<string, unknown>;
+    gameSettings?: Record<string, Untrusted>;
     grandFinalMode?: 'none' | 'simple' | 'double';
   };
 }
@@ -71,7 +72,7 @@ export default function SaveTemplateModal({
         seedingMethod: 'random',
       };
 
-      const settings: Partial<TournamentSettings> & Record<string, unknown> = {
+      const settings: Partial<TournamentSettings> & Record<string, Untrusted> = {
         ...baseSettings,
         ...(tournamentData.gameSettings ?? {}),
       };

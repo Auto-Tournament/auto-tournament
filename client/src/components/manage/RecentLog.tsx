@@ -5,6 +5,7 @@ import { tokens } from '../../theme/tokens';
 import { KindDot } from './NeedsYouQueue';
 import { useTranslation } from 'react-i18next';
 import type { RecentEvent } from '../../utils/manageSelectors';
+import type { Untrusted } from '../../utils/untrusted';
 
 interface RecentLogProps {
   events: RecentEvent[];
@@ -12,7 +13,7 @@ interface RecentLogProps {
 
 function relativeTime(
   unixSeconds: number,
-  t: (key: string, opts?: Record<string, unknown>) => string
+  t: (key: string, opts?: Record<string, Untrusted>) => string
 ): string {
   const seconds = Math.max(0, Math.floor(Date.now() / 1000) - unixSeconds);
   if (seconds < 60) return t('managePage.needsYou.secondsAgo', { count: seconds });

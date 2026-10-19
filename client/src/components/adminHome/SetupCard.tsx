@@ -3,6 +3,7 @@ import { Box, Button } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { tokens, radii, textSize } from '../../theme/tokens';
 import { setupCardTarget } from '../../utils/signInSetup';
+import type { Untrusted } from '../../utils/untrusted';
 
 const { color } = tokens;
 
@@ -13,7 +14,7 @@ export interface SetupItem {
   optional?: boolean;
   /** i18n key for the label; interpolation values, if any. */
   labelKey: string;
-  labelValues?: Record<string, unknown>;
+  labelValues?: Record<string, Untrusted>;
   /** The namespace `labelKey` is in, for a module's row; core's otherwise. */
   ns?: string;
   /** Where to set it up; "Open settings" goes to the first unfinished item's. */

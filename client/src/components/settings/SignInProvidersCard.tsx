@@ -16,6 +16,7 @@ import { ProviderLogo } from '../auth/ProviderLogo';
 import { AdminAccessSection } from './AdminAccessSection';
 import { LocalAccountsSection } from './LocalAccountsSection';
 import { SettingsCardHead, SettingsRow } from './SettingsRow';
+import type { Untrusted } from '../../utils/untrusted';
 
 /** One provider as GET /api/sign-in-providers returns it. Never carries a secret. */
 export interface AdminSignInProvider {
@@ -144,7 +145,7 @@ function ProviderSection({
     ? t('settingsPage.signIn.clientSecret')
     : t('settingsPage.signIn.steamKey');
 
-  const save = async (body: Record<string, unknown>) => {
+  const save = async (body: Record<string, Untrusted>) => {
     setBusy(true);
     setTestResult(null);
     try {
@@ -161,7 +162,7 @@ function ProviderSection({
   };
 
   const saveCredentials = () => {
-    const body: Record<string, unknown> = {};
+    const body: Record<string, Untrusted> = {};
     if (provider.hasClientId && clientId.trim() !== (provider.clientId ?? '')) {
       body.clientId = clientId.trim() || null;
     }

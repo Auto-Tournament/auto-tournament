@@ -37,6 +37,7 @@ export const MatchListCard: React.FC<MatchListCardProps> = ({
 }) => {
   const { t } = useTranslation();
   const bracketMatch = match as Match & { liveStats?: MatchLiveStats | null };
+  // eslint-disable-next-line no-restricted-syntax -- Match is an interface without MatchLike's index signature; same fields
   const matchLike = match as unknown as MatchLike;
   const shuffle = isShuffleMatch(matchLike);
   const manual = isManualMatch(matchLike);

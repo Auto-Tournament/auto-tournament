@@ -13,6 +13,7 @@ import { getMapDisplayName } from '../../../constants/maps';
 import { matchPhaseOf } from '../../../utils/matchPhase';
 import { tokens, fontDisplay, mono, radii } from '../../../theme/tokens';
 import { panelSx, panelBorderSx } from '../../../components/common/ui';
+import type { Untrusted } from '../../../utils/untrusted';
 
 const { color } = tokens;
 
@@ -244,7 +245,10 @@ export function YourMatchCard({
 
   // Which side each team is on now (draft 7c): the map's starting side from
   // the config, swapped after the first half. Nothing for a knife round.
-  const config = (match.config ?? {}) as { map_sides?: string[]; cvars?: Record<string, unknown> };
+  const config = (match.config ?? {}) as {
+    map_sides?: string[];
+    cvars?: Record<string, Untrusted>;
+  };
   const sideCode = typeof mapNumber === 'number' ? config.map_sides?.[mapNumber] : undefined;
   const team1Starts = sideCode === 'team1_ct' ? 'CT' : sideCode === 'team2_ct' ? 'T' : null;
   const half = Number(config.cvars?.mp_maxrounds ?? 24) / 2;

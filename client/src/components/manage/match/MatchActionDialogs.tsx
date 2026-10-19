@@ -19,6 +19,7 @@ import { PlayerPicker } from '../../common/PlayerPicker';
 import { api } from '../../../utils/api';
 import { radii, textSize, tokens } from '../../../theme/tokens';
 import type { ActionTarget } from './ConfirmAction';
+import type { Untrusted } from '../../../utils/untrusted';
 
 const { color } = tokens;
 
@@ -57,7 +58,7 @@ function ActionDialog({
   action: string;
   disabled?: boolean;
   onClose: () => void;
-  onRun: () => Promise<unknown>;
+  onRun: () => Promise<Untrusted>;
   testId: string;
 }) {
   const [busy, setBusy] = useState(false);
@@ -172,7 +173,7 @@ export function MoveServerDialog({
   /** The round in progress, restored on the new server. */
   round: number | null;
   onClose: () => void;
-  post: (url: string, body: Record<string, unknown>, ok: string) => Promise<void>;
+  post: (url: string, body: Record<string, Untrusted>, ok: string) => Promise<void>;
 }) {
   const [servers, setServers] = useState<ServerChoice[] | null>(null);
   const [picked, setPicked] = useState<string | null>(null);
@@ -326,7 +327,7 @@ export function ChangeMapDialog({
   current: SeriesMap | undefined;
   maps: SeriesMap[];
   onClose: () => void;
-  send: (name: string, args: Record<string, unknown>, ok?: string) => Promise<unknown>;
+  send: (name: string, args: Record<string, Untrusted>, ok?: string) => Promise<Untrusted>;
 }) {
   const others = maps.filter((m) => m.number !== current?.number);
   const [picked, setPicked] = useState<number | null>(
@@ -682,7 +683,7 @@ export function CorrectMapDialog({
   /** Maps won so far: [team1, team2]. */
   seriesNow: [number, number];
   onClose: () => void;
-  post: (url: string, body: Record<string, unknown>, ok: string) => Promise<void>;
+  post: (url: string, body: Record<string, Untrusted>, ok: string) => Promise<void>;
 }) {
   const [s1, setS1] = useState(String(map.score?.team1 ?? 0));
   const [s2, setS2] = useState(String(map.score?.team2 ?? 0));
@@ -774,7 +775,7 @@ export function MessageAllDialog({
   /** Humans on the server, for the button. */
   players: number;
   onClose: () => void;
-  send: (name: string, args: Record<string, unknown>, ok?: string) => Promise<unknown>;
+  send: (name: string, args: Record<string, Untrusted>, ok?: string) => Promise<Untrusted>;
   onDone: (text: string) => void;
   onError: (text: string) => void;
 }) {
