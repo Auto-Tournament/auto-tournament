@@ -975,19 +975,14 @@ export function startDemoStreams(options: Partial<DemoStreamOptions> = {}): Demo
     registerInboundHandler('demo.begin', {
       priority: 'low',
       async handle(ctx, env) {
-        const answer = await r.begin(
-          ctx.serverId,
-          env.epoch,
-          // Checked against its schema by the gateway first, as are chunk and end.
-          env.payload as DemoBeginPayload
-        );
+        const answer = await r.begin(ctx.serverId, env.epoch, env.payload);
         sendAck(ctx, env, answer);
       },
     }),
     registerInboundHandler('demo.chunk', {
       priority: 'low',
       async handle(ctx, env) {
-        const payload = env.payload as DemoChunkPayload;
+        const payload = env.payload;
         const answer = await r.chunk(ctx.serverId, payload);
         await pace.take(ctx.serverId, payload.data.length + 256);
         sendAck(ctx, env, answer);
@@ -996,7 +991,7 @@ export function startDemoStreams(options: Partial<DemoStreamOptions> = {}): Demo
     registerInboundHandler('demo.end', {
       priority: 'low',
       async handle(ctx, env) {
-        const answer = await r.end(ctx.serverId, env.payload as DemoEndPayload);
+        const answer = await r.end(ctx.serverId, env.payload);
         sendAck(ctx, env, answer);
       },
     }),
