@@ -1,4 +1,5 @@
-import { Router, Request, Response } from 'express';
+import type { Request, Response } from 'express';
+import { Router } from 'express';
 import fetch from 'node-fetch';
 import { steamService } from '../services/steamService';
 import { requireAuth } from '../middleware/auth';
@@ -64,7 +65,8 @@ router.get('/status', async (_req: Request, res: Response) => {
       errorType: health.errorType,
       statusCode: health.statusCode,
       // Keep wording generic for the UI. Admins can still inspect API logs for details.
-      error: 'Steam integration is currently unavailable. Check server configuration and connectivity.',
+      error:
+        'Steam integration is currently unavailable. Check server configuration and connectivity.',
     });
   } catch (error) {
     log.error('Error in Steam status endpoint', error);

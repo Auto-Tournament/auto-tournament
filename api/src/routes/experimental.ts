@@ -2,7 +2,8 @@
  * Experimental features (services/experimentalFeatures): list them and turn
  * one on or off. Admin only; writes must be same-site JSON.
  */
-import { Router, Request, Response } from 'express';
+import type { Request, Response } from 'express';
+import { Router } from 'express';
 import { requireAuth } from '../middleware/auth';
 import { isSameSiteRequest } from '../utils/accountConnections';
 import { log } from '../utils/logger';

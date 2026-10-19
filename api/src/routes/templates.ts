@@ -1,8 +1,13 @@
-import { Router, Request, Response } from 'express';
+import type { Request, Response } from 'express';
+import { Router } from 'express';
 import { templateService } from '../services/templateService';
 import { requireAuth } from '../middleware/auth';
 import { log } from '../utils/logger';
-import type { CreateTemplateInput, UpdateTemplateInput, TournamentTemplate } from '../types/tournament.types';
+import type {
+  CreateTemplateInput,
+  UpdateTemplateInput,
+  TournamentTemplate,
+} from '../types/tournament.types';
 
 const router = Router();
 
@@ -291,4 +296,3 @@ router.delete('/:id', async (req: Request, res: Response) => {
 });
 
 export default router;
-

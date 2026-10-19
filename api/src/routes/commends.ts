@@ -2,7 +2,8 @@
  * Commends after a match (services/commends.ts): what the viewer gave in a
  * match, giving or taking one back, and a player's counts.
  */
-import { Router, Request, Response, NextFunction } from 'express';
+import type { Request, Response, NextFunction } from 'express';
+import { Router } from 'express';
 import { isSameSiteRequest } from '../utils/accountConnections';
 import { resolveViewerIdentity } from '../utils/viewerIdentity';
 import { log } from '../utils/logger';

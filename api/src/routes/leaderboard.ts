@@ -3,7 +3,8 @@
  * one game (ratings are per game, services/gameRatings), with what they
  * played. Public, like the player and team directories.
  */
-import { Router, Request, Response } from 'express';
+import type { Request, Response } from 'express';
+import { Router } from 'express';
 import { db } from '../config/database';
 import { log } from '../utils/logger';
 import { getIntegration } from '../integrations/registry';
@@ -46,7 +47,10 @@ router.get('/', async (req: Request, res: Response) => {
         []
       )
     ).map((g) => ({ id: g.game, name: gameName(g.game), players: Number(g.players) }));
-    const asked = typeof req.query.game === 'string' && req.query.game.trim() ? ratingGame(req.query.game) : null;
+    const asked =
+      typeof req.query.game === 'string' && req.query.game.trim()
+        ? ratingGame(req.query.game)
+        : null;
     const game = asked ?? games[0]?.id ?? null;
     if (!game) return res.json({ success: true, games, game: null, players: [] });
 

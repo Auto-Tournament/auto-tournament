@@ -1,5 +1,11 @@
 import { db } from '../config/database';
-import { Team, CreateTeamInput, UpdateTeamInput, TeamResponse, Player } from '../types/team.types';
+import type {
+  Team,
+  CreateTeamInput,
+  UpdateTeamInput,
+  TeamResponse,
+  Player,
+} from '../types/team.types';
 import { log } from '../utils/logger';
 import { steamService } from './steamService';
 import { playerService } from './playerService';

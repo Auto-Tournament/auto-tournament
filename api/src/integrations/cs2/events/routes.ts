@@ -4,7 +4,8 @@
  * events themselves arrive on the fleet link (fleet/inbound.ts).
  */
 
-import { Router, Request, Response } from 'express';
+import type { Request, Response } from 'express';
+import { Router } from 'express';
 import { requireAuth } from '../../../middleware/auth';
 import { db } from '../../../config/database';
 import { log } from '../../../utils/logger';

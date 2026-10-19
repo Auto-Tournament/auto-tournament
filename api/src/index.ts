@@ -30,7 +30,8 @@ migrateLegacyDataDir();
 import { migrateLegacyMapImages } from './config/migrateLegacyMapImages';
 migrateLegacyMapImages();
 
-import express, { Request, Response, NextFunction, RequestHandler } from 'express';
+import type { Request, Response, NextFunction, RequestHandler } from 'express';
+import express from 'express';
 import cors from 'cors';
 import { createServer } from 'http';
 import swaggerUi from 'swagger-ui-express';

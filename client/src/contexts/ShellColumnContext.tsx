@@ -1,4 +1,5 @@
-import { createContext, useContext, useLayoutEffect, useState, ReactNode } from 'react';
+import type { ReactNode } from 'react';
+import { createContext, useContext, useLayoutEffect, useState } from 'react';
 
 /**
  * The admin shell's left column, lent to a page that brings its own.

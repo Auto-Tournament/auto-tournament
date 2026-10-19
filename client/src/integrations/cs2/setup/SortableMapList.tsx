@@ -1,3 +1,4 @@
+import type { DragEndEvent } from '@dnd-kit/core';
 import {
   DndContext,
   closestCenter,
@@ -5,7 +6,6 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
-  DragEndEvent,
 } from '@dnd-kit/core';
 import {
   arrayMove,
@@ -15,13 +15,7 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import {
-  Box,
-  Paper,
-  Typography,
-  Chip,
-  IconButton,
-} from '@mui/material';
+import { Box, Paper, Typography, Chip, IconButton } from '@mui/material';
 import { DotsSixVerticalIcon, XIcon } from '@phosphor-icons/react';
 /** What the list reads of a map: a CS2 map row has more, and still fits. */
 interface SortableMap {
@@ -46,14 +40,10 @@ interface SortableMapItemProps {
 }
 
 function SortableMapItem({ mapId, index, displayName, onRemove, disabled }: SortableMapItemProps) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: mapId, disabled });
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: mapId,
+    disabled,
+  });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -176,11 +166,7 @@ export function SortableMapList({
       <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
         Drag and drop to reorder maps. Maps will be played in this sequence.
       </Typography>
-      <DndContext
-        sensors={sensors}
-        collisionDetection={closestCenter}
-        onDragEnd={handleDragEnd}
-      >
+      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
         <SortableContext items={maps} strategy={verticalListSortingStrategy}>
           {maps.map((mapId, index) => (
             <SortableMapItem
@@ -197,4 +183,3 @@ export function SortableMapList({
     </Box>
   );
 }
-

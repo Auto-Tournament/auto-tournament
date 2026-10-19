@@ -1,5 +1,6 @@
 import { readHighlightSettings } from '../services/highlights/settings';
-import { Router, Request, Response } from 'express';
+import type { Request, Response } from 'express';
+import { Router } from 'express';
 import { requireAuth, requestActorId, type AuthedRequest } from '../middleware/auth';
 import { apiTokenService, ApiTokenError, type StoredTokenScope } from '../services/apiTokenService';
 import { settingsService } from '../services/settingsService';
