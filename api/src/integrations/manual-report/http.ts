@@ -34,12 +34,7 @@ import { db } from '../../config/database';
 import { log } from '../../utils/logger';
 import { resolveViewerAccount, type ViewerAccount } from '../../utils/viewerIdentity';
 import type { DbMatchRow } from '../../types/database.types';
-import {
-  isManualReportMatch,
-  resolveActor,
-  type ReportActor,
-  type ReportOutcome,
-} from './reports';
+import { isManualReportMatch, resolveActor, type ReportActor, type ReportOutcome } from './reports';
 
 /** The response body every state-machine route answers with. */
 export function answer(res: Response, outcome: ReportOutcome): Response {
@@ -159,7 +154,9 @@ export async function tournamentForRequest(req: Request, res: Response): Promise
     res.status(400).json({ success: false, error: 'tournamentId must be a positive integer' });
     return null;
   }
-  const row = await db.queryOneAsync<{ id: number }>('SELECT id FROM tournament WHERE id = ?', [id]);
+  const row = await db.queryOneAsync<{ id: number }>('SELECT id FROM tournament WHERE id = ?', [
+    id,
+  ]);
   if (!row) {
     res.status(404).json({ success: false, error: `Tournament ${id} not found` });
     return null;
@@ -231,9 +228,10 @@ export async function teamRosters(match: DbMatchRow): Promise<Map<string, Roster
 }
 
 /** The two teams of a match, by name, for a client that has only the slugs. */
-export async function teamNames(
-  match: DbMatchRow
-): Promise<{ team1: { id: string | null; name: string | null }; team2: { id: string | null; name: string | null } }> {
+export async function teamNames(match: DbMatchRow): Promise<{
+  team1: { id: string | null; name: string | null };
+  team2: { id: string | null; name: string | null };
+}> {
   const ids = [match.team1_id ?? null, match.team2_id ?? null];
   const rows = ids.some(Boolean)
     ? await db.queryAsync<{ id: string; name: string }>(

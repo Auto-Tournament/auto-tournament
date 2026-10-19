@@ -82,8 +82,7 @@ export async function listFields(tournamentId: number): Promise<CustomStatField[
 }
 
 export type FieldsCheck =
-  | { ok: true; fields: CustomStatFieldInput[] }
-  | { ok: false; error: string };
+  { ok: true; fields: CustomStatFieldInput[] } | { ok: false; error: string };
 
 /**
  * Check a whole set of fields before any of it is written.
@@ -115,7 +114,8 @@ export function validateFields(input: unknown): FieldsCheck {
 
     const label = typeof entry.label === 'string' ? entry.label.trim() : '';
     if (!label) return { ok: false, error: `${where}: label is required` };
-    if (label.length > 80) return { ok: false, error: `${where}: label is longer than 80 characters` };
+    if (label.length > 80)
+      return { ok: false, error: `${where}: label is longer than 80 characters` };
 
     const valueType = entry.valueType ?? 'number';
     if (!VALUE_TYPES.includes(valueType)) {

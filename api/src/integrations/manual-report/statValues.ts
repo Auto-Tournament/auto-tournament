@@ -95,9 +95,7 @@ export interface MatchStatValue {
   reportId: number | null;
 }
 
-export type StatValuesCheck =
-  | { ok: true; values: StatValueWrite[] }
-  | { ok: false; error: string };
+export type StatValuesCheck = { ok: true; values: StatValueWrite[] } | { ok: false; error: string };
 
 /** What the values are checked against. */
 export interface StatValuesContext {
@@ -227,7 +225,8 @@ export function validateStatValues(input: unknown, ctx: StatValuesContext): Stat
     }
     const where = `Stat ${index + 1} ('${field.label}')`;
 
-    const mapNumber = entry.mapNumber === undefined || entry.mapNumber === null ? 0 : Number(entry.mapNumber);
+    const mapNumber =
+      entry.mapNumber === undefined || entry.mapNumber === null ? 0 : Number(entry.mapNumber);
     if (!Number.isInteger(mapNumber) || mapNumber < 0 || mapNumber > ctx.gameCount) {
       return {
         ok: false,
@@ -240,7 +239,8 @@ export function validateStatValues(input: unknown, ctx: StatValuesContext): Stat
 
     if (field.scope === 'player') {
       const uid = typeof entry.playerUid === 'string' ? entry.playerUid.trim() : '';
-      if (!uid) return { ok: false, error: `${where}: playerUid is required, it is a per-player field` };
+      if (!uid)
+        return { ok: false, error: `${where}: playerUid is required, it is a per-player field` };
       const memberSide = ctx.sideOf.get(uid);
       if (!memberSide) {
         return { ok: false, error: `${where}: ${uid} is not on either team in this match` };
@@ -276,7 +276,10 @@ export function validateStatValues(input: unknown, ctx: StatValuesContext): Stat
     const subject = `${field.key}|${playerUid ?? side}`;
     const duplicate = `${subject}|${mapNumber}`;
     if (seen.has(duplicate)) {
-      return { ok: false, error: `${where}: given twice for the same ${playerUid ? 'player' : 'team'}` };
+      return {
+        ok: false,
+        error: `${where}: given twice for the same ${playerUid ? 'player' : 'team'}`,
+      };
     }
     seen.add(duplicate);
 
@@ -399,7 +402,12 @@ function toValue(row: JoinedValueRow): MatchStatValue {
     playerId: row.player_id,
     playerName: row.player_name,
     team: (row.team as TeamSide | null) ?? null,
-    value: valueType === 'text' ? row.value_text : row.value_number === null ? null : Number(row.value_number),
+    value:
+      valueType === 'text'
+        ? row.value_text
+        : row.value_number === null
+          ? null
+          : Number(row.value_number),
     reportId: row.report_id === null ? null : Number(row.report_id),
   };
 }
@@ -565,7 +573,10 @@ export async function tournamentStats(
   const byId = new Map(fields.map((field) => [field.id, field]));
   const playerBuckets = new Map<string, Bucket>();
   const teamBuckets = new Map<string, Bucket>();
-  const playerMeta = new Map<string, { playerId: string | null; name: string | null; teams: Set<string> }>();
+  const playerMeta = new Map<
+    string,
+    { playerId: string | null; name: string | null; teams: Set<string> }
+  >();
   const teamIds = new Set<string>();
 
   for (const row of rows) {
