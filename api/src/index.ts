@@ -543,7 +543,7 @@ process.on('uncaughtException', (err) => {
 });
 
 // Initialize database and start server
-(async () => {
+void (async () => {
   try {
     // Initialize database first (including schema)
     await db.init();
@@ -726,7 +726,7 @@ process.on('uncaughtException', (err) => {
       // Recover matches and start the game integrations (CS2: bootstrap server
       // webhooks, fetch the MatchZy Enhanced version, start health monitoring) now the
       // database is ready.
-      Promise.all([
+      void Promise.all([
         ...listIntegrations().map((integration) =>
           (integration.start?.() ?? Promise.resolve()).catch((error) => {
             log.warn(`Failed to start the ${integration.id} integration`, { error });
