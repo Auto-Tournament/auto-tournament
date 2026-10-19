@@ -39,6 +39,7 @@ import type { DbMatchReportRow } from '../../types/matchReport.types';
 import { adminActor, answer, guarded, matchForRequest, tournamentForRequest } from './http';
 import { listFields, replaceFields, validateFields } from './fields';
 import { adminResolve, isManualReportMatch, reopenMatch, type MatchReport } from './reports';
+import type { Untrusted } from '../../utils/untrusted';
 
 export const manualReportAdminRoutes = Router();
 
@@ -135,9 +136,9 @@ manualReportAdminRoutes.get('/disputes', async (req: Request, res: Response) => 
 
 /** The report fields of a joined row, as the captain routes return them. */
 function reportOf(row: DisputeRow): Partial<MatchReport> & { revision: number } {
-  let result: unknown = null;
+  let result: object | null = null;
   try {
-    result = JSON.parse(row.result);
+    result = JSON.parse(row.result) as object | null;
   } catch {
     result = null;
   }
@@ -174,7 +175,7 @@ manualReportAdminRoutes.post('/matches/:slug/resolve', async (req: Request, res:
   await guarded(res, 'POST /matches/:slug/resolve', async () => {
     const match = await matchForRequest(req, res);
     if (!match) return;
-    const body = (req.body ?? {}) as { result?: unknown; stats?: unknown };
+    const body = (req.body ?? {}) as { result?: Untrusted; stats?: Untrusted };
     answer(
       res,
       await adminResolve({
@@ -229,7 +230,7 @@ manualReportAdminRoutes.put(
       const tournamentId = await tournamentForRequest(req, res);
       if (tournamentId === null) return;
 
-      const body = (req.body ?? {}) as { fields?: unknown };
+      const body = (req.body ?? {}) as { fields?: Untrusted };
       const check = validateFields(Array.isArray(body.fields) ? body.fields : body);
       if (!check.ok) {
         res.status(400).json({ success: false, error: check.error });
@@ -290,7 +291,7 @@ async function membersOf(teamId: string): Promise<TeamMemberView[]> {
 manualReportAdminRoutes.post('/teams/:teamId/captain', async (req: Request, res: Response) => {
   await guarded(res, 'POST /teams/:teamId/captain', async () => {
     const { teamId } = req.params;
-    const body = (req.body ?? {}) as { uid?: unknown; role?: unknown };
+    const body = (req.body ?? {}) as { uid?: Untrusted; role?: Untrusted };
 
     const uid = typeof body.uid === 'string' ? body.uid.trim() : '';
     if (!uid) {

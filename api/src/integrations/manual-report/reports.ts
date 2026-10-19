@@ -80,6 +80,8 @@ import {
   validateStatValues,
   type StatValueWrite,
 } from './statValues';
+import type { SqlValue } from '../../config/database';
+import type { Untrusted } from '../../utils/untrusted';
 
 // ---------------------------------------------------------------------------
 // Values
@@ -140,9 +142,10 @@ const now = (): number => Math.floor(Date.now() / 1000);
 
 function parseResult(json: string): ReportedResult {
   try {
-    const value: unknown = JSON.parse(json);
+    // Reports of every age: read leniently.
+    const value = JSON.parse(json) as Partial<ReportedResult> | null;
     if (value && typeof value === 'object' && !Array.isArray(value)) {
-      const r = value as Partial<ReportedResult>;
+      const r = value;
       return {
         maps: Array.isArray(r.maps) ? r.maps : [],
         seriesTeam1Score: Number(r.seriesTeam1Score) || 0,
@@ -230,10 +233,8 @@ interface StoredConfig {
 
 function configOf(match: DbMatchRow): StoredConfig {
   try {
-    const value: unknown = JSON.parse(match.config || '{}');
-    return value && typeof value === 'object' && !Array.isArray(value)
-      ? (value as StoredConfig)
-      : {};
+    const value = JSON.parse(match.config || '{}') as StoredConfig | null;
+    return value && typeof value === 'object' && !Array.isArray(value) ? value : {};
   } catch {
     return {};
   }
@@ -343,7 +344,7 @@ const otherSide = (team: TeamSide): TeamSide => (team === 'team1' ? 'team2' : 't
  * score that matches the games. Returns the normalized result, or an error.
  */
 export function validateResult(
-  input: unknown,
+  input: Untrusted,
   rules: { seriesLength: number; allowDraw: boolean }
 ): { ok: true; result: ReportedResult } | { ok: false; error: string } {
   const body = (input ?? {}) as Partial<ReportedResult>;
@@ -440,7 +441,7 @@ async function recordAction(
   report: { id: number | null; matchSlug: string },
   action: MatchReportAction,
   actor: ReportActor,
-  detail?: Record<string, unknown>
+  detail?: object
 ): Promise<void> {
   try {
     await db.insertAsync('match_report_actions', {
@@ -560,14 +561,14 @@ export interface SubmitInput {
   matchSlug: string;
   actor: ReportActor;
   /** The reported games; checked by `validateResult` against the match's rules. */
-  result: unknown;
+  result: Untrusted;
   /**
    * The tournament's custom stat fields, filled in (3.0 phase D, PR D6).
    * Checked by `validateStatValues` against `custom_stat_fields`; a required
    * field left blank, an unknown key or a value of the wrong type refuses the
    * whole report.
    */
-  stats?: unknown;
+  stats?: Untrusted;
 }
 
 /**
@@ -823,9 +824,9 @@ async function mayAnswer(
 export async function adminResolve(input: {
   matchSlug: string;
   actor: ReportActor;
-  result?: unknown;
+  result?: Untrusted;
   /** Custom stat values for the admin's own result; ignored without one. */
-  stats?: unknown;
+  stats?: Untrusted;
 }): Promise<ReportOutcome> {
   if (input.actor.role !== 'admin') return fail(403, 'Only an admin may resolve a report');
   const match = await matchFor(input.matchSlug);
@@ -867,8 +868,8 @@ export async function adminResolve(input: {
 export async function adminOverride(input: {
   matchSlug: string;
   actor: ReportActor;
-  result: unknown;
-  stats?: unknown;
+  result: Untrusted;
+  stats?: Untrusted;
 }): Promise<ReportOutcome> {
   if (input.actor.role !== 'admin') return fail(403, 'Only an admin may override a result');
   const match = await matchFor(input.matchSlug);
@@ -886,9 +887,9 @@ export async function adminOverride(input: {
 async function writeAdminResult(
   match: DbMatchRow,
   actor: ReportActor,
-  result: unknown,
+  result: Untrusted,
   action: Extract<MatchReportAction, 'resolve' | 'override'>,
-  statsInput?: unknown
+  statsInput?: Untrusted
 ): Promise<ReportOutcome> {
   const config = configOf(match);
   const check = validateResult(result, {
@@ -951,7 +952,7 @@ async function writeAdminResult(
  */
 async function checkStats(
   match: DbMatchRow,
-  input: unknown,
+  input: Untrusted,
   gameCount: number
 ): Promise<{ ok: true; values: StatValueWrite[] } | { ok: false; error: string }> {
   const [fields, { sideOf, sides }] = await Promise.all([
@@ -1028,7 +1029,7 @@ export async function reopenMatch(input: {
 
   // Empty the slots this match filled, so the replacement winner fills them.
   for (const later of downstream) {
-    const updates: Record<string, unknown> = {};
+    const updates: Record<string, SqlValue> = {};
     if (later.team1_from_match_id === match.id) updates.team1_id = null;
     if (later.team2_from_match_id === match.id) updates.team2_id = null;
     if (later.team1_id === match.winner_id && later.team1_from_match_id === null) {
