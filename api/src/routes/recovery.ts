@@ -2,7 +2,8 @@
  * Recovery routes - for testing and manual recovery
  */
 
-import { Router, Request, Response } from 'express';
+import type { Request, Response } from 'express';
+import { Router } from 'express';
 import { requireAuth } from '../middleware/auth';
 import { recoverActiveMatches, replayRecentEvents } from '../services/matchRecoveryService';
 import { log } from '../utils/logger';

@@ -8,7 +8,8 @@
  * up only for admins. The site's pages, tabs and actions are searched in the
  * browser (client/src/search/siteIndex.ts).
  */
-import { Router, Request, Response } from 'express';
+import type { Request, Response } from 'express';
+import { Router } from 'express';
 import { db } from '../config/database';
 import { log } from '../utils/logger';
 import { checkAdminAccess } from '../middleware/auth';

@@ -2,7 +2,8 @@
  * Player reports: a signed-in player reports another to the admins; admins
  * list, dismiss, or ban from a report (services/playerReports.ts).
  */
-import { Router, Request, Response, NextFunction } from 'express';
+import type { Request, Response, NextFunction } from 'express';
+import { Router } from 'express';
 import { requireAuth, requestActorId } from '../middleware/auth';
 import { isSameSiteRequest } from '../utils/accountConnections';
 import { resolveViewerIdentity } from '../utils/viewerIdentity';

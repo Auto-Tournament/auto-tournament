@@ -5,7 +5,8 @@
  */
 import { ChannelError, notifyChannels } from '../services/notifyChannels';
 import { PushError, webPush } from '../services/webPush';
-import { Router, Request, Response, NextFunction } from 'express';
+import type { Request, Response, NextFunction } from 'express';
+import { Router } from 'express';
 import { requireAuth } from '../middleware/auth';
 import { resolveViewerIdentity } from '../utils/viewerIdentity';
 import { isSameSiteRequest } from '../utils/accountConnections';

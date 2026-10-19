@@ -8,7 +8,8 @@
  * boot (services/authProviderSettingsService). Saving re-registers the Passport strategies, so the change applies
  * without a restart.
  */
-import { Router, Request, Response } from 'express';
+import type { Request, Response } from 'express';
+import { Router } from 'express';
 import { requireAuth, requestActorId } from '../middleware/auth';
 import { isSameSiteRequest } from '../utils/accountConnections';
 import { log } from '../utils/logger';

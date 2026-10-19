@@ -1,4 +1,5 @@
-import { Router, Request, Response } from 'express';
+import type { Request, Response } from 'express';
+import { Router } from 'express';
 import fetch from 'node-fetch';
 import { steamService } from '../services/steamService';
 import { requireAuth } from '../middleware/auth';

@@ -1,6 +1,7 @@
 import { noticeTournamentStarted } from '../services/tournamentNotices';
 import { licenseService } from '../services/license/licenseService';
-import express, { Router, Request, Response } from 'express';
+import type { Request, Response } from 'express';
+import express, { Router } from 'express';
 import { tournamentService } from '../services/tournamentService';
 import { scheduler } from '../core/scheduler';
 import { db } from '../config/database';
