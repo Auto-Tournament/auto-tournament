@@ -148,7 +148,12 @@ export function TeamSelectionStep({
           onChange={(_, newValue) => onTeamsChange(newValue.map((t) => t.id))}
           disabled={!canEdit || saving}
           sx={{ flex: 1 }}
-          renderInput={(params) => <TextField {...params} placeholder={t('tournament.teamSelection.chooseTeamsPlaceholder')} />}
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              placeholder={t('tournament.teamSelection.chooseTeamsPlaceholder')}
+            />
+          )}
           renderTags={(value, getTagProps) =>
             value.map((option, index) => (
               <Chip label={option.name} {...getTagProps({ index })} key={option.id} />

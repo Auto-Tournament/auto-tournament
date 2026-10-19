@@ -1,5 +1,13 @@
 import React, { useState } from 'react';
-import { Button, CircularProgress, Alert, Snackbar, ButtonProps, Typography, Box } from '@mui/material';
+import {
+  Button,
+  CircularProgress,
+  Alert,
+  Snackbar,
+  ButtonProps,
+  Typography,
+  Box,
+} from '@mui/material';
 import { ArrowCounterClockwiseIcon } from '@phosphor-icons/react';
 import { useNavigate } from 'react-router-dom';
 import { useTournament } from '../../hooks/useTournament';
@@ -65,7 +73,13 @@ export const RestartTournamentButton: React.FC<RestartTournamentButtonProps> = (
         color="warning"
         size={size}
         fullWidth={fullWidth}
-        startIcon={restarting ? <CircularProgress size={20} color="inherit" /> : <ArrowCounterClockwiseIcon />}
+        startIcon={
+          restarting ? (
+            <CircularProgress size={20} color="inherit" />
+          ) : (
+            <ArrowCounterClockwiseIcon />
+          )
+        }
         onClick={() => setShowConfirm(true)}
         disabled={restarting}
       >
@@ -135,4 +149,3 @@ export const RestartTournamentButton: React.FC<RestartTournamentButtonProps> = (
     </>
   );
 };
-

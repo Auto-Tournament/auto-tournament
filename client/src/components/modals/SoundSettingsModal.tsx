@@ -45,9 +45,7 @@ export function SoundSettingsModal({
         <Box display="flex" alignItems="center" justifyContent="space-between">
           <Box display="flex" alignItems="center" gap={1}>
             <Box component={SpeakerHighIcon} sx={{ color: 'primary.main' }} />
-            <Typography variant="h6">
-              {t('soundSettingsModal.title')}
-            </Typography>
+            <Typography variant="h6">{t('soundSettingsModal.title')}</Typography>
           </Box>
           <IconButton onClick={onClose} size="small">
             <XIcon />
@@ -99,12 +97,7 @@ export function SoundSettingsModal({
           </Box>
 
           {/* Test Sound Button */}
-          <Button
-            variant="outlined"
-            startIcon={<PlayIcon />}
-            onClick={onPreviewSound}
-            fullWidth
-          >
+          <Button variant="outlined" startIcon={<PlayIcon />} onClick={onPreviewSound} fullWidth>
             {t('soundSettingsModal.testButton')}
           </Button>
 

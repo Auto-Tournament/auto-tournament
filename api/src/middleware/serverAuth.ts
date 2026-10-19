@@ -130,7 +130,10 @@ export function validateEventToken(req: Request, res: Response, next: NextFuncti
     // A wrong token is never let through, shim or not: a server MAT configured
     // sends the right one, so this is either an attacker or a server pointed at
     // the wrong instance.
-    log.authFailed(req.path, 'Game event rejected: X-Auto-Tournament-Token does not match SERVER_TOKEN');
+    log.authFailed(
+      req.path,
+      'Game event rejected: X-Auto-Tournament-Token does not match SERVER_TOKEN'
+    );
     res.status(401).json({
       success: false,
       error: 'Unauthorized - Invalid server token',

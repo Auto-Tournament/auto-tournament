@@ -7,4 +7,3 @@ export const SteamIcon = (props: SvgIconProps) => {
     </SvgIcon>
   );
 };
-
