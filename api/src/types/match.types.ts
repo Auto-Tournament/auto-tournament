@@ -134,7 +134,8 @@ export interface MatchResponse {
   id: number;
   slug: string;
   serverId: string;
-  config: MatchConfig;
+  /** The integration's stored config, forwarded as stored. */
+  config: object;
   createdAt: number;
   loadedAt?: number;
   status: string;

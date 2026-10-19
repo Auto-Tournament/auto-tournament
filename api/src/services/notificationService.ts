@@ -16,6 +16,8 @@ import { db } from '../config/database';
 import { log } from '../utils/logger';
 import { MATCH_NAMED_EVENTS, configTeamName, hasTbdSide, matchNoticeName } from './matchNoticeName';
 import { emitNotification } from './socketService';
+import type { JsonObject } from '../utils/json';
+import type { Untrusted } from '../utils/untrusted';
 
 export type NotificationKind =
   | 'party_invite'
@@ -53,8 +55,8 @@ export const NOTIFICATION_ANSWERED: NotificationKind[] = [
 export type NotificationSettings = Record<NotificationKind, NotificationDelivery>;
 
 /** Stored (or posted) settings with every kind filled in and nothing unknown. */
-export function normalizeNotificationSettings(raw: unknown): NotificationSettings {
-  const input = raw && typeof raw === 'object' ? (raw as Record<string, unknown>) : {};
+export function normalizeNotificationSettings(raw: Untrusted): NotificationSettings {
+  const input = raw && typeof raw === 'object' ? (raw as Record<string, Untrusted>) : {};
   const out = { ...NOTIFICATION_DEFAULTS };
   for (const kind of Object.keys(out) as NotificationKind[]) {
     const v = input[kind];
@@ -68,7 +70,7 @@ export function normalizeNotificationSettings(raw: unknown): NotificationSetting
 export interface NotificationView {
   id: number;
   kind: NotificationKind;
-  data: Record<string, unknown>;
+  data: Record<string, Untrusted>;
   createdAt: number;
   read: boolean;
 }
@@ -88,11 +90,11 @@ const PAGE = 30;
 
 const now = () => Math.floor(Date.now() / 1000);
 
-function parse(raw: string): Record<string, unknown> {
+function parse(raw: string): Record<string, Untrusted> {
   try {
     const value = JSON.parse(raw);
     return value && typeof value === 'object' && !Array.isArray(value)
-      ? (value as Record<string, unknown>)
+      ? (value as Record<string, Untrusted>)
       : {};
   } catch {
     return {};
@@ -164,7 +166,7 @@ export const notificationService = {
   async notify(
     playerId: string,
     kind: NotificationKind,
-    data: Record<string, unknown>,
+    data: JsonObject,
     dedupeKey?: string
   ): Promise<NotificationView | null> {
     try {
@@ -199,7 +201,7 @@ export const notificationService = {
   async notifyOnce(
     playerIds: string[],
     kind: NotificationKind,
-    data: Record<string, unknown>,
+    data: Record<string, Untrusted>,
     dedupeKey: string
   ): Promise<number> {
     let sent = 0;
@@ -226,7 +228,7 @@ export const notificationService = {
   },
 
   /** News for every player who has signed in: one row each, in one statement. */
-  async broadcast(data: Record<string, unknown>): Promise<number> {
+  async broadcast(data: JsonObject): Promise<number> {
     const rows = await db.queryAsync<Row & { player_id: string }>(
       `INSERT INTO notifications (player_id, kind, data, created_at)
        SELECT id, 'news', ?, ? FROM players
@@ -259,7 +261,7 @@ export const notificationService = {
   },
 
   /** Change some kinds; the rest stay. Returns all of them. */
-  async saveSettings(playerId: string, patch: unknown): Promise<NotificationSettings> {
+  async saveSettings(playerId: string, patch: Untrusted): Promise<NotificationSettings> {
     const next = normalizeNotificationSettings({
       ...(await this.settings(playerId)),
       ...(patch && typeof patch === 'object' ? patch : {}),

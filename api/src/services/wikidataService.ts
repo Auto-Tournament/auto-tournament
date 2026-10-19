@@ -28,6 +28,7 @@
 import fetch, { type Response } from 'node-fetch';
 import packageJson from '../../package.json';
 import { slugify } from '../utils/slug';
+import type { Untrusted } from '../utils/untrusted';
 
 const DEFAULT_WIKIDATA_API_BASE = 'https://www.wikidata.org/w/api.php';
 
@@ -118,7 +119,7 @@ async function throttle(): Promise<void> {
   }
 }
 
-async function wikidataFetch(params: Record<string, string>): Promise<unknown> {
+async function wikidataFetch(params: Record<string, string>): Promise<Untrusted> {
   await throttle();
 
   const url = new URL(apiBase());
@@ -144,8 +145,8 @@ async function wikidataFetch(params: Record<string, string>): Promise<unknown> {
 // ---------------------------------------------------------------------------
 
 interface WikidataSnakValue {
-  id?: unknown;
-  time?: unknown;
+  id?: Untrusted;
+  time?: Untrusted;
 }
 
 interface WikidataClaim {
@@ -155,7 +156,7 @@ interface WikidataClaim {
 interface WikidataEntity {
   id: string;
   claims?: Record<string, WikidataClaim[]>;
-  labels?: Record<string, { value?: unknown }>;
+  labels?: Record<string, { value?: Untrusted }>;
 }
 
 function claimValues(entity: WikidataEntity, prop: string): Array<string | WikidataSnakValue> {
@@ -196,7 +197,7 @@ function earliestYear(times: string[]): number | null {
 
 /** The first Steam application ID (P1733) on the item, as a number, or null. */
 export function wikidataSteamAppId(entity: {
-  claims?: Record<string, Array<{ mainsnak?: { datavalue?: { value?: unknown } } }>>;
+  claims?: Record<string, Array<{ mainsnak?: { datavalue?: { value?: Untrusted } } }>>;
 }): number | null {
   for (const claim of entity.claims?.[STEAM_APP_ID_PROP] ?? []) {
     const value = claim?.mainsnak?.datavalue?.value;
@@ -284,7 +285,7 @@ export async function searchWikidata(query: string, limit: number): Promise<Wiki
     type: 'item',
     limit: '20',
     format: 'json',
-  })) as { search?: Array<{ id?: unknown }> };
+  })) as { search?: Array<{ id?: Untrusted }> };
 
   const ids = (searchBody.search ?? [])
     .map((r) => r.id)

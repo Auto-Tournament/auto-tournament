@@ -23,6 +23,8 @@ import { log } from '../utils/logger';
 import { decryptSecret, encryptSecret } from '../utils/secretBox';
 import { emailService } from './emailService';
 import { webPush } from './webPush';
+import type { JsonValue } from '../utils/json';
+import type { Untrusted } from '../utils/untrusted';
 
 export type ChannelEvent =
   'match_ready' | 'veto_turn' | 'checkin_open' | 'new_tournament' | 'tournament_starting';
@@ -94,8 +96,8 @@ async function botToken(): Promise<string | null> {
 async function discordFetch(
   token: string,
   path: string,
-  init: { method?: string; body?: unknown } = {}
-): Promise<{ ok: boolean; status: number; body: Record<string, unknown> }> {
+  init: { method?: string; body?: JsonValue } = {}
+): Promise<{ ok: boolean; status: number; body: Record<string, Untrusted> }> {
   const res = await globalThis.fetch(`${DISCORD_API}${path}`, {
     method: init.method ?? 'GET',
     headers: {
@@ -106,7 +108,7 @@ async function discordFetch(
     body: init.body === undefined ? undefined : JSON.stringify(init.body),
     signal: globalThis.AbortSignal.timeout(10_000),
   });
-  const body = (await res.json().catch(() => ({}))) as Record<string, unknown>;
+  const body = (await res.json().catch(() => ({}))) as Record<string, Untrusted>;
   return { ok: res.ok, status: res.status, body };
 }
 
@@ -190,10 +192,10 @@ async function emailOf(
   };
 }
 
-function isEvent(v: unknown): v is ChannelEvent {
+function isEvent(v: Untrusted): v is ChannelEvent {
   return typeof v === 'string' && (CHANNEL_EVENTS as string[]).includes(v);
 }
-function isChannel(v: unknown): v is Channel {
+function isChannel(v: Untrusted): v is Channel {
   return typeof v === 'string' && (CHANNELS as string[]).includes(v);
 }
 
@@ -244,9 +246,9 @@ export const notifyChannels = {
   /** Turn one event's channel on or off for a player. */
   async set(
     playerId: string,
-    event: unknown,
-    channel: unknown,
-    on: unknown
+    event: Untrusted,
+    channel: Untrusted,
+    on: Untrusted
   ): Promise<ChannelPrefs> {
     if (!isEvent(event))
       throw new ChannelError(400, `event must be one of ${CHANNEL_EVENTS.join(', ')}`);

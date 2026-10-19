@@ -30,6 +30,7 @@ import {
 import { generateTotpSecret, verifyTotp } from '../utils/totp';
 import { playerService } from './playerService';
 import { adminAccessSettings } from './adminAccessSettings';
+import type { Untrusted } from '../utils/untrusted';
 
 export type SetupCodePurpose = 'setup' | 'reset';
 
@@ -83,7 +84,7 @@ class LocalAdminService {
   }
 
   /** The unused, unexpired code matching `input`, compared timing-safe against every candidate. */
-  private async findCode(input: unknown): Promise<CodeRow | null> {
+  private async findCode(input: Untrusted): Promise<CodeRow | null> {
     const normalized = normalizeSetupCode(input);
     const rows = await db.queryAsync<CodeRow>(
       'SELECT id, code_hash, purpose, expires_at FROM setup_codes WHERE used_at IS NULL AND expires_at > ?',
@@ -112,14 +113,14 @@ class LocalAdminService {
   }
 
   /** Whether `code` is valid for the current mode, without using it. */
-  async checkCode(code: unknown): Promise<boolean> {
+  async checkCode(code: Untrusted): Promise<boolean> {
     const mode = await this.setupMode();
     const row = await this.findCode(code);
     return !!row && !!mode && (row.purpose === mode || row.purpose === 'reset');
   }
 
   /** Mark `code` used, if it still can be. Returns its purpose, or null. */
-  private async consumeCode(code: unknown): Promise<SetupCodePurpose | null> {
+  private async consumeCode(code: Untrusted): Promise<SetupCodePurpose | null> {
     const row = await this.findCode(code);
     if (!row) return null;
     const used = await db.queryAsync<{ purpose: SetupCodePurpose }>(
@@ -184,7 +185,7 @@ class LocalAdminService {
    * in as, or an error the route maps to a response.
    */
   async completeSetup(
-    code: unknown,
+    code: Untrusted,
     username: string,
     password: string,
     ip: string | undefined
@@ -236,8 +237,8 @@ class LocalAdminService {
    */
   async verifyLogin(
     username: string | null,
-    password: unknown,
-    totp: unknown
+    password: Untrusted,
+    totp: Untrusted
   ): Promise<
     | { ok: true; playerId: string }
     | { ok: false; reason: 'invalid' | 'totp_required' | 'totp_invalid' }
@@ -288,7 +289,7 @@ class LocalAdminService {
   }
 
   /** Confirm enrolment with a code from the app. */
-  async confirmTotp(playerId: string, code: unknown): Promise<boolean> {
+  async confirmTotp(playerId: string, code: Untrusted): Promise<boolean> {
     const row = await this.findByPlayerId(playerId);
     const pending = decryptSecret(row?.totp_pending_enc);
     if (!row || !pending) return false;

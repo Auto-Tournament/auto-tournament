@@ -27,6 +27,7 @@ import { teamPlayers } from './matchViewer';
 import { notificationService } from './notificationService';
 import { notifyChannels } from './notifyChannels';
 import type { GameId } from '../integrations/types';
+import type { Untrusted } from '../utils/untrusted';
 
 export const DEFAULT_VETO_LEAD_MINUTES = 5;
 export const DEFAULT_REMINDER_MINUTES = 15;
@@ -43,15 +44,15 @@ export interface MatchTimes {
 }
 
 /** The match times in a tournament's settings; null in 'asap' mode or when there are none (pure). */
-export function matchTimesOf(settings: unknown): MatchTimes | null {
-  const s = settings && typeof settings === 'object' ? (settings as Record<string, unknown>) : {};
+export function matchTimesOf(settings: Untrusted): MatchTimes | null {
+  const s = settings && typeof settings === 'object' ? (settings as Record<string, Untrusted>) : {};
   const raw = s.matchTimes;
   if (!raw || typeof raw !== 'object') return null;
-  const m = raw as Record<string, unknown>;
+  const m = raw as Record<string, Untrusted>;
   if (m.mode !== 'times') return null;
   const rounds: Record<number, number> = {};
   if (m.rounds && typeof m.rounds === 'object') {
-    for (const [k, v] of Object.entries(m.rounds as Record<string, unknown>)) {
+    for (const [k, v] of Object.entries(m.rounds as Record<string, Untrusted>)) {
       const round = Number(k);
       const at = typeof v === 'string' ? Date.parse(v) : NaN;
       if (Number.isInteger(round) && round >= 1 && Number.isFinite(at)) {
@@ -59,7 +60,7 @@ export function matchTimesOf(settings: unknown): MatchTimes | null {
       }
     }
   }
-  const minutes = (v: unknown, fallback: number) =>
+  const minutes = (v: Untrusted, fallback: number) =>
     typeof v === 'number' && Number.isInteger(v) && v >= 0 && v <= 120 ? v : fallback;
   return {
     mode: 'times',
@@ -70,16 +71,16 @@ export function matchTimesOf(settings: unknown): MatchTimes | null {
 }
 
 /** Checks `settings.matchTimes` as sent; an error message, or null when it is fine. */
-export function matchTimesError(raw: unknown): string | null {
+export function matchTimesError(raw: Untrusted): string | null {
   if (raw === undefined || raw === null) return null;
   if (typeof raw !== 'object') return 'settings.matchTimes must be an object';
-  const m = raw as Record<string, unknown>;
+  const m = raw as Record<string, Untrusted>;
   if (m.mode !== 'times' && m.mode !== 'asap')
     return "settings.matchTimes.mode must be 'times' or 'asap'";
   if (m.rounds !== undefined) {
     if (!m.rounds || typeof m.rounds !== 'object')
       return 'settings.matchTimes.rounds must be an object';
-    for (const [k, v] of Object.entries(m.rounds as Record<string, unknown>)) {
+    for (const [k, v] of Object.entries(m.rounds as Record<string, Untrusted>)) {
       if (!Number.isInteger(Number(k)) || Number(k) < 1 || Number(k) > 64)
         return 'settings.matchTimes.rounds is keyed by round number';
       if (typeof v !== 'string' || !Number.isFinite(Date.parse(v)))
@@ -113,14 +114,14 @@ export function vetoOpensOf(start: number | null, times: MatchTimes | null): num
 /** The times of one match for its pages: `{ startsAt, vetoOpensAt }` (unix s), or nulls. */
 export function matchTimeFields(
   match: { round: number | null; starts_at?: number | null },
-  settings: unknown
+  settings: Untrusted
 ): { startsAt: number | null; vetoOpensAt: number | null } {
   const times = matchTimesOf(settings);
   const startsAt = startOfMatch(match, times);
   return { startsAt, vetoOpensAt: vetoOpensOf(startsAt, times) };
 }
 
-async function tournamentSettings(tournamentId: number): Promise<unknown> {
+async function tournamentSettings(tournamentId: number): Promise<Untrusted> {
   const row = await db.queryOneAsync<{ settings: string | null }>(
     'SELECT settings FROM tournament WHERE id = ?',
     [tournamentId]
@@ -223,7 +224,7 @@ async function sweepReminders(): Promise<void> {
   );
   const now = Math.floor(Date.now() / 1000);
   for (const t of tournaments) {
-    let settings: unknown = {};
+    let settings: Untrusted = {};
     try {
       settings = JSON.parse(t.settings ?? '{}');
     } catch {

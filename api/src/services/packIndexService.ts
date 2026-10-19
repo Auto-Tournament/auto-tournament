@@ -37,6 +37,7 @@ import {
   type AppIcon,
   type GamePackDefinition,
 } from './gamePackService';
+import type { Untrusted } from '../utils/untrusted';
 
 /** Where the index lives, unless a host or a test says otherwise. */
 const DEFAULT_PACK_INDEX_URL = 'https://raw.githubusercontent.com/Auto-Tournament/packs/main/';
@@ -92,16 +93,16 @@ export interface PackIndexResult {
 }
 
 interface RawEntry {
-  slug?: unknown;
-  name?: unknown;
-  version?: unknown;
-  engine?: unknown;
-  description?: unknown;
-  file?: unknown;
-  icon?: unknown;
+  slug?: Untrusted;
+  name?: Untrusted;
+  version?: Untrusted;
+  engine?: Untrusted;
+  description?: Untrusted;
+  file?: Untrusted;
+  icon?: Untrusted;
 }
 
-function asString(value: unknown): string | null {
+function asString(value: Untrusted): string | null {
   return typeof value === 'string' && value.trim() ? value.trim() : null;
 }
 
@@ -161,7 +162,7 @@ export async function fetchBytes(url: string, limit: number): Promise<Buffer> {
 }
 
 function parseIndex(text: string): RawEntry[] {
-  const parsed = JSON.parse(text) as { schema?: unknown; packs?: unknown };
+  const parsed = JSON.parse(text) as { schema?: Untrusted; packs?: Untrusted };
   if (parsed.schema !== 1) throw new Error('the index is written for a newer Auto Tournament');
   if (!Array.isArray(parsed.packs)) throw new Error('the index has no packs');
   return parsed.packs as RawEntry[];
@@ -297,7 +298,7 @@ export async function fetchPackAt(
     };
   }
 
-  let parsed: unknown;
+  let parsed: Untrusted;
   try {
     parsed = JSON.parse(text);
   } catch {
