@@ -22,24 +22,24 @@ import {
 
 test.describe('skin drop rules', () => {
   test('the chance follows the mode and the result', () => {
-    expect(matchDropChance(DEFAULT_CONFIG, '5v5', true, 0)).toBe(20);
-    expect(matchDropChance(DEFAULT_CONFIG, '5v5', false, 0)).toBe(5);
-    expect(matchDropChance(DEFAULT_CONFIG, '2v2', true, 0)).toBe(10);
-    expect(matchDropChance(DEFAULT_CONFIG, '2v2', false, 0)).toBe(3);
-    expect(matchDropChance(DEFAULT_CONFIG, '1v1', true, 0)).toBe(5);
-    expect(matchDropChance(DEFAULT_CONFIG, '1v1', false, 0)).toBe(1);
+    expect(matchDropChance(DEFAULT_CONFIG, '5v5', true, 0)).toBe(50);
+    expect(matchDropChance(DEFAULT_CONFIG, '5v5', false, 0)).toBe(20);
+    expect(matchDropChance(DEFAULT_CONFIG, '2v2', true, 0)).toBe(30);
+    expect(matchDropChance(DEFAULT_CONFIG, '2v2', false, 0)).toBe(10);
+    expect(matchDropChance(DEFAULT_CONFIG, '1v1', true, 0)).toBe(20);
+    expect(matchDropChance(DEFAULT_CONFIG, '1v1', false, 0)).toBe(5);
     // A game with no lobby (an admin's match) counts as 5v5.
-    expect(matchDropChance(DEFAULT_CONFIG, null, true, 0)).toBe(20);
+    expect(matchDropChance(DEFAULT_CONFIG, null, true, 0)).toBe(50);
   });
 
   test('from the third game against the same opponents in a day, much less (unless turned off)', () => {
     // A second game (one earlier) is fine: a small platform plays the same people.
-    expect(matchDropChance(DEFAULT_CONFIG, '5v5', true, 1)).toBe(20);
-    expect(matchDropChance(DEFAULT_CONFIG, '5v5', true, 2)).toBe(5);
-    expect(matchDropChance(DEFAULT_CONFIG, '5v5', true, 4)).toBe(20 / 16);
-    expect(matchDropChance(DEFAULT_CONFIG, '1v1', true, -2)).toBe(5);
+    expect(matchDropChance(DEFAULT_CONFIG, '5v5', true, 1)).toBe(50);
+    expect(matchDropChance(DEFAULT_CONFIG, '5v5', true, 2)).toBe(50 / 4);
+    expect(matchDropChance(DEFAULT_CONFIG, '5v5', true, 4)).toBe(50 / 16);
+    expect(matchDropChance(DEFAULT_CONFIG, '1v1', true, -2)).toBe(20);
     expect(matchDropChance({ ...DEFAULT_CONFIG, repeatOpponentCut: false }, '5v5', true, 4)).toBe(
-      20
+      50
     );
   });
 
@@ -72,7 +72,7 @@ test.describe('skin drop rules', () => {
     expect(modeForTeamSize(2)).toBe('2v2');
     expect(modeForTeamSize(5)).toBe('5v5');
     expect(modeForTeamSize(undefined)).toBeNull();
-    expect(matchDropChance(DEFAULT_CONFIG, modeForTeamSize(2), true, 0)).toBe(10);
+    expect(matchDropChance(DEFAULT_CONFIG, modeForTeamSize(2), true, 0)).toBe(30);
   });
 
   test('the admin settings are clamped', { tag: ['@api'] }, async ({ request }) => {
