@@ -58,30 +58,3 @@ export async function setupTestContextWithFreshDB(
   // resolved from the DB on every request, so the row has to be recreated.
   return await setupTestContext(page, request);
 }
-
-/**
- * Configure webhook URL (required for match loading)
- * @param request Playwright API request context
- * @param baseUrl Base URL for webhook
- */
-export async function configureWebhook(
-  request: APIRequestContext,
-  baseUrl: string
-): Promise<boolean> {
-  try {
-    const response = await request.put('/api/settings', {
-      headers: getAuthHeader(),
-      data: { webhookUrl: baseUrl },
-    });
-
-    if (!response.ok()) {
-      return false;
-    }
-
-    const data = await response.json();
-    return data.success === true;
-  } catch (error) {
-    console.warn('Could not configure webhook URL:', error);
-    return false;
-  }
-}

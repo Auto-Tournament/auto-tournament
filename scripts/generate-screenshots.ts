@@ -828,20 +828,6 @@ async function generateTestData(
     console.log(`✅ Using ${servers.length} existing servers (some may have IP 0.0.0.0)`);
   }
 
-  // Configure webhook URL (required to start tournament)
-  console.log('🔗 Configuring webhook URL...');
-  try {
-    await apiRequest(request, 'put', '/api/settings', {
-      headers: getAuthHeader(),
-      data: {
-        webhookUrl: 'http://localhost:3000/webhook', // Dummy webhook for screenshots
-      },
-    });
-    console.log('✅ Webhook configured');
-  } catch (error) {
-    console.warn('⚠️  Could not configure webhook:', error);
-  }
-
   // Create tournament (4 teams, double elimination, BO3 for veto) - but don't start it yet
   console.log('🏟️  Creating tournament...');
   const tournament = await createTournament(request, {
