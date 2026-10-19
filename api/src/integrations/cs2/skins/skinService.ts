@@ -281,9 +281,9 @@ export function parseRewards(raw: Untrusted): TournamentReward[] | null {
 export const DEFAULT_CONFIG: SkinsConfig = {
   enabled: false,
   matchmakingDrops: true,
-  dropChance: 20,
-  playDropChance: 5,
-  modeChances: { '2v2': { win: 10, play: 3 }, '1v1': { win: 5, play: 1 } },
+  dropChance: 50,
+  playDropChance: 20,
+  modeChances: { '2v2': { win: 30, play: 10 }, '1v1': { win: 20, play: 5 } },
   tournamentMatchDrops: true,
   levelUpDrops: true,
   rarityWeights: {
