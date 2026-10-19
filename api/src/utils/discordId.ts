@@ -28,9 +28,10 @@
  * resolved to one without calling Discord, so it is refused rather than
  * guessed at.
  */
+import type { Untrusted } from './untrusted';
 const DISCORD_ID_PATTERN = /^\d{17,20}$/;
 
-export function isValidDiscordId(value: unknown): value is string {
+export function isValidDiscordId(value: Untrusted): value is string {
   return typeof value === 'string' && DISCORD_ID_PATTERN.test(value);
 }
 
@@ -78,7 +79,7 @@ export function redactDiscordIdsInPath(path: string): string {
 }
 
 /** How a player is named in a warning — the name and Steam ID the admin sent. */
-export function describePlayer(player: { name?: unknown; steamId?: unknown }): string {
+export function describePlayer(player: { name?: Untrusted; steamId?: Untrusted }): string {
   const name = typeof player.name === 'string' && player.name.length > 0 ? player.name : 'Unknown';
   const steamId = typeof player.steamId === 'string' ? player.steamId : 'unknown';
   return `Player "${name}" (${steamId})`;
@@ -111,7 +112,7 @@ export type DiscordIdEdit =
  *   worst thing this function could do;
  * - anything else → invalid.
  */
-export function parseDiscordIdEdit(raw: unknown): DiscordIdEdit {
+export function parseDiscordIdEdit(raw: Untrusted): DiscordIdEdit {
   if (raw === undefined) return { kind: 'absent' };
   if (raw === null) return { kind: 'clear' };
 
@@ -184,8 +185,8 @@ export function normalisePlayerDiscordIds<P extends { steamId: string; name: str
   const stripped = players.map((input) => {
     let player = input;
     if (player && typeof player === 'object' && 'oidcSubject' in player) {
-      const { oidcSubject: rawSub, ...withoutSub } = player as P & { oidcSubject?: unknown };
-      player = withoutSub as unknown as P;
+      const { oidcSubject: rawSub, ...withoutSub } = player as P & { oidcSubject?: Untrusted };
+      player = withoutSub as P;
       const sub = typeof rawSub === 'string' ? rawSub.trim() : '';
       if (sub && sub.length <= 255) {
         oidcSubjects.push({ steamId: input.steamId, name: input.name, oidcSubject: sub });
@@ -199,7 +200,7 @@ export function normalisePlayerDiscordIds<P extends { steamId: string; name: str
       return player;
     }
 
-    const { discordId: raw, ...rest } = player as P & { discordId?: unknown };
+    const { discordId: raw, ...rest } = player as P & { discordId?: Untrusted };
     const parsed = parseDiscordIdEdit(raw);
 
     if (parsed.kind === 'set') {
@@ -212,7 +213,7 @@ export function normalisePlayerDiscordIds<P extends { steamId: string; name: str
       );
     }
 
-    return rest as unknown as P;
+    return rest as P;
   });
 
   return { players: stripped, discordIds, oidcSubjects, warnings };

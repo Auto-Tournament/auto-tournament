@@ -33,6 +33,7 @@
  */
 
 import crypto from 'crypto';
+import type { Untrusted } from './untrusted';
 
 export const PENDING_STEAM_LINK_COOKIE_NAME = 'pending_steam_link';
 
@@ -102,7 +103,7 @@ function hmac(key: string, value: string): Buffer {
   return crypto.createHmac('sha256', key).update(`${SIGNATURE_NAMESPACE}${value}`, 'utf8').digest();
 }
 
-function isKnownProvider(value: unknown): value is PendingSteamLinkProvider {
+function isKnownProvider(value: Untrusted): value is PendingSteamLinkProvider {
   return (
     typeof value === 'string' && (PENDING_STEAM_LINK_PROVIDERS as readonly string[]).includes(value)
   );
@@ -164,7 +165,7 @@ export function verifyPendingSteamLink(
     return { ok: false, reason: 'bad-signature' };
   }
 
-  let decoded: unknown;
+  let decoded: Untrusted;
   try {
     decoded = JSON.parse(Buffer.from(payload, 'base64url').toString('utf8'));
   } catch {
@@ -175,7 +176,7 @@ export function verifyPendingSteamLink(
   if (typeof decoded !== 'object' || decoded === null || Array.isArray(decoded)) {
     return { ok: false, reason: 'invalid-payload' };
   }
-  const { provider, providerUserId, exp, ae } = decoded as Record<string, unknown>;
+  const { provider, providerUserId, exp, ae } = decoded as Record<string, Untrusted>;
   if (
     !isKnownProvider(provider) ||
     typeof providerUserId !== 'string' ||

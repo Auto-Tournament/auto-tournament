@@ -13,6 +13,8 @@ import type { TournamentResponse, TournamentSettings } from '../types/tournament
 import { integrationForMatch } from '../integrations/registry';
 import { tournamentIdForMatch, tournamentRowToResponse } from './tournamentRow';
 import { bareSlug, tournamentSlugPrefix } from './matchSlug';
+import type { SqlValue } from '../config/database';
+import type { Untrusted } from './untrusted';
 
 /**
  * Advance winner to next match in bracket
@@ -299,7 +301,7 @@ export async function propagateMatchBySlotSources(matchId: number): Promise<void
     }
 
     for (const child of children) {
-      const updates: Partial<DbMatchRow> = {};
+      const updates: Record<string, SqlValue> = {};
 
       if (child.team1_from_match_id === matchId) {
         const outcome = (child.team1_from_outcome ?? null) as 'winner' | 'loser' | null;
@@ -337,7 +339,7 @@ export async function propagateMatchBySlotSources(matchId: number): Promise<void
         continue;
       }
 
-      await db.updateAsync('matches', updates as Record<string, unknown>, 'id = ?', [child.id]);
+      await db.updateAsync('matches', updates, 'id = ?', [child.id]);
 
       const refreshed = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE id = ?', [
         child.id,
@@ -760,7 +762,7 @@ export async function reconcileDoubleElimination8Bracket(tournamentId: number): 
       return;
     }
 
-    let teamIds: unknown;
+    let teamIds: Untrusted;
     try {
       teamIds = JSON.parse(tournament.team_ids);
     } catch {
@@ -813,7 +815,7 @@ export async function reconcileDoubleElimination8Bracket(tournamentId: number): 
       team2Id?: string | null
     ): Promise<DbMatchRow | undefined> => {
       if (!m) return undefined;
-      const updates: Partial<DbMatchRow> = {};
+      const updates: Record<string, SqlValue> = {};
 
       if (team1Id && m.team1_id !== team1Id) {
         updates.team1_id = team1Id;
@@ -823,7 +825,7 @@ export async function reconcileDoubleElimination8Bracket(tournamentId: number): 
       }
 
       if (Object.keys(updates).length > 0) {
-        await db.updateAsync('matches', updates as Record<string, unknown>, 'id = ?', [m.id]);
+        await db.updateAsync('matches', updates, 'id = ?', [m.id]);
         const refreshed = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE id = ?', [
           m.id,
         ]);

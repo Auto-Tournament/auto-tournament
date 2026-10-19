@@ -17,6 +17,7 @@
  */
 
 import { routeTable } from '../routes/routeTable';
+import type { Untrusted } from './untrusted';
 
 /** What a caller has to present. */
 export type Guard =
@@ -80,7 +81,7 @@ interface Layer {
  * single `use`, `matches` guards route by route, and `tournament` and `players`
  * do both — switching partway down the file.
  */
-export function walkRouter(router: unknown, prefix = ''): Endpoint[] {
+export function walkRouter(router: Untrusted, prefix = ''): Endpoint[] {
   const stack = (router as { stack?: Layer[] }).stack;
 
   if (!Array.isArray(stack)) {

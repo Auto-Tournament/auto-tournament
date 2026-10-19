@@ -6,6 +6,7 @@
  */
 import crypto from 'crypto';
 import { URLSearchParams } from 'url';
+import type { Untrusted } from './untrusted';
 
 const BASE32 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
 export const TOTP_STEP_SECONDS = 30;
@@ -71,7 +72,7 @@ export function totpStep(nowMs: number = Date.now()): number {
  */
 export function verifyTotp(
   secretBase32: string,
-  code: unknown,
+  code: Untrusted,
   opts: { nowMs?: number; lastStep?: number | null } = {}
 ): number | null {
   if (typeof code !== 'string') return null;

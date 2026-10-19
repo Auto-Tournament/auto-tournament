@@ -14,6 +14,7 @@
  */
 
 import { abbreviateId } from './discordId';
+import type { Untrusted } from './untrusted';
 
 /**
  * Object keys whose values are never logged. Matched against the lowercased
@@ -24,7 +25,7 @@ import { abbreviateId } from './discordId';
 const REDACTED_KEY = /(password|secret|token|key|discord|totp|code_hash)/;
 
 /** JSON for a log line, with sensitive keys masked and long strings cut. */
-export function safeLogJson(value: unknown): string {
+export function safeLogJson(value: Untrusted): string {
   try {
     return JSON.stringify(value, (k, v) => {
       const key = k.toLowerCase?.() ?? '';
@@ -56,8 +57,8 @@ const ID_SHAPED = /^\d{17,20}$/;
  */
 export function redactParamsForLog(
   sql: string,
-  params: unknown[] | undefined
-): unknown[] | undefined {
+  params: Untrusted[] | undefined
+): Untrusted[] | undefined {
   if (!params || params.length === 0) return params;
   // Local admin accounts and setup codes: every string parameter is masked.
   if (MENTIONS_CREDENTIAL.test(sql))
@@ -72,7 +73,7 @@ export function redactParamsForLog(
  * Values of an INSERT, safe to log: the column list is known, so a value is
  * masked by its column name exactly as `safeLogJson` masks an object key.
  */
-export function redactInsertValuesForLog(columns: string[], values: unknown[]): unknown[] {
+export function redactInsertValuesForLog(columns: string[], values: Untrusted[]): Untrusted[] {
   if (!columns.some((column) => REDACTED_KEY.test(column.toLowerCase()))) return values;
   return values.map((value, i) =>
     REDACTED_KEY.test((columns[i] ?? '').toLowerCase()) ? '***' : value

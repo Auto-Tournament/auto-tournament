@@ -15,6 +15,7 @@
  * Pure: no Express, no database, so it is tested in process.
  */
 
+import type { Untrusted } from './untrusted';
 export const COMPAT_SCHEMA_VERSION = 1;
 
 export const COMPAT_TRIGGERS = [
@@ -129,12 +130,16 @@ class Checker {
     if (this.errors.length < 50) this.errors.push(`${path}: ${message}`);
   }
 
-  object(value: unknown, path: string, keys: readonly string[]): Record<string, unknown> | null {
+  object(
+    value: Untrusted,
+    path: string,
+    keys: readonly string[]
+  ): Record<string, Untrusted> | null {
     if (typeof value !== 'object' || value === null || Array.isArray(value)) {
       this.fail(path, 'must be an object');
       return null;
     }
-    const record = value as Record<string, unknown>;
+    const record = value as Record<string, Untrusted>;
     for (const key of Object.keys(record)) {
       if (!keys.includes(key)) this.fail(path ? `${path}.${key}` : key, 'is not a known field');
     }
@@ -145,7 +150,7 @@ class Checker {
   }
 
   string(
-    value: unknown,
+    value: Untrusted,
     path: string,
     opts: { max: number; pattern?: RegExp; label?: string }
   ): string | null {
@@ -168,7 +173,7 @@ class Checker {
     return value;
   }
 
-  oneOf<T extends string>(value: unknown, path: string, allowed: readonly T[]): T | null {
+  oneOf<T extends string>(value: Untrusted, path: string, allowed: readonly T[]): T | null {
     if (typeof value !== 'string' || !(allowed as readonly string[]).includes(value)) {
       this.fail(path, `must be one of ${allowed.join(', ')}`);
       return null;
@@ -177,7 +182,7 @@ class Checker {
   }
 
   /** An ISO timestamp, normalised to UTC `toISOString()` form so it sorts as text. */
-  timestamp(value: unknown, path: string): string | null {
+  timestamp(value: Untrusted, path: string): string | null {
     if (typeof value !== 'string' || value.length > 40 || !ISO_DATETIME.test(value)) {
       this.fail(path, 'must be an ISO 8601 date-time (e.g. 2026-09-25T12:00:00Z)');
       return null;
@@ -190,7 +195,7 @@ class Checker {
     return new Date(ms).toISOString();
   }
 
-  count(value: unknown, path: string): number | null {
+  count(value: Untrusted, path: string): number | null {
     if (
       typeof value !== 'number' ||
       !Number.isInteger(value) ||
@@ -203,7 +208,7 @@ class Checker {
     return value;
   }
 
-  array(value: unknown, path: string, max: number): unknown[] | null {
+  array(value: Untrusted, path: string, max: number): Untrusted[] | null {
     if (!Array.isArray(value)) {
       this.fail(path, 'must be an array');
       return null;
@@ -216,7 +221,7 @@ class Checker {
   }
 }
 
-function httpUrl(checker: Checker, value: unknown, path: string): string | null {
+function httpUrl(checker: Checker, value: Untrusted, path: string): string | null {
   const text = checker.string(value, path, { max: COMPAT_LIMITS.urlLength });
   if (text === null) return null;
   try {
@@ -229,7 +234,7 @@ function httpUrl(checker: Checker, value: unknown, path: string): string | null 
   return null;
 }
 
-function validateCheck(c: Checker, value: unknown, path: string): CompatCheck | null {
+function validateCheck(c: Checker, value: Untrusted, path: string): CompatCheck | null {
   const raw = c.object(value, path, ['kind', 'status', 'passed', 'total', 'failures']);
   if (!raw) return null;
   const kind = c.oneOf(raw.kind, `${path}.kind`, COMPAT_CHECK_KINDS);
@@ -250,7 +255,7 @@ function validateCheck(c: Checker, value: unknown, path: string): CompatCheck | 
   return { kind, status, passed, total, failures };
 }
 
-function validateComponent(c: Checker, value: unknown, path: string): CompatComponent | null {
+function validateComponent(c: Checker, value: Untrusted, path: string): CompatComponent | null {
   const raw = c.object(value, path, ['id', 'name', 'status', 'checks']);
   if (!raw) return null;
   const id = c.string(raw.id, `${path}.id`, {
@@ -275,7 +280,7 @@ function validateComponent(c: Checker, value: unknown, path: string): CompatComp
  * object holding exactly the contract's fields, in the contract's order, with
  * timestamps normalised to UTC; on failure `errors` names each bad path.
  */
-export function validateCompatDocument(input: unknown): CompatValidation {
+export function validateCompatDocument(input: Untrusted): CompatValidation {
   const c = new Checker();
   const raw = c.object(input, '', [
     'schema',

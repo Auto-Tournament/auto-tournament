@@ -7,6 +7,7 @@
  */
 
 /** Sign-in providers that can be linked to an account next to its Steam ID. */
+import type { Untrusted } from './untrusted';
 export const LINKABLE_PROVIDERS = [
   'discord',
   'github',
@@ -17,7 +18,7 @@ export const LINKABLE_PROVIDERS = [
 ] as const;
 export type LinkableProvider = (typeof LINKABLE_PROVIDERS)[number];
 
-export function isLinkableProvider(value: unknown): value is LinkableProvider {
+export function isLinkableProvider(value: Untrusted): value is LinkableProvider {
   return typeof value === 'string' && (LINKABLE_PROVIDERS as readonly string[]).includes(value);
 }
 

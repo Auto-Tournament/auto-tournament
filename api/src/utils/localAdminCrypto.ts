@@ -11,6 +11,7 @@
  *   the parameters can be raised later without breaking old hashes.
  */
 import crypto from 'crypto';
+import type { Untrusted } from './untrusted';
 
 // Crockford base32: no I, L, O, U.
 const CROCKFORD = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
@@ -31,7 +32,7 @@ export function generateSetupCode(): string {
 }
 
 /** The code as typed, in canonical form, or null when it cannot be a code. */
-export function normalizeSetupCode(input: unknown): string | null {
+export function normalizeSetupCode(input: Untrusted): string | null {
   if (typeof input !== 'string' || input.length > 100) return null;
   const s = input.toUpperCase().replace(/[\s-]/g, '').replace(/O/g, '0').replace(/[IL]/g, '1');
   if (s.length !== SETUP_CODE_LENGTH) return null;
@@ -111,7 +112,7 @@ export function dummyPasswordHash(): Promise<string> {
 export const USERNAME_RE = /^[a-z0-9][a-z0-9._-]{2,31}$/;
 
 /** Lower-cased username, or null when it breaks the rule (3-32 of a-z 0-9 . _ -, starting with a letter or digit). */
-export function normalizeUsername(input: unknown): string | null {
+export function normalizeUsername(input: Untrusted): string | null {
   if (typeof input !== 'string') return null;
   const u = input.trim().toLowerCase();
   return USERNAME_RE.test(u) ? u : null;
@@ -125,7 +126,7 @@ export type PasswordProblem = 'too_short' | 'too_long';
  * Admins choose their own password strength: it only has to be non-empty.
  * The upper bound stops a huge input from tying up the password hash.
  */
-export function passwordProblem(_username: string, password: unknown): PasswordProblem | null {
+export function passwordProblem(_username: string, password: Untrusted): PasswordProblem | null {
   if (typeof password !== 'string' || password.length === 0) return 'too_short';
   if (password.length > PASSWORD_MAX) return 'too_long';
   return null;

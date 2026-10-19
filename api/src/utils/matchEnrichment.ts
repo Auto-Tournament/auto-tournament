@@ -6,6 +6,7 @@
 import { db } from '../config/database';
 import type { EnrichableMatch } from '../types/match.types';
 import type { BracketMatch } from '../types/tournament.types';
+import type { Untrusted } from './untrusted';
 
 /**
  * Who won one map: its recorded winner, which counts when the rounds are level (the damage
@@ -69,7 +70,7 @@ export async function enrichMatchWithScores(
     anyMatch.winner?.id &&
     anyMatch.team1?.id &&
     anyMatch.team2?.id &&
-    typeof (match as { config?: { num_maps?: unknown } }).config?.num_maps === 'number' &&
+    typeof (match as { config?: { num_maps?: Untrusted } }).config?.num_maps === 'number' &&
     (match as { config: { num_maps: number } }).config.num_maps === 1
   ) {
     const winnerId = anyMatch.winner.id;
