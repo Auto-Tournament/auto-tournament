@@ -35,7 +35,6 @@ export const MAX_LINES_TODO = [
   'api/src/integrations/cs2/index.ts',
   'api/src/integrations/cs2/matchConfig.ts',
   'api/src/integrations/cs2/migrations.ts',
-  'api/src/integrations/cs2/routes/highlights.ts',
   'api/src/integrations/cs2/routes/rcon.ts',
   'api/src/integrations/cs2/routes/testHelpers.ts',
   'api/src/integrations/cs2/skins/routes.ts',

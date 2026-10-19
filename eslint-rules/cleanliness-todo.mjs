@@ -27,6 +27,11 @@ export const NESTED_TERNARY = [
   'api/src/integrations/cs2/maps/poolRoutes.ts',
   'api/src/integrations/cs2/matchConfig.ts',
   'api/src/integrations/cs2/roles.ts',
+  'api/src/integrations/cs2/routes/highlightReadRoutes.ts',
+  'api/src/integrations/cs2/routes/highlightRecorderAdminRoutes.ts',
+  'api/src/integrations/cs2/routes/highlightRecorderJobRoutes.ts',
+  'api/src/integrations/cs2/routes/highlightReelRoutes.ts',
+  'api/src/integrations/cs2/routes/highlightRouteHelpers.ts',
   'api/src/integrations/cs2/routes/highlights.ts',
   'api/src/integrations/cs2/routes/liveOverview.ts',
   'api/src/integrations/cs2/routes/manageMatch.ts',
@@ -324,6 +329,11 @@ export const NON_NULL_ASSERTION = [
   'api/src/integrations/cs2/fleet/driver.ts',
   'api/src/integrations/cs2/fleet/push/matchUpdate.ts',
   'api/src/integrations/cs2/gotv.ts',
+  'api/src/integrations/cs2/routes/highlightReadRoutes.ts',
+  'api/src/integrations/cs2/routes/highlightRecorderAdminRoutes.ts',
+  'api/src/integrations/cs2/routes/highlightRecorderJobRoutes.ts',
+  'api/src/integrations/cs2/routes/highlightReelRoutes.ts',
+  'api/src/integrations/cs2/routes/highlightRouteHelpers.ts',
   'api/src/integrations/cs2/routes/highlights.ts',
   'api/src/integrations/cs2/routes/matchPage.ts',
   'api/src/integrations/cs2/routes/testHelpers.ts',
@@ -449,4 +459,11 @@ export const OBJECT_LITERAL_ASSERTION = [
 ];
 
 /** @typescript-eslint/consistent-type-imports */
-export const TYPE_IMPORTS = ['api/src/integrations/cs2/routes/highlights.ts'];
+export const TYPE_IMPORTS = [
+  'api/src/integrations/cs2/routes/highlightReadRoutes.ts',
+  'api/src/integrations/cs2/routes/highlightRecorderAdminRoutes.ts',
+  'api/src/integrations/cs2/routes/highlightRecorderJobRoutes.ts',
+  'api/src/integrations/cs2/routes/highlightReelRoutes.ts',
+  'api/src/integrations/cs2/routes/highlightRouteHelpers.ts',
+  'api/src/integrations/cs2/routes/highlights.ts',
+];
