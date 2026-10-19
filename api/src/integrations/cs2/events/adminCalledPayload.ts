@@ -14,31 +14,32 @@ import {
   type AdminCallTeam,
 } from '../../../types/adminCall.types';
 import type { AdminCalledEvent } from './plugin-events.types';
+import type { Untrusted } from '../../../utils/untrusted';
 
 export type AdminCalledFields = Omit<
   AdminCallInput,
   'serverId' | 'serverName' | 'matchId' | 'matchSlug'
 >;
 
-function text(value: unknown, max: number): string | null {
+function text(value: Untrusted, max: number): string | null {
   if (typeof value === 'number' && Number.isFinite(value)) return String(value);
   if (typeof value !== 'string') return null;
   const trimmed = value.trim();
   return trimmed === '' ? null : trimmed.slice(0, max);
 }
 
-function team(value: unknown): AdminCallTeam | null {
+function team(value: Untrusted): AdminCallTeam | null {
   const v = typeof value === 'string' ? value.trim().toLowerCase() : '';
   return v === 'team1' || v === 'team2' || v === 'spectator' ? v : null;
 }
 
-function side(value: unknown): string | null {
+function side(value: Untrusted): string | null {
   const v = typeof value === 'string' ? value.trim().toLowerCase() : '';
   return v === 'ct' || v === 't' ? v : null;
 }
 
 /** ISO 8601 → epoch seconds; `receivedAt` when missing or unreadable. */
-function calledAtSeconds(value: unknown, receivedAt: number): number {
+function calledAtSeconds(value: Untrusted, receivedAt: number): number {
   if (typeof value === 'string' && value.trim() !== '') {
     const ms = Date.parse(value);
     if (Number.isFinite(ms)) return Math.floor(ms / 1000);

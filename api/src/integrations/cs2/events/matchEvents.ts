@@ -20,6 +20,8 @@ import { matchLifecycle } from '../../../core/matchLifecycle';
 import { isMatchFinalized } from '../../../utils/matchStatusHelpers';
 import type { DbMatchRow } from '../../../types/database.types';
 import type { NormalizedEvent } from '../../types';
+import type { Untrusted } from '../../../utils/untrusted';
+import type { PluginStats } from '../stats';
 
 /**
  * Is this event about a map the series has already moved past?
@@ -32,7 +34,7 @@ import type { NormalizedEvent } from '../../types';
  */
 async function isStaleMapEvent(
   match: DbMatchRow,
-  rawMapNumber: unknown,
+  rawMapNumber: number | undefined,
   eventName: string
 ): Promise<boolean> {
   const mapNumber = parseNumber(rawMapNumber);
@@ -117,7 +119,10 @@ function determinePlayerTeam(
   }
 
   try {
-    const config = typeof match.config === 'string' ? JSON.parse(match.config) : match.config;
+    const config = (typeof match.config === 'string' ? JSON.parse(match.config) : match.config) as {
+      team1?: { players?: ConfigPlayers };
+      team2?: { players?: ConfigPlayers };
+    } | null;
     const team1Players = config?.team1?.players;
     const team2Players = config?.team2?.players;
 
@@ -137,12 +142,17 @@ function determinePlayerTeam(
   return null;
 }
 
-function playerMatchesCollection(collection: unknown, steamId: string): boolean {
+/** A config player: a Steam id, or an entry with one (older configs). */
+type ConfigPlayer = string | { steamId?: string; steamid?: string };
+/** A team's players in a stored match config: a list, `{steamId: name}`, or `{0: entry}`. */
+type ConfigPlayers = ConfigPlayer[] | Record<string, ConfigPlayer>;
+
+function playerMatchesCollection(collection: ConfigPlayers | undefined, steamId: string): boolean {
   if (!collection) return false;
 
   // Handle array of players [{ steamid, name }, ...]
   if (Array.isArray(collection)) {
-    return collection.some((player) => getSteamIdFromUnknown(player) === steamId);
+    return collection.some((player) => steamIdOf(player) === steamId);
   }
 
   if (typeof collection === 'object') {
@@ -152,13 +162,13 @@ function playerMatchesCollection(collection: unknown, steamId: string): boolean 
     }
 
     // Iterate over values (legacy format {0: {steamId, name}})
-    return Object.values(collection).some((value) => getSteamIdFromUnknown(value) === steamId);
+    return Object.values(collection).some((value) => steamIdOf(value) === steamId);
   }
 
   return false;
 }
 
-function getSteamIdFromUnknown(value: unknown): string | null {
+function steamIdOf(value: ConfigPlayer | undefined): string | null {
   if (!value) return null;
 
   if (typeof value === 'string') {
@@ -167,9 +177,7 @@ function getSteamIdFromUnknown(value: unknown): string | null {
   }
 
   if (typeof value === 'object') {
-    const candidate =
-      (value as { steamId?: string; steamid?: string }).steamId ||
-      (value as { steamId?: string; steamid?: string }).steamid;
+    const candidate = value.steamId || value.steamid;
     return typeof candidate === 'string' ? candidate : null;
   }
 
@@ -185,12 +193,12 @@ function updateLiveStats(match: DbMatchRow, updates: Partial<MatchLiveStats>): v
 }
 
 function extractPlayerStatsFromEvent(
-  eventData: Record<string, unknown>
+  eventData: Record<string, Untrusted>
 ): MatchPlayerStatsSnapshot | null {
-  const team1 = eventData.team1 as { players?: unknown[] } | undefined;
-  const team2 = eventData.team2 as { players?: unknown[] } | undefined;
+  const team1 = eventData.team1 as { players?: Untrusted[] } | undefined;
+  const team2 = eventData.team2 as { players?: Untrusted[] } | undefined;
 
-  const buildTeam = (team?: { players?: unknown[] }): PlayerStatLine[] => {
+  const buildTeam = (team?: { players?: Untrusted[] }): PlayerStatLine[] => {
     if (!team?.players || !Array.isArray(team.players)) return [];
 
     return team.players
@@ -199,7 +207,7 @@ function extractPlayerStatsFromEvent(
           steamId?: string;
           steamid?: string;
           name?: string;
-          stats?: Record<string, unknown>;
+          stats?: Record<string, Untrusted>;
         };
         const steamId = player.steamId || player.steamid;
         if (!steamId) return null;
@@ -251,7 +259,7 @@ function extractPlayerStatsFromEvent(
   };
 }
 
-function parseNumber(value: unknown): number | undefined {
+function parseNumber(value: number | string | null | undefined): number | undefined {
   if (value === undefined || value === null) return undefined;
   const num = typeof value === 'string' ? Number(value) : value;
   if (typeof num === 'number' && Number.isFinite(num)) {
@@ -513,7 +521,7 @@ export async function applyNormalizedEvents(
 // Series results: what the core asks the integration for
 // ---------------------------------------------------------------------------
 
-type StatsBySteamId = Record<string, Record<string, unknown>>;
+type StatsBySteamId = Record<string, PluginStats>;
 
 function statsFromLines(lines: PlayerStatLine[]): StatsBySteamId {
   const map: StatsBySteamId = {};
@@ -603,7 +611,7 @@ export async function seriesPlayerStats(
 
     if (lastRoundEndEvent) {
       try {
-        const roundEndData = JSON.parse(lastRoundEndEvent.event_data) as Record<string, unknown>;
+        const roundEndData = JSON.parse(lastRoundEndEvent.event_data) as Record<string, Untrusted>;
         const snapshot = extractPlayerStatsFromEvent(roundEndData);
         if (snapshot) {
           team1PlayerStats = statsFromLines(snapshot.team1);

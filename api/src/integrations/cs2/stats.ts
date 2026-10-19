@@ -63,25 +63,27 @@ export const CS2_STATS_SCHEMA: StatsSchema = {
  *
  * Values are passed through as MatchZy Enhanced sent them (no coercion), as before.
  */
-export function metricsFromPluginStats(raw: Record<string, unknown>): Record<string, number> {
-  const stats = raw as {
-    rounds_played?: number;
-    roundsPlayed?: number;
-    damage?: number;
-    kills?: number;
-    deaths?: number;
-    assists?: number;
-    headshot_kills?: number;
-    headshotKills?: number;
-    flash_assists?: number;
-    flashAssists?: number;
-    utility_damage?: number;
-    utilityDamage?: number;
-    kast?: number;
-    mvp?: number;
-    mvps?: number;
-    score?: number;
-  };
+/** A MatchZy Enhanced per-player stat record, snake or camel case. */
+export interface PluginStats {
+  rounds_played?: number;
+  roundsPlayed?: number;
+  damage?: number;
+  kills?: number;
+  deaths?: number;
+  assists?: number;
+  headshot_kills?: number;
+  headshotKills?: number;
+  flash_assists?: number;
+  flashAssists?: number;
+  utility_damage?: number;
+  utilityDamage?: number;
+  kast?: number;
+  mvp?: number;
+  mvps?: number;
+  score?: number;
+}
+
+export function metricsFromPluginStats(stats: PluginStats): Record<string, number> {
   const roundsPlayed = stats.rounds_played ?? stats.roundsPlayed ?? 0;
   const adr = roundsPlayed > 0 ? (stats.damage ?? 0) / roundsPlayed : 0;
   return {
