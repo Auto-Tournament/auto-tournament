@@ -48,7 +48,11 @@ export function parseTeamInput(raw: unknown, externalIdFromPath?: string): Integ
   const body = (raw && typeof raw === 'object' ? raw : {}) as Record<string, unknown>;
 
   const externalId = externalIdFromPath ?? body.externalId;
-  if (externalIdFromPath !== undefined && body.externalId !== undefined && body.externalId !== externalIdFromPath) {
+  if (
+    externalIdFromPath !== undefined &&
+    body.externalId !== undefined &&
+    body.externalId !== externalIdFromPath
+  ) {
     errors.push('externalId in the body does not match the one in the path');
   }
   if (typeof externalId !== 'string' || !EXTERNAL_ID_PATTERN.test(externalId)) {
@@ -62,7 +66,8 @@ export function parseTeamInput(raw: unknown, externalIdFromPath?: string): Integ
   let tag: string | null = null;
   if (body.tag !== undefined && body.tag !== null) {
     if (typeof body.tag !== 'string') errors.push('tag must be a string');
-    else if (body.tag.trim().length > TAG_MAX) errors.push(`tag must be at most ${TAG_MAX} characters`);
+    else if (body.tag.trim().length > TAG_MAX)
+      errors.push(`tag must be at most ${TAG_MAX} characters`);
     else tag = body.tag.trim() || null;
   }
 
@@ -89,7 +94,8 @@ export function parseTeamInput(raw: unknown, externalIdFromPath?: string): Integ
       seen.add(steamId);
       const playerName = typeof player.name === 'string' ? player.name.trim() : '';
       if (!playerName) errors.push(`players[${i}].name is required`);
-      else if (playerName.length > NAME_MAX) errors.push(`players[${i}].name must be at most ${NAME_MAX} characters`);
+      else if (playerName.length > NAME_MAX)
+        errors.push(`players[${i}].name must be at most ${NAME_MAX} characters`);
       else players.push({ steamId, name: playerName });
     });
   }
@@ -99,4 +105,3 @@ export function parseTeamInput(raw: unknown, externalIdFromPath?: string): Integ
   }
   return { externalId: externalId as string, name, tag, players };
 }
-
