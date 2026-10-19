@@ -55,7 +55,8 @@ function sourceFor(req: Request, res: Response): string | null {
   if (!source) {
     res.status(400).json({
       success: false,
-      error: 'source is required: pass ?source=<the integrator token label> when calling with an admin session',
+      error:
+        'source is required: pass ?source=<the integrator token label> when calling with an admin session',
     });
     return null;
   }
@@ -64,10 +65,14 @@ function sourceFor(req: Request, res: Response): string | null {
 
 function sendError(res: Response, error: unknown): Response {
   if (error instanceof IntegrationTeamError) {
-    return res.status(error.status).json({ success: false, code: error.code, error: error.message, ...(error.details ?? {}) });
+    return res
+      .status(error.status)
+      .json({ success: false, code: error.code, error: error.message, ...(error.details ?? {}) });
   }
   log.error('[Integrations] Teams API failed', error);
-  return res.status(500).json({ success: false, error: error instanceof Error ? error.message : 'Unknown error' });
+  return res
+    .status(500)
+    .json({ success: false, error: error instanceof Error ? error.message : 'Unknown error' });
 }
 
 /**
@@ -100,7 +105,9 @@ router.post('/batch', async (req: Request, res: Response) => {
   if (!source) return;
   const list = (req.body as { teams?: unknown } | undefined)?.teams;
   if (!Array.isArray(list) || list.length === 0) {
-    return res.status(400).json({ success: false, error: 'Body must be { teams: [ ... ] } with at least one team' });
+    return res
+      .status(400)
+      .json({ success: false, error: 'Body must be { teams: [ ... ] } with at least one team' });
   }
   if (list.length > MAX_BATCH) {
     return res.status(400).json({ success: false, error: `At most ${MAX_BATCH} teams per batch` });
@@ -112,17 +119,34 @@ router.post('/batch', async (req: Request, res: Response) => {
     try {
       const input = parseTeamInput(raw);
       if (seen.has(input.externalId)) {
-        throw new IntegrationTeamError('invalid', 400, `externalId '${input.externalId}' appears more than once in this batch`);
+        throw new IntegrationTeamError(
+          'invalid',
+          400,
+          `externalId '${input.externalId}' appears more than once in this batch`
+        );
       }
       seen.add(input.externalId);
       const r = await upsertIntegrationTeam(source, input);
       results.push({ index, ok: true, ...r });
     } catch (error) {
       if (error instanceof IntegrationTeamError) {
-        results.push({ index, ok: false, externalId: typeof externalId === 'string' ? externalId : null, code: error.code, error: error.message, ...(error.details ?? {}) });
+        results.push({
+          index,
+          ok: false,
+          externalId: typeof externalId === 'string' ? externalId : null,
+          code: error.code,
+          error: error.message,
+          ...(error.details ?? {}),
+        });
       } else {
         log.error('[Integrations] Teams batch item failed', error);
-        results.push({ index, ok: false, externalId: typeof externalId === 'string' ? externalId : null, code: 'error', error: error instanceof Error ? error.message : 'Unknown error' });
+        results.push({
+          index,
+          ok: false,
+          externalId: typeof externalId === 'string' ? externalId : null,
+          code: 'error',
+          error: error instanceof Error ? error.message : 'Unknown error',
+        });
       }
     }
   }
@@ -156,7 +180,11 @@ router.get('/:externalId', async (req: Request, res: Response) => {
   try {
     const team = await getIntegrationTeam(source, externalId);
     if (!team) {
-      return res.status(404).json({ success: false, code: 'not_found', error: `No team with externalId '${externalId}' for source '${source}'` });
+      return res.status(404).json({
+        success: false,
+        code: 'not_found',
+        error: `No team with externalId '${externalId}' for source '${source}'`,
+      });
     }
     return res.json({ success: true, team });
   } catch (error) {
