@@ -59,9 +59,7 @@ export function signModuleArchive(
 ): ModuleSignature {
   if (!isValidModuleId(meta.id)) throw new Error(`'${meta.id}' is not a valid module id`);
   if (!semver.valid(meta.version)) throw new Error(`'${meta.version}' is not a semver version`);
-  const publicRaw = crypto
-    .createPublicKey(privateKey)
-    .export({ format: 'jwk' }).x as string;
+  const publicRaw = crypto.createPublicKey(privateKey).export({ format: 'jwk' }).x as string;
   const sha256 = sha256Hex(archive);
   const signature = crypto.sign(null, signedMessage(meta.id, meta.version, sha256), privateKey);
   return {
@@ -75,17 +73,24 @@ export function signModuleArchive(
   };
 }
 
-export type VerifyResult = { ok: true; signature: ModuleSignature; key: TrustedKey } | { ok: false; reason: string };
+export type VerifyResult =
+  { ok: true; signature: ModuleSignature; key: TrustedKey } | { ok: false; reason: string };
 
 function parseSignature(raw: unknown): ModuleSignature | string {
-  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return 'the signature file is not a JSON object';
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw))
+    return 'the signature file is not a JSON object';
   const s = raw as Record<string, unknown>;
   if (s.schema !== SIGNATURE_SCHEMA) return 'the signature file is for a newer Auto Tournament';
-  if (s.algorithm !== 'ed25519') return `the signature algorithm '${String(s.algorithm).slice(0, 40)}' is not supported`;
-  if (typeof s.keyId !== 'string' || !/^[0-9a-f]{16}$/.test(s.keyId)) return 'the signature names no valid key';
-  if (typeof s.id !== 'string' || !isValidModuleId(s.id)) return 'the signature names no valid module id';
-  if (typeof s.version !== 'string' || !semver.valid(s.version)) return 'the signature names no valid version';
-  if (typeof s.sha256 !== 'string' || !/^[0-9a-f]{64}$/.test(s.sha256)) return 'the signature names no valid sha256';
+  if (s.algorithm !== 'ed25519')
+    return `the signature algorithm '${String(s.algorithm).slice(0, 40)}' is not supported`;
+  if (typeof s.keyId !== 'string' || !/^[0-9a-f]{16}$/.test(s.keyId))
+    return 'the signature names no valid key';
+  if (typeof s.id !== 'string' || !isValidModuleId(s.id))
+    return 'the signature names no valid module id';
+  if (typeof s.version !== 'string' || !semver.valid(s.version))
+    return 'the signature names no valid version';
+  if (typeof s.sha256 !== 'string' || !/^[0-9a-f]{64}$/.test(s.sha256))
+    return 'the signature names no valid sha256';
   if (typeof s.signature !== 'string' || !/^[A-Za-z0-9+/]+={0,2}$/.test(s.signature)) {
     return 'the signature is not base64';
   }
@@ -122,7 +127,11 @@ export function verifyModuleRelease(
 
   const sha256 = sha256Hex(archive);
   if (parsed.sha256 !== sha256) {
-    return { ok: false, reason: 'the archive does not match its signature (sha256 differs): it was changed after signing' };
+    return {
+      ok: false,
+      reason:
+        'the archive does not match its signature (sha256 differs): it was changed after signing',
+    };
   }
   if (expected.sha256 && expected.sha256.toLowerCase() !== sha256) {
     return { ok: false, reason: 'the archive does not match the sha256 the catalog lists' };
@@ -131,12 +140,23 @@ export function verifyModuleRelease(
     return { ok: false, reason: `the signature is for '${parsed.id}', not '${expected.id}'` };
   }
   if (expected.version && parsed.version !== expected.version) {
-    return { ok: false, reason: `the signature is for version ${parsed.version}, not ${expected.version}` };
+    return {
+      ok: false,
+      reason: `the signature is for version ${parsed.version}, not ${expected.version}`,
+    };
   }
 
   const key = keys.find((candidate) => candidate.keyId === parsed.keyId);
-  if (!key) return { ok: false, reason: `the release is signed by key ${parsed.keyId}, which this platform does not trust` };
-  if (key.revoked) return { ok: false, reason: `the release is signed by key ${parsed.keyId}, which has been revoked` };
+  if (!key)
+    return {
+      ok: false,
+      reason: `the release is signed by key ${parsed.keyId}, which this platform does not trust`,
+    };
+  if (key.revoked)
+    return {
+      ok: false,
+      reason: `the release is signed by key ${parsed.keyId}, which has been revoked`,
+    };
 
   let valid = false;
   try {
@@ -149,6 +169,10 @@ export function verifyModuleRelease(
   } catch {
     valid = false;
   }
-  if (!valid) return { ok: false, reason: 'the signature does not verify: the release was not signed by a trusted key' };
+  if (!valid)
+    return {
+      ok: false,
+      reason: 'the signature does not verify: the release was not signed by a trusted key',
+    };
   return { ok: true, signature: parsed, key };
 }

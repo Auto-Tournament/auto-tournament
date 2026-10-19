@@ -108,7 +108,11 @@ export function parseManifest(raw: unknown, folder: string): ManifestResult {
     return fail("'clientApi' must be a semver range, such as ^0.1.0");
   }
 
-  if (typeof m.server !== 'string' || !isSafeEntryPath(m.server) || !SERVER_ENTRY_EXT.test(m.server)) {
+  if (
+    typeof m.server !== 'string' ||
+    !isSafeEntryPath(m.server) ||
+    !SERVER_ENTRY_EXT.test(m.server)
+  ) {
     return fail(
       "'server' must be a .js, .mjs or .cjs file inside the module folder, such as server/index.js"
     );
