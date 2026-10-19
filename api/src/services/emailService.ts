@@ -13,6 +13,7 @@ import { db } from '../config/database';
 import { log } from '../utils/logger';
 import { decryptSecret, encryptSecret } from '../utils/secretBox';
 import { settingsService } from './settingsService';
+import type { Untrusted } from '../utils/untrusted';
 
 export type SmtpSecurity = 'tls' | 'starttls' | 'none';
 
@@ -80,7 +81,7 @@ const SETTINGS_ROW = 1;
 const EMAIL_RE = /^[^\s@<>"]+@[^\s@<>"]+\.[^\s@<>"]+$/;
 
 /** A plausible email address, trimmed; null when it is not one. */
-export function normalizeEmail(input: unknown): string | null {
+export function normalizeEmail(input: Untrusted): string | null {
   if (typeof input !== 'string') return null;
   const value = input.trim();
   return value.length <= 254 && EMAIL_RE.test(value) ? value : null;

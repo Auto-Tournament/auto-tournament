@@ -27,6 +27,7 @@ import { log } from '../utils/logger';
 import { emitCompatUpdate } from './socketService';
 import type { CompatCheck, CompatComponentStatus, CompatDocument } from '../utils/compatPayload';
 import type { CompatRunSummary, CompatSnapshot, CompatSource } from '../types/compat.types';
+import type { Untrusted } from '../utils/untrusted';
 
 /** Runs kept; older ones are deleted with their components. */
 export const COMPAT_HISTORY_LIMIT = 200;
@@ -97,7 +98,10 @@ export function reportCompatConfig(): void {
     log.warn('[Startup] COMPAT_FEED_URL is not an http(s) URL and was ignored.');
   }
   if (isCompatEnabled()) {
-    const inputs = [compatIngestToken() ? 'push' : null, compatFeedUrl() ? 'pull (every 5 min)' : null]
+    const inputs = [
+      compatIngestToken() ? 'push' : null,
+      compatFeedUrl() ? 'pull (every 5 min)' : null,
+    ]
       .filter(Boolean)
       .join(' + ');
     log.info(`[Startup] Ready Up compatibility page enabled: ${inputs}`);
@@ -149,7 +153,7 @@ function isoFromEpoch(seconds: number): string {
 
 function parseChecks(text: string): CompatCheck[] {
   try {
-    const parsed: unknown = JSON.parse(text);
+    const parsed: Untrusted = JSON.parse(text);
     return Array.isArray(parsed) ? (parsed as CompatCheck[]) : [];
   } catch {
     return [];
@@ -328,7 +332,14 @@ async function storeDocument(
     await client.query(
       `INSERT INTO compat_components (run_pk, position, component_id, name, status, checks)
        VALUES ($1, $2, $3, $4, $5, $6)`,
-      [runPk, position, component.id, component.name, component.status, JSON.stringify(component.checks)]
+      [
+        runPk,
+        position,
+        component.id,
+        component.name,
+        component.status,
+        JSON.stringify(component.checks),
+      ]
     );
   }
 
@@ -373,16 +384,19 @@ export async function ingestCompatDocument(
       // The run can be gone already when it was older than the whole history.
       if (run) emitCompatUpdate({ latest, run });
     } catch (err) {
-      log.warn(`[COMPAT] Stored run ${doc.run.id} but could not announce it: ${(err as Error).message}`);
+      log.warn(
+        `[COMPAT] Stored run ${doc.run.id} but could not announce it: ${(err as Error).message}`
+      );
     }
   }
   return result;
 }
 
 async function getRunSummary(runPk: number): Promise<CompatRunSummary | null> {
-  const row = await db.queryOneAsync<CompatRunRow>(`SELECT ${RUN_COLUMNS} FROM compat_runs WHERE id = $1`, [
-    runPk,
-  ]);
+  const row = await db.queryOneAsync<CompatRunRow>(
+    `SELECT ${RUN_COLUMNS} FROM compat_runs WHERE id = $1`,
+    [runPk]
+  );
   if (!row) return null;
   const components = await componentsFor([row.id]);
   return toSummary(row, components.get(row.id) ?? []);

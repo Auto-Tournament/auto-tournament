@@ -26,6 +26,8 @@ import {
   type AdminCallTeam,
   type AdminCallResolvedEvent,
 } from '../types/adminCall.types';
+import type { SqlValue } from '../config/database';
+import type { Untrusted } from '../utils/untrusted';
 
 /** Resolved calls are deleted after this long. Open calls are never deleted. */
 const RESOLVED_RETENTION_SECONDS = 90 * 24 * 60 * 60;
@@ -154,7 +156,7 @@ function toAdminCall(row: AdminCallRow): AdminCall {
   };
 }
 
-async function getRows(where: string, params: unknown[], tail = ''): Promise<AdminCall[]> {
+async function getRows(where: string, params: SqlValue[], tail = ''): Promise<AdminCall[]> {
   const rows = await db.queryAsync<AdminCallRow>(`${SELECT_CALLS} WHERE ${where} ${tail}`, params);
   return rows.map(toAdminCall);
 }
@@ -258,7 +260,7 @@ export async function listAdminCalls(
   return { open, resolved };
 }
 
-function normalizeNote(note: unknown): string | null {
+function normalizeNote(note: Untrusted): string | null {
   if (typeof note !== 'string') return null;
   const trimmed = note.trim();
   return trimmed === '' ? null : trimmed.slice(0, 500);
@@ -271,7 +273,7 @@ function normalizeNote(note: unknown): string | null {
 export async function resolveAdminCall(
   id: number,
   resolvedBy: string | null,
-  note?: unknown
+  note?: Untrusted
 ): Promise<{ call: AdminCall; changed: boolean } | null> {
   const resolvedAt = nowSeconds();
   const updated = await db.queryOneAsync<{ id: number }>(
@@ -334,7 +336,7 @@ export async function claimAdminCall(
 /** Resolve every open call. Returns the ids it resolved. */
 export async function resolveAllAdminCalls(
   resolvedBy: string | null,
-  note?: unknown
+  note?: Untrusted
 ): Promise<number[]> {
   const resolvedAt = nowSeconds();
   const rows = await db.queryAsync<{ id: number }>(

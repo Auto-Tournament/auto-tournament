@@ -6,6 +6,7 @@ import { log } from '../utils/logger';
 import { listIntegrations } from '../integrations/registry';
 import type { ModuleMigration, ResultMeta, SeriesResult } from '../integrations/types';
 import { matchLifecycle } from '../core/matchLifecycle';
+import type { JsonObject } from '../utils/json';
 import { db } from '../config/database';
 import { playerService } from '../services/playerService';
 import { signPlayerSteamId } from '../utils/signedPlayerCookie';
@@ -102,7 +103,7 @@ router.post('/admin-notice', requireAuth, async (req: Request, res: Response): P
   const { ADMIN_NOTICE_KINDS, adminNoticeService } = await import('../services/adminNoticeService');
   const body = (req.body ?? {}) as {
     kind?: string;
-    data?: Record<string, unknown>;
+    data?: JsonObject;
     dedupeKey?: string;
     resolve?: boolean;
     ongoing?: boolean;

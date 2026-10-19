@@ -14,6 +14,8 @@
 import { db } from '../config/database';
 import { log } from '../utils/logger';
 import { emitAdminNotice, emitAdminNoticesResolved } from './socketService';
+import type { JsonObject } from '../utils/json';
+import type { Untrusted } from '../utils/untrusted';
 
 export const ADMIN_NOTICE_KINDS = {
   // Matches
@@ -52,7 +54,7 @@ export interface AdminNotice {
   id: number;
   kind: AdminNoticeKind;
   severity: AdminNoticeSeverity;
-  data: Record<string, unknown>;
+  data: JsonObject;
   dedupeKey: string;
   count: number;
   createdAt: number;
@@ -81,9 +83,9 @@ const KEEP_DISMISSED_SECONDS = 14 * 24 * 3600;
 const now = () => Math.floor(Date.now() / 1000);
 
 function view(row: Row): AdminNotice {
-  let data: Record<string, unknown> = {};
+  let data: JsonObject = {};
   try {
-    data = JSON.parse(row.data) as Record<string, unknown>;
+    data = JSON.parse(row.data) as JsonObject;
   } catch {
     data = {};
   }
@@ -102,9 +104,9 @@ function view(row: Row): AdminNotice {
 
 /** Every kind's delivery, defaults filled in ("sound" for errors, "bell" for the rest). */
 export function normalizeNoticeSettings(
-  raw: unknown
+  raw: Untrusted
 ): Record<AdminNoticeKind, AdminNoticeDelivery> {
-  const given = raw && typeof raw === 'object' ? (raw as Record<string, unknown>) : {};
+  const given = raw && typeof raw === 'object' ? (raw as Record<string, Untrusted>) : {};
   const out = {} as Record<AdminNoticeKind, AdminNoticeDelivery>;
   for (const kind of Object.keys(ADMIN_NOTICE_KINDS) as AdminNoticeKind[]) {
     const value = given[kind];
@@ -128,7 +130,7 @@ export const adminNoticeService = {
     }
   },
 
-  async setSettings(input: unknown): Promise<Record<AdminNoticeKind, AdminNoticeDelivery>> {
+  async setSettings(input: Untrusted): Promise<Record<AdminNoticeKind, AdminNoticeDelivery>> {
     const next = normalizeNoticeSettings({ ...(await this.settings()), ...(input as object) });
     await db.setAppSettingAsync(SETTINGS_KEY, JSON.stringify(next));
     return next;
@@ -140,7 +142,7 @@ export const adminNoticeService = {
    */
   async raise(
     kind: AdminNoticeKind,
-    data: Record<string, unknown>,
+    data: JsonObject,
     dedupeKey: string = kind,
     severity: AdminNoticeSeverity = ADMIN_NOTICE_KINDS[kind].severity,
     { ongoing = false }: { ongoing?: boolean } = {}

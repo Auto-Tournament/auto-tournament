@@ -67,7 +67,7 @@ export async function sweepStuckMatches(now = Math.floor(Date.now() / 1000)): Pr
     let veto: SweepMatch['veto'] = null;
     try {
       const parsed = row.veto_state
-        ? (JSON.parse(row.veto_state) as { status?: string; actions?: unknown[] })
+        ? (JSON.parse(row.veto_state) as { status?: string; actions?: object[] })
         : null;
       veto = parsed
         ? {
