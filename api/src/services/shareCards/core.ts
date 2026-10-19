@@ -17,10 +17,11 @@ import { moderationOf } from '../playerModeration';
 import { ratingGame } from '../gameRatings';
 import { fromBytes, fromUrl } from './images';
 import type { CardData, CardStat, CardTeam, ShareKind, ShareMeta } from './types';
+import type { JsonValue } from '../../utils/json';
 
 const DAY = 24 * 3600;
 
-export const versionOf = (...parts: unknown[]) =>
+export const versionOf = (...parts: Array<JsonValue | undefined>) =>
   createHash('sha1').update(JSON.stringify(parts)).digest('base64url').slice(0, 12);
 
 /**

@@ -19,6 +19,7 @@ import { db } from '../config/database';
 import { emitTournamentUpdate } from './socketService';
 import { builtinGames } from './gameCatalogService';
 import { teamMembers } from './teamMembers';
+import type { Untrusted } from '../utils/untrusted';
 
 export const MAX_SUBS = 2;
 
@@ -93,8 +94,8 @@ function parse<T>(raw: string | null | undefined, fallback: T): T {
 }
 
 function windowOf(row: TournamentRow): SignupWindow {
-  const s = parse<Record<string, unknown>>(row.settings, {});
-  const iso = (v: unknown) => (typeof v === 'string' && v.trim() ? v : null);
+  const s = parse<Record<string, Untrusted>>(row.settings, {});
+  const iso = (v: Untrusted) => (typeof v === 'string' && v.trim() ? v : null);
   return {
     registrationOpen: s.registrationOpen === true,
     registrationClosesAt: iso(s.registrationClosesAt),

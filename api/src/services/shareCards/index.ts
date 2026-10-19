@@ -19,7 +19,7 @@ import { log } from '../../utils/logger';
 import { settingsService } from '../settingsService';
 import { CORE_SHARE_KINDS } from './core';
 import { renderCard } from './render';
-import type { CardData, ShareKind, ShareMeta } from './types';
+import type { CardData, CardValue, ShareKind, ShareMeta } from './types';
 
 export type { CardData, ShareKind, ShareMeta } from './types';
 
@@ -68,14 +68,9 @@ export async function sharePageTags(pathname: string): Promise<SharePageTags | n
 
 /** What a card shows, as a hash: pictures by their bytes. */
 export function cardHash(card: CardData): string {
-  const json = JSON.stringify(card, (_k, v: unknown) =>
-    v &&
-    typeof v === 'object' &&
-    'data' in (v as object) &&
-    Buffer.isBuffer((v as { data: unknown }).data)
-      ? createHash('sha1')
-          .update((v as { data: Buffer }).data)
-          .digest('hex')
+  const json = JSON.stringify(card, (_k, v: CardValue) =>
+    v && typeof v === 'object' && 'data' in v && Buffer.isBuffer(v.data)
+      ? createHash('sha1').update(v.data).digest('hex')
       : v
   );
   return createHash('sha1').update(json).digest('hex');

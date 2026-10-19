@@ -23,6 +23,7 @@ import { log } from '../utils/logger';
 import { holdMatch, releaseMatch, type Actor } from './matchHolds';
 import { notificationService } from './notificationService';
 import { playerService } from './playerService';
+import type { SqlValue } from '../config/database';
 
 /** How long a team gets to pick a sub after losing a starter. */
 export const LINEUP_GAP_MINUTES = 15;
@@ -264,7 +265,7 @@ async function isDeleted(playerId: string): Promise<boolean> {
 }
 
 /** Statements that remove what is personal; each tolerates a table a module did not create. */
-const WIPE: Array<[string, (id: string, uid: string) => unknown[]]> = [
+const WIPE: Array<[string, (id: string, uid: string) => SqlValue[]]> = [
   ['DELETE FROM local_admins WHERE player_id = ?', (id) => [id]],
   ['DELETE FROM auth_identities WHERE steam_id = ?', (id) => [id]],
   ['DELETE FROM linked_accounts WHERE player_id = ?', (id) => [id]],
@@ -358,7 +359,7 @@ export function blockedViewerMiddleware(
         const state = await moderationOf(id);
         if (state.banned || state.deleted) {
           const r = req as import('express').Request & {
-            user?: unknown;
+            user?: object;
             session?: { destroy?: (cb: (err?: unknown) => void) => void };
           };
           delete r.user;

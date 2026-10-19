@@ -24,6 +24,9 @@ export interface CardTeam {
   logo: CardImage | null;
 }
 
+/** Any value inside a card, as JSON.stringify's replacer sees it (pictures carry a Buffer). */
+export type CardValue = object | string | number | boolean | null | undefined;
+
 export type CardData =
   | {
       kind: 'clip';

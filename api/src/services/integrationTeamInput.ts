@@ -12,7 +12,7 @@ export const EXTERNAL_ID_PATTERN = /^[A-Za-z0-9._:@-]{1,128}$/;
 const STEAM64_MIN = 76561197960265729n;
 const STEAM64_MAX = 76561202255233023n;
 
-export function isValidSteam64(value: unknown): value is string {
+export function isValidSteam64(value: Untrusted): value is string {
   if (typeof value !== 'string' || !/^7656119\d{10}$/.test(value)) return false;
   const n = BigInt(value);
   return n >= STEAM64_MIN && n <= STEAM64_MAX;
@@ -35,7 +35,7 @@ export class IntegrationTeamError extends Error {
     readonly code: 'invalid' | 'team_in_live_match' | 'not_found',
     readonly status: number,
     message: string,
-    readonly details?: Record<string, unknown>
+    readonly details?: Record<string, Untrusted>
   ) {
     super(message);
     this.name = 'IntegrationTeamError';
@@ -43,12 +43,16 @@ export class IntegrationTeamError extends Error {
 }
 
 /** Validate one team. `externalId` comes from the path for a single upsert. */
-export function parseTeamInput(raw: unknown, externalIdFromPath?: string): IntegrationTeamInput {
+export function parseTeamInput(raw: Untrusted, externalIdFromPath?: string): IntegrationTeamInput {
   const errors: string[] = [];
-  const body = (raw && typeof raw === 'object' ? raw : {}) as Record<string, unknown>;
+  const body = (raw && typeof raw === 'object' ? raw : {}) as Record<string, Untrusted>;
 
   const externalId = externalIdFromPath ?? body.externalId;
-  if (externalIdFromPath !== undefined && body.externalId !== undefined && body.externalId !== externalIdFromPath) {
+  if (
+    externalIdFromPath !== undefined &&
+    body.externalId !== undefined &&
+    body.externalId !== externalIdFromPath
+  ) {
     errors.push('externalId in the body does not match the one in the path');
   }
   if (typeof externalId !== 'string' || !EXTERNAL_ID_PATTERN.test(externalId)) {
@@ -62,7 +66,8 @@ export function parseTeamInput(raw: unknown, externalIdFromPath?: string): Integ
   let tag: string | null = null;
   if (body.tag !== undefined && body.tag !== null) {
     if (typeof body.tag !== 'string') errors.push('tag must be a string');
-    else if (body.tag.trim().length > TAG_MAX) errors.push(`tag must be at most ${TAG_MAX} characters`);
+    else if (body.tag.trim().length > TAG_MAX)
+      errors.push(`tag must be at most ${TAG_MAX} characters`);
     else tag = body.tag.trim() || null;
   }
 
@@ -74,7 +79,7 @@ export function parseTeamInput(raw: unknown, externalIdFromPath?: string): Integ
   } else {
     const seen = new Set<string>();
     body.players.forEach((p, i) => {
-      const player = (p && typeof p === 'object' ? p : {}) as Record<string, unknown>;
+      const player = (p && typeof p === 'object' ? p : {}) as Record<string, Untrusted>;
       const steamId = player.steamId;
       if (!isValidSteam64(steamId)) {
         errors.push(
@@ -89,7 +94,8 @@ export function parseTeamInput(raw: unknown, externalIdFromPath?: string): Integ
       seen.add(steamId);
       const playerName = typeof player.name === 'string' ? player.name.trim() : '';
       if (!playerName) errors.push(`players[${i}].name is required`);
-      else if (playerName.length > NAME_MAX) errors.push(`players[${i}].name must be at most ${NAME_MAX} characters`);
+      else if (playerName.length > NAME_MAX)
+        errors.push(`players[${i}].name must be at most ${NAME_MAX} characters`);
       else players.push({ steamId, name: playerName });
     });
   }
@@ -100,3 +106,4 @@ export function parseTeamInput(raw: unknown, externalIdFromPath?: string): Integ
   return { externalId: externalId as string, name, tag, players };
 }
 
+import type { Untrusted } from '../utils/untrusted';

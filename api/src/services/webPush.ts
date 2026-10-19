@@ -12,6 +12,7 @@ import webpush from 'web-push';
 import { db } from '../config/database';
 import { log } from '../utils/logger';
 import { decryptSecret, encryptSecret } from '../utils/secretBox';
+import type { Untrusted } from '../utils/untrusted';
 
 const PUBLIC_KEY = 'web_push_public_key';
 const PRIVATE_KEY = 'web_push_private_key';
@@ -52,7 +53,7 @@ export class PushError extends Error {
   }
 }
 
-function validSubscription(input: unknown): PushSubscriptionInput {
+function validSubscription(input: Untrusted): PushSubscriptionInput {
   const s = input as Partial<PushSubscriptionInput> | null;
   const endpoint = typeof s?.endpoint === 'string' ? s.endpoint.trim() : '';
   if (!/^https:\/\//.test(endpoint) || endpoint.length > 1000)
@@ -79,7 +80,7 @@ export const webPush = {
   },
 
   /** This browser gets the player's notifications (again: a known endpoint moves to them). */
-  async subscribe(playerId: string, input: unknown, userAgent?: string): Promise<void> {
+  async subscribe(playerId: string, input: Untrusted, userAgent?: string): Promise<void> {
     const sub = validSubscription(input);
     await db.runAsync(
       `INSERT INTO push_subscriptions (endpoint, player_id, p256dh, auth, user_agent, created_at)
@@ -97,7 +98,7 @@ export const webPush = {
     );
   },
 
-  async unsubscribe(playerId: string, endpoint: unknown): Promise<void> {
+  async unsubscribe(playerId: string, endpoint: Untrusted): Promise<void> {
     if (typeof endpoint !== 'string') throw new PushError(400, 'endpoint is required');
     await db.runAsync('DELETE FROM push_subscriptions WHERE endpoint = ? AND player_id = ?', [
       endpoint,
