@@ -71,21 +71,44 @@ function totals(row: TotalsRow | undefined) {
 // Only CS2 matches: a manually reported game has no kills to sum.
 const CS2_MATCH = `(m.game IS NULL OR m.game = 'cs2')`;
 
+// A player's maps from the demo analysis (cs2_player_map_stats) that have no
+// live stats: an imported match. They count as the player's match too.
+const DEMO_ONLY = `NOT EXISTS (SELECT 1 FROM player_match_stats p
+  WHERE p.player_id = s.player_id AND p.match_slug = s.match_slug)`;
+
+// One row per player and CS2 match: the live stats (player_match_stats), else
+// the demo analysis summed over the match's maps. MVPs and flash assists only
+// come live.
+const PLAYER_MATCHES = `(
+  SELECT pms.player_id, pms.match_slug, pms.kills, pms.deaths, pms.assists, pms.headshots,
+         pms.total_damage, pms.rounds_played, pms.flash_assists, pms.utility_damage, pms.mvps,
+         pms.kast
+    FROM player_match_stats pms
+    JOIN matches m ON pms.match_slug = m.slug
+   WHERE ${CS2_MATCH}
+  UNION ALL
+  SELECT s.player_id, s.match_slug, SUM(s.kills), SUM(s.deaths), SUM(s.assists),
+         SUM(s.headshot_kills), SUM(s.damage), SUM(s.rounds_played), NULL, SUM(s.utility_damage),
+         NULL, 100.0 * SUM(s.kast_rounds) / NULLIF(SUM(s.rounds_played), 0)
+    FROM cs2_player_map_stats s
+   WHERE ${DEMO_ONLY}
+   GROUP BY s.player_id, s.match_slug
+) pm`;
+
 const TOTALS_SELECT = `
   SELECT
-    COUNT(DISTINCT pms.match_slug) AS matches,
-    SUM(pms.kills) AS kills,
-    SUM(pms.deaths) AS deaths,
-    SUM(pms.assists) AS assists,
-    SUM(pms.headshots) AS headshots,
-    SUM(pms.total_damage) AS total_damage,
-    SUM(pms.rounds_played) AS rounds_played,
-    SUM(pms.flash_assists) AS flash_assists,
-    SUM(pms.utility_damage) AS utility_damage,
-    SUM(pms.mvps) AS mvps,
-    AVG(pms.kast) AS kast
-  FROM player_match_stats pms
-  JOIN matches m ON pms.match_slug = m.slug
+    COUNT(DISTINCT pm.match_slug) AS matches,
+    SUM(pm.kills) AS kills,
+    SUM(pm.deaths) AS deaths,
+    SUM(pm.assists) AS assists,
+    SUM(pm.headshots) AS headshots,
+    SUM(pm.total_damage) AS total_damage,
+    SUM(pm.rounds_played) AS rounds_played,
+    SUM(pm.flash_assists) AS flash_assists,
+    SUM(pm.utility_damage) AS utility_damage,
+    SUM(pm.mvps) AS mvps,
+    AVG(pm.kast) AS kast
+  FROM ${PLAYER_MATCHES}
 `;
 
 interface DetailRow {
@@ -244,11 +267,10 @@ router.get('/teams/:teamId/roles', async (req: Request, res: Response) => {
 router.get('/players/:playerId/profile', async (req: Request, res: Response) => {
   const { playerId } = req.params;
   try {
-    const player = await db.queryOneAsync<TotalsRow>(
-      `${TOTALS_SELECT} WHERE pms.player_id = ? AND ${CS2_MATCH}`,
-      [playerId]
-    );
-    const everyone = await db.queryOneAsync<TotalsRow>(`${TOTALS_SELECT} WHERE ${CS2_MATCH}`);
+    const player = await db.queryOneAsync<TotalsRow>(`${TOTALS_SELECT} WHERE pm.player_id = ?`, [
+      playerId,
+    ]);
+    const everyone = await db.queryOneAsync<TotalsRow>(TOTALS_SELECT);
 
     // Each map the player's team played: won when the map's winner is the
     // player's side of that match, rounds from the side's own score.
@@ -256,18 +278,26 @@ router.get('/players/:playerId/profile', async (req: Request, res: Response) => 
       `SELECT
          mmr.map_name,
          COUNT(*) AS played,
-         SUM(CASE WHEN mmr.winner_team = pms.team THEN 1 ELSE 0 END) AS won,
-         SUM(CASE WHEN pms.team = 'team1' THEN mmr.team1_score ELSE mmr.team2_score END) AS rounds_won,
-         SUM(CASE WHEN pms.team = 'team1' THEN mmr.team2_score ELSE mmr.team1_score END) AS rounds_lost
-       FROM player_match_stats pms
-       JOIN matches m ON pms.match_slug = m.slug
-       JOIN match_map_results mmr ON mmr.match_slug = pms.match_slug
-       WHERE pms.player_id = ? AND ${CS2_MATCH}
-         AND mmr.map_name IS NOT NULL AND mmr.map_name <> ''
+         SUM(CASE WHEN mmr.winner_team = pm.team THEN 1 ELSE 0 END) AS won,
+         SUM(CASE WHEN pm.team = 'team1' THEN mmr.team1_score ELSE mmr.team2_score END) AS rounds_won,
+         SUM(CASE WHEN pm.team = 'team1' THEN mmr.team2_score ELSE mmr.team1_score END) AS rounds_lost
+       FROM (
+         SELECT pms.match_slug, pms.team, NULL::INTEGER AS map_number
+           FROM player_match_stats pms
+           JOIN matches m ON pms.match_slug = m.slug
+          WHERE pms.player_id = ? AND ${CS2_MATCH}
+         UNION ALL
+         SELECT s.match_slug, s.team, s.map_number
+           FROM cs2_player_map_stats s
+          WHERE s.player_id = ? AND ${DEMO_ONLY}
+       ) pm
+       JOIN match_map_results mmr ON mmr.match_slug = pm.match_slug
+         AND (pm.map_number IS NULL OR mmr.map_number = pm.map_number)
+       WHERE mmr.map_name IS NOT NULL AND mmr.map_name <> ''
          AND mmr.winner_team IS NOT NULL
        GROUP BY mmr.map_name
        ORDER BY played DESC, mmr.map_name`,
-      [playerId]
+      [playerId, playerId]
     );
 
     const playerDetail = await db.queryOneAsync<DetailRow>(`${DETAIL_SELECT} WHERE player_id = ?`, [
