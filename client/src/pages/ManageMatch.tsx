@@ -39,6 +39,7 @@ import { fontDisplay, fontMono, radii, textSize, tokens } from '../theme/tokens'
 import { SegmentedControl } from '../components/common/SegmentedControl';
 import { fmtMoney } from '../utils/number';
 import { copyTextToClipboard } from '../utils/clipboard';
+import type { Untrusted } from '../utils/untrusted';
 
 const { color } = tokens;
 
@@ -443,19 +444,19 @@ export default function ManageMatch() {
   }, [socket, load]);
 
   const send = useCallback(
-    async (name: string, args: Record<string, unknown> = {}, ok?: string) => {
+    async (name: string, args: Record<string, Untrusted> = {}, ok?: string) => {
       try {
         const res = await api.post<{
           success: boolean;
           error?: string;
           message?: string;
-          response?: unknown;
+          response?: Untrusted;
         }>(`/api/game/cs2/matches/${encodeURIComponent(slug)}/manage/command`, { name, args });
         if (res && res.success === false) throw new Error(res.error || 'The server refused it');
         if (ok) showSuccess(ok);
         await load();
         // exec answers with the console lines it saw.
-        const out = res?.response as { lines?: unknown; output?: unknown } | string | undefined;
+        const out = res?.response as { lines?: Untrusted; output?: Untrusted } | string | undefined;
         if (typeof out === 'string') return out;
         const lines = out?.lines ?? out?.output;
         return Array.isArray(lines) ? lines.join('\n') : typeof lines === 'string' ? lines : '';
@@ -468,7 +469,7 @@ export default function ManageMatch() {
   );
 
   const post = useCallback(
-    async (url: string, body: Record<string, unknown>, ok: string) => {
+    async (url: string, body: Record<string, Untrusted>, ok: string) => {
       try {
         await api.post(url, body);
         showSuccess(ok);

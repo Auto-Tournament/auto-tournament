@@ -48,6 +48,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useInstalledIntegrations } from '../integrations/registry';
 import type { AdminPlayerActionProps } from '../integrations/types';
 import type { ComponentType } from 'react';
+import type { Untrusted } from '../utils/untrusted';
 
 export default function Players() {
   const { t } = useTranslation();
@@ -230,7 +231,7 @@ export default function Players() {
     handleCloseModal();
   };
 
-  const moderate = async (work: () => Promise<unknown>, done: string, fail: string) => {
+  const moderate = async (work: () => Promise<Untrusted>, done: string, fail: string) => {
     setModerating(true);
     try {
       await work();

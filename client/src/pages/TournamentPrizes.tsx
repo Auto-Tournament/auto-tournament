@@ -6,13 +6,14 @@ import { useIntegrationFor } from '../integrations/registry';
 import { PageHead } from '../components/common/ui';
 import { pageTitle } from '../utils/pageTitle';
 import { tokens } from '../theme/tokens';
+import type { Untrusted } from '../utils/untrusted';
 
 interface PrizeTournament {
   id: number;
   name: string;
   status: string;
   game?: string | null;
-  settings?: unknown;
+  settings?: Untrusted;
 }
 
 /**

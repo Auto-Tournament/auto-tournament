@@ -26,6 +26,7 @@ import { fontMono, radii, teamColors, textSize, tokens } from '../theme/tokens';
 import { refreshTeamColors } from '../components/tournament/ui/draftUi';
 import { useSetupGames } from '../components/tournament/setup/games';
 import { useIntegration } from '../integrations/registry';
+import type { Untrusted } from '../utils/untrusted';
 
 const { color } = tokens;
 
@@ -129,7 +130,7 @@ export default function TeamManage() {
   }, [view, t]);
 
   /** Runs one action, then reloads; errors show above the page. */
-  const act = async (fn: () => Promise<unknown>, done?: string) => {
+  const act = async (fn: () => Promise<Untrusted>, done?: string) => {
     setError('');
     setNotice('');
     try {

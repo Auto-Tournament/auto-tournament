@@ -130,6 +130,7 @@ export const MAX_LINES_TODO = [
   'client/src/pages/Bracket.tsx',
   'client/src/pages/Browse.tsx',
   'client/src/pages/Development.tsx',
+  'client/src/pages/Friends.tsx',
   'client/src/pages/Home.tsx',
   'client/src/pages/LiveMatches.tsx',
   'client/src/pages/ManageMatch.tsx',

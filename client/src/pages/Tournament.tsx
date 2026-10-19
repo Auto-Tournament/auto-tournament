@@ -63,6 +63,7 @@ import type { Tournament as TournamentRecord, TournamentTemplate } from '../type
 import type { ShuffleTournamentSettings } from '../components/tournament/ShuffleTournamentConfigStep';
 import type { EloCalculationTemplate } from '../types/elo.types';
 import { resetCurrentTournamentId } from '../hooks/useTournamentList';
+import type { Untrusted } from '../utils/untrusted';
 
 /** Human label for a match format ("bo3" -> "Best of 3"), raw value if unknown. */
 const formatLabel = (value: string): string =>
@@ -300,7 +301,7 @@ const Tournament: React.FC = () => {
   const loadRegisteredPlayerCount = async () => {
     if (tournament?.type === 'shuffle') {
       try {
-        const response = await api.get<{ success: boolean; count: number; players: unknown[] }>(
+        const response = await api.get<{ success: boolean; count: number; players: Untrusted[] }>(
           `/api/tournament/${tournament.id}/players`
         );
         if (response.success) {
@@ -517,7 +518,8 @@ const Tournament: React.FC = () => {
       // A draft saved for one game can hold a step the next game does not
       // have, so the bound is that game's own list.
       const stepCount = setupStepsFor(values.game ?? DEFAULT_FORM.game).length;
-      const validStep = (n: unknown) => (typeof n === 'number' && n >= 0 && n < stepCount ? n : 0);
+      const validStep = (n: Untrusted) =>
+        typeof n === 'number' && n >= 0 && n < stepCount ? n : 0;
       setActiveStep(validStep(step));
       setFurthestStep(Math.max(validStep(step), validStep(savedFurthest)));
     } catch (error) {
@@ -830,7 +832,7 @@ const Tournament: React.FC = () => {
 
       const response = await api.post<{
         success: boolean;
-        tournament: unknown;
+        tournament: Untrusted;
         error?: string;
       }>('/api/tournament/shuffle', payload);
 
@@ -1040,7 +1042,7 @@ const Tournament: React.FC = () => {
     try {
       const response = await api.put<{
         success: boolean;
-        tournament: unknown;
+        tournament: Untrusted;
         error?: string;
       }>('/api/tournament', { name: trimmedName });
 

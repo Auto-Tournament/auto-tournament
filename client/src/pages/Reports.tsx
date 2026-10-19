@@ -25,6 +25,7 @@ import { api, apiErrorMessage } from '../utils/api';
 import { getPlayerPageUrl } from '../utils/playerLinks';
 import { pageTitle } from '../utils/pageTitle';
 import { SegmentedControl } from '../components/common/SegmentedControl';
+import type { Untrusted } from '../utils/untrusted';
 
 interface Report {
   id: number;
@@ -71,7 +72,7 @@ export default function Reports() {
     void load();
   }, [load]);
 
-  const act = async (work: () => Promise<unknown>, done: string) => {
+  const act = async (work: () => Promise<Untrusted>, done: string) => {
     setBusy(true);
     try {
       await work();

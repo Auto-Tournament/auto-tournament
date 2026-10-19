@@ -41,6 +41,7 @@ import { leaderboardsPath, paths, playLobbyPath } from '../paths';
 import { fontDisplay, fontMono, radii, textSize, tokens, withAlpha } from '../theme/tokens';
 import { PlayerAvatar } from '../components/player/PlayerAvatar';
 import { useInstalledIntegrations } from '../integrations/registry';
+import type { Untrusted } from '../utils/untrusted';
 
 const { color } = tokens;
 const MAX_PARTY = 5;
@@ -272,7 +273,7 @@ export default function Play() {
     document.title = pageTitle(t('matchmaking.play.title'));
   }, [t]);
 
-  const run = async (fn: () => Promise<unknown>, done?: string) => {
+  const run = async (fn: () => Promise<Untrusted>, done?: string) => {
     setBusy(true);
     try {
       await fn();
