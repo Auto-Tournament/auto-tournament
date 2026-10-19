@@ -176,6 +176,19 @@ test(
       tournamentName: 'Spec Cup',
     });
 
+    // The match is in both sides' history (profile: recent matches, the match count).
+    type Summary = {
+      stats: { matchesPlayed: number; wins: number };
+      matches: Array<{ slug: string; won_match: boolean }>;
+    };
+    const summary = async (id: string) =>
+      (await (await request.get(`/api/players/${id}/summary`)).json()) as Summary;
+    const winner = await summary(alpha[0]);
+    expect(winner.matches.find((m) => m.slug === slug)).toMatchObject({ won_match: true });
+    expect(winner.stats.matchesPlayed).toBeGreaterThanOrEqual(1);
+    const loser = await summary(bravo[0]);
+    expect(loser.matches.find((m) => m.slug === slug)).toMatchObject({ won_match: false });
+
     // They are in a CS2 demo, so CS2 is on their profile: no "What do you play?".
     const imported = await playwright.request.newContext({ baseURL });
     expect(await signInAsPlayerViaRequest(imported, bravo[0])).toBe(true);
