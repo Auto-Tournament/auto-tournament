@@ -39,9 +39,7 @@ function uniqueSteamId(offset = 0): string {
 }
 
 /** Discord IDs by Steam ID, from the admin player list. */
-async function discordIdsByPlayer(
-  request: APIRequestContext
-): Promise<Map<string, string | null>> {
+async function discordIdsByPlayer(request: APIRequestContext): Promise<Map<string, string | null>> {
   const response = await request.get('/api/players', { headers: getAuthHeader() });
   expect(response.ok(), 'GET /api/players should succeed').toBe(true);
   const body = (await response.json()) as {

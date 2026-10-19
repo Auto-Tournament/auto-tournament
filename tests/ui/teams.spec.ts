@@ -44,10 +44,7 @@ test.describe.serial('Teams UI', () => {
       // There is always a way to add a team: the header action once teams
       // exist, or the empty-state call to action when none do.
       await expect(
-        page
-          .getByTestId('add-team-button')
-          .or(page.getByTestId('empty-state-action'))
-          .first()
+        page.getByTestId('add-team-button').or(page.getByTestId('empty-state-action')).first()
       ).toBeVisible();
     }
   );

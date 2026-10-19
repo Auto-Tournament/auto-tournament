@@ -7,10 +7,10 @@ import { setupTestContextWithFreshDB, configureWebhook } from './helpers/setup';
  * 1. Database is wiped
  * 2. User is signed in
  * 3. Webhook is configured
- * 
+ *
  * Other tests can depend on this by using test.describe.serial
  * and checking for the @setup tag
- * 
+ *
  * @tag setup
  * @tag global
  */
@@ -30,17 +30,20 @@ export const test = base.extend<TestFixtures>({
 });
 
 test.describe.serial('Global Test Setup', () => {
-  test('should setup test environment', { tag: ['@setup', '@global'] }, async ({ page, request }) => {
-    // Wipe database and sign in
-    const context = await setupTestContextWithFreshDB(page, request);
-    
-    // Configure webhook
-    const webhookConfigured = await configureWebhook(request, context.baseUrl);
-    expect(webhookConfigured).toBe(true);
-    
-    // Verify we can access protected routes
-    await page.goto('/');
-    await expect(page).not.toHaveURL(/\/login/);
-  });
-});
+  test(
+    'should setup test environment',
+    { tag: ['@setup', '@global'] },
+    async ({ page, request }) => {
+      // Wipe database and sign in
+      const context = await setupTestContextWithFreshDB(page, request);
 
+      // Configure webhook
+      const webhookConfigured = await configureWebhook(request, context.baseUrl);
+      expect(webhookConfigured).toBe(true);
+
+      // Verify we can access protected routes
+      await page.goto('/');
+      await expect(page).not.toHaveURL(/\/login/);
+    }
+  );
+});
