@@ -36,7 +36,6 @@ export const TYPED_INTERNALS_TODO = [
   'api/src/integrations/cs2/events/matchEvents.ts',
   'api/src/integrations/cs2/events/routes.ts',
   'api/src/integrations/cs2/fleet/driver.ts',
-  'api/src/integrations/cs2/fleet/hosts/service.ts',
   'api/src/integrations/cs2/health.ts',
   'api/src/integrations/cs2/index.ts',
   'api/src/integrations/cs2/maps/mapCatalog.ts',
