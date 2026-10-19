@@ -18,7 +18,7 @@ import { soundNotification } from '../../utils/soundNotification';
 import { browserNotify } from '../../utils/browserNotify';
 import { useTimeAgo } from '../social/timeAgo';
 import { useAdminNotices } from '../../hooks/useAdminNotices';
-import { noticeKey, noticeLink, noticeParams, type AdminNotice } from './adminNoticeText';
+import { noticeHref, noticeKey, noticeParams, type AdminNotice } from './adminNoticeText';
 
 const { color } = tokens;
 
@@ -51,7 +51,7 @@ export function AdminNoticeBell() {
       );
       if (sound) soundNotification.playNotification();
       // In the background: a browser notification too, when they're on here.
-      const to = noticeLink(notice, LINKS);
+      const to = noticeHref(notice, LINKS);
       browserNotify({
         title: t(noticeKey(notice), noticeParams(notice)),
         tag: `admin-notice-${notice.id}`,
@@ -163,7 +163,7 @@ export function AdminNoticeBell() {
             </Typography>
           ) : (
             notices.slice(0, 30).map((n) => {
-              const to = noticeLink(n, LINKS);
+              const to = noticeHref(n, LINKS);
               const resolved = n.resolvedAt !== null;
               return (
                 <Box

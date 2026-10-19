@@ -11,7 +11,7 @@ import { tokens } from '../../theme/tokens';
 import { matchDetailsPath, paths } from '../../paths';
 import { useAdminNotices } from '../../hooks/useAdminNotices';
 import { useTimeAgo } from '../social/timeAgo';
-import { noticeKey, noticeLink, noticeParams } from './adminNoticeText';
+import { noticeHref, noticeKey, noticeParams } from './adminNoticeText';
 
 const { color } = tokens;
 
@@ -29,7 +29,7 @@ export function AdminNoticesPanel() {
     >
       <Typography sx={{ fontWeight: 600 }}>{t('adminNotices.needsYou')}</Typography>
       {open.slice(0, 8).map((n) => {
-        const to = noticeLink(n, {
+        const to = noticeHref(n, {
           match: matchDetailsPath,
           servers: paths.servers,
           recorders: paths.highlights,

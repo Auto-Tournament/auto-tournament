@@ -167,11 +167,9 @@ async function waitForCompletion(request: APIRequestContext) {
 test.describe.serial('Fake integration: a tournament without CS2', () => {
   test.beforeEach(async ({ request }) => {
     expect(await signInViaRequest(request)).toBe(true);
-    // The fake game has no servers, so it needs no webhook URL to start
-    // (`tournament-start-webhook.spec.ts` proves that). This only puts the
-    // suite's default back, and turns simulation off.
+    // Simulation off.
     await request.put('/api/settings', {
-      data: { webhookUrl: 'http://localhost:3069', simulateMatches: false },
+      data: { simulateMatches: false },
     });
   });
 

@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
-import { io, type Socket } from 'socket.io-client';
+import type { Socket } from 'socket.io-client';
+import { acquireSocket, onSharedSocket, releaseSocket } from '../utils/sharedSocket';
 import type { Untrusted } from '../utils/untrusted';
 
 /**
@@ -15,8 +16,7 @@ import type { Untrusted } from '../utils/untrusted';
  * lost. Admin topics need `admin`: the socket joins the admins' room; player
  * events (`mm:changed`) need `player`.
  *
- * Every subscriber shares one connection, opened with the first and closed
- * with the last.
+ * Every subscriber shares the page's one connection (utils/sharedSocket).
  */
 export interface TopicOptions {
   events?: readonly string[];
@@ -35,7 +35,6 @@ interface Subscriber {
 
 const THROTTLE_MS = 300;
 const subscribers = new Set<Subscriber>();
-let socket: Socket | null = null;
 let connectedBefore = false;
 
 function joinRooms(s: Socket): void {
@@ -44,9 +43,7 @@ function joinRooms(s: Socket): void {
   if (all.some((x) => x.player)) s.emit('player:subscribe');
 }
 
-function shared(): Socket {
-  if (socket) return socket;
-  const s = io({ autoConnect: false });
+onSharedSocket((s) => {
   s.on('connect', () => {
     joinRooms(s);
     // A reconnect: everything emitted meanwhile is lost, so everyone re-reads.
@@ -58,17 +55,7 @@ function shared(): Socket {
     if (!topic) return;
     for (const sub of subscribers) if (sub.topics.has(topic)) sub.reload();
   });
-  s.connect();
-  socket = s;
-  return s;
-}
-
-function release(): void {
-  if (subscribers.size > 0 || !socket) return;
-  socket.close();
-  socket = null;
-  connectedBefore = false;
-}
+});
 
 /** Calls `fn` at most once per `ms`, the last call after the wait. */
 function throttled(fn: () => void, ms: number): { call: () => void; cancel: () => void } {
@@ -119,7 +106,7 @@ export function useTopic(
       reload: limiter.call,
     };
     subscribers.add(sub);
-    const s = shared();
+    const s = acquireSocket();
     if (s.connected) {
       if (admin) s.emit('admin:subscribe');
       if (player) s.emit('player:subscribe');
@@ -130,7 +117,7 @@ export function useTopic(
       for (const event of events) s.off(event, limiter.call);
       limiter.cancel();
       subscribers.delete(sub);
-      release();
+      releaseSocket();
     };
   }, [topicKey, eventKey, admin, player, enabled]);
 }

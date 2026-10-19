@@ -154,6 +154,31 @@
       "demos_failing": "{{count}} demo analyses failed in the last hour",
       "tournament_autostart_failed": "{{name}} did not start at its start time: {{reason}}",
       "shuffle_no_show": "{{players}} never joined {{matchSlug}}: out of the next draws until they say they're back"
+    },
+    "close": "Close",
+    "fix": {
+      "match_no_server": "A match waits until a server is free. Start a stopped server on the Servers page, or wait for one to finish. If all of them are running, the license may be full.",
+      "veto_stalled": "Open the match to see whose turn it is, and nudge that captain.",
+      "warmup_long": "Some players aren't ready. The match page shows who is missing: force them ready if they're there, or decide the match.",
+      "match_forfeit": "Check the result on the match page. If it was a mistake, restart the match from there.",
+      "report_disputed": "The two teams reported different results. Open the match, compare the reports and set the result.",
+      "failover": "Nothing to do: the match moves to another server by itself. You can follow it here.",
+      "failoverDecision": "Choose on this page: move the match to another server, restore a round, or decide it.",
+      "match_silent": "Its server stopped sending updates. Check it on the Servers page and restart it if it hangs.",
+      "server_crashed": "Check the server on this page. It restarts by itself; if it keeps crashing, look at its console.",
+      "plugin_update_available": "Update Ready Up on this page. A server in a match updates once the match is over.",
+      "update_failed": "Try the update again on this page. If it fails again, the error above says why.",
+      "autoscale_license": "Every server the license covers is running. Free one, or add servers to the license.",
+      "recorder_offline": "Check the recorder's machine: is it on, and is its container running?",
+      "recorder_updated": "Nothing to do.",
+      "recorder_update_failed": "Update it again from this page, or run start-recorder.sh on its machine.",
+      "benchmark_failed": "Run the benchmark again from this page. If it fails again, check the recorder's GPU and its CS2.",
+      "clips_failing": "Open a recorder's recent runs on this page to see why the clips failed.",
+      "beta_available": "Update when it suits you, between tournaments.",
+      "license_problem": "The license page says what needs doing.",
+      "demos_failing": "The logs on this page say why the demo analyses failed.",
+      "tournament_autostart_failed": "Fix what the reason says, then start the tournament by hand.",
+      "shuffle_no_show": "Nothing to do: they're left out of the next draws until they say they're back."
     }
   },
   "matchNow": {

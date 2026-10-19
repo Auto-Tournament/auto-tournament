@@ -1,6 +1,5 @@
 import { test, expect, type APIRequestContext } from '@playwright/test';
 import { DEFAULT_ADMIN_STEAM_ID, getAuthHeader, signInViaRequest } from '../helpers/auth';
-import { configureWebhook } from '../helpers/setup';
 import { createTeam, type Team } from '../helpers/teams';
 import { createTestServer } from '../helpers/servers';
 import { getOk, normalizeForGolden, postOk, resetDatabaseForGolden } from '../helpers/golden';
@@ -71,7 +70,6 @@ async function getMatch(
 /** A fresh database with a 4-team single-elimination Bo3, started. */
 async function startTournament(request: APIRequestContext): Promise<void> {
   await resetDatabaseForGolden(request);
-  expect(await configureWebhook(request, 'http://localhost:3069')).toBe(true);
   for (const team of TEAMS) {
     expect(await createTeam(request, team), `create ${team.id}`).toBeTruthy();
   }

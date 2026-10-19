@@ -523,6 +523,15 @@ test.describe.serial('Fleet hosts (csm)', () => {
       resume: { result: 'resumed', platform_last_rx_seq: csm.txSeq },
     });
     await expect(again.client.nextOfType('host.updates_hold', 1500)).rejects.toThrow();
+    // Its first message skips three seqs the platform no longer has (a database
+    // restored from before them): taken once, not closed.
+    again.txSeq += 3;
+    const after = again.sendReliable('host.health', {
+      server: 'server-1',
+      event: 'hung',
+      detail: 'after a restore',
+    });
+    await again.acked(after.seq as number);
     again.close();
   });
 

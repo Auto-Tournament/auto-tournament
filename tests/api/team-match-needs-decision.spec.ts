@@ -81,7 +81,6 @@ test.describe.serial('A played but unsettled match on the team page', () => {
         teamCount: 3,
         serverCount: 1,
         prefix: 'nd-cs2',
-        webhookUrl: baseURL ?? 'http://localhost:3069',
       });
       expect(setup, 'the CS2 tournament should be set up').toBeTruthy();
       const [one, two, three] = setup!.teams;

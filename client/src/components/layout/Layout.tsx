@@ -7,6 +7,7 @@ import { usePageHeader } from '../../contexts/PageHeaderContext';
 import { ManageRailProvider } from '../../contexts/ManageRailContext';
 import { ShellColumnProvider, useShellColumnSlot } from '../../contexts/ShellColumnContext';
 import { api } from '../../utils/api';
+import { NoticeCard } from '../admin/NoticeCard';
 import { useTranslation } from 'react-i18next';
 import { AdminNoticeBell } from '../admin/AdminNoticeBell';
 import { ManageRail } from '../manage/ManageRail';
@@ -274,6 +275,8 @@ function AdminShell() {
             )}
             {/* The tournament's own pages: which tournament, and its tabs. */}
             {isTournamentPage(location.pathname) && <TournamentBar />}
+            {/* Opened from an admin notice: what happened and what to do. */}
+            <NoticeCard />
             <Outlet />
           </Box>
         </Box>
