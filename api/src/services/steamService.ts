@@ -8,6 +8,7 @@ import type {
 } from '../types/steam.types';
 import { settingsService } from './settingsService';
 import { emitTopic } from './socketService';
+import type { Response as FetchResponse } from 'node-fetch';
 
 class SteamService {
   private readonly baseUrl = 'http://api.steampowered.com';
@@ -95,7 +96,7 @@ class SteamService {
       const controller = new globalThis.AbortController();
       const timeout = setTimeout(() => controller.abort(), 5000);
 
-      let response: import('node-fetch').Response;
+      let response: FetchResponse;
       try {
         response = await fetch(url, { signal: controller.signal });
       } finally {
