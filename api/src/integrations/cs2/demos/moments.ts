@@ -55,7 +55,13 @@ export interface MomentKill {
   victimBot?: boolean;
   weapon?: string;
   headshot?: boolean;
+  penetrated?: boolean;
+  throughSmoke?: boolean;
+  /** CS2's kill feed marks: no scope, the killer flashed, in the air. */
   noScope?: boolean;
+  attackerBlind?: boolean;
+  inAir?: boolean;
+  opening?: boolean;
   attackerSide?: string | null;
   victimSide?: string | null;
 }
