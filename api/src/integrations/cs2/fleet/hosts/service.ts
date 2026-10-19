@@ -136,7 +136,7 @@ export class HostCommandError extends Error {
     message: string,
     readonly status: 400 | 402 | 404 | 409,
     readonly code: string,
-    readonly details?: Record<string, unknown>
+    readonly details?: { servers: string[] }
   ) {
     super(message);
     this.name = 'HostCommandError';
@@ -166,11 +166,22 @@ export interface SentHostCommand {
 async function acceptedLicenseUse(): Promise<'noncommercial' | 'commercial' | null> {
   try {
     const raw = await settingsService.getSetting('license_consent');
-    const use = raw ? (JSON.parse(raw) as { use?: unknown }).use : null;
+    const use = raw ? (JSON.parse(raw) as { use?: string }).use : null;
     return use === 'noncommercial' || use === 'commercial' ? use : null;
   } catch {
     return null;
   }
+}
+
+/** The fields sendHostCommand reads or sets on a command's payload. */
+interface CommandBody {
+  expires_at?: number;
+  server?: string;
+  servers?: string[];
+  count?: number;
+  force?: HostForce;
+  enroll_key?: string;
+  accept_license?: 'noncommercial' | 'commercial';
 }
 
 export async function sendHostCommand<T extends HostCommandType>(
@@ -189,14 +200,11 @@ export async function sendHostCommand<T extends HostCommandType>(
   if (host.status !== 'enrolled')
     throw new HostCommandError('Only an enrolled machine takes commands', 409, 'not_enrolled');
 
-  const body: Record<string, unknown> = { ...(payload as Record<string, unknown>) };
+  const body: CommandBody = { ...payload };
   delete body.force;
   // A paid license's server limit, before a machine is asked to create any.
   if (type === 'server.create' || type === 'server.enroll') {
-    const count =
-      type === 'server.enroll'
-        ? ((body as { servers?: unknown[] }).servers?.length ?? 1)
-        : Number((body as { count?: unknown }).count ?? 1);
+    const count = type === 'server.enroll' ? (body.servers?.length ?? 1) : Number(body.count ?? 1);
     try {
       await licenseService.assertCanCreateServers(Number.isInteger(count) && count > 0 ? count : 1);
     } catch (error) {
@@ -256,8 +264,7 @@ export async function sendHostCommand<T extends HostCommandType>(
   // its fleet entry goes too once csm has removed the server.
   if (type === 'server.remove') {
     const inventory = (await registry.getHostView(hostId))?.inventory;
-    const target = inventory?.servers.find((sv) => sv.name === body.server) as
-      { readyup?: { server_id?: string } } | undefined;
+    const target = inventory?.servers.find((sv) => sv.name === body.server);
     if (target?.readyup?.server_id)
       meta = { ...(meta ?? {}), fleetServerId: target.readyup.server_id };
   }
