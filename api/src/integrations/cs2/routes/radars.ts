@@ -6,12 +6,12 @@
  *   GET /api/game/cs2/radars                    every map and level with its texture CRC
  *   GET /api/game/cs2/radars/:map               a map's levels: position, scale, altitudes, image URL
  *   GET /api/game/cs2/radars/:map/:level.png    the image
- *   PUT /api/game/cs2/radars/:map/:level        the worker's upload (API token)
+ *   PUT /api/game/cs2/radars/:map/:level        a worker's upload (API token) or a recorder's (its key)
  */
 
 import { Router, type Request, type Response } from 'express';
 import { db } from '../../../config/database';
-import { requireAuth } from '../../../middleware/auth';
+import { requireRecorder } from '../demos/recorderKeys';
 import { log } from '../../../utils/logger';
 import type { Untrusted } from '../../../utils/untrusted';
 
@@ -76,7 +76,7 @@ router.get('/radars/:map/:file', async (req: Request, res: Response) => {
   return res.send(row.png);
 });
 
-router.put('/radars/:map/:level', requireAuth, async (req: Request, res: Response) => {
+router.put('/radars/:map/:level', requireRecorder, async (req: Request, res: Response) => {
   const map = req.params.map.toLowerCase();
   const level = req.params.level.toLowerCase();
   const b = req.body ?? {};

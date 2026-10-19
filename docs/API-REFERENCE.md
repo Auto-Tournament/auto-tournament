@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 750 of them, 425 behind auth —
+Every endpoint this API serves — 750 of them, 424 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -394,7 +394,7 @@ Map radar images and coordinates for the 2D replay, read from a CS2 install's ow
 | `GET` | `/api/game/cs2/radars` | public |
 | `GET` | `/api/game/cs2/radars/:map` | public |
 | `GET` | `/api/game/cs2/radars/:map/:file` | public |
-| `PUT` | `/api/game/cs2/radars/:map/:level` | admin |
+| `PUT` | `/api/game/cs2/radars/:map/:level` | public |
 
 ### Team profile
 

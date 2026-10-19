@@ -34,6 +34,7 @@ import (
 	"net/url"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"sync/atomic"
@@ -317,6 +318,15 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 	if len(os.Args) >= 2 && os.Args[1] == "record" {
+		// A recorder has a whole CS2 install: its radars give the site's 2D
+		// replay its maps, also where no analysis worker has CS2.
+		cs2Dir := env("AT_CS2_DIR", "")
+		if cs2Dir == "" {
+			if game := env("AT_CS2_GAME", ""); game != "" {
+				cs2Dir = filepath.Join(game, "csgo")
+			}
+		}
+		syncRadarsEvery6h(ctx, c, cs2Dir)
 		if err := runRecorder(ctx, c, time.Duration(poll)*time.Second); err != nil {
 			log.Fatal(err)
 		}
@@ -324,25 +334,7 @@ func main() {
 	}
 	log.Printf("analyzer v%d, platform %s", AnalyzerVersion, c.base)
 
-	// Radars for the 2D replay, from the game's own files: now, then every 6 hours.
-	if cs2Dir := env("AT_CS2_DIR", ""); cs2Dir != "" {
-		var workshop []string
-		if w := env("AT_WORKSHOP_DIRS", ""); w != "" {
-			workshop = strings.Split(w, ":")
-		}
-		go func() {
-			for {
-				if err := c.SyncRadars(ctx, cs2Dir, workshop); err != nil {
-					log.Printf("radars: %v", err)
-				}
-				select {
-				case <-ctx.Done():
-					return
-				case <-time.After(6 * time.Hour):
-				}
-			}
-		}()
-	}
+	syncRadarsEvery6h(ctx, c, env("AT_CS2_DIR", ""))
 
 	for ctx.Err() == nil {
 		j, err := c.claim(ctx)
@@ -360,4 +352,29 @@ func main() {
 			c.fail(context.Background(), j, err)
 		}
 	}
+}
+
+// syncRadarsEvery6h uploads the radars for the 2D replay from the game's own
+// files (cs2Dir: a CS2 install's game/csgo), now and then every 6 hours, in
+// the background. No-op without a CS2 install.
+func syncRadarsEvery6h(ctx context.Context, c *client, cs2Dir string) {
+	if cs2Dir == "" {
+		return
+	}
+	var workshop []string
+	if w := env("AT_WORKSHOP_DIRS", ""); w != "" {
+		workshop = strings.Split(w, ":")
+	}
+	go func() {
+		for {
+			if err := c.SyncRadars(ctx, cs2Dir, workshop); err != nil {
+				log.Printf("radars: %v", err)
+			}
+			select {
+			case <-ctx.Done():
+				return
+			case <-time.After(6 * time.Hour):
+			}
+		}
+	}()
 }
