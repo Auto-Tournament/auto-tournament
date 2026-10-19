@@ -45,3 +45,22 @@ change that fully solves the task.
 - New files are welcome; keep each under 450 lines of code (blank lines and
   comments don't count; lint checks it). A file that grows past that gets
   split, in a PR that only moves code.
+
+## Types
+
+Lint enforces these, so `yarn lint` tells you before review does.
+
+- Values our own code makes or stores have their real type. No `unknown`,
+  no `any`, no `as unknown as`.
+- Data from outside (a request body, a fetch, a game server or recorder
+  message, a file someone uploaded) comes in as `Untrusted`
+  (`api/src/utils/untrusted.ts`, the same in the client; a module imports it
+  from `integrations/types`). Check it once where it arrives, and pass the
+  checked, typed value on.
+- SQL parameters and rows are `SqlValue`. JSON you build is `JsonValue` /
+  `JsonObject`.
+- No nested ternaries, no `x!`, no `{ … } as T` (type the variable instead),
+  `import type` for types, `===`.
+- When a cast really can't be avoided (two copies of a library's types, a
+  library's private field), use `eslint-disable-next-line … -- reason`, with
+  the reason.
