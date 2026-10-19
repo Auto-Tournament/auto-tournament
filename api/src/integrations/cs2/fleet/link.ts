@@ -27,6 +27,7 @@
  *   was created by the link (it has no RCON password to be driven with).
  */
 
+import type { Untrusted } from '../../../utils/untrusted';
 import { db } from '../../../config/database';
 import { log } from '../../../utils/logger';
 import {
@@ -132,7 +133,7 @@ export async function machineAddresses(): Promise<Map<string, string>> {
   for (const row of rows) {
     try {
       const inv = JSON.parse(row.inventory as string) as {
-        address?: unknown;
+        address?: string;
         servers?: Array<{ readyup?: { server_id?: string; install_id?: string } }>;
       };
       if (typeof inv.address !== 'string' || !inv.address) continue;
@@ -188,14 +189,14 @@ export function machineAddressOf(
   );
 }
 
-function blank(v: unknown): boolean {
+function blank(v: Untrusted): boolean {
   return v === undefined || v === null || v === '';
 }
 
 /** Validate an admin's override (both blank = none); the error text is for the API response. */
 export function checkAddressOverride(value: {
-  host?: unknown;
-  port?: unknown;
+  host?: Untrusted;
+  port?: Untrusted;
 }): { ok: true; override: AddressOverride | null } | { ok: false; error: string } {
   if (blank(value.host) && blank(value.port)) return { ok: true, override: null };
   if (typeof value.host !== 'string' || !isValidConnectHost(value.host.trim())) {

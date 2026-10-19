@@ -16,6 +16,8 @@
  * two updates from the same base.
  */
 
+import type { JsonValue } from '../../../../utils/json';
+import type { Untrusted } from '../../../../utils/untrusted';
 import { db } from '../../../../config/database';
 import { log } from '../../../../utils/logger';
 import { awaitCommandResult, sendReliable, type FleetCommandRecord } from '../reliable';
@@ -41,14 +43,14 @@ const ROLES: ReadonlySet<string> = new Set(['player', 'sub', 'coach']);
 const MAX_OPS = 64;
 
 export function validateRosterOps(
-  input: unknown
+  input: Untrusted
 ): { ok: true; ops: RosterOp[] } | { ok: false; error: string } {
   if (!Array.isArray(input) || input.length === 0)
     return { ok: false, error: 'ops must be a non-empty array' };
   if (input.length > MAX_OPS) return { ok: false, error: `at most ${MAX_OPS} ops` };
   const ops: RosterOp[] = [];
   for (const [i, raw] of input.entries()) {
-    const o = raw as Record<string, unknown>;
+    const o = raw as Record<string, Untrusted>;
     const where = `ops[${i}]`;
     if (!o || typeof o !== 'object') return { ok: false, error: `${where} must be an object` };
     if (o.op === 'add_player') {
@@ -93,13 +95,13 @@ interface StoredTeam {
   players?: Record<string, string> | Array<{ steamid?: string; steamId?: string; name?: string }>;
   coaches?: Record<string, string> | null;
   substitutes?: Record<string, string> | null;
-  [k: string]: unknown;
+  [k: string]: JsonValue | undefined;
 }
 interface StoredConfig {
   team1?: StoredTeam;
   team2?: StoredTeam;
   spectators?: { players?: Record<string, string> };
-  [k: string]: unknown;
+  [k: string]: JsonValue | undefined;
 }
 
 function playerMap(players: StoredTeam['players']): Record<string, string> {
@@ -403,11 +405,14 @@ export type MatchUpdateOutcome =
   /** Sent (or queued for an offline server), no answer yet. */
   | { kind: 'pending'; commandId: string; delivered: boolean };
 
-const locks = new Map<string, Promise<unknown>>();
+const locks = new Map<string, Promise<void>>();
 function perMatch<T>(slug: string, fn: () => Promise<T>): Promise<T> {
   const prev = locks.get(slug) ?? Promise.resolve();
   const run = prev.then(fn, fn);
-  const tail = run.catch(() => undefined);
+  const tail = run.then(
+    () => undefined,
+    () => undefined
+  );
   locks.set(slug, tail);
   void tail.then(() => {
     if (locks.get(slug) === tail) locks.delete(slug);

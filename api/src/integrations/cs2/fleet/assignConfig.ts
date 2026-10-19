@@ -95,13 +95,13 @@ function defaultRandom(n: number): Uint8Array {
   return randomBytes(n);
 }
 
-function clampText(value: unknown, max: number): string | undefined {
+function clampText(value: string | undefined, max: number): string | undefined {
   if (typeof value !== 'string') return undefined;
   const t = value.trim();
   return t === '' ? undefined : t.slice(0, max);
 }
 
-function num(value: unknown): number | undefined {
+function num(value: string | number | undefined): number | undefined {
   const n =
     typeof value === 'number'
       ? value
@@ -111,7 +111,7 @@ function num(value: unknown): number | undefined {
   return Number.isFinite(n) ? n : undefined;
 }
 
-function flag(value: unknown): boolean | undefined {
+function flag(value: string | number | undefined): boolean | undefined {
   const n = num(value);
   return n === undefined ? undefined : n !== 0;
 }
@@ -154,7 +154,7 @@ function team(value: MatchTeam | undefined, fallbackName: string): AssignTeam {
   return out;
 }
 
-function mapSides(value: unknown): MapSides {
+function mapSides(value: string | undefined): MapSides {
   return value === 'team1_ct' || value === 'team2_ct' ? value : 'knife';
 }
 

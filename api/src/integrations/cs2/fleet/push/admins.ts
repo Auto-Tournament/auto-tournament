@@ -14,6 +14,7 @@
  *   ours (unless the current rev is still waiting in that server's outbox).
  */
 
+import type { Untrusted } from '../../../../utils/untrusted';
 import crypto from 'crypto';
 import { db } from '../../../../config/database';
 import { log } from '../../../../utils/logger';
@@ -41,11 +42,11 @@ export const MAX_FLEET_ADMINS = 1000;
 const NAME_MAX = 128;
 const STEAM64 = /^\d{17}$/;
 
-export function isSteam64(value: unknown): value is string {
+export function isSteam64(value: Untrusted): value is string {
   return typeof value === 'string' && STEAM64.test(value);
 }
 
-function cleanName(name: unknown, fallback: string): string {
+function cleanName(name: Untrusted, fallback: string): string {
   // Control characters (C0, DEL) out of a display name.
   const text =
     typeof name === 'string'
@@ -147,11 +148,14 @@ async function currentList(): Promise<{ admins: FleetAdmin[]; dropped: number }>
   return buildAdminList(rows, await getExtraAdmins());
 }
 
-let chain: Promise<unknown> = Promise.resolve();
+let chain: Promise<void> = Promise.resolve();
 /** One sync at a time in this process (the rev bump itself is a single CAS statement). */
 function serialized<T>(fn: () => Promise<T>): Promise<T> {
   const run = chain.then(fn, fn);
-  chain = run.catch(() => undefined);
+  chain = run.then(
+    () => undefined,
+    () => undefined
+  );
   return run;
 }
 

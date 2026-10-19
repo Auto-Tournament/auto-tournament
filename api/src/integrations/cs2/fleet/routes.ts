@@ -25,6 +25,7 @@
  * the HTTP server's `upgrade` event (./gateway.ts).
  */
 
+import type { Untrusted } from '../../../utils/untrusted';
 import { Router, type NextFunction, type Request, type Response } from 'express';
 import { requireAuth, requestActorId } from '../../../middleware/auth';
 import { log } from '../../../utils/logger';
@@ -181,7 +182,7 @@ fleetAdminRouter.use(fleetChangedOnWrite);
 fleetAdminRouter.use(requireAuth);
 
 /** An admin handler whose failure is a JSON 500 rather than a hung request. */
-function handler(what: string, fn: (req: Request, res: Response) => Promise<unknown>) {
+function handler(what: string, fn: (req: Request, res: Response) => Promise<void | Response>) {
   return (req: Request, res: Response) => {
     fn(req, res).catch((error) => {
       log.error(`[FLEET] ${what} failed: ${(error as Error).message}`);
@@ -248,14 +249,14 @@ async function withLinks<
   });
 }
 
-function trimmedString(value: unknown, max: number): string | null | undefined {
+function trimmedString(value: Untrusted, max: number): string | null | undefined {
   if (value === undefined || value === null) return undefined;
   if (typeof value !== 'string') return null;
   const t = value.trim();
   return t.length === 0 || t.length > max ? null : t;
 }
 
-function optionalPositiveInt(value: unknown): number | null | undefined {
+function optionalPositiveInt(value: Untrusted): number | null | undefined {
   if (value === undefined || value === null || value === '') return undefined;
   const n = Number(value);
   return Number.isInteger(n) && n > 0 ? n : null;
