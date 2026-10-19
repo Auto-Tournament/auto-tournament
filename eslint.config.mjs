@@ -64,7 +64,7 @@ export default [
     rules: {
       ...typescript.configs.recommended.rules,
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
-      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-explicit-any': 'error',
       '@typescript-eslint/explicit-function-return-type': 'off',
       // Use `log` from utils/logger. Stray console.log/debug dumps reached
       // production logs unfiltered; console.warn/error remain in catch blocks.
@@ -298,7 +298,7 @@ export default [
       'react/prop-types': 'off', // Using TypeScript
       'react/no-unescaped-entities': 'off', // Allow quotes in text content
       '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
-      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-explicit-any': 'error',
       '@typescript-eslint/no-unused-expressions': [
         'error',
         { allowShortCircuit: true, allowTernary: true },

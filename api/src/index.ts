@@ -30,7 +30,7 @@ migrateLegacyDataDir();
 import { migrateLegacyMapImages } from './config/migrateLegacyMapImages';
 migrateLegacyMapImages();
 
-import express, { Request, Response, NextFunction } from 'express';
+import express, { Request, Response, NextFunction, RequestHandler } from 'express';
 import cors from 'cors';
 import { createServer } from 'http';
 import swaggerUi from 'swagger-ui-express';
@@ -292,16 +292,17 @@ if (fs.existsSync(SWAGGER_UI_DIR)) {
   app.use('/api-docs', express.static(SWAGGER_UI_DIR, { fallthrough: true }));
 }
 
-// swagger-ui-express types don't perfectly match Express middleware types
+// swagger-ui-express is typed against its own nested copy of @types/express.
+/* eslint-disable no-restricted-syntax -- the same handlers under two copies of Express's types */
 app.use(
   '/api-docs',
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ...(swaggerUi.serve as any),
+  ...(swaggerUi.serve as unknown as RequestHandler[]),
   swaggerUi.setup(getOpenApiSpec(), {
     customCss: '.swagger-ui .topbar { display: none }',
     customSiteTitle: 'Auto Tournament API',
-  }) as any // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  }) as unknown as RequestHandler
 );
+/* eslint-enable no-restricted-syntax */
 
 // Swagger JSON
 app.get('/api-docs.json', (_req: Request, res: Response) => {
