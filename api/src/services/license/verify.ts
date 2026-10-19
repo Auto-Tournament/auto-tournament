@@ -17,6 +17,7 @@
 
 import { createPublicKey, verify, type JsonWebKey } from 'crypto';
 import { LICENSE_PUBLIC_KEYS, type LicensePublicKey } from './publicKeys';
+import { isOneOf, type Untrusted } from '../../utils/untrusted';
 
 export const TOKEN_PREFIX = 'ATL1';
 export const MAX_TOKEN_LENGTH = 4096;
@@ -88,7 +89,7 @@ export interface VerifyOptions {
   now?: string | Date;
 }
 
-function isDate(value: unknown): value is string {
+function isDate(value: Untrusted): value is string {
   if (typeof value !== 'string' || !DATE.test(value)) return false;
   const d = new Date(`${value}T00:00:00Z`);
   return !Number.isNaN(d.getTime()) && d.toISOString().slice(0, 10) === value;
@@ -103,18 +104,18 @@ function day(value: string | Date | undefined): string {
 }
 
 /** The payload's shape: an error message, or null when it is a v1 license. */
-export function payloadProblem(p: unknown): string | null {
+export function payloadProblem(p: Untrusted): string | null {
   if (typeof p !== 'object' || p === null || Array.isArray(p)) return 'payload is not an object';
-  const o = p as Record<string, unknown>;
+  const o = p as Record<string, Untrusted>;
   if (o.v !== 1) return `unsupported version ${JSON.stringify(o.v)}`;
   if (typeof o.kid !== 'string' || !o.kid) return 'missing kid';
   if (typeof o.id !== 'string' || !o.id) return 'missing id';
   if (typeof o.customer !== 'string' || !o.customer) return 'missing customer';
-  if (!(PRODUCTS as readonly unknown[]).includes(o.product)) return 'bad product';
-  if (!(PACKS as readonly unknown[]).includes(o.pack)) return 'bad pack';
+  if (!isOneOf(PRODUCTS, o.product)) return 'bad product';
+  if (!isOneOf(PACKS, o.pack)) return 'bad pack';
   if (!Number.isSafeInteger(o.max_servers) || (o.max_servers as number) < 1)
     return 'bad max_servers';
-  if (!(KINDS as readonly unknown[]).includes(o.kind)) return 'bad kind';
+  if (!isOneOf(KINDS, o.kind)) return 'bad kind';
   if (typeof o.issued_at !== 'string' || Number.isNaN(Date.parse(o.issued_at)))
     return 'bad issued_at';
   if (!isDate(o.updates_until)) return 'bad updates_until';
@@ -134,13 +135,13 @@ export function payloadProblem(p: unknown): string | null {
 }
 
 export interface DecodedLicense {
-  payload: unknown;
+  payload: Untrusted;
   signature: Buffer;
   signed: Buffer;
 }
 
 /** Splits and decodes a token without checking the signature. Throws on a malformed token. */
-export function decodeLicense(token: unknown): DecodedLicense {
+export function decodeLicense(token: Untrusted): DecodedLicense {
   if (typeof token !== 'string') throw new Error('not a string');
   const t = token.trim();
   if (t.length > MAX_TOKEN_LENGTH) throw new Error('too long');
@@ -149,7 +150,7 @@ export function decodeLicense(token: unknown): DecodedLicense {
     throw new Error(`not an ${TOKEN_PREFIX} key`);
   const [, body, sig] = parts;
   if (!B64URL.test(body) || !B64URL.test(sig)) throw new Error('not base64url');
-  const payload: unknown = JSON.parse(Buffer.from(body, 'base64url').toString('utf8'));
+  const payload: Untrusted = JSON.parse(Buffer.from(body, 'base64url').toString('utf8'));
   const signature = Buffer.from(sig, 'base64url');
   if (signature.length !== 64) throw new Error('bad signature length');
   return { payload, signature, signed: Buffer.from(`${TOKEN_PREFIX}.${body}`, 'ascii') };
@@ -160,7 +161,7 @@ function invalid(code: LicenseWarningCode, message: string): LicenseCheck {
 }
 
 /** Checks a license key. Never throws. */
-export function verifyLicense(token: unknown, options: VerifyOptions = {}): LicenseCheck {
+export function verifyLicense(token: Untrusted, options: VerifyOptions = {}): LicenseCheck {
   const publicKeys = options.publicKeys ?? LICENSE_PUBLIC_KEYS;
 
   let decoded: DecodedLicense;
@@ -175,7 +176,7 @@ export function verifyLicense(token: unknown, options: VerifyOptions = {}): Lice
   const { payload, signature, signed } = decoded;
   const p = (typeof payload === 'object' && payload !== null ? payload : {}) as Record<
     string,
-    unknown
+    Untrusted
   >;
 
   if (typeof p.v === 'number' && p.v !== 1) {
