@@ -19,6 +19,7 @@
  */
 
 import crypto from 'crypto';
+import type { Untrusted } from '../../../../utils/untrusted';
 import { log } from '../../../../utils/logger';
 import { sendReliable } from '../reliable';
 import { validatePayload, type CmdPayload, type ServerConfigPayload } from '../protocol/v1';
@@ -64,6 +65,12 @@ type Field =
   | { kind: 'bool' }
   | { kind: 'object'; fields: Record<string, Field> };
 
+/** A checked setting: a value, or a group of them (`demo`, `warmup`, ...). */
+type SettingValue = string | number | boolean | SettingGroup;
+interface SettingGroup {
+  [name: string]: SettingValue | null | undefined;
+}
+
 /** server.config.json `settings`, with the platform's own bounds. */
 const CONFIG_FIELDS: Record<string, Field> = {
   chat_prefix: { kind: 'string', max: 64 },
@@ -104,7 +111,12 @@ export function hasControlChars(text: string): boolean {
   return false;
 }
 
-function checkField(path: string, field: Field, value: unknown, errors: string[]): unknown {
+function checkField(
+  path: string,
+  field: Field,
+  value: Untrusted,
+  errors: string[]
+): SettingValue | undefined {
   switch (field.kind) {
     case 'string':
       if (typeof value !== 'string') errors.push(`${path} must be a string`);
@@ -129,8 +141,8 @@ function checkField(path: string, field: Field, value: unknown, errors: string[]
         errors.push(`${path} must be an object`);
         return undefined;
       }
-      const out: Record<string, unknown> = {};
-      for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
+      const out: SettingGroup = {};
+      for (const [k, v] of Object.entries(value)) {
         const sub = field.fields[k];
         if (!sub) {
           errors.push(`${path}.${k} is not a setting`);
@@ -150,13 +162,13 @@ function checkField(path: string, field: Field, value: unknown, errors: string[]
  * errors; null / undefined values mean "not set" (inherit the default).
  */
 export function validateSettings(
-  input: unknown
+  input: Untrusted
 ): { ok: true; value: FleetSettings } | { ok: false; errors: string[] } {
   const errors: string[] = [];
   if (input === undefined || input === null) return { ok: true, value: { config: {}, match: {} } };
   if (typeof input !== 'object' || Array.isArray(input))
     return { ok: false, errors: ['settings must be an object'] };
-  const raw = input as Record<string, unknown>;
+  const raw: Record<string, Untrusted> = { ...input };
   for (const k of Object.keys(raw)) {
     if (k !== 'config' && k !== 'match')
       errors.push(`${k} is not a settings group (config, match)`);
@@ -171,7 +183,7 @@ export function validateSettings(
     if (typeof raw.match !== 'object' || Array.isArray(raw.match))
       errors.push('match must be an object');
     else {
-      for (const [k, v] of Object.entries(raw.match as Record<string, unknown>)) {
+      for (const [k, v] of Object.entries(raw.match)) {
         const spec = (
           MATCH_SETTINGS as Record<
             string,
@@ -195,21 +207,16 @@ export function validateSettings(
   return { ok: true, value: { config, match } };
 }
 
-function isPlainObject(v: unknown): v is Record<string, unknown> {
-  return !!v && typeof v === 'object' && !Array.isArray(v);
+function isGroup(v: SettingValue | null | undefined): v is SettingGroup {
+  return !!v && typeof v === 'object';
 }
 
-function mergeObjects(
-  base: Record<string, unknown>,
-  over: Record<string, unknown>
-): Record<string, unknown> {
-  const out: Record<string, unknown> = { ...base };
+function mergeGroups(base: SettingGroup, over: SettingGroup): SettingGroup {
+  const out: SettingGroup = { ...base };
   for (const [k, v] of Object.entries(over)) {
     if (v === undefined || v === null) continue;
-    out[k] =
-      isPlainObject(v) && isPlainObject(out[k])
-        ? mergeObjects(out[k] as Record<string, unknown>, v)
-        : v;
+    const current = out[k];
+    out[k] = isGroup(v) && isGroup(current) ? mergeGroups(current, v) : v;
   }
   return out;
 }
@@ -221,15 +228,15 @@ export function mergeSettings(
 ): FleetSettings {
   if (!override) return { config: { ...base.config }, match: { ...base.match } };
   return {
-    config: mergeObjects(
-      base.config as Record<string, unknown>,
-      override.config as Record<string, unknown>
+    config: mergeGroups(
+      base.config as SettingGroup,
+      override.config as SettingGroup
     ) as ServerConfigSettings,
     match: { ...base.match, ...stripNulls(override.match) },
   };
 }
 
-function stripNulls<T extends Record<string, unknown>>(o: T): T {
+function stripNulls<T extends object>(o: T): T {
   return Object.fromEntries(
     Object.entries(o ?? {}).filter(([, v]) => v !== undefined && v !== null)
   ) as T;
@@ -304,12 +311,11 @@ export function buildSettingsSetCmd(
   };
 }
 
-function asSettings(raw: unknown): FleetSettings | null {
-  if (!isPlainObject(raw)) return null;
-  return {
-    config: (isPlainObject(raw.config) ? raw.config : {}) as ServerConfigSettings,
-    match: (isPlainObject(raw.match) ? raw.match : {}) as MatchSettings,
-  };
+/** Settings as saved (validateSettings checked them first); a group never saved is empty. */
+function asSettings(raw: object | null): FleetSettings | null {
+  if (!raw) return null;
+  const saved = raw as Partial<FleetSettings>;
+  return { config: saved.config ?? {}, match: saved.match ?? {} };
 }
 
 function settingsHash(scope: string, s: FleetSettings): string {

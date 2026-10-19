@@ -10,28 +10,34 @@
 
 export type Json = null | boolean | number | string | Json[] | { [key: string]: Json };
 
-function isObject(value: unknown): value is Record<string, unknown> {
+/** What the walks take: JSON, or a typed record of it (MatchState); undefined for a missing member. */
+type JsonLike = Json | object | undefined;
+interface JsonRecord {
+  [key: string]: JsonLike;
+}
+
+function isObject(value: JsonLike): value is JsonRecord {
   return value !== null && typeof value === 'object' && !Array.isArray(value);
 }
 
 /** `target` with `patch` applied (RFC 7386 §2). */
-export function applyMergePatch<T = unknown>(target: unknown, patch: unknown): T {
+export function applyMergePatch<T extends JsonLike>(target: JsonLike, patch: JsonLike): T {
   if (!isObject(patch)) return clone(patch) as T;
-  const out: Record<string, unknown> = isObject(target) ? { ...target } : {};
+  const out: JsonRecord = isObject(target) ? { ...target } : {};
   for (const [key, value] of Object.entries(patch)) {
     if (value === null) {
       delete out[key];
     } else {
-      out[key] = applyMergePatch(out[key], value);
+      out[key] = applyMergePatch<JsonLike>(out[key], value);
     }
   }
   return out as T;
 }
 
-function clone(value: unknown): unknown {
+function clone(value: JsonLike): JsonLike {
   if (Array.isArray(value)) return value.map(clone);
   if (isObject(value)) {
-    const out: Record<string, unknown> = {};
+    const out: JsonRecord = {};
     for (const [k, v] of Object.entries(value)) out[k] = clone(v);
     return out;
   }
@@ -39,7 +45,7 @@ function clone(value: unknown): unknown {
 }
 
 /** Deep equality for JSON values (member order does not matter). */
-export function jsonEqual(a: unknown, b: unknown): boolean {
+export function jsonEqual(a: JsonLike, b: JsonLike): boolean {
   if (a === b) return true;
   if (Array.isArray(a)) {
     return Array.isArray(b) && a.length === b.length && a.every((v, i) => jsonEqual(v, b[i]));
@@ -57,9 +63,9 @@ export function jsonEqual(a: unknown, b: unknown): boolean {
  * at most `limit` of them, in a stable order. For logging a drift between the
  * stored state and a snapshot.
  */
-export function diffPaths(a: unknown, b: unknown, limit = 20, prefix = ''): string[] {
+export function diffPaths(a: JsonLike, b: JsonLike, limit = 20, prefix = ''): string[] {
   const out: string[] = [];
-  const walk = (x: unknown, y: unknown, path: string) => {
+  const walk = (x: JsonLike, y: JsonLike, path: string) => {
     if (out.length >= limit) return;
     if (isObject(x) && isObject(y)) {
       const keys = [...new Set([...Object.keys(x), ...Object.keys(y)])].sort();
