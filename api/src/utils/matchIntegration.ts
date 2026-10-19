@@ -61,9 +61,9 @@ export function toIntegrationTournament(tournament: TournamentResponse): Integra
 export async function buildMatchConfigFor(
   target: MatchConfigTarget,
   tournament: TournamentResponse | null,
-  settings?: unknown,
+  settings?: object,
   options: { defaultsFrom?: TournamentResponse | null } = {}
-): Promise<unknown> {
+): Promise<object> {
   const game = target.game || DEFAULT_GAME;
   const standalone = !tournament || target.round === 0;
   return integrationForMatch({ game }).buildMatchConfig({
@@ -83,7 +83,7 @@ export async function buildMatchConfigFor(
 }
 
 /** The value persisted to `matches.config`. */
-export function serializeMatchConfig(config: unknown): string {
+export function serializeMatchConfig(config: object): string {
   return JSON.stringify(config);
 }
 
@@ -92,21 +92,29 @@ export function serializeMatchConfig(config: unknown): string {
  * client unchanged. Do not read fields off it; use `describeMatch`.
  * Unreadable JSON gives `{}`.
  */
-export function parseStoredMatchConfig(config: string | null | undefined): Record<string, unknown> {
-  if (!config) return {};
+export function parseStoredMatchConfig(config: string | null | undefined): object {
+  return readStoredMatchConfig(config) ?? {};
+}
+
+/** The stored config parsed; null when it is not a JSON object (the integration's own value). */
+export function readStoredMatchConfig(config: string | null | undefined): object | null {
+  if (!config) return null;
   try {
-    const value: unknown = JSON.parse(config);
-    return value && typeof value === 'object' && !Array.isArray(value)
-      ? (value as Record<string, unknown>)
-      : {};
+    const value = JSON.parse(config) as object | null;
+    return value && typeof value === 'object' && !Array.isArray(value) ? value : null;
   } catch {
-    return {};
+    return null;
   }
 }
 
 /** Neutral view (series length, maps, rosters) of a match's config, stored JSON or already parsed. */
-export function describeMatch(match: { game?: GameId | null; config?: unknown }): MatchDescription {
-  return integrationForMatch(match).describeMatch(match.config ?? null);
+export function describeMatch(match: {
+  game?: GameId | null;
+  config?: string | object | null;
+}): MatchDescription {
+  const config =
+    typeof match.config === 'string' ? parseStoredMatchConfig(match.config) : (match.config ?? {});
+  return integrationForMatch(match).describeMatch(config);
 }
 
 /** Whether a match's config follows its tournament (bracket match) rather than being stored as-is. */
@@ -133,7 +141,7 @@ export async function currentMatchConfig(match: {
   team1_id?: string | null;
   team2_id?: string | null;
   config?: string | null;
-}): Promise<Record<string, unknown>> {
+}): Promise<object> {
   if (isBracketManaged(match)) {
     const row = await db.queryOneAsync<DbTournamentRow>('SELECT * FROM tournament WHERE id = ?', [
       match.tournament_id,
@@ -151,7 +159,7 @@ export async function currentMatchConfig(match: {
         },
         tournamentRowToResponse(row)
       );
-      return (config ?? {}) as Record<string, unknown>;
+      return config ?? {};
     }
   }
   return parseStoredMatchConfig(match.config);

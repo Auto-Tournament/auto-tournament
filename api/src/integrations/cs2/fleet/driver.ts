@@ -352,7 +352,7 @@ async function servedMatchConfig(match: DbMatchRow): Promise<MatchConfig> {
     if (!served) throw new AssignConfigError(`Match ${match.slug} not found`);
     return served;
   }
-  return (await currentMatchConfig(match)) as unknown as MatchConfig;
+  return (await currentMatchConfig(match)) as MatchConfig;
 }
 
 /**
