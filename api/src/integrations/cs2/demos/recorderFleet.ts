@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { refreshRecorderRelease, newerRecorderAgent } from './recorderUpdates';
 import { db } from '../../../config/database';
+import type { Untrusted } from '../../../utils/untrusted';
 export class FleetError extends Error {
   constructor(
     readonly status: number,
@@ -15,7 +16,7 @@ export async function listRecorderGroups() {
   );
   return rows.map((r) => ({ id: Number(r.id), name: r.name, enabled: Number(r.enabled) === 1 }));
 }
-export async function requireGroup(id: unknown): Promise<number | null> {
+export async function requireGroup(id: Untrusted): Promise<number | null> {
   if (id === null) return null;
   if (typeof id !== 'number' || !Number.isSafeInteger(id) || id <= 0)
     throw new FleetError(400, 'Choose a valid recorder group');
@@ -23,7 +24,7 @@ export async function requireGroup(id: unknown): Promise<number | null> {
     throw new FleetError(404, 'No such recorder group');
   return id;
 }
-export async function createRecorderGroup(name: unknown) {
+export async function createRecorderGroup(name: Untrusted) {
   if (typeof name !== 'string' || !name.trim() || name.trim().length > 80)
     throw new FleetError(400, 'Group name must contain 1–80 characters');
   const row = await db.queryOneAsync<{ id: number }>(
@@ -33,7 +34,7 @@ export async function createRecorderGroup(name: unknown) {
   if (!row) throw new FleetError(409, 'A recorder group with that name already exists');
   return Number(row.id);
 }
-export async function setGroupEnabled(id: number, enabled: unknown) {
+export async function setGroupEnabled(id: number, enabled: Untrusted) {
   await requireGroup(id);
   if (typeof enabled !== 'boolean') throw new FleetError(400, 'Enabled must be a boolean');
   await db.runAsync('UPDATE cs2_recorder_groups SET enabled = ? WHERE id = ?', [
@@ -43,7 +44,7 @@ export async function setGroupEnabled(id: number, enabled: unknown) {
 }
 export async function setRecorderControls(
   name: string,
-  body: { enabled?: unknown; groupId?: unknown }
+  body: { enabled?: Untrusted; groupId?: Untrusted }
 ) {
   if (body.enabled === undefined && body.groupId === undefined)
     throw new FleetError(400, 'Supply enabled or groupId');
@@ -82,7 +83,7 @@ export async function matchRecordingGroup(slug: string) {
   );
   return row ? Number(row.group_id) : null;
 }
-export async function setMatchRecordingGroup(slug: string, id: unknown) {
+export async function setMatchRecordingGroup(slug: string, id: Untrusted) {
   await matchRecordingGroup(slug);
   const group = await requireGroup(id);
   if (group === null)

@@ -12,7 +12,7 @@ import {
   setMatchRecordingGroup,
 } from '../demos/recorderFleet';
 export const recorderFleetRouter = Router();
-const handle = (fn: (req: Request) => Promise<unknown>) => async (req: Request, res: Response) => {
+const handle = (fn: (req: Request) => Promise<object>) => async (req: Request, res: Response) => {
   try {
     return res.json(await fn(req));
   } catch (error) {

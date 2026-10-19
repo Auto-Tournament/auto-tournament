@@ -23,6 +23,7 @@ import { recorderLink, wakeRecorders } from './recorderLink';
 import { log } from '../../../utils/logger';
 import { jobFor, queueMatchReelFor, type MomentRow } from './highlights';
 import { readHighlightQuality } from './highlightQuality';
+import type { Untrusted } from '../../../utils/untrusted';
 
 export const PAUSE_SECONDS = 15 * 60;
 /** Jobs in a row whose CS2 would not start before the recorder is paused. */
@@ -79,11 +80,11 @@ export interface RecorderRow {
   gamescope_hz: number | null;
 }
 
-const text = (v: unknown, max: number): string | null =>
+const text = (v: Untrusted, max: number): string | null =>
   typeof v === 'string' && v.trim() ? v.trim().slice(0, max) : null;
 
 /** New recorders get their numbered labels one at a time (two joining at once took the same). */
-let labelling: Promise<unknown> = Promise.resolve();
+let labelling: Promise<void> = Promise.resolve();
 
 /**
  * The label a new recorder gets from its key: `<key name>-<n>`, the next number after the
@@ -110,7 +111,7 @@ async function nextKeyLabel(keyName: string): Promise<string> {
  */
 export async function seenRecorder(
   name: string,
-  info: { version?: unknown; gpu?: unknown; platform?: unknown },
+  info: { version?: Untrusted; gpu?: Untrusted; platform?: Untrusted },
   keyName?: string | null
 ): Promise<RecorderRow> {
   // Keys made before the dialog asked for a name are called key-<date>: no numbering for those.
@@ -169,7 +170,7 @@ export async function clipKept(highlightId: number): Promise<void> {
  * recorded here (its demo is known to play), so for them it is null until
  * something has been recorded.
  */
-export async function benchmarkJob(benchDemo = false): Promise<Record<string, unknown> | null> {
+export async function benchmarkJob(benchDemo = false) {
   const tries = BENCHMARK_HZ.map((gamescopeHz) => ({ gamescopeHz }));
   const row = await db.queryOneAsync<MomentRow>(
     `SELECT h.id, h.match_slug, h.map_number, h.player_id, h.kind, h.title, h.round, h.score,
@@ -220,6 +221,13 @@ export function wantsBenchmark(me: RecorderRow, benchDemo: boolean): boolean {
   }
 }
 
+/** cs2_recorders.benchmark, as saveBenchmark writes it. */
+interface StoredBenchmark {
+  tries: BenchmarkTry[];
+  pick: number | null;
+  source: 'bundled' | 'match';
+}
+
 interface BenchmarkTry {
   gamescopeHz: number;
   seconds: number | null;
@@ -231,15 +239,15 @@ interface BenchmarkTry {
 /** A benchmark's results: keep the fastest finished try's refresh rate. */
 export async function saveBenchmark(
   name: string,
-  body: { tries?: unknown; source?: unknown }
+  body: { tries?: Untrusted; source?: Untrusted }
 ): Promise<{ gamescopeHz: number | null }> {
   // Which clip it timed: the demo shipped with the worker ('bundled', the same
   // everywhere) or this install's first clip ('match'; older workers send none).
   const source = body.source === 'bundled' ? 'bundled' : 'match';
   const tries: BenchmarkTry[] = (Array.isArray(body.tries) ? body.tries : [])
     .slice(0, 8)
-    .map((t: Record<string, unknown>) => {
-      const num = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) ? v : null);
+    .map((t: Record<string, Untrusted>) => {
+      const num = (v: Untrusted) => (typeof v === 'number' && Number.isFinite(v) ? v : null);
       return {
         gamescopeHz: Number(t.gamescopeHz) || 0,
         seconds: num(t.seconds),
@@ -273,9 +281,9 @@ export async function saveBenchmark(
 }
 
 /** A finished job's log and timings. */
-export async function saveRun(name: string, body: Record<string, unknown>): Promise<void> {
+export async function saveRun(name: string, body: Record<string, Untrusted>): Promise<void> {
   const kind = text(body.kind, 40) ?? 'unknown';
-  const num = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) ? v : null);
+  const num = (v: Untrusted) => (typeof v === 'number' && Number.isFinite(v) ? v : null);
   const logText = typeof body.log === 'string' ? body.log.slice(-LOG_MAX) : null;
   await db.runAsync(
     `INSERT INTO cs2_recorder_runs (recorder, kind, match_slug, map_number, started_at, seconds, ok, clips, rejected, failed, error, log)
@@ -345,9 +353,9 @@ export async function listRecorders() {
   const t = now();
   const linked = recorderLink.linked();
   return rows.map((r) => {
-    let benchmark: unknown = null;
+    let benchmark: StoredBenchmark | null = null;
     try {
-      benchmark = r.benchmark ? JSON.parse(r.benchmark) : null;
+      benchmark = r.benchmark ? (JSON.parse(r.benchmark) as StoredBenchmark) : null;
     } catch {
       benchmark = null;
     }
