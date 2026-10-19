@@ -13,13 +13,14 @@
  */
 import { Strategy as OAuth2Strategy } from 'passport-oauth2';
 import { log } from '../utils/logger';
+import type { Untrusted } from '../utils/untrusted';
 
 export interface OidcStrategyOptions {
   issuerUrl: string;
   clientID: string;
   clientSecret: string;
   callbackURL: string;
-  store: unknown;
+  store: object;
 }
 
 export interface OidcDiscovery {
@@ -54,7 +55,8 @@ const TIMEOUT_MS = 10_000;
 /** The Passport user for an OpenID Connect login. No tokens: nothing uses them. */
 export function oidcUserInfoToUser(info: OidcUserInfo): OidcUser {
   const sub = String(info.sub);
-  const picture = typeof info.picture === 'string' && /^https:\/\//.test(info.picture) ? info.picture : undefined;
+  const picture =
+    typeof info.picture === 'string' && /^https:\/\//.test(info.picture) ? info.picture : undefined;
   return {
     provider: 'oidc',
     oidcId: sub,
@@ -70,11 +72,13 @@ export function oidcUserInfoToUser(info: OidcUserInfo): OidcUser {
  * `issuer` equal to the configured one (the spec requires it; a mismatch means
  * the URL points at the wrong realm or tenant). Throws a message an admin can act on.
  */
-export function checkDiscovery(issuerUrl: string, doc: unknown): OidcDiscovery {
-  const d = (doc ?? {}) as Record<string, unknown>;
+export function checkDiscovery(issuerUrl: string, doc: Untrusted): OidcDiscovery {
+  const d = (doc ?? {}) as Record<string, Untrusted>;
   const issuer = typeof d.issuer === 'string' ? d.issuer.replace(/\/+$/, '') : '';
   if (issuer !== issuerUrl) {
-    throw new Error(`The discovery document is for issuer "${issuer || '(none)'}", not ${issuerUrl}`);
+    throw new Error(
+      `The discovery document is for issuer "${issuer || '(none)'}", not ${issuerUrl}`
+    );
   }
   const endpoint = (name: string): string => {
     const value = d[name];
@@ -101,7 +105,7 @@ export async function discoverOidc(issuerUrl: string): Promise<OidcDiscovery> {
   return checkDiscovery(issuerUrl, await response.json());
 }
 
-type Done = (err: unknown, user?: unknown) => void;
+type Done = (err: Untrusted, user?: Untrusted) => void;
 
 /** passport-oauth2's internals the strategy points at the discovered endpoints. */
 interface OAuth2Internals {
@@ -112,7 +116,7 @@ export function createOidcStrategy(
   options: OidcStrategyOptions,
   verify: (user: OidcUser, done: Done) => void,
   discover: (issuerUrl: string) => Promise<OidcDiscovery> = discoverOidc
-): unknown {
+): object {
   // Placeholders until discovery: passport-oauth2 wants URLs up front.
   const strategy = new OAuth2Strategy(
     {
@@ -124,7 +128,8 @@ export function createOidcStrategy(
       scope: ['openid', 'profile', 'email'],
       store: options.store,
     },
-    (_accessToken: string, _refreshToken: string, profile: OidcUser, done: Done) => verify(profile, done)
+    (_accessToken: string, _refreshToken: string, profile: OidcUser, done: Done) =>
+      verify(profile, done)
   );
   strategy.name = 'oidc';
 
@@ -132,6 +137,7 @@ export function createOidcStrategy(
   const ready = (): Promise<OidcDiscovery> => {
     discovered ??= discover(options.issuerUrl).then(
       (doc) => {
+        // eslint-disable-next-line no-restricted-syntax -- passport-oauth2's private _oauth2 has no type
         const oauth2 = (strategy as unknown as OAuth2Internals)._oauth2;
         oauth2._authorizeUrl = doc.authorization_endpoint;
         oauth2._accessTokenUrl = doc.token_endpoint;
@@ -147,28 +153,40 @@ export function createOidcStrategy(
 
   // Not bound: Passport calls authenticate on a per-request copy
   // (Object.create(strategy)) that carries that request's redirect/error.
-  const authenticate = strategy.authenticate as (this: unknown, req: unknown, options: unknown) => void;
-  strategy.authenticate = function (this: { error(err: Error): void }, req: unknown, authOptions: unknown) {
+  const authenticate = strategy.authenticate as (
+    this: Untrusted,
+    req: Untrusted,
+    options: Untrusted
+  ) => void;
+  strategy.authenticate = function (
+    this: { error(err: Error): void },
+    req: Untrusted,
+    authOptions: Untrusted
+  ) {
     ready().then(
       () => {
         // The server refused "profile email" (a Keycloak client without those
         // client scopes answers invalid_scope): start again with "openid"
         // alone rather than fail. The name and email are then unknown, so the
         // admin should still add the scopes (Settings -> Sign-in says so).
-        const query = ((req as { query?: Record<string, unknown> }).query ?? {}) as Record<string, unknown>;
+        const query = ((req as { query?: Record<string, Untrusted> }).query ?? {}) as Record<
+          string,
+          Untrusted
+        >;
         const refused = typeof query.error_description === 'string' ? query.error_description : '';
         if (query.error === 'invalid_scope' && /\b(profile|email)\b/.test(refused)) {
           log.warn(
             'OpenID Connect: the server refused the profile and email scopes; signing in with openid only. Add the "profile" and "email" client scopes to this client on the server.'
           );
-          const retry = Object.create(req as object) as { query: Record<string, unknown> };
+          const retry = Object.create(req as object) as { query: Record<string, Untrusted> };
           retry.query = {};
           authenticate.call(this, retry, { ...((authOptions as object) ?? {}), scope: ['openid'] });
           return;
         }
         authenticate.call(this, req, authOptions);
       },
-      (error: unknown) => this.error(new Error(`OpenID Connect discovery failed: ${(error as Error).message}`))
+      (error: unknown) =>
+        this.error(new Error(`OpenID Connect discovery failed: ${(error as Error).message}`))
     );
   };
 

@@ -8,6 +8,7 @@
  * https://dev.twitch.tv/docs/api/reference/#get-users
  */
 import { Strategy as OAuth2Strategy } from 'passport-oauth2';
+import type { Untrusted } from '../utils/untrusted';
 
 export const TWITCH_AUTHORIZE_URL = 'https://id.twitch.tv/oauth2/authorize';
 export const TWITCH_TOKEN_URL = 'https://id.twitch.tv/oauth2/token';
@@ -17,7 +18,7 @@ export interface TwitchStrategyOptions {
   clientID: string;
   clientSecret: string;
   callbackURL: string;
-  store: unknown;
+  store: object;
 }
 
 /** One user from Helix `GET /users`. */
@@ -47,12 +48,12 @@ export function twitchProfileToUser(profile: TwitchHelixUser): TwitchUser {
   };
 }
 
-type Done = (err: unknown, user?: unknown) => void;
+type Done = (err: Untrusted, user?: Untrusted) => void;
 
 export function createTwitchStrategy(
   options: TwitchStrategyOptions,
   verify: (user: TwitchUser, done: Done) => void
-): unknown {
+): object {
   const strategy = new OAuth2Strategy(
     {
       authorizationURL: TWITCH_AUTHORIZE_URL,
@@ -64,14 +65,16 @@ export function createTwitchStrategy(
       scope: [],
       store: options.store,
     },
-    (_accessToken: string, _refreshToken: string, profile: TwitchUser, done: Done) => verify(profile, done)
+    (_accessToken: string, _refreshToken: string, profile: TwitchUser, done: Done) =>
+      verify(profile, done)
   );
   strategy.name = 'twitch';
   strategy.userProfile = (accessToken: string, done: Done) => {
-    globalThis.fetch(TWITCH_USERS_URL, {
-      headers: { Authorization: `Bearer ${accessToken}`, 'Client-Id': options.clientID },
-      signal: globalThis.AbortSignal.timeout(10_000),
-    })
+    globalThis
+      .fetch(TWITCH_USERS_URL, {
+        headers: { Authorization: `Bearer ${accessToken}`, 'Client-Id': options.clientID },
+        signal: globalThis.AbortSignal.timeout(10_000),
+      })
       .then(async (response) => {
         if (!response.ok) throw new Error(`Twitch users endpoint answered HTTP ${response.status}`);
         const body = (await response.json()) as { data?: TwitchHelixUser[] };

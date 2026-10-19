@@ -18,12 +18,13 @@ import {
   COMPAT_STAGES,
   COMPAT_TRIGGERS,
 } from '../utils/compatPayload';
+import type { Untrusted } from '../utils/untrusted';
 
 /**
  * The Ready Up `compat.json` (schema 1), from the same enums the validator
  * uses (utils/compatPayload.ts), so the two cannot drift.
  */
-function compatDocumentSchema(): Record<string, unknown> {
+function compatDocumentSchema(): Record<string, Untrusted> {
   const dateTime = { type: 'string', format: 'date-time' };
   return {
     type: 'object',
@@ -121,7 +122,7 @@ const options: swaggerJsdoc.Options = {
       description:
         'Run a tournament from a bot or a script: teams, players, brackets, ' +
         'matches and results. The dashboard is a client of this API and ' +
-        'nothing more. Which game a tournament runs is a module\'s business, ' +
+        "nothing more. Which game a tournament runs is a module's business, " +
         'so the endpoints here are the same whether it is Counter-Strike 2 ' +
         'or a game whose captains report their own scores.',
       contact: {
@@ -172,8 +173,7 @@ const options: swaggerJsdoc.Options = {
           type: 'apiKey',
           in: 'header',
           name: 'X-API-Token',
-          description:
-            'Service token, as an alternative to `Authorization: Bearer <token>`.',
+          description: 'Service token, as an alternative to `Authorization: Bearer <token>`.',
         },
         atServerToken: {
           type: 'apiKey',
@@ -187,7 +187,7 @@ const options: swaggerJsdoc.Options = {
           scheme: 'bearer',
           bearerFormat: 'opaque',
           description:
-            'The Ready Up CI\'s credential for POST /api/compat/events: `Authorization: Bearer <token>`, ' +
+            "The Ready Up CI's credential for POST /api/compat/events: `Authorization: Bearer <token>`, " +
             'where the token is COMPAT_INGEST_TOKEN. Grants nothing else.',
         },
       },
@@ -361,7 +361,8 @@ const options: swaggerJsdoc.Options = {
             imageUrl: {
               type: 'string',
               nullable: true,
-              description: "coverUrl if present, else logoUrl; convenience for the onboarding page's cards",
+              description:
+                "coverUrl if present, else logoUrl; convenience for the onboarding page's cards",
             },
           },
         },
@@ -424,9 +425,9 @@ interface OperationObject {
   summary?: string;
   description?: string;
   security?: Array<Record<string, string[]>>;
-  parameters?: Array<Record<string, unknown>>;
-  responses?: Record<string, unknown>;
-  [key: string]: unknown;
+  parameters?: Array<Record<string, Untrusted>>;
+  responses?: Record<string, Untrusted>;
+  [key: string]: Untrusted;
 }
 
 type PathsObject = Record<string, Record<string, OperationObject>>;
@@ -446,8 +447,8 @@ type PathsObject = Record<string, Record<string, OperationObject>>;
  */
 export function buildOpenApiSpec(
   overrides: { serverUrl?: string } = {}
-): Record<string, unknown> {
-  const spec = swaggerJsdoc(options) as Record<string, unknown> & {
+): Record<string, Untrusted> {
+  const spec = swaggerJsdoc(options) as Record<string, Untrusted> & {
     paths?: PathsObject;
     servers?: Array<{ url: string; description?: string }>;
   };
@@ -636,11 +637,11 @@ const COMMITTED_SPEC_CANDIDATES = [
  * portable URL so its bytes are reproducible, which would point Swagger UI's
  * "Try it" button at the wrong host. That is replaced with this instance's own.
  */
-function resolveOpenApiSpec(): Record<string, unknown> {
+function resolveOpenApiSpec(): Record<string, Untrusted> {
   for (const candidate of COMMITTED_SPEC_CANDIDATES) {
     try {
       if (!fs.existsSync(candidate)) continue;
-      const spec = JSON.parse(fs.readFileSync(candidate, 'utf8')) as Record<string, unknown>;
+      const spec = JSON.parse(fs.readFileSync(candidate, 'utf8')) as Record<string, Untrusted>;
       spec.servers = [{ url: swaggerServerUrl, description: 'This instance' }];
       return spec;
     } catch {
@@ -652,13 +653,13 @@ function resolveOpenApiSpec(): Record<string, unknown> {
   return buildOpenApiSpec();
 }
 
-let cachedSpec: Record<string, unknown> | null = null;
+let cachedSpec: Record<string, Untrusted> | null = null;
 
 /**
  * Lazy so that merely importing this module — as the docs generator does, for
  * `buildOpenApiSpec` — does not read a spec file it is about to rewrite.
  */
-export function getOpenApiSpec(): Record<string, unknown> {
+export function getOpenApiSpec(): Record<string, Untrusted> {
   cachedSpec ??= resolveOpenApiSpec();
   return cachedSpec;
 }

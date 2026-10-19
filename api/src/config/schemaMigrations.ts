@@ -21,6 +21,7 @@ import type { PoolClient } from 'pg';
 import { log } from '../utils/logger';
 import { foldCs2TournamentColumns } from './cs2SettingsFold';
 import { BUILTIN_WIKIDATA_QIDS, FORGET_WIKIDATA_SET } from '../services/builtinGameIdentity';
+import type { Untrusted } from '../utils/untrusted';
 
 /** What a migration body gets: a client inside the migration's transaction. */
 type Queryable = Pick<PoolClient, 'query'>;
@@ -83,7 +84,7 @@ export interface TeamMembersBackfillResult {
 
 /** One roster entry of `teams.players`, which is a JSON array. */
 interface RosterEntry {
-  steamId?: unknown;
+  steamId?: Untrusted;
 }
 
 /**
@@ -113,7 +114,7 @@ export async function backfillTeamMembers(client: Queryable): Promise<TeamMember
   for (const team of teams) {
     let roster: RosterEntry[];
     try {
-      const parsed: unknown = JSON.parse(team.players ?? '[]');
+      const parsed: Untrusted = JSON.parse(team.players ?? '[]');
       roster = Array.isArray(parsed) ? (parsed as RosterEntry[]) : [];
     } catch {
       // A roster we cannot read is not a reason to fail the migration, and
@@ -199,19 +200,19 @@ export async function renamePluginNames(client: Queryable): Promise<PluginNamesR
   );
   let matchConfigs = 0;
   for (const row of rows) {
-    let config: unknown;
+    let config: Untrusted;
     try {
       config = JSON.parse(row.config);
     } catch {
       continue;
     }
     if (!config || typeof config !== 'object' || Array.isArray(config)) continue;
-    const cvars = (config as { cvars?: unknown }).cvars;
+    const cvars = (config as { cvars?: Untrusted }).cvars;
     if (!cvars || typeof cvars !== 'object' || Array.isArray(cvars)) continue;
 
     let changed = false;
-    const next: Record<string, unknown> = {};
-    for (const [key, value] of Object.entries(cvars as Record<string, unknown>)) {
+    const next: Record<string, Untrusted> = {};
+    for (const [key, value] of Object.entries(cvars as Record<string, Untrusted>)) {
       const newKey = key.startsWith(LEGACY_PLUGIN_PREFIX)
         ? PLUGIN_PREFIX + key.slice(LEGACY_PLUGIN_PREFIX.length)
         : key;
@@ -223,7 +224,7 @@ export async function renamePluginNames(client: Queryable): Promise<PluginNamesR
       }
     }
     if (!changed) continue;
-    (config as { cvars: unknown }).cvars = next;
+    (config as { cvars: Untrusted }).cvars = next;
     await client.query('UPDATE matches SET config = $1 WHERE id = $2', [
       JSON.stringify(config),
       row.id,
@@ -293,7 +294,8 @@ export const SCHEMA_MIGRATIONS: readonly SchemaMigration[] = [
   },
   {
     id: '2026-09-24-plugin-names',
-    description: 'Rename the CS2 plugin names 2.x stored (settings keys, match config cvars) to at_*',
+    description:
+      'Rename the CS2 plugin names 2.x stored (settings keys, match config cvars) to at_*',
     async up(client) {
       const { settings, settingsSkipped, matchConfigs } = await renamePluginNames(client);
       log.success(
@@ -355,7 +357,8 @@ export const SCHEMA_MIGRATIONS: readonly SchemaMigration[] = [
   },
   {
     id: '2026-10-07-per-game-rating',
-    description: "Move each player's tournament rating to player_game_ratings, under the game they were rated in",
+    description:
+      "Move each player's tournament rating to player_game_ratings, under the game they were rated in",
     async up(client) {
       // Every rating so far is one number across all games. It goes to the
       // game most of the player's rated matches were in (CS2 for a player
@@ -384,13 +387,16 @@ export const SCHEMA_MIGRATIONS: readonly SchemaMigration[] = [
   },
   {
     id: '2026-10-09-highlight-music-to-core',
-    description: "Move the reel music library from CS2's cs2_music_tracks to core's highlight_music_tracks, ids kept",
+    description:
+      "Move the reel music library from CS2's cs2_music_tracks to core's highlight_music_tracks, ids kept",
     async up(client) {
       // Every game's highlights share the library now. The ids stay: the
       // highlights_music setting lists the tracks an admin picked by id. A
       // database without CS2's table (fresh, or CS2 never installed) has
       // nothing to move.
-      const has = await client.query<{ t: string | null }>("SELECT to_regclass('cs2_music_tracks')::text AS t");
+      const has = await client.query<{ t: string | null }>(
+        "SELECT to_regclass('cs2_music_tracks')::text AS t"
+      );
       if (!has.rows[0]?.t) return;
       await client.query(
         `INSERT INTO highlight_music_tracks (id, title, artist, genre, source, content_id, file, seconds, gain_db, created_at)
