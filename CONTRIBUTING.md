@@ -28,8 +28,12 @@ writes it, have it use the
 [`ponytail`](https://github.com/DietrichGebert/ponytail) skill: the smallest
 change that fully solves the task.
 
-- Aim for under ~10 files and a few hundred changed lines. Over that, split
-  it, and say in the PR body what the next one carries.
+- Aim for under ~10 files and a few hundred changed lines per PR.
+- A bigger change is agreed first (in its issue: what gets added), then sent
+  as a stack of small PRs, each based on the one before. Each one is complete
+  on its own: it builds, passes its tests and leaves nothing half done. They
+  are reviewed one by one and merged in order; say in each PR body where it
+  sits in the stack and what the next one carries.
 - No autofix sweeps, renames or reformatting across files as a side effect of
   something else. A new lint rule lands with its existing violations listed in
   the lint config, and the fixes follow in small PRs of their own.
