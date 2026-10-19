@@ -50,7 +50,7 @@ Fixes #
 
 <!-- Mark with an "x" all that you have completed -->
 
-- [ ] Small: under ~10 files and a few hundred lines (or one step of an agreed stack), nothing mechanical mixed in (CONTRIBUTING.md › PR size)
+- [ ] Small: under ~10 files and a few hundred lines (or one step of a bigger change), nothing mechanical mixed in (CONTRIBUTING.md › PR size)
 - [ ] Small: under ~10 files and a few hundred lines, nothing mechanical mixed in (CONTRIBUTING.md › PR size)
 - [ ] My code follows the project's code style
 - [ ] I have performed a self-review of my code

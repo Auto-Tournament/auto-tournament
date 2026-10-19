@@ -29,11 +29,12 @@ writes it, have it use the
 change that fully solves the task.
 
 - Aim for under ~10 files and a few hundred changed lines per PR.
-- A bigger change is agreed first (in its issue: what gets added), then sent
-  as a stack of small PRs, each based on the one before. Each one is complete
-  on its own: it builds, passes its tests and leaves nothing half done. They
-  are reviewed one by one and merged in order; say in each PR body where it
-  sits in the stack and what the next one carries.
+- A bigger change goes in several PRs, one at a time: each one complete on
+  its own (it builds, passes its tests, leaves nothing half done), opened
+  after the one before it is merged, or against `main` with "depends on #N"
+  in the body. (Branches in this repo can use GitHub's
+  [stacked pull requests](https://docs.github.com/en/pull-requests/how-tos/create-pull-requests/creating-stacked-pull-requests);
+  they do not work across forks.)
 - No autofix sweeps, renames or reformatting across files as a side effect of
   something else. A new lint rule lands with its existing violations listed in
   the lint config, and the fixes follow in small PRs of their own.
