@@ -16,6 +16,7 @@
  * Pure functions, no database: the tests import this file directly.
  */
 
+import type { Untrusted } from '../../../utils/untrusted';
 import crypto from 'crypto';
 
 export const SERVER_TOKEN_PREFIX = 'rus';
@@ -99,7 +100,7 @@ const SECRET_RE = /^[A-Za-z0-9_-]{43}$/;
  * contain `_`, so only the first two separators count. Null for anything
  * that is not well formed.
  */
-export function parseSecret(prefix: string, value: unknown): ParsedSecret | null {
+export function parseSecret(prefix: string, value: Untrusted): ParsedSecret | null {
   if (typeof value !== 'string') return null;
   const head = `${prefix}_`;
   if (!value.startsWith(head)) return null;
@@ -112,15 +113,15 @@ export function parseSecret(prefix: string, value: unknown): ParsedSecret | null
   return { id, secretHash: sha256Hex(secret) };
 }
 
-export function parseServerToken(value: unknown): ParsedSecret | null {
+export function parseServerToken(value: Untrusted): ParsedSecret | null {
   return parseSecret(SERVER_TOKEN_PREFIX, value);
 }
 
-export function parseHostToken(value: unknown): ParsedSecret | null {
+export function parseHostToken(value: Untrusted): ParsedSecret | null {
   return parseSecret(HOST_TOKEN_PREFIX, value);
 }
 
-export function parseFleetKey(value: unknown): ParsedSecret | null {
+export function parseFleetKey(value: Untrusted): ParsedSecret | null {
   return parseSecret(FLEET_KEY_PREFIX, value);
 }
 
@@ -146,7 +147,7 @@ export function issueEnrollmentCode(): IssuedCode {
  * Forgiving about case, spaces and dashes, and about Crockford's look-alikes
  * (O→0, I/L→1), since people type these from a screen.
  */
-export function enrollmentCodeHash(input: unknown): string | null {
+export function enrollmentCodeHash(input: Untrusted): string | null {
   if (typeof input !== 'string') return null;
   let s = input.toUpperCase().replace(/[\s-]/g, '');
   if (s.startsWith(ENROLLMENT_CODE_PREFIX)) s = s.slice(ENROLLMENT_CODE_PREFIX.length);

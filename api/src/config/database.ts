@@ -22,6 +22,22 @@ import { setCurrentTournamentId } from '../utils/tournamentRow';
 const MAX_DB_VALUES_SAMPLE = 5;
 
 /**
+ * A value pg sends as a query parameter: scalars, dates, buffers, arrays for
+ * `= ANY($1)`, and objects pg writes as JSON (jsonb columns).
+ */
+export type SqlValue =
+  | string
+  | number
+  | bigint
+  | boolean
+  | null
+  | undefined
+  | Date
+  | Buffer
+  | readonly SqlValue[]
+  | { readonly [key: string]: SqlValue };
+
+/**
  * Helper to convert ? placeholders to PostgreSQL placeholders ($1, $2, etc.)
  */
 function convertPlaceholders(sql: string, params: unknown[]): { sql: string; params: unknown[] } {

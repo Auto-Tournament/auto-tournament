@@ -23,6 +23,7 @@
  * starts, so without one the platform would resend every cycle).
  */
 
+import type { HostCommands } from '../protocol/host/v1';
 import { log } from '../../../../utils/logger';
 import { resolveTournamentId } from '../../../../utils/tournamentRow';
 import { cs2UpdateService } from '../../services/cs2UpdateService';
@@ -298,8 +299,8 @@ async function tickHost(
 
   const send = async (
     type: 'host.update_game' | 'host.update_plugins',
-    payload: Record<string, unknown>,
-    meta: Record<string, unknown>
+    payload: HostCommands['host.update_game'] | HostCommands['host.update_plugins'],
+    meta: registry.HostCommandMeta
   ) => {
     try {
       await sendHostCommand(host.id, type, payload as never, {

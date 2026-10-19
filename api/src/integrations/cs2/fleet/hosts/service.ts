@@ -180,7 +180,7 @@ export async function sendHostCommand<T extends HostCommandType>(
   opts: {
     issuedBy: string | null;
     force?: { reason: string } | null;
-    meta?: Record<string, unknown>;
+    meta?: registry.HostCommandMeta;
   } = { issuedBy: null }
 ): Promise<SentHostCommand> {
   const host = await registry.getHost(hostId);
@@ -251,7 +251,7 @@ export async function sendHostCommand<T extends HostCommandType>(
   // for the Ready Up install that follows (csm decision 10), and the plugin
   // set they get once they enroll: the create's own, else the fleet default
   // (../push/pluginSets.ts).
-  let meta: Record<string, unknown> | null = opts.meta ?? null;
+  let meta: registry.HostCommandMeta | null = opts.meta ?? null;
   // server.remove: remember the Ready Up fleet server that lives in it, so
   // its fleet entry goes too once csm has removed the server.
   if (type === 'server.remove') {

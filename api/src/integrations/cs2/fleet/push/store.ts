@@ -20,7 +20,7 @@ export interface ListRow {
   name: ListName;
   rev: number;
   hash: string | null;
-  data: unknown;
+  data: object | null;
   updatedBy: string | null;
   updatedAt: number | null;
 }
@@ -42,7 +42,7 @@ export type PushKind =
 
 export interface ServerPrefs {
   serverId: string;
-  settings: unknown;
+  settings: object | null;
   whitelist: { enabled: boolean; steamids: string[] } | null;
   practice: boolean | null;
   /** The last plugins.set lists, and the preset they came from (./pluginSets.ts). */
@@ -116,7 +116,7 @@ export async function raiseListRev(name: ListName, rev: number): Promise<number>
 
 export async function writeListData(
   name: ListName,
-  data: unknown,
+  data: object,
   updatedBy: string | null
 ): Promise<void> {
   await db.runAsync(
@@ -171,7 +171,7 @@ type PrefsColumn = 'settings' | 'whitelist' | 'practice' | 'plugins';
 export async function writePref(
   serverId: string,
   column: PrefsColumn,
-  value: unknown,
+  value: object | boolean | null | undefined,
   updatedBy: string | null
 ): Promise<void> {
   const stored =

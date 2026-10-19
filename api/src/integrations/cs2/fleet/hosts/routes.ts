@@ -20,6 +20,8 @@
  * the HTTP server's `upgrade` event.
  */
 
+import type { HostCommandMeta } from './registry';
+import type { Untrusted } from '../../../../utils/untrusted';
 import { Router, type Request, type Response } from 'express';
 import { isValidConnectHost } from '../address';
 import { syncLinkedAddress } from '../link';
@@ -130,7 +132,7 @@ function hostWsUrl(req: Request): string {
  * 400 invalid body, 401 invalid code/key, 403 revoked/expired/locked key or
  * revoked machine, 429 rate limited.
  */
-export async function enrollHostHandler(req: Request, res: Response): Promise<unknown> {
+export async function enrollHostHandler(req: Request, res: Response): Promise<void | Response> {
   const check = validateHostEnrollRequest(req.body);
   if (!check.ok) {
     return res.status(400).json({
@@ -182,7 +184,7 @@ export const fleetHostAdminRouter = Router();
 fleetHostAdminRouter.use(fleetChangedOnWrite);
 fleetHostAdminRouter.use(requireAuth);
 
-function handler(what: string, fn: (req: Request, res: Response) => Promise<unknown>) {
+function handler(what: string, fn: (req: Request, res: Response) => Promise<void | Response>) {
   return (req: Request, res: Response) => {
     fn(req, res).catch((error) => {
       if (error instanceof HostCommandError) {
@@ -202,7 +204,7 @@ function handler(what: string, fn: (req: Request, res: Response) => Promise<unkn
   };
 }
 
-function trimmedString(value: unknown, max: number): string | null | undefined {
+function trimmedString(value: Untrusted, max: number): string | null | undefined {
   if (value === undefined || value === null) return undefined;
   if (typeof value !== 'string') return null;
   const t = value.trim();
@@ -253,7 +255,7 @@ fleetHostAdminRouter.get(
 fleetHostAdminRouter.patch(
   '/hosts/:id',
   handler('update the machine', async (req, res) => {
-    const body = (req.body ?? {}) as { name?: unknown; publicAddress?: unknown };
+    const body = (req.body ?? {}) as { name?: Untrusted; publicAddress?: Untrusted };
     if (body.name === undefined && body.publicAddress === undefined)
       return res.status(400).json({ success: false, error: 'Send name and/or publicAddress' });
     if (body.publicAddress !== undefined) {
@@ -376,7 +378,7 @@ fleetHostAdminRouter.post(
       type === 'server.create' && payload.enroll === undefined
         ? { ...payload, enroll: true }
         : payload;
-    let meta: Record<string, unknown> | undefined;
+    let meta: HostCommandMeta | undefined;
     if (req.body?.plugins !== undefined && req.body?.plugins !== null) {
       if (type !== 'server.create') {
         return res.status(400).json({
