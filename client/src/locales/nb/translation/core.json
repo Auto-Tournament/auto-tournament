@@ -154,6 +154,31 @@
       "demos_failing": "{{count}} demoanalyser feilet den siste timen",
       "tournament_autostart_failed": "{{name}} startet ikke på starttidspunktet: {{reason}}",
       "shuffle_no_show": "{{players}} koblet aldri til {{matchSlug}}: ute av de neste trekningene til de sier fra at de er tilbake"
+    },
+    "close": "Lukk",
+    "fix": {
+      "match_no_server": "En kamp venter til en server er ledig. Start en stoppet server på Servere-siden, eller vent til en blir ferdig. Kjører alle, kan lisensen være full.",
+      "veto_stalled": "Åpne kampen for å se hvem som har tur, og gi den kapteinen et dytt.",
+      "warmup_long": "Noen spillere er ikke klare. Kampsiden viser hvem som mangler: gjør dem klare hvis de er der, eller avgjør kampen.",
+      "match_forfeit": "Sjekk resultatet på kampsiden. Var det en feil, kan du starte kampen på nytt derfra.",
+      "report_disputed": "Lagene har rapportert ulike resultater. Åpne kampen, sammenlign rapportene og sett resultatet.",
+      "failover": "Ingenting å gjøre: kampen flyttes til en annen server av seg selv. Du kan følge den her.",
+      "failoverDecision": "Velg på denne siden: flytt kampen til en annen server, gjenopprett en runde eller avgjør den.",
+      "match_silent": "Serveren har sluttet å sende oppdateringer. Sjekk den på Servere-siden, og start den på nytt hvis den har hengt seg.",
+      "server_crashed": "Sjekk serveren på denne siden. Den starter på nytt av seg selv; krasjer den igjen og igjen, se i konsollen.",
+      "plugin_update_available": "Oppdater Ready Up på denne siden. En server i en kamp oppdateres når kampen er ferdig.",
+      "update_failed": "Prøv oppdateringen på nytt på denne siden. Feiler den igjen, står årsaken over.",
+      "autoscale_license": "Alle serverne lisensen dekker, kjører. Frigjør en, eller legg til servere i lisensen.",
+      "recorder_offline": "Sjekk maskinen til opptakeren: er den på, og kjører containeren?",
+      "recorder_updated": "Ingenting å gjøre.",
+      "recorder_update_failed": "Oppdater den på nytt fra denne siden, eller kjør start-recorder.sh på maskinen.",
+      "benchmark_failed": "Kjør benchmarken på nytt fra denne siden. Feiler den igjen, sjekk skjermkortet og CS2 på opptakeren.",
+      "clips_failing": "Åpne de siste kjøringene til en opptaker på denne siden for å se hvorfor klippene feilet.",
+      "beta_available": "Oppdater når det passer, mellom turneringer.",
+      "license_problem": "Lisenssiden sier hva som må gjøres.",
+      "demos_failing": "Loggene på denne siden sier hvorfor demoanalysene feilet.",
+      "tournament_autostart_failed": "Rett det årsaken sier, og start turneringen for hånd.",
+      "shuffle_no_show": "Ingenting å gjøre: de holdes utenfor de neste trekningene til de sier at de er tilbake."
     }
   },
   "matchNow": {
