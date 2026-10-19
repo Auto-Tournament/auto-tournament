@@ -27,6 +27,7 @@
 import type { Router } from 'express';
 import type { DbMatchRow } from '../types/database.types';
 import type { SqlValue } from '../config/database';
+import type { TournamentSettings } from '../types/tournament.types';
 import type { JsonObject } from '../utils/json';
 import type { Untrusted } from '../utils/untrusted';
 
@@ -275,7 +276,7 @@ export interface ValidationResult {
 /** What a tournament create or update asks its integration to validate. */
 export interface TournamentSettingsInput {
   /** The request's `settings` object. */
-  settings: unknown;
+  settings: Untrusted;
   /**
    * Map pool size a settings-only check (no `mode`) validates against. With
    * a `mode` the integration works it out from `body` and `stored`.
@@ -293,12 +294,12 @@ export interface TournamentSettingsInput {
    * `body.settings` and any 2.x top-level fields it still accepts (CS2:
    * maps, mapSequence, maxRounds, overtimeMode, overtimeSegments).
    */
-  body?: Record<string, unknown>;
+  body?: Record<string, Untrusted>;
   /**
    * Update: the stored tournament row (its `settings` as the stored JSON
    * text), for fields the request leaves alone.
    */
-  stored?: Record<string, unknown> | null;
+  stored?: { settings?: string | null } | null;
 }
 
 /**
@@ -332,7 +333,7 @@ export type ModuleSettingsTarget = 'tournament' | 'template';
  * `tournament_templates.map_pool_id`, `maps`); the schema migration
  * `2026-09-24-cs2-tournament-settings` folded them in.
  */
-export interface ModuleTournamentSettings<T = unknown> {
+export interface ModuleTournamentSettings<T extends object = object> {
   /**
    * The key under `settings` this module owns. It must not be one of the
    * core's own settings keys (`matchFormat`, `description`, ...).
@@ -347,7 +348,7 @@ export interface ModuleTournamentSettings<T = unknown> {
    * request changes nothing.
    */
   fromRequest(
-    body: Record<string, unknown>,
+    body: Record<string, Untrusted>,
     stored: T | undefined,
     target: ModuleSettingsTarget
   ): T | undefined;
@@ -357,7 +358,7 @@ export interface ModuleTournamentSettings<T = unknown> {
    * `maxRounds`, `overtimeMode`, `overtimeSegments`, `mapPoolId`). Omitted:
    * none.
    */
-  responseFields?(value: T | undefined, target: ModuleSettingsTarget): Record<string, unknown>;
+  responseFields?(value: T | undefined, target: ModuleSettingsTarget): object;
   /**
    * Whether an update from `before` to `after` changes the bracket, so the
    * core regenerates it (CS2: the map pool changed size). Omitted: never.
@@ -1100,7 +1101,7 @@ export interface GameIntegration {
     tournamentId: number;
     tournamentName: string;
     /** The tournament's settings object (CS2 reads `skinRewards`). */
-    settings: Record<string, unknown>;
+    settings: TournamentSettings;
     placements: Array<{ place: 1 | 2 | 3 | 4; steamIds: string[] }>;
   }): Promise<void>;
 
