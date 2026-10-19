@@ -3,9 +3,11 @@ import type { Socket } from 'socket.io-client';
 import {
   acquireSocket,
   currentSocket,
+  ownedView,
   releaseSocket,
   socketFactory,
 } from '../../client/src/utils/sharedSocket';
+import { onSocketReconnect } from '../../client/src/utils/socketResync';
 
 /**
  * client/src/utils/sharedSocket: every listener shares one socket, connected
@@ -61,5 +63,44 @@ test(
     expect(calls).toEqual(['connect', 'disconnect', 'connect']);
     expect(made).toBe(1);
     releaseSocket();
+  }
+);
+
+test(
+  'ownedView: connect runs for a late listener; a resync waits for a real reconnect',
+  { tag: ['@api'] },
+  async () => {
+    const handlers = new Map<string, Array<(...a: unknown[]) => void>>();
+    const raw = {
+      connected: true,
+      on(event: string, fn: (...a: unknown[]) => void) {
+        handlers.set(event, [...(handlers.get(event) ?? []), fn]);
+      },
+      off(event: string, fn: (...a: unknown[]) => void) {
+        handlers.set(
+          event,
+          (handlers.get(event) ?? []).filter((f) => f !== fn)
+        );
+      },
+      listeners(event: string) {
+        return handlers.get(event) ?? [];
+      },
+    };
+    const socket = ownedView(raw as unknown as Socket);
+
+    let joined = 0;
+    socket.on('connect', () => (joined += 1));
+    let resyncs = 0;
+    onSocketReconnect(socket, () => (resyncs += 1));
+    await Promise.resolve();
+    await Promise.resolve();
+    // Already connected: the room join ran; the resync did not.
+    expect(joined).toBe(1);
+    expect(resyncs).toBe(0);
+
+    // A real reconnect: both run.
+    for (const fn of handlers.get('connect') ?? []) fn();
+    expect(joined).toBe(2);
+    expect(resyncs).toBe(1);
   }
 );

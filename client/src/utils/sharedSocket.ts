@@ -1,4 +1,5 @@
 import { io, type Socket } from 'socket.io-client';
+import type { Untrusted } from './untrusted';
 
 /**
  * The page's one Socket.IO connection, shared by everything that listens.
@@ -58,4 +59,38 @@ export function releaseSocket(): void {
     closeTimer = null;
     if (users === 0) socket?.disconnect();
   }, CLOSE_AFTER_MS);
+}
+
+/**
+ * The argument a synthetic `connect` call gets (see `ownedView`), so a handler
+ * that cares (utils/socketResync) can tell it from a real (re)connect.
+ */
+export const SYNTHETIC_CONNECT = Symbol('synthetic connect');
+
+/**
+ * The shared socket as a component's own: `on('connect', fn)` also calls
+ * `fn(SYNTHETIC_CONNECT)` on the next tick when the socket is already
+ * connected, as a socket of its own would have connected after mount. Code
+ * that joins its rooms on `connect` keeps working. Everything else is the
+ * shared socket's.
+ */
+export function ownedView(s: Socket): Socket {
+  return new Proxy(s, {
+    get(target, prop, receiver) {
+      if (prop === 'on') {
+        return (event: string, fn: (...args: Untrusted[]) => void) => {
+          target.on(event, fn);
+          if (event === 'connect' && target.connected) {
+            void Promise.resolve().then(() => {
+              if (target.connected && target.listeners('connect').includes(fn))
+                fn(SYNTHETIC_CONNECT);
+            });
+          }
+          return receiver;
+        };
+      }
+      const value: Untrusted = Reflect.get(target, prop, target);
+      return typeof value === 'function' ? value.bind(target) : value;
+    },
+  });
 }
