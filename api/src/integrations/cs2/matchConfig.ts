@@ -10,6 +10,7 @@ import { tournamentSignupService } from '../../services/tournamentSignupService'
 import { cs2Settings } from './settingsReaders';
 import { pluginConfigService } from './services/pluginConfigService';
 import { simulationTvCvars } from './utils/serverTurnover';
+import type { StoredConfigPlayers } from '../../utils/playerTransform';
 
 /**
  * Determine whether matches should be simulated (bots instead of real players).
@@ -46,7 +47,8 @@ async function getSimulationTimescale(): Promise<number> {
  * - Falls back to 24 (MR24) when missing/invalid.
  */
 function resolveMaxRounds(tournament: TournamentResponse): number {
-  const raw = tournament.maxRounds;
+  // Older rows stored it as text.
+  const raw = tournament.maxRounds as number | string | undefined;
   const parsed =
     typeof raw === 'number'
       ? raw
@@ -118,26 +120,25 @@ export const generateMatchConfig = async (
   // MatchZy Enhanced format: {steamId: name, steamId2: name2}
   const convertPlayersToPluginFormat = (playersJson: string): Record<string, string> => {
     try {
-      const parsed = JSON.parse(playersJson || '{}');
+      // teams.players as the platform stored it over time (StoredConfigPlayers).
+      const parsed = JSON.parse(playersJson || '{}') as StoredConfigPlayers;
       const result: Record<string, string> = {};
 
       // If it's already in MatchZy Enhanced format (all keys are Steam IDs), return as-is
       const keys = Object.keys(parsed);
       if (keys.length > 0 && keys.every((k) => /^7656\d{13}$/.test(k))) {
-        return parsed;
+        return parsed as Record<string, string>;
       }
 
       // Convert from database array-like format to MatchZy Enhanced format
-      Object.values(parsed).forEach((player: unknown) => {
+      Object.values(parsed).forEach((player) => {
         if (
           player &&
           typeof player === 'object' &&
-          'steamId' in player &&
-          'name' in player &&
-          typeof (player as { steamId: string; name: string }).steamId === 'string' &&
-          typeof (player as { steamId: string; name: string }).name === 'string'
+          typeof player.steamId === 'string' &&
+          typeof player.name === 'string'
         ) {
-          const typedPlayer = player as { steamId: string; name: string };
+          const typedPlayer = { steamId: player.steamId, name: player.name };
           // CS2 needs a Steam account: a player without one (an acc_… account id)
           // cannot join the server, so leave them out of the roster.
           if (!/^\d{17}$/.test(typedPlayer.steamId)) {
@@ -469,24 +470,23 @@ async function generateShuffleMatchConfig(
   // Convert players
   const convertPlayersToPluginFormat = (playersJson: string): Record<string, string> => {
     try {
-      const parsed = JSON.parse(playersJson || '{}');
+      // teams.players as the platform stored it over time (StoredConfigPlayers).
+      const parsed = JSON.parse(playersJson || '{}') as StoredConfigPlayers;
       const result: Record<string, string> = {};
 
       const keys = Object.keys(parsed);
       if (keys.length > 0 && keys.every((k) => /^7656\d{13}$/.test(k))) {
-        return parsed;
+        return parsed as Record<string, string>;
       }
 
-      Object.values(parsed).forEach((player: unknown) => {
+      Object.values(parsed).forEach((player) => {
         if (
           player &&
           typeof player === 'object' &&
-          'steamId' in player &&
-          'name' in player &&
-          typeof (player as { steamId: string; name: string }).steamId === 'string' &&
-          typeof (player as { steamId: string; name: string }).name === 'string'
+          typeof player.steamId === 'string' &&
+          typeof player.name === 'string'
         ) {
-          const typedPlayer = player as { steamId: string; name: string };
+          const typedPlayer = { steamId: player.steamId, name: player.name };
           result[typedPlayer.steamId] = typedPlayer.name;
         }
       });
@@ -722,13 +722,13 @@ export async function buildStandaloneMatchConfig(
 }
 
 /** Player lists in stored manual configs: a steamId -> name map, or the modal's array. */
-function normalizeManualPlayers(value: unknown): MatchPlayer {
+function normalizeManualPlayers(value: StoredConfigPlayers | undefined): MatchPlayer {
   if (!value) return {};
 
   // Case 1: already a map of steamId -> name
   if (typeof value === 'object' && !Array.isArray(value)) {
     const result: MatchPlayer = {};
-    for (const [steamId, name] of Object.entries(value as Record<string, unknown>)) {
+    for (const [steamId, name] of Object.entries(value)) {
       if (typeof name === 'string') {
         result[steamId] = name;
       }
@@ -739,12 +739,10 @@ function normalizeManualPlayers(value: unknown): MatchPlayer {
   // Case 2: array of { steamid/name } objects from the manual match modal
   if (Array.isArray(value)) {
     const result: MatchPlayer = {};
-    for (const entry of value as Array<unknown>) {
+    for (const entry of value) {
       if (!entry || typeof entry !== 'object') continue;
-      const steamid =
-        (entry as { steamid?: string; steamId?: string }).steamid ||
-        (entry as { steamid?: string; steamId?: string }).steamId;
-      const name = (entry as { name?: string }).name;
+      const steamid = entry.steamid || entry.steamId;
+      const name = typeof entry.name === 'string' ? entry.name : undefined;
       if (steamid && name) {
         result[steamid] = name;
       }
@@ -801,7 +799,7 @@ export async function serveStandaloneMatchConfig(slug: string): Promise<MatchCon
         ? {
             ...storedConfig.team1,
             players: normalizeManualPlayers(
-              (storedConfig.team1 as { players?: unknown } | undefined)?.players
+              (storedConfig.team1 as { players?: StoredConfigPlayers } | undefined)?.players
             ),
           }
         : {
@@ -813,7 +811,7 @@ export async function serveStandaloneMatchConfig(slug: string): Promise<MatchCon
         ? {
             ...storedConfig.team2,
             players: normalizeManualPlayers(
-              (storedConfig.team2 as { players?: unknown } | undefined)?.players
+              (storedConfig.team2 as { players?: StoredConfigPlayers } | undefined)?.players
             ),
           }
         : {

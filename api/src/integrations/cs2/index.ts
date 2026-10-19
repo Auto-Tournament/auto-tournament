@@ -37,7 +37,9 @@
  * module still delegates back to them.
  */
 
+import type { SqlValue } from '../../config/database';
 import type { MatchConfig } from '../../types/match.types';
+import type { Untrusted } from '../../utils/untrusted';
 import type { TournamentResponse, TournamentSettings } from '../../types/tournament.types';
 import type { DbTournamentRow } from '../../types/database.types';
 import { normalizeConfigPlayers, type StoredConfigPlayers } from '../../utils/playerTransform';
@@ -497,7 +499,8 @@ export const cs2Integration: GameIntegration<Cs2Data> = {
     const { ACTIVE_DUTY_POOL } = await import('./maps/mapSync');
     const parseIds = (raw: string): string[] => {
       try {
-        const ids: unknown = JSON.parse(raw);
+        // Older rows: a comma list, or JSON that is not a list of ids.
+        const ids: Untrusted = JSON.parse(raw);
         return Array.isArray(ids)
           ? ids.filter((id): id is string => typeof id === 'string' && id.length > 0)
           : [];
@@ -566,7 +569,7 @@ export const cs2Integration: GameIntegration<Cs2Data> = {
     return rows.map((r) => {
       let maps = 0;
       try {
-        const ids: unknown = JSON.parse(r.map_ids);
+        const ids: Untrusted = JSON.parse(r.map_ids);
         maps = Array.isArray(ids) ? ids.length : 0;
       } catch {
         maps = r.map_ids.split(',').filter((x) => x.trim()).length;
@@ -854,7 +857,7 @@ export const cs2Integration: GameIntegration<Cs2Data> = {
  * license. Empty when the inventories can't be read.
  */
 async function hostedElsewhere(db: {
-  queryAsync<T>(sql: string, params?: unknown[]): Promise<T[]>;
+  queryAsync<T>(sql: string, params?: SqlValue[]): Promise<T[]>;
 }): Promise<Set<string>> {
   const out = new Set<string>();
   try {
@@ -865,8 +868,8 @@ async function hostedElsewhere(db: {
     );
     for (const h of hosts) {
       const inv = JSON.parse(h.inventory ?? 'null') as {
-        license?: { own?: unknown; license_id?: unknown };
-        servers?: { readyup?: { install_id?: unknown } }[];
+        license?: { own?: Untrusted; license_id?: Untrusted };
+        servers?: { readyup?: { install_id?: Untrusted } }[];
       } | null;
       const lic = inv?.license;
       if (
