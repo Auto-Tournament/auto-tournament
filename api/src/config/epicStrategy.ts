@@ -7,6 +7,7 @@
  * Endpoints from https://api.epicgames.dev/epic/oauth/v2/.well-known/openid-configuration
  */
 import { Strategy as OAuth2Strategy } from 'passport-oauth2';
+import type { Untrusted } from '../utils/untrusted';
 
 export const EPIC_AUTHORIZE_URL = 'https://www.epicgames.com/id/authorize';
 export const EPIC_TOKEN_URL = 'https://api.epicgames.dev/epic/oauth/v2/token';
@@ -16,7 +17,7 @@ export interface EpicStrategyOptions {
   clientID: string;
   clientSecret: string;
   callbackURL: string;
-  store: unknown;
+  store: object;
 }
 
 /** The userInfo answer (OIDC claims). */
@@ -42,12 +43,12 @@ export function epicProfileToUser(info: EpicUserInfo): EpicUser {
   };
 }
 
-type Done = (err: unknown, user?: unknown) => void;
+type Done = (err: Untrusted, user?: Untrusted) => void;
 
 export function createEpicStrategy(
   options: EpicStrategyOptions,
   verify: (user: EpicUser, done: Done) => void
-): unknown {
+): object {
   // Epic authenticates the client on the token endpoint with HTTP Basic.
   const basic = Buffer.from(`${options.clientID}:${options.clientSecret}`).toString('base64');
   const strategy = new OAuth2Strategy(

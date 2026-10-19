@@ -10,6 +10,7 @@ import { adminEmailsConfigured } from '../utils/adminEmails';
 import { createTwitchStrategy, type TwitchStrategyOptions } from './twitchStrategy';
 import { createEpicStrategy } from './epicStrategy';
 import { createOidcStrategy } from './oidcStrategy';
+import type { Untrusted } from '../utils/untrusted';
 
 interface SteamProfile {
   id: string;
@@ -47,7 +48,7 @@ export interface GoogleProfile {
   photos?: Array<{ value: string }>;
 }
 
-type VerifyDone = (err: unknown, user?: unknown) => void;
+type VerifyDone = (err: Untrusted, user?: Untrusted) => void;
 
 /**
  * Endpoint overrides for a provider strategy. Only the test-only fake provider
@@ -153,7 +154,7 @@ function configureSteamStrategy(): void {
       (
         _identifier: string,
         profile: SteamProfile,
-        done: (err: unknown, user?: unknown) => void
+        done: (err: Untrusted, user?: Untrusted) => void
       ) => {
         // Minimal structured debug for Steam logins so we can correlate
         // Passport-level data with downstream auth routes.
@@ -207,7 +208,7 @@ function configureDiscordStrategy(): void {
         _accessToken: string,
         _refreshToken: string,
         profile: DiscordProfile,
-        done: (err: unknown, user?: unknown) => void
+        done: (err: Untrusted, user?: Untrusted) => void
       ) => {
         const safeProfile = {
           id: profile.id,
@@ -270,7 +271,7 @@ function configureOidcStrategy(): void {
  */
 function configureOAuthStrategy(
   provider: 'github' | 'google' | 'twitch' | 'epic',
-  create: (options: OAuthStrategyOptions) => unknown
+  create: (options: OAuthStrategyOptions) => object
 ): void {
   const settings = effectiveProviderSettings(provider);
   const clientID = settings.clientId;
@@ -496,17 +497,18 @@ function configureTestOAuthStrategies(): void {
 
 /** Whether a Passport strategy with this name is registered. */
 export function isStrategyConfigured(name: string): boolean {
-  const anyPassport = passport as unknown as { _strategy?: (n: string) => unknown };
+  // eslint-disable-next-line no-restricted-syntax -- Passport's private strategy lookup has no type
+  const anyPassport = passport as unknown as { _strategy?: (n: string) => object | undefined };
   return typeof anyPassport._strategy === 'function' && !!anyPassport._strategy(name);
 }
 
 // We don't currently use sessions, but Passport still expects serialize/deserialize
 // when session support is enabled. Define no-op versions for future use.
-passport.serializeUser((user: unknown, done: (err: unknown, id?: unknown) => void) => {
+passport.serializeUser((user: Untrusted, done: (err: Untrusted, id?: Untrusted) => void) => {
   done(null, user);
 });
 
-passport.deserializeUser((obj: unknown, done: (err: unknown, user?: unknown) => void) => {
+passport.deserializeUser((obj: Untrusted, done: (err: Untrusted, user?: Untrusted) => void) => {
   done(null, obj);
 });
 

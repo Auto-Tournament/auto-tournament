@@ -120,7 +120,7 @@ export const SIGN_IN_PROVIDERS: readonly SignInProviderDefinition[] = [
 /** The login button's name for OpenID Connect when the admin set none. */
 export const OIDC_DEFAULT_LABEL = 'OpenID Connect';
 
-export function isSignInProviderId(value: unknown): value is SignInProviderId {
+export function isSignInProviderId(value: Untrusted): value is SignInProviderId {
   return typeof value === 'string' && (SIGN_IN_PROVIDER_IDS as readonly string[]).includes(value);
 }
 
@@ -330,12 +330,12 @@ const CREDENTIAL_RE = /^[\x21-\x7e]+$/;
  */
 export function parseProviderPatch(
   def: SignInProviderDefinition,
-  body: unknown
+  body: Untrusted
 ): { ok: true; patch: ProviderPatch } | { ok: false; error: string } {
   if (typeof body !== 'object' || body === null || Array.isArray(body)) {
     return { ok: false, error: 'Send a JSON object' };
   }
-  const input = body as Record<string, unknown>;
+  const input = body as Record<string, Untrusted>;
   const allowed = new Set([
     'enabled',
     'clientId',
@@ -481,3 +481,5 @@ export function getStoredProviderSettings(id: SignInProviderId): StoredProviderS
 export function effectiveProviderSettings(id: SignInProviderId): EffectiveProviderSettings {
   return resolveProviderSettings(signInProviderDefinition(id), storedRows.get(id) ?? null);
 }
+
+import type { Untrusted } from '../utils/untrusted';

@@ -5,15 +5,7 @@
  * list; when it is empty, delete it.
  */
 export const TYPED_INTERNALS_TODO = [
-  'api/src/config/cs2SettingsFold.ts',
   'api/src/config/database.ts',
-  'api/src/config/epicStrategy.ts',
-  'api/src/config/oidcStrategy.ts',
-  'api/src/config/passport.ts',
-  'api/src/config/schemaMigrations.ts',
-  'api/src/config/signInProviders.ts',
-  'api/src/config/swagger.ts',
-  'api/src/config/twitchStrategy.ts',
   'client/src/components/account/connectionsApi.ts',
   'client/src/components/admin/AddBackupPlayer.tsx',
   'client/src/components/admin/MatchHoldPanel.tsx',

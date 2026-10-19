@@ -21,6 +21,7 @@ import type { PoolClient } from 'pg';
 import { log } from '../utils/logger';
 import { foldCs2TournamentColumns } from './cs2SettingsFold';
 import { BUILTIN_WIKIDATA_QIDS, FORGET_WIKIDATA_SET } from '../services/builtinGameIdentity';
+import type { Untrusted } from '../utils/untrusted';
 
 /** What a migration body gets: a client inside the migration's transaction. */
 type Queryable = Pick<PoolClient, 'query'>;
@@ -83,7 +84,7 @@ export interface TeamMembersBackfillResult {
 
 /** One roster entry of `teams.players`, which is a JSON array. */
 interface RosterEntry {
-  steamId?: unknown;
+  steamId?: Untrusted;
 }
 
 /**
@@ -113,7 +114,7 @@ export async function backfillTeamMembers(client: Queryable): Promise<TeamMember
   for (const team of teams) {
     let roster: RosterEntry[];
     try {
-      const parsed: unknown = JSON.parse(team.players ?? '[]');
+      const parsed: Untrusted = JSON.parse(team.players ?? '[]');
       roster = Array.isArray(parsed) ? (parsed as RosterEntry[]) : [];
     } catch {
       // A roster we cannot read is not a reason to fail the migration, and
@@ -199,19 +200,19 @@ export async function renamePluginNames(client: Queryable): Promise<PluginNamesR
   );
   let matchConfigs = 0;
   for (const row of rows) {
-    let config: unknown;
+    let config: Untrusted;
     try {
       config = JSON.parse(row.config);
     } catch {
       continue;
     }
     if (!config || typeof config !== 'object' || Array.isArray(config)) continue;
-    const cvars = (config as { cvars?: unknown }).cvars;
+    const cvars = (config as { cvars?: Untrusted }).cvars;
     if (!cvars || typeof cvars !== 'object' || Array.isArray(cvars)) continue;
 
     let changed = false;
-    const next: Record<string, unknown> = {};
-    for (const [key, value] of Object.entries(cvars as Record<string, unknown>)) {
+    const next: Record<string, Untrusted> = {};
+    for (const [key, value] of Object.entries(cvars as Record<string, Untrusted>)) {
       const newKey = key.startsWith(LEGACY_PLUGIN_PREFIX)
         ? PLUGIN_PREFIX + key.slice(LEGACY_PLUGIN_PREFIX.length)
         : key;
@@ -223,7 +224,7 @@ export async function renamePluginNames(client: Queryable): Promise<PluginNamesR
       }
     }
     if (!changed) continue;
-    (config as { cvars: unknown }).cvars = next;
+    (config as { cvars: Untrusted }).cvars = next;
     await client.query('UPDATE matches SET config = $1 WHERE id = $2', [
       JSON.stringify(config),
       row.id,

@@ -18,12 +18,13 @@ import {
   COMPAT_STAGES,
   COMPAT_TRIGGERS,
 } from '../utils/compatPayload';
+import type { Untrusted } from '../utils/untrusted';
 
 /**
  * The Ready Up `compat.json` (schema 1), from the same enums the validator
  * uses (utils/compatPayload.ts), so the two cannot drift.
  */
-function compatDocumentSchema(): Record<string, unknown> {
+function compatDocumentSchema(): Record<string, Untrusted> {
   const dateTime = { type: 'string', format: 'date-time' };
   return {
     type: 'object',
@@ -424,9 +425,9 @@ interface OperationObject {
   summary?: string;
   description?: string;
   security?: Array<Record<string, string[]>>;
-  parameters?: Array<Record<string, unknown>>;
-  responses?: Record<string, unknown>;
-  [key: string]: unknown;
+  parameters?: Array<Record<string, Untrusted>>;
+  responses?: Record<string, Untrusted>;
+  [key: string]: Untrusted;
 }
 
 type PathsObject = Record<string, Record<string, OperationObject>>;
@@ -444,8 +445,10 @@ type PathsObject = Record<string, Record<string, OperationObject>>;
  * an endpoint is open when `requireAuth` guards it (or the reverse) is worse
  * than no annotation, because it is believed. The middleware is the truth.
  */
-export function buildOpenApiSpec(overrides: { serverUrl?: string } = {}): Record<string, unknown> {
-  const spec = swaggerJsdoc(options) as Record<string, unknown> & {
+export function buildOpenApiSpec(
+  overrides: { serverUrl?: string } = {}
+): Record<string, Untrusted> {
+  const spec = swaggerJsdoc(options) as Record<string, Untrusted> & {
     paths?: PathsObject;
     servers?: Array<{ url: string; description?: string }>;
   };
@@ -634,11 +637,11 @@ const COMMITTED_SPEC_CANDIDATES = [
  * portable URL so its bytes are reproducible, which would point Swagger UI's
  * "Try it" button at the wrong host. That is replaced with this instance's own.
  */
-function resolveOpenApiSpec(): Record<string, unknown> {
+function resolveOpenApiSpec(): Record<string, Untrusted> {
   for (const candidate of COMMITTED_SPEC_CANDIDATES) {
     try {
       if (!fs.existsSync(candidate)) continue;
-      const spec = JSON.parse(fs.readFileSync(candidate, 'utf8')) as Record<string, unknown>;
+      const spec = JSON.parse(fs.readFileSync(candidate, 'utf8')) as Record<string, Untrusted>;
       spec.servers = [{ url: swaggerServerUrl, description: 'This instance' }];
       return spec;
     } catch {
@@ -650,13 +653,13 @@ function resolveOpenApiSpec(): Record<string, unknown> {
   return buildOpenApiSpec();
 }
 
-let cachedSpec: Record<string, unknown> | null = null;
+let cachedSpec: Record<string, Untrusted> | null = null;
 
 /**
  * Lazy so that merely importing this module — as the docs generator does, for
  * `buildOpenApiSpec` — does not read a spec file it is about to rewrite.
  */
-export function getOpenApiSpec(): Record<string, unknown> {
+export function getOpenApiSpec(): Record<string, Untrusted> {
   cachedSpec ??= resolveOpenApiSpec();
   return cachedSpec;
 }

@@ -39,6 +39,7 @@
  */
 
 import type { PoolClient } from 'pg';
+import type { Untrusted } from '../utils/untrusted';
 
 type Queryable = Pick<PoolClient, 'query'>;
 
@@ -68,11 +69,11 @@ export interface Cs2SettingsFoldResult {
   dropped: string[];
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
+function isRecord(value: Untrusted): value is Record<string, Untrusted> {
   return value !== null && typeof value === 'object' && !Array.isArray(value);
 }
 
-function isCs2Game(game: unknown): boolean {
+function isCs2Game(game: Untrusted): boolean {
   if (game === null || game === undefined) return true;
   const id = String(game).trim().toLowerCase();
   return id === '' || id === 'cs2';
@@ -94,9 +95,9 @@ async function presentColumns(
 }
 
 /** `settings` as an object: NULL is `{}`; anything but a JSON object refuses the row. */
-function settingsObject(raw: unknown, where: string): Record<string, unknown> {
+function settingsObject(raw: Untrusted, where: string): Record<string, Untrusted> {
   if (raw === null || raw === undefined || raw === '') return {};
-  let parsed: unknown;
+  let parsed: Untrusted;
   try {
     parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
   } catch {
@@ -113,8 +114,8 @@ function settingsObject(raw: unknown, where: string): Record<string, unknown> {
 }
 
 /** A JSON array of strings from a 2.x maps column; anything else refuses the row. */
-function mapList(raw: unknown, column: string, where: string): string[] {
-  let parsed: unknown;
+function mapList(raw: Untrusted, column: string, where: string): string[] {
+  let parsed: Untrusted;
   try {
     parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
   } catch {
@@ -127,8 +128,12 @@ function mapList(raw: unknown, column: string, where: string): string[] {
 }
 
 /** The CS2 fields a tournament row's columns hold. NULL columns are left out. */
-function tournamentFields(row: Record<string, unknown>, columns: readonly string[], where: string) {
-  const fields: Record<string, unknown> = {};
+function tournamentFields(
+  row: Record<string, Untrusted>,
+  columns: readonly string[],
+  where: string
+) {
+  const fields: Record<string, Untrusted> = {};
   const has = (c: string) => columns.includes(c) && row[c] !== null && row[c] !== undefined;
   if (has('maps')) fields.maps = mapList(row.maps, 'maps', where);
   if (has('map_sequence')) fields.mapSequence = mapList(row.map_sequence, 'map_sequence', where);
@@ -139,7 +144,7 @@ function tournamentFields(row: Record<string, unknown>, columns: readonly string
 }
 
 /** Whether a tournament row's CS2 columns hold only what every row got by default. */
-function onlyTournamentDefaults(fields: Record<string, unknown>): boolean {
+function onlyTournamentDefaults(fields: Record<string, Untrusted>): boolean {
   const maps = fields.maps as string[] | undefined;
   return (
     (maps === undefined || maps.length === 0) &&
@@ -150,8 +155,8 @@ function onlyTournamentDefaults(fields: Record<string, unknown>): boolean {
   );
 }
 
-function templateFields(row: Record<string, unknown>, columns: readonly string[], where: string) {
-  const fields: Record<string, unknown> = {};
+function templateFields(row: Record<string, Untrusted>, columns: readonly string[], where: string) {
+  const fields: Record<string, Untrusted> = {};
   const has = (c: string) => columns.includes(c) && row[c] !== null && row[c] !== undefined;
   if (has('map_pool_id')) fields.mapPoolId = Number(row.map_pool_id);
   if (has('maps')) fields.maps = mapList(row.maps, 'maps', where);
@@ -164,10 +169,10 @@ async function foldTable(
   table: 'tournament' | 'tournament_templates',
   candidates: readonly string[],
   fieldsOf: (
-    row: Record<string, unknown>,
+    row: Record<string, Untrusted>,
     columns: readonly string[],
     where: string
-  ) => Record<string, unknown>,
+  ) => Record<string, Untrusted>,
   result: Cs2SettingsFoldResult
 ): Promise<number> {
   const columns = await presentColumns(client, table, candidates);
@@ -175,7 +180,7 @@ async function foldTable(
   const hasGame = (await presentColumns(client, table, ['game'])).length > 0;
 
   const select = ['id', 'settings', ...(hasGame ? ['game'] : []), ...columns].join(', ');
-  const { rows } = await client.query<Record<string, unknown>>(
+  const { rows } = await client.query<Record<string, Untrusted>>(
     `SELECT ${select} FROM ${table} ORDER BY id`
   );
 
@@ -196,7 +201,7 @@ async function foldTable(
     }
     const settings = settingsObject(row.settings, where);
     const existing = isRecord(settings[CS2_SETTINGS_KEY]) ? settings[CS2_SETTINGS_KEY] : {};
-    settings[CS2_SETTINGS_KEY] = { ...(existing as Record<string, unknown>), ...fields };
+    settings[CS2_SETTINGS_KEY] = { ...(existing as Record<string, Untrusted>), ...fields };
     await client.query(`UPDATE ${table} SET settings = $1 WHERE id = $2`, [
       JSON.stringify(settings),
       row.id,
