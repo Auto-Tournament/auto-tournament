@@ -130,3 +130,51 @@ export function reconnectSharedSocket(): void {
   socket.disconnect();
   if (users > 0) socket.connect();
 }
+
+/**
+ * The shared socket for one hook or page, used like a socket of its own:
+ * `on`/`off` as before, and `close()`/`disconnect()` removes only the
+ * handlers it added and gives the shared socket back. For code written for
+ * `io()`; new code takes `useSocket()` or `listenShared()`.
+ */
+export function scopedSocket(): Socket {
+  const s = acquireSocket();
+  const mine: Array<[string, (...args: Untrusted[]) => void]> = [];
+  let done = false;
+  const stop = () => {
+    if (done) return;
+    done = true;
+    for (const [event, fn] of mine) s.off(event, fn);
+    mine.length = 0;
+    releaseSocket();
+  };
+  return new Proxy(s, {
+    get(target, prop, receiver) {
+      if (prop === 'on') {
+        return (event: string, fn: (...args: Untrusted[]) => void) => {
+          if (!done) {
+            mine.push([event, fn]);
+            target.on(event, fn);
+          }
+          return receiver;
+        };
+      }
+      if (prop === 'off') {
+        return (event: string, fn: (...args: Untrusted[]) => void) => {
+          const i = mine.findIndex(([e, f]) => e === event && f === fn);
+          if (i >= 0) mine.splice(i, 1);
+          target.off(event, fn);
+          return receiver;
+        };
+      }
+      if (prop === 'close' || prop === 'disconnect') {
+        return () => {
+          stop();
+          return receiver;
+        };
+      }
+      const value: Untrusted = Reflect.get(target, prop, target);
+      return typeof value === 'function' ? value.bind(target) : value;
+    },
+  });
+}

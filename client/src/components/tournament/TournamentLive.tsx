@@ -25,7 +25,7 @@ import {
   XIcon,
 } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
-import { io } from 'socket.io-client';
+import { scopedSocket } from '../../utils/sharedSocket';
 import { onSocketReconnect } from '../../utils/socketResync';
 import { TOURNAMENT_TYPES, MATCH_FORMATS } from '../../constants/tournament';
 import { RestartTournamentButton } from '../dashboard/RestartTournamentButton';
@@ -122,7 +122,7 @@ export const TournamentLive: React.FC<TournamentLiveProps> = ({
 
     void loadMatches();
 
-    const socket = io();
+    const socket = scopedSocket();
     const handleMatchUpdate = () => {
       void loadMatches();
     };

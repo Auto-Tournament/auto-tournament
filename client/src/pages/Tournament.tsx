@@ -56,7 +56,7 @@ import { BulkShuffleMatchesModal } from '../components/modals/BulkShuffleMatches
 import { useTournament } from '../hooks/useTournament';
 import { validateTeamCountForType } from '../utils/tournamentValidation';
 import { api } from '../utils/api';
-import { io } from 'socket.io-client';
+import { scopedSocket } from '../utils/sharedSocket';
 import { onSocketReconnect } from '../utils/socketResync';
 import { MATCH_FORMATS } from '../constants/tournament';
 import type { Tournament as TournamentRecord, TournamentTemplate } from '../types/tournament.types';
@@ -1158,7 +1158,7 @@ const Tournament: React.FC = () => {
   const refreshDataRef = useRef(refreshData);
   refreshDataRef.current = refreshData;
   useEffect(() => {
-    const socket = io();
+    const socket = scopedSocket();
 
     const handleTournamentUpdate = (data?: { action?: string; status?: string }) => {
       if (!data) return;

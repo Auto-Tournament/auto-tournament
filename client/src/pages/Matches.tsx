@@ -3,7 +3,7 @@ import { manageMatchPath } from '../paths';
 import { useState, useEffect, useCallback } from 'react';
 import { Box, Typography, LinearProgress, Snackbar, Alert, Button } from '@mui/material';
 import { GameControllerIcon, PlusIcon } from '@phosphor-icons/react';
-import { io } from 'socket.io-client';
+import { scopedSocket } from '../utils/sharedSocket';
 import { onSocketReconnect } from '../utils/socketResync';
 import { useNavigate, useSearchParams, useParams } from 'react-router-dom';
 import { useSnackbar } from '../contexts/SnackbarContext';
@@ -161,7 +161,7 @@ export default function Matches() {
   // Initialize Socket.io connection (mount-only)
   useEffect(() => {
     // Connect to same origin - works in both dev (proxied) and production (Caddy)
-    const newSocket = io();
+    const newSocket = scopedSocket();
 
     newSocket.on('connect', () => {
       console.log('Socket.io connected');

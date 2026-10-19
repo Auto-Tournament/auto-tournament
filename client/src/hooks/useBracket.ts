@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { api } from '../utils/api';
-import { io } from 'socket.io-client';
+import { scopedSocket } from '../utils/sharedSocket';
 import { onSocketReconnect } from '../utils/socketResync';
 import type {
   Match,
@@ -208,7 +208,7 @@ export const useBracket = () => {
   useEffect(() => {
     void loadBracket();
 
-    const newSocket = io();
+    const newSocket = scopedSocket();
 
     const applyMatchPatch = (payload: Record<string, Untrusted>) => {
       if (!payload) return;

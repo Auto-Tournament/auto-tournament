@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { io } from 'socket.io-client';
+import { scopedSocket } from '../utils/sharedSocket';
 import { api } from '../utils/api';
 import { useIntegrationFor } from '../integrations/registry';
 import { useResourceAvailability } from './useResourceAvailability';
@@ -95,7 +95,7 @@ export function useManageData(
   // Same sockets Matches.tsx listens to, so the status strip and queue update
   // live without a second, independent realtime channel.
   useEffect(() => {
-    const socket = io();
+    const socket = scopedSocket();
     socket.on('match:update', () => void fetchMatches());
     socket.on('bracket:update', () => void fetchMatches());
     return () => {
