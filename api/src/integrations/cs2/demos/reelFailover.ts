@@ -1,5 +1,6 @@
 import { recordingTargetFilter } from './recorderFleet';
 import { db } from '../../../config/database';
+import type { SqlValue } from '../../../config/database';
 
 /**
  * Reel failover. A reel (match, team or tournament) that fails on a recorder
@@ -34,7 +35,7 @@ export async function reelFailoverFilter(
   recorder: string,
   match?: string,
   tournament?: string
-): Promise<{ sql: string; params: unknown[] }> {
+): Promise<{ sql: string; params: SqlValue[] }> {
   const eligible = match
     ? recordingTargetFilter(match, 'r.name')
     : tournament

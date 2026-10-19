@@ -11,6 +11,8 @@
  */
 
 import { db } from '../../../config/database';
+import type { Untrusted } from '../../../utils/untrusted';
+import type { SqlValue } from '../../../config/database';
 
 /** A viewer's view of a video counts again after this many seconds. */
 export const VIEW_WINDOW = 12 * 60 * 60;
@@ -65,7 +67,7 @@ const VIDEO_KEY =
   /^(clip\/\d+|match\/[^/]{1,200}\/-?\d+|team\/[^/]{1,200}\/[^/]{1,200}|tournament\/\d+|reel\/[^/]{1,200}\/\d+\/\d{5,20})$/;
 
 /** A video key as the client sends it; null when it is not one. */
-export function videoKey(raw: unknown): string | null {
+export function videoKey(raw: Untrusted): string | null {
   return typeof raw === 'string' && VIDEO_KEY.test(raw) ? raw : null;
 }
 
@@ -129,7 +131,7 @@ export async function libraryPage(
   q: LibraryQuery
 ): Promise<{ items: LibraryItem[]; total: number }> {
   const where: string[] = [];
-  const args: unknown[] = [q.viewer ?? ''];
+  const args: SqlValue[] = [q.viewer ?? ''];
   if (q.kind === 'clips') where.push(`i.kind = 'clip'`);
   if (q.kind === 'reels') where.push(`i.kind <> 'clip'`);
   if (q.player) {

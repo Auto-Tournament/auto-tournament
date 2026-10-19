@@ -25,8 +25,16 @@ import zlib from 'zlib';
 import type { PoolClient } from 'pg';
 import { db } from '../../../config/database';
 import { log } from '../../../utils/logger';
-import { findMoments, type FoundMoment, type MomentReplay, type MomentRound } from './moments';
+import {
+  findMoments,
+  type FoundMoment,
+  type MomentKill,
+  type MomentReplay,
+  type MomentRound,
+} from './moments';
 import type { DemoJob } from './jobs';
+import type { SqlValue } from '../../../config/database';
+import type { JsonObject } from '../../../utils/json';
 
 /** pg_advisory_xact_lock key: one writer of cs2_moments at a time. */
 const LOCK_SQL = "SELECT pg_advisory_xact_lock(hashtext('cs2_moments'))";
@@ -98,7 +106,7 @@ export async function readReplay(file: string): Promise<MomentReplay | undefined
   }
 }
 
-const sameDetail = (a: string, b: Record<string, unknown>) => {
+const sameDetail = (a: string, b: JsonObject) => {
   try {
     return JSON.stringify(JSON.parse(a)) === JSON.stringify(b);
   } catch {
@@ -224,7 +232,7 @@ export async function syncMapMoments(
 }
 
 /** Revoke every moment matching `where` (a match deleted, forgotten, or gone). */
-async function revokeWhere(where: string, params: unknown[], reason: string): Promise<number> {
+async function revokeWhere(where: string, params: SqlValue[], reason: string): Promise<number> {
   return db.withClient(async (client) => {
     await client.query('BEGIN');
     try {
@@ -281,7 +289,7 @@ export async function momentsFromAnalysis(
   job: DemoJob,
   analysis: {
     rounds: ReadonlyArray<MomentRound>;
-    kills: ReadonlyArray<unknown>;
+    kills: ReadonlyArray<MomentKill>;
     players?: Record<string, { name?: string }>;
   },
   replay: MomentReplay | undefined
@@ -336,7 +344,7 @@ export interface BackfillResult {
 export async function backfillMoments(opts: BackfillOptions = {}): Promise<BackfillResult> {
   const { REPLAYS_DIR } = await import('./jobs');
   const where: string[] = [];
-  const params: unknown[] = [];
+  const params: SqlValue[] = [];
   if (opts.match) {
     where.push('j.match_slug = ?');
     params.push(opts.match);
@@ -374,10 +382,10 @@ export async function backfillMoments(opts: BackfillOptions = {}): Promise<Backf
   for (const j of jobs) {
     const job = { matchSlug: j.match_slug, mapNumber: Number(j.map_number) };
     let rounds: MomentRound[];
-    let kills: unknown[];
+    let kills: MomentKill[];
     try {
       rounds = JSON.parse(j.rounds ?? 'null') as MomentRound[];
-      kills = JSON.parse(j.kills ?? 'null') as unknown[];
+      kills = JSON.parse(j.kills ?? 'null') as MomentKill[];
     } catch {
       out.skipped.push({ ...job, reason: 'the stored analysis is not readable' });
       continue;
@@ -451,7 +459,7 @@ export interface IntegrationHighlight {
   player: { steamId64: string; name: string | null };
   victim: { steamId64: string; name: string | null } | null;
   weapon: string | null;
-  detail: Record<string, unknown>;
+  detail: JsonObject;
   clipUrl: string | null;
   replayUrl: string | null;
   imported: boolean;
@@ -471,7 +479,7 @@ export async function listMoments(
   const limit = Math.max(1, Math.min(LIST_MAX, Math.floor(q.limit ?? LIST_DEFAULT)));
   const since = q.since && /^\d{1,18}$/.test(q.since) ? q.since : '0';
   const where = ['h.seq > ?'];
-  const params: unknown[] = [since];
+  const params: SqlValue[] = [since];
   if (q.tournament !== undefined) {
     where.push('h.tournament_id = ?');
     params.push(q.tournament);
@@ -529,9 +537,9 @@ export async function listMoments(
   const page = rows.slice(0, limit);
   const link = (p: string) => (origin ? `${origin}${p}` : p);
   const highlights = page.map((r) => {
-    let detail: Record<string, unknown> = {};
+    let detail: JsonObject = {};
     try {
-      detail = JSON.parse(r.detail) as Record<string, unknown>;
+      detail = JSON.parse(r.detail) as JsonObject;
     } catch {
       // Stored by this module: always JSON.
     }

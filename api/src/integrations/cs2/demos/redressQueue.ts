@@ -5,10 +5,11 @@
  */
 import { db } from '../../../config/database';
 import { emitTopic } from '../../../services/socketService';
+import type { SqlValue } from '../../../config/database';
 
 export async function runRedressQueue(
   sql: string,
-  params: unknown[] = []
+  params: SqlValue[] = []
 ): ReturnType<typeof db.runAsync> {
   const result = await db.runAsync(sql, params);
   emitTopic('highlights-admin', { admin: true });
