@@ -5,7 +5,6 @@
  * list; when it is empty, delete it.
  */
 export const TYPED_INTERNALS_TODO = [
-  'api/src/config/database.ts',
   'client/src/components/account/connectionsApi.ts',
   'client/src/components/admin/AddBackupPlayer.tsx',
   'client/src/components/admin/MatchHoldPanel.tsx',

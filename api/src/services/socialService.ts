@@ -14,7 +14,7 @@ import { emitSocialChanged, isPlayerOnline, onPresence } from './socketService';
 import { activitiesOf, type PresenceActivity } from './presenceService';
 import { notificationService } from './notificationService';
 import { canInvite, INVITE_POLICIES, invitePolicy, type InvitePolicy } from './gameReadiness';
-import type { Untrusted } from '../utils/untrusted';
+import { isOneOf, type Untrusted } from '../utils/untrusted';
 
 export class SocialError extends Error {
   constructor(
@@ -346,7 +346,7 @@ export const socialService = {
     input: { partyInvitesFrom?: Untrusted }
   ): Promise<{ partyInvitesFrom: InvitePolicy }> {
     if (input.partyInvitesFrom !== undefined) {
-      if (!INVITE_POLICIES.includes(input.partyInvitesFrom as InvitePolicy)) {
+      if (!isOneOf(INVITE_POLICIES, input.partyInvitesFrom)) {
         throw new SocialError(
           400,
           'invalid_setting',

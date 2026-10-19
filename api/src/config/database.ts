@@ -9,6 +9,7 @@
  * which keeps dev/prod log files focused on actions instead of every SQL call.
  */
 
+import type { Untrusted } from '../utils/untrusted';
 import { Pool, type PoolClient } from 'pg';
 import { log, LOG_DB_VERBOSE, LOG_DB_VALUES } from '../utils/logger';
 import { safeLogJson, redactParamsForLog, redactInsertValuesForLog } from '../utils/dbLogRedaction';
@@ -40,7 +41,7 @@ export type SqlValue =
 /**
  * Helper to convert ? placeholders to PostgreSQL placeholders ($1, $2, etc.)
  */
-function convertPlaceholders(sql: string, params: unknown[]): { sql: string; params: unknown[] } {
+function convertPlaceholders(sql: string, params: SqlValue[]): { sql: string; params: SqlValue[] } {
   if (sql.includes('?')) {
     let paramIndex = 1;
     const convertedSql = sql.replace(/\?/g, () => `$${paramIndex++}`);
@@ -551,7 +552,7 @@ class DatabaseManager {
   // Redaction lives in utils/dbLogRedaction so it can be unit-tested: secrets
   // and Discord IDs (private contact data, some of it children's) must not
   // reach the verbose DB logs.
-  private safeJson(value: unknown): string {
+  private safeJson(value: Untrusted): string {
     return safeLogJson(value);
   }
 
@@ -574,7 +575,7 @@ class DatabaseManager {
     }
   }
 
-  async getAllAsync<T>(table: string, where?: string, params?: unknown[]): Promise<T[]> {
+  async getAllAsync<T>(table: string, where?: string, params?: SqlValue[]): Promise<T[]> {
     if (!this.postgresPool) throw new Error('Database not initialized');
     let query = `SELECT * FROM ${table}`;
     if (where) {
@@ -600,7 +601,7 @@ class DatabaseManager {
     return rows;
   }
 
-  async getOneAsync<T>(table: string, where: string, params: unknown[]): Promise<T | undefined> {
+  async getOneAsync<T>(table: string, where: string, params: SqlValue[]): Promise<T | undefined> {
     if (!this.postgresPool) throw new Error('Database not initialized');
     const converted = convertPlaceholders(where, params);
     const query = `SELECT * FROM ${table} WHERE ${converted.sql} LIMIT 1`;
@@ -622,7 +623,7 @@ class DatabaseManager {
 
   async insertAsync(
     table: string,
-    data: Record<string, unknown>
+    data: Record<string, SqlValue>
   ): Promise<{ changes: number; lastInsertRowid: number | string }> {
     if (!this.postgresPool) throw new Error('Database not initialized');
     const columns = Object.keys(data);
@@ -662,9 +663,9 @@ class DatabaseManager {
 
   async updateAsync(
     table: string,
-    data: Record<string, unknown>,
+    data: Record<string, SqlValue>,
     where: string,
-    whereParams: unknown[]
+    whereParams: SqlValue[]
   ): Promise<{ changes: number }> {
     if (!this.postgresPool) throw new Error('Database not initialized');
     const setClauses = Object.keys(data)
@@ -691,7 +692,11 @@ class DatabaseManager {
     }
   }
 
-  async deleteAsync(table: string, where: string, params: unknown[]): Promise<{ changes: number }> {
+  async deleteAsync(
+    table: string,
+    where: string,
+    params: SqlValue[]
+  ): Promise<{ changes: number }> {
     if (!this.postgresPool) throw new Error('Database not initialized');
     const converted = convertPlaceholders(where, params);
     const query = `DELETE FROM ${table} WHERE ${converted.sql}`;
@@ -710,7 +715,7 @@ class DatabaseManager {
 
   async runAsync(
     sql: string,
-    params: unknown[] = []
+    params: SqlValue[] = []
   ): Promise<{ changes: number; lastInsertRowid?: number | string }> {
     if (!this.postgresPool) throw new Error('Database not initialized');
     try {
@@ -744,7 +749,7 @@ class DatabaseManager {
     }
   }
 
-  async queryAsync<T>(sql: string, params?: unknown[]): Promise<T[]> {
+  async queryAsync<T>(sql: string, params?: SqlValue[]): Promise<T[]> {
     if (!this.postgresPool) throw new Error('Database not initialized');
     try {
       if (LOG_DB_VERBOSE) {
@@ -769,7 +774,7 @@ class DatabaseManager {
     }
   }
 
-  async queryOneAsync<T>(sql: string, params?: unknown[]): Promise<T | undefined> {
+  async queryOneAsync<T>(sql: string, params?: SqlValue[]): Promise<T | undefined> {
     if (!this.postgresPool) throw new Error('Database not initialized');
     try {
       if (LOG_DB_VERBOSE) {
