@@ -74,18 +74,20 @@ export const SYNTHETIC_CONNECT = Symbol('synthetic connect');
  * that joins its rooms on `connect` keeps working. Everything else is the
  * shared socket's.
  */
+function connectNowIfUp(s: Socket, fn: (...args: Untrusted[]) => void): void {
+  if (!s.connected) return;
+  void Promise.resolve().then(() => {
+    if (s.connected && s.listeners('connect').includes(fn)) fn(SYNTHETIC_CONNECT);
+  });
+}
+
 export function ownedView(s: Socket): Socket {
   return new Proxy(s, {
     get(target, prop, receiver) {
       if (prop === 'on') {
         return (event: string, fn: (...args: Untrusted[]) => void) => {
           target.on(event, fn);
-          if (event === 'connect' && target.connected) {
-            void Promise.resolve().then(() => {
-              if (target.connected && target.listeners('connect').includes(fn))
-                fn(SYNTHETIC_CONNECT);
-            });
-          }
+          if (event === 'connect') connectNowIfUp(target, fn);
           return receiver;
         };
       }
@@ -155,6 +157,7 @@ export function scopedSocket(): Socket {
           if (!done) {
             mine.push([event, fn]);
             target.on(event, fn);
+            if (event === 'connect') connectNowIfUp(target, fn);
           }
           return receiver;
         };

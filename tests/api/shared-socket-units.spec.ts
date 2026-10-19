@@ -147,7 +147,7 @@ test(
   }
 );
 
-test('scopedSocket: close removes only its own handlers', { tag: ['@api'] }, () => {
+test('scopedSocket: close removes only its own handlers', { tag: ['@api'] }, async () => {
   const handlers = new Map<string, Set<() => void>>();
   const s = currentSocket() as unknown as Record<string, unknown>;
   Object.assign(s, {
@@ -160,11 +160,19 @@ test('scopedSocket: close removes only its own handlers', { tag: ['@api'] }, () 
     off(event: string, fn: () => void) {
       handlers.get(event)?.delete(fn);
     },
+    listeners(event: string) {
+      return [...(handlers.get(event) ?? [])];
+    },
   });
   const other = () => undefined;
   const page = scopedSocket();
   page.on('match:update', () => undefined);
   page.on('bracket:update', () => undefined);
+  // Already connected: its connect handler still runs, as on a socket of its own.
+  let joined = 0;
+  page.on('connect', () => (joined += 1));
+  await Promise.resolve();
+  expect(joined).toBe(1);
   (s.on as (e: string, f: () => void) => void)('match:update', other);
   expect(handlers.get('match:update')?.size).toBe(2);
 
