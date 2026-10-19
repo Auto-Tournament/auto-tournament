@@ -2,7 +2,8 @@
  * Import a match from its demos (admin): create the match, upload one demo
  * per map, follow its analysis (demos/demoImport.ts).
  */
-import express, { Router, Request, Response } from 'express';
+import type { Request, Response } from 'express';
+import express, { Router } from 'express';
 import { requireAuth } from '../../../middleware/auth';
 import { log } from '../../../utils/logger';
 import {

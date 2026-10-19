@@ -8,7 +8,8 @@
  * the match's event log with who sent it, so admins see each other's actions.
  */
 
-import { Router, Request, Response } from 'express';
+import type { Request, Response } from 'express';
+import { Router } from 'express';
 import { db } from '../../../config/database';
 import { requireAuth } from '../../../middleware/auth';
 import { log } from '../../../utils/logger';

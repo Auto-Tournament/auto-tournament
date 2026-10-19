@@ -1,6 +1,7 @@
-import { Router, Request, Response } from 'express';
+import type { Request, Response } from 'express';
+import { Router } from 'express';
 import { serverService } from '../services/serverService';
-import { CreateServerInput, UpdateServerInput } from '../../../types/server.types';
+import type { CreateServerInput, UpdateServerInput } from '../../../types/server.types';
 import { requireAuth } from '../../../middleware/auth';
 import { scheduler } from '../../../core/scheduler';
 import { log } from '../../../utils/logger';

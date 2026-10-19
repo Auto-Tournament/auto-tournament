@@ -24,7 +24,7 @@ import type { ServerResponse } from '../../types/server.types';
 import { matchBracketOf } from '../../core/allocationQueue';
 import type { ResourcePoolStatus } from '../types';
 import { serverService } from './services/serverService';
-import { ServerStatus } from './services/serverStatusService';
+import type { ServerStatus } from './services/serverStatusService';
 import { serverAllocationTracker } from './services/serverAllocationTracker';
 import { serverTurnoverTracker } from './utils/serverTurnover';
 import { driverFor } from './driver';

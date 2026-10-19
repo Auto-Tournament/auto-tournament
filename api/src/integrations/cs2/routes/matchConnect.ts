@@ -25,7 +25,8 @@
  * in the same tournament, if any, to go to instead.
  */
 
-import { Router, Request, Response } from 'express';
+import type { Request, Response } from 'express';
+import { Router } from 'express';
 import { lookup } from 'node:dns/promises';
 import { isIP } from 'node:net';
 import { db } from '../../../config/database';
