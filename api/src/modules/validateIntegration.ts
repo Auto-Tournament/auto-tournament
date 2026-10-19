@@ -10,6 +10,7 @@
  */
 
 import type { GameIntegration } from '../integrations/types';
+import type { Untrusted } from '../utils/untrusted';
 
 const CAPABILITIES = ['servers', 'veto', 'liveEvents', 'demos', 'playerStats'] as const;
 
@@ -61,7 +62,7 @@ const OPTIONAL_METHODS = [
 
 const OPTIONAL_ARRAYS = ['catalogEntries', 'instanceSettings', 'clientSlots'] as const;
 
-function isObject(value: unknown): value is Record<string, unknown> {
+function isObject(value: Untrusted): value is Record<string, Untrusted> {
   return value !== null && typeof value === 'object' && !Array.isArray(value);
 }
 
@@ -69,7 +70,7 @@ function isObject(value: unknown): value is Record<string, unknown> {
  * The integration a server entry's module namespace holds: its default
  * export, or for a CommonJS file built from ESM, `module.exports.default`.
  */
-export function integrationFromNamespace(namespace: unknown): unknown {
+export function integrationFromNamespace(namespace: Untrusted): Untrusted {
   if (!isObject(namespace)) return undefined;
   const candidate = namespace.default;
   if (isObject(candidate) && !('id' in candidate) && isObject(candidate.default)) {
@@ -79,7 +80,7 @@ export function integrationFromNamespace(namespace: unknown): unknown {
 }
 
 /** The first reason `value` is not a `GameIntegration`, or null when it is one. */
-export function integrationProblem(value: unknown): string | null {
+export function integrationProblem(value: Untrusted): string | null {
   if (!isObject(value)) return 'The server entry has no default export object (a GameIntegration).';
 
   if (typeof value.id !== 'string' || value.id === '') return "The integration has no string 'id'.";
@@ -142,6 +143,6 @@ export function integrationProblem(value: unknown): string | null {
   return null;
 }
 
-export function isGameIntegration(value: unknown): value is GameIntegration {
+export function isGameIntegration(value: Untrusted): value is GameIntegration {
   return integrationProblem(value) === null;
 }

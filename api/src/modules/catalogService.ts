@@ -77,6 +77,8 @@ import {
 import { compatibilityProblem, isValidModuleId, parseManifest } from './manifest';
 import { verifyModuleRelease } from './signature';
 import { trustedKeys } from './trustedKeys';
+import type { SqlValue } from '../config/database';
+import type { Untrusted } from '../utils/untrusted';
 
 // ---------------------------------------------------------------------------
 // Errors and the lock
@@ -226,7 +228,7 @@ export async function sweepStaging(): Promise<void> {
 async function diskVersion(dir: string): Promise<string | null> {
   try {
     const raw = JSON.parse(await fs.promises.readFile(path.join(dir, 'module.json'), 'utf8')) as {
-      version?: unknown;
+      version?: Untrusted;
     };
     return typeof raw.version === 'string' && semver.valid(raw.version) ? raw.version : null;
   } catch {
@@ -944,7 +946,7 @@ async function installModule(
       throw error;
     }
 
-    let raw: unknown;
+    let raw: Untrusted;
     try {
       raw = JSON.parse(await fs.promises.readFile(path.join(tree, 'module.json'), 'utf8'));
     } catch {
@@ -1327,7 +1329,7 @@ export function uninstallCatalogModule(id: string, actor: string | null): Promis
  */
 export function purgeCatalogModule(
   id: string,
-  confirm: unknown,
+  confirm: Untrusted,
   actor: string | null
 ): Promise<OperationResult & { dropped: string[] }> {
   return exclusive(`module ${id}`, async () => {
@@ -1401,7 +1403,10 @@ export interface PurgeReport {
  */
 export async function purgeModuleData(
   client: {
-    query: (sql: string, params?: unknown[]) => Promise<{ rows: Array<Record<string, unknown>> }>;
+    query: (
+      sql: string,
+      params?: SqlValue[]
+    ) => Promise<{ rows: Array<Record<string, Untrusted>> }>;
   },
   id: string,
   tables: string[]
@@ -1443,7 +1448,7 @@ export function purgeableTables(id: string): Promise<string[]> {
 // The 2.x upgrade rule
 // ---------------------------------------------------------------------------
 
-async function countRows(sql: string, params: unknown[] = []): Promise<number> {
+async function countRows(sql: string, params: SqlValue[] = []): Promise<number> {
   try {
     const row = await db.queryOneAsync<{ count: string }>(sql, params);
     return Number(row?.count ?? 0);

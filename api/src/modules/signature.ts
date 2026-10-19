@@ -25,6 +25,7 @@ import crypto from 'crypto';
 import semver from 'semver';
 import { isValidModuleId } from './manifest';
 import { keyIdFor, publicKeyObject, trustedKeys, type TrustedKey } from './trustedKeys';
+import type { Untrusted } from '../utils/untrusted';
 
 export const SIGNATURE_SCHEMA = 1;
 export const MAX_SIGNATURE_BYTES = 4096;
@@ -76,10 +77,10 @@ export function signModuleArchive(
 export type VerifyResult =
   { ok: true; signature: ModuleSignature; key: TrustedKey } | { ok: false; reason: string };
 
-function parseSignature(raw: unknown): ModuleSignature | string {
+function parseSignature(raw: Untrusted): ModuleSignature | string {
   if (!raw || typeof raw !== 'object' || Array.isArray(raw))
     return 'the signature file is not a JSON object';
-  const s = raw as Record<string, unknown>;
+  const s = raw as Record<string, Untrusted>;
   if (s.schema !== SIGNATURE_SCHEMA) return 'the signature file is for a newer Auto Tournament';
   if (s.algorithm !== 'ed25519')
     return `the signature algorithm '${String(s.algorithm).slice(0, 40)}' is not supported`;
@@ -94,7 +95,15 @@ function parseSignature(raw: unknown): ModuleSignature | string {
   if (typeof s.signature !== 'string' || !/^[A-Za-z0-9+/]+={0,2}$/.test(s.signature)) {
     return 'the signature is not base64';
   }
-  return s as unknown as ModuleSignature;
+  return {
+    schema: SIGNATURE_SCHEMA,
+    algorithm: 'ed25519',
+    keyId: s.keyId,
+    id: s.id,
+    version: s.version,
+    sha256: s.sha256,
+    signature: s.signature,
+  };
 }
 
 /**
@@ -116,7 +125,7 @@ export function verifyModuleRelease(
   if (Buffer.byteLength(text, 'utf8') > MAX_SIGNATURE_BYTES) {
     return { ok: false, reason: 'the signature file is too large' };
   }
-  let raw: unknown;
+  let raw: Untrusted;
   try {
     raw = JSON.parse(text);
   } catch {

@@ -21,6 +21,7 @@
  */
 
 import type { GameId, GameIntegration, MatchDescription } from '../integrations/types';
+import type { Untrusted } from '../utils/untrusted';
 
 /** The placeholder's `id`. Never a real module's, and never stored in a row. */
 export const MISSING_MODULE_ID = 'module-not-installed';
@@ -37,9 +38,9 @@ export function moduleNotInstalledMessage(game: GameId): string {
   return `The game module for '${game}' is not installed on this instance.`;
 }
 
-function nameFrom(value: unknown, fallback: string): string {
+function nameFrom(value: Untrusted, fallback: string): string {
   if (value && typeof value === 'object') {
-    const name = (value as { name?: unknown }).name;
+    const name = (value as { name?: Untrusted }).name;
     if (typeof name === 'string' && name.trim()) return name;
   }
   return fallback;
@@ -50,8 +51,8 @@ function nameFrom(value: unknown, fallback: string): string {
  * shape: the team names when the config has them the way every module so far
  * stores them, one game, no maps and no roster.
  */
-function describeUnknownConfig(config: unknown): MatchDescription {
-  let value: unknown = config;
+function describeUnknownConfig(config: Untrusted): MatchDescription {
+  let value: Untrusted = config;
   if (typeof value === 'string') {
     try {
       value = JSON.parse(value);
@@ -61,7 +62,7 @@ function describeUnknownConfig(config: unknown): MatchDescription {
   }
   const object =
     value && typeof value === 'object' && !Array.isArray(value)
-      ? (value as Record<string, unknown>)
+      ? (value as Record<string, Untrusted>)
       : {};
   return {
     seriesLength: 1,

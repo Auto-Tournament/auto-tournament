@@ -38,6 +38,7 @@ import { resolveInsideIndex } from '../services/packIndexService';
 import { isValidModuleId } from './manifest';
 import { CLIENT_API_VERSION, SERVER_API_VERSION } from './version';
 import { MAX_SIGNATURE_BYTES } from './signature';
+import type { Untrusted } from '../utils/untrusted';
 
 export const DEFAULT_CATALOG_URL =
   'https://raw.githubusercontent.com/Auto-Tournament/packs/main/catalog.json';
@@ -169,11 +170,11 @@ export interface RemoteFeed {
 // Parsing — every field checked, a bad row skipped rather than fatal
 // ---------------------------------------------------------------------------
 
-function text(value: unknown, max = 500): string | null {
+function text(value: Untrusted, max = 500): string | null {
   return typeof value === 'string' && value.trim() && value.length <= max ? value.trim() : null;
 }
 
-function isRange(value: unknown): value is string {
+function isRange(value: Untrusted): value is string {
   return typeof value === 'string' && value.trim() !== '' && semver.validRange(value) !== null;
 }
 
@@ -194,9 +195,9 @@ export function allowedReleaseUrl(value: string, prefix = releasePrefix()): bool
   return url.pathname.startsWith(root.pathname) && !url.search && !url.hash;
 }
 
-function parseRelease(raw: unknown, from: 'remote' | 'snapshot'): CatalogRelease | null {
+function parseRelease(raw: Untrusted, from: 'remote' | 'snapshot'): CatalogRelease | null {
   if (!raw || typeof raw !== 'object') return null;
-  const r = raw as Record<string, unknown>;
+  const r = raw as Record<string, Untrusted>;
   if (typeof r.version !== 'string' || !semver.valid(r.version)) return null;
   if (!isRange(r.serverApi) || !isRange(r.clientApi)) return null;
   const sha256 =
@@ -221,12 +222,12 @@ function parseRelease(raw: unknown, from: 'remote' | 'snapshot'): CatalogRelease
   return { ...base, file: r.file };
 }
 
-function parseModules(raw: unknown, from: 'remote' | 'snapshot'): CatalogModuleEntry[] {
+function parseModules(raw: Untrusted, from: 'remote' | 'snapshot'): CatalogModuleEntry[] {
   if (!Array.isArray(raw)) return [];
   const modules: CatalogModuleEntry[] = [];
   for (const row of raw) {
     if (!row || typeof row !== 'object') continue;
-    const m = row as Record<string, unknown>;
+    const m = row as Record<string, Untrusted>;
     if (!isValidModuleId(m.id)) continue;
     const name = text(m.name, 100);
     if (!name) continue;
@@ -246,12 +247,12 @@ function parseModules(raw: unknown, from: 'remote' | 'snapshot'): CatalogModuleE
   return modules;
 }
 
-function parsePacks(raw: unknown): CatalogPackEntry[] {
+function parsePacks(raw: Untrusted): CatalogPackEntry[] {
   if (!Array.isArray(raw)) return [];
   const packs: CatalogPackEntry[] = [];
   for (const row of raw) {
     if (!row || typeof row !== 'object') continue;
-    const p = row as Record<string, unknown>;
+    const p = row as Record<string, Untrusted>;
     const slug = text(p.slug, 80)?.toLowerCase();
     const name = text(p.name, 100);
     const file = text(p.file, 200);
@@ -273,9 +274,9 @@ function parsePacks(raw: unknown): CatalogPackEntry[] {
 
 function parseFeed(body: string): { packs: CatalogPackEntry[]; modules: CatalogModuleEntry[] } {
   const parsed = JSON.parse(body) as {
-    schema?: unknown;
-    packs?: unknown;
-    modules?: unknown;
+    schema?: Untrusted;
+    packs?: Untrusted;
+    modules?: Untrusted;
   } | null;
   if (!parsed || typeof parsed !== 'object')
     throw new CatalogFetchError('bad_response', SENTENCES.bad_response);
@@ -398,6 +399,7 @@ async function getOnce(url: string, options: GetOptions): Promise<Got> {
       redirect: options.redirect,
       size: options.limit,
       // node-fetch 2 declares its own AbortSignal type; Node's has the same shape.
+      // eslint-disable-next-line no-restricted-syntax -- node-fetch 2's own AbortSignal type
       signal: controller.signal as unknown as NonNullable<Parameters<typeof fetch>[1]>['signal'],
       headers: options.headers,
     });
@@ -577,8 +579,8 @@ export async function readSnapshotModules(): Promise<CatalogModuleEntry[]> {
     const parsed = JSON.parse(
       await fs.readFile(path.join(snapshotDir(), 'index.json'), 'utf8')
     ) as {
-      schema?: unknown;
-      modules?: unknown;
+      schema?: Untrusted;
+      modules?: Untrusted;
     };
     if (parsed.schema !== 1) return [];
     return parseModules(parsed.modules, 'snapshot');

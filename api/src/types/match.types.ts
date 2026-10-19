@@ -140,7 +140,7 @@ export interface MatchResponse {
   loadedAt?: number;
   status: string;
   configUrl: string; // The URL to access this match config
-  [key: string]: unknown;
+  [key: string]: Untrusted;
 }
 
 /**
@@ -181,7 +181,7 @@ export interface MatchListItem {
   game: string;
   round: number;
   matchNumber: number;
-  [key: string]: unknown;
+  [key: string]: Untrusted;
   team1?: {
     id: string;
     name: string;
@@ -199,7 +199,7 @@ export interface MatchListItem {
   };
   status: string;
   serverId?: string;
-  config?: Record<string, unknown>;
+  config?: Record<string, Untrusted>;
   demoFilePath?: string;
   createdAt: number;
   loadedAt?: number;
@@ -226,7 +226,7 @@ export interface MatchListItem {
 /**
  * Enrichable match object - BracketMatch or similar structures with optional fields
  */
-export type EnrichableMatch = Record<string, unknown> & {
+export type EnrichableMatch = Record<string, Untrusted> & {
   team1Players?: PlayerStats[];
   team2Players?: PlayerStats[];
   team1Score?: number;
@@ -286,3 +286,5 @@ export interface CreateManualMatchTemplateInput {
   mapPoolId?: number | null;
   maps: string[];
 }
+
+import type { Untrusted } from '../utils/untrusted';
