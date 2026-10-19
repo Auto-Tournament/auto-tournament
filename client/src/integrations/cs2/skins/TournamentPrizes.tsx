@@ -22,6 +22,7 @@ import type { TournamentPrizesViewProps } from '../../types';
 import { rarityColor } from './rarity';
 import { VirtualNotice } from './SkinParts';
 import { skinPaths } from './paths';
+import type { Untrusted } from '../../types';
 
 const { color } = tokens;
 const MEDAL = [color.medalGold, color.medalSilver, color.medalBronze];
@@ -38,10 +39,10 @@ interface Odds {
 }
 
 /** A tournament's own prize list (settings.cs2.rewards), or null to use the site's. */
-function ownRewards(settings: unknown): Odds['tournamentRewards'] | null {
-  const cs2 = ((settings ?? {}) as { cs2?: { rewards?: unknown } }).cs2;
+function ownRewards(settings: Untrusted): Odds['tournamentRewards'] | null {
+  const cs2 = ((settings ?? {}) as { cs2?: { rewards?: Untrusted } }).cs2;
   if (!Array.isArray(cs2?.rewards)) return null;
-  return (cs2.rewards as Array<Record<string, unknown>>).map((r) => ({
+  return (cs2.rewards as Array<Record<string, Untrusted>>).map((r) => ({
     place: Number(r.place),
     mode: String(r.mode ?? 'random'),
     rarity: (r.rarity as string | undefined) ?? null,
@@ -51,9 +52,9 @@ function ownRewards(settings: unknown): Odds['tournamentRewards'] | null {
 }
 
 /** The tournament's own switches: esports mode and skin rewards off give nothing. */
-function rewardsOff(settings: unknown): boolean {
-  const s = (settings ?? {}) as { skinRewards?: unknown; cs2?: unknown };
-  const cs2 = (s.cs2 ?? {}) as { skinRewards?: unknown; esportsMode?: unknown };
+function rewardsOff(settings: Untrusted): boolean {
+  const s = (settings ?? {}) as { skinRewards?: Untrusted; cs2?: Untrusted };
+  const cs2 = (s.cs2 ?? {}) as { skinRewards?: Untrusted; esportsMode?: Untrusted };
   return cs2.esportsMode === true || cs2.skinRewards === false || s.skinRewards === false;
 }
 

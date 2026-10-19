@@ -12,6 +12,7 @@ import {
   useTopic,
 } from '../../../module-sdk';
 import type { MatchAdminPanelProps } from '../../types';
+import type { Untrusted } from '../../types';
 
 /** One failover, as GET /api/game/cs2/matches/:slug/failover lists it. */
 interface Failover {
@@ -157,7 +158,7 @@ export function FailoverPanel({ matchSlug, matchStatus }: MatchAdminPanelProps) 
       : t('failover.roundN', { defaultValue: 'Round {{round}}', round: value });
   };
 
-  const run = async (path: string, body: Record<string, unknown>, done: string) => {
+  const run = async (path: string, body: Record<string, Untrusted>, done: string) => {
     setBusy(true);
     try {
       await api.post(path, body);

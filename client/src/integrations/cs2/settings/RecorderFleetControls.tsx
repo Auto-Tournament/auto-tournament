@@ -1,6 +1,7 @@
 import { useEffect, useState, type InputHTMLAttributes } from 'react';
 import { Alert, Box, Button, MenuItem, Stack, Switch, TextField, Typography } from '@mui/material';
 import { api, useModuleTranslation, useSnackbar, SwitchRow } from '../../../module-sdk';
+import type { Untrusted } from '../../types';
 
 export interface RecorderGroup {
   id: number;
@@ -20,7 +21,7 @@ export function RecorderGroups({
   const { showError } = useSnackbar();
   const [name, setName] = useState('');
   const [busy, setBusy] = useState(false);
-  async function change(action: () => Promise<unknown>) {
+  async function change(action: () => Promise<Untrusted>) {
     setBusy(true);
     try {
       await action();

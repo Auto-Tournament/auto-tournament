@@ -23,6 +23,7 @@ import {
 } from '../../../module-sdk';
 import type { TournamentPrizesManageProps } from '../../types';
 import { rarityColor } from './rarity';
+import type { Untrusted } from '../../types';
 
 const { color } = tokens;
 
@@ -65,9 +66,9 @@ interface Candidate {
   rating: number | null;
 }
 
-function cs2Of(settings: unknown): Record<string, unknown> {
-  const cs2 = (settings as { cs2?: unknown } | null | undefined)?.cs2;
-  return cs2 && typeof cs2 === 'object' ? (cs2 as Record<string, unknown>) : {};
+function cs2Of(settings: Untrusted): Record<string, Untrusted> {
+  const cs2 = (settings as { cs2?: Untrusted } | null | undefined)?.cs2;
+  return cs2 && typeof cs2 === 'object' ? (cs2 as Record<string, Untrusted>) : {};
 }
 
 function toPlaces(rewards: StoredReward[]): PlacePrize[] {

@@ -16,6 +16,7 @@
  *    is worth saying out loud.
  */
 
+import type { Untrusted } from '../types';
 export type ReportSide = 'team1' | 'team2';
 
 export type ReportStatus = 'submitted' | 'confirmed' | 'disputed' | 'superseded' | 'withdrawn';
@@ -220,7 +221,7 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<ApiResu
     return { status: 0, ok: false, data: null, error: 'network' };
   }
 
-  let body: unknown = null;
+  let body: Untrusted = null;
   try {
     body = await response.json();
   } catch {
@@ -228,7 +229,7 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<ApiResu
   }
 
   const error =
-    body && typeof body === 'object' && typeof (body as { error?: unknown }).error === 'string'
+    body && typeof body === 'object' && typeof (body as { error?: Untrusted }).error === 'string'
       ? (body as { error: string }).error
       : null;
 

@@ -25,6 +25,7 @@ import { Box, Typography } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { ConfirmDialog, api, links, useModuleTranslation } from '../../../module-sdk';
 import type { TournamentStartFailureProps } from '../../types';
+import type { Untrusted } from '../../types';
 
 export interface OutdatedServer {
   id: string;
@@ -40,12 +41,12 @@ export interface OutdatedServer {
  */
 export function parseCs2OutdatedError(raw: string): OutdatedServer[] | null {
   try {
-    const parsed = JSON.parse(raw) as { errorCode?: unknown; servers?: unknown };
+    const parsed = JSON.parse(raw) as { errorCode?: Untrusted; servers?: Untrusted };
     if (!parsed || typeof parsed !== 'object') return null;
     if (parsed.errorCode !== 'cs2_outdated_servers') return null;
-    const servers = Array.isArray(parsed.servers) ? (parsed.servers as unknown[]) : [];
+    const servers = Array.isArray(parsed.servers) ? (parsed.servers as Untrusted[]) : [];
     const cleaned = servers
-      .filter((s): s is Record<string, unknown> => Boolean(s) && typeof s === 'object')
+      .filter((s): s is Record<string, Untrusted> => Boolean(s) && typeof s === 'object')
       .map((s) => ({
         id: String(s.id ?? ''),
         name: String(s.name ?? ''),

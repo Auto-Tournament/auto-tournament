@@ -23,12 +23,13 @@ import {
 } from '../../../module-sdk';
 import type { WebhookSettings, WebhookSettingsResponse } from '../cs2.types';
 import { Cs2ServerDefaults } from './Cs2ServerDefaults';
+import type { Untrusted } from '../../types';
 
 export const MatchRulesPage: React.FC = () => {
   const { t } = useModuleTranslation('cs2');
   const { showSuccess, showError } = useSnackbar();
   const [loading, setLoading] = useState(true);
-  const [initialSettings, setInitialSettings] = useState<Record<string, unknown> | undefined>();
+  const [initialSettings, setInitialSettings] = useState<Record<string, Untrusted> | undefined>();
   const [webhookUrl, setWebhookUrl] = useState('');
   const [savedWebhookUrl, setSavedWebhookUrl] = useState('');
   const saveTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -47,7 +48,7 @@ export const MatchRulesPage: React.FC = () => {
         if (active) {
           setWebhookUrl(url);
           setSavedWebhookUrl(url);
-          setInitialSettings(response.settings as Record<string, unknown> | undefined);
+          setInitialSettings(response.settings as Record<string, Untrusted> | undefined);
         }
       } catch (err) {
         if (active) showError(err instanceof Error ? err.message : t('settings.loadFailed'));

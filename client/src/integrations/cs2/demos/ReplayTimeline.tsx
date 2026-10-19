@@ -73,9 +73,7 @@ export function ReplayTimeline({
     onSeek(first + f * span);
   };
   const onPointerDown = (e: PointerEvent) => {
-    (e.currentTarget as unknown as { setPointerCapture: (id: number) => void }).setPointerCapture(
-      e.pointerId
-    );
+    e.currentTarget.setPointerCapture(e.pointerId);
     seekAt(e.clientX);
   };
   const onPointerMove = (e: PointerEvent) => {

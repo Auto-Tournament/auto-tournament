@@ -5,6 +5,7 @@
  * `integrations/cs2/maps/mapModes.ts` (a module does not import core).
  */
 import type { Map as MapType, MapGameMode } from '../cs2.types';
+import type { Untrusted } from '../../types';
 
 export const MAP_MODES: readonly MapGameMode[] = [
   'defusal',
@@ -33,7 +34,7 @@ export const WINGMAN_LAYOUTS: ReadonlySet<string> = new Set([
   'de_eldorado',
 ]);
 
-export function isMapMode(value: unknown): value is MapGameMode {
+export function isMapMode(value: Untrusted): value is MapGameMode {
   return typeof value === 'string' && (MAP_MODES as readonly string[]).includes(value);
 }
 

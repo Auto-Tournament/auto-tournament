@@ -59,6 +59,7 @@ import type { FleetKey, FleetKeysResponse, FleetServer, FleetServersResponse } f
 import { insecureFlag, platformIsPlainHttp } from './insecureLink';
 import { ServerSection } from './ServerSection';
 import { useTopic } from '../../../module-sdk';
+import type { Untrusted } from '../../types';
 
 type Secret = { kind: 'code' | 'key'; value: string; expiresAt: number | null; name: string };
 /** The link / connect-address dialog: `link` links the server, `edit` changes a linked server's address. */
@@ -186,7 +187,7 @@ export default function FleetPanel() {
   const createKey = async () => {
     setBusy(true);
     try {
-      const body: Record<string, unknown> = { name: keyForm.name.trim() };
+      const body: Record<string, Untrusted> = { name: keyForm.name.trim() };
       if (keyForm.namePrefix.trim()) body.namePrefix = keyForm.namePrefix.trim();
       if (keyForm.maxServers.trim()) body.maxServers = Number(keyForm.maxServers);
       if (keyForm.expiresInDays.trim()) body.expiresInDays = Number(keyForm.expiresInDays);
