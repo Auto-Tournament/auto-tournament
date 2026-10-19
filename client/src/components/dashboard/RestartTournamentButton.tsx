@@ -1,13 +1,6 @@
 import React, { useState } from 'react';
-import {
-  Button,
-  CircularProgress,
-  Alert,
-  Snackbar,
-  ButtonProps,
-  Typography,
-  Box,
-} from '@mui/material';
+import type { ButtonProps } from '@mui/material';
+import { Button, CircularProgress, Alert, Snackbar, Typography, Box } from '@mui/material';
 import { ArrowCounterClockwiseIcon } from '@phosphor-icons/react';
 import { useNavigate } from 'react-router-dom';
 import { useTournament } from '../../hooks/useTournament';

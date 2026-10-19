@@ -1,3 +1,4 @@
+import type { SelectChangeEvent } from '@mui/material';
 import {
   Dialog,
   DialogTitle,
@@ -12,7 +13,6 @@ import {
   Stack,
   FormControl,
   InputLabel,
-  SelectChangeEvent,
 } from '@mui/material';
 import { PlayIcon, SpeakerHighIcon, XIcon } from '@phosphor-icons/react';
 import { NOTIFICATION_SOUNDS } from '../../utils/soundNotification';

@@ -18,7 +18,8 @@ import {
 import { RankingIcon, UserFocusIcon } from '@phosphor-icons/react';
 import { api } from '../utils/api';
 import { onSocketReconnect } from '../utils/socketResync';
-import { io, Socket } from 'socket.io-client';
+import type { Socket } from 'socket.io-client';
+import { io } from 'socket.io-client';
 import { NextMatchCard } from '../components/match/NextMatchCard';
 import { PendingTeamInvites } from '../components/team/PendingTeamInvites';
 import { useSoundSettings } from '../hooks/useSoundSettings';

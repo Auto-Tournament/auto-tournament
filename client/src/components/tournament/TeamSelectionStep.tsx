@@ -1,7 +1,7 @@
 import { Box, Typography, Chip, Alert, Button, Autocomplete, TextField } from '@mui/material';
 import { PlusIcon, WarningIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
-import { Team } from '../../types';
+import type { Team } from '../../types';
 import { validateTeamCountForType } from '../../utils/tournamentValidation';
 import { paths } from '../../paths';
 
