@@ -16,6 +16,7 @@
 import { effectiveProviderSettings, type SignInProviderId } from '../config/signInProviders';
 import { steamService } from './steamService';
 import { discoverOidc } from '../config/oidcStrategy';
+import type { Untrusted } from '../utils/untrusted';
 
 export type ProviderTestResult =
   'ok' | 'invalid_credentials' | 'unreachable' | 'not_configured' | 'not_supported' | 'unexpected';
@@ -50,7 +51,7 @@ async function errorCode(
   response: Awaited<ReturnType<typeof globalThis.fetch>>
 ): Promise<string | undefined> {
   try {
-    const json = (await response.json()) as { error?: unknown };
+    const json = (await response.json()) as { error?: Untrusted };
     return typeof json.error === 'string' ? json.error : undefined;
   } catch {
     return undefined;

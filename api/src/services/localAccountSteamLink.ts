@@ -22,6 +22,7 @@
  */
 import type { PoolClient } from 'pg';
 import { db } from '../config/database';
+import type { SqlValue } from '../config/database';
 
 export type SteamLinkRefusal =
   /** The local account is gone or is not a local account. */
@@ -68,7 +69,7 @@ async function foldInto(
   to: PlayerRow
 ): Promise<Record<string, number>> {
   const moved: Record<string, number> = {};
-  const run = async (label: string, sql: string, params: unknown[]) => {
+  const run = async (label: string, sql: string, params: SqlValue[]) => {
     const res = await client.query(sql, params);
     if (res.rowCount) moved[label] = (moved[label] ?? 0) + res.rowCount;
   };

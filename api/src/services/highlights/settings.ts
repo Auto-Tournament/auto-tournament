@@ -22,6 +22,7 @@ import {
   numberRequest,
   stringRequest,
 } from '../../utils/settingFields';
+import type { JsonValue } from '../../utils/json';
 
 /** Highlight video heights (16:9) and frame rates the recorders offer. */
 export const HIGHLIGHT_HEIGHTS = [720, 1080, 1440, 2160] as const;
@@ -143,7 +144,7 @@ export const HIGHLIGHT_SETTINGS: ReadonlyArray<SettingDefinition & { key: Highli
 /** The settings page's highlight fields, as GET /api/settings answers them. */
 export async function readHighlightSettings(
   get: (key: HighlightSettingKey) => Promise<string | null | undefined>
-): Promise<Record<string, unknown>> {
+): Promise<Record<string, JsonValue>> {
   const height = Number(await get('highlights_resolution'));
   const fps = Number(await get('highlights_fps'));
   return {

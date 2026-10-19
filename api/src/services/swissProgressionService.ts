@@ -26,6 +26,7 @@ import {
 import type { DbMatchRow, DbTournamentRow } from '../types/database.types';
 import type { SwissStandingEntry } from '../types/tournament.types';
 import { tournamentSlugPrefix } from '../utils/matchSlug';
+import type { Untrusted } from '../utils/untrusted';
 
 interface RoundRow extends DbMatchRow {
   team1_rounds?: number | string | null;
@@ -66,7 +67,7 @@ export function toSwissMatch(row: RoundRow): SwissMatchLike {
 
 export function parseTeamIds(raw: string | null | undefined): string[] {
   try {
-    const parsed = JSON.parse(raw ?? '[]') as unknown;
+    const parsed = JSON.parse(raw ?? '[]') as Untrusted;
     return Array.isArray(parsed) ? parsed.map(String) : [];
   } catch {
     return [];

@@ -28,6 +28,7 @@ import type { Player, TeamResponse } from '../types/team.types';
 import { teamService } from './teamService';
 import { linkExternalId, teamIdForExternalId } from './teamExternalIds';
 import { IntegrationTeamError, type IntegrationTeamInput } from './integrationTeamInput';
+import type { Untrusted } from '../utils/untrusted';
 
 import {
   describeDuplicateMemberships,
@@ -116,7 +117,7 @@ async function rosterWarnings(
     team_ids: string | null;
   }>('SELECT id, name, status, team_ids FROM tournament');
   for (const t of tournaments) {
-    let ids: unknown;
+    let ids: Untrusted;
     try {
       ids = JSON.parse(t.team_ids ?? '[]');
     } catch {

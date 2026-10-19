@@ -93,7 +93,7 @@ class TemplateService {
     const templateSettings: TournamentSettings = withModuleSettings(
       DEFAULT_GAME,
       { ...DEFAULT_SETTINGS, matchFormat: format, ...settings },
-      input as unknown as Record<string, unknown>,
+      { ...input },
       undefined,
       'template'
     );
@@ -149,7 +149,7 @@ class TemplateService {
         ...input.settings,
         matchFormat: input.format || existing.format,
       },
-      input as unknown as Record<string, unknown>,
+      { ...input },
       existing.settings,
       'template'
     );
