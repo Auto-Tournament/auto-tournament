@@ -188,7 +188,7 @@ class Cs2Settings {
 export const cs2Settings = new Cs2Settings();
 
 /** CS2's fields of the `GET /api/settings` response (`readInstanceSettings`). */
-export async function readCs2InstanceSettings(): Promise<Record<string, unknown>> {
+export async function readCs2InstanceSettings(): Promise<object> {
   const simulateMatches = await settingsService.isSimulationModeEnabled();
   const simulationTimescale = await settingsService.getSimulationTimescale();
   const atCore = await cs2Settings.getAtCoreDefaults();
