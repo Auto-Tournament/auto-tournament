@@ -641,12 +641,6 @@
     "info_other": "Zostanie zapisana pula map z {{count}} mapami."
   },
   "settings": {
-    "webhook": {
-      "title": "Platform URL",
-      "description": "The address your CS2 servers, links and webhooks use to reach the platform.",
-      "label": "URL webhooka",
-      "helper": "Przykład: https://twoja-domena.pl"
-    },
     "mapSync": {
       "title": "Synchronizacja map",
       "description": "Synchronizuj mapy CS2 z repozytorium GitHub.",

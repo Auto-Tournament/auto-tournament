@@ -13,7 +13,7 @@
 import type { ResourceAvailability } from '../types';
 import type { Untrusted } from '../types';
 
-interface Cs2ApiResponse {
+export interface Cs2ApiResponse {
   success: boolean;
   message?: string;
   error?: string;
@@ -131,20 +131,6 @@ export interface ServerStatusResponse extends Cs2ApiResponse {
  */
 export interface ServerMatchesResponse extends Cs2ApiResponse {
   matches: Array<{ slug: string; status: string }>;
-}
-
-/**
- * `GET /api/settings`, read only for whether the webhook URL (the address a
- * CS2 server reaches the platform on) is set. The rest is the platform's.
- */
-export interface WebhookSettings {
-  webhookConfigured?: boolean;
-  /** The URL itself, as `GET /api/settings` answers it (null when unset). */
-  webhookUrl?: string | null;
-}
-
-export interface WebhookSettingsResponse extends Cs2ApiResponse {
-  settings?: WebhookSettings;
 }
 
 /** One server as `/api/tournament/server-availability` describes it. */

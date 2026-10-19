@@ -633,12 +633,6 @@
     "info_other": "将保存一个包含 {{count}} 张地图的地图池。"
   },
   "settings": {
-    "webhook": {
-      "title": "Platform URL",
-      "description": "The address your CS2 servers, links and webhooks use to reach the platform.",
-      "label": "Webhook 地址",
-      "helper": "示例：https://your-domain.com"
-    },
     "mapSync": {
       "title": "地图同步",
       "description": "从 GitHub 仓库同步 CS2 地图。",
