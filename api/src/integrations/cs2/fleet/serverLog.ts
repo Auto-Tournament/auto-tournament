@@ -9,20 +9,21 @@
 import { db } from '../../../config/database';
 import { log } from '../../../utils/logger';
 import type { MatchState } from './protocol/v1';
-
-import { serverLogLine } from './serverLogLine';
+import { serverLogLine, type ServerLogEvent } from './serverLogLine';
 export { serverLogLine } from './serverLogLine';
 
 /** Write the event's line to the match's event log (best effort). */
 export async function recordServerLog(
   matchSlug: string,
   type: string,
-  data: Record<string, unknown> | undefined,
+  data: object | undefined,
   state: MatchState | null,
   mapNumber?: number,
   round?: number
 ): Promise<void> {
-  const line = serverLogLine(type, data, state, mapNumber, round);
+  // A checked fleet event: its type names its data (./inbound).
+  const event = { type, payload: { data: data ?? {} } } as ServerLogEvent;
+  const line = serverLogLine(event, state, mapNumber, round);
   if (!line) return;
   await db
     .runAsync('INSERT INTO match_events (match_slug, event_type, event_data) VALUES (?, ?, ?)', [
