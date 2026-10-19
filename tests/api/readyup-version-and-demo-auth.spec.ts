@@ -142,6 +142,23 @@ test.describe('Ready Up version parsing and channels', () => {
     expect(readyUpUpdateStatus('0.1.0-beta.2 (abc1234)', latest).state).toBe('current');
   });
 
+  test(
+    'a server running a newer build than the cached latest looks again',
+    { tag: ['@api'] },
+    async () => {
+      const first = await getLatestReadyUpRelease({
+        runningVersion: '0.1.0-beta.71',
+        fetchImpl: listOf(rel('v0.1.0-beta.71', true)),
+      });
+      expect(first?.version).toBe('0.1.0-beta.71');
+      const after = await getLatestReadyUpRelease({
+        runningVersion: '0.1.0-beta.73 (a71890e)',
+        fetchImpl: listOf(rel('v0.1.0-beta.73', true), rel('v0.1.0-beta.71', true)),
+      });
+      expect(after?.version).toBe('0.1.0-beta.73');
+    }
+  );
+
   test('a running beta sees a newer stable and skips drafts', { tag: ['@api'] }, async () => {
     const latest = await getLatestReadyUpRelease({
       runningVersion: '0.1.0-rc.1',
