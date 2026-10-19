@@ -27,6 +27,8 @@
 import type { Router } from 'express';
 import type { DbMatchRow } from '../types/database.types';
 import type { SqlValue } from '../config/database';
+import type { JsonObject } from '../utils/json';
+import type { Untrusted } from '../utils/untrusted';
 
 /**
  * Identifier stored in the `game` column: 'cs2', plus 'fake' in test runs
@@ -209,14 +211,14 @@ export type ResourceActionResult =
       /** The resource the match is on afterwards. */
       resourceId?: string;
       /** Integration-specific fields the route passes through (CS2: RCON replies). */
-      details?: Record<string, unknown>;
+      details?: object;
     }
   | {
       ok: false;
       error: string;
       /** The action is not possible right now (no free resource), rather than broken. */
       conflict?: boolean;
-      details?: Record<string, unknown>;
+      details?: object;
     };
 
 /**
@@ -231,7 +233,7 @@ export interface ResourcePoolStatus {
   /** When every resource is resting: seconds until the first one is free. */
   nextAllocationInSeconds: number | null;
   /** One row per resource; fields beyond `id` and `online` are integration-specific. */
-  resources: Array<{ id: string; online: boolean } & Record<string, unknown>>;
+  resources: Array<{ id: string; online: boolean } & JsonObject>;
   offlineCount: number;
   busyCount: number;
   graceWindowCount: number;
@@ -263,8 +265,7 @@ export type CancelReason =
  * admin as they are (CS2: `cs2_outdated_servers` with the affected servers).
  */
 export type StartCheckResult =
-  | { ok: true }
-  | { ok: false; errorCode: string; message: string; details?: Record<string, unknown> };
+  { ok: true } | { ok: false; errorCode: string; message: string; details?: object };
 
 export interface ValidationResult {
   valid: boolean;
@@ -385,7 +386,7 @@ export interface ModuleMigration {
 }
 
 /** JSON Schema document. Kept loose on purpose; the core only stores and forwards it. */
-export type JSONSchema = Record<string, unknown>;
+export type JSONSchema = JsonObject;
 
 export interface SetupSchema {
   /**
@@ -455,7 +456,7 @@ export interface SettingDefinition {
    * Apply the request value (never `undefined`). Return an error message for
    * a 400, or nothing once it is stored (through `ctx.set`).
    */
-  applyRequest?(value: unknown, ctx: SettingWriteContext): Promise<string | void>;
+  applyRequest?(value: Untrusted, ctx: SettingWriteContext): Promise<string | void>;
 }
 
 // ---------------------------------------------------------------------------
@@ -805,7 +806,7 @@ export interface GameIntegration {
    * This game's fields of the `GET /api/settings` response (the stored
    * values with their defaults applied), keyed by `SettingDefinition.field`.
    */
-  readInstanceSettings?(): Promise<Record<string, unknown>>;
+  readInstanceSettings?(): Promise<object>;
   /**
    * Validate a tournament create or update: the integration's top-level
    * fields and its part of `settings`. CS2: the map pool (`maps`), the shuffle
@@ -1147,7 +1148,7 @@ export interface GameIntegration {
    * Fields this integration adds to `GET /api/health/fleet`, merged after
    * `status` and `timestamp` (CS2: `cs2Fleet` and `servers`).
    */
-  healthContributions?(): Promise<Record<string, unknown>>;
+  healthContributions?(): Promise<object>;
   /**
    * How players join a match right now: the address of the resource it is
    * loaded on and its join password (CS2: the server's host and port, and a
@@ -1175,7 +1176,7 @@ export interface GameIntegration {
   syncMatchState?(
     slug: string,
     source: { resourceId: string } | { report: unknown }
-  ): Promise<Record<string, unknown> | null>;
+  ): Promise<object | null>;
   /**
    * The match was held or released, or its tournament paused or resumed
    * (services/matchHolds.ts): stop or restart whatever counts down to a
