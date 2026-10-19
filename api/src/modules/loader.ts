@@ -59,6 +59,7 @@ import {
   type ModuleManifest,
 } from './manifest';
 import { integrationFromNamespace, integrationProblem } from './validateIntegration';
+import type { Untrusted } from '../utils/untrusted';
 
 export type ModuleStatus = 'ok' | 'incompatible' | 'broken' | 'disabled';
 
@@ -195,7 +196,7 @@ function withTimeout<T>(promise: Promise<T>, ms: number, message: string): Promi
   return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
 }
 
-async function importServerEntry(dir: string, manifest: ModuleManifest): Promise<unknown> {
+async function importServerEntry(dir: string, manifest: ModuleManifest): Promise<Untrusted> {
   const realDir = await fs.promises.realpath(dir);
   let realFile: string;
   try {
@@ -216,7 +217,7 @@ async function importServerEntry(dir: string, manifest: ModuleManifest): Promise
   // never imported twice: an update of one waits for a restart.
   const stamp = Math.floor((await fs.promises.stat(realFile)).mtimeMs);
   const url = `${pathToFileURL(realFile).href}?v=${encodeURIComponent(manifest.version)}-${stamp}`;
-  let namespace: unknown;
+  let namespace: Untrusted;
   try {
     namespace = await withTimeout(
       import(url),
@@ -276,7 +277,7 @@ async function evaluate(folder: string, dir: string): Promise<Evaluation> {
   } catch {
     return { record: record('broken', 'module.json is missing or cannot be read.') };
   }
-  let raw: unknown;
+  let raw: Untrusted;
   try {
     raw = JSON.parse(text);
   } catch (error) {
@@ -381,7 +382,7 @@ async function evaluate(folder: string, dir: string): Promise<Evaluation> {
   }
 }
 
-let scanning: Promise<unknown> = Promise.resolve();
+let scanning: Promise<GameIntegration[] | DiskModuleState | null | void> = Promise.resolve();
 
 /**
  * Scan `DATA_DIR/modules` and load every enabled, compatible module not yet

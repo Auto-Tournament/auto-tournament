@@ -38,8 +38,10 @@ import { resolveInsideIndex } from '../services/packIndexService';
 import { isValidModuleId } from './manifest';
 import { CLIENT_API_VERSION, SERVER_API_VERSION } from './version';
 import { MAX_SIGNATURE_BYTES } from './signature';
+import type { Untrusted } from '../utils/untrusted';
 
-export const DEFAULT_CATALOG_URL = 'https://raw.githubusercontent.com/Auto-Tournament/packs/main/catalog.json';
+export const DEFAULT_CATALOG_URL =
+  'https://raw.githubusercontent.com/Auto-Tournament/packs/main/catalog.json';
 /** Module releases are downloaded from here and nowhere else. */
 export const RELEASE_URL_PREFIX = 'https://github.com/Auto-Tournament/';
 
@@ -168,11 +170,11 @@ export interface RemoteFeed {
 // Parsing — every field checked, a bad row skipped rather than fatal
 // ---------------------------------------------------------------------------
 
-function text(value: unknown, max = 500): string | null {
+function text(value: Untrusted, max = 500): string | null {
   return typeof value === 'string' && value.trim() && value.length <= max ? value.trim() : null;
 }
 
-function isRange(value: unknown): value is string {
+function isRange(value: Untrusted): value is string {
   return typeof value === 'string' && value.trim() !== '' && semver.validRange(value) !== null;
 }
 
@@ -193,14 +195,24 @@ export function allowedReleaseUrl(value: string, prefix = releasePrefix()): bool
   return url.pathname.startsWith(root.pathname) && !url.search && !url.hash;
 }
 
-function parseRelease(raw: unknown, from: 'remote' | 'snapshot'): CatalogRelease | null {
+function parseRelease(raw: Untrusted, from: 'remote' | 'snapshot'): CatalogRelease | null {
   if (!raw || typeof raw !== 'object') return null;
-  const r = raw as Record<string, unknown>;
+  const r = raw as Record<string, Untrusted>;
   if (typeof r.version !== 'string' || !semver.valid(r.version)) return null;
   if (!isRange(r.serverApi) || !isRange(r.clientApi)) return null;
-  const sha256 = typeof r.sha256 === 'string' && /^[0-9a-f]{64}$/i.test(r.sha256) ? r.sha256.toLowerCase() : null;
+  const sha256 =
+    typeof r.sha256 === 'string' && /^[0-9a-f]{64}$/i.test(r.sha256)
+      ? r.sha256.toLowerCase()
+      : null;
   const size = typeof r.size === 'number' && Number.isFinite(r.size) && r.size > 0 ? r.size : null;
-  const base = { version: r.version, serverApi: r.serverApi, clientApi: r.clientApi, sha256, size, from };
+  const base = {
+    version: r.version,
+    serverApi: r.serverApi,
+    clientApi: r.clientApi,
+    sha256,
+    size,
+    from,
+  };
   if (from === 'remote') {
     if (typeof r.url !== 'string' || !allowedReleaseUrl(r.url)) return null;
     return { ...base, url: r.url };
@@ -210,12 +222,12 @@ function parseRelease(raw: unknown, from: 'remote' | 'snapshot'): CatalogRelease
   return { ...base, file: r.file };
 }
 
-function parseModules(raw: unknown, from: 'remote' | 'snapshot'): CatalogModuleEntry[] {
+function parseModules(raw: Untrusted, from: 'remote' | 'snapshot'): CatalogModuleEntry[] {
   if (!Array.isArray(raw)) return [];
   const modules: CatalogModuleEntry[] = [];
   for (const row of raw) {
     if (!row || typeof row !== 'object') continue;
-    const m = row as Record<string, unknown>;
+    const m = row as Record<string, Untrusted>;
     if (!isValidModuleId(m.id)) continue;
     const name = text(m.name, 100);
     if (!name) continue;
@@ -235,12 +247,12 @@ function parseModules(raw: unknown, from: 'remote' | 'snapshot'): CatalogModuleE
   return modules;
 }
 
-function parsePacks(raw: unknown): CatalogPackEntry[] {
+function parsePacks(raw: Untrusted): CatalogPackEntry[] {
   if (!Array.isArray(raw)) return [];
   const packs: CatalogPackEntry[] = [];
   for (const row of raw) {
     if (!row || typeof row !== 'object') continue;
-    const p = row as Record<string, unknown>;
+    const p = row as Record<string, Untrusted>;
     const slug = text(p.slug, 80)?.toLowerCase();
     const name = text(p.name, 100);
     const file = text(p.file, 200);
@@ -261,8 +273,13 @@ function parsePacks(raw: unknown): CatalogPackEntry[] {
 }
 
 function parseFeed(body: string): { packs: CatalogPackEntry[]; modules: CatalogModuleEntry[] } {
-  const parsed = JSON.parse(body) as { schema?: unknown; packs?: unknown; modules?: unknown } | null;
-  if (!parsed || typeof parsed !== 'object') throw new CatalogFetchError('bad_response', SENTENCES.bad_response);
+  const parsed = JSON.parse(body) as {
+    schema?: Untrusted;
+    packs?: Untrusted;
+    modules?: Untrusted;
+  } | null;
+  if (!parsed || typeof parsed !== 'object')
+    throw new CatalogFetchError('bad_response', SENTENCES.bad_response);
   if (parsed.schema !== 1) throw new CatalogFetchError('newer_schema', SENTENCES.newer_schema);
   return { packs: parsePacks(parsed.packs), modules: parseModules(parsed.modules, 'remote') };
 }
@@ -306,7 +323,8 @@ function errorCode(error: unknown): FeedErrorCode {
   if (error instanceof CatalogFetchError) return error.code;
   if (error instanceof SyntaxError) return 'bad_response';
   const err = error as { type?: string; name?: string };
-  if (err?.type === 'request-timeout' || err?.type === 'body-timeout' || err?.type === 'aborted') return 'timeout';
+  if (err?.type === 'request-timeout' || err?.type === 'body-timeout' || err?.type === 'aborted')
+    return 'timeout';
   if (err?.name === 'AbortError') return 'timeout';
   if (err?.type === 'max-size') return 'too_large';
   return 'unreachable';
@@ -327,7 +345,11 @@ function describe(error: unknown): string {
  * by default, it is set here so the catalog does not depend on the default.
  * No keep-alive: a retry gets a new connection, not the one that stalled.
  */
-const AGENT_OPTIONS = { keepAlive: false, autoSelectFamily: true, autoSelectFamilyAttemptTimeout: 250 };
+const AGENT_OPTIONS = {
+  keepAlive: false,
+  autoSelectFamily: true,
+  autoSelectFamilyAttemptTimeout: 250,
+};
 const httpsAgent = new https.Agent(AGENT_OPTIONS);
 const httpAgent = new http.Agent(AGENT_OPTIONS);
 const agentFor = (url: URL): http.Agent => (url.protocol === 'http:' ? httpAgent : httpsAgent);
@@ -339,7 +361,10 @@ function worthRetrying(error: unknown): boolean {
   if (error instanceof CatalogFetchError) return error.code === 'timeout';
   const err = error as { type?: string; code?: string; message?: string };
   if (err?.type === 'request-timeout' || err?.type === 'body-timeout') return true;
-  return err?.type === 'system' && (RETRY_SYSTEM_CODES.has(err.code ?? '') || /socket hang up/i.test(err.message ?? ''));
+  return (
+    err?.type === 'system' &&
+    (RETRY_SYSTEM_CODES.has(err.code ?? '') || /socket hang up/i.test(err.message ?? ''))
+  );
 }
 
 interface GetOptions {
@@ -374,6 +399,7 @@ async function getOnce(url: string, options: GetOptions): Promise<Got> {
       redirect: options.redirect,
       size: options.limit,
       // node-fetch 2 declares its own AbortSignal type; Node's has the same shape.
+      // eslint-disable-next-line no-restricted-syntax -- node-fetch 2's own AbortSignal type
       signal: controller.signal as unknown as NonNullable<Parameters<typeof fetch>[1]>['signal'],
       headers: options.headers,
     });
@@ -383,7 +409,10 @@ async function getOnce(url: string, options: GetOptions): Promise<Got> {
     }
     if (!response.ok) {
       response.body.resume();
-      throw new CatalogFetchError(`http_${response.status}`, `${response.status} ${response.statusText}`);
+      throw new CatalogFetchError(
+        `http_${response.status}`,
+        `${response.status} ${response.statusText}`
+      );
     }
     const declared = Number(response.headers.get('content-length') || 0);
     if (declared > options.limit) throw new CatalogFetchError('too_large', SENTENCES.too_large);
@@ -440,7 +469,14 @@ async function fetchFeedNow(gen: number): Promise<RemoteFeed> {
       await writeCachedFeed(file, body);
       lastFailure = null;
     }
-    return { base, ...feed, from: 'remote', error: null, fetchedAt: new Date().toISOString(), refreshing: false };
+    return {
+      base,
+      ...feed,
+      from: 'remote',
+      error: null,
+      fetchedAt: new Date().toISOString(),
+      refreshing: false,
+    };
   } catch (error) {
     const code = errorCode(error);
     if (gen === generation) lastFailure = { generation: gen, code, at: Date.now() };
@@ -466,11 +502,24 @@ export function refreshRemoteFeed(): Promise<RemoteFeed> {
 }
 
 /** The last copy, or nothing, and why the live feed is not shown. */
-async function fallbackFeed(base: string, file: string, code: FeedErrorCode, refreshing: boolean): Promise<RemoteFeed> {
+async function fallbackFeed(
+  base: string,
+  file: string,
+  code: FeedErrorCode,
+  refreshing: boolean
+): Promise<RemoteFeed> {
   const cached = await readCachedFeed(file);
   return cached
     ? { base, ...cached.feed, from: 'cache', error: code, fetchedAt: cached.at, refreshing }
-    : { base: null, packs: [], modules: [], from: 'none', error: code, fetchedAt: null, refreshing };
+    : {
+        base: null,
+        packs: [],
+        modules: [],
+        from: 'none',
+        error: code,
+        fetchedAt: null,
+        refreshing,
+      };
 }
 
 /**
@@ -484,7 +533,11 @@ export async function readRemoteFeed(): Promise<RemoteFeed> {
   const base = new URL('.', catalogUrl()).toString();
   if (catalogOffline()) return fallbackFeed(base, cacheFile(), 'offline', false);
   const failed = lastFailure?.generation === generation ? lastFailure : null;
-  if (!inFlight && failed && Date.now() - failed.at < (overrides.retryAfterFailureMs ?? RETRY_AFTER_FAILURE_MS)) {
+  if (
+    !inFlight &&
+    failed &&
+    Date.now() - failed.at < (overrides.retryAfterFailureMs ?? RETRY_AFTER_FAILURE_MS)
+  ) {
     return fallbackFeed(base, cacheFile(), failed.code, false);
   }
   const refresh = refreshRemoteFeed();
@@ -499,9 +552,10 @@ export async function readRemoteFeed(): Promise<RemoteFeed> {
   return waited ?? fallbackFeed(base, cacheFile(), 'timeout', true);
 }
 
-async function readCachedFeed(
-  file: string
-): Promise<{ feed: { packs: CatalogPackEntry[]; modules: CatalogModuleEntry[] }; at: string } | null> {
+async function readCachedFeed(file: string): Promise<{
+  feed: { packs: CatalogPackEntry[]; modules: CatalogModuleEntry[] };
+  at: string;
+} | null> {
   try {
     const [body, stat] = await Promise.all([fs.readFile(file, 'utf8'), fs.stat(file)]);
     return { feed: parseFeed(body), at: stat.mtime.toISOString() };
@@ -522,9 +576,11 @@ async function writeCachedFeed(file: string, body: string): Promise<void> {
 /** The modules the image's snapshot carries. Never throws. */
 export async function readSnapshotModules(): Promise<CatalogModuleEntry[]> {
   try {
-    const parsed = JSON.parse(await fs.readFile(path.join(snapshotDir(), 'index.json'), 'utf8')) as {
-      schema?: unknown;
-      modules?: unknown;
+    const parsed = JSON.parse(
+      await fs.readFile(path.join(snapshotDir(), 'index.json'), 'utf8')
+    ) as {
+      schema?: Untrusted;
+      modules?: Untrusted;
     };
     if (parsed.schema !== 1) return [];
     return parseModules(parsed.modules, 'snapshot');
@@ -542,13 +598,18 @@ export interface ReleaseBytes {
  * The hosts GitHub serves release assets from. A release URL on github.com
  * answers with one redirect to one of these; nothing else is followed.
  */
-export const RELEASE_REDIRECT_HOSTS = ['objects.githubusercontent.com', 'release-assets.githubusercontent.com'];
+export const RELEASE_REDIRECT_HOSTS = [
+  'objects.githubusercontent.com',
+  'release-assets.githubusercontent.com',
+];
 
 /** Whether a release download may be redirected to `url`: https, GitHub's asset hosts, nothing else. */
 export function allowedRedirectUrl(url: URL): boolean {
   if (url.username || url.password) return false;
   if (overrides.redirectOrigins?.includes(url.origin)) return true;
-  return url.protocol === 'https:' && url.port === '' && RELEASE_REDIRECT_HOSTS.includes(url.hostname);
+  return (
+    url.protocol === 'https:' && url.port === '' && RELEASE_REDIRECT_HOSTS.includes(url.hostname)
+  );
 }
 
 /**
@@ -574,7 +635,9 @@ async function fetchReleaseFile(url: string, limit: number, signal: AbortSignal)
     if (!got.location) throw new Error('it redirected nowhere');
     const next = new URL(got.location, target);
     if (!allowedRedirectUrl(next)) {
-      throw new Error(`it redirected to ${next.protocol}//${next.host}, which this platform does not download from`);
+      throw new Error(
+        `it redirected to ${next.protocol}//${next.host}, which this platform does not download from`
+      );
     }
     target = next.toString();
   }
@@ -596,7 +659,11 @@ export async function downloadRelease(release: CatalogRelease): Promise<ReleaseB
     }
     let signature: Buffer;
     try {
-      signature = await fetchReleaseFile(`${release.url}.sig`, MAX_SIGNATURE_BYTES, controller.signal);
+      signature = await fetchReleaseFile(
+        `${release.url}.sig`,
+        MAX_SIGNATURE_BYTES,
+        controller.signal
+      );
     } catch (error) {
       throw new Error(`downloading the release's signature failed: ${describe(error)}`);
     }
@@ -611,9 +678,11 @@ export async function readSnapshotRelease(release: CatalogRelease): Promise<Rele
   if (release.from !== 'snapshot' || !release.file) throw new Error('not a snapshot release');
   const dir = snapshotDir();
   const file = path.join(dir, release.file);
-  if (path.dirname(file) !== path.resolve(dir)) throw new Error('the snapshot file is outside the snapshot');
+  if (path.dirname(file) !== path.resolve(dir))
+    throw new Error('the snapshot file is outside the snapshot');
   const stat = await fs.stat(file).catch(() => null);
-  if (!stat?.isFile()) throw new Error(`the offline copy ${release.file} is missing from this image`);
+  if (!stat?.isFile())
+    throw new Error(`the offline copy ${release.file} is missing from this image`);
   if (stat.size > MAX_ARCHIVE_BYTES) throw new Error('the offline copy is too large');
   const signature = await fs.readFile(`${file}.sig`).catch(() => null);
   if (!signature) throw new Error(`the offline copy ${release.file} has no signature`);
@@ -644,7 +713,9 @@ export function pickRelease(
     };
   }
   // Newest first; for the same version the remote copy first (the snapshot is the fallback).
-  compatible.sort((a, b) => semver.rcompare(a.version, b.version) || (a.from === 'remote' ? -1 : 1));
+  compatible.sort(
+    (a, b) => semver.rcompare(a.version, b.version) || (a.from === 'remote' ? -1 : 1)
+  );
   return { ok: true, release: compatible[0] };
 }
 

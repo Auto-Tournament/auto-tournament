@@ -21,6 +21,7 @@ import { integrationForMatch } from '../integrations/registry';
 import type { GameIntegration, PlayerStatLine, ReportedStatLine } from '../integrations/types';
 import type { DbMatchRow } from '../types/database.types';
 import type { Player } from '../types/team.types';
+import type { Untrusted } from '../utils/untrusted';
 
 /**
  * Update player ratings for matches (all tournament types with players)
@@ -245,10 +246,10 @@ async function persistPlayerMatchStats(options: {
 }
 
 /** The ids among `ids` that have a player record. */
-function configHasBotFill(config: unknown): boolean {
+function configHasBotFill(config: Untrusted): boolean {
   try {
     const parsed = typeof config === 'string' ? JSON.parse(config) : config;
-    return (parsed as { bot_fill?: unknown } | null)?.bot_fill === true;
+    return (parsed as { bot_fill?: Untrusted } | null)?.bot_fill === true;
   } catch {
     return false;
   }

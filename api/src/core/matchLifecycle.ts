@@ -64,6 +64,7 @@ import {
   updateRatingsForMatch,
 } from './playerResults';
 import { matchTeamNames, postMatchChatLine } from '../services/matchChatLines';
+import type { Untrusted } from '../utils/untrusted';
 
 type MapResultEvent = Extract<NormalizedEvent, { type: 'map.result' }>;
 
@@ -849,7 +850,7 @@ async function processSeriesEnd(
   let teamCount: number | undefined;
   if (tournament?.team_ids) {
     try {
-      const parsed = JSON.parse(tournament.team_ids) as unknown;
+      const parsed = JSON.parse(tournament.team_ids) as Untrusted;
       if (Array.isArray(parsed)) {
         teamCount = parsed.length;
       }

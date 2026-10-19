@@ -13,6 +13,7 @@
 
 import semver from 'semver';
 import { CLIENT_API_VERSION, SERVER_API_VERSION } from './version';
+import type { Untrusted } from '../utils/untrusted';
 
 /**
  * A module id: lowercase letters and digits, in groups joined by single
@@ -23,7 +24,7 @@ import { CLIENT_API_VERSION, SERVER_API_VERSION } from './version';
 export const MODULE_ID_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 export const MODULE_ID_MAX_LENGTH = 64;
 
-export function isValidModuleId(id: unknown): boolean {
+export function isValidModuleId(id: Untrusted): boolean {
   return typeof id === 'string' && id.length <= MODULE_ID_MAX_LENGTH && MODULE_ID_PATTERN.test(id);
 }
 
@@ -65,7 +66,7 @@ function fail(reason: string): ManifestResult {
   return { ok: false, reason: `module.json: ${reason}` };
 }
 
-function isRange(value: unknown): value is string {
+function isRange(value: Untrusted): value is string {
   return typeof value === 'string' && value.trim() !== '' && semver.validRange(value) !== null;
 }
 
@@ -77,11 +78,11 @@ function isRange(value: unknown): value is string {
  * module folder. Keys it does not define are left for the parts of the module
  * system that own them (migrations, locales) and are not an error.
  */
-export function parseManifest(raw: unknown, folder: string): ManifestResult {
+export function parseManifest(raw: Untrusted, folder: string): ManifestResult {
   if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
     return fail('must be a JSON object');
   }
-  const m = raw as Record<string, unknown>;
+  const m = raw as Record<string, Untrusted>;
 
   if (typeof m.id !== 'string') return fail("'id' is required and must be a string");
   if (!isValidModuleId(m.id)) {
@@ -108,7 +109,11 @@ export function parseManifest(raw: unknown, folder: string): ManifestResult {
     return fail("'clientApi' must be a semver range, such as ^0.1.0");
   }
 
-  if (typeof m.server !== 'string' || !isSafeEntryPath(m.server) || !SERVER_ENTRY_EXT.test(m.server)) {
+  if (
+    typeof m.server !== 'string' ||
+    !isSafeEntryPath(m.server) ||
+    !SERVER_ENTRY_EXT.test(m.server)
+  ) {
     return fail(
       "'server' must be a .js, .mjs or .cjs file inside the module folder, such as server/index.js"
     );

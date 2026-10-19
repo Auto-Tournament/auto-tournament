@@ -123,17 +123,17 @@ const exposed = new Map<string, object>();
 function expose(name: string): object {
   const cached = exposed.get(name);
   if (cached) return cached;
-  const namespace = MODULES[name] as Record<string, unknown> | undefined;
+  const namespace: object | undefined = MODULES[name];
   if (!namespace || !HOST_MODULES.includes(name)) {
     throw new Error(
       `A code module imported the platform's '${name}', which this platform does not share with modules (server API ${SERVER_API_VERSION}).`
     );
   }
-  const view: Record<string, unknown> = {};
+  const view = {};
   Object.defineProperty(view, '__esModule', { value: true });
   for (const key of Object.keys(namespace)) {
     if (key === '__esModule') continue;
-    Object.defineProperty(view, key, { enumerable: true, get: () => namespace[key] });
+    Object.defineProperty(view, key, { enumerable: true, get: () => Reflect.get(namespace, key) });
   }
   Object.freeze(view);
   exposed.set(name, view);
@@ -147,7 +147,7 @@ export interface HostBridge {
 
 /** Put the bridge where module bundles look for it. Idempotent. */
 export function installHostBridge(): void {
-  const target = globalThis as unknown as Record<string, HostBridge | undefined>;
+  const target = globalThis as typeof globalThis & Record<string, HostBridge | undefined>;
   if (target[HOST_GLOBAL]) return;
   target[HOST_GLOBAL] = Object.freeze({ serverApi: SERVER_API_VERSION, module: expose });
 }

@@ -445,7 +445,7 @@ app.get('/health', (_req: Request, res: Response) => {
  */
 app.get('/api/health/fleet', async (_req: Request, res: Response) => {
   // Each game integration adds its own block (CS2: `cs2Fleet` and `servers`).
-  const contributions: Record<string, unknown> = {};
+  const contributions: object = {};
   for (const integration of listIntegrations()) {
     if (integration.healthContributions) {
       Object.assign(contributions, await integration.healthContributions());
@@ -504,8 +504,12 @@ app.use((_req: Request, res: Response) => {
 // so `admin:subscribe` can check admin rights like `requireAuth` does.
 initializeSocket(httpServer, {
   handshakeMiddleware: [
+    // Express middleware runs on the handshake request as it is; only the types differ.
+    // eslint-disable-next-line no-restricted-syntax -- express RequestHandler vs socket.io handshake types
     sessionMiddleware as unknown as HandshakeMiddleware,
+    // eslint-disable-next-line no-restricted-syntax -- as above
     passportInitialize as unknown as HandshakeMiddleware,
+    // eslint-disable-next-line no-restricted-syntax -- as above
     passportSession as unknown as HandshakeMiddleware,
   ],
 });

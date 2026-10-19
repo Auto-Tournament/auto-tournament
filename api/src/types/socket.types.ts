@@ -5,6 +5,7 @@
 
 import type { BracketMatch } from './tournament.types';
 import type { DbMatchRow } from './database.types';
+import type { Untrusted } from '../utils/untrusted';
 
 /**
  * Tournament update event
@@ -12,7 +13,7 @@ import type { DbMatchRow } from './database.types';
 export interface TournamentUpdateEvent {
   id?: number;
   status?: string;
-  [key: string]: unknown;
+  [key: string]: Untrusted;
 }
 
 /**
@@ -22,7 +23,7 @@ export interface BracketUpdateEvent {
   action: 'server_assigned' | 'match_loaded' | 'match_restarted' | 'tournament_started' | string;
   matchSlug?: string;
   serverId?: string;
-  [key: string]: unknown;
+  [key: string]: Untrusted;
 }
 
 /**
@@ -35,7 +36,7 @@ export type MatchUpdateEvent =
       id?: number;
       slug?: string;
       status?: string;
-      [key: string]: unknown;
+      [key: string]: Untrusted;
     };
 
 /**
@@ -67,7 +68,7 @@ export interface GameWebhookEvent {
 export interface PlayerConnectionEvent {
   slug: string;
   connectionStatus: 'waiting' | 'partial' | 'ready' | 'complete';
-  [key: string]: unknown;
+  [key: string]: Untrusted;
 }
 
 /**
@@ -76,7 +77,7 @@ export interface PlayerConnectionEvent {
 export interface ServerEvent {
   serverId: string;
   event?: string;
-  [key: string]: unknown;
+  [key: string]: Untrusted;
 }
 
 /**
