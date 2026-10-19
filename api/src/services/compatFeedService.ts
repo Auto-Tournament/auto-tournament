@@ -13,7 +13,11 @@
 
 import fetch from 'node-fetch';
 import { log } from '../utils/logger';
-import { COMPAT_MAX_BYTES, validateCompatDocument, type CompatDocument } from '../utils/compatPayload';
+import {
+  COMPAT_MAX_BYTES,
+  validateCompatDocument,
+  type CompatDocument,
+} from '../utils/compatPayload';
 import { compatFeedUrl, ingestCompatDocument } from './compatService';
 
 export const COMPAT_FEED_INTERVAL_MS = 5 * 60 * 1000;
@@ -59,7 +63,10 @@ export async function fetchCompatFeed(
     }
     const checked = validateCompatDocument(body);
     if (!checked.ok) {
-      return { status: 'error', error: `the document is invalid: ${checked.errors.slice(0, 5).join('; ')}` };
+      return {
+        status: 'error',
+        error: `the document is invalid: ${checked.errors.slice(0, 5).join('; ')}`,
+      };
     }
     return { status: 'ok', document: checked.value, etag: response.headers.get('etag') };
   } catch (error) {
@@ -92,7 +99,9 @@ export function pollCompatFeed(): Promise<void> {
     const outcome = await fetchCompatFeed(url, { etag: lastEtag });
     if (outcome.status === 'error') {
       if (outcome.error !== lastError) {
-        log.warn(`[COMPAT] Could not read COMPAT_FEED_URL (keeping the last good run): ${outcome.error}`);
+        log.warn(
+          `[COMPAT] Could not read COMPAT_FEED_URL (keeping the last good run): ${outcome.error}`
+        );
       }
       lastError = outcome.error;
       return;

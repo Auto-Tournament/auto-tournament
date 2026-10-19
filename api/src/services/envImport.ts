@@ -12,7 +12,9 @@ export async function envImportedNames(): Promise<Set<string>> {
   const raw = await db.getAppSettingAsync(KEY);
   try {
     const parsed = raw ? (JSON.parse(raw) as unknown) : [];
-    return new Set(Array.isArray(parsed) ? parsed.filter((x): x is string => typeof x === 'string') : []);
+    return new Set(
+      Array.isArray(parsed) ? parsed.filter((x): x is string => typeof x === 'string') : []
+    );
   } catch {
     return new Set();
   }
