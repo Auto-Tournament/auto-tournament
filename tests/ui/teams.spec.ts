@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { setupTestContext, configureWebhook } from '../helpers/setup';
+import { setupTestContext } from '../helpers/setup';
 import { getAuthHeader } from '../helpers/auth';
 
 /**
@@ -26,9 +26,8 @@ function teamCardId(name: string): string {
 
 test.describe.serial('Teams UI', () => {
   test.beforeEach(async ({ page, request }) => {
-    const context = await setupTestContext(page, request);
+    await setupTestContext(page, request);
     // A missing webhook URL raises a banner that can sit over the page actions.
-    await configureWebhook(request, context.baseUrl);
   });
 
   test(

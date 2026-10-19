@@ -5,7 +5,6 @@ import {
   signInViaRequest,
   stopImpersonating,
 } from '../helpers/auth';
-import { configureWebhook } from '../helpers/setup';
 import { createTeam, type Team } from '../helpers/teams';
 import { executeVetoAction, getVetoState } from '../helpers/veto';
 
@@ -87,7 +86,6 @@ test.describe.serial('A player in two tournaments at once', () => {
     { tag: ['@api', '@veto'] },
     async ({ request }) => {
       await signInViaRequest(request);
-      expect(await configureWebhook(request, 'http://localhost:3069')).toBe(true);
 
       const shared = { steamId: steamId(), name: 'Both Cups' };
       const make = async (key: string, players: Array<{ steamId: string; name: string }>) => {

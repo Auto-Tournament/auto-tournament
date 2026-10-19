@@ -1,5 +1,5 @@
 import { test as base, expect } from '@playwright/test';
-import { setupTestContextWithFreshDB, configureWebhook } from './helpers/setup';
+import { setupTestContextWithFreshDB } from './helpers/setup';
 
 /**
  * Global setup test - runs once before all other tests
@@ -23,8 +23,7 @@ type TestFixtures = {
 export const test = base.extend<TestFixtures>({
   authenticated: async ({ page, request }, use) => {
     // This will run before each test that uses the authenticated fixture
-    const context = await setupTestContextWithFreshDB(page, request);
-    await configureWebhook(request, context.baseUrl);
+    await setupTestContextWithFreshDB(page, request);
     await use(true);
   },
 });
@@ -35,11 +34,7 @@ test.describe.serial('Global Test Setup', () => {
     { tag: ['@setup', '@global'] },
     async ({ page, request }) => {
       // Wipe database and sign in
-      const context = await setupTestContextWithFreshDB(page, request);
-
-      // Configure webhook
-      const webhookConfigured = await configureWebhook(request, context.baseUrl);
-      expect(webhookConfigured).toBe(true);
+      await setupTestContextWithFreshDB(page, request);
 
       // Verify we can access protected routes
       await page.goto('/');

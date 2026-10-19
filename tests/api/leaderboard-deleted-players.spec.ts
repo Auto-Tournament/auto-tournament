@@ -1,6 +1,5 @@
 import { test, expect } from '@playwright/test';
 import { getAuthHeader, signInViaRequest } from '../helpers/auth';
-import { configureWebhook } from '../helpers/setup';
 import { createTeam, type Team } from '../helpers/teams';
 import { createTestServer } from '../helpers/servers';
 import { getOk, postOk, resetDatabaseForGolden } from '../helpers/golden';
@@ -30,7 +29,6 @@ test(
   async ({ request }) => {
     expect(await signInViaRequest(request)).toBe(true);
     await resetDatabaseForGolden(request);
-    expect(await configureWebhook(request, 'http://localhost:3069')).toBe(true);
     for (const team of TEAMS) expect(await createTeam(request, team)).toBeTruthy();
     expect(await createTestServer(request, 'lbdeleted')).toBeTruthy();
 
