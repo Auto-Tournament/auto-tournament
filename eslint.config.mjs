@@ -15,6 +15,13 @@ import {
   PREFER_CONST,
   TYPE_IMPORTS,
 } from './eslint-rules/cleanliness-todo.mjs';
+import {
+  NULLISH_COALESCING,
+  OPTIONAL_CHAIN,
+  SWITCH_EXHAUSTIVE,
+  UNNECESSARY_ASSERTION,
+  UNNECESSARY_CONDITION,
+} from './eslint-rules/typed-lint-todo.mjs';
 
 export default [
   js.configs.recommended,
@@ -411,6 +418,29 @@ export default [
     files: ['api/src/**/*.ts', 'client/src/**/*.{ts,tsx}'],
     rules: { eqeqeq: ['error', 'smart'], 'max-depth': ['warn', 4] },
   },
+
+  // Type-aware (api/src only: the client has no typed linting yet). No
+  // floating promises (a fire-and-forget call says so with `void`), no promise
+  // where a void callback is expected (Express handlers excepted), and five
+  // more that skip their own list of files from before the rule
+  // (eslint-rules/typed-lint-todo.mjs).
+  {
+    files: ['api/src/**/*.ts'],
+    rules: {
+      '@typescript-eslint/no-floating-promises': 'error',
+      '@typescript-eslint/no-misused-promises': [
+        'error',
+        { checksVoidReturn: { arguments: false } },
+      ],
+    },
+  },
+  ...[
+    ['@typescript-eslint/switch-exhaustiveness-check', SWITCH_EXHAUSTIVE],
+    ['@typescript-eslint/no-unnecessary-type-assertion', UNNECESSARY_ASSERTION],
+    ['@typescript-eslint/no-unnecessary-condition', UNNECESSARY_CONDITION],
+    ['@typescript-eslint/prefer-nullish-coalescing', NULLISH_COALESCING],
+    ['@typescript-eslint/prefer-optional-chain', OPTIONAL_CHAIN],
+  ].map(([rule, ignores]) => ({ files: ['api/src/**/*.ts'], ignores, rules: { [rule]: 'error' } })),
 
   // Ignore patterns
   {
