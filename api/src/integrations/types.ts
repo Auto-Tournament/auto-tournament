@@ -30,6 +30,7 @@ import type { SqlValue } from '../config/database';
 import type { TournamentResponse, TournamentSettings } from '../types/tournament.types';
 import type { JsonObject } from '../utils/json';
 import type { Untrusted } from '../utils/untrusted';
+import type { ShareKind } from '../services/shareCards/types';
 
 /**
  * Identifier stored in the `game` column: 'cs2', plus 'fake' in test runs
@@ -1159,7 +1160,7 @@ export interface GameIntegration<D extends IntegrationData = IntegrationData> {
    * and additive: a platform that predates it ignores it.
    * See services/shareCards/types.ts.
    */
-  shareCards?: import('../services/shareCards/types').ShareKind[];
+  shareCards?: ShareKind[];
   /**
    * Background jobs (monitors, fleet checks) and one-off startup work. Called
    * once the database is ready and the HTTP server is listening, alongside the

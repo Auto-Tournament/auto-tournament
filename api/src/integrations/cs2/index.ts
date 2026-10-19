@@ -69,6 +69,7 @@ import {
   cs2PlayerStatsMetrics,
   metricsFromPluginStats,
 } from './stats';
+import type * as Cs2Routes from './routes';
 
 /**
  * The tournament view `generateMatchConfig` needs: `ctx.tournament.full` when
@@ -757,7 +758,7 @@ export const cs2Integration: GameIntegration<Cs2Data> = {
   legacyRoutes() {
     // A synchronous lazy load: the route table is built synchronously.
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { cs2LegacyRoutes } = require('./routes') as typeof import('./routes');
+    const { cs2LegacyRoutes } = require('./routes') as typeof Cs2Routes;
     return cs2LegacyRoutes;
   },
 
