@@ -31,6 +31,7 @@ import {
   uninstallCatalogPack,
   updateAllCatalog,
 } from '../modules/catalogService';
+import type { Untrusted } from '../utils/untrusted';
 
 const router = Router();
 
@@ -104,7 +105,10 @@ async function sendIcon(res: Response, kind: 'pack' | 'module', id: string): Pro
       return;
     }
     res.setHeader('Content-Type', 'image/svg+xml; charset=utf-8');
-    res.setHeader('Content-Security-Policy', "default-src 'none'; style-src 'unsafe-inline'; sandbox");
+    res.setHeader(
+      'Content-Security-Policy',
+      "default-src 'none'; style-src 'unsafe-inline'; sandbox"
+    );
     res.setHeader('X-Content-Type-Options', 'nosniff');
     res.setHeader('Cache-Control', 'private, max-age=300');
     res.send(markup);
@@ -243,7 +247,10 @@ router.get('/modules/:id/icon.svg', (req: Request, res: Response) =>
  */
 router.post('/packs/:slug/install', sameSiteJson, async (req: Request, res: Response) => {
   try {
-    res.json({ success: true, ...(await installCatalogPack(req.params.slug, requestActorId(req))) });
+    res.json({
+      success: true,
+      ...(await installCatalogPack(req.params.slug, requestActorId(req))),
+    });
   } catch (error) {
     fail(res, error, 'install the game');
   }
@@ -272,7 +279,10 @@ router.post('/packs/:slug/install', sameSiteJson, async (req: Request, res: Resp
  */
 router.delete('/packs/:slug', sameSiteJson, async (req: Request, res: Response) => {
   try {
-    res.json({ success: true, ...(await uninstallCatalogPack(req.params.slug, requestActorId(req))) });
+    res.json({
+      success: true,
+      ...(await uninstallCatalogPack(req.params.slug, requestActorId(req))),
+    });
   } catch (error) {
     fail(res, error, 'remove the game');
   }
@@ -443,7 +453,10 @@ router.post('/modules/:id/enable', sameSiteJson, async (req: Request, res: Respo
  */
 router.post('/modules/:id/disable', sameSiteJson, async (req: Request, res: Response) => {
   try {
-    res.json({ success: true, ...(await disableCatalogModule(req.params.id, requestActorId(req))) });
+    res.json({
+      success: true,
+      ...(await disableCatalogModule(req.params.id, requestActorId(req))),
+    });
   } catch (error) {
     fail(res, error, 'disable the module');
   }
@@ -475,7 +488,10 @@ router.post('/modules/:id/disable', sameSiteJson, async (req: Request, res: Resp
  */
 router.delete('/modules/:id', sameSiteJson, async (req: Request, res: Response) => {
   try {
-    res.json({ success: true, ...(await uninstallCatalogModule(req.params.id, requestActorId(req))) });
+    res.json({
+      success: true,
+      ...(await uninstallCatalogModule(req.params.id, requestActorId(req))),
+    });
   } catch (error) {
     fail(res, error, 'uninstall the module');
   }
@@ -509,8 +525,11 @@ router.delete('/modules/:id', sameSiteJson, async (req: Request, res: Response) 
  */
 router.post('/modules/:id/purge', sameSiteJson, async (req: Request, res: Response) => {
   try {
-    const confirm = (req.body as { confirm?: unknown } | undefined)?.confirm;
-    res.json({ success: true, ...(await purgeCatalogModule(req.params.id, confirm, requestActorId(req))) });
+    const confirm = (req.body as { confirm?: Untrusted } | undefined)?.confirm;
+    res.json({
+      success: true,
+      ...(await purgeCatalogModule(req.params.id, confirm, requestActorId(req))),
+    });
   } catch (error) {
     fail(res, error, 'purge the module');
   }

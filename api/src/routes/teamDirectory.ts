@@ -50,6 +50,7 @@ import {
   bannerUrl,
   logoUrl,
 } from '../services/teamSelfService';
+import type { Untrusted } from '../utils/untrusted';
 
 const router = Router();
 
@@ -85,7 +86,7 @@ export interface DirectoryTeam {
 
 function rosterIds(players: string): string[] {
   try {
-    const list = JSON.parse(players) as unknown;
+    const list = JSON.parse(players) as Untrusted;
     return Array.isArray(list)
       ? list.map((p) => (p as { steamId?: string }).steamId).filter((id): id is string => !!id)
       : [];
@@ -154,7 +155,7 @@ async function withNumbers(rows: DirectoryRow[]): Promise<DirectoryTeam[]> {
 
 function rosterSize(players: string): number {
   try {
-    const list = JSON.parse(players) as unknown;
+    const list = JSON.parse(players) as Untrusted;
     return Array.isArray(list) ? list.length : 0;
   } catch {
     return 0;
@@ -183,8 +184,8 @@ const DIRECTORY_SELECT = `
 
 /** Team names: 2-32 characters. Tags: 2-5 letters or digits, kept upper case. */
 export function validateTeamFields(
-  name: unknown,
-  tag: unknown
+  name: Untrusted,
+  tag: Untrusted
 ): { name: string; tag: string } | string {
   const n = typeof name === 'string' ? name.trim().replace(/\s+/g, ' ') : '';
   if (n.length < 2 || n.length > 32) return 'The team name must be 2 to 32 characters.';
@@ -359,8 +360,8 @@ async function actingAccount(req: Request, res: Response): Promise<string | null
 }
 
 /** Runs a team action and answers with its result, or its refusal. */
-function teamAction(
-  action: (req: Request, uid: string | null) => Promise<unknown>,
+function teamAction<T>(
+  action: (req: Request, uid: string | null) => Promise<T>,
   { signIn = true }: { signIn?: boolean } = {}
 ) {
   return async (req: Request, res: Response) => {
@@ -413,7 +414,7 @@ router.get('/:teamId/profile', async (req: Request, res: Response) => {
 
     let roster: Array<{ steamId: string; name: string; avatar?: string }> = [];
     try {
-      const parsed = JSON.parse(row.players) as unknown;
+      const parsed = JSON.parse(row.players) as Untrusted;
       if (Array.isArray(parsed)) roster = parsed;
     } catch {
       roster = [];

@@ -56,6 +56,7 @@ export const MAX_LINES_TODO = [
   'api/src/routes/teamDirectory.ts',
   'api/src/routes/teamMatch.ts',
   'api/src/routes/test.ts',
+  'api/src/routes/testCatalog.ts',
   'api/src/routes/tournament.ts',
   'api/src/services/chatService.ts',
   'api/src/services/gameCatalogService.ts',

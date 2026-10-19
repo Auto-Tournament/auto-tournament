@@ -51,6 +51,7 @@ import {
 import { forgetDiskModule, loadModuleNow, modulesDir, storeEnabled } from '../modules/loader';
 import { isValidModuleId } from '../modules/manifest';
 import { db } from '../config/database';
+import type { Untrusted } from '../utils/untrusted';
 
 type FixtureFiles = (id: string, kind: 'valid' | 'bad-migration') => Record<string, string>;
 
@@ -118,7 +119,10 @@ function rawHeader(name: string, size: number, type: string, linkname = ''): Buf
   return block;
 }
 
-function rawArchive(files: Record<string, string>, extra: Array<{ name: string; type: string; data?: string; linkname?: string }>): Buffer {
+function rawArchive(
+  files: Record<string, string>,
+  extra: Array<{ name: string; type: string; data?: string; linkname?: string }>
+): Buffer {
   const parts: Buffer[] = [];
   const add = (name: string, type: string, data: Buffer, linkname?: string) => {
     parts.push(rawHeader(name, data.length, type, linkname));
@@ -127,26 +131,38 @@ function rawArchive(files: Record<string, string>, extra: Array<{ name: string; 
     if (pad) parts.push(Buffer.alloc(pad, 0));
   };
   for (const [name, text] of Object.entries(files)) add(name, '0', Buffer.from(text, 'utf8'));
-  for (const entry of extra) add(entry.name, entry.type, Buffer.from(entry.data ?? '', 'utf8'), entry.linkname);
+  for (const entry of extra)
+    add(entry.name, entry.type, Buffer.from(entry.data ?? '', 'utf8'), entry.linkname);
   parts.push(Buffer.alloc(1024, 0));
   return zlib.gzipSync(Buffer.concat(parts));
 }
 
 function withVersion(files: Record<string, string>, version: string): Record<string, string> {
-  const manifest = JSON.parse(files['module.json']) as Record<string, unknown>;
+  const manifest = JSON.parse(files['module.json']) as Record<string, Untrusted>;
   return { ...files, 'module.json': JSON.stringify({ ...manifest, version }, null, 2) };
 }
 
 function toEntries(files: Record<string, string>) {
-  return Object.entries(files).map(([file, text]) => ({ path: file, data: Buffer.from(text, 'utf8') }));
+  return Object.entries(files).map(([file, text]) => ({
+    path: file,
+    data: Buffer.from(text, 'utf8'),
+  }));
 }
 
-function release(kind: Kind, id: string, version: string, fixtureFiles: FixtureFiles): { archive: Buffer; signature: string } {
+function release(
+  kind: Kind,
+  id: string,
+  version: string,
+  fixtureFiles: FixtureFiles
+): { archive: Buffer; signature: string } {
   const key = `${id}@${version}`;
   const cached = built.get(key);
   if (cached) return cached;
 
-  const valid = withVersion(fixtureFiles(id, kind === 'migfail' ? 'bad-migration' : 'valid'), version);
+  const valid = withVersion(
+    fixtureFiles(id, kind === 'migfail' ? 'bad-migration' : 'valid'),
+    version
+  );
   let archive: Buffer;
   let signer = trusted!;
   switch (kind) {
@@ -190,7 +206,12 @@ function feed(run: string, goodVersions: string[]) {
       id,
       name: `Catalog fixture ${kind}`,
       description: `A fixture module: ${kind}.`,
-      releases: versions.map((version) => ({ version, serverApi, clientApi: '^0.2.0', url: url(id, version) })),
+      releases: versions.map((version) => ({
+        version,
+        serverApi,
+        clientApi: '^0.2.0',
+        url: url(id, version),
+      })),
     };
   };
   return {
@@ -222,7 +243,14 @@ function feed(run: string, goodVersions: string[]) {
       {
         id: `fixture-cat-elsewhere-${run}`,
         name: 'Elsewhere',
-        releases: [{ version: '1.0.0', serverApi: '^0.1.0', clientApi: '^0.2.0', url: 'https://example.com/evil.atmod' }],
+        releases: [
+          {
+            version: '1.0.0',
+            serverApi: '^0.1.0',
+            clientApi: '^0.2.0',
+            url: 'https://example.com/evil.atmod',
+          },
+        ],
       },
     ],
   };
@@ -268,17 +296,20 @@ async function writeSnapshot(run: string, fixtureFiles: FixtureFiles): Promise<v
  * what `POST /api/catalog/modules/<id>/purge` would drop and whether it
  * would succeed, for a module the running suite cannot unload (CS2).
  */
-async function purgeProbe(id: string): Promise<{ ok: boolean; tables: string[]; constraints: string[]; error?: string }> {
+async function purgeProbe(
+  id: string
+): Promise<{ ok: boolean; tables: string[]; constraints: string[]; error?: string }> {
   const tables = await purgeableTables(id);
   return db.withClient(async (client) => {
     await client.query('BEGIN');
     try {
       const report = await purgeModuleData(client, id, tables);
       const left = await client.query(
-        "SELECT tablename FROM pg_tables WHERE schemaname = current_schema() AND tablename = ANY($1)",
+        'SELECT tablename FROM pg_tables WHERE schemaname = current_schema() AND tablename = ANY($1)',
         [tables]
       );
-      if (left.rows.length > 0) throw new Error(`still there: ${left.rows.map((r) => r.tablename).join(', ')}`);
+      if (left.rows.length > 0)
+        throw new Error(`still there: ${left.rows.map((r) => r.tablename).join(', ')}`);
       return { ok: true, ...report };
     } catch (error) {
       return { ok: false, tables, constraints: [], error: (error as Error).message };
@@ -292,11 +323,17 @@ export function registerCatalogTestRoutes(
   router: Router,
   helpersEnabled: (res: Response) => boolean,
   fixtureFiles: FixtureFiles,
-  fakePack: { pack: (slug: string) => unknown; tile: string }
+  fakePack: { pack: (slug: string) => Untrusted; tile: string }
 ): void {
   router.post('/catalog', requireAuth, async (req: Request, res: Response): Promise<void> => {
     if (!helpersEnabled(res)) return;
-    const body = (req.body ?? {}) as { fake?: unknown; run?: unknown; goodVersions?: unknown; feed?: unknown; resetCache?: unknown };
+    const body = (req.body ?? {}) as {
+      fake?: Untrusted;
+      run?: Untrusted;
+      goodVersions?: Untrusted;
+      feed?: Untrusted;
+      resetCache?: Untrusted;
+    };
     if (body.fake === false) {
       state = null;
       setCatalogOverridesForTests(null);
@@ -305,11 +342,15 @@ export function registerCatalogTestRoutes(
     }
     const run = typeof body.run === 'string' && /^[a-z0-9]{1,20}$/.test(body.run) ? body.run : null;
     if (!run) {
-      res.status(400).json({ success: false, error: 'run must be 1-20 lowercase letters or digits' });
+      res
+        .status(400)
+        .json({ success: false, error: 'run must be 1-20 lowercase letters or digits' });
       return;
     }
     const goodVersions = Array.isArray(body.goodVersions)
-      ? body.goodVersions.filter((v): v is string => typeof v === 'string' && /^\d+\.\d+\.\d+$/.test(v))
+      ? body.goodVersions.filter(
+          (v): v is string => typeof v === 'string' && /^\d+\.\d+\.\d+$/.test(v)
+        )
       : ['1.0.0'];
     const feedMode = body.feed === 'hang' || body.feed === 'down' ? body.feed : 'ok';
 
@@ -337,110 +378,168 @@ export function registerCatalogTestRoutes(
     });
   });
 
-  router.post('/modules/:id/purge-probe', requireAuth, async (req: Request, res: Response): Promise<void> => {
-    if (!helpersEnabled(res)) return;
-    if (!isValidModuleId(req.params.id)) {
-      res.status(400).json({ success: false, error: 'Not a valid module id' });
-      return;
+  router.post(
+    '/modules/:id/purge-probe',
+    requireAuth,
+    async (req: Request, res: Response): Promise<void> => {
+      if (!helpersEnabled(res)) return;
+      if (!isValidModuleId(req.params.id)) {
+        res.status(400).json({ success: false, error: 'Not a valid module id' });
+        return;
+      }
+      res.json({ success: true, ...(await purgeProbe(req.params.id)) });
     }
-    res.json({ success: true, ...(await purgeProbe(req.params.id)) });
-  });
+  );
 
   // A migration the fixture module does not declare, as a newer version would
   // have left in the ledger. Fixture ids only.
-  router.post('/modules/:id/ledger', requireAuth, async (req: Request, res: Response): Promise<void> => {
-    if (!helpersEnabled(res)) return;
-    const migrationId = (req.body as { migrationId?: unknown } | undefined)?.migrationId;
-    if (!isValidModuleId(req.params.id) || !req.params.id.startsWith('fixture-') || typeof migrationId !== 'string' || !/^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/.test(migrationId)) {
-      res.status(400).json({ success: false, error: 'A fixture module id and a migration id are required' });
-      return;
+  router.post(
+    '/modules/:id/ledger',
+    requireAuth,
+    async (req: Request, res: Response): Promise<void> => {
+      if (!helpersEnabled(res)) return;
+      const migrationId = (req.body as { migrationId?: Untrusted } | undefined)?.migrationId;
+      if (
+        !isValidModuleId(req.params.id) ||
+        !req.params.id.startsWith('fixture-') ||
+        typeof migrationId !== 'string' ||
+        !/^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/.test(migrationId)
+      ) {
+        res
+          .status(400)
+          .json({ success: false, error: 'A fixture module id and a migration id are required' });
+        return;
+      }
+      await db.runAsync(
+        'INSERT INTO module_migrations (module_id, migration_id, checksum) VALUES (?, ?, ?) ON CONFLICT DO NOTHING',
+        [req.params.id, migrationId, 'f'.repeat(64)]
+      );
+      res.json({ success: true });
     }
-    await db.runAsync(
-      'INSERT INTO module_migrations (module_id, migration_id, checksum) VALUES (?, ?, ?) ON CONFLICT DO NOTHING',
-      [req.params.id, migrationId, 'f'.repeat(64)]
-    );
-    res.json({ success: true });
-  });
+  );
 
   const fixtureId = (res: Response, id: string): boolean => {
     if (isValidModuleId(id) && id.startsWith('fixture-')) return true;
-    res.status(400).json({ success: false, error: "id must be a valid module id starting with 'fixture-'" });
+    res
+      .status(400)
+      .json({ success: false, error: "id must be a valid module id starting with 'fixture-'" });
     return false;
   };
 
   // The highest version the instance recorded for a fixture module, and a way
   // to set it (as if a newer one had been installed and removed).
-  router.get('/modules/:id/max-version', requireAuth, async (req: Request, res: Response): Promise<void> => {
-    if (!helpersEnabled(res) || !fixtureId(res, req.params.id)) return;
-    res.json({ success: true, version: await db.getAppSettingAsync(`${MODULE_MAX_VERSION_KEY_PREFIX}${req.params.id}`) });
-  });
-  router.post('/modules/:id/max-version', requireAuth, async (req: Request, res: Response): Promise<void> => {
-    if (!helpersEnabled(res) || !fixtureId(res, req.params.id)) return;
-    const version = (req.body as { version?: unknown } | undefined)?.version;
-    if (typeof version !== 'string' || !/^\d+\.\d+\.\d+$/.test(version)) {
-      res.status(400).json({ success: false, error: 'version must be x.y.z' });
-      return;
+  router.get(
+    '/modules/:id/max-version',
+    requireAuth,
+    async (req: Request, res: Response): Promise<void> => {
+      if (!helpersEnabled(res) || !fixtureId(res, req.params.id)) return;
+      res.json({
+        success: true,
+        version: await db.getAppSettingAsync(`${MODULE_MAX_VERSION_KEY_PREFIX}${req.params.id}`),
+      });
     }
-    await db.setAppSettingAsync(`${MODULE_MAX_VERSION_KEY_PREFIX}${req.params.id}`, version);
-    res.json({ success: true });
-  });
+  );
+  router.post(
+    '/modules/:id/max-version',
+    requireAuth,
+    async (req: Request, res: Response): Promise<void> => {
+      if (!helpersEnabled(res) || !fixtureId(res, req.params.id)) return;
+      const version = (req.body as { version?: Untrusted } | undefined)?.version;
+      if (typeof version !== 'string' || !/^\d+\.\d+\.\d+$/.test(version)) {
+        res.status(400).json({ success: false, error: 'version must be x.y.z' });
+        return;
+      }
+      await db.setAppSettingAsync(`${MODULE_MAX_VERSION_KEY_PREFIX}${req.params.id}`, version);
+      res.json({ success: true });
+    }
+  );
 
   // What a crash between an install's two renames leaves: the module's folder
   // in .previous and nothing in its place. Then what boot does about it.
-  router.post('/modules/:id/interrupt-swap', requireAuth, async (req: Request, res: Response): Promise<void> => {
-    if (!helpersEnabled(res) || !fixtureId(res, req.params.id)) return;
-    const live = path.join(modulesDir(), req.params.id);
-    const previous = path.join(modulesDir(), '.previous', req.params.id);
-    await fs.promises.mkdir(path.dirname(previous), { recursive: true });
-    await fs.promises.rm(previous, { recursive: true, force: true });
-    await fs.promises.rename(live, previous);
-    forgetDiskModule(req.params.id);
-    res.json({ success: true });
-  });
-  router.post('/modules/restore-swaps', requireAuth, async (_req: Request, res: Response): Promise<void> => {
-    if (!helpersEnabled(res)) return;
-    await restoreInterruptedSwaps();
-    res.json({ success: true });
-  });
+  router.post(
+    '/modules/:id/interrupt-swap',
+    requireAuth,
+    async (req: Request, res: Response): Promise<void> => {
+      if (!helpersEnabled(res) || !fixtureId(res, req.params.id)) return;
+      const live = path.join(modulesDir(), req.params.id);
+      const previous = path.join(modulesDir(), '.previous', req.params.id);
+      await fs.promises.mkdir(path.dirname(previous), { recursive: true });
+      await fs.promises.rm(previous, { recursive: true, force: true });
+      await fs.promises.rename(live, previous);
+      forgetDiskModule(req.params.id);
+      res.json({ success: true });
+    }
+  );
+  router.post(
+    '/modules/restore-swaps',
+    requireAuth,
+    async (_req: Request, res: Response): Promise<void> => {
+      if (!helpersEnabled(res)) return;
+      await restoreInterruptedSwaps();
+      res.json({ success: true });
+    }
+  );
 
   // What an older image left on disk, not loaded: a fixture module's 1.0.0 in
   // its folder with its switch, installed from the snapshot (or, `manual`, a
   // folder an operator dropped in, with no install record).
-  router.post('/modules/:id/seed-installed', requireAuth, async (req: Request, res: Response): Promise<void> => {
-    if (!helpersEnabled(res) || !fixtureId(res, req.params.id)) return;
-    const { enabled, manual } = (req.body ?? {}) as { enabled?: unknown; manual?: unknown };
-    const id = req.params.id;
-    const dir = path.join(modulesDir(), id);
-    await fs.promises.rm(dir, { recursive: true, force: true });
-    for (const [file, text] of Object.entries(withVersion(fixtureFiles(id, 'valid'), '1.0.0'))) {
-      await fs.promises.mkdir(path.dirname(path.join(dir, file)), { recursive: true });
-      await fs.promises.writeFile(path.join(dir, file), text);
+  router.post(
+    '/modules/:id/seed-installed',
+    requireAuth,
+    async (req: Request, res: Response): Promise<void> => {
+      if (!helpersEnabled(res) || !fixtureId(res, req.params.id)) return;
+      const { enabled, manual } = (req.body ?? {}) as { enabled?: Untrusted; manual?: Untrusted };
+      const id = req.params.id;
+      const dir = path.join(modulesDir(), id);
+      await fs.promises.rm(dir, { recursive: true, force: true });
+      for (const [file, text] of Object.entries(withVersion(fixtureFiles(id, 'valid'), '1.0.0'))) {
+        await fs.promises.mkdir(path.dirname(path.join(dir, file)), { recursive: true });
+        await fs.promises.writeFile(path.join(dir, file), text);
+      }
+      await db.setAppSettingAsync(
+        `${MODULE_INSTALL_KEY_PREFIX}${id}`,
+        manual === true
+          ? null
+          : JSON.stringify({
+              source: 'snapshot',
+              version: '1.0.0',
+              sha256: '0'.repeat(64),
+              keyId: '0'.repeat(16),
+              installedAt: 0,
+              installedBy: null,
+            })
+      );
+      await storeEnabled(id, enabled !== false);
+      forgetDiskModule(id);
+      res.json({ success: true });
     }
-    await db.setAppSettingAsync(
-      `${MODULE_INSTALL_KEY_PREFIX}${id}`,
-      manual === true
-        ? null
-        : JSON.stringify({ source: 'snapshot', version: '1.0.0', sha256: '0'.repeat(64), keyId: '0'.repeat(16), installedAt: 0, installedBy: null })
-    );
-    await storeEnabled(id, enabled !== false);
-    forgetDiskModule(id);
-    res.json({ success: true });
-  });
+  );
 
   // Boot's automatic update for these fixture modules, then what the boot
   // scan does next: load the enabled ones.
-  router.post('/modules/auto-update', requireAuth, async (req: Request, res: Response): Promise<void> => {
-    if (!helpersEnabled(res)) return;
-    const ids = (req.body as { ids?: unknown } | undefined)?.ids;
-    if (!Array.isArray(ids) || ids.some((id) => typeof id !== 'string' || !isValidModuleId(id) || !id.startsWith('fixture-'))) {
-      res.status(400).json({ success: false, error: "ids must be module ids starting with 'fixture-'" });
-      return;
+  router.post(
+    '/modules/auto-update',
+    requireAuth,
+    async (req: Request, res: Response): Promise<void> => {
+      if (!helpersEnabled(res)) return;
+      const ids = (req.body as { ids?: Untrusted } | undefined)?.ids;
+      if (
+        !Array.isArray(ids) ||
+        ids.some(
+          (id) => typeof id !== 'string' || !isValidModuleId(id) || !id.startsWith('fixture-')
+        )
+      ) {
+        res
+          .status(400)
+          .json({ success: false, error: "ids must be module ids starting with 'fixture-'" });
+        return;
+      }
+      const outcomes = await autoUpdateModulesFromSnapshot(ids as string[]);
+      const states: Record<string, Awaited<ReturnType<typeof loadModuleNow>>> = {};
+      for (const id of ids as string[]) states[id] = await loadModuleNow(id);
+      res.json({ success: true, outcomes, states });
     }
-    const outcomes = await autoUpdateModulesFromSnapshot(ids as string[]);
-    const states: Record<string, unknown> = {};
-    for (const id of ids as string[]) states[id] = await loadModuleNow(id);
-    res.json({ success: true, outcomes, states });
-  });
+  );
 
   router.get('/fake-catalog/catalog.json', async (_req: Request, res: Response): Promise<void> => {
     if (!helpersEnabled(res)) return;
@@ -458,7 +557,9 @@ export function registerCatalogTestRoutes(
 
   router.get('/fake-catalog/releases/:file', async (req: Request, res: Response): Promise<void> => {
     if (!helpersEnabled(res)) return;
-    const match = /^(fixture-cat-[a-z]+-[a-z0-9]+)-(\d+\.\d+\.\d+)\.atmod(\.sig)?$/.exec(req.params.file);
+    const match = /^(fixture-cat-[a-z]+-[a-z0-9]+)-(\d+\.\d+\.\d+)\.atmod(\.sig)?$/.exec(
+      req.params.file
+    );
     const kind = match && state ? kindOf(match[1], state.run) : null;
     if (!match || !kind || !state) {
       res.status(404).json({ success: false, error: 'No such release' });

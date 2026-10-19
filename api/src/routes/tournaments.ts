@@ -24,6 +24,8 @@ import { log } from '../utils/logger';
 import { resolveTournamentId, tournamentRowToResponse } from '../utils/tournamentRow';
 import { getEffectiveViewerSteamId } from '../utils/viewerIdentity';
 import tournamentRoutes from './tournament';
+import type { TournamentSettings } from '../types/tournament.types';
+import type { Untrusted } from '../utils/untrusted';
 
 const router = Router();
 
@@ -65,12 +67,15 @@ export interface TournamentListItem {
   viewerTeamId: string | null;
 }
 
-function startOf(settings: Record<string, unknown>, startedAt: number | undefined): number | null {
+function startOf(
+  settings: { startsAt?: Untrusted; schedule?: Untrusted },
+  startedAt: number | undefined
+): number | null {
   // The start time the organizer set (tournamentSchedule.ts) wins over the schedule's first entry.
   const set = typeof settings.startsAt === 'string' ? Date.parse(settings.startsAt) : NaN;
   if (Number.isFinite(set)) return Math.floor(set / 1000);
   const schedule = Array.isArray(settings.schedule)
-    ? (settings.schedule as Array<{ at?: unknown }>)
+    ? (settings.schedule as Array<{ at?: Untrusted }>)
     : [];
   const first = schedule
     .map((s) =>
@@ -116,7 +121,7 @@ async function listItems(
   const out: TournamentListItem[] = [];
   for (const row of rows) {
     const t = tournamentRowToResponse(row);
-    const settings = (t.settings ?? {}) as unknown as Record<string, unknown>;
+    const settings: Partial<TournamentSettings> = t.settings ?? {};
     const registrationOpen = settings.registrationOpen === true;
     const draft = t.status === 'setup' && !registrationOpen;
     if (draft && !includeDrafts) continue;
@@ -169,7 +174,7 @@ async function listItems(
       format: t.format,
       status: t.status,
       description: typeof settings.description === 'string' ? settings.description : null,
-      bannerUrl: (t as unknown as { bannerUrl?: string | null }).bannerUrl ?? null,
+      bannerUrl: t.bannerUrl ?? null,
       bannerMap: typeof settings.bannerMap === 'string' ? settings.bannerMap : null,
       entries,
       maxEntries: typeof settings.maxTeams === 'number' ? settings.maxTeams : null,
@@ -186,7 +191,7 @@ async function listItems(
       currentRound: currentRound === null ? null : Number(currentRound),
       liveMatchCount,
       teamSize:
-        typeof (t as { teamSize?: unknown }).teamSize === 'number'
+        typeof (t as { teamSize?: Untrusted }).teamSize === 'number'
           ? (t as { teamSize: number }).teamSize
           : null,
       mine,
@@ -250,24 +255,24 @@ router.get('/', async (req: Request, res: Response) => {
  */
 router.post('/', requireAuth, async (req: Request, res: Response, next) => {
   try {
-    const body = { ...((req.body ?? {}) as Record<string, unknown>) };
+    const body = { ...((req.body ?? {}) as Record<string, Untrusted>) };
     const copyFrom = Number(body.copyFrom);
     delete body.copyFrom;
     if (Number.isInteger(copyFrom) && copyFrom > 0) {
       const source = await tournamentService.getTournament(copyFrom);
       if (!source)
         return res.status(404).json({ success: false, error: 'Tournament to copy not found' });
-      const settings = { ...((source.settings ?? {}) as unknown as Record<string, unknown>) };
+      const settings: Partial<TournamentSettings> = { ...source.settings };
       for (const key of [
         'registrationOpen',
         'registrationClosesAt',
         'checkInOpensAt',
         'checkInClosesAt',
         'schedule',
-      ]) {
+      ] as const) {
         delete settings[key];
       }
-      const bodySettings = (body.settings ?? {}) as Record<string, unknown>;
+      const bodySettings = (body.settings ?? {}) as Record<string, Untrusted>;
       Object.assign(body, {
         name: body.name ?? `${source.name} (copy)`,
         type: body.type ?? source.type,
@@ -414,7 +419,7 @@ router.post('/:id/archive', requireAuth, async (req: Request, res: Response) => 
  */
 function teamAction(
   action: (id: number, teamId: string) => Promise<string[]>,
-  teamIdOf: (req: Request) => unknown
+  teamIdOf: (req: Request) => Untrusted
 ) {
   return async (req: Request, res: Response) => {
     try {
