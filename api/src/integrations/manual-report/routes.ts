@@ -239,7 +239,11 @@ manualReportTestRoutes.get('/:slug/reports', async (req: Request, res: Response)
 
 const actions: Array<{
   path: string;
-  run: (match: DbMatchRow, actor: ReportActor, body: Record<string, unknown>) => Promise<ReportOutcome>;
+  run: (
+    match: DbMatchRow,
+    actor: ReportActor,
+    body: Record<string, unknown>
+  ) => Promise<ReportOutcome>;
 }> = [
   {
     path: '/:slug/report',
@@ -253,7 +257,10 @@ const actions: Array<{
         ...(body.stats === undefined ? {} : { stats: body.stats }),
       }),
   },
-  { path: '/:slug/confirm', run: (match, actor) => confirmReport({ matchSlug: match.slug, actor }) },
+  {
+    path: '/:slug/confirm',
+    run: (match, actor) => confirmReport({ matchSlug: match.slug, actor }),
+  },
   {
     path: '/:slug/dispute',
     run: (match, actor, body) =>
@@ -263,7 +270,10 @@ const actions: Array<{
         ...(typeof body.reason === 'string' ? { reason: body.reason } : {}),
       }),
   },
-  { path: '/:slug/withdraw', run: (match, actor) => withdrawReport({ matchSlug: match.slug, actor }) },
+  {
+    path: '/:slug/withdraw',
+    run: (match, actor) => withdrawReport({ matchSlug: match.slug, actor }),
+  },
   {
     path: '/:slug/resolve',
     run: (match, actor, body) =>

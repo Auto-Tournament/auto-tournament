@@ -38,12 +38,7 @@ import type { DbMatchRow } from '../../types/database.types';
 import type { DbMatchReportRow } from '../../types/matchReport.types';
 import { adminActor, answer, guarded, matchForRequest, tournamentForRequest } from './http';
 import { listFields, replaceFields, validateFields } from './fields';
-import {
-  adminResolve,
-  isManualReportMatch,
-  reopenMatch,
-  type MatchReport,
-} from './reports';
+import { adminResolve, isManualReportMatch, reopenMatch, type MatchReport } from './reports';
 
 export const manualReportAdminRoutes = Router();
 
@@ -304,7 +299,9 @@ manualReportAdminRoutes.post('/teams/:teamId/captain', async (req: Request, res:
     }
     const role: TeamMemberRole = body.role === 'member' ? 'member' : 'captain';
 
-    const team = await db.queryOneAsync<{ id: string }>('SELECT id FROM teams WHERE id = ?', [teamId]);
+    const team = await db.queryOneAsync<{ id: string }>('SELECT id FROM teams WHERE id = ?', [
+      teamId,
+    ]);
     if (!team) {
       res.status(404).json({ success: false, error: `Team '${teamId}' not found` });
       return;
@@ -321,7 +318,9 @@ manualReportAdminRoutes.post('/teams/:teamId/captain', async (req: Request, res:
 
     const ok = await teamMembers.setRole(teamId, uid, role);
     if (!ok) {
-      res.status(409).json({ success: false, error: `Could not make ${uid} a ${role} of '${teamId}'` });
+      res
+        .status(409)
+        .json({ success: false, error: `Could not make ${uid} a ${role} of '${teamId}'` });
       return;
     }
     res.json({ success: true, teamId, uid, role, members: await membersOf(teamId) });
@@ -339,7 +338,9 @@ manualReportAdminRoutes.post('/teams/:teamId/captain', async (req: Request, res:
 manualReportAdminRoutes.get('/teams/:teamId/members', async (req: Request, res: Response) => {
   await guarded(res, 'GET /teams/:teamId/members', async () => {
     const { teamId } = req.params;
-    const team = await db.queryOneAsync<{ id: string }>('SELECT id FROM teams WHERE id = ?', [teamId]);
+    const team = await db.queryOneAsync<{ id: string }>('SELECT id FROM teams WHERE id = ?', [
+      teamId,
+    ]);
     if (!team) {
       res.status(404).json({ success: false, error: `Team '${teamId}' not found` });
       return;

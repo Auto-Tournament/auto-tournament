@@ -239,9 +239,10 @@ for (const { path, what, revisionRequired, run } of answers) {
       const body = (req.body ?? {}) as { revision?: unknown; reason?: unknown };
       const revision = readRevision(body.revision);
       if (revision === null) {
-        res
-          .status(400)
-          .json({ success: false, error: 'revision must be the number of the report you are answering' });
+        res.status(400).json({
+          success: false,
+          error: 'revision must be the number of the report you are answering',
+        });
         return;
       }
       if (revisionRequired && revision === undefined) {
