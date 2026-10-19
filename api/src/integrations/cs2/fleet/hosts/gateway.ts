@@ -34,17 +34,18 @@ import { FLEET_CLOSE, type Envelope } from '../protocol/v1';
 import {
   HOST_MESSAGES,
   HOST_PROTOCOL_SUPPORTED,
+  checkHostPayload,
   isKnownHostMessageType,
   validateHostEnvelope,
   validateHostMessage,
   validateHostPayload,
   type HostHealthPayload,
-  type HostHelloPayload,
   type HostInventoryPayload,
-  type HostProgressPayload,
-  type HostResultPayload,
   type HostWelcomePayload,
+  type HostInboundMessage,
+  type HostOutboxMessage,
 } from '../protocol/host/v1';
+import type { Untrusted } from '../../../../utils/untrusted';
 import * as registry from './registry';
 
 export const FLEET_HOST_WS_PATH = '/api/fleet/host';
@@ -202,7 +203,7 @@ class HostSession {
   }
 
   private async handle(text: string): Promise<void> {
-    let value: unknown;
+    let value: Untrusted;
     try {
       value = JSON.parse(text);
     } catch {
@@ -223,7 +224,7 @@ class HostSession {
         this.close(FLEET_CLOSE.PROTOCOL_ERROR, 'expected hello');
         return;
       }
-      await this.onHello(msg as unknown as Envelope<'hello', HostHelloPayload>);
+      await this.onHello(msg);
       return;
     }
 
@@ -243,15 +244,17 @@ class HostSession {
     await this.onEphemeral(msg);
   }
 
-  /** Is this a host → platform type we know? Else the reason. */
-  private checkInbound(msg: Envelope): { ok: true } | { ok: false; code: string; message: string } {
+  /** A host → platform message we know, its payload checked; else the reason. */
+  private checkInbound(
+    msg: Envelope
+  ): { ok: true; msg: HostInboundMessage } | { ok: false; code: string; message: string } {
     const known =
       isKnownHostMessageType(msg.type) && HOST_MESSAGES[msg.type]?.direction !== 'platform_to_host';
     if (!known)
       return { ok: false, code: 'unknown_type', message: `unknown message type ${msg.type}` };
     const check = validateHostPayload(msg.type, msg.payload);
     if (!check.ok) return { ok: false, code: 'invalid_payload', message: check.errors.join('; ') };
-    return { ok: true };
+    return { ok: true, msg: msg as HostInboundMessage };
   }
 
   private async onReliable(msg: Envelope): Promise<void> {
@@ -274,7 +277,7 @@ class HostSession {
     if (!check.ok) this.sendError(msg, check.code, check.message);
     // Persist-before-ack: the message's effect and the stream position in one transaction.
     const effects = await registry.tx(async (c) => {
-      const out = check.ok ? await this.apply(c, msg) : [];
+      const out = check.ok ? await this.apply(c, check.msg) : [];
       await registry.setHostRxState(hostId, streamId, seq, c);
       return out;
     });
@@ -286,21 +289,23 @@ class HostSession {
   private async onEphemeral(msg: Envelope): Promise<void> {
     switch (msg.type) {
       case 'ping': {
-        const check = validateHostPayload('ping', msg.payload);
+        const check = checkHostPayload('ping', msg.payload);
         if (!check.ok) {
           this.sendError(msg, 'invalid_payload', check.errors.join('; '));
           return;
         }
-        this.sendEphemeral('pong', { t: (msg.payload as { t: number }).t }, msg.id);
+        this.sendEphemeral('pong', { t: check.payload.t }, msg.id);
         return;
       }
       case 'pong':
       case 'ack':
         return;
       case 'error': {
-        const p = msg.payload as { code?: unknown; message?: unknown };
+        // An error report is logged whatever shape it has.
+        const p = checkHostPayload('error', msg.payload);
+        const { code, message } = p.ok ? p.payload : { code: 'unreadable', message: '' };
         log.warn(
-          `[FLEET-HOST] ${this.hostId} reported an error: ${String(p.code)} ${redactFleetSecrets(String(p.message ?? ''))}`
+          `[FLEET-HOST] ${this.hostId} reported an error: ${code} ${redactFleetSecrets(message ?? '')}`
         );
         return;
       }
@@ -312,7 +317,8 @@ class HostSession {
           this.sendError(msg, check.code, check.message);
           return;
         }
-        const effects = await registry.tx((c) => this.apply(c, msg));
+        const typed = check.msg;
+        const effects = await registry.tx((c) => this.apply(c, typed));
         this.emitAll(effects);
       }
     }
@@ -321,12 +327,12 @@ class HostSession {
   /** Apply one validated host → platform message inside `c`; returns the events to emit after commit. */
   private async apply(
     c: Parameters<Parameters<typeof registry.tx>[0]>[0],
-    msg: Envelope
+    msg: HostInboundMessage
   ): Promise<Array<() => void>> {
     const hostId = this.hostId as string;
     switch (msg.type) {
       case 'host.inventory': {
-        const payload = msg.payload as unknown as HostInventoryPayload;
+        const payload = msg.payload;
         if (payload.host_id !== hostId) {
           log.warn(
             `[FLEET-HOST] ${hostId}: inventory names host ${payload.host_id}; stored under the session's host`
@@ -336,7 +342,7 @@ class HostSession {
         return [() => hostEvents.emit('inventory', hostId, payload)];
       }
       case 'host.health': {
-        const payload = msg.payload as unknown as HostHealthPayload;
+        const payload = msg.payload;
         const inserted = await registry.applyHealth(
           c,
           hostId,
@@ -357,12 +363,7 @@ class HostSession {
           log.warn(`[FLEET-HOST] ${hostId}: host.result without ref ignored`);
           return [];
         }
-        const record = await registry.applyResult(
-          c,
-          hostId,
-          msg.ref,
-          msg.payload as unknown as HostResultPayload
-        );
+        const record = await registry.applyResult(c, hostId, msg.ref, msg.payload);
         if (!record) {
           log.warn(`[FLEET-HOST] ${hostId}: host.result for unknown command ${msg.ref}`);
           return [];
@@ -370,7 +371,7 @@ class HostSession {
         return [() => hostEvents.emit('result', hostId, record)];
       }
       case 'host.progress': {
-        const payload = { ...(msg.payload as unknown as HostProgressPayload) };
+        const payload = { ...msg.payload };
         if (!payload.ref && msg.ref) payload.ref = msg.ref;
         const record = await registry.applyProgress(c, hostId, payload);
         return record ? [() => hostEvents.emit('progress', hostId, record)] : [];
@@ -395,13 +396,13 @@ class HostSession {
     }
   }
 
-  private async onHello(msg: Envelope<'hello', HostHelloPayload>): Promise<void> {
-    const check = validateHostPayload('hello', msg.payload);
+  private async onHello(msg: Envelope): Promise<void> {
+    const check = checkHostPayload('hello', msg.payload);
     if (!check.ok) {
       this.close(FLEET_CLOSE.PROTOCOL_ERROR, `invalid hello: ${check.errors[0] ?? ''}`);
       return;
     }
-    const hello = msg.payload;
+    const hello = check.payload;
     const hostId = this.hostId as string;
     if (hello.host_id !== hostId) {
       this.close(FLEET_CLOSE.REVOKED, 'host_id does not match the token');
@@ -484,7 +485,7 @@ class HostSession {
       host_id: hostId,
     };
     this.ready = true;
-    this.sendEphemeral('welcome', welcome as unknown as Record<string, unknown>, msg.id);
+    this.sendEphemeral('welcome', welcome, msg.id);
     log.info(
       `[FLEET-HOST] ${hostId} online (session ${this.sessionId}, csm ${hello.versions.csm}, resume ${result})`
     );
@@ -501,8 +502,8 @@ class HostSession {
 
   // --- outbound --------------------------------------------------------------
 
-  private frame(env: Envelope): string | null {
-    const out: Envelope = { ...env, ack: this.rxSeq };
+  private frame(env: Envelope<string, object>): string | null {
+    const out: Envelope<string, object> = { ...env, ack: this.rxSeq };
     const check = validateHostMessage(out);
     if (!check.ok) {
       log.error(`[FLEET-HOST] refusing to send an invalid ${env.type}: ${check.errors.join('; ')}`);
@@ -519,7 +520,7 @@ class HostSession {
     this.ackTimer = null;
   }
 
-  sendEphemeral(type: string, payload: Record<string, unknown>, ref?: string): boolean {
+  sendEphemeral(type: string, payload: object, ref?: string): boolean {
     const text = this.frame({
       v: 1,
       type,
@@ -553,10 +554,10 @@ class HostSession {
   }
 
   /** Write one outbox message; secrets are minted here, never stored. */
-  private async sendReliable(env: Envelope): Promise<boolean> {
-    let out = env;
+  private async sendReliable(env: HostOutboxMessage): Promise<boolean> {
+    let out: Envelope<string, object> = env;
     if (env.type === 'auth.rotate') {
-      const p = env.payload as { token_id?: string; old_valid_until?: number };
+      const p = env.payload;
       const token = p.token_id ? await registry.mintHostRotationSecret(p.token_id) : null;
       if (!token) {
         // A rotation that was superseded (same handling as the server gateway).
@@ -564,11 +565,8 @@ class HostSession {
         return false;
       }
       out = { ...env, payload: { token, old_valid_until: p.old_valid_until } };
-    } else if (
-      env.type === 'server.create' &&
-      (env.payload as { enroll?: boolean }).enroll === true
-    ) {
-      const p = env.payload as { count?: number };
+    } else if (env.type === 'server.create' && env.payload.enroll === true) {
+      const p = env.payload;
       const key = await registry.mintCreateKey({
         hostId: this.hostId as string,
         commandId: env.id,
@@ -577,7 +575,7 @@ class HostSession {
       });
       out = { ...env, payload: { ...env.payload, enroll_key: key } };
     } else if (env.type === 'server.enroll') {
-      const p = env.payload as { servers?: string[] };
+      const p = env.payload;
       const key = await registry.mintCreateKey({
         hostId: this.hostId as string,
         commandId: env.id,

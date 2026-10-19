@@ -33,6 +33,8 @@ import {
   TOKEN_ROTATE_AFTER_S,
 } from '../registry';
 import type { FleetKeyRow } from '../registry';
+import type { PluginSet } from '../push/pluginSets';
+import type { Untrusted } from '../../../../utils/untrusted';
 import type { Envelope } from '../protocol/v1';
 import type {
   HostEnrollRequest,
@@ -40,6 +42,9 @@ import type {
   HostInventoryPayload,
   HostProgressPayload,
   HostResultPayload,
+  HostOutboxMessage,
+  HostCommands,
+  HostCommandType,
 } from '../protocol/host/v1';
 
 /** How long a fleet key minted for a `server.create` stays usable (FLEET.md §4.1 B). */
@@ -505,7 +510,7 @@ export type HostTokenCheck =
   | { ok: false; reason: 'bad' | 'revoked' };
 
 /** Check an `rhs_…` token for the host WS upgrade. */
-export async function verifyHostToken(value: unknown): Promise<HostTokenCheck> {
+export async function verifyHostToken(value: Untrusted): Promise<HostTokenCheck> {
   const parsed = parseHostToken(value);
   if (!parsed) return { ok: false, reason: 'bad' };
   const token = await db.queryOneAsync<FleetHostTokenRow>(
@@ -799,8 +804,8 @@ export async function ensureHostTxSeqAtLeast(hostId: string, seq: number): Promi
 
 export async function appendHostOutbox(
   hostId: string,
-  message: { id?: string; type: string; payload: Record<string, unknown> }
-): Promise<Envelope> {
+  message: { id?: string; type: string; payload: object }
+): Promise<Envelope<string, object>> {
   return tx(async (c) => {
     const r = await c.query<{ tx_seq: number }>(
       `UPDATE cs2_fleet_hosts SET tx_seq = tx_seq + 1 WHERE id = $1 RETURNING tx_seq`,
@@ -808,7 +813,7 @@ export async function appendHostOutbox(
     );
     const seq = r.rows[0]?.tx_seq;
     if (!seq) throw new Error(`fleet: unknown host ${hostId}`);
-    const envelope: Envelope = {
+    const envelope: Envelope<string, object> = {
       v: 1,
       type: message.type,
       id: message.id ?? ulid(),
@@ -870,12 +875,15 @@ export async function rebaseHostTx(hostId: string, lastRx: number): Promise<numb
   });
 }
 
-export async function pendingHostOutbox(hostId: string, afterSeq: number): Promise<Envelope[]> {
+export async function pendingHostOutbox(
+  hostId: string,
+  afterSeq: number
+): Promise<HostOutboxMessage[]> {
   const rows = await db.queryAsync<{ message: string }>(
     'SELECT message FROM cs2_fleet_host_outbox WHERE host_id = ? AND seq > ? ORDER BY seq ASC',
     [hostId, afterSeq]
   );
-  return rows.map((r) => JSON.parse(r.message) as Envelope);
+  return rows.map((r) => JSON.parse(r.message) as HostOutboxMessage);
 }
 
 export async function ackHostOutbox(hostId: string, ack: number): Promise<void> {
@@ -1006,13 +1014,40 @@ export async function listHealth(hostId: string, limit = 20): Promise<HostHealth
 
 export type HostCommandStatus = 'pending' | 'ok' | 'rejected' | 'failed';
 
-export interface HostCommandRecord {
+/** What the platform keeps with a host command (`cs2_fleet_host_commands.meta`). */
+export interface HostCommandMeta {
+  /** server.create: the host's servers before it, the command that enrolls them, the new ones. */
+  serversBefore?: string[];
+  followUp?: string;
+  followUpOf?: string;
+  newServers?: string[];
+  /** server.create: the plugin set the new servers get (push/pluginSets). */
+  plugins?: PluginSet;
+  /** server.enroll: the fleet server it moves. */
+  fleetServerId?: string;
+  /** Refused because the host was busy and sent again. */
+  retryOf?: string;
+  retriedAs?: string;
+  busyRetries?: number;
+  /** Why it was sent: an auto update and its target, autoscale, a failover, a match. */
+  auto?: boolean;
+  target?: string;
+  autoscale?: boolean;
+  reason?: string;
+  failover?: string;
+  match?: string;
+}
+
+/** A platform → host command and its answer; its `type` narrows its `payload`. */
+export type HostCommandRecord = {
+  [K in HostCommandType]: HostCommandRecordBase & { type: K; payload: HostCommands[K] };
+}[HostCommandType];
+
+interface HostCommandRecordBase {
   id: string;
   hostId: string;
   seq: number | null;
-  type: string;
   server: string | null;
-  payload: Record<string, unknown>;
   status: HostCommandStatus;
   errorCode: string | null;
   errorMessage: string | null;
@@ -1022,7 +1057,7 @@ export interface HostCommandRecord {
   forcedBy: string | null;
   forceReason: string | null;
   /** What the platform keeps with the command (server.create: the servers before it, its follow-up). */
-  meta: Record<string, unknown> | null;
+  meta: HostCommandMeta | null;
   createdAt: number;
   answeredAt: number | null;
 }
@@ -1050,13 +1085,14 @@ interface HostCommandRow {
 }
 
 function commandFromRow(row: HostCommandRow): HostCommandRecord {
+  // The platform stored it from a typed command (recordHostCommand).
   return {
     id: row.message_id,
     hostId: row.host_id,
     seq: row.seq === null ? null : Number(row.seq),
     type: row.type,
     server: row.server,
-    payload: parseJson<Record<string, unknown>>(row.payload) ?? {},
+    payload: parseJson<object>(row.payload) ?? {},
     status: row.status,
     errorCode: row.error_code,
     errorMessage: row.error_message,
@@ -1069,10 +1105,10 @@ function commandFromRow(row: HostCommandRow): HostCommandRecord {
     issuedBy: row.issued_by,
     forcedBy: row.forced_by,
     forceReason: row.force_reason,
-    meta: parseJson<Record<string, unknown>>(row.meta),
+    meta: parseJson<HostCommandMeta>(row.meta),
     createdAt: Number(row.created_at),
     answeredAt: row.answered_at === null ? null : Number(row.answered_at),
-  };
+  } as HostCommandRecord;
 }
 
 export async function recordHostCommand(input: {
@@ -1080,11 +1116,11 @@ export async function recordHostCommand(input: {
   hostId: string;
   type: string;
   server: string | null;
-  payload: Record<string, unknown>;
+  payload: object;
   issuedBy: string | null;
   forcedBy: string | null;
   forceReason: string | null;
-  meta?: Record<string, unknown> | null;
+  meta?: HostCommandMeta | null;
 }): Promise<void> {
   await db.runAsync(
     `INSERT INTO cs2_fleet_host_commands (message_id, host_id, type, server, payload, status, issued_by, forced_by, force_reason, meta, created_at)
@@ -1105,10 +1141,7 @@ export async function recordHostCommand(input: {
 }
 
 /** Merge `patch` into a command's meta. */
-export async function mergeHostCommandMeta(
-  id: string,
-  patch: Record<string, unknown>
-): Promise<void> {
+export async function mergeHostCommandMeta(id: string, patch: HostCommandMeta): Promise<void> {
   const current = await getHostCommand(id);
   if (!current) return;
   await db.runAsync('UPDATE cs2_fleet_host_commands SET meta = ? WHERE message_id = ?', [
