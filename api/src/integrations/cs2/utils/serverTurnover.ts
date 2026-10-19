@@ -128,7 +128,10 @@ export class ServerTurnoverTracker {
   private readonly servers = new Map<string, ServerTurnoverState>();
   private readonly releaseListeners = new Set<TurnoverReleaseListener>();
   /** One give-up timer per server (the latest pending upload's give-up time). */
-  private readonly giveUpTimers = new Map<string, { at: number; timer: ReturnType<typeof setTimeout> }>();
+  private readonly giveUpTimers = new Map<
+    string,
+    { at: number; timer: ReturnType<typeof setTimeout> }
+  >();
 
   /** Subscribe to turnover releases. Returns the unsubscribe function. */
   onRelease(listener: TurnoverReleaseListener): () => void {
@@ -141,7 +144,9 @@ export class ServerTurnoverTracker {
       try {
         listener(serverId);
       } catch (error) {
-        log.warn(`[TURNOVER] release listener failed for server ${serverId}: ${(error as Error).message}`);
+        log.warn(
+          `[TURNOVER] release listener failed for server ${serverId}: ${(error as Error).message}`
+        );
       }
     }
   }
@@ -301,8 +306,7 @@ export class ServerTurnoverTracker {
 
     return {
       demoUploadPending,
-      demoUploadGiveUpInSeconds:
-        latestGiveUp === null ? null : latestGiveUp - now,
+      demoUploadGiveUpInSeconds: latestGiveUp === null ? null : latestGiveUp - now,
       releaseEarly,
     };
   }
