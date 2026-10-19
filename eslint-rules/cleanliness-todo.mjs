@@ -450,7 +450,11 @@ export const OBJECT_LITERAL_ASSERTION = [
 /** @typescript-eslint/consistent-type-imports */
 export const TYPE_IMPORTS = [
   'api/src/index.ts',
+  'api/src/integrations/cs2/index.ts',
   'api/src/integrations/cs2/routes/highlights.ts',
+  'api/src/integrations/fake/index.ts',
+  'api/src/integrations/manual-report/index.ts',
+  'api/src/integrations/types.ts',
   'api/src/middleware/auth.ts',
   'api/src/middleware/serverAuth.ts',
   'api/src/services/matchService.ts',
