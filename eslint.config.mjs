@@ -7,7 +7,6 @@ import reactCompiler from 'eslint-plugin-react-compiler';
 import integrationBoundaries from './eslint-rules/integration-boundaries.mjs';
 import moduleSdkBoundary from './eslint-rules/module-sdk-boundary.mjs';
 import { MAX_LINES_TODO } from './eslint-rules/max-lines-todo.mjs';
-import { TYPED_INTERNALS_TODO } from './eslint-rules/typed-internals-todo.mjs';
 
 export default [
   js.configs.recommended,
@@ -363,8 +362,6 @@ export default [
   // `.catch()` callbacks and in a parameter named error/err/e/reason/cause.
   {
     files: ['api/src/**/*.ts', 'client/src/**/*.{ts,tsx}'],
-    // Files from before the rule; each fix PR takes its files off the list.
-    ignores: TYPED_INTERNALS_TODO,
     rules: {
       'no-restricted-syntax': [
         'error',
