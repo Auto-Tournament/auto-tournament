@@ -209,7 +209,7 @@ test.describe('Manual-report module: tournament setup', () => {
     id: 1,
     type: 'single_elimination',
     format,
-    settings: { settings: { manualReport } },
+    settings: { manualReport },
   });
 
   test('a tournament with no manualReport object is still a valid one', () => {
@@ -344,7 +344,7 @@ test.describe('Manual-report module: match configs', () => {
         id: 1,
         type: 'single_elimination',
         format: 'bo1',
-        settings: { settings: { manualReport: { bestOf: 5, allowDraw: true } } },
+        settings: { manualReport: { bestOf: 5, allowDraw: true } },
       },
       team1: null,
       team2: null,

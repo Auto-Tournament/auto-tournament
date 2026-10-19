@@ -26,6 +26,7 @@ import { matchContextFor } from '../utils/matchIntegration';
 import { emitMatchUpdate } from './socketService';
 import { teamMembers } from './teamMembers';
 import { tournamentSignupService } from './tournamentSignupService';
+import type { TournamentSettings } from '../types/tournament.types';
 
 export type Side = 'team1' | 'team2';
 
@@ -169,7 +170,7 @@ function sizeFor(tournament: TournamentRow, game: string | null | undefined): nu
       id: tournament.id,
       type: tournament.type,
       format: tournament.format,
-      settings: parseJson<unknown>(tournament.settings, {}),
+      settings: parseJson<TournamentSettings>(tournament.settings, {} as TournamentSettings),
     },
     teamSize
   );

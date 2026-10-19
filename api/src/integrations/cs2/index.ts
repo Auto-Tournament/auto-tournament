@@ -38,7 +38,7 @@
  */
 
 import type { MatchConfig } from '../../types/match.types';
-import type { TournamentResponse } from '../../types/tournament.types';
+import type { TournamentResponse, TournamentSettings } from '../../types/tournament.types';
 import type { DbTournamentRow } from '../../types/database.types';
 import { normalizeConfigPlayers } from '../../utils/playerTransform';
 import {
@@ -67,26 +67,14 @@ import {
   metricsFromPluginStats,
 } from './stats';
 
-function looksLikeTournamentResponse(value: unknown): value is TournamentResponse {
-  return (
-    typeof value === 'object' &&
-    value !== null &&
-    Array.isArray((value as TournamentResponse).maps) &&
-    Array.isArray((value as TournamentResponse).teamIds)
-  );
-}
-
 /**
- * The tournament view `generateMatchConfig` needs. Callers pass it as
- * `ctx.tournament.settings`; otherwise it is read the way `makeMatchReady`
- * reads it today.
+ * The tournament view `generateMatchConfig` needs: `ctx.tournament.full` when
+ * the caller has it, else read the way `makeMatchReady` reads it.
  */
 async function resolveTournament(
   ctx: BuildMatchConfigContext & { tournament: NonNullable<BuildMatchConfigContext['tournament']> }
 ): Promise<TournamentResponse> {
-  if (looksLikeTournamentResponse(ctx.tournament.settings)) {
-    return ctx.tournament.settings;
-  }
+  if (ctx.tournament.full) return ctx.tournament.full;
   const { db } = await import('../../config/database');
   const { tournamentRowToResponse } = await import('../../utils/tournamentRow');
   const row = await db.queryOneAsync<DbTournamentRow>('SELECT * FROM tournament WHERE id = ?', [
@@ -160,17 +148,8 @@ function toResourceActionResult(result: ServerActionResult): ResourceActionResul
 }
 
 /** The tournament runs the map veto (`settings.cs2.veto` is not false). */
-function vetoOn(settings: unknown): boolean {
-  // Callers hand either the stored settings or the whole tournament (MatchContext's
-  // `tournament.settings` is the TournamentResponse, whose settings sit one level down): read
-  // both. Only the first made every later round of a veto-off tournament wait for a veto that
-  // never opened (the final stayed 'pending' in a live test, 2026-10-15).
-  const nested =
-    settings && typeof settings === 'object' && 'settings' in (settings as Record<string, unknown>)
-      ? (settings as { settings?: unknown }).settings
-      : undefined;
-  const cs2 = storedCs2Settings(settings) ?? storedCs2Settings(nested);
-  return cs2?.veto !== false;
+function vetoOn(settings: TournamentSettings | undefined): boolean {
+  return storedCs2Settings(settings)?.veto !== false;
 }
 
 /** The stored veto (`matches.veto_state`) is finished. */
@@ -222,13 +201,10 @@ export const cs2Integration: GameIntegration = {
     if (!tournament || ctx.round === 0) {
       // Standalone: create from the admin's settings, or serve the stored config.
       if (ctx.settings !== undefined) {
-        const defaults = looksLikeTournamentResponse(ctx.defaultsFrom?.settings)
-          ? ctx.defaultsFrom.settings
-          : null;
         return buildStandaloneMatchConfig(
           ctx.slug,
           (ctx.settings ?? {}) as Partial<MatchConfig>,
-          defaults
+          ctx.defaultsFrom?.full ?? null
         );
       }
       const served = await serveStandaloneMatchConfig(ctx.slug);
