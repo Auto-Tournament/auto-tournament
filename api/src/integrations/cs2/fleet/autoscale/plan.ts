@@ -10,6 +10,7 @@
  * the pool is short and a machine has room, creates.
  */
 
+import type { Untrusted } from '../../../../utils/untrusted';
 import { compareQueueOrder, withoutBusyTeams } from '../../../../core/allocationQueue';
 import { effectiveReserve, pickReserved } from '../failoverPlan';
 
@@ -47,15 +48,15 @@ export const AUTOSCALE_LIMITS = {
 
 type NumericSetting = keyof typeof AUTOSCALE_LIMITS;
 
-function inRange(key: NumericSetting, value: unknown): value is number {
+function inRange(key: NumericSetting, value: Untrusted): value is number {
   const { min, max } = AUTOSCALE_LIMITS[key];
   return typeof value === 'number' && Number.isInteger(value) && value >= min && value <= max;
 }
 
 /** Stored JSON → settings; anything missing or out of range is the default. */
-export function normalizeAutoscaleSettings(raw: unknown): AutoscaleSettings {
+export function normalizeAutoscaleSettings(raw: Untrusted): AutoscaleSettings {
   const o =
-    raw && typeof raw === 'object' && !Array.isArray(raw) ? (raw as Record<string, unknown>) : {};
+    raw && typeof raw === 'object' && !Array.isArray(raw) ? (raw as Record<string, Untrusted>) : {};
   const pick = (key: NumericSetting) =>
     inRange(key, o[key]) ? (o[key] as number) : DEFAULT_AUTOSCALE_SETTINGS[key];
   return {
@@ -68,12 +69,12 @@ export function normalizeAutoscaleSettings(raw: unknown): AutoscaleSettings {
 
 /** An admin's patch: only known keys, each in range. */
 export function validateAutoscalePatch(
-  patch: unknown
+  patch: Untrusted
 ): { ok: true; patch: Partial<AutoscaleSettings> } | { ok: false; error: string } {
   if (!patch || typeof patch !== 'object' || Array.isArray(patch))
     return { ok: false, error: 'Body must be an object' };
   const out: Partial<AutoscaleSettings> = {};
-  for (const [key, value] of Object.entries(patch as Record<string, unknown>)) {
+  for (const [key, value] of Object.entries(patch as Record<string, Untrusted>)) {
     if (key === 'enabled') {
       if (typeof value !== 'boolean') return { ok: false, error: 'enabled must be true or false' };
       out.enabled = value;

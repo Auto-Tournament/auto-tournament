@@ -15,6 +15,7 @@
  * command's id is remembered so its answer can be shown.
  */
 
+import type { Untrusted } from '../../../../utils/untrusted';
 import { db } from '../../../../config/database';
 import { log } from '../../../../utils/logger';
 import { sendReliable } from '../reliable';
@@ -43,11 +44,11 @@ const PRACTICE_TTL_MS = 10 * 60 * 1000;
 export type Validated<T> = { ok: true; value: T } | { ok: false; error: string };
 
 export function validateWhitelist(
-  input: unknown
+  input: Untrusted
 ): Validated<{ enabled: boolean; steamids: string[] }> {
   if (!input || typeof input !== 'object')
     return { ok: false, error: 'body must be {enabled, steamids?}' };
-  const { enabled, steamids } = input as { enabled?: unknown; steamids?: unknown };
+  const { enabled, steamids } = input as { enabled?: Untrusted; steamids?: Untrusted };
   if (typeof enabled !== 'boolean') return { ok: false, error: 'enabled must be true or false' };
   if (steamids === undefined || steamids === null)
     return { ok: true, value: { enabled, steamids: [] } };
@@ -63,11 +64,11 @@ export function validateWhitelist(
 }
 
 export function validatePlugins(
-  input: unknown
+  input: Untrusted
 ): Validated<{ enable: string[]; disable: string[] }> {
   if (!input || typeof input !== 'object')
     return { ok: false, error: 'body must be {enable?, disable?}' };
-  const raw = input as { enable?: unknown; disable?: unknown };
+  const raw = input as { enable?: Untrusted; disable?: Untrusted };
   const out: { enable: string[]; disable: string[] } = { enable: [], disable: [] };
   for (const key of ['enable', 'disable'] as const) {
     const list = raw[key];
@@ -196,7 +197,7 @@ export async function setPlugins(
 }
 
 /** practice.set for a practice server: on, always=1. */
-function practiceServerArgs(fleetCmds: boolean): Record<string, unknown> {
+function practiceServerArgs(fleetCmds: boolean): { on: boolean; always?: boolean } {
   return fleetCmds ? { on: true, always: true } : { on: true };
 }
 
@@ -208,7 +209,7 @@ async function sendPluginsSet(
   fleetCmds: boolean
 ): Promise<{ id: string; seq: number; delivered: boolean }> {
   const value = pluginsSetFor(stored, fleetCmds, await platformSkinsOn());
-  const args: Record<string, unknown> = {};
+  const args: { enable?: string[]; disable?: string[] } = {};
   if (value.enable.length > 0) args.enable = value.enable;
   if (value.disable.length > 0) args.disable = value.disable;
   const sent = await sendCmd(serverId, {

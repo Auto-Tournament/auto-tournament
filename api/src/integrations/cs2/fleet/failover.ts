@@ -153,7 +153,8 @@ interface ProposalRow {
 }
 
 const nowS = () => Math.floor(Date.now() / 1000);
-const num = (v: unknown): number | null => (v === null || v === undefined ? null : Number(v));
+const num = (v: number | string | null | undefined): number | null =>
+  v === null || v === undefined ? null : Number(v);
 
 function parseJson<T>(text: string | null): T | null {
   if (!text) return null;
@@ -282,12 +283,12 @@ function announce(matchSlug: string, proposal: FailoverProposal | null): void {
 // ---------------------------------------------------------------------------
 
 function parseCaps(text: string | null): string[] {
-  const caps = parseJson<unknown>(text);
+  const caps = parseJson<string[]>(text);
   return Array.isArray(caps) ? caps.filter((c): c is string => typeof c === 'string') : [];
 }
 
 function parseBuild(text: string | null): number | null {
-  const versions = parseJson<{ cs2_build?: unknown }>(text);
+  const versions = parseJson<{ cs2_build?: number }>(text);
   return typeof versions?.cs2_build === 'number' ? versions.cs2_build : null;
 }
 
@@ -337,7 +338,7 @@ export async function serverChoices(exceptId: string | null): Promise<ServerChoi
     .filter((r) => r.id !== exceptId)
     .map((r): ServerChoice => {
       const online = fleetBus().isConnected(r.fleet_id);
-      const versions = parseJson<{ core?: unknown; cs2_build?: unknown }>(r.versions);
+      const versions = parseJson<{ core?: string; cs2_build?: number }>(r.versions);
       const state = !online ? 'offline' : free.has(r.id) ? 'free' : 'busy';
       return {
         id: r.id,
@@ -610,7 +611,7 @@ async function autoAccept(proposal: FailoverProposal): Promise<AcceptOutcome> {
 /** The match config's map count (num_maps; 1 when unreadable). */
 function mapsOf(config: string | null): number {
   try {
-    const n = Number((JSON.parse(config ?? '{}') as { num_maps?: unknown }).num_maps);
+    const n = Number((JSON.parse(config ?? '{}') as { num_maps?: number }).num_maps);
     return Number.isInteger(n) && n >= 1 ? n : 1;
   } catch {
     return 1;
@@ -1065,7 +1066,7 @@ async function onServerBack(fleetServerId: string, hello: HelloPayload): Promise
   if (health && health.event !== 'hung') healthByServer.delete(fleetServerId);
   offlineSeen.delete(fleetServerId);
 
-  const held = hello.state as { match_id?: unknown } | null | undefined;
+  const held = hello.state;
   if (held && typeof held.match_id === 'string') return;
   // Ready Up says hello before it restores a match it kept locally (it reports the match a
   // moment later): only a server still without it after the grace lost it. Acting on the hello

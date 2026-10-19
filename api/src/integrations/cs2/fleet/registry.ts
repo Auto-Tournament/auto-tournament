@@ -10,6 +10,7 @@
  * (`mintRotationSecret`).
  */
 
+import type { Untrusted } from '../../../utils/untrusted';
 import type { PoolClient } from 'pg';
 import { db } from '../../../config/database';
 import {
@@ -22,7 +23,14 @@ import {
   ulid,
   verifySecret,
 } from './credentials';
-import type { EnrollRequest, Envelope, HostInfo, PingPayload, Versions } from './protocol/v1';
+import type {
+  EnrollRequest,
+  Envelope,
+  HostInfo,
+  PingPayload,
+  Versions,
+  SelftestSummary,
+} from './protocol/v1';
 
 export const FLEET_TENANT = 'default';
 /** One-time code lifetime (FLEET.md §4.1). */
@@ -152,8 +160,8 @@ export interface FleetServerView {
   peerAddr: string | null;
   /** The plugins it reported in its last hello (null: not reported, older Ready Up). */
   pluginsState: { installed: string[]; disabled: string[] } | null;
-  health: Record<string, unknown> | null;
-  selftest: Record<string, unknown> | null;
+  health: PingPayload['health'] | null;
+  selftest: SelftestSummary | null;
   protocol: number | null;
   connectedAt: number | null;
   lastSeen: number | null;
@@ -225,8 +233,8 @@ function toView(
     host: parseJson<HostInfo>(s.host),
     peerAddr: s.peer_addr ?? null,
     pluginsState: parseJson<{ installed: string[]; disabled: string[] }>(s.plugins_state ?? null),
-    health: parseJson<Record<string, unknown>>(s.health),
-    selftest: parseJson<Record<string, unknown>>(s.selftest),
+    health: parseJson<PingPayload['health']>(s.health),
+    selftest: parseJson<SelftestSummary>(s.selftest),
     protocol: s.protocol,
     connectedAt: s.connected_at,
     lastSeen: s.last_seen,
@@ -622,7 +630,7 @@ export type TokenCheck =
   | { ok: false; reason: 'bad' | 'revoked' };
 
 /** Check a `rus_…` token for the WS upgrade (FLEET.md §4.2). */
-export async function verifyServerToken(value: unknown): Promise<TokenCheck> {
+export async function verifyServerToken(value: Untrusted): Promise<TokenCheck> {
   const parsed = parseServerToken(value);
   if (!parsed) return { ok: false, reason: 'bad' };
   const token = await db.queryOneAsync<FleetTokenRow>(
@@ -784,7 +792,7 @@ export async function markConnected(
     versions: Versions;
     capabilities: string[];
     host: HostInfo;
-    selftest?: unknown;
+    selftest?: SelftestSummary;
     /** hello.plugins_state; absent = not reported (stored as NULL). */
     plugins_state?: { installed: string[]; disabled: string[] };
     protocol: number;
