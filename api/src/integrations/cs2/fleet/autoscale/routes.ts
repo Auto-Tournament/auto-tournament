@@ -16,7 +16,7 @@ import { setAutoscaleSettings } from './settings';
 export const fleetAutoscaleRouter = Router();
 fleetAutoscaleRouter.use(requireAuth);
 
-function handler(what: string, fn: (req: Request, res: Response) => Promise<unknown>) {
+function handler(what: string, fn: (req: Request, res: Response) => Promise<void | Response>) {
   return (req: Request, res: Response) => {
     fn(req, res).catch((error) => {
       log.error(`[AUTOSCALE] ${what} failed: ${(error as Error).message}`);

@@ -4,6 +4,7 @@
  * failover reserve, from the failover settings.
  */
 
+import type { Untrusted } from '../../../../utils/untrusted';
 import { db } from '../../../../config/database';
 import { log } from '../../../../utils/logger';
 import { getFailoverSettings } from '../failoverSettings';
@@ -16,7 +17,7 @@ export interface StoredAutoscaleSettings extends AutoscaleSettings {
 
 const nowS = () => Math.floor(Date.now() / 1000);
 
-function parse(raw: string | null | undefined): unknown {
+function parse(raw: string | null | undefined): Untrusted {
   if (!raw) return null;
   try {
     return JSON.parse(raw);
