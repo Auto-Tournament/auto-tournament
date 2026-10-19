@@ -46,7 +46,10 @@ router.get('/', async (req: Request, res: Response) => {
         []
       )
     ).map((g) => ({ id: g.game, name: gameName(g.game), players: Number(g.players) }));
-    const asked = typeof req.query.game === 'string' && req.query.game.trim() ? ratingGame(req.query.game) : null;
+    const asked =
+      typeof req.query.game === 'string' && req.query.game.trim()
+        ? ratingGame(req.query.game)
+        : null;
     const game = asked ?? games[0]?.id ?? null;
     if (!game) return res.json({ success: true, games, game: null, players: [] });
 
