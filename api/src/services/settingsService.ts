@@ -10,6 +10,7 @@ import {
   stringRequest,
 } from '../utils/settingFields';
 import type { SettingDefinition, SettingWriteContext } from '../integrations/types';
+import type { Untrusted } from '../utils/untrusted';
 
 /**
  * An `app_settings` key: one of `CoreSettingKey`, or a key an integration
@@ -262,7 +263,7 @@ class SettingsService {
    * store rejects throws.
    */
   async applyUpdate(
-    body: Record<string, unknown>,
+    body: Record<string, Untrusted>,
     ctx: Omit<SettingWriteContext, 'set'>
   ): Promise<string | undefined> {
     const editable = (await listSettingDefinitions())

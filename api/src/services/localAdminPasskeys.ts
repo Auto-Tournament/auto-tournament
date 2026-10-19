@@ -22,6 +22,7 @@ import {
   type RegistrationResponseJSON,
 } from '@simplewebauthn/server';
 import { db } from '../config/database';
+import type { Untrusted } from '../utils/untrusted';
 
 export type {
   AuthenticationResponseJSON,
@@ -175,7 +176,7 @@ const fromB64url = (text: string) => new Uint8Array(Buffer.from(text, 'base64url
 
 function parseTransports(raw: string): string[] {
   try {
-    const v = JSON.parse(raw) as unknown;
+    const v = JSON.parse(raw) as Untrusted;
     return Array.isArray(v) ? v.filter((t): t is string => typeof t === 'string') : [];
   } catch {
     return [];
@@ -256,7 +257,7 @@ export const localAdminPasskeys = {
 };
 
 /** A passkey's name: trimmed, at most 60 characters; empty means `fallback`. */
-export function passkeyName(raw: unknown, fallback: string): string {
+export function passkeyName(raw: Untrusted, fallback: string): string {
   const name = typeof raw === 'string' ? raw.trim().slice(0, 60) : '';
   return name || fallback;
 }

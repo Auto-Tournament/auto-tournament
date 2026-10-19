@@ -8,6 +8,7 @@ import { db } from '../config/database';
 import { log } from '../utils/logger';
 import { notificationService } from './notificationService';
 import { notifyChannels } from './notifyChannels';
+import type { Untrusted } from '../utils/untrusted';
 
 /** A window that opened longer ago than this is not announced (an old tournament, a first start). */
 const FRESH_SECONDS = 6 * 3600;
@@ -76,8 +77,8 @@ async function sweepCheckIns(): Promise<void> {
     let closes: number | null = null;
     try {
       const s = JSON.parse(t.settings ?? '{}') as {
-        checkInOpensAt?: unknown;
-        checkInClosesAt?: unknown;
+        checkInOpensAt?: Untrusted;
+        checkInClosesAt?: Untrusted;
       };
       opens = typeof s.checkInOpensAt === 'string' ? Date.parse(s.checkInOpensAt) : null;
       closes = typeof s.checkInClosesAt === 'string' ? Date.parse(s.checkInClosesAt) : null;

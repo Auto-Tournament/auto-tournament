@@ -10,6 +10,7 @@
 import { db } from '../config/database';
 import { playerService } from './playerService';
 import { settingsService } from './settingsService';
+import type { Untrusted } from '../utils/untrusted';
 
 export const DISPLAY_NAME_MIN = 2;
 export const DISPLAY_NAME_MAX = 32;
@@ -22,7 +23,7 @@ const FORBIDDEN = /[\p{Cc}\p{Cf}\p{Zl}\p{Zp}"<>]/u;
 
 /** A trimmed, valid name, or why the name is refused. */
 export function validateDisplayName(
-  raw: unknown
+  raw: Untrusted
 ): { ok: true; name: string } | { ok: false; error: string } {
   if (typeof raw !== 'string') return { ok: false, error: 'name must be a string' };
   const name = raw.trim().replace(/\s+/g, ' ');
@@ -91,7 +92,7 @@ export class NameChangeError extends Error {
  * Save (or confirm) the player's own name. Keeping the same name always
  * works, and confirms it; a different name works once a day.
  */
-export async function setOwnName(steamId: string, raw: unknown): Promise<OwnNameState> {
+export async function setOwnName(steamId: string, raw: Untrusted): Promise<OwnNameState> {
   if (!(await settingsService.canPlayersChooseName())) {
     throw new NameChangeError(403, 'Players cannot change their name on this site');
   }

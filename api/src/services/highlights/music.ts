@@ -19,6 +19,7 @@ import path from 'path';
 import { db } from '../../config/database';
 import { DATA_DIR } from '../../config/dataDir';
 import { settingsService } from '../settingsService';
+import type { Untrusted } from '../../utils/untrusted';
 
 /** Where highlight videos are kept (every game's recorder uploads here). */
 export const HIGHLIGHTS_DIR = path.join(DATA_DIR, 'highlights');
@@ -35,7 +36,7 @@ export const MUSIC_GAIN = 0.4;
 export const MUSIC_INTRO_GAIN = 0.32;
 
 /** A viewer's music level from a request: 0 to 1, MUSIC_GAIN when absent or wrong. */
-export function musicLevel(value: unknown): number {
+export function musicLevel(value: Untrusted): number {
   const n = Number(value);
   return value === undefined || value === null || value === '' || !Number.isFinite(n)
     ? MUSIC_GAIN
@@ -124,9 +125,10 @@ export async function enabledTracks(): Promise<MusicTrack[]> {
 
 export async function trackById(id: string): Promise<(MusicTrack & { file: string }) | undefined> {
   if (!/^\d{1,9}$/.test(id)) return undefined;
-  const row = await db.queryOneAsync<TrackRow>('SELECT * FROM highlight_music_tracks WHERE id = ?', [
-    Number(id),
-  ]);
+  const row = await db.queryOneAsync<TrackRow>(
+    'SELECT * FROM highlight_music_tracks WHERE id = ?',
+    [Number(id)]
+  );
   return row ? { ...toTrack(row), file: path.join(MUSIC_DIR, row.file) } : undefined;
 }
 

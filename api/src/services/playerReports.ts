@@ -16,6 +16,7 @@ import { log } from '../utils/logger';
 import { notificationService } from './notificationService';
 import { banPlayer } from './playerModeration';
 import type { Actor } from './matchHolds';
+import type { Untrusted } from '../utils/untrusted';
 
 export const REPORT_REASONS = ['cheating', 'toxic', 'griefing', 'name', 'other'] as const;
 export type ReportReason = (typeof REPORT_REASONS)[number];
@@ -59,7 +60,7 @@ async function adminIds(): Promise<string[]> {
 
 export async function createReport(
   reporterId: string,
-  input: { playerId: unknown; reason: unknown; details: unknown }
+  input: { playerId: Untrusted; reason: Untrusted; details: Untrusted }
 ): Promise<{ id: number }> {
   const playerId = typeof input.playerId === 'string' ? input.playerId : '';
   const reason = REPORT_REASONS.find((r) => r === input.reason);

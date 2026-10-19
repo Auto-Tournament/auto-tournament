@@ -16,9 +16,7 @@ class TemplateService {
    * Convert database row to TournamentTemplate
    */
   private rowToTemplate(row: TournamentTemplateRow): TournamentTemplate {
-    const settings: TournamentSettings = row.settings
-      ? JSON.parse(row.settings)
-      : DEFAULT_SETTINGS;
+    const settings: TournamentSettings = row.settings ? JSON.parse(row.settings) : DEFAULT_SETTINGS;
 
     const teamIds: string[] = row.team_ids ? JSON.parse(row.team_ids) : [];
     // The game module's 2.x fields (CS2: the map pool and its maps), from its
@@ -95,7 +93,7 @@ class TemplateService {
     const templateSettings: TournamentSettings = withModuleSettings(
       DEFAULT_GAME,
       { ...DEFAULT_SETTINGS, matchFormat: format, ...settings },
-      input as unknown as Record<string, unknown>,
+      { ...input },
       undefined,
       'template'
     );
@@ -140,7 +138,8 @@ class TemplateService {
     if (input.type !== undefined) updates.type = input.type;
     if (input.format !== undefined) updates.format = input.format;
     if (input.teamIds !== undefined) {
-      updates.team_ids = input.teamIds && input.teamIds.length > 0 ? JSON.stringify(input.teamIds) : null;
+      updates.team_ids =
+        input.teamIds && input.teamIds.length > 0 ? JSON.stringify(input.teamIds) : null;
     }
 
     const templateSettings: TournamentSettings = withModuleSettings(
@@ -150,7 +149,7 @@ class TemplateService {
         ...input.settings,
         matchFormat: input.format || existing.format,
       },
-      input as unknown as Record<string, unknown>,
+      { ...input },
       existing.settings,
       'template'
     );
@@ -188,4 +187,3 @@ class TemplateService {
 }
 
 export const templateService = new TemplateService();
-

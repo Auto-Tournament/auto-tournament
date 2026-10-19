@@ -43,7 +43,7 @@ export async function viewerTeamIdOfMatch(
   req: Request,
   match: {
     game?: GameId | null;
-    config?: unknown;
+    config?: string | object | null;
     team1_id: string | null;
     team2_id: string | null;
   }

@@ -6,7 +6,7 @@
  */
 
 /** A stored name with a placeholder side in it ("TBD vs TBD", "Alpha vs TBD"). */
-export function hasTbdSide(name: unknown): boolean {
+export function hasTbdSide(name: Untrusted): boolean {
   return typeof name === 'string' && /(^|\s)TBD(\s|$)/i.test(name);
 }
 
@@ -28,7 +28,7 @@ export function matchNoticeName(
 /** A side's name from the match's stored config (matches without a team row, e.g. matchmaking). */
 export function configTeamName(config: string | null, side: 'team1' | 'team2'): string | null {
   try {
-    const parsed = JSON.parse(config ?? '{}') as Record<string, { name?: unknown } | undefined>;
+    const parsed = JSON.parse(config ?? '{}') as Record<string, { name?: Untrusted } | undefined>;
     const name = parsed[side]?.name;
     return typeof name === 'string' ? name : null;
   } catch {
@@ -38,3 +38,5 @@ export function configTeamName(config: string | null, side: 'team1' | 'team2'): 
 
 /** The events whose bold lead is the match's name (match_soon's lead is the tournament). */
 export const MATCH_NAMED_EVENTS = ['match_ready', 'veto_turn'];
+
+import type { Untrusted } from '../utils/untrusted';
