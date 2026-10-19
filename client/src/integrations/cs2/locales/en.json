@@ -637,12 +637,6 @@
     "saved": "Settings saved",
     "saveFailed": "Failed to save settings",
     "loadFailed": "Failed to load settings",
-    "webhook": {
-      "title": "Platform URL",
-      "description": "The address your CS2 servers, links and webhooks use to reach the platform.",
-      "label": "Webhook URL",
-      "helper": "Example: https://your-domain.com"
-    },
     "mapSync": {
       "title": "Map Synchronization",
       "description": "Sync CS2 maps and the Active Duty pool from the map list in the cs2-server-manager repository.",

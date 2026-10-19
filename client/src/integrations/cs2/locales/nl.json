@@ -633,12 +633,6 @@
     "info_other": "Dit slaat een map pool op met {{count}} maps."
   },
   "settings": {
-    "webhook": {
-      "title": "Platform URL",
-      "description": "The address your CS2 servers, links and webhooks use to reach the platform.",
-      "label": "Webhook-URL",
-      "helper": "Voorbeeld: https://jouw-domein.nl"
-    },
     "mapSync": {
       "title": "Kaart-synchronisatie",
       "description": "Synchroniseer CS2-kaarten vanuit de GitHub-repository.",

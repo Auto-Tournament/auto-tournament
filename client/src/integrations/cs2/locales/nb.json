@@ -637,12 +637,6 @@
     "saved": "Innstillinger lagret",
     "saveFailed": "Kunne ikke lagre innstillingene",
     "loadFailed": "Kunne ikke laste innstillingene",
-    "webhook": {
-      "title": "Plattform-URL",
-      "description": "Webhook-URL som CS2-serverne kan nå.",
-      "label": "Webhook-URL",
-      "helper": "Eksempel: https://ditt-domene.no"
-    },
     "mapSync": {
       "title": "Mapsynkronisering",
       "description": "Synk CS2-kart og Active Duty-poolen fra kartlisten i cs2-server-manager-repositoriet.",

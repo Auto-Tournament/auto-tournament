@@ -519,12 +519,9 @@ export type IntegrationNavIcon = ComponentType<IntegrationNavIconProps>;
  * Something the module needs an admin to fix before its tournament can run,
  * shown on every admin page (3.0 phase E).
  *
- * CS2 fills it with the webhook URL — what a CS2 server reaches the platform
- * on — and with MatchZy Enhanced's database health, which is the plugin's
- * own connection on the game server and has no meaning anywhere else. The core
- * shell has no opinion about either: it renders the slot and nothing else, so
- * an instance whose tournament needs no servers is never nagged about settings
- * that would change nothing for it.
+ * The core shell has no opinion about what goes in it: it renders the slot
+ * and nothing else, so an instance whose tournament needs no servers is never
+ * nagged about settings that would change nothing for it.
  *
  * Not everything the shell warns about belongs here. Steam's health stays in
  * the shell, because the warning is about sign-ins and profile lookups — the
@@ -900,7 +897,7 @@ export type AdminToolsSectionProps = Record<string, never>;
 
 /**
  * The Settings page: this module's own settings, as a tab of its own (client
- * API 0.2.2). CS2: the webhook URL its servers call back on, and the map sync.
+ * API 0.2.2).
  *
  * The section reads and saves its own fields. It may save through
  * `PUT /api/settings` with only its own fields in the body: every field there
@@ -1181,7 +1178,7 @@ export interface ClientGameIntegration {
 
   /**
    * The admin shell, every page: a setting this module needs before its
-   * tournament can run (CS2: the webhook URL). Left empty by a module that
+   * tournament can run. Left empty by a module that
    * needs nothing configured, and the shell then says nothing.
    */
   adminGlobalWarning?: ComponentType<AdminGlobalWarningProps>;

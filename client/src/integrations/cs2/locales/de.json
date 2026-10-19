@@ -633,12 +633,6 @@
     "info_other": "Damit wird ein Map-Pool mit {{count}} Karten gespeichert."
   },
   "settings": {
-    "webhook": {
-      "title": "Platform URL",
-      "description": "The address your CS2 servers, links and webhooks use to reach the platform.",
-      "label": "Webhook-URL",
-      "helper": "Beispiel: https://deine-domain.de"
-    },
     "mapSync": {
       "title": "Map-Synchronisierung",
       "description": "CS2-Maps aus dem GitHub-Repository synchronisieren.",
