@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { io, type Socket } from 'socket.io-client';
+import type { Untrusted } from '../utils/untrusted';
 
 /**
  * Re-read page data when the server says it changed, instead of polling.
@@ -52,7 +53,7 @@ function shared(): Socket {
     if (connectedBefore) for (const sub of subscribers) sub.reload();
     connectedBefore = true;
   });
-  s.on('topic', (payload: { topic?: unknown }) => {
+  s.on('topic', (payload: { topic?: Untrusted }) => {
     const topic = typeof payload?.topic === 'string' ? payload.topic : null;
     if (!topic) return;
     for (const sub of subscribers) if (sub.topics.has(topic)) sub.reload();

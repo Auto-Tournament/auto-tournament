@@ -11,17 +11,18 @@ import type {
   MatchLiveStats,
   MatchPlayerStatsSnapshot,
 } from '../types';
+import type { Untrusted } from '../utils/untrusted';
 
 type BracketSocketEvent = {
   matchSlug?: string;
-  [key: string]: unknown;
+  [key: string]: Untrusted;
 };
 
 type TournamentSocketEvent = {
   deleted?: boolean;
   action?: string;
   matchSlug?: string;
-  [key: string]: unknown;
+  [key: string]: Untrusted;
 };
 
 interface UseTeamMatchDataReturn {
@@ -385,8 +386,8 @@ export function useTeamMatchData(
             Object.prototype.hasOwnProperty.call(data, 'current_map')
           ) {
             const nextMap =
-              (data as Record<string, unknown>).currentMap ??
-              (data as Record<string, unknown>).current_map ??
+              (data as Record<string, Untrusted>).currentMap ??
+              (data as Record<string, Untrusted>).current_map ??
               null;
             updated.currentMap = typeof nextMap === 'string' ? nextMap : null;
             changed = true;
@@ -397,8 +398,8 @@ export function useTeamMatchData(
             Object.prototype.hasOwnProperty.call(data, 'map_number')
           ) {
             const nextMapNumber =
-              (data as Record<string, unknown>).mapNumber ??
-              (data as Record<string, unknown>).map_number ??
+              (data as Record<string, Untrusted>).mapNumber ??
+              (data as Record<string, Untrusted>).map_number ??
               null;
             updated.mapNumber =
               typeof nextMapNumber === 'number' && Number.isFinite(nextMapNumber)
@@ -407,7 +408,7 @@ export function useTeamMatchData(
             changed = true;
           }
 
-          if (Array.isArray((data as Record<string, unknown>).mapResults)) {
+          if (Array.isArray((data as Record<string, Untrusted>).mapResults)) {
             updated.mapResults = (data as { mapResults: TeamMatchInfo['mapResults'] }).mapResults;
             changed = true;
           }

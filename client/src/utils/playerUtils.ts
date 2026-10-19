@@ -1,3 +1,4 @@
+import type { Untrusted } from './untrusted';
 export interface NormalizedPlayer {
   steamid: string;
   name: string;
@@ -7,7 +8,7 @@ export interface NormalizedPlayer {
 /**
  * Normalize player data coming from match configs, MatchZy Enhanced payloads, or legacy formats.
  */
-export function normalizeConfigPlayers(players: unknown): NormalizedPlayer[] {
+export function normalizeConfigPlayers(players: Untrusted): NormalizedPlayer[] {
   if (!players) return [];
 
   if (Array.isArray(players)) {
@@ -21,7 +22,7 @@ export function normalizeConfigPlayers(players: unknown): NormalizedPlayer[] {
   return [];
 }
 
-function normalizeSinglePlayer(player: unknown, fallbackKey: string): NormalizedPlayer {
+function normalizeSinglePlayer(player: Untrusted, fallbackKey: string): NormalizedPlayer {
   if (typeof player === 'string') {
     return { steamid: fallbackKey, name: player };
   }

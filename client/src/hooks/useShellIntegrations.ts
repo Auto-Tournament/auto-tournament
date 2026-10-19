@@ -58,7 +58,7 @@ export function useShellIntegrations(): {
  */
 export function shellModule(
   shell: ClientGameIntegration[],
-  fills: (integration: ClientGameIntegration) => unknown
+  fills: (integration: ClientGameIntegration) => object | undefined | null | boolean
 ): ClientGameIntegration | undefined {
   return shell.find((integration) => Boolean(fills(integration)));
 }

@@ -1,5 +1,6 @@
 // Match-like shape shared across different views (Matches page, Team page, modals).
 // We only care about round, team IDs and an optional config with vetoDisabled.
+import type { Untrusted } from './untrusted';
 export type MatchLike = {
   round?: number | null;
   team1?: { id?: string | null } | null;
@@ -9,10 +10,10 @@ export type MatchLike = {
     team1?: { id?: string | null } | null;
     team2?: { id?: string | null } | null;
     // Allow additional fields without typing them explicitly
-    [key: string]: unknown;
+    [key: string]: Untrusted;
   } | null;
   // Allow additional top-level fields without typing them explicitly
-  [key: string]: unknown;
+  [key: string]: Untrusted;
 };
 
 /**

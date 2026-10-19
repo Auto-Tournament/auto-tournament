@@ -23,15 +23,16 @@
  */
 
 import type { ModuleLocales } from '../integrations/types';
+import type { Untrusted } from '../utils/untrusted';
 
 /** Language codes as i18next spells them: `en`, `nb`, `pt-PT`, `zh-CN`. */
 const LANGUAGE_CODE = /^[a-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$/;
 
-const isObject = (value: unknown): value is Record<string, unknown> =>
+const isObject = (value: Untrusted): value is Record<string, Untrusted> =>
   !!value && typeof value === 'object' && !Array.isArray(value);
 
 /** A bundle is nested objects with strings at the leaves. */
-function bundleProblem(bundle: unknown, at: string): string | null {
+function bundleProblem(bundle: Untrusted, at: string): string | null {
   if (!isObject(bundle)) return `${at} is not an object`;
   for (const [key, value] of Object.entries(bundle)) {
     if (typeof value === 'string') continue;
@@ -43,7 +44,7 @@ function bundleProblem(bundle: unknown, at: string): string | null {
 }
 
 /** What is wrong with a module's `locales`, or null when it is absent or well formed. */
-export function localesProblem(locales: unknown): string | null {
+export function localesProblem(locales: Untrusted): string | null {
   if (locales === undefined) return null;
   if (!isObject(locales)) return 'locales is not an object of language bundles';
   for (const [language, bundle] of Object.entries(locales)) {
@@ -62,7 +63,7 @@ export interface LocaleRegistry {
     resources: object,
     deep?: boolean,
     overwrite?: boolean
-  ): unknown;
+  ): object;
 }
 
 /** Adds each language's bundle to i18next as namespace `moduleId`. */

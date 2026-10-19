@@ -12,6 +12,7 @@
  */
 
 /** One module, as the admin list shows it. */
+import type { Untrusted } from '../utils/untrusted';
 export interface ModuleListEntry {
   id: string;
   name: string;
@@ -57,16 +58,16 @@ export interface LoadableModule {
  * dropped; anything else the server claims is checked again by the loader.
  * Only the public fields are kept.
  */
-export function parsePublicManifest(body: unknown): LoadableModule[] | null {
+export function parsePublicManifest(body: Untrusted): LoadableModule[] | null {
   if (!body || typeof body !== 'object') return null;
-  const { modules } = body as { modules?: unknown };
+  const { modules } = body as { modules?: Untrusted };
   if (!Array.isArray(modules)) return null;
   const loadable: LoadableModule[] = [];
   for (const entry of modules) {
     if (!entry || typeof entry !== 'object') continue;
-    const { id, version, clientApi, client } = entry as Record<string, unknown>;
+    const { id, version, clientApi, client } = entry as Record<string, Untrusted>;
     const url =
-      client && typeof client === 'object' ? (client as { entry?: unknown }).entry : undefined;
+      client && typeof client === 'object' ? (client as { entry?: Untrusted }).entry : undefined;
     if (typeof id !== 'string' || typeof url !== 'string') continue;
     loadable.push({
       id,
@@ -79,9 +80,9 @@ export function parsePublicManifest(body: unknown): LoadableModule[] | null {
 }
 
 /** Loose shape check of the admin list, so a proxy's HTML or an old API is "no modules", not a crash. */
-export function parseModuleListing(body: unknown): ModuleListing | null {
+export function parseModuleListing(body: Untrusted): ModuleListing | null {
   if (!body || typeof body !== 'object') return null;
-  const { platform, modules } = body as { platform?: unknown; modules?: unknown };
+  const { platform, modules } = body as { platform?: Untrusted; modules?: Untrusted };
   if (!Array.isArray(modules)) return null;
   const valid = modules.filter(
     (entry): entry is ModuleListEntry =>
@@ -271,11 +272,11 @@ export const REQUIRED_GROUPS = [
 
 export const CAPABILITY_KEYS = ['servers', 'veto', 'liveEvents', 'demos', 'playerStats'] as const;
 
-export function getPath(root: unknown, path: string): unknown {
-  let value: unknown = root;
+export function getPath(root: Untrusted, path: string): Untrusted {
+  let value: Untrusted = root;
   for (const key of path.split('.')) {
     if (!value || typeof value !== 'object') return undefined;
-    value = (value as Record<string, unknown>)[key];
+    value = (value as Record<string, Untrusted>)[key];
   }
   return value;
 }

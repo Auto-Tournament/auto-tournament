@@ -5,6 +5,7 @@
 import i18n from '../i18n';
 import { bareSlug, isGrandFinalSlug, isLosersBracketSlug } from './matchSlug';
 import { fmtDateTime } from './time';
+import type { Untrusted } from './untrusted';
 
 /**
  * Format a Unix timestamp to a localized date string
@@ -60,8 +61,8 @@ export const calculateOvertimeNumber = (
 export const isUnpairedSwissMatch = (match: {
   slug?: string;
   status: string;
-  team1?: unknown;
-  team2?: unknown;
+  team1?: Untrusted;
+  team2?: Untrusted;
 }): boolean =>
   match.status === 'pending' &&
   !match.team1 &&
@@ -85,7 +86,7 @@ export const getStatusLabel = (
   maxRounds?: number,
   overtimeRoundsPerSegment?: number
 ): string => {
-  const label = (key: string, options?: Record<string, unknown>) =>
+  const label = (key: string, options?: Record<string, Untrusted>) =>
     i18n.t(`matchesPage.statusLabel.${key}`, options);
 
   if (walkover) return label('walkover');

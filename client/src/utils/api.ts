@@ -14,6 +14,7 @@
  * own page, which is about the tournament in its URL.
  * Without either the API answers for the featured tournament.
  */
+import type { Untrusted } from './untrusted';
 const ADMIN_SCOPE_KEY = 'at:adminTournamentId';
 function readStoredScope(): number | null {
   try {
@@ -100,14 +101,14 @@ export const api = {
   /**
    * GET request
    */
-  async get<T = unknown>(endpoint: string): Promise<T> {
+  async get<T = Untrusted>(endpoint: string): Promise<T> {
     return this.fetch(endpoint, { method: 'GET' });
   },
 
   /**
    * POST request
    */
-  async post<T = unknown>(endpoint: string, data?: unknown): Promise<T> {
+  async post<T = Untrusted>(endpoint: string, data?: object): Promise<T> {
     return this.fetch(endpoint, {
       method: 'POST',
       body: data ? JSON.stringify(data) : undefined,
@@ -117,7 +118,7 @@ export const api = {
   /**
    * PUT request
    */
-  async put<T = unknown>(endpoint: string, data?: unknown): Promise<T> {
+  async put<T = Untrusted>(endpoint: string, data?: object): Promise<T> {
     return this.fetch(endpoint, {
       method: 'PUT',
       body: data ? JSON.stringify(data) : undefined,
@@ -127,7 +128,7 @@ export const api = {
   /**
    * PATCH request
    */
-  async patch<T = unknown>(endpoint: string, data?: unknown): Promise<T> {
+  async patch<T = Untrusted>(endpoint: string, data?: object): Promise<T> {
     return this.fetch(endpoint, {
       method: 'PATCH',
       body: data ? JSON.stringify(data) : undefined,
@@ -150,7 +151,7 @@ export function apiErrorMessage(err: unknown, fallback: string): string {
   const raw = err instanceof Error ? err.message : '';
   if (!raw) return fallback;
   try {
-    const parsed = JSON.parse(raw) as { error?: unknown; message?: unknown };
+    const parsed = JSON.parse(raw) as { error?: Untrusted; message?: Untrusted };
     if (typeof parsed.error === 'string' && parsed.error) return parsed.error;
     if (typeof parsed.message === 'string' && parsed.message) return parsed.message;
   } catch {

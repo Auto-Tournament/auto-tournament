@@ -4,6 +4,7 @@
 
 import type { Team, MatchMapResult, MatchLiveStats } from './team.types';
 import type { MatchPhase } from './matchPhase.types';
+import type { Untrusted } from '../utils/untrusted';
 
 export interface Match {
   id: number;
@@ -137,7 +138,7 @@ export interface MatchEvent {
     params?: {
       team1_score?: number;
       team2_score?: number;
-      [key: string]: unknown;
+      [key: string]: Untrusted;
     };
   };
 }

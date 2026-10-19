@@ -19,11 +19,12 @@ import type { ClientGameIntegration } from '../integrations/types';
 import { COMPONENT_SLOTS, getPath } from './manifest';
 import { ModuleSlotBoundary } from './ModuleSlotBoundary';
 import { recordRenderFailure } from './moduleState';
+import type { Untrusted } from '../utils/untrusted';
 
-type AnyComponent = ComponentType<Record<string, unknown>>;
+type AnyComponent = ComponentType<Record<string, Untrusted>>;
 
 function withBoundary(moduleId: string, slot: string, Slot: AnyComponent): AnyComponent {
-  function ModuleSlot(props: Record<string, unknown>) {
+  function ModuleSlot(props: Record<string, Untrusted>) {
     return (
       <ModuleSlotBoundary moduleId={moduleId} slot={slot}>
         <Slot {...props} />
@@ -38,9 +39,9 @@ function withBoundary(moduleId: string, slot: string, Slot: AnyComponent): AnyCo
 }
 
 /** A copy of `root` with the value at `path` replaced, copying each object on the way. */
-function setPath<T>(root: T, path: string, value: unknown): T {
+function setPath<T>(root: T, path: string, value: Untrusted): T {
   const [head, ...rest] = path.split('.');
-  const source = root as Record<string, unknown>;
+  const source = root as Record<string, Untrusted>;
   return {
     ...source,
     [head]: rest.length === 0 ? value : setPath(source[head] ?? {}, rest.join('.'), value),
@@ -80,7 +81,7 @@ export function adaptCodeModule(integration: ClientGameIntegration): ClientGameI
   // counts as "nothing to add": no settings, no error, no rows, no change.
   const setup = adapted.tournamentSetup;
   if (setup) {
-    const guard = <A extends unknown[], R>(
+    const guard = <A extends Untrusted[], R>(
       name: string,
       fn: ((...args: A) => R) | undefined,
       fallback: R
@@ -164,14 +165,7 @@ export function adaptCodeModule(integration: ClientGameIntegration): ClientGameI
     })),
     navItems: adapted.navItems.map((item) =>
       item.icon
-        ? {
-            ...item,
-            icon: withBoundary(
-              id,
-              `nav ${item.key}`,
-              item.icon as unknown as AnyComponent
-            ) as never,
-          }
+        ? { ...item, icon: withBoundary(id, `nav ${item.key}`, item.icon as AnyComponent) as never }
         : item
     ),
   };

@@ -19,6 +19,7 @@ import {
   type ModuleFailure,
 } from './manifest';
 import { localesProblem } from './moduleLocales';
+import type { Untrusted } from '../utils/untrusted';
 
 /**
  * Null when `platform` satisfies the module's declared `range`
@@ -59,18 +60,18 @@ const REACT_ELEMENT = Symbol.for('react.element');
 const REACT_TRANSITIONAL_ELEMENT = Symbol.for('react.transitional.element');
 
 /** A function component, a class, or memo/forwardRef/lazy (objects with a React `$$typeof`). */
-export function isComponent(value: unknown): boolean {
+export function isComponent(value: Untrusted): boolean {
   if (typeof value === 'function') return true;
   return (
     !!value &&
     typeof value === 'object' &&
-    typeof (value as { $$typeof?: unknown }).$$typeof === 'symbol'
+    typeof (value as { $$typeof?: Untrusted }).$$typeof === 'symbol'
   );
 }
 
-function isElement(value: unknown): boolean {
+function isElement(value: Untrusted): boolean {
   if (!value || typeof value !== 'object') return false;
-  const tag = (value as { $$typeof?: unknown }).$$typeof;
+  const tag = (value as { $$typeof?: Untrusted }).$$typeof;
   return tag === REACT_ELEMENT || tag === REACT_TRANSITIONAL_ELEMENT;
 }
 
@@ -84,10 +85,10 @@ export const TOURNAMENT_SETUP_FUNCTIONS = [
   'changes',
 ] as const;
 
-const isObject = (value: unknown): value is Record<string, unknown> =>
+const isObject = (value: Untrusted): value is Record<string, Untrusted> =>
   !!value && typeof value === 'object' && !Array.isArray(value);
 
-const optionalString = (value: unknown) => value === undefined || typeof value === 'string';
+const optionalString = (value: Untrusted) => value === undefined || typeof value === 'string';
 
 const NAV_LABEL_SURFACES: readonly string[] = [
   'nav',
@@ -98,7 +99,7 @@ const NAV_LABEL_SURFACES: readonly string[] = [
 ] satisfies readonly IntegrationNavLabelSurface[];
 
 /** What is wrong with the shape, or null. Each answer names the field, for the module's author. */
-function shapeProblem(def: Record<string, unknown>): string | null {
+function shapeProblem(def: Record<string, Untrusted>): string | null {
   if (!isObject(def.capabilities)) return 'capabilities is missing';
   for (const key of CAPABILITY_KEYS) {
     if (typeof def.capabilities[key] !== 'boolean') return `capabilities.${key} is not a boolean`;
@@ -212,7 +213,7 @@ export type ValidatedExport =
  * whose id is the one the server listed and not one this bundle already has.
  */
 export function validateModuleExport(
-  namespace: unknown,
+  namespace: Untrusted,
   expectedId: string,
   takenIds: readonly string[]
 ): ValidatedExport {
@@ -259,5 +260,6 @@ export function validateModuleExport(
       ),
     };
   }
+  // eslint-disable-next-line no-restricted-syntax -- shapeProblem() above checked every field of the contract
   return { ok: true, integration: def as unknown as ClientGameIntegration };
 }

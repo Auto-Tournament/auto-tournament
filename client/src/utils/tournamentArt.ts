@@ -6,6 +6,7 @@
  */
 import { getMapImageUrl } from '../constants/maps';
 import { tokens } from '../theme/tokens';
+import type { Untrusted } from './untrusted';
 
 /** Map art for a tournament without a banner or a picked map. */
 export const FALLBACK_ART_MAPS = [
@@ -23,12 +24,12 @@ export interface ArtTournament {
   bannerUrl?: string | null;
   /** The picked map, from the list (`bannerMap`) or the settings. */
   bannerMap?: string | null;
-  settings?: unknown;
+  settings?: Untrusted;
 }
 
 function pickedMap(t: ArtTournament): string | null {
   if (t.bannerMap) return t.bannerMap;
-  const map = (t.settings as { bannerMap?: unknown } | undefined)?.bannerMap;
+  const map = (t.settings as { bannerMap?: Untrusted } | undefined)?.bannerMap;
   return typeof map === 'string' && map ? map : null;
 }
 

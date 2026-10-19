@@ -44,7 +44,7 @@ export function BracketPauseBar({ tournamentId }: { tournamentId: number }) {
   // A pause, a resume and its timer running out go out as tournament updates.
   useTopic([], load, { events: ['tournament:update', 'bracket:update'] });
 
-  const act = async (path: string, body: unknown, done: string) => {
+  const act = async (path: string, body: object, done: string) => {
     setBusy(true);
     setMenu(null);
     try {

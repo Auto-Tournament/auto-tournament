@@ -10,6 +10,7 @@ import type {
   Tournament,
 } from '../types';
 import { useSnackbar } from '../contexts/SnackbarContext';
+import type { Untrusted } from '../utils/untrusted';
 
 const LIVE_STATS_CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
 const getLiveStatsCacheKey = (tournamentId: number) => `mat:bracket:liveStats:v1:${tournamentId}`;
@@ -209,7 +210,7 @@ export const useBracket = () => {
 
     const newSocket = io();
 
-    const applyMatchPatch = (payload: Record<string, unknown>) => {
+    const applyMatchPatch = (payload: Record<string, Untrusted>) => {
       if (!payload) return;
       const slug =
         (payload.slug as string | undefined) ||
@@ -354,7 +355,7 @@ export const useBracket = () => {
       });
     };
 
-    const handleBracketUpdate = (event: Record<string, unknown>) => {
+    const handleBracketUpdate = (event: Record<string, Untrusted>) => {
       if (!event) return;
 
       const action = event.action as string | undefined;

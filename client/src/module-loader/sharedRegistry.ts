@@ -10,11 +10,12 @@
  */
 
 import { SHARED_GLOBAL, type SharedSpecifier } from './sharedSpecifiers';
+import type { Untrusted } from '../utils/untrusted';
 
 // Literal specifiers, so Vite resolves each to the host's own copy. The
 // Record type makes a specifier added to SHARED_SPECIFIERS without a loader
 // here a type error.
-const LOADERS: Record<SharedSpecifier, () => Promise<unknown>> = {
+const LOADERS: Record<SharedSpecifier, () => Promise<object>> = {
   react: () => import('react'),
   'react/jsx-runtime': () => import('react/jsx-runtime'),
   'react-dom': () => import('react-dom'),
@@ -30,7 +31,7 @@ const LOADERS: Record<SharedSpecifier, () => Promise<unknown>> = {
   '@auto-tournament/module-sdk': () => import('../module-sdk'),
 };
 
-type SharedGlobal = typeof globalThis & { [SHARED_GLOBAL]?: Record<string, unknown> };
+type SharedGlobal = typeof globalThis & { [SHARED_GLOBAL]?: Record<string, Untrusted> };
 
 /** Idempotent: the second call is free. */
 export async function provideShared(): Promise<void> {

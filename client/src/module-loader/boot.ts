@@ -28,6 +28,7 @@ import {
   type ModuleListing,
 } from './manifest';
 import { setBootStatus, setManifestStatus, setSafeMode } from './moduleState';
+import type { Untrusted } from '../utils/untrusted';
 
 /** The admin list: every module with its status and reason. The Modules page. */
 export const MODULES_ENDPOINT = '/api/modules';
@@ -55,7 +56,7 @@ type Fetched<T> = { ok: true; value: T } | { ok: false; status: number | null; e
 /** GET a JSON endpoint and parse it. Never throws. */
 async function fetchParsed<T>(
   url: string,
-  parse: (body: unknown) => T | null,
+  parse: (body: Untrusted) => T | null,
   timeoutMs: number
 ): Promise<Fetched<T>> {
   const controller = new globalThis.AbortController();
