@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { db } from '../../api/src/config/database';
+import { signInViaRequest } from '../helpers/auth';
 
 /**
  * GET /api/game/cs2/players/:id/profile counts an imported match: its maps
@@ -10,70 +10,78 @@ import { db } from '../../api/src/config/database';
  * @tag stats
  */
 
+const run = `${Date.now()}`.slice(-8);
+const PLAYER = `76561199${run}7`.padEnd(17, '0');
+const OTHER = `76561199${run}8`.padEnd(17, '0');
+const SLUG = `import-profile-${run}`;
+const TEAMS = [`profimp-x-${run}`, `profimp-y-${run}`];
+
+const line = (team: 'team1' | 'team2', player: string) => ({
+  player_id: player,
+  team,
+  rounds_played: 20,
+  kills: 20,
+  deaths: 10,
+  damage: 2000,
+  headshot_kills: 10,
+  kast_rounds: 15,
+});
+
+test.afterAll(async ({ request }) => {
+  await request.post('/api/test/stats-fixture/cleanup', {
+    data: { slugs: [SLUG], teams: TEAMS, players: [PLAYER, OTHER] },
+  });
+});
+
 test(
   'an imported match counts on the profile',
   { tag: ['@api', '@stats'] },
   async ({ request }) => {
-    const stamp = `${Date.now()}`.slice(-9);
-    const slug = `import-test${stamp}`;
-    const player = `7656119${stamp}07`.slice(0, 17);
-    await db.runAsync('INSERT INTO players (id, name) VALUES (?, ?)', [player, 'Imported pro']);
-    await db.runAsync(
-      `INSERT INTO matches (slug, round, match_number, config, status, game, completed_at)
-     VALUES (?, 0, 0, '{}', 'completed', 'cs2', EXTRACT(EPOCH FROM NOW())::INTEGER)`,
-      [slug]
-    );
-    // Two maps, the player's team (team2) won the first.
-    for (const [map, name, t1, t2, winner] of [
-      [0, 'de_mirage', 9, 13, 'team2'],
-      [1, 'de_nuke', 13, 4, 'team1'],
-    ] as const) {
-      await db.runAsync(
-        `INSERT INTO match_map_results (match_slug, map_number, map_name, team1_score, team2_score, winner_team)
-       VALUES (?, ?, ?, ?, ?, ?)`,
-        [slug, map, name, t1, t2, winner]
-      );
-      await db.runAsync(
-        `INSERT INTO cs2_player_map_stats
-         (match_slug, map_number, player_id, map_name, team, rounds_played, kills, deaths, damage, headshot_kills, kast_rounds)
-       VALUES (?, ?, ?, ?, 'team2', 20, 20, 10, 2000, 10, 15)`,
-        [slug, map, player, name]
-      );
-    }
-    try {
-      const res = await request.get(`/api/game/cs2/players/${player}/profile`);
-      expect(res.ok()).toBe(true);
-      const body = (await res.json()) as {
-        player: {
-          matches: number;
-          kills: number;
-          deaths: number;
-          headshots: number;
-          totalDamage: number;
-          roundsPlayed: number;
-          kast: number | null;
-        };
-        maps: Array<{ map: string; played: number; won: number }>;
-      };
-      expect(body.player).toMatchObject({
-        matches: 1,
-        kills: 40,
-        deaths: 20,
-        headshots: 20,
-        totalDamage: 4000,
-        roundsPlayed: 40,
-        kast: 75,
-      });
-      expect(body.maps).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({ map: 'de_mirage', played: 1, won: 1 }),
-          expect.objectContaining({ map: 'de_nuke', played: 1, won: 0 }),
-        ])
-      );
-    } finally {
-      await db.runAsync('DELETE FROM cs2_player_map_stats WHERE match_slug = ?', [slug]);
-      await db.runAsync('DELETE FROM matches WHERE slug = ?', [slug]);
-      await db.runAsync('DELETE FROM players WHERE id = ?', [player]);
-    }
+    expect(await signInViaRequest(request)).toBe(true);
+    const seeded = await request.post('/api/test/stats-fixture', {
+      data: {
+        players: [
+          { id: PLAYER, name: 'Imported pro' },
+          { id: OTHER, name: 'Opponent' },
+        ],
+        teams: [
+          { id: TEAMS[0], name: `X ${run}`, players: [OTHER] },
+          { id: TEAMS[1], name: `Y ${run}`, players: [PLAYER] },
+        ],
+        matches: [
+          {
+            // Imported: demo stats per map, no live stats. The player's team (team2) won map 1.
+            slug: SLUG,
+            source: 'import',
+            team1: TEAMS[0],
+            team2: TEAMS[1],
+            winner: 'team1',
+            maps: [
+              { winner: 'team2', lines: [line('team2', PLAYER), line('team1', OTHER)] },
+              { winner: 'team1', lines: [line('team2', PLAYER), line('team1', OTHER)] },
+            ],
+          },
+        ],
+      },
+    });
+    expect(seeded.ok(), await seeded.text()).toBe(true);
+
+    const res = await request.get(`/api/game/cs2/players/${PLAYER}/profile`);
+    expect(res.ok()).toBe(true);
+    const body = (await res.json()) as {
+      player: Record<string, number | null>;
+      maps: Array<{ map: string; played: number; won: number }>;
+    };
+    expect(body.player).toMatchObject({
+      matches: 1,
+      kills: 40,
+      deaths: 20,
+      headshots: 20,
+      totalDamage: 4000,
+      roundsPlayed: 40,
+      kast: 75,
+    });
+    // The fixture names every map de_mirage: two played, one won.
+    expect(body.maps).toEqual([expect.objectContaining({ map: 'de_mirage', played: 2, won: 1 })]);
   }
 );
