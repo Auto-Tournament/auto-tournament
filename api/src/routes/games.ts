@@ -1,4 +1,5 @@
-import { Router, Request, Response } from 'express';
+import type { Request, Response } from 'express';
+import { Router } from 'express';
 import { gameIconPath, scheduleGameIconRefresh } from '../services/gameIconService';
 import {
   SEARCH_MIN_LENGTH,

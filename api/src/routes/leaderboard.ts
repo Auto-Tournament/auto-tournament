@@ -3,7 +3,8 @@
  * one game (ratings are per game, services/gameRatings), with what they
  * played. Public, like the player and team directories.
  */
-import { Router, Request, Response } from 'express';
+import type { Request, Response } from 'express';
+import { Router } from 'express';
 import { db } from '../config/database';
 import { log } from '../utils/logger';
 import { getIntegration } from '../integrations/registry';

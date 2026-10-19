@@ -13,7 +13,8 @@
  * answered with one generic message. Sign-ins and code use are audit-logged
  * ([AUDIT]), never with a password or code.
  */
-import { Router, Request, Response, NextFunction } from 'express';
+import type { Request, Response, NextFunction } from 'express';
+import { Router } from 'express';
 import { log } from '../utils/logger';
 import { isSameSiteRequest } from '../utils/accountConnections';
 import { LoginThrottle } from '../utils/loginThrottle';

@@ -13,7 +13,8 @@
  * verifies against a key compiled into this platform.
  */
 
-import { Router, Request, Response, NextFunction } from 'express';
+import type { Request, Response, NextFunction } from 'express';
+import { Router } from 'express';
 import { requireAuth, requestActorId } from '../middleware/auth';
 import { isSameSiteRequest } from '../utils/accountConnections';
 import { log } from '../utils/logger';

@@ -1,12 +1,13 @@
 import { logoUrl } from '../services/teamSelfService';
 import { viewerTeamIdOfMatch } from '../services/matchViewer';
 import { applyMatchTimes, matchTimeFields } from '../services/matchTimes';
-import { Router, Request, Response } from 'express';
+import type { Request, Response } from 'express';
+import { Router } from 'express';
 import { getGameRatings } from '../services/gameRatings';
 import { matchService } from '../services/matchService';
 import { isQueuedAllocationResult, scheduler } from '../core/scheduler';
-import { CreateMatchInput, MatchConfig, MatchListItem } from '../types/match.types';
-import { TournamentResponse } from '../types/tournament.types';
+import type { CreateMatchInput, MatchConfig, MatchListItem } from '../types/match.types';
+import type { TournamentResponse } from '../types/tournament.types';
 import { checkAdminAccess, requestActorId, requireAuth } from '../middleware/auth';
 import {
   holdMatch,

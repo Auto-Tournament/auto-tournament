@@ -1,4 +1,5 @@
-import { Router, Request, Response } from 'express';
+import type { Request, Response } from 'express';
+import { Router } from 'express';
 import { requireAuth } from '../middleware/auth';
 import { log } from '../utils/logger';
 import { manualMatchTemplateService } from '../services/manualMatchTemplateService';

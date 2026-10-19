@@ -1,7 +1,8 @@
 import { getOwnNameState } from '../services/playerName';
 import { randomBytes } from 'crypto';
 import { URLSearchParams } from 'url';
-import { Router, Request, Response, NextFunction } from 'express';
+import type { Request, Response, NextFunction } from 'express';
+import { Router } from 'express';
 import { log } from '../utils/logger';
 import { getAuthProvidersConfig } from '../config/authProviders';
 import { steamService } from '../services/steamService';
@@ -9,7 +10,8 @@ import { playerService } from '../services/playerService';
 import { presetAccounts } from '../services/gameAccounts';
 import { passport, isStrategyConfigured } from '../config/passport';
 import { settingsService } from '../services/settingsService';
-import { authIdentityService, AuthProvider } from '../services/authIdentityService';
+import type { AuthProvider } from '../services/authIdentityService';
+import { authIdentityService } from '../services/authIdentityService';
 import { signPlayerSteamId, getVerifiedPlayerSteamId } from '../utils/signedPlayerCookie';
 import {
   PENDING_STEAM_LINK_COOKIE_NAME,

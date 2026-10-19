@@ -4,7 +4,8 @@
  * themselves are each game's (CS2: /api/game/cs2/highlights/...); they all
  * live in DATA_DIR/highlights, which is where these mixes read them from.
  */
-import express, { Router, Request, Response } from 'express';
+import type { Request, Response } from 'express';
+import express, { Router } from 'express';
 import fs from 'fs';
 import path from 'path';
 import { requireAuth } from '../middleware/auth';

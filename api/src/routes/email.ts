@@ -4,7 +4,8 @@
  * (confirming an address, unsubscribing). Password recovery by email is on
  * /api/auth/local (routes/localAdmin.ts).
  */
-import { Router, Request, Response, NextFunction } from 'express';
+import type { Request, Response, NextFunction } from 'express';
+import { Router } from 'express';
 import { requireAuth, requestActorId } from '../middleware/auth';
 import { isSameSiteRequest } from '../utils/accountConnections';
 import { resolveViewerIdentity } from '../utils/viewerIdentity';

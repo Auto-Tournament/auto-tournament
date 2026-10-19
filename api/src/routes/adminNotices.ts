@@ -3,7 +3,8 @@
  * Admin only. Live updates go to signed-in admins as the Socket.IO events
  * admin:notice and admin:notice:resolved.
  */
-import { Router, Request, Response } from 'express';
+import type { Request, Response } from 'express';
+import { Router } from 'express';
 import { requireAuth, requestActorId } from '../middleware/auth';
 import { log } from '../utils/logger';
 import { adminNoticeService } from '../services/adminNoticeService';
