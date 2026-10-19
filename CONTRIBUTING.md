@@ -40,3 +40,6 @@ change that fully solves the task.
   the lint config, and the fixes follow in small PRs of their own.
 - Mechanical changes go in a PR of their own, never mixed into one that
   changes behaviour.
+- New files are welcome; keep each under 450 lines of code (blank lines and
+  comments don't count; lint checks it). A file that grows past that gets
+  split, in a PR that only moves code.
