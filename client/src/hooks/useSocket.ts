@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
-import { io, type Socket } from 'socket.io-client';
+import type { Socket } from 'socket.io-client';
+import { acquireSocket, currentSocket, ownedView, releaseSocket } from '../utils/sharedSocket';
 
 /**
- * A connection to the platform's Socket.IO server, open for as long as the
- * calling component is mounted.
+ * The page's Socket.IO connection (utils/sharedSocket), held for as long as
+ * the calling component is mounted.
  *
  * Game modules get their socket from here (through the SDK) instead of
  * calling `io()` themselves: the connection is the host's to open, configure
@@ -11,20 +12,17 @@ import { io, type Socket } from 'socket.io-client';
  * handlers in its cleanup; never `close()` it. Pair it with
  * `onSocketReconnect` to refetch after a reconnect.
  *
- * Today each caller gets its own connection, opened on mount and closed on
- * unmount, which is what the modules' own `io()` calls did. The socket object
- * is the same for the component's lifetime, and is created unconnected so
- * rendering opens nothing; the effect connects it.
+ * Every caller shares one connection, and the socket is the same object for
+ * the page's life. A `connect` handler also runs right after it is added when
+ * the connection is already up, as on a socket of one's own (`ownedView`).
  */
 export function useSocket(): Socket {
-  const [socket] = useState(() => io({ autoConnect: false }));
+  const [socket] = useState(() => ownedView(currentSocket()));
 
   useEffect(() => {
-    socket.connect();
-    return () => {
-      socket.close();
-    };
-  }, [socket]);
+    acquireSocket();
+    return releaseSocket;
+  }, []);
 
   return socket;
 }
