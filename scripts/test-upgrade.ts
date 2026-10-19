@@ -421,16 +421,6 @@ async function seed(ctx: APIRequestContext): Promise<SeedResult> {
     throw new Error(`creating server failed: ${serverRes.status()} ${await serverRes.text()}`);
   }
 
-  // Settings: seed a distinctive, checkable value.
-  const settingsRes = await ctx.put('/api/settings', {
-    data: { webhookUrl: BASE_URL },
-  });
-  if (!settingsRes.ok()) {
-    throw new Error(
-      `setting webhookUrl failed: ${settingsRes.status()} ${await settingsRes.text()}`
-    );
-  }
-
   // Plugin settings, under 2.4.15's names: stored as matchzy_* keys, which
   // 3.0 reads back as at_* (checked in pluginSettingsOf).
   const pluginSettingsRes = await ctx.put('/api/settings', {
@@ -649,13 +639,12 @@ async function snapshot(
 
   const settingsRes = await ctx.get('/api/settings');
   const settingsBody = (await settingsRes.json()) as {
-    settings?: Record<string, unknown> & { webhookUrl?: string };
+    settings?: Record<string, unknown>;
   };
   // The plugin settings under each version's own field names: 2.4.15 answers
   // matchzyChatPrefix, 3.0 atChatPrefix. Each is read strictly by its own name.
   const prefix = apiVersion === 'old' ? 'matchzy' : 'at';
   const settings = {
-    webhookUrl: settingsBody.settings?.webhookUrl,
     pluginChatPrefix: settingsBody.settings?.[`${prefix}ChatPrefix`],
     pluginFfwTime: settingsBody.settings?.[`${prefix}FfwTime`],
   };
