@@ -1,5 +1,4 @@
 import { test, expect, type APIRequestContext } from '@playwright/test';
-import { configureWebhook } from '../helpers/setup';
 import { createTestTeams } from '../helpers/teams';
 import { createTestServer } from '../helpers/servers';
 import { findMatchByTeams } from '../helpers/matches';
@@ -149,7 +148,6 @@ test.describe.serial('Series out of maps without series_end', () => {
 
   test.beforeEach(async ({ request }) => {
     await signInViaRequest(request);
-    expect(await configureWebhook(request, 'http://localhost:3069')).toBe(true);
     const teams = await createTestTeams(request, 'exhausted');
     expect(teams).toBeTruthy();
     [team1, team2] = teams!;
