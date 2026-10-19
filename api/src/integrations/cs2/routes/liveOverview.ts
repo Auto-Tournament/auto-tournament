@@ -10,7 +10,8 @@
  * Admins refresh it on `match:update` and the admin call socket events.
  */
 
-import { Router, Request, Response } from 'express';
+import type { Request, Response } from 'express';
+import { Router } from 'express';
 import { db } from '../../../config/database';
 import { requireAuth } from '../../../middleware/auth';
 import { log } from '../../../utils/logger';

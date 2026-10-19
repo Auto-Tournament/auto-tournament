@@ -1,5 +1,5 @@
 import { db } from '../../../config/database';
-import {
+import type {
   DbMapRow,
   CreateMapInput,
   UpdateMapInput,
