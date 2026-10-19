@@ -25,6 +25,7 @@ import type {
   CustomStatValueType,
   DbCustomStatFieldRow,
 } from '../../types/matchReport.types';
+import type { Untrusted } from '../../utils/untrusted';
 
 export interface CustomStatField {
   id: number;
@@ -90,7 +91,7 @@ export type FieldsCheck =
  * All or nothing on purpose: a half-applied set would leave a tournament
  * asking for fields an admin had already replaced.
  */
-export function validateFields(input: unknown): FieldsCheck {
+export function validateFields(input: Untrusted): FieldsCheck {
   if (!Array.isArray(input)) return { ok: false, error: 'fields must be an array' };
   if (input.length > 50) {
     return { ok: false, error: 'A tournament may ask for at most 50 extra fields' };

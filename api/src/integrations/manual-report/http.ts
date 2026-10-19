@@ -35,6 +35,7 @@ import { log } from '../../utils/logger';
 import { resolveViewerAccount, type ViewerAccount } from '../../utils/viewerIdentity';
 import type { DbMatchRow } from '../../types/database.types';
 import { isManualReportMatch, resolveActor, type ReportActor, type ReportOutcome } from './reports';
+import type { Untrusted } from '../../utils/untrusted';
 
 /** The response body every state-machine route answers with. */
 export function answer(res: Response, outcome: ReportOutcome): Response {
@@ -128,7 +129,7 @@ export async function adminActor(req: Request): Promise<ReportActor> {
 export async function guarded(
   res: Response,
   where: string,
-  run: () => Promise<unknown>
+  run: () => Promise<void | Response>
 ): Promise<void> {
   try {
     await run();
@@ -165,7 +166,7 @@ export async function tournamentForRequest(req: Request, res: Response): Promise
 }
 
 /** A positive integer from a request body, or undefined when it is absent. */
-export function readRevision(value: unknown): number | undefined | null {
+export function readRevision(value: Untrusted): number | undefined | null {
   if (value === undefined || value === null || value === '') return undefined;
   const n = Number(value);
   if (!Number.isInteger(n) || n <= 0) return null;

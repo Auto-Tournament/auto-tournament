@@ -26,6 +26,7 @@ import type {
   TournamentSettingsValidation,
 } from '../types';
 import { catalogNameFor } from './catalog';
+import type { Untrusted } from '../../utils/untrusted';
 
 /** What the tournament asks for before a report counts. */
 export type ConfirmationMode = 'opponent' | 'none';
@@ -126,18 +127,18 @@ export function seriesLengthOf(format: string | null | undefined): number {
   return Number.isInteger(n) && n > 0 ? n : 1;
 }
 
-function asRecord(value: unknown): Record<string, unknown> {
+function asRecord(value: Untrusted): Record<string, Untrusted> {
   return value && typeof value === 'object' && !Array.isArray(value)
-    ? (value as Record<string, unknown>)
+    ? (value as Record<string, Untrusted>)
     : {};
 }
 
-function positiveInt(value: unknown, fallback: number): number {
+function positiveInt(value: Untrusted, fallback: number): number {
   const n = Number(value);
   return Number.isInteger(n) && n > 0 ? n : fallback;
 }
 
-function nonNegativeInt(value: unknown, fallback: number): number {
+function nonNegativeInt(value: Untrusted, fallback: number): number {
   const n = Number(value);
   return Number.isInteger(n) && n >= 0 ? n : fallback;
 }
@@ -151,7 +152,7 @@ export function readSetup(
   tournament: IntegrationTournament | null,
   game?: string | null
 ): ManualReportSetup {
-  const own = asRecord(asRecord(tournament?.settings).manualReport);
+  const own: ManualReportSettings = tournament?.settings.manualReport ?? {};
 
   const confirmation = own.confirmation === 'none' ? 'none' : 'opponent';
   const timeoutAction = own.timeoutAction === 'escalate' ? 'escalate' : 'auto_confirm';

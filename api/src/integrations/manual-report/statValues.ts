@@ -49,6 +49,7 @@ import type {
 } from '../../types/matchReport.types';
 import type { TeamSide } from '../types';
 import type { CustomStatField } from './fields';
+import type { Untrusted } from '../../utils/untrusted';
 
 // ---------------------------------------------------------------------------
 // Values
@@ -64,7 +65,7 @@ export interface ReportedStatValue {
   playerUid?: string | null;
   /** The side, for a `team` field. Ignored for a player value. */
   team?: TeamSide | null;
-  value?: unknown;
+  value?: Untrusted;
 }
 
 /** A checked value, ready to be written. */
@@ -156,7 +157,7 @@ export async function sidesForMatch(match: {
 
 /** `number` and `integer` land in `value_number`, `text` in `value_text`. */
 function readValue(
-  raw: unknown,
+  raw: Untrusted,
   valueType: CustomStatValueType,
   where: string
 ): { ok: true; number: number | null; text: string | null } | { ok: false; error: string } | null {
@@ -195,7 +196,7 @@ function readValue(
  * All or nothing: a set with one bad value writes none of it, so a report
  * either carries the numbers it says it does or it is refused outright.
  */
-export function validateStatValues(input: unknown, ctx: StatValuesContext): StatValuesCheck {
+export function validateStatValues(input: Untrusted, ctx: StatValuesContext): StatValuesCheck {
   if (input === undefined || input === null) {
     return requiredCheck([], ctx);
   }
