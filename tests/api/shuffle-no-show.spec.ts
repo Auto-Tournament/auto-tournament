@@ -68,12 +68,6 @@ test(
       players.push({ ctx, steamId });
     }
 
-    // CS2 starts only with a webhook URL set.
-    const webhook = await request.put('/api/settings', {
-      headers: getAuthHeader(),
-      data: { webhookUrl: BASE_URL },
-    });
-    expect(webhook.ok(), await webhook.text()).toBe(true);
     const started = await request.post('/api/tournament/start', { headers: scope });
     expect(started.ok(), await started.text()).toBe(true);
     // Sign-up closes once it runs: a no-show still gets back in.
