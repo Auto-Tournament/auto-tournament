@@ -55,6 +55,7 @@ import {
   type ConfirmationMode,
   type TimeoutAction,
 } from './setup';
+import type { TournamentSettings } from '../../types/tournament.types';
 
 export { MANUAL_REPORT_GAME_ID } from './catalog';
 
@@ -197,7 +198,7 @@ export const manualReportIntegration: GameIntegration = {
     const standaloneSettings =
       ctx.settings === undefined
         ? null
-        : { id: 0, type: '', format: '', settings: ctx.settings };
+        : { id: 0, type: '', format: '', settings: ctx.settings as TournamentSettings };
     const setup = readSetup(ctx.tournament ?? standaloneSettings, ctx.game);
     const standalone = parseConfig(ctx.settings);
     const seriesLength = ctx.tournament

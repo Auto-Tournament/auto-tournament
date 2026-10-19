@@ -27,7 +27,7 @@
 import type { Router } from 'express';
 import type { DbMatchRow } from '../types/database.types';
 import type { SqlValue } from '../config/database';
-import type { TournamentSettings } from '../types/tournament.types';
+import type { TournamentResponse, TournamentSettings } from '../types/tournament.types';
 import type { JsonObject } from '../utils/json';
 import type { Untrusted } from '../utils/untrusted';
 
@@ -81,14 +81,13 @@ export interface ParticipantRef {
 }
 
 /**
- * The neutral view of a tournament an integration gets. `settings` is the
- * integration-owned part: the core stores and forwards it without reading it.
+ * The neutral view of a tournament an integration gets: its `settings`, and
+ * the full response when the caller has it (`full`).
  *
- * For CS2 this is still the full `TournamentResponse`. CS2's own settings
- * (maps, map sequence, max rounds, overtime) are its object inside
- * `settings` (`settings.cs2`, see `ModuleTournamentSettings`), also spread
- * onto the response's top level for 2.x clients; the veto order is still
- * `settings.customVetoOrder`.
+ * CS2's own settings (maps, map sequence, max rounds, overtime) are its
+ * object inside `settings` (`settings.cs2`, see `ModuleTournamentSettings`),
+ * also spread onto the response's top level for 2.x clients; the veto order
+ * is still `settings.customVetoOrder`.
  */
 export interface IntegrationTournament {
   id: number;
@@ -96,7 +95,12 @@ export interface IntegrationTournament {
   type: string;
   /** Series format: 'bo1' | 'bo3' | 'bo5' */
   format: string;
-  settings: unknown;
+  settings: TournamentSettings;
+  /**
+   * The tournament as the API returns it, when the caller has it (building a
+   * bracket match's config reads its teams and rules).
+   */
+  full?: TournamentResponse;
 }
 
 /** Everything an integration needs to know about one match. */
@@ -862,13 +866,13 @@ export interface GameIntegration {
    * veto; `settings.cs2.veto: false` turns it off and each match plays maps
    * drawn from the pool). Omitted means `capabilities.veto`.
    */
-  usesPreMatchPhase?(tournament: { settings?: unknown }): boolean;
+  usesPreMatchPhase?(tournament: { settings?: TournamentSettings }): boolean;
   /**
    * Whether the game fills a short team with bots in this tournament (CS2:
    * `settings.cs2.fillTeamsWithBots`). A shuffle round then gives every
    * player a team instead of sitting some out. Omitted means `false`.
    */
-  fillsShortTeams?(tournament: { settings?: unknown }): boolean;
+  fillsShortTeams?(tournament: { settings?: TournamentSettings }): boolean;
   /**
    * A match got both participants and `isReadyToAllocate` returned `false`:
    * run the integration's pre-match phase. The integration readies and

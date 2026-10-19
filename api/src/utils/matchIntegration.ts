@@ -36,13 +36,14 @@ export interface MatchConfigTarget {
   team2Id?: string | null;
 }
 
-/** The neutral tournament view an integration gets; `settings` carries the full response for CS2 (see IntegrationTournament). */
+/** The tournament view an integration gets: its settings, and the full response. */
 export function toIntegrationTournament(tournament: TournamentResponse): IntegrationTournament {
   return {
     id: tournament.id,
     type: tournament.type,
     format: tournament.format,
-    settings: tournament,
+    settings: tournament.settings,
+    full: tournament,
   };
 }
 
@@ -109,7 +110,10 @@ export function describeMatch(match: { game?: GameId | null; config?: unknown })
 }
 
 /** Whether a match's config follows its tournament (bracket match) rather than being stored as-is. */
-export function isBracketManaged(match: { round?: number | null; tournament_id?: number | null }): boolean {
+export function isBracketManaged(match: {
+  round?: number | null;
+  tournament_id?: number | null;
+}): boolean {
   return typeof match.round === 'number' && match.round >= 1 && !!match.tournament_id;
 }
 
