@@ -73,8 +73,6 @@ export const TYPED_INTERNALS_TODO = [
   'api/src/integrations/cs2/fleet/reliable.ts',
   'api/src/integrations/cs2/fleet/restore.ts',
   'api/src/integrations/cs2/fleet/routes.ts',
-  'api/src/integrations/cs2/fleet/serverLog.ts',
-  'api/src/integrations/cs2/fleet/serverLogLine.ts',
   'api/src/integrations/cs2/fleet/serverNotices.ts',
   'api/src/integrations/cs2/fleet/state.ts',
   'api/src/integrations/cs2/fleet/tvState.ts',
