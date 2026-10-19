@@ -418,6 +418,8 @@ const SECURITY_BY_GUARD: Record<Guard, Array<Record<string, string[]>>> = {
   'server token or admin': [{ atServerToken: [] }, { bearerAuth: [] }, { apiToken: [] }],
   'compat ingest token': [{ compatIngestToken: [] }],
   'integrator token or admin': [{ bearerAuth: [] }, { apiToken: [] }],
+  // A recorder key (atr_…) is sent as a bearer token, like an admin's.
+  'recorder key or admin': [{ bearerAuth: [] }, { apiToken: [] }],
 };
 
 interface OperationObject {

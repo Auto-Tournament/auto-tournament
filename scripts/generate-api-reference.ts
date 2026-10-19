@@ -119,6 +119,7 @@ To generate a client, use [openapi.json](openapi.json) — same walk, machine-re
 | \`public\` | No credential needed |
 | \`admin\` | An admin session, or a service token (\`API_TOKENS\`; \`API_TOKENS_READONLY\` for \`GET\`) |
 | \`server token\` | \`X-Auto-Tournament-Token\` — for CS2 game servers, not for bots |
+| \`recorder key or admin\` | A highlight recorder's key (\`Authorization: Bearer atr_…\`), or what \`admin\` takes |
 
 \`public\` means the middleware requires nothing. A few of these still resolve
 the caller's identity from a cookie and change what they return, or reject the
