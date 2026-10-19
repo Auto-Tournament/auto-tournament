@@ -8,7 +8,7 @@
 import { Router, type Request, type Response } from 'express';
 import { requireAuth, requireIntegratorAuth } from '../../../middleware/auth';
 import { log } from '../../../utils/logger';
-import { platformOrigin } from '../../../services/webhooks/links';
+import { publicOrigin } from '../../../utils/publicOrigin';
 import { backfillMoments, LIST_MAX, listMoments } from '../demos/momentStore';
 import { MOMENT_KINDS } from '../demos/moments';
 import type { Untrusted } from '../../../utils/untrusted';
@@ -141,7 +141,7 @@ integrationHighlightsRouter.get('/', async (req: Request, res: Response) => {
   try {
     const page = await listMoments(
       { since, limit, tournament, match: str(q.match), kinds },
-      await platformOrigin()
+      publicOrigin(req)
     );
     return res.json({ success: true, ...page });
   } catch (error) {
