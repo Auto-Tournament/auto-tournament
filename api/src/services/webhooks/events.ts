@@ -8,6 +8,8 @@
  * Pure: no database, no Express. docs/WEBHOOKS.md documents the same list.
  */
 
+import type { Untrusted } from '../../utils/untrusted';
+
 /** Payload contract version, sent as `api_version` in every delivery. */
 export const WEBHOOK_API_VERSION = '1';
 
@@ -92,7 +94,7 @@ export const WEBHOOK_EVENT_CATALOG: ReadonlyArray<WebhookEventTypeInfo> = [
   },
 ];
 
-export function isWebhookEventType(value: unknown): value is WebhookEventType {
+export function isWebhookEventType(value: Untrusted): value is WebhookEventType {
   return typeof value === 'string' && (WEBHOOK_EVENT_TYPES as readonly string[]).includes(value);
 }
 
@@ -171,7 +173,12 @@ export interface WebhookMatch {
 export interface WebhookAdminCall {
   /** The call's id; the same on every delivery of this call. */
   id: string;
-  player: { steam_id64: string | null; name: string | null; team: TeamSide | null; team_name: string | null };
+  player: {
+    steam_id64: string | null;
+    name: string | null;
+    team: TeamSide | null;
+    team_name: string | null;
+  };
   /** What the player typed after .admin; empty when nothing. */
   message: string;
   map_number: number | null;
@@ -217,11 +224,18 @@ export interface WebhookEnvelope {
 }
 
 /** `steam://connect/host:port/password` and the matching console line. */
-export function connectLinks(host: string, port: number, password: string | null): Pick<WebhookConnect, 'steam_url' | 'console'> {
-  const address = host.includes(':') && !host.startsWith('[') ? `[${host}]:${port}` : `${host}:${port}`;
+export function connectLinks(
+  host: string,
+  port: number,
+  password: string | null
+): Pick<WebhookConnect, 'steam_url' | 'console'> {
+  const address =
+    host.includes(':') && !host.startsWith('[') ? `[${host}]:${port}` : `${host}:${port}`;
   const pw = password && password.length > 0 ? password : null;
   return {
-    steam_url: pw ? `steam://connect/${address}/${encodeURIComponent(pw)}` : `steam://connect/${address}`,
+    steam_url: pw
+      ? `steam://connect/${address}/${encodeURIComponent(pw)}`
+      : `steam://connect/${address}`,
     console: pw ? `connect ${address}; password ${pw}` : `connect ${address}`,
   };
 }

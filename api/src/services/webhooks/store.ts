@@ -11,10 +11,12 @@ import crypto from 'crypto';
 import type { QueryResultRow } from 'pg';
 import { db } from '../../config/database';
 import { isWebhookEventType, type WebhookEventType } from './events';
+import type { SqlValue } from '../../config/database';
+import type { Untrusted } from '../../utils/untrusted';
 
 export async function sql<T extends QueryResultRow = QueryResultRow>(
   text: string,
-  params: unknown[] = []
+  params: SqlValue[] = []
 ): Promise<T[]> {
   return db.withClient(async (client) => (await client.query<T>(text, params)).rows);
 }
@@ -26,7 +28,8 @@ export function newId(prefix: 'whk' | 'dlv' | 'evt'): string {
   return `${prefix}_${time}${rand}`;
 }
 
-const num = (v: unknown): number | null => (v === null || v === undefined ? null : Number(v));
+const num = (v: number | string | null | undefined): number | null =>
+  v === null || v === undefined ? null : Number(v);
 
 // ---------------------------------------------------------------------------
 // Endpoints
@@ -83,7 +86,8 @@ export interface WebhookEndpointWithSecrets extends WebhookEndpoint {
 
 function parseEventTypes(raw: string): string[] {
   try {
-    const parsed: unknown = JSON.parse(raw);
+    // Subscriptions of every age: read leniently.
+    const parsed: Untrusted = JSON.parse(raw);
     return Array.isArray(parsed) ? parsed.filter((t): t is string => typeof t === 'string') : ['*'];
   } catch {
     return ['*'];
@@ -134,12 +138,17 @@ export function publicEndpoint(e: WebhookEndpointWithSecrets): WebhookEndpoint {
   };
 }
 
-export function subscribes(endpoint: Pick<WebhookEndpoint, 'eventTypes'>, type: WebhookEventType): boolean {
+export function subscribes(
+  endpoint: Pick<WebhookEndpoint, 'eventTypes'>,
+  type: WebhookEventType
+): boolean {
   return endpoint.eventTypes.includes('*') || endpoint.eventTypes.includes(type);
 }
 
 /** Validate a subscription list: `['*']` or known type ids. */
-export function normalizeEventTypes(input: unknown): { ok: true; types: string[] } | { ok: false; error: string } {
+export function normalizeEventTypes(
+  input: Untrusted
+): { ok: true; types: string[] } | { ok: false; error: string } {
   if (input === undefined) return { ok: true, types: ['*'] };
   if (!Array.isArray(input) || input.length === 0) {
     return { ok: false, error: 'eventTypes must be a non-empty array of event type ids, or ["*"]' };
@@ -147,7 +156,8 @@ export function normalizeEventTypes(input: unknown): { ok: true; types: string[]
   const types = [...new Set(input.map((t) => (typeof t === 'string' ? t.trim() : t)))];
   if (types.includes('*')) return { ok: true, types: ['*'] };
   const unknown = types.filter((t) => !isWebhookEventType(t));
-  if (unknown.length > 0) return { ok: false, error: `Unknown event type(s): ${unknown.join(', ')}` };
+  if (unknown.length > 0)
+    return { ok: false, error: `Unknown event type(s): ${unknown.join(', ')}` };
   return { ok: true, types: types as string[] };
 }
 
@@ -157,7 +167,9 @@ export async function listEndpoints(): Promise<WebhookEndpointWithSecrets[]> {
 }
 
 export async function listActiveEndpoints(): Promise<WebhookEndpointWithSecrets[]> {
-  const rows = await sql<EndpointRow>('SELECT * FROM webhook_endpoints WHERE active = TRUE ORDER BY created_at, id');
+  const rows = await sql<EndpointRow>(
+    'SELECT * FROM webhook_endpoints WHERE active = TRUE ORDER BY created_at, id'
+  );
   return rows.map(toEndpoint);
 }
 
@@ -180,7 +192,17 @@ export async function insertEndpoint(input: {
   await sql(
     `INSERT INTO webhook_endpoints (id, url, description, event_types, active, source, format, secret, created_at, updated_at)
      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $9)`,
-    [id, input.url, input.description, JSON.stringify(input.eventTypes), input.active, input.source, input.format, input.secret, now]
+    [
+      id,
+      input.url,
+      input.description,
+      JSON.stringify(input.eventTypes),
+      input.active,
+      input.source,
+      input.format,
+      input.secret,
+      now,
+    ]
   );
   const created = await getEndpoint(id);
   if (!created) throw new Error('Failed to read back the webhook endpoint');
@@ -189,11 +211,18 @@ export async function insertEndpoint(input: {
 
 export async function updateEndpoint(
   id: string,
-  patch: Partial<{ url: string; description: string; eventTypes: string[]; active: boolean; source: string | null; format: WebhookFormat }>
+  patch: Partial<{
+    url: string;
+    description: string;
+    eventTypes: string[];
+    active: boolean;
+    source: string | null;
+    format: WebhookFormat;
+  }>
 ): Promise<WebhookEndpointWithSecrets | null> {
   const sets: string[] = [];
-  const params: unknown[] = [];
-  const add = (column: string, value: unknown) => {
+  const params: SqlValue[] = [];
+  const add = (column: string, value: SqlValue) => {
     params.push(value);
     sets.push(`${column} = $${params.length}`);
   };
@@ -221,7 +250,11 @@ export async function deleteEndpoint(id: string): Promise<boolean> {
 }
 
 /** New secret; the old one keeps signing (a second `v1=`) until `graceMs` from now. */
-export async function rotateSecret(id: string, secret: string, graceMs: number): Promise<WebhookEndpointWithSecrets | null> {
+export async function rotateSecret(
+  id: string,
+  secret: string,
+  graceMs: number
+): Promise<WebhookEndpointWithSecrets | null> {
   const now = Date.now();
   if (graceMs > 0) {
     await sql(
@@ -242,10 +275,10 @@ export async function rotateSecret(id: string, secret: string, graceMs: number):
 }
 
 export async function markEndpointResult(id: string, ok: boolean): Promise<void> {
-  await sql(`UPDATE webhook_endpoints SET ${ok ? 'last_success_at' : 'last_failure_at'} = $2 WHERE id = $1`, [
-    id,
-    Date.now(),
-  ]);
+  await sql(
+    `UPDATE webhook_endpoints SET ${ok ? 'last_success_at' : 'last_failure_at'} = $2 WHERE id = $1`,
+    [id, Date.now()]
+  );
 }
 
 /** Switch an endpoint off because it keeps failing; cancels what it had queued. */
@@ -356,7 +389,17 @@ export async function insertDelivery(input: {
        (id, endpoint_id, event_id, event_type, match_slug, body, test, resend_of, status, attempts, next_attempt_at, created_at)
      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'pending', 0, $9, $9)
      RETURNING *`,
-    [id, input.endpointId, input.eventId, input.eventType, input.matchSlug, input.body, input.test, input.resendOf ?? null, now]
+    [
+      id,
+      input.endpointId,
+      input.eventId,
+      input.eventType,
+      input.matchSlug,
+      input.body,
+      input.test,
+      input.resendOf ?? null,
+      now,
+    ]
   );
   return toDelivery(row);
 }
@@ -372,7 +415,7 @@ export async function listDeliveries(opts: {
   limit: number;
   before?: number;
 }): Promise<Delivery[]> {
-  const params: unknown[] = [opts.endpointId];
+  const params: SqlValue[] = [opts.endpointId];
   let where = 'endpoint_id = $1';
   if (opts.status) {
     params.push(opts.status);
@@ -405,7 +448,9 @@ export async function listAttempts(deliveryId: string): Promise<AttemptRow[]> {
     status_code: number | null;
     error: string | null;
     duration_ms: number | null;
-  }>('SELECT * FROM webhook_delivery_attempts WHERE delivery_id = $1 ORDER BY attempt', [deliveryId]);
+  }>('SELECT * FROM webhook_delivery_attempts WHERE delivery_id = $1 ORDER BY attempt', [
+    deliveryId,
+  ]);
   return rows.map((r) => ({
     attempt: r.attempt,
     attemptedAt: Number(r.attempted_at),
@@ -515,7 +560,13 @@ export async function deliveryCounts(endpointId: string): Promise<Record<Deliver
     `SELECT status, COUNT(*) AS n FROM webhook_deliveries WHERE endpoint_id = $1 GROUP BY status`,
     [endpointId]
   );
-  const out: Record<DeliveryStatus, number> = { pending: 0, delivering: 0, succeeded: 0, failed: 0, cancelled: 0 };
+  const out: Record<DeliveryStatus, number> = {
+    pending: 0,
+    delivering: 0,
+    succeeded: 0,
+    failed: 0,
+    cancelled: 0,
+  };
   for (const r of rows) out[r.status] = Number(r.n);
   return out;
 }

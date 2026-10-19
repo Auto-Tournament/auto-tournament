@@ -8,32 +8,35 @@
  * it) goes through `redactDeliveryBody`, and the logger never gets a body.
  */
 
+import type { JsonObject, JsonValue } from '../../utils/json';
+
 export const REDACTED = '[redacted]';
 
-function redactConnect(connect: unknown): unknown {
-  if (!connect || typeof connect !== 'object') return connect;
-  const out: Record<string, unknown> = {};
-  for (const key of Object.keys(connect as Record<string, unknown>)) {
-    const value = (connect as Record<string, unknown>)[key];
+function redactConnect(connect: JsonValue | undefined): JsonValue | undefined {
+  if (!connect || typeof connect !== 'object' || Array.isArray(connect)) return connect;
+  const out: JsonObject = {};
+  for (const key of Object.keys(connect)) {
+    const value = connect[key];
     out[key] = value === null || value === undefined ? value : REDACTED;
   }
   return out;
 }
 
 /** The body as the delivery log shows it: parsed, connect details replaced. */
-export function redactDeliveryBody(body: string | null | undefined): unknown {
+export function redactDeliveryBody(body: string | null | undefined): JsonValue | undefined {
   if (!body) return null;
-  let parsed: unknown;
+  let parsed: JsonValue;
   try {
-    parsed = JSON.parse(body);
+    // A body we wrote ourselves: JSON.
+    parsed = JSON.parse(body) as JsonValue;
   } catch {
     return REDACTED;
   }
-  const walk = (value: unknown): unknown => {
-    if (Array.isArray(value)) return value.map(walk);
+  const walk = (value: JsonValue | undefined): JsonValue | undefined => {
+    if (Array.isArray(value)) return value.map((v) => walk(v) ?? null);
     if (!value || typeof value !== 'object') return value;
-    const out: Record<string, unknown> = {};
-    for (const [key, inner] of Object.entries(value as Record<string, unknown>)) {
+    const out: JsonObject = {};
+    for (const [key, inner] of Object.entries(value)) {
       out[key] = key === 'connect' ? redactConnect(inner) : walk(inner);
     }
     return out;
@@ -52,7 +55,9 @@ export function truncateResponseBody(text: string, max = 2048): string {
 export function scrubSecrets(text: string, body: string): string {
   let out = text;
   try {
-    const parsed = JSON.parse(body) as { data?: { match?: { connect?: Record<string, unknown> | null } } };
+    const parsed = JSON.parse(body) as {
+      data?: { match?: { connect?: Record<string, string | null> | null } };
+    };
     const connect = parsed.data?.match?.connect;
     if (connect) {
       // Longest first: the steam:// link and console line contain the host and password.
