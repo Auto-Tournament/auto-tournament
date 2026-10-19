@@ -284,7 +284,9 @@ async function signIn(page: Page): Promise<void> {
     data: { steamId: process.env.TEST_STEAM_ID || '76561198000000001' },
   });
   if (!response.ok()) {
-    throw new Error(`Failed to create admin session for screenshots: ${response.status()} ${await response.text()}`);
+    throw new Error(
+      `Failed to create admin session for screenshots: ${response.status()} ${await response.text()}`
+    );
   }
   await page.goto(`${BASE_URL}/`);
   await page.waitForLoadState('networkidle');
@@ -379,7 +381,6 @@ async function takeScreenshot(page: Page, config: ScreenshotConfig): Promise<voi
     await page.waitForTimeout(300);
     // Scroll back to top
     await page.evaluate(() => {
-       
       window.scrollTo(0, 0);
     });
     await page.waitForTimeout(200);
@@ -1188,14 +1189,12 @@ async function generateScreenshots(): Promise<void> {
 
               // Consider teams "assigned" if either the direct team*_id fields are set
               // OR if the joined team objects have an id (as seen in the API response).
-              const hasTeamsAssigned = (
-                m: {
-                  team1_id?: string;
-                  team2_id?: string;
-                  team1?: unknown;
-                  team2?: unknown;
-                }
-              ) => {
+              const hasTeamsAssigned = (m: {
+                team1_id?: string;
+                team2_id?: string;
+                team1?: unknown;
+                team2?: unknown;
+              }) => {
                 const team1HasId =
                   !!m.team1_id ||
                   (m.team1 &&
@@ -1620,9 +1619,9 @@ async function generateScreenshots(): Promise<void> {
                 firstWithTeam.team1_id && firstWithTeam.team1_id !== 'null'
                   ? firstWithTeam.team1_id
                   : firstWithTeam.team2_id && firstWithTeam.team2_id !== 'null'
-                  ? firstWithTeam.team2_id
-                  : (firstWithTeam.team1 as { id?: string } | undefined)?.id ||
-                    (firstWithTeam.team2 as { id?: string } | undefined)?.id;
+                    ? firstWithTeam.team2_id
+                    : (firstWithTeam.team1 as { id?: string } | undefined)?.id ||
+                      (firstWithTeam.team2 as { id?: string } | undefined)?.id;
 
               if (candidateTeamId) {
                 const team1Id = candidateTeamId as string;
@@ -1885,7 +1884,6 @@ async function generateScreenshots(): Promise<void> {
 
                 // Scroll to top to show full page
                 await page.evaluate(() => {
-                   
                   window.scrollTo(0, 0);
                 });
                 await page.waitForTimeout(500);
@@ -1909,7 +1907,6 @@ async function generateScreenshots(): Promise<void> {
                 await page.waitForTimeout(1000);
 
                 await page.evaluate(() => {
-                   
                   window.scrollTo(0, 0);
                 });
                 await page.waitForTimeout(500);

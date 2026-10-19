@@ -73,11 +73,11 @@ export async function configureWebhook(
       headers: getAuthHeader(),
       data: { webhookUrl: baseUrl },
     });
-    
+
     if (!response.ok()) {
       return false;
     }
-    
+
     const data = await response.json();
     return data.success === true;
   } catch (error) {
@@ -85,4 +85,3 @@ export async function configureWebhook(
     return false;
   }
 }
-
