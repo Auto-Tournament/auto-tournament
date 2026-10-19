@@ -41,6 +41,7 @@ import { toGameIconPng } from '../utils/iconImage';
 import { buildGameLinks, linkBuiltin } from './gameCatalogService';
 import { enrichmentDisabled } from './gameEnrichmentService';
 import { getWikidataSteamAppIds } from './wikidataService';
+import type { Untrusted } from '../utils/untrusted';
 
 /** Where fetched icons are kept: the data volume, so they survive an upgrade. */
 export const GAME_ICON_DIR = path.join(DATA_DIR, 'game-icons');
@@ -104,8 +105,8 @@ async function download(url: string, maxBytes: number): Promise<Buffer | null> {
  * The client icon hash Steam lists for an app (`common.clienticon`), or null.
  * steamcmd.net answers `{ data: { "<appid>": { common: { clienticon } } } }`.
  */
-export function clientIconHash(info: unknown, appId: number): string | null {
-  const data = (info as { data?: Record<string, { common?: { clienticon?: unknown } }> } | null)
+export function clientIconHash(info: Untrusted, appId: number): string | null {
+  const data = (info as { data?: Record<string, { common?: { clienticon?: Untrusted } }> } | null)
     ?.data;
   const hash = data?.[String(appId)]?.common?.clienticon;
   return typeof hash === 'string' && /^[a-f0-9]{40}$/i.test(hash) ? hash.toLowerCase() : null;
@@ -120,7 +121,7 @@ export async function fetchSteamClientIcon(appId: number): Promise<Buffer | null
   const { steamInfoBase, steamIconBases } = endpoints();
   const infoBytes = await download(`${steamInfoBase}/${appId}`, MAX_INFO_BYTES);
   if (!infoBytes) return null;
-  let info: unknown;
+  let info: Untrusted;
   try {
     info = JSON.parse(infoBytes.toString('utf8'));
   } catch {
@@ -190,7 +191,9 @@ async function fillSteamAppIds(rows: IconCandidate[]): Promise<void> {
   const byWikidata = rows.filter((row) => !row.steam_app_id && row.wikidata_id !== null);
   if (byWikidata.length > 0) {
     try {
-      const found = await getWikidataSteamAppIds(byWikidata.map((row) => row.wikidata_id as string));
+      const found = await getWikidataSteamAppIds(
+        byWikidata.map((row) => row.wikidata_id as string)
+      );
       for (const row of byWikidata) await record(row, found.get(row.wikidata_id as string));
     } catch (err) {
       log.warn(`[Games] Wikidata Steam id lookup failed: ${(err as Error).message}`);

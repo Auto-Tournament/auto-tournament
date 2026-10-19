@@ -13,6 +13,7 @@ import { log } from '../utils/logger';
 import { emailService, normalizeEmail } from './emailService';
 import { localAdminService } from './localAdminService';
 import { settingsService } from './settingsService';
+import type { Untrusted } from '../utils/untrusted';
 
 const VERIFY_TTL = 24 * 60 * 60;
 const RESET_TTL = 60 * 60;
@@ -94,7 +95,7 @@ class PlayerEmailService {
 
   /** The token's player and address, marked used; null when unknown, used or expired. */
   private async consumeToken(
-    token: unknown,
+    token: Untrusted,
     purpose: Purpose
   ): Promise<{ playerId: string; email: string } | null> {
     if (typeof token !== 'string' || token.length < 20 || token.length > 100) return null;
@@ -130,7 +131,7 @@ class PlayerEmailService {
    * Set (or change) the player's address and send a confirmation link to it.
    * Changing it unconfirms it until the new link is opened.
    */
-  async setEmail(playerId: string, input: unknown, origin: string): Promise<PlayerEmailView> {
+  async setEmail(playerId: string, input: Untrusted, origin: string): Promise<PlayerEmailView> {
     const email = normalizeEmail(input);
     if (!email) throw new PlayerEmailError(400, 'That is not an email address', 'invalid');
     if (!(await emailService.isReady())) {
@@ -168,7 +169,7 @@ class PlayerEmailService {
   }
 
   /** Open a confirmation link: the address counts as the player's own from now. */
-  async verify(token: unknown): Promise<string | null> {
+  async verify(token: Untrusted): Promise<string | null> {
     const used = await this.consumeToken(token, 'verify');
     if (!used) return null;
     const rows = await db.queryAsync<{ player_id: string }>(
@@ -198,7 +199,7 @@ class PlayerEmailService {
   }
 
   /** The unsubscribe link in a tournament email: no more of them. */
-  async unsubscribe(token: unknown): Promise<boolean> {
+  async unsubscribe(token: Untrusted): Promise<boolean> {
     if (typeof token !== 'string' || !token) return false;
     const rows = await db.queryAsync<{ player_id: string }>(
       'UPDATE player_emails SET notify_tournaments = 0, updated_at = ? WHERE unsubscribe_token = ? RETURNING player_id',
@@ -212,7 +213,7 @@ class PlayerEmailService {
    * a reset link when it finds a username and password account with a
    * confirmed address, and says nothing either way (no account fishing).
    */
-  async requestPasswordReset(identifier: unknown, origin: string): Promise<void> {
+  async requestPasswordReset(identifier: Untrusted, origin: string): Promise<void> {
     if (typeof identifier !== 'string' || !identifier.trim() || identifier.length > 254) return;
     const value = identifier.trim();
     const rows = await db.queryAsync<{ player_id: string; email: string; username: string }>(
@@ -248,7 +249,7 @@ class PlayerEmailService {
   }
 
   /** Open a reset link with a new password. Two-step verification stays on. */
-  async resetPassword(token: unknown, password: string): Promise<string | null> {
+  async resetPassword(token: Untrusted, password: string): Promise<string | null> {
     const used = await this.consumeToken(token, 'reset');
     if (!used) return null;
     if (!(await localAdminService.changeOwnPassword(used.playerId, password))) return null;

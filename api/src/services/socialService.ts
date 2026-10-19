@@ -14,6 +14,7 @@ import { emitSocialChanged, isPlayerOnline, onPresence } from './socketService';
 import { activitiesOf, type PresenceActivity } from './presenceService';
 import { notificationService } from './notificationService';
 import { canInvite, INVITE_POLICIES, invitePolicy, type InvitePolicy } from './gameReadiness';
+import type { Untrusted } from '../utils/untrusted';
 
 export class SocialError extends Error {
   constructor(
@@ -25,11 +26,11 @@ export class SocialError extends Error {
   }
 }
 
-export interface Person {
+export type Person = {
   id: string;
   name: string;
   avatarUrl: string | null;
-}
+};
 
 export interface FriendView extends Person {
   online: boolean;
@@ -171,7 +172,7 @@ export const socialService = {
   },
 
   /** Ask to be friends. If they already asked you, this accepts. */
-  async request(playerId: string, targetId: unknown): Promise<Relation> {
+  async request(playerId: string, targetId: Untrusted): Promise<Relation> {
     if (typeof targetId !== 'string' || !/^\d{1,20}$/.test(targetId)) {
       throw new SocialError(400, 'invalid_player', 'That is not a player');
     }
@@ -211,7 +212,7 @@ export const socialService = {
     return 'sent';
   },
 
-  async accept(playerId: string, fromId: unknown): Promise<void> {
+  async accept(playerId: string, fromId: Untrusted): Promise<void> {
     if (typeof fromId !== 'string')
       throw new SocialError(400, 'invalid_player', 'That is not a player');
     const deleted = await db.queryAsync(
@@ -241,7 +242,7 @@ export const socialService = {
     emitSocialChanged([playerId, fromId]);
   },
 
-  async decline(playerId: string, fromId: unknown): Promise<void> {
+  async decline(playerId: string, fromId: Untrusted): Promise<void> {
     if (typeof fromId !== 'string')
       throw new SocialError(400, 'invalid_player', 'That is not a player');
     await db.runAsync('DELETE FROM friend_requests WHERE from_id = ? AND to_id = ?', [
@@ -253,7 +254,7 @@ export const socialService = {
   },
 
   /** Take back a request you sent. */
-  async cancel(playerId: string, toId: unknown): Promise<void> {
+  async cancel(playerId: string, toId: Untrusted): Promise<void> {
     if (typeof toId !== 'string')
       throw new SocialError(400, 'invalid_player', 'That is not a player');
     await db.runAsync('DELETE FROM friend_requests WHERE from_id = ? AND to_id = ?', [
@@ -264,7 +265,7 @@ export const socialService = {
     emitSocialChanged([playerId, toId]);
   },
 
-  async remove(playerId: string, friendId: unknown): Promise<void> {
+  async remove(playerId: string, friendId: Untrusted): Promise<void> {
     if (typeof friendId !== 'string')
       throw new SocialError(400, 'invalid_player', 'That is not a player');
     await db.runAsync(
@@ -286,7 +287,7 @@ export const socialService = {
   /** Players by name (or exact Steam id, or a Steam profile link), with how they relate to the caller. */
   async search(
     playerId: string,
-    query: unknown
+    query: Untrusted
   ): Promise<Array<Person & { relation: Relation; matches: number; invite: Invitable }>> {
     const q = typeof query === 'string' ? query.trim().slice(0, 100) : '';
     if (q.length < 2) return [];
@@ -342,7 +343,7 @@ export const socialService = {
 
   async saveSettings(
     playerId: string,
-    input: { partyInvitesFrom?: unknown }
+    input: { partyInvitesFrom?: Untrusted }
   ): Promise<{ partyInvitesFrom: InvitePolicy }> {
     if (input.partyInvitesFrom !== undefined) {
       if (!INVITE_POLICIES.includes(input.partyInvitesFrom as InvitePolicy)) {
