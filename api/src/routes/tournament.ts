@@ -874,13 +874,13 @@ function validateGameSettings(
  * page (or the settings JSON column) rather than a hard product limit.
  */
 function validateEventPageSettings(
-  settings: unknown
+  settings: Untrusted
 ): { valid: true } | { valid: false; error: string } {
   if (!settings || typeof settings !== 'object') {
     return { valid: true };
   }
 
-  const s = settings as Record<string, unknown>;
+  const s = settings as Record<string, Untrusted>;
 
   // Sign-up and check-in (tournament sign-up): a switch, a team cap and three times.
   if (s.registrationOpen !== undefined && typeof s.registrationOpen !== 'boolean') {
@@ -1010,7 +1010,7 @@ function validateEventPageSettings(
           error: 'settings.prizes items must be objects with place and prize',
         };
       }
-      const p = prize as Record<string, unknown>;
+      const p = prize as Record<string, Untrusted>;
       if (typeof p.place !== 'string' || p.place.length === 0 || p.place.length > 40) {
         return { valid: false, error: 'settings.prizes items need a place (1-40 characters)' };
       }
@@ -1034,7 +1034,7 @@ function validateEventPageSettings(
       if (!item || typeof item !== 'object') {
         return { valid: false, error: 'settings.schedule items must be objects with at and label' };
       }
-      const row = item as Record<string, unknown>;
+      const row = item as Record<string, Untrusted>;
       if (typeof row.at !== 'string' || Number.isNaN(new Date(row.at).getTime())) {
         return { valid: false, error: 'settings.schedule items need a valid ISO datetime "at"' };
       }
@@ -1071,8 +1071,8 @@ router.post('/', async (req: Request, res: Response) => {
 
     // 2v2 and 1v1 are short: no map veto unless the request asks for one (each match
     // draws its map from the pool), as the setup page's wingman preset does.
-    const smallTeams = Number((input as { teamSize?: unknown }).teamSize);
-    const cs2Input = (input?.settings as { cs2?: Record<string, unknown> } | undefined)?.cs2;
+    const smallTeams = Number((input as { teamSize?: Untrusted }).teamSize);
+    const cs2Input = (input?.settings as { cs2?: Record<string, Untrusted> } | undefined)?.cs2;
     if (cs2Input && smallTeams > 0 && smallTeams <= 2 && typeof cs2Input.veto !== 'boolean') {
       cs2Input.veto = false;
     }
@@ -1083,7 +1083,7 @@ router.post('/', async (req: Request, res: Response) => {
       mode: 'create',
       // `?.`: a missing body still fails on `input.name` below, as before.
       settings: input?.settings,
-      body: input as unknown as Record<string, unknown>,
+      body: { ...input },
     });
 
     // Validate input
@@ -1110,7 +1110,7 @@ router.post('/', async (req: Request, res: Response) => {
 
     // With sign-up open the teams arrive later; the count is checked at start.
     const signupOpen =
-      (input.settings as { registrationOpen?: unknown } | undefined)?.registrationOpen === true;
+      (input.settings as { registrationOpen?: Untrusted } | undefined)?.registrationOpen === true;
     // A draft made from the tournament list (POST /api/tournaments) may start
     // with no teams; they are picked, or sign up, before it starts.
     const draft =
@@ -1259,7 +1259,7 @@ router.put('/', async (req: Request, res: Response) => {
 
     const tournament = await tournamentService.updateTournament(tournamentId, input);
     // New match times move the holds of the matches that have not begun.
-    if (input.settings && 'matchTimes' in (input.settings as Record<string, unknown>)) {
+    if (input.settings && 'matchTimes' in (input.settings as Record<string, Untrusted>)) {
       await applyMatchTimes(tournamentId).catch((error) =>
         log.warn('[MATCH-TIMES] could not apply the new times', { error })
       );
@@ -1601,7 +1601,7 @@ router.get('/server-availability', requireAuth, async (req: Request, res: Respon
  * loaded or auto-started, and the walkover clocks are off.
  */
 router.post('/pause', requireAuth, async (req: Request, res: Response) => {
-  const body = (req.body ?? {}) as { minutes?: unknown; reason?: unknown };
+  const body = (req.body ?? {}) as { minutes?: Untrusted; reason?: Untrusted };
   const minutes = body.minutes === undefined || body.minutes === null ? null : Number(body.minutes);
   if (minutes !== null && !(Number.isFinite(minutes) && minutes > 0 && minutes <= 24 * 60)) {
     return res
@@ -1640,7 +1640,7 @@ router.post('/resume', requireAuth, async (req: Request, res: Response) => {
 router.post('/start', requireAuth, async (req: Request, res: Response) => {
   try {
     const tournamentId = resolveTournamentId(req);
-    const { enableSimulation } = (req.body ?? {}) as { enableSimulation?: unknown };
+    const { enableSimulation } = (req.body ?? {}) as { enableSimulation?: Untrusted };
 
     // Optional one-shot toggle to enable simulation mode at the moment the
     // tournament is started (dev-only safety; ignored in production unless explicitly enabled).
@@ -2242,7 +2242,7 @@ router.post('/shuffle', async (req: Request, res: Response) => {
       mode: 'create-shuffle',
       // No veto in shuffle, so no settings to check.
       settings: undefined,
-      body: config as unknown as Record<string, unknown>,
+      body: { ...config },
     });
 
     if (!config.name || gameCheck.missingFields.length > 0) {

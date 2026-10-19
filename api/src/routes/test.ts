@@ -56,6 +56,8 @@ import { envImportedNames } from '../services/envImport';
 import { setupThrottle, loginThrottle } from './localAdmin';
 import fs from 'fs';
 import path from 'path';
+import type { SqlValue } from '../config/database';
+import type { Untrusted } from '../utils/untrusted';
 
 const router = Router();
 
@@ -69,8 +71,8 @@ function isE2eTestHelperEnabled(): boolean {
  * it with `{ gamesPrompt: true }`: it is a modal, and every other UI spec that
  * signs in would otherwise have to dismiss it first.
  */
-async function setGamesPromptForTest(steamId: string, body: unknown): Promise<void> {
-  const wantsPrompt = (body as { gamesPrompt?: unknown } | undefined)?.gamesPrompt === true;
+async function setGamesPromptForTest(steamId: string, body: Untrusted): Promise<void> {
+  const wantsPrompt = (body as { gamesPrompt?: Untrusted } | undefined)?.gamesPrompt === true;
   await db.runAsync('UPDATE players SET games_prompt_dismissed_at = ? WHERE id = ?', [
     wantsPrompt ? null : Math.floor(Date.now() / 1000),
     steamId,
@@ -161,7 +163,7 @@ router.post('/admin-notice', requireAuth, async (req: Request, res: Response): P
  *         description: Invalid request payload
  */
 router.post('/marker', requireAuth, (req: Request, res: Response): void => {
-  const { message, scope } = req.body as { message?: unknown; scope?: unknown };
+  const { message, scope } = req.body as { message?: Untrusted; scope?: Untrusted };
 
   if (typeof message !== 'string' || message.trim().length === 0) {
     res.status(400).json({
@@ -421,7 +423,6 @@ router.post(
     }
     const { randomBytes } = await import('crypto');
     const challenge = () => randomBytes(16).toString('base64url');
-    type Answer = { id?: string; response?: Record<string, unknown> };
     setPasskeyVerifier({
       registrationOptions: async ({ rp, userName }) =>
         ({
@@ -430,7 +431,7 @@ router.post(
           user: { name: userName },
         }) as never,
       verifyRegistration: async ({ response, challenge: expected }) => {
-        const a = response as unknown as Answer;
+        const a = response;
         if (
           a.response?.clientDataJSON !== expected ||
           a.response?.attestationObject !== 'fake-ok' ||
@@ -450,7 +451,7 @@ router.post(
       },
       authenticationOptions: async () => ({ challenge: challenge() }) as never,
       verifyAuthentication: async ({ response, challenge: expected, credential }) => {
-        const a = response as unknown as Answer;
+        const a = response;
         const ok = a.response?.clientDataJSON === expected && a.response?.signature === 'fake-ok';
         return { verified: ok, newCounter: credential.counter + 1 };
       },
@@ -476,7 +477,7 @@ router.post('/login-admin', async (req: Request, res: Response): Promise<void> =
   }
 
   const anyReq = req as Request & {
-    login?: (user: unknown, cb: (err: unknown) => void) => void;
+    login?: (user: Untrusted, cb: (err: Untrusted) => void) => void;
   };
 
   if (!anyReq.login) {
@@ -568,7 +569,7 @@ router.post('/login-player', async (req: Request, res: Response): Promise<void> 
     await playerService.updatePlayer(steamId, { isAdmin: false });
     await setGamesPromptForTest(steamId, req.body);
     // `games`: put these games on the player's profile (matchmaking needs its game there).
-    const games = (req.body as { games?: unknown }).games;
+    const games = (req.body as { games?: Untrusted }).games;
     if (Array.isArray(games)) {
       for (const game of games) {
         if (typeof game !== 'string') continue;
@@ -615,7 +616,7 @@ function isTestHelperDisabled(res: Response): boolean {
   return false;
 }
 
-function parseProvider(value: unknown): AuthProvider | null {
+function parseProvider(value: Untrusted): AuthProvider | null {
   return typeof value === 'string' &&
     (PENDING_STEAM_LINK_PROVIDERS as readonly string[]).includes(value)
     ? (value as AuthProvider)
@@ -640,8 +641,8 @@ router.post('/pending-steam-link', requireAuth, (req: Request, res: Response): v
   if (isTestHelperDisabled(res)) return;
 
   const { provider: rawProvider, providerUserId } = req.body as {
-    provider?: unknown;
-    providerUserId?: unknown;
+    provider?: Untrusted;
+    providerUserId?: Untrusted;
   };
   const provider = rawProvider === undefined ? 'discord' : parseProvider(rawProvider);
   if (!provider) {
@@ -680,7 +681,7 @@ router.post(
   async (req: Request, res: Response): Promise<void> => {
     if (isTestHelperDisabled(res)) return;
 
-    const { steamId, nowOffsetMs } = req.body as { steamId?: unknown; nowOffsetMs?: unknown };
+    const { steamId, nowOffsetMs } = req.body as { steamId?: Untrusted; nowOffsetMs?: Untrusted };
     if (typeof steamId !== 'string' || !STEAM_ID_RE.test(steamId)) {
       res
         .status(400)
@@ -766,7 +767,7 @@ router.get(
         res.status(404).json({ success: false, error: 'Team not found' });
         return;
       }
-      const players: unknown = row.players ? JSON.parse(row.players) : [];
+      const players: Untrusted = row.players ? JSON.parse(row.players) : [];
       res.json({ success: true, players });
     } catch (err) {
       log.error('Error in GET /api/test/raw-team-roster', err as Error);
@@ -791,9 +792,9 @@ router.post('/auth-identities', requireAuth, async (req: Request, res: Response)
     providerUserId,
     steamId,
   } = req.body as {
-    provider?: unknown;
-    providerUserId?: unknown;
-    steamId?: unknown;
+    provider?: Untrusted;
+    providerUserId?: Untrusted;
+    steamId?: Untrusted;
   };
   const provider = rawProvider === undefined ? 'discord' : parseProvider(rawProvider);
   if (!provider) {
@@ -874,7 +875,7 @@ router.post(
   async (req: Request, res: Response): Promise<void> => {
     if (isTestHelperDisabled(res)) return;
 
-    const { clearPlayerId } = (req.body ?? {}) as { clearPlayerId?: unknown };
+    const { clearPlayerId } = (req.body ?? {}) as { clearPlayerId?: Untrusted };
     if (clearPlayerId !== undefined && typeof clearPlayerId !== 'string') {
       res.status(400).json({ success: false, error: 'Field "clearPlayerId" must be a string' });
       return;
@@ -1028,7 +1029,7 @@ router.post(
   requireAuth,
   async (req: Request, res: Response): Promise<void> => {
     if (isTestHelperDisabled(res)) return;
-    const { fixture } = (req.body ?? {}) as { fixture?: unknown };
+    const { fixture } = (req.body ?? {}) as { fixture?: Untrusted };
     const migrations =
       typeof fixture === 'string' &&
       Object.prototype.hasOwnProperty.call(MIGRATION_FIXTURES, fixture)
@@ -1160,7 +1161,7 @@ async function describeCs2Schema(client: SqlClient) {
     [tables]
   );
 
-  const schema: Record<string, unknown> = {};
+  const schema: Record<string, object> = {};
   for (const table of tables) {
     schema[table] = {
       columns: columns
@@ -1279,7 +1280,7 @@ interface ForeignKeyProbe {
 }
 
 /** Run `sql` under a savepoint and report the error it raised, if any. */
-async function probe(client: SqlClient, sql: string, params: unknown[]): Promise<ForeignKeyProbe> {
+async function probe(client: SqlClient, sql: string, params: SqlValue[]): Promise<ForeignKeyProbe> {
   await client.query('SAVEPOINT fk_probe');
   try {
     await client.query(sql, params);
@@ -1474,7 +1475,7 @@ router.post(
   requireAuth,
   async (req: Request, res: Response): Promise<void> => {
     if (isTestHelperDisabled(res)) return;
-    const { scenario } = (req.body ?? {}) as { scenario?: unknown };
+    const { scenario } = (req.body ?? {}) as { scenario?: Untrusted };
     if (
       typeof scenario !== 'string' ||
       !Object.prototype.hasOwnProperty.call(HANDOVER_PROBE_SCENARIOS, scenario)
@@ -1669,7 +1670,7 @@ router.post(
   requireAuth,
   async (req: Request, res: Response): Promise<void> => {
     if (isTestHelperDisabled(res)) return;
-    const { scenario } = (req.body ?? {}) as { scenario?: unknown };
+    const { scenario } = (req.body ?? {}) as { scenario?: Untrusted };
     if (
       typeof scenario !== 'string' ||
       !Object.prototype.hasOwnProperty.call(SETTINGS_FOLD_SCENARIOS, scenario)
@@ -1710,7 +1711,7 @@ router.post(
               `SELECT id, settings FROM ${table} ORDER BY id`
             )
           ).rows.map((r) => {
-            let settings: unknown = r.settings;
+            let settings: Untrusted = r.settings;
             try {
               settings = r.settings === null ? null : JSON.parse(r.settings);
             } catch {
@@ -1828,7 +1829,7 @@ router.get(
 const FAKE_OAUTH_PROVIDERS = ['github', 'google', 'oidc'] as const;
 type FakeOAuthProvider = (typeof FAKE_OAUTH_PROVIDERS)[number];
 
-function parseFakeOAuthProvider(value: unknown): FakeOAuthProvider | null {
+function parseFakeOAuthProvider(value: Untrusted): FakeOAuthProvider | null {
   return typeof value === 'string' && (FAKE_OAUTH_PROVIDERS as readonly string[]).includes(value)
     ? (value as FakeOAuthProvider)
     : null;
@@ -1893,7 +1894,7 @@ router.post('/steam-link/callback', async (req: Request, res: Response): Promise
     res.status(404).json({ success: false, error: 'Not found' });
     return;
   }
-  const steamId = (req.body as { steamId?: unknown })?.steamId;
+  const steamId = (req.body as { steamId?: Untrusted })?.steamId;
   await completeSteamLink(req, res, typeof steamId === 'string' ? steamId : '');
 });
 
@@ -1906,7 +1907,7 @@ router.get('/fake-oauth/:provider/authorize', (req: Request, res: Response): voi
 
 router.post('/fake-oauth/:provider/token', (req: Request, res: Response): void => {
   if (!fakeOAuthProviderFrom(req, res)) return;
-  const code = (req.body as { code?: unknown }).code;
+  const code = (req.body as { code?: Untrusted }).code;
   if (typeof code !== 'string' || code.length === 0 || code.startsWith('fail')) {
     res.status(400).json({ error: 'bad_verification_code' });
     return;
@@ -1922,7 +1923,7 @@ router.get('/fake-oauth/:provider/userinfo', (req: Request, res: Response): void
   const query = typeof req.query.access_token === 'string' ? req.query.access_token : '';
   const token = header.toLowerCase().startsWith('bearer ') ? header.slice(7).trim() : query;
   try {
-    const profile: unknown = JSON.parse(Buffer.from(token, 'base64url').toString('utf8'));
+    const profile: Untrusted = JSON.parse(Buffer.from(token, 'base64url').toString('utf8'));
     if (!profile || typeof profile !== 'object') throw new Error('not an object');
     res.json(profile);
   } catch {
@@ -2090,7 +2091,7 @@ function fakeWikidataEnabled(res: Response): boolean {
 
 router.post('/wikidata', requireAuth, (req: Request, res: Response): void => {
   if (!fakeWikidataEnabled(res)) return;
-  const { fake } = (req.body ?? {}) as { fake?: unknown };
+  const { fake } = (req.body ?? {}) as { fake?: Untrusted };
   const self = `http://127.0.0.1:${process.env.PORT || '3000'}/api/test/fake-wikidata`;
   setWikidataEndpointOverride(fake === false ? null : self);
   resetWikidataThrottle();
@@ -2129,7 +2130,7 @@ router.get('/fake-wikidata', (req: Request, res: Response): void => {
   if (action === 'wbgetentities') {
     fakeWikidataCounters.getEntitiesRequests += 1;
     const ids = (typeof req.query.ids === 'string' ? req.query.ids : '').split('|').filter(Boolean);
-    const entities: Record<string, unknown> = {};
+    const entities: Record<string, object> = {};
     for (const id of ids) {
       const item = FAKE_WIKIDATA_ITEMS.find((i) => i.id === id);
       if (item) {
@@ -2236,7 +2237,7 @@ function fakeSteamIco(size: number): Buffer {
 
 router.post('/game-icons', requireAuth, (req: Request, res: Response): void => {
   if (!testHelperEnabled(res)) return;
-  const { fake } = (req.body ?? {}) as { fake?: unknown };
+  const { fake } = (req.body ?? {}) as { fake?: Untrusted };
   const self = `http://127.0.0.1:${process.env.PORT || '3000'}/api/test/fake-steam`;
   setGameIconEndpointOverride(
     fake === false
@@ -2374,7 +2375,7 @@ router.post(
   async (req: Request, res: Response): Promise<void> => {
     if (isTestHelperDisabled(res)) return;
 
-    const { clearTeamId } = (req.body ?? {}) as { clearTeamId?: unknown };
+    const { clearTeamId } = (req.body ?? {}) as { clearTeamId?: Untrusted };
     if (clearTeamId !== undefined && typeof clearTeamId !== 'string') {
       res.status(400).json({ success: false, error: 'Field "clearTeamId" must be a string' });
       return;
@@ -2396,9 +2397,9 @@ router.post('/team-members', requireAuth, async (req: Request, res: Response): P
   if (isTestHelperDisabled(res)) return;
 
   const { teamId, accountUid, role } = (req.body ?? {}) as {
-    teamId?: unknown;
-    accountUid?: unknown;
-    role?: unknown;
+    teamId?: Untrusted;
+    accountUid?: Untrusted;
+    role?: Untrusted;
   };
   if (typeof teamId !== 'string' || teamId === '') {
     res.status(400).json({ success: false, error: 'Field "teamId" is required' });
@@ -2454,7 +2455,7 @@ router.get('/phase-d-schema', requireAuth, async (_req: Request, res: Response):
       [[...PHASE_D_TABLES]]
     );
 
-    const tables: Record<string, unknown> = {};
+    const tables: Record<string, object> = {};
     for (const table of PHASE_D_TABLES) {
       tables[table] = {
         columns: columns
@@ -2528,11 +2529,11 @@ router.post('/match-reports', requireAuth, async (req: Request, res: Response): 
     source,
     result: reported,
   } = (req.body ?? {}) as {
-    matchSlug?: unknown;
-    revision?: unknown;
-    status?: unknown;
-    source?: unknown;
-    result?: unknown;
+    matchSlug?: Untrusted;
+    revision?: Untrusted;
+    status?: Untrusted;
+    source?: Untrusted;
+    result?: Untrusted;
   };
   if (typeof matchSlug !== 'string' || matchSlug === '') {
     res.status(400).json({ success: false, error: 'Field "matchSlug" is required' });
@@ -2581,7 +2582,7 @@ const FAKE_INDEX_TILE =
   '<rect width="16" height="16" fill="var(--at-ember, #ff6a3d)"/>' +
   '<path d="M4 4h8v8H4z" fill="var(--at-ink-900, #121213)"/></svg>';
 
-const FAKE_INDEX_PACKS: Record<string, unknown> = {
+const FAKE_INDEX_PACKS: Record<string, object> = {
   'index-test-game': {
     schema: 1,
     slug: 'index-test-game',
@@ -2605,7 +2606,7 @@ router.post('/packs/reseed', requireAuth, async (req: Request, res: Response): P
   // put a bundled game it removed back exactly as a fresh install has it.
   // `{ preinstall: 'all' | [slug] }` runs it as if PREINSTALL_PACKS said so,
   // so a spec can see what a stock install (no preinstall) does.
-  const { forget, preinstall } = (req.body ?? {}) as { forget?: unknown; preinstall?: unknown };
+  const { forget, preinstall } = (req.body ?? {}) as { forget?: Untrusted; preinstall?: Untrusted };
   if (Array.isArray(forget)) {
     await forgetBundledPacks(forget.filter((slug): slug is string => typeof slug === 'string'));
   }
@@ -2624,7 +2625,7 @@ router.post('/packs/reseed', requireAuth, async (req: Request, res: Response): P
 
 router.post('/pack-index', requireAuth, (req: Request, res: Response): void => {
   if (!testHelperEnabled(res)) return;
-  const { fake } = (req.body ?? {}) as { fake?: unknown };
+  const { fake } = (req.body ?? {}) as { fake?: Untrusted };
   const self = `http://127.0.0.1:${process.env.PORT || '3000'}/api/test/fake-pack-index/`;
   setPackIndexBaseOverride(fake === false ? null : self);
   res.json({ success: true, fake: fake !== false });
@@ -2882,7 +2883,7 @@ export default integration;
 
 router.post('/modules/fixture', requireAuth, async (req: Request, res: Response): Promise<void> => {
   if (!testHelperEnabled(res)) return;
-  const { id, kind } = (req.body ?? {}) as { id?: unknown; kind?: unknown };
+  const { id, kind } = (req.body ?? {}) as { id?: Untrusted; kind?: Untrusted };
   if (typeof id !== 'string' || !isValidModuleId(id) || !id.startsWith('fixture-')) {
     res
       .status(400)
@@ -3020,7 +3021,7 @@ router.post('/license-consent', requireAuth, async (req: Request, res: Response)
     res.status(404).json({ success: false, error: 'Not found' });
     return;
   }
-  const { action, record } = (req.body ?? {}) as { action?: unknown; record?: unknown };
+  const { action, record } = (req.body ?? {}) as { action?: Untrusted; record?: Untrusted };
   try {
     if (action === 'clear') {
       licenseConsentService.setEnvSuspendedForTest(true);
@@ -3069,7 +3070,7 @@ function refuseInProduction(res: Response): boolean {
 
 router.post('/setup-code', async (req: Request, res: Response) => {
   if (refuseInProduction(res)) return;
-  const purpose = (req.body as { purpose?: unknown })?.purpose === 'reset' ? 'reset' : 'setup';
+  const purpose = (req.body as { purpose?: Untrusted })?.purpose === 'reset' ? 'reset' : 'setup';
   const { code } = await localAdminService.createCode(purpose);
   res.json({ success: true, code });
 });
