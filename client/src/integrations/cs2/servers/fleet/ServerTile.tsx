@@ -235,7 +235,13 @@ export function ServerTile({ host, server, state, match, command, onOpen }: Serv
           component="span"
           sx={{
             fontSize: '0.75rem',
-            color: i === 0 && state === 'match' ? color.ink : color.muted,
+            // An offline machine's card is dimmed, so muted would fail contrast.
+            color:
+              i === 0 && state === 'match'
+                ? color.ink
+                : state === 'offline'
+                  ? color.ink2
+                  : color.muted,
             ...(line.startsWith(':') ? mono : {}),
             whiteSpace: 'nowrap',
             overflow: 'hidden',
