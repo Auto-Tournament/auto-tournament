@@ -5,6 +5,7 @@
  * (their last match's, in postgame) is told in game where to go.
  */
 import { db } from '../../../config/database';
+import type { DbMatchRow } from '../../../types/database.types';
 import { log } from '../../../utils/logger';
 import { announceVetoTurn } from '../../../services/matchNotices';
 import { playerConnectionService } from '../../../services/playerConnectionService';
@@ -30,11 +31,8 @@ export async function announceVetoOpen(slug: string, opensAt?: number): Promise<
     if (!match?.team1_id || !match.team2_id) return;
 
     const { resolveCurrentVetoTurn } = await import('./context');
-    const full = await db.queryOneAsync<Record<string, unknown>>(
-      'SELECT * FROM matches WHERE slug = ?',
-      [slug]
-    );
-    const turn = full ? await resolveCurrentVetoTurn(full as never) : null;
+    const full = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [slug]);
+    const turn = full ? await resolveCurrentVetoTurn(full) : null;
     if (!opensAt && (turn?.currentTurn === 'team1' || turn?.currentTurn === 'team2')) {
       await announceVetoTurn(slug, turn.currentTurn, 1, String(turn.currentAction ?? 'ban'));
       // The match chat says the veto is on too (once per match).

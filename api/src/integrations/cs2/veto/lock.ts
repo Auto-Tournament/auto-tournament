@@ -5,12 +5,15 @@
  * and the last one wins. On the final step each of them also finished the veto
  * and loaded the match on a server.
  */
-const tails = new Map<string, Promise<unknown>>();
+const tails = new Map<string, Promise<void>>();
 
 export async function withVetoLock<T>(matchSlug: string, fn: () => Promise<T>): Promise<T> {
   const prev = tails.get(matchSlug) ?? Promise.resolve();
   const run = prev.catch(() => undefined).then(fn);
-  const tail = run.catch(() => undefined);
+  const tail = run.then(
+    () => undefined,
+    () => undefined
+  );
   tails.set(matchSlug, tail);
   try {
     return await run;

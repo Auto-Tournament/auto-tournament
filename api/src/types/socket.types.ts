@@ -28,12 +28,15 @@ export interface BracketUpdateEvent {
 /**
  * Match update event - can be BracketMatch, DbMatchRow, or partial match data
  */
-export type MatchUpdateEvent = Partial<BracketMatch> | Partial<DbMatchRow> | {
-  id?: number;
-  slug?: string;
-  status?: string;
-  [key: string]: unknown;
-};
+export type MatchUpdateEvent =
+  | Partial<BracketMatch>
+  | Partial<DbMatchRow>
+  | {
+      id?: number;
+      slug?: string;
+      status?: string;
+      [key: string]: unknown;
+    };
 
 /**
  * Match event (live stats)
@@ -81,16 +84,15 @@ export interface ServerEvent {
  */
 export interface VetoUpdateEvent {
   matchSlug: string;
+  /** The whole veto state; the fields listed are the ones the client reads. */
   veto: {
-    status?: 'in_progress' | 'completed';
+    status?: 'pending' | 'in_progress' | 'completed';
     pickedMaps?: Array<{
       mapName: string;
       mapNumber: number;
       sideTeam1?: 'CT' | 'T';
     }>;
-    [key: string]: unknown;
   } | null;
 }
-
 
 export type { CompatUpdateEvent } from './compat.types';
