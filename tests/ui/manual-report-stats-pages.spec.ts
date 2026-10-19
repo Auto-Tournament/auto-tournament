@@ -95,7 +95,7 @@ test.describe.serial('Stats pages follow the tournament game', () => {
     await ensureSignedIn(page);
     expect(await signInViaRequest(request)).toBe(true);
     await request.put('/api/settings', {
-      data: { webhookUrl: baseURL ?? 'http://localhost:3069', simulateMatches: false },
+      data: { simulateMatches: false },
     });
   });
 
