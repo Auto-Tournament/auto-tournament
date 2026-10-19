@@ -1,5 +1,5 @@
 import { test, expect, type APIRequestContext } from '@playwright/test';
-import { setupTestContext, configureWebhook } from '../helpers/setup';
+import { setupTestContext } from '../helpers/setup';
 import { createTestTeams } from '../helpers/teams';
 import { createTestServer } from '../helpers/servers';
 import { findMatchByTeams } from '../helpers/matches';
@@ -71,7 +71,6 @@ test.describe.serial('Drawn match with overtime disabled', () => {
 
   test.beforeEach(async ({ page, request }) => {
     await setupTestContext(page, request);
-    expect(await configureWebhook(request, 'http://localhost:3069')).toBe(true);
     const teams = await createTestTeams(request, 'draw');
     expect(teams).toBeTruthy();
     [team1, team2] = teams!;
