@@ -12,6 +12,8 @@
  * rule refuses it.
  */
 
+import type { Untrusted } from '../../../utils/untrusted';
+
 export const MAP_MODES = [
   'defusal',
   'hostage',
@@ -40,12 +42,12 @@ export const WINGMAN_LAYOUTS: ReadonlySet<string> = new Set([
   'de_eldorado',
 ]);
 
-export function isMapMode(value: unknown): value is MapMode {
+export function isMapMode(value: Untrusted): value is MapMode {
   return typeof value === 'string' && (MAP_MODES as readonly string[]).includes(value);
 }
 
 /** A mode as a request, maps.json or an older row spells it; null when it is none of ours. */
-export function normalizeMapMode(value: unknown): MapMode | null {
+export function normalizeMapMode(value: Untrusted): MapMode | null {
   if (typeof value !== 'string') return null;
   const v = value
     .trim()
