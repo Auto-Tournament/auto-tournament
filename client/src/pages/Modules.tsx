@@ -27,6 +27,7 @@ import { CatalogTile, GameCatalog } from '../components/catalog/GameCatalog';
 import type { CatalogListing } from '../components/catalog/catalogApi';
 import { builtInIntegrationIds, listIntegrations } from '../integrations/registry';
 import { api, apiErrorMessage } from '../utils/api';
+import type { Untrusted } from '../utils/untrusted';
 
 /** The largest pack file worth reading into memory before the API refuses it. */
 const MAX_PACK_BYTES = 2_000_000;
@@ -78,9 +79,9 @@ export default function Modules() {
     }
     setBusy(true);
     try {
-      let parsed: { icon?: unknown };
+      let parsed: { icon?: Untrusted };
       try {
-        parsed = JSON.parse(await json.text()) as { icon?: unknown };
+        parsed = JSON.parse(await json.text()) as { icon?: Untrusted };
       } catch {
         // A file that is not JSON never reaches the API: the API's answer
         // would be about the body it could not read, which is a worse

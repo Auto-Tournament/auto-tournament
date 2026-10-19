@@ -44,6 +44,7 @@ import {
 } from '../components/social/socialStore';
 import { useMatchmaking } from '../components/matchmaking/matchmakingStore';
 import { useTimeAgo } from '../components/social/timeAgo';
+import type { Untrusted } from '../utils/untrusted';
 
 const { color } = tokens;
 type TabId = 'friends' | 'requests' | 'add';
@@ -233,7 +234,7 @@ export default function Friends() {
     social.incoming.length,
   ]);
 
-  const run = async (key: string, fn: () => Promise<unknown>, done?: string) => {
+  const run = async (key: string, fn: () => Promise<Untrusted>, done?: string) => {
     setBusy(key);
     try {
       await fn();

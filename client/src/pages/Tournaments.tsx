@@ -29,6 +29,7 @@ import { tournamentTabPath, manageTournamentPath } from '../paths';
 import { tokens, radii, fontMono } from '../theme/tokens';
 import { api } from '../utils/api';
 import { pageTitle } from '../utils/pageTitle';
+import type { Untrusted } from '../utils/untrusted';
 
 const { color } = tokens;
 
@@ -90,7 +91,7 @@ export default function Tournaments() {
     navigate(manageTournamentPath(id, 'setup'));
   };
 
-  const run = async (fn: () => Promise<unknown>, done: string) => {
+  const run = async (fn: () => Promise<Untrusted>, done: string) => {
     setBusy(true);
     try {
       await fn();

@@ -17,6 +17,7 @@ import { TeamLogo, panel } from '../components/tournament/ui/draftUi';
 import { getRoundLabel } from '../utils/matchUtils';
 import { pageTitle } from '../utils/pageTitle';
 import { fontDisplay, radii, tokens } from '../theme/tokens';
+import type { Untrusted } from '../utils/untrusted';
 
 const { color } = tokens;
 
@@ -25,7 +26,7 @@ interface ScheduleTournament {
   name: string;
   type: string;
   status: string;
-  settings?: Record<string, unknown>;
+  settings?: Record<string, Untrusted>;
 }
 interface ScheduleMatch {
   slug: string;

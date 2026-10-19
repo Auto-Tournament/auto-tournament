@@ -20,6 +20,7 @@ import {
 } from '../components/tournament/ui/draftUi';
 import type { Match, Tournament } from '../types';
 import { tokens, textSize } from '../theme/tokens';
+import type { Untrusted } from '../utils/untrusted';
 
 const { color } = tokens;
 
@@ -38,7 +39,7 @@ interface TeamLeaderboardEntry {
 
 interface TournamentLeaderboardData {
   tournament: Pick<Tournament, 'id' | 'name' | 'status' | 'type' | 'game'>;
-  leaderboard: unknown[];
+  leaderboard: Untrusted[];
   teams?: TeamLeaderboardEntry[];
   currentRound: number;
   totalRounds: number;
