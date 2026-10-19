@@ -7,6 +7,14 @@ import reactCompiler from 'eslint-plugin-react-compiler';
 import integrationBoundaries from './eslint-rules/integration-boundaries.mjs';
 import moduleSdkBoundary from './eslint-rules/module-sdk-boundary.mjs';
 import { MAX_LINES_TODO } from './eslint-rules/max-lines-todo.mjs';
+import {
+  ELSE_RETURN,
+  NESTED_TERNARY,
+  NON_NULL_ASSERTION,
+  OBJECT_LITERAL_ASSERTION,
+  PREFER_CONST,
+  TYPE_IMPORTS,
+} from './eslint-rules/cleanliness-todo.mjs';
 
 export default [
   js.configs.recommended,
@@ -378,6 +386,30 @@ export default [
         },
       ],
     },
+  },
+
+  // Cleanliness. One rule per object so each can skip its own list of files
+  // from before the rule (eslint-rules/cleanliness-todo.mjs); new files follow
+  // all of them. max-depth is a warning until we agree a limit.
+  ...[
+    ['no-nested-ternary', 'error', NESTED_TERNARY],
+    ['no-else-return', 'error', ELSE_RETURN],
+    ['prefer-const', 'error', PREFER_CONST],
+    ['@typescript-eslint/no-non-null-assertion', 'error', NON_NULL_ASSERTION],
+    [
+      '@typescript-eslint/consistent-type-assertions',
+      ['error', { assertionStyle: 'as', objectLiteralTypeAssertions: 'never' }],
+      OBJECT_LITERAL_ASSERTION,
+    ],
+    ['@typescript-eslint/consistent-type-imports', 'error', TYPE_IMPORTS],
+  ].map(([rule, setting, ignores]) => ({
+    files: ['api/src/**/*.ts', 'client/src/**/*.{ts,tsx}'],
+    ignores,
+    rules: { [rule]: setting },
+  })),
+  {
+    files: ['api/src/**/*.ts', 'client/src/**/*.{ts,tsx}'],
+    rules: { eqeqeq: ['error', 'smart'], 'max-depth': ['warn', 4] },
   },
 
   // Ignore patterns
