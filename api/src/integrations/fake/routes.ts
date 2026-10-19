@@ -70,10 +70,14 @@ fakeEventRoutes.post('/tournament', async (req: Request, res: Response) => {
     return res.status(400).json({ success: false, error: 'name is required' });
   }
   if (typeof body.type !== 'string' || !TOURNAMENT_TYPES.includes(body.type)) {
-    return res.status(400).json({ success: false, error: `type must be one of ${TOURNAMENT_TYPES.join(', ')}` });
+    return res
+      .status(400)
+      .json({ success: false, error: `type must be one of ${TOURNAMENT_TYPES.join(', ')}` });
   }
   if (typeof body.format !== 'string' || !FORMATS.includes(body.format)) {
-    return res.status(400).json({ success: false, error: `format must be one of ${FORMATS.join(', ')}` });
+    return res
+      .status(400)
+      .json({ success: false, error: `format must be one of ${FORMATS.join(', ')}` });
   }
   if (teamIds.length < 2) {
     return res.status(400).json({ success: false, error: 'At least 2 teams are required' });
@@ -139,9 +143,10 @@ fakeEventRoutes.post('/:slug/events', async (req: Request, res: Response) => {
     }
     // Only the fake game's matches: this route must not drive a CS2 match.
     if (match.game !== FAKE_GAME_ID) {
-      return res
-        .status(409)
-        .json({ success: false, error: `Match '${slug}' belongs to '${match.game}', not '${FAKE_GAME_ID}'` });
+      return res.status(409).json({
+        success: false,
+        error: `Match '${slug}' belongs to '${match.game}', not '${FAKE_GAME_ID}'`,
+      });
     }
 
     const { matchLifecycle } = await import('../../core/matchLifecycle');
