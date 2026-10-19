@@ -11,7 +11,7 @@
  * them away when every tab they have open is idle.
  */
 import { useEffect, useState } from 'react';
-import { io, type Socket } from 'socket.io-client';
+import { currentSocket, listenShared } from '../../utils/sharedSocket';
 import { api } from '../../utils/api';
 import type { Untrusted } from '../../utils/untrusted';
 
@@ -72,16 +72,18 @@ async function flush() {
   notify();
 }
 
-let socket: Socket | null = null;
+/** This store listens on the page's shared socket (from the first use on). */
+let listening = false;
 let connectedBefore = false;
 /** This tab reports its idle state (a signed-in player). */
 let reporting = false;
 let idle = false;
 
-function shared(): Socket {
-  if (socket) return socket;
-  const s = io({ autoConnect: false });
-  s.on('connect', () => {
+function shared(): void {
+  if (listening) return;
+  listening = true;
+  const s = currentSocket();
+  const onConnect = () => {
     s.emit('presence:subscribe');
     if (reporting) {
       s.emit('player:subscribe');
@@ -90,8 +92,8 @@ function shared(): Socket {
     // Updates sent while disconnected are lost: ask about everyone again.
     if (connectedBefore) requestPresence([...known.keys()], true);
     connectedBefore = true;
-  });
-  s.on('presence:update', (u: { playerId?: Untrusted; status?: Untrusted }) => {
+  };
+  const onUpdate = (u: { playerId?: Untrusted; status?: Untrusted }) => {
     if (typeof u?.playerId !== 'string') return;
     if (u.status !== 'online' && u.status !== 'away' && u.status !== 'offline') return;
     const k = known.get(u.playerId);
@@ -104,10 +106,11 @@ function shared(): Socket {
       at: k.at,
     });
     notify();
-  });
-  s.connect();
-  socket = s;
-  return s;
+  };
+  listenShared([
+    ['connect', onConnect],
+    ['presence:update', onUpdate],
+  ]);
 }
 
 /**
@@ -118,16 +121,20 @@ function shared(): Socket {
 export function startPresenceReporting(): () => void {
   reporting = true;
   idle = false;
-  // A fresh connection: one opened before sign-in has no player in its handshake.
-  socket?.close();
-  socket = null;
+  // A connection opened before sign-in is opened again with the player in its
+  // handshake (components/SocketIdentity); if it already has it, say so now.
   shared();
+  const s = currentSocket();
+  if (s.connected) {
+    s.emit('player:subscribe');
+    s.emit('presence:idle', false);
+  }
   let last = Date.now();
   let check: ReturnType<typeof setTimeout> | null = null;
   const setIdle = (next: boolean) => {
     if (idle === next) return;
     idle = next;
-    if (socket?.connected) socket.emit('presence:idle', next);
+    if (currentSocket().connected) currentSocket().emit('presence:idle', next);
   };
   const arm = () => {
     if (check) clearTimeout(check);
@@ -157,10 +164,7 @@ export function startPresenceReporting(): () => void {
     if (check) clearTimeout(check);
     for (const e of events) window.removeEventListener(e, active);
     document.removeEventListener('visibilitychange', onVisibility);
-    // Signed out: this socket's handshake still names the player; a fresh one does not.
-    socket?.close();
-    socket = null;
-    if (listeners.size > 0) shared();
+    // Signed out: SocketIdentity opens the connection again without the player.
   };
 }
 

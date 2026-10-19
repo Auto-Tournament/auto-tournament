@@ -10,7 +10,7 @@
  * this player, so turning it on shows up without a reload.
  */
 import { useEffect, useSyncExternalStore } from 'react';
-import { io, type Socket } from 'socket.io-client';
+import { currentSocket, listenShared, type SocketHandler } from '../../utils/sharedSocket';
 import { apiErrorMessage } from '../../utils/api';
 import type { Untrusted } from '../../utils/untrusted';
 
@@ -107,23 +107,26 @@ let state: State = { available: null, me: null, skew: 0 };
 const listeners = new Set<() => void>();
 let timer: ReturnType<typeof setTimeout> | null = null;
 let users = 0;
-let socket: Socket | null = null;
+/** Stops this store's handlers on the page's shared socket. */
+let stopSocket: (() => void) | null = null;
 
 function openSocket() {
-  if (socket) return;
-  socket = io({ autoConnect: true });
+  if (stopSocket) return;
+  const handlers: SocketHandler[] = [];
+  const on = (event: string, fn: SocketHandler[1]) => handlers.push([event, fn]);
   // Rooms don't survive a reconnect: ask again on every connect, and read
   // the state in case something changed while disconnected.
-  socket.on('connect', () => {
-    socket?.emit('player:subscribe');
+  on('connect', () => {
+    currentSocket().emit('player:subscribe');
     void refreshMatchmaking();
   });
-  socket.on('mm:changed', () => void refreshMatchmaking());
+  on('mm:changed', () => void refreshMatchmaking());
+  stopSocket = listenShared(handlers);
 }
 
 function closeSocket() {
-  socket?.close();
-  socket = null;
+  stopSocket?.();
+  stopSocket = null;
 }
 
 function emit(next: State) {
