@@ -6,6 +6,7 @@
  */
 import { parseAdminEmails } from './adminEmails';
 import { parseAdminSteamIds } from './adminSteamIds';
+import type { Untrusted } from './untrusted';
 
 export interface AdminAccessPatch {
   localAdminLoginEnabled?: boolean;
@@ -14,15 +15,19 @@ export interface AdminAccessPatch {
 }
 
 /** Check a `PUT` body. Pure. */
-export function parseAdminAccessPatch(body: unknown): { ok: true; patch: AdminAccessPatch } | { ok: false; error: string } {
-  if (typeof body !== 'object' || body === null || Array.isArray(body)) return { ok: false, error: 'Send a JSON object' };
-  const input = body as Record<string, unknown>;
+export function parseAdminAccessPatch(
+  body: Untrusted
+): { ok: true; patch: AdminAccessPatch } | { ok: false; error: string } {
+  if (typeof body !== 'object' || body === null || Array.isArray(body))
+    return { ok: false, error: 'Send a JSON object' };
+  const input = body as Record<string, Untrusted>;
   const allowed = new Set(['localAdminLoginEnabled', 'adminSteamIds', 'adminEmails']);
   const unknown = Object.keys(input).filter((k) => !allowed.has(k));
   if (unknown.length > 0) return { ok: false, error: `Unknown field: ${unknown[0]}` };
   const patch: AdminAccessPatch = {};
   if (input.localAdminLoginEnabled !== undefined) {
-    if (typeof input.localAdminLoginEnabled !== 'boolean') return { ok: false, error: 'localAdminLoginEnabled must be true or false' };
+    if (typeof input.localAdminLoginEnabled !== 'boolean')
+      return { ok: false, error: 'localAdminLoginEnabled must be true or false' };
     patch.localAdminLoginEnabled = input.localAdminLoginEnabled;
   }
   if (input.adminSteamIds !== undefined) {

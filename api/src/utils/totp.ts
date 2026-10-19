@@ -6,6 +6,7 @@
  */
 import crypto from 'crypto';
 import { URLSearchParams } from 'url';
+import type { Untrusted } from './untrusted';
 
 const BASE32 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
 export const TOTP_STEP_SECONDS = 30;
@@ -71,7 +72,7 @@ export function totpStep(nowMs: number = Date.now()): number {
  */
 export function verifyTotp(
   secretBase32: string,
-  code: unknown,
+  code: Untrusted,
   opts: { nowMs?: number; lastStep?: number | null } = {}
 ): number | null {
   if (typeof code !== 'string') return null;
@@ -92,6 +93,12 @@ export function verifyTotp(
 /** The otpauth:// URI authenticator apps read (as a QR code or pasted). */
 export function totpUri(issuer: string, account: string, secretBase32: string): string {
   const label = encodeURIComponent(`${issuer}:${account}`);
-  const params = new URLSearchParams({ secret: secretBase32, issuer, algorithm: 'SHA1', digits: String(DIGITS), period: String(TOTP_STEP_SECONDS) });
+  const params = new URLSearchParams({
+    secret: secretBase32,
+    issuer,
+    algorithm: 'SHA1',
+    digits: String(DIGITS),
+    period: String(TOTP_STEP_SECONDS),
+  });
   return `otpauth://totp/${label}?${params.toString()}`;
 }

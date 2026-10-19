@@ -12,6 +12,7 @@
  */
 
 import type { SettingDefinition, SettingWriteContext } from '../integrations/types';
+import type { Untrusted } from './untrusted';
 
 type Normalized = ReturnType<SettingDefinition['normalize']>;
 type ApplyRequest = NonNullable<SettingDefinition['applyRequest']>;
@@ -67,8 +68,8 @@ export function normalizeText(message: string) {
 
 type Parsed = { value: string | null } | { error: string };
 
-function applyParsed(parse: (value: unknown) => Parsed): ApplyRequest {
-  return async (value: unknown, ctx: SettingWriteContext) => {
+function applyParsed(parse: (value: Untrusted) => Parsed): ApplyRequest {
+  return async (value: Untrusted, ctx: SettingWriteContext) => {
     const parsed = parse(value);
     if ('error' in parsed) return parsed.error;
     await ctx.set(parsed.value);

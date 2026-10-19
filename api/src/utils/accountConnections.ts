@@ -7,10 +7,18 @@
  */
 
 /** Sign-in providers that can be linked to an account next to its Steam ID. */
-export const LINKABLE_PROVIDERS = ['discord', 'github', 'google', 'twitch', 'epic', 'oidc'] as const;
+import type { Untrusted } from './untrusted';
+export const LINKABLE_PROVIDERS = [
+  'discord',
+  'github',
+  'google',
+  'twitch',
+  'epic',
+  'oidc',
+] as const;
 export type LinkableProvider = (typeof LINKABLE_PROVIDERS)[number];
 
-export function isLinkableProvider(value: unknown): value is LinkableProvider {
+export function isLinkableProvider(value: Untrusted): value is LinkableProvider {
   return typeof value === 'string' && (LINKABLE_PROVIDERS as readonly string[]).includes(value);
 }
 
@@ -42,7 +50,8 @@ export function checkRemoveSignInMethod(input: {
   hasSteam?: boolean;
 }): { ok: true } | { ok: false; reason: RemoveRefusal } {
   const { provider, linkedProviders, enabledProviders, hasSteam = true } = input;
-  if (provider === 'steam') return hasSteam ? { ok: false, reason: 'primary' } : { ok: false, reason: 'not_linked' };
+  if (provider === 'steam')
+    return hasSteam ? { ok: false, reason: 'primary' } : { ok: false, reason: 'not_linked' };
   if (!linkedProviders.includes(provider)) return { ok: false, reason: 'not_linked' };
 
   const enabled = new Set(enabledProviders);

@@ -4,6 +4,7 @@ import type { TournamentResponse, TournamentSettings } from '../types/tournament
 import { DEFAULT_GAME, type GameId } from '../integrations/types';
 import { bannerUrl } from '../services/tournamentBannerService';
 import { moduleResponseFields } from './moduleTournamentSettings';
+import type { Untrusted } from './untrusted';
 
 /**
  * The id of the single tournament row that 3.0 hosts.
@@ -36,8 +37,8 @@ export function setCurrentTournamentId(id: number): void {
  */
 export function requestedTournamentId(req: Request | undefined): number | null {
   if (!req) return null;
-  const params = (req.params ?? {}) as Record<string, unknown>;
-  const query = (req.query ?? {}) as Record<string, unknown>;
+  const params = (req.params ?? {}) as Record<string, Untrusted>;
+  const query = (req.query ?? {}) as Record<string, Untrusted>;
   const header = typeof req.get === 'function' ? req.get('x-tournament-id') : undefined;
   const raw = params.tournamentId ?? header ?? query.tournamentId;
   const id = Number(Array.isArray(raw) ? raw[0] : raw);

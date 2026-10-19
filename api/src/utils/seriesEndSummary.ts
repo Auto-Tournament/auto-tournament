@@ -7,6 +7,7 @@
  * from the payload when a plugin sends them, otherwise from what MAT knows
  * about the match (team rows, then the stored config), otherwise the side.
  */
+import type { Untrusted } from './untrusted';
 type NameSource = string | null | undefined;
 
 function firstName(...candidates: NameSource[]): string | null {
@@ -16,15 +17,15 @@ function firstName(...candidates: NameSource[]): string | null {
   return null;
 }
 
-function payloadTeamName(event: Record<string, unknown>, side: 'team1' | 'team2'): NameSource {
+function payloadTeamName(event: Record<string, Untrusted>, side: 'team1' | 'team2'): NameSource {
   const flat = event[`${side}_name`];
   if (typeof flat === 'string') return flat;
-  const nested = event[side] as { name?: unknown } | undefined;
+  const nested = event[side] as { name?: Untrusted } | undefined;
   return nested && typeof nested.name === 'string' ? nested.name : undefined;
 }
 
 export function formatSeriesEndSummary(
-  event: Record<string, unknown>,
+  event: Record<string, Untrusted>,
   known: {
     team1Name?: NameSource;
     team2Name?: NameSource;

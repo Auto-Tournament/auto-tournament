@@ -5,18 +5,19 @@
  * delay (`tv_delay` 0): then a viewer could ghost for a team, and only admins
  * and the config a server loads get it.
  */
+import type { Untrusted } from './untrusted';
 export function withoutConfigSecrets<T>(config: T): T {
   if (!config || typeof config !== 'object') return config;
-  const cvars = (config as { cvars?: unknown }).cvars;
+  const cvars = (config as { cvars?: Untrusted }).cvars;
   if (!cvars || typeof cvars !== 'object' || !('tv_password' in cvars)) return config;
-  if (!liveGotv(cvars as Record<string, unknown>)) return config;
-  const rest: Record<string, unknown> = { ...(cvars as Record<string, unknown>) };
+  if (!liveGotv(cvars as Record<string, Untrusted>)) return config;
+  const rest: Record<string, Untrusted> = { ...(cvars as Record<string, Untrusted>) };
   delete rest.tv_password;
   return { ...config, cvars: rest };
 }
 
 /** GOTV with no delay: `tv_delay` set to 0. Absent is the server's own delay (105). */
-export function liveGotv(cvars: Record<string, unknown> | undefined): boolean {
+export function liveGotv(cvars: Record<string, Untrusted> | undefined): boolean {
   const delay = cvars?.tv_delay;
   return delay !== undefined && delay !== null && delay !== '' && Number(delay) === 0;
 }

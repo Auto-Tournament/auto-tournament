@@ -13,12 +13,17 @@
  * change; they are accepted as before.
  */
 
+import type { Untrusted } from './untrusted';
 export const SERVER_ID_PARAM = 'server_id';
 export const MATCH_ID_PARAM = 'match_id';
 
-function appendQuery(url: string, params: Record<string, string | number | null | undefined>): string {
+function appendQuery(
+  url: string,
+  params: Record<string, string | number | null | undefined>
+): string {
   const entries = Object.entries(params).filter(
-    (entry): entry is [string, string | number] => entry[1] !== null && entry[1] !== undefined && entry[1] !== ''
+    (entry): entry is [string, string | number] =>
+      entry[1] !== null && entry[1] !== undefined && entry[1] !== ''
   );
   if (entries.length === 0) return url;
   const query = entries
@@ -46,7 +51,7 @@ export function buildMatchConfigUrl(
 }
 
 /** First string value of a query parameter, or null. */
-export function readQueryString(value: unknown): string | null {
+export function readQueryString(value: Untrusted): string | null {
   if (Array.isArray(value)) return readQueryString(value[0]);
   if (typeof value !== 'string') return null;
   const trimmed = value.trim();
@@ -158,7 +163,7 @@ export type ReportTarget<M extends ReportMatchRow> =
  *   server had played earlier.
  */
 export async function resolveReportTarget<M extends ReportMatchRow>(
-  input: { serverId: string; matchSlug: unknown; report: { match?: { phase?: string | null } } },
+  input: { serverId: string; matchSlug: Untrusted; report: { match?: { phase?: string | null } } },
   lookups: {
     findByIdentifier: (identifier: string | number) => Promise<M | null>;
     findActiveForServer: (serverId: string) => Promise<M | null>;

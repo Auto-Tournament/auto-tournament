@@ -11,6 +11,7 @@
  *   the parameters can be raised later without breaking old hashes.
  */
 import crypto from 'crypto';
+import type { Untrusted } from './untrusted';
 
 // Crockford base32: no I, L, O, U.
 const CROCKFORD = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
@@ -25,25 +26,25 @@ export function generateSetupCode(): string {
   // 256 is a multiple of 32, so `byte % 32` is uniform.
   for (let i = 0; i < SETUP_CODE_LENGTH; i++) chars.push(CROCKFORD[bytes[i] % 32]);
   const groups: string[] = [];
-  for (let i = 0; i < CODE_GROUPS; i++) groups.push(chars.slice(i * GROUP_LENGTH, (i + 1) * GROUP_LENGTH).join(''));
+  for (let i = 0; i < CODE_GROUPS; i++)
+    groups.push(chars.slice(i * GROUP_LENGTH, (i + 1) * GROUP_LENGTH).join(''));
   return groups.join('-');
 }
 
 /** The code as typed, in canonical form, or null when it cannot be a code. */
-export function normalizeSetupCode(input: unknown): string | null {
+export function normalizeSetupCode(input: Untrusted): string | null {
   if (typeof input !== 'string' || input.length > 100) return null;
-  const s = input
-    .toUpperCase()
-    .replace(/[\s-]/g, '')
-    .replace(/O/g, '0')
-    .replace(/[IL]/g, '1');
+  const s = input.toUpperCase().replace(/[\s-]/g, '').replace(/O/g, '0').replace(/[IL]/g, '1');
   if (s.length !== SETUP_CODE_LENGTH) return null;
   for (const c of s) if (!CROCKFORD.includes(c)) return null;
   return s;
 }
 
 export function hashSetupCode(normalized: string): string {
-  return crypto.createHash('sha256').update(`auto-tournament:setup-code:${normalized}`, 'utf8').digest('hex');
+  return crypto
+    .createHash('sha256')
+    .update(`auto-tournament:setup-code:${normalized}`, 'utf8')
+    .digest('hex');
 }
 
 /** Timing-safe compare of two hex digests. */
@@ -57,10 +58,21 @@ const SCRYPT = { N: 1 << 15, r: 8, p: 1, keyLength: 32, saltLength: 16 };
 // 128 * N * r bytes = 32 MiB; give scrypt room above Node's 32 MiB default.
 const SCRYPT_MAXMEM = 64 * 1024 * 1024;
 
-function scrypt(password: string, salt: Buffer, N: number, r: number, p: number, keyLength: number): Promise<Buffer> {
+function scrypt(
+  password: string,
+  salt: Buffer,
+  N: number,
+  r: number,
+  p: number,
+  keyLength: number
+): Promise<Buffer> {
   return new Promise((resolve, reject) => {
-    crypto.scrypt(password.normalize('NFKC'), salt, keyLength, { N, r, p, maxmem: SCRYPT_MAXMEM }, (err, key) =>
-      err ? reject(err) : resolve(key)
+    crypto.scrypt(
+      password.normalize('NFKC'),
+      salt,
+      keyLength,
+      { N, r, p, maxmem: SCRYPT_MAXMEM },
+      (err, key) => (err ? reject(err) : resolve(key))
     );
   });
 }
@@ -68,7 +80,14 @@ function scrypt(password: string, salt: Buffer, N: number, r: number, p: number,
 export async function hashPassword(password: string): Promise<string> {
   const salt = crypto.randomBytes(SCRYPT.saltLength);
   const key = await scrypt(password, salt, SCRYPT.N, SCRYPT.r, SCRYPT.p, SCRYPT.keyLength);
-  return ['scrypt', SCRYPT.N, SCRYPT.r, SCRYPT.p, salt.toString('base64url'), key.toString('base64url')].join('$');
+  return [
+    'scrypt',
+    SCRYPT.N,
+    SCRYPT.r,
+    SCRYPT.p,
+    salt.toString('base64url'),
+    key.toString('base64url'),
+  ].join('$');
 }
 
 export async function verifyPassword(password: string, stored: string): Promise<boolean> {
@@ -93,7 +112,7 @@ export function dummyPasswordHash(): Promise<string> {
 export const USERNAME_RE = /^[a-z0-9][a-z0-9._-]{2,31}$/;
 
 /** Lower-cased username, or null when it breaks the rule (3-32 of a-z 0-9 . _ -, starting with a letter or digit). */
-export function normalizeUsername(input: unknown): string | null {
+export function normalizeUsername(input: Untrusted): string | null {
   if (typeof input !== 'string') return null;
   const u = input.trim().toLowerCase();
   return USERNAME_RE.test(u) ? u : null;
@@ -107,7 +126,7 @@ export type PasswordProblem = 'too_short' | 'too_long';
  * Admins choose their own password strength: it only has to be non-empty.
  * The upper bound stops a huge input from tying up the password hash.
  */
-export function passwordProblem(_username: string, password: unknown): PasswordProblem | null {
+export function passwordProblem(_username: string, password: Untrusted): PasswordProblem | null {
   if (typeof password !== 'string' || password.length === 0) return 'too_short';
   if (password.length > PASSWORD_MAX) return 'too_long';
   return null;

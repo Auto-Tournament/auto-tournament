@@ -44,6 +44,7 @@
  */
 
 import crypto from 'crypto';
+import type { Untrusted } from './untrusted';
 
 /** Lifetime of a pending OAuth authorization, in milliseconds. */
 export const OAUTH_STATE_TTL_MS = 10 * 60 * 1000;
@@ -73,9 +74,9 @@ function encodeIntent(intent: OAuthLinkIntent): string {
 /** Parse an intent segment. Only called once its signature has checked out. */
 function decodeIntent(segment: string): OAuthLinkIntent | null {
   try {
-    const value: unknown = JSON.parse(Buffer.from(segment, 'base64url').toString('utf8'));
+    const value: Untrusted = JSON.parse(Buffer.from(segment, 'base64url').toString('utf8'));
     if (!value || typeof value !== 'object') return null;
-    const { purpose, steamId } = value as Record<string, unknown>;
+    const { purpose, steamId } = value as Record<string, Untrusted>;
     // A Steam ID, or a local admin account (`local-<username>`, see localAdminCrypto).
     if (
       purpose !== 'link' ||
@@ -272,13 +273,22 @@ export function peekOAuthLinkIntent(
   return parsed.ok ? parsed.cookie.intent : null;
 }
 
+/** The state cookie's options (a subset of Express's CookieOptions). */
+type StateCookieOptions = {
+  httpOnly: boolean;
+  sameSite: 'lax';
+  secure: boolean;
+  path: string;
+  maxAge?: number;
+};
+
 /** Minimal request/response shape the store needs (Express-compatible). */
 export interface StateStoreRequest {
   headers: { cookie?: string; 'x-forwarded-proto'?: string | string[] };
   secure?: boolean;
   res?: {
-    cookie: (name: string, value: string, options: Record<string, unknown>) => unknown;
-    clearCookie: (name: string, options: Record<string, unknown>) => unknown;
+    cookie: (name: string, value: string, options: StateCookieOptions) => void;
+    clearCookie: (name: string, options: StateCookieOptions) => void;
   };
 }
 
@@ -312,7 +322,7 @@ export class SignedCookieStateStore {
     this.cookiePath = path;
   }
 
-  private cookieOptions(req: StateStoreRequest): Record<string, unknown> {
+  private cookieOptions(req: StateStoreRequest): StateCookieOptions {
     const forwarded = req.headers['x-forwarded-proto'];
     const proto = (Array.isArray(forwarded) ? forwarded[0] : forwarded) || '';
     const frontend = process.env.FRONTEND_BASE_URL || '';
@@ -323,7 +333,7 @@ export class SignedCookieStateStore {
     return { httpOnly: true, sameSite: 'lax', secure, path: this.cookiePath };
   }
 
-  store(req: StateStoreRequest, _meta: unknown, callback: StoreCallback): void {
+  store(req: StateStoreRequest, _meta: Untrusted, callback: StoreCallback): void {
     if (!req.res) {
       callback(new Error('OAuth state store requires an Express response on the request'));
       return;
