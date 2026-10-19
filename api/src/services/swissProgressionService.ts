@@ -85,9 +85,7 @@ export async function getSwissStandings(tournamentId: number): Promise<SwissStan
 }
 
 /** Standings as exposed by the API (bracket and leaderboard), best first. */
-export async function getSwissStandingEntries(
-  tournamentId: number
-): Promise<SwissStandingEntry[]> {
+export async function getSwissStandingEntries(tournamentId: number): Promise<SwissStandingEntry[]> {
   const standings = await getSwissStandings(tournamentId);
   return standings.map((s, index) => ({
     rank: index + 1,

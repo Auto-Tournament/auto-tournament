@@ -34,7 +34,13 @@ import {
   findDuplicateTournamentMemberships,
 } from '../utils/duplicateTeamMembership';
 
-export { IntegrationTeamError, parseTeamInput, isValidSteam64, MAX_BATCH, MAX_PLAYERS } from './integrationTeamInput';
+export {
+  IntegrationTeamError,
+  parseTeamInput,
+  isValidSteam64,
+  MAX_BATCH,
+  MAX_PLAYERS,
+} from './integrationTeamInput';
 export type { IntegrationTeamInput } from './integrationTeamInput';
 
 export interface IntegrationTeamView {
@@ -48,7 +54,11 @@ export interface IntegrationTeamView {
   updatedAt: number;
 }
 
-export function teamView(team: TeamResponse, source: string, externalId: string): IntegrationTeamView {
+export function teamView(
+  team: TeamResponse,
+  source: string,
+  externalId: string
+): IntegrationTeamView {
   return {
     id: team.id,
     externalId,
@@ -70,7 +80,9 @@ export interface UpsertResult {
 }
 
 const rosterKey = (players: Array<{ steamId: string; name?: string }>): string =>
-  JSON.stringify([...players].map((p) => [p.steamId, p.name ?? '']).sort((a, b) => a[0].localeCompare(b[0])));
+  JSON.stringify(
+    [...players].map((p) => [p.steamId, p.name ?? '']).sort((a, b) => a[0].localeCompare(b[0]))
+  );
 const steamIdKey = (players: Array<{ steamId: string }>): string =>
   JSON.stringify(players.map((p) => p.steamId).sort());
 
@@ -91,11 +103,18 @@ async function liveMatchesOf(teamId: string): Promise<Array<{ slug: string; stat
   );
 }
 
-async function rosterWarnings(teamId: string, players: Player[], rosterChanged: boolean): Promise<string[]> {
+async function rosterWarnings(
+  teamId: string,
+  players: Player[],
+  rosterChanged: boolean
+): Promise<string[]> {
   const warnings: string[] = [];
-  const tournaments = await db.queryAsync<{ id: number; name: string; status: string; team_ids: string | null }>(
-    'SELECT id, name, status, team_ids FROM tournament'
-  );
+  const tournaments = await db.queryAsync<{
+    id: number;
+    name: string;
+    status: string;
+    team_ids: string | null;
+  }>('SELECT id, name, status, team_ids FROM tournament');
   for (const t of tournaments) {
     let ids: unknown;
     try {
@@ -115,7 +134,10 @@ async function rosterWarnings(teamId: string, players: Player[], rosterChanged: 
   return warnings;
 }
 
-export async function upsertIntegrationTeam(source: string, input: IntegrationTeamInput): Promise<UpsertResult> {
+export async function upsertIntegrationTeam(
+  source: string,
+  input: IntegrationTeamInput
+): Promise<UpsertResult> {
   const existingId = await teamIdForExternalId(source, input.externalId);
   const existing = existingId ? await teamService.getTeamById(existingId) : null;
 
@@ -168,7 +190,11 @@ export async function upsertIntegrationTeam(source: string, input: IntegrationTe
 
   // Keep what the platform already knows about players who stay (avatar, rating).
   const known = new Map((existing.players ?? []).map((p) => [p.steamId, p]));
-  const players: Player[] = input.players.map((p) => ({ ...(known.get(p.steamId) ?? {}), steamId: p.steamId, name: p.name }));
+  const players: Player[] = input.players.map((p) => ({
+    ...(known.get(p.steamId) ?? {}),
+    steamId: p.steamId,
+    name: p.name,
+  }));
   const { team, warnings } = await teamService.updateTeamWithWarnings(existing.id, {
     name: input.name,
     tag: input.tag ?? '',
@@ -184,10 +210,12 @@ export async function upsertIntegrationTeam(source: string, input: IntegrationTe
   };
 }
 
-export async function getIntegrationTeam(source: string, externalId: string): Promise<IntegrationTeamView | null> {
+export async function getIntegrationTeam(
+  source: string,
+  externalId: string
+): Promise<IntegrationTeamView | null> {
   const id = await teamIdForExternalId(source, externalId);
   if (!id) return null;
   const team = await teamService.getTeamById(id);
   return team ? teamView(team, source, externalId) : null;
 }
-

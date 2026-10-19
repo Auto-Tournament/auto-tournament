@@ -124,9 +124,10 @@ export async function enabledTracks(): Promise<MusicTrack[]> {
 
 export async function trackById(id: string): Promise<(MusicTrack & { file: string }) | undefined> {
   if (!/^\d{1,9}$/.test(id)) return undefined;
-  const row = await db.queryOneAsync<TrackRow>('SELECT * FROM highlight_music_tracks WHERE id = ?', [
-    Number(id),
-  ]);
+  const row = await db.queryOneAsync<TrackRow>(
+    'SELECT * FROM highlight_music_tracks WHERE id = ?',
+    [Number(id)]
+  );
   return row ? { ...toTrack(row), file: path.join(MUSIC_DIR, row.file) } : undefined;
 }
 

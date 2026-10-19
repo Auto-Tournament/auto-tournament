@@ -18,12 +18,7 @@ import { steamService } from './steamService';
 import { discoverOidc } from '../config/oidcStrategy';
 
 export type ProviderTestResult =
-  | 'ok'
-  | 'invalid_credentials'
-  | 'unreachable'
-  | 'not_configured'
-  | 'not_supported'
-  | 'unexpected';
+  'ok' | 'invalid_credentials' | 'unreachable' | 'not_configured' | 'not_supported' | 'unexpected';
 
 export interface ProviderTestOutcome {
   result: ProviderTestResult;
@@ -34,16 +29,26 @@ export interface ProviderTestOutcome {
 const TIMEOUT_MS = 8000;
 const INVALID_CODE = 'auto-tournament-connection-test';
 
-async function post(url: string, body: Record<string, string>, headers: Record<string, string> = {}) {
+async function post(
+  url: string,
+  body: Record<string, string>,
+  headers: Record<string, string> = {}
+) {
   return globalThis.fetch(url, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded', Accept: 'application/json', ...headers },
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      Accept: 'application/json',
+      ...headers,
+    },
     body: new globalThis.URLSearchParams(body).toString(),
     signal: globalThis.AbortSignal.timeout(TIMEOUT_MS),
   });
 }
 
-async function errorCode(response: Awaited<ReturnType<typeof globalThis.fetch>>): Promise<string | undefined> {
+async function errorCode(
+  response: Awaited<ReturnType<typeof globalThis.fetch>>
+): Promise<string | undefined> {
   try {
     const json = (await response.json()) as { error?: unknown };
     return typeof json.error === 'string' ? json.error : undefined;
@@ -52,7 +57,10 @@ async function errorCode(response: Awaited<ReturnType<typeof globalThis.fetch>>)
   }
 }
 
-export async function testSignInProvider(id: SignInProviderId, callbackUrl: string): Promise<ProviderTestOutcome> {
+export async function testSignInProvider(
+  id: SignInProviderId,
+  callbackUrl: string
+): Promise<ProviderTestOutcome> {
   const settings = effectiveProviderSettings(id);
   if (id === 'epic') return { result: 'not_supported' };
   if (!settings.configured || !settings.secret) return { result: 'not_configured' };
@@ -61,7 +69,8 @@ export async function testSignInProvider(id: SignInProviderId, callbackUrl: stri
     steamService.resetHealthCache();
     const health = await steamService.checkSteamWebApiHealth({ force: true });
     if (health.ok) return { result: 'ok' };
-    if (health.errorType === 'invalid_key') return { result: 'invalid_credentials', status: health.statusCode };
+    if (health.errorType === 'invalid_key')
+      return { result: 'invalid_credentials', status: health.statusCode };
     if (health.errorType === 'unreachable') return { result: 'unreachable' };
     if (health.errorType === 'not_configured') return { result: 'not_configured' };
     return { result: 'unexpected', status: health.statusCode };
