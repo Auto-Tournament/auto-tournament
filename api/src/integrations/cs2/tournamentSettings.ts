@@ -27,7 +27,7 @@ import type {
   TournamentSettingsValidation,
 } from '../types';
 import { validateCustomVetoOrderSetting } from './veto/config';
-import { isOneOf, type Untrusted } from '../../utils/untrusted';
+import type { Untrusted } from '../../utils/untrusted';
 import type { TournamentSettings } from '../../types/tournament.types';
 /** One place's prize as a tournament stores it: a rarity to pick from, or none. */
 export interface TournamentRewardSetting {
@@ -56,7 +56,8 @@ function mvpSetting(raw: Untrusted): MvpSetting | null {
   const r = raw;
   return {
     enabled: r.enabled === true,
-    by: isOneOf(MVP_BY, r.by) ? r.by : 'commends',
+    // No runtime import from the core here: the module reaches it only through its bridge.
+    by: MVP_BY.find((b) => b === r.by) ?? 'commends',
     rarity:
       typeof r.rarity === 'string' && REWARD_RARITIES.includes(r.rarity) ? r.rarity : 'legendary',
     ...(r.pick === 'one' ? { pick: 'one' as const } : {}),
