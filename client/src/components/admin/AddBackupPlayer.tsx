@@ -17,6 +17,7 @@ import { UserPlusIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../../utils/api';
 import { normalizeConfigPlayers } from '../../utils/playerUtils';
+import type { Untrusted } from '../../utils/untrusted';
 
 interface Player {
   steamId: string;
@@ -30,8 +31,8 @@ interface AddBackupPlayerProps {
   serverId: string;
   team1Name: string;
   team2Name: string;
-  existingTeam1Players: unknown;
-  existingTeam2Players: unknown;
+  existingTeam1Players: Untrusted;
+  existingTeam2Players: Untrusted;
   onSuccess?: (message: string) => void;
   onError?: (message: string) => void;
 }
@@ -280,10 +281,12 @@ export const AddBackupPlayer: React.FC<AddBackupPlayerProps> = ({
 
           <Alert severity="warning" sx={{ fontSize: '0.85rem' }}>
             <Typography variant="caption" display="block" gutterBottom>
-              ⚙️ <strong>{t('addBackupPlayer.underlyingCommand')}</strong> <code>at_addplayer &lt;steam64&gt; &lt;team1|team2|spec&gt; [name]</code>
+              ⚙️ <strong>{t('addBackupPlayer.underlyingCommand')}</strong>{' '}
+              <code>at_addplayer &lt;steam64&gt; &lt;team1|team2|spec&gt; [name]</code>
             </Typography>
             <Typography variant="caption">
-              ⚠️ <strong>{t('addBackupPlayer.important')}</strong> {t('addBackupPlayer.reconnectHint')}
+              ⚠️ <strong>{t('addBackupPlayer.important')}</strong>{' '}
+              {t('addBackupPlayer.reconnectHint')}
             </Typography>
           </Alert>
         </Stack>

@@ -1,4 +1,5 @@
 import { api } from '../../utils/api';
+import type { Untrusted } from '../../utils/untrusted';
 
 /** One row of "Sign-in methods" (`GET /api/me/connections`). */
 export interface SignInMethod {
@@ -87,7 +88,7 @@ export function startLink(provider: string): void {
 /** A flag on an API error body, e.g. `reauthRequired` or `totpRequired`. */
 export function apiErrorFlag(err: unknown, flag: string): boolean {
   try {
-    const parsed = JSON.parse(err instanceof Error ? err.message : '') as Record<string, unknown>;
+    const parsed = JSON.parse(err instanceof Error ? err.message : '') as Record<string, Untrusted>;
     return parsed[flag] === true;
   } catch {
     return false;

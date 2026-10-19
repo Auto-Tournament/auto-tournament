@@ -21,6 +21,7 @@ import { CircularProgress } from '@mui/material';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 import { useTranslation } from 'react-i18next';
 import { ExternalLink } from '../common/ExternalLink';
+import type { Untrusted } from '../../utils/untrusted';
 
 interface ImportPlayer {
   /** Optional: without one the player gets an account of their own (CS2 needs it). */
@@ -69,14 +70,14 @@ export const PlayerImportModal: React.FC<PlayerImportModalProps> = ({
     handleClose();
   };
 
-  const validatePlayer = (player: unknown, index: number): string | null => {
+  const validatePlayer = (player: Untrusted, index: number): string | null => {
     if (typeof player !== 'object' || player === null) {
       return `Player ${index + 1}: Invalid player object`;
     }
     // `typeof x === 'object'` narrows to `object`, which has no index
     // signature, so reading fields off it is a type error. Go through a
     // record and let the guards below do the actual narrowing.
-    const { steamId, name, initialELO } = player as Record<string, unknown>;
+    const { steamId, name, initialELO } = player as Record<string, Untrusted>;
     if (steamId !== undefined && (typeof steamId !== 'string' || !steamId.trim())) {
       return `Player ${index + 1}: steamId must be a Steam ID or left out`;
     }
@@ -171,9 +172,7 @@ export const PlayerImportModal: React.FC<PlayerImportModalProps> = ({
       await onImport(parsedPlayers);
       handleClose();
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : t('playerImportModal.errors.importFailed')
-      );
+      setError(err instanceof Error ? err.message : t('playerImportModal.errors.importFailed'));
     } finally {
       setImporting(false);
     }
@@ -190,13 +189,7 @@ export const PlayerImportModal: React.FC<PlayerImportModalProps> = ({
   };
 
   return (
-    <Dialog
-      open={open}
-      onClose={handleDialogClose}
-      maxWidth="md"
-      fullWidth
-      disableEscapeKeyDown
-    >
+    <Dialog open={open} onClose={handleDialogClose} maxWidth="md" fullWidth disableEscapeKeyDown>
       <DialogTitle>
         <Box display="flex" justifyContent="space-between" alignItems="center">
           <Typography variant="h6">{t('playerImportModal.title')}</Typography>
@@ -285,7 +278,9 @@ export const PlayerImportModal: React.FC<PlayerImportModalProps> = ({
                       <Typography variant="body2" fontWeight={600}>
                         {player.name}
                       </Typography>
-                      {player.steamId && <Chip label={player.steamId} size="small" variant="outlined" />}
+                      {player.steamId && (
+                        <Chip label={player.steamId} size="small" variant="outlined" />
+                      )}
                       {player.initialELO !== undefined && (
                         <Chip label={`ELO: ${player.initialELO}`} size="small" />
                       )}

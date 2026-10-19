@@ -25,6 +25,7 @@ const LANGUAGES: Language[] = [
 ];
 
 type FlagComponent = React.ComponentType<Record<string, never>>;
+// eslint-disable-next-line no-restricted-syntax -- the flag package's namespace: one component per country code
 const FlagByCode = Flags as unknown as Record<string, FlagComponent>;
 
 export function FlagIcon({ code }: { code: string }) {

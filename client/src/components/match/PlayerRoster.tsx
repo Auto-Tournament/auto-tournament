@@ -13,12 +13,13 @@ import { PlayerAvatar } from '../player/PlayerAvatar';
 import { useTranslation } from 'react-i18next';
 import { PlayerName } from '../player/PlayerName';
 import { radii } from '../../theme/tokens';
+import type { Untrusted } from '../../utils/untrusted';
 
 interface PlayerRosterProps {
   team1Name: string;
   team2Name: string;
-  team1Players: unknown;
-  team2Players: unknown;
+  team1Players: Untrusted;
+  team2Players: Untrusted;
   connectedPlayers: ConnectedPlayer[];
   isTeam1?: boolean; // If viewing from team perspective
   /** A simulated match: bots play, so nobody is "offline". */
@@ -76,14 +77,14 @@ export const PlayerRoster: React.FC<PlayerRosterProps> = ({
                   bgcolor: status.isReady
                     ? 'success.dark'
                     : status.isConnected
-                    ? 'action.hover'
-                    : 'action.disabledBackground',
+                      ? 'action.hover'
+                      : 'action.disabledBackground',
                   border: 1,
                   borderColor: status.isReady
                     ? 'success.main'
                     : status.isConnected
-                    ? 'divider'
-                    : 'action.disabled',
+                      ? 'divider'
+                      : 'action.disabled',
                   display: 'flex',
                   alignItems: 'center',
                   gap: 1.5,
@@ -94,7 +95,12 @@ export const PlayerRoster: React.FC<PlayerRosterProps> = ({
                 {status.isReady ? (
                   <Box component={CheckCircleIcon} size={20} sx={{ color: 'success.light' }} />
                 ) : status.isConnected ? (
-                  <Box component={CircleIcon} weight="fill" size={20} sx={{ color: 'warning.main' }} />
+                  <Box
+                    component={CircleIcon}
+                    weight="fill"
+                    size={20}
+                    sx={{ color: 'warning.main' }}
+                  />
                 ) : (
                   <Box component={UserMinusIcon} size={20} sx={{ color: 'action.disabled' }} />
                 )}
@@ -118,8 +124,8 @@ export const PlayerRoster: React.FC<PlayerRosterProps> = ({
                     color: status.isReady
                       ? 'success.contrastText'
                       : status.isConnected
-                      ? 'primary.main'
-                      : 'text.disabled',
+                        ? 'primary.main'
+                        : 'text.disabled',
                     fontWeight: status.isConnected ? 600 : 400,
                   }}
                 />
@@ -167,7 +173,12 @@ export const PlayerRoster: React.FC<PlayerRosterProps> = ({
                     label={t('matchDetailsModal.roster.bot')}
                     size="small"
                     data-testid="roster-bot"
-                    sx={{ bgcolor: 'action.selected', color: 'text.secondary', fontWeight: 600, fontSize: '0.7rem' }}
+                    sx={{
+                      bgcolor: 'action.selected',
+                      color: 'text.secondary',
+                      fontWeight: 600,
+                      fontSize: '0.7rem',
+                    }}
                   />
                 ) : (
                   <Chip

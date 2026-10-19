@@ -14,6 +14,7 @@ import { useSnackbar } from '../../../contexts/SnackbarContext';
 import { paths } from '../../../paths';
 import { radii, tokens } from '../../../theme/tokens';
 import { h2Sx, panel } from '../ui/draftUi';
+import type { Untrusted } from '../../../utils/untrusted';
 
 const { color } = tokens;
 
@@ -26,7 +27,7 @@ interface PauseState {
 interface Availability {
   availableServerCount: number;
   requiredServerCount: number;
-  servers?: unknown[];
+  servers?: Untrusted[];
 }
 
 export function TournamentRunState({

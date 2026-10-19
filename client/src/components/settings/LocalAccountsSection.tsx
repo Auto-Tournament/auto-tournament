@@ -16,6 +16,7 @@ import { api, apiErrorMessage } from '../../utils/api';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 import { SettingsRow } from './SettingsRow';
 import { SwitchRow } from '../../components/common/ui';
+import type { Untrusted } from '../../utils/untrusted';
 
 interface LocalAccount {
   username: string;
@@ -58,7 +59,7 @@ export function LocalAccountsSection() {
     void load();
   }, [load]);
 
-  const run = async (work: () => Promise<unknown>, done: string) => {
+  const run = async (work: () => Promise<Untrusted>, done: string) => {
     setBusy(true);
     try {
       await work();

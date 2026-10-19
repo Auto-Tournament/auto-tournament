@@ -13,6 +13,7 @@
 import { useEffect, useState } from 'react';
 import { io, type Socket } from 'socket.io-client';
 import { api } from '../../utils/api';
+import type { Untrusted } from '../../utils/untrusted';
 
 export type PresenceActivity =
   | { kind: 'searching'; mode: string }
@@ -90,7 +91,7 @@ function shared(): Socket {
     if (connectedBefore) requestPresence([...known.keys()], true);
     connectedBefore = true;
   });
-  s.on('presence:update', (u: { playerId?: unknown; status?: unknown }) => {
+  s.on('presence:update', (u: { playerId?: Untrusted; status?: Untrusted }) => {
     if (typeof u?.playerId !== 'string') return;
     if (u.status !== 'online' && u.status !== 'away' && u.status !== 'offline') return;
     const k = known.get(u.playerId);

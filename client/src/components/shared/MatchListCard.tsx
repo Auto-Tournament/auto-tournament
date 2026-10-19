@@ -16,10 +16,7 @@ import {
   type MatchLike,
 } from '../../utils/matchFlags';
 import type { Match, MatchLiveStats } from '../../types';
-import {
-  deriveCurrentMapScore,
-  deriveSeriesScore,
-} from '../../utils/matchScoreDisplay';
+import { deriveCurrentMapScore, deriveSeriesScore } from '../../utils/matchScoreDisplay';
 import { TeamNameLink } from '../team/TeamNameLink';
 import { useTranslation } from 'react-i18next';
 
@@ -40,6 +37,7 @@ export const MatchListCard: React.FC<MatchListCardProps> = ({
 }) => {
   const { t } = useTranslation();
   const bracketMatch = match as Match & { liveStats?: MatchLiveStats | null };
+  // eslint-disable-next-line no-restricted-syntax -- Match is an interface without MatchLike's index signature; same fields
   const matchLike = match as unknown as MatchLike;
   const shuffle = isShuffleMatch(matchLike);
   const manual = isManualMatch(matchLike);
@@ -108,8 +106,7 @@ export const MatchListCard: React.FC<MatchListCardProps> = ({
       const series = deriveSeriesScore(bracketMatch, bracketMatch.liveStats ?? null);
       const isInProgress = match.status === 'loaded' || match.status === 'live';
       const isNotStarted = match.status === 'pending' || match.status === 'ready';
-      const isUnknownZero =
-        series.source === 'default' && series.team1 === 0 && series.team2 === 0;
+      const isUnknownZero = series.source === 'default' && series.team1 === 0 && series.team2 === 0;
 
       // Keep dashes for not-started matches with no known series score yet.
       if (isNotStarted && isUnknownZero) {
@@ -151,10 +148,9 @@ export const MatchListCard: React.FC<MatchListCardProps> = ({
 
   // In the bracket list view we want to emphasise the map number rather than
   // the round label, so always show "Map N" (defaulting to Map 1 when unknown).
-  const metaLabel =
-    t('matchesPage.card.mapN', {
-      n: typeof match.mapNumber === 'number' ? match.mapNumber + 1 : 1,
-    });
+  const metaLabel = t('matchesPage.card.mapN', {
+    n: typeof match.mapNumber === 'number' ? match.mapNumber + 1 : 1,
+  });
 
   const tooltipTitle = (() => {
     if (scoreDisplayMode === 'series') {
@@ -185,7 +181,6 @@ export const MatchListCard: React.FC<MatchListCardProps> = ({
     return 'transparent';
   };
 
-
   return (
     // One row of a `RowList` (the drafts' `.row-list`), not a card of its own.
     <Row
@@ -199,145 +194,145 @@ export const MatchListCard: React.FC<MatchListCardProps> = ({
         '&:last-of-type': { borderBottomLeftRadius: 'inherit', borderBottomRightRadius: 'inherit' },
       }}
     >
+      <Box
+        position="relative"
+        display="flex"
+        alignItems="center"
+        justifyContent="space-between"
+        width="100%"
+      >
+        {/* Match meta */}
         <Box
-          position="relative"
-          display="flex"
-          alignItems="center"
-          justifyContent="space-between"
-          width="100%"
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+          }}
         >
-          {/* Match meta */}
-          <Box
-            sx={{
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'center',
-            }}
-          >
-            <Typography variant="caption" fontWeight={600} display="block">
-              {getBracketMatchLabel(match) ?? `#${matchNumber}`} · {metaLabel}
+          <Typography variant="caption" fontWeight={600} display="block">
+            {getBracketMatchLabel(match) ?? `#${matchNumber}`} · {metaLabel}
+          </Typography>
+          {match.serverName && (
+            <Typography variant="caption" color="text.secondary" noWrap>
+              {match.serverName}
             </Typography>
-            {match.serverName && (
-              <Typography variant="caption" color="text.secondary" noWrap>
-                {match.serverName}
-              </Typography>
-            )}
-          </Box>
+          )}
+        </Box>
 
-          <Box
-            flex={1}
-            minWidth={0}
-            position="absolute"
-            justifyContent="center"
-            alignItems="center"
-            display="flex"
-            left={0}
-            right={0}
-            top={0}
-            bottom={0}
-          >
-            <Box position="relative">
-              <Typography
+        <Box
+          flex={1}
+          minWidth={0}
+          position="absolute"
+          justifyContent="center"
+          alignItems="center"
+          display="flex"
+          left={0}
+          right={0}
+          top={0}
+          bottom={0}
+        >
+          <Box position="relative">
+            <Typography
+              variant="body2"
+              fontWeight={winnerSide === 'team1' ? 600 : 500}
+              noWrap
+              position="absolute"
+              right="120%"
+              top={0}
+              bottom={0}
+              display="flex"
+              alignItems="center"
+              justifyContent="center"
+              color={winnerSide === 'team1' ? 'success' : 'text.secondary'}
+            >
+              <TeamNameLink
+                teamId={match.team1?.id}
+                name={getTeamName(match.team1?.id, 'team1')}
+                showTag={false}
                 variant="body2"
-                fontWeight={winnerSide === 'team1' ? 600 : 500}
                 noWrap
-                position="absolute"
-                right="120%"
-                top={0}
-                bottom={0}
-                display="flex"
-                alignItems="center"
-                justifyContent="center"
-                color={winnerSide === 'team1' ? 'success' : 'text.secondary'}
-              >
-                <TeamNameLink
-                  teamId={match.team1?.id}
-                  name={getTeamName(match.team1?.id, 'team1')}
-                  showTag={false}
-                  variant="body2"
-                  noWrap
-                  sx={{
-                    color: winnerSide === 'team1' ? 'text.primary' : 'text.secondary',
-                    fontWeight: winnerSide === 'team1' ? 600 : 500,
-                  }}
-                  onClick={(e) => e.stopPropagation()}
-                />
+                sx={{
+                  color: winnerSide === 'team1' ? 'text.primary' : 'text.secondary',
+                  fontWeight: winnerSide === 'team1' ? 600 : 500,
+                }}
+                onClick={(e) => e.stopPropagation()}
+              />
+            </Typography>
+
+            <Tooltip title={tooltipTitle} placement="top">
+              <Typography variant="h6" fontWeight={700}>
+                {getTeamScoreDisplay('team1') !== undefined &&
+                  getTeamScoreDisplay('team2') !== undefined &&
+                  `${getTeamScoreDisplay('team1')} - ${getTeamScoreDisplay('team2')}`}
               </Typography>
+            </Tooltip>
 
-              <Tooltip title={tooltipTitle} placement="top">
-                <Typography variant="h6" fontWeight={700}>
-                  {getTeamScoreDisplay('team1') !== undefined &&
-                    getTeamScoreDisplay('team2') !== undefined &&
-                    `${getTeamScoreDisplay('team1')} - ${getTeamScoreDisplay('team2')}`}
-                </Typography>
-              </Tooltip>
-
-              <Typography
+            <Typography
+              variant="body2"
+              fontWeight={winnerSide === 'team2' ? 600 : 500}
+              noWrap
+              position="absolute"
+              left="120%"
+              top={0}
+              bottom={0}
+              display="flex"
+              alignItems="center"
+              justifyContent="center"
+              color={winnerSide === 'team2' ? 'success' : 'text.secondary'}
+            >
+              <TeamNameLink
+                teamId={match.team2?.id}
+                name={getTeamName(match.team2?.id, 'team2')}
+                showTag={false}
                 variant="body2"
-                fontWeight={winnerSide === 'team2' ? 600 : 500}
                 noWrap
-                position="absolute"
-                left="120%"
-                top={0}
-                bottom={0}
-                display="flex"
-                alignItems="center"
-                justifyContent="center"
-                color={winnerSide === 'team2' ? 'success' : 'text.secondary'}
-              >
-                <TeamNameLink
-                  teamId={match.team2?.id}
-                  name={getTeamName(match.team2?.id, 'team2')}
-                  showTag={false}
-                  variant="body2"
-                  noWrap
-                  sx={{
-                    color: winnerSide === 'team2' ? 'text.primary' : 'text.secondary',
-                    fontWeight: winnerSide === 'team2' ? 600 : 500,
-                  }}
-                  onClick={(e) => e.stopPropagation()}
-                />
-              </Typography>
-            </Box>
-          </Box>
-
-          {/* Status / badges */}
-          <Box display="flex" alignItems="center" gap={0.5}>
-            {shuffle && (
-              <Chip
-                label={manual ? t('matchesPage.card.shuffleManual') : t('matchesPage.card.shuffle')}
-                size="small"
-                variant="outlined"
-                sx={{ fontWeight: 500 }}
+                sx={{
+                  color: winnerSide === 'team2' ? 'text.primary' : 'text.secondary',
+                  fontWeight: winnerSide === 'team2' ? 600 : 500,
+                }}
+                onClick={(e) => e.stopPropagation()}
               />
-            )}
-            {!shuffle && manual && (
-              <Chip
-                label={t('matchesPage.card.manual')}
-                size="small"
-                variant="outlined"
-                sx={{ fontWeight: 500 }}
-              />
-            )}
-            <Chip
-              label={
-                isUnpairedSwissMatch(match)
-                  ? waitingForPairingLabel()
-                  : getStatusLabel(
-                      match.status,
-                      false,
-                      vetoDisabled ? true : match.vetoCompleted,
-                      undefined,
-                      Boolean(match.serverId)
-                    )
-              }
-              size="small"
-              {...(getStatusColor(match.status) === 'primary'
-                ? { sx: { color: tokens.color.accent } }
-                : { color: getStatusColor(match.status) })}
-            />
+            </Typography>
           </Box>
         </Box>
+
+        {/* Status / badges */}
+        <Box display="flex" alignItems="center" gap={0.5}>
+          {shuffle && (
+            <Chip
+              label={manual ? t('matchesPage.card.shuffleManual') : t('matchesPage.card.shuffle')}
+              size="small"
+              variant="outlined"
+              sx={{ fontWeight: 500 }}
+            />
+          )}
+          {!shuffle && manual && (
+            <Chip
+              label={t('matchesPage.card.manual')}
+              size="small"
+              variant="outlined"
+              sx={{ fontWeight: 500 }}
+            />
+          )}
+          <Chip
+            label={
+              isUnpairedSwissMatch(match)
+                ? waitingForPairingLabel()
+                : getStatusLabel(
+                    match.status,
+                    false,
+                    vetoDisabled ? true : match.vetoCompleted,
+                    undefined,
+                    Boolean(match.serverId)
+                  )
+            }
+            size="small"
+            {...(getStatusColor(match.status) === 'primary'
+              ? { sx: { color: tokens.color.accent } }
+              : { color: getStatusColor(match.status) })}
+          />
+        </Box>
+      </Box>
     </Row>
   );
 };

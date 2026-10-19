@@ -36,10 +36,15 @@ import type { TFunction } from 'i18next';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 import { api } from '../../utils/api';
 import { fetchModuleList, MODULES_ENDPOINT } from '../../module-loader/boot';
-import type { ModuleFailure, ModuleListEntry, ModuleServerStatus } from '../../module-loader/manifest';
+import type {
+  ModuleFailure,
+  ModuleListEntry,
+  ModuleServerStatus,
+} from '../../module-loader/manifest';
 import { useModuleState } from '../../module-loader/useModuleState';
 import type { ModuleState } from '../../module-loader/moduleState';
 import { radii } from '../../theme/tokens';
+import type { Untrusted } from '../../utils/untrusted';
 
 const STATUS_COLOR: Record<ModuleServerStatus, 'success' | 'warning' | 'error' | 'default'> = {
   ok: 'success',
@@ -101,7 +106,7 @@ function effectiveStatus(
 function reasonOf(error: unknown, fallback: string): string {
   if (!(error instanceof Error)) return fallback;
   try {
-    const body = JSON.parse(error.message) as { error?: unknown };
+    const body = JSON.parse(error.message) as { error?: Untrusted };
     if (typeof body.error === 'string' && body.error.trim()) return body.error;
   } catch {
     // Not JSON.
@@ -150,7 +155,10 @@ function EnableDialog({
           </Typography>
           {t('modulesPage.code.confirm.warning')}
         </Alert>
-        <Box component="dl" sx={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gap: 0.5, mb: 2, mt: 0 }}>
+        <Box
+          component="dl"
+          sx={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gap: 0.5, mb: 2, mt: 0 }}
+        >
           {details.map(([label, value]) => (
             <Box key={label} sx={{ display: 'contents' }}>
               <Typography component="dt" variant="body2" color="text.secondary" sx={{ pr: 2 }}>
@@ -268,75 +276,79 @@ export function CodeModuleList({ exclude }: { exclude?: ReadonlySet<string> } = 
         </Alert>
       )}
 
-      {modules.filter((entry) => !exclude?.has(entry.id)).map((entry) => {
-        const { status, reason } = effectiveStatus(entry, state, t);
-        return (
-          <Card key={entry.id} variant="outlined" data-testid={`code-module-${entry.id}`}>
-            <CardContent
-              sx={{ display: 'flex', gap: 2, alignItems: 'center', '&:last-child': { pb: 2 } }}
-            >
-              <Box
-                aria-hidden="true"
-                sx={{
-                  width: 56,
-                  height: 56,
-                  flex: '0 0 auto',
-                  borderRadius: radii.md,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  bgcolor: 'action.hover',
-                }}
+      {modules
+        .filter((entry) => !exclude?.has(entry.id))
+        .map((entry) => {
+          const { status, reason } = effectiveStatus(entry, state, t);
+          return (
+            <Card key={entry.id} variant="outlined" data-testid={`code-module-${entry.id}`}>
+              <CardContent
+                sx={{ display: 'flex', gap: 2, alignItems: 'center', '&:last-child': { pb: 2 } }}
               >
-                <CodeIcon />
-              </Box>
-              <Box sx={{ minWidth: 0, flex: 1 }}>
-                <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap" useFlexGap>
-                  <Typography fontWeight={600}>{entry.name || entry.id}</Typography>
-                  {entry.version && <Chip size="small" label={entry.version} />}
-                  <Chip
+                <Box
+                  aria-hidden="true"
+                  sx={{
+                    width: 56,
+                    height: 56,
+                    flex: '0 0 auto',
+                    borderRadius: radii.md,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    bgcolor: 'action.hover',
+                  }}
+                >
+                  <CodeIcon />
+                </Box>
+                <Box sx={{ minWidth: 0, flex: 1 }}>
+                  <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap" useFlexGap>
+                    <Typography fontWeight={600}>{entry.name || entry.id}</Typography>
+                    {entry.version && <Chip size="small" label={entry.version} />}
+                    <Chip
+                      size="small"
+                      color={STATUS_COLOR[status] ?? 'default'}
+                      label={t(`modulesPage.code.status.${status}`, { defaultValue: status })}
+                      data-testid={`code-module-${entry.id}-status`}
+                      data-status={status}
+                    />
+                  </Stack>
+                  <Typography
+                    variant="body2"
+                    color={
+                      status === 'broken' || status === 'incompatible' ? 'error' : 'text.secondary'
+                    }
+                    data-testid={`code-module-${entry.id}-reason`}
+                    sx={{ overflowWrap: 'anywhere' }}
+                  >
+                    {reason || t('modulesPage.code.hint')}
+                  </Typography>
+                </Box>
+                <Chip size="small" icon={<CodeIcon />} label={t('modulesPage.code.chip')} />
+                {entry.enabled ? (
+                  <Button
                     size="small"
-                    color={STATUS_COLOR[status] ?? 'default'}
-                    label={t(`modulesPage.code.status.${status}`, { defaultValue: status })}
-                    data-testid={`code-module-${entry.id}-status`}
-                    data-status={status}
-                  />
-                </Stack>
-                <Typography
-                  variant="body2"
-                  color={status === 'broken' || status === 'incompatible' ? 'error' : 'text.secondary'}
-                  data-testid={`code-module-${entry.id}-reason`}
-                  sx={{ overflowWrap: 'anywhere' }}
-                >
-                  {reason || t('modulesPage.code.hint')}
-                </Typography>
-              </Box>
-              <Chip size="small" icon={<CodeIcon />} label={t('modulesPage.code.chip')} />
-              {entry.enabled ? (
-                <Button
-                  size="small"
-                  variant="outlined"
-                  disabled={busy}
-                  onClick={() => void toggle(entry, false)}
-                  data-testid={`code-module-${entry.id}-disable`}
-                >
-                  {t('modulesPage.code.disable')}
-                </Button>
-              ) : (
-                <Button
-                  size="small"
-                  variant="contained"
-                  disabled={busy}
-                  onClick={() => setEnabling(entry)}
-                  data-testid={`code-module-${entry.id}-enable`}
-                >
-                  {t('modulesPage.code.enable')}
-                </Button>
-              )}
-            </CardContent>
-          </Card>
-        );
-      })}
+                    variant="outlined"
+                    disabled={busy}
+                    onClick={() => void toggle(entry, false)}
+                    data-testid={`code-module-${entry.id}-disable`}
+                  >
+                    {t('modulesPage.code.disable')}
+                  </Button>
+                ) : (
+                  <Button
+                    size="small"
+                    variant="contained"
+                    disabled={busy}
+                    onClick={() => setEnabling(entry)}
+                    data-testid={`code-module-${entry.id}-enable`}
+                  >
+                    {t('modulesPage.code.enable')}
+                  </Button>
+                )}
+              </CardContent>
+            </Card>
+          );
+        })}
 
       {enabling && (
         <EnableDialog

@@ -10,6 +10,7 @@ import {
   Typography,
 } from '@mui/material';
 import { radii, textSize, tokens } from '../../../theme/tokens';
+import type { Untrusted } from '../../../utils/untrusted';
 
 const { color } = tokens;
 
@@ -38,7 +39,7 @@ export interface ConfirmActionSpec {
   /** A choice the action needs (e.g. where a restarted match picks up); `run` gets the value. */
   choices?: { value: string; label: string }[];
   choiceLabel?: string;
-  run: (choice?: string) => Promise<unknown>;
+  run: (choice?: string) => Promise<Untrusted>;
 }
 
 /**

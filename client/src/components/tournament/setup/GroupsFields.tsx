@@ -5,6 +5,7 @@ import { TeamLogo } from '../ui/draftUi';
 import { radii, tokens } from '../../../theme/tokens';
 import type { Team } from '../../../types';
 import { FormField } from '../../common/ui';
+import type { Untrusted } from '../../../utils/untrusted';
 
 const { color } = tokens;
 
@@ -25,7 +26,7 @@ export const DEFAULT_GROUPS: GroupsForm = {
   playoffFormat: 'bo3',
 };
 
-export function groupsFormOf(settings: unknown): GroupsForm {
+export function groupsFormOf(settings: Untrusted): GroupsForm {
   const s = (settings ?? {}) as Partial<GroupsForm>;
   return {
     groupCount: [2, 3, 4].includes(Number(s.groupCount)) ? Number(s.groupCount) : 2,

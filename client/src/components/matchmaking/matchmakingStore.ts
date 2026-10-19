@@ -12,6 +12,7 @@
 import { useEffect, useSyncExternalStore } from 'react';
 import { io, type Socket } from 'socket.io-client';
 import { apiErrorMessage } from '../../utils/api';
+import type { Untrusted } from '../../utils/untrusted';
 
 export interface MatchmakingMe {
   party: {
@@ -183,10 +184,10 @@ export function useMatchmaking(): State {
 }
 
 /** A matchmaking write: same-site JSON (every write route requires a JSON body). */
-export async function matchmakingAction<T = unknown>(
+export async function matchmakingAction<T = Untrusted>(
   method: 'POST' | 'PUT' | 'DELETE',
   path: string,
-  body: unknown = {}
+  body: Untrusted = {}
 ): Promise<T> {
   const res = await fetch(`/api/matchmaking${path}`, {
     method,

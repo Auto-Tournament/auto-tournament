@@ -281,6 +281,7 @@ export default function BracketsViewerVisualization({
           if (list.some((m) => m.matchNumber === num)) continue;
           const slug = `${prefix}${lb ? 'lb-' : ''}r${round}m${num}`;
           byeKeys.add(slug);
+          /* eslint-disable no-restricted-syntax -- a bye seat: only the fields the viewer draws */
           list.push({
             id: -(byeKeys.size + 1000),
             slug,
@@ -290,6 +291,7 @@ export default function BracketsViewerVisualization({
             team1: lb ? null : seatOf(round, num),
             team2: null,
           } as unknown as Match);
+          /* eslint-enable no-restricted-syntax */
         }
         list.sort((x, y) => x.matchNumber - y.matchNumber);
         matchesByRound[key] = list;

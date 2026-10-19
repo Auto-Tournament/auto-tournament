@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { SegmentedControl } from './SegmentedControl';
 import { getRoundLabel } from '../../../utils/matchUtils';
 import { radii, tokens } from '../../../theme/tokens';
+import type { Untrusted } from '../../../utils/untrusted';
 
 const { color } = tokens;
 
@@ -30,9 +31,9 @@ export const DEFAULT_MATCH_TIMES: MatchTimesForm = {
 };
 
 /** `settings.roundBreaks` as the form holds it. */
-function breaksFormOf(settings: unknown): MatchTimesForm['breaks'] {
+function breaksFormOf(settings: Untrusted): MatchTimesForm['breaks'] {
   const raw = (
-    (settings ?? {}) as { roundBreaks?: { minutes?: unknown; after?: Record<string, unknown> } }
+    (settings ?? {}) as { roundBreaks?: { minutes?: Untrusted; after?: Record<string, Untrusted> } }
   ).roundBreaks;
   const minutes = typeof raw?.minutes === 'number' ? raw.minutes : null;
   const after = Object.entries(raw?.after ?? {})
@@ -64,7 +65,7 @@ function hhmmOf(iso: string): string {
 }
 
 /** A saved tournament's match times, as the form holds them. */
-export function matchTimesFormOf(settings: unknown): MatchTimesForm {
+export function matchTimesFormOf(settings: Untrusted): MatchTimesForm {
   const raw = (
     (settings ?? {}) as {
       matchTimes?: Partial<{

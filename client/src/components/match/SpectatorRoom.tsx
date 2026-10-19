@@ -10,6 +10,7 @@ import { fontDisplay, mono, radii, textSize, tokens } from '../../theme/tokens';
 import { LivePlayersTable } from './LivePlayersTable';
 import { SectionTitle, panel } from '../tournament/ui/draftUi';
 import { PlayerChip } from '../player/PlayerChip';
+import type { Untrusted } from '../../utils/untrusted';
 
 const { color } = tokens;
 
@@ -30,15 +31,15 @@ export interface SpectatorRoomMatch {
   team1LogoUrl?: string | null;
   team2LogoUrl?: string | null;
   config?: {
-    team1?: { name?: string; players?: RoomPlayer[] | Record<string, unknown> };
-    team2?: { name?: string; players?: RoomPlayer[] | Record<string, unknown> };
+    team1?: { name?: string; players?: RoomPlayer[] | Record<string, Untrusted> };
+    team2?: { name?: string; players?: RoomPlayer[] | Record<string, Untrusted> };
   } | null;
 }
 
 type Step = 'veto' | 'server' | 'live' | 'result';
 
 function playersOf(
-  team: { players?: RoomPlayer[] | Record<string, unknown> } | undefined
+  team: { players?: RoomPlayer[] | Record<string, Untrusted> } | undefined
 ): RoomPlayer[] {
   const players = team?.players;
   if (Array.isArray(players)) return players.filter((p) => p && p.steamid);

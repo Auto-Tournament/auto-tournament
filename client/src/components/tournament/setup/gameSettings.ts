@@ -5,6 +5,7 @@ import type {
   TournamentSetupContext,
   TournamentSetupSummary,
 } from '../../../integrations/types';
+import type { Untrusted } from '../../../utils/untrusted';
 
 /**
  * The core's own keys in `tournament.settings`. Everything else in there is a
@@ -36,8 +37,8 @@ const CORE_SETTING_KEYS = new Set([
  * does not name. "Not one of ours" is the only test there can be, since the
  * core never reads them (3.0 phase D, PR D9).
  */
-export function moduleKeysOf(settings: object | null | undefined): Record<string, unknown> {
-  const out: Record<string, unknown> = {};
+export function moduleKeysOf(settings: object | null | undefined): Record<string, Untrusted> {
+  const out: Record<string, Untrusted> = {};
   for (const [key, value] of Object.entries(settings ?? {})) {
     if (!CORE_SETTING_KEYS.has(key)) out[key] = value;
   }
@@ -53,8 +54,8 @@ export function moduleKeysOf(settings: object | null | undefined): Record<string
 export function gameSettingsFor(
   ctx: TournamentSetupContext,
   from?: object | null
-): Record<string, unknown> {
-  const saved = from ? (from as Record<string, unknown>) : undefined;
+): Record<string, Untrusted> {
+  const saved = from ? (from as Record<string, Untrusted>) : undefined;
   const model = getIntegration(ctx.game).tournamentSetup;
   return {
     ...moduleKeysOf(saved),
@@ -65,7 +66,7 @@ export function gameSettingsFor(
 /** The game module's check of its settings for a step, or null. */
 export function gameSettingsError(
   step: 'rules' | 'content',
-  settings: Record<string, unknown>,
+  settings: Record<string, Untrusted>,
   ctx: TournamentSetupContext,
   t: TFunction
 ): string | null {
@@ -76,7 +77,7 @@ const NO_SUMMARY: TournamentSetupSummary = { rows: [], checklist: [], review: []
 
 /** The game module's summary rows, checklist items and review rows. */
 export function gameSettingsSummary(
-  settings: Record<string, unknown>,
+  settings: Record<string, Untrusted>,
   ctx: TournamentSetupContext,
   t: TFunction
 ): TournamentSetupSummary {
@@ -85,7 +86,7 @@ export function gameSettingsSummary(
 
 /** Rounds a shuffle tournament gets from the game's settings, or null. */
 export function gameSettingsRoundCount(
-  settings: Record<string, unknown>,
+  settings: Record<string, Untrusted>,
   ctx: TournamentSetupContext
 ): number | null {
   return getIntegration(ctx.game).tournamentSetup?.roundCount?.(settings, ctx) ?? null;
@@ -97,8 +98,8 @@ export function gameSettingsRoundCount(
  * as before: its settings step saves with the rest of the form.
  */
 export function gameSettingsChanges(
-  before: Record<string, unknown>,
-  after: Record<string, unknown>,
+  before: Record<string, Untrusted>,
+  after: Record<string, Untrusted>,
   ctx: TournamentSetupContext,
   t: TFunction
 ): TournamentSettingChange[] {
@@ -108,9 +109,9 @@ export function gameSettingsChanges(
 /** The settings patch a change of tournament type makes to the game's settings. */
 export function gameSettingsOnTypeChange(
   game: string,
-  settings: Record<string, unknown>,
+  settings: Record<string, Untrusted>,
   from: string,
   to: string
-): Record<string, unknown> {
+): Record<string, Untrusted> {
   return getIntegration(game).tournamentSetup?.onTypeChange?.(settings, from, to) ?? {};
 }

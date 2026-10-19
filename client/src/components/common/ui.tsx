@@ -7,6 +7,7 @@ import Typography from '@mui/material/Typography';
 import Switch, { type SwitchProps } from '@mui/material/Switch';
 import type { Breakpoint, SxProps, Theme } from '@mui/material/styles';
 import { tokens, fontDisplay, fontMono, mono, radii, textSize } from '../../theme/tokens';
+import type { Untrusted } from '../../utils/untrusted';
 
 /**
  * Small building blocks shared by the restyled views. They mirror the product
@@ -19,7 +20,7 @@ import { tokens, fontDisplay, fontMono, mono, radii, textSize } from '../../them
 const { color, radius, ease, duration } = tokens;
 
 /** One entry of an `sx` array: a style object, a theme function or `false`. */
-type SxItem = Extract<SxProps<Theme>, ReadonlyArray<unknown>>[number];
+type SxItem = Extract<SxProps<Theme>, ReadonlyArray<Untrusted>>[number];
 
 /** `sx` may be an object, a function or an array; spread it after our own. */
 function sxList(sx: SxProps<Theme> | undefined): SxItem[] {
