@@ -6,6 +6,7 @@ import reactHooks from 'eslint-plugin-react-hooks';
 import reactCompiler from 'eslint-plugin-react-compiler';
 import integrationBoundaries from './eslint-rules/integration-boundaries.mjs';
 import moduleSdkBoundary from './eslint-rules/module-sdk-boundary.mjs';
+import { MAX_LINES_TODO } from './eslint-rules/max-lines-todo.mjs';
 import { TYPED_INTERNALS_TODO } from './eslint-rules/typed-internals-todo.mjs';
 
 export default [
@@ -340,6 +341,17 @@ export default [
     },
     rules: {
       'module-sdk/module-sdk-boundary': 'error',
+    },
+  },
+
+  // File length. A file over 450 lines of code (blank lines and comments not
+  // counted) is too long to keep in your head: split it. Files from before the
+  // rule are listed; a PR that splits one takes it off the list.
+  {
+    files: ['api/src/**/*.ts', 'client/src/**/*.{ts,tsx}'],
+    ignores: MAX_LINES_TODO,
+    rules: {
+      'max-lines': ['error', { max: 450, skipBlankLines: true, skipComments: true }],
     },
   },
 
