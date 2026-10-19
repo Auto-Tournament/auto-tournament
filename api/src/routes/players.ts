@@ -1,5 +1,7 @@
 import { logoUrl } from '../services/teamSelfService';
 import { randomBytes } from 'crypto';
+import type { SqlValue } from '../config/database';
+import type { Untrusted } from '../utils/untrusted';
 /**
  * Players API Routes
  * Handles player CRUD operations and bulk import
@@ -377,7 +379,7 @@ router.get('/:playerId/team', async (req: Request, res: Response) => {
       playersJson: string
     ): Array<{ steamId: string; name: string; avatar?: string }> => {
       try {
-        const parsed = JSON.parse(playersJson) as unknown;
+        const parsed = JSON.parse(playersJson) as Untrusted;
         if (!parsed) return [];
 
         // Canonical format: Player[]
@@ -385,7 +387,7 @@ router.get('/:playerId/team', async (req: Request, res: Response) => {
           return parsed
             .map((p) => {
               if (!p || typeof p !== 'object') return null;
-              const anyP = p as { steamId?: unknown; name?: unknown; avatar?: unknown };
+              const anyP = p as { steamId?: Untrusted; name?: Untrusted; avatar?: Untrusted };
               if (typeof anyP.steamId !== 'string' || typeof anyP.name !== 'string') return null;
               const base: { steamId: string; name: string; avatar?: string } = {
                 steamId: anyP.steamId,
@@ -403,7 +405,7 @@ router.get('/:playerId/team', async (req: Request, res: Response) => {
         // - Object map { idx: { steamId, name, avatar? } }
         // - Object map { steamId: name }
         if (typeof parsed === 'object') {
-          const record = parsed as Record<string, unknown>;
+          const record = parsed as Record<string, Untrusted>;
 
           // Old: { steamId: name }
           const fromEntries = Object.entries(record)
@@ -420,7 +422,7 @@ router.get('/:playerId/team', async (req: Request, res: Response) => {
           return Object.values(record)
             .map((v) => {
               if (!v || typeof v !== 'object') return null;
-              const anyV = v as { steamId?: unknown; name?: unknown; avatar?: unknown };
+              const anyV = v as { steamId?: Untrusted; name?: Untrusted; avatar?: Untrusted };
               if (typeof anyV.steamId !== 'string' || typeof anyV.name !== 'string') return null;
               const base: { steamId: string; name: string; avatar?: string } = {
                 steamId: anyV.steamId,
@@ -913,7 +915,7 @@ router.put('/me/discord-id', async (req: Request, res: Response) => {
     const steamId = await resolveSelfServiceSteamId(req, res);
     if (!steamId) return;
 
-    const body = (req.body ?? {}) as { discordId?: unknown };
+    const body = (req.body ?? {}) as { discordId?: Untrusted };
     if (!('discordId' in body)) {
       return res.status(400).json({
         success: false,
@@ -1223,7 +1225,7 @@ router.get('/:playerId/current-match', async (req: Request, res: Response) => {
     const tournament = await db.queryOneAsync<{
       status: string;
       format: string;
-      settings: unknown;
+      settings: Untrusted;
     }>('SELECT status, format, settings FROM tournament WHERE id = ?', [match.tournament_id]);
 
     // Note: We're NOT exposing RCON password to players
@@ -1574,7 +1576,7 @@ router.get('/:playerId/summary', async (req: Request, res: Response) => {
       LEFT JOIN teams t2 ON m.team2_id = t2.id
       WHERE pms.player_id = ?
     `;
-    const params: unknown[] = [playerId];
+    const params: SqlValue[] = [playerId];
 
     if (tournamentId) {
       query += ' AND m.tournament_id = ?';
@@ -1844,7 +1846,7 @@ router.get('/:playerId/matches', async (req: Request, res: Response) => {
       LEFT JOIN teams t2 ON m.team2_id = t2.id
       WHERE pms.player_id = ?
     `;
-    const params: unknown[] = [playerId];
+    const params: SqlValue[] = [playerId];
 
     if (tournamentId) {
       query += ' AND m.tournament_id = ?';
@@ -1906,14 +1908,18 @@ router.get('/:playerId/accounts', async (req: Request, res: Response) => {
 });
 
 /** Set the `accounts` a create or update carried; a refusal is answered and returns false. */
-async function applyAccounts(playerId: string, accounts: unknown, res: Response): Promise<boolean> {
+async function applyAccounts(
+  playerId: string,
+  accounts: Untrusted,
+  res: Response
+): Promise<boolean> {
   if (accounts === undefined) return true;
   if (!accounts || typeof accounts !== 'object' || Array.isArray(accounts)) {
     res.status(400).json({ success: false, error: 'accounts: { provider: account id or null }' });
     return false;
   }
   try {
-    await presetAccounts.set(playerId, accounts as Record<string, unknown>);
+    await presetAccounts.set(playerId, accounts as Record<string, Untrusted>);
     return true;
   } catch (error) {
     if (error instanceof PresetAccountError) {
@@ -1997,7 +2003,7 @@ router.post('/', async (req: Request, res: Response) => {
     // An explicit edit: an invalid discordId refuses the whole create (400).
     const created = await playerService.createPlayer(input);
     // Game accounts (Epic Games, ...): a refused one undoes the create.
-    const accounts = (req.body as { accounts?: unknown }).accounts;
+    const accounts = (req.body as { accounts?: Untrusted }).accounts;
     if (!(await applyAccounts(created.id, accounts, res))) {
       await playerService.deletePlayer(created.id).catch(() => undefined);
       return;
@@ -2200,7 +2206,7 @@ router.put('/:playerId', async (req: Request, res: Response) => {
     // leaves it alone, and an invalid value refuses the whole update (400).
     if (
       before &&
-      !(await applyAccounts(playerId, (req.body as { accounts?: unknown }).accounts, res))
+      !(await applyAccounts(playerId, (req.body as { accounts?: Untrusted }).accounts, res))
     ) {
       return;
     }
@@ -2321,11 +2327,11 @@ router.delete('/:playerId', async (req: Request, res: Response) => {
 
 /** POST /api/players/import (the @openapi block for /api/players/import documents it). */
 async function importPlayers(req: Request, res: Response) {
-  const body = req.body as unknown;
+  const body = req.body as Untrusted;
   const list = Array.isArray(body)
     ? body
-    : body && typeof body === 'object' && Array.isArray((body as { players?: unknown }).players)
-      ? (body as { players: unknown[] }).players
+    : body && typeof body === 'object' && Array.isArray((body as { players?: Untrusted }).players)
+      ? (body as { players: Untrusted[] }).players
       : null;
   if (!list || list.length === 0) {
     return res.status(400).json({ success: false, error: 'Send an array of players' });
@@ -2333,7 +2339,7 @@ async function importPlayers(req: Request, res: Response) {
   const players: CreatePlayerInput[] = [];
   const seeds: Array<{ id: string; rating: number }> = [];
   for (const raw of list) {
-    const p = (raw ?? {}) as Record<string, unknown>;
+    const p = (raw ?? {}) as Record<string, Untrusted>;
     const steamId = typeof p.steamId === 'string' ? p.steamId.trim() : '';
     const name = typeof p.name === 'string' ? p.name.trim() : '';
     if (!/^\d{17}$/.test(steamId) || !name) {
