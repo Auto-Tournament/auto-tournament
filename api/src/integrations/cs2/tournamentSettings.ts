@@ -27,6 +27,7 @@ import type {
   TournamentSettingsValidation,
 } from '../types';
 import { validateCustomVetoOrderSetting } from './veto/config';
+import type { TournamentSettings } from '../../types/tournament.types';
 /** One place's prize as a tournament stores it: a rarity to pick from, or none. */
 export interface TournamentRewardSetting {
   place: 0 | 1 | 2 | 3 | 4;
@@ -94,6 +95,15 @@ import { MAP_MODES, isMapMode, mapsOfOtherModes, unknownMaps, type MapMode } fro
 
 /** The key of CS2's object inside `tournament.settings` and a template's `settings`. */
 export const CS2_SETTINGS_KEY = 'cs2';
+
+declare module '../../types/tournament.types' {
+  interface ModuleTournamentObjects {
+    /** CS2's own tournament settings (this file). */
+    cs2?: Cs2TournamentSettings;
+    /** Before 3.0: `cs2.skinRewards` at the top level (read as a fallback). */
+    skinRewards?: boolean;
+  }
+}
 
 /**
  * CS2's tournament settings, `settings.cs2`. Until 3.0 these were core
@@ -196,17 +206,16 @@ function requestedMaps(body: Record<string, unknown> | undefined): unknown {
 }
 
 /** CS2's object in a stored settings value (the JSON text, or already parsed). */
-export function storedCs2Settings(settings: unknown): Cs2TournamentSettings | undefined {
-  let parsed = settings;
-  if (typeof settings === 'string') {
-    try {
-      parsed = JSON.parse(settings);
-    } catch {
-      return undefined;
-    }
+export function storedCs2Settings(
+  settings: Partial<TournamentSettings> | string | null | undefined
+): Cs2TournamentSettings | undefined {
+  if (typeof settings !== 'string') return settings?.cs2;
+  try {
+    // The platform wrote it (tournament.settings).
+    return (JSON.parse(settings) as Partial<TournamentSettings>).cs2;
+  } catch {
+    return undefined;
   }
-  const value = isRecord(parsed) ? parsed[CS2_SETTINGS_KEY] : undefined;
-  return isRecord(value) ? (value as Cs2TournamentSettings) : undefined;
 }
 
 /**

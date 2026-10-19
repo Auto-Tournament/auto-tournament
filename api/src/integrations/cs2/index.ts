@@ -654,14 +654,13 @@ export const cs2Integration: GameIntegration<Cs2Data> = {
         'SELECT t.settings FROM matches m JOIN tournament t ON t.id = m.tournament_id WHERE m.slug = ?',
         [matchSlug]
       );
-      let settings: Record<string, unknown> = {};
+      let settings: Partial<TournamentSettings> = {};
       try {
-        settings = row?.settings ? (JSON.parse(row.settings) as Record<string, unknown>) : {};
+        settings = row?.settings ? (JSON.parse(row.settings) as Partial<TournamentSettings>) : {};
       } catch {
         settings = {};
       }
-      const own = storedCs2Settings(settings) as
-        { esportsMode?: boolean; skinRewards?: boolean; matchDrops?: boolean } | undefined;
+      const own = settings.cs2;
       if (own?.esportsMode === true || own?.skinRewards === false || settings.skinRewards === false)
         return;
       // The tournament's Prizes: "Every match played can drop a skin" off.
@@ -717,8 +716,8 @@ export const cs2Integration: GameIntegration<Cs2Data> = {
   async onTournamentPlacements({ tournamentId, tournamentName, settings, placements }) {
     const { skinService } = await import('./skins/skinService');
     // `settings.cs2.skinRewards`; tournaments from before it moved here kept it at the top level.
-    const own = settings.cs2 as { skinRewards?: unknown; rewards?: unknown } | undefined;
-    const rewards = typeof own?.skinRewards === 'boolean' ? own.skinRewards : settings.skinRewards;
+    const own = settings.cs2;
+    const rewards = own?.skinRewards ?? settings.skinRewards;
     const { parseRewards } = await import('./skins/skinService');
     await skinService.awardTournament(
       tournamentId,
@@ -729,8 +728,7 @@ export const cs2Integration: GameIntegration<Cs2Data> = {
     );
     // The MVP prize, when it is chosen by commends or rating; the organizer's
     // pick waits for them (Prizes in Manage).
-    const mvp = (own as { mvp?: { enabled?: boolean; by?: string; rarity?: string; pick?: 'one' } })
-      ?.mvp;
+    const mvp = own?.mvp;
     if (rewards !== false && mvp?.enabled && (mvp.by === 'commends' || mvp.by === 'rating')) {
       try {
         const { mvpCandidates, pickMvp } = await import('./skins/mvp');
