@@ -52,4 +52,3 @@ function normalizeSinglePlayer(player: unknown, fallbackKey: string): Normalized
 
   return { steamid: fallbackKey, name: 'Unknown' };
 }
-

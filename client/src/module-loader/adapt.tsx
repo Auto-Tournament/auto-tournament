@@ -164,7 +164,14 @@ export function adaptCodeModule(integration: ClientGameIntegration): ClientGameI
     })),
     navItems: adapted.navItems.map((item) =>
       item.icon
-        ? { ...item, icon: withBoundary(id, `nav ${item.key}`, item.icon as unknown as AnyComponent) as never }
+        ? {
+            ...item,
+            icon: withBoundary(
+              id,
+              `nav ${item.key}`,
+              item.icon as unknown as AnyComponent
+            ) as never,
+          }
         : item
     ),
   };

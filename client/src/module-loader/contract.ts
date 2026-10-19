@@ -27,7 +27,10 @@ import { localesProblem } from './moduleLocales';
  * Plain semver: while the API is `0.x`, `^0.1.0` already means "0.1 only",
  * so the loader needs no special case for it.
  */
-export function checkClientApi(range: string | null | undefined, platform: string): ModuleFailure | null {
+export function checkClientApi(
+  range: string | null | undefined,
+  platform: string
+): ModuleFailure | null {
   if (typeof range !== 'string' || !range.trim()) {
     return failure(
       'contract',
@@ -127,7 +130,8 @@ function shapeProblem(def: Record<string, unknown>): string | null {
   const start = def.tournamentStart;
   if (isObject(start)) {
     if (start.confirmView === undefined) return 'tournamentStart.confirmView is missing';
-    if (typeof start.confirmLabel !== 'string') return 'tournamentStart.confirmLabel is not a string';
+    if (typeof start.confirmLabel !== 'string')
+      return 'tournamentStart.confirmLabel is not a string';
     if (typeof start.cancelLabel !== 'string') return 'tournamentStart.cancelLabel is not a string';
     if (start.ownsFailure !== undefined && typeof start.ownsFailure !== 'function') {
       return 'tournamentStart.ownsFailure is not a function';
@@ -153,7 +157,8 @@ function shapeProblem(def: Record<string, unknown>): string | null {
 
   if (!Array.isArray(def.routes)) return 'routes is not an array';
   for (const [index, route] of def.routes.entries()) {
-    if (!isObject(route) || typeof route.path !== 'string') return `routes[${index}].path is not a string`;
+    if (!isObject(route) || typeof route.path !== 'string')
+      return `routes[${index}].path is not a string`;
     if (route.scope !== 'admin' && route.scope !== 'admin-standalone' && route.scope !== 'site') {
       return `routes[${index}].scope is not 'admin', 'admin-standalone' or 'site'`;
     }
@@ -171,7 +176,8 @@ function shapeProblem(def: Record<string, unknown>): string | null {
     if (item.labels !== undefined) {
       if (!isObject(item.labels)) return `navItems[${index}].labels is not an object`;
       for (const [surface, key] of Object.entries(item.labels)) {
-        if (!NAV_LABEL_SURFACES.includes(surface)) return `navItems[${index}].labels.${surface} is not a label`;
+        if (!NAV_LABEL_SURFACES.includes(surface))
+          return `navItems[${index}].labels.${surface} is not a label`;
         if (typeof key !== 'string') return `navItems[${index}].labels.${surface} is not a string`;
       }
     }
@@ -199,8 +205,7 @@ function shapeProblem(def: Record<string, unknown>): string | null {
 }
 
 export type ValidatedExport =
-  | { ok: true; integration: ClientGameIntegration }
-  | { ok: false; failure: ModuleFailure };
+  { ok: true; integration: ClientGameIntegration } | { ok: false; failure: ModuleFailure };
 
 /**
  * The module namespace's default export, checked as a `ClientGameIntegration`
@@ -244,9 +249,14 @@ export function validateModuleExport(
   if (problem) {
     return {
       ok: false,
-      failure: failure('contract', 'badExport', `its default export is not a module definition: ${problem}`, {
-        detail: problem,
-      }),
+      failure: failure(
+        'contract',
+        'badExport',
+        `its default export is not a module definition: ${problem}`,
+        {
+          detail: problem,
+        }
+      ),
     };
   }
   return { ok: true, integration: def as unknown as ClientGameIntegration };

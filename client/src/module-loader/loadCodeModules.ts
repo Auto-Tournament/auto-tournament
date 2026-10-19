@@ -82,10 +82,15 @@ async function diagnoseImport(
         return failure('import', 'notFound', `its code is missing (HTTP 404 for ${url})`, { url });
       }
       if (!response.ok) {
-        return failure('import', 'httpError', `its code could not be fetched (HTTP ${response.status})`, {
-          status: response.status,
-          url,
-        });
+        return failure(
+          'import',
+          'httpError',
+          `its code could not be fetched (HTTP ${response.status})`,
+          {
+            status: response.status,
+            url,
+          }
+        );
       }
       const type = response.headers.get('content-type') ?? '';
       if (!/javascript|ecmascript/i.test(type)) {

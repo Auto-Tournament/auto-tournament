@@ -85,8 +85,7 @@ async function fetchParsed<T>(
 }
 
 export type ModuleListResult =
-  | { ok: true; listing: ModuleListing }
-  | { ok: false; status: number | null; error: string };
+  { ok: true; listing: ModuleListing } | { ok: false; status: number | null; error: string };
 
 /**
  * `GET /api/modules`, admin-only, for the Modules page. Never throws: a 401
@@ -99,8 +98,7 @@ export async function fetchModuleList(timeoutMs = LIST_TIMEOUT_MS): Promise<Modu
 }
 
 export type PublicManifestResult =
-  | { ok: true; modules: LoadableModule[] }
-  | { ok: false; status: number | null; error: string };
+  { ok: true; modules: LoadableModule[] } | { ok: false; status: number | null; error: string };
 
 /**
  * `GET /api/modules/public`, for anyone. Never throws: a 404 (an API from
@@ -123,7 +121,9 @@ export function bootCodeModules(): Promise<void> {
     let timer: ReturnType<typeof setTimeout> | undefined;
     const deadline = new Promise<void>((resolve) => {
       timer = setTimeout(() => {
-        console.error(`[modules] code modules still loading after ${BOOT_DEADLINE_MS} ms; going on without them`);
+        console.error(
+          `[modules] code modules still loading after ${BOOT_DEADLINE_MS} ms; going on without them`
+        );
         resolve();
       }, BOOT_DEADLINE_MS);
     });
@@ -160,4 +160,3 @@ async function run(): Promise<void> {
     console.error('[modules] loading code modules failed', error);
   }
 }
-
