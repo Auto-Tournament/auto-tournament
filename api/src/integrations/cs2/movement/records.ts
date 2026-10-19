@@ -47,9 +47,12 @@ export async function addMovementRun(
   );
 }
 
-async function applyRecord(ctx: InboundContext, env: Envelope): Promise<void> {
+async function applyRecord(
+  ctx: InboundContext,
+  env: Envelope<string, MovementRecordPayload>
+): Promise<void> {
   try {
-    await addMovementRun(ctx.serverId, env.payload as unknown as MovementRecordPayload);
+    await addMovementRun(ctx.serverId, env.payload);
   } catch (error) {
     log.warn(`[FLEET] ${ctx.serverId}: movement record not stored: ${(error as Error).message}`);
   }

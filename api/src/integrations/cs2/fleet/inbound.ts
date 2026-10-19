@@ -113,8 +113,9 @@ export function isStoredInboundType(type: string): boolean {
  * go base64 in the JSON. The per-server byte budget in gateway.ts (`RATE`)
  * applies to every frame.
  */
-export interface InboundHandler {
-  handle(ctx: InboundContext, env: Envelope): Promise<void>;
+export interface InboundHandler<P = Untrusted> {
+  /** A protocol/v1 type's payload is checked against its schema first, so it arrives typed. */
+  handle(ctx: InboundContext, env: Envelope<string, P>): Promise<void>;
   persist?: boolean;
   priority?: 'normal' | 'low';
   validate?(payload: Untrusted): string | null;
@@ -122,7 +123,10 @@ export interface InboundHandler {
 
 const handlers = new Map<string, InboundHandler>();
 
-export function registerInboundHandler(type: string, handler: InboundHandler): () => void {
+export function registerInboundHandler<K extends FleetMessageType>(
+  type: K,
+  handler: InboundHandler<FleetMessages[K]>
+): () => void {
   if (isStoredInboundType(type)) throw new Error(`fleet: ${type} is handled by fleet/inbound.ts`);
   handlers.set(type, handler);
   return () => {
