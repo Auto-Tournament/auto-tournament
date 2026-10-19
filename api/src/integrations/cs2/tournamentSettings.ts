@@ -27,6 +27,7 @@ import type {
   TournamentSettingsValidation,
 } from '../types';
 import { validateCustomVetoOrderSetting } from './veto/config';
+import { isOneOf, type Untrusted } from '../../utils/untrusted';
 import type { TournamentSettings } from '../../types/tournament.types';
 /** One place's prize as a tournament stores it: a rarity to pick from, or none. */
 export interface TournamentRewardSetting {
@@ -50,12 +51,12 @@ export interface MvpSetting {
 const MVP_BY = ['commends', 'rating', 'admin'] as const;
 
 /** An MVP setting as stored; null when it is not one. */
-function mvpSetting(raw: unknown): MvpSetting | null {
-  if (!raw || typeof raw !== 'object') return null;
-  const r = raw as Record<string, unknown>;
+function mvpSetting(raw: Untrusted): MvpSetting | null {
+  if (!isRecord(raw)) return null;
+  const r = raw;
   return {
     enabled: r.enabled === true,
-    by: (MVP_BY as readonly unknown[]).includes(r.by) ? (r.by as MvpSetting['by']) : 'commends',
+    by: isOneOf(MVP_BY, r.by) ? r.by : 'commends',
     rarity:
       typeof r.rarity === 'string' && REWARD_RARITIES.includes(r.rarity) ? r.rarity : 'legendary',
     ...(r.pick === 'one' ? { pick: 'one' as const } : {}),
@@ -73,9 +74,10 @@ const REWARD_RARITIES = [
 ];
 
 /** Places 1–4 and 0 (everyone else), each a rarity or none; anything else dropped. */
-function rewardSettings(raw: unknown[]): TournamentRewardSetting[] {
+function rewardSettings(raw: Untrusted[]): TournamentRewardSetting[] {
   const out: TournamentRewardSetting[] = [];
-  for (const r of raw as Array<Record<string, unknown> | null>) {
+  for (const item of raw) {
+    const r = isRecord(item) ? item : null;
     const place = Number(r?.place);
     if (![0, 1, 2, 3, 4].includes(place) || out.some((o) => o.place === place)) continue;
     if (r?.mode === 'none')
@@ -165,7 +167,7 @@ export interface Cs2BroadcastSettings {
 }
 
 /** A requested `broadcast`, with only its valid fields; null when it is not an object. */
-export function broadcastSetting(value: unknown): Cs2BroadcastSettings | null {
+export function broadcastSetting(value: Untrusted): Cs2BroadcastSettings | null {
   if (!isRecord(value)) return null;
   const out: Cs2BroadcastSettings = {};
   const delay = value.delay;
@@ -184,23 +186,23 @@ const DEFAULT_MAP_COUNT = 7;
 const CREATE_REQUIRED = ['maps'];
 const SHUFFLE_REQUIRED = ['mapSequence', 'maxRounds', 'overtimeMode'];
 
-function lengthOf(value: unknown): number | undefined {
-  return (value as { length?: number } | null | undefined)?.length;
+function lengthOf(value: Untrusted): number | undefined {
+  return Array.isArray(value) || typeof value === 'string' ? value.length : undefined;
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
+function isRecord(value: Untrusted): value is Record<string, Untrusted> {
   return value !== null && typeof value === 'object' && !Array.isArray(value);
 }
 
 /** `container[key]` when both are objects, else an empty object. */
-function objectIn(container: unknown, key: string): Record<string, unknown> {
+function objectIn(container: Untrusted, key: string): Record<string, Untrusted> {
   if (!isRecord(container)) return {};
   const value = container[key];
   return isRecord(value) ? value : {};
 }
 
 /** The map pool a request sends: top-level `maps` (2.x), else `settings.cs2.maps`. */
-function requestedMaps(body: Record<string, unknown> | undefined): unknown {
+function requestedMaps(body: Record<string, Untrusted> | undefined): Untrusted {
   if (body?.maps !== undefined) return body.maps;
   return objectIn(body?.settings, CS2_SETTINGS_KEY).maps;
 }
@@ -223,7 +225,7 @@ export function storedCs2Settings(
  * `settings.cs2`. undefined: not sent; null: cleared; a string that is no
  * type is returned as it is, for the error.
  */
-function requestedMapMode(body: Record<string, unknown> | undefined): unknown {
+function requestedMapMode(body: Record<string, Untrusted> | undefined): Untrusted {
   if (body?.mapMode !== undefined) return body.mapMode;
   return objectIn(body?.settings, CS2_SETTINGS_KEY).mapMode;
 }
@@ -232,7 +234,7 @@ function requestedMapMode(body: Record<string, unknown> | undefined): unknown {
  * Errors for `maps`: a map the site does not have, or (with a map type `mode`)
  * one of another type. An unset mode is fine; one that is not a type is an error.
  */
-function mapModeErrors(mode: unknown, maps: unknown): string[] {
+function mapModeErrors(mode: Untrusted, maps: Untrusted): string[] {
   const ids = Array.isArray(maps) ? maps.filter((id): id is string => typeof id === 'string') : [];
   const errors = unknownMaps(ids).map((id) => `Map ${id} is not in this site's map list`);
   if (mode === undefined || mode === null || mode === '') return errors;
@@ -243,7 +245,7 @@ function mapModeErrors(mode: unknown, maps: unknown): string[] {
   return errors;
 }
 
-function settingsErrors(settings: unknown, mapCount: number | undefined): string[] {
+function settingsErrors(settings: Untrusted, mapCount: number | undefined): string[] {
   // `mapCount` is undefined when a create sends a `maps` without a length,
   // exactly as it was passed before.
   const result = validateCustomVetoOrderSetting(settings, mapCount as number);
@@ -345,11 +347,11 @@ function validateUpdate(input: TournamentSettingsInput): TournamentSettingsValid
 }
 
 /** Errors for a requested `broadcast` (absent and null are fine: the site's settings). */
-function broadcastFieldErrors(value: unknown): string[] {
+function broadcastFieldErrors(value: Untrusted): string[] {
   if (value === undefined || value === null) return [];
   if (!isRecord(value)) return ['broadcast must be an object'];
   const errors: string[] = [];
-  const int = (v: unknown, min: number, max: number) =>
+  const int = (v: Untrusted, min: number, max: number) =>
     typeof v === 'number' && Number.isInteger(v) && v >= min && v <= max;
   if (value.delay !== undefined && value.delay !== null && !int(value.delay, 0, 120))
     errors.push('broadcast.delay must be 0-120 seconds');
@@ -393,9 +395,9 @@ export function validateCs2TournamentSettings(
 // Storing: `settings.cs2` (GameIntegration.tournamentSettings)
 // ---------------------------------------------------------------------------
 
-function stringArray(value: unknown): string[] | undefined {
-  return Array.isArray(value) && value.every((v) => typeof v === 'string')
-    ? [...(value as string[])]
+function stringArray(value: Untrusted): string[] | undefined {
+  return Array.isArray(value) && value.every((v): v is string => typeof v === 'string')
+    ? [...value]
     : undefined;
 }
 
@@ -409,7 +411,7 @@ function stringArray(value: unknown): string[] | undefined {
  */
 function applyLayer(
   into: Cs2TournamentSettings,
-  layer: Record<string, unknown>,
+  layer: Record<string, Untrusted>,
   target: ModuleSettingsTarget
 ): void {
   if (layer.maps !== undefined) {
