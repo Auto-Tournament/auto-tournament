@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 750 of them, 424 behind auth —
+Every endpoint this API serves — 750 of them, 473 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -25,6 +25,7 @@ To generate a client, use [openapi.json](openapi.json) — same walk, machine-re
 | `public` | No credential needed |
 | `admin` | An admin session, or a service token (`API_TOKENS`; `API_TOKENS_READONLY` for `GET`) |
 | `server token` | `X-Auto-Tournament-Token` — for CS2 game servers, not for bots |
+| `recorder key or admin` | A highlight recorder's key (`Authorization: Bearer atr_…`), or what `admin` takes |
 
 `public` means the middleware requires nothing. A few of these still resolve
 the caller's identity from a cookie and change what they return, or reject the
@@ -313,69 +314,69 @@ Each player's best moments, picked from the demo analysis, and the clips the rec
 
 | Method | Path | Auth |
 | --- | --- | --- |
-| `POST` | `/api/game/cs2/recorder/hello` | public |
-| `GET` | `/api/game/cs2/recorder/update` | public |
-| `POST` | `/api/game/cs2/recorder/update` | public |
-| `GET` | `/api/game/cs2/recorder/update/available` | public |
-| `POST` | `/api/game/cs2/recorder/update/request` | public |
-| `POST` | `/api/game/cs2/recorder/complete` | public |
-| `POST` | `/api/game/cs2/recorder/claim` | public |
-| `POST` | `/api/game/cs2/recorder/uploads` | public |
-| `PUT` | `/api/game/cs2/recorder/uploads/:id` | public |
-| `PUT` | `/api/game/cs2/recorder/jobs/:id/clip` | public |
-| `PUT` | `/api/game/cs2/recorder/reels/:slug/:map/:player` | public |
-| `PUT` | `/api/game/cs2/recorder/match-reels/:slug/:map` | public |
-| `POST` | `/api/game/cs2/recorder/match-reels/:slug/:map/fail` | public |
-| `GET` | `/api/game/cs2/matches/:slug/reels` | public |
-| `PUT` | `/api/game/cs2/recorder/jobs/:id/clip/:twin(crowd|clean|overlay)` | public |
-| `PUT` | `/api/game/cs2/recorder/reels/:slug/:map/:player/:twin(crowd|clean|overlay)` | public |
-| `PUT` | `/api/game/cs2/recorder/match-reels/:slug/:map/:twin(crowd|clean|overlay)` | public |
-| `PUT` | `/api/game/cs2/recorder/team-reels/:slug/:team/:twin(crowd|clean|overlay)` | public |
-| `PUT` | `/api/game/cs2/recorder/tournament-reels/:id/:twin(crowd|clean|overlay)` | public |
-| `PUT` | `/api/game/cs2/recorder/team-reels/:slug/:team` | public |
-| `POST` | `/api/game/cs2/recorder/team-reels/:slug/:team/fail` | public |
-| `PUT` | `/api/game/cs2/recorder/redress/:file` | public |
-| `POST` | `/api/game/cs2/recorder/redress/:file/fail` | public |
-| `GET` | `/api/game/cs2/redress` | admin |
-| `POST` | `/api/game/cs2/redress` | admin |
-| `POST` | `/api/game/cs2/recorder/fail` | public |
-| `PUT` | `/api/game/cs2/recorder/tournament-reels/:id` | public |
-| `POST` | `/api/game/cs2/recorder/tournament-reels/:id/fail` | public |
-| `PUT` | `/api/game/cs2/players/me/highlights/favourite` | public |
-| `GET` | `/api/game/cs2/players/:playerId/highlights` | public |
-| `GET` | `/api/game/cs2/tournaments/:id/highlights` | public |
-| `GET` | `/api/game/cs2/watch/clip/:id` | public |
-| `GET` | `/api/game/cs2/watch/reel/:slug/:map/:player` | public |
-| `GET` | `/api/game/cs2/watch/match/:slug/:map` | public |
-| `GET` | `/api/game/cs2/watch/tournament/:id` | public |
-| `GET` | `/api/game/cs2/watch/team/:slug/:team` | public |
-| `GET` | `/api/game/cs2/library` | public |
-| `GET` | `/api/game/cs2/watch/stats` | public |
-| `POST` | `/api/game/cs2/watch/view` | public |
-| `PUT` | `/api/game/cs2/watch/like` | public |
-| `GET` | `/api/game/cs2/watch/comments` | public |
-| `POST` | `/api/game/cs2/watch/comments` | public |
-| `PUT` | `/api/game/cs2/watch/comments/:id` | public |
-| `DELETE` | `/api/game/cs2/watch/comments/:id` | public |
-| `GET` | `/api/game/cs2/watch/related` | public |
-| `GET` | `/api/game/cs2/highlights/:file` | public |
-| `GET` | `/api/game/cs2/highlights/:file/music/:track` | public |
-| `POST` | `/api/game/cs2/recorder/heartbeat` | public |
-| `POST` | `/api/game/cs2/recorder/runs` | public |
-| `POST` | `/api/game/cs2/recorder/benchmark` | public |
-| `GET` | `/api/game/cs2/recorders` | admin |
-| `GET` | `/api/game/cs2/recorders/:name/runs` | admin |
-| `GET` | `/api/game/cs2/recorder-runs/:id/log` | admin |
-| `POST` | `/api/game/cs2/recorders/:name/resume` | admin |
-| `POST` | `/api/game/cs2/recorders/:name/benchmark` | admin |
-| `GET` | `/api/game/cs2/clips` | admin |
-| `POST` | `/api/game/cs2/clips/redo` | admin |
-| `POST` | `/api/game/cs2/clips/:id/review` | admin |
-| `GET` | `/api/game/cs2/recorder-keys` | admin |
-| `POST` | `/api/game/cs2/recorder-keys` | admin |
-| `DELETE` | `/api/game/cs2/recorder-keys/:id` | admin |
-| `PUT` | `/api/game/cs2/recorders/:name` | admin |
-| `DELETE` | `/api/game/cs2/recorders/:name` | admin |
+| `POST` | `/api/game/cs2/recorder/hello` | recorder key or admin |
+| `GET` | `/api/game/cs2/recorder/update` | recorder key or admin |
+| `POST` | `/api/game/cs2/recorder/update` | recorder key or admin |
+| `GET` | `/api/game/cs2/recorder/update/available` | recorder key or admin |
+| `POST` | `/api/game/cs2/recorder/update/request` | recorder key or admin |
+| `POST` | `/api/game/cs2/recorder/complete` | recorder key or admin |
+| `POST` | `/api/game/cs2/recorder/claim` | recorder key or admin |
+| `POST` | `/api/game/cs2/recorder/uploads` | recorder key or admin |
+| `PUT` | `/api/game/cs2/recorder/uploads/:id` | recorder key or admin |
+| `PUT` | `/api/game/cs2/recorder/jobs/:id/clip` | recorder key or admin |
+| `PUT` | `/api/game/cs2/recorder/reels/:slug/:map/:player` | recorder key or admin |
+| `PUT` | `/api/game/cs2/recorder/match-reels/:slug/:map` | recorder key or admin |
+| `POST` | `/api/game/cs2/recorder/match-reels/:slug/:map/fail` | recorder key or admin |
+| `GET` | `/api/game/cs2/matches/:slug/reels` | recorder key or admin |
+| `PUT` | `/api/game/cs2/recorder/jobs/:id/clip/:twin(crowd|clean|overlay)` | recorder key or admin |
+| `PUT` | `/api/game/cs2/recorder/reels/:slug/:map/:player/:twin(crowd|clean|overlay)` | recorder key or admin |
+| `PUT` | `/api/game/cs2/recorder/match-reels/:slug/:map/:twin(crowd|clean|overlay)` | recorder key or admin |
+| `PUT` | `/api/game/cs2/recorder/team-reels/:slug/:team/:twin(crowd|clean|overlay)` | recorder key or admin |
+| `PUT` | `/api/game/cs2/recorder/tournament-reels/:id/:twin(crowd|clean|overlay)` | recorder key or admin |
+| `PUT` | `/api/game/cs2/recorder/team-reels/:slug/:team` | recorder key or admin |
+| `POST` | `/api/game/cs2/recorder/team-reels/:slug/:team/fail` | recorder key or admin |
+| `PUT` | `/api/game/cs2/recorder/redress/:file` | recorder key or admin |
+| `POST` | `/api/game/cs2/recorder/redress/:file/fail` | recorder key or admin |
+| `GET` | `/api/game/cs2/redress` | recorder key or admin + admin |
+| `POST` | `/api/game/cs2/redress` | recorder key or admin + admin |
+| `POST` | `/api/game/cs2/recorder/fail` | recorder key or admin |
+| `PUT` | `/api/game/cs2/recorder/tournament-reels/:id` | recorder key or admin |
+| `POST` | `/api/game/cs2/recorder/tournament-reels/:id/fail` | recorder key or admin |
+| `PUT` | `/api/game/cs2/players/me/highlights/favourite` | recorder key or admin |
+| `GET` | `/api/game/cs2/players/:playerId/highlights` | recorder key or admin |
+| `GET` | `/api/game/cs2/tournaments/:id/highlights` | recorder key or admin |
+| `GET` | `/api/game/cs2/watch/clip/:id` | recorder key or admin |
+| `GET` | `/api/game/cs2/watch/reel/:slug/:map/:player` | recorder key or admin |
+| `GET` | `/api/game/cs2/watch/match/:slug/:map` | recorder key or admin |
+| `GET` | `/api/game/cs2/watch/tournament/:id` | recorder key or admin |
+| `GET` | `/api/game/cs2/watch/team/:slug/:team` | recorder key or admin |
+| `GET` | `/api/game/cs2/library` | recorder key or admin |
+| `GET` | `/api/game/cs2/watch/stats` | recorder key or admin |
+| `POST` | `/api/game/cs2/watch/view` | recorder key or admin |
+| `PUT` | `/api/game/cs2/watch/like` | recorder key or admin |
+| `GET` | `/api/game/cs2/watch/comments` | recorder key or admin |
+| `POST` | `/api/game/cs2/watch/comments` | recorder key or admin |
+| `PUT` | `/api/game/cs2/watch/comments/:id` | recorder key or admin |
+| `DELETE` | `/api/game/cs2/watch/comments/:id` | recorder key or admin |
+| `GET` | `/api/game/cs2/watch/related` | recorder key or admin |
+| `GET` | `/api/game/cs2/highlights/:file` | recorder key or admin |
+| `GET` | `/api/game/cs2/highlights/:file/music/:track` | recorder key or admin |
+| `POST` | `/api/game/cs2/recorder/heartbeat` | recorder key or admin |
+| `POST` | `/api/game/cs2/recorder/runs` | recorder key or admin |
+| `POST` | `/api/game/cs2/recorder/benchmark` | recorder key or admin |
+| `GET` | `/api/game/cs2/recorders` | recorder key or admin + admin |
+| `GET` | `/api/game/cs2/recorders/:name/runs` | recorder key or admin + admin |
+| `GET` | `/api/game/cs2/recorder-runs/:id/log` | recorder key or admin + admin |
+| `POST` | `/api/game/cs2/recorders/:name/resume` | recorder key or admin + admin |
+| `POST` | `/api/game/cs2/recorders/:name/benchmark` | recorder key or admin + admin |
+| `GET` | `/api/game/cs2/clips` | recorder key or admin + admin |
+| `POST` | `/api/game/cs2/clips/redo` | recorder key or admin + admin |
+| `POST` | `/api/game/cs2/clips/:id/review` | recorder key or admin + admin |
+| `GET` | `/api/game/cs2/recorder-keys` | recorder key or admin + admin |
+| `POST` | `/api/game/cs2/recorder-keys` | recorder key or admin + admin |
+| `DELETE` | `/api/game/cs2/recorder-keys/:id` | recorder key or admin + admin |
+| `PUT` | `/api/game/cs2/recorders/:name` | recorder key or admin + admin |
+| `DELETE` | `/api/game/cs2/recorders/:name` | recorder key or admin + admin |
 
 ### Map and skin pictures
 
@@ -394,7 +395,7 @@ Map radar images and coordinates for the 2D replay, read from a CS2 install's ow
 | `GET` | `/api/game/cs2/radars` | public |
 | `GET` | `/api/game/cs2/radars/:map` | public |
 | `GET` | `/api/game/cs2/radars/:map/:file` | public |
-| `PUT` | `/api/game/cs2/radars/:map/:level` | public |
+| `PUT` | `/api/game/cs2/radars/:map/:level` | recorder key or admin |
 
 ### Team profile
 

@@ -5120,6 +5120,12 @@
           },
           {
             "apiToken": []
+          },
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
           }
         ]
       }
@@ -5137,6 +5143,12 @@
           }
         },
         "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          },
           {
             "bearerAuth": []
           },
@@ -5169,6 +5181,12 @@
           }
         ],
         "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          },
           {
             "bearerAuth": []
           },
@@ -5341,6 +5359,14 @@
               "type": "string"
             }
           }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
         ]
       }
     },
@@ -5372,6 +5398,14 @@
             "schema": {
               "type": "string"
             }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
           }
         ]
       }
@@ -5581,7 +5615,15 @@
           "200": {
             "description": "Success"
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
       }
     },
     "/api/game/cs2/live-overview": {
@@ -6194,6 +6236,14 @@
               "type": "string"
             }
           }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
         ]
       }
     },
@@ -6391,7 +6441,15 @@
           "200": {
             "description": "Success"
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
       }
     },
     "/api/game/cs2/players/me/role": {
@@ -6428,6 +6486,14 @@
             "schema": {
               "type": "string"
             }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
           }
         ]
       }
@@ -6579,6 +6645,14 @@
               "type": "string"
             }
           }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
         ]
       }
     },
@@ -6696,6 +6770,12 @@
           },
           {
             "apiToken": []
+          },
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
           }
         ]
       },
@@ -6711,6 +6791,12 @@
           }
         },
         "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          },
           {
             "bearerAuth": []
           },
@@ -6750,6 +6836,12 @@
           },
           {
             "apiToken": []
+          },
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
           }
         ]
       }
@@ -6784,6 +6876,12 @@
           },
           {
             "apiToken": []
+          },
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
           }
         ]
       }
@@ -6799,7 +6897,15 @@
           "200": {
             "description": "`gamescopeHz`: the pick, or null when no try finished"
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
       }
     },
     "/api/game/cs2/recorder/claim": {
@@ -6813,7 +6919,15 @@
           "200": {
             "description": "Success"
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
       }
     },
     "/api/game/cs2/recorder/complete": {
@@ -6827,7 +6941,15 @@
           "200": {
             "description": "Success"
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
       }
     },
     "/api/game/cs2/recorder/fail": {
@@ -6841,7 +6963,15 @@
           "200": {
             "description": "Success"
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
       }
     },
     "/api/game/cs2/recorder/heartbeat": {
@@ -6855,7 +6985,15 @@
           "200": {
             "description": "How many claims were renewed"
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
       }
     },
     "/api/game/cs2/recorder/hello": {
@@ -6869,7 +7007,15 @@
           "200": {
             "description": "Success"
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
       }
     },
     "/api/game/cs2/recorder/jobs/{id}/clip": {
@@ -6892,6 +7038,14 @@
             "schema": {
               "type": "string"
             }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
           }
         ]
       }
@@ -6925,6 +7079,14 @@
               "type": "string"
             }
           }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
         ]
       }
     },
@@ -6957,6 +7119,14 @@
               "type": "string"
             }
           }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
         ]
       }
     },
@@ -6988,6 +7158,14 @@
             "schema": {
               "type": "string"
             }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
           }
         ]
       }
@@ -7029,6 +7207,14 @@
               "type": "string"
             }
           }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
         ]
       }
     },
@@ -7053,6 +7239,14 @@
               "type": "string"
             }
           }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
         ]
       }
     },
@@ -7076,6 +7270,14 @@
             "schema": {
               "type": "string"
             }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
           }
         ]
       }
@@ -7116,6 +7318,14 @@
             "schema": {
               "type": "string"
             }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
           }
         ]
       }
@@ -7165,6 +7375,14 @@
               "type": "string"
             }
           }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
         ]
       }
     },
@@ -7179,7 +7397,15 @@
           "200": {
             "description": "Stored"
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
       }
     },
     "/api/game/cs2/recorder/team-reels/{slug}/{team}": {
@@ -7210,6 +7436,14 @@
             "schema": {
               "type": "string"
             }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
           }
         ]
       }
@@ -7242,6 +7476,14 @@
             "schema": {
               "type": "string"
             }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
           }
         ]
       }
@@ -7283,6 +7525,14 @@
               "type": "string"
             }
           }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
         ]
       }
     },
@@ -7307,6 +7557,14 @@
               "type": "string"
             }
           }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
         ]
       }
     },
@@ -7330,6 +7588,14 @@
             "schema": {
               "type": "string"
             }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
           }
         ]
       }
@@ -7363,6 +7629,14 @@
               "type": "string"
             }
           }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
         ]
       }
     },
@@ -7377,7 +7651,15 @@
           "200": {
             "description": "Success"
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
       },
       "post": {
         "tags": [
@@ -7389,7 +7671,15 @@
           "200": {
             "description": "Success"
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
       }
     },
     "/api/game/cs2/recorder/update/available": {
@@ -7403,7 +7693,15 @@
           "200": {
             "description": "Success"
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
       }
     },
     "/api/game/cs2/recorder/update/request": {
@@ -7417,7 +7715,15 @@
           "200": {
             "description": "Success"
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
       }
     },
     "/api/game/cs2/recorder/uploads": {
@@ -7431,7 +7737,15 @@
           "200": {
             "description": "Success"
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
       }
     },
     "/api/game/cs2/recorder/uploads/{id}": {
@@ -7455,6 +7769,14 @@
               "type": "string"
             }
           }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
         ]
       }
     },
@@ -7471,6 +7793,12 @@
           }
         },
         "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          },
           {
             "bearerAuth": []
           },
@@ -7527,6 +7855,12 @@
           },
           {
             "apiToken": []
+          },
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
           }
         ]
       },
@@ -7554,6 +7888,12 @@
           }
         ],
         "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          },
           {
             "bearerAuth": []
           },
@@ -7588,6 +7928,12 @@
           }
         ],
         "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          },
           {
             "bearerAuth": []
           },
@@ -7675,6 +8021,12 @@
           },
           {
             "apiToken": []
+          },
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
           }
         ]
       }
@@ -7701,6 +8053,12 @@
           }
         ],
         "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          },
           {
             "bearerAuth": []
           },
@@ -7754,6 +8112,12 @@
           },
           {
             "apiToken": []
+          },
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
           }
         ]
       },
@@ -7769,6 +8133,12 @@
           }
         },
         "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          },
           {
             "bearerAuth": []
           },
@@ -7847,6 +8217,14 @@
               "type": "string"
             }
           }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
         ]
       }
     },
@@ -7871,6 +8249,14 @@
               "type": "string"
             }
           }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
         ]
       }
     },
@@ -7885,7 +8271,15 @@
           "200": {
             "description": "Success"
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
       },
       "post": {
         "tags": [
@@ -7897,7 +8291,15 @@
           "200": {
             "description": "Success"
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
       }
     },
     "/api/game/cs2/watch/comments/{id}": {
@@ -7921,6 +8323,14 @@
               "type": "string"
             }
           }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
         ]
       },
       "delete": {
@@ -7943,6 +8353,14 @@
               "type": "string"
             }
           }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
         ]
       }
     },
@@ -7957,7 +8375,15 @@
           "200": {
             "description": "Success"
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
       }
     },
     "/api/game/cs2/watch/match/{slug}/{map}": {
@@ -7988,6 +8414,14 @@
             "schema": {
               "type": "string"
             }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
           }
         ]
       }
@@ -8029,6 +8463,14 @@
               "type": "string"
             }
           }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
         ]
       }
     },
@@ -8043,7 +8485,15 @@
           "200": {
             "description": "Success"
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
       }
     },
     "/api/game/cs2/watch/stats": {
@@ -8057,7 +8507,15 @@
           "200": {
             "description": "Success"
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
       }
     },
     "/api/game/cs2/watch/team/{slug}/{team}": {
@@ -8089,6 +8547,14 @@
               "type": "string"
             }
           }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
         ]
       }
     },
@@ -8113,6 +8579,14 @@
               "type": "string"
             }
           }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
         ]
       }
     },
@@ -8127,7 +8601,15 @@
           "200": {
             "description": "Success"
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
       }
     },
     "/api/game/manual/disputes": {

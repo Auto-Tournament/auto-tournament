@@ -106,6 +106,19 @@ test.describe('OpenAPI spec', () => {
   );
 
   test(
+    'recorder routes are marked as needing a key, not public',
+    {
+      tag: ['@api', '@docs'],
+    },
+    async ({ request }) => {
+      const spec = (await (await request.get('/api-docs.json')).json()) as Spec;
+      // requireRecorder: a recorder key or admin auth, both bearer tokens.
+      expect(spec.paths['/api/game/cs2/recorder/claim']?.post?.security).toBeDefined();
+      expect(spec.paths['/api/game/cs2/radars/{map}/{level}']?.put?.security).toBeDefined();
+    }
+  );
+
+  test(
     'no route is registered twice',
     {
       tag: ['@api', '@docs'],
