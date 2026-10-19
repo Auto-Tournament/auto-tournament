@@ -66,6 +66,7 @@ import {
   validateSettings,
 } from './settings';
 import { enrolledServerIds, readAllPrefs, type PushRecord } from './store';
+import type { Untrusted } from '../../../../utils/untrusted';
 
 export const fleetPushRouter = Router();
 fleetPushRouter.use(requireAuth);
@@ -73,7 +74,7 @@ fleetPushRouter.use(requireAuth);
 /** How long a switch waits for its cmd.result before answering "sent". */
 const CONTROL_WAIT_MS = 5_000;
 
-function handler(what: string, fn: (req: Request, res: Response) => Promise<unknown>) {
+function handler(what: string, fn: (req: Request, res: Response) => Promise<Response | void>) {
   return (req: Request, res: Response) => {
     fn(req, res).catch((error) => {
       log.error(`[FLEET] ${what} failed: ${(error as Error).message}`);
@@ -187,7 +188,7 @@ fleetPushRouter.get(
 fleetPushRouter.put(
   '/admins/extras',
   handler('save the extra admins', async (req, res) => {
-    const raw = (req.body as { admins?: unknown })?.admins;
+    const raw = (req.body as { admins?: Untrusted })?.admins;
     if (!Array.isArray(raw))
       return res
         .status(400)
@@ -196,7 +197,7 @@ fleetPushRouter.put(
       return res.status(400).json({ success: false, error: 'at most 1000 extra admins' });
     const extras: FleetAdmin[] = [];
     for (const entry of raw) {
-      const e = entry as { steamid64?: unknown; name?: unknown };
+      const e = entry as { steamid64?: Untrusted; name?: Untrusted };
       const id = typeof e?.steamid64 === 'string' ? e.steamid64.trim() : '';
       if (!isSteam64(id))
         return res
@@ -245,7 +246,7 @@ fleetPushRouter.get(
 fleetPushRouter.put(
   '/settings',
   handler('save the fleet settings', async (req, res) => {
-    const check = validateSettings((req.body as { settings?: unknown })?.settings);
+    const check = validateSettings((req.body as { settings?: Untrusted })?.settings);
     if (!check.ok)
       return res
         .status(400)
@@ -296,7 +297,7 @@ fleetPushRouter.put(
   handler('save the server settings', async (req, res) => {
     const server = await enrolledServer(req, res);
     if (!server) return;
-    const raw = (req.body as { settings?: unknown })?.settings;
+    const raw = (req.body as { settings?: Untrusted })?.settings;
     let value = null;
     if (raw !== null) {
       const check = validateSettings(raw);
@@ -357,7 +358,7 @@ fleetPushRouter.put(
   handler('switch practice mode', async (req, res) => {
     const server = await enrolledServer(req, res);
     if (!server) return;
-    const on = (req.body as { on?: unknown })?.on;
+    const on = (req.body as { on?: Untrusted })?.on;
     if (typeof on !== 'boolean')
       return res.status(400).json({ success: false, error: 'on must be true or false' });
     const sent = await setPractice(server.id, on, await issuedBy(req), requestActorId(req));
@@ -371,7 +372,7 @@ fleetPushRouter.post(
   handler('change the plugins', async (req, res) => {
     const server = await enrolledServer(req, res);
     if (!server) return;
-    const body = (req.body ?? {}) as Record<string, unknown>;
+    const body = (req.body ?? {}) as Record<string, Untrusted>;
     let value: StoredPlugins;
     if (body.preset !== undefined || body.plugins !== undefined) {
       // A plugin set (the picker): its plugins on, the rest of the catalog off.
@@ -432,7 +433,7 @@ fleetPushRouter.get(
 fleetPushRouter.put(
   '/plugins/default',
   handler('save the default plugin set', async (req, res) => {
-    const raw = (req.body as { plugins?: unknown })?.plugins;
+    const raw = (req.body as { plugins?: Untrusted })?.plugins;
     let set = null;
     if (raw !== null && raw !== undefined) {
       const check = validatePluginSet(raw);
@@ -463,7 +464,7 @@ fleetPushRouter.get(
 fleetPushRouter.post(
   '/matches/:slug/update',
   handler('update the match', async (req, res) => {
-    const body = (req.body ?? {}) as { ops?: unknown; baseConfigRev?: unknown };
+    const body = (req.body ?? {}) as { ops?: Untrusted; baseConfigRev?: Untrusted };
     const check = validateRosterOps(body.ops);
     if (!check.ok) return res.status(400).json({ success: false, error: check.error });
     let baseConfigRev: number | undefined;
