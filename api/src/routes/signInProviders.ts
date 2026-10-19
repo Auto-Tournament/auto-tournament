@@ -23,7 +23,11 @@ import {
   EnvManagedFieldError,
 } from '../services/authProviderSettingsService';
 import { steamService } from '../services/steamService';
-import { adminAccessSettings, AdminAccessError, parseAdminAccessPatch } from '../services/adminAccessSettings';
+import {
+  adminAccessSettings,
+  AdminAccessError,
+  parseAdminAccessPatch,
+} from '../services/adminAccessSettings';
 import { testSignInProvider } from '../services/signInProviderTest';
 
 const router = Router();
@@ -124,7 +128,8 @@ router.put('/admin-access', async (req: Request, res: Response) => {
     await adminAccessSettings.update(parsed.patch, requestActorId(req));
     return res.json({ success: true, ...(await adminAccessSettings.view()) });
   } catch (error) {
-    if (error instanceof AdminAccessError) return res.status(error.status).json({ success: false, error: error.message });
+    if (error instanceof AdminAccessError)
+      return res.status(error.status).json({ success: false, error: error.message });
     log.error('[SIGN-IN] Failed to save admin access settings', error as Error);
     return res.status(500).json({ success: false, error: 'Failed to save admin access settings' });
   }
@@ -222,7 +227,11 @@ router.post('/:provider/test', async (req: Request, res: Response) => {
   }
   const callbackUrl = `${getBackendBaseUrl()}/api/auth/${provider}/callback`;
   const outcome = await testSignInProvider(provider, callbackUrl);
-  log.info('[SIGN-IN] Provider test', { provider, result: outcome.result, actor: requestActorId(req) });
+  log.info('[SIGN-IN] Provider test', {
+    provider,
+    result: outcome.result,
+    actor: requestActorId(req),
+  });
   return res.json({ success: true, ...outcome });
 });
 

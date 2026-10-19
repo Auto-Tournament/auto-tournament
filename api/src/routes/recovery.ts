@@ -69,4 +69,3 @@ router.post('/replay/:matchSlug', requireAuth, async (req: Request, res: Respons
 });
 
 export default router;
-
