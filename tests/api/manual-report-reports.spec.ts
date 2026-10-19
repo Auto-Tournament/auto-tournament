@@ -337,7 +337,7 @@ test.describe.serial('Manual-report: reporting a tournament to a champion', () =
   test.beforeEach(async ({ request }) => {
     expect(await signInViaRequest(request)).toBe(true);
     await request.put('/api/settings', {
-      data: { webhookUrl: 'http://localhost:3069', simulateMatches: false },
+      data: { simulateMatches: false },
     });
   });
 
