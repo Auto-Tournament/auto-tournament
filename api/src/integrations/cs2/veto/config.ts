@@ -3,6 +3,8 @@
  * Supports both standard CS Major formats and custom veto orders
  */
 
+import type { Untrusted } from '../../../utils/untrusted';
+
 export interface VetoStep {
   step: number;
   team: 'team1' | 'team2';
@@ -387,19 +389,19 @@ export function standardVetoOrder(format: string, totalMaps: number = 7): VetoSt
  * against the tournament's own map pool size.
  */
 export function validateCustomVetoOrderSetting(
-  settings: unknown,
+  settings: Untrusted,
   mapCount: number
 ): { valid: true } | { valid: false; error: string } {
   if (!settings || typeof settings !== 'object') {
     return { valid: true };
   }
 
-  const customVetoOrder = (settings as { customVetoOrder?: unknown }).customVetoOrder;
+  const customVetoOrder = (settings as { customVetoOrder?: Untrusted }).customVetoOrder;
   if (!customVetoOrder || typeof customVetoOrder !== 'object') {
     return { valid: true };
   }
 
-  const orders = customVetoOrder as Record<string, unknown>;
+  const orders = customVetoOrder as Record<string, Untrusted>;
 
   for (const format of ['bo1', 'bo3', 'bo5'] as const) {
     const order = orders[format];

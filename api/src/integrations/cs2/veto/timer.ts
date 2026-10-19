@@ -48,6 +48,7 @@ let timer: ReturnType<typeof setInterval> | null = null;
 
 interface StoredVeto {
   status?: string;
+  currentStep?: number;
   actions?: Array<{ timestamp?: string }>;
 }
 
@@ -139,7 +140,7 @@ export async function vetoTurnDeadline(
       [slug]
     );
     const { matchTimeFields } = await import('../../../services/matchTimes');
-    let settings: unknown = {};
+    let settings: object = {};
     try {
       settings = JSON.parse(row?.settings ?? '{}');
     } catch {
@@ -205,7 +206,7 @@ async function tournamentVetoMatches(): Promise<DbMatchRow[]> {
 }
 
 function stepOf(rawVeto: string | null | undefined): number {
-  const step = (parseVeto(rawVeto) as { currentStep?: unknown } | null)?.currentStep;
+  const step = parseVeto(rawVeto)?.currentStep;
   return typeof step === 'number' ? step : 1;
 }
 

@@ -16,9 +16,9 @@ export type VetoContext = {
   format: 'bo1' | 'bo3' | 'bo5';
   tournamentMaps: string[];
   customVetoOrder?: {
-    bo1?: unknown[];
-    bo3?: unknown[];
-    bo5?: unknown[];
+    bo1?: VetoStep[];
+    bo3?: VetoStep[];
+    bo5?: VetoStep[];
   };
   /** The tournament turned the veto off (maps are drawn). */
   vetoOff?: boolean;
