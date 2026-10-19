@@ -298,7 +298,11 @@ function rasterSize(bytes: Buffer): { type: AppIconType; width: number; height: 
     if (chunk === 'VP8L') {
       if (bytes[20] !== 0x2f) return null;
       const bits = bytes.readUInt32LE(21);
-      return { type: 'image/webp', width: (bits & 0x3fff) + 1, height: ((bits >>> 14) & 0x3fff) + 1 };
+      return {
+        type: 'image/webp',
+        width: (bits & 0x3fff) + 1,
+        height: ((bits >>> 14) & 0x3fff) + 1,
+      };
     }
     if (chunk === 'VP8X') {
       return {
@@ -451,7 +455,7 @@ export function validatePack(
       raw.igdbId < 1 ||
       raw.igdbId > 2_147_483_647
     ) {
-      return fail('igdbId must be a positive whole number (the id on the game\'s igdb.com page)');
+      return fail("igdbId must be a positive whole number (the id on the game's igdb.com page)");
     }
   }
 
@@ -480,7 +484,8 @@ export function validatePack(
   }
 
   if (raw.appIcon !== undefined) {
-    if (typeof raw.appIcon !== 'string') return fail('appIcon must be a path to a PNG or WebP file');
+    if (typeof raw.appIcon !== 'string')
+      return fail('appIcon must be a path to a PNG or WebP file');
     const problem = checkAppIconPath(raw.appIcon);
     if (problem) return fail(problem);
   }
@@ -549,11 +554,9 @@ export function validatePack(
 // ---------------------------------------------------------------------------
 
 export async function packIcon(slug: string): Promise<string | null> {
-  const row = await db.getOneAsync<{ icon: string | null }>(
-    'game_packs',
-    'slug = ?',
-    [slug.trim().toLowerCase()]
-  );
+  const row = await db.getOneAsync<{ icon: string | null }>('game_packs', 'slug = ?', [
+    slug.trim().toLowerCase(),
+  ]);
   return row?.icon ?? null;
 }
 
@@ -816,7 +819,9 @@ export async function bundledPackEntries(): Promise<BundledPackEntry[]> {
           : null,
     });
   }
-  bundledAppIconSlugs = new Set(entries.filter((entry) => entry.appIcon).map((entry) => entry.slug));
+  bundledAppIconSlugs = new Set(
+    entries.filter((entry) => entry.appIcon).map((entry) => entry.slug)
+  );
   bundledIgdbIds = new Map(
     entries.flatMap((entry) => (entry.igdbId ? [[entry.slug, entry.igdbId] as const] : []))
   );
