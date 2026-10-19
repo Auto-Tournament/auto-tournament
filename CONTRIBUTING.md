@@ -19,3 +19,19 @@ test:api` runs the API specs against a local stack (`scripts/test-e2e-all.sh`).
   languages.
 - **Migrations:** a new module migration takes the next free number and goes
   at the end of the list.
+
+## PR size
+
+Every pull request is read line by line, so one that can't be read in one
+sitting doesn't get a real review. Keep each one small, and if an AI agent
+writes it, have it use the
+[`ponytail`](https://github.com/DietrichGebert/ponytail) skill: the smallest
+change that fully solves the task.
+
+- Aim for under ~10 files and a few hundred changed lines. Over that, split
+  it, and say in the PR body what the next one carries.
+- No autofix sweeps, renames or reformatting across files as a side effect of
+  something else. A new lint rule lands with its existing violations listed in
+  the lint config, and the fixes follow in small PRs of their own.
+- Mechanical changes go in a PR of their own, never mixed into one that
+  changes behaviour.
