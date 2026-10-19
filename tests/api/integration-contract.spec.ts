@@ -199,7 +199,9 @@ test.describe('Fake integration (no database needed)', () => {
         team2: null,
         round: 1,
       });
-      const described = fakeIntegration.describeMatch(JSON.stringify(config));
+      const described = fakeIntegration.describeMatch(
+        parseStoredMatchConfig(JSON.stringify(config))
+      );
       expect(described.seriesLength).toBe(length);
       expect(described.maps).toEqual([]);
       expect(fakeIntegration.describeMatch(config)).toEqual(described);

@@ -18,8 +18,6 @@ export const TYPED_INTERNALS_TODO = [
   'api/src/core/missingModule.ts',
   'api/src/core/playerResults.ts',
   'api/src/index.ts',
-  'api/src/integrations/fake/index.ts',
-  'api/src/integrations/fake/routes.ts',
   'api/src/middleware/auth.ts',
   'api/src/modules/catalogFeed.ts',
   'api/src/modules/catalogService.ts',

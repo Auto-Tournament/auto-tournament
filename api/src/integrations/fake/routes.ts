@@ -24,6 +24,7 @@ import type {
   TournamentType,
 } from '../../types/tournament.types';
 import { FAKE_GAME_ID } from './index';
+import type { Untrusted } from '../../utils/untrusted';
 
 export const fakeEventRoutes = Router();
 
@@ -57,11 +58,11 @@ fakeEventRoutes.use(requireAuth, (_req, res, next) => {
 
 fakeEventRoutes.post('/tournament', async (req: Request, res: Response) => {
   const body = (req.body ?? {}) as {
-    name?: unknown;
-    type?: unknown;
-    format?: unknown;
-    teamIds?: unknown;
-    settings?: unknown;
+    name?: Untrusted;
+    type?: Untrusted;
+    format?: Untrusted;
+    teamIds?: Untrusted;
+    settings?: Untrusted;
   };
   const teamIds = Array.isArray(body.teamIds)
     ? body.teamIds.filter((id): id is string => typeof id === 'string')
@@ -111,10 +112,10 @@ fakeEventRoutes.post('/tournament', async (req: Request, res: Response) => {
 });
 
 /** Structural check only: the core validates the rest as it applies them. */
-function asEvents(value: unknown, slug: string): NormalizedEvent[] | string {
+function asEvents(value: Untrusted, slug: string): NormalizedEvent[] | string {
   if (!Array.isArray(value)) return 'Body must be an array of NormalizedEvent';
   for (const [i, event] of value.entries()) {
-    const e = event as { type?: unknown; slug?: unknown; eventId?: unknown } | null;
+    const e = event as { type?: Untrusted; slug?: Untrusted; eventId?: Untrusted } | null;
     if (!e || typeof e !== 'object') return `events[${i}] is not an object`;
     if (typeof e.type !== 'string' || !EVENT_TYPES.has(e.type as NormalizedEventType)) {
       return `events[${i}].type is not a NormalizedEvent type`;
