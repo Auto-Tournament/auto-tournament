@@ -92,6 +92,12 @@ export function verifyTotp(
 /** The otpauth:// URI authenticator apps read (as a QR code or pasted). */
 export function totpUri(issuer: string, account: string, secretBase32: string): string {
   const label = encodeURIComponent(`${issuer}:${account}`);
-  const params = new URLSearchParams({ secret: secretBase32, issuer, algorithm: 'SHA1', digits: String(DIGITS), period: String(TOTP_STEP_SECONDS) });
+  const params = new URLSearchParams({
+    secret: secretBase32,
+    issuer,
+    algorithm: 'SHA1',
+    digits: String(DIGITS),
+    period: String(TOTP_STEP_SECONDS),
+  });
   return `otpauth://totp/${label}?${params.toString()}`;
 }

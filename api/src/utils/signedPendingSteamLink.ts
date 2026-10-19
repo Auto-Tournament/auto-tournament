@@ -45,7 +45,14 @@ export const PENDING_STEAM_LINK_TTL_MS = 1000 * 60 * 10;
  * module free of DB imports; auth.ts passes one to the other, so a mismatch is
  * a type error there).
  */
-export const PENDING_STEAM_LINK_PROVIDERS = ['discord', 'github', 'google', 'twitch', 'epic', 'oidc'] as const;
+export const PENDING_STEAM_LINK_PROVIDERS = [
+  'discord',
+  'github',
+  'google',
+  'twitch',
+  'epic',
+  'oidc',
+] as const;
 export type PendingSteamLinkProvider = (typeof PENDING_STEAM_LINK_PROVIDERS)[number];
 
 export interface PendingSteamLink {
@@ -86,7 +93,9 @@ const SIGNATURE_NAMESPACE = 'pending_steam_link:';
 
 function getSecret(): string {
   const s = process.env.SESSION_SECRET;
-  return typeof s === 'string' && s.trim().length > 0 ? s.trim() : 'auto-tournament-dev-session-secret';
+  return typeof s === 'string' && s.trim().length > 0
+    ? s.trim()
+    : 'auto-tournament-dev-session-secret';
 }
 
 function hmac(key: string, value: string): Buffer {

@@ -17,9 +17,23 @@
 
 export const COMPAT_SCHEMA_VERSION = 1;
 
-export const COMPAT_TRIGGERS = ['build_change', 'surface_change', 'code_change', 'nightly', 'release', 'manual'] as const;
+export const COMPAT_TRIGGERS = [
+  'build_change',
+  'surface_change',
+  'code_change',
+  'nightly',
+  'release',
+  'manual',
+] as const;
 export const COMPAT_STAGES = ['static', 'selftest', 'live'] as const;
-export const COMPAT_RUN_STATES = ['queued', 'checking', 'pass', 'warn', 'fail', 'no_verdict'] as const;
+export const COMPAT_RUN_STATES = [
+  'queued',
+  'checking',
+  'pass',
+  'warn',
+  'fail',
+  'no_verdict',
+] as const;
 export const COMPAT_OVERALL = ['pass', 'warn', 'fail', 'checking', 'no_verdict'] as const;
 export const COMPAT_COMPONENT_STATUSES = ['pass', 'warn', 'fail', 'pending', 'checking'] as const;
 export const COMPAT_CHECK_KINDS = [
@@ -105,8 +119,7 @@ const ISO_DATETIME = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{1,9})?(Z|[+-]\d{
 const CONTROL_CHARS = /[\u0000-\u001f\u007f]/;
 
 export type CompatValidation =
-  | { ok: true; value: CompatDocument }
-  | { ok: false; errors: string[] };
+  { ok: true; value: CompatDocument } | { ok: false; errors: string[] };
 
 class Checker {
   readonly errors: string[] = [];
@@ -131,7 +144,11 @@ class Checker {
     return record;
   }
 
-  string(value: unknown, path: string, opts: { max: number; pattern?: RegExp; label?: string }): string | null {
+  string(
+    value: unknown,
+    path: string,
+    opts: { max: number; pattern?: RegExp; label?: string }
+  ): string | null {
     if (typeof value !== 'string') {
       this.fail(path, 'must be a string');
       return null;
@@ -174,7 +191,12 @@ class Checker {
   }
 
   count(value: unknown, path: string): number | null {
-    if (typeof value !== 'number' || !Number.isInteger(value) || value < 0 || value > COMPAT_LIMITS.checkCount) {
+    if (
+      typeof value !== 'number' ||
+      !Number.isInteger(value) ||
+      value < 0 ||
+      value > COMPAT_LIMITS.checkCount
+    ) {
       this.fail(path, `must be an integer from 0 to ${COMPAT_LIMITS.checkCount}`);
       return null;
     }
@@ -223,7 +245,8 @@ function validateCheck(c: Checker, value: unknown, path: string): CompatCheck | 
     const text = c.string(entry, `${path}.failures[${i}]`, { max: COMPAT_LIMITS.failureLength });
     if (text !== null) failures.push(text);
   });
-  if (kind === null || status === null || passed === null || total === null || list === null) return null;
+  if (kind === null || status === null || passed === null || total === null || list === null)
+    return null;
   return { kind, status, passed, total, failures };
 }
 
@@ -254,7 +277,15 @@ function validateComponent(c: Checker, value: unknown, path: string): CompatComp
  */
 export function validateCompatDocument(input: unknown): CompatValidation {
   const c = new Checker();
-  const raw = c.object(input, '', ['schema', 'cs2', 'readyup', 'run', 'overall', 'components', 'checked_at']);
+  const raw = c.object(input, '', [
+    'schema',
+    'cs2',
+    'readyup',
+    'run',
+    'overall',
+    'components',
+    'checked_at',
+  ]);
   if (!raw) return { ok: false, errors: c.errors };
 
   if (raw.schema !== COMPAT_SCHEMA_VERSION) {
@@ -263,7 +294,11 @@ export function validateCompatDocument(input: unknown): CompatValidation {
 
   const cs2Raw = c.object(raw.cs2, 'cs2', ['buildid', 'patch']);
   const buildid = cs2Raw
-    ? c.string(cs2Raw.buildid, 'cs2.buildid', { max: 20, pattern: BUILDID, label: 'must be a numeric Steam build id' })
+    ? c.string(cs2Raw.buildid, 'cs2.buildid', {
+        max: 20,
+        pattern: BUILDID,
+        label: 'must be a numeric Steam build id',
+      })
     : null;
   // Empty while a run is queued: Ready Up's CI only learns the patch version from steam.inf once
   // it has fetched the binaries (the build id comes first, from the public branch info).
@@ -271,26 +306,47 @@ export function validateCompatDocument(input: unknown): CompatValidation {
     ? null
     : cs2Raw.patch === ''
       ? ''
-      : c.string(cs2Raw.patch, 'cs2.patch', { max: 32, pattern: PATCH, label: 'must be a dotted version like 1.41.8.5' });
+      : c.string(cs2Raw.patch, 'cs2.patch', {
+          max: 32,
+          pattern: PATCH,
+          label: 'must be a dotted version like 1.41.8.5',
+        });
 
   const readyupRaw = c.object(raw.readyup, 'readyup', ['version', 'commit']);
   const version = readyupRaw
     ? c.string(readyupRaw.version, 'readyup.version', { max: COMPAT_LIMITS.versionLength })
     : null;
   const commit = readyupRaw
-    ? c.string(readyupRaw.commit, 'readyup.commit', { max: 64, pattern: COMMIT, label: 'must be a hex commit sha' })
+    ? c.string(readyupRaw.commit, 'readyup.commit', {
+        max: 64,
+        pattern: COMMIT,
+        label: 'must be a hex commit sha',
+      })
     : null;
 
-  const runRaw = c.object(raw.run, 'run', ['id', 'url', 'trigger', 'stage', 'state', 'started_at', 'finished_at']);
+  const runRaw = c.object(raw.run, 'run', [
+    'id',
+    'url',
+    'trigger',
+    'stage',
+    'state',
+    'started_at',
+    'finished_at',
+  ]);
   let run: CompatRun | null = null;
   if (runRaw) {
-    const id = c.string(runRaw.id, 'run.id', { max: 128, pattern: RUN_ID, label: 'must be letters, digits, . _ : or -' });
+    const id = c.string(runRaw.id, 'run.id', {
+      max: 128,
+      pattern: RUN_ID,
+      label: 'must be letters, digits, . _ : or -',
+    });
     const url = httpUrl(c, runRaw.url, 'run.url');
     const trigger = c.oneOf(runRaw.trigger, 'run.trigger', COMPAT_TRIGGERS);
     const stage = c.oneOf(runRaw.stage, 'run.stage', COMPAT_STAGES);
     const state = c.oneOf(runRaw.state, 'run.state', COMPAT_RUN_STATES);
     const startedAt = c.timestamp(runRaw.started_at, 'run.started_at');
-    const finishedAt = runRaw.finished_at === null ? null : c.timestamp(runRaw.finished_at, 'run.finished_at');
+    const finishedAt =
+      runRaw.finished_at === null ? null : c.timestamp(runRaw.finished_at, 'run.finished_at');
     const finishedOk = runRaw.finished_at === null || finishedAt !== null;
     if (id && url && trigger && stage && state && startedAt && finishedOk) {
       run = { id, url, trigger, stage, state, started_at: startedAt, finished_at: finishedAt };

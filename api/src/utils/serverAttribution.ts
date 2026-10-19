@@ -16,9 +16,13 @@
 export const SERVER_ID_PARAM = 'server_id';
 export const MATCH_ID_PARAM = 'match_id';
 
-function appendQuery(url: string, params: Record<string, string | number | null | undefined>): string {
+function appendQuery(
+  url: string,
+  params: Record<string, string | number | null | undefined>
+): string {
   const entries = Object.entries(params).filter(
-    (entry): entry is [string, string | number] => entry[1] !== null && entry[1] !== undefined && entry[1] !== ''
+    (entry): entry is [string, string | number] =>
+      entry[1] !== null && entry[1] !== undefined && entry[1] !== ''
   );
   if (entries.length === 0) return url;
   const query = entries

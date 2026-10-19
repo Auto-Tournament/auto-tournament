@@ -54,10 +54,14 @@ const ID_SHAPED = /^\d{17,20}$/;
  * Deliberately NOT applied to every statement: Steam IDs are 17 digits too, and
  * they have to stay readable in the rest of the debug log to be of any use.
  */
-export function redactParamsForLog(sql: string, params: unknown[] | undefined): unknown[] | undefined {
+export function redactParamsForLog(
+  sql: string,
+  params: unknown[] | undefined
+): unknown[] | undefined {
   if (!params || params.length === 0) return params;
   // Local admin accounts and setup codes: every string parameter is masked.
-  if (MENTIONS_CREDENTIAL.test(sql)) return params.map((param) => (typeof param === 'string' ? '***' : param));
+  if (MENTIONS_CREDENTIAL.test(sql))
+    return params.map((param) => (typeof param === 'string' ? '***' : param));
   if (!MENTIONS_DISCORD_ID.test(sql)) return params;
   return params.map((param) =>
     typeof param === 'string' && ID_SHAPED.test(param) ? abbreviateId(param) : param
