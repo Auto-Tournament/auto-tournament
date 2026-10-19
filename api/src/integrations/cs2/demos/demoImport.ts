@@ -25,6 +25,7 @@ import { settingsService } from '../../../services/settingsService';
 import { addPlayedGame } from '../../../services/gameReadiness';
 import { DEMOS_DIR, ensureDemosDir, linkStoredDemo } from '../utils/demoFiles';
 import type { DemoAnalysisPayload, DemoJob } from './jobs';
+import type { Untrusted } from '../../../utils/untrusted';
 
 export const IMPORT_SOURCE = 'import';
 export const IMPORT_MAX_MAPS = 5;
@@ -117,9 +118,9 @@ export function mapFromDemoHeader(head: Buffer): string | null {
 
 /** Create the match an import fills in. `event`: where it was played (optional). */
 export async function createImport(input: {
-  event?: unknown;
-  maps?: unknown;
-  recordingGroupId?: unknown;
+  event?: Untrusted;
+  maps?: Untrusted;
+  recordingGroupId?: Untrusted;
 }): Promise<{ slug: string }> {
   const maps = Number(input.maps);
   if (!Number.isInteger(maps) || maps < 1 || maps > IMPORT_MAX_MAPS) {

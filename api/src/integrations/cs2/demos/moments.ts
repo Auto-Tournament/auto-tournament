@@ -20,6 +20,8 @@
  * Pure: no database (tests/api/highlight-facts.spec.ts).
  */
 
+import type { JsonObject } from '../../../utils/json';
+
 export const MOMENT_KINDS = [
   'knife_kill',
   'zeus_kill',
@@ -41,7 +43,7 @@ export interface FoundMoment {
   playerId: string;
   victimId: string | null;
   weapon: string | null;
-  detail: Record<string, unknown>;
+  detail: JsonObject;
 }
 
 /** A kill as the analysis stores it (worker/stats.go `Kill`). */
@@ -304,10 +306,10 @@ function lastSecondDefuses(replay: MomentReplay | undefined, rounds: MomentRound
 
 /** Every notable moment of one map, in tick order. */
 export function findMoments(
-  analysis: { rounds: ReadonlyArray<MomentRound>; kills: ReadonlyArray<unknown> },
+  analysis: { rounds: ReadonlyArray<MomentRound>; kills: ReadonlyArray<MomentKill> },
   replay?: MomentReplay
 ): FoundMoment[] {
-  const allKills = (analysis.kills as MomentKill[])
+  const allKills = analysis.kills
     .filter((k) => k && Number.isFinite(k.tick) && Number.isFinite(k.round))
     .slice()
     .sort((a, b) => a.tick - b.tick);
@@ -362,7 +364,7 @@ export function findMoments(
         weapon: null,
         detail: {
           kills: list.length,
-          weapons: [...new Set(list.map((k) => k.weapon).filter(Boolean))],
+          weapons: [...new Set(list.map((k) => k.weapon).filter((w): w is string => !!w))],
         },
       });
     }
