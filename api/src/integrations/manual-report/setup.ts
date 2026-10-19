@@ -33,6 +33,27 @@ export type ConfirmationMode = 'opponent' | 'none';
 /** What the sweeper does when `confirmTimeoutMin` passes with no answer. */
 export type TimeoutAction = 'auto_confirm' | 'escalate';
 
+/**
+ * `settings.manualReport` as stored: what the organizer set, each field
+ * checked by `validateSetup` on the way in. Absent fields take their default.
+ */
+export interface ManualReportSettings {
+  gameLabel?: string;
+  bestOf?: number;
+  allowDraw?: boolean;
+  confirmation?: ConfirmationMode;
+  /** Minutes; a whole number, sent as a number or a numeric string. */
+  confirmTimeoutMin?: number | string;
+  timeoutAction?: TimeoutAction;
+}
+
+declare module '../../types/tournament.types' {
+  interface ModuleTournamentObjects {
+    /** Manual reporting's own tournament settings (this file). */
+    manualReport?: ManualReportSettings;
+  }
+}
+
 export interface ManualReportSetup {
   gameLabel: string;
   bestOf: number;
