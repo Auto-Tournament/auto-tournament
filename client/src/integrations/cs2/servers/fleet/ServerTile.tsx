@@ -1,5 +1,12 @@
 import { Box, ButtonBase, CircularProgress } from '@mui/material';
-import { mono, radii, textSize, tokens, useModuleTranslation, withAlpha } from '../../../../module-sdk';
+import {
+  mono,
+  radii,
+  textSize,
+  tokens,
+  useModuleTranslation,
+  withAlpha,
+} from '../../../../module-sdk';
 import type { FleetHost, FleetHostCommand, FleetHostServer } from '../../cs2.types';
 import { getMapDisplayName } from '../../maps/mapData';
 import type { ServerTileState } from '../machineState';
@@ -20,13 +27,21 @@ export const stateTone: Record<ServerTileState, string> = {
   offline: color.ban,
 };
 
-export const MOVING: ServerTileState[] = ['starting', 'stopping', 'restarting', 'updating', 'deleting'];
+export const MOVING: ServerTileState[] = [
+  'starting',
+  'stopping',
+  'restarting',
+  'updating',
+  'deleting',
+];
 
 export function useStateLabel() {
   const { t } = useModuleTranslation('cs2');
   return (state: ServerTileState, match?: ServerMatch | null) => {
-    if (state === 'match' && match?.phase === 'veto') return t('serversBoard.state.veto', { defaultValue: 'Veto' });
-    if (state === 'match' && match?.phase === 'warmup') return t('serversBoard.state.warmup', { defaultValue: 'Warmup' });
+    if (state === 'match' && match?.phase === 'veto')
+      return t('serversBoard.state.veto', { defaultValue: 'Veto' });
+    if (state === 'match' && match?.phase === 'warmup')
+      return t('serversBoard.state.warmup', { defaultValue: 'Warmup' });
     return t(`serversBoard.state.${state}`, {
       defaultValue: {
         free: 'Free',
@@ -46,9 +61,27 @@ export function useStateLabel() {
 /** The dot or, while something happens to the server, a small spinner. */
 export function StateMark({ state, size = 8 }: { state: ServerTileState; size?: number }) {
   if (MOVING.includes(state)) {
-    return <CircularProgress size={size + 4} thickness={6} sx={{ color: stateTone[state], flex: 'none' }} aria-hidden />;
+    return (
+      <CircularProgress
+        size={size + 4}
+        thickness={6}
+        sx={{ color: stateTone[state], flex: 'none' }}
+        aria-hidden
+      />
+    );
   }
-  return <Box aria-hidden sx={{ width: size, height: size, borderRadius: radii.pill, bgcolor: stateTone[state], flex: 'none' }} />;
+  return (
+    <Box
+      aria-hidden
+      sx={{
+        width: size,
+        height: size,
+        borderRadius: radii.pill,
+        bgcolor: stateTone[state],
+        flex: 'none',
+      }}
+    />
+  );
 }
 
 export interface ServerTileProps {
@@ -74,7 +107,10 @@ export function ServerTile({ host, server, state, match, command, onOpen }: Serv
   if (state === 'match' && match) {
     if (match.team1 || match.team2) {
       lines.push(
-        [`${match.team1} vs ${match.team2}`, match.score && match.phase !== 'veto' ? `${match.score[0]} – ${match.score[1]}` : null]
+        [
+          `${match.team1} vs ${match.team2}`,
+          match.score && match.phase !== 'veto' ? `${match.score[0]} – ${match.score[1]}` : null,
+        ]
           .filter(Boolean)
           .join(' · ')
       );
@@ -82,7 +118,11 @@ export function ServerTile({ host, server, state, match, command, onOpen }: Serv
     const where = [
       match.map ? getMapDisplayName(match.map) : null,
       match.maps > 1 && match.mapNumber !== null
-        ? t('serversBoard.mapOf', { defaultValue: 'Map {{n}} of {{count}}', n: match.mapNumber + 1, count: match.maps })
+        ? t('serversBoard.mapOf', {
+            defaultValue: 'Map {{n}} of {{count}}',
+            n: match.mapNumber + 1,
+            count: match.maps,
+          })
         : null,
     ].filter(Boolean);
     if (where.length) lines.push(where.join(' · '));
@@ -105,9 +145,14 @@ export function ServerTile({ host, server, state, match, command, onOpen }: Serv
     lines.push(`:${server.game_port}`);
   }
   if (server.process.restarts_24h > 0 && state !== 'match') {
-    lines.push(t('serversBoard.restarts', { defaultValue: '{{count}} restarts in 24 h', count: server.process.restarts_24h }));
+    lines.push(
+      t('serversBoard.restarts', {
+        defaultValue: '{{count}} restarts in 24 h',
+        count: server.process.restarts_24h,
+      })
+    );
   }
-  const pct = MOVING.includes(state) ? command?.progress.pct ?? null : null;
+  const pct = MOVING.includes(state) ? (command?.progress.pct ?? null) : null;
 
   return (
     <ButtonBase
@@ -129,7 +174,11 @@ export function ServerTile({ host, server, state, match, command, onOpen }: Serv
         bgcolor: color.paper,
         // Down is red only on an online machine: an offline one says so itself.
         border: `1px solid ${
-          state === 'match' ? withAlpha(color.accent, 0.55) : state === 'offline' && host.online ? withAlpha(color.ban, 0.6) : color.rule
+          state === 'match'
+            ? withAlpha(color.accent, 0.55)
+            : state === 'offline' && host.online
+              ? withAlpha(color.ban, 0.6)
+              : color.rule
         }`,
         opacity: state === 'deleting' ? 0.55 : 1,
         '&:hover': { borderColor: color.muted },
@@ -137,16 +186,43 @@ export function ServerTile({ host, server, state, match, command, onOpen }: Serv
       }}
     >
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 0 }}>
-        <Box component="span" sx={{ fontWeight: 600, fontSize: textSize.sm, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        <Box
+          component="span"
+          sx={{
+            fontWeight: 600,
+            fontSize: textSize.sm,
+            minWidth: 0,
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+          }}
+        >
           {name}
         </Box>
         <Box
           component="span"
           data-testid={`machine-state-${server.name}`}
-          sx={{ ml: 'auto', display: 'inline-flex', alignItems: 'center', gap: 0.75, fontSize: '0.75rem', color: color.ink2, whiteSpace: 'nowrap' }}
+          sx={{
+            ml: 'auto',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 0.75,
+            fontSize: '0.75rem',
+            color: color.ink2,
+            whiteSpace: 'nowrap',
+          }}
         >
           {state === 'offline' && !host.online ? (
-            <Box aria-hidden sx={{ width: 8, height: 8, borderRadius: radii.pill, bgcolor: color.muted, flex: 'none' }} />
+            <Box
+              aria-hidden
+              sx={{
+                width: 8,
+                height: 8,
+                borderRadius: radii.pill,
+                bgcolor: color.muted,
+                flex: 'none',
+              }}
+            />
           ) : (
             <StateMark state={state} />
           )}
@@ -159,7 +235,13 @@ export function ServerTile({ host, server, state, match, command, onOpen }: Serv
           component="span"
           sx={{
             fontSize: '0.75rem',
-            color: i === 0 && state === 'match' ? color.ink : color.muted,
+            // An offline machine's card is dimmed, so muted would fail contrast.
+            color:
+              i === 0 && state === 'match'
+                ? color.ink
+                : state === 'offline'
+                  ? color.ink2
+                  : color.muted,
             ...(line.startsWith(':') ? mono : {}),
             whiteSpace: 'nowrap',
             overflow: 'hidden',
@@ -170,7 +252,18 @@ export function ServerTile({ host, server, state, match, command, onOpen }: Serv
         </Box>
       ))}
       {pct !== null && (
-        <Box aria-hidden sx={{ position: 'absolute', left: 0, bottom: 0, height: 3, width: `${Math.max(4, pct)}%`, bgcolor: color.info, transition: 'width 240ms ease-out' }} />
+        <Box
+          aria-hidden
+          sx={{
+            position: 'absolute',
+            left: 0,
+            bottom: 0,
+            height: 3,
+            width: `${Math.max(4, pct)}%`,
+            bgcolor: color.info,
+            transition: 'width 240ms ease-out',
+          }}
+        />
       )}
     </ButtonBase>
   );
@@ -198,16 +291,37 @@ export function CreatingTile({ n, command }: { n: number; command: FleetHostComm
         <Box component="span" sx={{ fontWeight: 600, fontSize: textSize.sm, color: color.ink2 }}>
           {t('serversBoard.newServer', { defaultValue: 'New server {{n}}', n })}
         </Box>
-        <Box component="span" sx={{ ml: 'auto', display: 'inline-flex', alignItems: 'center', gap: 0.75, fontSize: '0.75rem', color: color.ink2 }}>
+        <Box
+          component="span"
+          sx={{
+            ml: 'auto',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 0.75,
+            fontSize: '0.75rem',
+            color: color.ink2,
+          }}
+        >
           <StateMark state="starting" />
           {t('serversBoard.state.creating', { defaultValue: 'Creating…' })}
         </Box>
       </Box>
       <Box component="span" sx={{ fontSize: '0.75rem', color: color.muted }}>
-        {command.progress.step ?? t('serversBoard.waitingForCsm', { defaultValue: 'Waiting for csm' })}
+        {command.progress.step ??
+          t('serversBoard.waitingForCsm', { defaultValue: 'Waiting for csm' })}
       </Box>
       {command.progress.pct !== null && (
-        <Box aria-hidden sx={{ position: 'absolute', left: 0, bottom: 0, height: 3, width: `${Math.max(4, command.progress.pct)}%`, bgcolor: color.info }} />
+        <Box
+          aria-hidden
+          sx={{
+            position: 'absolute',
+            left: 0,
+            bottom: 0,
+            height: 3,
+            width: `${Math.max(4, command.progress.pct)}%`,
+            bgcolor: color.info,
+          }}
+        />
       )}
     </Box>
   );

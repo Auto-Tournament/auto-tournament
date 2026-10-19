@@ -95,7 +95,7 @@ test.describe.serial('Stats pages follow the tournament game', () => {
     await ensureSignedIn(page);
     expect(await signInViaRequest(request)).toBe(true);
     await request.put('/api/settings', {
-      data: { webhookUrl: baseURL ?? 'http://localhost:3069', simulateMatches: false },
+      data: { simulateMatches: false },
     });
   });
 
@@ -183,7 +183,8 @@ test.describe.serial('Stats pages follow the tournament game', () => {
           async () => {
             const res = await request.get(`/api/players/${home.steamId}/summary`);
             if (!res.ok()) return false;
-            const rows = ((await res.json()) as { matches?: Array<{ slug: string }> }).matches ?? [];
+            const rows =
+              ((await res.json()) as { matches?: Array<{ slug: string }> }).matches ?? [];
             return rows.some((row) => row.slug === match!.slug);
           },
           { message: 'the match in the player history', timeout: 20_000, intervals: [500, 1000] }

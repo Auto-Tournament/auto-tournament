@@ -9,6 +9,7 @@ import {
 } from '../../api/src/integrations/cs2/adminNotices';
 import {
   noticeKey,
+  noticeHref,
   noticeLink,
   noticeParams,
   sortNotices,
@@ -95,6 +96,9 @@ test.describe('admin notices (rules)', () => {
     expect(noticeLink(notice({ kind: 'server_crashed' }), paths)).toBe('/s');
     expect(noticeLink(notice({ kind: 'clips_failing' }), paths)).toBe('/r');
     expect(noticeLink(notice({ kind: 'license_problem' }), paths)).toBe('/l');
+    // The bell's links carry the notice, for the card at the top of the page.
+    expect(noticeHref({ ...notice({ kind: 'server_crashed' }), id: 7 }, paths)).toBe('/s?notice=7');
+    expect(noticeHref({ ...notice({ kind: 'nothing_to_open' }), id: 7 }, paths)).toBeNull();
     expect(noticeKey(notice({ kind: 'failover', data: { needsDecision: true } }))).toBe(
       'adminNotices.kind.failoverDecision'
     );

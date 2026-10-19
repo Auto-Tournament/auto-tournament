@@ -8,7 +8,6 @@ import {
 } from '@playwright/test';
 import { getAuthHeader, signInAsPlayerViaRequest, signInViaRequest } from '../helpers/auth';
 import { createTestServer, deleteServer } from '../helpers/servers';
-import { configureWebhook } from '../helpers/setup';
 import {
   FleetTestClient,
   createFleetKey,
@@ -282,7 +281,6 @@ test.describe.serial('Fleet driver: Ready Up servers play matches (M1)', () => {
     if (!key) key = await createFleetKey(request, { name: 'fleet-driver-tests' });
     // Creating a match needs the webhook URL; a spec earlier in the shard may
     // have cleared it.
-    expect(await configureWebhook(request, 'http://localhost:3069')).toBe(true);
     // No bracket matches ahead of ours in the allocation queue.
     await request.delete('/api/tournament', { headers: getAuthHeader() });
   });

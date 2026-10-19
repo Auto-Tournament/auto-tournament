@@ -98,6 +98,16 @@ export function noticeLink(
   return null;
 }
 
+/** The notice's link with `?notice=<id>`: that page shows it at the top (NoticeCard). */
+export function noticeHref(
+  notice: Pick<AdminNotice, 'id' | 'kind' | 'data'>,
+  paths: Parameters<typeof noticeLink>[1]
+): string | null {
+  const to = noticeLink(notice, paths);
+  if (!to) return null;
+  return `${to}${to.includes('?') ? '&' : '?'}notice=${notice.id}`;
+}
+
 /** Open first, then newest change; resolved ones keep their place below. */
 export function sortNotices(list: AdminNotice[]): AdminNotice[] {
   return [...list].sort(

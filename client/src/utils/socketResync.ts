@@ -1,4 +1,6 @@
 import type { Socket } from 'socket.io-client';
+import { SYNTHETIC_CONNECT } from './sharedSocket';
+import type { Untrusted } from './untrusted';
 
 /**
  * Call `resync` every time `socket` reconnects after having been connected.
@@ -15,7 +17,12 @@ import type { Socket } from 'socket.io-client';
  */
 export function onSocketReconnect(socket: Socket, resync: () => void): () => void {
   let connectedBefore = socket.connected;
-  const handleConnect = () => {
+  const handleConnect = (arg?: Untrusted) => {
+    // The shared socket says it is connected (sharedSocket.ownedView): not a reconnect.
+    if (arg === SYNTHETIC_CONNECT) {
+      connectedBefore = true;
+      return;
+    }
     if (connectedBefore) {
       resync();
     }
