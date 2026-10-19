@@ -121,7 +121,9 @@ async function recoverMatch(
           result.webhookReconfigured = true;
           result.demoUploadReconfigured = true;
         }
-        log.success(`[Recovery] Verified persistent config for ${match.slug} on server ${match.server_id}`);
+        log.success(
+          `[Recovery] Verified persistent config for ${match.slug} on server ${match.server_id}`
+        );
       } catch (error) {
         log.warn(`[Recovery] Failed to verify persistent config for ${match.slug}`, { error });
       }
@@ -159,7 +161,10 @@ async function recoverMatch(
  * Replay recent events from database for a match
  * Useful for catching up on events that occurred during downtime
  */
-export async function replayRecentEvents(matchSlug: string, sinceTimestamp?: number): Promise<void> {
+export async function replayRecentEvents(
+  matchSlug: string,
+  sinceTimestamp?: number
+): Promise<void> {
   try {
     const since = sinceTimestamp || Math.floor(Date.now() / 1000) - 3600; // Default: last hour
 
@@ -195,7 +200,7 @@ export async function replayRecentEvents(matchSlug: string, sinceTimestamp?: num
 
     for (const eventRow of events) {
       try {
-        const event: unknown = JSON.parse(eventRow.event_data);
+        const event = JSON.parse(eventRow.event_data) as object;
         await integration.replayEvent(event);
         log.debug(`[Recovery] Replayed event: ${eventRow.event_type}`, {
           matchSlug,
@@ -214,4 +219,3 @@ export async function replayRecentEvents(matchSlug: string, sinceTimestamp?: num
     log.error(`[Recovery] Failed to replay events for ${matchSlug}`, error as Error);
   }
 }
-

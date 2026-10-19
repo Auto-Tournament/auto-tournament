@@ -35,6 +35,22 @@ import type { Untrusted } from '../utils/untrusted';
  * Identifier stored in the `game` column: 'cs2', plus 'fake' in test runs
  * (integrations/fake); later e.g. 'manual-report'.
  */
+/**
+ * The shapes of one integration's own data. The core stores these and hands
+ * them back without reading a field; the integration names them
+ * (`GameIntegration<Cs2Data>`), so its own code works with typed values.
+ */
+export interface IntegrationData {
+  /** `matches.config`. */
+  config: object;
+  /** A standalone match's admin settings (`SetupSchema.match`). */
+  matchSettings: object;
+  /** A stored game event (`match_events.event_data`), as `replayEvent` gets it. */
+  event: object;
+  /** A result report (`syncMatchState` with `report`). */
+  report: object;
+}
+
 export type GameId = string;
 
 /** The game every existing row belongs to; also the column default. */
@@ -104,7 +120,7 @@ export interface IntegrationTournament {
 }
 
 /** Everything an integration needs to know about one match. */
-export interface MatchContext {
+export interface MatchContext<D extends IntegrationData = IntegrationData> {
   slug: string;
   matchId: number;
   game: GameId;
@@ -115,7 +131,7 @@ export interface MatchContext {
   round: number;
   bracket?: string | null;
   /** Parsed `matches.config`: an integration-owned blob (for CS2, the MatchZy Enhanced config). */
-  integrationConfig: unknown;
+  integrationConfig: D['config'] | null;
   /** The resource the match is assigned to (CS2: `matches.server_id`), when it has one. */
   resourceId?: string | null;
 }
@@ -133,8 +149,11 @@ export interface MatchContext {
  * `matchId` is 0 while the match row does not exist yet (configs for new
  * bracket slots are built before the insert, as before).
  */
-export type BuildMatchConfigContext = Omit<MatchContext, 'integrationConfig'> & {
-  settings?: unknown;
+export type BuildMatchConfigContext<D extends IntegrationData = IntegrationData> = Omit<
+  MatchContext<D>,
+  'integrationConfig'
+> & {
+  settings?: D['matchSettings'];
   /**
    * Standalone creation only: the tournament whose rules a new standalone
    * match falls back to for settings the admin left out (CS2: the round
@@ -742,7 +761,7 @@ export interface SiteSearchHit {
   score: number;
 }
 
-export interface GameIntegration {
+export interface GameIntegration<D extends IntegrationData = IntegrationData> {
   id: GameId;
   displayName: string;
   capabilities: IntegrationCapabilities;
@@ -844,9 +863,9 @@ export interface GameIntegration {
   // --- setup ---------------------------------------------------------------
 
   /** Build the integration-owned `matches.config` for a match. */
-  buildMatchConfig(ctx: BuildMatchConfigContext): Promise<unknown>;
+  buildMatchConfig(ctx: BuildMatchConfigContext<D>): Promise<D['config']>;
   /** Neutral view of a stored config: roster, maps, series length. */
-  describeMatch(config: unknown): MatchDescription;
+  describeMatch(config: D['config']): MatchDescription;
 
   // --- lifecycle -----------------------------------------------------------
 
@@ -1046,13 +1065,13 @@ export interface GameIntegration {
    * exist only in its config; null when the config cannot be parsed. Without
    * it the core uses `describeMatch`.
    */
-  standaloneRoster?(config: unknown): { team1: string[]; team2: string[] } | null;
+  standaloneRoster?(config: D['config']): { team1: string[]; team2: string[] } | null;
   /**
    * Apply one stored game event again (`match_events.event_data`), as when it
    * arrived but without the webhook's side effects. Used by event replay after
    * downtime.
    */
-  replayEvent?(event: unknown): Promise<void>;
+  replayEvent?(event: D['event']): Promise<void>;
 
   // --- results -------------------------------------------------------------
 
@@ -1180,7 +1199,7 @@ export interface GameIntegration {
    */
   syncMatchState?(
     slug: string,
-    source: { resourceId: string } | { report: unknown }
+    source: { resourceId: string } | { report: D['report'] }
   ): Promise<object | null>;
   /**
    * The match was held or released, or its tournament paused or resumed

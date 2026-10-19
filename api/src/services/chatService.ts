@@ -175,7 +175,7 @@ async function matchTeams(
   teams.set(k1, new Set(steamIdsOf(row.t1)));
   teams.set(k2, new Set(steamIdsOf(row.t2)));
   try {
-    const config = row.config ? (JSON.parse(row.config) as unknown) : null;
+    const config = row.config ? (JSON.parse(row.config) as object) : null;
     const described = describeMatch({ game: row.game as never, config });
     for (const p of described.team1.players)
       if (p.account.provider === 'steam') teams.get(k1)!.add(p.account.externalId);
