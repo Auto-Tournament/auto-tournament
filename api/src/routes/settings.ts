@@ -54,7 +54,6 @@ async function startAutoVetoForRunningTournament(tournamentId: number): Promise<
  * (`readInstanceSettings`, CS2: the simulation and `at_*` defaults).
  */
 const mapSettingsResponse = async () => {
-  const webhookUrl = await settingsService.getWebhookUrl();
   const steamApiKey = await settingsService.getSteamApiKey();
   const defaultPlayerElo = null;
   const ratingsEnabled = await settingsService.areRatingsEnabled();
@@ -71,10 +70,8 @@ const mapSettingsResponse = async () => {
 
   return {
     siteName,
-    webhookUrl,
     steamApiKey: null,
     steamApiKeySet: Boolean(steamApiKey),
-    webhookConfigured: Boolean(webhookUrl),
     defaultPlayerElo,
     ratingsEnabled,
     allowSelfRegister,

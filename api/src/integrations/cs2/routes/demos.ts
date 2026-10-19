@@ -9,7 +9,6 @@ import {
 } from '../fleet/uploadAuth';
 import { db } from '../../../config/database';
 import { log } from '../../../utils/logger';
-import { settingsService } from '../../../services/settingsService';
 import path from 'path';
 import fs from 'fs';
 import type { DbMatchRow } from '../../../types/database.types';
@@ -370,87 +369,6 @@ router.get(
     }
   }
 );
-
-/**
- * GET /api/demos/:matchSlug/status
- * Get demo upload configuration status for a match
- * Shows if demo upload is configured and expected upload URL
- * Protected by API token
- *
- * HOW TO VERIFY DEMO UPLOAD IS ENABLED:
- * 1. Check this endpoint: GET /api/demos/:matchSlug/status
- *    - demoUploadConfigured should be true
- *    - expectedUploadUrl should be a valid URL
- * 2. When loading a match, check logs for:
- *    - "DEMO UPLOAD CONFIGURED SUCCESSFULLY"
- *    - Or "DEMO UPLOAD CONFIGURATION FAILED"
- * 3. When a demo is uploaded, you'll see:
- *    - "DEMO UPLOAD RECEIVED"
- *    - "DEMO UPLOAD COMPLETED SUCCESSFULLY"
- * 4. Verify webhook_url is set in Settings (required for demo upload URL)
- */
-router.get('/:matchSlug/status', requireAuth, async (req: Request, res: Response) => {
-  try {
-    const { matchSlug } = req.params;
-
-    const match = await db.queryOneAsync<DbMatchRow>(
-      'SELECT id, slug, server_id, status, demo_file_path FROM matches WHERE slug = ?',
-      [matchSlug]
-    );
-
-    if (!match) {
-      return res.status(404).json({
-        success: false,
-        error: `Match '${matchSlug}' not found`,
-      });
-    }
-
-    // Get webhook base URL to construct expected upload URL
-    const baseUrl = await settingsService.getSetting('webhook_url');
-
-    const expectedUploadUrl = baseUrl ? `${baseUrl}/api/demos/${matchSlug}/upload` : null;
-
-    // Check if demo file exists
-    let demoExists = false;
-    let demoFileSize = 0;
-    if (match.demo_file_path) {
-      let filepath = path.join(DEMOS_DIR, match.demo_file_path);
-      if (!fs.existsSync(filepath) && !match.demo_file_path.includes(path.sep)) {
-        filepath = path.join(DEMOS_DIR, matchSlug, match.demo_file_path);
-      }
-      if (fs.existsSync(filepath)) {
-        demoExists = true;
-        const stats = fs.statSync(filepath);
-        demoFileSize = stats.size;
-      }
-    }
-
-    res.json({
-      success: true,
-      matchSlug,
-      matchId: match.id,
-      serverId: match.server_id,
-      matchStatus: match.status,
-      demoUploadConfigured: !!expectedUploadUrl,
-      expectedUploadUrl,
-      hasDemoFile: demoExists,
-      demoFilePath: match.demo_file_path || null,
-      demoFileSize: demoExists ? demoFileSize : 0,
-      demoFileSizeFormatted: demoExists ? `${(demoFileSize / 1024 / 1024).toFixed(2)} MB` : null,
-      note: expectedUploadUrl
-        ? 'MatchZy Enhanced should upload demos to the expected URL after match/map completion'
-        : 'Webhook URL not configured - demo uploads will not work',
-    });
-    return;
-  } catch (error) {
-    log.error('Error getting demo status', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to get demo status',
-    });
-    return;
-  }
-});
 
 /**
  * GET /api/demos/:matchSlug/info

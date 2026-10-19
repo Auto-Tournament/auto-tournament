@@ -56,7 +56,6 @@ function makeLegacy(store: Store, writes: Write[], onAutoVeto: () => void) {
   };
 
   type AppSettingKey =
-    | 'webhook_url'
     | 'simulate_matches'
     | 'simulation_timescale'
     | 'at_chat_prefix'
@@ -96,7 +95,6 @@ function makeLegacy(store: Store, writes: Write[], onAutoVeto: () => void) {
     | 'at_demo_recording_enabled';
 
   const ALLOWED_KEYS: AppSettingKey[] = [
-    'webhook_url',
     'simulate_matches',
     'simulation_timescale',
     'ratings_enabled',
@@ -158,14 +156,6 @@ function makeLegacy(store: Store, writes: Write[], onAutoVeto: () => void) {
 
         if (!trimmed) {
           await db.setAppSettingAsync(key, null);
-          return;
-        }
-
-        if (key === 'webhook_url') {
-          this.validateWebhookUrl(trimmed);
-          const normalized = this.normalizeUrl(trimmed);
-          await db.setAppSettingAsync(key, normalized);
-          log.success(`Webhook URL updated to ${normalized}`);
           return;
         }
 
@@ -405,21 +395,6 @@ function makeLegacy(store: Store, writes: Write[], onAutoVeto: () => void) {
       const normalized = value.toLowerCase();
       return normalized === '1' || normalized === 'true' || normalized === 'yes';
     }
-
-    private normalizeUrl(url: string): string {
-      const normalized = url.replace(/\/+$/, '');
-      return normalized || url;
-    }
-
-    private validateWebhookUrl(url: string): void {
-      try {
-        new URL(url);
-      } catch {
-        throw new Error(
-          'Invalid webhook URL. Please provide a full URL including protocol (e.g., https://example.com)'
-        );
-      }
-    }
   }
 
   const settingsService = new LegacySettingsService();
@@ -440,7 +415,6 @@ function makeLegacy(store: Store, writes: Write[], onAutoVeto: () => void) {
   async function put(req: { body: Record<string, unknown> }): Promise<Result> {
     const tournamentId = resolveTournamentId(req);
     const {
-      webhookUrl,
       simulateMatches,
       simulationTimescale,
       ratingsEnabled,
@@ -464,7 +438,6 @@ function makeLegacy(store: Store, writes: Write[], onAutoVeto: () => void) {
       atFfwTime,
       atDemoRecordingEnabled,
     } = req.body as {
-      webhookUrl?: unknown;
       simulateMatches?: unknown;
       simulationTimescale?: unknown;
       ratingsEnabled?: unknown;
@@ -490,19 +463,6 @@ function makeLegacy(store: Store, writes: Write[], onAutoVeto: () => void) {
     };
 
     try {
-      if (webhookUrl !== undefined) {
-        if (typeof webhookUrl !== 'string' && webhookUrl !== null) {
-          return res.status(400).json({
-            success: false,
-            error: 'webhookUrl must be a string or null',
-          });
-        }
-        await settingsService.setSetting(
-          'webhook_url',
-          typeof webhookUrl === 'string' ? webhookUrl : null
-        );
-      }
-
       if (simulateMatches !== undefined) {
         // This is a **developer-only** option.
         // In production, ignore it by default for safety, unless explicitly enabled
@@ -949,7 +909,6 @@ async function runNew(initial: Record<string, string | null>, body: Record<strin
 
 /** Every `PUT /api/settings` field, in the legacy handler's order. */
 const LEGACY_FIELDS = [
-  'webhookUrl',
   'simulateMatches',
   'simulationTimescale',
   'ratingsEnabled',
@@ -1212,12 +1171,10 @@ test.describe('settings namespace', () => {
 /** Every field of the legacy `GET /api/settings` response, plus the added settings'. */
 const RESPONSE_FIELDS = [
   ...ADDED_SETTINGS.flatMap((added) => (added.field ? [added.field] : [])),
-  'webhookUrl',
   'steamApiKey',
   'steamApiKeySet',
-  'webhookConfigured',
   'defaultPlayerElo',
-  ...LEGACY_FIELDS.filter((field) => field !== 'webhookUrl'),
+  ...LEGACY_FIELDS,
 ];
 
 async function getSettings(request: APIRequestContext) {
