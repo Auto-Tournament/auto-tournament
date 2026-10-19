@@ -56,7 +56,13 @@ export async function getLatestReadyUpRelease(options?: {
   const channel = isPrereleaseVersion(options?.runningVersion) ? 'prerelease' : 'stable';
   const now = Date.now();
   const cached = readyUpCache.get(channel);
-  if (!options?.forceRefresh && cached && now - cached.at < CACHE_TTL_MS) {
+  // A server already running something newer than the cached answer means a
+  // release came out since: look again instead of calling an older one "latest".
+  const runningNewer =
+    !!cached?.release &&
+    !!options?.runningVersion &&
+    (compareVersions(options.runningVersion, cached.release.version) ?? 0) > 0;
+  if (!options?.forceRefresh && !runningNewer && cached && now - cached.at < CACHE_TTL_MS) {
     return cached.release;
   }
   const doFetch: ReleaseFetch =
