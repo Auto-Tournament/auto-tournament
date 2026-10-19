@@ -45,7 +45,7 @@ import crypto from 'crypto';
 import { EventEmitter } from 'events';
 import fs from 'fs';
 import path from 'path';
-import { db } from '../../../config/database';
+import { db, type SqlValue } from '../../../config/database';
 import { log } from '../../../utils/logger';
 import { DEMOS_DIR, ensureDemosDir, linkStoredDemo } from '../utils/demoFiles';
 import { serverTurnoverTracker } from '../utils/serverTurnover';
@@ -176,7 +176,7 @@ export class DemoStreamReceiver {
   private readonly platform: DemoStreamPlatform;
   private readonly maxBytes: number;
   private readonly now: () => number;
-  private readonly locks = new Map<string, Promise<unknown>>();
+  private readonly locks = new Map<string, Promise<void>>();
 
   constructor(options: DemoStreamOptions) {
     this.dir = path.resolve(options.dir);
@@ -216,7 +216,10 @@ export class DemoStreamReceiver {
   private locked<T>(demoId: string, fn: () => Promise<T>): Promise<T> {
     const previous = this.locks.get(demoId) ?? Promise.resolve();
     const run = previous.then(fn, fn);
-    const tail = run.catch(() => undefined);
+    const tail = run.then(
+      () => undefined,
+      () => undefined
+    );
     this.locks.set(demoId, tail);
     void tail.then(() => {
       if (this.locks.get(demoId) === tail) this.locks.delete(demoId);
@@ -777,7 +780,10 @@ const COLUMN: Record<keyof DemoStreamRow, string> = {
   completedAt: 'completed_at',
 };
 
-function toDbValue(key: keyof DemoStreamRow, value: unknown): unknown {
+function toDbValue(
+  key: keyof DemoStreamRow,
+  value: DemoStreamRow[keyof DemoStreamRow] | undefined
+): SqlValue {
   if (key === 'recording') return value ? 1 : 0;
   return value;
 }
@@ -972,7 +978,8 @@ export function startDemoStreams(options: Partial<DemoStreamOptions> = {}): Demo
         const answer = await r.begin(
           ctx.serverId,
           env.epoch,
-          env.payload as unknown as DemoBeginPayload
+          // Checked against its schema by the gateway first, as are chunk and end.
+          env.payload as DemoBeginPayload
         );
         sendAck(ctx, env, answer);
       },
@@ -980,7 +987,7 @@ export function startDemoStreams(options: Partial<DemoStreamOptions> = {}): Demo
     registerInboundHandler('demo.chunk', {
       priority: 'low',
       async handle(ctx, env) {
-        const payload = env.payload as unknown as DemoChunkPayload;
+        const payload = env.payload as DemoChunkPayload;
         const answer = await r.chunk(ctx.serverId, payload);
         await pace.take(ctx.serverId, payload.data.length + 256);
         sendAck(ctx, env, answer);
@@ -989,7 +996,7 @@ export function startDemoStreams(options: Partial<DemoStreamOptions> = {}): Demo
     registerInboundHandler('demo.end', {
       priority: 'low',
       async handle(ctx, env) {
-        const answer = await r.end(ctx.serverId, env.payload as unknown as DemoEndPayload);
+        const answer = await r.end(ctx.serverId, env.payload as DemoEndPayload);
         sendAck(ctx, env, answer);
       },
     }),

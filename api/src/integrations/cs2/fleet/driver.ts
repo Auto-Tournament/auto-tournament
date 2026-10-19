@@ -71,7 +71,6 @@ import type {
   AssignConfig,
   CmdName,
   FleetEventData,
-  FleetEventPayload,
   HelloPayload,
   MatchPhase,
   MatchUpdateOp,
@@ -363,7 +362,7 @@ async function servedMatchConfig(match: DbMatchRow): Promise<MatchConfig> {
 export async function assignConfigPreview(
   matchSlug: string
 ): Promise<
-  | { config: unknown; notAssignable?: undefined }
+  | { config: object; notAssignable?: undefined }
   | { config?: undefined; notAssignable: string; served: MatchConfig }
   | null
 > {
@@ -387,7 +386,7 @@ async function streamsDemos(fleetServerId: string): Promise<boolean> {
     [fleetServerId]
   );
   try {
-    const caps = row?.capabilities ? (JSON.parse(row.capabilities) as unknown) : [];
+    const caps = row?.capabilities ? (JSON.parse(row.capabilities) as string[]) : [];
     return Array.isArray(caps) && caps.includes(DEMO_STREAM_CAPABILITY);
   } catch {
     return false;
@@ -832,7 +831,7 @@ export interface FleetCommandOutcome {
 export async function runFleetCommand(
   cs2ServerId: string,
   name: CmdName,
-  args: Record<string, unknown>,
+  args: object,
   issuedBy: IssuedBy,
   options: { auditId?: string } = {}
 ): Promise<FleetCommandOutcome> {
@@ -1031,7 +1030,7 @@ export async function resolveWelcomeAssignment(
 
 /** After a welcome: a server holding a match the platform has moved on from gets `superseded` (§6.1, §11.4). */
 async function checkHello(fleetServerId: string, hello: HelloPayload): Promise<void> {
-  const state = hello.state as { match_id?: unknown; epoch?: unknown } | null | undefined;
+  const state = hello.state;
   if (state && typeof state.match_id === 'string' && typeof state.epoch === 'number') {
     // A match the platform never assigned (a local `ru match load`) has no
     // record: not ours to end.
@@ -1073,7 +1072,7 @@ function triggerAllocation(): void {
 
 async function onFleetEvent(notice: FleetEventNotice): Promise<void> {
   const env = notice.envelope;
-  const payload = env.payload as unknown as FleetEventPayload;
+  const payload = env.payload;
   const slug = payload.match_id;
 
   if (env.type === 'event.admin_called') {
