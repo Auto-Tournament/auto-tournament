@@ -19,6 +19,7 @@ import {
   type LoadableModule,
   type ModuleFailure,
 } from './manifest';
+import type { Untrusted } from '../utils/untrusted';
 
 /** How long one module may take to import before it is "broken: timed out" (§4.2). */
 export const IMPORT_TIMEOUT_MS = 10_000;
@@ -33,7 +34,7 @@ export interface LoadDeps {
   /** Ids a code module may not take: the built-ins compiled into this bundle. */
   takenIds: readonly string[];
   /** `(url) => import(url)` in the browser. */
-  importModule: (url: string) => Promise<unknown>;
+  importModule: (url: string) => Promise<Untrusted>;
   /**
    * Makes the shared packages available to the shims. Called once, and only
    * when at least one module passed the checks that need no code.
@@ -82,10 +83,15 @@ async function diagnoseImport(
         return failure('import', 'notFound', `its code is missing (HTTP 404 for ${url})`, { url });
       }
       if (!response.ok) {
-        return failure('import', 'httpError', `its code could not be fetched (HTTP ${response.status})`, {
-          status: response.status,
-          url,
-        });
+        return failure(
+          'import',
+          'httpError',
+          `its code could not be fetched (HTTP ${response.status})`,
+          {
+            status: response.status,
+            url,
+          }
+        );
       }
       const type = response.headers.get('content-type') ?? '';
       if (!/javascript|ecmascript/i.test(type)) {
@@ -140,7 +146,7 @@ export async function loadCodeModules(
       if (refused) return { id: entry.id, ok: false, failure: refused };
       if (sharedFailure) return { id: entry.id, ok: false, failure: sharedFailure };
 
-      let namespace: unknown;
+      let namespace: Untrusted;
       try {
         namespace = await withTimeout(deps.importModule(entry.client.entry), timeoutMs);
       } catch (error) {

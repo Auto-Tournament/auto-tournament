@@ -8,6 +8,7 @@ import type {
   TournamentResponse,
   TournamentBracketResponse,
 } from '../types';
+import type { Untrusted } from '../utils/untrusted';
 
 // Extended Tournament with teams array
 interface TournamentDetailed extends Tournament {
@@ -104,7 +105,7 @@ export const useTournament = () => {
        * A game module's own object (CS2: `cs2`, the map pool and round
        * rules), stored and forwarded unread by the core.
        */
-      [moduleKey: string]: unknown;
+      [moduleKey: string]: Untrusted;
     };
   }) => {
     const response = await api[tournament ? 'put' : 'post']<
@@ -120,7 +121,7 @@ export const useTournament = () => {
    * re-sending the whole wizard payload. The server merges it into the
    * tournament's existing settings.
    */
-  const updateSettings = async (settingsPatch: Record<string, unknown>) => {
+  const updateSettings = async (settingsPatch: Record<string, Untrusted>) => {
     const response = await api.put<TournamentResponse & { tournament: TournamentDetailed }>(
       '/api/tournament',
       { settings: settingsPatch }
@@ -153,7 +154,7 @@ export const useTournament = () => {
   };
 
   const startTournament = async (baseUrl: string, options?: { enableSimulation?: boolean }) => {
-    const payload: Record<string, unknown> = { baseUrl };
+    const payload: Record<string, Untrusted> = { baseUrl };
     if (options && typeof options.enableSimulation === 'boolean') {
       payload.enableSimulation = options.enableSimulation;
     }

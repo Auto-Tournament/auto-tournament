@@ -5,6 +5,7 @@
  */
 
 import type { Team, Match, Tournament, TeamStats, TeamStanding } from './index';
+import type { Untrusted } from '../utils/untrusted';
 
 // Base response types
 export interface ApiResponse {
@@ -191,7 +192,7 @@ export interface LogEntry {
   timestamp: string;
   level: string;
   message: string;
-  meta?: Record<string, unknown>;
+  meta?: Record<string, Untrusted>;
 }
 
 export interface LogsResponse extends ApiResponse {
@@ -206,7 +207,7 @@ export interface ServerEvent {
   event: {
     event: string;
     matchid: string;
-    [key: string]: unknown;
+    [key: string]: Untrusted;
   };
 }
 

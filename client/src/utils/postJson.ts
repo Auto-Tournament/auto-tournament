@@ -3,9 +3,10 @@
  * admin login pages branch on the status and on fields of an error body
  * (`totpRequired`, `problem`), which `api.post` would throw away.
  */
-export async function postJson<T = Record<string, unknown>>(
+import type { Untrusted } from './untrusted';
+export async function postJson<T = Record<string, Untrusted>>(
   url: string,
-  body: unknown
+  body: object
 ): Promise<{ status: number; data: T & { success?: boolean; error?: string } }> {
   const response = await fetch(url, {
     method: 'POST',

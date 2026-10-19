@@ -2,6 +2,7 @@
  * Tournament-related types
  */
 
+import type { Untrusted } from '../utils/untrusted';
 export interface Tournament {
   id: number;
   name: string;
@@ -55,7 +56,7 @@ export interface TournamentSettings {
   overtimeMode?: 'enabled' | 'disabled';
   overtimeSegments?: number;
   /** Custom veto step order, keyed by series format. Presence implies a non-default veto. */
-  customVetoOrder?: Record<string, unknown>;
+  customVetoOrder?: Record<string, Untrusted>;
 
   // Organizer-written event page content (public "Overview" tab). All
   // optional; a page section hides when its data is empty.
@@ -121,7 +122,7 @@ export interface RoundRobinStanding {
 
 export interface BracketData {
   tournament: Tournament;
-  matches: unknown[]; // Avoid circular dependency, use Match type in actual usage
+  matches: Untrusted[]; // Avoid circular dependency, use Match type in actual usage
   totalRounds: number;
   swissStandings?: SwissStanding[];
   roundRobinStandings?: RoundRobinStanding[];

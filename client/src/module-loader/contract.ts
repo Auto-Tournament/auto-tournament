@@ -19,6 +19,7 @@ import {
   type ModuleFailure,
 } from './manifest';
 import { localesProblem } from './moduleLocales';
+import type { Untrusted } from '../utils/untrusted';
 
 /**
  * Null when `platform` satisfies the module's declared `range`
@@ -27,7 +28,10 @@ import { localesProblem } from './moduleLocales';
  * Plain semver: while the API is `0.x`, `^0.1.0` already means "0.1 only",
  * so the loader needs no special case for it.
  */
-export function checkClientApi(range: string | null | undefined, platform: string): ModuleFailure | null {
+export function checkClientApi(
+  range: string | null | undefined,
+  platform: string
+): ModuleFailure | null {
   if (typeof range !== 'string' || !range.trim()) {
     return failure(
       'contract',
@@ -56,18 +60,18 @@ const REACT_ELEMENT = Symbol.for('react.element');
 const REACT_TRANSITIONAL_ELEMENT = Symbol.for('react.transitional.element');
 
 /** A function component, a class, or memo/forwardRef/lazy (objects with a React `$$typeof`). */
-export function isComponent(value: unknown): boolean {
+export function isComponent(value: Untrusted): boolean {
   if (typeof value === 'function') return true;
   return (
     !!value &&
     typeof value === 'object' &&
-    typeof (value as { $$typeof?: unknown }).$$typeof === 'symbol'
+    typeof (value as { $$typeof?: Untrusted }).$$typeof === 'symbol'
   );
 }
 
-function isElement(value: unknown): boolean {
+function isElement(value: Untrusted): boolean {
   if (!value || typeof value !== 'object') return false;
-  const tag = (value as { $$typeof?: unknown }).$$typeof;
+  const tag = (value as { $$typeof?: Untrusted }).$$typeof;
   return tag === REACT_ELEMENT || tag === REACT_TRANSITIONAL_ELEMENT;
 }
 
@@ -81,10 +85,10 @@ export const TOURNAMENT_SETUP_FUNCTIONS = [
   'changes',
 ] as const;
 
-const isObject = (value: unknown): value is Record<string, unknown> =>
+const isObject = (value: Untrusted): value is Record<string, Untrusted> =>
   !!value && typeof value === 'object' && !Array.isArray(value);
 
-const optionalString = (value: unknown) => value === undefined || typeof value === 'string';
+const optionalString = (value: Untrusted) => value === undefined || typeof value === 'string';
 
 const NAV_LABEL_SURFACES: readonly string[] = [
   'nav',
@@ -95,7 +99,7 @@ const NAV_LABEL_SURFACES: readonly string[] = [
 ] satisfies readonly IntegrationNavLabelSurface[];
 
 /** What is wrong with the shape, or null. Each answer names the field, for the module's author. */
-function shapeProblem(def: Record<string, unknown>): string | null {
+function shapeProblem(def: Record<string, Untrusted>): string | null {
   if (!isObject(def.capabilities)) return 'capabilities is missing';
   for (const key of CAPABILITY_KEYS) {
     if (typeof def.capabilities[key] !== 'boolean') return `capabilities.${key} is not a boolean`;
@@ -127,7 +131,8 @@ function shapeProblem(def: Record<string, unknown>): string | null {
   const start = def.tournamentStart;
   if (isObject(start)) {
     if (start.confirmView === undefined) return 'tournamentStart.confirmView is missing';
-    if (typeof start.confirmLabel !== 'string') return 'tournamentStart.confirmLabel is not a string';
+    if (typeof start.confirmLabel !== 'string')
+      return 'tournamentStart.confirmLabel is not a string';
     if (typeof start.cancelLabel !== 'string') return 'tournamentStart.cancelLabel is not a string';
     if (start.ownsFailure !== undefined && typeof start.ownsFailure !== 'function') {
       return 'tournamentStart.ownsFailure is not a function';
@@ -153,7 +158,8 @@ function shapeProblem(def: Record<string, unknown>): string | null {
 
   if (!Array.isArray(def.routes)) return 'routes is not an array';
   for (const [index, route] of def.routes.entries()) {
-    if (!isObject(route) || typeof route.path !== 'string') return `routes[${index}].path is not a string`;
+    if (!isObject(route) || typeof route.path !== 'string')
+      return `routes[${index}].path is not a string`;
     if (route.scope !== 'admin' && route.scope !== 'admin-standalone' && route.scope !== 'site') {
       return `routes[${index}].scope is not 'admin', 'admin-standalone' or 'site'`;
     }
@@ -171,7 +177,8 @@ function shapeProblem(def: Record<string, unknown>): string | null {
     if (item.labels !== undefined) {
       if (!isObject(item.labels)) return `navItems[${index}].labels is not an object`;
       for (const [surface, key] of Object.entries(item.labels)) {
-        if (!NAV_LABEL_SURFACES.includes(surface)) return `navItems[${index}].labels.${surface} is not a label`;
+        if (!NAV_LABEL_SURFACES.includes(surface))
+          return `navItems[${index}].labels.${surface} is not a label`;
         if (typeof key !== 'string') return `navItems[${index}].labels.${surface} is not a string`;
       }
     }
@@ -199,15 +206,14 @@ function shapeProblem(def: Record<string, unknown>): string | null {
 }
 
 export type ValidatedExport =
-  | { ok: true; integration: ClientGameIntegration }
-  | { ok: false; failure: ModuleFailure };
+  { ok: true; integration: ClientGameIntegration } | { ok: false; failure: ModuleFailure };
 
 /**
  * The module namespace's default export, checked as a `ClientGameIntegration`
  * whose id is the one the server listed and not one this bundle already has.
  */
 export function validateModuleExport(
-  namespace: unknown,
+  namespace: Untrusted,
   expectedId: string,
   takenIds: readonly string[]
 ): ValidatedExport {
@@ -244,10 +250,16 @@ export function validateModuleExport(
   if (problem) {
     return {
       ok: false,
-      failure: failure('contract', 'badExport', `its default export is not a module definition: ${problem}`, {
-        detail: problem,
-      }),
+      failure: failure(
+        'contract',
+        'badExport',
+        `its default export is not a module definition: ${problem}`,
+        {
+          detail: problem,
+        }
+      ),
     };
   }
+  // eslint-disable-next-line no-restricted-syntax -- shapeProblem() above checked every field of the contract
   return { ok: true, integration: def as unknown as ClientGameIntegration };
 }

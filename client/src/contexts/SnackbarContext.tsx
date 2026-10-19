@@ -146,7 +146,7 @@ const InfoSnackbar = createSnackbarVariant('info', 'InfoSnackbar');
 
 // Custom Slide transition with smooth easing for snackbars
 const SlideTransition = React.forwardRef<
-  unknown,
+  HTMLElement,
   TransitionProps & { children: React.ReactElement }
 >((props, ref) => {
   return (

@@ -2,8 +2,15 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { api } from '../utils/api';
 import { io } from 'socket.io-client';
 import { onSocketReconnect } from '../utils/socketResync';
-import type { Match, MatchLiveStats, RoundRobinStanding, SwissStanding, Tournament } from '../types';
+import type {
+  Match,
+  MatchLiveStats,
+  RoundRobinStanding,
+  SwissStanding,
+  Tournament,
+} from '../types';
 import { useSnackbar } from '../contexts/SnackbarContext';
+import type { Untrusted } from '../utils/untrusted';
 
 const LIVE_STATS_CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
 const getLiveStatsCacheKey = (tournamentId: number) => `mat:bracket:liveStats:v1:${tournamentId}`;
@@ -21,7 +28,10 @@ function readLiveStatsCache(tournamentId: number): Record<string, CachedLiveStat
   }
 }
 
-function writeLiveStatsCache(tournamentId: number, next: Record<string, CachedLiveStatsEntry>): void {
+function writeLiveStatsCache(
+  tournamentId: number,
+  next: Record<string, CachedLiveStatsEntry>
+): void {
   try {
     globalThis.localStorage.setItem(getLiveStatsCacheKey(tournamentId), JSON.stringify(next));
   } catch {
@@ -165,8 +175,7 @@ export const useBracket = () => {
           );
         } else {
           showSuccess(
-            response.message ||
-              'Tournament start requested. Servers will be allocated shortly.'
+            response.message || 'Tournament start requested. Servers will be allocated shortly.'
           );
         }
         await loadBracket();
@@ -201,13 +210,13 @@ export const useBracket = () => {
 
     const newSocket = io();
 
-    const applyMatchPatch = (payload: Record<string, unknown>) => {
+    const applyMatchPatch = (payload: Record<string, Untrusted>) => {
       if (!payload) return;
       const slug =
         (payload.slug as string | undefined) ||
         (payload.matchSlug as string | undefined) ||
         (payload.match && typeof payload.match === 'object'
-          ? (payload.match as { slug?: string }).slug ?? undefined
+          ? ((payload.match as { slug?: string }).slug ?? undefined)
           : undefined);
 
       if (!slug) {
@@ -271,9 +280,16 @@ export const useBracket = () => {
         // series score (maps won). We must NOT overwrite them with current-map
         // round score from liveStats, otherwise bracket tiles show 8–5 etc.
         // Store liveStats separately so tooltips/details can still show rounds.
-        const liveStats = (payload as {
-          liveStats?: { team1Score?: number; team2Score?: number; team1SeriesScore?: number; team2SeriesScore?: number };
-        }).liveStats;
+        const liveStats = (
+          payload as {
+            liveStats?: {
+              team1Score?: number;
+              team2Score?: number;
+              team1SeriesScore?: number;
+              team2SeriesScore?: number;
+            };
+          }
+        ).liveStats;
         const effectiveStatus = newStatus ?? current.status;
         if (liveStats && effectiveStatus !== 'completed') {
           next.liveStats = liveStats as MatchLiveStats;
@@ -305,8 +321,8 @@ export const useBracket = () => {
             current.team1?.id === winnerId
               ? current.team1
               : current.team2?.id === winnerId
-              ? current.team2
-              : undefined;
+                ? current.team2
+                : undefined;
           if (winnerTeam) {
             next.winner = winnerTeam;
             changed = true;
@@ -339,7 +355,7 @@ export const useBracket = () => {
       });
     };
 
-    const handleBracketUpdate = (event: Record<string, unknown>) => {
+    const handleBracketUpdate = (event: Record<string, Untrusted>) => {
       if (!event) return;
 
       const action = event.action as string | undefined;
@@ -441,10 +457,7 @@ export const useBracket = () => {
             (event.team1Score as number | undefined) ??
             (event as { team1_score?: number }).team1_score ??
             undefined;
-          if (
-            typeof updatedTeam1Score === 'number' &&
-            updatedTeam1Score !== current.team1Score
-          ) {
+          if (typeof updatedTeam1Score === 'number' && updatedTeam1Score !== current.team1Score) {
             next.team1Score = updatedTeam1Score;
             changed = true;
           }
@@ -453,10 +466,7 @@ export const useBracket = () => {
             (event.team2Score as number | undefined) ??
             (event as { team2_score?: number }).team2_score ??
             undefined;
-          if (
-            typeof updatedTeam2Score === 'number' &&
-            updatedTeam2Score !== current.team2Score
-          ) {
+          if (typeof updatedTeam2Score === 'number' && updatedTeam2Score !== current.team2Score) {
             next.team2Score = updatedTeam2Score;
             changed = true;
           }
