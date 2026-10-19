@@ -40,7 +40,7 @@
 import type { MatchConfig } from '../../types/match.types';
 import type { TournamentResponse, TournamentSettings } from '../../types/tournament.types';
 import type { DbTournamentRow } from '../../types/database.types';
-import { normalizeConfigPlayers } from '../../utils/playerTransform';
+import { normalizeConfigPlayers, type StoredConfigPlayers } from '../../utils/playerTransform';
 import {
   cs2TournamentSettings,
   storedCs2Settings,
@@ -54,6 +54,7 @@ import type {
   AllocateResult,
   BuildMatchConfigContext,
   GameIntegration,
+  IntegrationData,
   MatchContext,
   MatchDescription,
   MatchDescriptionTeam,
@@ -92,9 +93,7 @@ async function resolveTournament(
  * the API always normalised them (`normalizeConfigPlayers`).
  */
 function describeTeam(team: MatchConfig['team1'] | undefined): MatchDescriptionTeam {
-  const players = normalizeConfigPlayers(
-    team?.players as Record<string, unknown> | Array<unknown> | undefined
-  );
+  const players = normalizeConfigPlayers(team?.players);
   return {
     ...(team?.id ? { id: team.id } : {}),
     name: team?.name ?? '',
@@ -106,21 +105,6 @@ function describeTeam(team: MatchConfig['team1'] | undefined): MatchDescriptionT
       ...(p.avatar ? { avatar: p.avatar } : {}),
     })),
   };
-}
-
-/** `matches.config` as stored (JSON text) or already parsed; anything unreadable describes as empty. */
-function parseConfig(config: unknown): Partial<MatchConfig> {
-  let value = config;
-  if (typeof value === 'string') {
-    try {
-      value = JSON.parse(value);
-    } catch {
-      return {};
-    }
-  }
-  return value && typeof value === 'object' && !Array.isArray(value)
-    ? (value as Partial<MatchConfig>)
-    : {};
 }
 
 /** The pool's allocation outcome in the interface's terms. */
@@ -167,7 +151,15 @@ function usesVeto(format: string | undefined): boolean {
   return format === 'bo1' || format === 'bo3' || format === 'bo5';
 }
 
-export const cs2Integration: GameIntegration = {
+/** CS2's own data the core stores and hands back (`GameIntegration<Cs2Data>`). */
+interface Cs2Data extends IntegrationData {
+  /** `matches.config`: the Ready Up / MatchZy match config. */
+  config: Partial<MatchConfig>;
+  /** A standalone match's admin settings: the config fields they set. */
+  matchSettings: Partial<MatchConfig>;
+}
+
+export const cs2Integration: GameIntegration<Cs2Data> = {
   id: 'cs2',
   displayName: 'Counter-Strike 2',
   catalog: {
@@ -203,7 +195,7 @@ export const cs2Integration: GameIntegration = {
       if (ctx.settings !== undefined) {
         return buildStandaloneMatchConfig(
           ctx.slug,
-          (ctx.settings ?? {}) as Partial<MatchConfig>,
+          ctx.settings ?? {},
           ctx.defaultsFrom?.full ?? null
         );
       }
@@ -219,8 +211,7 @@ export const cs2Integration: GameIntegration = {
     });
   },
 
-  describeMatch(config): MatchDescription {
-    const cfg = parseConfig(config);
+  describeMatch(cfg): MatchDescription {
     return {
       seriesLength: typeof cfg.num_maps === 'number' ? cfg.num_maps : 1,
       maps: Array.isArray(cfg.maplist) ? [...cfg.maplist] : [],
@@ -625,30 +616,22 @@ export const cs2Integration: GameIntegration = {
 
   /**
    * Steam IDs from the `{ steamid }` player arrays the manual match modal
-   * stores. Null when the config is not JSON; a shape it cannot read throws.
+   * stores (the core hands no config that is not JSON).
    */
   standaloneRoster(config) {
-    let parsed: unknown;
-    try {
-      parsed = typeof config === 'string' ? JSON.parse(config) : config;
-    } catch {
-      return null;
-    }
-    const cfg = parsed as { team1?: { players?: unknown }; team2?: { players?: unknown } };
+    const cfg = config as {
+      team1?: { players?: StoredConfigPlayers };
+      team2?: { players?: StoredConfigPlayers };
+    };
     // A roster is a list of `{ steamid }` (matchmaking, the platform's own
     // configs) or MatchZy's `{ "<steamid>": "<name>" }` (a match made by hand
     // or from a template). The second used to throw here, so a finished
     // standalone match wrote no player stats and never showed in anyone's
     // recent matches (NTLAN test, Vikunja 1831).
-    const steamIds = (players: unknown): string[] => {
+    const steamIds = (players: StoredConfigPlayers | undefined): string[] => {
       if (Array.isArray(players)) {
         return players
-          .map((p) =>
-            p && typeof p === 'object'
-              ? ((p as { steamid?: string; steamId?: string }).steamid ??
-                (p as { steamId?: string }).steamId)
-              : null
-          )
+          .map((p) => (p && typeof p === 'object' ? (p.steamid ?? p.steamId) : null))
           .filter((p): p is string => typeof p === 'string' && p !== '');
       }
       if (players && typeof players === 'object')

@@ -15,7 +15,7 @@ import type { MatchDescription, MatchDescriptionTeam } from '../../integrations/
 import type { DbMatchRow } from '../../types/database.types';
 import { matchLiveStatsService } from '../matchLiveStatsService';
 import { getMapResults, type MatchMapResultRecord } from '../matchMapResultService';
-import { currentMatchConfig } from '../../utils/matchIntegration';
+import { currentMatchConfig, describeMatch } from '../../utils/matchIntegration';
 import { externalIdsForTeams } from '../teamExternalIds';
 import {
   connectLinks,
@@ -152,11 +152,10 @@ function winnerOf(record: MatchMapResultRecord): WebhookMapScore['winner'] {
 
 async function describe(row: DbMatchRow): Promise<MatchDescription | null> {
   try {
-    const config = await currentMatchConfig(row);
-    return integrationForMatch(row).describeMatch(config);
+    return describeMatch({ game: row.game, config: await currentMatchConfig(row) });
   } catch {
     try {
-      return integrationForMatch(row).describeMatch(row.config ? JSON.parse(row.config) : null);
+      return describeMatch(row);
     } catch {
       return null;
     }
