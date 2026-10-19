@@ -38,6 +38,7 @@ import type {
   BuildMatchConfigContext,
   CapacityScope,
   GameIntegration,
+  IntegrationData,
   MatchContext,
   MatchDescription,
   MatchDescriptionTeam,
@@ -53,9 +54,11 @@ import {
   readSetup,
   validateSetup,
   type ConfirmationMode,
+  type ManualReportSettings,
   type TimeoutAction,
 } from './setup';
 import type { TournamentSettings } from '../../types/tournament.types';
+import type { Untrusted } from '../../utils/untrusted';
 
 export { MANUAL_REPORT_GAME_ID } from './catalog';
 
@@ -109,10 +112,11 @@ async function readTeam(teamId: string | undefined | null): Promise<ManualReport
 function rosterOf(json: string | null): ManualReportTeam['players'] {
   const players: ManualReportTeam['players'] = [];
   try {
-    const parsed: unknown = JSON.parse(json || '[]');
+    // Rosters of every age: read leniently.
+    const parsed: Untrusted = JSON.parse(json || '[]');
     const list = parsed && typeof parsed === 'object' ? Object.values(parsed) : [];
     for (const entry of list) {
-      const player = entry as { steamId?: unknown; id?: unknown; name?: unknown };
+      const player = entry as { steamId?: Untrusted; id?: Untrusted; name?: Untrusted };
       const id = typeof player.steamId === 'string' ? player.steamId : player.id;
       if (typeof id === 'string' && id) {
         players.push({ id, name: typeof player.name === 'string' ? player.name : '' });
@@ -122,20 +126,6 @@ function rosterOf(json: string | null): ManualReportTeam['players'] {
     // An unreadable roster describes as empty, never throws: describeMatch is total.
   }
   return players;
-}
-
-function parseConfig(config: unknown): Partial<ManualReportMatchConfig> {
-  let value = config;
-  if (typeof value === 'string') {
-    try {
-      value = JSON.parse(value);
-    } catch {
-      return {};
-    }
-  }
-  return value && typeof value === 'object' && !Array.isArray(value)
-    ? (value as Partial<ManualReportMatchConfig>)
-    : {};
 }
 
 function describeTeam(team: Partial<ManualReportTeam> | undefined): MatchDescriptionTeam {
@@ -168,7 +158,14 @@ async function setLive(slug: string): Promise<void> {
   }
 }
 
-export const manualReportIntegration: GameIntegration = {
+/** This module's own data the core stores and hands back. */
+interface ManualReportData extends IntegrationData {
+  config: Partial<ManualReportMatchConfig>;
+  /** A standalone match's admin settings: its series length and reporting rules. */
+  matchSettings: { seriesLength?: number; manualReport?: ManualReportSettings };
+}
+
+export const manualReportIntegration: GameIntegration<ManualReportData> = {
   id: MANUAL_REPORT_GAME_ID,
   displayName: 'Manual reporting',
   // The module is not a game, so it has no catalogue row of its own. Nor does
@@ -192,7 +189,9 @@ export const manualReportIntegration: GameIntegration = {
     return validateSetup(input);
   },
 
-  async buildMatchConfig(ctx: BuildMatchConfigContext): Promise<ManualReportMatchConfig> {
+  async buildMatchConfig(
+    ctx: BuildMatchConfigContext<ManualReportData>
+  ): Promise<ManualReportMatchConfig> {
     // A standalone match carries the admin's own settings in `ctx.settings`;
     // a bracket match reads the tournament's. `readSetup` takes either shape.
     const standaloneSettings =
@@ -200,7 +199,7 @@ export const manualReportIntegration: GameIntegration = {
         ? null
         : { id: 0, type: '', format: '', settings: ctx.settings as TournamentSettings };
     const setup = readSetup(ctx.tournament ?? standaloneSettings, ctx.game);
-    const standalone = parseConfig(ctx.settings);
+    const standalone = ctx.settings ?? {};
     const seriesLength = ctx.tournament
       ? setup.bestOf
       : positiveOr(standalone.seriesLength, setup.bestOf);
@@ -220,8 +219,7 @@ export const manualReportIntegration: GameIntegration = {
     };
   },
 
-  describeMatch(config: unknown): MatchDescription {
-    const cfg = parseConfig(config);
+  describeMatch(cfg): MatchDescription {
     return {
       seriesLength: positiveOr(cfg.seriesLength, 1),
       // No maps: a manually reported series is a run of games, not of maps.
@@ -320,7 +318,7 @@ export const manualReportIntegration: GameIntegration = {
   },
 };
 
-function positiveOr(value: unknown, fallback: number): number {
+function positiveOr(value: number | undefined, fallback: number): number {
   const n = Number(value);
   return Number.isInteger(n) && n > 0 ? n : fallback;
 }

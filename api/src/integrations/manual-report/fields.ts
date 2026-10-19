@@ -25,6 +25,7 @@ import type {
   CustomStatValueType,
   DbCustomStatFieldRow,
 } from '../../types/matchReport.types';
+import type { Untrusted } from '../../utils/untrusted';
 
 export interface CustomStatField {
   id: number;
@@ -82,8 +83,7 @@ export async function listFields(tournamentId: number): Promise<CustomStatField[
 }
 
 export type FieldsCheck =
-  | { ok: true; fields: CustomStatFieldInput[] }
-  | { ok: false; error: string };
+  { ok: true; fields: CustomStatFieldInput[] } | { ok: false; error: string };
 
 /**
  * Check a whole set of fields before any of it is written.
@@ -91,7 +91,7 @@ export type FieldsCheck =
  * All or nothing on purpose: a half-applied set would leave a tournament
  * asking for fields an admin had already replaced.
  */
-export function validateFields(input: unknown): FieldsCheck {
+export function validateFields(input: Untrusted): FieldsCheck {
   if (!Array.isArray(input)) return { ok: false, error: 'fields must be an array' };
   if (input.length > 50) {
     return { ok: false, error: 'A tournament may ask for at most 50 extra fields' };
@@ -115,7 +115,8 @@ export function validateFields(input: unknown): FieldsCheck {
 
     const label = typeof entry.label === 'string' ? entry.label.trim() : '';
     if (!label) return { ok: false, error: `${where}: label is required` };
-    if (label.length > 80) return { ok: false, error: `${where}: label is longer than 80 characters` };
+    if (label.length > 80)
+      return { ok: false, error: `${where}: label is longer than 80 characters` };
 
     const valueType = entry.valueType ?? 'number';
     if (!VALUE_TYPES.includes(valueType)) {
