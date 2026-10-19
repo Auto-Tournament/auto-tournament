@@ -111,7 +111,8 @@ router.get('/leaderboards', async (req: Request, res: Response) => {
   const days = Number(req.query.days);
   const limit = Math.max(1, Math.min(100, Number(req.query.limit) || 50));
   try {
-    const where: string[] = [`s.player_id ~ '^[0-9]{15,20}$'`];
+    // A deleted player is a tombstone kept for the match rows, not someone to rank.
+    const where: string[] = [`s.player_id ~ '^[0-9]{15,20}$'`, 'p.deleted_at IS NULL'];
     const args: SqlValue[] = [];
     if (Number.isInteger(tournament) && tournament > 0) {
       where.push('m.tournament_id = ?');
