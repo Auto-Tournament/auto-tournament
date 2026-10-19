@@ -170,6 +170,10 @@ docker compose up -d --force-recreate
 # up (the link stays in its home, so it starts with the container from now on).
 for _ in $(seq 1 60); do
   if docker exec -u 99 at-recorder sh -c 'XDG_RUNTIME_DIR=/run/user/99 systemctl --user is-system-running >/dev/null 2>&1 || [ -S /run/user/99/bus ]'; then
+    # An older recorder kept its unit and settings in the home, and a unit
+    # there wins over this one (/etc/systemd/user): it ran its old worker
+    # against its old key. Put them aside.
+    docker exec -u 99 at-recorder sh -c 'c=$HOME/.config; [ -f "$c/systemd/user/at-recorder.service" ] || exit 0; mkdir -p "$HOME/.old-recorder" && mv "$c/systemd/user/at-recorder.service" "$HOME/.old-recorder/" && mv -f "$c/at-recorder.env" "$HOME/.old-recorder/" 2>/dev/null; rm -f "$c/systemd/user/default.target.wants/at-recorder.service"' || true
     docker exec -u 99 at-recorder sh -c 'XDG_RUNTIME_DIR=/run/user/99 systemctl --user daemon-reload && XDG_RUNTIME_DIR=/run/user/99 systemctl --user enable --now at-recorder' >/dev/null 2>&1 && break
   fi
   sleep 3
@@ -180,17 +184,22 @@ docker exec -u 99 at-recorder sh -c 'XDG_RUNTIME_DIR=/run/user/99 systemctl --us
 IP=$(hostname -I | awk '{print $1}')
 echo
 echo "Recorder \"$NAME\" is set up against $AT_URL."
-if [ ! -d "$DIR/games/GameLibrary/Steam/steamapps/common/Counter-Strike Global Offensive" ]; then
-  # The web UI's first-run password, while it has not been changed.
-  BOOT=$DIR/state/auth/bootstrap-password
-  for _ in $(seq 1 40); do [ -s "$BOOT" ] || docker exec at-recorder test -s /var/lib/steam-headless/auth/bootstrap-password 2>/dev/null && break; sleep 3; done
+# The web UI's first-run password, shown until it has been changed (also when
+# CS2 is already there: Steam may still need its login, e.g. on a new home).
+for _ in $(seq 1 40); do docker exec at-recorder test -s /var/lib/steam-headless/auth/state.json 2>/dev/null && break; sleep 3; done
+PASS=
+if docker exec at-recorder grep -q '"phase": *"bootstrap"' /var/lib/steam-headless/auth/state.json 2>/dev/null; then
   PASS=$(docker exec at-recorder cat /var/lib/steam-headless/auth/bootstrap-password 2>/dev/null || true)
-  echo "Once only: open https://$IP:$WEB_PORT (a self-signed certificate) and sign in"
-  if [ -n "$PASS" ]; then
-    echo "  username: steamheadless"
-    echo "  password: $PASS   (first-run; the web UI then asks you to set your own)"
-  fi
-  echo "Sign Steam in"
+fi
+echo "The desktop's web UI, for Steam's login: https://$IP:$WEB_PORT (a self-signed certificate)"
+if [ -n "$PASS" ]; then
+  echo "  username: steamheadless"
+  echo "  password: $PASS   (first-run; the web UI then asks you to set your own)"
+fi
+if [ ! -d "$DIR/games/GameLibrary/Steam/steamapps/common/Counter-Strike Global Offensive" ]; then
+  echo "Sign Steam in there"
   echo "with the recorder account, set it to offline mode and install Counter-Strike 2"
   echo "into the /mnt/games library. The recorder starts taking work when CS2 is there."
+else
+  echo "If a clip fails with \"Steam has not logged on\", sign Steam in there again."
 fi
