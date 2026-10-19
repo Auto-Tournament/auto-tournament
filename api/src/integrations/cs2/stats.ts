@@ -10,6 +10,7 @@
  */
 
 import type { StatsSchema } from '../types';
+import type { SqlValue } from '../../config/database';
 
 /**
  * The metrics MatchZy Enhanced reports, i.e. the CS2 columns of `player_match_stats`
@@ -106,7 +107,7 @@ export function metricsFromPluginStats(stats: PluginStats): Record<string, numbe
  * The CS2 columns of a `player_match_stats` row. A player MatchZy Enhanced reported
  * nothing for (`{}`) gets zeros everywhere.
  */
-export function cs2PlayerStatsColumns(metrics: Record<string, number>): Record<string, unknown> {
+export function cs2PlayerStatsColumns(metrics: Record<string, number>): Record<string, SqlValue> {
   return {
     adr: metrics.adr ?? 0,
     total_damage: metrics.damage || 0,
@@ -131,7 +132,7 @@ export function cs2PlayerStatsColumns(metrics: Record<string, number>): Record<s
  * `adr` here is the unrounded damage / rounds (the stored column is rounded
  * to two decimals); the adjustment has always used the unrounded value.
  */
-export function cs2PlayerStatsMetrics(row: Record<string, unknown>): Record<string, number> {
+export function cs2PlayerStatsMetrics(row: Record<string, SqlValue>): Record<string, number> {
   const stat = row as {
     adr: number;
     total_damage: number;
