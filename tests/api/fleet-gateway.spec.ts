@@ -209,6 +209,21 @@ test.describe.serial('Fleet gateway', () => {
     await again.next((m) => m.type === 'ack' && m.ack === 3, 3000);
     again.close();
 
+    // A resume whose first message is past what the platform has (its database
+    // is older than the server's acks, e.g. restored from a backup): the jump
+    // is taken once. A gap later in the same session still closes it.
+    const restored = await FleetTestClient.connect(server.token);
+    const w3 = await restored.handshake(server.server_id, server.installId, {
+      stream: { id: 'stream-rel', last_tx_seq: 7, last_rx_seq: 0 },
+    });
+    expect(w3.payload.resume).toEqual({ result: 'resumed', platform_last_rx_seq: 3 });
+    restored.send(envelope('auth.rotated', {}, { seq: 7 }));
+    await restored.next((m) => m.type === 'ack' && m.ack === 7, 3000);
+    restored.send(envelope('auth.rotated', {}, { seq: 9 }));
+    const gapLater = await restored.waitClosed();
+    expect(gapLater.code).toBe(4400);
+    expect(gapLater.reason).toContain('seq gap');
+
     // A different stream id: reset, and the next seq it sends is the new base.
     const reset = await FleetTestClient.connect(server.token);
     const w2 = await reset.handshake(server.server_id, server.installId, {

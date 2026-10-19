@@ -129,6 +129,13 @@ class FleetSession {
   private rxStreamId: string | null = null;
   /** After a `reset` resume, the first reliable message sets the base. */
   private rxBaseUnknown = false;
+  /**
+   * After a `resumed` resume, the first reliable message may start past what
+   * the database has: the other side had acks for the ones in between and
+   * dropped them, and our database is older than that (restored from a
+   * backup). They can't come again, so that one jump is taken, not closed.
+   */
+  private firstAfterResume = false;
   private txAcked = 0;
   /** Highest platform seq written to this socket. */
   private lastSentSeq = 0;
@@ -283,6 +290,16 @@ class FleetSession {
     if (this.rxBaseUnknown) {
       this.rxSeq = seq - 1;
       this.rxBaseUnknown = false;
+    }
+    if (this.firstAfterResume) {
+      this.firstAfterResume = false;
+      if (seq > this.rxSeq + 1) {
+        log.warn(
+          `[FLEET] ${this.serverId}: resumed at ${seq}, the database had ${this.rxSeq}; ` +
+            `${seq - this.rxSeq - 1} message(s) acked before the database was restored are skipped`
+        );
+        this.rxSeq = seq - 1;
+      }
     }
     if (seq <= this.rxSeq) {
       // Already processed (a replay after a lost ack): ack it again.
@@ -469,6 +486,7 @@ class FleetSession {
     if (stream.rxStreamId === hello.stream.id && hello.stream.last_tx_seq >= stream.rxSeq) {
       result = 'resumed';
       this.rxSeq = stream.rxSeq;
+      this.firstAfterResume = true;
     } else {
       result = 'reset';
       this.rxSeq = 0;
