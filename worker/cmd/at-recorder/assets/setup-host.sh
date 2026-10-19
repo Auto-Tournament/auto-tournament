@@ -37,6 +37,16 @@ echo "== Docker"
 apt-get install -y -qq docker.io docker-compose-v2 curl ca-certificates gnupg
 systemctl enable --now docker
 usermod -aG docker "$USER_NAME"
+# start-recorder.sh, run as this user, gives the recorder's config to group 100
+# (the desktop's "users"), which only a member may do.
+usermod -aG users "$USER_NAME"
+
+echo "== Input devices (uinput, uhid)"
+# uhid is in linux-modules-extra, which a virtual (cloud / VM) kernel leaves out.
+# The meta package keeps it there through kernel updates.
+apt-get install -y -qq linux-image-extra-virtual
+printf 'uinput\nuhid\n' > /etc/modules-load.d/at-recorder.conf
+{ modprobe uinput && modprobe uhid; } 2>/dev/null || REBOOT=1
 
 echo "== NVIDIA container toolkit"
 if ! command -v nvidia-ctk >/dev/null; then
@@ -90,5 +100,5 @@ if [ "${REBOOT:-0}" = 1 ] || ! nvidia-smi >/dev/null 2>&1; then
   echo "Done. Reboot now for the driver (sudo reboot), then run the second line (start-recorder.sh) as $USER_NAME."
 else
   nvidia-smi --query-gpu=name,driver_version --format=csv,noheader
-  echo "Done. Log out and in (for the docker group), then run the second line (start-recorder.sh) as $USER_NAME."
+  echo "Done. Log out and in (for the docker and users groups), then run the second line (start-recorder.sh) as $USER_NAME."
 fi
