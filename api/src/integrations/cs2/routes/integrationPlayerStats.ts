@@ -9,6 +9,7 @@ import { Router, type Request, type Response } from 'express';
 import { requireIntegratorAuth } from '../../../middleware/auth';
 import { log } from '../../../utils/logger';
 import { playerStatTotals } from '../statTotals';
+import type { Untrusted } from '../../../utils/untrusted';
 
 /** At most this many tournaments or matches in one read. */
 export const SCOPE_MAX = 200;
@@ -108,7 +109,7 @@ integrationPlayerStatsRouter.use(requireIntegratorAuth);
  *       401: { description: No or a wrong token }
  */
 integrationPlayerStatsRouter.get('/', async (req: Request, res: Response) => {
-  const list = (v: unknown) =>
+  const list = (v: Untrusted) =>
     typeof v === 'string'
       ? v
           .split(',')

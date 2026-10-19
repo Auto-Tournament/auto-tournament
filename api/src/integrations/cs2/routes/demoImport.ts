@@ -13,6 +13,7 @@ import {
 } from '../demos/demoImport';
 
 import { FleetError } from '../demos/recorderFleet';
+import type { Untrusted } from '../../../utils/untrusted';
 
 const router = Router();
 
@@ -50,7 +51,7 @@ function fail(res: Response, error: unknown, fallback: string): Response {
  */
 router.post('/imports', requireAuth, async (req: Request, res: Response) => {
   try {
-    const body = (req.body ?? {}) as Record<string, unknown>;
+    const body = (req.body ?? {}) as Record<string, Untrusted>;
     return res.status(201).json({ success: true, ...(await createImport(body)) });
   } catch (error) {
     return fail(res, error, 'Could not start the import');

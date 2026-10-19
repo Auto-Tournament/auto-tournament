@@ -13,6 +13,7 @@ import { Router, type Request, type Response } from 'express';
 import { db } from '../../../config/database';
 import { requireAuth } from '../../../middleware/auth';
 import { log } from '../../../utils/logger';
+import type { Untrusted } from '../../../utils/untrusted';
 
 const router = Router();
 const NAME = /^[a-z0-9_]{1,64}$/;
@@ -87,7 +88,7 @@ router.put('/radars/:map/:level', requireAuth, async (req: Request, res: Respons
   if (!NAME.test(map) || !NAME.test(level) || !isPng || png.length > PNG_MAX_BYTES) {
     return res.status(400).json({ success: false, error: 'A map, a level and a PNG' });
   }
-  const n = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) ? v : null);
+  const n = (v: Untrusted) => (typeof v === 'number' && Number.isFinite(v) ? v : null);
   if (n(b.scale) === null || !n(b.scale))
     return res.status(400).json({ success: false, error: 'A scale' });
   try {

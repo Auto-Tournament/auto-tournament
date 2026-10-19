@@ -11,6 +11,7 @@ import { log } from '../../../utils/logger';
 import { settingsService } from '../../../services/settingsService';
 import { backfillMoments, LIST_MAX, listMoments } from '../demos/momentStore';
 import { MOMENT_KINDS } from '../demos/moments';
+import type { Untrusted } from '../../../utils/untrusted';
 
 /** The platform's address (Settings → webhook URL), for absolute links; null without it. */
 async function platformOrigin(): Promise<string | null> {
@@ -121,7 +122,7 @@ integrationHighlightsRouter.use(requireIntegratorAuth);
  */
 integrationHighlightsRouter.get('/', async (req: Request, res: Response) => {
   const q = req.query;
-  const str = (v: unknown) => (typeof v === 'string' && v.trim() ? v.trim() : undefined);
+  const str = (v: Untrusted) => (typeof v === 'string' && v.trim() ? v.trim() : undefined);
   const since = str(q.since);
   if (since !== undefined && !/^\d{1,18}$/.test(since)) {
     return res
@@ -188,7 +189,7 @@ export const momentAdminRouter = Router();
  *       400: { description: A bad parameter }
  */
 momentAdminRouter.post('/moments/backfill', requireAuth, async (req: Request, res: Response) => {
-  const body = (req.body ?? {}) as Record<string, unknown>;
+  const body = (req.body ?? {}) as Record<string, Untrusted>;
   const match = typeof body.match === 'string' && body.match.trim() ? body.match.trim() : undefined;
   const tournament = body.tournament === undefined ? undefined : Number(body.tournament);
   if (tournament !== undefined && !(Number.isInteger(tournament) && tournament > 0)) {
