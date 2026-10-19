@@ -19,7 +19,7 @@ import { RankingIcon, UserFocusIcon } from '@phosphor-icons/react';
 import { api } from '../utils/api';
 import { onSocketReconnect } from '../utils/socketResync';
 import type { Socket } from 'socket.io-client';
-import { io } from 'socket.io-client';
+import { scopedSocket } from '../utils/sharedSocket';
 import { NextMatchCard } from '../components/match/NextMatchCard';
 import { PendingTeamInvites } from '../components/team/PendingTeamInvites';
 import { useSoundSettings } from '../hooks/useSoundSettings';
@@ -644,7 +644,7 @@ export default function PlayerProfile() {
   // Lazily create a shared Socket.IO connection for this page once per mount.
   useEffect(() => {
     if (!socketRef.current) {
-      socketRef.current = io();
+      socketRef.current = scopedSocket();
     }
 
     const socket = socketRef.current;

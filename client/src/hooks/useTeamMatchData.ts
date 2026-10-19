@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { io } from 'socket.io-client';
+import { scopedSocket } from '../utils/sharedSocket';
 import { onSocketReconnect } from '../utils/socketResync';
 import type {
   Team,
@@ -301,7 +301,7 @@ export function useTeamMatchData(
     loadTeamStats(false);
 
     // Setup Socket.IO for real-time updates
-    const socket = io();
+    const socket = scopedSocket();
 
     // Silent refetch of everything the page shows, coalesced so a burst of
     // events (a round advancing emits several) costs one round of requests.

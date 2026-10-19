@@ -6,6 +6,7 @@ import {
   listenShared,
   ownedView,
   releaseSocket,
+  scopedSocket,
   socketFactory,
 } from '../../client/src/utils/sharedSocket';
 import { onSocketReconnect } from '../../client/src/utils/socketResync';
@@ -145,3 +146,40 @@ test(
     expect(handlers.get('presence:update')?.size ?? 0).toBe(0);
   }
 );
+
+test('scopedSocket: close removes only its own handlers', { tag: ['@api'] }, async () => {
+  const handlers = new Map<string, Set<() => void>>();
+  const s = currentSocket() as unknown as Record<string, unknown>;
+  Object.assign(s, {
+    connected: true,
+    active: true,
+    on(event: string, fn: () => void) {
+      if (!handlers.has(event)) handlers.set(event, new Set());
+      handlers.get(event)?.add(fn);
+    },
+    off(event: string, fn: () => void) {
+      handlers.get(event)?.delete(fn);
+    },
+    listeners(event: string) {
+      return [...(handlers.get(event) ?? [])];
+    },
+  });
+  const other = () => undefined;
+  const page = scopedSocket();
+  page.on('match:update', () => undefined);
+  page.on('bracket:update', () => undefined);
+  // Already connected: its connect handler still runs, as on a socket of its own.
+  let joined = 0;
+  page.on('connect', () => (joined += 1));
+  await Promise.resolve();
+  expect(joined).toBe(1);
+  (s.on as (e: string, f: () => void) => void)('match:update', other);
+  expect(handlers.get('match:update')?.size).toBe(2);
+
+  page.close();
+  expect(handlers.get('match:update')?.size).toBe(1);
+  expect(handlers.get('match:update')?.has(other)).toBe(true);
+  expect(handlers.get('bracket:update')?.size).toBe(0);
+  // Closing twice gives the socket back once.
+  page.close();
+});
