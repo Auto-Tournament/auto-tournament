@@ -247,10 +247,14 @@ export async function readPackIndex(): Promise<PackIndexResult> {
  * is. Returns the definition and the URL it came from, for the caller to
  * install.
  */
-export async function fetchIndexedPack(
-  slug: string
-): Promise<
-  | { ok: true; pack: GamePackDefinition; origin: string; tile: string | null; appIcon: AppIcon | null }
+export async function fetchIndexedPack(slug: string): Promise<
+  | {
+      ok: true;
+      pack: GamePackDefinition;
+      origin: string;
+      tile: string | null;
+      appIcon: AppIcon | null;
+    }
   | { ok: false; error: string }
 > {
   const wanted = slug.trim().toLowerCase();
@@ -270,7 +274,13 @@ export async function fetchPackAt(
   slug: string,
   file: string
 ): Promise<
-  | { ok: true; pack: GamePackDefinition; origin: string; tile: string | null; appIcon: AppIcon | null }
+  | {
+      ok: true;
+      pack: GamePackDefinition;
+      origin: string;
+      tile: string | null;
+      appIcon: AppIcon | null;
+    }
   | { ok: false; error: string }
 > {
   const wanted = slug.trim().toLowerCase();
@@ -299,7 +309,10 @@ export async function fetchPackAt(
   const result = validatePack(parsed);
   if (!result.ok) return { ok: false, error: result.error };
   if (result.pack.slug !== wanted) {
-    return { ok: false, error: `The index lists '${wanted}' but the file is '${result.pack.slug}'` };
+    return {
+      ok: false,
+      error: `The index lists '${wanted}' but the file is '${result.pack.slug}'`,
+    };
   }
 
   // The tile is a file beside the pack, named by a path relative to it —

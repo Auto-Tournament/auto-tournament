@@ -308,7 +308,8 @@ export async function searchWikidata(query: string, limit: number): Promise<Wiki
   // relevance order.
   const ordered = ids.map((id) => entities[id]).filter((e): e is WikidataEntity => Boolean(e));
 
-  const isVideoGame = (e: WikidataEntity) => claimEntityIds(e, INSTANCE_OF_PROP).includes(VIDEO_GAME_QID);
+  const isVideoGame = (e: WikidataEntity) =>
+    claimEntityIds(e, INSTANCE_OF_PROP).includes(VIDEO_GAME_QID);
   const isSeries = (e: WikidataEntity) =>
     claimEntityIds(e, INSTANCE_OF_PROP).includes(VIDEO_GAME_SERIES_QID);
 
@@ -381,7 +382,9 @@ export interface WikidataBuiltinInfo {
  * decides how to handle that (built-in enrichment logs and retries next
  * start; see `gameEnrichmentService.enrichBuiltinGames`).
  */
-export async function getWikidataBuiltinInfo(ids: string[]): Promise<Map<string, WikidataBuiltinInfo>> {
+export async function getWikidataBuiltinInfo(
+  ids: string[]
+): Promise<Map<string, WikidataBuiltinInfo>> {
   const out = new Map<string, WikidataBuiltinInfo>();
   if (ids.length === 0) return out;
 

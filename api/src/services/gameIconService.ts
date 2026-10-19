@@ -190,7 +190,9 @@ async function fillSteamAppIds(rows: IconCandidate[]): Promise<void> {
   const byWikidata = rows.filter((row) => !row.steam_app_id && row.wikidata_id !== null);
   if (byWikidata.length > 0) {
     try {
-      const found = await getWikidataSteamAppIds(byWikidata.map((row) => row.wikidata_id as string));
+      const found = await getWikidataSteamAppIds(
+        byWikidata.map((row) => row.wikidata_id as string)
+      );
       for (const row of byWikidata) await record(row, found.get(row.wikidata_id as string));
     } catch (err) {
       log.warn(`[Games] Wikidata Steam id lookup failed: ${(err as Error).message}`);
