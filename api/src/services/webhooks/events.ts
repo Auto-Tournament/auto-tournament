@@ -171,7 +171,12 @@ export interface WebhookMatch {
 export interface WebhookAdminCall {
   /** The call's id; the same on every delivery of this call. */
   id: string;
-  player: { steam_id64: string | null; name: string | null; team: TeamSide | null; team_name: string | null };
+  player: {
+    steam_id64: string | null;
+    name: string | null;
+    team: TeamSide | null;
+    team_name: string | null;
+  };
   /** What the player typed after .admin; empty when nothing. */
   message: string;
   map_number: number | null;
@@ -217,11 +222,18 @@ export interface WebhookEnvelope {
 }
 
 /** `steam://connect/host:port/password` and the matching console line. */
-export function connectLinks(host: string, port: number, password: string | null): Pick<WebhookConnect, 'steam_url' | 'console'> {
-  const address = host.includes(':') && !host.startsWith('[') ? `[${host}]:${port}` : `${host}:${port}`;
+export function connectLinks(
+  host: string,
+  port: number,
+  password: string | null
+): Pick<WebhookConnect, 'steam_url' | 'console'> {
+  const address =
+    host.includes(':') && !host.startsWith('[') ? `[${host}]:${port}` : `${host}:${port}`;
   const pw = password && password.length > 0 ? password : null;
   return {
-    steam_url: pw ? `steam://connect/${address}/${encodeURIComponent(pw)}` : `steam://connect/${address}`,
+    steam_url: pw
+      ? `steam://connect/${address}/${encodeURIComponent(pw)}`
+      : `steam://connect/${address}`,
     console: pw ? `connect ${address}; password ${pw}` : `connect ${address}`,
   };
 }

@@ -42,7 +42,8 @@ function classifyV4(ip: string): AddressClass {
   const n = ipv4ToInt(ip);
   if (inV4(n, '127.0.0.0/8')) return 'loopback';
   if (inV4(n, '169.254.0.0/16')) return 'link_local';
-  if (inV4(n, '10.0.0.0/8') || inV4(n, '172.16.0.0/12') || inV4(n, '192.168.0.0/16')) return 'private';
+  if (inV4(n, '10.0.0.0/8') || inV4(n, '172.16.0.0/12') || inV4(n, '192.168.0.0/16'))
+    return 'private';
   if (inV4(n, '100.64.0.0/10')) return 'private'; // CGNAT
   if (inV4(n, '198.18.0.0/15')) return 'private'; // benchmarking, used on some LANs
   if (
@@ -78,10 +79,12 @@ function ipv6Groups(ip: string): number[] | null {
   const missing = 8 - head.length - tail.length;
   if (halves.length === 1 && missing !== 0) return null;
   if (missing < 0) return null;
-  const groups = [...head, ...Array(halves.length === 2 ? missing : 0).fill('0'), ...tail].map((g) =>
-    parseInt(g, 16)
+  const groups = [...head, ...Array(halves.length === 2 ? missing : 0).fill('0'), ...tail].map(
+    (g) => parseInt(g, 16)
   );
-  return groups.length === 8 && groups.every((g) => Number.isInteger(g) && g >= 0 && g <= 0xffff) ? groups : null;
+  return groups.length === 8 && groups.every((g) => Number.isInteger(g) && g >= 0 && g <= 0xffff)
+    ? groups
+    : null;
 }
 
 function classifyV6(ip: string): AddressClass {
@@ -139,7 +142,8 @@ export function checkWebhookUrlSyntax(raw: unknown, allowPrivate: boolean): URL 
     throw new WebhookTargetError('url is required', 'invalid_url');
   }
   const value = raw.trim();
-  if (value.length > 2048) throw new WebhookTargetError('url is longer than 2048 characters', 'invalid_url');
+  if (value.length > 2048)
+    throw new WebhookTargetError('url is longer than 2048 characters', 'invalid_url');
   let url: URL;
   try {
     url = new URL(value);
@@ -155,7 +159,11 @@ export function checkWebhookUrlSyntax(raw: unknown, allowPrivate: boolean): URL 
   const host = hostOf(url);
   if (!host) throw new WebhookTargetError('url has no host', 'invalid_url');
   if (host === 'localhost' || host.endsWith('.localhost')) {
-    if (!allowPrivate) throw new WebhookTargetError(`${host} is a local address. ${PRIVATE_HINT}`, 'blocked_address');
+    if (!allowPrivate)
+      throw new WebhookTargetError(
+        `${host} is a local address. ${PRIVATE_HINT}`,
+        'blocked_address'
+      );
   } else if (net.isIP(host)) {
     const cls = classifyAddress(host);
     if (!isAddressAllowed(cls, allowPrivate)) {

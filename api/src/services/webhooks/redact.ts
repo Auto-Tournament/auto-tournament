@@ -52,7 +52,9 @@ export function truncateResponseBody(text: string, max = 2048): string {
 export function scrubSecrets(text: string, body: string): string {
   let out = text;
   try {
-    const parsed = JSON.parse(body) as { data?: { match?: { connect?: Record<string, unknown> | null } } };
+    const parsed = JSON.parse(body) as {
+      data?: { match?: { connect?: Record<string, unknown> | null } };
+    };
     const connect = parsed.data?.match?.connect;
     if (connect) {
       // Longest first: the steam:// link and console line contain the host and password.

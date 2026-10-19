@@ -13,9 +13,20 @@
 
 import { log } from '../../utils/logger';
 import { settingsService } from '../settingsService';
-import { WEBHOOK_API_VERSION, isWebhookEventType, type WebhookEnvelope, type WebhookEventType } from './events';
+import {
+  WEBHOOK_API_VERSION,
+  isWebhookEventType,
+  type WebhookEnvelope,
+  type WebhookEventType,
+} from './events';
 import { redactDeliveryBody } from './redact';
-import { invalidateEndpointCache, enqueueEnvelope, reconcileMatch, startReconciler, stopReconciler } from './reconciler';
+import {
+  invalidateEndpointCache,
+  enqueueEnvelope,
+  reconcileMatch,
+  startReconciler,
+  stopReconciler,
+} from './reconciler';
 import { sampleEnvelope, sampleMatch } from './samples';
 import { generateWebhookSecret } from './signing';
 import { checkWebhookUrlSyntax, resolveWebhookTarget, WebhookTargetError } from './ssrf';
@@ -54,7 +65,12 @@ interface AdminCallForWebhook {
   mapNumber: number | null;
   serverId: string | null;
   serverName: string | null;
-  player: { steamId: string | null; name: string | null; team: string | null; teamName: string | null };
+  player: {
+    steamId: string | null;
+    name: string | null;
+    team: string | null;
+    teamName: string | null;
+  };
   message: string;
   calledAt: string;
 }
@@ -72,7 +88,8 @@ async function emitAdminCallEvent(
   const match = await buildMatchPayload(await readMatchFacts(row));
   if (type === 'admin.call_resolved') match.connect = null;
   const origin = await platformOrigin();
-  const team = call.player.team === 'team1' || call.player.team === 'team2' ? call.player.team : null;
+  const team =
+    call.player.team === 'team1' || call.player.team === 'team2' ? call.player.team : null;
   const envelope: WebhookEnvelope = {
     id: store.newId('evt'),
     type,
@@ -83,7 +100,12 @@ async function emitAdminCallEvent(
       match,
       admin_call: {
         id: call.callId,
-        player: { steam_id64: call.player.steamId, name: call.player.name, team, team_name: call.player.teamName },
+        player: {
+          steam_id64: call.player.steamId,
+          name: call.player.name,
+          team,
+          team_name: call.player.teamName,
+        },
         message: call.message,
         map_number: call.mapNumber,
         server: { id: call.serverId, name: call.serverName },
@@ -144,7 +166,8 @@ function cleanDescription(raw: unknown): string {
   if (raw === undefined || raw === null) return '';
   if (typeof raw !== 'string') throw new WebhookInputError('description must be a string');
   const trimmed = raw.trim();
-  if (trimmed.length > 500) throw new WebhookInputError('description must be at most 500 characters');
+  if (trimmed.length > 500)
+    throw new WebhookInputError('description must be at most 500 characters');
   return trimmed;
 }
 
@@ -174,15 +197,20 @@ function cleanFormat(raw: unknown): store.WebhookFormat {
 /** A Discord endpoint must be a Discord webhook URL (it gets Discord's message format). */
 function checkFormatUrl(format: store.WebhookFormat, url: string): void {
   if (format === 'discord' && !isDiscordWebhookUrl(url)) {
-    throw new WebhookInputError('A Discord endpoint needs a Discord webhook URL (https://discord.com/api/webhooks/...)');
+    throw new WebhookInputError(
+      'A Discord endpoint needs a Discord webhook URL (https://discord.com/api/webhooks/...)'
+    );
   }
 }
 
-export async function createEndpoint(body: Record<string, unknown>): Promise<{ endpoint: store.WebhookEndpoint; secret: string }> {
+export async function createEndpoint(
+  body: Record<string, unknown>
+): Promise<{ endpoint: store.WebhookEndpoint; secret: string }> {
   const url = await checkUrl(body.url);
   const format = cleanFormat(body.format);
   checkFormatUrl(format, url);
-  if (body.active !== undefined && typeof body.active !== 'boolean') throw new WebhookInputError('active must be a boolean');
+  if (body.active !== undefined && typeof body.active !== 'boolean')
+    throw new WebhookInputError('active must be a boolean');
   const secret = generateWebhookSecret();
   const created = await store.insertEndpoint({
     url,
@@ -198,7 +226,10 @@ export async function createEndpoint(body: Record<string, unknown>): Promise<{ e
   return { endpoint: store.publicEndpoint(created), secret };
 }
 
-export async function updateEndpoint(id: string, body: Record<string, unknown>): Promise<store.WebhookEndpoint> {
+export async function updateEndpoint(
+  id: string,
+  body: Record<string, unknown>
+): Promise<store.WebhookEndpoint> {
   const existing = await store.getEndpoint(id);
   if (!existing) throw new WebhookInputError(`Webhook endpoint '${id}' not found`, 404);
   const patch: Parameters<typeof store.updateEndpoint>[1] = {};
@@ -234,8 +265,15 @@ export async function rotateEndpointSecret(
 ): Promise<{ endpoint: store.WebhookEndpoint; secret: string }> {
   let graceHours = DEFAULT_ROTATION_GRACE_HOURS;
   if (graceHoursRaw !== undefined) {
-    if (typeof graceHoursRaw !== 'number' || !Number.isFinite(graceHoursRaw) || graceHoursRaw < 0 || graceHoursRaw > MAX_ROTATION_GRACE_HOURS) {
-      throw new WebhookInputError(`graceHours must be a number from 0 to ${MAX_ROTATION_GRACE_HOURS}`);
+    if (
+      typeof graceHoursRaw !== 'number' ||
+      !Number.isFinite(graceHoursRaw) ||
+      graceHoursRaw < 0 ||
+      graceHoursRaw > MAX_ROTATION_GRACE_HOURS
+    ) {
+      throw new WebhookInputError(
+        `graceHours must be a number from 0 to ${MAX_ROTATION_GRACE_HOURS}`
+      );
     }
     graceHours = graceHoursRaw;
   }
@@ -243,7 +281,9 @@ export async function rotateEndpointSecret(
   const updated = await store.rotateSecret(id, secret, Math.round(graceHours * 3_600_000));
   if (!updated) throw new WebhookInputError(`Webhook endpoint '${id}' not found`, 404);
   invalidateEndpointCache();
-  log.info(`[Webhooks] Secret of endpoint ${id} rotated (previous secret valid for ${graceHours} h)`);
+  log.info(
+    `[Webhooks] Secret of endpoint ${id} rotated (previous secret valid for ${graceHours} h)`
+  );
   return { endpoint: store.publicEndpoint(updated), secret };
 }
 
@@ -253,10 +293,17 @@ export async function rotateEndpointSecret(
  * details. Always `test: true`, signed and retried like any delivery. A
  * switched-off endpoint is refused (409).
  */
-export async function sendTestEvent(id: string, body: Record<string, unknown>): Promise<store.Delivery> {
+export async function sendTestEvent(
+  id: string,
+  body: Record<string, unknown>
+): Promise<store.Delivery> {
   const endpoint = await store.getEndpoint(id);
   if (!endpoint) throw new WebhookInputError(`Webhook endpoint '${id}' not found`, 404);
-  if (!endpoint.active) throw new WebhookInputError('The endpoint is switched off; switch it on to send it a test event', 409);
+  if (!endpoint.active)
+    throw new WebhookInputError(
+      'The endpoint is switched off; switch it on to send it a test event',
+      409
+    );
   const type = body.type ?? 'match.ready';
   if (!isWebhookEventType(type)) throw new WebhookInputError(`Unknown event type: ${String(type)}`);
 
@@ -268,7 +315,8 @@ export async function sendTestEvent(id: string, body: Record<string, unknown>): 
   });
   let slug: string | null = null;
   if (body.matchSlug !== undefined) {
-    if (typeof body.matchSlug !== 'string') throw new WebhookInputError('matchSlug must be a string');
+    if (typeof body.matchSlug !== 'string')
+      throw new WebhookInputError('matchSlug must be a string');
     const row = await readMatchRow({ slug: body.matchSlug });
     if (!row) throw new WebhookInputError(`Match '${body.matchSlug}' not found`, 404);
     const real = await buildMatchPayload(await readMatchFacts(row));
@@ -290,7 +338,8 @@ export async function resendDelivery(deliveryId: string): Promise<store.Delivery
   if (!original) throw new WebhookInputError(`Delivery '${deliveryId}' not found`, 404);
   const endpoint = await store.getEndpoint(original.endpointId);
   if (!endpoint) throw new WebhookInputError('Its endpoint no longer exists', 404);
-  if (!endpoint.active) throw new WebhookInputError('The endpoint is switched off; switch it on to resend', 409);
+  if (!endpoint.active)
+    throw new WebhookInputError('The endpoint is switched off; switch it on to resend', 409);
   const copy = await store.insertDelivery({
     endpointId: original.endpointId,
     eventId: original.eventId,
@@ -310,7 +359,9 @@ export function deliveryView(d: store.Delivery): Record<string, unknown> {
   return { ...rest, payload: redactDeliveryBody(body) };
 }
 
-export async function endpointView(e: store.WebhookEndpointWithSecrets): Promise<Record<string, unknown>> {
+export async function endpointView(
+  e: store.WebhookEndpointWithSecrets
+): Promise<Record<string, unknown>> {
   return { ...store.publicEndpoint(e), deliveries: await store.deliveryCounts(e.id) };
 }
 
