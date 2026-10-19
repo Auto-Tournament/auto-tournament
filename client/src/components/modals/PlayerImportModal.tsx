@@ -171,9 +171,7 @@ export const PlayerImportModal: React.FC<PlayerImportModalProps> = ({
       await onImport(parsedPlayers);
       handleClose();
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : t('playerImportModal.errors.importFailed')
-      );
+      setError(err instanceof Error ? err.message : t('playerImportModal.errors.importFailed'));
     } finally {
       setImporting(false);
     }
@@ -190,13 +188,7 @@ export const PlayerImportModal: React.FC<PlayerImportModalProps> = ({
   };
 
   return (
-    <Dialog
-      open={open}
-      onClose={handleDialogClose}
-      maxWidth="md"
-      fullWidth
-      disableEscapeKeyDown
-    >
+    <Dialog open={open} onClose={handleDialogClose} maxWidth="md" fullWidth disableEscapeKeyDown>
       <DialogTitle>
         <Box display="flex" justifyContent="space-between" alignItems="center">
           <Typography variant="h6">{t('playerImportModal.title')}</Typography>
@@ -285,7 +277,9 @@ export const PlayerImportModal: React.FC<PlayerImportModalProps> = ({
                       <Typography variant="body2" fontWeight={600}>
                         {player.name}
                       </Typography>
-                      {player.steamId && <Chip label={player.steamId} size="small" variant="outlined" />}
+                      {player.steamId && (
+                        <Chip label={player.steamId} size="small" variant="outlined" />
+                      )}
                       {player.initialELO !== undefined && (
                         <Chip label={`ELO: ${player.initialELO}`} size="small" />
                       )}

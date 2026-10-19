@@ -280,10 +280,12 @@ export const AddBackupPlayer: React.FC<AddBackupPlayerProps> = ({
 
           <Alert severity="warning" sx={{ fontSize: '0.85rem' }}>
             <Typography variant="caption" display="block" gutterBottom>
-              ⚙️ <strong>{t('addBackupPlayer.underlyingCommand')}</strong> <code>at_addplayer &lt;steam64&gt; &lt;team1|team2|spec&gt; [name]</code>
+              ⚙️ <strong>{t('addBackupPlayer.underlyingCommand')}</strong>{' '}
+              <code>at_addplayer &lt;steam64&gt; &lt;team1|team2|spec&gt; [name]</code>
             </Typography>
             <Typography variant="caption">
-              ⚠️ <strong>{t('addBackupPlayer.important')}</strong> {t('addBackupPlayer.reconnectHint')}
+              ⚠️ <strong>{t('addBackupPlayer.important')}</strong>{' '}
+              {t('addBackupPlayer.reconnectHint')}
             </Typography>
           </Alert>
         </Stack>

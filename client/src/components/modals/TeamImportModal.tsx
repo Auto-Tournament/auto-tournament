@@ -191,9 +191,7 @@ export const TeamImportModal: React.FC<TeamImportModalProps> = ({ open, onClose,
       await onImport(parsedTeams);
       handleClose();
     } catch (err) {
-      showError(
-        err instanceof Error ? err.message : t('teamImportModal.errors.importFailed')
-      );
+      showError(err instanceof Error ? err.message : t('teamImportModal.errors.importFailed'));
     } finally {
       setImporting(false);
     }
@@ -287,10 +285,7 @@ export const TeamImportModal: React.FC<TeamImportModalProps> = ({ open, onClose,
                   })}
                 </Typography>
                 {missingDiscordTotal > 0 && (
-                  <Typography
-                    variant="body2"
-                    data-testid="team-import-missing-discord-total"
-                  >
+                  <Typography variant="body2" data-testid="team-import-missing-discord-total">
                     {t('teamImportModal.preview.missingDiscordTotal', {
                       count: missingDiscordTotal,
                     })}
@@ -321,99 +316,99 @@ export const TeamImportModal: React.FC<TeamImportModalProps> = ({ open, onClose,
                 {parsedTeams.map((team, index) => {
                   const missingDiscord = team.players.filter((p) => !p.discordId).length;
                   return (
-                  <Paper key={index} variant="outlined" sx={{ overflow: 'hidden' }}>
-                    <Box
-                      display="flex"
-                      alignItems="center"
-                      justifyContent="space-between"
-                      p={2}
-                      sx={{
-                        cursor: 'pointer',
-                        '&:hover': { bgcolor: 'action.hover' },
-                      }}
-                      onClick={() => toggleTeamExpanded(index)}
-                      data-testid={`team-import-preview-team-${index}`}
-                    >
-                      <Box display="flex" alignItems="center" gap={1}>
-                        <Typography variant="body1" fontWeight={600}>
-                          {team.name}
-                        </Typography>
-                        {team.tag && <Chip label={team.tag} size="small" />}
-                        <Chip
-                          label={t('teamImportModal.preview.playersChip', {
-                            count: team.players.length,
-                          })}
-                          size="small"
-                          variant="outlined"
-                        />
-                        {missingDiscord > 0 && (
+                    <Paper key={index} variant="outlined" sx={{ overflow: 'hidden' }}>
+                      <Box
+                        display="flex"
+                        alignItems="center"
+                        justifyContent="space-between"
+                        p={2}
+                        sx={{
+                          cursor: 'pointer',
+                          '&:hover': { bgcolor: 'action.hover' },
+                        }}
+                        onClick={() => toggleTeamExpanded(index)}
+                        data-testid={`team-import-preview-team-${index}`}
+                      >
+                        <Box display="flex" alignItems="center" gap={1}>
+                          <Typography variant="body1" fontWeight={600}>
+                            {team.name}
+                          </Typography>
+                          {team.tag && <Chip label={team.tag} size="small" />}
                           <Chip
-                            label={t('teamImportModal.preview.missingDiscordChip', {
-                              count: missingDiscord,
+                            label={t('teamImportModal.preview.playersChip', {
+                              count: team.players.length,
                             })}
                             size="small"
                             variant="outlined"
-                            color="warning"
-                            data-testid={`team-import-missing-discord-${index}`}
                           />
-                        )}
+                          {missingDiscord > 0 && (
+                            <Chip
+                              label={t('teamImportModal.preview.missingDiscordChip', {
+                                count: missingDiscord,
+                              })}
+                              size="small"
+                              variant="outlined"
+                              color="warning"
+                              data-testid={`team-import-missing-discord-${index}`}
+                            />
+                          )}
+                        </Box>
+                        <IconButton size="small">
+                          {expandedTeams.has(index) ? <CaretUpIcon /> : <CaretDownIcon />}
+                        </IconButton>
                       </Box>
-                      <IconButton size="small">
-                        {expandedTeams.has(index) ? <CaretUpIcon /> : <CaretDownIcon />}
-                      </IconButton>
-                    </Box>
 
-                    <Collapse in={expandedTeams.has(index)}>
-                      <Box px={2} pb={2} bgcolor="action.hover">
-                        <Stack spacing={0.5}>
-                          {team.players.map((player, pIndex) => (
-                            <Box
-                              key={pIndex}
-                              display="flex"
-                              alignItems="center"
-                              justifyContent="space-between"
-                              py={0.5}
-                              gap={1}
-                            >
-                              <Box>
-                                <PlayerName name={player.name} variant="body2" />
-                                {player.elo !== undefined && (
-                                  <Typography variant="caption" color="text.secondary">
-                                    ELO: {player.elo}
-                                  </Typography>
-                                )}
-                              </Box>
-                              <Box textAlign="right">
-                                <Typography
-                                  variant="caption"
-                                  fontFamily="monospace"
-                                  color="text.secondary"
-                                  display="block"
-                                >
-                                  {player.steamId}
-                                </Typography>
-                                {player.discordId ? (
+                      <Collapse in={expandedTeams.has(index)}>
+                        <Box px={2} pb={2} bgcolor="action.hover">
+                          <Stack spacing={0.5}>
+                            {team.players.map((player, pIndex) => (
+                              <Box
+                                key={pIndex}
+                                display="flex"
+                                alignItems="center"
+                                justifyContent="space-between"
+                                py={0.5}
+                                gap={1}
+                              >
+                                <Box>
+                                  <PlayerName name={player.name} variant="body2" />
+                                  {player.elo !== undefined && (
+                                    <Typography variant="caption" color="text.secondary">
+                                      ELO: {player.elo}
+                                    </Typography>
+                                  )}
+                                </Box>
+                                <Box textAlign="right">
                                   <Typography
                                     variant="caption"
                                     fontFamily="monospace"
                                     color="text.secondary"
                                     display="block"
-                                    data-testid={`team-import-player-discord-${player.steamId}`}
                                   >
-                                    {t('discordId.display', { id: player.discordId })}
+                                    {player.steamId}
                                   </Typography>
-                                ) : (
-                                  <NoDiscordChip
-                                    testId={`team-import-player-no-discord-${player.steamId}`}
-                                  />
-                                )}
+                                  {player.discordId ? (
+                                    <Typography
+                                      variant="caption"
+                                      fontFamily="monospace"
+                                      color="text.secondary"
+                                      display="block"
+                                      data-testid={`team-import-player-discord-${player.steamId}`}
+                                    >
+                                      {t('discordId.display', { id: player.discordId })}
+                                    </Typography>
+                                  ) : (
+                                    <NoDiscordChip
+                                      testId={`team-import-player-no-discord-${player.steamId}`}
+                                    />
+                                  )}
+                                </Box>
                               </Box>
-                            </Box>
-                          ))}
-                        </Stack>
-                      </Box>
-                    </Collapse>
-                  </Paper>
+                            ))}
+                          </Stack>
+                        </Box>
+                      </Collapse>
+                    </Paper>
                   );
                 })}
               </Stack>

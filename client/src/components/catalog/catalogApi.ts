@@ -88,7 +88,8 @@ export async function waitForServer(since: number, timeoutMs = 180_000): Promise
   while (Date.now() - since < timeoutMs) {
     await new Promise((resolve) => setTimeout(resolve, 1500));
     const uptime = await fetch('/health', { cache: 'no-store' }).then(
-      async (response) => (response.ok ? ((await response.json()) as { uptime?: number }).uptime : undefined),
+      async (response) =>
+        response.ok ? ((await response.json()) as { uptime?: number }).uptime : undefined,
       () => undefined
     );
     if (typeof uptime === 'number' && uptime < (Date.now() - since) / 1000) return true;
@@ -108,7 +109,10 @@ function base(item: Pick<CatalogItem, 'kind' | 'id'>): string {
  * Run one operation. Every write is a same-origin JSON request, which the
  * API requires (its CSRF check), so even the bodiless ones send `{}`.
  */
-export function runCatalogAction(item: Pick<CatalogItem, 'kind' | 'id'>, action: CatalogAction): Promise<CatalogResult> {
+export function runCatalogAction(
+  item: Pick<CatalogItem, 'kind' | 'id'>,
+  action: CatalogAction
+): Promise<CatalogResult> {
   if (action === 'uninstall') {
     return api.fetch(base(item), { method: 'DELETE', body: '{}' }) as Promise<CatalogResult>;
   }

@@ -87,7 +87,11 @@ export const EloTemplateImportModal: React.FC<EloTemplateImportModalProps> = ({
     }
 
     if (typed.weights !== undefined) {
-      if (typeof typed.weights !== 'object' || typed.weights === null || Array.isArray(typed.weights)) {
+      if (
+        typeof typed.weights !== 'object' ||
+        typed.weights === null ||
+        Array.isArray(typed.weights)
+      ) {
         return `Template "${typed.name}": "weights" must be an object if provided`;
       }
       for (const [key, value] of Object.entries(typed.weights as Record<string, unknown>)) {
@@ -342,6 +346,4 @@ export const EloTemplateImportModal: React.FC<EloTemplateImportModalProps> = ({
       </DialogActions>
     </Dialog>
   );
-}
-
-
+};
