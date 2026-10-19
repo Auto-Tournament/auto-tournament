@@ -26,6 +26,7 @@ import {
 import { WEBHOOK_API_VERSION, WEBHOOK_EVENT_CATALOG } from '../services/webhooks/events';
 import { MAX_ATTEMPTS, RETRY_DELAYS_MS } from '../services/webhooks/retry';
 import type { DeliveryStatus } from '../services/webhooks/store';
+import type { Untrusted } from '../utils/untrusted';
 
 const router = Router();
 
@@ -65,7 +66,11 @@ router.get('/', async (_req: Request, res: Response) => {
  * The event type ids and when each fires.
  */
 router.get('/event-types', (_req: Request, res: Response) => {
-  return res.json({ success: true, apiVersion: WEBHOOK_API_VERSION, eventTypes: WEBHOOK_EVENT_CATALOG });
+  return res.json({
+    success: true,
+    apiVersion: WEBHOOK_API_VERSION,
+    eventTypes: WEBHOOK_EVENT_CATALOG,
+  });
 });
 
 /**
@@ -75,7 +80,9 @@ router.get('/event-types', (_req: Request, res: Response) => {
  */
 router.post('/', async (req: Request, res: Response) => {
   try {
-    const { endpoint, secret } = await createEndpoint((req.body ?? {}) as Record<string, unknown>);
+    const { endpoint, secret } = await createEndpoint(
+      (req.body ?? {}) as Record<string, Untrusted>
+    );
     return res.status(201).json({ success: true, endpoint, secret });
   } catch (error) {
     return fail(res, error, 'Failed to create webhook endpoint');
@@ -118,7 +125,8 @@ router.post('/deliveries/:deliveryId/resend', async (req: Request, res: Response
 router.get('/:id', async (req: Request, res: Response) => {
   try {
     const endpoint = await store.getEndpoint(req.params.id);
-    if (!endpoint) return res.status(404).json({ success: false, error: 'Webhook endpoint not found' });
+    if (!endpoint)
+      return res.status(404).json({ success: false, error: 'Webhook endpoint not found' });
     return res.json({ success: true, endpoint: await endpointView(endpoint) });
   } catch (error) {
     return fail(res, error, 'Failed to read webhook endpoint');
@@ -133,7 +141,10 @@ router.get('/:id', async (req: Request, res: Response) => {
  */
 router.patch('/:id', async (req: Request, res: Response) => {
   try {
-    const endpoint = await updateEndpoint(req.params.id, (req.body ?? {}) as Record<string, unknown>);
+    const endpoint = await updateEndpoint(
+      req.params.id,
+      (req.body ?? {}) as Record<string, Untrusted>
+    );
     return res.json({ success: true, endpoint });
   } catch (error) {
     return fail(res, error, 'Failed to update webhook endpoint');
@@ -147,7 +158,8 @@ router.patch('/:id', async (req: Request, res: Response) => {
 router.delete('/:id', async (req: Request, res: Response) => {
   try {
     const deleted = await deleteEndpoint(req.params.id);
-    if (!deleted) return res.status(404).json({ success: false, error: 'Webhook endpoint not found' });
+    if (!deleted)
+      return res.status(404).json({ success: false, error: 'Webhook endpoint not found' });
     return res.json({ success: true });
   } catch (error) {
     return fail(res, error, 'Failed to delete webhook endpoint');
@@ -163,7 +175,7 @@ router.post('/:id/rotate-secret', async (req: Request, res: Response) => {
   try {
     const { endpoint, secret } = await rotateEndpointSecret(
       req.params.id,
-      (req.body as { graceHours?: unknown } | undefined)?.graceHours
+      (req.body as { graceHours?: Untrusted } | undefined)?.graceHours
     );
     return res.json({ success: true, endpoint, secret });
   } catch (error) {
@@ -179,7 +191,10 @@ router.post('/:id/rotate-secret', async (req: Request, res: Response) => {
  */
 router.post('/:id/test', async (req: Request, res: Response) => {
   try {
-    const delivery = await sendTestEvent(req.params.id, (req.body ?? {}) as Record<string, unknown>);
+    const delivery = await sendTestEvent(
+      req.params.id,
+      (req.body ?? {}) as Record<string, Untrusted>
+    );
     return res.status(202).json({ success: true, delivery: deliveryView(delivery) });
   } catch (error) {
     return fail(res, error, 'Failed to send test event');
@@ -195,11 +210,20 @@ router.post('/:id/test', async (req: Request, res: Response) => {
 router.get('/:id/deliveries', async (req: Request, res: Response) => {
   try {
     const endpoint = await store.getEndpoint(req.params.id);
-    if (!endpoint) return res.status(404).json({ success: false, error: 'Webhook endpoint not found' });
-    const statuses: DeliveryStatus[] = ['pending', 'delivering', 'succeeded', 'failed', 'cancelled'];
+    if (!endpoint)
+      return res.status(404).json({ success: false, error: 'Webhook endpoint not found' });
+    const statuses: DeliveryStatus[] = [
+      'pending',
+      'delivering',
+      'succeeded',
+      'failed',
+      'cancelled',
+    ];
     const status = typeof req.query.status === 'string' ? req.query.status : undefined;
     if (status !== undefined && !statuses.includes(status as DeliveryStatus)) {
-      return res.status(400).json({ success: false, error: `status must be one of ${statuses.join(', ')}` });
+      return res
+        .status(400)
+        .json({ success: false, error: `status must be one of ${statuses.join(', ')}` });
     }
     const limit = Math.min(200, Math.max(1, Number(req.query.limit) || 50));
     const before = Number(req.query.before) || undefined;

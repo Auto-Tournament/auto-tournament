@@ -16,20 +16,21 @@ import { log } from '../utils/logger';
 import { resolveViewerAccount } from '../utils/viewerIdentity';
 import { SignupError, tournamentSignupService } from '../services/tournamentSignupService';
 import { readableTournamentId } from '../services/currentTournament';
+import type { Untrusted } from '../utils/untrusted';
 
 const router = Router();
 
-function idList(value: unknown): string[] {
+function idList(value: Untrusted): string[] {
   return Array.isArray(value) ? value.filter((v): v is string => typeof v === 'string') : [];
 }
 
 /** Runs a sign-up action for the tournament in the URL, with or without a signed-in account. */
-function signupAction(
+function signupAction<T>(
   action: (
     tournamentId: number,
     viewer: { uid: string | null; steamId: string | null },
     req: Request
-  ) => Promise<unknown>,
+  ) => Promise<T>,
   { signIn = true }: { signIn?: boolean } = {}
 ) {
   return async (req: Request, res: Response) => {
@@ -189,7 +190,7 @@ router.get(
 router.post(
   '/:id/remind',
   signupAction(async (tournamentId, viewer, req) => {
-    const body = (req.body ?? {}) as { teamId?: unknown; steamId?: unknown };
+    const body = (req.body ?? {}) as { teamId?: Untrusted; steamId?: Untrusted };
     if (typeof body.teamId !== 'string' || typeof body.steamId !== 'string') {
       throw new SignupError(400, 'teamId and steamId are required.', 'invalid');
     }

@@ -59,12 +59,11 @@ async function candidates(): Promise<Candidates> {
     [CANDIDATES]
   );
   const tournaments = tournamentRows.map(tournamentRowToResponse).map((t) => {
-    const settings = (t.settings ?? {}) as unknown as Record<string, unknown>;
     return {
       id: t.id,
       name: t.name,
       status: t.status,
-      hidden: t.status === 'setup' && settings.registrationOpen !== true,
+      hidden: t.status === 'setup' && t.settings?.registrationOpen !== true,
     };
   });
   const matches = await db.queryAsync<Candidates['matches'][number]>(

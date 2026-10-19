@@ -22,6 +22,7 @@ import {
   parseLicenseUse,
 } from '../services/license/consent';
 import { DECLARATION_ANSWERS, type EventPromptAction } from '../services/license/checkin';
+import type { Untrusted } from '../utils/untrusted';
 
 const router = Router();
 
@@ -162,7 +163,7 @@ async function useFollowsKey(
 
 router.put('/', async (req: Request, res: Response) => {
   if (refuseWrite(req, res)) return;
-  const key = (req.body as { key?: unknown } | undefined)?.key;
+  const key = (req.body as { key?: Untrusted } | undefined)?.key;
   const problem = keyInputProblem(key);
   if (problem) return res.status(400).json({ success: false, error: problem });
   try {
@@ -224,7 +225,7 @@ const EVENT_PROMPT_ACTIONS: readonly EventPromptAction[] = [
  */
 router.post('/event-prompt', async (req: Request, res: Response) => {
   if (refuseWrite(req, res)) return;
-  const action = (req.body as { action?: unknown } | undefined)?.action;
+  const action = (req.body as { action?: Untrusted } | undefined)?.action;
   if (typeof action !== 'string' || !(EVENT_PROMPT_ACTIONS as readonly string[]).includes(action)) {
     return res
       .status(400)
@@ -337,11 +338,11 @@ router.post('/consent', async (req: Request, res: Response) => {
     });
   }
   const body = (req.body ?? {}) as {
-    use?: unknown;
-    confirm?: unknown;
-    key?: unknown;
-    termsVersion?: unknown;
-    read?: unknown;
+    use?: Untrusted;
+    confirm?: Untrusted;
+    key?: Untrusted;
+    termsVersion?: Untrusted;
+    read?: Untrusted;
   };
   const use = parseLicenseUse(body.use);
   if (!use) {

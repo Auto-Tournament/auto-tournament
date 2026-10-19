@@ -24,6 +24,7 @@ import type { Request, Response, Router } from 'express';
 import { requireAuth } from '../middleware/auth';
 import { reconcileMatch } from '../services/webhooks';
 import { webhookTiming } from '../services/webhooks/worker';
+import type { Untrusted } from '../utils/untrusted';
 
 interface SinkEntry {
   headers: Record<string, string | string[] | undefined>;
@@ -52,7 +53,10 @@ function sinkFor(bin: string): Sink {
 
 const DEFAULT_TIMING = { ...webhookTiming };
 
-export function registerWebhookTestRoutes(router: Router, helpersEnabled: (res: Response) => boolean): void {
+export function registerWebhookTestRoutes(
+  router: Router,
+  helpersEnabled: (res: Response) => boolean
+): void {
   router.post('/webhook-sink/:bin', (req: Request, res: Response): void => {
     if (!helpersEnabled(res)) return;
     if (!BIN.test(req.params.bin)) {
@@ -65,22 +69,31 @@ export function registerWebhookTestRoutes(router: Router, helpersEnabled: (res: 
     if (sink.received.length > 500) sink.received.shift();
     if (sink.failNext > 0) {
       sink.failNext--;
-      res.status(sink.failStatus).type('text/plain').send(sink.echo ? body : 'sink says no');
+      res
+        .status(sink.failStatus)
+        .type('text/plain')
+        .send(sink.echo ? body : 'sink says no');
       return;
     }
-    res.status(200).type('text/plain').send(sink.echo ? body : 'ok');
+    res
+      .status(200)
+      .type('text/plain')
+      .send(sink.echo ? body : 'ok');
   });
 
   router.get('/webhook-sink/:bin/url', requireAuth, (req: Request, res: Response): void => {
     if (!helpersEnabled(res)) return;
     const port = process.env.PORT || 3000;
-    res.json({ success: true, url: `http://127.0.0.1:${port}/api/test/webhook-sink/${encodeURIComponent(req.params.bin)}` });
+    res.json({
+      success: true,
+      url: `http://127.0.0.1:${port}/api/test/webhook-sink/${encodeURIComponent(req.params.bin)}`,
+    });
   });
 
   router.post('/webhook-sink/:bin/behaviour', requireAuth, (req: Request, res: Response): void => {
     if (!helpersEnabled(res)) return;
     const sink = sinkFor(req.params.bin);
-    const body = (req.body ?? {}) as { status?: unknown; times?: unknown; echo?: unknown };
+    const body = (req.body ?? {}) as { status?: Untrusted; times?: Untrusted; echo?: Untrusted };
     sink.failStatus = typeof body.status === 'number' ? body.status : 500;
     sink.failNext = typeof body.times === 'number' ? body.times : 0;
     sink.echo = body.echo === true;
@@ -100,7 +113,9 @@ export function registerWebhookTestRoutes(router: Router, helpersEnabled: (res: 
 
   router.post('/webhooks/timing', requireAuth, (req: Request, res: Response): void => {
     if (!helpersEnabled(res)) return;
-    const body = (req.body ?? {}) as Partial<Record<keyof typeof webhookTiming, unknown>> & { reset?: unknown };
+    const body = (req.body ?? {}) as Partial<Record<keyof typeof webhookTiming, Untrusted>> & {
+      reset?: Untrusted;
+    };
     if (body.reset === true) Object.assign(webhookTiming, DEFAULT_TIMING);
     for (const key of Object.keys(DEFAULT_TIMING) as Array<keyof typeof webhookTiming>) {
       const v = body[key];
@@ -109,14 +124,18 @@ export function registerWebhookTestRoutes(router: Router, helpersEnabled: (res: 
     res.json({ success: true, timing: webhookTiming });
   });
 
-  router.post('/webhooks/reconcile', requireAuth, async (req: Request, res: Response): Promise<void> => {
-    if (!helpersEnabled(res)) return;
-    const slug = (req.body as { slug?: unknown } | undefined)?.slug;
-    if (typeof slug !== 'string' || !slug) {
-      res.status(400).json({ success: false, error: 'slug is required' });
-      return;
+  router.post(
+    '/webhooks/reconcile',
+    requireAuth,
+    async (req: Request, res: Response): Promise<void> => {
+      if (!helpersEnabled(res)) return;
+      const slug = (req.body as { slug?: Untrusted } | undefined)?.slug;
+      if (typeof slug !== 'string' || !slug) {
+        res.status(400).json({ success: false, error: 'slug is required' });
+        return;
+      }
+      await reconcileMatch(slug);
+      res.json({ success: true });
     }
-    await reconcileMatch(slug);
-    res.json({ success: true });
-  });
+  );
 }

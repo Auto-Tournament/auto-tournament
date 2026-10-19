@@ -17,6 +17,7 @@ import {
   ReportError,
 } from '../services/playerReports';
 import type { Actor } from '../services/matchHolds';
+import type { Untrusted } from '../utils/untrusted';
 
 const router = Router();
 
@@ -82,7 +83,7 @@ router.post('/', guardWrite, async (req: Request, res: Response) => {
     return res.status(403).json({ success: false, error: 'Stop impersonating first' });
   }
   try {
-    const body = (req.body ?? {}) as Record<string, unknown>;
+    const body = (req.body ?? {}) as Record<string, Untrusted>;
     const created = await createReport(identity.realSteamId, {
       playerId: body.playerId,
       reason: body.reason,
