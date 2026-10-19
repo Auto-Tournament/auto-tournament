@@ -36,6 +36,7 @@ import { log } from '../../../utils/logger';
 import { maybeIO, ADMIN_ROOM } from '../../../services/socketService';
 import { checkRecorderKey } from './recorderKeys';
 import { recordingWaiting } from './recorderLeases';
+import type { Untrusted } from '../../../utils/untrusted';
 
 export const RECORDER_LINK_PATH = '/api/game/cs2/recorder/link';
 export const LINK_HEARTBEAT_MS = 10_000;
@@ -104,9 +105,9 @@ class LinkSession {
         if (isBinary) return;
         const text = data.toString();
         if (text.length > MAX_FRAME) return;
-        let msg: Record<string, unknown>;
+        let msg: Record<string, Untrusted>;
         try {
-          msg = JSON.parse(text) as Record<string, unknown>;
+          msg = JSON.parse(text) as Record<string, Untrusted>;
         } catch {
           return;
         }
@@ -140,7 +141,7 @@ class LinkSession {
       .catch(() => undefined);
   }
 
-  send(msg: Record<string, unknown>): boolean {
+  send(msg: object): boolean {
     if (this.ws.readyState !== WebSocket.OPEN) return false;
     this.ws.send(JSON.stringify(msg));
     return true;
@@ -155,18 +156,18 @@ class LinkSession {
   }
 }
 
-function validName(v: unknown): v is string {
+function validName(v: Untrusted): v is string {
   return typeof v === 'string' && /^[A-Za-z0-9._-]{1,64}$/.test(v);
 }
 
-const num = (v: unknown, lo: number, hi: number): number | undefined =>
+const num = (v: Untrusted, lo: number, hi: number): number | undefined =>
   typeof v === 'number' && Number.isFinite(v) && v >= lo && v <= hi ? v : undefined;
-const str = (v: unknown, max: number): string | undefined =>
+const str = (v: Untrusted, max: number): string | undefined =>
   typeof v === 'string' && v.trim() ? v.trim().slice(0, max) : undefined;
 
 /** A progress message, checked: only what the pages show, bounded. */
 export function parseProgress(
-  msg: Record<string, unknown>,
+  msg: Record<string, Untrusted>,
   at = Date.now()
 ): RecorderProgress | null {
   const step = str(msg.step, 24);
@@ -270,7 +271,7 @@ export class RecorderLink {
   }
 
   /** @internal */
-  progress(name: string, msg: Record<string, unknown>): void {
+  progress(name: string, msg: Record<string, Untrusted>): void {
     const p = parseProgress(msg);
     if (!p) return;
     const before = this.latest.get(name);
@@ -376,7 +377,7 @@ function clearPublic(recorder: string, matchSlug: string): void {
   maybeIO()?.emit(`highlights:progress:${matchSlug}`, { recorder, step: null });
 }
 
-function emitAdmin(event: string, payload: unknown): void {
+function emitAdmin(event: string, payload: object): void {
   maybeIO()?.to(ADMIN_ROOM).emit(event, payload);
 }
 

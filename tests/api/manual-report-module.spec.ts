@@ -59,6 +59,7 @@ import {
   readSetup,
   validateSetup,
 } from '../../api/src/integrations/manual-report/setup';
+import { describeMatch } from '../../api/src/utils/matchIntegration';
 
 /**
  * The manual-report game module (3.0 phase D, PR D2).
@@ -209,7 +210,7 @@ test.describe('Manual-report module: tournament setup', () => {
     id: 1,
     type: 'single_elimination',
     format,
-    settings: { settings: { manualReport } },
+    settings: { manualReport },
   });
 
   test('a tournament with no manualReport object is still a valid one', () => {
@@ -344,7 +345,7 @@ test.describe('Manual-report module: match configs', () => {
         id: 1,
         type: 'single_elimination',
         format: 'bo1',
-        settings: { settings: { manualReport: { bestOf: 5, allowDraw: true } } },
+        settings: { manualReport: { bestOf: 5, allowDraw: true } },
       },
       team1: null,
       team2: null,
@@ -358,7 +359,11 @@ test.describe('Manual-report module: match configs', () => {
       allowDraw: true,
     });
 
-    const described = module.describeMatch(JSON.stringify(config));
+    // As stored: the core parses matches.config before describeMatch gets it.
+    const described = describeMatch({
+      game: MANUAL_REPORT_GAME_ID,
+      config: JSON.stringify(config),
+    });
     expect(described.seriesLength).toBe(5);
     expect(described.maps).toEqual([]);
     expect(described.gamesCanDraw).toBe(true);

@@ -111,7 +111,21 @@ export interface TurnoverDecision {
   releaseEarly: boolean;
 }
 
-function mapKey(matchId: string, mapNumber: unknown): string {
+/** What the fleet driver and the demo stream tell the tracker. */
+export interface TurnoverEvent {
+  event:
+    | 'series_start'
+    | 'demo_recording_start'
+    | 'map_result'
+    | 'series_end'
+    | 'demo_upload_success'
+    | 'demo_upload_fail'
+    | 'demo_upload_ended';
+  matchid: string | number;
+  map_number?: number;
+}
+
+function mapKey(matchId: string, mapNumber: number | undefined): string {
   const n = typeof mapNumber === 'number' ? mapNumber : Number(mapNumber);
   return `${matchId}:${Number.isFinite(n) ? n : 0}`;
 }
@@ -128,7 +142,10 @@ export class ServerTurnoverTracker {
   private readonly servers = new Map<string, ServerTurnoverState>();
   private readonly releaseListeners = new Set<TurnoverReleaseListener>();
   /** One give-up timer per server (the latest pending upload's give-up time). */
-  private readonly giveUpTimers = new Map<string, { at: number; timer: ReturnType<typeof setTimeout> }>();
+  private readonly giveUpTimers = new Map<
+    string,
+    { at: number; timer: ReturnType<typeof setTimeout> }
+  >();
 
   /** Subscribe to turnover releases. Returns the unsubscribe function. */
   onRelease(listener: TurnoverReleaseListener): () => void {
@@ -141,7 +158,9 @@ export class ServerTurnoverTracker {
       try {
         listener(serverId);
       } catch (error) {
-        log.warn(`[TURNOVER] release listener failed for server ${serverId}: ${(error as Error).message}`);
+        log.warn(
+          `[TURNOVER] release listener failed for server ${serverId}: ${(error as Error).message}`
+        );
       }
     }
   }
@@ -213,7 +232,7 @@ export class ServerTurnoverTracker {
    * Feed a MatchZy Enhanced webhook event sent by `serverId`. Only the events that
    * matter for turnover are looked at.
    */
-  recordEvent(serverId: string, event: Record<string, unknown>, now: number): void {
+  recordEvent(serverId: string, event: TurnoverEvent, now: number): void {
     if (!serverId || serverId === 'unknown') return;
     const rawMatchId = event.matchid;
     if (rawMatchId === undefined || rawMatchId === null || String(rawMatchId) === '-1') return;
@@ -301,8 +320,7 @@ export class ServerTurnoverTracker {
 
     return {
       demoUploadPending,
-      demoUploadGiveUpInSeconds:
-        latestGiveUp === null ? null : latestGiveUp - now,
+      demoUploadGiveUpInSeconds: latestGiveUp === null ? null : latestGiveUp - now,
       releaseEarly,
     };
   }

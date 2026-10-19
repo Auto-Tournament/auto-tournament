@@ -42,6 +42,7 @@ import { liveStateStore } from '../fleet/state';
 import { pauseView } from '../fleet/pauseView';
 import { connectChoice } from '../fleet/connectChoice';
 import { QUEUE_ORDER_SQL } from '../../../core/allocationQueue';
+import type { MatchState } from '../fleet/protocol/v1';
 
 /** The match is over: its server, if it still names one, belongs to another match now. */
 function isFinishedMatchStatus(status: string | null | undefined): boolean {
@@ -75,12 +76,8 @@ async function viewerCurrentMatchSlug(
  * Whether the move no longer concerns this viewer: they are connected again (a player), or every
  * connected-able roster player is (anyone else). False with no players known.
  */
-function backOnServer(state: unknown, steamId: string | null | undefined): boolean {
-  const teams = (
-    state as {
-      teams?: Record<string, { players?: Record<string, { connected?: boolean }> }>;
-    } | null
-  )?.teams;
+function backOnServer(state: MatchState | null, steamId: string | null | undefined): boolean {
+  const teams = state?.teams;
   const players = Object.values(teams ?? {}).flatMap((t) => Object.entries(t?.players ?? {}));
   if (players.length === 0) return false;
   const mine = steamId ? players.find(([id]) => id === steamId) : undefined;
@@ -89,13 +86,12 @@ function backOnServer(state: unknown, steamId: string | null | undefined): boole
 }
 
 /** Whether this roster player is on the match's server now; null when the live state does not list them. */
-function viewerOnServer(state: unknown, steamId: string | null | undefined): boolean | null {
+function viewerOnServer(
+  state: MatchState | null,
+  steamId: string | null | undefined
+): boolean | null {
   if (!steamId) return null;
-  const teams = (
-    state as {
-      teams?: Record<string, { players?: Record<string, { connected?: boolean }> }>;
-    } | null
-  )?.teams;
+  const teams = state?.teams;
   for (const t of Object.values(teams ?? {})) {
     const p = t?.players?.[steamId];
     if (p) return p.connected === true;
@@ -108,10 +104,13 @@ const router = Router();
 /** How long to wait for the server's own status before answering without it. */
 const STATUS_TIMEOUT_MS = 2000;
 
-async function serverStatus(
-  serverId: string,
-  matchSlug: string
-): Promise<{ status: string; description: unknown } | null> {
+/** The server's own status and how the page describes it. */
+interface ServerStatusView {
+  status: string;
+  description: { label: string; description: string };
+}
+
+async function serverStatus(serverId: string, matchSlug: string): Promise<ServerStatusView | null> {
   try {
     const { serverStatusService } = await import('../services/serverStatusService');
     const read = (async () => {
@@ -213,7 +212,7 @@ router.get('/matches/:slug/connect', async (req: Request, res: Response) => {
     const currentMap =
       liveStats?.mapName || match.current_map || at(picked) || at(configMaps) || null;
 
-    let status: { status: string; description: unknown } | null = null;
+    let status: ServerStatusView | null = null;
     let password: string | null = null;
     // A failover moved the match in the last half hour: players reconnect.
     let moved: { at: number; reason: string; inPlace: boolean } | null = null;

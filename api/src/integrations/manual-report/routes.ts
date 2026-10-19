@@ -53,6 +53,7 @@ import {
   type ReportOutcome,
 } from './reports';
 import { sweepOnce } from './sweeper';
+import type { Untrusted } from '../../utils/untrusted';
 
 export const manualReportTestRoutes = Router();
 
@@ -76,12 +77,12 @@ manualReportTestRoutes.use(requireAuth, (_req, res, next) => {
 
 manualReportTestRoutes.post('/tournament', async (req: Request, res: Response) => {
   const body = (req.body ?? {}) as {
-    name?: unknown;
-    type?: unknown;
-    format?: unknown;
-    game?: unknown;
-    teamIds?: unknown;
-    settings?: unknown;
+    name?: Untrusted;
+    type?: Untrusted;
+    format?: Untrusted;
+    game?: Untrusted;
+    teamIds?: Untrusted;
+    settings?: Untrusted;
   };
   const teamIds = Array.isArray(body.teamIds)
     ? body.teamIds.filter((id): id is string => typeof id === 'string')
@@ -168,7 +169,7 @@ manualReportTestRoutes.post('/tournament', async (req: Request, res: Response) =
  */
 manualReportTestRoutes.post('/teams/:teamId/captain', async (req: Request, res: Response) => {
   const { teamId } = req.params;
-  const body = (req.body ?? {}) as { steamId?: unknown; uid?: unknown };
+  const body = (req.body ?? {}) as { steamId?: Untrusted; uid?: Untrusted };
 
   let uid: string | null = typeof body.uid === 'string' ? body.uid : null;
   if (!uid && typeof body.steamId === 'string') {
@@ -239,7 +240,11 @@ manualReportTestRoutes.get('/:slug/reports', async (req: Request, res: Response)
 
 const actions: Array<{
   path: string;
-  run: (match: DbMatchRow, actor: ReportActor, body: Record<string, unknown>) => Promise<ReportOutcome>;
+  run: (
+    match: DbMatchRow,
+    actor: ReportActor,
+    body: Record<string, Untrusted>
+  ) => Promise<ReportOutcome>;
 }> = [
   {
     path: '/:slug/report',
@@ -253,7 +258,10 @@ const actions: Array<{
         ...(body.stats === undefined ? {} : { stats: body.stats }),
       }),
   },
-  { path: '/:slug/confirm', run: (match, actor) => confirmReport({ matchSlug: match.slug, actor }) },
+  {
+    path: '/:slug/confirm',
+    run: (match, actor) => confirmReport({ matchSlug: match.slug, actor }),
+  },
   {
     path: '/:slug/dispute',
     run: (match, actor, body) =>
@@ -263,7 +271,10 @@ const actions: Array<{
         ...(typeof body.reason === 'string' ? { reason: body.reason } : {}),
       }),
   },
-  { path: '/:slug/withdraw', run: (match, actor) => withdrawReport({ matchSlug: match.slug, actor }) },
+  {
+    path: '/:slug/withdraw',
+    run: (match, actor) => withdrawReport({ matchSlug: match.slug, actor }),
+  },
   {
     path: '/:slug/resolve',
     run: (match, actor, body) =>
@@ -299,7 +310,7 @@ for (const { path, run } of actions) {
       });
     }
     try {
-      return answer(res, await run(match, actor, (req.body ?? {}) as Record<string, unknown>));
+      return answer(res, await run(match, actor, (req.body ?? {}) as Record<string, Untrusted>));
     } catch (error) {
       log.error(`[MANUAL-REPORT] ${path} failed`, error, { slug: match.slug });
       return res.status(500).json({
@@ -330,7 +341,7 @@ manualReportTestRoutes.post('/:slug/deadline', async (req: Request, res: Respons
   if (!open) {
     return res.status(404).json({ success: false, error: 'No open report' });
   }
-  const body = (req.body ?? {}) as { minutesFromNow?: unknown };
+  const body = (req.body ?? {}) as { minutesFromNow?: Untrusted };
   const minutes = Number(body.minutesFromNow);
   if (!Number.isFinite(minutes)) {
     return res.status(400).json({ success: false, error: 'minutesFromNow must be a number' });

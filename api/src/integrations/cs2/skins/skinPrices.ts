@@ -41,7 +41,11 @@ let lastFailure = 0;
 let inflight: Promise<StoredPrices | null> | null = null;
 
 /** "karambit|doppler|sapphire": the weapon's and finish's display names, and the phase. */
-export function priceKey(weaponName: string, name: string, variant: string | null | undefined): string {
+export function priceKey(
+  weaponName: string,
+  name: string,
+  variant: string | null | undefined
+): string {
   return [weaponName, name, variant ?? ''].map((part) => part.trim().toLowerCase()).join('|');
 }
 
@@ -58,7 +62,10 @@ function median(values: number[]): number {
  */
 export function parseMarketName(name: string): { weaponName: string; finish: string } | null {
   if (!name.startsWith('★ ') || name.includes('StatTrak')) return null;
-  const match = /^★ (.+?) \| (.+?)(?: \((?:Factory New|Minimal Wear|Field-Tested|Well-Worn|Battle-Scarred)\))?$/.exec(name);
+  const match =
+    /^★ (.+?) \| (.+?)(?: \((?:Factory New|Minimal Wear|Field-Tested|Well-Worn|Battle-Scarred)\))?$/.exec(
+      name
+    );
   return match ? { weaponName: match[1], finish: match[2] } : null;
 }
 
@@ -89,11 +96,13 @@ async function download(): Promise<Record<string, number>> {
       headers: { 'Accept-Encoding': 'br' },
       compress: false,
       // node-fetch 2 declares its own AbortSignal type; Node's has the same shape.
+      // eslint-disable-next-line no-restricted-syntax -- node-fetch 2's AbortSignal type does not overlap Node's for tsc
       signal: controller.signal as unknown as NonNullable<Parameters<typeof fetch>[1]>['signal'],
     });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const raw = await response.buffer();
-    const body = response.headers.get('content-encoding') === 'br' ? brotliDecompressSync(raw) : raw;
+    const body =
+      response.headers.get('content-encoding') === 'br' ? brotliDecompressSync(raw) : raw;
     const items = JSON.parse(body.toString('utf8')) as SkinportItem[];
     if (!Array.isArray(items)) throw new Error('not a list');
     return pricesFromItems(items);
@@ -109,7 +118,9 @@ async function refresh(): Promise<StoredPrices | null> {
     const next = { at: Date.now(), prices };
     await db.setAppSettingAsync(SETTING_KEY, JSON.stringify(next));
     memory = next;
-    log.info('[Skins] Knife and glove prices updated from Skinport', { finishes: Object.keys(prices).length });
+    log.info('[Skins] Knife and glove prices updated from Skinport', {
+      finishes: Object.keys(prices).length,
+    });
     return next;
   } catch (error) {
     lastFailure = Date.now();
@@ -155,7 +166,9 @@ export function priceFor(prices: Record<string, number>, key: string): number | 
   const [weapon, finish, variant] = key.split('|');
   if (!variant) return undefined;
   const prefix = `${weapon}|${finish}|`;
-  const siblings = Object.keys(prices).filter((k) => k.startsWith(prefix) && k !== prefix).map((k) => prices[k]);
+  const siblings = Object.keys(prices)
+    .filter((k) => k.startsWith(prefix) && k !== prefix)
+    .map((k) => prices[k]);
   return siblings.length ? Math.max(...siblings) : undefined;
 }
 
@@ -164,7 +177,11 @@ export function priceFor(prices: Record<string, number>, key: string): number | 
  * many equal groups as there are rarities, so each rarity holds the same share
  * of knives and gloves. Returns `priceKey` → index into `rarities`.
  */
-export function rarityIndexByPrice(prices: Record<string, number>, keys: string[], rarityCount: number): Map<string, number> {
+export function rarityIndexByPrice(
+  prices: Record<string, number>,
+  keys: string[],
+  rarityCount: number
+): Map<string, number> {
   const priceOf = new Map<string, number>();
   for (const key of new Set(keys)) {
     const price = priceFor(prices, key);

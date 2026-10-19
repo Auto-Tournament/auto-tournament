@@ -36,16 +36,21 @@ import {
   FLEET_CLOSE,
   FLEET_MESSAGES,
   FLEET_PROTOCOL_SUPPORTED,
+  checkMessage,
+  checkPayload,
   isKnownMessageType,
   validateEnvelope,
   validateMessage,
   validatePayload,
   type Envelope,
+  type FleetMessages,
+  type FleetMessageType,
   type HelloPayload,
   type PingPayload,
-  type StateSnapshotPayload,
   type WelcomePayload,
 } from './protocol/v1';
+import type { Untrusted } from '../../../utils/untrusted';
+import type { FleetOutboundMessage } from './bus';
 import * as registry from './registry';
 import {
   handleSnapshot,
@@ -234,7 +239,7 @@ class FleetSession {
   }
 
   private async handle(text: string): Promise<void> {
-    let value: unknown;
+    let value: Untrusted;
     try {
       value = JSON.parse(text);
     } catch {
@@ -256,7 +261,7 @@ class FleetSession {
         this.close(FLEET_CLOSE.PROTOCOL_ERROR, 'expected hello');
         return;
       }
-      await this.onHello(msg as unknown as Envelope<'hello', HelloPayload>);
+      await this.onHello(msg);
       return;
     }
 
@@ -314,20 +319,20 @@ class FleetSession {
     if (!known) {
       this.sendError(msg, 'unknown_type', `unknown message type ${msg.type}`);
     } else {
-      const check = validatePayload(msg.type, msg.payload);
+      const check = checkMessage(msg);
       if (!check.ok) {
         this.sendError(msg, 'invalid_payload', check.errors.join('; '));
-      } else if (msg.type === 'auth.rotated') {
+      } else if (check.msg.type === 'auth.rotated') {
         await registry.confirmRotation(this.serverId as string);
         log.info(`[FLEET] ${this.serverId}: rotated its token`);
-      } else if (isStoredInboundType(msg.type)) {
+      } else if (isStoredInboundType(check.msg.type)) {
         // Step 3 (match state and events): stored with the stream position in
         // one transaction, acked, then applied (./inbound).
         const ctx = this.inboundContext();
-        const { rowId } = await persistInbound(ctx, msg);
+        const { rowId } = await persistInbound(ctx, check.msg);
         this.rxSeq = seq;
         this.owe();
-        if (rowId !== null) await processInbound(ctx, msg, rowId);
+        if (rowId !== null) await processInbound(ctx, check.msg, rowId);
         return;
       }
     }
@@ -340,12 +345,12 @@ class FleetSession {
   private async onEphemeral(msg: Envelope): Promise<void> {
     switch (msg.type) {
       case 'ping': {
-        const check = validatePayload('ping', msg.payload);
+        const check = checkPayload('ping', msg.payload);
         if (!check.ok) {
           this.sendError(msg, 'invalid_payload', check.errors.join('; '));
           return;
         }
-        const payload = msg.payload as unknown as PingPayload;
+        const payload = check.payload;
         this.sendEphemeral('pong', { t: payload.t }, msg.id);
         if (payload.health) this.touchSeen(payload.health, true);
         // Who is on a server with no match: their skins go out (push/skins.ts).
@@ -359,19 +364,21 @@ class FleetSession {
       case 'ack':
         return;
       case 'state.snapshot': {
-        const check = validatePayload('state.snapshot', msg.payload);
+        const check = checkPayload('state.snapshot', msg.payload);
         if (!check.ok) {
           this.sendError(msg, 'invalid_payload', check.errors.join('; '));
           return;
         }
-        setTvState(this.serverId as string, (msg.payload as unknown as StateSnapshotPayload).tv);
-        await handleSnapshot(this.inboundContext(), msg.payload as unknown as StateSnapshotPayload);
+        setTvState(this.serverId as string, check.payload.tv);
+        await handleSnapshot(this.inboundContext(), check.payload);
         return;
       }
       case 'error': {
-        const p = msg.payload as { code?: unknown; message?: unknown };
+        // An error report is logged whatever shape it has.
+        const p = checkPayload('error', msg.payload);
+        const { code, message } = p.ok ? p.payload : { code: 'unreadable', message: '' };
         log.warn(
-          `[FLEET] ${this.serverId} reported an error: ${String(p.code)} ${redactFleetSecrets(String(p.message ?? ''))}`
+          `[FLEET] ${this.serverId} reported an error: ${code} ${redactFleetSecrets(message ?? '')}`
         );
         return;
       }
@@ -425,13 +432,13 @@ class FleetSession {
     }
   }
 
-  private async onHello(msg: Envelope<'hello', HelloPayload>): Promise<void> {
-    const check = validatePayload('hello', msg.payload);
+  private async onHello(msg: Envelope): Promise<void> {
+    const check = checkPayload('hello', msg.payload);
     if (!check.ok) {
       this.close(FLEET_CLOSE.PROTOCOL_ERROR, `invalid hello: ${check.errors[0] ?? ''}`);
       return;
     }
-    const hello = msg.payload;
+    const hello = check.payload;
     const serverId = this.serverId as string;
     if (hello.server_id !== serverId) {
       this.close(FLEET_CLOSE.REVOKED, 'server_id does not match the token');
@@ -529,7 +536,7 @@ class FleetSession {
       assignment,
     };
     this.ready = true;
-    this.sendEphemeral('welcome', welcome as unknown as Record<string, unknown>, msg.id);
+    this.sendEphemeral('welcome', welcome, msg.id);
     log.info(
       `[FLEET] ${serverId} online (session ${this.sessionId}, protocol ${protocol}, core ${hello.versions.core}, resume ${result})`
     );
@@ -571,11 +578,30 @@ class FleetSession {
     this.ackTimer = null;
   }
 
-  sendEphemeral(
-    type: string,
-    payload: Record<string, unknown>,
+  sendEphemeral<K extends FleetMessageType>(
+    type: K,
+    payload: FleetMessages[K],
     ref?: string,
     extra: { epoch?: number } = {}
+  ): boolean {
+    return this.writeEphemeral(type, payload, ref, extra);
+  }
+
+  /** An ephemeral message from the bus (./bus). */
+  sendOutbound(message: FleetOutboundMessage): boolean {
+    return this.writeEphemeral(
+      message.type,
+      message.payload,
+      message.ref ?? undefined,
+      message.epoch !== undefined ? { epoch: message.epoch } : {}
+    );
+  }
+
+  private writeEphemeral(
+    type: FleetMessageType,
+    payload: object,
+    ref: string | undefined,
+    extra: { epoch?: number }
   ): boolean {
     const text = this.frame({
       v: 1,
@@ -677,7 +703,7 @@ class FleetSession {
     }, this.timings.heartbeatTimeoutMs);
   }
 
-  private touchSeen(health?: unknown, force = false): void {
+  private touchSeen(health?: PingPayload['health'], force = false): void {
     const now = Date.now();
     if (!force && now - this.lastSeenWrite < SEEN_WRITE_MS) return;
     this.lastSeenWrite = now;

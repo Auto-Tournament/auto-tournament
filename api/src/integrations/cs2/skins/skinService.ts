@@ -27,6 +27,7 @@ import {
 import { WEAPON_DEFINDEX } from './skinDefindex';
 import { prefetchSkinImages } from '../routes/images';
 import { knifeAndGlovePrices, priceFor, priceKey, rarityIndexByPrice } from './skinPrices';
+import type { Untrusted } from '../../../utils/untrusted';
 
 /** Full-size skin pictures, served by the platform (routes/images.ts). */
 export const SKIN_IMAGES_BASE = '/api/game/cs2/img/skins';
@@ -255,7 +256,7 @@ export interface SkinsConfig {
 }
 
 /** A reward list as stored (site config or a tournament's own): bad entries dropped; null when not a list. */
-export function parseRewards(raw: unknown): TournamentReward[] | null {
+export function parseRewards(raw: Untrusted): TournamentReward[] | null {
   if (!Array.isArray(raw)) return null;
   return (raw as Array<Partial<TournamentReward> | null>)
     .filter(
@@ -280,9 +281,9 @@ export function parseRewards(raw: unknown): TournamentReward[] | null {
 export const DEFAULT_CONFIG: SkinsConfig = {
   enabled: false,
   matchmakingDrops: true,
-  dropChance: 20,
-  playDropChance: 5,
-  modeChances: { '2v2': { win: 10, play: 3 }, '1v1': { win: 5, play: 1 } },
+  dropChance: 50,
+  playDropChance: 20,
+  modeChances: { '2v2': { win: 30, play: 10 }, '1v1': { win: 20, play: 5 } },
   tournamentMatchDrops: true,
   levelUpDrops: true,
   rarityWeights: {
@@ -448,7 +449,7 @@ export function sideOf(weapon: string): 2 | 3 | null {
 }
 
 /** The side a skin is equipped for: a one-side weapon is always "both" (its side is the only one). */
-export function equipTeam(weapon: string, wanted: unknown): LoadoutTeam {
+export function equipTeam(weapon: string, wanted: Untrusted): LoadoutTeam {
   if (sideOf(weapon) !== null) return 0;
   return wanted === 2 || wanted === 3 ? wanted : 0;
 }
@@ -577,7 +578,7 @@ function normalizeConfig(raw: Partial<SkinsConfig>): SkinsConfig {
     modeChances: (['2v2', '1v1'] as const).reduce(
       (out, mode) => {
         const given = raw.modeChances?.[mode];
-        const pct = (v: unknown, fallback: number) =>
+        const pct = (v: Untrusted, fallback: number) =>
           typeof v === 'number' && Number.isFinite(v) ? Math.max(0, Math.min(100, v)) : fallback;
         out[mode] = {
           win: pct(given?.win, DEFAULT_CONFIG.modeChances[mode].win),
@@ -737,6 +738,7 @@ export const skinService = {
       try {
         const response = await fetch(SKINS_JSON_URL, {
           // node-fetch 2 declares its own AbortSignal type; Node's has the same shape.
+          // eslint-disable-next-line no-restricted-syntax -- node-fetch 2's AbortSignal type does not overlap Node's for tsc
           signal: controller.signal as unknown as NonNullable<
             Parameters<typeof fetch>[1]
           >['signal'],
@@ -919,8 +921,13 @@ export const skinService = {
       );
       let formatMaxRounds: number | null = null;
       try {
-        const c = cfg?.config ? (JSON.parse(cfg.config) as Record<string, unknown>) : {};
-        const cv = (c.cvars ?? {}) as Record<string, unknown>;
+        const c = cfg?.config
+          ? (JSON.parse(cfg.config) as {
+              maxRounds?: number;
+              cvars?: { mp_maxrounds?: number | string };
+            })
+          : {};
+        const cv = c.cvars ?? {};
         formatMaxRounds = Number(c.maxRounds ?? cv.mp_maxrounds) || null;
       } catch {
         formatMaxRounds = null;
@@ -1579,7 +1586,7 @@ export const skinService = {
    * that side had. "Both" also clears the slot's one-side picks. A weapon
    * only one side buys is always equipped for both.
    */
-  async equip(playerUid: string, skinId: number, team: unknown = 0): Promise<void> {
+  async equip(playerUid: string, skinId: number, team: Untrusted = 0): Promise<void> {
     const skin = await db.queryOneAsync<SkinRow>(
       'SELECT * FROM cs2_player_skins WHERE id = ? AND player_uid = ?',
       [skinId, playerUid]
@@ -1601,7 +1608,7 @@ export const skinService = {
   },
 
   /** Empties a slot: one side's pick (2, 3), or every side's (no team). */
-  async unequip(playerUid: string, slot: string, team?: unknown): Promise<void> {
+  async unequip(playerUid: string, slot: string, team?: Untrusted): Promise<void> {
     if (team === 0 || team === 2 || team === 3) {
       await db.runAsync(
         'DELETE FROM cs2_player_loadout WHERE player_uid = ? AND slot = ? AND team = ?',
@@ -1755,7 +1762,7 @@ export const skinService = {
    */
   async tradeUp(
     playerUid: string,
-    skinIds: unknown
+    skinIds: Untrusted
   ): Promise<{ skinId: number; skin: CatalogSkin }> {
     const config = await this.config();
     if (!config.tradeUp.enabled) throw new SkinError(404, 'Trade-ups are off on this site.');

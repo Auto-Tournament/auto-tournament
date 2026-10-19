@@ -63,6 +63,7 @@ import {
 } from './reports';
 import { listFields } from './fields';
 import { listValues, tournamentStats } from './statValues';
+import type { Untrusted } from '../../utils/untrusted';
 
 export const manualReportRoutes = Router();
 
@@ -158,7 +159,7 @@ manualReportRoutes.post('/matches/:slug/report', async (req: Request, res: Respo
     const viewer = await viewerForMatch(req, res, match, 'report a result');
     if (!viewer) return;
 
-    const body = (req.body ?? {}) as { result?: unknown; stats?: unknown };
+    const body = (req.body ?? {}) as { result?: Untrusted; stats?: Untrusted };
     answer(
       res,
       await submitReport({
@@ -187,7 +188,7 @@ interface AnswerRoute {
     slug: string,
     revision: number | undefined,
     actor: ReportActor,
-    body: { reason?: unknown }
+    body: { reason?: Untrusted }
   ) => Promise<ReportOutcome>;
 }
 
@@ -236,12 +237,13 @@ for (const { path, what, revisionRequired, run } of answers) {
       const viewer = await viewerForMatch(req, res, match, what);
       if (!viewer) return;
 
-      const body = (req.body ?? {}) as { revision?: unknown; reason?: unknown };
+      const body = (req.body ?? {}) as { revision?: Untrusted; reason?: Untrusted };
       const revision = readRevision(body.revision);
       if (revision === null) {
-        res
-          .status(400)
-          .json({ success: false, error: 'revision must be the number of the report you are answering' });
+        res.status(400).json({
+          success: false,
+          error: 'revision must be the number of the report you are answering',
+        });
         return;
       }
       if (revisionRequired && revision === undefined) {

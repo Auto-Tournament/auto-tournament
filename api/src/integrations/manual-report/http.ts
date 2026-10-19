@@ -34,12 +34,8 @@ import { db } from '../../config/database';
 import { log } from '../../utils/logger';
 import { resolveViewerAccount, type ViewerAccount } from '../../utils/viewerIdentity';
 import type { DbMatchRow } from '../../types/database.types';
-import {
-  isManualReportMatch,
-  resolveActor,
-  type ReportActor,
-  type ReportOutcome,
-} from './reports';
+import { isManualReportMatch, resolveActor, type ReportActor, type ReportOutcome } from './reports';
+import type { Untrusted } from '../../utils/untrusted';
 
 /** The response body every state-machine route answers with. */
 export function answer(res: Response, outcome: ReportOutcome): Response {
@@ -133,7 +129,7 @@ export async function adminActor(req: Request): Promise<ReportActor> {
 export async function guarded(
   res: Response,
   where: string,
-  run: () => Promise<unknown>
+  run: () => Promise<void | Response>
 ): Promise<void> {
   try {
     await run();
@@ -159,7 +155,9 @@ export async function tournamentForRequest(req: Request, res: Response): Promise
     res.status(400).json({ success: false, error: 'tournamentId must be a positive integer' });
     return null;
   }
-  const row = await db.queryOneAsync<{ id: number }>('SELECT id FROM tournament WHERE id = ?', [id]);
+  const row = await db.queryOneAsync<{ id: number }>('SELECT id FROM tournament WHERE id = ?', [
+    id,
+  ]);
   if (!row) {
     res.status(404).json({ success: false, error: `Tournament ${id} not found` });
     return null;
@@ -168,7 +166,7 @@ export async function tournamentForRequest(req: Request, res: Response): Promise
 }
 
 /** A positive integer from a request body, or undefined when it is absent. */
-export function readRevision(value: unknown): number | undefined | null {
+export function readRevision(value: Untrusted): number | undefined | null {
   if (value === undefined || value === null || value === '') return undefined;
   const n = Number(value);
   if (!Number.isInteger(n) || n <= 0) return null;
@@ -231,9 +229,10 @@ export async function teamRosters(match: DbMatchRow): Promise<Map<string, Roster
 }
 
 /** The two teams of a match, by name, for a client that has only the slugs. */
-export async function teamNames(
-  match: DbMatchRow
-): Promise<{ team1: { id: string | null; name: string | null }; team2: { id: string | null; name: string | null } }> {
+export async function teamNames(match: DbMatchRow): Promise<{
+  team1: { id: string | null; name: string | null };
+  team2: { id: string | null; name: string | null };
+}> {
   const ids = [match.team1_id ?? null, match.team2_id ?? null];
   const rows = ids.some(Boolean)
     ? await db.queryAsync<{ id: string; name: string }>(

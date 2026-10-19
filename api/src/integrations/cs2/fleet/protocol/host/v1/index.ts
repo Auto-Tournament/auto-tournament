@@ -11,7 +11,13 @@
  * in the schema descriptions (`server.create.enroll_key`, `expires_at`).
  */
 
-import Ajv2020, { type ErrorObject, type ValidateFunction } from 'ajv/dist/2020';
+import Ajv2020, {
+  type AnySchemaObject,
+  type ErrorObject,
+  type ValidateFunction,
+} from 'ajv/dist/2020';
+import type { Untrusted } from '../../../../../../utils/untrusted';
+import type { Envelope } from '../../v1/types';
 import defs from './defs.json';
 import envelope from './envelope.json';
 import enrollRequest from './http/enroll.request.json';
@@ -206,6 +212,40 @@ export interface HostCommands {
 
 export type HostCommandType = keyof HostCommands;
 
+/** Host → platform messages and their payloads. */
+export interface HostInbound {
+  hello: HostHelloPayload;
+  ping: { t: number };
+  error: { code: string; message?: string };
+  'auth.rotated': object;
+  'host.result': HostResultPayload;
+  'host.health': HostHealthPayload;
+  'host.inventory': HostInventoryPayload;
+  'host.progress': HostProgressPayload;
+  'logs.chunk': object;
+}
+
+/** A host message whose payload passed its schema: its `type` narrows its `payload`. */
+export type HostInboundMessage = {
+  [K in keyof HostInbound]: Envelope<K, HostInbound[K]>;
+}[keyof HostInbound];
+
+/** A payload checked against its type's schema, typed from then on. */
+export function checkHostPayload<K extends keyof HostInbound>(
+  type: K,
+  payload: Untrusted
+): { ok: true; payload: HostInbound[K] } | { ok: false; errors: string[] } {
+  const check = validateHostPayload(type, payload);
+  return check.ok
+    ? { ok: true, payload: payload as HostInbound[K] }
+    : { ok: false, errors: check.errors };
+}
+
+/** A platform → host reliable message as the outbox stores it. */
+export type HostOutboxMessage =
+  | { [K in HostCommandType]: Envelope<K, HostCommands[K]> }[HostCommandType]
+  | Envelope<'auth.rotate', { token_id?: string; old_valid_until?: number }>;
+
 export const HOST_COMMAND_TYPES: ReadonlyArray<HostCommandType> = [
   'host.servers.list',
   'server.start',
@@ -262,7 +302,7 @@ export const HOST_MESSAGES: Record<string, { direction: HostDirection; reliable:
   ),
 };
 
-export const HOST_MESSAGE_SCHEMAS: Record<string, Record<string, unknown>> = {
+export const HOST_MESSAGE_SCHEMAS: Record<string, AnySchemaObject> = {
   hello,
   welcome,
   ping,
@@ -369,17 +409,17 @@ export function isKnownHostMessageType(type: string): boolean {
   return Object.prototype.hasOwnProperty.call(HOST_MESSAGE_SCHEMAS, type);
 }
 
-export function isHostCommandType(type: unknown): type is HostCommandType {
+export function isHostCommandType(type: Untrusted): type is HostCommandType {
   return typeof type === 'string' && (HOST_COMMAND_TYPES as readonly string[]).includes(type);
 }
 
-export function validateHostEnvelope(value: unknown): ValidationResult {
+export function validateHostEnvelope(value: Untrusted): ValidationResult {
   const v = validators().envelope;
   const ok = v(value) as boolean;
   return { ok, errors: ok ? [] : describe(v.errors) };
 }
 
-export function validateHostPayload(type: string, payload: unknown): ValidationResult {
+export function validateHostPayload(type: string, payload: Untrusted): ValidationResult {
   const v = validators().messages.get(type);
   if (!v) return { ok: false, errors: [`unknown type ${type}`] };
   const ok = v(payload) as boolean;
@@ -387,20 +427,20 @@ export function validateHostPayload(type: string, payload: unknown): ValidationR
 }
 
 /** Envelope and payload (tests, and the host gateway's outbound self-check). */
-export function validateHostMessage(value: unknown): ValidationResult {
+export function validateHostMessage(value: Untrusted): ValidationResult {
   const env = validateHostEnvelope(value);
   if (!env.ok) return env;
-  const msg = value as { type: string; payload: unknown };
+  const msg = value as Envelope;
   return validateHostPayload(msg.type, msg.payload);
 }
 
-export function validateHostEnrollRequest(value: unknown): ValidationResult {
+export function validateHostEnrollRequest(value: Untrusted): ValidationResult {
   const v = validators().enrollRequest;
   const ok = v(value) as boolean;
   return { ok, errors: ok ? [] : describe(v.errors) };
 }
 
-export function validateHostEnrollResponse(value: unknown): ValidationResult {
+export function validateHostEnrollResponse(value: Untrusted): ValidationResult {
   const v = validators().enrollResponse;
   const ok = v(value) as boolean;
   return { ok, errors: ok ? [] : describe(v.errors) };

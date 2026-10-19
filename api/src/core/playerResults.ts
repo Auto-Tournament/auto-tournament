@@ -16,7 +16,7 @@ import { log } from '../utils/logger';
 import { updatePlayerRatings } from '../services/ratingService';
 import { teamService } from '../services/teamService';
 import { playerIdentity } from '../services/playerIdentity';
-import { describeMatch } from '../utils/matchIntegration';
+import { describeMatch, readStoredMatchConfig } from '../utils/matchIntegration';
 import { integrationForMatch } from '../integrations/registry';
 import type { GameIntegration, PlayerStatLine, ReportedStatLine } from '../integrations/types';
 import type { DbMatchRow } from '../types/database.types';
@@ -332,7 +332,8 @@ export async function trackPlayerStatsForManualMatch(
     const integration = integrationForMatch(match);
     let roster: { team1: string[]; team2: string[] } | null;
     if (integration.standaloneRoster) {
-      roster = integration.standaloneRoster(match.config);
+      const config = readStoredMatchConfig(match.config);
+      roster = config ? integration.standaloneRoster(config) : null;
     } else {
       const description = describeMatch(match);
       roster = {

@@ -57,7 +57,9 @@ export function resolveTournamentId(req?: Request): number {
  * always been read against the single tournament row; that fallback lives here
  * so 3.1 can decide what a standalone match resolves to in one place.
  */
-export function tournamentIdForMatch(match: { tournament_id?: number | null } | null | undefined): number {
+export function tournamentIdForMatch(
+  match: { tournament_id?: number | null } | null | undefined
+): number {
   return match?.tournament_id ?? currentTournamentId;
 }
 
@@ -107,9 +109,13 @@ export type ModuleTournamentFields = Pick<
  */
 export function moduleTournamentFields(
   game: GameId | null | undefined,
-  settings: unknown
+  settings: object | null | undefined
 ): ModuleTournamentFields {
-  const fields = moduleResponseFields(game, settings, 'tournament') as Partial<ModuleTournamentFields>;
+  const fields = moduleResponseFields(
+    game,
+    settings,
+    'tournament'
+  ) as Partial<ModuleTournamentFields>;
   return { ...fields, maps: Array.isArray(fields.maps) ? fields.maps : [] };
 }
 

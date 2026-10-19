@@ -12,9 +12,13 @@ import { resetEnrollRateLimit } from '../fleet/routes';
 import { liveStateStore } from '../fleet/state';
 import { processInbound } from '../fleet/inbound';
 import { assignConfigPreview } from '../fleet/driver';
-import type { Envelope } from '../fleet/protocol/v1';
+import type { Envelope, FleetMessage } from '../fleet/protocol/v1';
 import { FleetSendError, getCommand, sendReliable, type ReliableType } from '../fleet/reliable';
 import { scanForFailovers } from '../fleet/failover';
+import type { Untrusted } from '../../../utils/untrusted';
+import type { MatchState, StateSnapshotPayload } from '../fleet/protocol/v1';
+import type { JsonObject } from '../../../utils/json';
+import type { SqlValue } from '../../../config/database';
 
 const router = Router();
 
@@ -36,7 +40,7 @@ router.post(
       res.status(403).json({ success: false, error: 'Disabled in production' });
       return;
     }
-    const { ids, status } = (req.body || {}) as { ids?: unknown; status?: unknown };
+    const { ids, status } = (req.body || {}) as { ids?: Untrusted; status?: Untrusted };
     const list = Array.isArray(ids) ? ids.map(Number).filter(Number.isInteger) : [];
     if (list.length === 0 || typeof status !== 'string') {
       res.status(400).json({ success: false, error: 'ids and status are required' });
@@ -213,17 +217,19 @@ router.post('/fleet/snapshot', requireAuth, async (req: Request, res: Response):
   if (!fleetTestGuard(res)) return;
   const { serverId, state } = (req.body || {}) as {
     serverId?: string;
-    state?: Record<string, unknown>;
+    state?: MatchState;
   };
   if (!state || typeof state.match_id !== 'string') {
     res.status(400).json({ success: false, error: 'state with match_id is required' });
     return;
   }
   try {
-    const outcome = await liveStateStore.applySnapshot(serverId || 'test-ready-up', {
-      reason: 'request',
-      state,
-    } as unknown as Parameters<typeof liveStateStore.applySnapshot>[1]);
+    // A test sends only the reason and the state.
+    const snapshot: Partial<StateSnapshotPayload> = { reason: 'request', state };
+    const outcome = await liveStateStore.applySnapshot(
+      serverId || 'test-ready-up',
+      snapshot as StateSnapshotPayload
+    );
     res.json({ success: true, outcome });
   } catch (error) {
     res.status(500).json({ success: false, error: (error as Error).message });
@@ -275,8 +281,8 @@ router.post('/fleet/events', requireAuth, async (req: Request, res: Response): P
       type: string;
       map_number?: number;
       round?: number;
-      data?: Record<string, unknown>;
-      patch?: Record<string, unknown>;
+      data?: JsonObject;
+      patch?: JsonObject;
     }>;
   };
   if (!matchSlug || !Array.isArray(events) || events.length === 0) {
@@ -302,7 +308,7 @@ router.post('/fleet/events', requireAuth, async (req: Request, res: Response): P
     const type = event.type.startsWith('event.') ? event.type : `event.${event.type}`;
     rev += 1;
     testRevs.set(matchSlug, rev);
-    const env = {
+    const env: Envelope = {
       v: 1,
       type,
       id: `test-${matchSlug}-${rev}-${Date.now()}`,
@@ -316,8 +322,9 @@ router.post('/fleet/events', requireAuth, async (req: Request, res: Response): P
         patch: { ...(event.patch ?? {}), live_rev: rev },
         data: event.data ?? {},
       },
-    } as unknown as Envelope;
-    await processInbound(ctx, env, null);
+    };
+    // A test's event carries only the fields it is about: not checked against the schema.
+    await processInbound(ctx, env as FleetMessage, null);
   }
   res.json({ success: true, applied: events.length });
 });
@@ -342,7 +349,7 @@ router.post('/fleet/send', requireAuth, async (req: Request, res: Response): Pro
   const { serverId, type, payload, epoch } = (req.body || {}) as {
     serverId?: string;
     type?: ReliableType;
-    payload?: Record<string, unknown>;
+    payload?: object;
     epoch?: number;
   };
   if (!serverId || !type || !payload) {
@@ -443,7 +450,7 @@ router.post('/stats-fixture', requireAuth, async (req: Request, res: Response): 
     res.status(403).json({ success: false, error: 'Disabled in production' });
     return;
   }
-  type Row = Record<string, unknown>;
+  type Row = Record<string, SqlValue>;
   const body = (req.body || {}) as {
     tournaments?: string[];
     players?: Array<{ id: string; name: string }>;

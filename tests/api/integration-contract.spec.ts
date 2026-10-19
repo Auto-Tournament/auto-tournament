@@ -3,6 +3,7 @@ import { hasIntegration, listIntegrations } from '../../api/src/integrations/reg
 import { fakeIntegration, isFakeIntegrationEnabled } from '../../api/src/integrations/fake';
 import { missingModuleIntegration } from '../../api/src/core/missingModule';
 import type { GameIntegration, MatchContext } from '../../api/src/integrations/types';
+import { parseStoredMatchConfig } from '../../api/src/utils/matchIntegration';
 import {
   BALANCED_STATS_V1_WEIGHTS,
   PURE_WIN_LOSS_WEIGHTS,
@@ -148,7 +149,14 @@ test.describe('Game integration contract', () => {
 
       test('describeMatch is total: any stored config describes, never throws', () => {
         for (const config of JUNK_CONFIGS) {
-          const d = integration.describeMatch(config);
+          // The core hands describeMatch a parsed object, whatever is stored (utils/matchIntegration).
+          const handed =
+            typeof config === 'string'
+              ? parseStoredMatchConfig(config)
+              : config !== null && typeof config === 'object'
+                ? config
+                : {};
+          const d = integration.describeMatch(handed);
           const label = JSON.stringify(config) ?? String(config);
           expect(Number.isInteger(d.seriesLength) && d.seriesLength >= 1, label).toBe(true);
           expect(Array.isArray(d.maps), label).toBe(true);

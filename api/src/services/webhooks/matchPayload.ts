@@ -15,7 +15,7 @@ import type { MatchDescription, MatchDescriptionTeam } from '../../integrations/
 import type { DbMatchRow } from '../../types/database.types';
 import { matchLiveStatsService } from '../matchLiveStatsService';
 import { getMapResults, type MatchMapResultRecord } from '../matchMapResultService';
-import { currentMatchConfig } from '../../utils/matchIntegration';
+import { currentMatchConfig, describeMatch } from '../../utils/matchIntegration';
 import { externalIdsForTeams } from '../teamExternalIds';
 import {
   connectLinks,
@@ -42,12 +42,25 @@ export interface MatchFacts {
   connect: WebhookConnect | null;
 }
 
-export async function readMatchRow(ref: { slug?: string | null; id?: number | null }): Promise<(DbMatchRow & { status: string }) | null> {
+export async function readMatchRow(ref: {
+  slug?: string | null;
+  id?: number | null;
+}): Promise<(DbMatchRow & { status: string }) | null> {
   if (ref.slug) {
-    return (await db.queryOneAsync<DbMatchRow & { status: string }>('SELECT * FROM matches WHERE slug = ?', [ref.slug])) ?? null;
+    return (
+      (await db.queryOneAsync<DbMatchRow & { status: string }>(
+        'SELECT * FROM matches WHERE slug = ?',
+        [ref.slug]
+      )) ?? null
+    );
   }
   if (typeof ref.id === 'number') {
-    return (await db.queryOneAsync<DbMatchRow & { status: string }>('SELECT * FROM matches WHERE id = ?', [ref.id])) ?? null;
+    return (
+      (await db.queryOneAsync<DbMatchRow & { status: string }>(
+        'SELECT * FROM matches WHERE id = ?',
+        [ref.id]
+      )) ?? null
+    );
   }
   return null;
 }
@@ -58,14 +71,22 @@ export async function readMatchFacts(row: DbMatchRow & { status: string }): Prom
   const results = await getMapResults(row.slug);
   const mapNumber = typeof live?.mapNumber === 'number' ? live.mapNumber : (row.map_number ?? 0);
   const liveOnThisMap = live && live.mapNumber === mapNumber;
-  const mapScore = liveOnThisMap ? { team1: live.team1Score ?? 0, team2: live.team2Score ?? 0 } : { team1: 0, team2: 0 };
+  const mapScore = liveOnThisMap
+    ? { team1: live.team1Score ?? 0, team2: live.team2Score ?? 0 }
+    : { team1: 0, team2: 0 };
   const mapName = (liveOnThisMap && live?.mapName) || row.current_map || null;
 
   let connect: WebhookConnect | null = null;
   if (CONNECTABLE_STATUSES.has(row.status) && row.server_id) {
     try {
       const info = await integrationForMatch(row).connectInfo?.(row);
-      if (info) connect = { host: info.host, port: info.port, password: info.password, ...connectLinks(info.host, info.port, info.password) };
+      if (info)
+        connect = {
+          host: info.host,
+          port: info.port,
+          password: info.password,
+          ...connectLinks(info.host, info.port, info.password),
+        };
     } catch (error) {
       log.warn('[Webhooks] Could not read how to join a match', {
         matchSlug: row.slug,
@@ -93,20 +114,32 @@ interface TeamRow {
   players: string;
 }
 
-function rosterOf(teamRow: TeamRow | undefined, described: MatchDescriptionTeam | undefined): WebhookPlayer[] {
+function rosterOf(
+  teamRow: TeamRow | undefined,
+  described: MatchDescriptionTeam | undefined
+): WebhookPlayer[] {
   if (teamRow) {
     try {
       const parsed: unknown = JSON.parse(teamRow.players);
       if (Array.isArray(parsed)) {
         return parsed
-          .filter((p): p is { steamId: string; name?: string } => !!p && typeof (p as { steamId?: unknown }).steamId === 'string')
-          .map((p) => ({ steam_id64: p.steamId, name: typeof p.name === 'string' ? p.name : p.steamId }));
+          .filter(
+            (p): p is { steamId: string; name?: string } =>
+              !!p && typeof (p as { steamId?: unknown }).steamId === 'string'
+          )
+          .map((p) => ({
+            steam_id64: p.steamId,
+            name: typeof p.name === 'string' ? p.name : p.steamId,
+          }));
       }
     } catch {
       // Fall through to the described roster.
     }
   }
-  return (described?.players ?? []).map((p) => ({ steam_id64: p.account.externalId, name: p.name }));
+  return (described?.players ?? []).map((p) => ({
+    steam_id64: p.account.externalId,
+    name: p.name,
+  }));
 }
 
 function winnerOf(record: MatchMapResultRecord): WebhookMapScore['winner'] {
@@ -119,11 +152,10 @@ function winnerOf(record: MatchMapResultRecord): WebhookMapScore['winner'] {
 
 async function describe(row: DbMatchRow): Promise<MatchDescription | null> {
   try {
-    const config = await currentMatchConfig(row);
-    return integrationForMatch(row).describeMatch(config);
+    return describeMatch({ game: row.game, config: await currentMatchConfig(row) });
   } catch {
     try {
-      return integrationForMatch(row).describeMatch(row.config ? JSON.parse(row.config) : null);
+      return describeMatch(row);
     } catch {
       return null;
     }
@@ -147,9 +179,10 @@ export async function buildMatchPayload(facts: MatchFacts): Promise<WebhookMatch
     : [];
   const externalIds = await externalIdsForTeams(teamIds);
   const tournament = row.tournament_id
-    ? await db.queryOneAsync<{ id: number; name: string }>('SELECT id, name FROM tournament WHERE id = ?', [
-        row.tournament_id,
-      ])
+    ? await db.queryOneAsync<{ id: number; name: string }>(
+        'SELECT id, name FROM tournament WHERE id = ?',
+        [row.tournament_id]
+      )
     : undefined;
 
   const team = (side: TeamSide): WebhookTeam | null => {
@@ -171,7 +204,8 @@ export async function buildMatchPayload(facts: MatchFacts): Promise<WebhookMatch
   const plannedMaps = description?.maps ?? [];
   const maps: WebhookMapScore[] = [];
   const status: string = row.status;
-  const finishedStatus = status === 'completed' || status === 'cancelled' || status === 'needs_decision';
+  const finishedStatus =
+    status === 'completed' || status === 'cancelled' || status === 'needs_decision';
   for (let i = 0; i < seriesLength; i++) {
     const result = facts.results.find((r) => r.mapNumber === i);
     if (result) {
@@ -193,7 +227,14 @@ export async function buildMatchPayload(facts: MatchFacts): Promise<WebhookMatch
         winner: null,
       });
     } else if (!finishedStatus) {
-      maps.push({ number: i + 1, name: plannedMaps[i] ?? null, team1: 0, team2: 0, status: 'upcoming', winner: null });
+      maps.push({
+        number: i + 1,
+        name: plannedMaps[i] ?? null,
+        team1: 0,
+        team2: 0,
+        status: 'upcoming',
+        winner: null,
+      });
     }
   }
 
@@ -204,9 +245,16 @@ export async function buildMatchPayload(facts: MatchFacts): Promise<WebhookMatch
     else if (w === 'team2') series.team2++;
   }
 
-  const current = maps.find((m) => m.status === 'live') ?? [...maps].reverse().find((m) => m.status === 'finished') ?? null;
+  const current =
+    maps.find((m) => m.status === 'live') ??
+    [...maps].reverse().find((m) => m.status === 'finished') ??
+    null;
   const winnerSide: TeamSide | null =
-    row.winner_id && row.winner_id === row.team1_id ? 'team1' : row.winner_id && row.winner_id === row.team2_id ? 'team2' : null;
+    row.winner_id && row.winner_id === row.team1_id
+      ? 'team1'
+      : row.winner_id && row.winner_id === row.team2_id
+        ? 'team2'
+        : null;
 
   return {
     id: row.id,
@@ -222,7 +270,9 @@ export async function buildMatchPayload(facts: MatchFacts): Promise<WebhookMatch
     team2: team('team2'),
     score: {
       series,
-      map: current ? { number: current.number, name: current.name, team1: current.team1, team2: current.team2 } : null,
+      map: current
+        ? { number: current.number, name: current.name, team1: current.team1, team2: current.team2 }
+        : null,
     },
     maps,
     winner: winnerSide ? { side: winnerSide, team_id: row.winner_id ?? null } : null,
@@ -235,7 +285,11 @@ export function forEndpoint(match: WebhookMatch, source: string | null): Webhook
   const pick = (t: WebhookTeam | null): WebhookTeam | null => {
     if (!t) return t;
     const values = Object.values(t.external_ids);
-    const externalId = source ? (t.external_ids[source] ?? null) : values.length === 1 ? values[0] : null;
+    const externalId = source
+      ? (t.external_ids[source] ?? null)
+      : values.length === 1
+        ? values[0]
+        : null;
     return { ...t, external_id: externalId };
   };
   return { ...match, team1: pick(match.team1), team2: pick(match.team2) };

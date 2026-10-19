@@ -7,6 +7,7 @@
  */
 
 import { db } from '../../../config/database';
+import type { Untrusted } from '../../../utils/untrusted';
 
 export const COMMENT_MAX = 1000;
 /** A player may post this many comments an hour, and one every few seconds. */
@@ -44,7 +45,7 @@ const toComment = (r: Row): VideoComment => ({
 });
 
 /** The text as it is kept: trimmed, at most COMMENT_MAX, no control characters but newlines. */
-export function cleanBody(raw: unknown): string | null {
+export function cleanBody(raw: Untrusted): string | null {
   if (typeof raw !== 'string') return null;
   // eslint-disable-next-line no-control-regex
   const body = raw.replace(/[\u0000-\u0009\u000b-\u001f\u007f]/g, '').trim();

@@ -6,6 +6,7 @@ import {
   MapPoolResponse,
 } from '../../../types/mapPool.types';
 import { log } from '../../../utils/logger';
+import type { SqlValue } from '../../../config/database';
 
 /**
  * Map pool service for business logic
@@ -119,7 +120,7 @@ export class MapPoolService {
       throw new Error('Map pool must contain at least one map');
     }
 
-    const updateData: Record<string, unknown> = {
+    const updateData: Record<string, SqlValue> = {
       updated_at: Math.floor(Date.now() / 1000),
     };
 
@@ -158,7 +159,12 @@ export class MapPoolService {
     await db.updateAsync('cs2_map_pools', { is_default: 0 }, 'is_default = $1', [1]);
 
     // Set new default
-    await db.updateAsync('cs2_map_pools', { is_default: 1, updated_at: Math.floor(Date.now() / 1000) }, 'id = $1', [id]);
+    await db.updateAsync(
+      'cs2_map_pools',
+      { is_default: 1, updated_at: Math.floor(Date.now() / 1000) },
+      'id = $1',
+      [id]
+    );
 
     log.success(`Default map pool set to: ${pool.name}`);
     const result = await this.getMapPoolById(id);
@@ -192,7 +198,12 @@ export class MapPoolService {
       throw new Error(`Map pool with ID ${id} not found`);
     }
 
-    await db.updateAsync('cs2_map_pools', { enabled: enabled ? 1 : 0, updated_at: Math.floor(Date.now() / 1000) }, 'id = $1', [id]);
+    await db.updateAsync(
+      'cs2_map_pools',
+      { enabled: enabled ? 1 : 0, updated_at: Math.floor(Date.now() / 1000) },
+      'id = $1',
+      [id]
+    );
 
     log.success(`Map pool ${enabled ? 'enabled' : 'disabled'}: ${pool.name}`);
     const result = await this.getMapPoolById(id);
@@ -226,4 +237,3 @@ export class MapPoolService {
 }
 
 export const mapPoolService = new MapPoolService();
-

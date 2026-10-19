@@ -143,7 +143,7 @@ function emptyRecord(matchSlug: string): LiveMatchRecord {
 
 export class LiveStateStore {
   private readonly emitter = new EventEmitter();
-  private readonly locks = new Map<string, Promise<unknown>>();
+  private readonly locks = new Map<string, Promise<void>>();
   private readonly held = new Map<string, HeldPatch[]>();
   private readonly requestedAt = new Map<string, number>();
   /**

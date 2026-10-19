@@ -14,9 +14,11 @@ import {
   normalizeMapMode,
   rememberMapModes,
 } from './mapModes';
+import type { Untrusted } from '../../../utils/untrusted';
+import type { SqlValue } from '../../../config/database';
 
 /** A request's `gameMode`: undefined when not sent, null to clear; throws on an unknown type. */
-function requestedMode(value: unknown): MapGameMode | null | undefined {
+function requestedMode(value: Untrusted): MapGameMode | null | undefined {
   if (value === undefined) return undefined;
   if (value === null || value === '') return null;
   const mode = normalizeMapMode(value);
@@ -108,7 +110,7 @@ export class MapService {
       throw new Error('Display name cannot be empty');
     }
 
-    const updateData: Record<string, unknown> = {
+    const updateData: Record<string, SqlValue> = {
       updated_at: Math.floor(Date.now() / 1000),
     };
 

@@ -23,7 +23,7 @@ let unregister: (() => void) | null = null;
 export function startTvState(): void {
   if (unregister) return;
   unregister = registerInboundHandler('server.tv', {
-    handle: async (ctx, env) => setTvState(ctx.serverId, env.payload as unknown as TvState),
+    handle: async (ctx, env) => setTvState(ctx.serverId, env.payload),
   });
 }
 

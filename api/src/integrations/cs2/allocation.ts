@@ -82,9 +82,8 @@ export type ServerActionResult =
       ok: true;
       message: string;
       serverId?: string;
-      details?: Record<string, unknown>;
     }
-  | { ok: false; error: string; conflict?: boolean; details?: Record<string, unknown> };
+  | { ok: false; error: string; conflict?: boolean };
 
 export class Cs2ServerPool {
   // How long callers that schedule a delayed allocation pass (shuffle round

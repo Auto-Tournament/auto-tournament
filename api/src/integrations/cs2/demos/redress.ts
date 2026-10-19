@@ -13,7 +13,7 @@ import fs from 'fs';
 import path from 'path';
 import { db } from '../../../config/database';
 import { wakeRecorders } from './recorderLink';
-import { HIGHLIGHTS_DIR, parseMarkers, twinFileOf } from './highlights';
+import { HIGHLIGHTS_DIR, parseMarkers, twinFileOf, type ClipMarkers } from './highlights';
 import { runRedressQueue } from './redressQueue';
 
 /** How many videos one claim hands out (a clip takes seconds, a reel a minute). */
@@ -90,7 +90,7 @@ export interface PlayerReelJob {
     playerName: string;
     title: string;
     url: string;
-    markers: unknown;
+    markers: ClipMarkers | null;
   }>;
   upload: string;
   fail: string;
@@ -173,7 +173,7 @@ async function reelAgain(file: string, now: number): Promise<PlayerReelJob | nul
   );
   let ids: number[] = [];
   try {
-    ids = reel?.clip_ids ? (JSON.parse(reel.clip_ids) as unknown[]).map(Number) : [];
+    ids = reel?.clip_ids ? (JSON.parse(reel.clip_ids) as number[]).map(Number) : [];
   } catch {
     ids = [];
   }

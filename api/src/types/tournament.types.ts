@@ -21,7 +21,17 @@ export interface VetoStep {
   action: 'ban' | 'pick' | 'side_pick';
 }
 
-export interface TournamentSettings {
+/**
+ * Game modules' own objects inside a tournament's settings, under each
+ * module's key (CS2: `cs2`, manual reporting: `manualReport`). Empty here: a
+ * module adds its key with declaration merging, next to its own types, so
+ * its code reads `settings.cs2` typed. The core stores them and never reads
+ * a field (`GameIntegration.tournamentSettings`).
+ */
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type -- filled in by modules
+export interface ModuleTournamentObjects {}
+
+export interface TournamentSettings extends ModuleTournamentObjects {
   matchFormat: MatchFormat;
   thirdPlaceMatch: boolean;
   autoAdvance: boolean;
@@ -68,13 +78,45 @@ export interface TournamentSettings {
   prizes?: EventPagePrize[];
   /** Up to 20 schedule rows, in display order. */
   schedule?: EventPageScheduleItem[];
+  /** A map's picture instead of an uploaded banner (a map id). */
+  bannerMap?: string;
 
-  /**
-   * A game module's own object, under the module's key (CS2: `cs2`, manual
-   * reporting: `manualReport`). The core stores it and never reads it; see
-   * `GameIntegration.tournamentSettings`.
-   */
-  [moduleKey: string]: unknown;
+  /** Sign-up and check-in (tournament sign-up). Times are ISO date-times. */
+  registrationOpen?: boolean;
+  maxTeams?: number | null;
+  registrationClosesAt?: string | null;
+  checkInOpensAt?: string | null;
+  checkInClosesAt?: string | null;
+
+  /** Groups, then playoffs (services/groupsTournament.ts): 1–4 each. */
+  groupCount?: number;
+  advancePerGroup?: number;
+
+  /** The start (services/tournamentSchedule.ts): ISO date-time, reminders (minutes before) and auto start. */
+  startsAt?: string | null;
+  startReminders?: number[] | null;
+  autoStart?: boolean;
+  /** Round start times (services/matchTimes.ts). */
+  matchTimes?: StoredMatchTimes;
+  /** Shuffle: breaks between rounds (services/shuffleTournamentService.ts). */
+  roundBreaks?: RoundBreaks;
+}
+
+/** `settings.matchTimes` as stored: round number → ISO start time. */
+export interface StoredMatchTimes {
+  mode: 'times' | 'asap';
+  rounds?: Record<string, string>;
+  vetoLeadMinutes?: number;
+  reminderMinutes?: number;
+}
+
+/**
+ * `settings.roundBreaks`: `minutes` after every round, and `after` a longer
+ * (or shorter) one after given rounds, e.g. { minutes: 0, after: { "3": 30 } }.
+ */
+export interface RoundBreaks {
+  minutes?: number;
+  after?: Record<string, number>;
 }
 
 export interface EventPagePrize {

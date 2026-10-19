@@ -9,25 +9,23 @@
 import { db } from '../../../config/database';
 import { log } from '../../../utils/logger';
 import type { MatchState } from './protocol/v1';
-
-import { serverLogLine } from './serverLogLine';
+import { serverLogLine, type ServerLogEvent } from './serverLogLine';
 export { serverLogLine } from './serverLogLine';
 
 /** Write the event's line to the match's event log (best effort). */
 export async function recordServerLog(
   matchSlug: string,
-  type: string,
-  data: Record<string, unknown> | undefined,
+  event: ServerLogEvent,
   state: MatchState | null,
   mapNumber?: number,
   round?: number
 ): Promise<void> {
-  const line = serverLogLine(type, data, state, mapNumber, round);
+  const line = serverLogLine(event, state, mapNumber, round);
   if (!line) return;
   await db
     .runAsync('INSERT INTO match_events (match_slug, event_type, event_data) VALUES (?, ?, ?)', [
       matchSlug,
-      `fleet.${type.replace(/^event\./, '')}`,
+      `fleet.${event.type.replace(/^event\./, '')}`,
       JSON.stringify({ level: line.level, text: line.text }),
     ])
     .catch((error: unknown) =>

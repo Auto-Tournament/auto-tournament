@@ -10,7 +10,7 @@
 import { applyNormalizedEvents } from '../events/matchEvents';
 import type { NormalizedEvent } from '../../types';
 import { normalizeFleetEvent } from './normalize';
-import type { Envelope, MatchState, RoundSummary } from './protocol/v1';
+import type { FleetEventMessage, MatchState, RoundSummary } from './protocol/v1';
 
 export interface FleetIngestContext {
   /** MatchState after the event's patch (null when the store has none yet). */
@@ -20,7 +20,7 @@ export interface FleetIngestContext {
 }
 
 export async function ingestFleetEvent(
-  env: Envelope,
+  env: FleetEventMessage,
   ctx: FleetIngestContext
 ): Promise<NormalizedEvent[]> {
   const state = ctx.state;
@@ -30,7 +30,7 @@ export async function ingestFleetEvent(
     includeBots: state?.rules?.simulation !== undefined,
   });
   if (!events.length) return [];
-  const data = (env.payload as { data?: { steamid64?: unknown; name?: unknown } }).data;
+  const data = env.payload.data as { steamid64?: string; name?: string };
   const playerName = (steamId: string): string | undefined => {
     if (data && data.steamid64 === steamId && typeof data.name === 'string' && data.name)
       return data.name;

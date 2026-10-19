@@ -10,6 +10,7 @@
  */
 
 import type { StatsSchema } from '../types';
+import type { SqlValue } from '../../config/database';
 
 /**
  * The metrics MatchZy Enhanced reports, i.e. the CS2 columns of `player_match_stats`
@@ -63,25 +64,27 @@ export const CS2_STATS_SCHEMA: StatsSchema = {
  *
  * Values are passed through as MatchZy Enhanced sent them (no coercion), as before.
  */
-export function metricsFromPluginStats(raw: Record<string, unknown>): Record<string, number> {
-  const stats = raw as {
-    rounds_played?: number;
-    roundsPlayed?: number;
-    damage?: number;
-    kills?: number;
-    deaths?: number;
-    assists?: number;
-    headshot_kills?: number;
-    headshotKills?: number;
-    flash_assists?: number;
-    flashAssists?: number;
-    utility_damage?: number;
-    utilityDamage?: number;
-    kast?: number;
-    mvp?: number;
-    mvps?: number;
-    score?: number;
-  };
+/** A MatchZy Enhanced per-player stat record, snake or camel case. */
+export interface PluginStats {
+  rounds_played?: number;
+  roundsPlayed?: number;
+  damage?: number;
+  kills?: number;
+  deaths?: number;
+  assists?: number;
+  headshot_kills?: number;
+  headshotKills?: number;
+  flash_assists?: number;
+  flashAssists?: number;
+  utility_damage?: number;
+  utilityDamage?: number;
+  kast?: number;
+  mvp?: number;
+  mvps?: number;
+  score?: number;
+}
+
+export function metricsFromPluginStats(stats: PluginStats): Record<string, number> {
   const roundsPlayed = stats.rounds_played ?? stats.roundsPlayed ?? 0;
   const adr = roundsPlayed > 0 ? (stats.damage ?? 0) / roundsPlayed : 0;
   return {
@@ -104,7 +107,7 @@ export function metricsFromPluginStats(raw: Record<string, unknown>): Record<str
  * The CS2 columns of a `player_match_stats` row. A player MatchZy Enhanced reported
  * nothing for (`{}`) gets zeros everywhere.
  */
-export function cs2PlayerStatsColumns(metrics: Record<string, number>): Record<string, unknown> {
+export function cs2PlayerStatsColumns(metrics: Record<string, number>): Record<string, SqlValue> {
   return {
     adr: metrics.adr ?? 0,
     total_damage: metrics.damage || 0,
@@ -129,7 +132,7 @@ export function cs2PlayerStatsColumns(metrics: Record<string, number>): Record<s
  * `adr` here is the unrounded damage / rounds (the stored column is rounded
  * to two decimals); the adjustment has always used the unrounded value.
  */
-export function cs2PlayerStatsMetrics(row: Record<string, unknown>): Record<string, number> {
+export function cs2PlayerStatsMetrics(row: Record<string, SqlValue>): Record<string, number> {
   const stat = row as {
     adr: number;
     total_damage: number;

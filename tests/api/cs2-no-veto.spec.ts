@@ -1,6 +1,8 @@
 import { test, expect } from '@playwright/test';
 import { drawMaps } from '../../api/src/integrations/cs2/matchConfig';
 import { cs2Integration } from '../../api/src/integrations/cs2';
+import { toIntegrationTournament } from '../../api/src/utils/matchIntegration';
+import type { TournamentResponse } from '../../api/src/types/tournament.types';
 
 /**
  * A tournament without a veto (`settings.cs2.veto: false`): no pre-match
@@ -48,15 +50,21 @@ test(
   'a later round of a veto-off tournament is ready to allocate (no veto to wait for)',
   TAGS,
   async () => {
-    // MatchContext hands the whole tournament as `settings` (its settings one level down): the
-    // check read only the top level, so the final of a veto-off bracket waited for a veto that
-    // never opened (2026-10-15).
-    const ctx = (settings: unknown) =>
+    // MatchContext used to hand the whole tournament as `settings` (its settings one level
+    // down): the check read only the top level, so the final of a veto-off bracket waited for a
+    // veto that never opened (2026-10-15). Its tournament comes from toIntegrationTournament.
+    const response = {
+      id: 9,
+      type: 'single_elimination',
+      format: 'bo1',
+      settings: { cs2: { veto: false } },
+    } as unknown as TournamentResponse;
+    const ctx = () =>
       ({
         slug: 't9-r2m1',
         matchId: 1,
         game: 'cs2',
-        tournament: { id: 9, type: 'single_elimination', format: 'bo1', settings },
+        tournament: toIntegrationTournament(response),
         team1: { id: 'a' },
         team2: { id: 'b' },
         round: 2,
@@ -64,8 +72,6 @@ test(
         integrationConfig: null,
         resourceId: null,
       }) as unknown as Parameters<NonNullable<typeof cs2Integration.isReadyToAllocate>>[0];
-    const whole = { id: 9, format: 'bo1', settings: { cs2: { veto: false } } };
-    expect(await cs2Integration.isReadyToAllocate?.(ctx(whole))).toBe(true);
-    expect(await cs2Integration.isReadyToAllocate?.(ctx({ cs2: { veto: false } }))).toBe(true);
+    expect(await cs2Integration.isReadyToAllocate?.(ctx())).toBe(true);
   }
 );

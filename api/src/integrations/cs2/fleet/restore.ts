@@ -23,7 +23,7 @@
  * failover `match.assign.resume.backup` needs.
  */
 
-import { db } from '../../../config/database';
+import { db, type SqlValue } from '../../../config/database';
 import { log } from '../../../utils/logger';
 import { ulid } from './credentials';
 import { fleetInbound } from './inbound';
@@ -330,7 +330,8 @@ interface RestoreRow {
 }
 
 function fromRestoreRow(row: RestoreRow): RestoreRecord {
-  const n = (v: unknown) => (v === null || v === undefined ? null : Number(v));
+  const n = (v: number | string | null | undefined) =>
+    v === null || v === undefined ? null : Number(v);
   return {
     id: row.id,
     matchSlug: row.match_slug,
@@ -390,11 +391,11 @@ export function createDbRestoreAudit(): RestoreAuditPersistence {
     },
     async update(id, patch) {
       const sets: string[] = [];
-      const params: unknown[] = [];
+      const params: SqlValue[] = [];
       for (const [key, column] of Object.entries(PATCH_COLUMNS)) {
         if (key in patch) {
           sets.push(`${column} = ?`);
-          params.push((patch as Record<string, unknown>)[key] ?? null);
+          params.push(patch[key as keyof typeof patch] ?? null);
         }
       }
       if (!sets.length) return;

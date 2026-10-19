@@ -34,6 +34,7 @@ import {
   MVP_PLACE,
   parseRewards,
 } from './skinService';
+import type { Untrusted } from '../../../utils/untrusted';
 
 const router = Router();
 
@@ -585,7 +586,7 @@ router.get('/tournaments/:id/mvp-candidates', requireAuth, async (req, res) => {
 router.post('/tournaments/:id/mvp', requireAuth, async (req, res) => {
   try {
     const id = Number(req.params.id);
-    const steamId = String((req.body as { steamId?: unknown } | undefined)?.steamId ?? '');
+    const steamId = String((req.body as { steamId?: Untrusted } | undefined)?.steamId ?? '');
     if (!Number.isInteger(id) || id <= 0 || !steamId)
       return res.status(400).json({ success: false, error: 'Pick a player' });
     const { storedCs2Settings } = await import('../tournamentSettings');
@@ -926,10 +927,10 @@ router.post('/admin/players/:steamId/skins', requireAuth, async (req, res) => {
 router.post('/admin/drops', requireAuth, async (req, res) => {
   try {
     const body = (req.body ?? {}) as {
-      target?: { kind?: string; id?: unknown };
+      target?: { kind?: string; id?: Untrusted };
       preview?: boolean;
-      label?: unknown;
-      rarity?: unknown;
+      label?: Untrusted;
+      rarity?: Untrusted;
     };
     const rarity =
       typeof body.rarity === 'string' && RARITIES.includes(body.rarity as Rarity)

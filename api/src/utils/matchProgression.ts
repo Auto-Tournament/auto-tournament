@@ -9,7 +9,7 @@ import { emitBracketUpdate } from '../services/socketService';
 import { scheduler } from '../core/scheduler';
 import { buildMatchConfigFor, matchContextFor, serializeMatchConfig } from './matchIntegration';
 import type { DbMatchRow, DbTeamRow, DbTournamentRow } from '../types/database.types';
-import type { TournamentResponse } from '../types/tournament.types';
+import type { TournamentResponse, TournamentSettings } from '../types/tournament.types';
 import { integrationForMatch } from '../integrations/registry';
 import { tournamentIdForMatch, tournamentRowToResponse } from './tournamentRow';
 import { bareSlug, tournamentSlugPrefix } from './matchSlug';
@@ -484,9 +484,9 @@ export async function awardPlacements(
   if (!onPlacements) return;
   const settings = (() => {
     try {
-      return JSON.parse(tournament.settings ?? '{}') as Record<string, unknown>;
+      return JSON.parse(tournament.settings ?? '{}') as TournamentSettings;
     } catch {
-      return {};
+      return {} as TournamentSettings;
     }
   })();
   await onPlacements({

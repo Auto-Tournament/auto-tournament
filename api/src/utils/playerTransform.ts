@@ -1,9 +1,17 @@
-interface RawPlayer {
+/** One player as configs have stored them over time. */
+export interface StoredConfigPlayer {
   steamid?: string;
   steamId?: string;
-  name?: string | { name?: string; steamId?: string };
+  name?: string | { name?: string; steamId?: string; avatar?: string };
   avatar?: string;
 }
+
+/**
+ * A config's roster: MatchZy's `{ "<steamid>": "<name>" }`, or a list (or
+ * keyed object) of player objects.
+ */
+export type StoredConfigPlayers =
+  Record<string, string | StoredConfigPlayer> | Array<string | StoredConfigPlayer>;
 
 export interface NormalizedServerPlayer {
   steamid: string;
@@ -16,7 +24,7 @@ export interface NormalizedServerPlayer {
  * a consistent `{ steamid, name }` array for API responses.
  */
 export function normalizeConfigPlayers(
-  players?: Record<string, unknown> | Array<unknown>
+  players?: StoredConfigPlayers | null
 ): NormalizedServerPlayer[] {
   if (!players) return [];
 
@@ -27,16 +35,19 @@ export function normalizeConfigPlayers(
   return Object.entries(players).map(([key, value]) => normalizeSinglePlayer(value, key));
 }
 
-function normalizeSinglePlayer(value: unknown, fallbackKey: string): NormalizedServerPlayer {
+function normalizeSinglePlayer(
+  value: string | StoredConfigPlayer | null | undefined,
+  fallbackKey: string
+): NormalizedServerPlayer {
   if (typeof value === 'string') {
     return { steamid: fallbackKey, name: value };
   }
 
-  if (value && typeof value === 'object') {
-    const player = value as RawPlayer;
+  if (value) {
+    const player = value;
 
-    if (typeof player.name === 'object' && player.name !== null) {
-      const nested = player.name as { name?: string; steamId?: string; avatar?: string };
+    if (typeof player.name === 'object') {
+      const nested = player.name;
       return {
         steamid: nested.steamId || player.steamid || player.steamId || fallbackKey,
         name: nested.name || fallbackKey,
@@ -53,4 +64,3 @@ function normalizeSinglePlayer(value: unknown, fallbackKey: string): NormalizedS
 
   return { steamid: fallbackKey, name: 'Unknown' };
 }
-

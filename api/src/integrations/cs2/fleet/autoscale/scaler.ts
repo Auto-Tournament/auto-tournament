@@ -32,7 +32,7 @@ import { fleetBus } from '../service';
 import { linkFleetServer } from '../link';
 import * as hostRegistry from '../hosts/registry';
 import { HostCommandError, hostServers, isHostOnline, sendHostCommand } from '../hosts/service';
-import { commandTargets } from '../hosts/join';
+import { commandTargets, type CommandTargetsPayload } from '../hosts/join';
 import type { HostCommandType } from '../protocol/host/v1';
 import {
   computeDemand,
@@ -396,7 +396,7 @@ export async function gatherInputs(settings: StoredAutoscaleSettings): Promise<G
       let pending: ScalerServer['pending'] = null;
       let updating = false;
       for (const p of hostPending) {
-        const payload = parseJson<Record<string, unknown>>(p.payload) ?? {};
+        const payload = parseJson<CommandTargetsPayload>(p.payload) ?? {};
         const targetsIt = commandTargets(p.type as HostCommandType, payload, inv.servers).includes(
           v.name
         );

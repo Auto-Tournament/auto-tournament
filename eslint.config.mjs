@@ -7,6 +7,7 @@ import reactCompiler from 'eslint-plugin-react-compiler';
 import integrationBoundaries from './eslint-rules/integration-boundaries.mjs';
 import moduleSdkBoundary from './eslint-rules/module-sdk-boundary.mjs';
 import { MAX_LINES_TODO } from './eslint-rules/max-lines-todo.mjs';
+import { TYPED_INTERNALS_TODO } from './eslint-rules/typed-internals-todo.mjs';
 
 export default [
   js.configs.recommended,
@@ -351,6 +352,34 @@ export default [
     ignores: MAX_LINES_TODO,
     rules: {
       'max-lines': ['error', { max: 450, skipBlankLines: true, skipComments: true }],
+    },
+  },
+
+  // Typed internals. Values our own code makes or stores carry their real
+  // type, so mistakes show up here instead of as runtime checks. Data from
+  // outside (a request body, a fetch, a server message, a feed) comes in as
+  // `Untrusted` (utils/untrusted) and is checked once where it arrives.
+  // A caught error keeps `unknown` (anything can be thrown): in `catch`, in
+  // `.catch()` callbacks and in a parameter named error/err/e/reason/cause.
+  {
+    files: ['api/src/**/*.ts', 'client/src/**/*.{ts,tsx}'],
+    // Files from before the rule; each fix PR takes its files off the list.
+    ignores: TYPED_INTERNALS_TODO,
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector:
+            'TSUnknownKeyword:not(CatchClause TSUnknownKeyword):not(CallExpression[callee.property.name="catch"] TSUnknownKeyword):not(Identifier[name=/^(e|err|error|reason|cause)$/] > TSTypeAnnotation > TSUnknownKeyword)',
+          message:
+            'Give it its real type. Outside data is `Untrusted` (utils/untrusted), checked once where it arrives.',
+        },
+        {
+          selector:
+            'TSAsExpression[expression.type="TSAsExpression"][expression.typeAnnotation.type="TSUnknownKeyword"]',
+          message: '`as unknown as` switches type checking off. Fix the types instead.',
+        },
+      ],
     },
   },
 

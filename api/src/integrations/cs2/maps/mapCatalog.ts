@@ -19,6 +19,7 @@ import https from 'https';
 import fetch from 'node-fetch';
 import { log } from '../../../utils/logger';
 import bundledMapsJson from './bundled-maps.json';
+import type { Untrusted } from '../../../utils/untrusted';
 
 // Images from the platform itself (routes/images.ts: bundled with the module,
 // or fetched once and cached); the catalogue from GitHub, which has a new
@@ -66,22 +67,22 @@ export function isPlayableMapId(id: string): boolean {
   return true;
 }
 
-function text(value: unknown): string | null {
+function text(value: Untrusted): string | null {
   return typeof value === 'string' && value.trim() ? value.trim() : null;
 }
 
 /** The catalogue in `raw` (a parsed maps.json), non-playable entries left out. Throws on a file of the wrong shape. */
-export function parseMapCatalog(raw: unknown, imageBase = MAP_THUMBNAILS_BASE): MapCatalog {
-  const file = raw as { maps?: unknown; activeDuty?: unknown } & Record<string, unknown>;
+export function parseMapCatalog(raw: Untrusted, imageBase = MAP_THUMBNAILS_BASE): MapCatalog {
+  const file = raw as { maps?: Untrusted; activeDuty?: Untrusted } & Record<string, Untrusted>;
   if (!file || typeof file !== 'object' || !Array.isArray(file.maps)) {
     throw new Error('maps.json has no maps list');
   }
   const maps: CatalogMap[] = [];
   const seen = new Set<string>();
-  for (const entry of file.maps as Array<Record<string, unknown>>) {
+  for (const entry of file.maps as Array<Record<string, Untrusted>>) {
     const id = text(entry?.id);
     if (!id || seen.has(id) || !isPlayableMapId(id)) continue;
-    const images = (entry.images ?? {}) as Record<string, unknown>;
+    const images = (entry.images ?? {}) as Record<string, Untrusted>;
     const full = text(images.full) ?? `${id}.webp`;
     maps.push({
       id,
@@ -95,7 +96,7 @@ export function parseMapCatalog(raw: unknown, imageBase = MAP_THUMBNAILS_BASE): 
   const activeDuty = Array.isArray(file.activeDuty)
     ? [
         ...new Set(
-          (file.activeDuty as unknown[]).filter((id): id is string => typeof id === 'string')
+          (file.activeDuty as Untrusted[]).filter((id): id is string => typeof id === 'string')
         ),
       ].filter((id) => seen.has(id))
     : [];
@@ -118,7 +119,7 @@ const httpsAgent = new https.Agent(AGENT_OPTIONS);
 const httpAgent = new http.Agent(AGENT_OPTIONS);
 const agentFor = (url: URL): http.Agent => (url.protocol === 'http:' ? httpAgent : httpsAgent);
 
-async function fetchOnce(url: string, timeoutMs: number): Promise<unknown> {
+async function fetchOnce(url: string, timeoutMs: number): Promise<Untrusted> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
@@ -126,6 +127,7 @@ async function fetchOnce(url: string, timeoutMs: number): Promise<unknown> {
       agent: agentFor,
       headers: { 'User-Agent': 'auto-tournament', Accept: 'application/json' },
       // node-fetch 2 declares its own AbortSignal type; Node's has the same shape.
+      // eslint-disable-next-line no-restricted-syntax -- the two AbortSignal types do not overlap for tsc
       signal: controller.signal as unknown as NonNullable<Parameters<typeof fetch>[1]>['signal'],
     });
     if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
@@ -161,7 +163,7 @@ export async function loadMapCatalog(
   } else {
     const timeoutMs = options.timeoutMs ?? ATTEMPT_TIMEOUT_MS;
     try {
-      let raw: unknown;
+      let raw: Untrusted;
       try {
         raw = await fetchOnce(url, timeoutMs);
       } catch (first) {

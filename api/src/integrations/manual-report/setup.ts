@@ -26,12 +26,34 @@ import type {
   TournamentSettingsValidation,
 } from '../types';
 import { catalogNameFor } from './catalog';
+import type { Untrusted } from '../../utils/untrusted';
 
 /** What the tournament asks for before a report counts. */
 export type ConfirmationMode = 'opponent' | 'none';
 
 /** What the sweeper does when `confirmTimeoutMin` passes with no answer. */
 export type TimeoutAction = 'auto_confirm' | 'escalate';
+
+/**
+ * `settings.manualReport` as stored: what the organizer set, each field
+ * checked by `validateSetup` on the way in. Absent fields take their default.
+ */
+export interface ManualReportSettings {
+  gameLabel?: string;
+  bestOf?: number;
+  allowDraw?: boolean;
+  confirmation?: ConfirmationMode;
+  /** Minutes; a whole number, sent as a number or a numeric string. */
+  confirmTimeoutMin?: number | string;
+  timeoutAction?: TimeoutAction;
+}
+
+declare module '../../types/tournament.types' {
+  interface ModuleTournamentObjects {
+    /** Manual reporting's own tournament settings (this file). */
+    manualReport?: ManualReportSettings;
+  }
+}
 
 export interface ManualReportSetup {
   gameLabel: string;
@@ -63,7 +85,8 @@ export const MANUAL_REPORT_TOURNAMENT_SCHEMA: JSONSchema = {
         gameLabel: {
           type: 'string',
           maxLength: 60,
-          description: 'What to call the game; defaults to the catalogue name of `tournament.game`.',
+          description:
+            'What to call the game; defaults to the catalogue name of `tournament.game`.',
         },
         bestOf: {
           type: 'integer',
@@ -77,7 +100,8 @@ export const MANUAL_REPORT_TOURNAMENT_SCHEMA: JSONSchema = {
         confirmation: {
           type: 'string',
           enum: [...CONFIRMATION_MODES],
-          description: "'opponent': the other team's captain has to agree. 'none': a report stands on its own.",
+          description:
+            "'opponent': the other team's captain has to agree. 'none': a report stands on its own.",
         },
         confirmTimeoutMin: {
           type: 'integer',
@@ -103,18 +127,18 @@ export function seriesLengthOf(format: string | null | undefined): number {
   return Number.isInteger(n) && n > 0 ? n : 1;
 }
 
-function asRecord(value: unknown): Record<string, unknown> {
+function asRecord(value: Untrusted): Record<string, Untrusted> {
   return value && typeof value === 'object' && !Array.isArray(value)
-    ? (value as Record<string, unknown>)
+    ? (value as Record<string, Untrusted>)
     : {};
 }
 
-function positiveInt(value: unknown, fallback: number): number {
+function positiveInt(value: Untrusted, fallback: number): number {
   const n = Number(value);
   return Number.isInteger(n) && n > 0 ? n : fallback;
 }
 
-function nonNegativeInt(value: unknown, fallback: number): number {
+function nonNegativeInt(value: Untrusted, fallback: number): number {
   const n = Number(value);
   return Number.isInteger(n) && n >= 0 ? n : fallback;
 }
@@ -122,23 +146,18 @@ function nonNegativeInt(value: unknown, fallback: number): number {
 /**
  * The module's settings for a tournament, with every default applied.
  *
- * `tournament.settings` is the full tournament response for now (see
- * `IntegrationTournament`), so the module's object is at
- * `settings.settings.manualReport`; a bare settings object is read too, so a
- * caller that already has one does not have to wrap it.
+ * The module's object is `tournament.settings.manualReport`.
  */
 export function readSetup(
   tournament: IntegrationTournament | null,
   game?: string | null
 ): ManualReportSetup {
-  const outer = asRecord(tournament?.settings);
-  const settings = asRecord(outer.settings ?? outer);
-  const own = asRecord(settings.manualReport);
+  const own: ManualReportSettings = tournament?.settings.manualReport ?? {};
 
   const confirmation = own.confirmation === 'none' ? 'none' : 'opponent';
   const timeoutAction = own.timeoutAction === 'escalate' ? 'escalate' : 'auto_confirm';
   const label = typeof own.gameLabel === 'string' ? own.gameLabel.trim() : '';
-  const gameRef = game ?? (typeof outer.game === 'string' ? outer.game : null);
+  const gameRef = game ?? tournament?.full?.game ?? null;
 
   return {
     gameLabel: label || (gameRef && catalogNameFor(gameRef)) || 'the game',
@@ -162,7 +181,10 @@ export function validateSetup(input: TournamentSettingsInput): TournamentSetting
   if ('gameLabel' in own && (typeof own.gameLabel !== 'string' || own.gameLabel.length > 60)) {
     errors.push('manualReport.gameLabel must be a string of at most 60 characters');
   }
-  if ('bestOf' in own && !BEST_OF_CHOICES.includes(own.bestOf as (typeof BEST_OF_CHOICES)[number])) {
+  if (
+    'bestOf' in own &&
+    !BEST_OF_CHOICES.includes(own.bestOf as (typeof BEST_OF_CHOICES)[number])
+  ) {
     errors.push(`manualReport.bestOf must be one of ${BEST_OF_CHOICES.join(', ')}`);
   }
   if ('allowDraw' in own && typeof own.allowDraw !== 'boolean') {

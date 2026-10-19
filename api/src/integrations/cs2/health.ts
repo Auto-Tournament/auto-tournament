@@ -7,7 +7,7 @@
 
 import { serverService } from './services/serverService';
 
-export async function cs2FleetHealth(): Promise<Record<string, unknown>> {
+export async function cs2FleetHealth(): Promise<object> {
   const now = Math.floor(Date.now() / 1000);
   const servers = await serverService.getRconServers(true);
 

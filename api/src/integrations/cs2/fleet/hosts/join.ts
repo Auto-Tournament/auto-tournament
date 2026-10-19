@@ -6,15 +6,22 @@
 
 import type { HostCommandType, HostInventoryServer } from '../protocol/host/v1';
 
+/** The fields of a host command's payload that name its servers. */
+export interface CommandTargetsPayload {
+  server?: string;
+  servers?: string[];
+}
+
 /** The servers a command touches: its `server`, its `servers`, or (updates) every server on the host. */
 export function commandTargets(
   type: HostCommandType,
-  payload: Record<string, unknown>,
+  payload: CommandTargetsPayload,
   inventory: Array<Pick<HostInventoryServer, 'name'>>
 ): string[] {
-  if (typeof payload.server === 'string') return [payload.server];
-  if (Array.isArray(payload.servers)) return payload.servers.filter((s): s is string => typeof s === 'string');
-  if (type === 'host.update_game' || type === 'host.update_plugins') return inventory.map((s) => s.name);
+  if (payload.server) return [payload.server];
+  if (payload.servers) return payload.servers;
+  if (type === 'host.update_game' || type === 'host.update_plugins')
+    return inventory.map((s) => s.name);
   return [];
 }
 
@@ -104,9 +111,15 @@ export function joinInventory(
  * output (csm names them there) that were not there before, else what the
  * inventory has now that it did not have then.
  */
-export function newServersOf(output: string | null, serversBefore: unknown, inventoryNow: string[]): string[] {
-  const before = new Set(Array.isArray(serversBefore) ? serversBefore.filter((v): v is string => typeof v === 'string') : []);
-  const named = [...new Set((output ?? '').match(/\bserver-[1-9][0-9]{0,3}\b/g) ?? [])].filter((n) => !before.has(n));
+export function newServersOf(
+  output: string | null,
+  serversBefore: string[] | undefined,
+  inventoryNow: string[]
+): string[] {
+  const before = new Set(serversBefore ?? []);
+  const named = [...new Set((output ?? '').match(/\bserver-[1-9][0-9]{0,3}\b/g) ?? [])].filter(
+    (n) => !before.has(n)
+  );
   if (named.length > 0) return named;
   return inventoryNow.filter((n) => !before.has(n));
 }

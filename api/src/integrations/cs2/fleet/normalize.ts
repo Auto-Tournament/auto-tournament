@@ -86,7 +86,7 @@ function steam(steamId: string): LinkedAccountRef {
   return { provider: 'steam', externalId: steamId };
 }
 
-function teamOf(value: unknown): TeamSide | undefined {
+function teamOf(value: string | number | null | undefined): TeamSide | undefined {
   if (value === 'team1' || value === 1) return 'team1';
   if (value === 'team2' || value === 2) return 'team2';
   return undefined;
@@ -216,7 +216,7 @@ export function normalizeFleetEvent(
   ctx: FleetNormalizeContext = {}
 ): NormalizedEvent[] {
   if (!env || typeof env.type !== 'string' || !env.type.startsWith('event.')) return [];
-  const payload = env.payload as unknown as FleetEventPayload;
+  const payload = env.payload as FleetEventPayload;
   if (!payload || typeof payload.match_id !== 'string') return [];
   const slug = ctx.slug ?? payload.match_id;
   if (!slug) return [];

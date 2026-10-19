@@ -37,10 +37,12 @@
  * module still delegates back to them.
  */
 
+import type { SqlValue } from '../../config/database';
 import type { MatchConfig } from '../../types/match.types';
-import type { TournamentResponse } from '../../types/tournament.types';
+import type { Untrusted } from '../../utils/untrusted';
+import type { TournamentResponse, TournamentSettings } from '../../types/tournament.types';
 import type { DbTournamentRow } from '../../types/database.types';
-import { normalizeConfigPlayers } from '../../utils/playerTransform';
+import { normalizeConfigPlayers, type StoredConfigPlayers } from '../../utils/playerTransform';
 import {
   cs2TournamentSettings,
   storedCs2Settings,
@@ -54,6 +56,7 @@ import type {
   AllocateResult,
   BuildMatchConfigContext,
   GameIntegration,
+  IntegrationData,
   MatchContext,
   MatchDescription,
   MatchDescriptionTeam,
@@ -67,26 +70,14 @@ import {
   metricsFromPluginStats,
 } from './stats';
 
-function looksLikeTournamentResponse(value: unknown): value is TournamentResponse {
-  return (
-    typeof value === 'object' &&
-    value !== null &&
-    Array.isArray((value as TournamentResponse).maps) &&
-    Array.isArray((value as TournamentResponse).teamIds)
-  );
-}
-
 /**
- * The tournament view `generateMatchConfig` needs. Callers pass it as
- * `ctx.tournament.settings`; otherwise it is read the way `makeMatchReady`
- * reads it today.
+ * The tournament view `generateMatchConfig` needs: `ctx.tournament.full` when
+ * the caller has it, else read the way `makeMatchReady` reads it.
  */
 async function resolveTournament(
   ctx: BuildMatchConfigContext & { tournament: NonNullable<BuildMatchConfigContext['tournament']> }
 ): Promise<TournamentResponse> {
-  if (looksLikeTournamentResponse(ctx.tournament.settings)) {
-    return ctx.tournament.settings;
-  }
+  if (ctx.tournament.full) return ctx.tournament.full;
   const { db } = await import('../../config/database');
   const { tournamentRowToResponse } = await import('../../utils/tournamentRow');
   const row = await db.queryOneAsync<DbTournamentRow>('SELECT * FROM tournament WHERE id = ?', [
@@ -104,9 +95,7 @@ async function resolveTournament(
  * the API always normalised them (`normalizeConfigPlayers`).
  */
 function describeTeam(team: MatchConfig['team1'] | undefined): MatchDescriptionTeam {
-  const players = normalizeConfigPlayers(
-    team?.players as Record<string, unknown> | Array<unknown> | undefined
-  );
+  const players = normalizeConfigPlayers(team?.players);
   return {
     ...(team?.id ? { id: team.id } : {}),
     name: team?.name ?? '',
@@ -118,21 +107,6 @@ function describeTeam(team: MatchConfig['team1'] | undefined): MatchDescriptionT
       ...(p.avatar ? { avatar: p.avatar } : {}),
     })),
   };
-}
-
-/** `matches.config` as stored (JSON text) or already parsed; anything unreadable describes as empty. */
-function parseConfig(config: unknown): Partial<MatchConfig> {
-  let value = config;
-  if (typeof value === 'string') {
-    try {
-      value = JSON.parse(value);
-    } catch {
-      return {};
-    }
-  }
-  return value && typeof value === 'object' && !Array.isArray(value)
-    ? (value as Partial<MatchConfig>)
-    : {};
 }
 
 /** The pool's allocation outcome in the interface's terms. */
@@ -160,17 +134,8 @@ function toResourceActionResult(result: ServerActionResult): ResourceActionResul
 }
 
 /** The tournament runs the map veto (`settings.cs2.veto` is not false). */
-function vetoOn(settings: unknown): boolean {
-  // Callers hand either the stored settings or the whole tournament (MatchContext's
-  // `tournament.settings` is the TournamentResponse, whose settings sit one level down): read
-  // both. Only the first made every later round of a veto-off tournament wait for a veto that
-  // never opened (the final stayed 'pending' in a live test, 2026-10-15).
-  const nested =
-    settings && typeof settings === 'object' && 'settings' in (settings as Record<string, unknown>)
-      ? (settings as { settings?: unknown }).settings
-      : undefined;
-  const cs2 = storedCs2Settings(settings) ?? storedCs2Settings(nested);
-  return cs2?.veto !== false;
+function vetoOn(settings: TournamentSettings | undefined): boolean {
+  return storedCs2Settings(settings)?.veto !== false;
 }
 
 /** The stored veto (`matches.veto_state`) is finished. */
@@ -188,7 +153,15 @@ function usesVeto(format: string | undefined): boolean {
   return format === 'bo1' || format === 'bo3' || format === 'bo5';
 }
 
-export const cs2Integration: GameIntegration = {
+/** CS2's own data the core stores and hands back (`GameIntegration<Cs2Data>`). */
+interface Cs2Data extends IntegrationData {
+  /** `matches.config`: the Ready Up / MatchZy match config. */
+  config: Partial<MatchConfig>;
+  /** A standalone match's admin settings: the config fields they set. */
+  matchSettings: Partial<MatchConfig>;
+}
+
+export const cs2Integration: GameIntegration<Cs2Data> = {
   id: 'cs2',
   displayName: 'Counter-Strike 2',
   catalog: {
@@ -222,13 +195,10 @@ export const cs2Integration: GameIntegration = {
     if (!tournament || ctx.round === 0) {
       // Standalone: create from the admin's settings, or serve the stored config.
       if (ctx.settings !== undefined) {
-        const defaults = looksLikeTournamentResponse(ctx.defaultsFrom?.settings)
-          ? ctx.defaultsFrom.settings
-          : null;
         return buildStandaloneMatchConfig(
           ctx.slug,
-          (ctx.settings ?? {}) as Partial<MatchConfig>,
-          defaults
+          ctx.settings ?? {},
+          ctx.defaultsFrom?.full ?? null
         );
       }
       const served = await serveStandaloneMatchConfig(ctx.slug);
@@ -243,8 +213,7 @@ export const cs2Integration: GameIntegration = {
     });
   },
 
-  describeMatch(config): MatchDescription {
-    const cfg = parseConfig(config);
+  describeMatch(cfg): MatchDescription {
     return {
       seriesLength: typeof cfg.num_maps === 'number' ? cfg.num_maps : 1,
       maps: Array.isArray(cfg.maplist) ? [...cfg.maplist] : [],
@@ -530,7 +499,8 @@ export const cs2Integration: GameIntegration = {
     const { ACTIVE_DUTY_POOL } = await import('./maps/mapSync');
     const parseIds = (raw: string): string[] => {
       try {
-        const ids: unknown = JSON.parse(raw);
+        // Older rows: a comma list, or JSON that is not a list of ids.
+        const ids: Untrusted = JSON.parse(raw);
         return Array.isArray(ids)
           ? ids.filter((id): id is string => typeof id === 'string' && id.length > 0)
           : [];
@@ -599,7 +569,7 @@ export const cs2Integration: GameIntegration = {
     return rows.map((r) => {
       let maps = 0;
       try {
-        const ids: unknown = JSON.parse(r.map_ids);
+        const ids: Untrusted = JSON.parse(r.map_ids);
         maps = Array.isArray(ids) ? ids.length : 0;
       } catch {
         maps = r.map_ids.split(',').filter((x) => x.trim()).length;
@@ -649,30 +619,22 @@ export const cs2Integration: GameIntegration = {
 
   /**
    * Steam IDs from the `{ steamid }` player arrays the manual match modal
-   * stores. Null when the config is not JSON; a shape it cannot read throws.
+   * stores (the core hands no config that is not JSON).
    */
   standaloneRoster(config) {
-    let parsed: unknown;
-    try {
-      parsed = typeof config === 'string' ? JSON.parse(config) : config;
-    } catch {
-      return null;
-    }
-    const cfg = parsed as { team1?: { players?: unknown }; team2?: { players?: unknown } };
+    const cfg = config as {
+      team1?: { players?: StoredConfigPlayers };
+      team2?: { players?: StoredConfigPlayers };
+    };
     // A roster is a list of `{ steamid }` (matchmaking, the platform's own
     // configs) or MatchZy's `{ "<steamid>": "<name>" }` (a match made by hand
     // or from a template). The second used to throw here, so a finished
     // standalone match wrote no player stats and never showed in anyone's
     // recent matches (NTLAN test, Vikunja 1831).
-    const steamIds = (players: unknown): string[] => {
+    const steamIds = (players: StoredConfigPlayers | undefined): string[] => {
       if (Array.isArray(players)) {
         return players
-          .map((p) =>
-            p && typeof p === 'object'
-              ? ((p as { steamid?: string; steamId?: string }).steamid ??
-                (p as { steamId?: string }).steamId)
-              : null
-          )
+          .map((p) => (p && typeof p === 'object' ? (p.steamid ?? p.steamId) : null))
           .filter((p): p is string => typeof p === 'string' && p !== '');
       }
       if (players && typeof players === 'object')
@@ -695,14 +657,13 @@ export const cs2Integration: GameIntegration = {
         'SELECT t.settings FROM matches m JOIN tournament t ON t.id = m.tournament_id WHERE m.slug = ?',
         [matchSlug]
       );
-      let settings: Record<string, unknown> = {};
+      let settings: Partial<TournamentSettings> = {};
       try {
-        settings = row?.settings ? (JSON.parse(row.settings) as Record<string, unknown>) : {};
+        settings = row?.settings ? (JSON.parse(row.settings) as Partial<TournamentSettings>) : {};
       } catch {
         settings = {};
       }
-      const own = storedCs2Settings(settings) as
-        { esportsMode?: boolean; skinRewards?: boolean; matchDrops?: boolean } | undefined;
+      const own = settings.cs2;
       if (own?.esportsMode === true || own?.skinRewards === false || settings.skinRewards === false)
         return;
       // The tournament's Prizes: "Every match played can drop a skin" off.
@@ -758,8 +719,8 @@ export const cs2Integration: GameIntegration = {
   async onTournamentPlacements({ tournamentId, tournamentName, settings, placements }) {
     const { skinService } = await import('./skins/skinService');
     // `settings.cs2.skinRewards`; tournaments from before it moved here kept it at the top level.
-    const own = settings.cs2 as { skinRewards?: unknown; rewards?: unknown } | undefined;
-    const rewards = typeof own?.skinRewards === 'boolean' ? own.skinRewards : settings.skinRewards;
+    const own = settings.cs2;
+    const rewards = own?.skinRewards ?? settings.skinRewards;
     const { parseRewards } = await import('./skins/skinService');
     await skinService.awardTournament(
       tournamentId,
@@ -770,8 +731,7 @@ export const cs2Integration: GameIntegration = {
     );
     // The MVP prize, when it is chosen by commends or rating; the organizer's
     // pick waits for them (Prizes in Manage).
-    const mvp = (own as { mvp?: { enabled?: boolean; by?: string; rarity?: string; pick?: 'one' } })
-      ?.mvp;
+    const mvp = own?.mvp;
     if (rewards !== false && mvp?.enabled && (mvp.by === 'commends' || mvp.by === 'rating')) {
       try {
         const { mvpCandidates, pickMvp } = await import('./skins/mvp');
@@ -897,7 +857,7 @@ export const cs2Integration: GameIntegration = {
  * license. Empty when the inventories can't be read.
  */
 async function hostedElsewhere(db: {
-  queryAsync<T>(sql: string, params?: unknown[]): Promise<T[]>;
+  queryAsync<T>(sql: string, params?: SqlValue[]): Promise<T[]>;
 }): Promise<Set<string>> {
   const out = new Set<string>();
   try {
@@ -908,8 +868,8 @@ async function hostedElsewhere(db: {
     );
     for (const h of hosts) {
       const inv = JSON.parse(h.inventory ?? 'null') as {
-        license?: { own?: unknown; license_id?: unknown };
-        servers?: { readyup?: { install_id?: unknown } }[];
+        license?: { own?: Untrusted; license_id?: Untrusted };
+        servers?: { readyup?: { install_id?: Untrusted } }[];
       } | null;
       const lic = inv?.license;
       if (

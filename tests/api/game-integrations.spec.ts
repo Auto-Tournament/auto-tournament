@@ -9,6 +9,7 @@ import {
 } from '../../api/src/integrations/registry';
 import { DEFAULT_GAME } from '../../api/src/integrations/types';
 import { getSchemaColumns } from '../../api/src/config/database.schema';
+import { describeMatch } from '../../api/src/utils/matchIntegration';
 
 /**
  * Game integration registry and the `game` column (3.0 module split, PR 2).
@@ -123,8 +124,8 @@ test.describe('Game integration registry', () => {
     };
     const cs2 = getIntegration('cs2');
     expect(cs2.describeMatch(config)).toEqual(expected);
-    // matches.config is stored as a string; both forms are accepted.
-    expect(cs2.describeMatch(JSON.stringify(config))).toEqual(expected);
+    // matches.config is stored as a string; the core parses it first.
+    expect(describeMatch({ game: 'cs2', config: JSON.stringify(config) })).toEqual(expected);
   });
 
   test('cs2 describeMatch reads stored manual configs (player arrays, tag, veto flag)', () => {
@@ -158,7 +159,10 @@ test.describe('Game integration registry', () => {
     });
     // Unreadable or empty configs describe as an empty match instead of throwing.
     for (const bad of ['not json', 'null', '', null]) {
-      expect(getIntegration('cs2').describeMatch(bad)).toMatchObject({ seriesLength: 1, maps: [] });
+      expect(describeMatch({ game: 'cs2', config: bad })).toMatchObject({
+        seriesLength: 1,
+        maps: [],
+      });
     }
   });
 

@@ -17,6 +17,7 @@ import { Router, type Request, type Response } from 'express';
 import { db } from '../../../config/database';
 import { log } from '../../../utils/logger';
 import { atRating, RATING_SUMS } from '../rating';
+import type { SqlValue } from '../../../config/database';
 
 const router = Router();
 
@@ -47,7 +48,8 @@ interface Totals {
 
 /** The category's value for a player (higher is better), or null when they do not qualify for it. */
 export function categoryValue(c: Category, t: Totals): { value: number; sample: number } | null {
-  const n = (v: unknown) => Number(v) || 0;
+  // pg can hand back a SUM as a string.
+  const n = (v: number | string) => Number(v) || 0;
   const rounds = n(t.rounds_played);
   if (n(t.maps) < MIN_MAPS || rounds < MIN_ROUNDS) return null;
   const round2 = (v: number) => Math.round(v * 100) / 100;
@@ -110,7 +112,7 @@ router.get('/leaderboards', async (req: Request, res: Response) => {
   const limit = Math.max(1, Math.min(100, Number(req.query.limit) || 50));
   try {
     const where: string[] = [`s.player_id ~ '^[0-9]{15,20}$'`];
-    const args: unknown[] = [];
+    const args: SqlValue[] = [];
     if (Number.isInteger(tournament) && tournament > 0) {
       where.push('m.tournament_id = ?');
       args.push(tournament);

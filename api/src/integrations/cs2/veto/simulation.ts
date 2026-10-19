@@ -130,7 +130,7 @@ type StoredVetoStatus = 'none' | 'in_progress' | 'completed' | 'invalid';
 function storedVetoStatus(rawVetoState: string | null | undefined): StoredVetoStatus {
   if (!rawVetoState) return 'none';
   try {
-    const parsed = JSON.parse(rawVetoState) as { status?: unknown } | null;
+    const parsed = JSON.parse(rawVetoState) as { status?: string } | null;
     if (!parsed || typeof parsed !== 'object') return 'invalid';
     return parsed.status === 'completed' ? 'completed' : 'in_progress';
   } catch {
@@ -281,8 +281,7 @@ async function runAutoVeto(matchSlug: string, options?: AutoVetoOptions): Promis
     ? {
         format: tournament.format as 'bo1' | 'bo3' | 'bo5',
         tournamentMaps: tournament.maps,
-        customVetoOrder: (tournament.settings as { customVetoOrder?: unknown } | undefined)
-          ?.customVetoOrder,
+        customVetoOrder: tournament.settings?.customVetoOrder,
       }
     : await getVetoContext(match);
   if (!context) {
@@ -559,7 +558,7 @@ async function runAutoVeto(matchSlug: string, options?: AutoVetoOptions): Promis
         await db.updateAsync('matches', { veto_state: JSON.stringify(vetoState) }, 'slug = ?', [
           matchSlug,
         ]);
-        emitVetoUpdate(matchSlug, vetoState as unknown as Parameters<typeof emitVetoUpdate>[1]);
+        emitVetoUpdate(matchSlug, vetoState);
         break;
       }
 

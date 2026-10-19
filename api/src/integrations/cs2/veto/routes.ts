@@ -26,6 +26,7 @@ import { postVetoProgress } from './chatLines';
 import { storeStandaloneVetoConfig } from './standaloneConfig';
 import { isVoteVeto, MM_VOTE_SECONDS, sidesOf, votersOf } from './vote';
 import { autoCompleteVetoForMatch } from './simulation';
+import type { Untrusted } from '../../../utils/untrusted';
 
 const router = Router();
 
@@ -70,7 +71,7 @@ function normalizeTeamRosterPlayers(players: string | null | undefined) {
   }
 
   try {
-    const parsed = JSON.parse(players) as Record<string, unknown> | Array<unknown>;
+    const parsed = JSON.parse(players) as Parameters<typeof normalizeConfigPlayers>[0];
     return normalizeConfigPlayers(parsed);
   } catch {
     const steamIds = players.match(/\b\d{17}\b/g) ?? [];
@@ -214,8 +215,8 @@ router.get('/:matchSlug', async (req: Request, res: Response) => {
     const isManualMatch = match.round === 0 || match.tournament_id == null;
     const description = describeMatch(match);
 
-    let team1Id: string | null = match.team1_id;
-    let team2Id: string | null = match.team2_id;
+    let team1Id: string | null = match.team1_id ?? null;
+    let team2Id: string | null = match.team2_id ?? null;
     let team1Name = 'Team 1';
     let team2Name = 'Team 2';
 
@@ -381,7 +382,7 @@ async function vetoAction(req: Request, res: Response) {
       side?: string;
       teamSlug?: string;
       /** An admin acting for a team (the admin match page's "Act for a team"). */
-      actAs?: unknown;
+      actAs?: Untrusted;
     };
 
     const match = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [
@@ -437,8 +438,8 @@ async function vetoAction(req: Request, res: Response) {
     }
 
     const isManualMatch = match.round === 0 || match.tournament_id == null;
-    let team1Id: string | null = match.team1_id;
-    let team2Id: string | null = match.team2_id;
+    let team1Id: string | null = match.team1_id ?? null;
+    let team2Id: string | null = match.team2_id ?? null;
     let team1Name = 'Team 1';
     let team2Name = 'Team 2';
 

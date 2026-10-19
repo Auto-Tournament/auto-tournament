@@ -5,7 +5,11 @@
  * and csm copy them. This file only wires them into ajv (draft 2020-12).
  */
 
-import Ajv2020, { type ErrorObject, type ValidateFunction } from 'ajv/dist/2020';
+import Ajv2020, {
+  type AnySchemaObject,
+  type ErrorObject,
+  type ValidateFunction,
+} from 'ajv/dist/2020';
 import defs from './defs.json';
 import matchDefs from './match.defs.json';
 import tvDefs from './tv.defs.json';
@@ -68,12 +72,13 @@ import demoEnd from './messages/demo.end.json';
 import demoAck from './messages/demo.ack.json';
 import enrollRequest from './http/enroll.request.json';
 import enrollResponse from './http/enroll.response.json';
-import type { Envelope, FleetMessageType } from './types';
+import type { Envelope, FleetMessage, FleetMessages, FleetMessageType } from './types';
+import type { Untrusted } from '../../../../../utils/untrusted';
 
 export * from './types';
 
 /** Payload schema per message type. */
-export const FLEET_MESSAGE_SCHEMAS: Record<FleetMessageType, Record<string, unknown>> = {
+export const FLEET_MESSAGE_SCHEMAS: Record<FleetMessageType, AnySchemaObject> = {
   hello,
   welcome,
   ping,
@@ -195,35 +200,54 @@ export function isKnownMessageType(type: string): type is FleetMessageType {
   return Object.prototype.hasOwnProperty.call(FLEET_MESSAGE_SCHEMAS, type);
 }
 
-export function validateEnvelope(value: unknown): ValidationResult {
+export function validateEnvelope(value: Untrusted): ValidationResult {
   const v = validators().envelope;
   const ok = v(value) as boolean;
   return { ok, errors: ok ? [] : describe(v.errors) };
 }
 
 /** Validate a payload against its type's schema. An unknown type fails with `unknown type`. */
-export function validatePayload(type: string, payload: unknown): ValidationResult {
+export function validatePayload(type: string, payload: Untrusted): ValidationResult {
   const v = validators().messages.get(type);
   if (!v) return { ok: false, errors: [`unknown type ${type}`] };
   const ok = v(payload) as boolean;
   return { ok, errors: ok ? [] : describe(v.errors, '/payload') };
 }
 
+/** A payload checked against its type's schema, typed from then on. */
+export function checkPayload<K extends FleetMessageType>(
+  type: K,
+  payload: Untrusted
+): { ok: true; payload: FleetMessages[K] } | { ok: false; errors: string[] } {
+  const check = validatePayload(type, payload);
+  return check.ok
+    ? { ok: true, payload: payload as FleetMessages[K] }
+    : { ok: false, errors: check.errors };
+}
+
+/** An envelope whose payload passed its type's schema, as a typed `FleetMessage`. */
+export function checkMessage(
+  env: Envelope
+): { ok: true; msg: FleetMessage } | { ok: false; errors: string[] } {
+  const check = validatePayload(env.type, env.payload);
+  return check.ok ? { ok: true, msg: env as FleetMessage } : { ok: false, errors: check.errors };
+}
+
 /** Envelope and payload in one go (tests, and the gateway's outbound self-check). */
-export function validateMessage(value: unknown): ValidationResult {
+export function validateMessage(value: Untrusted): ValidationResult {
   const env = validateEnvelope(value);
   if (!env.ok) return env;
   const msg = value as Envelope;
   return validatePayload(msg.type, msg.payload);
 }
 
-export function validateEnrollRequest(value: unknown): ValidationResult {
+export function validateEnrollRequest(value: Untrusted): ValidationResult {
   const v = validators().enrollRequest;
   const ok = v(value) as boolean;
   return { ok, errors: ok ? [] : describe(v.errors) };
 }
 
-export function validateEnrollResponse(value: unknown): ValidationResult {
+export function validateEnrollResponse(value: Untrusted): ValidationResult {
   const v = validators().enrollResponse;
   const ok = v(value) as boolean;
   return { ok, errors: ok ? [] : describe(v.errors) };

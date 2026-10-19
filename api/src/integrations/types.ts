@@ -26,11 +26,31 @@
 
 import type { Router } from 'express';
 import type { DbMatchRow } from '../types/database.types';
+import type { SqlValue } from '../config/database';
+import type { TournamentResponse, TournamentSettings } from '../types/tournament.types';
+import type { JsonObject } from '../utils/json';
+import type { Untrusted } from '../utils/untrusted';
 
 /**
  * Identifier stored in the `game` column: 'cs2', plus 'fake' in test runs
  * (integrations/fake); later e.g. 'manual-report'.
  */
+/**
+ * The shapes of one integration's own data. The core stores these and hands
+ * them back without reading a field; the integration names them
+ * (`GameIntegration<Cs2Data>`), so its own code works with typed values.
+ */
+export interface IntegrationData {
+  /** `matches.config`. */
+  config: object;
+  /** A standalone match's admin settings (`SetupSchema.match`). */
+  matchSettings: object;
+  /** A stored game event (`match_events.event_data`), as `replayEvent` gets it. */
+  event: object;
+  /** A result report (`syncMatchState` with `report`). */
+  report: object;
+}
+
 export type GameId = string;
 
 /** The game every existing row belongs to; also the column default. */
@@ -77,14 +97,13 @@ export interface ParticipantRef {
 }
 
 /**
- * The neutral view of a tournament an integration gets. `settings` is the
- * integration-owned part: the core stores and forwards it without reading it.
+ * The neutral view of a tournament an integration gets: its `settings`, and
+ * the full response when the caller has it (`full`).
  *
- * For CS2 this is still the full `TournamentResponse`. CS2's own settings
- * (maps, map sequence, max rounds, overtime) are its object inside
- * `settings` (`settings.cs2`, see `ModuleTournamentSettings`), also spread
- * onto the response's top level for 2.x clients; the veto order is still
- * `settings.customVetoOrder`.
+ * CS2's own settings (maps, map sequence, max rounds, overtime) are its
+ * object inside `settings` (`settings.cs2`, see `ModuleTournamentSettings`),
+ * also spread onto the response's top level for 2.x clients; the veto order
+ * is still `settings.customVetoOrder`.
  */
 export interface IntegrationTournament {
   id: number;
@@ -92,11 +111,16 @@ export interface IntegrationTournament {
   type: string;
   /** Series format: 'bo1' | 'bo3' | 'bo5' */
   format: string;
-  settings: unknown;
+  settings: TournamentSettings;
+  /**
+   * The tournament as the API returns it, when the caller has it (building a
+   * bracket match's config reads its teams and rules).
+   */
+  full?: TournamentResponse;
 }
 
 /** Everything an integration needs to know about one match. */
-export interface MatchContext {
+export interface MatchContext<D extends IntegrationData = IntegrationData> {
   slug: string;
   matchId: number;
   game: GameId;
@@ -107,7 +131,7 @@ export interface MatchContext {
   round: number;
   bracket?: string | null;
   /** Parsed `matches.config`: an integration-owned blob (for CS2, the MatchZy Enhanced config). */
-  integrationConfig: unknown;
+  integrationConfig: D['config'] | null;
   /** The resource the match is assigned to (CS2: `matches.server_id`), when it has one. */
   resourceId?: string | null;
 }
@@ -125,8 +149,11 @@ export interface MatchContext {
  * `matchId` is 0 while the match row does not exist yet (configs for new
  * bracket slots are built before the insert, as before).
  */
-export type BuildMatchConfigContext = Omit<MatchContext, 'integrationConfig'> & {
-  settings?: unknown;
+export type BuildMatchConfigContext<D extends IntegrationData = IntegrationData> = Omit<
+  MatchContext<D>,
+  'integrationConfig'
+> & {
+  settings?: D['matchSettings'];
   /**
    * Standalone creation only: the tournament whose rules a new standalone
    * match falls back to for settings the admin left out (CS2: the round
@@ -208,14 +235,14 @@ export type ResourceActionResult =
       /** The resource the match is on afterwards. */
       resourceId?: string;
       /** Integration-specific fields the route passes through (CS2: RCON replies). */
-      details?: Record<string, unknown>;
+      details?: object;
     }
   | {
       ok: false;
       error: string;
       /** The action is not possible right now (no free resource), rather than broken. */
       conflict?: boolean;
-      details?: Record<string, unknown>;
+      details?: object;
     };
 
 /**
@@ -230,7 +257,7 @@ export interface ResourcePoolStatus {
   /** When every resource is resting: seconds until the first one is free. */
   nextAllocationInSeconds: number | null;
   /** One row per resource; fields beyond `id` and `online` are integration-specific. */
-  resources: Array<{ id: string; online: boolean } & Record<string, unknown>>;
+  resources: Array<{ id: string; online: boolean } & JsonObject>;
   offlineCount: number;
   busyCount: number;
   graceWindowCount: number;
@@ -262,8 +289,7 @@ export type CancelReason =
  * admin as they are (CS2: `cs2_outdated_servers` with the affected servers).
  */
 export type StartCheckResult =
-  | { ok: true }
-  | { ok: false; errorCode: string; message: string; details?: Record<string, unknown> };
+  { ok: true } | { ok: false; errorCode: string; message: string; details?: object };
 
 export interface ValidationResult {
   valid: boolean;
@@ -273,7 +299,7 @@ export interface ValidationResult {
 /** What a tournament create or update asks its integration to validate. */
 export interface TournamentSettingsInput {
   /** The request's `settings` object. */
-  settings: unknown;
+  settings: Untrusted;
   /**
    * Map pool size a settings-only check (no `mode`) validates against. With
    * a `mode` the integration works it out from `body` and `stored`.
@@ -291,12 +317,12 @@ export interface TournamentSettingsInput {
    * `body.settings` and any 2.x top-level fields it still accepts (CS2:
    * maps, mapSequence, maxRounds, overtimeMode, overtimeSegments).
    */
-  body?: Record<string, unknown>;
+  body?: Record<string, Untrusted>;
   /**
    * Update: the stored tournament row (its `settings` as the stored JSON
    * text), for fields the request leaves alone.
    */
-  stored?: Record<string, unknown> | null;
+  stored?: { settings?: string | null } | null;
 }
 
 /**
@@ -330,7 +356,7 @@ export type ModuleSettingsTarget = 'tournament' | 'template';
  * `tournament_templates.map_pool_id`, `maps`); the schema migration
  * `2026-09-24-cs2-tournament-settings` folded them in.
  */
-export interface ModuleTournamentSettings<T = unknown> {
+export interface ModuleTournamentSettings<T extends object = object> {
   /**
    * The key under `settings` this module owns. It must not be one of the
    * core's own settings keys (`matchFormat`, `description`, ...).
@@ -345,7 +371,7 @@ export interface ModuleTournamentSettings<T = unknown> {
    * request changes nothing.
    */
   fromRequest(
-    body: Record<string, unknown>,
+    body: Record<string, Untrusted>,
     stored: T | undefined,
     target: ModuleSettingsTarget
   ): T | undefined;
@@ -355,7 +381,7 @@ export interface ModuleTournamentSettings<T = unknown> {
    * `maxRounds`, `overtimeMode`, `overtimeSegments`, `mapPoolId`). Omitted:
    * none.
    */
-  responseFields?(value: T | undefined, target: ModuleSettingsTarget): Record<string, unknown>;
+  responseFields?(value: T | undefined, target: ModuleSettingsTarget): object;
   /**
    * Whether an update from `before` to `after` changes the bracket, so the
    * core regenerates it (CS2: the map pool changed size). Omitted: never.
@@ -368,7 +394,7 @@ export interface ModuleTournamentSettings<T = unknown> {
  * SQL with `$n` placeholders.
  */
 export interface SeedClient {
-  query(sql: string, params?: unknown[]): Promise<{ rows: Array<Record<string, unknown>> }>;
+  query(sql: string, params?: SqlValue[]): Promise<{ rows: Array<Record<string, SqlValue>> }>;
 }
 
 /**
@@ -384,7 +410,7 @@ export interface ModuleMigration {
 }
 
 /** JSON Schema document. Kept loose on purpose; the core only stores and forwards it. */
-export type JSONSchema = Record<string, unknown>;
+export type JSONSchema = JsonObject;
 
 export interface SetupSchema {
   /**
@@ -454,7 +480,7 @@ export interface SettingDefinition {
    * Apply the request value (never `undefined`). Return an error message for
    * a 400, or nothing once it is stored (through `ctx.set`).
    */
-  applyRequest?(value: unknown, ctx: SettingWriteContext): Promise<string | void>;
+  applyRequest?(value: Untrusted, ctx: SettingWriteContext): Promise<string | void>;
 }
 
 // ---------------------------------------------------------------------------
@@ -735,7 +761,7 @@ export interface SiteSearchHit {
   score: number;
 }
 
-export interface GameIntegration {
+export interface GameIntegration<D extends IntegrationData = IntegrationData> {
   id: GameId;
   displayName: string;
   capabilities: IntegrationCapabilities;
@@ -804,7 +830,7 @@ export interface GameIntegration {
    * This game's fields of the `GET /api/settings` response (the stored
    * values with their defaults applied), keyed by `SettingDefinition.field`.
    */
-  readInstanceSettings?(): Promise<Record<string, unknown>>;
+  readInstanceSettings?(): Promise<object>;
   /**
    * Validate a tournament create or update: the integration's top-level
    * fields and its part of `settings`. CS2: the map pool (`maps`), the shuffle
@@ -837,9 +863,9 @@ export interface GameIntegration {
   // --- setup ---------------------------------------------------------------
 
   /** Build the integration-owned `matches.config` for a match. */
-  buildMatchConfig(ctx: BuildMatchConfigContext): Promise<unknown>;
+  buildMatchConfig(ctx: BuildMatchConfigContext<D>): Promise<D['config']>;
   /** Neutral view of a stored config: roster, maps, series length. */
-  describeMatch(config: unknown): MatchDescription;
+  describeMatch(config: D['config']): MatchDescription;
 
   // --- lifecycle -----------------------------------------------------------
 
@@ -859,13 +885,13 @@ export interface GameIntegration {
    * veto; `settings.cs2.veto: false` turns it off and each match plays maps
    * drawn from the pool). Omitted means `capabilities.veto`.
    */
-  usesPreMatchPhase?(tournament: { settings?: unknown }): boolean;
+  usesPreMatchPhase?(tournament: { settings?: TournamentSettings }): boolean;
   /**
    * Whether the game fills a short team with bots in this tournament (CS2:
    * `settings.cs2.fillTeamsWithBots`). A shuffle round then gives every
    * player a team instead of sitting some out. Omitted means `false`.
    */
-  fillsShortTeams?(tournament: { settings?: unknown }): boolean;
+  fillsShortTeams?(tournament: { settings?: TournamentSettings }): boolean;
   /**
    * A match got both participants and `isReadyToAllocate` returned `false`:
    * run the integration's pre-match phase. The integration readies and
@@ -1027,25 +1053,25 @@ export interface GameIntegration {
    * Transitional: a later PR adds a `metrics` JSONB column and a `game`
    * column; until then the metrics live in the CS2 columns.
    */
-  playerStatsColumns?(metrics: Record<string, number>): Record<string, unknown>;
+  playerStatsColumns?(metrics: Record<string, number>): Record<string, SqlValue>;
   /**
    * The reverse of `playerStatsColumns`: the metrics of a stored
    * `player_match_stats` row, as the rating stat adjustment reads them.
    * Without it a stored row has no metrics (no stat adjustment).
    */
-  playerStatsMetrics?(row: Record<string, unknown>): Record<string, number>;
+  playerStatsMetrics?(row: Record<string, SqlValue>): Record<string, number>;
   /**
    * Account ids (`externalId`) per side of a standalone match, whose teams
    * exist only in its config; null when the config cannot be parsed. Without
    * it the core uses `describeMatch`.
    */
-  standaloneRoster?(config: unknown): { team1: string[]; team2: string[] } | null;
+  standaloneRoster?(config: D['config']): { team1: string[]; team2: string[] } | null;
   /**
    * Apply one stored game event again (`match_events.event_data`), as when it
    * arrived but without the webhook's side effects. Used by event replay after
    * downtime.
    */
-  replayEvent?(event: unknown): Promise<void>;
+  replayEvent?(event: D['event']): Promise<void>;
 
   // --- results -------------------------------------------------------------
 
@@ -1098,7 +1124,7 @@ export interface GameIntegration {
     tournamentId: number;
     tournamentName: string;
     /** The tournament's settings object (CS2 reads `skinRewards`). */
-    settings: Record<string, unknown>;
+    settings: TournamentSettings;
     placements: Array<{ place: 1 | 2 | 3 | 4; steamIds: string[] }>;
   }): Promise<void>;
 
@@ -1146,7 +1172,7 @@ export interface GameIntegration {
    * Fields this integration adds to `GET /api/health/fleet`, merged after
    * `status` and `timestamp` (CS2: `cs2Fleet` and `servers`).
    */
-  healthContributions?(): Promise<Record<string, unknown>>;
+  healthContributions?(): Promise<object>;
   /**
    * How players join a match right now: the address of the resource it is
    * loaded on and its join password (CS2: the server's host and port, and a
@@ -1173,8 +1199,8 @@ export interface GameIntegration {
    */
   syncMatchState?(
     slug: string,
-    source: { resourceId: string } | { report: unknown }
-  ): Promise<Record<string, unknown> | null>;
+    source: { resourceId: string } | { report: D['report'] }
+  ): Promise<object | null>;
   /**
    * The match was held or released, or its tournament paused or resumed
    * (services/matchHolds.ts): stop or restart whatever counts down to a
