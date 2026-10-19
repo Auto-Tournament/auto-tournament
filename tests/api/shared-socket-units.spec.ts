@@ -3,6 +3,7 @@ import type { Socket } from 'socket.io-client';
 import {
   acquireSocket,
   currentSocket,
+  listenShared,
   ownedView,
   releaseSocket,
   socketFactory,
@@ -102,5 +103,45 @@ test(
     for (const fn of handlers.get('connect') ?? []) fn();
     expect(joined).toBe(2);
     expect(resyncs).toBe(1);
+  }
+);
+
+test(
+  'listenShared attaches, runs connect when already connected, and removes on stop',
+  { tag: ['@api'] },
+  async () => {
+    const handlers = new Map<string, Set<() => void>>();
+    const fake = {
+      connected: true,
+      active: true,
+      connect() {},
+      disconnect() {},
+      on(event: string, fn: () => void) {
+        if (!handlers.has(event)) handlers.set(event, new Set());
+        handlers.get(event)!.add(fn);
+      },
+      off(event: string, fn: () => void) {
+        handlers.get(event)?.delete(fn);
+      },
+    };
+    socketFactory.make = () => fake as unknown as Socket;
+    const s = currentSocket() as unknown as typeof fake;
+    // The first test may have left its own fake as the socket: use whatever is current.
+    if (s !== fake) Object.assign(s, { connected: true, on: fake.on, off: fake.off });
+
+    let connects = 0;
+    let updates = 0;
+    const stop = listenShared([
+      ['connect', () => (connects += 1)],
+      ['presence:update', () => (updates += 1)],
+    ]);
+    await Promise.resolve();
+    expect(connects).toBe(1);
+    for (const fn of handlers.get('presence:update') ?? []) fn();
+    expect(updates).toBe(1);
+
+    stop();
+    expect(handlers.get('connect')?.size ?? 0).toBe(0);
+    expect(handlers.get('presence:update')?.size ?? 0).toBe(0);
   }
 );

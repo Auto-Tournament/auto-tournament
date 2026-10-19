@@ -70,6 +70,7 @@ import { useMatchRoomPath } from './components/matchmaking/matchRoomPath';
 import { ChatDock } from './components/chat/ChatDock';
 import { PartyInviteToast } from './components/social/PartyInviteToast';
 import { PresenceReporter } from './components/social/PresenceReporter';
+import { SocketIdentity } from './components/SocketIdentity';
 import AccountConnections from './pages/AccountConnections';
 import ConnectSteam from './pages/ConnectSteam';
 import Templates from './pages/Templates';
@@ -776,6 +777,7 @@ export default function App() {
               <PartyInviteToast />
               {/* Online or away: this tab says when it goes idle. */}
               <PresenceReporter />
+              <SocketIdentity />
             </PageHeaderProvider>
           </SnackbarProvider>
         </AuthProvider>

@@ -10,7 +10,7 @@
 import { soundNotification } from '../../utils/soundNotification';
 import { refreshAllPresence } from './presenceStore';
 import { useEffect, useSyncExternalStore } from 'react';
-import { io, type Socket } from 'socket.io-client';
+import { currentSocket, listenShared, type SocketHandler } from '../../utils/sharedSocket';
 import { apiErrorMessage } from '../../utils/api';
 import { refreshMatchmaking } from '../matchmaking/matchmakingStore';
 import type { Untrusted } from '../../utils/untrusted';
@@ -97,7 +97,8 @@ export function onNewNotice(listener: (notice: Notice) => void): () => void {
 }
 const listeners = new Set<() => void>();
 let users = 0;
-let socket: Socket | null = null;
+/** Stops this store's handlers on the page's shared socket. */
+let stopSocket: (() => void) | null = null;
 let timer: ReturnType<typeof setTimeout> | null = null;
 
 function emit(patch: Partial<State>) {
@@ -143,14 +144,15 @@ export async function loadOlderNotices(): Promise<void> {
 }
 
 function openSocket() {
-  if (socket) return;
-  socket = io({ autoConnect: true });
-  socket.on('connect', () => {
-    socket?.emit('player:subscribe');
+  if (stopSocket) return;
+  const handlers: SocketHandler[] = [];
+  const on = (event: string, fn: SocketHandler[1]) => handlers.push([event, fn]);
+  on('connect', () => {
+    currentSocket().emit('player:subscribe');
     void refreshFriends();
     void refreshNotices();
   });
-  socket.on('notify:new', (notice: Notice) => {
+  on('notify:new', (notice: Notice) => {
     const notices = [notice, ...state.notices.filter((n) => n.id !== notice.id)];
     const toasts =
       notice.kind === 'party_invite'
@@ -162,18 +164,19 @@ function openSocket() {
     newNoticeListeners.forEach((l) => l(notice));
   });
   // Friends, requests or a withdrawn notice (a skin whose reveal was seen) changed.
-  socket.on('social:changed', () => {
+  on('social:changed', () => {
     void refreshFriends();
     void refreshNotices();
   });
   // A match or the queue changed: what players are doing may have too.
-  socket.on('match:update', () => refreshAllPresence());
-  socket.on('mm:changed', () => refreshAllPresence());
+  on('match:update', () => refreshAllPresence());
+  on('mm:changed', () => refreshAllPresence());
+  stopSocket = listenShared(handlers);
 }
 
 function closeSocket() {
-  socket?.close();
-  socket = null;
+  stopSocket?.();
+  stopSocket = null;
 }
 
 function poll() {

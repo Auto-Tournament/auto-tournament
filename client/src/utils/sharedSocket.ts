@@ -94,3 +94,39 @@ export function ownedView(s: Socket): Socket {
     },
   });
 }
+
+/** A socket event and its handler, for `listenShared`. */
+export type SocketHandler = readonly [event: string, handler: (...args: never[]) => void];
+
+/**
+ * Takes the shared socket and attaches `handlers`; the returned stop removes
+ * them and gives the socket back. A `connect` handler also runs (on the next
+ * tick) when the socket is already connected, as it did on a socket of one's own.
+ */
+export function listenShared(handlers: readonly SocketHandler[]): () => void {
+  const s = acquireSocket();
+  const attached = handlers.map(
+    ([event, fn]) => [event, fn as (...args: Untrusted[]) => void] as const
+  );
+  for (const [event, fn] of attached) s.on(event, fn);
+  if (s.connected) {
+    void Promise.resolve().then(() => {
+      for (const [event, fn] of attached) if (event === 'connect' && s.connected) fn();
+    });
+  }
+  return () => {
+    for (const [event, fn] of attached) s.off(event, fn);
+    releaseSocket();
+  };
+}
+
+/**
+ * The server knows the player from the socket's handshake: after signing in
+ * or out, open the connection again so it does (every `connect` handler then
+ * joins its rooms again).
+ */
+export function reconnectSharedSocket(): void {
+  if (!socket) return;
+  socket.disconnect();
+  if (users > 0) socket.connect();
+}
