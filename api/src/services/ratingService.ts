@@ -3,7 +3,7 @@
  * Handles OpenSkill rating calculations and Skill Rating conversions
  */
 
-import { db } from '../config/database';
+import { db, type SqlValue } from '../config/database';
 import { log } from '../utils/logger';
 import { eloTemplateService } from './eloTemplateService';
 import { integrationForMatch } from '../integrations/registry';
@@ -38,7 +38,10 @@ async function restoreRatings(rows: Array<RatingHistoryRow & { game: string | nu
   const all = [];
   for (const [game, gameRows] of byGame) {
     const rollbacks = ratingRollbacks(gameRows);
-    const current = await getGameRatings(rollbacks.map((rb) => rb.playerId), game);
+    const current = await getGameRatings(
+      rollbacks.map((rb) => rb.playerId),
+      game
+    );
     for (const rb of rollbacks) {
       await setGameRating(rb.playerId, game, {
         elo: rb.elo,
@@ -75,7 +78,9 @@ export async function discardTournamentRatings(tournamentId: number): Promise<nu
     [tournamentId]
   );
   if (rollbacks.length > 0) {
-    log.info(`[RATINGS] Reverted tournament ${tournamentId} ratings for ${rollbacks.length} player(s)`);
+    log.info(
+      `[RATINGS] Reverted tournament ${tournamentId} ratings for ${rollbacks.length} player(s)`
+    );
   }
   return rollbacks.length;
 }
@@ -177,7 +182,13 @@ export async function updatePlayerRatings(
       if (!r) {
         throw new Error(`Player not found: ${playerId}`);
       }
-      return { id: playerId, current_elo: r.elo, openskill_mu: r.mu, openskill_sigma: r.sigma, match_count: r.matchCount };
+      return {
+        id: playerId,
+        current_elo: r.elo,
+        openskill_mu: r.mu,
+        openskill_sigma: r.sigma,
+        match_count: r.matchCount,
+      };
     });
 
     // Separate into teams
@@ -214,7 +225,7 @@ export async function updatePlayerRatings(
         toIntegrationTournament(tournamentRowToResponse(tournament))
       );
       if (integration.playerStatsMetrics) {
-        const statsRecords = await db.queryAsync<Record<string, unknown> & { player_id: string }>(
+        const statsRecords = await db.queryAsync<Record<string, SqlValue> & { player_id: string }>(
           'SELECT * FROM player_match_stats WHERE match_slug = ?',
           [matchSlug]
         );
@@ -377,7 +388,7 @@ export async function getRatingHistory(
   // One row per match: duplicate history rows (earlier bugs or retries) would
   // otherwise show as several rating changes for the same match. The newest
   // row wins. Rows of deleted tournaments have no slug and are kept as-is.
-  const params: unknown[] = [playerId];
+  const params: SqlValue[] = [playerId];
   let tournamentFilter = '';
   if (tournamentId) {
     tournamentFilter = 'AND match_slug IN (SELECT slug FROM matches WHERE tournament_id = ?)';
@@ -402,4 +413,3 @@ export async function getRatingHistory(
     params
   );
 }
-

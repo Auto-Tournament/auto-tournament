@@ -26,6 +26,7 @@
 
 import type { Router } from 'express';
 import type { DbMatchRow } from '../types/database.types';
+import type { SqlValue } from '../config/database';
 
 /**
  * Identifier stored in the `game` column: 'cs2', plus 'fake' in test runs
@@ -368,7 +369,7 @@ export interface ModuleTournamentSettings<T = unknown> {
  * SQL with `$n` placeholders.
  */
 export interface SeedClient {
-  query(sql: string, params?: unknown[]): Promise<{ rows: Array<Record<string, unknown>> }>;
+  query(sql: string, params?: SqlValue[]): Promise<{ rows: Array<Record<string, SqlValue>> }>;
 }
 
 /**
@@ -1027,13 +1028,13 @@ export interface GameIntegration {
    * Transitional: a later PR adds a `metrics` JSONB column and a `game`
    * column; until then the metrics live in the CS2 columns.
    */
-  playerStatsColumns?(metrics: Record<string, number>): Record<string, unknown>;
+  playerStatsColumns?(metrics: Record<string, number>): Record<string, SqlValue>;
   /**
    * The reverse of `playerStatsColumns`: the metrics of a stored
    * `player_match_stats` row, as the rating stat adjustment reads them.
    * Without it a stored row has no metrics (no stat adjustment).
    */
-  playerStatsMetrics?(row: Record<string, unknown>): Record<string, number>;
+  playerStatsMetrics?(row: Record<string, SqlValue>): Record<string, number>;
   /**
    * Account ids (`externalId`) per side of a standalone match, whose teams
    * exist only in its config; null when the config cannot be parsed. Without
