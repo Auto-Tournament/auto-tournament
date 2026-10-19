@@ -68,9 +68,7 @@ async function serverNames(ids: Array<string | null>): Promise<Map<string, strin
   return new Map(rows.map((r) => [r.id, r.name]));
 }
 
-async function view(
-  proposals: FailoverProposal[]
-): Promise<
+async function view(proposals: FailoverProposal[]): Promise<
   Array<
     FailoverProposal & {
       fromServerName: string | null;
@@ -304,13 +302,11 @@ failoverSettingsRouter.put(
         body.reserve < 0 ||
         body.reserve > MAX_RESERVE)
     ) {
-      return res
-        .status(400)
-        .json({
-          success: false,
-          code: 'bad_args',
-          error: `reserve must be null (automatic) or 0-${MAX_RESERVE}`,
-        });
+      return res.status(400).json({
+        success: false,
+        code: 'bad_args',
+        error: `reserve must be null (automatic) or 0-${MAX_RESERVE}`,
+      });
     }
     try {
       await setFailoverSettings(
