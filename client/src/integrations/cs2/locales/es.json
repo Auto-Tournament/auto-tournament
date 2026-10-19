@@ -633,12 +633,6 @@
     "info_other": "Se guardará un pool de mapas con {{count}} mapas."
   },
   "settings": {
-    "webhook": {
-      "title": "Platform URL",
-      "description": "The address your CS2 servers, links and webhooks use to reach the platform.",
-      "label": "URL de webhook",
-      "helper": "Ejemplo: https://tu-dominio.com"
-    },
     "mapSync": {
       "title": "Sincronización de mapas",
       "description": "Sincroniza mapas de CS2 desde el repositorio de GitHub.",

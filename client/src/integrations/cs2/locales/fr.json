@@ -633,12 +633,6 @@
     "info_other": "Cela enregistre un pool de cartes avec {{count}} cartes."
   },
   "settings": {
-    "webhook": {
-      "title": "Platform URL",
-      "description": "The address your CS2 servers, links and webhooks use to reach the platform.",
-      "label": "URL de webhook",
-      "helper": "Exemple : https://votre-domaine.com"
-    },
     "mapSync": {
       "title": "Synchronisation des cartes",
       "description": "Synchroniser les cartes CS2 depuis le dépôt GitHub.",

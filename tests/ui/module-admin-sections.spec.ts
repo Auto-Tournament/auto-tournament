@@ -58,7 +58,6 @@ test.describe('Module sections on Admin tools and Settings', () => {
       await expect(page.getByTestId('settings-card-site')).toBeVisible({ timeout: 30000 });
 
       // Settings is the platform's only: none of CS2's fields, no second nav.
-      await expect(page.getByTestId('settings-webhook-url-input')).toHaveCount(0);
       await expect(page.getByTestId('cs2-server-defaults')).toHaveCount(0);
       await expect(page.getByTestId('settings-game-links')).toBeVisible({ timeout: 30000 });
 
@@ -71,8 +70,7 @@ test.describe('Module sections on Admin tools and Settings', () => {
       }
 
       await group.getByRole('link', { name: 'Match rules' }).click();
-      await expect(page.getByTestId('settings-webhook-url-input')).toBeVisible({ timeout: 15000 });
-      await expect(page.getByTestId('cs2-server-defaults')).toBeVisible();
+      await expect(page.getByTestId('cs2-server-defaults')).toBeVisible({ timeout: 15000 });
       await expect(page.getByTestId('at-kick-delay-input')).toBeAttached();
 
       await group.getByRole('link', { name: 'Skins' }).click();
@@ -115,7 +113,6 @@ test.describe('Module sections on Admin tools and Settings', () => {
       await expect(page.getByTestId('settings-version')).toBeVisible({ timeout: 15000 });
       await expect(page.getByTestId('settings-card-site')).toBeVisible();
       await expect(page.getByTestId('settings-game-links')).toHaveCount(0);
-      await expect(page.getByTestId('settings-webhook-url-input')).toHaveCount(0);
       await expect(page.getByTestId('cs2-settings-map-sync')).toHaveCount(0);
       await expect(page.getByTestId('cs2-server-defaults')).toHaveCount(0);
     }

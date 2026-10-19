@@ -87,9 +87,8 @@ function AdminShell() {
   const steamWarningShownRef = React.useRef(false);
 
   // One read of the tournament for the shell's game-dependent parts: what the
-  // game's module needs an admin to fix before it can run (phase E: CS2's
-  // webhook URL and its plugin's database), and whether the module is there
-  // at all. The rail reads the same hook for its links.
+  // game's module needs an admin to fix before it can run, and whether the
+  // module is there at all. The rail reads the same hook for its links.
   const { tournament: tournamentIntegration, loading: tournamentGameLoading } =
     useShellIntegrations();
   const AdminGlobalWarning = tournamentGameLoading

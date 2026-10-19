@@ -42,7 +42,6 @@ test.describe.serial('Settings UI', () => {
           'page'
         );
       }
-      await expect(page.getByTestId('settings-webhook-url-input')).toHaveCount(0);
 
       // CS2's settings are its Match rules page, linked from here.
       await page
@@ -50,62 +49,12 @@ test.describe.serial('Settings UI', () => {
         .getByRole('link', { name: 'Match rules' })
         .click();
       await expect(page).toHaveURL(/\/match-rules$/);
-      await expect(page.getByTestId('settings-webhook-url-input')).toBeVisible({ timeout: 15000 });
-      await expect(page.getByTestId('cs2-server-defaults')).toBeVisible();
+      await expect(page.getByTestId('cs2-server-defaults')).toBeVisible({ timeout: 15000 });
       await expect(page.getByTestId('cs2-settings-reset-button')).toBeVisible();
 
       // The Steam API key is env-only; a field here would mean a secret is being
       // round-tripped through the browser.
       await expect(page.getByTestId('settings-steam-api-key-input')).toHaveCount(0);
-    }
-  );
-
-  test(
-    'should update and clear the webhook URL',
-    {
-      tag: ['@ui', '@settings', '@configuration'],
-    },
-    async ({ page }) => {
-      await page.goto('/manage/match-rules');
-      await page.waitForLoadState('networkidle');
-
-      const webhookInput = page.getByTestId('settings-webhook-url-input');
-      await expect(webhookInput).toBeVisible({ timeout: 15000 });
-
-      // --- Update webhook URL (auto-saved on change/blur) ---
-      const testWebhookUrl = `https://example.com/webhook/${Date.now()}`;
-      await webhookInput.clear();
-      await webhookInput.fill(testWebhookUrl);
-      await webhookInput.blur();
-
-      // Reload to verify the value was persisted server-side.
-      await expect
-        .poll(
-          async () => {
-            await page.reload();
-            await page.waitForLoadState('networkidle');
-            return page.getByTestId('settings-webhook-url-input').inputValue();
-          },
-          { message: 'webhook URL to persist', timeout: 15000 }
-        )
-        .toBe(testWebhookUrl);
-
-      // --- Clear webhook URL and verify the empty value persists ---
-      const webhookInput2 = page.getByTestId('settings-webhook-url-input');
-      await expect(webhookInput2).toBeVisible({ timeout: 15000 });
-      await webhookInput2.clear();
-      await webhookInput2.blur();
-
-      await expect
-        .poll(
-          async () => {
-            await page.reload();
-            await page.waitForLoadState('networkidle');
-            return page.getByTestId('settings-webhook-url-input').inputValue();
-          },
-          { message: 'webhook URL to be cleared', timeout: 15000 }
-        )
-        .toBe('');
     }
   );
 
