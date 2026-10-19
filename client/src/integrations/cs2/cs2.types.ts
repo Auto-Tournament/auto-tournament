@@ -11,6 +11,7 @@
  */
 
 import type { ResourceAvailability } from '../types';
+import type { Untrusted } from '../types';
 
 interface Cs2ApiResponse {
   success: boolean;
@@ -437,7 +438,7 @@ export interface ServerEvent {
   event: {
     event: string;
     matchid: string;
-    [key: string]: unknown;
+    [key: string]: Untrusted;
   };
 }
 
@@ -484,7 +485,7 @@ export interface FleetServer {
   };
   capabilities: string[];
   host: { hostname: string; game_port: number; tv_port?: number; public_addr?: string } | null;
-  health: Record<string, unknown> | null;
+  health: Record<string, Untrusted> | null;
   protocol: number | null;
   connectedAt: number | null;
   lastSeen: number | null;
@@ -606,7 +607,7 @@ export interface FleetHostCommand {
   seq: number | null;
   type: FleetHostCommandType;
   server: string | null;
-  payload: Record<string, unknown>;
+  payload: Record<string, Untrusted>;
   status: 'pending' | 'ok' | 'rejected' | 'failed';
   errorCode: string | null;
   errorMessage: string | null;

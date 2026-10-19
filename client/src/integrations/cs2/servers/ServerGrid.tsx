@@ -15,6 +15,7 @@ import {
 import type { ServerAllocationInfo } from '../cs2.types';
 import { useServerAvailability } from './useServerAvailability';
 import { useUnconfiguredServers } from './useUnconfiguredServers';
+import type { Untrusted } from '../../types';
 
 /** The two team names of a match, for a server running one with no bracket label. */
 type TeamNames = { team1?: string; team2?: string };
@@ -95,7 +96,7 @@ function bracketLabel(server: ServerAllocationInfo): string | null {
 
 function timeAgo(
   unixSeconds: number,
-  t: (key: string, opts?: Record<string, unknown>) => string
+  t: (key: string, opts?: Record<string, Untrusted>) => string
 ): string {
   const seconds = Math.max(0, Math.floor(Date.now() / 1000) - unixSeconds);
   if (seconds < 60) return t('managePage.needsYou.secondsAgo', { count: seconds });

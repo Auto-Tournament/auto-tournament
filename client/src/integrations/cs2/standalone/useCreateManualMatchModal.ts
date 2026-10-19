@@ -17,9 +17,10 @@ import type {
   Team,
   TeamsResponse,
 } from './standaloneTypes';
+import type { Untrusted } from '../../types';
 
 /** A config's players: an array of { steamid } or, in a shuffle config, { steamid: name }. */
-function configSteamIds(players: unknown): string[] {
+function configSteamIds(players: Untrusted): string[] {
   if (Array.isArray(players)) return players.map((p: { steamid?: string }) => p?.steamid ?? '');
   return players && typeof players === 'object' ? Object.keys(players) : [];
 }

@@ -5,6 +5,7 @@ import {
   MatchRecordingGroup,
   type RecorderGroup,
 } from '../settings/RecorderFleetControls';
+import type { Untrusted } from '../../types';
 /**
  * CS2's part of the Highlights page. Four tabs:
  *
@@ -1282,7 +1283,7 @@ function ClipReview({
     setNote('');
   }
   useEffect(() => {
-    const onKey = (e: { key: string; target: unknown; defaultPrevented: boolean }) => {
+    const onKey = (e: { key: string; target: Untrusted; defaultPrevented: boolean }) => {
       if (e.defaultPrevented) return;
       if ((e.target as HTMLElement | null)?.tagName === 'INPUT') return;
       if (e.key === 'ArrowRight' && index < clips.length - 1) onIndex(index + 1);

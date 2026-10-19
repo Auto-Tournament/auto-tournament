@@ -1,15 +1,16 @@
 import type { TournamentRulesViewProps } from '../../types';
 import { cs2SettingsOf } from '../setup/cs2TournamentSettings';
+import type { Untrusted } from '../../types';
 
 /** Splits a line's bold first sentence from the rest (the view draws it strong). */
 export const STRONG_END = '\u0000';
 
 /** The lines, in order: pure, so the view and a test read the same words. */
 export function rulesLines(
-  t: (key: string, values?: Record<string, unknown>) => string,
+  t: (key: string, values?: Record<string, Untrusted>) => string,
   tournament: TournamentRulesViewProps['tournament']
 ): string[] {
-  const cs2 = cs2SettingsOf(tournament.settings as Record<string, unknown> | undefined);
+  const cs2 = cs2SettingsOf(tournament.settings as Record<string, Untrusted> | undefined);
   const lines: string[] = [];
   const wingman = cs2.mapMode === 'wingman';
   const size = tournament.teamSize ?? (wingman ? 2 : 5);

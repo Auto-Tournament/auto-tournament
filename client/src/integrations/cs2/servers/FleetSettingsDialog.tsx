@@ -20,6 +20,7 @@ import {
 } from '@mui/material';
 import { useModuleTranslation } from '../../../module-sdk';
 import type { FleetSettingsValue } from './fleetPush.types';
+import type { Untrusted } from '../../types';
 
 type Kind = 'text' | 'int' | 'bool' | 'secret' | 'html';
 interface FieldSpec {
@@ -81,20 +82,20 @@ export const FLEET_SETTING_FIELDS: FieldSpec[] = [
 
 type Form = Record<string, string>;
 
-function read(obj: unknown, path: string[]): unknown {
+function read(obj: Untrusted, path: string[]): Untrusted {
   let cur = obj;
   for (const p of path) {
     if (!cur || typeof cur !== 'object') return undefined;
-    cur = (cur as Record<string, unknown>)[p];
+    cur = (cur as Record<string, Untrusted>)[p];
   }
   return cur;
 }
 
-function write(obj: Record<string, unknown>, path: string[], value: unknown): void {
+function write(obj: Record<string, Untrusted>, path: string[], value: Untrusted): void {
   let cur = obj;
   for (const p of path.slice(0, -1)) {
     if (!cur[p] || typeof cur[p] !== 'object') cur[p] = {};
-    cur = cur[p] as Record<string, unknown>;
+    cur = cur[p] as Record<string, Untrusted>;
   }
   cur[path[path.length - 1]] = value;
 }
@@ -114,7 +115,7 @@ export function settingsToForm(value: FleetSettingsValue | null): Form {
 
 /** The API body from the form; `errors` names fields that are not valid numbers. */
 export function formToSettings(form: Form): { value: FleetSettingsValue; errors: string[] } {
-  const out: Record<string, unknown> = { config: {}, match: {} };
+  const out: Record<string, Untrusted> = { config: {}, match: {} };
   const errors: string[] = [];
   for (const f of FLEET_SETTING_FIELDS) {
     const raw = (form[f.path] ?? '').trim();
@@ -134,6 +135,7 @@ export function formToSettings(form: Form): { value: FleetSettingsValue; errors:
       write(out, f.path.split('.'), f.kind === 'html' ? form[f.path] : raw);
     }
   }
+  // eslint-disable-next-line no-restricted-syntax -- built path by path from FLEET_SETTING_FIELDS, which mirrors FleetSettingsValue
   return { value: out as unknown as FleetSettingsValue, errors };
 }
 

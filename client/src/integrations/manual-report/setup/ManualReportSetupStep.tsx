@@ -19,6 +19,7 @@
 import { Box, TextField, Typography } from '@mui/material';
 import { SegmentedControl, useModuleTranslation, radii, FormField } from '../../../module-sdk';
 import type { TournamentGameSettingsStepProps } from '../../types';
+import type { Untrusted } from '../../types';
 
 /** The module's key inside `tournament.settings`. */
 const KEY = 'manualReport';
@@ -41,9 +42,9 @@ interface ManualReportSettings {
   timeoutAction: TimeoutAction;
 }
 
-function asRecord(value: unknown): Record<string, unknown> {
+function asRecord(value: Untrusted): Record<string, Untrusted> {
   return value && typeof value === 'object' && !Array.isArray(value)
-    ? (value as Record<string, unknown>)
+    ? (value as Record<string, Untrusted>)
     : {};
 }
 
@@ -58,7 +59,7 @@ function seriesLengthOf(format: string): number {
  * applies on the API side. `bestOf` falls back to the tournament's format, so
  * a tournament created before this step existed reads back unchanged.
  */
-function readSettings(settings: Record<string, unknown>, format: string): ManualReportSettings {
+function readSettings(settings: Record<string, Untrusted>, format: string): ManualReportSettings {
   const own = asRecord(settings[KEY]);
   const bestOf = Number(own.bestOf);
   const timeout = Number(own.confirmTimeoutMin);

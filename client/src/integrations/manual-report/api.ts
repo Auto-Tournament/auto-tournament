@@ -16,6 +16,7 @@
  *    is worth saying out loud.
  */
 
+import type { Untrusted } from '../types';
 export type ReportSide = 'team1' | 'team2';
 
 export type ReportStatus = 'submitted' | 'confirmed' | 'disputed' | 'superseded' | 'withdrawn';
@@ -206,10 +207,7 @@ export interface ApiResult<T> {
   error: string | null;
 }
 
-async function request<T>(
-  path: string,
-  init: RequestInit = {}
-): Promise<ApiResult<T>> {
+async function request<T>(path: string, init: RequestInit = {}): Promise<ApiResult<T>> {
   let response: Response;
   try {
     response = await fetch(path, {
@@ -223,7 +221,7 @@ async function request<T>(
     return { status: 0, ok: false, data: null, error: 'network' };
   }
 
-  let body: unknown = null;
+  let body: Untrusted = null;
   try {
     body = await response.json();
   } catch {
@@ -231,7 +229,7 @@ async function request<T>(
   }
 
   const error =
-    body && typeof body === 'object' && typeof (body as { error?: unknown }).error === 'string'
+    body && typeof body === 'object' && typeof (body as { error?: Untrusted }).error === 'string'
       ? (body as { error: string }).error
       : null;
 
@@ -338,8 +336,7 @@ export const manualReportApi = {
     }),
 
   /** Put a settled match back to `live` so it can be reported again. */
-  reopen: (slug: string) =>
-    request(`/api/game/manual/matches/${slug}/reopen`, { method: 'POST' }),
+  reopen: (slug: string) => request(`/api/game/manual/matches/${slug}/reopen`, { method: 'POST' }),
 };
 
 /** A status that means "this panel is not for you", rather than a failure. */

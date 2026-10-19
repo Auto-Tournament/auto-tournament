@@ -22,6 +22,9 @@ import type { PlayerHighlightsFeed } from '../components/highlights/feed';
 import type { ComponentType, ReactElement, ReactNode } from 'react';
 import type { TFunction } from 'i18next';
 import type { NoticeFilter } from '../components/social/noticeFilters';
+import type { Untrusted } from '../utils/untrusted';
+
+export type { Untrusted };
 
 /** Integration id, the same value as the API's `game` column. */
 export type GameId = 'cs2' | (string & {});
@@ -217,9 +220,9 @@ export interface PreMatchHistoryProps {
  */
 export interface TournamentSettingsStepProps {
   /** The tournament's `settings` object as the wizard has it so far. */
-  settings: Record<string, unknown>;
+  settings: Record<string, Untrusted>;
   /** Merge a patch into `settings`. A module writes only its own key. */
-  onChange: (patch: Record<string, unknown>) => void;
+  onChange: (patch: Record<string, Untrusted>) => void;
   /** The tournament's `game`, for a default that depends on the title. */
   game: string;
   /** Format id: 'single_elimination' | 'double_elimination' | 'round_robin' | 'swiss' | 'shuffle'. */
@@ -320,14 +323,14 @@ export interface TournamentSetupModel {
    */
   initialSettings?(
     ctx: TournamentSetupContext,
-    from?: Record<string, unknown>
-  ): Record<string, unknown>;
+    from?: Record<string, Untrusted>
+  ): Record<string, Untrusted>;
   /** A settings patch for a change of tournament type (CS2: a shuffle starts with no maps). */
   onTypeChange?(
-    settings: Record<string, unknown>,
+    settings: Record<string, Untrusted>,
     from: string,
     to: string
-  ): Record<string, unknown>;
+  ): Record<string, Untrusted>;
   /**
    * Why the organizer cannot go on yet, or null. `rules` is asked on the
    * Format step (where the `rules` step shows), `content` on the module's own
@@ -335,13 +338,13 @@ export interface TournamentSetupModel {
    */
   stepError?(
     step: 'rules' | 'content',
-    settings: Record<string, unknown>,
+    settings: Record<string, Untrusted>,
     ctx: TournamentSetupContext,
     t: TFunction
   ): string | null;
   /** Summary rows, Start checklist items and review rows for the module's settings. */
   summary?(
-    settings: Record<string, unknown>,
+    settings: Record<string, Untrusted>,
     ctx: TournamentSetupContext,
     t: TFunction
   ): TournamentSetupSummary;
@@ -349,14 +352,14 @@ export interface TournamentSetupModel {
    * Rounds a shuffle tournament will have with these settings (CS2: one per
    * map), for the match estimate. Null when it cannot say.
    */
-  roundCount?(settings: Record<string, unknown>, ctx: TournamentSetupContext): number | null;
+  roundCount?(settings: Record<string, Untrusted>, ctx: TournamentSetupContext): number | null;
   /**
    * What differs between the saved settings and the edited ones. An empty
    * list is "no change" for the module's part of the form.
    */
   changes?(
-    before: Record<string, unknown>,
-    after: Record<string, unknown>,
+    before: Record<string, Untrusted>,
+    after: Record<string, Untrusted>,
     ctx: TournamentSetupContext,
     t: TFunction
   ): TournamentSettingChange[];
@@ -647,7 +650,7 @@ export interface TournamentStartSlot {
  */
 export type ResourceAvailability = {
   nextAllocationInSeconds?: number | null;
-} & Record<string, unknown>;
+} & Record<string, Untrusted>;
 
 /**
  * The two numbers core shows about a queue itself, read by the module out of
@@ -785,7 +788,7 @@ export interface AdminHomeSetupItem {
   optional?: boolean;
   /** A key in the module's own namespace. */
   labelKey: string;
-  labelValues?: Record<string, unknown>;
+  labelValues?: Record<string, Untrusted>;
 }
 
 // ---------------------------------------------------------------------------
@@ -985,7 +988,7 @@ export interface PlayerProfileTabProps extends PlayerProfileSectionProps {
  * A module's own strings: one i18next resource bundle per language code
  * (`en`, `de`, `pt-PT`, …), each the same nested JSON core's locale files use.
  */
-export type ModuleLocales = Readonly<Record<string, Record<string, unknown>>>;
+export type ModuleLocales = Readonly<Record<string, Record<string, Untrusted>>>;
 
 export interface PinnedNoticesProps {
   onNavigate: () => void;
@@ -1440,14 +1443,14 @@ export interface ClientGameIntegration {
 /** A game module's rules summary (`GameIntegration.tournamentRulesView`). */
 /** Manage's Prizes tab (`GameIntegration.tournamentPrizesManage`). */
 export interface TournamentPrizesManageProps {
-  tournament: { id: number; name: string; status: string; settings?: unknown };
+  tournament: { id: number; name: string; status: string; settings?: Untrusted };
   /** Saves a patch of the tournament's settings (merged into them by the API). */
-  onSave: (settingsPatch: Record<string, unknown>) => Promise<void>;
+  onSave: (settingsPatch: Record<string, Untrusted>) => Promise<void>;
 }
 
 /** A game module's prizes view (`GameIntegration.tournamentPrizesView`). */
 export interface TournamentPrizesViewProps {
-  tournament: { id: number; status: string; settings?: unknown };
+  tournament: { id: number; status: string; settings?: Untrusted };
 }
 
 export interface TournamentRulesViewProps {
@@ -1455,7 +1458,7 @@ export interface TournamentRulesViewProps {
     type: string;
     format: string;
     teamSize?: number | null;
-    settings?: unknown;
+    settings?: Untrusted;
   };
   /** One line for the overview instead of the list. */
   compact?: boolean;

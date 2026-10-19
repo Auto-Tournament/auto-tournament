@@ -20,13 +20,14 @@ import type {
   FleetHostCommandType,
   FleetHostsResponse,
 } from '../../cs2.types';
+import type { Untrusted } from '../../../types';
 
 /** A refused disruptive command: which servers have a match on them. */
 export interface ForcePrompt {
   host: FleetHost;
   type: FleetHostCommandType;
-  payload: Record<string, unknown>;
-  extra: Record<string, unknown>;
+  payload: Record<string, Untrusted>;
+  extra: Record<string, Untrusted>;
   servers: string[];
 }
 
@@ -34,7 +35,7 @@ export interface ForcePrompt {
 function matchInProgressServers(err: unknown): string[] | null {
   if (!(err instanceof Error)) return null;
   try {
-    const body = JSON.parse(err.message) as { code?: string; servers?: unknown };
+    const body = JSON.parse(err.message) as { code?: string; servers?: Untrusted };
     if (body.code !== 'match_in_progress') return null;
     return Array.isArray(body.servers)
       ? body.servers.filter((s): s is string => typeof s === 'string')
@@ -110,7 +111,7 @@ export function useFleet() {
   const showPending = (
     host: FleetHost,
     type: FleetHostCommandType,
-    payload: Record<string, unknown>
+    payload: Record<string, Untrusted>
   ) => {
     const now = Math.floor(Date.now() / 1000);
     const command: FleetHostCommand = {
@@ -148,8 +149,8 @@ export function useFleet() {
     async (
       host: FleetHost,
       type: FleetHostCommandType,
-      payload: Record<string, unknown> = {},
-      opts: { forceReason?: string; extra?: Record<string, unknown> } = {}
+      payload: Record<string, Untrusted> = {},
+      opts: { forceReason?: string; extra?: Record<string, Untrusted> } = {}
     ): Promise<boolean> => {
       const localId = showPending(host, type, payload);
       try {

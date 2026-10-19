@@ -22,6 +22,7 @@ import {
   useTopic,
 } from '../../../module-sdk';
 import type { MatchAdminPanelProps } from '../../types';
+import type { Untrusted } from '../../types';
 
 /** One stored backup, as GET /api/game/cs2/matches/:slug/round-backups lists it. */
 interface RoundBackup {
@@ -76,7 +77,7 @@ function formatTime(unixSeconds: number): string {
 function errorCode(err: unknown): string | null {
   const raw = err instanceof Error ? err.message : '';
   try {
-    const parsed = JSON.parse(raw) as { code?: unknown };
+    const parsed = JSON.parse(raw) as { code?: Untrusted };
     return typeof parsed.code === 'string' ? parsed.code : null;
   } catch {
     return null;

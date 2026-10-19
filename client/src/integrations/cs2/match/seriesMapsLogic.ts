@@ -1,4 +1,5 @@
 import type { VetoAction } from '../cs2.types';
+import type { Untrusted } from '../../types';
 
 export type VetoPickedBy = 'team1' | 'team2' | 'decider';
 
@@ -27,7 +28,7 @@ export function liveMapIndex(
   status: string,
   mapNumber: number | null | undefined,
   mapCount: number,
-  results: ReadonlyMap<number, unknown>
+  results: ReadonlyMap<number, Untrusted>
 ): number | null {
   if (status !== 'live' && status !== 'loaded') return null;
   if (typeof mapNumber === 'number') return mapNumber;
