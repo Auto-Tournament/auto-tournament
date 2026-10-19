@@ -110,7 +110,9 @@ export default function Maps() {
         onClick={() => void syncMaps()}
         disabled={syncingMaps}
       >
-        {syncingMaps ? t('mapsPage.headerActions.syncingMaps') : t('mapsPage.headerActions.syncMaps')}
+        {syncingMaps
+          ? t('mapsPage.headerActions.syncingMaps')
+          : t('mapsPage.headerActions.syncMaps')}
       </Button>
       {addAction}
     </Stack>
@@ -126,14 +128,11 @@ export default function Maps() {
     setPoolActionsModalOpen(true);
   };
 
-  const handleOpenMapPoolModal = useCallback(
-    (pool?: MapPool) => {
-      setEditingMapPool(pool || null);
-      setMapPoolModalOpen(true);
-      setPoolActionsModalOpen(false);
-    },
-    []
-  );
+  const handleOpenMapPoolModal = useCallback((pool?: MapPool) => {
+    setEditingMapPool(pool || null);
+    setMapPoolModalOpen(true);
+    setPoolActionsModalOpen(false);
+  }, []);
 
   const handleCloseMapPoolModal = () => {
     setMapPoolModalOpen(false);
@@ -235,14 +234,11 @@ export default function Maps() {
     setActionsModalOpen(true);
   };
 
-  const handleOpenModal = useCallback(
-    (map?: Map) => {
-      setEditingMap(map || null);
-      setModalOpen(true);
-      setActionsModalOpen(false);
-    },
-    []
-  );
+  const handleOpenModal = useCallback((map?: Map) => {
+    setEditingMap(map || null);
+    setModalOpen(true);
+    setActionsModalOpen(false);
+  }, []);
 
   const handleCloseModal = () => {
     setModalOpen(false);
@@ -325,7 +321,6 @@ export default function Maps() {
         />
       </Tabs>
 
-
       {activeTab === 0 && (
         <MapsTab maps={maps} onAddMap={() => handleOpenModal()} onMapClick={handleMapCardClick} />
       )}
@@ -394,7 +389,6 @@ export default function Maps() {
         confirmColor="error"
         loading={deletingPool}
       />
-
     </Box>
   );
 }

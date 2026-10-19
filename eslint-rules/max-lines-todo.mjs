@@ -107,7 +107,6 @@ export const MAX_LINES_TODO = [
   'client/src/integrations/cs2/maps/MapModal.tsx',
   'client/src/integrations/cs2/match/MatchServerPanel.tsx',
   'client/src/integrations/cs2/match/RoundBackupsPanel.tsx',
-  'client/src/integrations/cs2/pages/Highlights.tsx',
   'client/src/integrations/cs2/pages/Servers.tsx',
   'client/src/integrations/cs2/profile/Cs2ProfileStats.tsx',
   'client/src/integrations/cs2/servers/FleetPanel.tsx',
