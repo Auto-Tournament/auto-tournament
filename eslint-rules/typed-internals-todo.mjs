@@ -20,7 +20,6 @@ export const TYPED_INTERNALS_TODO = [
   'api/src/index.ts',
   'api/src/integrations/cs2/index.ts',
   'api/src/integrations/cs2/matchConfig.ts',
-  'api/src/integrations/cs2/tournamentSettings.ts',
   'api/src/integrations/fake/index.ts',
   'api/src/integrations/fake/routes.ts',
   'api/src/integrations/manual-report/adminRoutes.ts',
