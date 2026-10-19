@@ -81,6 +81,15 @@ export async function startCs2(): Promise<void> {
   startFleetTopics();
   // What the platform does to a match, told in game (next map, pauses, a crash recovered).
   startGameMessages();
+  // Imports analysed before they wrote the core's match history: once, in the background.
+  void import('./demos/demoImport')
+    .then(({ backfillImportedSeriesStats }) => backfillImportedSeriesStats())
+    .then((n) => {
+      if (n > 0) log.info(`[IMPORT] ${n} imported match(es) added to the players' match history`);
+    })
+    .catch((error: unknown) =>
+      log.warn('[IMPORT] could not backfill imported matches', { error: (error as Error).message })
+    );
   // The match chat to and from the game server (event.chat in, say out, admin call notices).
   startChatBridge();
 

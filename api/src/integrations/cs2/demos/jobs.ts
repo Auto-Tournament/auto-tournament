@@ -313,7 +313,7 @@ export async function completeDemoJob(job: DemoJob, analysis: DemoAnalysisPayloa
 async function completeDemoJobNow(job: DemoJob, analysis: DemoAnalysisPayload): Promise<void> {
   // An imported match learns its teams and score from the demo first, so
   // the players below land on their teams.
-  const { applyImportedMap } = await import('./demoImport');
+  const { applyImportedMap, writeImportedSeriesStats } = await import('./demoImport');
   await applyImportedMap(job, analysis).catch((error: unknown) =>
     log.warn(`[DEMO-JOBS] ${job.matchSlug} map ${job.mapNumber}: could not apply the import`, {
       error: (error as Error).message,
@@ -417,6 +417,12 @@ async function completeDemoJobNow(job: DemoJob, analysis: DemoAnalysisPayload): 
       job.matchSlug,
       job.mapNumber,
     ]
+  );
+  // An imported match: its players' rows in the core's match history.
+  await writeImportedSeriesStats(job.matchSlug).catch((error: unknown) =>
+    log.warn(`[DEMO-JOBS] ${job.matchSlug}: could not write the imported match's player stats`, {
+      error: (error as Error).message,
+    })
   );
   // The map's best moments, for the highlight recorder.
   const { settingsService } = await import('../../../services/settingsService');
