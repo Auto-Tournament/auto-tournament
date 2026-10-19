@@ -54,7 +54,8 @@ const TIMEOUT_MS = 10_000;
 /** The Passport user for an OpenID Connect login. No tokens: nothing uses them. */
 export function oidcUserInfoToUser(info: OidcUserInfo): OidcUser {
   const sub = String(info.sub);
-  const picture = typeof info.picture === 'string' && /^https:\/\//.test(info.picture) ? info.picture : undefined;
+  const picture =
+    typeof info.picture === 'string' && /^https:\/\//.test(info.picture) ? info.picture : undefined;
   return {
     provider: 'oidc',
     oidcId: sub,
@@ -74,7 +75,9 @@ export function checkDiscovery(issuerUrl: string, doc: unknown): OidcDiscovery {
   const d = (doc ?? {}) as Record<string, unknown>;
   const issuer = typeof d.issuer === 'string' ? d.issuer.replace(/\/+$/, '') : '';
   if (issuer !== issuerUrl) {
-    throw new Error(`The discovery document is for issuer "${issuer || '(none)'}", not ${issuerUrl}`);
+    throw new Error(
+      `The discovery document is for issuer "${issuer || '(none)'}", not ${issuerUrl}`
+    );
   }
   const endpoint = (name: string): string => {
     const value = d[name];
@@ -124,7 +127,8 @@ export function createOidcStrategy(
       scope: ['openid', 'profile', 'email'],
       store: options.store,
     },
-    (_accessToken: string, _refreshToken: string, profile: OidcUser, done: Done) => verify(profile, done)
+    (_accessToken: string, _refreshToken: string, profile: OidcUser, done: Done) =>
+      verify(profile, done)
   );
   strategy.name = 'oidc';
 
@@ -147,15 +151,26 @@ export function createOidcStrategy(
 
   // Not bound: Passport calls authenticate on a per-request copy
   // (Object.create(strategy)) that carries that request's redirect/error.
-  const authenticate = strategy.authenticate as (this: unknown, req: unknown, options: unknown) => void;
-  strategy.authenticate = function (this: { error(err: Error): void }, req: unknown, authOptions: unknown) {
+  const authenticate = strategy.authenticate as (
+    this: unknown,
+    req: unknown,
+    options: unknown
+  ) => void;
+  strategy.authenticate = function (
+    this: { error(err: Error): void },
+    req: unknown,
+    authOptions: unknown
+  ) {
     ready().then(
       () => {
         // The server refused "profile email" (a Keycloak client without those
         // client scopes answers invalid_scope): start again with "openid"
         // alone rather than fail. The name and email are then unknown, so the
         // admin should still add the scopes (Settings -> Sign-in says so).
-        const query = ((req as { query?: Record<string, unknown> }).query ?? {}) as Record<string, unknown>;
+        const query = ((req as { query?: Record<string, unknown> }).query ?? {}) as Record<
+          string,
+          unknown
+        >;
         const refused = typeof query.error_description === 'string' ? query.error_description : '';
         if (query.error === 'invalid_scope' && /\b(profile|email)\b/.test(refused)) {
           log.warn(
@@ -168,7 +183,8 @@ export function createOidcStrategy(
         }
         authenticate.call(this, req, authOptions);
       },
-      (error: unknown) => this.error(new Error(`OpenID Connect discovery failed: ${(error as Error).message}`))
+      (error: unknown) =>
+        this.error(new Error(`OpenID Connect discovery failed: ${(error as Error).message}`))
     );
   };
 

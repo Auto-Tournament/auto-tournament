@@ -61,7 +61,8 @@ export function createEpicStrategy(
       customHeaders: { Authorization: `Basic ${basic}` },
       store: options.store,
     },
-    (_accessToken: string, _refreshToken: string, profile: EpicUser, done: Done) => verify(profile, done)
+    (_accessToken: string, _refreshToken: string, profile: EpicUser, done: Done) =>
+      verify(profile, done)
   );
   strategy.name = 'epic';
   strategy.userProfile = (accessToken: string, done: Done) => {

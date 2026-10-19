@@ -64,14 +64,16 @@ export function createTwitchStrategy(
       scope: [],
       store: options.store,
     },
-    (_accessToken: string, _refreshToken: string, profile: TwitchUser, done: Done) => verify(profile, done)
+    (_accessToken: string, _refreshToken: string, profile: TwitchUser, done: Done) =>
+      verify(profile, done)
   );
   strategy.name = 'twitch';
   strategy.userProfile = (accessToken: string, done: Done) => {
-    globalThis.fetch(TWITCH_USERS_URL, {
-      headers: { Authorization: `Bearer ${accessToken}`, 'Client-Id': options.clientID },
-      signal: globalThis.AbortSignal.timeout(10_000),
-    })
+    globalThis
+      .fetch(TWITCH_USERS_URL, {
+        headers: { Authorization: `Bearer ${accessToken}`, 'Client-Id': options.clientID },
+        signal: globalThis.AbortSignal.timeout(10_000),
+      })
       .then(async (response) => {
         if (!response.ok) throw new Error(`Twitch users endpoint answered HTTP ${response.status}`);
         const body = (await response.json()) as { data?: TwitchHelixUser[] };

@@ -121,7 +121,7 @@ const options: swaggerJsdoc.Options = {
       description:
         'Run a tournament from a bot or a script: teams, players, brackets, ' +
         'matches and results. The dashboard is a client of this API and ' +
-        'nothing more. Which game a tournament runs is a module\'s business, ' +
+        "nothing more. Which game a tournament runs is a module's business, " +
         'so the endpoints here are the same whether it is Counter-Strike 2 ' +
         'or a game whose captains report their own scores.',
       contact: {
@@ -172,8 +172,7 @@ const options: swaggerJsdoc.Options = {
           type: 'apiKey',
           in: 'header',
           name: 'X-API-Token',
-          description:
-            'Service token, as an alternative to `Authorization: Bearer <token>`.',
+          description: 'Service token, as an alternative to `Authorization: Bearer <token>`.',
         },
         atServerToken: {
           type: 'apiKey',
@@ -187,7 +186,7 @@ const options: swaggerJsdoc.Options = {
           scheme: 'bearer',
           bearerFormat: 'opaque',
           description:
-            'The Ready Up CI\'s credential for POST /api/compat/events: `Authorization: Bearer <token>`, ' +
+            "The Ready Up CI's credential for POST /api/compat/events: `Authorization: Bearer <token>`, " +
             'where the token is COMPAT_INGEST_TOKEN. Grants nothing else.',
         },
       },
@@ -361,7 +360,8 @@ const options: swaggerJsdoc.Options = {
             imageUrl: {
               type: 'string',
               nullable: true,
-              description: "coverUrl if present, else logoUrl; convenience for the onboarding page's cards",
+              description:
+                "coverUrl if present, else logoUrl; convenience for the onboarding page's cards",
             },
           },
         },
@@ -444,9 +444,7 @@ type PathsObject = Record<string, Record<string, OperationObject>>;
  * an endpoint is open when `requireAuth` guards it (or the reverse) is worse
  * than no annotation, because it is believed. The middleware is the truth.
  */
-export function buildOpenApiSpec(
-  overrides: { serverUrl?: string } = {}
-): Record<string, unknown> {
+export function buildOpenApiSpec(overrides: { serverUrl?: string } = {}): Record<string, unknown> {
   const spec = swaggerJsdoc(options) as Record<string, unknown> & {
     paths?: PathsObject;
     servers?: Array<{ url: string; description?: string }>;
