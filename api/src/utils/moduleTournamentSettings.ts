@@ -12,6 +12,7 @@
 
 import { integrationForMatch } from '../integrations/registry';
 import type { GameId, ModuleSettingsTarget, ModuleTournamentSettings } from '../integrations/types';
+import type { Untrusted } from './untrusted';
 
 /**
  * The core's own settings keys (`TournamentSettings`). A module's key may not
@@ -43,8 +44,13 @@ export const CORE_SETTINGS_KEYS: ReadonlySet<string> = new Set([
   'checkInClosesAt',
 ]);
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return value !== null && typeof value === 'object' && !Array.isArray(value);
+/**
+ * A module's object in a settings value, by the module's key. The one place
+ * the core reads a settings object by a key it only knows at run time.
+ */
+function moduleObject(settings: object | null | undefined, key: string): object | undefined {
+  const value = settings ? (settings as Record<string, object | undefined>)[key] : undefined;
+  return value !== null && typeof value === 'object' ? value : undefined;
 }
 
 /** The settings handler of the module that runs `game`, when it has a usable one. */
@@ -64,21 +70,21 @@ export function moduleSettingsHandler(
 export function withModuleSettings<S extends object>(
   game: GameId | null | undefined,
   settings: S,
-  body: Record<string, unknown>,
-  stored: Record<string, unknown> | undefined,
+  body: Record<string, Untrusted>,
+  stored: object | undefined,
   target: ModuleSettingsTarget
 ): S {
   const handler = moduleSettingsHandler(game);
   if (!handler) return settings;
-  const before = stored?.[handler.key];
+  const before = moduleObject(stored, handler.key);
   const next = handler.fromRequest(body, before, target);
   if (next === undefined) {
     // Nothing to store; keep what was there rather than what the request's
     // own `settings` may have carried in under the key.
     if (before === undefined) {
-      const rest = { ...(settings as Record<string, unknown>) };
+      const rest: Partial<Record<string, object>> & S = { ...settings };
       delete rest[handler.key];
-      return rest as S;
+      return rest;
     }
     return { ...settings, [handler.key]: before };
   }
@@ -88,23 +94,24 @@ export function withModuleSettings<S extends object>(
 /** The 2.x top-level response fields the module fills from its object. */
 export function moduleResponseFields(
   game: GameId | null | undefined,
-  settings: unknown,
+  settings: object | null | undefined,
   target: ModuleSettingsTarget
-): Record<string, unknown> {
+): object {
   const handler = moduleSettingsHandler(game);
   if (!handler?.responseFields) return {};
-  const value = isRecord(settings) ? settings[handler.key] : undefined;
-  return handler.responseFields(value, target) ?? {};
+  return handler.responseFields(moduleObject(settings, handler.key), target) ?? {};
 }
 
 /** Whether moving the module's object from `before` to `after` changes the bracket. */
 export function moduleSettingsChangeBracket(
   game: GameId | null | undefined,
-  before: unknown,
-  after: unknown
+  before: object | null | undefined,
+  after: object | null | undefined
 ): boolean {
   const handler = moduleSettingsHandler(game);
   if (!handler?.changesBracket) return false;
-  const pick = (settings: unknown) => (isRecord(settings) ? settings[handler.key] : undefined);
-  return handler.changesBracket(pick(before), pick(after));
+  return handler.changesBracket(
+    moduleObject(before, handler.key),
+    moduleObject(after, handler.key)
+  );
 }

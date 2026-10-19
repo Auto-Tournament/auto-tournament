@@ -157,7 +157,6 @@ export const TYPED_INTERNALS_TODO = [
   'api/src/utils/matchEnrichment.ts',
   'api/src/utils/matchIntegration.ts',
   'api/src/utils/matchProgression.ts',
-  'api/src/utils/moduleTournamentSettings.ts',
   'api/src/utils/oauthStateCookie.ts',
   'api/src/utils/playerTransform.ts',
   'api/src/utils/routeIntrospection.ts',

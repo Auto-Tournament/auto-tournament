@@ -14,7 +14,7 @@ import type {
   CreateTournamentInput,
   UpdateTournamentInput,
 } from '../types/tournament.types';
-import type { DbMatchRow } from '../types/database.types';
+import type { DbMatchRow, DbTournamentRow } from '../types/database.types';
 import type { MatchConfig } from '../types/match.types';
 import { emitTournamentUpdate, emitBracketUpdate } from '../services/socketService';
 import {
@@ -54,6 +54,7 @@ import {
   TournamentArchiveError,
 } from '../services/currentTournament';
 import { shuffleTeamId } from '../utils/matchSlug';
+import type { Untrusted } from '../utils/untrusted';
 
 const router = Router();
 
@@ -1229,14 +1230,14 @@ router.put('/', async (req: Request, res: Response) => {
     if (input.settings) {
       // The stored row lets the integration fall back to the stored values
       // the update leaves alone (CS2: the map pool the veto order runs on).
-      const existing = await db.queryOneAsync<Record<string, unknown> & { game: GameId | null }>(
+      const existing = await db.queryOneAsync<DbTournamentRow>(
         'SELECT * FROM tournament WHERE id = ?',
         [tournamentId]
       );
       const gameCheck = validateGameSettings(existing?.game, {
         mode: 'update',
         settings: input.settings,
-        body: input as unknown as Record<string, unknown>,
+        body: input as Record<string, Untrusted>,
         stored: existing ?? null,
       });
       const gameError = [...gameCheck.fieldErrors, ...gameCheck.errors][0];
