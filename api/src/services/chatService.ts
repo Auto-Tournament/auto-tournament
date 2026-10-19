@@ -21,6 +21,8 @@ import { emitChatMessage, emitChatTyping, matchChatPosted } from './socketServic
 import { recordAdminCall } from './adminCallService';
 import { chatLineBody } from './matchChatLines';
 import { CURRENT_MATCH_TOURNAMENT_JOIN } from '../utils/currentMatchOrder';
+import type { SqlValue } from '../config/database';
+import type { Untrusted } from '../utils/untrusted';
 
 export type ChatKind = 'match' | 'team' | 'party';
 
@@ -132,7 +134,8 @@ export function parseChannel(channel: string): { kind: ChatKind; ref: string } |
 function steamIdsOf(json: string | null | undefined): string[] {
   if (!json) return [];
   try {
-    const list = JSON.parse(json) as unknown;
+    // Rosters of every age: read leniently.
+    const list = JSON.parse(json) as Untrusted;
     if (Array.isArray(list)) {
       return list
         .map((p) =>
@@ -143,7 +146,7 @@ function steamIdsOf(json: string | null | undefined): string[] {
         )
         .filter((id): id is string => typeof id === 'string' && id !== '');
     }
-    if (list && typeof list === 'object') return Object.keys(list as Record<string, unknown>);
+    if (list && typeof list === 'object') return Object.keys(list as Record<string, Untrusted>);
   } catch {
     // Not a roster.
   }
@@ -425,7 +428,7 @@ export const chatService = {
     const myTeam = viewer.steamId ? (m.teamOf.get(viewer.steamId) ?? null) : null;
     // In-game team chat: its own team and the admins (an admin playing reads as a player).
     const seesEveryTeam = viewer.isAdmin && !isMember;
-    const params: unknown[] = [channel, m.since];
+    const params: SqlValue[] = [channel, m.since];
     if (!seesEveryTeam) params.push(myTeam);
     if (before) params.push(before);
     const rows = await db.queryAsync<MessageRow>(

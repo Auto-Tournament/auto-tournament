@@ -19,6 +19,7 @@ import {
   type CompatDocument,
 } from '../utils/compatPayload';
 import { compatFeedUrl, ingestCompatDocument } from './compatService';
+import type { Untrusted } from '../utils/untrusted';
 
 export const COMPAT_FEED_INTERVAL_MS = 5 * 60 * 1000;
 export const COMPAT_FEED_TIMEOUT_MS = 10_000;
@@ -49,13 +50,14 @@ export async function fetchCompatFeed(
       follow: 3,
       size: COMPAT_MAX_BYTES,
       // node-fetch 2 declares its own AbortSignal type; Node's has the same shape.
+      // eslint-disable-next-line no-restricted-syntax -- node-fetch 2's AbortSignal type does not overlap Node's for tsc
       signal: controller.signal as unknown as NonNullable<Parameters<typeof fetch>[1]>['signal'],
     });
     if (response.status === 304) return { status: 'not_modified' };
     if (!response.ok) return { status: 'error', error: `HTTP ${response.status}` };
 
     const text = await response.text();
-    let body: unknown;
+    let body: Untrusted;
     try {
       body = JSON.parse(text);
     } catch {

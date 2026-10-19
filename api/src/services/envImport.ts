@@ -5,13 +5,14 @@
  * truth, even if the admin clears it.
  */
 import { db } from '../config/database';
+import type { Untrusted } from '../utils/untrusted';
 
 const KEY = 'env_imported';
 
 export async function envImportedNames(): Promise<Set<string>> {
   const raw = await db.getAppSettingAsync(KEY);
   try {
-    const parsed = raw ? (JSON.parse(raw) as unknown) : [];
+    const parsed = raw ? (JSON.parse(raw) as Untrusted) : [];
     return new Set(
       Array.isArray(parsed) ? parsed.filter((x): x is string => typeof x === 'string') : []
     );

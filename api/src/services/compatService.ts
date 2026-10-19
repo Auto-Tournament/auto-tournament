@@ -27,6 +27,7 @@ import { log } from '../utils/logger';
 import { emitCompatUpdate } from './socketService';
 import type { CompatCheck, CompatComponentStatus, CompatDocument } from '../utils/compatPayload';
 import type { CompatRunSummary, CompatSnapshot, CompatSource } from '../types/compat.types';
+import type { Untrusted } from '../utils/untrusted';
 
 /** Runs kept; older ones are deleted with their components. */
 export const COMPAT_HISTORY_LIMIT = 200;
@@ -152,7 +153,7 @@ function isoFromEpoch(seconds: number): string {
 
 function parseChecks(text: string): CompatCheck[] {
   try {
-    const parsed: unknown = JSON.parse(text);
+    const parsed: Untrusted = JSON.parse(text);
     return Array.isArray(parsed) ? (parsed as CompatCheck[]) : [];
   } catch {
     return [];

@@ -17,6 +17,7 @@ import { db } from '../config/database';
 import { listIntegrations } from '../integrations/registry';
 import { isSignInProviderId } from '../config/signInProviders';
 import { installedPacks } from './packCache';
+import type { Untrusted } from '../utils/untrusted';
 
 export const ACCOUNT_LABELS: Record<string, string> = {
   steam: 'Steam',
@@ -107,7 +108,7 @@ export const presetAccounts = {
    * player. A verified one (its owner signed in with it) is never changed or
    * removed here; one that belongs to another player is refused (409).
    */
-  async set(playerId: string, accounts: Record<string, unknown>): Promise<void> {
+  async set(playerId: string, accounts: Record<string, Untrusted>): Promise<void> {
     for (const [provider, raw] of Object.entries(accounts)) {
       if (!isPresetProvider(provider))
         throw new PresetAccountError(400, `Unknown account: ${provider}`);
