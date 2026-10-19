@@ -24,6 +24,7 @@ import type { Request, Response, Router } from 'express';
 import { requireAuth } from '../middleware/auth';
 import { reconcileMatch } from '../services/webhooks';
 import { webhookTiming } from '../services/webhooks/worker';
+import type { Untrusted } from '../utils/untrusted';
 
 interface SinkEntry {
   headers: Record<string, string | string[] | undefined>;
@@ -92,7 +93,7 @@ export function registerWebhookTestRoutes(
   router.post('/webhook-sink/:bin/behaviour', requireAuth, (req: Request, res: Response): void => {
     if (!helpersEnabled(res)) return;
     const sink = sinkFor(req.params.bin);
-    const body = (req.body ?? {}) as { status?: unknown; times?: unknown; echo?: unknown };
+    const body = (req.body ?? {}) as { status?: Untrusted; times?: Untrusted; echo?: Untrusted };
     sink.failStatus = typeof body.status === 'number' ? body.status : 500;
     sink.failNext = typeof body.times === 'number' ? body.times : 0;
     sink.echo = body.echo === true;
@@ -112,8 +113,8 @@ export function registerWebhookTestRoutes(
 
   router.post('/webhooks/timing', requireAuth, (req: Request, res: Response): void => {
     if (!helpersEnabled(res)) return;
-    const body = (req.body ?? {}) as Partial<Record<keyof typeof webhookTiming, unknown>> & {
-      reset?: unknown;
+    const body = (req.body ?? {}) as Partial<Record<keyof typeof webhookTiming, Untrusted>> & {
+      reset?: Untrusted;
     };
     if (body.reset === true) Object.assign(webhookTiming, DEFAULT_TIMING);
     for (const key of Object.keys(DEFAULT_TIMING) as Array<keyof typeof webhookTiming>) {
@@ -128,7 +129,7 @@ export function registerWebhookTestRoutes(
     requireAuth,
     async (req: Request, res: Response): Promise<void> => {
       if (!helpersEnabled(res)) return;
-      const slug = (req.body as { slug?: unknown } | undefined)?.slug;
+      const slug = (req.body as { slug?: Untrusted } | undefined)?.slug;
       if (typeof slug !== 'string' || !slug) {
         res.status(400).json({ success: false, error: 'slug is required' });
         return;

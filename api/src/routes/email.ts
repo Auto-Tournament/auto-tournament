@@ -17,6 +17,7 @@ import {
   type SmtpSecurity,
 } from '../services/emailService';
 import { playerEmailService, PlayerEmailError } from '../services/playerEmailService';
+import type { Untrusted } from '../utils/untrusted';
 
 export const emailSettingsRouter = Router();
 export const meEmailRouter = Router();
@@ -109,7 +110,7 @@ emailSettingsRouter.get('/', async (_req: Request, res: Response) => {
  *         description: A value is not accepted
  */
 emailSettingsRouter.put('/', guardWrite, async (req: Request, res: Response) => {
-  const body = (req.body ?? {}) as Record<string, unknown>;
+  const body = (req.body ?? {}) as Record<string, Untrusted>;
   const update: EmailSettingsUpdate = {};
   const str = (k: string) => (typeof body[k] === 'string' ? (body[k] as string) : undefined);
   if (typeof body.enabled === 'boolean') update.enabled = body.enabled;

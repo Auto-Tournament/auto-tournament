@@ -9,6 +9,7 @@ import { db } from '../config/database';
 import { integrationForMatch, listIntegrations } from '../integrations/registry';
 import packageJson from '../../package.json';
 import { runningTournamentIds } from '../services/currentTournament';
+import type { Untrusted } from '../utils/untrusted';
 
 const router = Router();
 
@@ -62,7 +63,7 @@ const mapSettingsResponse = async () => {
   const webhooksAllowPrivateTargets = await settingsService.areWebhookPrivateTargetsAllowed();
   const highlights = await readHighlightSettings((key) => settingsService.getSetting(key));
 
-  const integrationFields: Record<string, unknown> = {};
+  const integrationFields: object = {};
   for (const integration of listIntegrations()) {
     Object.assign(integrationFields, await integration.readInstanceSettings?.());
   }
@@ -195,7 +196,7 @@ router.post('/api-tokens', async (req: Request, res: Response) => {
       .json({ success: false, error: 'Sign in as an admin to make API tokens.' });
   }
   try {
-    const { label, scope } = (req.body ?? {}) as { label?: unknown; scope?: unknown };
+    const { label, scope } = (req.body ?? {}) as { label?: Untrusted; scope?: Untrusted };
     const made = await apiTokenService.create(
       typeof label === 'string' ? label : '',
       String(scope ?? '') as StoredTokenScope,
@@ -244,7 +245,7 @@ router.get('/', async (_req: Request, res: Response) => {
  */
 router.put('/', async (req: Request, res: Response) => {
   const tournamentId = resolveTournamentId(req);
-  const body = req.body as Record<string, unknown>;
+  const body = req.body as Record<string, Untrusted>;
 
   try {
     const error = await settingsService.applyUpdate(body, {

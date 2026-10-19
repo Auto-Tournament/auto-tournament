@@ -26,6 +26,7 @@ import {
   type AppIcon,
 } from '../services/gamePackService';
 import { fetchIndexedPack, fetchIndexedTile, readPackIndex } from '../services/packIndexService';
+import type { Untrusted } from '../utils/untrusted';
 
 const router = Router();
 
@@ -177,7 +178,7 @@ router.post('/', async (req: Request, res: Response) => {
   // SVG the admin picked alongside the JSON; `curl -d @pack.json` sends the
   // pack on its own, and gets the game with its text mark. `appIcon`, when
   // sent, is the app icon's bytes as base64.
-  const body = (req.body ?? {}) as { pack?: unknown; icon?: unknown; appIcon?: unknown };
+  const body = (req.body ?? {}) as { pack?: Untrusted; icon?: Untrusted; appIcon?: Untrusted };
   const hasEnvelope = body.pack !== undefined;
   const result = validatePack(hasEnvelope ? body.pack : req.body);
   if (!result.ok) {

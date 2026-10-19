@@ -26,6 +26,7 @@ import {
   withSound,
 } from '../services/highlights/music';
 import { MUSIC_SUGGESTIONS } from '../services/highlights/musicSuggestions';
+import type { Untrusted } from '../utils/untrusted';
 
 const router = Router();
 
@@ -54,7 +55,7 @@ router.get('/music', async (_req: Request, res: Response) => {
 });
 
 /** The library's form fields, from a query string or a JSON body. */
-const trackFields = (src: Record<string, unknown>) => {
+const trackFields = (src: Record<string, Untrusted>) => {
   const str = (k: string) => (typeof src[k] === 'string' ? (src[k] as string).trim() : undefined);
   return {
     title: str('title'),
@@ -88,7 +89,7 @@ router.post(
   async (req: Request, res: Response) => {
     if (!Buffer.isBuffer(req.body) || req.body.length === 0)
       return res.status(415).json({ success: false, error: 'Send the track as an audio file.' });
-    const f = trackFields(req.query as Record<string, unknown>);
+    const f = trackFields(req.query as Record<string, Untrusted>);
     if (!f.title) return res.status(400).json({ success: false, error: 'A title' });
     try {
       const track = await addTrack(req.body, {
@@ -119,7 +120,7 @@ router.post(
  *         description: "`track`"
  */
 router.post('/music/from-link', requireAuth, async (req: Request, res: Response) => {
-  const body = (req.body ?? {}) as Record<string, unknown>;
+  const body = (req.body ?? {}) as Record<string, Untrusted>;
   const f = trackFields(body);
   const url = typeof body.url === 'string' ? body.url.trim() : '';
   if (!url) return res.status(400).json({ success: false, error: 'A link' });
@@ -166,7 +167,7 @@ router.post('/music/from-link', requireAuth, async (req: Request, res: Response)
  *         description: No such track
  */
 router.put('/music/:id', requireAuth, async (req: Request, res: Response) => {
-  const f = trackFields((req.body ?? {}) as Record<string, unknown>);
+  const f = trackFields((req.body ?? {}) as Record<string, Untrusted>);
   const track = await updateTrack(req.params.id, {
     ...(f.title ? { title: f.title } : {}),
     ...(f.artist !== undefined ? { artist: f.artist } : {}),

@@ -7,6 +7,7 @@ import { isSameSiteRequest } from '../utils/accountConnections';
 import { resolveViewerIdentity } from '../utils/viewerIdentity';
 import { log } from '../utils/logger';
 import { CommendError, commendCounts, commendState, setCommend } from '../services/commends';
+import type { Untrusted } from '../utils/untrusted';
 
 const router = Router();
 
@@ -75,7 +76,7 @@ router.put('/match/:slug/:playerId', guardWrite, async (req: Request, res: Respo
     return res.status(403).json({ success: false, error: 'Stop impersonating first' });
   }
   try {
-    const kind = (req.body as { kind?: unknown } | undefined)?.kind ?? null;
+    const kind = (req.body as { kind?: Untrusted } | undefined)?.kind ?? null;
     const state = await setCommend(
       req.params.slug,
       identity.realSteamId,

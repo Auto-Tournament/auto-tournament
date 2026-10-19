@@ -28,6 +28,7 @@ import {
 } from '../services/integrationTeamService';
 import { listExternalIds, SOURCE_PATTERN, EXTERNAL_ID_PATTERN } from '../services/teamExternalIds';
 import { teamService } from '../services/teamService';
+import type { Untrusted } from '../utils/untrusted';
 
 const router = Router();
 
@@ -103,7 +104,7 @@ router.get('/', async (req: Request, res: Response) => {
 router.post('/batch', async (req: Request, res: Response) => {
   const source = sourceFor(req, res);
   if (!source) return;
-  const list = (req.body as { teams?: unknown } | undefined)?.teams;
+  const list = (req.body as { teams?: Untrusted } | undefined)?.teams;
   if (!Array.isArray(list) || list.length === 0) {
     return res
       .status(400)
@@ -112,10 +113,12 @@ router.post('/batch', async (req: Request, res: Response) => {
   if (list.length > MAX_BATCH) {
     return res.status(400).json({ success: false, error: `At most ${MAX_BATCH} teams per batch` });
   }
-  const results: Array<Record<string, unknown>> = [];
+  const results: Array<
+    { index: number; ok: boolean; result?: string } & Record<string, Untrusted>
+  > = [];
   const seen = new Set<string>();
   for (const [index, raw] of list.entries()) {
-    const externalId = (raw as { externalId?: unknown } | null)?.externalId;
+    const externalId = (raw as { externalId?: Untrusted } | null)?.externalId;
     try {
       const input = parseTeamInput(raw);
       if (seen.has(input.externalId)) {

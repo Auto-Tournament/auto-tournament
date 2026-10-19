@@ -26,6 +26,7 @@ import {
 import { WEBHOOK_API_VERSION, WEBHOOK_EVENT_CATALOG } from '../services/webhooks/events';
 import { MAX_ATTEMPTS, RETRY_DELAYS_MS } from '../services/webhooks/retry';
 import type { DeliveryStatus } from '../services/webhooks/store';
+import type { Untrusted } from '../utils/untrusted';
 
 const router = Router();
 
@@ -79,7 +80,9 @@ router.get('/event-types', (_req: Request, res: Response) => {
  */
 router.post('/', async (req: Request, res: Response) => {
   try {
-    const { endpoint, secret } = await createEndpoint((req.body ?? {}) as Record<string, unknown>);
+    const { endpoint, secret } = await createEndpoint(
+      (req.body ?? {}) as Record<string, Untrusted>
+    );
     return res.status(201).json({ success: true, endpoint, secret });
   } catch (error) {
     return fail(res, error, 'Failed to create webhook endpoint');
@@ -140,7 +143,7 @@ router.patch('/:id', async (req: Request, res: Response) => {
   try {
     const endpoint = await updateEndpoint(
       req.params.id,
-      (req.body ?? {}) as Record<string, unknown>
+      (req.body ?? {}) as Record<string, Untrusted>
     );
     return res.json({ success: true, endpoint });
   } catch (error) {
@@ -172,7 +175,7 @@ router.post('/:id/rotate-secret', async (req: Request, res: Response) => {
   try {
     const { endpoint, secret } = await rotateEndpointSecret(
       req.params.id,
-      (req.body as { graceHours?: unknown } | undefined)?.graceHours
+      (req.body as { graceHours?: Untrusted } | undefined)?.graceHours
     );
     return res.json({ success: true, endpoint, secret });
   } catch (error) {
@@ -190,7 +193,7 @@ router.post('/:id/test', async (req: Request, res: Response) => {
   try {
     const delivery = await sendTestEvent(
       req.params.id,
-      (req.body ?? {}) as Record<string, unknown>
+      (req.body ?? {}) as Record<string, Untrusted>
     );
     return res.status(202).json({ success: true, delivery: deliveryView(delivery) });
   } catch (error) {
