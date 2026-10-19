@@ -16,6 +16,9 @@
  * are adopted here unchanged and the types below follow those schemas.
  */
 
+import type { Untrusted } from '../../../../../utils/untrusted';
+import type { JsonObject } from '../../../../../utils/json';
+
 export const FLEET_PROTOCOL_VERSION = 1 as const;
 /** The protocol majors this platform speaks (FLEET.md §14.1). */
 export const FLEET_PROTOCOL_SUPPORTED = { min: 1, max: 1 } as const;
@@ -27,7 +30,8 @@ export type Ulid = string;
 /** SteamID64 as a decimal string. */
 export type U64s = string;
 
-export interface Envelope<T extends string = string, P = Record<string, unknown>> {
+/** A message as it arrives; `P` is its payload once checked (see `FleetMessage`). */
+export interface Envelope<T extends string = string, P = Untrusted> {
   v: 1;
   type: T;
   id: Ulid;
@@ -77,7 +81,7 @@ export interface HelloPayload {
   boot_id: Ulid;
   stream: { id: string; last_tx_seq: number; last_rx_seq: number };
   /** MatchState (§9); null or absent when idle. */
-  state?: Record<string, unknown> | null;
+  state?: MatchState | null;
   availability: Availability;
   selftest?: SelftestSummary;
   /** GOTV state from the tv plugin; absent without tv.so. */
@@ -221,7 +225,7 @@ export interface MatchRules {
   simulation?: { timescale?: number };
   bot_fill?: { players_per_team: number };
   ruleset?: 'default' | 'valve';
-  overrides?: Record<string, unknown>;
+  overrides?: JsonObject;
 }
 
 export interface AssignPlayer {
@@ -451,11 +455,11 @@ export interface MatchState {
   backups?: { latest_round?: number };
   rules?: MatchRules;
   ruleset?: 'default' | 'valve';
-  effective_rules?: Record<string, unknown>;
+  effective_rules?: JsonObject;
 }
 
 /** RFC 7386 JSON merge patch on MatchState (`null` removes a member, arrays are replaced whole). */
-export type MatchStatePatch = Record<string, unknown>;
+export type MatchStatePatch = JsonObject;
 
 // --- step 3: platform -> server ---------------------------------------------
 
@@ -525,7 +529,7 @@ export interface CmdPayload {
   match_id?: string;
   epoch?: number;
   name: CmdName;
-  args: Record<string, unknown>;
+  args: object;
   issued_by: { user_id: string; name: string; root: boolean };
   /** Unix ms; 0 = never. A past one is answered `expired`, not run. */
   expires_at: number;
@@ -608,7 +612,7 @@ export interface TvState {
   relay_text_chat: boolean | null;
   relay_voice: boolean | null;
   password_set: boolean | null;
-  profile: { source: 'server' | 'match'; match_id?: string; settings: Record<string, unknown> };
+  profile: { source: 'server' | 'match'; match_id?: string; settings: JsonObject };
   delay_floor: number;
   casters: number;
   server_insecure: boolean;
@@ -719,7 +723,7 @@ export interface DemoAckPayload {
 }
 
 /** Every `event.*` payload: a merge patch with its rev, plus the event's `data`. */
-export interface FleetEventPayload<D = Record<string, unknown>> {
+export interface FleetEventPayload<D = object> {
   match_id: string;
   /** 1-based. */
   map_number: number;
@@ -974,6 +978,21 @@ export interface FleetMessages {
 }
 
 export type FleetMessageType = keyof FleetMessages;
+
+/**
+ * A message whose payload passed its schema: its `type` decides its
+ * `payload`, so `switch (msg.type)` narrows the payload with it.
+ */
+export type FleetMessage = {
+  [K in FleetMessageType]: Envelope<K, FleetMessages[K]>;
+}[FleetMessageType];
+
+/** A checked `event.*` message. */
+export type FleetEventMessage = Extract<FleetMessage, { type: FleetEventType }>;
+
+export function isFleetEventMessage(msg: FleetMessage): msg is FleetEventMessage {
+  return isFleetEventType(msg.type);
+}
 
 export type Direction = 'server_to_platform' | 'platform_to_server' | 'both';
 

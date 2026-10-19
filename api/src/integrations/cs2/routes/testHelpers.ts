@@ -12,7 +12,7 @@ import { resetEnrollRateLimit } from '../fleet/routes';
 import { liveStateStore } from '../fleet/state';
 import { processInbound } from '../fleet/inbound';
 import { assignConfigPreview } from '../fleet/driver';
-import type { Envelope } from '../fleet/protocol/v1';
+import type { Envelope, FleetMessage } from '../fleet/protocol/v1';
 import { FleetSendError, getCommand, sendReliable, type ReliableType } from '../fleet/reliable';
 import { scanForFailovers } from '../fleet/failover';
 
@@ -302,7 +302,7 @@ router.post('/fleet/events', requireAuth, async (req: Request, res: Response): P
     const type = event.type.startsWith('event.') ? event.type : `event.${event.type}`;
     rev += 1;
     testRevs.set(matchSlug, rev);
-    const env = {
+    const env: Envelope = {
       v: 1,
       type,
       id: `test-${matchSlug}-${rev}-${Date.now()}`,
@@ -316,8 +316,9 @@ router.post('/fleet/events', requireAuth, async (req: Request, res: Response): P
         patch: { ...(event.patch ?? {}), live_rev: rev },
         data: event.data ?? {},
       },
-    } as unknown as Envelope;
-    await processInbound(ctx, env, null);
+    };
+    // A test's event carries only the fields it is about: not checked against the schema.
+    await processInbound(ctx, env as FleetMessage, null);
   }
   res.json({ success: true, applied: events.length });
 });

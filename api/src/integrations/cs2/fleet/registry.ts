@@ -22,7 +22,7 @@ import {
   ulid,
   verifySecret,
 } from './credentials';
-import type { EnrollRequest, Envelope, HostInfo, Versions } from './protocol/v1';
+import type { EnrollRequest, Envelope, HostInfo, PingPayload, Versions } from './protocol/v1';
 
 export const FLEET_TENANT = 'default';
 /** One-time code lifetime (FLEET.md §4.1). */
@@ -828,7 +828,7 @@ export async function setPeerAddr(serverId: string, peerAddr: string | null): Pr
   ]);
 }
 
-export async function markSeen(serverId: string, health?: unknown): Promise<void> {
+export async function markSeen(serverId: string, health?: PingPayload['health']): Promise<void> {
   await db.runAsync(
     `UPDATE cs2_fleet_servers SET last_seen = ?, health = COALESCE(?, health) WHERE id = ?`,
     [nowS(), health === undefined ? null : JSON.stringify(health), serverId]
