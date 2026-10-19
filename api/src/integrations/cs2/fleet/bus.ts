@@ -10,11 +10,25 @@
  */
 
 import type { FleetGateway } from './gateway';
+import type { FleetMessages, FleetMessageType } from './protocol/v1';
 import * as registry from './registry';
 
-export interface FleetOutboundMessage {
-  type: string;
-  payload: Record<string, unknown>;
+/** `auth.rotate` as the outbox holds it: the token id. The secret is minted when it is written (./gateway). */
+export interface AuthRotateOutbox {
+  token_id: string;
+  old_valid_until: number;
+}
+
+/** A message to send; its `type` decides its `payload`. */
+export type FleetOutboundMessage = (
+  | {
+      [K in Exclude<FleetMessageType, 'auth.rotate'>]: { type: K; payload: FleetMessages[K] };
+    }[Exclude<FleetMessageType, 'auth.rotate'>]
+  | { type: 'auth.rotate'; payload: AuthRotateOutbox }
+) &
+  FleetOutboundOptions;
+
+export interface FleetOutboundOptions {
   /** Reliable (default for everything but ping/pong/ack/error): seq'd, stored and replayed until acked. */
   reliable?: boolean;
   /** Assignment epoch, for match-scoped messages. */
@@ -54,14 +68,7 @@ export class InProcessFleetBus implements FleetBus {
     const reliable = message.reliable ?? !EPHEMERAL.has(message.type);
     const session = this.gateway.session(serverId);
     if (!reliable) {
-      const delivered = session
-        ? session.sendEphemeral(
-            message.type,
-            message.payload,
-            message.ref ?? undefined,
-            message.epoch !== undefined ? { epoch: message.epoch } : undefined
-          )
-        : false;
+      const delivered = session ? session.sendOutbound(message) : false;
       return { delivered };
     }
     const envelope = await registry.appendOutbox(serverId, {

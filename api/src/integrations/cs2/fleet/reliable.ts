@@ -66,11 +66,12 @@ export class FleetSendError extends Error {
   }
 }
 
-function matchScope(
-  type: ReliableType,
-  payload: Record<string, unknown>
-): { slug: string | null; scoped: boolean } {
-  const slug = typeof payload.match_id === 'string' ? payload.match_id : null;
+/** A reliable message as one union: its `type` narrows its `payload`. */
+type AnyReliableMessage = { [K in ReliableType]: ReliableMessage<K> }[ReliableType];
+
+function matchScope(msg: AnyReliableMessage): { slug: string | null; scoped: boolean } {
+  const { type } = msg;
+  const slug = 'match_id' in msg.payload ? (msg.payload.match_id ?? null) : null;
   const scoped = type.startsWith('match.') || (type === 'cmd' && slug !== null);
   return { slug, scoped };
 }
@@ -79,8 +80,8 @@ export async function sendReliable<T extends ReliableType>(
   serverId: string,
   message: ReliableMessage<T>
 ): Promise<ReliableSendResult> {
-  const { type } = message;
-  const payload = message.payload as unknown as Record<string, unknown>;
+  const msg = message as AnyReliableMessage;
+  const { type, payload } = msg;
   if (
     !isKnownMessageType(type) ||
     FLEET_MESSAGES[type].direction !== 'platform_to_server' ||
@@ -91,13 +92,14 @@ export async function sendReliable<T extends ReliableType>(
   const check = validatePayload(type, payload);
   if (!check.ok) throw new FleetSendError(`invalid ${type}: ${check.errors.join('; ')}`);
 
-  const { slug, scoped } = matchScope(type, payload);
-  const epoch = message.epoch ?? (typeof payload.epoch === 'number' ? payload.epoch : undefined);
+  const { slug, scoped } = matchScope(msg);
+  const payloadEpoch = 'epoch' in msg.payload ? msg.payload.epoch : undefined;
+  const epoch = msg.epoch ?? payloadEpoch;
   if (scoped && (epoch === undefined || epoch < 1)) {
     throw new FleetSendError(`${type}${slug ? ` for ${slug}` : ''} needs the assignment epoch`);
   }
-  if (epoch !== undefined && typeof payload.epoch === 'number' && payload.epoch !== epoch) {
-    throw new FleetSendError(`${type}: envelope epoch ${epoch} != payload.epoch ${payload.epoch}`);
+  if (epoch !== undefined && payloadEpoch !== undefined && payloadEpoch !== epoch) {
+    throw new FleetSendError(`${type}: envelope epoch ${epoch} != payload.epoch ${payloadEpoch}`);
   }
 
   const id = ulid();
@@ -109,15 +111,14 @@ export async function sendReliable<T extends ReliableType>(
       type,
       matchSlug: slug,
       epoch: epoch ?? null,
-      name: type === 'cmd' ? String(payload.name) : null,
+      name: msg.type === 'cmd' ? msg.payload.name : null,
     });
   }
 
-  const expiresMs = type === 'cmd' ? Number(payload.expires_at) : 0;
+  const expiresMs = msg.type === 'cmd' ? msg.payload.expires_at : 0;
   const sent = await fleetBus().send(serverId, {
+    ...msg,
     id,
-    type,
-    payload,
     reliable: true,
     ...(epoch !== undefined ? { epoch } : {}),
     expiresAt: expiresMs > 0 ? Math.ceil(expiresMs / 1000) : null,
