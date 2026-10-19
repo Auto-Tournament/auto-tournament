@@ -6579,14 +6579,6 @@
               "type": "string"
             }
           }
-        ],
-        "security": [
-          {
-            "bearerAuth": []
-          },
-          {
-            "apiToken": []
-          }
         ]
       }
     },
