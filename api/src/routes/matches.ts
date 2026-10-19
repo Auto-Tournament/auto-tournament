@@ -46,6 +46,8 @@ import {
   tournamentRowToResponse,
 } from '../utils/tournamentRow';
 import { compareQueueOrder, isQueueable, matchBracketOf } from '../core/allocationQueue';
+import type { SqlValue } from '../config/database';
+import type { Untrusted } from '../utils/untrusted';
 
 const router = Router();
 
@@ -105,7 +107,7 @@ async function getMatchDetailsBySlug(slug: string): Promise<MatchListItem | null
   // stale snapshot from when the match was first generated. Manual matches
   // (round = 0) keep their stored config as-is.
   // Integration-owned; forwarded to the client below (client slots: PR 12).
-  const config = (await currentMatchConfig(row)) as MatchConfig | Record<string, unknown>;
+  const config = (await currentMatchConfig(row)) as MatchConfig | Record<string, Untrusted>;
   const description = describeMatch({ game: row.game, config });
   const vetoState = row.veto_state ? JSON.parse(row.veto_state as string) : null;
 
@@ -637,7 +639,7 @@ router.get('/', async (req: Request, res: Response) => {
       LEFT JOIN cs2_servers s ON m.server_id = s.id
     `;
 
-    const params: unknown[] = [];
+    const params: SqlValue[] = [];
     if (serverId) {
       query += ' WHERE m.server_id = ?';
       params.push(serverId);
@@ -673,7 +675,7 @@ router.get('/', async (req: Request, res: Response) => {
         // admin views always see the latest team composition and settings. Manual
         // matches (round = 0) keep their stored config.
         // Integration-owned; forwarded to the client below (client slots: PR 12).
-        const config = (await currentMatchConfig(row)) as MatchConfig | Record<string, unknown>;
+        const config = (await currentMatchConfig(row)) as MatchConfig | Record<string, Untrusted>;
         const description = describeMatch({ game: row.game, config });
 
         const vetoState = row.veto_state ? JSON.parse(row.veto_state as string) : null;
@@ -1148,8 +1150,8 @@ router.get('/:slug', async (req: Request, res: Response) => {
         // No GOTV password for non-admins when the match broadcasts with no delay.
         config: admin ? match.config : withoutConfigSecrets(match.config),
         // Kept as they are where the match already has them (tournament matches).
-        team1: (match as { team1?: unknown }).team1 ?? teamOf('team1'),
-        team2: (match as { team2?: unknown }).team2 ?? teamOf('team2'),
+        team1: (match as { team1?: Untrusted }).team1 ?? teamOf('team1'),
+        team2: (match as { team2?: Untrusted }).team2 ?? teamOf('team2'),
         winnerSide:
           row?.winner_id && row.winner_id === row.team1_id
             ? 'team1'
@@ -1161,7 +1163,7 @@ router.get('/:slug', async (req: Request, res: Response) => {
         team1LogoUrl: row?.team1_id ? logoUrl(row.team1_id, row.team1_logo) : null,
         team2LogoUrl: row?.team2_id ? logoUrl(row.team2_id, row.team2_logo) : null,
         tournament:
-          (match as { tournament?: unknown }).tournament ??
+          (match as { tournament?: Untrusted }).tournament ??
           row?.tournament ??
           row?.played_in ??
           null,
@@ -1184,7 +1186,7 @@ router.get('/:slug', async (req: Request, res: Response) => {
         // them their part (veto, connect, reporting). Null for everyone else.
         viewerTeamId: await viewerTeamIdOfMatch(req, {
           game: (match as { game?: string | null }).game ?? null,
-          config: (match as { config?: unknown }).config ?? null,
+          config: (match as { config?: Untrusted }).config ?? null,
           team1_id: row?.team1_id ?? null,
           team2_id: row?.team2_id ?? null,
         }),
@@ -1386,7 +1388,7 @@ function actorOf(req: Request): Actor {
 }
 
 /** minutes from a request body: a positive number up to a day, or null (until released). */
-function holdMinutes(value: unknown): number | null | false {
+function holdMinutes(value: Untrusted): number | null | false {
   if (value === undefined || value === null) return null;
   const n = Number(value);
   return Number.isFinite(n) && n > 0 && n <= 24 * 60 ? n : false;
@@ -1398,7 +1400,7 @@ function holdMinutes(value: unknown): number | null | false {
  * Null goes back to its round's time. Its hold moves with it (services/matchTimes.ts).
  */
 router.put('/:slug/start-time', requireAuth, async (req: Request, res: Response) => {
-  const raw = (req.body ?? {}).startsAt as unknown;
+  const raw = (req.body ?? {}).startsAt as Untrusted;
   const at = raw === null ? null : typeof raw === 'string' ? Date.parse(raw) : NaN;
   if (at !== null && !Number.isFinite(at)) {
     return res.status(400).json({ success: false, error: 'startsAt: an ISO time, or null' });
@@ -1453,7 +1455,7 @@ router.get('/:slug/hold', async (req: Request, res: Response) => {
  * Not loaded or auto-started, and no walkover clock on its server, until then.
  */
 router.post('/:slug/hold', requireAuth, async (req: Request, res: Response) => {
-  const body = (req.body ?? {}) as { minutes?: unknown; reason?: unknown };
+  const body = (req.body ?? {}) as { minutes?: Untrusted; reason?: Untrusted };
   const minutes = holdMinutes(body.minutes);
   if (minutes === false) {
     return res
@@ -1531,8 +1533,8 @@ function seriesScore(maps: Array<{ winnerTeam: string | null }>): [number, numbe
 router.post('/:slug/maps/:map/result', requireAuth, async (req: Request, res: Response) => {
   const { slug } = req.params;
   const mapNumber = Number(req.params.map);
-  const body = (req.body ?? {}) as Record<string, unknown>;
-  const score = (v: unknown) =>
+  const body = (req.body ?? {}) as Record<string, Untrusted>;
+  const score = (v: Untrusted) =>
     Number.isInteger(v) && (v as number) >= 0 && (v as number) <= 99 ? (v as number) : null;
   const team1Score = score(body.team1Score);
   const team2Score = score(body.team2Score);
@@ -1748,7 +1750,7 @@ router.patch('/:slug/status', requireAuth, async (req: Request, res: Response) =
 router.post('/:slug/winner', requireAuth, async (req: Request, res: Response) => {
   try {
     const { slug } = req.params;
-    const winner = (req.body as { winner?: unknown } | undefined)?.winner;
+    const winner = (req.body as { winner?: Untrusted } | undefined)?.winner;
     if (winner !== 'team1' && winner !== 'team2') {
       return res.status(400).json({ success: false, error: "winner must be 'team1' or 'team2'" });
     }
