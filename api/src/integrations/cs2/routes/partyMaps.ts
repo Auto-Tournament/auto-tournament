@@ -14,6 +14,7 @@ import { Router, Request, Response } from 'express';
 import { db } from '../../../config/database';
 import { log } from '../../../utils/logger';
 import { ACTIVE_DUTY_POOL } from '../maps/mapSync';
+import type { Untrusted } from '../../../utils/untrusted';
 
 const router = Router();
 
@@ -34,7 +35,8 @@ const num = (v: number | string | null | undefined): number => {
 
 function parseIds(raw: string): string[] {
   try {
-    const ids: unknown = JSON.parse(raw);
+    // Older rows: a comma list, or JSON that is not a list of names.
+    const ids: Untrusted = JSON.parse(raw);
     return Array.isArray(ids) ? ids.filter((id): id is string => typeof id === 'string') : [];
   } catch {
     return raw

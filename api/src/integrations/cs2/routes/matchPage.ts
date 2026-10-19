@@ -52,7 +52,7 @@ export interface ScoreboardLine {
   multiKills: number;
 }
 
-const num = (v: unknown) => Number(v) || 0;
+const num = (v: StatRow[keyof StatRow]) => Number(v) || 0;
 
 function line(rows: StatRow[]): ScoreboardLine {
   const sum = (k: keyof StatRow) => rows.reduce((s, r) => s + num(r[k]), 0);
