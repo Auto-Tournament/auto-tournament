@@ -1,3 +1,4 @@
+import type { Untrusted } from '../../utils/untrusted';
 /**
  * The running build's `line_date`: the release date of its version line
  * (x.y.0). A license covers a release when `line_date <= updates_until`, so
@@ -17,7 +18,7 @@ declare const __AT_LINE_RELEASE_DATE__: string | undefined;
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
 const VERSION = /^v?(\d+)\.(\d+)\.(\d+)(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/;
 
-function isDate(value: unknown): value is string {
+function isDate(value: Untrusted): value is string {
   if (typeof value !== 'string' || !DATE.test(value)) return false;
   const d = new Date(`${value}T00:00:00Z`);
   return !Number.isNaN(d.getTime()) && d.toISOString().slice(0, 10) === value;

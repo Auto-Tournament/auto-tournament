@@ -29,6 +29,7 @@ import { randomUUID } from 'crypto';
 import { log } from '../../utils/logger';
 import { decodeLicense, verifyLicense } from './verify';
 import type { ServerLicenseState } from './gate';
+import { isOneOf, type Untrusted } from '../../utils/untrusted';
 
 export const DEFAULT_CHECKIN_URL = 'https://autotournament.gg/api/licenses/checkin';
 export const CHECKIN_PRIVACY_URL = 'https://autotournament.gg/privacy#license-checkin';
@@ -167,11 +168,11 @@ export interface EventPromptStatus {
 // Pure helpers
 // ---------------------------------------------------------------------------
 
-function isObject(value: unknown): value is Record<string, unknown> {
+function isObject(value: Untrusted): value is Record<string, Untrusted> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
-function count(value: unknown): number | null {
+function count(value: Untrusted): number | null {
   return typeof value === 'number' && Number.isSafeInteger(value) && value >= 0 ? value : null;
 }
 
@@ -213,7 +214,7 @@ export function resolveCheckinUrl(env: {
 }
 
 /** The server's notice as plain text: control characters dropped, trimmed, capped. */
-export function cleanNotice(value: unknown): string | null {
+export function cleanNotice(value: Untrusted): string | null {
   if (typeof value !== 'string') return null;
   const text = value
     // eslint-disable-next-line no-control-regex
@@ -227,7 +228,7 @@ export function cleanNotice(value: unknown): string | null {
 }
 
 /** A 200 body, checked field by field. Null when it is not `{ ok: true, … }`. */
-export function parseCheckinResponse(value: unknown): CheckinResult | null {
+export function parseCheckinResponse(value: Untrusted): CheckinResult | null {
   if (!isObject(value) || value.ok !== true) return null;
   let usage: CheckinUsage | null = null;
   const u = value.usage;
@@ -277,9 +278,9 @@ const STATES = [
 ] as const;
 
 /** The answer's `license`, checked; null when missing or not understood. */
-export function parseLicenseState(value: unknown): ServerLicenseState | null {
-  if (!isObject(value) || !(STATES as readonly unknown[]).includes(value.status)) return null;
-  const day = (v: unknown) => (typeof v === 'string' && DAY.test(v) ? v : null);
+export function parseLicenseState(value: Untrusted): ServerLicenseState | null {
+  if (!isObject(value) || !isOneOf(STATES, value.status)) return null;
+  const day = (v: Untrusted) => (typeof v === 'string' && DAY.test(v) ? v : null);
   return {
     status: value.status as ServerLicenseState['status'],
     validUntil: day(value.valid_until ?? value.validUntil),
@@ -287,7 +288,7 @@ export function parseLicenseState(value: unknown): ServerLicenseState | null {
   };
 }
 
-function cleanToken(value: unknown): string | null {
+function cleanToken(value: Untrusted): string | null {
   return typeof value === 'string' && value.startsWith('ATL1.') && value.length <= 4096
     ? value
     : null;
@@ -297,7 +298,7 @@ function cleanToken(value: unknown): string | null {
 export function parseStoredResult(raw: string | null): CheckinResult {
   if (!raw) return { usage: null, notice: null };
   try {
-    const value = JSON.parse(raw) as unknown;
+    const value = JSON.parse(raw) as Untrusted;
     if (!isObject(value)) return { usage: null, notice: null };
     const u = value.usage;
     let usage: CheckinUsage | null = null;
@@ -331,9 +332,9 @@ export function parseStoredResult(raw: string | null): CheckinResult {
 export function parseDeclaration(raw: string | null): EventDeclaration | null {
   if (!raw) return null;
   try {
-    const v = JSON.parse(raw) as unknown;
+    const v = JSON.parse(raw) as Untrusted;
     if (!isObject(v)) return null;
-    if (!(DECLARATION_ANSWERS as readonly unknown[]).includes(v.answer)) return null;
+    if (!isOneOf(DECLARATION_ANSWERS, v.answer)) return null;
     if (typeof v.at !== 'string' || typeof v.licenseId !== 'string') return null;
     return {
       answer: v.answer as DeclarationAnswer,
@@ -349,7 +350,7 @@ export function parseDeclaration(raw: string | null): EventDeclaration | null {
 export function parsePromptState(raw: string | null): EventPromptState {
   if (!raw) return { askedAt: null, mutedFor: null };
   try {
-    const v = JSON.parse(raw) as unknown;
+    const v = JSON.parse(raw) as Untrusted;
     if (!isObject(v)) return { askedAt: null, mutedFor: null };
     return {
       askedAt: typeof v.askedAt === 'string' ? v.askedAt : null,
@@ -413,7 +414,7 @@ export function summarizeActivity(
     if (!ids.has(row.id)) continue;
     let teams = 0;
     try {
-      const list = JSON.parse(row.team_ids ?? '[]') as unknown;
+      const list = JSON.parse(row.team_ids ?? '[]') as Untrusted;
       teams = Array.isArray(list) ? list.length : 0;
     } catch {
       teams = 0;
@@ -615,7 +616,7 @@ export class LicenseCheckin {
         signal: globalThis.AbortSignal.timeout(CHECKIN_TIMEOUT_MS),
       });
       if (res.status !== 200) return { result: 'unreachable' };
-      const answer = (await res.json().catch(() => null)) as Record<string, unknown> | null;
+      const answer = (await res.json().catch(() => null)) as Record<string, Untrusted> | null;
       if (!answer || answer.ok !== true || typeof answer.allowed !== 'boolean')
         return { result: 'unreachable' };
       if (answer.allowed) return { result: 'allowed' };

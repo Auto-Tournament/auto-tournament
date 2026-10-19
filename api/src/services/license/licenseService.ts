@@ -44,6 +44,7 @@ import {
   type LicensePayload,
   type LicenseWarning,
 } from './verify';
+import type { Untrusted } from '../../utils/untrusted';
 
 export const VERIFY_URL_BASE = 'https://autotournament.gg/verify/';
 export const PRICING_URL = 'https://autotournament.gg/pricing';
@@ -161,9 +162,9 @@ export function statusFor(key: string | null, inputs: StatusInputs): LicenseStat
 }
 
 /** Why a pasted key is refused before it is stored, or null to store it. */
-export function keyInputProblem(input: unknown): string | null {
+export function keyInputProblem(input: Untrusted): string | null {
   if (typeof input !== 'string' || !input.trim()) return 'Paste a license key';
-  let payload: unknown;
+  let payload: Untrusted;
   try {
     payload = decodeLicense(input).payload;
   } catch {
@@ -172,7 +173,7 @@ export function keyInputProblem(input: unknown): string | null {
   if (
     typeof payload === 'object' &&
     payload !== null &&
-    (payload as { lease?: unknown }).lease === true
+    (payload as { lease?: Untrusted }).lease === true
   ) {
     return 'This is a lease, not a license key. Copy the key from the console.';
   }

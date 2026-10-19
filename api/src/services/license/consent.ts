@@ -27,6 +27,7 @@ import path from 'path';
 import { log } from '../../utils/logger';
 import { settingsService } from '../settingsService';
 import { PRICING_URL, keyInputProblem, licenseService } from './licenseService';
+import type { Untrusted } from '../../utils/untrusted';
 
 /** Bump only when admins must accept the terms again. */
 export const LICENSE_TERMS_VERSION = 1;
@@ -62,7 +63,7 @@ export interface LicenseConsentRecord {
 export const CONSENT_READ_ITEMS = ['license', 'rules', 'pricing'] as const;
 
 /** The read items `value` is missing, in order (all of them when it is not a list). */
-export function missingReadItems(value: unknown): string[] {
+export function missingReadItems(value: Untrusted): string[] {
   const read = new Set(Array.isArray(value) ? value.filter((v) => typeof v === 'string') : []);
   return CONSENT_READ_ITEMS.filter((item) => !read.has(item));
 }
@@ -97,7 +98,7 @@ const HISTORY_LIMIT = 50;
 export const ENV_ACTOR = 'env:AT_ACCEPT_LICENSE';
 
 /** `noncommercial` / `commercial` (and a few spellings), else null. */
-export function parseLicenseUse(value: unknown): LicenseUse | null {
+export function parseLicenseUse(value: Untrusted): LicenseUse | null {
   if (typeof value !== 'string') return null;
   const v = value
     .trim()
@@ -109,7 +110,7 @@ export function parseLicenseUse(value: unknown): LicenseUse | null {
 }
 
 /** Does the typed confirmation say I AGREE (any case, outer spaces ignored)? */
-export function isConsentPhrase(value: unknown): boolean {
+export function isConsentPhrase(value: Untrusted): boolean {
   return (
     typeof value === 'string' && value.trim().replace(/\s+/g, ' ').toUpperCase() === CONSENT_PHRASE
   );
@@ -225,7 +226,7 @@ class LicenseConsentService {
     const raw = await settingsService.getSetting('license_consent_history');
     if (!raw) return [];
     try {
-      const list = JSON.parse(raw) as unknown[];
+      const list = JSON.parse(raw) as Untrusted[];
       if (!Array.isArray(list)) return [];
       return list
         .map((entry) => parseConsentRecord(JSON.stringify(entry)))
