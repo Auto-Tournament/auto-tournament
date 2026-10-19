@@ -1,4 +1,5 @@
 import { logoUrl } from './teamSelfService';
+import type { Untrusted } from '../utils/untrusted';
 /**
  * Shuffle Tournament Service
  * Handles shuffle tournament creation, round generation, and automatic progression
@@ -47,7 +48,7 @@ export interface ShuffleTournamentConfig {
   overtimeSegments?: number;
   eloTemplateId?: string; // ELO calculation template ID (optional, defaults to "Pure Win/Loss")
   /** The game module's object, under its key (CS2: `cs2`). */
-  settings?: Record<string, unknown>;
+  settings?: Record<string, Untrusted>;
 }
 
 export interface PlayerLeaderboardEntry {
@@ -122,7 +123,7 @@ export async function createShuffleTournament(
   // settings.cs2), built by it from the request: its object in `settings`,
   // then the 2.x top-level fields. A 2.x sequence is also the map pool, and a
   // shuffle tournament has never stored 0 overtime segments: 0 is the default.
-  const legacy: Record<string, unknown> = {};
+  const legacy: Record<string, Untrusted> = {};
   if (config.mapSequence !== undefined) {
     legacy.maps = config.mapSequence;
     legacy.mapSequence = config.mapSequence;
@@ -799,7 +800,7 @@ export async function breakAfterRound(tournamentId: number, round: number): Prom
   } catch {
     breaks = undefined;
   }
-  const valid = (n: unknown) =>
+  const valid = (n: Untrusted) =>
     typeof n === 'number' && Number.isFinite(n) && n >= 0 && n <= 24 * 60 ? n : undefined;
   const special = valid(breaks?.after?.[String(round)]);
   if (special !== undefined) return special;
@@ -1143,7 +1144,7 @@ export async function getTournamentLeaderboard(tournamentId: number): Promise<{
     for (const team of teamRows) {
       let roster: Array<{ steamId?: string; steamid?: string }> = [];
       try {
-        const parsed = JSON.parse(team.players ?? '[]') as unknown;
+        const parsed = JSON.parse(team.players ?? '[]') as Untrusted;
         if (Array.isArray(parsed)) roster = parsed as typeof roster;
       } catch {
         roster = [];

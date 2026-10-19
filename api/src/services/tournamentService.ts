@@ -47,9 +47,11 @@ import {
   shuffleTeamLike,
   tournamentSlugPrefix,
 } from '../utils/matchSlug';
+import type { SqlValue } from '../config/database';
+import type { Untrusted } from '../utils/untrusted';
 
 /** Players per team from a request (2-10), or null when it names none. */
-function validTeamSize(value: unknown): number | null {
+function validTeamSize(value: Untrusted): number | null {
   if (value === undefined || value === null) return null;
   const n = Number(value);
   if (!Number.isInteger(n) || n < 1 || n > 10)
@@ -83,8 +85,8 @@ export const DEFAULT_SETTINGS: TournamentSettings = {
   grandFinalMode: 'simple',
 };
 
-function signupIsOpen(settings: unknown): boolean {
-  return (settings as { registrationOpen?: unknown } | undefined)?.registrationOpen === true;
+function signupIsOpen(settings: Untrusted): boolean {
+  return (settings as { registrationOpen?: Untrusted } | undefined)?.registrationOpen === true;
 }
 
 /** Sign-up has just opened: email the players who asked for it (in the background). */
@@ -244,7 +246,7 @@ class TournamentService {
     // The team size can come in the settings too (the MCP tool, older clients): the row's
     // column is what matches and rosters use, so it takes either (it stayed 5 for a 2v2).
     const teamSize = validTeamSize(
-      input.teamSize ?? (settings as { teamSize?: unknown } | undefined)?.teamSize
+      input.teamSize ?? (settings as { teamSize?: Untrusted } | undefined)?.teamSize
     );
     if (type === 'shuffle' && teamSize !== null && teamSize < 2)
       throw new Error('Team size must be between 2 and 10 players');
@@ -254,7 +256,7 @@ class TournamentService {
     // Shuffle tournaments don't use teams, skip validation. With sign-up open
     // the teams sign themselves up later; the count is checked at start.
     const signupOpen =
-      (settings as { registrationOpen?: unknown } | undefined)?.registrationOpen === true;
+      (settings as { registrationOpen?: Untrusted } | undefined)?.registrationOpen === true;
     if (type !== 'shuffle' && !signupOpen && !emptyDraft) {
       // Validate team count based on tournament type
       validateTeamCount(type, teamIds.length);
@@ -266,7 +268,7 @@ class TournamentService {
     const tournamentSettings: TournamentSettings = withModuleSettings(
       options.game ?? DEFAULT_GAME,
       normalizeTournamentSettings({ ...DEFAULT_SETTINGS, ...settings }, format),
-      input as unknown as Record<string, unknown>,
+      { ...input },
       undefined,
       'tournament'
     );
@@ -376,8 +378,8 @@ class TournamentService {
     // Validate team count if changing teams or type (not while teams sign
     // themselves up: then it is checked at start)
     const signupOpen =
-      ((settings as { registrationOpen?: unknown } | undefined)?.registrationOpen ??
-        (existing.settings as { registrationOpen?: unknown } | undefined)?.registrationOpen) ===
+      ((settings as { registrationOpen?: Untrusted } | undefined)?.registrationOpen ??
+        (existing.settings as { registrationOpen?: Untrusted } | undefined)?.registrationOpen) ===
       true;
     if ((type || teamIds) && !signupOpen) {
       validateTeamCount(type || existing.type, (teamIds || existing.teamIds).length);
@@ -392,7 +394,7 @@ class TournamentService {
     if (format) updates.format = format;
     if (teamIds) updates.team_ids = JSON.stringify(teamIds);
     const teamSize = validTeamSize(
-      input.teamSize ?? (input.settings as { teamSize?: unknown } | undefined)?.teamSize
+      input.teamSize ?? (input.settings as { teamSize?: Untrusted } | undefined)?.teamSize
     );
     if (teamSize !== null && (type ?? existing.type) === 'shuffle' && teamSize < 2)
       throw new Error('Team size must be between 2 and 10 players');
@@ -409,7 +411,7 @@ class TournamentService {
         { ...existing.settings, ...(settings ?? {}) },
         format || existing.format
       ),
-      input as unknown as Record<string, unknown>,
+      { ...input },
       existing.settings,
       'tournament'
     );
@@ -654,7 +656,7 @@ class TournamentService {
         const dbId = slugToDbId.get(matchData.slug);
         if (!dbId) continue;
 
-        const updates: Partial<DbMatchRow> = {};
+        const updates: Record<string, SqlValue> = {};
 
         if (matchData.team1FromMatchSlug) {
           const fromId = slugToDbId.get(matchData.team1FromMatchSlug) ?? null;
@@ -669,7 +671,7 @@ class TournamentService {
         }
 
         if (Object.keys(updates).length > 0) {
-          await db.updateAsync('matches', updates as Record<string, unknown>, 'id = ?', [dbId]);
+          await db.updateAsync('matches', updates, 'id = ?', [dbId]);
         }
         // Groups' playoffs: a winner's slot is the match's next one (placements read it).
         if (tournament.type === 'groups') {

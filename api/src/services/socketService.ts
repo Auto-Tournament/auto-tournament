@@ -20,6 +20,7 @@ import type {
   VetoUpdateEvent,
   CompatUpdateEvent,
 } from '../types/socket.types';
+import type { Untrusted } from '../utils/untrusted';
 
 let io: SocketIOServer | null = null;
 
@@ -71,8 +72,8 @@ function handshakeAsRequest(socket: Socket): Request {
   return req as Request;
 }
 
-async function joinAdminRoom(socket: Socket, ack?: unknown): Promise<void> {
-  const reply = typeof ack === 'function' ? (ack as (body: unknown) => void) : () => undefined;
+async function joinAdminRoom(socket: Socket, ack?: Untrusted): Promise<void> {
+  const reply = typeof ack === 'function' ? (ack as (body: object) => void) : () => undefined;
   try {
     const access = await checkAdminAccess(handshakeAsRequest(socket));
     if (!access.ok) {
@@ -133,7 +134,7 @@ export function initializeSocket(
     // handshake's session, signed cookie or API token is an admin's — the
     // same check as `requireAuth`. The optional ack says whether it did.
     // Rooms do not survive a reconnect: the client asks again on `connect`.
-    socket.on('admin:subscribe', (ack?: unknown) => {
+    socket.on('admin:subscribe', (ack?: Untrusted) => {
       void joinAdminRoom(socket, ack);
     });
     socket.on('admin:unsubscribe', () => {
@@ -143,8 +144,8 @@ export function initializeSocket(
     // A signed-in player's own events (matchmaking): room `player:<id>`, for
     // the account the handshake's session or signed cookie names. Nothing for
     // an anonymous socket. The client asks again on every `connect`.
-    socket.on('player:subscribe', (ack?: unknown) => {
-      const reply = typeof ack === 'function' ? (ack as (body: unknown) => void) : () => undefined;
+    socket.on('player:subscribe', (ack?: Untrusted) => {
+      const reply = typeof ack === 'function' ? (ack as (body: object) => void) : () => undefined;
       const playerId = getRealViewerSteamId(handshakeAsRequest(socket));
       if (!playerId) return reply({ ok: false });
       const change = presence.connect(playerId, socket.id);
@@ -162,7 +163,7 @@ export function initializeSocket(
 
     // The tab went idle (5 minutes without input) or came back. One socket
     // per tab reports it; nothing for an anonymous socket.
-    socket.on('presence:idle', (idle?: unknown) => {
+    socket.on('presence:idle', (idle?: Untrusted) => {
       if (typeof idle !== 'boolean') return;
       const playerId = getRealViewerSteamId(handshakeAsRequest(socket));
       if (!playerId) return;
@@ -256,11 +257,7 @@ export function emitTournamentUpdate(tournament: TournamentUpdateEvent): void {
  * a 3.1 client subscribes to. `tournamentId` rides along in the payload so a
  * listener on the global channel can tell them apart.
  */
-export function emitTournament(
-  tournamentId: number,
-  event: string,
-  payload: Record<string, unknown> = {}
-): void {
+export function emitTournament(tournamentId: number, event: string, payload: object = {}): void {
   if (!io) return;
   const body = { ...payload, tournamentId };
   io.emit(event, body);
@@ -407,7 +404,7 @@ function presenceChanged(change: PresenceChange): void {
 }
 
 /** A new notice for the bell (`notify:new`, the notice as payload). Room `player:<id>`. */
-export function emitNotification(playerId: string, notice: unknown): void {
+export function emitNotification(playerId: string, notice: object): void {
   if (io) io.to(playerRoom(playerId)).emit('notify:new', notice);
 }
 
@@ -457,7 +454,7 @@ export function emitFleetHostChanged(hostId: string): void {
 }
 
 /** A notice for the admins' bell (services/adminNoticeService.ts), to the signed-in admins. */
-export function emitAdminNotice(notice: unknown, sound: boolean): void {
+export function emitAdminNotice(notice: object, sound: boolean): void {
   if (io) io.to(ADMIN_ROOM).emit('admin:notice', { notice, sound });
 }
 
@@ -486,7 +483,7 @@ export function emitAdminCallResolved(payload: AdminCallResolvedEvent): void {
 export function emitChatMessage(
   playerIds: Iterable<string>,
   toAdmins: boolean,
-  message: unknown
+  message: object
 ): void {
   if (!io) return;
   const rooms = [...new Set(playerIds)].map(playerRoom);
