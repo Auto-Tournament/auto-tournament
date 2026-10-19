@@ -170,6 +170,10 @@ docker compose up -d --force-recreate
 # up (the link stays in its home, so it starts with the container from now on).
 for _ in $(seq 1 60); do
   if docker exec -u 99 at-recorder sh -c 'XDG_RUNTIME_DIR=/run/user/99 systemctl --user is-system-running >/dev/null 2>&1 || [ -S /run/user/99/bus ]'; then
+    # An older recorder kept its unit and settings in the home, and a unit
+    # there wins over this one (/etc/systemd/user): it ran its old worker
+    # against its old key. Put them aside.
+    docker exec -u 99 at-recorder sh -c 'c=$HOME/.config; [ -f "$c/systemd/user/at-recorder.service" ] || exit 0; mkdir -p "$HOME/.old-recorder" && mv "$c/systemd/user/at-recorder.service" "$HOME/.old-recorder/" && mv -f "$c/at-recorder.env" "$HOME/.old-recorder/" 2>/dev/null; rm -f "$c/systemd/user/default.target.wants/at-recorder.service"' || true
     docker exec -u 99 at-recorder sh -c 'XDG_RUNTIME_DIR=/run/user/99 systemctl --user daemon-reload && XDG_RUNTIME_DIR=/run/user/99 systemctl --user enable --now at-recorder' >/dev/null 2>&1 && break
   fi
   sleep 3
