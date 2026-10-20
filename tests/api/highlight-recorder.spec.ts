@@ -177,6 +177,9 @@ test.describe('Highlight recorder routes', () => {
     ).toBe(404);
     expect((await request.get('/api/game/cs2/watch/match/no-such/0')).status()).toBe(404);
     expect((await request.get('/api/game/cs2/watch/tournament/999999')).status()).toBe(404);
+    // A tournament reel's players (its own query) and reels: none here, but it answers.
+    const related = await request.get('/api/game/cs2/watch/related?tournament=999999');
+    expect(await related.json()).toMatchObject({ success: true, players: [], reels: [] });
     const player = await request.get('/api/game/cs2/players/76561190000000000/highlights?all=1');
     expect(await player.json()).toMatchObject({ success: true, favourite: null, isOwn: false });
   });

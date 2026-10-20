@@ -378,12 +378,26 @@ export async function tournamentReel(tournamentId: number) {
     [tournamentId]
   );
   if (!row) return null;
+  const t = await db.queryOneAsync<{
+    name: string;
+    started_at: number | null;
+    completed_at: number | null;
+  }>('SELECT name, started_at, completed_at FROM tournament WHERE id = ?', [tournamentId]);
   const done = row.status === 'done' && !!row.clip_path;
   const chapters = done ? await chaptersOf(row.clip_ids, row.clip_starts) : [];
   const last = chapters[chapters.length - 1];
   const lastClip = last ? await clipView(last.highlightId) : null;
   return {
     status: row.status,
+    /** The tournament it is from, for the watch page's title line. */
+    tournament: t
+      ? {
+          id: tournamentId,
+          name: t.name,
+          // When it was played: finished, else started (epoch s).
+          at: Number(t.completed_at ?? t.started_at) || null,
+        }
+      : null,
     video: done ? fileUrl(row.clip_path!) : null,
     crowd: done ? crowdUrlOf(row.clip_path) : null,
     chapters,
@@ -520,7 +534,7 @@ export interface RelatedReel {
  * What the watch page shows under a reel: the players with highlights on its
  * map (most clips first), and more reels: the match's other maps first, then
  * the tournament's other match reels, newest first. `tournamentId` alone (a
- * tournament's reel) gives only the reels.
+ * tournament's reel): everyone with highlights in it, and its match reels.
  */
 export async function watchRelated(
   matchSlug: string | null,
@@ -554,6 +568,30 @@ export async function watchRelated(
       avatarUrl: r.avatar_url,
       clips: Number(r.clips),
       reel: !!r.reel,
+    }));
+  }
+  if (!matchSlug && tournamentId !== null) {
+    const rows = await db.queryAsync<{
+      player_id: string;
+      name: string | null;
+      avatar_url: string | null;
+      clips: number | string;
+    }>(
+      `SELECT h.player_id, p.name, p.avatar_url, COUNT(*) AS clips
+         FROM cs2_highlights h
+         JOIN matches m ON m.slug = h.match_slug
+         LEFT JOIN players p ON p.id = h.player_id
+        WHERE m.tournament_id = ? AND h.status = 'done' AND h.kind <> 'funny'
+        GROUP BY h.player_id, p.name, p.avatar_url
+        ORDER BY COUNT(*) DESC, p.name`,
+      [tournamentId]
+    );
+    players = rows.map((r) => ({
+      playerId: r.player_id,
+      name: r.name ?? r.player_id,
+      avatarUrl: r.avatar_url,
+      clips: Number(r.clips),
+      reel: false,
     }));
   }
   let tournament = tournamentId;
