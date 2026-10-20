@@ -45,7 +45,12 @@ export async function createTournament(
         status: response.status(),
         statusText: response.statusText(),
         error: errorText,
-        input: { name: input.name, type: input.type, format: input.format, teamCount: input.teamIds.length },
+        input: {
+          name: input.name,
+          type: input.type,
+          format: input.format,
+          teamCount: input.teamIds.length,
+        },
       });
       return null;
     }
@@ -107,7 +112,7 @@ export async function createAndStartTournament(
       headers: getAuthHeader(),
     });
     // Wait a bit for deletion to complete
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await new Promise((resolve) => setTimeout(resolve, 500));
   } catch (error) {
     // Ignore errors if no tournament exists
   }
@@ -119,7 +124,7 @@ export async function createAndStartTournament(
   }
 
   // Wait a bit for bracket generation
-  await new Promise(resolve => setTimeout(resolve, 1000));
+  await new Promise((resolve) => setTimeout(resolve, 1000));
 
   const started = await startTournament(request);
   if (!started) {
@@ -128,4 +133,17 @@ export async function createAndStartTournament(
   }
 
   return tournament;
+}
+
+/**
+ * Delete every tournament. Since 3.0 several can exist, and deleting only the
+ * current one let another spec's finished tournament become current, so the
+ * setup wizard (which opens only when none is left) never showed.
+ */
+export async function deleteAllTournaments(request: APIRequestContext): Promise<void> {
+  const res = await request.get('/api/tournaments', { headers: getAuthHeader() });
+  const list = res.ok() ? ((await res.json()).tournaments as Array<{ id: number }>) : [];
+  for (const { id } of list) {
+    await request.delete(`/api/tournament?tournamentId=${id}`, { headers: getAuthHeader() });
+  }
 }
