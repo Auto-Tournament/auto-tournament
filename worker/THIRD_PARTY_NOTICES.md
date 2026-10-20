@@ -4,6 +4,11 @@ The worker binary (`at-worker`, the highlight recorder and demo analyzer) is Aut
 
 CS2's kill feed icons are not part of this repository or of the binary: `at-worker export-hud` reads them from the player's own CS2 install at run time.
 
+The native capture backend embeds CS Demo Manager's Linux CS2 plugin,
+Copyright (c) 2014-present AkiVer, under the MIT License. Its full license and
+binary provenance are in `assets/native/LICENSE` and `assets/native/README.md`.
+Its dependency notices are in `assets/native/THIRD_PARTY_NOTICES.md`.
+
 ## github.com/golang/geo v0.0.0-20230421003525-6adc56603217
 
 ```
@@ -897,7 +902,6 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ```
-
 
 ## Go standard library and runtime
 
