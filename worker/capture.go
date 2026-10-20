@@ -493,19 +493,28 @@ func (g *game) seekForCapture(from int, scale float64) error {
 	return fmt.Errorf("seek could not preserve capture run-up at tick %d after 3 attempts", from)
 }
 
-// resume plays the demo on and returns the tick it resumed at; if it was
-// already playing (no answer), it pauses it and tries once more.
-func (g *game) resume() (string, time.Time, error) {
+// resume plays the demo on from analyzer tick `at` (where it is paused) and
+// returns the tick it resumed at; if it said nothing, it pauses it, seeks
+// back to `at` and tries once more. Its answer can go missing while the demo
+// does play: the pause and second resume then started 120–200 ticks late,
+// past the run-up, and the clip failed with "no frame near tick" on every
+// retry (73 passes in 8 h on csm-test, 2026-10-20).
+func (g *game) resume(at int, scale float64) (string, time.Time, error) {
 	for i := 0; i < 2; i++ {
 		g.con.drain()
 		if err := g.con.send("demo_resume"); err != nil {
 			return "", time.Time{}, err
 		}
-		if v, at, err := g.con.expect(reUnpaused, 3*time.Second); err == nil {
-			return v, at, nil
+		if v, t, err := g.con.expect(reUnpaused, 3*time.Second); err == nil {
+			return v, t, nil
 		}
 		if err := g.pause(); err != nil {
 			return "", time.Time{}, err
+		}
+		if i == 0 {
+			if err := g.seekForCapture(at, scale); err != nil {
+				return "", time.Time{}, err
+			}
 		}
 	}
 	return "", time.Time{}, errors.New("the demo would not resume")
@@ -587,7 +596,11 @@ func (g *game) playPhases(from int, phases []playPhase, name string, started fun
 				return spans, err
 			}
 		}
-		v, at, err := g.resume()
+		back := from
+		if i > 0 {
+			back = spans[i-1].toTick
+		}
+		v, at, err := g.resume(back, ph.scale)
 		if err != nil {
 			return spans, err
 		}
@@ -604,7 +617,7 @@ func (g *game) playPhases(from int, phases []playPhase, name string, started fun
 		}
 		log.Printf("playing ticks %d → %d at %gx (%.1f s; seek %.1f s, ready %.1f s)", s.fromTick, ph.to, ph.scale, wall,
 			seekTook.Seconds(), time.Since(seekStart).Seconds())
-		if gameSeconds > 60 || gameSeconds < -float64(tickrate) {
+		if gameSeconds > 60 || gameSeconds < -1 {
 			return spans, fmt.Errorf("resumed at tick %d, too far from %d", s.fromTick, ph.to)
 		}
 		time.Sleep(time.Duration(wall * float64(time.Second)))

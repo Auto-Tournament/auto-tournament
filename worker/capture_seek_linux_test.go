@@ -101,3 +101,40 @@ func TestCaptureSeekRejectsOvershootAtDemoStart(t *testing.T) {
 		t.Fatalf("late landing at demo start must fail before capture: %v", err)
 	}
 }
+
+// A resume whose answer goes missing while the demo plays on (csm-test,
+// 2026-10-20) must seek back before resuming again, not start 190 ticks late.
+func TestResumeSeeksBackAfterAMissingAnswer(t *testing.T) {
+	conn, peer := net.Pipe()
+	defer conn.Close()
+	defer peer.Close()
+	con := &console{conn: conn, lines: make(chan string, 16)}
+	go func() {
+		sc := bufio.NewScanner(peer)
+		tick, resumes := 42630, 0
+		for sc.Scan() {
+			line := sc.Text()
+			switch {
+			case strings.HasPrefix(line, "demo_gototick "):
+				tick, _ = strconv.Atoi(strings.TrimPrefix(line, "demo_gototick "))
+			case line == "demo_resume":
+				resumes++
+				if resumes == 1 {
+					tick += 190 // played on, said nothing
+				} else {
+					con.lines <- fmt.Sprintf("unpaused on tick %d", tick+1000)
+				}
+			case line == "demo_pause":
+				con.lines <- fmt.Sprintf("paused on tick %d", tick+1000)
+			}
+		}
+	}()
+	g := &game{con: con, startTick: 1000}
+	v, _, err := g.resume(42630, 0.7)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if tick, _ := strconv.Atoi(v); tick-1000 > 42630+lead/2 {
+		t.Fatalf("resumed at tick %d, past the run-up", tick-1000)
+	}
+}
