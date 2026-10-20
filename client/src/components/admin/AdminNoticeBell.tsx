@@ -18,7 +18,13 @@ import { soundNotification } from '../../utils/soundNotification';
 import { browserNotify } from '../../utils/browserNotify';
 import { useTimeAgo } from '../social/timeAgo';
 import { useAdminNotices } from '../../hooks/useAdminNotices';
-import { noticeHref, noticeKey, noticeParams, type AdminNotice } from './adminNoticeText';
+import {
+  noticeHref,
+  noticeKey,
+  noticeParams,
+  stackNotices,
+  type AdminNotice,
+} from './adminNoticeText';
 
 const { color } = tokens;
 
@@ -62,6 +68,79 @@ export function AdminNoticeBell() {
   );
   const { notices, unread, markSeen, dismiss } = useAdminNotices(true, onNew);
   const close = () => setAnchor(null);
+  const [expanded, setExpanded] = React.useState<Set<string>>(new Set());
+  const toggle = (kind: string) =>
+    setExpanded((set) => {
+      const next = new Set(set);
+      if (!next.delete(kind)) next.add(kind);
+      return next;
+    });
+
+  const row = (n: AdminNotice, nested: boolean) => {
+    const to = noticeHref(n, LINKS);
+    const resolved = n.resolvedAt !== null;
+    return (
+      <Box
+        key={n.id}
+        data-testid="admin-notice"
+        data-kind={n.kind}
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: 'auto minmax(0,1fr) auto',
+          gap: 1.25,
+          alignItems: 'start',
+          pl: nested ? 4.5 : 1.75,
+          pr: 1.75,
+          py: 1.25,
+          borderBottom: 1,
+          borderColor: 'divider',
+          opacity: resolved ? 0.55 : 1,
+        }}
+      >
+        <Box
+          aria-hidden
+          sx={{
+            width: 10,
+            height: 10,
+            mt: 0.75,
+            borderRadius: '50%',
+            bgcolor: resolved ? color.muted : dot[n.severity],
+          }}
+        />
+        <ButtonBase
+          disabled={!to}
+          onClick={() => {
+            if (!to) return;
+            close();
+            navigate(to);
+          }}
+          sx={{ display: 'block', textAlign: 'left', minWidth: 0 }}
+        >
+          <Typography sx={{ fontSize: '0.875rem', color: color.ink, overflowWrap: 'anywhere' }}>
+            {t(noticeKey(n), noticeParams(n))}
+          </Typography>
+          <Typography sx={{ fontSize: '0.75rem', color: color.muted }}>
+            {[
+              timeAgo(n.updatedAt),
+              n.count > 1 ? t('adminNotices.times', { count: n.count }) : null,
+              resolved ? t('adminNotices.resolved') : null,
+            ]
+              .filter(Boolean)
+              .join(' · ')}
+          </Typography>
+        </ButtonBase>
+        {!resolved && (
+          <Button
+            size="small"
+            onClick={() => void dismiss(n.id)}
+            sx={{ color: color.ink2, minWidth: 0 }}
+          >
+            {t('adminNotices.dismiss')}
+          </Button>
+        )}
+      </Box>
+    );
+  };
 
   return (
     <>
@@ -162,72 +241,47 @@ export function AdminNoticeBell() {
               {t('adminNotices.empty')}
             </Typography>
           ) : (
-            notices.slice(0, 30).map((n) => {
-              const to = noticeHref(n, LINKS);
-              const resolved = n.resolvedAt !== null;
-              return (
-                <Box
-                  key={n.id}
-                  data-testid="admin-notice"
-                  data-kind={n.kind}
-                  sx={{
-                    display: 'grid',
-                    gridTemplateColumns: 'auto minmax(0,1fr) auto',
-                    gap: 1.25,
-                    alignItems: 'start',
-                    px: 1.75,
-                    py: 1.25,
-                    borderBottom: 1,
-                    borderColor: 'divider',
-                    opacity: resolved ? 0.55 : 1,
-                  }}
-                >
-                  <Box
-                    aria-hidden
-                    sx={{
-                      width: 10,
-                      height: 10,
-                      mt: 0.75,
-                      borderRadius: '50%',
-                      bgcolor: resolved ? color.muted : dot[n.severity],
-                    }}
-                  />
-                  <ButtonBase
-                    disabled={!to}
-                    onClick={() => {
-                      if (!to) return;
-                      close();
-                      navigate(to);
-                    }}
-                    sx={{ display: 'block', textAlign: 'left', minWidth: 0 }}
-                  >
-                    <Typography
-                      sx={{ fontSize: '0.875rem', color: color.ink, overflowWrap: 'anywhere' }}
+            stackNotices(notices)
+              .slice(0, 30)
+              .map(({ lead, rest }) => (
+                <React.Fragment key={lead.id}>
+                  {row(lead, false)}
+                  {rest.length > 0 && (
+                    <Box
+                      data-testid="admin-notice-stack"
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        pl: 4.5,
+                        pr: 1.75,
+                        py: 0.5,
+                        borderBottom: 1,
+                        borderColor: 'divider',
+                      }}
                     >
-                      {t(noticeKey(n), noticeParams(n))}
-                    </Typography>
-                    <Typography sx={{ fontSize: '0.75rem', color: color.muted }}>
-                      {[
-                        timeAgo(n.updatedAt),
-                        n.count > 1 ? t('adminNotices.times', { count: n.count }) : null,
-                        resolved ? t('adminNotices.resolved') : null,
-                      ]
-                        .filter(Boolean)
-                        .join(' · ')}
-                    </Typography>
-                  </ButtonBase>
-                  {!resolved && (
-                    <Button
-                      size="small"
-                      onClick={() => void dismiss(n.id)}
-                      sx={{ color: color.ink2, minWidth: 0 }}
-                    >
-                      {t('adminNotices.dismiss')}
-                    </Button>
+                      <Button
+                        size="small"
+                        aria-expanded={expanded.has(lead.kind)}
+                        onClick={() => toggle(lead.kind)}
+                        sx={{ color: color.ink2 }}
+                      >
+                        {expanded.has(lead.kind)
+                          ? t('adminNotices.hideMore')
+                          : t('adminNotices.moreLikeThis', { count: rest.length })}
+                      </Button>
+                      <Button
+                        size="small"
+                        onClick={() => [lead, ...rest].forEach((n) => void dismiss(n.id))}
+                        sx={{ color: color.ink2 }}
+                      >
+                        {t('adminNotices.dismissAll')}
+                      </Button>
+                    </Box>
                   )}
-                </Box>
-              );
-            })
+                  {expanded.has(lead.kind) && rest.map((n) => row(n, true))}
+                </React.Fragment>
+              ))
           )}
         </Box>
       </Popover>
