@@ -38,7 +38,7 @@ import {
 } from '../matchmaking/matchmakingStore';
 import { paths, playerProfilePath } from '../../paths';
 import { Link as RouterLink } from 'react-router-dom';
-import { fontDisplay, radii, textSize, tokens } from '../../theme/tokens';
+import { fontDisplay, radii, textSize, tokens, withAlpha } from '../../theme/tokens';
 import {
   callAdmin,
   closeChat,
@@ -1084,6 +1084,7 @@ export function ChatDock() {
   const { channels, open, peek } = useChat({ steamId: playerSteamId ?? null, isAdmin });
   const { me } = useMatchmaking();
   const unread = channels.reduce((n, c) => n + c.unread, 0);
+  const ring = withAlpha(color.accent, 0.35);
 
   useEffect(() => {
     if (!peek) return undefined;
@@ -1202,6 +1203,19 @@ export function ChatDock() {
           position: 'relative',
           '&:hover': { bgcolor: color.accent2 },
           '&:focus-visible': { outline: `2px solid ${color.ink}`, outlineOffset: 2 },
+          // Unread: an accent ring that grows and shrinks, the same strength
+          // throughout (no fade); a still ring with reduced motion.
+          ...(unread > 0 && {
+            '@keyframes chatPulse': {
+              '0%, 100%': { boxShadow: `0 12px 32px ${color.shadow}, 0 0 0 0 ${ring}` },
+              '50%': { boxShadow: `0 12px 32px ${color.shadow}, 0 0 0 10px ${ring}` },
+            },
+            animation: 'chatPulse 1.6s ease-in-out infinite',
+            '@media (prefers-reduced-motion: reduce)': {
+              animation: 'none',
+              boxShadow: `0 12px 32px ${color.shadow}, 0 0 0 6px ${ring}`,
+            },
+          }),
         }}
       >
         <ChatIcon />
