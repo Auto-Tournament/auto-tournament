@@ -17,8 +17,9 @@ import {
   teamChannelsOn,
 } from './teamChannels';
 import { resolveViewerAccount } from '../../utils/viewerIdentity';
-import { handleInteraction, registerCommands } from './interactions';
-import { SetupError, setupServer } from './setup';
+import { handleInteraction, inviteUrl, registerCommands } from './interactions';
+import { currentView, refreshView } from './view';
+import { SetupError, setupServer, setupState } from './setup';
 import { restartPresence, startPresence, stopPresence } from './presence';
 import { startLobbyInvites, stopLobbyInvites } from './lobby';
 import { setVoiceSettings, startMatchVoice, stopMatchVoice, voiceSettings } from './matchVoice';
@@ -78,19 +79,25 @@ router.use(requireAuth);
  *     summary: Whether a Discord bot token is set, the bot's name, its Discord servers and the one in use
  *     security: [{ BearerAuth: [] }]
  *     responses:
- *       200: { description: "`set`, `name`, `guilds` ({ id, name }[]), `guildId`, `categories` ({ id, name }[] of the picked server), `matchVoice` ({ enabled, categoryId }), `textChannels` ({ id, name }[]), `announceChannelId`, `teamChannels` (on/off)" }
+ *       200: { description: "`set`, `name`, `guilds` ({ id, name }[]), `guildId`, `categories` ({ id, name }[] of the picked server), `matchVoice` ({ enabled, categoryId }), `textChannels` ({ id, name }[]), `announceChannelId`, `inviteUrl` (adds the bot to a server), `setup` ({ category, results, lobby }: which of what Set up makes are there), `stale` (answered from a snapshot that is being refreshed), `teamChannels` (on/off)" }
  */
 router.get('/', async (_req: Request, res: Response) => {
   try {
-    const status = await discordBot.status();
-    const guilds = status.set ? await discordBot.guilds() : { guilds: [], guildId: null };
+    // From the stored snapshot (view.ts): at once, refreshed behind the scenes.
+    const { view, stale } = await currentView();
+    const { channels } = view;
     return res.json({
       success: true,
-      ...status,
-      ...guilds,
-      categories: guilds.guildId ? await discordBot.channels([4]) : [],
-      textChannels: guilds.guildId ? await discordBot.channels([0, 5]) : [],
+      stale,
+      set: view.set,
+      name: view.name,
+      guilds: view.guilds,
+      guildId: view.guildId,
+      categories: channels.filter((c) => c.type === 4),
+      textChannels: channels.filter((c) => c.type === 0 || c.type === 5),
+      setup: view.guildId ? await setupState(channels) : null,
       matchVoice: await voiceSettings(),
+      inviteUrl: view.appId ? inviteUrl(view.appId) : null,
       announceChannelId: await announceChannel(),
       teamChannels: await teamChannelsOn(),
     });
@@ -128,6 +135,7 @@ router.put('/token', async (req: Request, res: Response) => {
     try {
       const saved = await discordBot.setToken(token);
       restartPresence();
+      await refreshView().catch(() => undefined);
       return res.json({ success: true, ...saved });
     } catch (error) {
       if (error instanceof ChannelError) {
@@ -167,6 +175,7 @@ router.put('/guild', async (req: Request, res: Response) => {
     try {
       const guildId = await discordBot.setGuild(typeof raw === 'string' && raw ? raw : null);
       void registerCommands();
+      await refreshView().catch(() => undefined);
       return res.json({ success: true, guildId });
     } catch (error) {
       if (error instanceof ChannelError) {
@@ -300,7 +309,9 @@ router.put('/team-channels', async (req: Request, res: Response) => {
  */
 router.post('/setup', async (_req: Request, res: Response) => {
   try {
-    return res.json({ success: true, ...(await setupServer()) });
+    const made = await setupServer();
+    await refreshView().catch(() => undefined);
+    return res.json({ success: true, ...made });
   } catch (error) {
     if (error instanceof SetupError) {
       return res.status(400).json({ success: false, error: error.message });

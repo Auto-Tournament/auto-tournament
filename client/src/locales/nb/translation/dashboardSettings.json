@@ -914,10 +914,19 @@
     },
     "setup": {
       "button": "Sett opp denne serveren",
-      "help": "Lager kategorien «Auto Tournament» med #results for kampvarsler og en lobby der spillerne venter (de kan lytte, ikke snakke) til boten flytter dem til lagkanalen sin. Det som finnes fra før, brukes på nytt.",
+      "help": "Oppsettet lager det som mangler, og bruker det som finnes fra før, også om du har gitt det nytt navn. Ingenting du har laget, blir slettet.",
       "done": "Discord-serveren er satt opp",
-      "failed": "Kunne ikke sette opp Discord-serveren."
-    }
+      "failed": "Kunne ikke sette opp Discord-serveren.",
+      "category": "En kategori «Auto Tournament», for lagkanalene",
+      "results": "#results, for kampvarslene",
+      "lobby": "En lobby der spillerne venter på å bli flyttet",
+      "allThere": "Discord-serveren din er satt opp",
+      "missing_one": "{{count}} ting mangler på Discord-serveren din",
+      "missing_other": "{{count}} ting mangler på Discord-serveren din",
+      "notThere": "mangler",
+      "fix": "Fiks det som mangler"
+    },
+    "invite": "Inviter til en server"
   },
   "liveMatchesPage": {
     "title": "Direktekamper",

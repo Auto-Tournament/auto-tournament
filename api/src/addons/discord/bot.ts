@@ -83,7 +83,7 @@ export const discordBot = {
   },
 
   /** The picked server's channels of these types (0 text, 4 category, 5 announcement). */
-  async channels(types: number[]): Promise<Array<{ id: string; name: string }>> {
+  async channels(types: number[]): Promise<Array<{ id: string; name: string; type: number }>> {
     const token = await botToken();
     const guildId = await pickedGuildId();
     if (!token || !guildId) return [];
@@ -93,7 +93,7 @@ export const discordBot = {
       .filter(
         (c) => typeof c.type === 'number' && types.includes(c.type) && typeof c.id === 'string'
       )
-      .map((c) => ({ id: String(c.id), name: String(c.name ?? c.id) }));
+      .map((c) => ({ id: String(c.id), name: String(c.name ?? c.id), type: Number(c.type) }));
   },
 
   /** Use this Discord server (one the bot is in). Null clears it. */

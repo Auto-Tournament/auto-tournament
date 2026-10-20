@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Box, Button, MenuItem, TextField, Typography } from '@mui/material';
+import { Box, Button, CircularProgress, MenuItem, TextField, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { api, apiErrorMessage } from '../../utils/api';
 import { useSnackbar } from '../../contexts/SnackbarContext';
@@ -7,6 +7,7 @@ import { tokens, radii } from '../../theme/tokens';
 
 import { ExternalLink } from '../../components/common/ExternalLink';
 import { SwitchRow } from '../../components/common/ui';
+import { SetupChecklist, type SetupState } from './SetupChecklist';
 
 const { color } = tokens;
 
@@ -20,6 +21,9 @@ interface BotStatus {
   textChannels?: Array<{ id: string; name: string }>;
   announceChannelId?: string | null;
   teamChannels?: boolean;
+  inviteUrl?: string | null;
+  stale?: boolean;
+  setup?: SetupState | null;
 }
 
 /**
@@ -37,14 +41,23 @@ export function DiscordBotPage() {
 
   const load = useCallback(async () => {
     try {
-      setStatus(await api.get<BotStatus>('/api/addons/discord'));
+      const next = await api.get<BotStatus>('/api/addons/discord');
+      setStatus(next);
+      // Shown from the stored snapshot while the server reads Discord again: fetch it once more.
+      if (next.stale) setTimeout(() => void load(), 3000);
     } catch {
       setStatus({ set: false, name: null });
     }
   }, []);
   useEffect(() => {
     const id = setTimeout(() => void load(), 0);
-    return () => clearTimeout(id);
+    // Back from inviting the bot in another tab: the new server shows up.
+    const onFocus = () => void load();
+    window.addEventListener('focus', onFocus);
+    return () => {
+      clearTimeout(id);
+      window.removeEventListener('focus', onFocus);
+    };
   }, [load]);
 
   const save = async (value: string | null) => {
@@ -130,6 +143,18 @@ export function DiscordBotPage() {
     }
   };
 
+  // Only before the very first answer: after that the page shows the stored snapshot at once.
+  if (!status) {
+    return (
+      <Box
+        sx={{ display: 'flex', justifyContent: 'center', py: 6 }}
+        data-testid="discord-bot-loading"
+      >
+        <CircularProgress size={28} />
+      </Box>
+    );
+  }
+
   return (
     <Box data-testid="discord-bot">
       <Typography sx={{ fontSize: '0.875rem', color: color.muted, mb: 2 }}>
@@ -160,24 +185,40 @@ export function DiscordBotPage() {
         </Box>
       )}
       {status?.set && (
-        <TextField
-          select
-          size="small"
-          label={t('discordBot.guild')}
-          value={status.guildId ?? ''}
-          disabled={busy}
-          onChange={(e) => void pickGuild(e.target.value)}
-          helperText={status.guilds?.length ? t('discordBot.guildHint') : t('discordBot.noGuilds')}
-          inputProps={{ 'data-testid': 'discord-bot-guild' }}
-          sx={{ minWidth: 280, maxWidth: 420, mb: 2, display: 'flex' }}
-        >
-          <MenuItem value="">{t('discordBot.noGuild')}</MenuItem>
-          {(status.guilds ?? []).map((g) => (
-            <MenuItem key={g.id} value={g.id}>
-              {g.name}
-            </MenuItem>
-          ))}
-        </TextField>
+        <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'flex-start', flexWrap: 'wrap', mb: 2 }}>
+          <TextField
+            select
+            size="small"
+            label={t('discordBot.guild')}
+            value={status.guildId ?? ''}
+            disabled={busy}
+            onChange={(e) => void pickGuild(e.target.value)}
+            helperText={
+              status.guilds?.length ? t('discordBot.guildHint') : t('discordBot.noGuilds')
+            }
+            inputProps={{ 'data-testid': 'discord-bot-guild' }}
+            sx={{ minWidth: 280, maxWidth: 420, flex: '1 1 280px' }}
+          >
+            <MenuItem value="">{t('discordBot.noGuild')}</MenuItem>
+            {(status.guilds ?? []).map((g) => (
+              <MenuItem key={g.id} value={g.id}>
+                {g.name}
+              </MenuItem>
+            ))}
+          </TextField>
+          {status.inviteUrl && (
+            <Button
+              component={ExternalLink}
+              href={status.inviteUrl}
+              variant="outlined"
+              underline="none"
+              data-testid="discord-bot-invite"
+              sx={{ borderRadius: radii.pill, mt: 0.25 }}
+            >
+              {t('discordBot.invite')}
+            </Button>
+          )}
+        </Box>
       )}
       {status?.set && status.guildId && (
         <Box sx={{ mb: 2, maxWidth: 520 }}>
@@ -211,21 +252,8 @@ export function DiscordBotPage() {
           )}
         </Box>
       )}
-      {status?.set && status.guildId && (
-        <Box sx={{ mb: 2, maxWidth: 620 }}>
-          <Button
-            variant="outlined"
-            disabled={busy}
-            onClick={() => void setUp()}
-            data-testid="discord-bot-setup"
-            sx={{ borderRadius: radii.pill }}
-          >
-            {t('discordBot.setup.button')}
-          </Button>
-          <Typography sx={{ fontSize: '0.8125rem', color: color.muted, mt: 0.5 }}>
-            {t('discordBot.setup.help')}
-          </Typography>
-        </Box>
+      {status?.set && status.guildId && status.setup && (
+        <SetupChecklist state={status.setup} busy={busy} onSetUp={() => void setUp()} />
       )}
       {status?.set && status.guildId && (
         <Box sx={{ mb: 2, maxWidth: 620 }} data-testid="discord-bot-commands">

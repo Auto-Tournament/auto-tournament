@@ -38,12 +38,20 @@ const EPHEMERAL = 64;
 /** The app's id and public key, from Discord (cached per token). */
 let app: { token: string; id: string; publicKey: string } | null = null;
 
-async function appInfo(token: string): Promise<{ id: string; publicKey: string } | null> {
+export async function appInfo(token: string): Promise<{ id: string; publicKey: string } | null> {
   if (app?.token === token) return app;
   const r = await discordFetch(token, '/oauth2/applications/@me');
   if (!r.ok || typeof r.body.id !== 'string' || typeof r.body.verify_key !== 'string') return null;
   app = { token, id: r.body.id, publicKey: r.body.verify_key };
   return app;
+}
+
+/** What the invite link asks for: Manage Channels, Manage Roles, Move Members, View Channels, Connect, Send Messages, Embed Links. */
+const INVITE_PERMISSIONS = '286280720';
+
+/** The link that adds the bot to a Discord server, with the permissions it needs. */
+export function inviteUrl(appId: string): string {
+  return `https://discord.com/oauth2/authorize?client_id=${appId}&scope=bot%20applications.commands&permissions=${INVITE_PERMISSIONS}`;
 }
 
 /** Put /matches and /mymatch on the picked server. */
