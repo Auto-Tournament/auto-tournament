@@ -1,3 +1,4 @@
+import { isUpcoming } from '../utils/tournamentStatus';
 import { Link as RouterLink } from 'react-router-dom';
 import { fmtTime } from '../utils/time';
 import { useIntegrationFor } from '../integrations/registry';
@@ -151,7 +152,7 @@ export default function TournamentOverview() {
   // Before it starts (the drafts' "Before it starts" board): the key dates,
   // where the viewer stands, the schedule, how matches are played, the map
   // pool and the teams.
-  if (tournament.status === 'setup' || tournament.status === 'ready') {
+  if (isUpcoming(tournament.status)) {
     const { viewerHasSteamIdentity } = page;
     return (
       <Stack spacing={3} data-testid="public-tournament-overview">

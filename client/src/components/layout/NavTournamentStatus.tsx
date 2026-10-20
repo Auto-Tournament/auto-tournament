@@ -7,6 +7,7 @@
  * While the team has a match, the match CTA takes this spot (SharedNavBar).
  * Outlined like the start countdown: information, not a call to act.
  */
+import { isStarted } from '../../utils/tournamentStatus';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../../utils/api';
@@ -48,7 +49,7 @@ export function NavTournamentStatus({ viewerId }: { viewerId: string }) {
             (x) =>
               !x.draft &&
               x.viewerTeamId &&
-              (x.status === 'in_progress' || x.status === 'completed') &&
+              isStarted(x.status) &&
               (x.type === 'single_elimination' || x.type === 'double_elimination')
           );
           setRunning(t?.viewerTeamId ? { id: t.id, teamId: t.viewerTeamId } : null);

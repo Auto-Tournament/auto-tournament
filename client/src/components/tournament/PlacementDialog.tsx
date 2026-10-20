@@ -9,6 +9,7 @@
  * go next, and the match their next opponent comes from (live score, about how long it has
  * left).
  */
+import { isStarted } from '../../utils/tournamentStatus';
 import React from 'react';
 import { Box, Button, Typography } from '@mui/material';
 import { Link as RouterLink, useLocation } from 'react-router-dom';
@@ -70,7 +71,7 @@ export function PlacementDialog({ viewerId }: { viewerId: string }) {
                 !t.draft &&
                 t.viewerTeamId &&
                 (t.type === 'single_elimination' || t.type === 'double_elimination') &&
-                (t.status === 'in_progress' || t.status === 'completed') &&
+                isStarted(t.status) &&
                 !seen(t.id, t.viewerTeamId)
             )
           );

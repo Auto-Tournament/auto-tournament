@@ -1,3 +1,4 @@
+import { isUpcoming } from './utils/tournamentStatus';
 /**
  * Client route paths, in one place.
  *
@@ -254,7 +255,7 @@ export function visibleTournamentTabs(tournament: {
   if (tournament.archived_at) {
     return elim ? ['overview', 'bracket', 'rules'] : ['overview', 'standings', 'rules'];
   }
-  if (tournament.status === 'setup' || tournament.status === 'ready') {
+  if (isUpcoming(tournament.status)) {
     return ['overview', 'teams', 'rules'];
   }
   if (tournament.type === 'shuffle') return ['overview', 'standings', 'matches', 'rules'];
