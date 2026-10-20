@@ -58,16 +58,12 @@ import { validateTeamCountForType } from '../utils/tournamentValidation';
 import { api } from '../utils/api';
 import { scopedSocket } from '../utils/sharedSocket';
 import { onSocketReconnect } from '../utils/socketResync';
-import { MATCH_FORMATS } from '../constants/tournament';
+import { seriesLabel, typeLabel } from '../utils/tournamentSummary';
 import type { Tournament as TournamentRecord, TournamentTemplate } from '../types/tournament.types';
 import type { ShuffleTournamentSettings } from '../components/tournament/ShuffleTournamentConfigStep';
 import type { EloCalculationTemplate } from '../types/elo.types';
 import { resetCurrentTournamentId } from '../hooks/useTournamentList';
 import type { Untrusted } from '../utils/untrusted';
-
-/** Human label for a match format ("bo3" -> "Best of 3"), raw value if unknown. */
-const formatLabel = (value: string): string =>
-  MATCH_FORMATS.find((f) => f.value === value)?.label ?? value;
 
 type GrandFinalMode = 'none' | 'simple' | 'double';
 
@@ -729,8 +725,8 @@ const Tournament: React.FC = () => {
         detectedChanges.push({
           field: 'type',
           label: t('tournament.review.summary.typeLabel'),
-          oldValue: t(`tournament.typeSelector.types.${tournament.type}.label`, tournament.type),
-          newValue: t(`tournament.typeSelector.types.${type}.label`, type),
+          oldValue: typeLabel(t, tournament.type),
+          newValue: typeLabel(t, type),
         });
       }
       if (type === 'double_elimination') {
@@ -750,8 +746,8 @@ const Tournament: React.FC = () => {
         detectedChanges.push({
           field: 'format',
           label: t('tournament.review.summary.formatLabel'),
-          oldValue: formatLabel(tournament.format),
-          newValue: formatLabel(format),
+          oldValue: seriesLabel(tournament.format),
+          newValue: seriesLabel(format),
         });
       }
       if (

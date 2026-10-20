@@ -10,6 +10,16 @@ import { tournamentTabPath } from '../paths';
  * read off the tournament row; nothing is guessed.
  */
 
+/** "Single elimination": a tournament type's name, the raw type when it has none. */
+export function typeLabel(t: TFunction, type: string): string {
+  return t(`tournament.typeSelector.types.${type}.label`, { defaultValue: type });
+}
+
+/** "Best of 3": a series format's name, the raw format when it is not a known one. */
+export function seriesLabel(format: string): string {
+  return MATCH_FORMATS.find((f) => f.value === format)?.label ?? format;
+}
+
 /** "bo3" -> "Bo3"; the MATCH_FORMATS label when it is a known one. */
 export function formatBadge(format: string): string {
   const known = MATCH_FORMATS.find((f) => f.value === format);
@@ -21,7 +31,7 @@ export function formatBadge(format: string): string {
 export function formatLine(t: TFunction, tournament: TournamentSummary): string {
   return [
     tournament.teamSize ? `${tournament.teamSize}v${tournament.teamSize}` : null,
-    t(`tournament.typeSelector.types.${tournament.type}.label`),
+    typeLabel(t, tournament.type),
     formatBadge(tournament.format),
   ]
     .filter(Boolean)

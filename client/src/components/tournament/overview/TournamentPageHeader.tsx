@@ -10,7 +10,7 @@ import type { Tournament } from '../../../types';
 import { GameMark } from '../../common/GameMark';
 import { StartCountdown } from '../StartCountdown';
 import { useSetupGames } from '../setup/games';
-import { MATCH_FORMATS } from '../../../constants/tournament';
+import { seriesLabel, typeLabel } from '../../../utils/tournamentSummary';
 import { manageTournamentPath, tournamentTabPath, type TournamentTab } from '../../../paths';
 import { tokens, textSize, fontDisplay, radii, withAlpha } from '../../../theme/tokens';
 
@@ -166,9 +166,8 @@ export function TournamentPageHeader({
   const paused = !!useTournamentPause(tournament.id, isLive)?.pausedAt;
   const description = tournament.settings?.description?.trim();
 
-  const typeLabelKey = `tournament.typeSelector.types.${tournament.type}.label`;
-  const typeLabel = t(typeLabelKey) === typeLabelKey ? tournament.type : t(typeLabelKey);
-  const seriesLabel = MATCH_FORMATS.find((f) => f.value === tournament.format)?.label;
+  const typeName = typeLabel(t, tournament.type);
+  const seriesName = seriesLabel(tournament.format);
 
   let statusLabel = t('overviewPage.status.setup');
   if (isLive) {
@@ -346,9 +345,9 @@ export function TournamentPageHeader({
                   {statusLabel}
                 </Box>
                 <GamePill game={tournament.game} />
-                <HeroPill icon={<TreeStructureIcon size={14} />}>{typeLabel}</HeroPill>
-                {seriesLabel && tournament.type !== 'shuffle' && (
-                  <HeroPill icon={<ColumnsIcon size={14} />}>{seriesLabel}</HeroPill>
+                <HeroPill icon={<TreeStructureIcon size={14} />}>{typeName}</HeroPill>
+                {seriesName && tournament.type !== 'shuffle' && (
+                  <HeroPill icon={<ColumnsIcon size={14} />}>{seriesName}</HeroPill>
                 )}
                 {tournament.type === 'shuffle' && tournament.teamSize ? (
                   <HeroPill icon={<ColumnsIcon size={14} />}>
