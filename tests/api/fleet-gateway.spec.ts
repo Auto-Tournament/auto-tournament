@@ -348,6 +348,32 @@ test.describe.serial('Fleet gateway', () => {
     withOld.close();
   });
 
+  test('a server whose fleet state was reset gets what is queued, renumbered from its seq', async ({
+    request,
+  }) => {
+    const server = await enrollNew(request);
+    const reliable = (m: Envelope) => typeof m.seq === 'number' && m.seq > 0;
+    const first = await FleetTestClient.connect(server.token);
+    await first.handshake(server.server_id, server.installId, {
+      stream: { id: 'lost-stream', last_tx_seq: 0, last_rx_seq: 0 },
+    });
+    const got = await first.next(reliable, 5000);
+    first.send(envelope('ping', { t: Date.now() }, { ack: got.seq }));
+    await new Promise((r) => setTimeout(r, 500));
+    first.close();
+    await first.waitClosed();
+
+    // Its spool was cleared: it has processed nothing of ours. What the
+    // platform sends next starts at 1, not after the old numbering.
+    const reset = await FleetTestClient.connect(server.token);
+    await reset.handshake(server.server_id, server.installId, {
+      stream: { id: 'lost-stream-2', last_tx_seq: 0, last_rx_seq: 0 },
+    });
+    const again = await reset.next(reliable, 5000);
+    expect(again.seq).toBe(1);
+    reset.close();
+  });
+
   test('an unacked auth.rotate is replayed after a reconnect, with a fresh secret', async ({
     request,
   }) => {
