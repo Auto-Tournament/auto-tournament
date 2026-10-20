@@ -32,3 +32,38 @@ export function announceText(
   }
   return url ? `${line} ${url}` : line;
 }
+
+const ACCENT = 0xff6a3d;
+
+/**
+ * The post as Discord takes it: a card with the line and a "Go to match"
+ * button, and for ready and live a ping of both teams' roles ("@Kestrel vs
+ * @Halcyon") when they have one. A result pings nobody.
+ */
+export function announceMessage(
+  event: AnnounceEvent,
+  team1: string,
+  team2: string,
+  result: { winner: 1 | 2; score: [number, number] } | null,
+  url: string | null,
+  roles: { team1: string | null; team2: string | null }
+) {
+  const ping = event !== 'result' && roles.team1 && roles.team2 ? [roles.team1, roles.team2] : [];
+  return {
+    ...(ping.length ? { content: `<@&${ping[0]}> vs <@&${ping[1]}>` } : {}),
+    embeds: [
+      {
+        title: `${team1} vs ${team2}`,
+        description: announceText(event, team1, team2, result, null),
+        color: ACCENT,
+        ...(url ? { url } : {}),
+      },
+    ],
+    ...(url
+      ? {
+          components: [{ type: 1, components: [{ type: 2, style: 5, label: 'Go to match', url }] }],
+        }
+      : {}),
+    allowed_mentions: { parse: [], roles: ping },
+  };
+}

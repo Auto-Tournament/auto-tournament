@@ -1,9 +1,10 @@
 /**
- * Team channels (the Discord add-on, Modules → Discord; GitHub #112): while a
- * tournament runs, each of its teams has a private text channel on the Discord
- * server, in the bot's category. The team page links to it for the team's own
- * players. When the tournament is over (or the feature is turned off) the
- * channels go.
+ * Team channels and roles (the Discord add-on, Modules → Discord; GitHub
+ * #112): while a tournament runs, each of its teams has a role in its colour,
+ * given to its players on the Discord server (announcements ping it), and a
+ * private text channel only that role sees, in the bot's category. The team
+ * page links to the channel for the team's own players. When the tournament
+ * is over (or the feature is turned off) both go.
  *
  * A sweep every minute keeps them in step; no listener.
  * shortcut: members are set when the channel is made, so a roster change mid-tournament is not reflected; sync overwrites on roster changes if teams ask for it.
@@ -18,6 +19,13 @@ import { voiceSettings } from './matchVoice';
 import { TEXT_MEMBER, teamOverwrites } from './voiceChannel';
 
 const ON_KEY = 'discord_team_channels';
+
+// The 16 team colours (client theme tokens.ts teamColors), by a team's color_index.
+const TEAM_COLORS = [
+  0xf4928a, 0x3ecab7, 0xe492c9, 0x8bc376, 0xb7a1f5, 0xccaf4e, 0x73b6fa, 0xef996c, 0x31c7d5,
+  0xf090aa, 0x64c897, 0xd098e3, 0xafba5c, 0x97acfd, 0xe2a355, 0x4dc0ec,
+];
+
 const SWEEP_MS = 60_000;
 
 export async function teamChannelsOn(): Promise<boolean> {
@@ -64,13 +72,19 @@ async function sweep(): Promise<void> {
   for (const t of running) {
     for (const teamId of JSON.parse(t.team_ids ?? '[]') as string[]) want.add(`${t.id}:${teamId}`);
   }
-  const rows = await db.queryAsync<{ tournament_id: number; team_id: string; channel_id: string }>(
-    'SELECT tournament_id, team_id, channel_id FROM discord_team_channels'
-  );
+  const rows = await db.queryAsync<{
+    tournament_id: number;
+    team_id: string;
+    channel_id: string;
+    role_id: string | null;
+  }>('SELECT tournament_id, team_id, channel_id, role_id FROM discord_team_channels');
   // Gone: the tournament is over, the team left, or the feature is off.
   for (const row of rows) {
     if (want.has(`${row.tournament_id}:${row.team_id}`) || !token) continue;
     const gone = await discordFetch(token, `/channels/${row.channel_id}`, { method: 'DELETE' });
+    if (row.role_id && guildId) {
+      await discordFetch(token, `/guilds/${guildId}/roles/${row.role_id}`, { method: 'DELETE' });
+    }
     if (gone.ok || gone.status === 404) {
       await db.runAsync(
         'DELETE FROM discord_team_channels WHERE tournament_id = ? AND team_id = ?',
@@ -87,10 +101,11 @@ async function sweep(): Promise<void> {
   for (const key of want) {
     if (have.has(key)) continue;
     const [tournamentId, teamId] = key.split(':');
-    const team = await db.queryOneAsync<{ name: string; players: string }>(
-      'SELECT name, players FROM teams WHERE id = ?',
-      [teamId]
-    );
+    const team = await db.queryOneAsync<{
+      name: string;
+      players: string;
+      color_index: number | null;
+    }>('SELECT name, players, color_index FROM teams WHERE id = ?', [teamId]);
     if (!team) continue;
     const members: string[] = [];
     for (const steamId of rosterIds(team.players)) {
@@ -99,13 +114,38 @@ async function sweep(): Promise<void> {
         members.push(discordId);
       }
     }
+    // The team's role, in its colour, for its players on the server.
+    const role = await discordFetch(token, `/guilds/${guildId}/roles`, {
+      method: 'POST',
+      body: {
+        name: team.name.slice(0, 100),
+        color: TEAM_COLORS[(team.color_index ?? 0) % TEAM_COLORS.length],
+        mentionable: true,
+        permissions: '0',
+      },
+    });
+    const roleId = typeof role.body.id === 'string' ? role.body.id : null;
+    if (roleId) {
+      for (const member of members) {
+        await discordFetch(token, `/guilds/${guildId}/members/${member}/roles/${roleId}`, {
+          method: 'PUT',
+        });
+      }
+    }
+    // Only the team (its role, else its players one by one) sees the channel.
+    const overwrites = roleId
+      ? [
+          ...teamOverwrites(guildId, botId, [], TEXT_MEMBER),
+          { id: roleId, type: 0 as const, allow: String(TEXT_MEMBER), deny: '0' },
+        ]
+      : teamOverwrites(guildId, botId, members, TEXT_MEMBER);
     const created = await discordFetch(token, `/guilds/${guildId}/channels`, {
       method: 'POST',
       body: {
         name: team.name.slice(0, 100),
         type: 0,
         ...(categoryId ? { parent_id: categoryId } : {}),
-        permission_overwrites: teamOverwrites(guildId, botId, members, TEXT_MEMBER),
+        permission_overwrites: overwrites,
       },
     });
     const channelId = typeof created.body.id === 'string' ? created.body.id : null;
@@ -119,9 +159,9 @@ async function sweep(): Promise<void> {
       continue;
     }
     await db.runAsync(
-      `INSERT INTO discord_team_channels (tournament_id, team_id, channel_id) VALUES (?, ?, ?)
-       ON CONFLICT DO NOTHING`,
-      [Number(tournamentId), teamId, channelId]
+      `INSERT INTO discord_team_channels (tournament_id, team_id, channel_id, role_id)
+       VALUES (?, ?, ?, ?) ON CONFLICT DO NOTHING`,
+      [Number(tournamentId), teamId, channelId, roleId]
     );
   }
 }

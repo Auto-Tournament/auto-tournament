@@ -1129,6 +1129,7 @@ export function getSchemaSQL(): string {
       tournament_id INTEGER NOT NULL,
       team_id TEXT NOT NULL,
       channel_id TEXT NOT NULL,
+      role_id TEXT, -- the team's role (its colour), given to its players on the server
       PRIMARY KEY (tournament_id, team_id)
     );
 
