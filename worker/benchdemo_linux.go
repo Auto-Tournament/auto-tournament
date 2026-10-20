@@ -3,15 +3,61 @@ package main
 import (
 	"bytes"
 	"embed"
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
+	"os"
+	"path/filepath"
 	"strconv"
 	"sync"
 
 	dem "github.com/markus-wa/demoinfocs-golang/v5/pkg/demoinfocs"
 	"github.com/markus-wa/demoinfocs-golang/v5/pkg/demoinfocs/events"
 )
+
+// recordBenchmark renders the first human kill from a local demo. This gives
+// a new recorder a smoke test without platform credentials or hand-written
+// tick ranges, using the same moment selection as the fleet benchmark.
+func recordBenchmark(args []string) error {
+	if len(args) != 2 {
+		return fmt.Errorf("usage: at-worker record-benchmark <demo.dem> <outdir>")
+	}
+	f, err := os.Open(args[0])
+	if err != nil {
+		return err
+	}
+	job, err := benchMoment(f)
+	f.Close()
+	if err != nil {
+		return err
+	}
+	if err := os.MkdirAll(args[1], 0o755); err != nil {
+		return err
+	}
+	data, err := json.Marshal(job.Moments)
+	if err != nil {
+		return err
+	}
+	config, err := os.CreateTemp(args[1], "benchmark-*.json")
+	if err != nil {
+		return err
+	}
+	defer os.Remove(config.Name())
+	if _, err := config.Write(data); err != nil {
+		config.Close()
+		return err
+	}
+	if err := config.Close(); err != nil {
+		return err
+	}
+	out, err := filepath.Abs(args[1])
+	if err != nil {
+		return err
+	}
+	log.Printf("benchmark: %s, ticks %d–%d", job.PlayerName, job.Moments[0].StartTick, job.Moments[0].EndTick)
+	return recordFile([]string{args[0], job.PlayerID, config.Name(), out})
+}
 
 // benchAssets holds the shipped benchmark demo, assets/benchmark/bench.dem,
 // when the build has one (the README keeps the pattern matching without it).

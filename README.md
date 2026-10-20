@@ -72,6 +72,7 @@ Full docs at **[docs.autotournament.gg](https://docs.autotournament.gg)**.
 
 - [API reference](docs/API-REFERENCE.md) and [OpenAPI spec](docs/openapi.json), generated from the code
 - [Webhooks](docs/WEBHOOKS.md)
+- [Recorder setup and recovery](docs/RECORDER-OPERATIONS.md), including headless Intel/AMD frame export
 - [Example Discord bot](examples/discord-bot/README.md)
 - [Translating](TRANSLATING.md)
 

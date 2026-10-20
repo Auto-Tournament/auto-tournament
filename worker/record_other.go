@@ -17,6 +17,7 @@ func recordFile([]string) error { return errRecorderLinuxOnly }
 
 func joinReelFiles(string, []string) error { return errRecorderLinuxOnly }
 func recordDemo([]string) error            { return errRecorderLinuxOnly }
+func recordBenchmark([]string) error       { return errRecorderLinuxOnly }
 
 func markCheers([]string) error { return errRecorderLinuxOnly }
 

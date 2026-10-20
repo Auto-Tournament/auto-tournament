@@ -49,8 +49,17 @@ environment:
 
 `at-worker record` turns each player's best moments into clips and reels. It
 runs on a **Linux** PC with a GPU, CS2 and Steam signed in (any account; CS2 is
-free), and needs gamescope, ffmpeg and PipeWire (the recorder container below
-brings those). Windows is not supported: the capture goes through gamescope.
+free). The default backend needs gamescope, ffmpeg and PipeWire (the recorder
+container below brings those). For Intel/AMD graphics and slower hardware,
+use [native frame export](#native-frame-export-intelamd-or-slower-hardware).
+Highlight recording is not supported on Windows.
+
+Steam's saved account state and desktop session must remain available; offline
+mode is supported after initial setup. The browser
+used to access the desktop can be closed. A signed-in Auto Tournament website
+session is only needed for management: the recorder authenticates with its
+own token. See the [setup and operations guide](../docs/RECORDER-OPERATIONS.md)
+for headless setup, persistent Steam state and benchmark troubleshooting.
 
 ```sh
 AT_URL=https://your-platform AT_WORKER_TOKEN=... AT_WORKER_NAME=lan-seat-12 \
@@ -75,7 +84,7 @@ What the platform does with it:
   while it records (see below).
 - **CS2 that will not start.** The job goes back without using up its moments'
   tries; two such jobs in a row pause the recorder for 15 minutes.
-- **Benchmark.** On its first job the recorder records one moment at 240 and
+- **Benchmark.** With gamescope, on its first job the recorder records one moment at 240 and
   120 Hz and keeps the faster one (`AT_GAMESCOPE_HZ`, set by hand,
   wins).
 - **Run log.** Each job's timings and log show on the Highlights page.
@@ -129,6 +138,95 @@ at-worker redress clip.clean.mp4 clip.overlay.json clip.mp4
 
 The platform does the same for every video at once (Highlights settings,
 "Redraw overlays"): an idle recorder takes them in batches.
+
+## Native frame export (Intel/AMD or slower hardware)
+
+`AT_CAPTURE_BACKEND=native` uses CS Demo Manager's Linux CS2 plugin to expose
+`startmovie` and export every rendered frame as TGA plus engine-generated WAV
+audio. Game time advances at a fixed frame rate even when rendering is slower
+than playback. The editor still produces the same clean clips, overlays,
+slow motion and reels. NVIDIA, NVENC, gamescope and PipeWire capture tools are
+not required by this backend; a working CS2 graphics driver, display, Steam
+session and FFmpeg are required.
+
+For an i7-6700 with Intel integrated graphics, start with:
+
+```sh
+AT_CAPTURE_BACKEND=native AT_VIDEO=low AT_ENCODER=libx264 AT_GPU_BLUR=0 \
+AT_OUTPUT_HEIGHT=1080 AT_OUTPUT_FPS=60 AT_ENCODE_TIMEOUT_SECONDS=3600 \
+at-worker record-file demo.dem 'name:Player' moments.json ./native-test
+```
+
+Intel hardware H.264 encoding is available through `AT_ENCODER=h264_vaapi`
+with `AT_VAAPI_DEVICE=/dev/dri/renderD128` (adjust the render node for your
+host). This uses Intel's video encoding hardware through VAAPI; it is separate
+from CS2's Vulkan rendering. The HD 530 has been tested with the worker's
+overlay pipeline using this setting. The explicit FFmpeg `h264_qsv` path did
+not initialize an MFX session in the tested container, so use `h264_vaapi`
+there. Keep `AT_GPU_BLUR=0` initially. Test before changing a production
+recorder, then drain its current job and restart the worker with the new
+environment. The compose file defaults to CPU encoding for compatibility.
+
+`moments.json` uses the same format as the existing `record-file` command.
+For a smoke test without hand-written tick ranges, use
+`at-worker record-benchmark demo.dem ./native-test` with the same environment;
+it selects the first kill by a human player and renders a short highlight.
+Claimed jobs use the platform's resolution/FPS settings unless overridden by
+`AT_RESOLUTION`, `AT_OUTPUT_HEIGHT` or `AT_OUTPUT_FPS` on the recorder.
+Native export captures additional frames for slow motion, converts each
+window to the editor's I420 format, and deletes its TGA/WAV files after
+conversion. It encodes each window before capturing the next. Allow several
+GiB of free space on **both the CS2 installation filesystem and scratch**;
+the game writes images into its own `csgo/at-native/movie` directory and
+audio into `csgo/movie`. `AT_KEEP_SCRATCH=1` retains diagnostics there too.
+Cancelled exports are removed only after CS2 confirms it has stopped writing.
+If confirmation fails, the worker logs a warning and retains the frames; stop
+the recorder before removing those files manually.
+
+`native.compose.yml` and `native.Dockerfile` provide a separate Intel/AMD
+Steam desktop without a host cgroup mount or a systemd container. They expose
+the login desktop on loopback port 8484 only, start Steam, and leave the
+worker stopped until explicitly
+invoked. Forward the port with `ssh -L 8484:127.0.0.1:8484 USER@HOST`, sign
+in at `http://localhost:8484`, install CS2 in `/mnt/games`, then run local
+capture as the `abc` user with the desktop's environment (normally
+`DISPLAY=:0`, `XDG_RUNTIME_DIR=/config/.XDG` and `HOME=/config`). Ensure the
+scratch and output directories are writable by that user.
+The compose file opts into `AT_NATIVE_DISPLAY_SETUP=1`, which sets its
+dedicated Wayland output to the capture size at scale 1 before starting CS2.
+This avoids a 1080p display with fractional scaling yielding only 720p frames.
+An already larger desktop is used at scale 1 without requiring an exact mode.
+The compose file pins Selkies to 1920×1080 so opening a smaller browser does
+not shrink the recorder's desktop.
+Dedicated display setup also removes LinuxServer's default labwc rule that
+maximizes every new window, keeping a backup in `rc.xml.at-native-original`.
+Native CS2 uses a window so its frame size stays independent of the browser.
+The container permits Valve's nested runtime namespaces through container-only
+seccomp/AppArmor exceptions, without privileged mode or host cgroup access.
+Use this compose file instead of the NVIDIA-only `at-recorder setup` scripts.
+
+For longer platform jobs, set `CS2_RECORDER_JOB_SECONDS=21600` on the API and
+`AT_RECORDER_JOB_SECONDS=21600` on the recorder. Both default to 45 minutes
+for compatibility. Heartbeats still expire abandoned jobs after 12 minutes.
+`AT_NATIVE_TIMEOUT_SECONDS` bounds each window's export (default one hour),
+`AT_NATIVE_LOAD_SECONDS` allows initial map/shader loading (default ten minutes),
+`AT_NATIVE_STALL_SECONDS` detects an export with no new frames (default three
+minutes), and `AT_ENCODE_TIMEOUT_SECONDS` controls encoding (default 15 minutes).
+The plugin needs one local game connection before demo playback; the worker
+reads the demo header and loads that same map to initialize its hook. Matching
+the map prevents the server plugin from unloading during the switch to a demo.
+Native benchmarks time one complete export and report render throughput;
+they do not tune gamescope refresh rates or require rendering in real time.
+CS2 still needs memory for map loading: a busy 16 GiB host can exhaust a
+4 GiB swap allocation even with low graphics. Allow NVMe swap for the peak;
+the worker reports a detected out-of-memory kill as a memory error.
+
+The plugin is bundled with its MIT license and pinned provenance in
+`assets/native/`. CS2 updates may require a newer plugin; select a replacement
+with `AT_CSDM_PLUGIN=/absolute/path/libserver.so`. Installation backs up
+`gameinfo.gi`, adds a private plugin search path, and restores the original
+after loading or a failed launch. Use a dedicated CS2 installation for the
+recorder, and do not share a running installation with another recorder.
 
 ## Develop
 

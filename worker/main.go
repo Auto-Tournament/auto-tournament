@@ -251,6 +251,12 @@ func main() {
 		}
 		return
 	}
+	if len(os.Args) >= 2 && os.Args[1] == "record-benchmark" {
+		if err := recordBenchmark(os.Args[2:]); err != nil {
+			log.Fatal(err)
+		}
+		return
+	}
 
 	if len(os.Args) >= 2 && os.Args[1] == "redress" {
 		if err := redressFile(os.Args[2:]); err != nil {
