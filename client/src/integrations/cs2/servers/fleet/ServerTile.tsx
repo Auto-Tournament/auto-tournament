@@ -152,6 +152,8 @@ export function ServerTile({ host, server, state, match, command, onOpen }: Serv
       })
     );
   }
+  // An offline machine's card is dimmed, so muted would fail contrast.
+  const quiet = state === 'offline' ? color.ink2 : color.muted;
   const pct = MOVING.includes(state) ? (command?.progress.pct ?? null) : null;
 
   return (
@@ -235,13 +237,7 @@ export function ServerTile({ host, server, state, match, command, onOpen }: Serv
           component="span"
           sx={{
             fontSize: '0.75rem',
-            // An offline machine's card is dimmed, so muted would fail contrast.
-            color:
-              i === 0 && state === 'match'
-                ? color.ink
-                : state === 'offline'
-                  ? color.ink2
-                  : color.muted,
+            color: i === 0 && state === 'match' ? color.ink : quiet,
             ...(line.startsWith(':') ? mono : {}),
             whiteSpace: 'nowrap',
             overflow: 'hidden',
