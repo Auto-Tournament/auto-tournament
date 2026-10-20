@@ -352,6 +352,10 @@ test.describe.serial('Fleet gateway', () => {
     request,
   }) => {
     const server = await enrollNew(request);
+    // An aged token: the platform sends an auth.rotate (reliable) on connect.
+    await request.post('/api/test/fleet/age-token', {
+      data: { serverId: server.server_id, days: 91 },
+    });
     const reliable = (m: Envelope) => typeof m.seq === 'number' && m.seq > 0;
     const first = await FleetTestClient.connect(server.token);
     await first.handshake(server.server_id, server.installId, {
