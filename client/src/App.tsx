@@ -29,6 +29,7 @@ import PlayedMatches from './pages/PlayedMatches';
 import ImportMatch from './pages/ImportMatch';
 import HighlightsAdmin from './pages/HighlightsAdmin';
 import Modules from './pages/Modules';
+import AddonPage from './pages/AddonPage';
 import AdminTools from './pages/AdminTools';
 import Settings from './pages/Settings';
 import License from './pages/License';
@@ -645,6 +646,7 @@ function AppRoutes() {
         <Route path={adminRoute(paths.importMatch)} element={<ImportMatch />} />
         <Route path={adminRoute(paths.highlights)} element={<HighlightsAdmin />} />
         <Route path={adminRoute(paths.modules)} element={<Modules />} />
+        <Route path={adminRoute(`${paths.modules}/:id`)} element={<AddonPage />} />
         <Route path={adminRoute(paths.admin)} element={<AdminTools />} />
         <Route path={adminRoute(paths.settings)} element={<Settings />} />
         <Route path={adminRoute(paths.license)} element={<License />} />

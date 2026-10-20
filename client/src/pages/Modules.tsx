@@ -23,6 +23,7 @@ import { pageTitle } from '../utils/pageTitle';
 import { useSnackbar } from '../contexts/SnackbarContext';
 import { PageHead } from '../components/common/ui';
 import { CodeModuleList } from '../components/modules/CodeModuleList';
+import { AddonList } from '../components/modules/AddonList';
 import { CatalogTile, GameCatalog } from '../components/catalog/GameCatalog';
 import type { CatalogListing } from '../components/catalog/catalogApi';
 import { builtInIntegrationIds, listIntegrations } from '../integrations/registry';
@@ -164,6 +165,8 @@ export default function Modules() {
         />
 
         <SignInNeedsWarning />
+
+        <AddonList />
 
         <Box component="section">
           <Typography variant="h6" fontWeight={700} mb={1}>
