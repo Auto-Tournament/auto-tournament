@@ -6,6 +6,7 @@ import { useSnackbar } from '../../contexts/SnackbarContext';
 import { tokens, radii } from '../../theme/tokens';
 
 import { ExternalLink } from '../../components/common/ExternalLink';
+import { SwitchRow } from '../../components/common/ui';
 
 const { color } = tokens;
 
@@ -14,6 +15,8 @@ interface BotStatus {
   name: string | null;
   guilds?: Array<{ id: string; name: string }>;
   guildId?: string | null;
+  categories?: Array<{ id: string; name: string }>;
+  matchVoice?: { enabled: boolean; categoryId: string | null };
 }
 
 /**
@@ -70,6 +73,22 @@ export function DiscordBotPage() {
     }
   };
 
+  const saveVoice = async (patch: { enabled?: boolean; categoryId?: string | null }) => {
+    setBusy(true);
+    try {
+      const r = await api.put<{ matchVoice: NonNullable<BotStatus['matchVoice']> }>(
+        '/api/addons/discord/match-voice',
+        patch
+      );
+      setStatus((prev) => (prev ? { ...prev, matchVoice: r.matchVoice } : prev));
+      showSuccess(t('discordBot.voice.saved'));
+    } catch (error) {
+      showError(apiErrorMessage(error, t('discordBot.saveFailed')));
+    } finally {
+      setBusy(false);
+    }
+  };
+
   return (
     <Box data-testid="discord-bot">
       <Typography sx={{ fontSize: '0.875rem', color: color.muted, mb: 2 }}>
@@ -118,6 +137,38 @@ export function DiscordBotPage() {
             </MenuItem>
           ))}
         </TextField>
+      )}
+      {status?.set && status.guildId && (
+        <Box sx={{ mb: 2, maxWidth: 520 }}>
+          <SwitchRow
+            label={t('discordBot.voice.label')}
+            help={t('discordBot.voice.help')}
+            checked={status.matchVoice?.enabled ?? false}
+            disabled={busy}
+            onChange={(e) => void saveVoice({ enabled: e.target.checked })}
+            size="small"
+            data-testid="discord-bot-voice"
+          />
+          {status.matchVoice?.enabled && (
+            <TextField
+              select
+              size="small"
+              label={t('discordBot.voice.category')}
+              value={status.matchVoice.categoryId ?? ''}
+              disabled={busy}
+              onChange={(e) => void saveVoice({ categoryId: e.target.value || null })}
+              inputProps={{ 'data-testid': 'discord-bot-voice-category' }}
+              sx={{ minWidth: 280, maxWidth: 420, mt: 1.5, display: 'flex' }}
+            >
+              <MenuItem value="">{t('discordBot.voice.noCategory')}</MenuItem>
+              {(status.categories ?? []).map((c) => (
+                <MenuItem key={c.id} value={c.id}>
+                  {c.name}
+                </MenuItem>
+              ))}
+            </TextField>
+          )}
+        </Box>
       )}
       <Box
         component="form"

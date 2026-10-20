@@ -1105,6 +1105,17 @@ export function getSchemaSQL(): string {
       PRIMARY KEY (player_id, dedupe_key, channel)
     );
 
+    -- The Discord bot's team voice channels for a match (services/discord/matchVoice.ts).
+    -- ended_at: when the match stopped being on a server; the channels go a little later.
+    CREATE TABLE IF NOT EXISTS discord_match_channels (
+      match_slug TEXT NOT NULL,
+      side TEXT NOT NULL, -- 'team1' | 'team2'
+      channel_id TEXT NOT NULL,
+      created_at INTEGER NOT NULL,
+      ended_at INTEGER,
+      PRIMARY KEY (match_slug, side)
+    );
+
     -- Browser and phone notifications (Web Push): one row per browser a player turned them on in.
     CREATE TABLE IF NOT EXISTS push_subscriptions (
       endpoint TEXT PRIMARY KEY,
