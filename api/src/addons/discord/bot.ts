@@ -82,15 +82,17 @@ export const discordBot = {
     };
   },
 
-  /** The picked server's channel categories, for where the bot puts its channels. */
-  async categories(): Promise<Array<{ id: string; name: string }>> {
+  /** The picked server's channels of these types (0 text, 4 category, 5 announcement). */
+  async channels(types: number[]): Promise<Array<{ id: string; name: string }>> {
     const token = await botToken();
     const guildId = await pickedGuildId();
     if (!token || !guildId) return [];
     const r = await discordFetch(token, `/guilds/${guildId}/channels`);
     const list = r.ok && Array.isArray(r.body) ? (r.body as Array<Record<string, Untrusted>>) : [];
     return list
-      .filter((c) => c.type === 4 && typeof c.id === 'string')
+      .filter(
+        (c) => typeof c.type === 'number' && types.includes(c.type) && typeof c.id === 'string'
+      )
       .map((c) => ({ id: String(c.id), name: String(c.name ?? c.id) }));
   },
 

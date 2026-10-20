@@ -17,6 +17,8 @@ interface BotStatus {
   guildId?: string | null;
   categories?: Array<{ id: string; name: string }>;
   matchVoice?: { enabled: boolean; categoryId: string | null };
+  textChannels?: Array<{ id: string; name: string }>;
+  announceChannelId?: string | null;
 }
 
 /**
@@ -82,6 +84,19 @@ export function DiscordBotPage() {
       );
       setStatus((prev) => (prev ? { ...prev, matchVoice: r.matchVoice } : prev));
       showSuccess(t('discordBot.voice.saved'));
+    } catch (error) {
+      showError(apiErrorMessage(error, t('discordBot.saveFailed')));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const saveAnnounce = async (channelId: string) => {
+    setBusy(true);
+    try {
+      await api.put('/api/addons/discord/announce', { channelId: channelId || null });
+      setStatus((prev) => (prev ? { ...prev, announceChannelId: channelId || null } : prev));
+      showSuccess(t('discordBot.announce.saved'));
     } catch (error) {
       showError(apiErrorMessage(error, t('discordBot.saveFailed')));
     } finally {
@@ -169,6 +184,26 @@ export function DiscordBotPage() {
             </TextField>
           )}
         </Box>
+      )}
+      {status?.set && status.guildId && (
+        <TextField
+          select
+          size="small"
+          label={t('discordBot.announce.label')}
+          helperText={t('discordBot.announce.help')}
+          value={status.announceChannelId ?? ''}
+          disabled={busy}
+          onChange={(e) => void saveAnnounce(e.target.value)}
+          inputProps={{ 'data-testid': 'discord-bot-announce' }}
+          sx={{ minWidth: 280, maxWidth: 420, mb: 2, display: 'flex' }}
+        >
+          <MenuItem value="">{t('discordBot.announce.none')}</MenuItem>
+          {(status.textChannels ?? []).map((c) => (
+            <MenuItem key={c.id} value={c.id}>
+              #{c.name}
+            </MenuItem>
+          ))}
+        </TextField>
       )}
       <Box
         component="form"
