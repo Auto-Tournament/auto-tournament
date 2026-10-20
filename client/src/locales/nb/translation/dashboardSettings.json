@@ -909,8 +909,8 @@
       "link": "Lagkanalen på Discord"
     },
     "commands": {
-      "label": "Skråstrekkommandoer: /matches og /mymatch",
-      "help": "Lim inn denne som Interactions Endpoint URL for appen din i Discord Developer Portal. Discord må kunne nå dette nettstedet."
+      "label": "Skråstrekkommandoer: /matches, /mymatch og /setup",
+      "help": "De virker så snart boten er tilkoblet. Valgfritt: Vil du at Discord skal sende dem til dette nettstedet i stedet, limer du inn denne som Interactions Endpoint URL for appen din i Discord Developer Portal."
     },
     "setup": {
       "button": "Sett opp denne serveren",

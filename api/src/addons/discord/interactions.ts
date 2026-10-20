@@ -1,9 +1,9 @@
 /**
- * Slash commands (the Discord add-on): /matches and /mymatch, answered over
- * Discord's Interactions Endpoint (POST /api/addons/discord/interactions), so
- * there is no gateway connection to keep up. The admin pastes that URL into
- * the app's settings in the Discord Developer Portal; it needs the site to be
- * reachable from the internet.
+ * Slash commands (the Discord add-on): /matches, /mymatch and /setup. They
+ * come over the bot's gateway connection (presence.ts), so nothing needs
+ * setting up and the site needs no public address. An admin who sets the
+ * app's Interactions Endpoint URL in the Discord Developer Portal gets them
+ * at POST /api/addons/discord/interactions instead; both answer the same.
  *
  * The commands are registered on the picked server (guild commands show up at
  * once) when the add-on starts and when the server changes.
@@ -109,6 +109,49 @@ async function setupCommand(permissions: string | undefined): Promise<string> {
   }
 }
 
+/** What a slash command answers (only the asker sees it). */
+async function commandAnswer(interaction: Record<string, Untrusted>): Promise<string> {
+  const data = interaction.data as Record<string, Untrusted> | undefined;
+  const member = interaction.member as { user?: { id?: string }; permissions?: string } | undefined;
+  const user = (interaction.user as { id?: string } | undefined) ?? member?.user;
+  try {
+    if (data?.name === 'matches') return await matchesNow();
+    if (data?.name === 'mymatch' && user?.id) return await myMatch(user.id);
+    if (data?.name === 'setup') return await setupCommand(member?.permissions);
+    return 'I do not know that command.';
+  } catch (error) {
+    log.warn('[Discord] A slash command failed', {
+      error: error instanceof Error ? error.message : String(error),
+    });
+    return 'Something went wrong; try again in a moment.';
+  }
+}
+
+/**
+ * A slash command that came over the gateway (presence.ts), which Discord uses
+ * when no Interactions Endpoint URL is set: no public address needed. Answered
+ * "thinking" at once (Discord allows 3 s), then with the text.
+ */
+export async function handleGatewayInteraction(
+  interaction: Record<string, Untrusted>
+): Promise<void> {
+  if (interaction.type !== 2) return;
+  const token = await botToken();
+  const info = token ? await appInfo(token) : null;
+  const id = typeof interaction.id === 'string' ? interaction.id : null;
+  const answerToken = typeof interaction.token === 'string' ? interaction.token : null;
+  if (!token || !info || !id || !answerToken) return;
+  await discordFetch(token, `/interactions/${id}/${answerToken}/callback`, {
+    method: 'POST',
+    body: { type: 5, data: { flags: EPHEMERAL } },
+  });
+  const content = await commandAnswer(interaction);
+  await discordFetch(token, `/webhooks/${info.id}/${answerToken}/messages/@original`, {
+    method: 'PATCH',
+    body: { content: content.slice(0, 2000), allowed_mentions: { parse: [] } },
+  });
+}
+
 /** POST /api/addons/discord/interactions: the raw body (index.ts), checked against Discord's signature. */
 export async function handleInteraction(req: Request, res: Response): Promise<Response> {
   const token = await botToken();
@@ -131,20 +174,7 @@ export async function handleInteraction(req: Request, res: Response): Promise<Re
   }
   // 1: Discord checking the endpoint.
   if (interaction.type === 1) return res.json({ type: 1 });
-  const data = interaction.data as Record<string, Untrusted> | undefined;
-  const member = interaction.member as { user?: { id?: string }; permissions?: string } | undefined;
-  const user = (interaction.user as { id?: string } | undefined) ?? member?.user;
-  let content = 'I do not know that command.';
-  try {
-    if (data?.name === 'matches') content = await matchesNow();
-    else if (data?.name === 'mymatch' && user?.id) content = await myMatch(user.id);
-    else if (data?.name === 'setup') content = await setupCommand(member?.permissions);
-  } catch (error) {
-    log.warn('[Discord] A slash command failed', {
-      error: error instanceof Error ? error.message : String(error),
-    });
-    content = 'Something went wrong; try again in a moment.';
-  }
+  const content = await commandAnswer(interaction);
   // 4: answer now; only the asker sees it.
   return res.json({
     type: 4,
