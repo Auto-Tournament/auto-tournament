@@ -4,7 +4,6 @@ import { createPortal } from 'react-dom';
 import { Alert, Box, Button, Menu, MenuItem, TextField, Typography } from '@mui/material';
 import { ArrowLeftIcon, ArrowRightIcon, FileTextIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
-import { api } from '../../../utils/api';
 import { estimateMatchCount, type GrandFinalMode } from '../../../utils/tournamentMatchCount';
 import { requiresVeto } from '../../../utils/tournamentVerification';
 import { validateTeamCountForType } from '../../../utils/tournamentValidation';
@@ -21,16 +20,10 @@ import {
   type ShuffleTournamentSettings,
 } from '../ShuffleTournamentConfigStep';
 import { EventPageSettingsCard, type EventPageFields } from '../EventPageSettingsCard';
-import {
-  SignupSettings,
-  signupOf,
-  signupSettingsPatch,
-  useSavedSignup,
-  type SignupFields,
-} from './SignupSettings';
+import { SignupSettings, type SignupFields } from './SignupSettings';
 import { TournamentTeamsList } from './TournamentTeamsList';
-import { useSnackbar } from '../../../contexts/SnackbarContext';
 import { useTournamentFormData } from '../useTournamentFormData';
+import { useSetupSignup, useSetupTemplates, useSiteRules } from './useSetupData';
 import { SetupColumn } from './SetupColumn';
 import { SetupSummary, type ChecklistItem, type SummaryRow } from './SetupSummary';
 import { FormatCards } from './FormatCards';
@@ -171,32 +164,8 @@ export function TournamentSetup(props: TournamentSetupProps) {
   const steps = setupStepsFor(game);
   const reviewStepIndex = steps.length - 1;
   const stepId = steps[props.activeStep] ?? 'game';
-  // The site's match rules the Schedule and Extras steps mention (CS2: the
-  // break between matches, spectators in GOTV).
-  const [siteRules, setSiteRules] = useState<{
-    matchBreakMinutes?: number;
-    gotvSpectators?: number;
-    gotvDelay?: number;
-  } | null>(null);
-  useEffect(() => {
-    let live = true;
-    api
-      .get<{ settings?: Record<string, unknown> } & Record<string, unknown>>('/api/settings')
-      .then((res) => {
-        const s = (res.settings ?? res) as Record<string, unknown>;
-        if (!live) return;
-        setSiteRules({
-          matchBreakMinutes:
-            typeof s.matchBreakMinutes === 'number' ? s.matchBreakMinutes : undefined,
-          gotvSpectators: typeof s.gotvSpectators === 'number' ? s.gotvSpectators : undefined,
-          gotvDelay: typeof s.gotvDelay === 'number' ? s.gotvDelay : undefined,
-        });
-      })
-      .catch(() => undefined);
-    return () => {
-      live = false;
-    };
-  }, []);
+  // The site's match rules the Schedule and Extras steps mention.
+  const siteRules = useSiteRules();
   // A saved tournament can name a game the playable list does not — one found
   // through game search, which manual reporting runs too. It is named by its
   // catalogue id and gets a text mark, never another game's icon.
@@ -245,83 +214,19 @@ export function TournamentSetup(props: TournamentSetupProps) {
   // A saved tournament's sign-up settings save on their own; its teams are
   // added and removed one at a time, so a team signing up meanwhile is never
   // dropped by a save that still held the old list.
-  const { showError: toastError, showSuccess: toastSuccess } = useSnackbar();
-  const savedSignup = useSavedSignup(signupOf(tournament?.settings, tournament?.teamSize));
-  const signup = tournament ? savedSignup.value : form.signup;
-  const [savingSignup, setSavingSignup] = useState(false);
-  // Shuffle: players join on their own (the tournament page's Join) while sign-up is open.
-  const [shuffleSignupOpen, setShuffleSignupOpen] = useState(
-    tournament?.settings?.registrationOpen === true
-  );
-  const setShuffleSignup = async (open: boolean) => {
-    if (!tournament) {
-      handlers.onSignupChange({ ...form.signup, registrationOpen: open });
-      return;
-    }
-    setShuffleSignupOpen(open);
-    try {
-      await api.put('/api/tournament', { settings: { registrationOpen: open } });
-      toastSuccess(t('tournament.setup.signup.saved'));
-      await props.onRefreshTeams();
-    } catch (error) {
-      setShuffleSignupOpen(!open);
-      toastError((error as Error).message);
-    }
-  };
-  const saveSignup = async () => {
-    setSavingSignup(true);
-    try {
-      await api.put('/api/tournament', {
-        settings: signupSettingsPatch(savedSignup.value),
-        teamSize: savedSignup.value.teamSize,
-      });
-      toastSuccess(t('tournament.setup.signup.saved'));
-      await props.onRefreshTeams();
-    } catch (error) {
-      toastError((error as Error).message);
-    } finally {
-      setSavingSignup(false);
-    }
-  };
-  const [changingTeams, setChangingTeams] = useState(false);
-  const changeTeams = async (next: string[]) => {
-    if (!tournament) {
-      handlers.onTeamsChange(next);
-      return;
-    }
-    const current = form.selectedTeams;
-    const added = next.filter((id) => !current.includes(id));
-    const removed = current.filter((id) => !next.includes(id));
-    setChangingTeams(true);
-    try {
-      for (const teamId of added)
-        await api.post(`/api/tournaments/${tournament.id}/teams`, { teamId });
-      for (const teamId of removed)
-        await api.delete(`/api/tournaments/${tournament.id}/teams/${encodeURIComponent(teamId)}`);
-    } catch (error) {
-      toastError((error as Error).message);
-    } finally {
-      setChangingTeams(false);
-      await props.onRefreshTeams();
-    }
-  };
+  const {
+    signup,
+    savedSignup,
+    savingSignup,
+    saveSignup,
+    shuffleSignupOpen,
+    setShuffleSignup,
+    changingTeams,
+    changeTeams,
+  } = useSetupSignup({ tournament, form, handlers, onRefreshTeams: props.onRefreshTeams });
 
   // ---- Templates ("Start from a template") ---------------------------------
-  const [templates, setTemplates] = useState<TournamentTemplate[]>([]);
-  const [templateMenu, setTemplateMenu] = useState<HTMLElement | null>(null);
-  useEffect(() => {
-    if (tournament) return;
-    let cancelled = false;
-    api
-      .get<{ success: boolean; templates: TournamentTemplate[] }>('/api/templates')
-      .then((response) => {
-        if (!cancelled && response.success) setTemplates(response.templates);
-      })
-      .catch((error) => console.error('Error loading templates:', error));
-    return () => {
-      cancelled = true;
-    };
-  }, [tournament]);
+  const { templates, templateMenu, setTemplateMenu } = useSetupTemplates(tournament);
 
   // ---- Validation and navigation ------------------------------------------
   const validationInput = {
