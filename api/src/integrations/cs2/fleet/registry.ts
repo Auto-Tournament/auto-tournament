@@ -925,6 +925,45 @@ export async function appendOutbox(
   });
 }
 
+/**
+ * The server has processed less than it once acknowledged: its fleet state
+ * was reset (the spool cleared, a reinstall). It drops seqs out of order, so
+ * what is queued after the old numbering would never be taken. Renumber the
+ * queue from `lastRx + 1` and carry on from there. Returns how many queued
+ * messages were renumbered. Same as hosts/registry.ts rebaseHostTx.
+ */
+export async function rebaseTx(serverId: string, lastRx: number): Promise<number> {
+  return tx(async (c) => {
+    const rows = (
+      await c.query<{ message: string; expires_at: number | null }>(
+        'SELECT message, expires_at FROM cs2_fleet_outbox WHERE server_id = $1 ORDER BY seq ASC',
+        [serverId]
+      )
+    ).rows;
+    await c.query('DELETE FROM cs2_fleet_outbox WHERE server_id = $1', [serverId]);
+    let seq = lastRx;
+    for (const row of rows) {
+      seq += 1;
+      const envelope = JSON.parse(row.message) as Envelope;
+      envelope.seq = seq;
+      await c.query(
+        `INSERT INTO cs2_fleet_outbox (server_id, seq, type, message, expires_at) VALUES ($1, $2, $3, $4, $5)`,
+        [serverId, seq, envelope.type, JSON.stringify(envelope), row.expires_at]
+      );
+      await c.query('UPDATE cs2_fleet_commands SET seq = $1 WHERE message_id = $2', [
+        seq,
+        envelope.id,
+      ]);
+    }
+    await c.query('UPDATE cs2_fleet_servers SET tx_seq = $2, tx_acked = $3 WHERE id = $1', [
+      serverId,
+      seq,
+      lastRx,
+    ]);
+    return rows.length;
+  });
+}
+
 export async function pendingOutbox(serverId: string, afterSeq: number): Promise<Envelope[]> {
   const rows = await db.queryAsync<{ message: string }>(
     'SELECT message FROM cs2_fleet_outbox WHERE server_id = ? AND seq > ? ORDER BY seq ASC',
