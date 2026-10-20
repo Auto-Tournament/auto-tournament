@@ -1,3 +1,4 @@
+import { OpponentName } from '../team/MatchRowLinks';
 import { useEffect, useMemo, useState } from 'react';
 import { Box, Button, ButtonBase, Checkbox, InputBase } from '@mui/material';
 import { MagnifyingGlassIcon } from '@phosphor-icons/react';
@@ -254,7 +255,17 @@ export function MatchesTable({
                   #{numberOf(m)}
                 </Box>
               </Box>,
-              <strong key="t">{teamsOf(m)}</strong>,
+              <strong key="t">
+                <OpponentName
+                  id={m.team1?.id}
+                  name={m.team1?.name ?? m.config?.team1?.name ?? t('matchesPage.table.tbd')}
+                />{' '}
+                vs{' '}
+                <OpponentName
+                  id={m.team2?.id}
+                  name={m.team2?.name ?? m.config?.team2?.name ?? t('matchesPage.table.tbd')}
+                />
+              </strong>,
               <LevelText key="p" tone={phase.tone}>
                 {phase.text}
               </LevelText>,

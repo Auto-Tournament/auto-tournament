@@ -5,6 +5,7 @@
  * bar and come first. Kept fresh by `match:update` and the admin call events
  * (one read per second at most), with a 5 s poll behind them.
  */
+import { OpponentName } from '../components/team/MatchRowLinks';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Box, Button, Tooltip } from '@mui/material';
 import { ChatCircleIcon, CheckIcon, XIcon } from '@phosphor-icons/react';
@@ -19,7 +20,7 @@ import { useSocket } from '../hooks/useSocket';
 import { onSocketReconnect } from '../utils/socketResync';
 import { pageTitle } from '../utils/pageTitle';
 import { api } from '../utils/api';
-import { manageMatchPath } from '../paths';
+import { manageMatchPath, manageTournamentPath } from '../paths';
 import { fontMono, radii, textSize, tokens } from '../theme/tokens';
 
 const { color } = tokens;
@@ -285,7 +286,21 @@ function MatchLabel({ m }: { m: LiveOverviewMatch }) {
   return (
     <Box sx={{ display: 'grid', gap: 0.25, minWidth: 140 }}>
       <Box component="span" sx={{ color: color.ink2, whiteSpace: 'nowrap' }}>
-        {where}
+        {m.tournament ? (
+          <Box
+            component={RouterLink}
+            to={manageTournamentPath(m.tournament.id)}
+            sx={{
+              color: 'inherit',
+              textDecoration: 'none',
+              '&:hover': { textDecoration: 'underline' },
+            }}
+          >
+            {where}
+          </Box>
+        ) : (
+          where
+        )}
       </Box>
       <Box
         component={RouterLink}
@@ -305,7 +320,7 @@ function Score({ m }: { m: LiveOverviewMatch }) {
     <Box sx={{ display: 'grid', gap: 0.25, whiteSpace: 'nowrap' }}>
       <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.75 }}>
         <Box component="span" sx={{ color: sideColor(m.team1.side), fontWeight: 600 }}>
-          {m.team1.name}
+          <OpponentName id={m.team1.id} name={m.team1.name} />
         </Box>
         <Box
           component="span"
@@ -321,7 +336,7 @@ function Score({ m }: { m: LiveOverviewMatch }) {
           </Box>
         </Box>
         <Box component="span" sx={{ color: sideColor(m.team2.side), fontWeight: 600 }}>
-          {m.team2.name}
+          <OpponentName id={m.team2.id} name={m.team2.name} />
         </Box>
       </Box>
       {series && (
