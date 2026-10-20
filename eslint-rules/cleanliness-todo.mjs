@@ -444,7 +444,6 @@ export const OBJECT_LITERAL_ASSERTION = [
   'client/src/components/tournament/EventPageSettingsCard.tsx',
   'client/src/components/tournament/setup/ScheduleStep.tsx',
   'client/src/components/tournament/setup/SignupSettings.tsx',
-  'client/src/components/tournament/setup/TournamentSetup.tsx',
   'client/src/integrations/cs2/maps/mapData.ts',
   'client/src/integrations/cs2/servers/fleet/SideSheet.tsx',
   'client/src/integrations/cs2/settings/Cs2ServerDefaults.tsx',
