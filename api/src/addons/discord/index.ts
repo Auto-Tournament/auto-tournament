@@ -17,7 +17,8 @@ import {
   teamChannelsOn,
 } from './teamChannels';
 import { resolveViewerAccount } from '../../utils/viewerIdentity';
-import { handleInteraction, registerCommands } from './interactions';
+import { appInfo, handleInteraction, inviteUrl, registerCommands } from './interactions';
+import { botToken } from './bot';
 import { SetupError, setupServer } from './setup';
 import { restartPresence, startPresence, stopPresence } from './presence';
 import { startLobbyInvites, stopLobbyInvites } from './lobby';
@@ -78,11 +79,13 @@ router.use(requireAuth);
  *     summary: Whether a Discord bot token is set, the bot's name, its Discord servers and the one in use
  *     security: [{ BearerAuth: [] }]
  *     responses:
- *       200: { description: "`set`, `name`, `guilds` ({ id, name }[]), `guildId`, `categories` ({ id, name }[] of the picked server), `matchVoice` ({ enabled, categoryId }), `textChannels` ({ id, name }[]), `announceChannelId`, `teamChannels` (on/off)" }
+ *       200: { description: "`set`, `name`, `guilds` ({ id, name }[]), `guildId`, `categories` ({ id, name }[] of the picked server), `matchVoice` ({ enabled, categoryId }), `textChannels` ({ id, name }[]), `announceChannelId`, `inviteUrl` (adds the bot to a server), `teamChannels` (on/off)" }
  */
 router.get('/', async (_req: Request, res: Response) => {
   try {
     const status = await discordBot.status();
+    const token = status.set ? await botToken() : null;
+    const app = token ? await appInfo(token) : null;
     const guilds = status.set ? await discordBot.guilds() : { guilds: [], guildId: null };
     return res.json({
       success: true,
@@ -91,6 +94,7 @@ router.get('/', async (_req: Request, res: Response) => {
       categories: guilds.guildId ? await discordBot.channels([4]) : [],
       textChannels: guilds.guildId ? await discordBot.channels([0, 5]) : [],
       matchVoice: await voiceSettings(),
+      inviteUrl: app ? inviteUrl(app.id) : null,
       announceChannelId: await announceChannel(),
       teamChannels: await teamChannelsOn(),
     });

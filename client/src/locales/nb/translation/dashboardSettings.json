@@ -917,7 +917,8 @@
       "help": "Lager kategorien «Auto Tournament» med #results for kampvarsler og en lobby der spillerne venter (de kan lytte, ikke snakke) til boten flytter dem til lagkanalen sin. Det som finnes fra før, brukes på nytt.",
       "done": "Discord-serveren er satt opp",
       "failed": "Kunne ikke sette opp Discord-serveren."
-    }
+    },
+    "invite": "Inviter til en server"
   },
   "liveMatchesPage": {
     "title": "Direktekamper",
