@@ -5,7 +5,7 @@ import { GameMark } from '../common/GameMark';
 import { EmptyPanel, LiveChip, Row, RowList, SectionHead } from '../common/ui';
 import type { TournamentSummary } from '../../hooks/useTournamentList';
 import { tournamentTabPath, manageTournamentPath } from '../../paths';
-import { formatBadge } from '../../utils/tournamentSummary';
+import { formatBadge, typeLabel } from '../../utils/tournamentSummary';
 import { tokens, textSize } from '../../theme/tokens';
 
 const { color } = tokens;
@@ -66,10 +66,7 @@ export function TournamentsList({ tournaments, loading }: TournamentsListProps) 
         .filter(Boolean)
         .join(' · ');
     }
-    const format = [
-      t(`tournament.typeSelector.types.${tournament.type}.label`),
-      formatBadge(tournament.format),
-    ];
+    const format = [typeLabel(t, tournament.type), formatBadge(tournament.format)];
     if (status === 'ready') {
       return [
         t(`dashboard.tournaments.state.entered${unit}`, { count: teamCount }),

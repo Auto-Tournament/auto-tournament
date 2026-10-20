@@ -1,4 +1,5 @@
 import { BracketPauseBar } from '../components/bracket/BracketPauseBar';
+import { typeLabel } from '../utils/tournamentSummary';
 import { pageTitle } from '../utils/pageTitle';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import {
@@ -364,7 +365,7 @@ export default function Bracket() {
           <PageHead
             data-testid="bracket-tournament-info"
             title={tournament.name}
-            subtitle={`${t(`tournament.typeSelector.types.${tournament.type}.label`)} • ${tournament.format.toUpperCase()}`}
+            subtitle={`${typeLabel(t, tournament.type)} • ${tournament.format.toUpperCase()}`}
             actions={
               <Box display="flex" gap={1} alignItems="center" flexWrap="wrap">
                 {tournament.status === 'setup' && (
