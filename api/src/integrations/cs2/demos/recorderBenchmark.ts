@@ -4,7 +4,8 @@
  */
 import { db } from '../../../config/database';
 import { log } from '../../../utils/logger';
-import type { Untrusted } from '../../../utils/untrusted';
+import type { BenchmarkResult } from './benchmarkResult';
+export type { StoredBenchmark } from './benchmarkResult';
 import { jobFor, type MomentRow } from './highlights';
 import { readHighlightQuality } from './highlightQuality';
 import { BENCHMARK_HZ, type RecorderRow } from './recorders';
@@ -69,61 +70,27 @@ export function wantsBenchmark(me: RecorderRow, benchDemo: boolean): boolean {
   }
 }
 
-/** cs2_recorders.benchmark, as saveBenchmark writes it. */
-export interface StoredBenchmark {
-  tries: BenchmarkTry[];
-  pick: number | null;
-  source: 'bundled' | 'match';
-}
-
-interface BenchmarkTry {
-  gamescopeHz: number;
-  seconds: number | null;
-  captureFps: number | null;
-  ok: boolean;
-  error?: string;
-}
-
-/** A benchmark's results: keep the fastest finished try's refresh rate. */
+/** Save a checked native export result or the stream recorder's fastest rate. */
 export async function saveBenchmark(
   name: string,
-  body: { tries?: Untrusted; source?: Untrusted }
-): Promise<{ gamescopeHz: number | null }> {
-  // Which clip it timed: the demo shipped with the worker ('bundled', the same
-  // everywhere) or this install's first clip ('match'; older workers send none).
-  const source = body.source === 'bundled' ? 'bundled' : 'match';
-  const tries: BenchmarkTry[] = (Array.isArray(body.tries) ? body.tries : [])
-    .slice(0, 8)
-    .map((t: Record<string, Untrusted>) => {
-      const num = (v: Untrusted) => (typeof v === 'number' && Number.isFinite(v) ? v : null);
-      return {
-        gamescopeHz: Number(t.gamescopeHz) || 0,
-        seconds: num(t.seconds),
-        captureFps: num(t.captureFps),
-        ok: t.ok === true,
-        ...(typeof t.error === 'string' ? { error: t.error.slice(0, 300) } : {}),
-      };
-    })
-    .filter((t) => t.gamescopeHz > 0);
-  const fastest = tries
-    .filter((t) => t.ok && t.seconds != null)
-    .sort((a, b) => a.seconds! - b.seconds!);
-  const pick = fastest[0]?.gamescopeHz ?? null;
+  result: BenchmarkResult
+): Promise<{ gamescopeHz: number | null; ok: boolean }> {
+  const { pick, source, ok, backend } = result;
   await db.runAsync(
     `UPDATE cs2_recorders SET benchmark = ?, benchmark_at = ?, benchmark_wanted = 0, gamescope_hz = ?
       WHERE name = ?`,
-    [JSON.stringify({ tries, pick, source }), now(), pick, name.slice(0, 120)]
+    [JSON.stringify(result), now(), pick, name.slice(0, 120)]
   );
-  log.info(
-    `[RECORDERS] ${name} benchmarked (${source} clip): ${pick ? `${pick} Hz` : 'no try finished'}`
-  );
+  let summary = 'no try finished';
+  if (ok) summary = backend === 'native' ? 'native export completed' : `${pick} Hz`;
+  log.info(`[RECORDERS] ${name} benchmarked (${source} clip): ${summary}`);
   const { adminNoticeService } = await import('../../../services/adminNoticeService');
-  if (pick) await adminNoticeService.resolve(`benchmark_failed:${name}`);
+  if (ok) await adminNoticeService.resolve(`benchmark_failed:${name}`);
   else
     await adminNoticeService.raise(
       'benchmark_failed',
-      { recorder: name, error: tries.find((t) => t.error)?.error ?? null },
+      { recorder: name, error: result.error },
       `benchmark_failed:${name}`
     );
-  return { gamescopeHz: pick };
+  return { gamescopeHz: pick, ok };
 }
