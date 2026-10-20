@@ -856,69 +856,70 @@ const Tournament: React.FC = () => {
     setGrandFinalModePicked(false);
   };
 
-  const handleDelete = async () => {
+  // A confirm dialog's action: close the dialog, run it, say how it went.
+  const runAction = async (
+    closeConfirm: () => void,
+    action: () => Promise<void>,
+    doneKey: string,
+    failedKey: string,
+    after?: () => Promise<void>
+  ) => {
     setSaving(true);
-    setShowDeleteConfirm(false);
-
+    closeConfirm();
     try {
-      await deleteTournament();
-      showSuccess(t('tournament.toasts.deleted'));
-      await refreshData();
+      await action();
+      showSuccess(t(doneKey));
+      await after?.();
     } catch (err) {
       const error = err as Error;
-      showError(error.message || t('tournament.toasts.deleteFailed'));
+      showError(error.message || t(failedKey));
     } finally {
       setSaving(false);
     }
   };
+
+  const handleDelete = () =>
+    runAction(
+      () => setShowDeleteConfirm(false),
+      deleteTournament,
+      'tournament.toasts.deleted',
+      'tournament.toasts.deleteFailed',
+      refreshData
+    );
 
   // A finished tournament makes way for a new one: archived, it keeps its
   // matches, results and stats, and its public page stays at its id.
-  const handleArchive = async () => {
-    setSaving(true);
-    setShowArchiveConfirm(false);
-    try {
-      await api.post('/api/tournament/archive');
-      resetCurrentTournamentId();
-      showSuccess(t('tournament.toasts.archived'));
-      await refreshData();
-    } catch (err) {
-      const error = err as Error;
-      showError(error.message || t('tournament.toasts.archiveFailed'));
-    } finally {
-      setSaving(false);
-    }
-  };
+  const handleArchive = () =>
+    runAction(
+      () => setShowArchiveConfirm(false),
+      async () => {
+        await api.post('/api/tournament/archive');
+        resetCurrentTournamentId();
+      },
+      'tournament.toasts.archived',
+      'tournament.toasts.archiveFailed',
+      refreshData
+    );
 
-  const handleRegenerate = async () => {
-    setSaving(true);
-    setShowRegenerateConfirm(false);
+  const handleRegenerate = () =>
+    runAction(
+      () => setShowRegenerateConfirm(false),
+      async () => {
+        await regenerateBracket(true);
+      },
+      'tournament.toasts.regenerated',
+      'tournament.toasts.regenerateFailed'
+    );
 
-    try {
-      await regenerateBracket(true);
-      showSuccess(t('tournament.toasts.regenerated'));
-    } catch (err) {
-      const error = err as Error;
-      showError(error.message || t('tournament.toasts.regenerateFailed'));
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleReset = async () => {
-    setSaving(true);
-    setShowResetConfirm(false);
-
-    try {
-      await resetTournament();
-      showSuccess(t('tournament.toasts.resetDone'));
-    } catch (err) {
-      const error = err as Error;
-      showError(error.message || t('tournament.toasts.resetFailed'));
-    } finally {
-      setSaving(false);
-    }
-  };
+  const handleReset = () =>
+    runAction(
+      () => setShowResetConfirm(false),
+      async () => {
+        await resetTournament();
+      },
+      'tournament.toasts.resetDone',
+      'tournament.toasts.resetFailed'
+    );
 
   const handleRenameTournament = async (newName: string) => {
     const trimmedName = newName.trim();
