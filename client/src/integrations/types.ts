@@ -354,6 +354,10 @@ export interface TournamentSetupModel {
    */
   roundCount?(settings: Record<string, Untrusted>, ctx: TournamentSetupContext): number | null;
   /**
+   * Minutes one map takes with these settings, warmup included, for the "Takes about" estimate. Null when it cannot say.
+   */
+  minutesPerMap?(settings: Record<string, Untrusted>, ctx: TournamentSetupContext): number | null;
+  /**
    * What differs between the saved settings and the edited ones. An empty
    * list is "no change" for the module's part of the form.
    */
