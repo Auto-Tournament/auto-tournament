@@ -4,8 +4,10 @@
  */
 import { registerAddon } from './registry';
 import { testAddon } from './testAddon';
+import { hasIntegration } from '../integrations/registry';
 
-if (process.env.NODE_ENV === 'test') registerAddon(testAddon);
+// Test runs only, on the same switch as the fake game integration.
+if (hasIntegration('fake')) registerAddon(testAddon);
 
 export {
   getAddon,

@@ -1,6 +1,6 @@
 /**
- * A do-nothing add-on for test runs (NODE_ENV=test), like the fake game
- * integration: proves an add-on turns on and off live and that its routes
+ * A do-nothing add-on for test runs, on the fake game integration's switch
+ * (isFakeIntegrationEnabled): proves an add-on turns on and off live and that its routes
  * answer only while it is on. Never registered in production.
  */
 import { Router } from 'express';
