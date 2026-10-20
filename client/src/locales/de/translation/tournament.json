@@ -1413,7 +1413,8 @@
     "eta": {
       "nextRoundAbout": "Next round about {{time}}",
       "nextRoundAt": "Next round at {{time}}",
-      "finalEnds": "Final round: ends about {{time}}"
+      "finalEnds": "Final round: ends about {{time}}",
+      "endsAbout": "Ende etwa {{time}}"
     }
   },
   "matchesCards": {
