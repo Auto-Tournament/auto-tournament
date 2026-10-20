@@ -19,6 +19,7 @@ import {
 import { resolveViewerAccount } from '../../utils/viewerIdentity';
 import { handleInteraction, registerCommands } from './interactions';
 import { SetupError, setupServer } from './setup';
+import { restartPresence, startPresence, stopPresence } from './presence';
 import { startLobbyInvites, stopLobbyInvites } from './lobby';
 import { setVoiceSettings, startMatchVoice, stopMatchVoice, voiceSettings } from './matchVoice';
 import {
@@ -125,7 +126,9 @@ router.put('/token', async (req: Request, res: Response) => {
     const raw = (req.body as Record<string, Untrusted> | undefined)?.token;
     const token = typeof raw === 'string' ? raw : null;
     try {
-      return res.json({ success: true, ...(await discordBot.setToken(token)) });
+      const saved = await discordBot.setToken(token);
+      restartPresence();
+      return res.json({ success: true, ...saved });
     } catch (error) {
       if (error instanceof ChannelError) {
         return res.status(error.status).json({ success: false, error: error.message });
@@ -319,6 +322,7 @@ export const discordAddon: AddonModule = {
     startAnnouncements();
     startTeamChannels();
     startLobbyInvites();
+    startPresence();
     void registerCommands();
   },
   stop() {
@@ -326,6 +330,7 @@ export const discordAddon: AddonModule = {
     stopAnnouncements();
     stopTeamChannels();
     stopLobbyInvites();
+    stopPresence();
   },
   router,
 };
