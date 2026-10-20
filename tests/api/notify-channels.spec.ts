@@ -82,6 +82,15 @@ test(
         data: { enabled: false },
       });
       expect((await voiceOff.json()).matchVoice).toEqual({ enabled: false, categoryId: null });
+      // Match announcements: only a text channel of the picked server; null turns them off.
+      const badChannel = await request.put('/api/addons/discord/announce', {
+        data: { channelId: '123456789012345678' },
+      });
+      expect(badChannel.status()).toBe(400);
+      const noAnnounce = await request.put('/api/addons/discord/announce', {
+        data: { channelId: null },
+      });
+      expect((await noAnnounce.json()).announceChannelId).toBeNull();
       // An API token alone (no session) cannot set it.
       const bare = await playwright.request.newContext({
         baseURL: process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3069',

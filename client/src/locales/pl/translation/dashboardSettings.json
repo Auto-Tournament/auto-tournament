@@ -900,6 +900,12 @@
       "category": "Category",
       "noCategory": "None (top of the server)",
       "saved": "Voice channel settings saved"
+    },
+    "announce": {
+      "label": "Match announcements",
+      "help": "Posts when a match is ready, goes live, and its result.",
+      "none": "Off",
+      "saved": "Announcement channel saved"
     }
   },
   "liveMatchesPage": {

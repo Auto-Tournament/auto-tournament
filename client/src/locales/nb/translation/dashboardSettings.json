@@ -896,6 +896,12 @@
       "category": "Kategori",
       "noCategory": "Ingen (øverst på serveren)",
       "saved": "Innstillingene for talekanaler er lagret"
+    },
+    "announce": {
+      "label": "Kampvarsler",
+      "help": "Poster når en kamp er klar, starter og er ferdig, med resultatet.",
+      "none": "Av",
+      "saved": "Kanalen for kampvarsler er lagret"
     }
   },
   "liveMatchesPage": {

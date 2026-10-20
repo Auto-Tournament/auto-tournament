@@ -1116,6 +1116,14 @@ export function getSchemaSQL(): string {
       PRIMARY KEY (match_slug, side)
     );
 
+    -- The Discord bot's match posts (addons/discord/announce.ts): each once per match.
+    CREATE TABLE IF NOT EXISTS discord_announcements (
+      match_slug TEXT NOT NULL,
+      event TEXT NOT NULL, -- 'ready' | 'live' | 'result'
+      sent_at INTEGER NOT NULL,
+      PRIMARY KEY (match_slug, event)
+    );
+
     -- Browser and phone notifications (Web Push): one row per browser a player turned them on in.
     CREATE TABLE IF NOT EXISTS push_subscriptions (
       endpoint TEXT PRIMARY KEY,

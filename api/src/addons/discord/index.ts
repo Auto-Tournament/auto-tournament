@@ -10,6 +10,12 @@ import type { Untrusted } from '../../utils/untrusted';
 import type { AddonModule } from '../types';
 import { ChannelError, botTokenStored, discordBot } from './bot';
 import { setVoiceSettings, startMatchVoice, stopMatchVoice, voiceSettings } from './matchVoice';
+import {
+  announceChannel,
+  setAnnounceChannel,
+  startAnnouncements,
+  stopAnnouncements,
+} from './announce';
 
 const router = Router();
 router.use(requireAuth);
@@ -22,7 +28,7 @@ router.use(requireAuth);
  *     summary: Whether a Discord bot token is set, the bot's name, its Discord servers and the one in use
  *     security: [{ BearerAuth: [] }]
  *     responses:
- *       200: { description: "`set`, `name`, `guilds` ({ id, name }[]), `guildId`, `categories` ({ id, name }[] of the picked server), `matchVoice` ({ enabled, categoryId })" }
+ *       200: { description: "`set`, `name`, `guilds` ({ id, name }[]), `guildId`, `categories` ({ id, name }[] of the picked server), `matchVoice` ({ enabled, categoryId }), `textChannels` ({ id, name }[]), `announceChannelId`" }
  */
 router.get('/', async (_req: Request, res: Response) => {
   try {
@@ -32,8 +38,10 @@ router.get('/', async (_req: Request, res: Response) => {
       success: true,
       ...status,
       ...guilds,
-      categories: guilds.guildId ? await discordBot.categories() : [],
+      categories: guilds.guildId ? await discordBot.channels([4]) : [],
+      textChannels: guilds.guildId ? await discordBot.channels([0, 5]) : [],
       matchVoice: await voiceSettings(),
+      announceChannelId: await announceChannel(),
     });
   } catch (error) {
     log.error('Reading the Discord bot failed', error as Error);
@@ -145,7 +153,7 @@ router.put('/match-voice', async (req: Request, res: Response) => {
     if (typeof body.enabled === 'boolean') patch.enabled = body.enabled;
     if (body.categoryId === null || body.categoryId === '') patch.categoryId = null;
     else if (typeof body.categoryId === 'string') {
-      const categories = await discordBot.categories();
+      const categories = await discordBot.channels([4]);
       if (!categories.some((c) => c.id === body.categoryId)) {
         return res
           .status(400)
@@ -162,6 +170,40 @@ router.put('/match-voice', async (req: Request, res: Response) => {
   }
 });
 
+/**
+ * @openapi
+ * /api/addons/discord/announce:
+ *   put:
+ *     tags: [Add-ons]
+ *     summary: The channel match announcements go to (one of the picked server's); null turns them off
+ *     security: [{ BearerAuth: [] }]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema: { type: object, properties: { channelId: { type: string, nullable: true } } }
+ *     responses:
+ *       200: { description: "`announceChannelId`" }
+ *       400: { description: Not a text channel of the picked server }
+ */
+router.put('/announce', async (req: Request, res: Response) => {
+  try {
+    const raw = (req.body as Record<string, Untrusted> | undefined)?.channelId;
+    if (raw === null || raw === '' || raw === undefined) {
+      return res.json({ success: true, announceChannelId: await setAnnounceChannel(null) });
+    }
+    if (typeof raw !== 'string' || !(await discordBot.channels([0, 5])).some((c) => c.id === raw)) {
+      return res
+        .status(400)
+        .json({ success: false, error: 'Not a text channel of the picked Discord server' });
+    }
+    return res.json({ success: true, announceChannelId: await setAnnounceChannel(raw) });
+  } catch (error) {
+    log.error('Setting the Discord announcement channel failed', error as Error);
+    return res.status(500).json({ success: false, error: 'Could not save the channel' });
+  }
+});
+
 export const discordAddon: AddonModule = {
   id: 'discord',
   name: 'Discord bot',
@@ -171,9 +213,11 @@ export const discordAddon: AddonModule = {
   defaultOn: async () => (await botTokenStored()) !== null,
   start() {
     startMatchVoice();
+    startAnnouncements();
   },
   stop() {
     stopMatchVoice();
+    stopAnnouncements();
   },
   router,
 };
