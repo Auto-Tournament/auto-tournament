@@ -2,6 +2,7 @@
  * OverviewLive's smaller parts: a match row, the round strip, the side
  * table and the next-round line. Moved out of OverviewLive.tsx as is.
  */
+import { OpponentName } from '../../team/MatchRowLinks';
 import { fmtTime } from '../../../utils/time';
 import { Link as RouterLink } from 'react-router-dom';
 import { Box, Typography } from '@mui/material';
@@ -363,7 +364,7 @@ export function SideTable({
                     textOverflow: 'ellipsis',
                   }}
                 >
-                  {team?.name ?? r.id}
+                  {team ? <OpponentName id={team.id} name={team.name} /> : r.id}
                 </Typography>
               </Box>
               <Typography
