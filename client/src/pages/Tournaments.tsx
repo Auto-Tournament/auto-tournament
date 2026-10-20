@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { typeLabel } from '../utils/tournamentSummary';
 import { fmtDate, fmtDayTime, fmtTime } from '../utils/time';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import {
@@ -211,7 +212,7 @@ export default function Tournaments() {
                   <Typography variant="caption" color="text.secondary" display="block">
                     {[
                       x.teamSize ? `${x.teamSize}v${x.teamSize}` : x.format.toUpperCase(),
-                      t(`tournament.typeSelector.types.${x.type}.label`, { defaultValue: x.type }),
+                      typeLabel(t, x.type),
                       x.winner ? t('tournamentsPage.won', { name: x.winner.name }) : null,
                       selected ? t('tournamentsPage.selected') : null,
                     ]

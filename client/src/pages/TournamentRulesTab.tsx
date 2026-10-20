@@ -6,7 +6,7 @@ import { RulesList } from '../components/tournament/overview/RulesList';
 import { useTournamentPage } from '../components/tournament/page/tournamentPageContext';
 import { tokens, fontDisplay, radii, textSize } from '../theme/tokens';
 import { useIntegrationFor } from '../integrations/registry';
-import { MATCH_FORMATS } from '../constants/tournament';
+import { seriesLabel, typeLabel } from '../utils/tournamentSummary';
 import { MapTile, panel } from '../components/tournament/ui/draftUi';
 import { panelSx } from '../components/common/ui';
 
@@ -71,9 +71,8 @@ export default function TournamentRulesTab() {
   const schedule = [...(settings?.schedule ?? [])].sort((a, b) => a.at.localeCompare(b.at));
   const maps = tournament.maps ?? [];
 
-  const typeKey = `tournament.typeSelector.types.${tournament.type}.label`;
-  const typeLabel = t(typeKey) === typeKey ? tournament.type : t(typeKey);
-  const series = MATCH_FORMATS.find((f) => f.value === tournament.format)?.label;
+  const typeName = typeLabel(t, tournament.type);
+  const series = seriesLabel(tournament.format);
   const rounds = tournament.maxRounds;
   const overtime =
     tournament.overtimeMode === 'disabled'
@@ -82,7 +81,7 @@ export default function TournamentRulesTab() {
         ? t('rulesTab.facts.overtimeSegments', { count: tournament.overtimeSegments })
         : t('rulesTab.facts.overtimeUnlimited');
   const facts = [
-    { label: t('overviewPage.facts.format'), value: typeLabel, note: series ?? '' },
+    { label: t('overviewPage.facts.format'), value: typeName, note: series ?? '' },
     ...(tournament.type !== 'shuffle'
       ? [
           {

@@ -27,7 +27,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { scopedSocket } from '../../utils/sharedSocket';
 import { onSocketReconnect } from '../../utils/socketResync';
-import { TOURNAMENT_TYPES, MATCH_FORMATS } from '../../constants/tournament';
+import { seriesLabel, typeLabel } from '../../utils/tournamentSummary';
 import { RestartTournamentButton } from '../dashboard/RestartTournamentButton';
 import { EndTournamentButton } from '../dashboard/EndTournamentButton';
 import { ChampionBanner } from './ChampionBanner';
@@ -310,10 +310,7 @@ export const TournamentLive: React.FC<TournamentLiveProps> = ({
               {t('tournament.labels.format')}
             </Typography>
             <Typography variant="body2">
-              {TOURNAMENT_TYPES.some((tt) => tt.value === tournament.type)
-                ? t(`tournament.typeSelector.types.${tournament.type}.label`)
-                : tournament.type}{' '}
-              • {MATCH_FORMATS.find((f) => f.value === tournament.format)?.label}
+              {typeLabel(t, tournament.type)} • {seriesLabel(tournament.format)}
             </Typography>
           </Grid>
           {!isShuffle && (
