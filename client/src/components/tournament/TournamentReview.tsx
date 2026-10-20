@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { seriesLabel } from '../../utils/tournamentSummary';
 import {
   Box,
   Typography,
@@ -19,7 +20,7 @@ import {
   TrashIcon,
 } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
-import { TOURNAMENT_TYPES, MATCH_FORMATS } from '../../constants/tournament';
+import { TOURNAMENT_TYPES } from '../../constants/tournament';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 import { api } from '../../utils/api';
 import { useIsDevelopment } from '../../hooks/useIsDevelopment';
@@ -114,7 +115,7 @@ export const TournamentReview: React.FC<TournamentReviewProps> = ({
       <CardContent>
         <Typography variant="h5" fontWeight={600} mb={3} data-testid="tournament-name-display">
           {tournament.name} • {TOURNAMENT_TYPES.find((t) => t.value === tournament.type)?.label} •{' '}
-          {MATCH_FORMATS.find((f) => f.value === tournament.format)?.label}
+          {seriesLabel(tournament.format)}
         </Typography>
 
         <Grid container spacing={3} sx={{ mb: 4 }}>
@@ -192,8 +193,8 @@ export const TournamentReview: React.FC<TournamentReviewProps> = ({
                 ? t('tournament.reviewCard.startingSimulation')
                 : t('tournament.reviewCard.starting')
               : simulationEnabled
-              ? t('tournament.reviewCard.startSimulation')
-              : t('tournament.reviewCard.start')}
+                ? t('tournament.reviewCard.startSimulation')
+                : t('tournament.reviewCard.start')}
           </Button>
 
           {isShuffle && onBulkCreateShuffleMatches && (

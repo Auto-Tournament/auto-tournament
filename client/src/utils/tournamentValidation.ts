@@ -1,4 +1,5 @@
 import type { TFunction } from 'i18next';
+import { typeLabel } from './tournamentSummary';
 import { TOURNAMENT_TYPES } from '../constants/tournament';
 
 export const isTournamentTypeValid = (
@@ -31,7 +32,7 @@ export const validateTeamCountForType = (
 
   if (!isTournamentTypeValid(tournamentType, teamCount)) {
     const params = {
-      type: t(`tournament.typeSelector.types.${tournamentType.value}.label`),
+      type: typeLabel(t, tournamentType.value),
       selected: t('tournament.counts.teams', { count: teamCount }),
     };
     if (tournamentType.requirePowerOfTwo && tournamentType.validCounts) {
