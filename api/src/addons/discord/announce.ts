@@ -42,6 +42,8 @@ interface MatchState {
   next_match_id: number | null;
   config: string | null;
   tournament_id: number | null;
+  tournament_type: string | null;
+  bracket: string | null;
   tournament: string | null;
 }
 
@@ -130,6 +132,34 @@ async function nextFor(m: MatchState, winnerName: string): Promise<string | null
     : `${winnerName} goes on to ${stage}; the opponent is not decided yet.`;
 }
 
+/**
+ * The match's stage: "Final", "Semi-final" and "Quarter-final" in a single
+ * elimination bracket, "Grand final" and "Upper/Lower final" in a double one,
+ * else "Round 2" (roundLabel).
+ */
+async function stageOf(slug: string, m: MatchState): Promise<string | null> {
+  if (m.round === null) return null;
+  const round = Number(m.round);
+  const plain =
+    m.bracket === 'GF' || m.bracket === 'GF_RESET' ? 'Grand final' : roundLabel(slug, round);
+  if (!m.tournament_id || !/elimination/.test(m.tournament_type ?? '') || plain === 'Grand final') {
+    return plain;
+  }
+  const last = await db.queryOneAsync<{ r: number | null }>(
+    'SELECT MAX(round)::int AS r FROM matches WHERE tournament_id = ? AND bracket IS NOT DISTINCT FROM ?',
+    [m.tournament_id, m.bracket]
+  );
+  const lastRound = last?.r ?? null;
+  if (lastRound === null) return plain;
+  if (m.tournament_type === 'double_elimination') {
+    return round === lastRound ? `${m.bracket === 'LB' ? 'Lower' : 'Upper'} final` : plain;
+  }
+  if (round === lastRound) return 'Final';
+  if (round === lastRound - 1) return 'Semi-final';
+  if (round === lastRound - 2) return 'Quarter-final';
+  return plain;
+}
+
 /** Format and maps from the match's config: "Bo3", ["Mirage", "Inferno", "Nuke"]. */
 function formatOf(config: string | null): { format: string | null; maps: string[] } {
   try {
@@ -170,7 +200,7 @@ async function announceNow(slug: string): Promise<void> {
   if (!token) return;
   const state = await db.queryOneAsync<MatchState>(
     `SELECT m.status, m.completed_at, m.winner_id, m.team1_id, m.team2_id, m.round, m.next_match_id,
-            m.config, m.tournament_id, tr.name AS tournament
+            m.config, m.tournament_id, tr.name AS tournament, tr.type AS tournament_type, m.bracket
        FROM matches m LEFT JOIN tournament tr ON tr.id = m.tournament_id
       WHERE m.slug = ?`,
     [slug]
@@ -202,7 +232,7 @@ async function announceNow(slug: string): Promise<void> {
       url,
       roles: await rolesOf(state),
       tournament: state.tournament,
-      stage: state.round !== null ? roundLabel(slug, Number(state.round)) : null,
+      stage: await stageOf(slug, state),
       ...formatOf(state.config),
     };
     if (event === 'live') {
