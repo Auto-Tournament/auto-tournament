@@ -13,7 +13,6 @@ import { TopNavBar } from '../components/layout/TopNavBar';
 import { TournamentPageHeader } from '../components/tournament/overview/TournamentPageHeader';
 import { ArchivedNotice } from '../components/tournament/page/ArchivedNotice';
 import { TournamentRunState } from '../components/tournament/page/TournamentRunState';
-import { LicensedBadge } from '../components/tournament/page/LicensedBadge';
 import type { TournamentPageContext } from '../components/tournament/page/tournamentPageContext';
 import { usePublicTournamentOverview } from '../hooks/usePublicTournamentOverview';
 import { useAuth } from '../contexts/AuthContext';
@@ -196,8 +195,6 @@ export default function TournamentPage() {
           )}
           <Outlet context={context} />
         </Box>
-        {/* Off unless an admin turns it on, and only for a valid license key. */}
-        <LicensedBadge />
       </Container>
     </Box>
   );

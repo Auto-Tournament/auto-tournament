@@ -233,7 +233,7 @@ export function LicenseCard() {
         </Stack>
       </SettingsRow>
 
-      {/* What players see at the bottom of event pages (LicensedBadge), always. */}
+      {/* What players see at the bottom of every page (LicensedBadge), always. */}
       <Typography
         variant="body2"
         color="text.secondary"
