@@ -661,6 +661,11 @@ func (r *recorder) recordMoment(g *game, look clipLook, name string, m moment, o
 			os.RemoveAll(dir)
 		}
 	}
+	// A demo that stops before the moment's kills would give a clip of the
+	// lead-up alone: fail it, so it shows as failed rather than as a clip.
+	if killsPastEnd(m.KillTicks, g.lastTick) {
+		return clipMarkers{}, nil, fmt.Errorf("the demo ends at tick %d, before the kills of this moment (%v)", g.lastTick, m.KillTicks)
+	}
 	// The clip ends where the slow motion after the last kill does.
 	end := m.SlowmoTick + int(math.Ceil(tailSec*tickrate))
 	if g.lastTick > 0 && end > g.lastTick-endMargin {

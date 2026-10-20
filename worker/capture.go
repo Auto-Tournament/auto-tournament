@@ -821,3 +821,14 @@ func defaultSink() string {
 
 // demoDir is where the recorder puts demos for CS2 (playdemo reads under game/csgo).
 func demoDir(gameDir string) string { return filepath.Join(gameDir, "csgo", "at-recorder") }
+
+// killsPastEnd says whether any kill falls in the last endMargin of a demo
+// lastTick long (0: length unknown), where playback cannot reach it.
+func killsPastEnd(kills []int, lastTick int) bool {
+	for _, k := range kills {
+		if lastTick > 0 && k > lastTick-endMargin {
+			return true
+		}
+	}
+	return false
+}
