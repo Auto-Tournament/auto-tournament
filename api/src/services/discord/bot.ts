@@ -4,11 +4,11 @@
  */
 import { db } from '../../config/database';
 import { decryptSecret, encryptSecret } from '../../utils/secretBox';
-import type { JsonValue } from '../../utils/json';
 import type { Untrusted } from '../../utils/untrusted';
+import { discordFetch, type DiscordAnswer } from './rest';
 
 const BOT_TOKEN_KEY = 'discord_bot_token';
-const DISCORD_API = 'https://discord.com/api/v10';
+const GUILD_KEY = 'discord_guild_id';
 
 export class ChannelError extends Error {
   constructor(
@@ -22,25 +22,6 @@ export class ChannelError extends Error {
 export async function botToken(): Promise<string | null> {
   const stored = await db.getAppSettingAsync(BOT_TOKEN_KEY).catch(() => null);
   return decryptSecret(stored);
-}
-
-export async function discordFetch(
-  token: string,
-  path: string,
-  init: { method?: string; body?: JsonValue } = {}
-): Promise<{ ok: boolean; status: number; body: Record<string, Untrusted> }> {
-  const res = await globalThis.fetch(`${DISCORD_API}${path}`, {
-    method: init.method ?? 'GET',
-    headers: {
-      Authorization: `Bot ${token}`,
-      'Content-Type': 'application/json',
-      'User-Agent': 'AutoTournament (https://autotournament.gg, 3)',
-    },
-    body: init.body === undefined ? undefined : JSON.stringify(init.body),
-    signal: globalThis.AbortSignal.timeout(10_000),
-  });
-  const body = (await res.json().catch(() => ({}))) as Record<string, Untrusted>;
-  return { ok: res.ok, status: res.status, body };
 }
 
 export const discordBot = {
@@ -63,7 +44,7 @@ export const discordBot = {
       return { set: false, name: null };
     }
     const value = token.trim();
-    let me: Awaited<ReturnType<typeof discordFetch>>;
+    let me: DiscordAnswer;
     try {
       me = await discordFetch(value, '/users/@me');
     } catch {
@@ -72,6 +53,36 @@ export const discordBot = {
     if (!me.ok) throw new ChannelError(400, 'Discord refused that token (is it a bot token?)');
     await db.setAppSettingAsync(BOT_TOKEN_KEY, encryptSecret(value));
     return { set: true, name: String(me.body.username ?? '') || null };
+  },
+
+  /** The Discord servers the bot is in, and the one the site uses (null: none picked). */
+  async guilds(): Promise<{ guilds: Array<{ id: string; name: string }>; guildId: string | null }> {
+    const token = await botToken();
+    const stored = await db.getAppSettingAsync(GUILD_KEY).catch(() => null);
+    const guildId = stored ?? null;
+    if (!token) return { guilds: [], guildId };
+    const r = await discordFetch(token, '/users/@me/guilds');
+    const list = r.ok && Array.isArray(r.body) ? (r.body as Array<Record<string, Untrusted>>) : [];
+    return {
+      guilds: list
+        .filter((g) => typeof g.id === 'string')
+        .map((g) => ({ id: String(g.id), name: String(g.name ?? g.id) })),
+      guildId,
+    };
+  },
+
+  /** Use this Discord server (one the bot is in). Null clears it. */
+  async setGuild(guildId: string | null): Promise<string | null> {
+    if (!guildId) {
+      await db.setAppSettingAsync(GUILD_KEY, null);
+      return null;
+    }
+    const { guilds } = await this.guilds();
+    if (!guilds.some((g) => g.id === guildId)) {
+      throw new ChannelError(400, 'The bot is not in that Discord server');
+    }
+    await db.setAppSettingAsync(GUILD_KEY, guildId);
+    return guildId;
   },
 
   /** A DM to one Discord user. False when Discord refuses (no shared server, DMs closed). */
