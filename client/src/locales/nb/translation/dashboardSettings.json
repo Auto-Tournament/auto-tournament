@@ -911,6 +911,12 @@
     "commands": {
       "label": "Skråstrekkommandoer: /matches og /mymatch",
       "help": "Lim inn denne som Interactions Endpoint URL for appen din i Discord Developer Portal. Discord må kunne nå dette nettstedet."
+    },
+    "setup": {
+      "button": "Sett opp denne serveren",
+      "help": "Lager kategorien «Auto Tournament» med #results for kampvarsler og en lobby der spillerne venter (de kan lytte, ikke snakke) til boten flytter dem til lagkanalen sin. Det som finnes fra før, brukes på nytt.",
+      "done": "Discord-serveren er satt opp",
+      "failed": "Kunne ikke sette opp Discord-serveren."
     }
   },
   "liveMatchesPage": {

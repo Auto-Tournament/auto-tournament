@@ -21,7 +21,7 @@ export class ChannelError extends Error {
 }
 
 /** The stored bot token, whether the add-on is on or not. */
-export async function botTokenStored(): Promise<string | null> {
+async function botTokenStored(): Promise<string | null> {
   const stored = await db.getAppSettingAsync(BOT_TOKEN_KEY).catch(() => null);
   return decryptSecret(stored);
 }

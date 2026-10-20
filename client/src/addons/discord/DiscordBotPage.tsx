@@ -117,6 +117,19 @@ export function DiscordBotPage() {
     }
   };
 
+  const setUp = async () => {
+    setBusy(true);
+    try {
+      await api.post('/api/addons/discord/setup', {});
+      await load();
+      showSuccess(t('discordBot.setup.done'));
+    } catch (error) {
+      showError(apiErrorMessage(error, t('discordBot.setup.failed')));
+    } finally {
+      setBusy(false);
+    }
+  };
+
   return (
     <Box data-testid="discord-bot">
       <Typography sx={{ fontSize: '0.875rem', color: color.muted, mb: 2 }}>
@@ -196,6 +209,22 @@ export function DiscordBotPage() {
               ))}
             </TextField>
           )}
+        </Box>
+      )}
+      {status?.set && status.guildId && (
+        <Box sx={{ mb: 2, maxWidth: 620 }}>
+          <Button
+            variant="outlined"
+            disabled={busy}
+            onClick={() => void setUp()}
+            data-testid="discord-bot-setup"
+            sx={{ borderRadius: radii.pill }}
+          >
+            {t('discordBot.setup.button')}
+          </Button>
+          <Typography sx={{ fontSize: '0.8125rem', color: color.muted, mt: 0.5 }}>
+            {t('discordBot.setup.help')}
+          </Typography>
         </Box>
       )}
       {status?.set && status.guildId && (

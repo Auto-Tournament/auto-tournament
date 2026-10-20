@@ -16,10 +16,21 @@ import { matchNowPath } from '../../routes/players';
 import { botToken, pickedGuildId } from './bot';
 import { discordFetch } from './rest';
 import { verifyDiscordSignature } from './interactionVerify';
+import { setupServer } from './setup';
+
+const ADMINISTRATOR = 1n << 3n;
+const MANAGE_GUILD = 1n << 5n;
 
 const COMMANDS = [
   { name: 'matches', description: 'The matches on a server right now' },
   { name: 'mymatch', description: 'Your match: where it is and how to join' },
+  {
+    name: 'setup',
+    description: 'Set up this server for Auto Tournament: category, #results and a Lobby',
+    // Shown to the server's admins only; checked again when it runs.
+    default_member_permissions: String(ADMINISTRATOR),
+    dm_permission: false,
+  },
 ];
 
 const EPHEMERAL = 64;
@@ -86,6 +97,18 @@ async function myMatch(discordUserId: string): Promise<string> {
   return path ? `Your match: ${siteUrl()}${path}` : 'You have no match right now.';
 }
 
+async function setupCommand(permissions: string | undefined): Promise<string> {
+  const perms = BigInt(permissions ?? '0');
+  if ((perms & (ADMINISTRATOR | MANAGE_GUILD)) === 0n)
+    return "Only the server's admins can do that.";
+  try {
+    await setupServer();
+    return 'Done: the "Auto Tournament" category, #results for announcements, and a Lobby where players wait to be moved into their team\'s voice channel. When a tournament starts, its players get a DM with the Lobby link.';
+  } catch (error) {
+    return error instanceof Error ? error.message : 'Could not set up the server.';
+  }
+}
+
 /** POST /api/addons/discord/interactions: the raw body (index.ts), checked against Discord's signature. */
 export async function handleInteraction(req: Request, res: Response): Promise<Response> {
   const token = await botToken();
@@ -109,12 +132,13 @@ export async function handleInteraction(req: Request, res: Response): Promise<Re
   // 1: Discord checking the endpoint.
   if (interaction.type === 1) return res.json({ type: 1 });
   const data = interaction.data as Record<string, Untrusted> | undefined;
-  const member = interaction.member as { user?: { id?: string } } | undefined;
+  const member = interaction.member as { user?: { id?: string }; permissions?: string } | undefined;
   const user = (interaction.user as { id?: string } | undefined) ?? member?.user;
   let content = 'I do not know that command.';
   try {
     if (data?.name === 'matches') content = await matchesNow();
     else if (data?.name === 'mymatch' && user?.id) content = await myMatch(user.id);
+    else if (data?.name === 'setup') content = await setupCommand(member?.permissions);
   } catch (error) {
     log.warn('[Discord] A slash command failed', {
       error: error instanceof Error ? error.message : String(error),
