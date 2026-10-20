@@ -350,6 +350,11 @@ export function TournamentPageHeader({
                 {seriesLabel && tournament.type !== 'shuffle' && (
                   <HeroPill icon={<ColumnsIcon size={14} />}>{seriesLabel}</HeroPill>
                 )}
+                {tournament.type === 'shuffle' && tournament.teamSize ? (
+                  <HeroPill icon={<ColumnsIcon size={14} />}>
+                    {`${tournament.teamSize}v${tournament.teamSize}`}
+                  </HeroPill>
+                ) : null}
               </Box>
               <Typography
                 id="tournament-title"
