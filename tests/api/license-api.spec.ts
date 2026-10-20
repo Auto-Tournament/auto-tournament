@@ -136,6 +136,27 @@ test.describe('License API', () => {
     expect(form.status()).toBe(415);
   });
 
+  test('an API token cannot change the license (a person decides it)', async ({ request }) => {
+    const token = (process.env.API_TOKENS || 'ci-admin:ci-admin-token-0123456789abcdef')
+      .split(/[\s,;]+/)[0]
+      .split(':')
+      .slice(1)
+      .join(':');
+    const auth = { Authorization: `Bearer ${token}` };
+    const put = await request.put('/api/license', {
+      data: { key: UNSIGNED_KEY },
+      headers: { ...json, ...auth },
+    });
+    // 403 when the token is configured (CI); 401 when this server has none.
+    expect([401, 403]).toContain(put.status());
+    expect([401, 403]).toContain(
+      (await request.delete('/api/license', { headers: auth })).status()
+    );
+    expect((await (await request.get('/api/license')).json()).license?.status ?? 'none').toBe(
+      'none'
+    );
+  });
+
   test('check-in: nothing without a key; with one, what is sent (CI never sends it)', async ({
     request,
   }) => {

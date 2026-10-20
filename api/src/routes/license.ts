@@ -1,7 +1,7 @@
 /**
  * The Auto Tournament license key (services/license/licenseService.ts).
- * Admin only, except the public badge. Writes must be same-site JSON, and a
- * read-only API token cannot write. The key is never returned or logged.
+ * Admin only, except the public badge. Writes must be same-site JSON from a
+ * signed-in admin: no API token can write. The key is never returned or logged.
  *
  * Nothing here blocks anything: a missing or problematic key is a notice for
  * admins, never a lockout. The one required step is accepting the license
@@ -29,9 +29,18 @@ const router = Router();
 
 /**
  * Same-site JSON only, like the catalog's and the system routes' writes. A
- * DELETE carries no body, so it only has to be same-site.
+ * DELETE carries no body, so it only has to be same-site. And a person: the
+ * license is the admin's own decision, so an API token (a bot, an AI through
+ * the MCP) cannot change it, e.g. to "fix" a full license by going free.
  */
 function refuseWrite(req: Request, res: Response): boolean {
+  if ((req as AuthedRequest).serviceToken) {
+    res.status(403).json({
+      success: false,
+      error: 'An API token cannot change the license. An admin does this in Manage → License.',
+    });
+    return true;
+  }
   if (!isSameSiteRequest(req)) {
     res.status(403).json({ success: false, error: 'Request refused' });
     return true;
@@ -330,7 +339,6 @@ router.get('/consent', async (_req: Request, res: Response) => {
 });
 
 router.post('/consent', async (req: Request, res: Response) => {
-  if (refuseWrite(req, res)) return;
   if ((req as AuthedRequest).serviceToken) {
     return res.status(403).json({
       success: false,
@@ -338,6 +346,7 @@ router.post('/consent', async (req: Request, res: Response) => {
         'An API token cannot accept the license terms. Sign in as an admin, or set AT_ACCEPT_LICENSE.',
     });
   }
+  if (refuseWrite(req, res)) return;
   const body = (req.body ?? {}) as {
     use?: Untrusted;
     confirm?: Untrusted;
