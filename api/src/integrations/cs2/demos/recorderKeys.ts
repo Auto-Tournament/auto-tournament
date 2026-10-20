@@ -131,7 +131,12 @@ export async function requireRecorder(
       res.status(500).json({ success: false, error: 'Could not check the recorder key' });
       return;
     }
-    res.status(401).json({ success: false, error: 'Invalid or revoked recorder key' });
+    // The code tells the recorder to forget this key and this platform (at-recorder agent).
+    res.status(401).json({
+      success: false,
+      error: 'Invalid or revoked recorder key',
+      code: 'recorder_key_rejected',
+    });
     return;
   }
   return requireAuth(req, res, next);

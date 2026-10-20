@@ -23,6 +23,10 @@ import (
 )
 
 var version = "dev"
+
+// errKeyRejected: the platform does not take this recorder's key (revoked, or
+// a key it never made). The recorder then forgets the key and the platform.
+var errKeyRejected = errors.New("the platform rejected this recorder's key")
 var imagePattern = regexp.MustCompile(`^sivertio/auto-tournament-recorder@sha256:[0-9a-f]{64}$`)
 
 type agent struct {
@@ -82,14 +86,21 @@ func newAgent(root string) (*agent, error) {
 		return nil, err
 	}
 	a := &agent{hostID: hostID, hostname: hostname, root: root, base: strings.TrimRight(conf["AT_URL"], "/"), token: conf["AT_WORKER_TOKEN"], name: conf["AT_WORKER_NAME"], http: &http.Client{Timeout: 25 * time.Second, CheckRedirect: func(req *http.Request, via []*http.Request) error { return http.ErrUseLastResponse }}, wait: wait}
-	if a.base == "" || a.token == "" || a.name == "" {
-		return nil, errors.New("AT_URL, AT_WORKER_TOKEN and AT_WORKER_NAME are required")
+	if a.name == "" {
+		return nil, errors.New("AT_WORKER_NAME is required")
 	}
-	if _, err := platformURL(a.base); err != nil {
-		return nil, err
-	}
-	if !validKey(a.token) {
-		return nil, errors.New("invalid recorder key")
+	// Neither a platform nor a key: unlinked (a platform rejected its key and
+	// it forgot both), waiting for `at-recorder connect`.
+	if a.base != "" || a.token != "" {
+		if a.base == "" || a.token == "" {
+			return nil, errors.New("AT_URL and AT_WORKER_TOKEN go together")
+		}
+		if _, err := platformURL(a.base); err != nil {
+			return nil, err
+		}
+		if !validKey(a.token) {
+			return nil, errors.New("invalid recorder key")
+		}
 	}
 	a.restart = func(ctx context.Context) error {
 		return exec.CommandContext(ctx, "systemctl", "restart", "at-recorder-agent.service").Run()
@@ -128,6 +139,12 @@ func (a *agent) apiPath(ctx context.Context, endpoint string, body any, out any)
 		return err
 	}
 	defer res.Body.Close()
+	if res.StatusCode == http.StatusUnauthorized {
+		b, _ := io.ReadAll(io.LimitReader(res.Body, 2048))
+		if strings.Contains(string(b), "recorder_key_rejected") {
+			return errKeyRejected
+		}
+	}
 	if res.StatusCode != 200 {
 		return fmt.Errorf("platform %s HTTP %d", endpoint, res.StatusCode)
 	}
@@ -203,8 +220,28 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGTERM, syscall.SIGINT)
 	defer stop()
 	log.Printf("at-recorder host agent %s: %s", version, a.name)
+	told := false
 	for ctx.Err() == nil {
-		if err = a.tick(ctx); err != nil {
+		if a.base == "" {
+			if !told {
+				log.Print("not linked to a platform: link it with `at-recorder connect`")
+				told = true
+			}
+			if a.wait(ctx, time.Minute) != nil {
+				break
+			}
+			continue
+		}
+		if err = a.tick(ctx); errors.Is(err, errKeyRejected) {
+			log.Printf("%s rejected this recorder's key (revoked or unknown): forgetting the key and the platform", a.base)
+			if err = a.forget(ctx); err != nil {
+				log.Printf("forget: %v", err)
+				if a.wait(ctx, time.Minute) != nil {
+					break
+				}
+			}
+			continue
+		} else if err != nil {
 			log.Printf("heartbeat: %v", err)
 		}
 		updateCtx, cancelUpdate := context.WithTimeout(ctx, 60*time.Minute)
@@ -220,6 +257,33 @@ func main() {
 			break
 		}
 	}
+}
+
+// forget unlinks the recorder from a platform that rejected its key: the
+// container stops (nothing to record for, and `connect` wants it stopped) and
+// the platform's address and key leave its configuration. The name and the
+// installation ID stay, so connecting again keeps the same recorder.
+func (a *agent) forget(ctx context.Context) error {
+	if _, err := a.run(ctx, "stop", "at-recorder"); err != nil {
+		return err
+	}
+	path := filepath.Join(a.root, "config/at-recorder.env")
+	b, err := os.ReadFile(path)
+	if err != nil {
+		return err
+	}
+	var keep []string
+	for _, line := range strings.Split(string(b), "\n") {
+		k, _, _ := strings.Cut(strings.TrimSpace(line), "=")
+		if k != "AT_URL" && k != "AT_WORKER_TOKEN" {
+			keep = append(keep, line)
+		}
+	}
+	if err = writeConfig(path, []byte(strings.Join(keep, "\n"))); err != nil {
+		return err
+	}
+	a.base, a.token = "", ""
+	return nil
 }
 
 func machineID(root string) (string, error) {

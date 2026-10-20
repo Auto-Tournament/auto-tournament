@@ -63,11 +63,13 @@ test(
     }>;
     expect(recorders.find((r) => r.name === name)?.label).toBe('Seat 12');
 
-    // Revoked: no more work.
+    // Revoked: no more work, and the answer tells the recorder to forget the key.
     expect((await request.delete(`/api/game/cs2/recorder-keys/${key.id}`)).status()).toBe(200);
-    expect(
-      (await asRecorder.post('/api/game/cs2/recorder/claim', { data: { recorder: name } })).status()
-    ).toBe(401);
+    const refused = await asRecorder.post('/api/game/cs2/recorder/claim', {
+      data: { recorder: name },
+    });
+    expect(refused.status()).toBe(401);
+    expect((await refused.json()).code).toBe('recorder_key_rejected');
     expect((await request.delete(`/api/game/cs2/recorder-keys/${key.id}`)).status()).toBe(404);
 
     // A made-up key is refused.
