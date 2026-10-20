@@ -20,6 +20,7 @@ interface BotStatus {
   textChannels?: Array<{ id: string; name: string }>;
   announceChannelId?: string | null;
   teamChannels?: boolean;
+  inviteUrl?: string | null;
 }
 
 /**
@@ -44,7 +45,13 @@ export function DiscordBotPage() {
   }, []);
   useEffect(() => {
     const id = setTimeout(() => void load(), 0);
-    return () => clearTimeout(id);
+    // Back from inviting the bot in another tab: the new server shows up.
+    const onFocus = () => void load();
+    window.addEventListener('focus', onFocus);
+    return () => {
+      clearTimeout(id);
+      window.removeEventListener('focus', onFocus);
+    };
   }, [load]);
 
   const save = async (value: string | null) => {
@@ -160,24 +167,40 @@ export function DiscordBotPage() {
         </Box>
       )}
       {status?.set && (
-        <TextField
-          select
-          size="small"
-          label={t('discordBot.guild')}
-          value={status.guildId ?? ''}
-          disabled={busy}
-          onChange={(e) => void pickGuild(e.target.value)}
-          helperText={status.guilds?.length ? t('discordBot.guildHint') : t('discordBot.noGuilds')}
-          inputProps={{ 'data-testid': 'discord-bot-guild' }}
-          sx={{ minWidth: 280, maxWidth: 420, mb: 2, display: 'flex' }}
-        >
-          <MenuItem value="">{t('discordBot.noGuild')}</MenuItem>
-          {(status.guilds ?? []).map((g) => (
-            <MenuItem key={g.id} value={g.id}>
-              {g.name}
-            </MenuItem>
-          ))}
-        </TextField>
+        <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'flex-start', flexWrap: 'wrap', mb: 2 }}>
+          <TextField
+            select
+            size="small"
+            label={t('discordBot.guild')}
+            value={status.guildId ?? ''}
+            disabled={busy}
+            onChange={(e) => void pickGuild(e.target.value)}
+            helperText={
+              status.guilds?.length ? t('discordBot.guildHint') : t('discordBot.noGuilds')
+            }
+            inputProps={{ 'data-testid': 'discord-bot-guild' }}
+            sx={{ minWidth: 280, maxWidth: 420, flex: '1 1 280px' }}
+          >
+            <MenuItem value="">{t('discordBot.noGuild')}</MenuItem>
+            {(status.guilds ?? []).map((g) => (
+              <MenuItem key={g.id} value={g.id}>
+                {g.name}
+              </MenuItem>
+            ))}
+          </TextField>
+          {status.inviteUrl && (
+            <Button
+              component={ExternalLink}
+              href={status.inviteUrl}
+              variant="outlined"
+              underline="none"
+              data-testid="discord-bot-invite"
+              sx={{ borderRadius: radii.pill, mt: 0.25 }}
+            >
+              {t('discordBot.invite')}
+            </Button>
+          )}
+        </Box>
       )}
       {status?.set && status.guildId && (
         <Box sx={{ mb: 2, maxWidth: 520 }}>
