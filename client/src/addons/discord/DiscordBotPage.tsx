@@ -7,6 +7,7 @@ import { tokens, radii } from '../../theme/tokens';
 
 import { ExternalLink } from '../../components/common/ExternalLink';
 import { SwitchRow } from '../../components/common/ui';
+import { SetupChecklist, type SetupState } from './SetupChecklist';
 
 const { color } = tokens;
 
@@ -21,6 +22,7 @@ interface BotStatus {
   announceChannelId?: string | null;
   teamChannels?: boolean;
   inviteUrl?: string | null;
+  setup?: SetupState | null;
 }
 
 /**
@@ -234,21 +236,8 @@ export function DiscordBotPage() {
           )}
         </Box>
       )}
-      {status?.set && status.guildId && (
-        <Box sx={{ mb: 2, maxWidth: 620 }}>
-          <Button
-            variant="outlined"
-            disabled={busy}
-            onClick={() => void setUp()}
-            data-testid="discord-bot-setup"
-            sx={{ borderRadius: radii.pill }}
-          >
-            {t('discordBot.setup.button')}
-          </Button>
-          <Typography sx={{ fontSize: '0.8125rem', color: color.muted, mt: 0.5 }}>
-            {t('discordBot.setup.help')}
-          </Typography>
-        </Box>
+      {status?.set && status.guildId && status.setup && (
+        <SetupChecklist state={status.setup} busy={busy} onSetUp={() => void setUp()} />
       )}
       {status?.set && status.guildId && (
         <Box sx={{ mb: 2, maxWidth: 620 }} data-testid="discord-bot-commands">

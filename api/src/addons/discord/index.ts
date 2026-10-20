@@ -19,7 +19,7 @@ import {
 import { resolveViewerAccount } from '../../utils/viewerIdentity';
 import { appInfo, handleInteraction, inviteUrl, registerCommands } from './interactions';
 import { botToken } from './bot';
-import { SetupError, setupServer } from './setup';
+import { SetupError, setupServer, setupState } from './setup';
 import { restartPresence, startPresence, stopPresence } from './presence';
 import { startLobbyInvites, stopLobbyInvites } from './lobby';
 import { setVoiceSettings, startMatchVoice, stopMatchVoice, voiceSettings } from './matchVoice';
@@ -79,7 +79,7 @@ router.use(requireAuth);
  *     summary: Whether a Discord bot token is set, the bot's name, its Discord servers and the one in use
  *     security: [{ BearerAuth: [] }]
  *     responses:
- *       200: { description: "`set`, `name`, `guilds` ({ id, name }[]), `guildId`, `categories` ({ id, name }[] of the picked server), `matchVoice` ({ enabled, categoryId }), `textChannels` ({ id, name }[]), `announceChannelId`, `inviteUrl` (adds the bot to a server), `teamChannels` (on/off)" }
+ *       200: { description: "`set`, `name`, `guilds` ({ id, name }[]), `guildId`, `categories` ({ id, name }[] of the picked server), `matchVoice` ({ enabled, categoryId }), `textChannels` ({ id, name }[]), `announceChannelId`, `inviteUrl` (adds the bot to a server), `setup` ({ category, results, lobby }: which of what Set up makes are there), `teamChannels` (on/off)" }
  */
 router.get('/', async (_req: Request, res: Response) => {
   try {
@@ -87,12 +87,15 @@ router.get('/', async (_req: Request, res: Response) => {
     const token = status.set ? await botToken() : null;
     const app = token ? await appInfo(token) : null;
     const guilds = status.set ? await discordBot.guilds() : { guilds: [], guildId: null };
+    // One read of the server's channels: the pickers and what Set up made.
+    const channels = guilds.guildId ? await discordBot.channels([0, 2, 4, 5]) : [];
     return res.json({
       success: true,
       ...status,
       ...guilds,
-      categories: guilds.guildId ? await discordBot.channels([4]) : [],
-      textChannels: guilds.guildId ? await discordBot.channels([0, 5]) : [],
+      categories: channels.filter((c) => c.type === 4),
+      textChannels: channels.filter((c) => c.type === 0 || c.type === 5),
+      setup: guilds.guildId ? await setupState(channels) : null,
       matchVoice: await voiceSettings(),
       inviteUrl: app ? inviteUrl(app.id) : null,
       announceChannelId: await announceChannel(),

@@ -914,9 +914,17 @@
     },
     "setup": {
       "button": "Set up this server",
-      "help": "Makes an \"Auto Tournament\" category with #results for announcements and a Lobby where players wait (they can listen, not talk) until the bot moves them into their team's channel. Anything already there is reused.",
+      "help": "Set up makes what is missing and reuses what is there, also if you renamed it. Nothing you made is deleted.",
       "done": "The Discord server is set up",
-      "failed": "Could not set up the Discord server."
+      "failed": "Could not set up the Discord server.",
+      "category": "An \"Auto Tournament\" category, for the team channels",
+      "results": "#results, for the match announcements",
+      "lobby": "A Lobby, where players wait to be moved",
+      "allThere": "Your Discord server is set up",
+      "missing_one": "{{count}} thing is missing on your Discord server",
+      "missing_other": "{{count}} things are missing on your Discord server",
+      "notThere": "missing",
+      "fix": "Fix what is missing"
     },
     "invite": "Invite to a server"
   },
