@@ -9,6 +9,7 @@
  * - The next round's veto opens one break (Match rules, "Break between
  *   matches") after the last match of the current round ends.
  * - A hold on a next-round match (the break, or its scheduled start) is an exact time.
+ * - The tournament's end: each later round a warmup and a full match, one break apart.
  */
 import type { BracketMatch } from '../types/tournament.types';
 
@@ -34,6 +35,12 @@ export interface NextRoundEta {
   exact: boolean;
   /** The current round is the last: `at` is when the tournament should end. */
   final: boolean;
+  /**
+   * When the last round should end (not on the final round, where that is
+   * `at`): each round after this one a warmup and a full match, with the
+   * break between rounds.
+   */
+  endsAt?: string;
 }
 
 /** Rounds left in the current map for a match at this score (pure). */
@@ -99,7 +106,13 @@ export function computeNextRoundEta(input: EtaInput): NextRoundEta | null {
   const final = later.length === 0 && round >= input.totalRounds;
   if (final) return { at: new Date(ends).toISOString(), exact: false, final: true };
 
-  const estimate = ends + Math.max(0, breakMinutes) * 60 * 1000;
+  const breakMs = Math.max(0, breakMinutes) * 60 * 1000;
+  const estimate = ends + breakMs;
+  const roundsAfter = Math.max(1, input.totalRounds - round);
+  const endsFrom = (start: number) =>
+    new Date(
+      start + roundsAfter * (warmupMs + fullMatchMs) + (roundsAfter - 1) * breakMs
+    ).toISOString();
   // A hold on a next-round match is when its veto really opens; a schedule is a floor.
   const times = later
     .filter((m) => m.status === 'pending' || m.status === 'ready')
@@ -113,8 +126,18 @@ export function computeNextRoundEta(input: EtaInput): NextRoundEta | null {
   if (times.length > 0) {
     const first = times.reduce((a, b) => (a.at <= b.at ? a : b));
     if (first.at >= estimate || first.hold) {
-      return { at: new Date(first.at).toISOString(), exact: true, final: false };
+      return {
+        at: new Date(first.at).toISOString(),
+        exact: true,
+        final: false,
+        endsAt: endsFrom(first.at),
+      };
     }
   }
-  return { at: new Date(estimate).toISOString(), exact: false, final: false };
+  return {
+    at: new Date(estimate).toISOString(),
+    exact: false,
+    final: false,
+    endsAt: endsFrom(estimate),
+  };
 }

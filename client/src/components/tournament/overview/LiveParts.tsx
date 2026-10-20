@@ -383,7 +383,7 @@ export function SideTable({
   );
 }
 
-/** "Next round about 15:47" while a round is being played; nothing when there is no estimate. */
+/** "Next round about 15:47 · ends about 19:10" while a round is being played; nothing when there is no estimate. */
 
 export function NextRoundEtaLine({ eta }: { eta: NextRoundEta | null }) {
   const { t, i18n } = useTranslation();
@@ -396,6 +396,8 @@ export function NextRoundEtaLine({ eta }: { eta: NextRoundEta | null }) {
       sx={{ px: 1, fontSize: textSize.sm, color: color.ink2, fontVariantNumeric: 'tabular-nums' }}
     >
       {t(`liveOverview.eta.${key}`, { time })}
+      {eta.endsAt &&
+        ` · ${t('liveOverview.eta.endsAbout', { time: fmtTime(eta.endsAt, i18n.language) })}`}
     </Typography>
   );
 }

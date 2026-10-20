@@ -10,6 +10,8 @@ export interface NextRoundEta {
   at: string;
   exact: boolean;
   final: boolean;
+  /** When the last round should end; only before the final round. */
+  endsAt?: string;
 }
 
 interface PublicBracketResponse {
