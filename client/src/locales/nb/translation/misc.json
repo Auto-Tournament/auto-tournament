@@ -523,6 +523,16 @@
     "signInNeed": {
       "body": "{{game}}-spillere logger inn med {{provider}}, og innlogging med {{provider}} er slått av. De kan ikke koble til kontoen spillet trenger.",
       "action": "Slå den på"
+    },
+    "addons": {
+      "title": "Tillegg",
+      "hint": "Funksjoner ved siden av spillene. Når du slår et tillegg av eller på, skjer det med en gang.",
+      "open": "Åpne",
+      "toggle": "{{name}} av eller på",
+      "toggleFailed": "Kunne ikke endre tillegget.",
+      "startFailed": "Slått på, men startet ikke: {{error}}",
+      "notFound": "Det finnes ikke noe slikt tillegg.",
+      "off": "Dette tillegget er slått av. Slå det på under Moduler for å sette det opp."
     }
   },
   "catalog": {

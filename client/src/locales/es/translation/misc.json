@@ -523,6 +523,16 @@
     "signInNeed": {
       "body": "{{game}} players sign in with {{provider}}, and {{provider}} sign-in is turned off. They can't link the account the game needs.",
       "action": "Turn it on"
+    },
+    "addons": {
+      "title": "Add-ons",
+      "hint": "Features beside the games. Turning one on or off takes effect at once.",
+      "open": "Open",
+      "toggle": "{{name}} on or off",
+      "toggleFailed": "Could not change the add-on.",
+      "startFailed": "On, but it did not start: {{error}}",
+      "notFound": "There is no such add-on.",
+      "off": "This add-on is off. Turn it on under Modules to set it up."
     }
   },
   "catalog": {
