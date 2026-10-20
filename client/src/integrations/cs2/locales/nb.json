@@ -2148,7 +2148,10 @@
     "bench": {
       "hz": "Oppdateringsfrekvens",
       "time": "Tid",
-      "fps": "Opptaks-fps"
+      "fps": "Opptaks-fps",
+      "mode": "Capture mode",
+      "native": "Frame by frame",
+      "exportFps": "Render fps"
     },
     "lastError": "Siste feil: {{error}}",
     "runs_one": "{{count}} kjøring",
@@ -2307,7 +2310,11 @@
       "updatedAt": "oppdatert {{time}}"
     },
     "runFailed_one": "{{count}} feilet",
-    "runFailed_other": "{{count}} feilet"
+    "runFailed_other": "{{count}} feilet",
+    "benchmarkRunning": "Running",
+    "benchmarkNativeReady": "Frame export ready",
+    "benchmarkFailed": "Benchmark failed",
+    "benchmarkNativeHint": "Frame-by-frame export saves every frame even when render speed is below playback speed."
   },
   "tournament": {
     "botFill": {
