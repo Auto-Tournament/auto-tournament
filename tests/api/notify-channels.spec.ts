@@ -91,6 +91,17 @@ test(
         data: { channelId: null },
       });
       expect((await noAnnounce.json()).announceChannelId).toBeNull();
+      // Team channels: on and off; a team's link is only for its own players.
+      const teamsOn = await request.put('/api/addons/discord/team-channels', {
+        data: { enabled: true },
+      });
+      expect((await teamsOn.json()).teamChannels).toBe(true);
+      const link = await player.get('/api/addons/discord/team-channel/no-such-team');
+      expect((await link.json()).url).toBeNull();
+      const teamsOff = await request.put('/api/addons/discord/team-channels', {
+        data: { enabled: false },
+      });
+      expect((await teamsOff.json()).teamChannels).toBe(false);
       // An API token alone (no session) cannot set it.
       const bare = await playwright.request.newContext({
         baseURL: process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3069',

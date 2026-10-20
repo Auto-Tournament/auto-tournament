@@ -902,6 +902,11 @@
       "help": "Posts when a match is ready, goes live, and its result.",
       "none": "Off",
       "saved": "Announcement channel saved"
+    },
+    "teamChannels": {
+      "label": "Team channels",
+      "help": "While a tournament runs, each team gets a private text channel. Its players find the link on their team page.",
+      "link": "Team channel on Discord"
     }
   },
   "liveMatchesPage": {

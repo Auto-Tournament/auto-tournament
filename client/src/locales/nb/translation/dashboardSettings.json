@@ -902,6 +902,11 @@
       "help": "Poster når en kamp er klar, starter og er ferdig, med resultatet.",
       "none": "Av",
       "saved": "Kanalen for kampvarsler er lagret"
+    },
+    "teamChannels": {
+      "label": "Lagkanaler",
+      "help": "Mens en turnering pågår, får hvert lag sin egen private tekstkanal. Spillerne finner lenken på lagsiden sin.",
+      "link": "Lagkanalen på Discord"
     }
   },
   "liveMatchesPage": {

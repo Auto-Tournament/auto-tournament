@@ -1,5 +1,9 @@
 import { test, expect } from '@playwright/test';
-import { teamOverwrites, voiceChannelName } from '../../api/src/addons/discord/voiceChannel';
+import {
+  TEXT_MEMBER,
+  teamOverwrites,
+  voiceChannelName,
+} from '../../api/src/addons/discord/voiceChannel';
 
 /**
  * A match's team voice channel: named after the team and the match, and only
@@ -24,6 +28,12 @@ test.describe('Discord team voice channel', () => {
       expect(p.type).toBe(1);
       expect(BigInt(p.allow) & (view | connect)).toBe(view | connect);
     }
+  });
+
+  test('a text channel lets the team write and read back', () => {
+    const send = 1n << 11n;
+    const player = teamOverwrites('guild', 'bot', ['p1'], TEXT_MEMBER).find((x) => x.id === 'p1');
+    expect(BigInt(player?.allow ?? '0') & send).toBe(send);
   });
 
   test('named after the team and the match, at most 100 characters', () => {

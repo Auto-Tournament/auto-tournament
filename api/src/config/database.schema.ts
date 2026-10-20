@@ -1124,6 +1124,14 @@ export function getSchemaSQL(): string {
       PRIMARY KEY (match_slug, event)
     );
 
+    -- The Discord bot's team channels (addons/discord/teamChannels.ts): one per team while its tournament runs.
+    CREATE TABLE IF NOT EXISTS discord_team_channels (
+      tournament_id INTEGER NOT NULL,
+      team_id TEXT NOT NULL,
+      channel_id TEXT NOT NULL,
+      PRIMARY KEY (tournament_id, team_id)
+    );
+
     -- Browser and phone notifications (Web Push): one row per browser a player turned them on in.
     CREATE TABLE IF NOT EXISTS push_subscriptions (
       endpoint TEXT PRIMARY KEY,

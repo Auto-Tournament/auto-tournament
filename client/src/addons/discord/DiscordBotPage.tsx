@@ -19,6 +19,7 @@ interface BotStatus {
   matchVoice?: { enabled: boolean; categoryId: string | null };
   textChannels?: Array<{ id: string; name: string }>;
   announceChannelId?: string | null;
+  teamChannels?: boolean;
 }
 
 /**
@@ -97,6 +98,18 @@ export function DiscordBotPage() {
       await api.put('/api/addons/discord/announce', { channelId: channelId || null });
       setStatus((prev) => (prev ? { ...prev, announceChannelId: channelId || null } : prev));
       showSuccess(t('discordBot.announce.saved'));
+    } catch (error) {
+      showError(apiErrorMessage(error, t('discordBot.saveFailed')));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const saveTeamChannels = async (enabled: boolean) => {
+    setBusy(true);
+    try {
+      await api.put('/api/addons/discord/team-channels', { enabled });
+      setStatus((prev) => (prev ? { ...prev, teamChannels: enabled } : prev));
     } catch (error) {
       showError(apiErrorMessage(error, t('discordBot.saveFailed')));
     } finally {
@@ -183,6 +196,19 @@ export function DiscordBotPage() {
               ))}
             </TextField>
           )}
+        </Box>
+      )}
+      {status?.set && status.guildId && (
+        <Box sx={{ mb: 2, maxWidth: 520 }}>
+          <SwitchRow
+            label={t('discordBot.teamChannels.label')}
+            help={t('discordBot.teamChannels.help')}
+            checked={status.teamChannels ?? false}
+            disabled={busy}
+            onChange={(e) => void saveTeamChannels(e.target.checked)}
+            size="small"
+            data-testid="discord-bot-team-channels"
+          />
         </Box>
       )}
       {status?.set && status.guildId && (
