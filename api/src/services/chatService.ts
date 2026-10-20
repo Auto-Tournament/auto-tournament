@@ -1,9 +1,10 @@
 /**
- * Chat: a match's chat (both teams and the admins), a team's chat, and a
- * matchmaking party's chat. Channels are `match:<slug>`, `team:<id>` and
- * `party:<id>`; who may read and write one is worked out each time from the
- * match roster, the team roster or the party, so nobody has to be added to a
- * channel. Admins read and write every match's chat (to settle things); team
+ * Chat: a match's chat (both teams and the admins), a team's chat, a
+ * matchmaking party's chat, and two friends' direct messages. Channels are
+ * `match:<slug>`, `team:<id>`, `party:<id>` and `dm:<id>:<id>` (the two Steam
+ * IDs in order); who may read and write one is worked out each time from the
+ * match roster, the team roster, the party or the friendship, so nobody has to
+ * be added to a channel. Admins read and write every match's chat (to settle things); team
  * and party chats are private to their members.
  *
  * Messages go out live over Socket.IO (`chat:message`) to the members' own
@@ -24,7 +25,7 @@ import { CURRENT_MATCH_TOURNAMENT_JOIN } from '../utils/currentMatchOrder';
 import type { SqlValue } from '../config/database';
 import type { Untrusted } from '../utils/untrusted';
 
-export type ChatKind = 'match' | 'team' | 'party';
+export type ChatKind = 'match' | 'team' | 'party' | 'dm';
 
 export interface ChatMessage {
   id: number;
@@ -127,8 +128,22 @@ const toMessage = (r: MessageRow): ChatMessage => ({
 });
 
 export function parseChannel(channel: string): { kind: ChatKind; ref: string } | null {
-  const m = /^(match|team|party):([A-Za-z0-9_.:-]{1,128})$/.exec(channel);
-  return m ? { kind: m[1] as ChatKind, ref: m[2] } : null;
+  const m = /^(match|team|party|dm):([A-Za-z0-9_.:-]{1,128})$/.exec(channel);
+  if (!m) return null;
+  if (m[1] === 'dm' && dmPair(m[2]) === null) return null;
+  return { kind: m[1] as ChatKind, ref: m[2] };
+}
+
+/** The DM channel of two players: one name for the pair, whoever opens it. */
+export function dmChannel(a: string, b: string): string {
+  return `dm:${[a, b].sort().join(':')}`;
+}
+
+/** A DM channel's two players, or null when the ref is not two different IDs in order. */
+function dmPair(ref: string): [string, string] | null {
+  const ids = ref.split(':');
+  if (ids.length !== 2 || !ids[0] || !ids[1] || ids[0] >= ids[1]) return null;
+  return [ids[0], ids[1]];
 }
 
 function steamIdsOf(json: string | null | undefined): string[] {
@@ -224,6 +239,15 @@ async function members(channel: string): Promise<Members | null> {
     );
     if (!row) return null;
     return { players: new Set(steamIdsOf(row.players)), teamOf, since: 0 };
+  }
+  if (parsed.kind === 'dm') {
+    // Friends only: a DM ends with the friendship.
+    const [a, b] = dmPair(parsed.ref)!;
+    const friends = await db.queryOneAsync(
+      'SELECT 1 FROM friendships WHERE player_id = ? AND friend_id = ?',
+      [a, b]
+    );
+    return friends ? { players: new Set([a, b]), teamOf, since: 0 } : null;
   }
   const rows = await db.queryAsync<{ player_id: string }>(
     'SELECT player_id FROM mm_party_members WHERE party_id = ?',
@@ -405,6 +429,28 @@ export const chatService = {
          FROM mm_party_members pm WHERE pm.player_id = ?`,
       [id]
     );
+    // DMs with friends, the latest talked to first.
+    const dms = await db.queryAsync<{ friend_id: string; name: string | null }>(
+      `SELECT f.friend_id, p.name FROM friendships f
+         JOIN players p ON p.id = f.friend_id
+         JOIN LATERAL (
+           SELECT MAX(c.id) AS last FROM chat_messages c
+            WHERE c.channel = 'dm:' || LEAST(f.player_id COLLATE "C", f.friend_id) || ':' || GREATEST(f.player_id COLLATE "C", f.friend_id)
+         ) lm ON lm.last IS NOT NULL
+        WHERE f.player_id = ?
+        ORDER BY lm.last DESC LIMIT 10`,
+      [id]
+    );
+    for (const dm of dms) {
+      const channel = dmChannel(id, dm.friend_id);
+      out.push({
+        channel,
+        kind: 'dm',
+        title: dm.name ?? dm.friend_id,
+        myTeam: null,
+        unread: await unreadFor(id, channel),
+      });
+    }
     if (party && party.n > 1) {
       const channel = `party:${party.party_id}`;
       out.push({
