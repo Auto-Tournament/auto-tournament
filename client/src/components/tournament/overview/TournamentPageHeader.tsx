@@ -150,11 +150,9 @@ const tabLinkSx = {
 } as const;
 
 /**
- * The top of the tournament page. Before and after the tournament runs: the
- * banner wide across the page with a dark card on it (game, format and series
- * pills, the H1, the organizer's description). While it runs the banner closes
- * to a strip with the name and a live mark, so the match gets the room. The
- * tabs sit under either.
+ * The top of the tournament page, the same before, during and after it runs:
+ * the banner wide across the page with a dark card on it (status, game,
+ * format and series pills, the H1, the organizer's description), the tabs on it.
  */
 export function TournamentPageHeader({
   tournament,
@@ -166,29 +164,20 @@ export function TournamentPageHeader({
   const { t } = useTranslation();
   const isLive = tournament.status === 'in_progress';
   const paused = !!useTournamentPause(tournament.id, isLive)?.pausedAt;
-  // A finished tournament with a champion puts the champion on the banner.
-  const isFinished = tournament.status === 'completed' && Boolean(tournament.winner);
   const description = tournament.settings?.description?.trim();
 
   const typeLabelKey = `tournament.typeSelector.types.${tournament.type}.label`;
   const typeLabel = t(typeLabelKey) === typeLabelKey ? tournament.type : t(typeLabelKey);
   const seriesLabel = MATCH_FORMATS.find((f) => f.value === tournament.format)?.label;
 
-  const teamCount = tournament.teamIds?.length ?? 0;
-  const formatLine = [
-    typeLabel,
-    tournament.type === 'shuffle'
-      ? tournament.teamSize
-        ? `${tournament.teamSize}v${tournament.teamSize}`
-        : null
-      : seriesLabel,
-    teamCount > 0 && tournament.type !== 'shuffle'
-      ? t('overviewPage.facts.teamsValue', { count: teamCount })
-      : null,
-  ]
-    .filter(Boolean)
-    .join(' · ');
-  const isUpcoming = !isLive && tournament.status !== 'completed';
+  let statusLabel = t('overviewPage.status.setup');
+  if (isLive) {
+    statusLabel = paused ? t('runState.pausedShort') : t('overviewPage.status.inProgress');
+  } else if (tournament.status === 'completed') {
+    statusLabel = tournament.completed_at
+      ? t('overviewPage.status.finishedOn', { date: fmtDate(tournament.completed_at) })
+      : t('overviewPage.status.completed');
+  }
 
   const tabsRow = (
     <Box
@@ -303,187 +292,109 @@ export function TournamentPageHeader({
           </Box>
         </Container>
       )}
-
-      {isUpcoming ? (
-        // Before it starts (board "Before it starts"): the banner, the name, the
-        // organizer's description, and the tabs on the banner.
-        <Container maxWidth="lg" sx={{ pt: { xs: 2, md: 4 } }}>
+      {/* Every state the same (board "Before it starts"): the banner, the status,
+          game and format pills, the name, the organizer's description, the tabs. */}
+      <Container maxWidth="lg" sx={{ pt: { xs: 2, md: 4 } }}>
+        <Box
+          data-testid="tournament-hero"
+          data-has-banner={tournament.bannerUrl ? 'true' : 'false'}
+          sx={{
+            ...bannerSx(tournament),
+            position: 'relative',
+            overflow: 'hidden',
+            borderRadius: radii.lg,
+            minHeight: 220,
+          }}
+        >
           <Box
-            data-testid="tournament-hero"
-            data-has-banner={tournament.bannerUrl ? 'true' : 'false'}
             sx={{
-              ...bannerSx(tournament),
               position: 'relative',
-              overflow: 'hidden',
-              borderRadius: radii.lg,
               minHeight: 220,
+              p: { xs: 2.5, md: 3.5 },
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'flex-end',
+              gap: 2.5,
+              background: tournamentArtUrl(tournament, { fallback: false })
+                ? `linear-gradient(to top, ${withAlpha(color.paper, 0.92)}, ${withAlpha(color.paper, 0.45)})`
+                : 'none',
             }}
           >
             <Box
               sx={{
-                position: 'relative',
-                minHeight: 220,
-                p: { xs: 2.5, md: 3.5 },
                 display: 'flex',
                 flexDirection: 'column',
-                justifyContent: 'flex-end',
-                gap: 2.5,
-                background: tournamentArtUrl(tournament, { fallback: false })
-                  ? `linear-gradient(to top, ${withAlpha(color.paper, 0.92)}, ${withAlpha(color.paper, 0.45)})`
-                  : 'none',
+                gap: 1,
+                maxWidth: '62ch',
+                minWidth: 0,
               }}
             >
-              <Box
-                sx={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: 1,
-                  maxWidth: '62ch',
-                  minWidth: 0,
-                }}
-              >
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center' }}>
-                  <Box
-                    component="span"
-                    data-testid="tournament-status"
-                    sx={{
-                      px: 1.5,
-                      py: 0.5,
-                      borderRadius: radii.pill,
-                      bgcolor: color.ink,
-                      color: color.accentInk,
-                      fontSize: textSize.sm,
-                      fontWeight: 600,
-                    }}
-                  >
-                    {t('overviewPage.status.setup')}
-                  </Box>
-                  <GamePill game={tournament.game} />
-                  <HeroPill icon={<TreeStructureIcon size={14} />}>{typeLabel}</HeroPill>
-                  {seriesLabel && tournament.type !== 'shuffle' && (
-                    <HeroPill icon={<ColumnsIcon size={14} />}>{seriesLabel}</HeroPill>
-                  )}
-                </Box>
-                <Typography
-                  id="tournament-title"
-                  component="h1"
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center' }}>
+                <Box
+                  component="span"
+                  data-testid="tournament-status"
                   sx={{
-                    m: 0,
-                    fontFamily: fontDisplay,
-                    fontSize: { xs: '1.75rem', md: '2.125rem' },
-                    fontWeight: 700,
-                    lineHeight: 1.15,
-                    overflowWrap: 'anywhere',
+                    px: 1.5,
+                    py: 0.5,
+                    borderRadius: radii.pill,
+                    bgcolor: color.ink,
+                    color: color.accentInk,
+                    fontSize: textSize.sm,
+                    fontWeight: 600,
                   }}
                 >
-                  {tournament.name}
-                </Typography>
-                {tournament.settings?.startsAt && !tournament.started_at && (
-                  <Typography sx={{ fontSize: textSize.md }} data-testid="tournament-starts">
-                    <StartCountdown
-                      at={new Date(tournament.settings.startsAt).getTime()}
-                      color={color.accent}
-                    />
-                  </Typography>
-                )}
-                {description && (
-                  <Typography
-                    data-testid="overview-about"
-                    sx={{
-                      color: color.ink2,
-                      fontSize: '1rem',
-                      lineHeight: 1.55,
-                      whiteSpace: 'pre-wrap',
-                      display: '-webkit-box',
-                      WebkitLineClamp: 3,
-                      WebkitBoxOrient: 'vertical',
-                      overflow: 'hidden',
-                    }}
-                  >
-                    {description}
-                  </Typography>
+                  {statusLabel}
+                </Box>
+                <GamePill game={tournament.game} />
+                <HeroPill icon={<TreeStructureIcon size={14} />}>{typeLabel}</HeroPill>
+                {seriesLabel && tournament.type !== 'shuffle' && (
+                  <HeroPill icon={<ColumnsIcon size={14} />}>{seriesLabel}</HeroPill>
                 )}
               </Box>
-              {tabsRow}
-            </Box>
-          </Box>
-        </Container>
-      ) : (
-        // Running or finished: the format line, the name, then the tabs in one
-        // fixed row, so they never move between pages.
-        <Container maxWidth="lg" sx={{ pt: { xs: 2.5, md: 4 } }}>
-          <Box
-            data-testid="tournament-hero"
-            sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
-          >
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75, minWidth: 0 }}>
-              <Typography
-                component="div"
-                sx={{
-                  display: 'flex',
-                  flexWrap: 'wrap',
-                  alignItems: 'center',
-                  gap: 1.25,
-                  fontSize: textSize.sm,
-                  letterSpacing: '0.06em',
-                  textTransform: 'uppercase',
-                  color: color.muted,
-                }}
-              >
-                <span>{formatLine}</span>
-                {isLive && (
-                  <Box
-                    component="span"
-                    data-testid="tournament-status"
-                    sx={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: 0.75,
-                      color: paused ? color.warning : color.live,
-                      fontWeight: 600,
-                    }}
-                  >
-                    <Box
-                      component="span"
-                      sx={{
-                        width: 8,
-                        height: 8,
-                        borderRadius: '50%',
-                        bgcolor: paused ? color.warning : color.live,
-                      }}
-                    />
-                    {paused ? t('runState.pausedShort') : t('overviewPage.status.inProgress')}
-                  </Box>
-                )}
-                {isFinished && (
-                  <Box component="span" data-testid="tournament-status" sx={{ color: color.ink2 }}>
-                    {tournament.completed_at
-                      ? t('overviewPage.status.finishedOn', {
-                          date: fmtDate(tournament.completed_at),
-                        })
-                      : t('overviewPage.status.completed')}
-                  </Box>
-                )}
-              </Typography>
               <Typography
                 id="tournament-title"
                 component="h1"
                 sx={{
                   m: 0,
                   fontFamily: fontDisplay,
-                  fontSize: { xs: '1.625rem', md: '2.125rem' },
-                  lineHeight: 1.15,
+                  fontSize: { xs: '1.75rem', md: '2.125rem' },
                   fontWeight: 700,
+                  lineHeight: 1.15,
                   overflowWrap: 'anywhere',
                 }}
               >
                 {tournament.name}
               </Typography>
+              {tournament.settings?.startsAt && !tournament.started_at && (
+                <Typography sx={{ fontSize: textSize.md }} data-testid="tournament-starts">
+                  <StartCountdown
+                    at={new Date(tournament.settings.startsAt).getTime()}
+                    color={color.accent}
+                  />
+                </Typography>
+              )}
+              {description && (
+                <Typography
+                  data-testid="overview-about"
+                  sx={{
+                    color: color.ink2,
+                    fontSize: '1rem',
+                    lineHeight: 1.55,
+                    whiteSpace: 'pre-wrap',
+                    display: '-webkit-box',
+                    WebkitLineClamp: 3,
+                    WebkitBoxOrient: 'vertical',
+                    overflow: 'hidden',
+                  }}
+                >
+                  {description}
+                </Typography>
+              )}
             </Box>
             {tabsRow}
           </Box>
-        </Container>
-      )}
+        </Box>
+      </Container>
     </Box>
   );
 }
