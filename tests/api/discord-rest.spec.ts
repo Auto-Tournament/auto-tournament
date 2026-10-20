@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { discordFetch } from '../../api/src/services/discord/rest';
+import { discordFetch } from '../../api/src/addons/discord/rest';
 
 /**
  * Discord calls go one at a time and wait out Discord's limits: a 429 is
