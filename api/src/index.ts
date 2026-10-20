@@ -87,6 +87,7 @@ import { reportCompatConfig } from './services/compatService';
 import { startCompatFeed, stopCompatFeed } from './services/compatFeedService';
 import { startLicenseCheckin, stopLicenseCheckin } from './services/license/checkinService';
 import { startWebhooks, stopWebhooks } from './services/webhooks';
+import { startMatchVoice, stopMatchVoice } from './services/discord/matchVoice';
 import {
   refreshCurrentTournamentId,
   startCurrentTournamentRefresh,
@@ -703,6 +704,8 @@ void (async () => {
       // Integrator webhooks: the persisted delivery queue and the match
       // watcher (services/webhooks). Idle while no endpoint is switched on.
       startWebhooks();
+      // The Discord bot's team voice channels (services/discord/matchVoice): idle while off.
+      startMatchVoice();
       // The daily license check-in: only with a license key saved, in the
       // background, never blocking anything (services/license/checkin.ts).
       startLicenseCheckin();
@@ -772,6 +775,7 @@ void (async () => {
       scheduler.stopAllPolling();
       stopCompatFeed();
       stopWebhooks();
+      stopMatchVoice();
       stopLicenseCheckin();
       stopIntegrations();
       void import('./services/builtinWorker').then(({ stopBuiltinWorker }) => stopBuiltinWorker());

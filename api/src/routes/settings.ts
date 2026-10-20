@@ -106,7 +106,7 @@ router.get('/site-url', (_req: Request, res: Response) => {
  *     summary: Whether a Discord bot token is set, the bot's name, its Discord servers and the one in use
  *     security: [{ BearerAuth: [] }]
  *     responses:
- *       200: { description: "`set`, `name`, `guilds` ({ id, name }[]), `guildId`" }
+ *       200: { description: "`set`, `name`, `guilds` ({ id, name }[]), `guildId`, `categories` ({ id, name }[] of the picked server), `matchVoice` ({ enabled, categoryId })" }
  *   put:
  *     tags: [Settings]
  *     summary: Set (checked with Discord, stored encrypted) or clear the bot token
@@ -125,11 +125,15 @@ router.get('/site-url', (_req: Request, res: Response) => {
 router.get('/discord-bot', async (_req: Request, res: Response) => {
   try {
     const { discordBot } = await import('../services/notifyChannels');
+    const { voiceSettings } = await import('../services/discord/matchVoice');
     const status = await discordBot.status();
+    const guilds = status.set ? await discordBot.guilds() : { guilds: [], guildId: null };
     return res.json({
       success: true,
       ...status,
-      ...(status.set ? await discordBot.guilds() : { guilds: [], guildId: null }),
+      ...guilds,
+      categories: guilds.guildId ? await discordBot.categories() : [],
+      matchVoice: await voiceSettings(),
     });
   } catch (error) {
     log.error('Reading the Discord bot failed', error as Error);
@@ -195,6 +199,56 @@ router.put('/discord-bot/guild', async (req: Request, res: Response) => {
   } catch (error) {
     log.error('Setting the Discord server failed', error as Error);
     return res.status(500).json({ success: false, error: 'Could not save the Discord server' });
+  }
+});
+
+/**
+ * @openapi
+ * /api/settings/discord-bot/match-voice:
+ *   put:
+ *     tags: [Settings]
+ *     summary: Team voice channels per match (on/off, and the category they go in)
+ *     security: [{ BearerAuth: [] }]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               enabled: { type: boolean }
+ *               categoryId: { type: string, nullable: true }
+ *     responses:
+ *       200: { description: "`matchVoice` ({ enabled, categoryId })" }
+ *       400: { description: Not a category of the picked server }
+ *       403: { description: Called with an API token }
+ */
+router.put('/discord-bot/match-voice', async (req: Request, res: Response) => {
+  if ((req as AuthedRequest).serviceToken) {
+    return res.status(403).json({ success: false, error: 'Only a signed-in admin can set it' });
+  }
+  try {
+    const { discordBot } = await import('../services/notifyChannels');
+    const { setVoiceSettings } = await import('../services/discord/matchVoice');
+    const body = (req.body ?? {}) as Record<string, Untrusted>;
+    const patch: { enabled?: boolean; categoryId?: string | null } = {};
+    if (typeof body.enabled === 'boolean') patch.enabled = body.enabled;
+    if (body.categoryId === null || body.categoryId === '') patch.categoryId = null;
+    else if (typeof body.categoryId === 'string') {
+      const categories = await discordBot.categories();
+      if (!categories.some((c) => c.id === body.categoryId)) {
+        return res
+          .status(400)
+          .json({ success: false, error: 'Not a category of the picked Discord server' });
+      }
+      patch.categoryId = body.categoryId;
+    }
+    return res.json({ success: true, matchVoice: await setVoiceSettings(patch) });
+  } catch (error) {
+    log.error('Setting the Discord voice channels failed', error as Error);
+    return res
+      .status(500)
+      .json({ success: false, error: 'Could not save the voice channel settings' });
   }
 });
 

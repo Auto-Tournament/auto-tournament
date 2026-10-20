@@ -41,7 +41,7 @@ export const NOTICE_GROUPS: Record<string, string[]> = {
     'benchmark_failed',
     'clips_failing',
   ],
-  platform: ['beta_available', 'license_problem', 'demos_failing'],
+  platform: ['beta_available', 'license_problem', 'demos_failing', 'discord_failed'],
 };
 
 const str = (v: Untrusted) => (typeof v === 'string' ? v : typeof v === 'number' ? String(v) : '');

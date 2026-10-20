@@ -68,6 +68,19 @@ test(
         data: { guildId: null },
       });
       expect((await cleared.json()).guildId).toBeNull();
+      // Team voice channels: on and off; a category must be one of the server's.
+      const voiceOn = await request.put('/api/settings/discord-bot/match-voice', {
+        data: { enabled: true },
+      });
+      expect((await voiceOn.json()).matchVoice.enabled).toBe(true);
+      const badCategory = await request.put('/api/settings/discord-bot/match-voice', {
+        data: { categoryId: '123456789012345678' },
+      });
+      expect(badCategory.status()).toBe(400);
+      const voiceOff = await request.put('/api/settings/discord-bot/match-voice', {
+        data: { enabled: false },
+      });
+      expect((await voiceOff.json()).matchVoice).toEqual({ enabled: false, categoryId: null });
       // An API token alone (no session) cannot set it.
       const bare = await playwright.request.newContext({
         baseURL: process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3069',
