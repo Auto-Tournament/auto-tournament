@@ -1105,6 +1105,34 @@ export function getSchemaSQL(): string {
       PRIMARY KEY (player_id, dedupe_key, channel)
     );
 
+    -- The Discord bot's team voice channels for a match (services/discord/matchVoice.ts).
+    -- ended_at: when the match stopped being on a server; the channels go a little later.
+    CREATE TABLE IF NOT EXISTS discord_match_channels (
+      match_slug TEXT NOT NULL,
+      side TEXT NOT NULL, -- 'team1' | 'team2'
+      channel_id TEXT NOT NULL,
+      created_at INTEGER NOT NULL,
+      ended_at INTEGER,
+      PRIMARY KEY (match_slug, side)
+    );
+
+    -- The Discord bot's match posts (addons/discord/announce.ts): each once per match.
+    CREATE TABLE IF NOT EXISTS discord_announcements (
+      match_slug TEXT NOT NULL,
+      event TEXT NOT NULL, -- 'ready' | 'live' | 'result'
+      sent_at INTEGER NOT NULL,
+      PRIMARY KEY (match_slug, event)
+    );
+
+    -- The Discord bot's team channels (addons/discord/teamChannels.ts): one per team while its tournament runs.
+    CREATE TABLE IF NOT EXISTS discord_team_channels (
+      tournament_id INTEGER NOT NULL,
+      team_id TEXT NOT NULL,
+      channel_id TEXT NOT NULL,
+      role_id TEXT, -- the team's role (its colour), given to its players on the server
+      PRIMARY KEY (tournament_id, team_id)
+    );
+
     -- Browser and phone notifications (Web Push): one row per browser a player turned them on in.
     CREATE TABLE IF NOT EXISTS push_subscriptions (
       endpoint TEXT PRIMARY KEY,

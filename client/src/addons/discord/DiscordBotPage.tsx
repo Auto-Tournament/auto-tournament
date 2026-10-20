@@ -6,6 +6,7 @@ import { useSnackbar } from '../../contexts/SnackbarContext';
 import { tokens, radii } from '../../theme/tokens';
 
 import { ExternalLink } from '../../components/common/ExternalLink';
+import { SwitchRow } from '../../components/common/ui';
 
 const { color } = tokens;
 
@@ -14,6 +15,11 @@ interface BotStatus {
   name: string | null;
   guilds?: Array<{ id: string; name: string }>;
   guildId?: string | null;
+  categories?: Array<{ id: string; name: string }>;
+  matchVoice?: { enabled: boolean; categoryId: string | null };
+  textChannels?: Array<{ id: string; name: string }>;
+  announceChannelId?: string | null;
+  teamChannels?: boolean;
 }
 
 /**
@@ -70,6 +76,60 @@ export function DiscordBotPage() {
     }
   };
 
+  const saveVoice = async (patch: { enabled?: boolean; categoryId?: string | null }) => {
+    setBusy(true);
+    try {
+      const r = await api.put<{ matchVoice: NonNullable<BotStatus['matchVoice']> }>(
+        '/api/addons/discord/match-voice',
+        patch
+      );
+      setStatus((prev) => (prev ? { ...prev, matchVoice: r.matchVoice } : prev));
+      showSuccess(t('discordBot.voice.saved'));
+    } catch (error) {
+      showError(apiErrorMessage(error, t('discordBot.saveFailed')));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const saveAnnounce = async (channelId: string) => {
+    setBusy(true);
+    try {
+      await api.put('/api/addons/discord/announce', { channelId: channelId || null });
+      setStatus((prev) => (prev ? { ...prev, announceChannelId: channelId || null } : prev));
+      showSuccess(t('discordBot.announce.saved'));
+    } catch (error) {
+      showError(apiErrorMessage(error, t('discordBot.saveFailed')));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const saveTeamChannels = async (enabled: boolean) => {
+    setBusy(true);
+    try {
+      await api.put('/api/addons/discord/team-channels', { enabled });
+      setStatus((prev) => (prev ? { ...prev, teamChannels: enabled } : prev));
+    } catch (error) {
+      showError(apiErrorMessage(error, t('discordBot.saveFailed')));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const setUp = async () => {
+    setBusy(true);
+    try {
+      await api.post('/api/addons/discord/setup', {});
+      await load();
+      showSuccess(t('discordBot.setup.done'));
+    } catch (error) {
+      showError(apiErrorMessage(error, t('discordBot.setup.failed')));
+    } finally {
+      setBusy(false);
+    }
+  };
+
   return (
     <Box data-testid="discord-bot">
       <Typography sx={{ fontSize: '0.875rem', color: color.muted, mb: 2 }}>
@@ -115,6 +175,100 @@ export function DiscordBotPage() {
           {(status.guilds ?? []).map((g) => (
             <MenuItem key={g.id} value={g.id}>
               {g.name}
+            </MenuItem>
+          ))}
+        </TextField>
+      )}
+      {status?.set && status.guildId && (
+        <Box sx={{ mb: 2, maxWidth: 520 }}>
+          <SwitchRow
+            label={t('discordBot.voice.label')}
+            help={t('discordBot.voice.help')}
+            checked={status.matchVoice?.enabled ?? false}
+            disabled={busy}
+            onChange={(e) => void saveVoice({ enabled: e.target.checked })}
+            size="small"
+            data-testid="discord-bot-voice"
+          />
+          {status.matchVoice?.enabled && (
+            <TextField
+              select
+              size="small"
+              label={t('discordBot.voice.category')}
+              value={status.matchVoice.categoryId ?? ''}
+              disabled={busy}
+              onChange={(e) => void saveVoice({ categoryId: e.target.value || null })}
+              inputProps={{ 'data-testid': 'discord-bot-voice-category' }}
+              sx={{ minWidth: 280, maxWidth: 420, mt: 1.5, display: 'flex' }}
+            >
+              <MenuItem value="">{t('discordBot.voice.noCategory')}</MenuItem>
+              {(status.categories ?? []).map((c) => (
+                <MenuItem key={c.id} value={c.id}>
+                  {c.name}
+                </MenuItem>
+              ))}
+            </TextField>
+          )}
+        </Box>
+      )}
+      {status?.set && status.guildId && (
+        <Box sx={{ mb: 2, maxWidth: 620 }}>
+          <Button
+            variant="outlined"
+            disabled={busy}
+            onClick={() => void setUp()}
+            data-testid="discord-bot-setup"
+            sx={{ borderRadius: radii.pill }}
+          >
+            {t('discordBot.setup.button')}
+          </Button>
+          <Typography sx={{ fontSize: '0.8125rem', color: color.muted, mt: 0.5 }}>
+            {t('discordBot.setup.help')}
+          </Typography>
+        </Box>
+      )}
+      {status?.set && status.guildId && (
+        <Box sx={{ mb: 2, maxWidth: 620 }} data-testid="discord-bot-commands">
+          <Typography sx={{ fontSize: '0.875rem', fontWeight: 600 }}>
+            {t('discordBot.commands.label')}
+          </Typography>
+          <Typography sx={{ fontSize: '0.8125rem', color: color.muted, mb: 0.5 }}>
+            {t('discordBot.commands.help')}
+          </Typography>
+          <Typography component="code" sx={{ fontSize: '0.8125rem', wordBreak: 'break-all' }}>
+            {`${window.location.origin}/api/addons/discord/interactions`}
+          </Typography>
+        </Box>
+      )}
+      {status?.set && status.guildId && (
+        <Box sx={{ mb: 2, maxWidth: 520 }}>
+          <SwitchRow
+            label={t('discordBot.teamChannels.label')}
+            help={t('discordBot.teamChannels.help')}
+            checked={status.teamChannels ?? false}
+            disabled={busy}
+            onChange={(e) => void saveTeamChannels(e.target.checked)}
+            size="small"
+            data-testid="discord-bot-team-channels"
+          />
+        </Box>
+      )}
+      {status?.set && status.guildId && (
+        <TextField
+          select
+          size="small"
+          label={t('discordBot.announce.label')}
+          helperText={t('discordBot.announce.help')}
+          value={status.announceChannelId ?? ''}
+          disabled={busy}
+          onChange={(e) => void saveAnnounce(e.target.value)}
+          inputProps={{ 'data-testid': 'discord-bot-announce' }}
+          sx={{ minWidth: 280, maxWidth: 420, mb: 2, display: 'flex' }}
+        >
+          <MenuItem value="">{t('discordBot.announce.none')}</MenuItem>
+          {(status.textChannels ?? []).map((c) => (
+            <MenuItem key={c.id} value={c.id}>
+              #{c.name}
             </MenuItem>
           ))}
         </TextField>

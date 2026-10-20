@@ -21,7 +21,7 @@ export class ChannelError extends Error {
 }
 
 /** The stored bot token, whether the add-on is on or not. */
-export async function botTokenStored(): Promise<string | null> {
+async function botTokenStored(): Promise<string | null> {
   const stored = await db.getAppSettingAsync(BOT_TOKEN_KEY).catch(() => null);
   return decryptSecret(stored);
 }
@@ -29,6 +29,11 @@ export async function botTokenStored(): Promise<string | null> {
 /** The bot token, while the Discord add-on is on; null while it is off. */
 export async function botToken(): Promise<string | null> {
   return isAddonRunning('discord') ? botTokenStored() : null;
+}
+
+/** The Discord server the site uses, without asking Discord. */
+export async function pickedGuildId(): Promise<string | null> {
+  return (await db.getAppSettingAsync(GUILD_KEY).catch(() => null)) ?? null;
 }
 
 export const discordBot = {
@@ -65,8 +70,7 @@ export const discordBot = {
   /** The Discord servers the bot is in, and the one the site uses (null: none picked). */
   async guilds(): Promise<{ guilds: Array<{ id: string; name: string }>; guildId: string | null }> {
     const token = await botToken();
-    const stored = await db.getAppSettingAsync(GUILD_KEY).catch(() => null);
-    const guildId = stored ?? null;
+    const guildId = await pickedGuildId();
     if (!token) return { guilds: [], guildId };
     const r = await discordFetch(token, '/users/@me/guilds');
     const list = r.ok && Array.isArray(r.body) ? (r.body as Array<Record<string, Untrusted>>) : [];
@@ -76,6 +80,20 @@ export const discordBot = {
         .map((g) => ({ id: String(g.id), name: String(g.name ?? g.id) })),
       guildId,
     };
+  },
+
+  /** The picked server's channels of these types (0 text, 4 category, 5 announcement). */
+  async channels(types: number[]): Promise<Array<{ id: string; name: string }>> {
+    const token = await botToken();
+    const guildId = await pickedGuildId();
+    if (!token || !guildId) return [];
+    const r = await discordFetch(token, `/guilds/${guildId}/channels`);
+    const list = r.ok && Array.isArray(r.body) ? (r.body as Array<Record<string, Untrusted>>) : [];
+    return list
+      .filter(
+        (c) => typeof c.type === 'number' && types.includes(c.type) && typeof c.id === 'string'
+      )
+      .map((c) => ({ id: String(c.id), name: String(c.name ?? c.id) }));
   },
 
   /** Use this Discord server (one the bot is in). Null clears it. */

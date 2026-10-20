@@ -15,8 +15,8 @@ export interface AddonModule {
   name: string;
   /** One sentence for the Modules page. */
   description: string;
-  /** On for an install that never chose (default off); may look at what is set up. */
-  defaultOn?: boolean | (() => Promise<boolean>);
+  /** On for an install that never chose (default off). */
+  defaultOn?: boolean;
   /** Turned on, or at boot while on: set up listeners and timers. */
   start(): Promise<void> | void;
   /** Turned off, or shutting down: undo all of start(). */

@@ -133,7 +133,8 @@
       "license_problem": "License problems",
       "demos_failing": "Demo analyses keep failing",
       "tournament_autostart_failed": "A tournament does not start on time",
-      "shuffle_no_show": "A shuffle player never joins their match"
+      "shuffle_no_show": "A shuffle player never joins their match",
+      "discord_failed": "Discord bot failed"
     },
     "kind": {
       "match_no_server": "{{matchSlug}} has waited {{minutes}} min for a server",
@@ -157,7 +158,8 @@
       "license_problem": "The license needs attention: {{problem}}",
       "demos_failing": "{{count}} demo analyses failed in the last hour",
       "tournament_autostart_failed": "{{name}} did not start at its start time: {{reason}}",
-      "shuffle_no_show": "{{players}} never joined {{matchSlug}}: out of the next draws until they say they're back"
+      "shuffle_no_show": "{{players}} never joined {{matchSlug}}: out of the next draws until they say they're back",
+      "discord_failed": "{{what}} failed: {{detail}}"
     },
     "close": "Close",
     "fix": {
@@ -182,7 +184,8 @@
       "license_problem": "The license page says what needs doing.",
       "demos_failing": "The logs on this page say why the demo analyses failed.",
       "tournament_autostart_failed": "Fix what the reason says, then start the tournament by hand.",
-      "shuffle_no_show": "Nothing to do: they're left out of the next draws until they say they're back."
+      "shuffle_no_show": "Nothing to do: they're left out of the next draws until they say they're back.",
+      "discord_failed": "Check that the bot is in the Discord server and has Manage Channels, Manage Roles and Move Members (Settings → Integrations → Discord bot)."
     }
   },
   "matchNow": {

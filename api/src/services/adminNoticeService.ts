@@ -43,6 +43,7 @@ export const ADMIN_NOTICE_KINDS = {
   beta_available: { group: 'platform', severity: 'info' },
   license_problem: { group: 'platform', severity: 'error' },
   demos_failing: { group: 'platform', severity: 'warn' },
+  discord_failed: { group: 'platform', severity: 'warn' },
 } as const satisfies Record<string, { group: string; severity: AdminNoticeSeverity }>;
 
 export type AdminNoticeKind = keyof typeof ADMIN_NOTICE_KINDS;

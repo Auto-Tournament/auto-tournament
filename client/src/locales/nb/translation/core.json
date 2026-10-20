@@ -133,7 +133,8 @@
       "license_problem": "Lisensproblemer",
       "demos_failing": "Demoanalyser feiler gjentatte ganger",
       "tournament_autostart_failed": "En turnering starter ikke i tide",
-      "shuffle_no_show": "En shuffle-spiller kobler aldri til kampen"
+      "shuffle_no_show": "En shuffle-spiller kobler aldri til kampen",
+      "discord_failed": "Discord-boten feilet"
     },
     "kind": {
       "match_no_server": "{{matchSlug}} har ventet i {{minutes}} min på en server",
@@ -157,7 +158,8 @@
       "license_problem": "Lisensen trenger oppmerksomhet: {{problem}}",
       "demos_failing": "{{count}} demoanalyser feilet den siste timen",
       "tournament_autostart_failed": "{{name}} startet ikke på starttidspunktet: {{reason}}",
-      "shuffle_no_show": "{{players}} koblet aldri til {{matchSlug}}: ute av de neste trekningene til de sier fra at de er tilbake"
+      "shuffle_no_show": "{{players}} koblet aldri til {{matchSlug}}: ute av de neste trekningene til de sier fra at de er tilbake",
+      "discord_failed": "{{what}} feilet: {{detail}}"
     },
     "close": "Lukk",
     "fix": {
@@ -182,7 +184,8 @@
       "license_problem": "Lisenssiden sier hva som må gjøres.",
       "demos_failing": "Loggene på denne siden sier hvorfor demoanalysene feilet.",
       "tournament_autostart_failed": "Rett det årsaken sier, og start turneringen for hånd.",
-      "shuffle_no_show": "Ingenting å gjøre: de holdes utenfor de neste trekningene til de sier at de er tilbake."
+      "shuffle_no_show": "Ingenting å gjøre: de holdes utenfor de neste trekningene til de sier at de er tilbake.",
+      "discord_failed": "Sjekk at boten er med i Discord-serveren og har Manage Channels, Manage Roles og Move Members (Innstillinger → Integrasjoner → Discord-bot)."
     }
   },
   "matchNow": {

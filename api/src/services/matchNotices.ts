@@ -9,7 +9,7 @@ import { notificationService } from './notificationService';
 import { configTeamName, matchNoticeName } from './matchNoticeName';
 import { notifyChannels } from './notifyChannels';
 
-interface MatchRow {
+export interface MatchRow {
   slug: string;
   tournament_id: number | null;
   team1_id: string | null;
@@ -20,7 +20,7 @@ interface MatchRow {
   t2: string | null;
 }
 
-async function matchRow(slug: string): Promise<MatchRow | null> {
+export async function matchRow(slug: string): Promise<MatchRow | null> {
   const row = await db.queryOneAsync<MatchRow>(
     `SELECT m.slug, m.tournament_id, m.team1_id, m.team2_id, m.config, m.loaded_at,
             t1.name AS t1, t2.name AS t2
@@ -34,7 +34,7 @@ async function matchRow(slug: string): Promise<MatchRow | null> {
 }
 
 /** A side's players: the match's own lineup (no bots), else its team's members. */
-async function sidePlayers(match: MatchRow, side: 'team1' | 'team2'): Promise<string[]> {
+export async function sidePlayers(match: MatchRow, side: 'team1' | 'team2'): Promise<string[]> {
   try {
     const config = JSON.parse(match.config ?? '{}') as Record<
       string,
