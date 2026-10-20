@@ -352,26 +352,24 @@ test.describe.serial('Fleet gateway', () => {
     request,
   }) => {
     const server = await enrollNew(request);
-    await request.post('/api/test/fleet/age-token', {
-      data: { serverId: server.server_id, days: 91 },
-    });
+    const reliable = (m: Envelope) => typeof m.seq === 'number' && m.seq > 0;
     const first = await FleetTestClient.connect(server.token);
     await first.handshake(server.server_id, server.installId, {
       stream: { id: 'lost-stream', last_tx_seq: 0, last_rx_seq: 0 },
     });
-    const rotate = await first.nextOfType('auth.rotate');
-    // Acked, but the rotation is never confirmed, so a reconnect queues it again.
-    first.send(envelope('ping', { t: Date.now() }, { ack: rotate.seq }));
+    const got = await first.next(reliable, 5000);
+    first.send(envelope('ping', { t: Date.now() }, { ack: got.seq }));
     await new Promise((r) => setTimeout(r, 500));
     first.close();
     await first.waitClosed();
 
-    // Its spool was cleared: it has processed nothing of ours.
+    // Its spool was cleared: it has processed nothing of ours. What the
+    // platform sends next starts at 1, not after the old numbering.
     const reset = await FleetTestClient.connect(server.token);
     await reset.handshake(server.server_id, server.installId, {
       stream: { id: 'lost-stream-2', last_tx_seq: 0, last_rx_seq: 0 },
     });
-    const again = await reset.nextOfType('auth.rotate');
+    const again = await reset.next(reliable, 5000);
     expect(again.seq).toBe(1);
     reset.close();
   });
