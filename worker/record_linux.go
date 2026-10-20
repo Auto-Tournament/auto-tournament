@@ -251,6 +251,10 @@ func (c *client) claimRecording(ctx context.Context, loaded map[string]any) (*ma
 		return nil, nil, nil, nil
 	}
 	if err := ok(res, "claim"); err != nil {
+		if res.StatusCode == http.StatusUnauthorized && strings.Contains(err.Error(), "recorder_key_rejected") {
+			c.rejected.Store(true)
+			log.Printf("%s rejected this recorder's key: not asking it for work again", c.base)
+		}
 		return nil, nil, nil, err
 	}
 	var body struct {
@@ -1605,6 +1609,9 @@ func runRecorder(ctx context.Context, clients []*client, poll time.Duration) err
 		var redress *redressJob
 		for i := range clients {
 			k := (next + i) % len(clients)
+			if clients[k].rejected.Load() {
+				continue
+			}
 			c, r.client, r.link = clients[k], clients[k], links[k]
 			j, reel, redress, err = c.claimRecording(ctx, r.loadedMap())
 			if err != nil {

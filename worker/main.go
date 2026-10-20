@@ -56,6 +56,9 @@ type client struct {
 	token      string
 	worker     string
 	http       *http.Client
+	// rejected: the platform refused this recorder's key (revoked, or never
+	// made there); it is not asked again until the recorder restarts.
+	rejected atomic.Bool
 }
 
 func env(key, fallback string) string {

@@ -85,7 +85,7 @@ func (l *recorderLink) Linked() bool {
 // drop, waiting longer each time (up to a minute).
 func (l *recorderLink) run(ctx context.Context) {
 	backoff := 2 * time.Second
-	for ctx.Err() == nil {
+	for ctx.Err() == nil && !l.c.rejected.Load() {
 		started := time.Now()
 		err := l.session(ctx)
 		if ctx.Err() != nil {

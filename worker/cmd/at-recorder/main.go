@@ -31,10 +31,13 @@ var imagePattern = regexp.MustCompile(`^sivertio/auto-tournament-recorder@sha256
 
 type agent struct {
 	root, base, token, name, hostID, hostname string
-	http                                      *http.Client
-	run                                       func(context.Context, ...string) ([]byte, error)
-	wait                                      func(context.Context, time.Duration) error
-	restart                                   func(context.Context) error
+	// others: the other platforms it records for (AT_PLATFORMS, "url|key"),
+	// in turn with the home one (base); updates follow home.
+	others  []platformLink
+	http    *http.Client
+	run     func(context.Context, ...string) ([]byte, error)
+	wait    func(context.Context, time.Duration) error
+	restart func(context.Context) error
 }
 
 func wait(ctx context.Context, d time.Duration) error {
@@ -85,7 +88,7 @@ func newAgent(root string) (*agent, error) {
 	if err != nil {
 		return nil, err
 	}
-	a := &agent{hostID: hostID, hostname: hostname, root: root, base: strings.TrimRight(conf["AT_URL"], "/"), token: conf["AT_WORKER_TOKEN"], name: conf["AT_WORKER_NAME"], http: &http.Client{Timeout: 25 * time.Second, CheckRedirect: func(req *http.Request, via []*http.Request) error { return http.ErrUseLastResponse }}, wait: wait}
+	a := &agent{hostID: hostID, hostname: hostname, root: root, base: strings.TrimRight(conf["AT_URL"], "/"), token: conf["AT_WORKER_TOKEN"], name: conf["AT_WORKER_NAME"], others: othersOf(conf["AT_PLATFORMS"], strings.TrimRight(conf["AT_URL"], "/")), http: &http.Client{Timeout: 25 * time.Second, CheckRedirect: func(req *http.Request, via []*http.Request) error { return http.ErrUseLastResponse }}, wait: wait}
 	if a.name == "" {
 		return nil, errors.New("AT_WORKER_NAME is required")
 	}
@@ -116,7 +119,58 @@ func newAgent(root string) (*agent, error) {
 	}
 	return a, nil
 }
+
+type platformLink struct{ base, token string }
+
+// othersOf reads AT_PLATFORMS: "url|key" entries split by commas.
+func othersOf(raw, home string) []platformLink {
+	var out []platformLink
+	for _, entry := range strings.Split(raw, ",") {
+		base, key, ok := strings.Cut(strings.TrimSpace(entry), "|")
+		base = strings.TrimRight(strings.TrimSpace(base), "/")
+		if ok && base != "" && base != home && strings.TrimSpace(key) != "" {
+			out = append(out, platformLink{base, strings.TrimSpace(key)})
+		}
+	}
+	return out
+}
+
+func platformsLine(others []platformLink) string {
+	parts := make([]string, len(others))
+	for i, o := range others {
+		parts[i] = o.base + "|" + o.token
+	}
+	return "AT_PLATFORMS=" + strings.Join(parts, ",")
+}
+
+// withConfig rewrites the config's lines for these keys ("" drops one) and keeps the rest.
+func withConfig(old []byte, set map[string]string) []byte {
+	var out []string
+	done := map[string]bool{}
+	for _, line := range strings.Split(strings.TrimRight(string(old), "\n"), "\n") {
+		k, _, _ := strings.Cut(strings.TrimSpace(line), "=")
+		if v, ok := set[k]; ok {
+			if v != "" && !done[k] {
+				out = append(out, k+"="+v)
+			}
+			done[k] = true
+			continue
+		}
+		out = append(out, line)
+	}
+	for k, v := range set {
+		if !done[k] && v != "" {
+			out = append(out, k+"="+v)
+		}
+	}
+	return []byte(strings.Join(out, "\n") + "\n")
+}
+
 func (a *agent) apiPath(ctx context.Context, endpoint string, body any, out any) error {
+	return a.apiTo(ctx, a.base, a.token, endpoint, body, out)
+}
+
+func (a *agent) apiTo(ctx context.Context, base, token, endpoint string, body any, out any) error {
 	var reader io.Reader
 	method := "GET"
 	if body != nil {
@@ -127,11 +181,11 @@ func (a *agent) apiPath(ctx context.Context, endpoint string, body any, out any)
 		reader = bytes.NewReader(b)
 		method = "POST"
 	}
-	req, err := http.NewRequestWithContext(ctx, method, a.base+"/api/game/cs2/recorder/"+endpoint, reader)
+	req, err := http.NewRequestWithContext(ctx, method, base+"/api/game/cs2/recorder/"+endpoint, reader)
 	if err != nil {
 		return err
 	}
-	req.Header.Set("Authorization", "Bearer "+a.token)
+	req.Header.Set("Authorization", "Bearer "+token)
 	req.Header.Set("X-AT-Recorder", a.name)
 	req.Header.Set("Content-Type", "application/json")
 	res, err := a.http.Do(req)
@@ -232,6 +286,7 @@ func main() {
 			}
 			continue
 		}
+		a.helloOthers(ctx)
 		if err = a.tick(ctx); errors.Is(err, errKeyRejected) {
 			log.Printf("%s rejected this recorder's key (revoked or unknown): forgetting the key and the platform", a.base)
 			if err = a.forget(ctx); err != nil {
@@ -259,28 +314,105 @@ func main() {
 	}
 }
 
-// forget unlinks the recorder from a platform that rejected its key: the
-// container stops (nothing to record for, and `connect` wants it stopped) and
-// the platform's address and key leave its configuration. The name and the
-// installation ID stay, so connecting again keeps the same recorder.
-func (a *agent) forget(ctx context.Context) error {
-	if _, err := a.run(ctx, "stop", "at-recorder"); err != nil {
+// helloOthers says hello to the other platforms; one that rejects the key is
+// forgotten (the recorder stops asking it at once, see worker client.rejected).
+func (a *agent) helloOthers(ctx context.Context) {
+	for _, o := range append([]platformLink(nil), a.others...) {
+		err := a.apiTo(ctx, o.base, o.token, "hello", map[string]string{"name": a.name, "hostname": a.hostname, "hostId": a.hostID, "agentVersion": version}, nil)
+		if errors.Is(err, errKeyRejected) {
+			log.Printf("%s rejected this recorder's key: forgetting it", o.base)
+			if err = a.dropOther(o.base); err != nil {
+				log.Printf("forget %s: %v", o.base, err)
+			}
+		}
+	}
+}
+
+// link adds another platform, once it has taken the key (a hello).
+func (a *agent) link(ctx context.Context, base, token string) error {
+	base = strings.TrimRight(base, "/")
+	if _, err := platformURL(base); err != nil {
 		return err
+	}
+	if !validKey(token) {
+		return errors.New("invalid recorder key")
+	}
+	if base == a.base {
+		return errors.New("that is already this recorder's home platform")
+	}
+	if err := a.apiTo(ctx, base, token, "hello", map[string]string{"name": a.name, "hostname": a.hostname, "hostId": a.hostID, "agentVersion": version}, nil); err != nil {
+		return fmt.Errorf("%s did not take the key: %w", base, err)
+	}
+	others := []platformLink{}
+	for _, o := range a.others {
+		if o.base != base {
+			others = append(others, o)
+		}
+	}
+	others = append(others, platformLink{base, token})
+	path := filepath.Join(a.root, "config/at-recorder.env")
+	b, err := os.ReadFile(path)
+	if err != nil {
+		return err
+	}
+	if err = writeConfig(path, withConfig(b, map[string]string{"AT_PLATFORMS": strings.TrimPrefix(platformsLine(others), "AT_PLATFORMS=")})); err != nil {
+		return err
+	}
+	a.others = others
+	return nil
+}
+
+// dropOther takes one of the other platforms out of the configuration.
+func (a *agent) dropOther(base string) error {
+	var keep []platformLink
+	for _, o := range a.others {
+		if o.base != base {
+			keep = append(keep, o)
+		}
 	}
 	path := filepath.Join(a.root, "config/at-recorder.env")
 	b, err := os.ReadFile(path)
 	if err != nil {
 		return err
 	}
-	var keep []string
-	for _, line := range strings.Split(string(b), "\n") {
-		k, _, _ := strings.Cut(strings.TrimSpace(line), "=")
-		if k != "AT_URL" && k != "AT_WORKER_TOKEN" {
-			keep = append(keep, line)
-		}
+	line := ""
+	if len(keep) > 0 {
+		line = strings.TrimPrefix(platformsLine(keep), "AT_PLATFORMS=")
 	}
-	if err = writeConfig(path, []byte(strings.Join(keep, "\n"))); err != nil {
+	if err = writeConfig(path, withConfig(b, map[string]string{"AT_PLATFORMS": line})); err != nil {
 		return err
+	}
+	a.others = keep
+	return nil
+}
+
+// forget unlinks the recorder from its home platform, which rejected its key.
+// With other platforms the first of them becomes home; without, the container
+// stops (nothing to record for, and `connect` wants it stopped) and the agent
+// waits unlinked. The name and the installation ID stay, so connecting again
+// keeps the same recorder.
+func (a *agent) forget(ctx context.Context) error {
+	path := filepath.Join(a.root, "config/at-recorder.env")
+	b, err := os.ReadFile(path)
+	if err != nil {
+		return err
+	}
+	set := map[string]string{"AT_URL": "", "AT_WORKER_TOKEN": "", "AT_PLATFORMS": ""}
+	if len(a.others) > 0 {
+		home := a.others[0]
+		set["AT_URL"], set["AT_WORKER_TOKEN"] = home.base, home.token
+		if len(a.others) > 1 {
+			set["AT_PLATFORMS"] = strings.TrimPrefix(platformsLine(a.others[1:]), "AT_PLATFORMS=")
+		}
+	} else if _, err := a.run(ctx, "stop", "at-recorder"); err != nil {
+		return err
+	}
+	if err = writeConfig(path, withConfig(b, set)); err != nil {
+		return err
+	}
+	if len(a.others) > 0 {
+		a.base, a.token, a.others = a.others[0].base, a.others[0].token, a.others[1:]
+		return nil
 	}
 	a.base, a.token = "", ""
 	return nil

@@ -16,7 +16,7 @@ func cli(root string, args []string) (bool, error) {
 	}
 	switch args[0] {
 	case "help", "--help", "-h":
-		fmt.Println("at-recorder: manage a Linux highlight recorder host\n\n  connect URL [KEY]          connect to AT (KEY may be read from stdin)\n  setup --user USER         provision a fresh Ubuntu NVIDIA host\n  setup --adopt --user USER  adopt an existing recorder without restarting it\n  doctor                    check Docker, NVIDIA, Steam, CS2 and platform access\n  status                    show host identity and installed runtime\n  update [--check]          update the recorder and host agent (as the platform's Update button)\n  logs [-f] [-n LINES]      the host agent's and the worker's logs, secrets hidden\n  restart [--force]         restart the worker when idle (--force: mid-job, after a yes)\n  agent                     report identity and software versions to AT\n  version                   print the host binary version\n\nAT_RECORDER_ROOT defaults to /srv/at-recorder. New hosts register disabled.\nSteam sign-in and installing CS2 require the Steam web desktop after fresh setup.")
+		fmt.Println("at-recorder: manage a Linux highlight recorder host\n\n  connect URL [KEY]          connect to AT (KEY may be read from stdin)\n  link URL KEY              also record for another AT platform (in turn)\n  unlink URL                stop recording for that platform\n  setup --user USER         provision a fresh Ubuntu NVIDIA host\n  setup --adopt --user USER  adopt an existing recorder without restarting it\n  doctor                    check Docker, NVIDIA, Steam, CS2 and platform access\n  status                    show host identity and installed runtime\n  update [--check]          update the recorder and host agent (as the platform's Update button)\n  logs [-f] [-n LINES]      the host agent's and the worker's logs, secrets hidden\n  restart [--force]         restart the worker when idle (--force: mid-job, after a yes)\n  agent                     report identity and software versions to AT\n  version                   print the host binary version\n\nAT_RECORDER_ROOT defaults to /srv/at-recorder. New hosts register disabled.\nSteam sign-in and installing CS2 require the Steam web desktop after fresh setup.")
 		return true, nil
 	case "version":
 		if len(args) != 1 {
@@ -26,6 +26,28 @@ func cli(root string, args []string) (bool, error) {
 		return true, nil
 	case "connect":
 		return true, connect(root, args[1:])
+	case "link", "unlink":
+		a, err := newAgent(root)
+		if err != nil {
+			return true, err
+		}
+		ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+		defer cancel()
+		if args[0] == "link" {
+			if len(args) != 3 {
+				return true, fmt.Errorf("usage: at-recorder link URL KEY")
+			}
+			err = a.link(ctx, args[1], args[2])
+		} else {
+			if len(args) != 2 {
+				return true, fmt.Errorf("usage: at-recorder unlink URL")
+			}
+			err = a.dropOther(strings.TrimRight(args[1], "/"))
+		}
+		if err == nil {
+			fmt.Println("Saved. It takes effect when the recorder restarts: at-recorder restart")
+		}
+		return true, err
 	case "setup":
 		return true, setup(root, args[1:])
 	case "doctor", "status":
