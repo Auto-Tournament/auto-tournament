@@ -27,8 +27,10 @@ const api = new ApiClient(url, token);
 const server = new McpServer(
   { name: 'auto-tournament', version: '0.1.0' },
   {
-    instructions:
-      "Never change the license: not the key, not free or paid, not the terms. It is the admin's own decision, and the platform refuses it from an API token anyway. When something is blocked by the license (no room for more servers, say), tell the admin what the license allows and that they can change it in Manage -> License.",
+    instructions: [
+      "Never change the license: not the key, not free or paid, not the terms. It is the admin's own decision, and the platform refuses it from an API token anyway.",
+      'When the license blocks something (no room for more servers, autoscale could not add one), that is the license working as sold, not a platform fault. Say so plainly: the license covers a number of game servers, and running more for a paid or commercial event means adding servers to the license (https://autotournament.gg/pricing). Never suggest switching to a free key to get around it: free is for non-commercial use only.',
+    ].join(' '),
   }
 );
 
