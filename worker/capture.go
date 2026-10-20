@@ -161,7 +161,10 @@ func (c *console) send(cmds ...string) error {
 func (c *console) drain() {
 	for {
 		select {
-		case <-c.lines:
+		case _, ok := <-c.lines:
+			if !ok {
+				return
+			}
 		default:
 			return
 		}
@@ -197,6 +200,8 @@ type game struct {
 	startTick int // the demo's first tick: the console's ticks count from it
 	lastTick  int // the demo's length in ticks (the analyzer's last tick)
 	logPath   string
+	done      chan struct{}
+	waitErr   error // published by closing done
 	// follow, when set, is where the followed player stands at a tick (the
 	// demo's replay frames): the capture checks the camera is with them.
 	follow func(tick int) ([3]float64, bool)
@@ -252,6 +257,9 @@ func (r *recorder) launchGameOnce(ctx context.Context, logPath string) (*game, e
 		return nil, fmt.Errorf("start gamescope: %w", err)
 	}
 	g := &game{cmd: cmd, width: r.width, height: r.height, logPath: logPath}
+	g.done = make(chan struct{})
+	startupCtx, cancelStartup := context.WithCancel(ctx)
+	defer cancelStartup()
 	nodeCh := make(chan string, 1)
 	go func() {
 		sc := bufio.NewScanner(pr)
@@ -266,7 +274,9 @@ func (r *recorder) launchGameOnce(ctx context.Context, logPath string) (*game, e
 		}
 	}()
 	go func() {
-		_ = cmd.Wait()
+		g.waitErr = cmd.Wait()
+		close(g.done)
+		cancelStartup()
 		pw.Close()
 		logFile.Close()
 	}()
@@ -275,12 +285,20 @@ func (r *recorder) launchGameOnce(ctx context.Context, logPath string) (*game, e
 	case <-ctx.Done():
 		g.stop()
 		return nil, ctx.Err()
+	case <-g.done:
+		g.stop()
+		return nil, fmt.Errorf("CS2 exited during startup: %v", g.waitErr)
 	case <-time.After(90 * time.Second):
 		g.stop()
 		return nil, errors.New("gamescope never offered its video stream")
 	}
-	if g.con, err = dialConsole(ctx, 3*time.Minute, strings.TrimSuffix(logPath, filepath.Ext(logPath))+"-console.log"); err != nil {
+	if g.con, err = dialConsole(startupCtx, 3*time.Minute, strings.TrimSuffix(logPath, filepath.Ext(logPath))+"-console.log"); err != nil {
 		g.stop()
+		select {
+		case <-g.done:
+			return nil, fmt.Errorf("CS2 exited during startup: %v", g.waitErr)
+		default:
+		}
 		return nil, err
 	}
 	// The main menu loads after the console opens.
@@ -299,10 +317,13 @@ func (g *game) stop() {
 	// CS2 (its console port): in a container with the host's PIDs (the
 	// recorder command's --pid=host), the PC's own CS2 is in reach too.
 	_ = exec.Command("pkill", "-KILL", "-f", fmt.Sprintf("linuxsteamrt64/cs2 .*-netconport %d", netconPort)).Run()
-	if g.cmd.Process != nil {
+	if g.cmd != nil && g.cmd.Process != nil {
 		_ = syscall.Kill(-g.cmd.Process.Pid, syscall.SIGTERM)
-		done := make(chan struct{})
-		go func() { _ = g.cmd.Wait(); close(done) }()
+		done := g.done
+		if done == nil {
+			done = make(chan struct{})
+			go func() { _ = g.cmd.Wait(); close(done) }()
+		}
 		select {
 		case <-done:
 		case <-time.After(10 * time.Second):
