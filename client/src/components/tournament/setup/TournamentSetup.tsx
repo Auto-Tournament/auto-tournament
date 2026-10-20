@@ -5,6 +5,7 @@ import { Alert, Box, Button, Menu, MenuItem, TextField, Typography } from '@mui/
 import { ArrowLeftIcon, ArrowRightIcon, FileTextIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import { estimateMatchCount, type GrandFinalMode } from '../../../utils/tournamentMatchCount';
+import { estimateDurationMinutes } from '../../../utils/tournamentDuration';
 import { requiresVeto } from '../../../utils/tournamentVerification';
 import { validateTeamCountForType } from '../../../utils/tournamentValidation';
 import type { Team } from '../../../types';
@@ -25,7 +26,12 @@ import { getIntegration } from '../../../integrations/registry';
 import { BELOW_NAV_STICKY_TOP } from '../../../constants/navBar';
 import { useModuleState } from '../../../module-loader/useModuleState';
 import type { TournamentSetupContext } from '../../../integrations/types';
-import { gameSettingsError, gameSettingsRoundCount, gameSettingsSummary } from './gameSettings';
+import {
+  gameSettingsError,
+  gameSettingsMinutesPerMap,
+  gameSettingsRoundCount,
+  gameSettingsSummary,
+} from './gameSettings';
 import { EloTemplateSelect } from './EloTemplateSelect';
 import { ReviewStep, type ReviewTournament } from './ReviewStep';
 import { GamePicker } from './GamePicker';
@@ -283,6 +289,23 @@ export function TournamentSetup(props: TournamentSetupProps) {
     teamSize: form.shuffleSettings.teamSize,
   });
   const seriesLabel = form.format.replace(/^bo/, 'Bo');
+  const minutesPerMap = gameSettingsMinutesPerMap(form.gameSettings, settingsCtx);
+  const duration =
+    estimate.matches !== null && minutesPerMap !== null
+      ? estimateDurationMinutes({
+          matches: estimate.matches,
+          // Double elimination: the losers' bracket about doubles the rounds, plus the grand final.
+          rounds:
+            estimate.rounds ??
+            (form.type === 'double_elimination'
+              ? 2 * Math.ceil(Math.log2(teamCountForMath)) + 1
+              : null),
+          servers: needsServers ? serverCount : 0,
+          format: isShuffle ? 'bo1' : form.format,
+          minutesPerMap,
+          breakMinutes: siteRules?.matchBreakMinutes ?? 5,
+        })
+      : null;
 
   const summaryRows: SummaryRow[] = [
     {
@@ -330,6 +353,18 @@ export function TournamentSetup(props: TournamentSetupProps) {
             : t('tournament.setup.summary.notSet'),
       pending: estimate.matches === null,
     },
+    ...(duration !== null
+      ? [
+          {
+            key: 'duration',
+            label: t('tournament.setup.summary.duration'),
+            value: t('tournament.setup.summary.durationValue', {
+              hours: Math.floor(duration / 60),
+              minutes: duration % 60,
+            }),
+          },
+        ]
+      : []),
     isShuffle
       ? tournament
         ? {

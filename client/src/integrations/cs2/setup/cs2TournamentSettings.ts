@@ -305,6 +305,11 @@ export const cs2TournamentSetup: TournamentSetupModel = {
     };
   },
 
+  minutesPerMap(settings) {
+    // As the API's "next round about" (utils/nextRoundEta.ts): 115 s a round, 5 min warmup.
+    return (cs2SettingsOf(settings).maxRounds * 115) / 60 + 5;
+  },
+
   roundCount(settings, ctx) {
     if (ctx.type !== 'shuffle') return null;
     const cs2 = cs2SettingsOf(settings);

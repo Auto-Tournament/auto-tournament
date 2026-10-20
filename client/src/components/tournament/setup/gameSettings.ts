@@ -84,6 +84,14 @@ export function gameSettingsSummary(
   return getIntegration(ctx.game).tournamentSetup?.summary?.(settings, ctx, t) ?? NO_SUMMARY;
 }
 
+/** Minutes one map takes with the game's settings, or null. */
+export function gameSettingsMinutesPerMap(
+  settings: Record<string, Untrusted>,
+  ctx: TournamentSetupContext
+): number | null {
+  return getIntegration(ctx.game).tournamentSetup?.minutesPerMap?.(settings, ctx) ?? null;
+}
+
 /** Rounds a shuffle tournament gets from the game's settings, or null. */
 export function gameSettingsRoundCount(
   settings: Record<string, Untrusted>,
