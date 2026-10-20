@@ -141,6 +141,7 @@
     "profile": {
       "friends": "Friends",
       "acceptRequest": "Accept friend request",
+      "message": "Nachricht",
       "invite": "Invite to party"
     },
     "settings": {

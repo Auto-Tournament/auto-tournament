@@ -1,14 +1,15 @@
 /**
  * On someone else's profile, for a signed-in player: Add friend (or Accept,
- * Request sent, Friends) and Invite to party.
+ * Request sent, Friends, then Message) and Invite to party.
  */
 import React from 'react';
 import { Box, Button } from '@mui/material';
-import { CheckIcon, UserPlusIcon } from '@phosphor-icons/react';
+import { ChatCircleIcon, CheckIcon, UserPlusIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 import { useMatchmaking } from '../matchmaking/matchmakingStore';
+import { dmChannel, openChat } from '../chat/chatStore';
 import {
   acceptFriend,
   friendRequest,
@@ -60,9 +61,20 @@ export function ProfileSocialButtons({ playerId, name }: { playerId: string; nam
   return (
     <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }} data-testid="profile-social">
       {relation === 'friend' ? (
-        <Button size="small" variant="outlined" disabled startIcon={<CheckIcon size={16} />}>
-          {t('social.profile.friends')}
-        </Button>
+        <>
+          <Button size="small" variant="outlined" disabled startIcon={<CheckIcon size={16} />}>
+            {t('social.profile.friends')}
+          </Button>
+          <Button
+            size="small"
+            variant="outlined"
+            startIcon={<ChatCircleIcon size={16} />}
+            onClick={() => playerSteamId && openChat(dmChannel(playerSteamId, playerId), name)}
+            data-testid="profile-message"
+          >
+            {t('social.profile.message')}
+          </Button>
+        </>
       ) : relation === 'sent' ? (
         <Button size="small" variant="outlined" disabled>
           {t('social.friends.requestSent')}

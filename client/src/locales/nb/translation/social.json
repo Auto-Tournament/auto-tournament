@@ -152,6 +152,7 @@
     "profile": {
       "friends": "Venner",
       "acceptRequest": "Godta venneforespørsel",
+      "message": "Send melding",
       "invite": "Inviter til gruppe"
     },
     "settings": {

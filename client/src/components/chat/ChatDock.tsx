@@ -318,7 +318,9 @@ function Tabs({
       ? t('chat.tabMatch')
       : c.kind === 'team'
         ? t('chat.tabTeam')
-        : t('chat.tabParty');
+        : c.kind === 'dm'
+          ? c.title
+          : t('chat.tabParty');
   return (
     <Box
       role="tablist"
@@ -370,7 +372,7 @@ function Tabs({
                     textOverflow: 'ellipsis',
                   }}
                 >
-                  {c.title}
+                  {c.kind === 'dm' ? t('chat.tabDm') : c.title}
                 </Box>
               </Box>
             ) : (
@@ -459,21 +461,27 @@ function Panel({ phone, wide, lift = 0 }: { phone: boolean; wide: boolean; lift?
         ? t('chat.teamWho', { team: channel.title })
         : channel?.kind === 'party'
           ? t('chat.partyWho')
-          : '';
+          : channel?.kind === 'dm'
+            ? t('chat.dmWho')
+            : '';
 
   const kindLabel =
     channel?.kind === 'match'
       ? t('chat.tabMatch')
       : channel?.kind === 'team'
         ? t('chat.tabTeam')
-        : t('chat.tabParty');
+        : channel?.kind === 'dm'
+          ? channel.title
+          : t('chat.tabParty');
 
   const placeholder =
     channel?.kind === 'match'
       ? t('chat.placeholderMatch')
       : channel?.kind === 'team'
         ? t('chat.placeholderTeam')
-        : t('chat.placeholderParty');
+        : channel?.kind === 'dm'
+          ? t('chat.placeholderDm', { name: channel.title })
+          : t('chat.placeholderParty');
 
   const submit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -1102,7 +1110,9 @@ export function ChatDock() {
       ? t('chat.peekMatch', { title: peekChannel.title.replace(/^vs /, '') })
       : peekChannel.kind === 'team'
         ? t('chat.peekTeam')
-        : t('chat.peekParty')
+        : peekChannel.kind === 'dm'
+          ? t('chat.tabDm')
+          : t('chat.peekParty')
     : '';
   const peekColor =
     peek?.senderKind === 'admin'
