@@ -46,6 +46,8 @@ type job struct {
 	MatchSlug string `json:"matchSlug"`
 	MapNumber int    `json:"mapNumber"`
 	MapName   string `json:"mapName"`
+	// A simulated match: SteamID64 -> the roster name its bot plays under.
+	StandIns map[string]string `json:"standIns"`
 }
 
 type client struct {
@@ -155,7 +157,7 @@ func (c *client) work(ctx context.Context, j *job) error {
 	}
 	// The parser reads as it downloads; no copy on disk.
 	started := time.Now()
-	analysis, replay, err := Analyze(res.Body, j.MapName)
+	analysis, replay, err := Analyze(res.Body, j.MapName, j.StandIns)
 	if err != nil {
 		return fmt.Errorf("parse: %w", err)
 	}
@@ -203,7 +205,7 @@ func analyzeFile(path, mapName string) {
 	}
 	defer f.Close()
 	started := time.Now()
-	analysis, replay, err := Analyze(f, mapName)
+	analysis, replay, err := Analyze(f, mapName, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
