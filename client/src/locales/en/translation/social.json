@@ -256,6 +256,10 @@
       "tournament_starting": {
         "title": "Tournament starting",
         "hint": "Reminders before a tournament you're in starts"
+      },
+      "direct_message": {
+        "title": "Messages from friends",
+        "hint": "When you are not on the site"
       }
     },
     "reason": {

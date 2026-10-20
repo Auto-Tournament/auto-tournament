@@ -20,6 +20,7 @@ import { db } from '../config/database';
 import { describeMatch } from '../utils/matchIntegration';
 import { emitChatMessage, emitChatTyping, matchChatPosted } from './socketService';
 import { recordAdminCall } from './adminCallService';
+import { notifyChannels } from './notifyChannels';
 import { chatLineBody } from './matchChatLines';
 import { CURRENT_MATCH_TOURNAMENT_JOIN } from '../utils/currentMatchOrder';
 import type { SqlValue } from '../config/database';
@@ -527,6 +528,19 @@ export const chatService = {
     const message = toMessage({ ...(row as MessageRow), sender_avatar: avatar });
     if (viewer.steamId) await this.markRead(viewer, channel, message.id);
     emitChatMessage(m.players, parsed.kind === 'match', message);
+    if (parsed.kind === 'dm' && viewer.steamId) {
+      // Away from the site: one push or Discord DM until they read the chat (the key is their read mark).
+      const to = [...m.players].find((id) => id !== viewer.steamId)!;
+      const read = await db.queryOneAsync<{ last_id: number }>(
+        'SELECT last_id FROM chat_reads WHERE player_id = ? AND channel = ?',
+        [to, channel]
+      );
+      void notifyChannels.deliver([to], 'direct_message', `${channel}:${read?.last_id ?? 0}`, {
+        subject: name ?? 'A friend',
+        text: text.length > 140 ? `${text.slice(0, 139)}…` : text,
+        url: `/player/${viewer.steamId}`,
+      });
+    }
     if (parsed.kind === 'match') {
       // To the game server, when the match is on one (CS2: fleet/chatBridge.ts).
       matchChatPosted({

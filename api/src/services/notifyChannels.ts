@@ -5,8 +5,8 @@
  * them where the player is when the site is closed.
  *
  * - Events: their own match is ready, their turn in the veto (captains),
- *   check-in opens, a new tournament takes sign-ups. "Off by default except
- *   your own matches."
+ *   check-in opens, a new tournament takes sign-ups, a friend's direct message.
+ *   "Off by default except your own matches" (and DMs).
  * - Email goes to the player's verified address (playerEmailService), when
  *   the site can send email. A new tournament's email is the existing
  *   "tournament emails" switch (player_emails.notify_tournaments), sent by
@@ -27,7 +27,12 @@ import { botToken, ChannelError, discordBot } from '../addons/discord/bot';
 import type { Untrusted } from '../utils/untrusted';
 
 export type ChannelEvent =
-  'match_ready' | 'veto_turn' | 'checkin_open' | 'new_tournament' | 'tournament_starting';
+  | 'match_ready'
+  | 'veto_turn'
+  | 'checkin_open'
+  | 'new_tournament'
+  | 'tournament_starting'
+  | 'direct_message';
 export type Channel = 'email' | 'discord' | 'push';
 
 export const CHANNEL_EVENTS: ChannelEvent[] = [
@@ -36,6 +41,7 @@ export const CHANNEL_EVENTS: ChannelEvent[] = [
   'checkin_open',
   'new_tournament',
   'tournament_starting',
+  'direct_message',
 ];
 export const CHANNELS: Channel[] = ['discord', 'email', 'push'];
 
@@ -47,6 +53,8 @@ const DEFAULT_ON: Record<ChannelEvent, boolean> = {
   new_tournament: false,
   // A tournament they signed up for is about to start (tournamentSchedule.ts).
   tournament_starting: true,
+  // A friend wrote to them (chatService, `dm:` channels).
+  direct_message: true,
 };
 
 export interface ChannelMessage {
@@ -213,6 +221,12 @@ export const notifyChannels = {
         for (const channel of CHANNELS) {
           // A new tournament's email goes out with the sign-up email itself.
           if (event === 'new_tournament' && channel === 'email') continue;
+          // A chat line is no email; and on the site the dock shows it already.
+          if (
+            event === 'direct_message' &&
+            (channel === 'email' || presenceStatus(playerId) === 'online')
+          )
+            continue;
           if (!prefs.events[event][channel] || !prefs.channels[channel].available) continue;
           // Someone active on the site sees it there (the bell): a Discord DM is for
           // when they are away or gone. Not claimed, so nothing is marked sent.

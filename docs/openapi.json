@@ -16774,7 +16774,9 @@
                       "match_ready",
                       "veto_turn",
                       "checkin_open",
-                      "new_tournament"
+                      "new_tournament",
+                      "tournament_starting",
+                      "direct_message"
                     ]
                   },
                   "channel": {

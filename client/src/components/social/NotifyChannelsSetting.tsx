@@ -16,7 +16,12 @@ import { panelSx, panelBorderSx } from '../../components/common/ui';
 const { color } = tokens;
 
 type Event =
-  'match_ready' | 'veto_turn' | 'checkin_open' | 'new_tournament' | 'tournament_starting';
+  | 'match_ready'
+  | 'veto_turn'
+  | 'checkin_open'
+  | 'new_tournament'
+  | 'tournament_starting'
+  | 'direct_message';
 type Channel = 'discord' | 'email' | 'push';
 const EVENTS: Event[] = [
   'match_ready',
@@ -24,6 +29,7 @@ const EVENTS: Event[] = [
   'checkin_open',
   'tournament_starting',
   'new_tournament',
+  'direct_message',
 ];
 const CHANNELS: Channel[] = ['push', 'discord', 'email'];
 
@@ -150,20 +156,23 @@ export function NotifyChannelsSetting() {
                   </Box>
                   {CHANNELS.map((channel) => (
                     <Box key={channel} component="td" sx={{ p: 1.5, textAlign: 'center' }}>
-                      <Switch
-                        checked={prefs.events[event][channel]}
-                        disabled={!prefs.channels[channel].available || saving !== null}
-                        onChange={(e) => void save(event, channel, e.target.checked)}
-                        slotProps={{
-                          input: {
-                            'aria-label': t('notifyChannels.switchLabel', {
-                              event: t(`notifyChannels.events.${event}.title`),
-                              channel: t(`notifyChannels.channel.${channel}`),
-                            }),
-                            'data-testid': `notify-${event}-${channel}`,
-                          } as React.InputHTMLAttributes<HTMLInputElement>,
-                        }}
-                      />
+                      {/* A chat line never goes out by email (notifyChannels.deliver). */}
+                      {event === 'direct_message' && channel === 'email' ? null : (
+                        <Switch
+                          checked={prefs.events[event][channel]}
+                          disabled={!prefs.channels[channel].available || saving !== null}
+                          onChange={(e) => void save(event, channel, e.target.checked)}
+                          slotProps={{
+                            input: {
+                              'aria-label': t('notifyChannels.switchLabel', {
+                                event: t(`notifyChannels.events.${event}.title`),
+                                channel: t(`notifyChannels.channel.${channel}`),
+                              }),
+                              'data-testid': `notify-${event}-${channel}`,
+                            } as React.InputHTMLAttributes<HTMLInputElement>,
+                          }}
+                        />
+                      )}
                     </Box>
                   ))}
                 </Box>

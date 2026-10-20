@@ -84,3 +84,12 @@ test.describe.serial('Direct messages', () => {
     expect((await a.ctx.get(`/api/chat/${channel}/messages`)).status()).toBe(404);
   });
 });
+
+test('a DM is a notification event, on by default', TAGS, async () => {
+  const someone = await player('Fay');
+  const res = await someone.ctx.get('/api/social/notifications/channels');
+  expect(res.ok()).toBe(true);
+  const body = (await res.json()) as { events?: Record<string, Record<string, boolean>> };
+  expect(body.events?.direct_message?.push).toBe(true);
+  await someone.ctx.dispose();
+});

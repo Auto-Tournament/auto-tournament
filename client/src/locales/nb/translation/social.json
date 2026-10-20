@@ -256,6 +256,10 @@
       "tournament_starting": {
         "title": "Turneringen starter",
         "hint": "Påminnelser før en turnering du er med i, starter"
+      },
+      "direct_message": {
+        "title": "Meldinger fra venner",
+        "hint": "Når du ikke er på siden"
       }
     },
     "reason": {

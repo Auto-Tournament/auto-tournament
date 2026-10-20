@@ -245,6 +245,10 @@
       "tournament_starting": {
         "title": "Tournament starting",
         "hint": "Reminders before a tournament you're in starts"
+      },
+      "direct_message": {
+        "title": "好友消息",
+        "hint": "你不在网站上时"
       }
     },
     "reason": {

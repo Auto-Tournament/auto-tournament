@@ -245,6 +245,10 @@
       "tournament_starting": {
         "title": "Tournament starting",
         "hint": "Reminders before a tournament you're in starts"
+      },
+      "direct_message": {
+        "title": "Wiadomości od znajomych",
+        "hint": "Gdy nie ma cię na stronie"
       }
     },
     "reason": {
