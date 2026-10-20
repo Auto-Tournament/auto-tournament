@@ -8,6 +8,7 @@ import { getBracketMatchLabel, getMatchBracket, getRoundLabel } from '../../../u
 import { tokens, fontDisplay, mono } from '../../../theme/tokens';
 import { TeamIdentity, resultInk } from '../ui/draftUi';
 import { matchPagePath } from '../../../paths';
+import { fmtDayTime } from '../../../utils/time';
 
 const { color } = tokens;
 
@@ -301,7 +302,7 @@ function MatchCard({
   bestOf: number;
   muted?: boolean;
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const yourTeamId = useContext(YourTeam);
   const tone = toneOf(match);
   const mine = !!yourTeamId && (match.team1?.id === yourTeamId || match.team2?.id === yourTeamId);
@@ -348,7 +349,13 @@ function MatchCard({
                 `${r.mapName ? getMapDisplayName(r.mapName) : ''} ${r.team1Score}–${r.team2Score}`.trim()
               )
               .join(' · ')
-          : t('bracketCards.bestOf', { count: bestOf });
+          : // Upcoming: its start time when it has one (Manage › Schedule).
+            [
+              t('bracketCards.bestOf', { count: bestOf }),
+              match.startsAt ? fmtDayTime(match.startsAt, i18n.language) : null,
+            ]
+              .filter(Boolean)
+              .join(' · ');
 
   const row = (team: Match['team1'], score: number | undefined, slot: 0 | 1) => {
     const from = feeders[slot];
