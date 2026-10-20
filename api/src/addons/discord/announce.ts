@@ -13,7 +13,7 @@ import { adminNoticeService } from '../../services/adminNoticeService';
 import { matchRow } from '../../services/matchNotices';
 import { botToken } from './bot';
 import { discordFetch } from './rest';
-import { announceText, dueEvents } from './announceText';
+import { announceMessage, dueEvents } from './announceText';
 
 const CHANNEL_KEY = 'discord_announce_channel';
 
@@ -46,6 +46,21 @@ async function resultOf(slug: string, m: MatchState): Promise<[number, number]> 
   const won = (side: 'team1' | 'team2', id: string | null) =>
     maps.filter((r) => r.winner_team === side || (id !== null && r.winner_team === id)).length;
   return [won('team1', m.team1_id), won('team2', m.team2_id)];
+}
+
+/** The teams' roles (team channels and roles), newest tournament first. */
+async function rolesOf(m: MatchState): Promise<{ team1: string | null; team2: string | null }> {
+  const roleOf = async (teamId: string | null) =>
+    teamId
+      ? ((
+          await db.queryOneAsync<{ role_id: string | null }>(
+            `SELECT role_id FROM discord_team_channels WHERE team_id = ? AND role_id IS NOT NULL
+              ORDER BY tournament_id DESC LIMIT 1`,
+            [teamId]
+          )
+        )?.role_id ?? null)
+      : null;
+  return { team1: await roleOf(m.team1_id), team2: await roleOf(m.team2_id) };
 }
 
 const chains = new Map<string, Promise<void>>();
@@ -89,10 +104,7 @@ async function announceNow(slug: string): Promise<void> {
         : null;
     const posted = await discordFetch(token, `/channels/${channelId}/messages`, {
       method: 'POST',
-      body: {
-        content: announceText(event, match.t1, match.t2, result, url),
-        allowed_mentions: { parse: [] },
-      },
+      body: announceMessage(event, match.t1, match.t2, result, url, await rolesOf(state)),
     });
     if (!posted.ok) {
       log.warn(`[Discord] Announcing ${slug} (${event}) failed: ${posted.status}`);
