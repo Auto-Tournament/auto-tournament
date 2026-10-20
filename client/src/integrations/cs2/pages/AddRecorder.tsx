@@ -1,3 +1,4 @@
+import { nativeServerCommands, nativeStartCommand } from './nativeRecorderSetup';
 /** Adding a recorder: its key and the command that starts it (Highlights admin). */
 /**
  * CS2's part of the Highlights page. Four tabs:
@@ -73,7 +74,7 @@ export function serverCommands(origin: string, token: string): string {
   ].join('\n');
 }
 
-export type RecorderKind = 'pc' | 'server';
+export type RecorderKind = 'pc' | 'server' | 'native';
 
 /**
  * "Add a recorder": a key made for it, and what to paste, for a gaming PC
@@ -130,11 +131,12 @@ export function AddRecorder({ onKeys }: { onKeys: () => void }) {
       showError(err instanceof Error ? err.message : t('highlightsAdmin.actionError'));
     }
   };
-  const command = token
-    ? kind === 'pc'
-      ? recorderCommand(origin, token)
-      : serverCommands(origin, token)
-    : '';
+  const commands: Record<RecorderKind, string> = {
+    pc: recorderCommand(origin, token ?? ''),
+    server: serverCommands(origin, token ?? ''),
+    native: nativeServerCommands(origin, token ?? ''),
+  };
+  const command = token ? commands[kind] : '';
   const close = () => {
     setOpen(false);
     setToken(null);
@@ -186,19 +188,26 @@ export function AddRecorder({ onKeys }: { onKeys: () => void }) {
       <Dialog open={open} onClose={close} maxWidth="md" fullWidth>
         <DialogTitle>{t('highlightsAdmin.add.title')}</DialogTitle>
         <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          <Tabs value={kind} onChange={(_, v: RecorderKind) => setKind(v)}>
+          <Tabs
+            value={kind}
+            onChange={(_, v: RecorderKind) => setKind(v)}
+            variant="scrollable"
+            scrollButtons="auto"
+          >
             <Tab value="pc" label={t('highlightsAdmin.add.pc')} data-testid="recorder-add-pc" />
             <Tab
               value="server"
               label={t('highlightsAdmin.add.server')}
               data-testid="recorder-add-server"
             />
+            <Tab
+              value="native"
+              label={t('highlightsAdmin.add.native')}
+              data-testid="recorder-add-native"
+            />
           </Tabs>
-          <Typography variant="body2">
-            {kind === 'pc'
-              ? t('highlightsAdmin.add.pcNeeds')
-              : t('highlightsAdmin.add.serverNeeds')}
-          </Typography>
+          <Typography variant="body2">{t(`highlightsAdmin.add.${kind}Needs`)}</Typography>
+          <Alert severity="info">{t('highlightsAdmin.add.steamOffline')}</Alert>
           {!token ? (
             <Stack direction="row" spacing={1.5} alignItems="flex-start" flexWrap="wrap" useFlexGap>
               <TextField
@@ -237,10 +246,38 @@ export function AddRecorder({ onKeys }: { onKeys: () => void }) {
                 {command}
               </Box>
               <Typography variant="body2" color="text.secondary">
-                {kind === 'pc'
-                  ? t('highlightsAdmin.add.pcAfter')
-                  : t('highlightsAdmin.add.serverAfter')}
+                {t(`highlightsAdmin.add.${kind}After`)}
               </Typography>
+              {kind === 'native' && (
+                <>
+                  <Box
+                    component="pre"
+                    data-testid="recorder-native-start"
+                    sx={{
+                      m: 0,
+                      p: 1.5,
+                      bgcolor: 'action.hover',
+                      borderRadius: 1,
+                      overflowX: 'auto',
+                      fontSize: 12.5,
+                    }}
+                  >
+                    {nativeStartCommand}
+                  </Box>
+                  <Button
+                    onClick={async () => {
+                      try {
+                        await navigator.clipboard.writeText(nativeStartCommand);
+                        showSuccess(t('highlightsAdmin.add.copied'));
+                      } catch {
+                        showError(t('highlightsAdmin.add.copyFailed'));
+                      }
+                    }}
+                  >
+                    {t('highlightsAdmin.add.nativeCopyStart')}
+                  </Button>
+                </>
+              )}
               <Alert severity="info">{t('highlightsAdmin.add.once')}</Alert>
             </>
           )}

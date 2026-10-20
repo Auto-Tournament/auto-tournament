@@ -2229,7 +2229,7 @@
       "baseNameHelp": "Recorders that join with this command show up as {{name}}-1, {{name}}-2, … Rename them in the list.",
       "makeCommand": "Make the command",
       "button": "Add a recorder",
-      "hint": "A gaming PC or a headless server with an NVIDIA or AMD GPU. It shows up here under its own name when it first asks for work; rename it in the list.",
+      "hint": "A gaming PC or a headless server with Intel, AMD or NVIDIA graphics. Intel integrated graphics can use frame-by-frame capture. It shows up here under its own name when it first asks for work; rename it in the list.",
       "keys": "Recorder keys",
       "used": "last used {{time}}",
       "unused": "not used yet",
@@ -2245,7 +2245,12 @@
       "pcNeeds": "A Linux PC with Docker, Steam (signed in) and CS2 installed. Paste this in a terminal in its desktop session. The recorder uses its GPU and finds CS2 in its Steam libraries. Don't game or run other GPU work on it while it records: the clips would stutter.",
       "serverNeeds": "An Ubuntu 24.04 server with an NVIDIA GPU, no desktop needed. The first line (once, with sudo) installs the NVIDIA driver and Docker and turns sleep off; reboot if it says so. The second starts Steam and CS2 in a container and the recorder in it.",
       "pcAfter": "It starts now and again whenever Docker does.",
-      "serverAfter": "Then, once: open the web UI it prints (https, port 8483) and sign in with the first-run login it prints, then set your own. Sign Steam in (the first sign-in can say “waiting for network” for a minute), set it to offline mode and install CS2. The recorder starts taking work when CS2 is there. Run the second line again to update it."
+      "serverAfter": "Then, once: open the web UI it prints (https, port 8483) and sign in with the first-run login it prints, then set your own. Sign Steam in (the first sign-in can say “waiting for network” for a minute), set it to offline mode and install CS2. The recorder starts taking work when CS2 is there. Run the second line again to update it.",
+      "native": "Server (headless - frame by frame)",
+      "nativeNeeds": "A Linux amd64 server with Intel or AMD graphics exposed through /dev/dri, Git, Docker and the Compose plugin. NVIDIA requires additional container runtime configuration. This builds the native recorder from upstream source; a prebuilt native image is not provided. It exports every frame, so slower hardware can produce smooth video without keeping up in real time. Defaults: low graphics, 1080p60, CPU encoding. Allow several GiB of free disk space and enough memory/swap for CS2. Review native.compose.yml for your GPU device and user IDs before starting.",
+      "steamOffline": "Steam needs an initial account sign-in to install and initialize CS2. After setup, recording works with Steam in offline mode. Keep its saved configuration and desktop running; you can close the browser. An open Auto Tournament website session is not required.",
+      "nativeAfter": "After setup, forward the desktop from your computer with ssh -L 8484:127.0.0.1:8484 USER@SERVER and open http://localhost:8484. Sign into Steam, install CS2 in a library under /mnt/games, then switch Steam to offline mode. On the server, run the command below to start recording. It runs in the foreground; use a service manager for unattended restarts. Preserve the Docker volumes. For long jobs, also set CS2_RECORDER_JOB_SECONDS=21600 on the platform API; the compose file already sets the worker allowance to six hours.",
+      "nativeCopyStart": "Copy start command"
     },
     "rename": "Rename",
     "renameTitle": "Name this recorder",
