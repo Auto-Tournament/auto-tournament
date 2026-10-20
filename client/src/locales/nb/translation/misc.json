@@ -900,6 +900,8 @@
     "tabDm": "Direktemelding",
     "dmWho": "Bare dere to ser dette",
     "placeholderDm": "Skriv til {{name}}",
+    "friends": "Venner",
+    "messageFriend": "Skriv til {{name}}",
     "matchWho": "Laget ditt, {{title}} og adminene",
     "matchWhoAdmin": "Begge lagene og adminene",
     "teamWho": "Alle på {{team}}",

@@ -900,6 +900,8 @@
     "tabDm": "Message privé",
     "dmWho": "Vous seuls lisez ceci",
     "placeholderDm": "Écrire à {{name}}",
+    "friends": "Amis",
+    "messageFriend": "Écrire à {{name}}",
     "matchWho": "Your team, {{title}} and the admins",
     "matchWhoAdmin": "Both teams and the admins",
     "teamWho": "Everyone on {{team}}",

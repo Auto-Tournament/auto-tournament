@@ -902,6 +902,8 @@
     "tabDm": "Wiadomość prywatna",
     "dmWho": "Czytacie to tylko wy dwoje",
     "placeholderDm": "Napisz do {{name}}",
+    "friends": "Znajomi",
+    "messageFriend": "Napisz do {{name}}",
     "matchWho": "Your team, {{title}} and the admins",
     "matchWhoAdmin": "Both teams and the admins",
     "teamWho": "Everyone on {{team}}",
