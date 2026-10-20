@@ -913,8 +913,8 @@
       "link": "Team channel on Discord"
     },
     "commands": {
-      "label": "Slash commands: /matches and /mymatch",
-      "help": "In the Discord Developer Portal, paste this as your app's Interactions Endpoint URL. Discord must be able to reach this site."
+      "label": "Slash commands: /matches, /mymatch and /setup",
+      "help": "They work as soon as the bot is connected. Optional: to have Discord send them to this site instead, paste this as your app's Interactions Endpoint URL in the Discord Developer Portal."
     },
     "setup": {
       "button": "Set up this server",

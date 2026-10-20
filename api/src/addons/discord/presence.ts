@@ -1,7 +1,7 @@
 /**
- * The bot shows as online in Discord ("Watching 2 matches"). Everything else
- * the bot does is plain API calls; this keeps Discord's gateway websocket open
- * only for the presence: identify with no intents (no events wanted),
+ * Discord's gateway websocket: the bot shows as online ("Watching 2
+ * matches"), and slash commands arrive here when no Interactions Endpoint URL
+ * is set (interactions.ts). Identify with no intents (commands come anyway),
  * heartbeat, and connect again when Discord closes it.
  *
  * Started and stopped with the add-on, and again when the token changes.
@@ -11,6 +11,7 @@ import { db } from '../../config/database';
 import { log } from '../../utils/logger';
 import type { Untrusted } from '../../utils/untrusted';
 import { botToken } from './bot';
+import { handleGatewayInteraction } from './interactions';
 
 const GATEWAY = 'wss://gateway.discord.gg/?v=10&encoding=json';
 const STATUS_MS = 60_000;
@@ -64,7 +65,7 @@ async function connect(): Promise<void> {
   const ws = new WebSocket(GATEWAY);
   socket = ws;
   ws.on('message', (raw: RawData) => {
-    let msg: { op?: number; s?: number | null; d?: Record<string, Untrusted> | null };
+    let msg: { op?: number; s?: number | null; t?: string; d?: Record<string, Untrusted> | null };
     try {
       msg = JSON.parse(String(raw)) as typeof msg;
     } catch {
@@ -95,6 +96,8 @@ async function connect(): Promise<void> {
       statusTimer.unref();
     } else if (msg.op === 1) {
       send({ op: 1, d: seq });
+    } else if (msg.op === 0 && msg.t === 'INTERACTION_CREATE' && msg.d) {
+      void handleGatewayInteraction(msg.d).catch(() => undefined);
     } else if (msg.op === 0 && msg.d && (msg.d as { session_id?: string }).session_id) {
       backoffMs = 5_000; // READY: connected.
     } else if (msg.op === 7 || msg.op === 9) {
