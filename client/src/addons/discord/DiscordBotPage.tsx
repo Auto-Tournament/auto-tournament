@@ -199,6 +199,19 @@ export function DiscordBotPage() {
         </Box>
       )}
       {status?.set && status.guildId && (
+        <Box sx={{ mb: 2, maxWidth: 620 }} data-testid="discord-bot-commands">
+          <Typography sx={{ fontSize: '0.875rem', fontWeight: 600 }}>
+            {t('discordBot.commands.label')}
+          </Typography>
+          <Typography sx={{ fontSize: '0.8125rem', color: color.muted, mb: 0.5 }}>
+            {t('discordBot.commands.help')}
+          </Typography>
+          <Typography component="code" sx={{ fontSize: '0.8125rem', wordBreak: 'break-all' }}>
+            {`${window.location.origin}/api/addons/discord/interactions`}
+          </Typography>
+        </Box>
+      )}
+      {status?.set && status.guildId && (
         <Box sx={{ mb: 2, maxWidth: 520 }}>
           <SwitchRow
             label={t('discordBot.teamChannels.label')}

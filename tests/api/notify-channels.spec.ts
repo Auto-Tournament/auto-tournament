@@ -102,6 +102,9 @@ test(
         data: { enabled: false },
       });
       expect((await teamsOff.json()).teamChannels).toBe(false);
+      // Slash commands: an unsigned request is refused.
+      const unsigned = await player.post('/api/addons/discord/interactions', { data: { type: 1 } });
+      expect(unsigned.status()).toBe(401);
       // An API token alone (no session) cannot set it.
       const bare = await playwright.request.newContext({
         baseURL: process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3069',

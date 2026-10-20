@@ -122,6 +122,8 @@ app.use('/api/compat/events', (err: unknown, _req: Request, res: Response, next:
   }
   return next(err);
 });
+// Discord's slash commands are signed over the raw body (addons/discord/interactions.ts).
+app.use('/api/addons/discord/interactions', express.raw({ type: '*/*', limit: '100kb' }));
 // Increase body size limit to 50MB for image uploads (base64 encoded images can be large)
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
