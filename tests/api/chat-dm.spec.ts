@@ -50,7 +50,9 @@ test.describe.serial('Direct messages', () => {
     expect(
       (await a.ctx.post('/api/social/friends/requests', { data: { playerId: b.id } })).ok()
     ).toBe(true);
-    expect((await b.ctx.post(`/api/social/friends/requests/${a.id}/accept`)).ok()).toBe(true);
+    expect(
+      (await b.ctx.post(`/api/social/friends/requests/${a.id}/accept`, { data: {} })).ok()
+    ).toBe(true);
 
     const sent = await a.ctx.post(`/api/chat/${channel}/messages`, { data: { body: 'gg?' } });
     expect(sent.ok()).toBe(true);
