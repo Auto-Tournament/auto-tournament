@@ -15,7 +15,8 @@ import { adminNoticeService } from '../../services/adminNoticeService';
 import { matchRow } from '../../services/matchNotices';
 import { botToken } from './bot';
 import { discordFetch } from './rest';
-import { announceMessage, dueEvents, type CardInput } from './announceText';
+import { announceMessage, dueEvents, teamLabel, type CardInput } from './announceText';
+import { discordIdOf } from '../../services/notifyChannels';
 import { matchLiveStatsService } from '../../services/matchLiveStatsService';
 import { mapLabel, roundLabel } from '../../services/shareCards/core';
 
@@ -77,12 +78,13 @@ async function resultOf(
 /** The match's best player by kills (ADR breaks a tie), from its stats. */
 async function topPlayer(slug: string) {
   const row = await db.queryOneAsync<{
+    player_id: string;
     name: string | null;
     kills: number;
     deaths: number;
     adr: number | null;
   }>(
-    `SELECT COALESCE(p.name, s.player_id) AS name, SUM(s.kills)::int AS kills, SUM(s.deaths)::int AS deaths,
+    `SELECT s.player_id, COALESCE(p.name, s.player_id) AS name, SUM(s.kills)::int AS kills, SUM(s.deaths)::int AS deaths,
             AVG(s.adr) AS adr
        FROM player_match_stats s LEFT JOIN players p ON p.id = s.player_id
       WHERE s.match_slug = ?
@@ -96,11 +98,12 @@ async function topPlayer(slug: string) {
         kills: row.kills,
         deaths: row.deaths,
         adr: row.adr === null ? null : Number(row.adr),
+        discordId: await discordIdOf(row.player_id),
       }
     : null;
 }
 
-/** What the winner plays next: "Round 3 vs Halcyon", "... opponent to be decided", or none. */
+/** What the winner plays next: "@Kestrel plays @Halcyon next (Final)", "... opponent to be decided", or none. */
 async function nextFor(m: MatchState, winnerName: string): Promise<string | null> {
   if (!m.next_match_id) {
     // The last match of a finished tournament: its winner won the tournament.
@@ -126,7 +129,11 @@ async function nextFor(m: MatchState, winnerName: string): Promise<string | null
   );
   if (!next) return null;
   const stage = roundLabel(next.slug, Number(next.round));
-  const opponent = next.team1_id === m.winner_id ? next.t2 : next.t1;
+  const opponentFirst = next.team1_id !== m.winner_id;
+  const opponentName = opponentFirst ? next.t1 : next.t2;
+  const opponent = opponentName
+    ? teamLabel(opponentName, await roleOf(opponentFirst ? next.team1_id : next.team2_id))
+    : null;
   return opponent
     ? `${winnerName} plays ${opponent} next (${stage}).`
     : `${winnerName} goes on to ${stage}; the opponent is not decided yet.`;
@@ -177,17 +184,18 @@ const liveCards = new Map<string, string>();
 const liveLast = new Map<string, NonNullable<CardInput['live']>>();
 
 /** The teams' roles (team channels and roles), newest tournament first. */
+/** A team's Discord role (team channels and roles), newest tournament first. */
+async function roleOf(teamId: string | null): Promise<string | null> {
+  if (!teamId) return null;
+  const row = await db.queryOneAsync<{ role_id: string | null }>(
+    `SELECT role_id FROM discord_team_channels WHERE team_id = ? AND role_id IS NOT NULL
+      ORDER BY tournament_id DESC LIMIT 1`,
+    [teamId]
+  );
+  return row?.role_id ?? null;
+}
+
 async function rolesOf(m: MatchState): Promise<{ team1: string | null; team2: string | null }> {
-  const roleOf = async (teamId: string | null) =>
-    teamId
-      ? ((
-          await db.queryOneAsync<{ role_id: string | null }>(
-            `SELECT role_id FROM discord_team_channels WHERE team_id = ? AND role_id IS NOT NULL
-              ORDER BY tournament_id DESC LIMIT 1`,
-            [teamId]
-          )
-        )?.role_id ?? null)
-      : null;
   return { team1: await roleOf(m.team1_id), team2: await roleOf(m.team2_id) };
 }
 
@@ -256,7 +264,10 @@ async function announceNow(slug: string): Promise<void> {
         winner,
         ...r,
         top: await topPlayer(slug),
-        next: await nextFor(state, winner === 1 ? team1 : team2),
+        next: await nextFor(
+          state,
+          winner === 1 ? teamLabel(team1, base.roles.team1) : teamLabel(team2, base.roles.team2)
+        ),
       };
     }
     return base;
