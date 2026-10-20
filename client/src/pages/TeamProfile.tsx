@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { TeamDiscordLink } from '../addons/discord/TeamDiscordLink';
 import { Link as RouterLink, useNavigate, useParams } from 'react-router-dom';
 import { Alert, Box, Button, CircularProgress, Container, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
@@ -146,27 +147,30 @@ export default function TeamProfile() {
   }, [teamId, playerSteamId]);
 
   const ownActions = own ? (
-    own.role === 'member' ? (
-      <Button
-        variant="outlined"
-        size="small"
-        color="error"
-        onClick={() => setLeaving(true)}
-        data-testid="team-profile-leave"
-      >
-        {t('teamProfile.leave')}
-      </Button>
-    ) : (
-      <Button
-        variant="outlined"
-        size="small"
-        component={RouterLink}
-        to={teamManagePath(teamId ?? '')}
-        data-testid="team-profile-manage"
-      >
-        {t('teamProfile.manage')}
-      </Button>
-    )
+    <>
+      <TeamDiscordLink teamId={teamId ?? ''} />
+      {own.role === 'member' ? (
+        <Button
+          variant="outlined"
+          size="small"
+          color="error"
+          onClick={() => setLeaving(true)}
+          data-testid="team-profile-leave"
+        >
+          {t('teamProfile.leave')}
+        </Button>
+      ) : (
+        <Button
+          variant="outlined"
+          size="small"
+          component={RouterLink}
+          to={teamManagePath(teamId ?? '')}
+          data-testid="team-profile-manage"
+        >
+          {t('teamProfile.manage')}
+        </Button>
+      )}
+    </>
   ) : undefined;
 
   // The team's game is its tournament's, else the one it plays (or last played).

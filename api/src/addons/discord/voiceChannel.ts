@@ -7,6 +7,8 @@
 const VIEW = 1n << 10n;
 const CONNECT = 1n << 20n;
 const SPEAK = 1n << 21n;
+const SEND = 1n << 11n;
+const HISTORY = 1n << 16n;
 const MOVE = 1n << 24n;
 const MANAGE_CHANNELS = 1n << 4n;
 
@@ -18,15 +20,24 @@ type Overwrite = {
   deny: string;
 };
 
+/** What a team's players may do in its voice channel, and in its text channel. */
+export const VOICE_MEMBER = VIEW | CONNECT | SPEAK;
+export const TEXT_MEMBER = VIEW | SEND | HISTORY;
+
 /** A team-only channel: nobody else sees or joins it (@everyone's id is the server's). */
-export function teamOverwrites(guildId: string, botId: string, memberIds: string[]): Overwrite[] {
+export function teamOverwrites(
+  guildId: string,
+  botId: string,
+  memberIds: string[],
+  memberAllow: bigint = VOICE_MEMBER
+): Overwrite[] {
   return [
     { id: guildId, type: 0, allow: '0', deny: String(VIEW | CONNECT) },
     { id: botId, type: 1, allow: String(VIEW | CONNECT | MOVE | MANAGE_CHANNELS), deny: '0' },
     ...[...new Set(memberIds)].map((id) => ({
       id,
       type: 1 as const,
-      allow: String(VIEW | CONNECT | SPEAK),
+      allow: String(memberAllow),
       deny: '0',
     })),
   ];

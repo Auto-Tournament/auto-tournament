@@ -9,6 +9,14 @@ import { log } from '../../utils/logger';
 import type { Untrusted } from '../../utils/untrusted';
 import type { AddonModule } from '../types';
 import { ChannelError, botTokenStored, discordBot } from './bot';
+import {
+  setTeamChannelsOn,
+  startTeamChannels,
+  stopTeamChannels,
+  teamChannelUrl,
+  teamChannelsOn,
+} from './teamChannels';
+import { resolveViewerAccount } from '../../utils/viewerIdentity';
 import { setVoiceSettings, startMatchVoice, stopMatchVoice, voiceSettings } from './matchVoice';
 import {
   announceChannel,
@@ -18,6 +26,32 @@ import {
 } from './announce';
 
 const router = Router();
+
+/**
+ * @openapi
+ * /api/addons/discord/team-channel/{teamId}:
+ *   get:
+ *     tags: [Add-ons]
+ *     summary: The team's Discord channel for the running tournament, for one of its own players
+ *     parameters:
+ *       - { in: path, name: teamId, required: true, schema: { type: string } }
+ *     responses:
+ *       200: { description: "`url`: the channel's link, or null" }
+ */
+router.get('/team-channel/:teamId', async (req: Request, res: Response) => {
+  try {
+    const viewer = await resolveViewerAccount(req);
+    const url = viewer.playerId
+      ? await teamChannelUrl(String(req.params.teamId), viewer.playerId)
+      : null;
+    return res.json({ success: true, url });
+  } catch (error) {
+    log.error('Reading a team channel failed', error as Error);
+    return res.status(500).json({ success: false, error: 'Could not read the team channel' });
+  }
+});
+
+// Everything below is the admin's.
 router.use(requireAuth);
 
 /**
@@ -28,7 +62,7 @@ router.use(requireAuth);
  *     summary: Whether a Discord bot token is set, the bot's name, its Discord servers and the one in use
  *     security: [{ BearerAuth: [] }]
  *     responses:
- *       200: { description: "`set`, `name`, `guilds` ({ id, name }[]), `guildId`, `categories` ({ id, name }[] of the picked server), `matchVoice` ({ enabled, categoryId }), `textChannels` ({ id, name }[]), `announceChannelId`" }
+ *       200: { description: "`set`, `name`, `guilds` ({ id, name }[]), `guildId`, `categories` ({ id, name }[] of the picked server), `matchVoice` ({ enabled, categoryId }), `textChannels` ({ id, name }[]), `announceChannelId`, `teamChannels` (on/off)" }
  */
 router.get('/', async (_req: Request, res: Response) => {
   try {
@@ -42,6 +76,7 @@ router.get('/', async (_req: Request, res: Response) => {
       textChannels: guilds.guildId ? await discordBot.channels([0, 5]) : [],
       matchVoice: await voiceSettings(),
       announceChannelId: await announceChannel(),
+      teamChannels: await teamChannelsOn(),
     });
   } catch (error) {
     log.error('Reading the Discord bot failed', error as Error);
@@ -204,6 +239,35 @@ router.put('/announce', async (req: Request, res: Response) => {
   }
 });
 
+/**
+ * @openapi
+ * /api/addons/discord/team-channels:
+ *   put:
+ *     tags: [Add-ons]
+ *     summary: A private text channel per team while its tournament runs (on/off)
+ *     security: [{ BearerAuth: [] }]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema: { type: object, required: [enabled], properties: { enabled: { type: boolean } } }
+ *     responses:
+ *       200: { description: "`teamChannels`" }
+ *       400: { description: enabled is not a boolean }
+ */
+router.put('/team-channels', async (req: Request, res: Response) => {
+  const enabled = (req.body as Record<string, Untrusted> | undefined)?.enabled;
+  if (typeof enabled !== 'boolean') {
+    return res.status(400).json({ success: false, error: 'enabled must be true or false' });
+  }
+  try {
+    return res.json({ success: true, teamChannels: await setTeamChannelsOn(enabled) });
+  } catch (error) {
+    log.error('Setting the Discord team channels failed', error as Error);
+    return res.status(500).json({ success: false, error: 'Could not save the team channels' });
+  }
+});
+
 export const discordAddon: AddonModule = {
   id: 'discord',
   name: 'Discord bot',
@@ -214,10 +278,12 @@ export const discordAddon: AddonModule = {
   start() {
     startMatchVoice();
     startAnnouncements();
+    startTeamChannels();
   },
   stop() {
     stopMatchVoice();
     stopAnnouncements();
+    stopTeamChannels();
   },
   router,
 };
