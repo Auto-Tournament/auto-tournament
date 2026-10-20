@@ -83,6 +83,38 @@ test.describe('Tournament sign-up', () => {
       const after = await (await request.get(`/api/tournament/${id}/leaderboard`)).json();
       expect(after.tournament.teamIds).toContain(team.id);
 
+      // A player plays for one team per tournament: a second team with one of
+      // these players in its lineup is refused (GitHub #125).
+      const other = await playwright.request.newContext({ baseURL });
+      const otherId = steamId();
+      expect(await signInAsPlayerViaRequest(other, otherId, `Other ${otherId.slice(-4)}`)).toBe(
+        true
+      );
+      const second = await other.post('/api/team-directory/mine', {
+        data: { name: `Signup2 ${otherId.slice(-5)}`, tag: 'S2' },
+      });
+      expect(second.status(), await second.text()).toBe(201);
+      const team2 = (await second.json()).team as { id: string };
+      const others = [steamId(), steamId(), steamId()];
+      const roster2 = await request.put(`/api/teams/${team2.id}`, {
+        headers: getAuthHeader(),
+        data: {
+          players: [otherId, mates[0], ...others].map((p) => ({ steamId: p, name: p.slice(-4) })),
+        },
+      });
+      expect(roster2.ok(), await roster2.text()).toBe(true);
+      const twice = await other.post(`/api/tournament-signup/${id}/register`, {
+        data: {
+          teamId: team2.id,
+          starters: [otherId, mates[0], ...others],
+          subs: [],
+          acceptRules: true,
+        },
+      });
+      expect(twice.status(), await twice.text()).toBe(409);
+      expect((await twice.json()).code).toBe('other_team');
+      await other.dispose();
+
       // Check-in is not open (no window set).
       expect((await owner.post(`/api/tournament-signup/${id}/check-in`)).status()).toBe(409);
 
