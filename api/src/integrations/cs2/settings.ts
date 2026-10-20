@@ -173,7 +173,7 @@ export const CS2_INSTANCE_SETTINGS: ReadonlyArray<Cs2Setting> = [
     key: 'simulation_timescale',
     field: 'simulationTimescale',
     order: 30,
-    schema: { type: 'string', 'x-minimum': 0.1, 'x-maximum': 10 },
+    schema: { type: 'string', 'x-minimum': 0.1, 'x-maximum': 4 },
     normalize(trimmed) {
       const parsed = Number(trimmed);
       if (!Number.isFinite(parsed)) {
