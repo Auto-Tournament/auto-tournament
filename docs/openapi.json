@@ -6972,10 +6972,10 @@
           "Highlights"
         ],
         "summary": "A recorder's benchmark results (recorder)",
-        "description": "`recorder` and `tries`: per refresh rate (`gamescopeHz`) the seconds\nthe moment took, the capture frame rate and `ok`. The fastest finished\ntry's rate is kept and sent with every job after (`settings.gamescopeHz`).\n",
+        "description": "`recorder` and `tries`: per refresh rate (`gamescopeHz`) the seconds\nthe moment took, the capture frame rate and `ok`. The fastest finished\ntry's rate is kept and sent with every job after (`settings.gamescopeHz`).\nNative workers send `backend: native` and one attempt without a refresh\nrate. A complete frame export succeeds even below playback speed.\n`error` describes failures before an attempt could start.\n",
         "responses": {
           "200": {
-            "description": "`gamescopeHz`: the pick, or null when no try finished"
+            "description": "`ok`: whether an attempt finished; `gamescopeHz`: the stream pick, null for native export"
           }
         },
         "security": [

@@ -30,6 +30,7 @@ import type { SqlValue } from '../config/database';
 import type { TournamentResponse, TournamentSettings } from '../types/tournament.types';
 import type { JsonObject } from '../utils/json';
 import type { Untrusted } from '../utils/untrusted';
+export type { Untrusted };
 import type { ShareKind } from '../services/shareCards/types';
 
 /**
