@@ -315,7 +315,9 @@ export function TournamentPageHeader({
               justifyContent: 'flex-end',
               gap: 2.5,
               background: tournamentArtUrl(tournament, { fallback: false })
-                ? `linear-gradient(to top, ${withAlpha(color.paper, 0.92)}, ${withAlpha(color.paper, 0.45)})`
+                ? // Dark behind the title, so it reads over any picture (a banner may carry its
+                  // own text); the art shows on the right.
+                  `linear-gradient(to right, ${withAlpha(color.paper, 0.95)} 0%, ${withAlpha(color.paper, 0.9)} 50%, ${withAlpha(color.paper, 0.3)} 100%), linear-gradient(to top, ${withAlpha(color.paper, 0.85)}, ${withAlpha(color.paper, 0)} 70%)`
                 : 'none',
             }}
           >
