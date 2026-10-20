@@ -368,3 +368,45 @@ func TestStoppedReconnectValidatesBeforeRestartAndPreservesIdentity(t *testing.T
 		})
 	}
 }
+
+func TestARejectedKeyForgetsThePlatformAndTheKey(t *testing.T) {
+	root := fixture(t)
+	a, err := newAgent(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var stopped []string
+	a.run = func(ctx context.Context, args ...string) ([]byte, error) {
+		if args[0] == "stop" {
+			stopped = append(stopped, args[1])
+		}
+		return fakeDocker(ctx, args...)
+	}
+	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusUnauthorized)
+		w.Write([]byte(`{"success":false,"code":"recorder_key_rejected"}`))
+	}))
+	defer s.Close()
+	a.base = s.URL
+	if err = a.tick(context.Background()); !errors.Is(err, errKeyRejected) {
+		t.Fatalf("want errKeyRejected, got %v", err)
+	}
+	if err = a.forget(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	if !reflect.DeepEqual(stopped, []string{"at-recorder"}) {
+		t.Fatalf("the container should stop: %v", stopped)
+	}
+	b, _ := os.ReadFile(filepath.Join(root, "config/at-recorder.env"))
+	if strings.Contains(string(b), "AT_URL") || strings.Contains(string(b), "AT_WORKER_TOKEN") {
+		t.Fatalf("the platform and key should be gone:\n%s", b)
+	}
+	if !strings.Contains(string(b), "AT_WORKER_NAME=original-host") {
+		t.Fatal("the name stays")
+	}
+	// It starts again unlinked, waiting to be connected.
+	again, err := newAgent(root)
+	if err != nil || again.base != "" || again.token != "" {
+		t.Fatalf("unlinked agent: %v %+v", err, again)
+	}
+}
