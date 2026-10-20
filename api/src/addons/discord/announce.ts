@@ -117,18 +117,21 @@ async function nextFor(m: MatchState, winnerName: string): Promise<string | null
   const next = await db.queryOneAsync<{
     slug: string;
     round: number;
+    bracket: string | null;
     team1_id: string | null;
     team2_id: string | null;
     t1: string | null;
     t2: string | null;
   }>(
-    `SELECT n.slug, n.round, n.team1_id, n.team2_id, t1.name AS t1, t2.name AS t2
+    `SELECT n.slug, n.round, n.bracket, n.team1_id, n.team2_id, t1.name AS t1, t2.name AS t2
        FROM matches n LEFT JOIN teams t1 ON t1.id = n.team1_id LEFT JOIN teams t2 ON t2.id = n.team2_id
       WHERE n.id = ?`,
     [m.next_match_id]
   );
   if (!next) return null;
-  const stage = roundLabel(next.slug, Number(next.round));
+  const stage =
+    (await stageOf(next.slug, { ...m, round: Number(next.round), bracket: next.bracket })) ??
+    roundLabel(next.slug, Number(next.round));
   const opponentFirst = next.team1_id !== m.winner_id;
   const opponentName = opponentFirst ? next.t1 : next.t2;
   const opponent = opponentName
@@ -180,8 +183,6 @@ function formatOf(config: string | null): { format: string | null; maps: string[
 
 /** The live card's message, and what it last said, so a change edits it once. */
 const liveCards = new Map<string, string>();
-/** The live card's last score, to leave it as "Over on Nuke: A 13–7 B" when the match ends. */
-const liveLast = new Map<string, NonNullable<CardInput['live']>>();
 
 /** The teams' roles (team channels and roles), newest tournament first. */
 /** A team's Discord role (team channels and roles), newest tournament first. */
@@ -224,7 +225,9 @@ async function announceNow(slug: string): Promise<void> {
   );
   const todo = due.filter((e) => !sent.some((s) => s.event === e));
   const liveSent = sent.find((s) => s.event === 'live' && s.message_id);
-  const overDue = state.status === 'completed' && !!liveSent && liveLast.has(slug);
+  // Once completed, the live card is left with the last map's score ("Over on Nuke: ...").
+  const overDue =
+    state.status === 'completed' && !!liveSent && !sent.some((s) => s.event === 'over');
   if (!todo.length && !(state.status === 'live' && liveSent) && !overDue) return;
   const match = await matchRow(slug);
   const team1 = match?.t1;
@@ -283,18 +286,31 @@ async function announceNow(slug: string): Promise<void> {
         allowed_mentions: { parse: [] },
       },
     });
-  const last = liveLast.get(slug);
-  if (state.status === 'completed' && liveSent?.message_id && last) {
-    liveLast.delete(slug);
-    await editLive(
-      announceMessage({ ...(await card('live')), live: last, over: true }),
-      liveSent.message_id
+  const liveId = liveSent ? liveSent.message_id : null;
+  if (overDue && liveId) {
+    // Claimed first, like the posts, so it is edited once.
+    const claimed = await db.queryOneAsync<{ event: string }>(
+      `INSERT INTO discord_announcements (match_slug, event, sent_at) VALUES (?, 'over', ?)
+       ON CONFLICT DO NOTHING RETURNING event`,
+      [slug, Math.floor(Date.now() / 1000)]
     );
+    const won = await resultOf(slug, state);
+    const maps = won.maps;
+    if (claimed && maps.length > 0) {
+      const lastMap = maps[maps.length - 1];
+      const live: NonNullable<CardInput['live']> = {
+        map: lastMap.map,
+        mapNumber: maps.length - 1,
+        totalMaps: maps.length,
+        score: lastMap.score,
+        round: lastMap.score[0] + lastMap.score[1],
+        series: won.score,
+      };
+      await editLive(announceMessage({ ...(await card('live')), live, over: true }), liveId);
+    }
   }
   if (state.status === 'live' && liveSent?.message_id) {
-    const live = await card('live');
-    if (live.live) liveLast.set(slug, live.live);
-    const body = announceMessage(live);
+    const body = announceMessage(await card('live'));
     const text = JSON.stringify(body.embeds);
     if (liveCards.get(slug) !== text) {
       liveCards.set(slug, text);

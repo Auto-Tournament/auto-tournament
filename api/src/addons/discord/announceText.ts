@@ -101,8 +101,10 @@ function fields(c: CardInput): Field[] {
     }
   }
   if (c.event === 'result' && c.result) {
+    // From the winner's side, as the headline reads.
+    const w = c.result.winner === 1 ? 0 : 1;
     const maps = c.result.maps
-      .map((m) => `${m.map ?? 'Map'} ${m.score[0]}–${m.score[1]}`)
+      .map((m) => `${m.map ?? 'Map'} ${m.score[w]}–${m.score[1 - w]}`)
       .join('\n');
     if (maps) {
       out.push({ name: c.result.maps.length > 1 ? 'Maps' : 'Map', value: maps, inline: true });

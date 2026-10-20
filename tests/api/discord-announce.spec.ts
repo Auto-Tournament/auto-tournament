@@ -103,6 +103,16 @@ test.describe('Discord match announcements', () => {
     ]);
   });
 
+  test('map scores read from the winner\u2019s side, like the headline', () => {
+    const done = announceMessage({
+      ...base,
+      event: 'result',
+      result: { winner: 2, score: [0, 1], maps: [{ map: 'Inferno', score: [0, 5] }] },
+    });
+    expect(done.embeds[0].description).toBe('**B** beat **A** 1–0.');
+    expect(done.embeds[0].fields?.[0]).toEqual({ name: 'Map', value: 'Inferno 5–0', inline: true });
+  });
+
   test('teams and the top player are mentioned when they have a role and a Discord account', () => {
     const roles = { team1: '11', team2: '22' };
     expect(
