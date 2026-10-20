@@ -5,6 +5,7 @@
  * the server and the score.
  */
 
+import { OpponentName } from '../team/MatchRowLinks';
 import { useCallback, useEffect, useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import { Box, Button, Typography } from '@mui/material';
@@ -76,6 +77,8 @@ export function NextMatchCard({ teamId }: { teamId: string }) {
   const them = match.isTeam1 ? 'team2' : 'team1';
   const ourName = data?.team?.name ?? match[us]?.name ?? match.config?.[us]?.name ?? '';
   const theirName = match.opponent?.name ?? match.config?.[them]?.name ?? t('home.tbd');
+  const ourId = teamId;
+  const theirId = match.opponent?.id ?? null;
   const yourTurn = phase === 'veto';
 
   return (
@@ -112,7 +115,8 @@ export function NextMatchCard({ teamId }: { teamId: string }) {
             overflowWrap: 'anywhere',
           }}
         >
-          {ourName} {t('teamPage.versus')} {theirName}
+          <OpponentName id={ourId} name={ourName} /> {t('teamPage.versus')}{' '}
+          <OpponentName id={theirId} name={theirName} />
         </Typography>
         <Typography sx={{ color: color.ink2, fontSize: '0.875rem' }} data-testid="next-match-phase">
           {t(PHASE_KEY[phase])}

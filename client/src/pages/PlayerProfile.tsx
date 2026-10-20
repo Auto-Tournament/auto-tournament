@@ -1049,7 +1049,14 @@ export default function PlayerProfile() {
           wonMatch: m.wonMatch,
           title: `${t('teamMatchHistory.vs')} ${opponentName}`,
           opponent: { id: (isTeam1 ? m.team2Id : m.team1Id) ?? null, name: opponentName },
-          detail: [rating?.tournamentName, getRoundLabel(m.round)].filter(Boolean).join(' · '),
+          tournament:
+            m.tournamentId && rating?.tournamentName
+              ? { id: m.tournamentId, name: rating.tournamentName }
+              : null,
+          detail:
+            m.tournamentId && rating?.tournamentName
+              ? getRoundLabel(m.round)
+              : [rating?.tournamentName, getRoundLabel(m.round)].filter(Boolean).join(' · '),
           ratingAfter: rating?.eloAfter,
           // Only a game that records demos, and only a match that has one: no
           // download button that leads nowhere.
