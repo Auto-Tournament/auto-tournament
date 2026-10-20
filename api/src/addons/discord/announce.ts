@@ -1,8 +1,10 @@
 /**
  * Match announcements (the Discord add-on, Modules → Discord): a post in the
- * channel the admin picked when a match is ready on its server, when it goes
- * live, and its result. Each once per match (discord_announcements); a match
- * that is reloaded (failover) is not announced again.
+ * channel the admin picked when a match is ready on its server (format, maps),
+ * when it goes live, and its result (each map's score, the top player, what
+ * the winner plays next). Each once per match (discord_announcements); a match
+ * that is reloaded (failover) is not announced again. The live card is edited
+ * as the score moves, so the channel follows the match without a post a round.
  *
  * Listens on the match change bus like the team voice channels.
  */
@@ -13,7 +15,9 @@ import { adminNoticeService } from '../../services/adminNoticeService';
 import { matchRow } from '../../services/matchNotices';
 import { botToken } from './bot';
 import { discordFetch } from './rest';
-import { announceMessage, dueEvents } from './announceText';
+import { announceMessage, dueEvents, type CardInput } from './announceText';
+import { matchLiveStatsService } from '../../services/matchLiveStatsService';
+import { mapLabel, roundLabel } from '../../services/shareCards/core';
 
 const CHANNEL_KEY = 'discord_announce_channel';
 
@@ -34,19 +38,102 @@ interface MatchState {
   winner_id: string | null;
   team1_id: string | null;
   team2_id: string | null;
+  round: number | null;
+  next_match_id: number | null;
+  config: string | null;
+  tournament: string | null;
 }
 
-/** Maps won by each side (or the map's rounds for a Bo1). */
-async function resultOf(slug: string, m: MatchState): Promise<[number, number]> {
-  const maps = await db.queryAsync<{ t1: number; t2: number; winner_team: string | null }>(
-    'SELECT team1_score AS t1, team2_score AS t2, winner_team FROM match_map_results WHERE match_slug = ? ORDER BY map_number',
+/** Each map's score, and maps won by each side (or the map's rounds for a Bo1). */
+async function resultOf(
+  slug: string,
+  m: MatchState
+): Promise<{
+  score: [number, number];
+  maps: Array<{ map: string | null; score: [number, number] }>;
+}> {
+  const rows = await db.queryAsync<{
+    t1: number;
+    t2: number;
+    winner_team: string | null;
+    map_name: string | null;
+  }>(
+    'SELECT team1_score AS t1, team2_score AS t2, winner_team, map_name FROM match_map_results WHERE match_slug = ? ORDER BY map_number',
     [slug]
   );
-  if (maps.length === 1) return [maps[0].t1, maps[0].t2];
+  const maps = rows.map((r) => ({
+    map: mapLabel(r.map_name),
+    score: [Number(r.t1), Number(r.t2)] as [number, number],
+  }));
+  if (rows.length === 1) return { score: maps[0].score, maps };
   const won = (side: 'team1' | 'team2', id: string | null) =>
-    maps.filter((r) => r.winner_team === side || (id !== null && r.winner_team === id)).length;
-  return [won('team1', m.team1_id), won('team2', m.team2_id)];
+    rows.filter((r) => r.winner_team === side || (id !== null && r.winner_team === id)).length;
+  return { score: [won('team1', m.team1_id), won('team2', m.team2_id)], maps };
 }
+
+/** The match's best player by kills (ADR breaks a tie), from its stats. */
+async function topPlayer(slug: string) {
+  const row = await db.queryOneAsync<{
+    name: string | null;
+    kills: number;
+    deaths: number;
+    adr: number | null;
+  }>(
+    `SELECT COALESCE(p.name, s.player_id) AS name, SUM(s.kills)::int AS kills, SUM(s.deaths)::int AS deaths,
+            AVG(s.adr) AS adr
+       FROM player_match_stats s LEFT JOIN players p ON p.id = s.player_id
+      WHERE s.match_slug = ?
+      GROUP BY s.player_id, p.name
+      ORDER BY kills DESC, adr DESC NULLS LAST LIMIT 1`,
+    [slug]
+  );
+  return row?.name
+    ? {
+        name: row.name,
+        kills: row.kills,
+        deaths: row.deaths,
+        adr: row.adr === null ? null : Number(row.adr),
+      }
+    : null;
+}
+
+/** What the winner plays next: "Round 3 vs Halcyon", "... opponent to be decided", or none. */
+async function nextFor(m: MatchState, winnerName: string): Promise<string | null> {
+  if (!m.next_match_id) return null;
+  const next = await db.queryOneAsync<{
+    slug: string;
+    round: number;
+    team1_id: string | null;
+    team2_id: string | null;
+    t1: string | null;
+    t2: string | null;
+  }>(
+    `SELECT n.slug, n.round, n.team1_id, n.team2_id, t1.name AS t1, t2.name AS t2
+       FROM matches n LEFT JOIN teams t1 ON t1.id = n.team1_id LEFT JOIN teams t2 ON t2.id = n.team2_id
+      WHERE n.id = ?`,
+    [m.next_match_id]
+  );
+  if (!next) return null;
+  const stage = roundLabel(next.slug, Number(next.round));
+  const opponent = next.team1_id === m.winner_id ? next.t2 : next.t1;
+  return opponent
+    ? `${winnerName} plays ${opponent} next (${stage}).`
+    : `${winnerName} goes on to ${stage}; the opponent is not decided yet.`;
+}
+
+/** Format and maps from the match's config: "Bo3", ["Mirage", "Inferno", "Nuke"]. */
+function formatOf(config: string | null): { format: string | null; maps: string[] } {
+  try {
+    const c = JSON.parse(config ?? '{}') as { num_maps?: number; maplist?: string[] | null };
+    const maps = (c.maplist ?? []).map((m) => mapLabel(m)).filter((m): m is string => !!m);
+    return { format: c.num_maps ? `Bo${c.num_maps}` : null, maps };
+  } catch {
+    return { format: null, maps: [] };
+  }
+}
+
+/** The live card's message, and what it last said, so a change edits it once. */
+const liveCards = new Map<string, string>();
 
 /** The teams' roles (team channels and roles), newest tournament first. */
 async function rolesOf(m: MatchState): Promise<{ team1: string | null; team2: string | null }> {
@@ -71,7 +158,10 @@ async function announceNow(slug: string): Promise<void> {
   const token = await botToken();
   if (!token) return;
   const state = await db.queryOneAsync<MatchState>(
-    'SELECT status, completed_at, winner_id, team1_id, team2_id FROM matches WHERE slug = ?',
+    `SELECT m.status, m.completed_at, m.winner_id, m.team1_id, m.team2_id, m.round, m.next_match_id,
+            m.config, tr.name AS tournament
+       FROM matches m LEFT JOIN tournament tr ON tr.id = m.tournament_id
+      WHERE m.slug = ?`,
     [slug]
   );
   if (!state) return;
@@ -79,16 +169,73 @@ async function announceNow(slug: string): Promise<void> {
   const fresh = (state.completed_at ?? 0) > Date.now() / 1000 - 30 * 60;
   const due = dueEvents(state.status, state.winner_id !== null && fresh);
   if (!due.length) return;
-  const sent = await db.queryAsync<{ event: string }>(
-    'SELECT event FROM discord_announcements WHERE match_slug = ?',
+  const sent = await db.queryAsync<{ event: string; message_id: string | null }>(
+    'SELECT event, message_id FROM discord_announcements WHERE match_slug = ?',
     [slug]
   );
   const todo = due.filter((e) => !sent.some((s) => s.event === e));
-  if (!todo.length) return;
+  const liveSent = sent.find((s) => s.event === 'live' && s.message_id);
+  if (!todo.length && !(state.status === 'live' && liveSent)) return;
   const match = await matchRow(slug);
-  if (!match?.t1 || !match.t2) return;
+  const team1 = match?.t1;
+  const team2 = match?.t2;
+  if (!team1 || !team2) return;
   const site = siteUrl();
   const url = site ? `${site}/match/${encodeURIComponent(slug)}` : null;
+  const card = async (event: CardInput['event']): Promise<CardInput> => {
+    const base: CardInput = {
+      event,
+      team1,
+      team2,
+      url,
+      roles: await rolesOf(state),
+      tournament: state.tournament,
+      stage: state.round !== null ? roundLabel(slug, Number(state.round)) : null,
+      ...formatOf(state.config),
+    };
+    if (event === 'live') {
+      const s = matchLiveStatsService.getStats(slug);
+      if (s && s.status !== 'warmup') {
+        base.live = {
+          map: mapLabel(s.mapName ?? null),
+          mapNumber: s.mapNumber,
+          totalMaps: s.totalMaps,
+          score: [s.team1Score, s.team2Score],
+          round: s.roundNumber,
+          series: [s.team1SeriesScore, s.team2SeriesScore],
+        };
+      }
+    }
+    if (event === 'result' && state.winner_id) {
+      const r = await resultOf(slug, state);
+      const winner = state.winner_id === state.team1_id ? (1 as const) : (2 as const);
+      base.result = {
+        winner,
+        ...r,
+        top: await topPlayer(slug),
+        next: await nextFor(state, winner === 1 ? team1 : team2),
+      };
+    }
+    return base;
+  };
+  // The live card follows the score: edited when what it says changes.
+  if (state.status === 'live' && liveSent?.message_id) {
+    const body = announceMessage(await card('live'));
+    const text = JSON.stringify(body.embeds);
+    if (liveCards.get(slug) !== text) {
+      liveCards.set(slug, text);
+      await discordFetch(token, `/channels/${channelId}/messages/${liveSent.message_id}`, {
+        method: 'PATCH',
+        // The embed and button only: an edit pings no one.
+        body: {
+          embeds: body.embeds,
+          components: body.components ?? [],
+          allowed_mentions: { parse: [] },
+        },
+      });
+    }
+  }
+  if (state.status !== 'live') liveCards.delete(slug);
   for (const event of todo) {
     // Claimed first, so a burst of changes posts it once.
     const claimed = await db.queryOneAsync<{ event: string }>(
@@ -97,15 +244,16 @@ async function announceNow(slug: string): Promise<void> {
       [slug, event, Math.floor(Date.now() / 1000)]
     );
     if (!claimed) continue;
-    const score = event === 'result' ? await resultOf(slug, state) : null;
-    const result =
-      score && state.winner_id
-        ? { winner: state.winner_id === state.team1_id ? (1 as const) : (2 as const), score }
-        : null;
     const posted = await discordFetch(token, `/channels/${channelId}/messages`, {
       method: 'POST',
-      body: announceMessage(event, match.t1, match.t2, result, url, await rolesOf(state)),
+      body: announceMessage(await card(event)),
     });
+    if (posted.ok && typeof posted.body.id === 'string') {
+      await db.runAsync(
+        'UPDATE discord_announcements SET message_id = ? WHERE match_slug = ? AND event = ?',
+        [posted.body.id, slug, event]
+      );
+    }
     if (!posted.ok) {
       log.warn(`[Discord] Announcing ${slug} (${event}) failed: ${posted.status}`);
       await adminNoticeService.raise(
