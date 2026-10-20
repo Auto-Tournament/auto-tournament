@@ -390,7 +390,7 @@ router.put(
  *             type: object
  *             required: [event, channel, on]
  *             properties:
- *               event: { type: string, enum: [match_ready, veto_turn, checkin_open, new_tournament] }
+ *               event: { type: string, enum: [match_ready, veto_turn, checkin_open, new_tournament, tournament_starting, direct_message] }
  *               channel: { type: string, enum: [discord, email, push] }
  *               on: { type: boolean }
  *     responses:

@@ -17,7 +17,7 @@ import { currentSocket, listenShared, type SocketHandler } from '../../utils/sha
 import { addTypist, removeTypist, shouldSendTyping, SHOW_MS, type Typing } from './typing';
 import { api } from '../../utils/api';
 
-export type ChatKind = 'match' | 'team' | 'party';
+export type ChatKind = 'match' | 'team' | 'party' | 'dm';
 
 export interface ChatMessage {
   id: number;
@@ -110,10 +110,11 @@ export async function refreshChannels(): Promise<void> {
   try {
     const body = await api.get<{ channels: ChatChannel[] }>('/api/chat/channels');
     const channels = body.channels ?? [];
-    // An admin's match chat opened from match details is not one of theirs: keep its tab.
+    // An admin's match chat opened from match details is not one of theirs, and a DM with
+    // no messages yet is not listed: keep its tab.
     const extra = state.channels.filter(
       (c) =>
-        c.kind === 'match' &&
+        (c.kind === 'match' || c.kind === 'dm') &&
         !channels.some((x) => x.channel === c.channel) &&
         c.channel === state.active
     );
@@ -326,15 +327,22 @@ function closeSocket() {
   stopSocket = null;
 }
 
+/** Two friends' DM channel (the API's `dm:<id>:<id>`, the IDs in order). */
+export function dmChannel(a: string, b: string): string {
+  return `dm:${[a, b].sort().join(':')}`;
+}
+
 /** Open the dock, on `channel` when given (`title` names a chat that is not one of the viewer's own). */
 export function openChat(channel?: string, title?: string): void {
   const active = channel ?? state.active ?? state.channels[0]?.channel ?? null;
   if (channel && !state.channels.some((c) => c.channel === channel)) {
+    // A match an admin opens, or a DM with no messages yet.
+    const kind: ChatKind = channel.startsWith('dm:') ? 'dm' : 'match';
     const ref = channel.replace(/^match:/, '');
     set({
       channels: [
         ...state.channels,
-        { channel, kind: 'match', title: title ?? ref, myTeam: null, unread: 0 },
+        { channel, kind, title: title ?? ref, myTeam: null, unread: 0 },
       ],
     });
   }

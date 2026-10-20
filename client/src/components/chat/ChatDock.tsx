@@ -55,6 +55,8 @@ import {
 } from './chatStore';
 import ConfirmDialog from '../modals/ConfirmDialog';
 import { EmojiPicker } from './EmojiPicker';
+import { DockFriends } from './DockFriends';
+import { useSocial } from '../social/socialStore';
 import { insertAt } from './emojiData';
 import { typingLine, typistsNow } from './typing';
 
@@ -318,7 +320,9 @@ function Tabs({
       ? t('chat.tabMatch')
       : c.kind === 'team'
         ? t('chat.tabTeam')
-        : t('chat.tabParty');
+        : c.kind === 'dm'
+          ? c.title
+          : t('chat.tabParty');
   return (
     <Box
       role="tablist"
@@ -370,7 +374,7 @@ function Tabs({
                     textOverflow: 'ellipsis',
                   }}
                 >
-                  {c.title}
+                  {c.kind === 'dm' ? t('chat.tabDm') : c.title}
                 </Box>
               </Box>
             ) : (
@@ -459,21 +463,27 @@ function Panel({ phone, wide, lift = 0 }: { phone: boolean; wide: boolean; lift?
         ? t('chat.teamWho', { team: channel.title })
         : channel?.kind === 'party'
           ? t('chat.partyWho')
-          : '';
+          : channel?.kind === 'dm'
+            ? t('chat.dmWho')
+            : '';
 
   const kindLabel =
     channel?.kind === 'match'
       ? t('chat.tabMatch')
       : channel?.kind === 'team'
         ? t('chat.tabTeam')
-        : t('chat.tabParty');
+        : channel?.kind === 'dm'
+          ? channel.title
+          : t('chat.tabParty');
 
   const placeholder =
     channel?.kind === 'match'
       ? t('chat.placeholderMatch')
       : channel?.kind === 'team'
         ? t('chat.placeholderTeam')
-        : t('chat.placeholderParty');
+        : channel?.kind === 'dm'
+          ? t('chat.placeholderDm', { name: channel.title })
+          : t('chat.placeholderParty');
 
   const submit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -547,7 +557,7 @@ function Panel({ phone, wide, lift = 0 }: { phone: boolean; wide: boolean; lift?
             }),
       })}
     >
-      {wide && channels.length > 0 && (
+      {wide && (channels.length > 0 || playerSteamId) && (
         <Box
           sx={{
             width: LIST_WIDTH,
@@ -558,6 +568,7 @@ function Panel({ phone, wide, lift = 0 }: { phone: boolean; wide: boolean; lift?
           }}
         >
           <Tabs channels={channels} active={active} vertical />
+          {playerSteamId && !readOnly && <DockFriends me={playerSteamId} />}
         </Box>
       )}
       <Box sx={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
@@ -638,6 +649,7 @@ function Panel({ phone, wide, lift = 0 }: { phone: boolean; wide: boolean; lift?
             </IconButton>
           </Box>
           {channels.length > 0 && !wide && <Tabs channels={channels} active={active} />}
+          {!wide && playerSteamId && !readOnly && <DockFriends me={playerSteamId} row />}
           {subtitle && !wide && (
             <Typography sx={{ fontSize: textSize.sm, color: color.muted }}>{subtitle}</Typography>
           )}
@@ -1083,6 +1095,7 @@ export function ChatDock() {
   const { playerSteamId, isAuthenticated: isAdmin } = useAuth();
   const { channels, open, peek } = useChat({ steamId: playerSteamId ?? null, isAdmin });
   const { me } = useMatchmaking();
+  const social = useSocial(Boolean(playerSteamId));
   const unread = channels.reduce((n, c) => n + c.unread, 0);
   const ring = withAlpha(color.accent, 0.35);
 
@@ -1093,8 +1106,9 @@ export function ChatDock() {
   }, [peek]);
 
   if (open) return <Panel phone={phone} wide={!phone} lift={me?.queue ? 56 : 0} />;
-  // Admins always get the launcher: a call or a match they open lands here.
-  if (channels.length === 0 && !isAdmin) return null;
+  // Admins always get the launcher: a call or a match they open lands here. A player with
+  // friends gets it too: the dock is where they write to them.
+  if (channels.length === 0 && !isAdmin && social.friends.length === 0) return null;
 
   const peekChannel = peek ? channels.find((c) => c.channel === peek.channel) : null;
   const peekWhere = peekChannel
@@ -1102,7 +1116,9 @@ export function ChatDock() {
       ? t('chat.peekMatch', { title: peekChannel.title.replace(/^vs /, '') })
       : peekChannel.kind === 'team'
         ? t('chat.peekTeam')
-        : t('chat.peekParty')
+        : peekChannel.kind === 'dm'
+          ? t('chat.tabDm')
+          : t('chat.peekParty')
     : '';
   const peekColor =
     peek?.senderKind === 'admin'

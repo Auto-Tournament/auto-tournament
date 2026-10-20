@@ -141,6 +141,7 @@
     "profile": {
       "friends": "Friends",
       "acceptRequest": "Accept friend request",
+      "message": "Messaggio",
       "invite": "Invite to party"
     },
     "settings": {
@@ -244,6 +245,10 @@
       "tournament_starting": {
         "title": "Tournament starting",
         "hint": "Reminders before a tournament you're in starts"
+      },
+      "direct_message": {
+        "title": "Messaggi dagli amici",
+        "hint": "Quando non sei sul sito"
       }
     },
     "reason": {

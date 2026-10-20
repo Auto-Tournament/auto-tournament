@@ -55,7 +55,7 @@ router.get('/channels', async (req: Request, res: Response) => {
  *     tags: [Chat]
  *     summary: A chat's messages, newest page (or the page before `before`), oldest first
  *     parameters:
- *       - { in: path, name: channel, required: true, schema: { type: string }, description: "match:<slug>, team:<id> or party:<id>" }
+ *       - { in: path, name: channel, required: true, schema: { type: string }, description: "match:<slug>, team:<id>, party:<id> or dm:<id>:<id> (two friends, IDs in order)" }
  *       - { in: query, name: before, schema: { type: integer } }
  *     responses:
  *       200: { description: "{ messages, myTeam }" }
