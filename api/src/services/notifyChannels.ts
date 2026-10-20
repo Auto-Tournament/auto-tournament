@@ -22,7 +22,7 @@ import { db } from '../config/database';
 import { log } from '../utils/logger';
 import { emailService } from './emailService';
 import { webPush } from './webPush';
-import { botToken, ChannelError, discordBot } from './discord/bot';
+import { botToken, ChannelError, discordBot } from '../addons/discord/bot';
 import type { Untrusted } from '../utils/untrusted';
 
 export type ChannelEvent =
