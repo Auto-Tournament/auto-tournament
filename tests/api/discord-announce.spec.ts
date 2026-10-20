@@ -61,6 +61,10 @@ test.describe('Discord match announcements', () => {
     expect(headline({ ...base, event: 'result', result: result(2, [0, 2]) })).toBe(
       '**B** beat **A** 2–0.'
     );
+    // Level, decided on a tiebreak: never "beat 4–4".
+    expect(headline({ ...base, event: 'result', result: result(2, [4, 4]) })).toBe(
+      '**B** go through against **A** on a tiebreak (4–4).'
+    );
   });
 
   test('ready shows format and maps; a result each map, the top player and what is next', () => {
