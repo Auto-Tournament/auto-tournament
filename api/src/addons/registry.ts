@@ -38,11 +38,14 @@ async function isOn(addon: AddonModule): Promise<boolean> {
 
 async function start(addon: AddonModule): Promise<void> {
   if (running.has(addon.id)) return;
+  // Running from the start: what start() kicks off may already ask whether it is
+  // (the Discord bot's token reads as unset otherwise, and its gateway never connected).
+  running.add(addon.id);
   try {
     await addon.start();
-    running.add(addon.id);
     startErrors.delete(addon.id);
   } catch (error) {
+    running.delete(addon.id);
     const message = error instanceof Error ? error.message : String(error);
     startErrors.set(addon.id, message);
     log.error(`[Add-ons] ${addon.name} did not start: ${message}`);
