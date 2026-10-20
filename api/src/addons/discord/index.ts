@@ -22,6 +22,7 @@ import { currentView, refreshView } from './view';
 import { SetupError, setupServer, setupState } from './setup';
 import { restartPresence, startPresence, stopPresence } from './presence';
 import { startLobbyInvites, stopLobbyInvites } from './lobby';
+import { startTournamentSpaces, stopTournamentSpaces } from './tournamentSpace';
 import { setVoiceSettings, startMatchVoice, stopMatchVoice, voiceSettings } from './matchVoice';
 import {
   announceChannel,
@@ -329,6 +330,7 @@ export const discordAddon: AddonModule = {
   // On: without a token it does nothing, and its page is where the token goes.
   defaultOn: true,
   start() {
+    startTournamentSpaces();
     startMatchVoice();
     startAnnouncements();
     startTeamChannels();
@@ -337,6 +339,7 @@ export const discordAddon: AddonModule = {
     void registerCommands();
   },
   stop() {
+    stopTournamentSpaces();
     stopMatchVoice();
     stopAnnouncements();
     stopTeamChannels();

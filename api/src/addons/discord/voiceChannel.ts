@@ -24,6 +24,33 @@ type Overwrite = {
 export const VOICE_MEMBER = VIEW | CONNECT | SPEAK;
 export const TEXT_MEMBER = VIEW | SEND | HISTORY;
 
+/** What a tournament's players may not do in its Lobby: they wait and listen. */
+export const LISTEN_ONLY = SPEAK;
+
+/**
+ * A tournament's category (tournamentSpace.ts): only its players' role sees it,
+ * and the bot, which makes and moves in it. Without a role (Discord refused it)
+ * nobody but the bot and the server's admins sees it.
+ */
+export function spaceOverwrites(
+  guildId: string,
+  botId: string,
+  roleId: string | null
+): Overwrite[] {
+  return [
+    { id: guildId, type: 0, allow: '0', deny: String(VIEW | CONNECT) },
+    {
+      id: botId,
+      type: 1,
+      allow: String(VIEW | CONNECT | MOVE | MANAGE_CHANNELS | SEND | HISTORY),
+      deny: '0',
+    },
+    ...(roleId
+      ? [{ id: roleId, type: 0 as const, allow: String(VOICE_MEMBER | TEXT_MEMBER), deny: '0' }]
+      : []),
+  ];
+}
+
 /** A team-only channel: nobody else sees or joins it (@everyone's id is the server's). */
 export function teamOverwrites(
   guildId: string,

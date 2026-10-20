@@ -1126,6 +1126,15 @@ export function getSchemaSQL(): string {
     );
 
     -- The Discord bot's team channels (addons/discord/teamChannels.ts): one per team while its tournament runs.
+    -- A tournament's own category on the Discord server (addons/discord/tournamentSpace.ts).
+    CREATE TABLE IF NOT EXISTS discord_tournament_spaces (
+      tournament_id INTEGER PRIMARY KEY,
+      category_id TEXT NOT NULL,
+      role_id TEXT, -- "<tournament> players", given to its players on the server
+      channel_id TEXT,
+      lobby_id TEXT
+    );
+
     CREATE TABLE IF NOT EXISTS discord_team_channels (
       tournament_id INTEGER NOT NULL,
       team_id TEXT NOT NULL,
