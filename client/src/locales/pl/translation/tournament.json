@@ -789,6 +789,12 @@
       "exitFullscreen": "Zamknij pełny ekran",
       "shuffleNoVisual": "Turnieje shuffle nie mają graficznej drabinki; użyj widoku listy."
     },
+    "times": {
+      "toggle": "Ustaw godziny",
+      "startsAt": "Początek",
+      "clear": "Użyj godziny rundy",
+      "save": "Zapisz"
+    },
     "shuffleEmpty": {
       "title": "Brak drabinki dla turniejów shuffle",
       "description": "Turnieje shuffle nie mają stałej drabinki. Drużyny są losowane od nowa w każdej rundzie na podstawie ELO graczy.",

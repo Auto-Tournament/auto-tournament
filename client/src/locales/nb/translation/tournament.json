@@ -787,6 +787,12 @@
       "exitFullscreen": "Avslutt fullskjerm",
       "shuffleNoVisual": "Shuffle-turneringer har ingen visuelt turneringstre. Bruk listevisningen i stedet."
     },
+    "times": {
+      "toggle": "Sett tider",
+      "startsAt": "Starter",
+      "clear": "Bruk rundens tid",
+      "save": "Lagre"
+    },
     "shuffleEmpty": {
       "title": "Ingen turneringstre for shuffle-turneringer",
       "description": "Shuffle-turneringer bruker ikke en fast turneringstre. Lagene stokkes om hver runde basert på spillernes ELO.",

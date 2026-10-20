@@ -787,6 +787,12 @@
       "exitFullscreen": "Sair do ecrã inteiro",
       "shuffleNoVisual": "Os torneios shuffle não têm quadro visual; usa a vista de lista."
     },
+    "times": {
+      "toggle": "Definir horas",
+      "startsAt": "Começa às",
+      "clear": "Usar a hora da ronda",
+      "save": "Guardar"
+    },
     "shuffleEmpty": {
       "title": "Sem quadro para torneios shuffle",
       "description": "Os torneios shuffle não usam um quadro fixo. As equipas são remisturadas a cada ronda com base no ELO dos jogadores.",

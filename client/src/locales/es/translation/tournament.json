@@ -787,6 +787,12 @@
       "exitFullscreen": "Salir de pantalla completa",
       "shuffleNoVisual": "Los torneos shuffle no tienen cuadro visual; usa la vista de lista."
     },
+    "times": {
+      "toggle": "Fijar horas",
+      "startsAt": "Empieza a las",
+      "clear": "Usar la hora de la ronda",
+      "save": "Guardar"
+    },
     "shuffleEmpty": {
       "title": "No hay cuadro para torneos shuffle",
       "description": "Los torneos shuffle no usan un cuadro fijo. Los equipos se remezclan cada ronda según el ELO de los jugadores.",

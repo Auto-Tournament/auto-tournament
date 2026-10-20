@@ -787,6 +787,12 @@
       "exitFullscreen": "Quitter le plein écran",
       "shuffleNoVisual": "Les tournois shuffle n'ont pas d'arbre visuel ; utilisez plutôt la vue en liste."
     },
+    "times": {
+      "toggle": "Fixer les horaires",
+      "startsAt": "Commence à",
+      "clear": "Utiliser l’heure du tour",
+      "save": "Enregistrer"
+    },
     "shuffleEmpty": {
       "title": "Pas d'arbre pour les tournois shuffle",
       "description": "Les tournois shuffle n'utilisent pas d'arbre fixe. Les équipes sont remélangées à chaque manche selon l'ELO des joueurs.",

@@ -786,6 +786,12 @@
       "exitFullscreen": "Exit Fullscreen",
       "shuffleNoVisual": "Shuffle tournaments do not have a visual bracket; use the list view instead."
     },
+    "times": {
+      "toggle": "Set times",
+      "startsAt": "Starts at",
+      "clear": "Use the round’s time",
+      "save": "Save"
+    },
     "shuffleEmpty": {
       "title": "No bracket for shuffle tournaments",
       "description": "Shuffle tournaments don't use a fixed bracket view. Teams are reshuffled each round based on player ELO.",
