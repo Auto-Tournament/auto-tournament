@@ -4,8 +4,8 @@ package main
 
 // The CS2 side of the recorder: CS2 runs inside a headless gamescope, which
 // hands its frames out as a PipeWire video stream; the recorder drives the
-// demo over CS2's console port (-netconport). CS2 has no frame dump of its
-// own (`startmovie` is gone), so a moment is captured live, twice:
+// demo over CS2's console port (-netconport). The default stream backend
+// captures a moment live, twice (the native backend is in native_capture_linux.go):
 //
 //   - the picture slowed down (demo_timescale), in one pass per window that
 //     slows further for the caption card's opening and the slow motion:
@@ -200,9 +200,10 @@ type game struct {
 	startTick     int // the demo's first tick: the console's ticks count from it
 	lastTick      int // the demo's length in ticks (the analyzer's last tick)
 	logPath       string
-	demoPath      string
+	demoPath      string // absolute copy in the game's demo folder, for native actions
 	native        *nativeBridge
 	nativePredict string
+	restoreNative func()
 	done          chan struct{}
 	waitErr       error // published by closing done
 	// follow, when set, is where the followed player stands at a tick (the
@@ -212,8 +213,12 @@ type game struct {
 
 // launchGame starts gamescope with CS2 and waits for its console and stream.
 func (r *recorder) launchGame(ctx context.Context, logPath string) (*game, error) {
+	oomBefore := nativeOOMKills()
 	g, err := r.launchGameOnce(ctx, logPath)
 	if err != nil {
+		if nativeOOMKills() > oomBefore {
+			err = fmt.Errorf("CS2 was killed because the recorder ran out of memory; lower graphics settings or capture resolution: %w", err)
+		}
 		// The log is in the job's folder, which goes when the job ends: its
 		// last lines go with the error (into the run report and the job log).
 		if tail := logTail(logPath, 40, 3000); tail != "" {
@@ -233,20 +238,64 @@ func (r *recorder) launchGameOnce(ctx context.Context, logPath string) (*game, e
 	if err := awaitSteam(ctx, 3*time.Minute); err != nil {
 		return nil, err
 	}
+	if r.backend == "native" {
+		if err := prepareNativeDisplay(ctx, r.width, r.height); err != nil {
+			return nil, err
+		}
+	}
+	g := &game{width: r.width, height: r.height, logPath: logPath}
+	if r.backend == "native" {
+		var err error
+		g.restoreNative, err = installNativePlugin(r.gameDir)
+		if err != nil {
+			return nil, err
+		}
+		g.native, err = newNativeBridge()
+		if err != nil {
+			g.restoreNative()
+			return nil, err
+		}
+		defer func() {
+			if g.con == nil {
+				g.native.close()
+				g.restoreNative()
+			}
+		}()
+	}
 	setRecordingVideo(r.width, r.height)
 	w, h := strconv.Itoa(r.width), strconv.Itoa(r.height)
 	args := []string{"--backend", "headless", "-W", w, "-H", h, "-w", w, "-h", h, "-r", strconv.Itoa(envPositive("AT_GAMESCOPE_HZ", 120)), "--"}
+	launcher := "gamescope"
+	if r.backend == "native" {
+		// Native movie export needs a graphics context, but no screen capture
+		// compositor. Use the Steam desktop's X11/Wayland display directly.
+		args = nil
+	}
 	if r.sniper != "" {
 		args = append(args, r.sniper, "--")
 	}
 	args = append(args, "./cs2.sh", "-steam", "-insecure", "-novid", "-console",
-		"-width", w, "-height", h, "-fullscreen", "-netconport", strconv.Itoa(netconPort))
+		"-width", w, "-height", h)
+	if r.backend == "native" {
+		// Match CSDM's video launcher. Fullscreen mode switching is unreliable
+		// on Linux and is unnecessary for engine frame export.
+		args = append(args, "-sw")
+	} else {
+		args = append(args, "-fullscreen")
+	}
+	args = append(args, "-netconport", strconv.Itoa(netconPort))
 	// AT_CS2_LAUNCH: more launch options (space-separated), for what CS2 won't
 	// change during demo playback ("+fps_max 30": "Can't change 'fps_max' right now").
 	args = append(args, strings.Fields(env("AT_CS2_LAUNCH", ""))...)
-	cmd := exec.Command("gamescope", args...)
+	if r.backend == "native" {
+		launcher, args = args[0], args[1:]
+	}
+	cmd := exec.Command(launcher, args...)
 	cmd.Dir = r.gameDir
 	cmd.Env = append(os.Environ(), "SteamAppId=730", "SteamGameId=730")
+	if g.native != nil {
+		cmd.Env = append(cmd.Env, "CSDM_WS_PORT="+g.native.port)
+	}
 	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 	logFile, err := os.Create(logPath)
 	if err != nil {
@@ -257,9 +306,9 @@ func (r *recorder) launchGameOnce(ctx context.Context, logPath string) (*game, e
 	cmd.Stderr = cmd.Stdout
 	if err := cmd.Start(); err != nil {
 		logFile.Close()
-		return nil, fmt.Errorf("start gamescope: %w", err)
+		return nil, fmt.Errorf("start CS2 (%s): %w", launcher, err)
 	}
-	g := &game{cmd: cmd, width: r.width, height: r.height, logPath: logPath}
+	g.cmd = cmd
 	g.done = make(chan struct{})
 	startupCtx, cancelStartup := context.WithCancel(ctx)
 	defer cancelStartup()
@@ -283,17 +332,19 @@ func (r *recorder) launchGameOnce(ctx context.Context, logPath string) (*game, e
 		pw.Close()
 		logFile.Close()
 	}()
-	select {
-	case g.node = <-nodeCh:
-	case <-ctx.Done():
-		g.stop()
-		return nil, ctx.Err()
-	case <-g.done:
-		g.stop()
-		return nil, fmt.Errorf("CS2 exited during startup: %v", g.waitErr)
-	case <-time.After(90 * time.Second):
-		g.stop()
-		return nil, errors.New("gamescope never offered its video stream")
+	if g.native == nil {
+		select {
+		case g.node = <-nodeCh:
+		case <-ctx.Done():
+			g.stop()
+			return nil, ctx.Err()
+		case <-g.done:
+			g.stop()
+			return nil, fmt.Errorf("CS2 exited during startup: %v", g.waitErr)
+		case <-time.After(90 * time.Second):
+			g.stop()
+			return nil, errors.New("gamescope never offered its video stream")
+		}
 	}
 	if g.con, err = dialConsole(startupCtx, 3*time.Minute, strings.TrimSuffix(logPath, filepath.Ext(logPath))+"-console.log"); err != nil {
 		g.stop()
@@ -306,10 +357,37 @@ func (r *recorder) launchGameOnce(ctx context.Context, logPath string) (*game, e
 	}
 	// The main menu loads after the console opens.
 	time.Sleep(10 * time.Second)
+	if g.native != nil {
+		// The plugin hooks FrameStageNotify from ClientFullyConnect, which
+		// demo playback alone does not trigger. Connect to a local server once
+		// before sending its first playdemo message.
+		bootstrap := r.nativeMap
+		if bootstrap == "" {
+			bootstrap = env("AT_NATIVE_BOOTSTRAP_MAP", "de_dust2")
+		}
+		if !regexp.MustCompile(`^[a-zA-Z0-9_/-]+$`).MatchString(bootstrap) {
+			g.stop()
+			return nil, errors.New("invalid AT_NATIVE_BOOTSTRAP_MAP")
+		}
+		if err := g.con.send("map " + bootstrap); err != nil {
+			g.stop()
+			return nil, err
+		}
+		if _, _, err := g.con.expect(regexp.MustCompile(`CSDM: Hooked (FrameStageNotify)`), time.Duration(envPositive("AT_NATIVE_LOAD_SECONDS", 600))*time.Second); err != nil {
+			g.stop()
+			return nil, fmt.Errorf("native plugin playback hook did not initialize: %w", err)
+		}
+	}
 	return g, nil
 }
 
 func (g *game) stop() {
+	if g.native != nil {
+		defer g.native.close()
+	}
+	if g.restoreNative != nil {
+		defer g.restoreNative()
+	}
 	if g.con != nil {
 		_ = g.con.send("quit")
 		time.Sleep(3 * time.Second)
@@ -346,7 +424,12 @@ func (g *game) loadDemo(demo string, look []string) error {
 		return err
 	}
 	// The map has loaded once the client switches to the game loop.
-	if _, _, err := g.con.expect(reMapLoaded, 3*time.Minute); err != nil {
+	loadTimeout := 3 * time.Minute
+	if g.native != nil {
+		// A first launch on an iGPU can compile thousands of map shaders.
+		loadTimeout = time.Duration(envPositive("AT_NATIVE_LOAD_SECONDS", 600)) * time.Second
+	}
+	if _, _, err := g.con.expect(reMapLoaded, loadTimeout); err != nil {
 		return fmt.Errorf("the demo's map never loaded: %w", err)
 	}
 	time.Sleep(3 * time.Second)

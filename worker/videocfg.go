@@ -14,13 +14,16 @@ import (
 // what holds capture back (2026-10-08: 99 % at 4x MSAA, high shadows and
 // ambient occlusion). AT_VIDEO=keep puts CS2's own back.
 var recordingVideo = map[string]string{
+	"setting.cpu_level":                 "0",
+	"setting.gpu_level":                 "0",
+	"setting.gpu_mem_level":             "0",
 	"setting.msaa_samples":              "0",
 	"setting.r_csgo_cmaa_enable":        "1", // cheap edge smoothing instead of MSAA
 	"setting.videocfg_shadow_quality":   "0",
 	"setting.videocfg_dynamic_shadows":  "0",
 	"setting.videocfg_ao_detail":        "0",
 	"setting.videocfg_particle_detail":  "0",
-	"setting.videocfg_texture_detail":   "1",
+	"setting.videocfg_texture_detail":   "0",
 	"setting.shaderquality":             "0",
 	"setting.r_texturefilteringquality": "1",
 	// FSR (performance): CS2 renders smaller inside and upscales; the
@@ -136,6 +139,13 @@ func setRecordingVideo(width, height int) {
 	}
 	for k, v := range preset {
 		set[k] = v
+	}
+	if env("AT_CAPTURE_BACKEND", "stream") == "native" {
+		// Fullscreen can replace the requested size with the browser desktop's
+		// current mode even when CS2 was launched with -sw.
+		set["setting.fullscreen"] = "0"
+		set["setting.coop_fullscreen"] = "0"
+		set["setting.nowindowborder"] = "0"
 	}
 	// AT_VIDEO_SET: more, as key=value pairs separated by commas
 	// (setting.videocfg_fsr_detail=3 renders smaller and upscales with FSR).
