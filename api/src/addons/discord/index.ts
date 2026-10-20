@@ -8,7 +8,7 @@ import { requireAuth, type AuthedRequest } from '../../middleware/auth';
 import { log } from '../../utils/logger';
 import type { Untrusted } from '../../utils/untrusted';
 import type { AddonModule } from '../types';
-import { ChannelError, botTokenStored, discordBot } from './bot';
+import { ChannelError, discordBot } from './bot';
 import {
   setTeamChannelsOn,
   startTeamChannels,
@@ -18,6 +18,8 @@ import {
 } from './teamChannels';
 import { resolveViewerAccount } from '../../utils/viewerIdentity';
 import { handleInteraction, registerCommands } from './interactions';
+import { SetupError, setupServer } from './setup';
+import { startLobbyInvites, stopLobbyInvites } from './lobby';
 import { setVoiceSettings, startMatchVoice, stopMatchVoice, voiceSettings } from './matchVoice';
 import {
   announceChannel,
@@ -282,23 +284,48 @@ router.put('/team-channels', async (req: Request, res: Response) => {
   }
 });
 
+/**
+ * @openapi
+ * /api/addons/discord/setup:
+ *   post:
+ *     tags: [Add-ons]
+ *     summary: Set up the picked Discord server (category, #results, a Lobby nobody talks in) and use it
+ *     security: [{ BearerAuth: [] }]
+ *     responses:
+ *       200: { description: "`categoryId`, `resultsId`, `lobbyId`" }
+ *       400: { description: No server picked, or Discord refused (the reason says why) }
+ */
+router.post('/setup', async (_req: Request, res: Response) => {
+  try {
+    return res.json({ success: true, ...(await setupServer()) });
+  } catch (error) {
+    if (error instanceof SetupError) {
+      return res.status(400).json({ success: false, error: error.message });
+    }
+    log.error('Setting up the Discord server failed', error as Error);
+    return res.status(500).json({ success: false, error: 'Could not set up the Discord server' });
+  }
+});
+
 export const discordAddon: AddonModule = {
   id: 'discord',
   name: 'Discord bot',
   description:
     'Your own Discord bot: DMs players about their matches, and works in your Discord server.',
-  // On for an install that set a bot token before the Discord bot was an add-on.
-  defaultOn: async () => (await botTokenStored()) !== null,
+  // On: without a token it does nothing, and its page is where the token goes.
+  defaultOn: true,
   start() {
     startMatchVoice();
     startAnnouncements();
     startTeamChannels();
+    startLobbyInvites();
     void registerCommands();
   },
   stop() {
     stopMatchVoice();
     stopAnnouncements();
     stopTeamChannels();
+    stopLobbyInvites();
   },
   router,
 };

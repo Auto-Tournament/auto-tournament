@@ -105,6 +105,9 @@ test(
       // Slash commands: an unsigned request is refused.
       const unsigned = await player.post('/api/addons/discord/interactions', { data: { type: 1 } });
       expect(unsigned.status()).toBe(401);
+      // Set up this server: needs a picked server first.
+      const noServer = await request.post('/api/addons/discord/setup', { data: {} });
+      expect(noServer.status()).toBe(400);
       // An API token alone (no session) cannot set it.
       const bare = await playwright.request.newContext({
         baseURL: process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3069',

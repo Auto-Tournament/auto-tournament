@@ -915,6 +915,12 @@
     "commands": {
       "label": "Slash commands: /matches and /mymatch",
       "help": "In the Discord Developer Portal, paste this as your app's Interactions Endpoint URL. Discord must be able to reach this site."
+    },
+    "setup": {
+      "button": "Set up this server",
+      "help": "Makes an \"Auto Tournament\" category with #results for announcements and a Lobby where players wait (they can listen, not talk) until the bot moves them into their team's channel. Anything already there is reused.",
+      "done": "The Discord server is set up",
+      "failed": "Could not set up the Discord server."
     }
   },
   "liveMatchesPage": {
