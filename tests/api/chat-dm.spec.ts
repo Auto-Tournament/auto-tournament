@@ -80,7 +80,7 @@ test.describe.serial('Direct messages', () => {
   });
 
   test('it ends with the friendship', TAGS, async () => {
-    expect((await a.ctx.delete(`/api/social/friends/${b.id}`)).ok()).toBe(true);
+    expect((await a.ctx.delete(`/api/social/friends/${b.id}`, { data: {} })).ok()).toBe(true);
     expect((await a.ctx.get(`/api/chat/${channel}/messages`)).status()).toBe(404);
   });
 });
