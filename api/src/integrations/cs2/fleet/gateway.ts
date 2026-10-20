@@ -495,6 +495,16 @@ class FleetSession {
     this.rxStreamId = hello.stream.id;
     this.bytesPerMinute = socketBytesPerMinute(hello.capabilities);
     if (result === 'reset') await registry.setRxState(serverId, hello.stream.id, 0);
+    // The server has received less than it once acknowledged: its fleet
+    // state was reset. Continue the numbering from where it is, or every
+    // command waits for seqs it can never get.
+    if (hello.stream.last_rx_seq < stream.txAcked) {
+      const renumbered = await registry.rebaseTx(serverId, hello.stream.last_rx_seq);
+      log.warn(
+        `[FLEET] ${serverId}: the server starts over at seq ${hello.stream.last_rx_seq} (platform had ${stream.txAcked} acknowledged); ${renumbered} queued message(s) renumbered`
+      );
+      stream.txAcked = hello.stream.last_rx_seq;
+    }
     if (hello.stream.last_rx_seq > 0) {
       await registry.ensureTxSeqAtLeast(serverId, hello.stream.last_rx_seq);
       await registry.ackOutbox(serverId, hello.stream.last_rx_seq);
