@@ -454,6 +454,20 @@ export interface AssignOptions {
 }
 
 /**
+ * Servers that did not answer a match.assign, passed over until then. A
+ * silent server still looks free, so a match was assigned to it every 15 s
+ * for 12 hours (t10-r1m4, 2026-10-19). Every assignment comes through
+ * `assignMatch`, so this is where it is kept.
+ */
+const SILENT_SKIP_MS = 5 * 60_000;
+const silentUntil = new Map<string, number>();
+
+/** The server did not answer its last match.assign, a moment ago: pick another. */
+export function serverIsSilent(cs2ServerId: string): boolean {
+  return (silentUntil.get(cs2ServerId) ?? 0) > Date.now();
+}
+
+/**
  * Put a match on the fleet server behind `cs2ServerId`. On success the match
  * is `loaded`, the same as an RCON load (a resumed live match stays `live`).
  */
@@ -467,6 +481,13 @@ export async function assignMatch(
     return { success: false, error: `Server ${cs2ServerId} is not a Ready Up fleet server` };
   if (!fleetBus().isConnected(fleetServerId)) {
     return { success: false, error: 'The Ready Up server is not connected', retryElsewhere: true };
+  }
+  if (serverIsSilent(cs2ServerId)) {
+    return {
+      success: false,
+      error: 'The Ready Up server did not answer its last assignment',
+      retryElsewhere: true,
+    };
   }
   const match = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [
     matchSlug,
@@ -534,6 +555,7 @@ export async function assignMatch(
     // It stays in the outbox until acked: take it back, so the server does
     // not start the match on its own later while it plays somewhere else.
     await unassignEpoch(fleetServerId, matchSlug, epoch, 'cancelled').catch(() => undefined);
+    silentUntil.set(cs2ServerId, Date.now() + SILENT_SKIP_MS);
     log.warn(
       `[FLEET] ${matchSlug}: ${fleetServerId} did not answer match.assign in ${ASSIGN_TIMEOUT_MS} ms`
     );
@@ -557,6 +579,7 @@ export async function assignMatch(
     };
   }
 
+  silentUntil.delete(cs2ServerId);
   await storeAckedConfig(matchSlug, epoch, config);
   if (!options.resume) matchLiveStatsService.reset(matchSlug);
   const status = options.resume && match.status === 'live' ? 'live' : 'loaded';

@@ -28,7 +28,7 @@ import type { ServerStatus } from './services/serverStatusService';
 import { serverAllocationTracker } from './services/serverAllocationTracker';
 import { serverTurnoverTracker } from './utils/serverTurnover';
 import { driverFor } from './driver';
-import { execOnFleetServer, fleetServerIsIdle } from './fleet/driver';
+import { execOnFleetServer, fleetServerIsIdle, serverIsSilent } from './fleet/driver';
 import { reserveCount } from './fleet/failoverSettings';
 import { pickReserved } from './fleet/failoverPlan';
 
@@ -411,6 +411,12 @@ export class Cs2ServerPool {
     for (const server of servers) {
       if (this.allocatingServers.has(server.id) || serverAllocationTracker.isBusy(server.id))
         continue;
+      if (serverIsSilent(server.id)) {
+        log.debug(
+          `Fleet server ${server.id} (${server.name}) skipped: it did not answer a match.assign`
+        );
+        continue;
+      }
       if (dbBusyServers.has(server.id)) {
         log.debug(
           `Fleet server ${server.id} (${server.name}) not available: database shows loaded/live match`
