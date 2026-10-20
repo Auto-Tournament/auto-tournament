@@ -926,11 +926,38 @@ export async function appendOutbox(
 }
 
 /**
+ * The ids of queued match.assign / match.unassign messages that a newer
+ * assignment of the same match replaced. Only each match's newest epoch still
+ * means anything: t10-r1m4 once had 150 assign/unassign pairs queued, and the
+ * server played them all back.
+ */
+export function supersededAssignments(queue: readonly Envelope[]): Set<string> {
+  const matchOf = (e: Envelope) =>
+    e.type === 'match.assign' || e.type === 'match.unassign'
+      ? (e.payload as { match_id?: string }).match_id
+      : undefined;
+  const newest = new Map<string, number>();
+  for (const e of queue) {
+    const id = matchOf(e);
+    if (id) newest.set(id, Math.max(newest.get(id) ?? 0, e.epoch ?? 0));
+  }
+  return new Set(
+    queue
+      .filter((e) => {
+        const id = matchOf(e);
+        return id !== undefined && (e.epoch ?? 0) < (newest.get(id) ?? 0);
+      })
+      .map((e) => e.id)
+  );
+}
+
+/**
  * The server has processed less than it once acknowledged: its fleet state
  * was reset (the spool cleared, a reinstall). It drops seqs out of order, so
  * what is queued after the old numbering would never be taken. Renumber the
- * queue from `lastRx + 1` and carry on from there. Returns how many queued
- * messages were renumbered. Same as hosts/registry.ts rebaseHostTx.
+ * queue from `lastRx + 1` and carry on from there, without the assignments a
+ * newer one replaced. Returns how many queued messages were kept. Same as
+ * hosts/registry.ts rebaseHostTx.
  */
 export async function rebaseTx(serverId: string, lastRx: number): Promise<number> {
   return tx(async (c) => {
@@ -941,14 +968,23 @@ export async function rebaseTx(serverId: string, lastRx: number): Promise<number
       )
     ).rows;
     await c.query('DELETE FROM cs2_fleet_outbox WHERE server_id = $1', [serverId]);
+    const queued = rows.map((row) => ({ ...row, envelope: JSON.parse(row.message) as Envelope }));
+    const stale = supersededAssignments(queued.map(({ envelope }) => envelope));
+    if (stale.size) {
+      await c.query(
+        `UPDATE cs2_fleet_commands SET status = 'expired', answered_at = $2
+          WHERE message_id = ANY($1) AND status = 'pending'`,
+        [[...stale], Math.floor(Date.now() / 1000)]
+      );
+    }
     let seq = lastRx;
-    for (const row of rows) {
+    for (const { envelope, expires_at } of queued) {
+      if (stale.has(envelope.id)) continue;
       seq += 1;
-      const envelope = JSON.parse(row.message) as Envelope;
       envelope.seq = seq;
       await c.query(
         `INSERT INTO cs2_fleet_outbox (server_id, seq, type, message, expires_at) VALUES ($1, $2, $3, $4, $5)`,
-        [serverId, seq, envelope.type, JSON.stringify(envelope), row.expires_at]
+        [serverId, seq, envelope.type, JSON.stringify(envelope), expires_at]
       );
       await c.query('UPDATE cs2_fleet_commands SET seq = $1 WHERE message_id = $2', [
         seq,
@@ -960,7 +996,7 @@ export async function rebaseTx(serverId: string, lastRx: number): Promise<number
       seq,
       lastRx,
     ]);
-    return rows.length;
+    return seq - lastRx;
   });
 }
 
