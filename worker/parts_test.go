@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"testing"
+	"time"
 )
 
 func TestSendFileInParts(t *testing.T) {
@@ -82,5 +83,39 @@ func TestSendFileWithoutParts(t *testing.T) {
 	res.Body.Close()
 	if !bytes.Equal(got, want) {
 		t.Fatalf("an older platform got %q", got)
+	}
+}
+
+// A platform restarting (a deploy) answers 502 for a moment: the clip goes up
+// on the next try instead of being lost.
+func TestSendFileRetriesWhileThePlatformRestarts(t *testing.T) {
+	old := uploadWaits
+	uploadWaits = []time.Duration{time.Millisecond, time.Millisecond}
+	defer func() { uploadWaits = old }()
+	want := []byte("a clip")
+	tries := 0
+	var got []byte
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		tries++
+		body, _ := io.ReadAll(r.Body)
+		if tries == 1 {
+			w.WriteHeader(http.StatusBadGateway)
+			return
+		}
+		got = body
+	}))
+	defer srv.Close()
+	path := filepath.Join(t.TempDir(), "clip.mp4")
+	if err := os.WriteFile(path, want, 0o644); err != nil {
+		t.Fatal(err)
+	}
+	c := &client{base: srv.URL, http: srv.Client()}
+	res, err := c.sendFile(context.Background(), path, "/clip", "video/mp4", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	res.Body.Close()
+	if tries != 2 || !bytes.Equal(got, want) {
+		t.Fatalf("%d tries, got %q", tries, got)
 	}
 }
