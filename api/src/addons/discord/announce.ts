@@ -177,14 +177,16 @@ async function announceNow(slug: string): Promise<void> {
   const liveSent = sent.find((s) => s.event === 'live' && s.message_id);
   if (!todo.length && !(state.status === 'live' && liveSent)) return;
   const match = await matchRow(slug);
-  if (!match?.t1 || !match.t2) return;
+  const team1 = match?.t1;
+  const team2 = match?.t2;
+  if (!team1 || !team2) return;
   const site = siteUrl();
   const url = site ? `${site}/match/${encodeURIComponent(slug)}` : null;
   const card = async (event: CardInput['event']): Promise<CardInput> => {
     const base: CardInput = {
       event,
-      team1: match.t1!,
-      team2: match.t2!,
+      team1,
+      team2,
       url,
       roles: await rolesOf(state),
       tournament: state.tournament,
@@ -211,7 +213,7 @@ async function announceNow(slug: string): Promise<void> {
         winner,
         ...r,
         top: await topPlayer(slug),
-        next: await nextFor(state, winner === 1 ? match.t1! : match.t2!),
+        next: await nextFor(state, winner === 1 ? team1 : team2),
       };
     }
     return base;
