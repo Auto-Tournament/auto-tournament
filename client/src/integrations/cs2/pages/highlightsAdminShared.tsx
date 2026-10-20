@@ -51,7 +51,13 @@ export interface Recorder {
   pausedUntil: number | null;
   pauseReason: string | null;
   clipsOk: number;
-  benchmark: { tries: BenchmarkTry[]; pick: number | null } | null;
+  benchmark: {
+    tries: BenchmarkTry[];
+    pick: number | null;
+    backend?: 'native' | 'stream';
+    ok?: boolean;
+    error?: string | null;
+  } | null;
   benchmarkAt: number | null;
   benchmarkWanted: boolean;
   gamescopeHz: number | null;

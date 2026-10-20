@@ -2148,7 +2148,10 @@
     "bench": {
       "hz": "Refresh rate",
       "time": "Time",
-      "fps": "Capture fps"
+      "fps": "Capture fps",
+      "mode": "Capture mode",
+      "native": "Frame by frame",
+      "exportFps": "Render fps"
     },
     "lastError": "Last error: {{error}}",
     "runs_one": "{{count}} run",
@@ -2307,7 +2310,11 @@
       "updatedAt": "updated {{time}}"
     },
     "runFailed_one": "{{count}} failed",
-    "runFailed_other": "{{count}} failed"
+    "runFailed_other": "{{count}} failed",
+    "benchmarkRunning": "Running",
+    "benchmarkNativeReady": "Frame export ready",
+    "benchmarkFailed": "Benchmark failed",
+    "benchmarkNativeHint": "Frame-by-frame export saves every frame even when render speed is below playback speed."
   },
   "tournament": {
     "botFill": {

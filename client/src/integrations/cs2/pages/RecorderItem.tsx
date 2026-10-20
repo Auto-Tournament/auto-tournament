@@ -50,6 +50,18 @@ export function RecorderItem({
   const { t } = useModuleTranslation('cs2');
   const { showSuccess, showError } = useSnackbar();
   const enc = encodeURIComponent(r.name);
+  let benchmarkValue = '—';
+  if (r.progress?.step === 'benchmark') benchmarkValue = t('highlightsAdmin.benchmarkRunning');
+  else if (r.benchmarkWanted) benchmarkValue = t('highlightsAdmin.benchmarkPending');
+  else if (r.benchmark?.backend === 'native') {
+    benchmarkValue = t(
+      r.benchmark.ok ? 'highlightsAdmin.benchmarkNativeReady' : 'highlightsAdmin.benchmarkFailed'
+    );
+  } else if (r.gamescopeHz)
+    benchmarkValue = t('highlightsAdmin.benchmarkPick', { hz: r.gamescopeHz });
+  else if (r.benchmarkAt) benchmarkValue = t('highlightsAdmin.benchmarkNone');
+  const benchmark = r.benchmark;
+  const native = benchmark?.backend === 'native';
   return (
     <Box
       key={r.name}
@@ -134,7 +146,7 @@ export function RecorderItem({
               <Chip size="small" color="warning" label={t('highlightsAdmin.paused')} />
             ) : r.working ? (
               <Chip size="small" color="success" label={t('highlightsAdmin.recording')} />
-            ) : r.online ? (
+            ) : r.online && !r.progress ? (
               <Chip
                 size="small"
                 color="success"
@@ -257,58 +269,74 @@ export function RecorderItem({
           >
             <Stat label={t('highlightsAdmin.stat.perClip')} value={duration(r.avgClipSeconds)} />
             <Stat label={t('highlightsAdmin.stat.kept')} value={String(r.clipsOk)} />
-            <Stat
-              label={t('highlightsAdmin.stat.benchmark')}
-              value={
-                r.benchmarkWanted
-                  ? t('highlightsAdmin.benchmarkPending')
-                  : r.gamescopeHz
-                    ? t('highlightsAdmin.benchmarkPick', { hz: r.gamescopeHz })
-                    : r.benchmarkAt
-                      ? t('highlightsAdmin.benchmarkNone')
-                      : '—'
-              }
-            />
+            <Stat label={t('highlightsAdmin.stat.benchmark')} value={benchmarkValue} />
           </Box>
-          {r.benchmark && r.benchmark.tries.length > 0 && (
-            <Box sx={{ overflowX: 'auto' }}>
-              <Box
-                component="table"
-                sx={{
-                  borderCollapse: 'collapse',
-                  fontSize: 13,
-                  '& td, & th': {
-                    px: 1,
-                    py: 0.25,
-                    textAlign: 'left',
-                    whiteSpace: 'nowrap',
-                  },
-                  fontVariantNumeric: 'tabular-nums',
-                }}
-              >
-                <thead>
-                  <tr>
-                    <th>{t('highlightsAdmin.bench.hz')}</th>
-                    <th>{t('highlightsAdmin.bench.time')}</th>
-                    <th>{t('highlightsAdmin.bench.fps')}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {r.benchmark.tries.map((b) => (
-                    <tr key={b.gamescopeHz}>
-                      <td>
-                        {b.gamescopeHz} Hz
-                        {b.gamescopeHz === r.benchmark?.pick ? ' ✓' : ''}
-                      </td>
-                      <td>{b.ok ? duration(b.seconds) : (b.error ?? '—')}</td>
-                      <td>{b.captureFps != null ? Math.round(b.captureFps) : '—'}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </Box>
-            </Box>
+          {benchmark && !r.benchmarkWanted && r.progress?.step !== 'benchmark' && (
+            <>
+              {benchmark.error && (
+                <Alert severity="error">
+                  {benchmark.error.split('--- gamescope log')[0].trim()}
+                </Alert>
+              )}
+              {native && (
+                <Typography variant="caption" color="text.secondary">
+                  {t('highlightsAdmin.benchmarkNativeHint')}
+                </Typography>
+              )}
+              {benchmark.tries.length > 0 && (
+                <Box sx={{ overflowX: 'auto' }}>
+                  <Box
+                    component="table"
+                    sx={{
+                      borderCollapse: 'collapse',
+                      fontSize: 13,
+                      '& td, & th': { px: 1, py: 0.25, textAlign: 'left', whiteSpace: 'nowrap' },
+                      fontVariantNumeric: 'tabular-nums',
+                    }}
+                  >
+                    <thead>
+                      <tr>
+                        <th>
+                          {t(native ? 'highlightsAdmin.bench.mode' : 'highlightsAdmin.bench.hz')}
+                        </th>
+                        <th>{t('highlightsAdmin.bench.time')}</th>
+                        <th>
+                          {t(
+                            native ? 'highlightsAdmin.bench.exportFps' : 'highlightsAdmin.bench.fps'
+                          )}
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {benchmark.tries.map((attempt) => (
+                        <tr key={attempt.gamescopeHz}>
+                          <td>
+                            {native
+                              ? t('highlightsAdmin.bench.native')
+                              : `${attempt.gamescopeHz} Hz`}
+                            {attempt.ok && (native || attempt.gamescopeHz === benchmark.pick)
+                              ? ' ✓'
+                              : ''}
+                          </td>
+                          <td>
+                            {attempt.ok
+                              ? duration(attempt.seconds)
+                              : attempt.error || t('highlightsAdmin.failed')}
+                          </td>
+                          <td>
+                            {attempt.captureFps != null
+                              ? Number(attempt.captureFps.toFixed(1))
+                              : '—'}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </Box>
+                </Box>
+              )}
+            </>
           )}
-          {r.lastError && (
+          {r.lastError && !(r.benchmark?.error && r.lastError.startsWith(r.benchmark.error)) && (
             <Typography variant="caption" color="error" sx={{ overflowWrap: 'anywhere' }}>
               {t('highlightsAdmin.lastError', { error: r.lastError })}
             </Typography>
