@@ -887,7 +887,9 @@
     "guildHint": "Her lager boten lagkanaler og poster. Bare servere boten er med i, vises her.",
     "noGuilds": "Boten er ikke med i noen Discord-server ennå. Inviter den, og last inn siden på nytt.",
     "noGuild": "Ingen",
-    "guildSaved": "Discord-serveren er lagret"
+    "guildSaved": "Discord-serveren er lagret",
+    "movedHint": "Discord-boten er et tillegg nå: slå den på og sett den opp under Moduler.",
+    "open": "Åpne Discord-boten"
   },
   "liveMatchesPage": {
     "title": "Direktekamper",

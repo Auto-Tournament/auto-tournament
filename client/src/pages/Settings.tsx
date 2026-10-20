@@ -1,4 +1,4 @@
-import { DiscordBotCard } from '../components/settings/DiscordBotCard';
+import { DiscordBotLinkCard } from '../components/settings/DiscordBotLinkCard';
 import { pageTitle } from '../utils/pageTitle';
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { PageHead, Panel } from '../components/common/ui';
@@ -362,7 +362,7 @@ export default function Settings() {
       body: (
         <>
           <WebhooksCard />
-          <DiscordBotCard />
+          <DiscordBotLinkCard />
         </>
       ),
     },
