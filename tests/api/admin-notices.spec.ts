@@ -13,6 +13,7 @@ import {
   noticeLink,
   noticeParams,
   sortNotices,
+  stackNotices,
   upsertNotice,
   type AdminNotice,
 } from '../../client/src/components/admin/adminNoticeText';
@@ -119,6 +120,21 @@ test.describe('admin notices (rules)', () => {
       [2, 2],
       [3, 1],
       [1, 1],
+    ]);
+    // Open ones of a kind stack under the newest; resolved ones stand alone.
+    const stacks = stackNotices(
+      sortNotices([
+        notice({ id: 1, kind: 'match_no_server', updatedAt: 300 }),
+        notice({ id: 2, kind: 'server_crashed', updatedAt: 250 }),
+        notice({ id: 3, kind: 'match_no_server', updatedAt: 200 }),
+        notice({ id: 4, kind: 'match_no_server', updatedAt: 100 }),
+        notice({ id: 5, kind: 'match_no_server', updatedAt: 400, resolvedAt: 450 }),
+      ])
+    );
+    expect(stacks.map((st) => [st.lead.id, st.rest.map((n) => n.id)])).toEqual([
+      [1, [3, 4]],
+      [2, []],
+      [5, []],
     ]);
   });
 });

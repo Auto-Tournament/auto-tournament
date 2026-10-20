@@ -118,6 +118,23 @@ export function sortNotices(list: AdminNotice[]): AdminNotice[] {
   );
 }
 
+/** A sorted list's open notices of one kind stack under the newest; resolved ones stand alone. */
+export function stackNotices(list: AdminNotice[]): Array<{ lead: AdminNotice; rest: AdminNotice[] }> {
+  const stacks: Array<{ lead: AdminNotice; rest: AdminNotice[] }> = [];
+  const open = new Map<string, { lead: AdminNotice; rest: AdminNotice[] }>();
+  for (const n of list) {
+    const stack = n.resolvedAt === null ? open.get(n.kind) : undefined;
+    if (stack) {
+      stack.rest.push(n);
+      continue;
+    }
+    const next = { lead: n, rest: [] };
+    stacks.push(next);
+    if (n.resolvedAt === null) open.set(n.kind, next);
+  }
+  return stacks;
+}
+
 /** A live notice into the list: replaces the same id (a repeat counted up), else goes in. */
 export function upsertNotice(list: AdminNotice[], notice: AdminNotice): AdminNotice[] {
   return sortNotices([notice, ...list.filter((n) => n.id !== notice.id)]);
