@@ -492,6 +492,10 @@
   },
   "tags": [
     {
+      "name": "Add-ons",
+      "description": "Add-on modules (features beside the games, e.g. the Discord bot): on and off, and their own API under /api/addons/<id>/."
+    },
+    {
       "name": "Admin calls",
       "description": "Players calling for an admin from a game server (CS2: `.admin [message]` in Ready Up, sent as the admin_called event): list open and recently resolved calls, resolve one or all. Admin only. Live updates go to signed-in admins as the Socket.IO events admin:call and admin:call:resolved."
     },
@@ -851,6 +855,82 @@
         "responses": {
           "200": {
             "description": "API information"
+          }
+        }
+      }
+    },
+    "/api/addons": {
+      "get": {
+        "tags": [
+          "Add-ons"
+        ],
+        "summary": "The add-on modules, and whether each is on and running",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "`addons`: { id, name, description, enabled, running, error }[]"
+          }
+        }
+      }
+    },
+    "/api/addons/{id}": {
+      "put": {
+        "tags": [
+          "Add-ons"
+        ],
+        "summary": "Turn an add-on on or off (takes effect at once)",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "enabled"
+                ],
+                "properties": {
+                  "enabled": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "`addon`: the add-on after the change"
+          },
+          "400": {
+            "description": "enabled is not a boolean"
+          },
+          "404": {
+            "description": "No such add-on"
           }
         }
       }

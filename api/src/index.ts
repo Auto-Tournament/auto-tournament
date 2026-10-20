@@ -87,6 +87,7 @@ import { reportCompatConfig } from './services/compatService';
 import { startCompatFeed, stopCompatFeed } from './services/compatFeedService';
 import { startLicenseCheckin, stopLicenseCheckin } from './services/license/checkinService';
 import { startWebhooks, stopWebhooks } from './services/webhooks';
+import { startAddons, stopAddons } from './addons';
 import {
   refreshCurrentTournamentId,
   startCurrentTournamentRefresh,
@@ -703,6 +704,8 @@ void (async () => {
       // Integrator webhooks: the persisted delivery queue and the match
       // watcher (services/webhooks). Idle while no endpoint is switched on.
       startWebhooks();
+      // Add-on modules that are on (addons/): each sets up its own listeners.
+      void startAddons();
       // The daily license check-in: only with a license key saved, in the
       // background, never blocking anything (services/license/checkin.ts).
       startLicenseCheckin();
@@ -772,6 +775,7 @@ void (async () => {
       scheduler.stopAllPolling();
       stopCompatFeed();
       stopWebhooks();
+      void stopAddons();
       stopLicenseCheckin();
       stopIntegrations();
       void import('./services/builtinWorker').then(({ stopBuiltinWorker }) => stopBuiltinWorker());

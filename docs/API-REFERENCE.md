@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 751 of them, 474 behind auth —
+Every endpoint this API serves — 753 of them, 476 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -858,6 +858,15 @@ Every team (public), and the signed-in player's own teams: list them, make one (
 | `DELETE` | `/api/team-directory/:teamId/invites/:uid` | public |
 | `POST` | `/api/team-directory/:teamId/transfer` | public |
 | `DELETE` | `/api/team-directory/:teamId` | public |
+
+### Add-ons
+
+Add-on modules (features beside the games, e.g. the Discord bot): on and off, and their own API under /api/addons/<id>/.
+
+| Method | Path | Auth |
+| --- | --- | --- |
+| `GET` | `/api/addons` | admin |
+| `PUT` | `/api/addons/:id` | admin |
 
 ### Settings
 
