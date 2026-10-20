@@ -52,6 +52,8 @@ test.describe('remainingRounds (MR24: first to 13)', () => {
 
 test.describe('computeNextRoundEta', () => {
   const base = { totalRounds: 5, breakMinutes: 10, nowMs: NOW };
+  // From round 2 on, four rounds of warmup plus a full match, three breaks between them.
+  const rest = 4 * (WARMUP_SECONDS + 24 * ROUND_SECONDS) * 1000 + 3 * 10 * 60_000;
 
   test('latest live match plus the break', () => {
     const eta = computeNextRoundEta({
@@ -60,7 +62,12 @@ test.describe('computeNextRoundEta', () => {
     });
     // b: 13 - 3 = 10 rounds left
     const at = NOW + 10 * ROUND_SECONDS * 1000 + 10 * 60_000;
-    expect(eta).toEqual({ at: new Date(at).toISOString(), exact: false, final: false });
+    expect(eta).toEqual({
+      at: new Date(at).toISOString(),
+      exact: false,
+      final: false,
+      endsAt: new Date(at + rest).toISOString(),
+    });
   });
 
   test('a loaded match not started counts warmup plus a full match', () => {
@@ -79,7 +86,12 @@ test.describe('computeNextRoundEta', () => {
       matches: [live('a', 1, 10, 5), pending('c', 2)],
       heldUntil: { c: held },
     });
-    expect(eta).toEqual({ at: new Date(held * 1000).toISOString(), exact: true, final: false });
+    expect(eta).toEqual({
+      at: new Date(held * 1000).toISOString(),
+      exact: true,
+      final: false,
+      endsAt: new Date(held * 1000 + rest).toISOString(),
+    });
   });
 
   test('final round: when it ends, flagged final', () => {

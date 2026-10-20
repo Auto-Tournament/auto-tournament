@@ -1326,7 +1326,8 @@
     "eta": {
       "nextRoundAbout": "Neste runde ca. {{time}}",
       "nextRoundAt": "Neste runde kl. {{time}}",
-      "finalEnds": "Siste runde: ferdig ca. {{time}}"
+      "finalEnds": "Siste runde: ferdig ca. {{time}}",
+      "endsAbout": "ferdig ca. {{time}}"
     },
     "hero": {
       "playingTitle": "Du spiller nå",

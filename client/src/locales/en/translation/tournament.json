@@ -1325,7 +1325,8 @@
     "eta": {
       "nextRoundAbout": "Next round about {{time}}",
       "nextRoundAt": "Next round at {{time}}",
-      "finalEnds": "Final round: ends about {{time}}"
+      "finalEnds": "Final round: ends about {{time}}",
+      "endsAbout": "ends about {{time}}"
     },
     "hero": {
       "playingTitle": "You’re playing now",
