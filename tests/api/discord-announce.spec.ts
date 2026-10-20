@@ -103,6 +103,41 @@ test.describe('Discord match announcements', () => {
     ]);
   });
 
+  test('map scores read from the winner\u2019s side, like the headline', () => {
+    const done = announceMessage({
+      ...base,
+      event: 'result',
+      result: { winner: 2, score: [0, 1], maps: [{ map: 'Inferno', score: [0, 5] }] },
+    });
+    expect(done.embeds[0].description).toBe('**B** beat **A** 1–0.');
+    expect(done.embeds[0].fields?.[0]).toEqual({ name: 'Map', value: 'Inferno 5–0', inline: true });
+  });
+
+  test('teams and the top player are mentioned when they have a role and a Discord account', () => {
+    const roles = { team1: '11', team2: '22' };
+    expect(
+      headline({ ...base, roles, event: 'result', result: { winner: 1, score: [2, 0], maps: [] } })
+    ).toBe('<@&11> beat <@&22> 2–0.');
+    const done = announceMessage({
+      ...base,
+      roles,
+      event: 'result',
+      result: {
+        winner: 1,
+        score: [1, 0],
+        maps: [],
+        top: { name: 'Ada', kills: 9, deaths: 2, adr: null, discordId: '1234567890123456' },
+      },
+    });
+    expect(done.embeds[0].fields).toContainEqual({
+      name: 'Top player',
+      value: '<@1234567890123456>: 9–2',
+      inline: true,
+    });
+    // A result still pings nobody: mentions in an embed never do.
+    expect(done.allowed_mentions.roles).toEqual([]);
+  });
+
   test('a card with a button; ready and live ping both teams, a result nobody', () => {
     const roles = { team1: '11', team2: '22' };
     const live = announceMessage({ ...base, event: 'live', url: 'https://x/match/m', roles });

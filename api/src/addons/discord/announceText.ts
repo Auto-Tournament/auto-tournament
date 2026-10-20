@@ -41,16 +41,28 @@ export interface CardInput {
     /** Maps won (a Bo1: the map's rounds). */
     score: [number, number];
     maps: Array<{ map: string | null; score: [number, number] }>;
-    top?: { name: string; kills: number; deaths: number; adr: number | null } | null;
+    /** discordId: the player's linked Discord account, mentioned instead of the name. */
+    top?: {
+      name: string;
+      kills: number;
+      deaths: number;
+      adr: number | null;
+      discordId?: string | null;
+    } | null;
     /** "Final vs Halcyon", "Final, opponent to be decided", "Champions". */
     next?: string | null;
   } | null;
 }
 
+/** A team as the card names it: its role mentioned when it has one (no ping in an embed), else in bold. */
+export function teamLabel(name: string, roleId: string | null | undefined): string {
+  return roleId ? `<@&${roleId}>` : `**${name}**`;
+}
+
 /** The card's first line: who plays, who is up, who won. */
 export function headline(c: CardInput): string {
-  const a = `**${c.team1}**`;
-  const b = `**${c.team2}**`;
+  const a = teamLabel(c.team1, c.roles.team1);
+  const b = teamLabel(c.team2, c.roles.team2);
   if (c.event === 'ready') return `${a} vs ${b} is ready: the server is up.`;
   if (c.event === 'live') {
     if (!c.live) return `${a} vs ${b} is live.`;
@@ -89,8 +101,10 @@ function fields(c: CardInput): Field[] {
     }
   }
   if (c.event === 'result' && c.result) {
+    // From the winner's side, as the headline reads.
+    const w = c.result.winner === 1 ? 0 : 1;
     const maps = c.result.maps
-      .map((m) => `${m.map ?? 'Map'} ${m.score[0]}–${m.score[1]}`)
+      .map((m) => `${m.map ?? 'Map'} ${m.score[w]}–${m.score[1 - w]}`)
       .join('\n');
     if (maps) {
       out.push({ name: c.result.maps.length > 1 ? 'Maps' : 'Map', value: maps, inline: true });
@@ -100,7 +114,7 @@ function fields(c: CardInput): Field[] {
       const adr = top.adr !== null ? `, ${Math.round(top.adr)} ADR` : '';
       out.push({
         name: 'Top player',
-        value: `${top.name}: ${top.kills}–${top.deaths}${adr}`,
+        value: `${top.discordId ? `<@${top.discordId}>` : top.name}: ${top.kills}–${top.deaths}${adr}`,
         inline: true,
       });
     }
