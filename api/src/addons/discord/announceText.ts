@@ -125,17 +125,16 @@ function fields(c: CardInput): Field[] {
 
 /**
  * The post as Discord takes it: a card with the headline, the details for its
- * stage and a "Go to match" button; for ready and live a ping of both teams'
- * roles ("@Kestrel vs @Halcyon") when they have one. A result pings nobody.
+ * stage and a "Go to match" button. It pings no one in #results, which the
+ * whole server reads; `ping` is a team's role, for the copy of the ready card
+ * in that team's own channel ("@Kestrel, your match is ready").
  * The live card is edited as the score moves (announce.ts); an edit pings no one.
  */
-export function announceMessage(c: CardInput) {
-  const ping =
-    c.event !== 'result' && c.roles.team1 && c.roles.team2 ? [c.roles.team1, c.roles.team2] : [];
+export function announceMessage(c: CardInput, ping: string | null = null) {
   const footer = [c.tournament, c.stage].filter(Boolean).join(' · ');
   const f = fields(c);
   return {
-    ...(ping.length ? { content: `<@&${ping[0]}> vs <@&${ping[1]}>` } : {}),
+    ...(ping ? { content: `<@&${ping}>, your match is ready.` } : {}),
     embeds: [
       {
         title: `${c.team1} vs ${c.team2}`,
@@ -153,6 +152,6 @@ export function announceMessage(c: CardInput) {
           ],
         }
       : {}),
-    allowed_mentions: { parse: [], roles: ping },
+    allowed_mentions: { parse: [], roles: ping ? [ping] : [] },
   };
 }

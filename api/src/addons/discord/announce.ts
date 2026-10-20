@@ -185,6 +185,19 @@ function formatOf(config: string | null): { format: string | null; maps: string[
 const liveCards = new Map<string, string>();
 
 /** The teams' roles (team channels and roles), newest tournament first. */
+/** A team's own text channel in this tournament (teamChannels.ts), or null. */
+async function teamChannelOf(
+  tournamentId: number | null,
+  teamId: string | null
+): Promise<string | null> {
+  if (!tournamentId || !teamId) return null;
+  const row = await db.queryOneAsync<{ channel_id: string }>(
+    'SELECT channel_id FROM discord_team_channels WHERE tournament_id = ? AND team_id = ?',
+    [tournamentId, teamId]
+  );
+  return row?.channel_id ?? null;
+}
+
 /** A team's Discord role (team channels and roles), newest tournament first. */
 async function roleOf(teamId: string | null): Promise<string | null> {
   if (!teamId) return null;
@@ -335,6 +348,22 @@ async function announceNow(slug: string): Promise<void> {
         'UPDATE discord_announcements SET message_id = ? WHERE match_slug = ? AND event = ?',
         [posted.body.id, slug, event]
       );
+    }
+    // Ready: each team is pinged in its own channel (#results pings no one).
+    if (event === 'ready') {
+      const ready = await card('ready');
+      for (const [teamId, roleId] of [
+        [state.team1_id, ready.roles.team1],
+        [state.team2_id, ready.roles.team2],
+      ] as const) {
+        const own = await teamChannelOf(state.tournament_id, teamId);
+        if (own && roleId) {
+          await discordFetch(token, `/channels/${own}/messages`, {
+            method: 'POST',
+            body: announceMessage(ready, roleId),
+          });
+        }
+      }
     }
     if (!posted.ok) {
       log.warn(`[Discord] Announcing ${slug} (${event}) failed: ${posted.status}`);
