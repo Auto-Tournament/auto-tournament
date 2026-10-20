@@ -43,6 +43,9 @@ import { SettingsCardHead, SettingsRow } from './SettingsRow';
 import { SwitchRow } from '../../components/common/ui';
 import type { Untrusted } from '../../utils/untrusted';
 
+/** Deliveries per page of the log. */
+const DELIVERY_PAGE = 50;
+
 interface EventTypeInfo {
   type: string;
   description: string;
@@ -157,6 +160,8 @@ export function WebhooksCard() {
   const [secret, setSecret] = useState<{ endpointId: string; value: string } | null>(null);
   const [logFor, setLogFor] = useState<Endpoint | null>(null);
   const [deliveries, setDeliveries] = useState<Delivery[]>([]);
+  // A full page means there may be older deliveries (kept 30 days).
+  const [moreDeliveries, setMoreDeliveries] = useState(false);
   const [payload, setPayload] = useState<Delivery | null>(null);
   const [testType, setTestType] = useState<Record<string, string>>({});
   const [confirmDelete, setConfirmDelete] = useState<Endpoint | null>(null);
@@ -181,15 +186,33 @@ export function WebhooksCard() {
     async (endpoint: Endpoint) => {
       try {
         const res = await api.get<{ deliveries: Delivery[] }>(
-          `/api/webhooks/${endpoint.id}/deliveries?limit=50`
+          `/api/webhooks/${endpoint.id}/deliveries?limit=${DELIVERY_PAGE}`
         );
         setDeliveries(res.deliveries);
+        setMoreDeliveries(res.deliveries.length === DELIVERY_PAGE);
       } catch (err) {
         showError(apiErrorMessage(err, t('webhooksPage.errors.load')));
       }
     },
     [showError, t]
   );
+
+  const loadOlderDeliveries = async (endpoint: Endpoint) => {
+    const oldest = deliveries[deliveries.length - 1];
+    // shortcut: `before` is strict, so a delivery made in the same millisecond as
+    // the oldest one shown is skipped; page by (time, id) if that ever matters.
+    if (!oldest) return;
+    try {
+      const res = await api.get<{ deliveries: Delivery[] }>(
+        `/api/webhooks/${endpoint.id}/deliveries?limit=${DELIVERY_PAGE}&before=${oldest.createdAt}`
+      );
+      const seen = new Set(deliveries.map((d) => d.id));
+      setDeliveries([...deliveries, ...res.deliveries.filter((d) => !seen.has(d.id))]);
+      setMoreDeliveries(res.deliveries.length === DELIVERY_PAGE);
+    } catch (err) {
+      showError(apiErrorMessage(err, t('webhooksPage.errors.load')));
+    }
+  };
 
   if (!data) return null;
 
@@ -741,6 +764,15 @@ export function WebhooksCard() {
                 ))}
               </TableBody>
             </Table>
+          )}
+          {moreDeliveries && logFor && (
+            <Button
+              onClick={() => void loadOlderDeliveries(logFor)}
+              data-testid="webhook-deliveries-older"
+              sx={{ mt: 1 }}
+            >
+              {t('webhooksPage.showOlder')}
+            </Button>
           )}
         </DialogContent>
         <DialogActions>

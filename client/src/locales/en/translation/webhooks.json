@@ -29,6 +29,7 @@
     "cancel": "Cancel",
     "done": "Done",
     "copy": "Copy",
+    "showOlder": "Show older",
     "refresh": "Refresh",
     "rotate": "Rotate secret",
     "secretTitle": "Secret for the receiving site",

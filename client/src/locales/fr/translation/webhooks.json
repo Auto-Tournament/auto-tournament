@@ -26,6 +26,7 @@
     "cancel": "Annuler",
     "done": "Terminé",
     "copy": "Copier",
+    "showOlder": "Show older",
     "refresh": "Actualiser",
     "rotate": "Renouveler le secret",
     "secretTitle": "Secret de signature",
