@@ -39,6 +39,21 @@ test.describe('Discord match announcements', () => {
         },
       })
     ).toBe('Live on map 2 of 3, Mirage: **A** **7–5** **B**');
+    const live = {
+      map: 'Nuke',
+      mapNumber: 0,
+      totalMaps: 1,
+      score: [5, 0] as [number, number],
+      round: 6,
+      series: [0, 0] as [number, number],
+    };
+    // Over: the live card keeps its last score.
+    expect(headline({ ...base, event: 'live', live, over: true })).toBe(
+      'Over on Nuke: **A** **5–0** **B**'
+    );
+    expect(
+      announceMessage({ ...base, event: 'live', live, over: true }).embeds[0].fields
+    ).toBeUndefined();
     const result = (winner: 1 | 2, score: [number, number]) => ({ winner, score, maps: [] });
     expect(headline({ ...base, event: 'result', result: result(1, [2, 1]) })).toBe(
       '**A** beat **B** 2–1.'
