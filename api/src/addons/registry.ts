@@ -33,7 +33,8 @@ const key = (id: string) => `addon_enabled:${id}`;
 
 async function isOn(addon: AddonModule): Promise<boolean> {
   const stored = await db.getAppSettingAsync(key(addon.id)).catch(() => null);
-  return stored === null ? addon.defaultOn === true : stored === '1';
+  if (stored !== null) return stored === '1';
+  return typeof addon.defaultOn === 'function' ? addon.defaultOn() : addon.defaultOn === true;
 }
 
 async function start(addon: AddonModule): Promise<void> {

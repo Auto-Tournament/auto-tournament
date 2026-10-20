@@ -4,6 +4,7 @@
  * Discord bot is the first.
  */
 import type { ComponentType } from 'react';
+import { DiscordBotPage } from './discord/DiscordBotPage';
 
 export interface ClientAddon {
   id: string;
@@ -20,3 +21,5 @@ export function registerClientAddon(addon: ClientAddon): void {
 export function clientAddon(id: string): ClientAddon | undefined {
   return addons.get(id);
 }
+
+registerClientAddon({ id: 'discord', Page: DiscordBotPage });
