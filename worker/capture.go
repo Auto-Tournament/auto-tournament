@@ -192,16 +192,19 @@ func (c *console) expect(re *regexp.Regexp, wait time.Duration) (string, time.Ti
 
 // game is one CS2 in its own headless gamescope.
 type game struct {
-	cmd       *exec.Cmd
-	con       *console
-	node      string
-	width     int
-	height    int
-	startTick int // the demo's first tick: the console's ticks count from it
-	lastTick  int // the demo's length in ticks (the analyzer's last tick)
-	logPath   string
-	done      chan struct{}
-	waitErr   error // published by closing done
+	cmd           *exec.Cmd
+	con           *console
+	node          string
+	width         int
+	height        int
+	startTick     int // the demo's first tick: the console's ticks count from it
+	lastTick      int // the demo's length in ticks (the analyzer's last tick)
+	logPath       string
+	demoPath      string
+	native        *nativeBridge
+	nativePredict string
+	done          chan struct{}
+	waitErr       error // published by closing done
 	// follow, when set, is where the followed player stands at a tick (the
 	// demo's replay frames): the capture checks the camera is with them.
 	follow func(tick int) ([3]float64, bool)
