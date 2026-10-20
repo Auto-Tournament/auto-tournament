@@ -1,5 +1,5 @@
-import { OpponentName, RowCoverLink } from '../../team/MatchRowLinks';
-import { matchPagePath } from '../../../paths';
+import { InRowLink, OpponentName, RowCoverLink } from '../../team/MatchRowLinks';
+import { matchPagePath, tournamentTabPath } from '../../../paths';
 import Box from '@mui/material/Box';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
@@ -23,7 +23,9 @@ export interface RecentMatchEntry {
   title: string;
   /** The opponent, when the match is still here: "vs" and their name, linked to their team page. */
   opponent?: { id: string | null; name: string };
-  /** Where it was played: tournament and round, whichever are known. */
+  /** The tournament, linked before `detail` when it is still here. */
+  tournament?: { id: number; name: string } | null;
+  /** Where it was played: the round (and the tournament's name when it is not linked). */
   detail: string;
   kills?: number;
   deaths?: number;
@@ -132,6 +134,14 @@ export function RecentMatches({ matches, limit = 10, showStatsNote = true }: Rec
                   )}
                 </Typography>
                 <Typography variant="caption" color="text.secondary" noWrap component="div">
+                  {match.tournament && (
+                    <>
+                      <InRowLink to={tournamentTabPath(match.tournament.id)}>
+                        {match.tournament.name}
+                      </InRowLink>
+                      {match.detail || typeof match.ratingAfter === 'number' ? ' · ' : ''}
+                    </>
+                  )}
                   {typeof match.ratingAfter === 'number'
                     ? t('playerPage.recentMatches.roundAndRating', {
                         round: match.detail,

@@ -61,6 +61,26 @@ export function OpponentName({ id, name }: { id?: string | null; name: string })
   );
 }
 
+/** Any other link inside a match row (a tournament's name), above the row's cover link. */
+export function InRowLink({ to, children }: { to: string; children: ReactNode }) {
+  return (
+    <Box
+      component={RouterLink}
+      to={to}
+      sx={{
+        position: 'relative',
+        zIndex: 1,
+        color: 'inherit',
+        textDecoration: 'none',
+        '&:hover': { textDecoration: 'underline' },
+        '&:focus-visible': { outline: `2px solid ${tokens.color.focus}`, outlineOffset: 2 },
+      }}
+    >
+      {children}
+    </Box>
+  );
+}
+
 const SLOT = '\u0000';
 
 /**

@@ -6,7 +6,7 @@ import { formatDate, getBracketMatchLabel } from '../../../utils/matchUtils';
 import { LiveChip, Panel, Row, RowList, SectionHead } from '../../common/ui';
 import { fontDisplay, mono, textSize, tokens } from '../../../theme/tokens';
 import { matchPagePath, paths } from '../../../paths';
-import { OpponentName, RowCoverLink, versusLine } from '../MatchRowLinks';
+import { InRowLink, OpponentName, RowCoverLink, versusLine } from '../MatchRowLinks';
 import type { TeamMatchInfo, TeamMatchHistory, TeamStanding } from '../../../types';
 
 export interface TeamTournamentInfo {
@@ -157,7 +157,14 @@ export function TeamTournaments({
             )}
             <Box minWidth={0}>
               <Typography variant="body2" fontWeight={600} noWrap>
-                {tournament.name}
+                {/* The row opens the match; the name opens the tournament. */}
+                {hasMatch && match?.slug && typeof tournament.id === 'number' ? (
+                  <InRowLink to={paths.tournamentOverview.replace(':id', String(tournament.id))}>
+                    {tournament.name}
+                  </InRowLink>
+                ) : (
+                  tournament.name
+                )}
               </Typography>
               {detail && (
                 <Typography variant="caption" color="text.secondary" component="div" noWrap>
