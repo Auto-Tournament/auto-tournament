@@ -41,7 +41,9 @@ const CLIP_SELECT = `
   SELECT h.id, h.match_slug, h.map_number, h.player_id, h.kind, h.title, h.score, h.status, h.round,
          h.markers, h.created_at, h.slowmo_tick, j.map_name, p.name AS player_name, p.avatar_url,
          t1.name AS team1, t2.name AS team2, m.tournament_id, COALESCE(tr.name, m.played_in) AS tournament,
-         m.round AS match_round, m.bracket, m.match_number
+         m.round AS match_round, m.bracket, m.match_number,
+         -- A simulated match: a bot played them (demos/standIns.ts).
+         COALESCE(m.config LIKE '%"simulation":true%', FALSE) AS simulated
     FROM cs2_highlights h
     LEFT JOIN cs2_demo_jobs j ON j.match_slug = h.match_slug AND j.map_number = h.map_number
     LEFT JOIN players p ON p.id = h.player_id
@@ -63,6 +65,7 @@ interface ClipRow {
   markers: string | null;
   created_at: number;
   slowmo_tick: number;
+  simulated?: boolean;
   map_name: string | null;
   player_name: string | null;
   avatar_url: string | null;
@@ -108,6 +111,8 @@ export interface ClipView {
   reelMarkers: ClipMarkers | null;
   match: MatchRef;
   createdAt: number;
+  /** From a simulated match: a bot played as them. */
+  simulated: boolean;
 }
 
 function parseJson<T>(raw: string | null): T | null {
@@ -148,6 +153,7 @@ function toClip(r: ClipRow): ClipView {
       matchNumber: r.match_number === null ? null : Number(r.match_number),
     },
     createdAt: Number(r.created_at),
+    simulated: Boolean(r.simulated),
   };
 }
 

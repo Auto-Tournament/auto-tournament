@@ -32,7 +32,15 @@ type Filter = HighlightFilter | 'reels';
 const FILTERS: Filter[] = ['all', 'reels', 'multi', 'clutch', 'flair', 'funny'];
 
 /** A filter chip: a toggle button, the pressed one filled. */
-export function Chip({ on, onClick, children }: { on: boolean; onClick: () => void; children: ReactNode }) {
+export function Chip({
+  on,
+  onClick,
+  children,
+}: {
+  on: boolean;
+  onClick: () => void;
+  children: ReactNode;
+}) {
   return (
     <ButtonBase
       onClick={onClick}
@@ -73,7 +81,9 @@ export function PlayerHighlightsPage() {
 
   const load = useCallback(() => {
     api
-      .get<{ success: boolean } & PlayerHighlights>(`/api/game/cs2/players/${encodeURIComponent(playerId)}/highlights?all=1`)
+      .get<{ success: boolean } & PlayerHighlights>(
+        `/api/game/cs2/players/${encodeURIComponent(playerId)}/highlights?all=1`
+      )
       .then((res) => setData(res))
       .catch(() => setFailed(true));
   }, [playerId]);
@@ -115,7 +125,9 @@ export function PlayerHighlightsPage() {
     .filter((c) => filter === 'all' || filter === 'reels' || inFilter(c, filter))
     .sort((a, b) =>
       a.status !== b.status
-        ? (a.status === 'done' ? -1 : 1)
+        ? a.status === 'done'
+          ? -1
+          : 1
         : sort === 'best'
           ? b.score - a.score
           : b.createdAt - a.createdAt
@@ -130,21 +142,52 @@ export function PlayerHighlightsPage() {
       <Box
         component={RouterLink}
         to={links.playerProfile(playerId)}
-        sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5, color: tokens.color.ink2, textDecoration: 'none', fontSize: textSize.sm, mb: 2, '&:hover': { color: tokens.color.ink } }}
+        sx={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: 0.5,
+          color: tokens.color.ink2,
+          textDecoration: 'none',
+          fontSize: textSize.sm,
+          mb: 2,
+          '&:hover': { color: tokens.color.ink },
+        }}
       >
         <CaretLeftIcon size={14} />
         {name}
       </Box>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: 2, flexWrap: 'wrap', mb: 3 }}>
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'flex-end',
+          gap: 2,
+          flexWrap: 'wrap',
+          mb: 3,
+        }}
+      >
         <Box>
-          <Box component="h1" sx={{ m: 0, fontFamily: fontDisplay, fontSize: { xs: '2rem', md: '2.5rem' }, fontWeight: 600, letterSpacing: '-0.02em' }}>
+          <Box
+            component="h1"
+            sx={{
+              m: 0,
+              fontFamily: fontDisplay,
+              fontSize: { xs: '2rem', md: '2.5rem' },
+              fontWeight: 600,
+              letterSpacing: '-0.02em',
+            }}
+          >
             {t('highlights.title')}
           </Box>
           <Box sx={{ color: tokens.color.muted, fontSize: textSize.sm, mt: 0.5 }}>
             {t('highlights.summary', { clips: done, reels: data.reels.length, maps })}
           </Box>
         </Box>
-        <Box role="group" aria-label={t('highlights.filterLabel')} sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+        <Box
+          role="group"
+          aria-label={t('highlights.filterLabel')}
+          sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}
+        >
           {FILTERS.map((f) => (
             <Chip key={f} on={filter === f} onClick={() => setFilter(f)}>
               {t(`highlights.filter.${f}`)}
@@ -158,20 +201,44 @@ export function PlayerHighlightsPage() {
 
       {showReels && (
         <Box component="section" aria-labelledby="hl-reels" sx={{ mb: 4 }}>
-          <Box id="hl-reels" component="h2" sx={{ m: 0, mb: 1.5, ...mono, fontSize: '0.75rem', fontWeight: 500, color: tokens.color.muted, letterSpacing: '0.04em' }}>
+          <Box
+            id="hl-reels"
+            component="h2"
+            sx={{
+              m: 0,
+              mb: 1.5,
+              ...mono,
+              fontSize: '0.75rem',
+              fontWeight: 500,
+              color: tokens.color.muted,
+              letterSpacing: '0.04em',
+            }}
+          >
             {t('highlights.reelsHeading')}
           </Box>
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'minmax(0,1fr)', sm: 'repeat(2, minmax(0,1fr))', md: 'repeat(3, minmax(0,1fr))' }, gap: 1.5 }}>
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: {
+                xs: 'minmax(0,1fr)',
+                sm: 'repeat(2, minmax(0,1fr))',
+                md: 'repeat(3, minmax(0,1fr))',
+              },
+              gap: 1.5,
+            }}
+          >
             {data.reels.map((r) => (
-                <HighlightCard
-                  key={`${r.matchSlug}-${r.mapNumber}`}
-                  testId="cs2-highlight-reel"
-                  to={watchReelPath(r.matchSlug, r.mapNumber, playerId)}
-                  video={r.video}
-                  title={[mapLabel(t, r.map, r.mapNumber), teamsLabel(r.match)].filter(Boolean).join(' · ')}
-                  sub={t('highlights.moments', { count: r.moments })}
-                  badge={<KindBadge kind="reel" clutch={false} label={t('highlights.reelBadge')} />}
-                />
+              <HighlightCard
+                key={`${r.matchSlug}-${r.mapNumber}`}
+                testId="cs2-highlight-reel"
+                to={watchReelPath(r.matchSlug, r.mapNumber, playerId)}
+                video={r.video}
+                title={[mapLabel(t, r.map, r.mapNumber), teamsLabel(r.match)]
+                  .filter(Boolean)
+                  .join(' · ')}
+                sub={t('highlights.moments', { count: r.moments })}
+                badge={<KindBadge kind="reel" clutch={false} label={t('highlights.reelBadge')} />}
+              />
             ))}
           </Box>
         </Box>
@@ -179,15 +246,44 @@ export function PlayerHighlightsPage() {
 
       {showClips && (
         <Box component="section" aria-labelledby="hl-moments">
-          <Box id="hl-moments" component="h2" sx={{ m: 0, mb: 1.5, ...mono, fontSize: '0.75rem', fontWeight: 500, color: tokens.color.muted, letterSpacing: '0.04em' }}>
+          <Box
+            id="hl-moments"
+            component="h2"
+            sx={{
+              m: 0,
+              mb: 1.5,
+              ...mono,
+              fontSize: '0.75rem',
+              fontWeight: 500,
+              color: tokens.color.muted,
+              letterSpacing: '0.04em',
+            }}
+          >
             {t('highlights.momentsHeading')}
           </Box>
           {clips.length === 0 ? (
-            <Box sx={{ p: 3, borderRadius: '18px', border: `1px dashed ${tokens.color.rule}`, color: tokens.color.muted }}>
+            <Box
+              sx={{
+                p: 3,
+                borderRadius: '18px',
+                border: `1px dashed ${tokens.color.rule}`,
+                color: tokens.color.muted,
+              }}
+            >
               {t('highlights.noneForFilter')}
             </Box>
           ) : (
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'minmax(0,1fr)', sm: 'repeat(2, minmax(0,1fr))', md: 'repeat(3, minmax(0,1fr))' }, gap: 1.5 }}>
+            <Box
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: {
+                  xs: 'minmax(0,1fr)',
+                  sm: 'repeat(2, minmax(0,1fr))',
+                  md: 'repeat(3, minmax(0,1fr))',
+                },
+                gap: 1.5,
+              }}
+            >
               {clips.map((c) => (
                 <HighlightCard
                   key={c.id}
@@ -196,11 +292,30 @@ export function PlayerHighlightsPage() {
                   video={c.video}
                   markers={c.markers}
                   title={playTitle(c.title)}
-                  sub={[mapLabel(t, c.map, c.mapNumber), t('highlights.roundN', { n: c.round }), teamsLabel(c.match)].filter(Boolean).join(' · ')}
-                  badge={<KindBadge kind={c.kind} clutch={c.clutch} label={data.favourite === c.id ? t('highlights.favourite') : undefined} />}
+                  sub={[
+                    mapLabel(t, c.map, c.mapNumber),
+                    t('highlights.roundN', { n: c.round }),
+                    teamsLabel(c.match),
+                  ]
+                    .filter(Boolean)
+                    .join(' · ')}
+                  badge={
+                    <KindBadge
+                      kind={c.kind}
+                      clutch={c.clutch}
+                      simulated={c.simulated}
+                      label={data.favourite === c.id ? t('highlights.favourite') : undefined}
+                    />
+                  }
                   duration={c.markers ? c.markers.duration : null}
-                  waiting={t(c.status === 'recording' ? 'highlights.recording' : 'highlights.pending')}
-                  favourite={data.isOwn && c.status === 'done' ? { on: data.favourite === c.id, onToggle: () => void toggleFavourite(c.id) } : undefined}
+                  waiting={t(
+                    c.status === 'recording' ? 'highlights.recording' : 'highlights.pending'
+                  )}
+                  favourite={
+                    data.isOwn && c.status === 'done'
+                      ? { on: data.favourite === c.id, onToggle: () => void toggleFavourite(c.id) }
+                      : undefined
+                  }
                 />
               ))}
             </Box>

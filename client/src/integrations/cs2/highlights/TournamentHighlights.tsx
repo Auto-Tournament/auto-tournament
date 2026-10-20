@@ -313,7 +313,7 @@ export function TournamentHighlightsTab({
                   markers={c.markers}
                   title={c.playerName}
                   sub={playSub(c)}
-                  badge={<KindBadge kind={c.kind} clutch={c.clutch} />}
+                  badge={<KindBadge kind={c.kind} clutch={c.clutch} simulated={c.simulated} />}
                   duration={c.markers?.duration}
                 />
               ))}
@@ -500,7 +500,7 @@ export function TournamentReelSection({ tournamentId }: TournamentResultsSection
             sub={[teamsLabel(top.match), mapLabel(t, top.map, top.mapNumber)]
               .filter(Boolean)
               .join(' · ')}
-            badge={<KindBadge kind={top.kind} clutch={top.clutch} />}
+            badge={<KindBadge kind={top.kind} clutch={top.clutch} simulated={top.simulated} />}
             duration={top.markers?.duration}
           />
         </Box>

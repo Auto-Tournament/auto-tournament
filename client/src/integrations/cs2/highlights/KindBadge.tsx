@@ -2,8 +2,18 @@ import { Box } from '@mui/material';
 import { radii, tokens, useModuleTranslation } from '../../../module-sdk';
 import { isBigPlay, kindLabel } from './data';
 
-/** A small badge over a still: ACE and 4K in the accent, the rest quiet. */
-export function KindBadge({ kind, clutch, label }: { kind: string; clutch: boolean; label?: string }) {
+/** A small badge over a still: ACE and 4K in the accent, the rest quiet. "Simulated player" after it for a bot's play. */
+export function KindBadge({
+  kind,
+  clutch,
+  label,
+  simulated = false,
+}: {
+  kind: string;
+  clutch: boolean;
+  label?: string;
+  simulated?: boolean;
+}) {
   const { t } = useModuleTranslation('cs2');
   const big = isBigPlay(kind);
   return (
@@ -25,6 +35,7 @@ export function KindBadge({ kind, clutch, label }: { kind: string; clutch: boole
       }}
     >
       {label ?? kindLabel(t, kind, clutch)}
+      {simulated && ` · ${t('highlights.simulated')}`}
     </Box>
   );
 }

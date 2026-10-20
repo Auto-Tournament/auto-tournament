@@ -40,6 +40,8 @@ export interface Clip {
   markers: ClipMarkers | null;
   match: MatchRef;
   createdAt: number;
+  /** From a simulated match: a bot played as them. */
+  simulated?: boolean;
 }
 
 /** One clip in a reel; `at` is where it starts (null when a clip before it has no known length). */
