@@ -21,7 +21,7 @@ import { usePublicTournamentOverview } from '../hooks/usePublicTournamentOvervie
 import { useMatchmaking } from '../components/matchmaking/matchmakingStore';
 import { api } from '../utils/api';
 import { eliminationRoundCount, getRoundLabel } from '../utils/matchUtils';
-import { formatBadge } from '../utils/tournamentSummary';
+import { formatBadge, typeLabel } from '../utils/tournamentSummary';
 import { paths, tournamentTabPath } from '../paths';
 import { tokens, radii, fontDisplay, fontMono } from '../theme/tokens';
 import { tournamentArtSx } from '../utils/tournamentArt';
@@ -782,7 +782,7 @@ function HeroCard({ tour, when }: { tour: TournamentSummary; when: When }) {
           ) : tour.registrationOpen ? (
             <Pill tone="accent">{t('home.signup.open')}</Pill>
           ) : null}
-          <Pill>{t(`tournament.typeSelector.types.${tour.type}.label`)}</Pill>
+          <Pill>{typeLabel(t, tour.type)}</Pill>
           <Pill>{formatBadge(tour.format)}</Pill>
         </Box>
         <Typography

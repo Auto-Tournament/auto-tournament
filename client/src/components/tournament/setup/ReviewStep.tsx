@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { typeLabel } from '../../../utils/tournamentSummary';
 import { Alert, Box, Button, Typography } from '@mui/material';
 import { FloppyDiskIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
@@ -197,7 +198,7 @@ function NewTournamentDetails({
     {
       key: 'type',
       label: t('tournament.review.summary.typeLabel'),
-      value: t(`tournament.typeSelector.types.${form.type}.label`),
+      value: typeLabel(t, form.type),
     },
     {
       key: 'format',
