@@ -17,6 +17,7 @@ import {
   teamChannelsOn,
 } from './teamChannels';
 import { resolveViewerAccount } from '../../utils/viewerIdentity';
+import { handleInteraction, registerCommands } from './interactions';
 import { setVoiceSettings, startMatchVoice, stopMatchVoice, voiceSettings } from './matchVoice';
 import {
   announceChannel,
@@ -50,6 +51,18 @@ router.get('/team-channel/:teamId', async (req: Request, res: Response) => {
     return res.status(500).json({ success: false, error: 'Could not read the team channel' });
   }
 });
+
+/**
+ * @openapi
+ * /api/addons/discord/interactions:
+ *   post:
+ *     tags: [Add-ons]
+ *     summary: Discord's Interactions Endpoint (slash commands); signed by Discord, not for other callers
+ *     responses:
+ *       200: { description: The answer Discord shows }
+ *       401: { description: Not signed by this app's Discord key }
+ */
+router.post('/interactions', (req: Request, res: Response) => void handleInteraction(req, res));
 
 // Everything below is the admin's.
 router.use(requireAuth);
@@ -148,6 +161,7 @@ router.put('/guild', async (req: Request, res: Response) => {
     const raw = (req.body as Record<string, Untrusted> | undefined)?.guildId;
     try {
       const guildId = await discordBot.setGuild(typeof raw === 'string' && raw ? raw : null);
+      void registerCommands();
       return res.json({ success: true, guildId });
     } catch (error) {
       if (error instanceof ChannelError) {
@@ -279,6 +293,7 @@ export const discordAddon: AddonModule = {
     startMatchVoice();
     startAnnouncements();
     startTeamChannels();
+    void registerCommands();
   },
   stop() {
     stopMatchVoice();

@@ -911,6 +911,10 @@
       "label": "Team channels",
       "help": "While a tournament runs, each team gets a private text channel. Its players find the link on their team page.",
       "link": "Team channel on Discord"
+    },
+    "commands": {
+      "label": "Slash commands: /matches and /mymatch",
+      "help": "In the Discord Developer Portal, paste this as your app's Interactions Endpoint URL. Discord must be able to reach this site."
     }
   },
   "liveMatchesPage": {
