@@ -227,7 +227,6 @@ export const NESTED_TERNARY = [
   'client/src/integrations/cs2/servers/fleet/MachineSheet.tsx',
   'client/src/integrations/cs2/servers/fleet/OtherServers.tsx',
   'client/src/integrations/cs2/servers/fleet/ServerSheet.tsx',
-  'client/src/integrations/cs2/servers/fleet/ServerTile.tsx',
   'client/src/integrations/cs2/servers/fleet/serverMatchPhase.ts',
   'client/src/integrations/cs2/setup/SortableMapList.tsx',
   'client/src/integrations/cs2/setup/cs2TournamentSettings.ts',

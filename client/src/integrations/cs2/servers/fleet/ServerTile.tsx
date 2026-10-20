@@ -152,6 +152,12 @@ export function ServerTile({ host, server, state, match, command, onOpen }: Serv
       })
     );
   }
+  // Down is red only on an online machine: an offline one says so itself.
+  let edge = color.rule;
+  if (state === 'match') edge = withAlpha(color.accent, 0.55);
+  else if (state === 'offline' && host.online) edge = withAlpha(color.ban, 0.6);
+  // An offline machine's card is dimmed, so muted would fail contrast.
+  const quiet = state === 'offline' ? color.ink2 : color.muted;
   const pct = MOVING.includes(state) ? (command?.progress.pct ?? null) : null;
 
   return (
@@ -172,14 +178,7 @@ export function ServerTile({ host, server, state, match, command, onOpen }: Serv
         minHeight: 92,
         borderRadius: radii.md,
         bgcolor: color.paper,
-        // Down is red only on an online machine: an offline one says so itself.
-        border: `1px solid ${
-          state === 'match'
-            ? withAlpha(color.accent, 0.55)
-            : state === 'offline' && host.online
-              ? withAlpha(color.ban, 0.6)
-              : color.rule
-        }`,
+        border: `1px solid ${edge}`,
         opacity: state === 'deleting' ? 0.55 : 1,
         '&:hover': { borderColor: color.muted },
         '&.Mui-focusVisible': { outline: `2px solid ${color.focus}`, outlineOffset: 2 },
@@ -235,13 +234,7 @@ export function ServerTile({ host, server, state, match, command, onOpen }: Serv
           component="span"
           sx={{
             fontSize: '0.75rem',
-            // An offline machine's card is dimmed, so muted would fail contrast.
-            color:
-              i === 0 && state === 'match'
-                ? color.ink
-                : state === 'offline'
-                  ? color.ink2
-                  : color.muted,
+            color: i === 0 && state === 'match' ? color.ink : quiet,
             ...(line.startsWith(':') ? mono : {}),
             whiteSpace: 'nowrap',
             overflow: 'hidden',
