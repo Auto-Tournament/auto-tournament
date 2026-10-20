@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { Alert, Box, Typography } from '@mui/material';
+import { Link as RouterLink, useParams } from 'react-router-dom';
+import { Alert, Box, Link, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { GroupTables } from '../components/tournament/GroupTables';
 import { api } from '../utils/api';
@@ -20,6 +20,7 @@ import {
 } from '../components/tournament/ui/draftUi';
 import type { Match, Tournament } from '../types';
 import { tokens, textSize } from '../theme/tokens';
+import { teamProfilePath } from '../paths';
 import type { Untrusted } from '../utils/untrusted';
 
 const { color } = tokens;
@@ -325,7 +326,14 @@ export default function TournamentLeaderboard() {
                       >
                         <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 1 }}>
                           <TeamLogo team={{ id: r.id, name: r.name, tag: r.tag }} size="sm" />
-                          {r.name}
+                          <Link
+                            component={RouterLink}
+                            to={teamProfilePath(r.id)}
+                            underline="hover"
+                            sx={{ color: 'inherit' }}
+                          >
+                            {r.name}
+                          </Link>
                           {champion?.id === r.id && (
                             <Box
                               component="span"
