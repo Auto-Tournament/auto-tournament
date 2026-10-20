@@ -14,7 +14,7 @@
  * through the SDK's other imports could reach them.
  */
 
-import { paths } from '../paths';
+import { paths, teamProfilePath } from '../paths';
 
 export const links = {
   /**
@@ -37,7 +37,10 @@ export const links = {
     paths.playerProfile.replace(':steamId', encodeURIComponent(playerId)),
   /** A match's own page: its result, maps, scoreboard and highlights. Client API 0.2.19. */
   match: (slug: string): string => paths.match.replace(':slug', encodeURIComponent(slug)),
+  /** A team's public page. Client API 0.2.30. */
+  team: (teamId: string): string => teamProfilePath(teamId),
   /** A tournament's public page. Client API 0.2.13. */
+
   tournament: (tournamentId: number | string): string =>
     paths.tournamentOverview.replace(':id', String(tournamentId)),
 } as const;

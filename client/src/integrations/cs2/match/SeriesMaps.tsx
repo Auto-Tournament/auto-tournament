@@ -1,10 +1,12 @@
 import { Box, Stack, Typography } from '@mui/material';
 import { useEffect, useMemo, useState } from 'react';
+import { Link as RouterLink } from 'react-router-dom';
 import {
   api,
   fontDisplay,
   radii,
   tokens,
+  links,
   useModuleTranslation,
   withAlpha,
 } from '../../../module-sdk';
@@ -82,6 +84,7 @@ export function SeriesMaps({ matchSlug, match, renderMapAction }: MatchSeriesMap
   const next = finished || live != null ? null : order.findIndex((_, i) => !results.has(i));
 
   const team = (side: Side) => ({
+    id: match[side]?.id ?? null,
     name: match[side]?.name ?? (side === 'team1' ? 'Team 1' : 'Team 2'),
     tag: match[side]?.tag ?? null,
     logo: side === 'team1' ? match.team1LogoUrl : match.team2LogoUrl,
@@ -270,7 +273,7 @@ export function SeriesMaps({ matchSlug, match, renderMapAction }: MatchSeriesMap
                       component="span"
                       sx={{ color: w ? tokens.color.live : tokens.color.ink2, fontWeight: 600 }}
                     >
-                      {w ? t('seriesMaps.won', { team: w.name }) : t('seriesMaps.draw')}
+                      {w ? <WonLine name={w.name} teamId={w.id} /> : t('seriesMaps.draw')}
                     </Box>
                     <Box component="span" sx={{ color: tokens.color.muted }}>
                       {' '}
@@ -301,5 +304,29 @@ export function SeriesMaps({ matchSlug, match, renderMapAction }: MatchSeriesMap
         })}
       </Box>
     </Box>
+  );
+}
+
+/** "{team} won", the team's name linked to its page where the language puts it. */
+function WonLine({ name, teamId }: { name: string; teamId: string | null }) {
+  const { t } = useModuleTranslation('cs2');
+  const [before, after = ''] = t('seriesMaps.won', { team: '\u0000' }).split('\u0000');
+  if (!teamId) return <>{t('seriesMaps.won', { team: name })}</>;
+  return (
+    <>
+      {before}
+      <Box
+        component={RouterLink}
+        to={links.team(teamId)}
+        sx={{
+          color: 'inherit',
+          textDecoration: 'none',
+          '&:hover': { textDecoration: 'underline' },
+        }}
+      >
+        {name}
+      </Box>
+      {after}
+    </>
   );
 }
