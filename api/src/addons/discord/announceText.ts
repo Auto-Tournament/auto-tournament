@@ -66,6 +66,8 @@ export function headline(c: CardInput): string {
   if (!c.result) return `${a} vs ${b} is over.`;
   const [w, l] = c.result.winner === 1 ? [a, b] : [b, a];
   const s = c.result.winner === 1 ? c.result.score : [c.result.score[1], c.result.score[0]];
+  // Level: an elimination match is decided on a tiebreak (core matchLifecycle, series guard).
+  if (s[0] === s[1]) return `${w} go through against ${l} on a tiebreak (${s[0]}–${s[1]}).`;
   return `${w} beat ${l} ${s[0]}–${s[1]}.`;
 }
 
