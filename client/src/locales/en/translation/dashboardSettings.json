@@ -871,7 +871,6 @@
   },
   "discordBot": {
     "title": "Discord bot",
-    "hint": "Your own Discord bot: the site sends players their DMs through it (Account → Notifications). A player gets them when they share a Discord server with your bot.",
     "token": "Bot token",
     "replace": "New bot token",
     "save": "Save",

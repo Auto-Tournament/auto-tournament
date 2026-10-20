@@ -157,9 +157,6 @@ export function DiscordBotPage() {
 
   return (
     <Box data-testid="discord-bot">
-      <Typography sx={{ fontSize: '0.875rem', color: color.muted, mb: 2 }}>
-        {t('discordBot.hint')}
-      </Typography>
       {status?.set && (
         <Box
           sx={{

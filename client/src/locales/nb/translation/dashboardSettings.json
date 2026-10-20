@@ -871,7 +871,6 @@
   },
   "discordBot": {
     "title": "Discord-bot",
-    "hint": "Discord-boten din: nettstedet sender spillerne meldinger gjennom den (Konto → Varsler). En spiller får dem når hen er på en Discord-server sammen med boten din.",
     "token": "Bot-token",
     "replace": "Ny bot-token",
     "save": "Lagre",
