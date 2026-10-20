@@ -9,6 +9,7 @@ import { log } from '../../utils/logger';
 import type { Untrusted } from '../../utils/untrusted';
 import type { AddonModule } from '../types';
 import { ChannelError, botTokenStored, discordBot } from './bot';
+import { setVoiceSettings, startMatchVoice, stopMatchVoice, voiceSettings } from './matchVoice';
 
 const router = Router();
 router.use(requireAuth);
@@ -21,15 +22,18 @@ router.use(requireAuth);
  *     summary: Whether a Discord bot token is set, the bot's name, its Discord servers and the one in use
  *     security: [{ BearerAuth: [] }]
  *     responses:
- *       200: { description: "`set`, `name`, `guilds` ({ id, name }[]), `guildId`" }
+ *       200: { description: "`set`, `name`, `guilds` ({ id, name }[]), `guildId`, `categories` ({ id, name }[] of the picked server), `matchVoice` ({ enabled, categoryId })" }
  */
 router.get('/', async (_req: Request, res: Response) => {
   try {
     const status = await discordBot.status();
+    const guilds = status.set ? await discordBot.guilds() : { guilds: [], guildId: null };
     return res.json({
       success: true,
       ...status,
-      ...(status.set ? await discordBot.guilds() : { guilds: [], guildId: null }),
+      ...guilds,
+      categories: guilds.guildId ? await discordBot.categories() : [],
+      matchVoice: await voiceSettings(),
     });
   } catch (error) {
     log.error('Reading the Discord bot failed', error as Error);
@@ -114,6 +118,50 @@ router.put('/guild', async (req: Request, res: Response) => {
   }
 });
 
+/**
+ * @openapi
+ * /api/addons/discord/match-voice:
+ *   put:
+ *     tags: [Add-ons]
+ *     summary: Team voice channels per match (on/off, and the category they go in)
+ *     security: [{ BearerAuth: [] }]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               enabled: { type: boolean }
+ *               categoryId: { type: string, nullable: true }
+ *     responses:
+ *       200: { description: "`matchVoice` ({ enabled, categoryId })" }
+ *       400: { description: Not a category of the picked server }
+ */
+router.put('/match-voice', async (req: Request, res: Response) => {
+  try {
+    const body = (req.body as Record<string, Untrusted> | undefined) ?? {};
+    const patch: { enabled?: boolean; categoryId?: string | null } = {};
+    if (typeof body.enabled === 'boolean') patch.enabled = body.enabled;
+    if (body.categoryId === null || body.categoryId === '') patch.categoryId = null;
+    else if (typeof body.categoryId === 'string') {
+      const categories = await discordBot.categories();
+      if (!categories.some((c) => c.id === body.categoryId)) {
+        return res
+          .status(400)
+          .json({ success: false, error: 'Not a category of the picked Discord server' });
+      }
+      patch.categoryId = body.categoryId;
+    }
+    return res.json({ success: true, matchVoice: await setVoiceSettings(patch) });
+  } catch (error) {
+    log.error('Setting the Discord voice channels failed', error as Error);
+    return res
+      .status(500)
+      .json({ success: false, error: 'Could not save the voice channel settings' });
+  }
+});
+
 export const discordAddon: AddonModule = {
   id: 'discord',
   name: 'Discord bot',
@@ -121,7 +169,11 @@ export const discordAddon: AddonModule = {
     'Your own Discord bot: DMs players about their matches, and works in your Discord server.',
   // On for an install that set a bot token before the Discord bot was an add-on.
   defaultOn: async () => (await botTokenStored()) !== null,
-  start() {},
-  stop() {},
+  start() {
+    startMatchVoice();
+  },
+  stop() {
+    stopMatchVoice();
+  },
   router,
 };

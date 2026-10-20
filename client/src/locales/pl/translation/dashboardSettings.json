@@ -893,7 +893,14 @@
     "noGuild": "None",
     "guildSaved": "Discord server saved",
     "movedHint": "The Discord bot is an add-on now: turn it on and set it up under Modules.",
-    "open": "Open the Discord bot"
+    "open": "Open the Discord bot",
+    "voice": {
+      "label": "Team voice channels",
+      "help": "While a match is on its server, each team gets a private voice channel. Players already in voice are moved there; the rest get a link by DM. The channels go a few minutes after the match.",
+      "category": "Category",
+      "noCategory": "None (top of the server)",
+      "saved": "Voice channel settings saved"
+    }
   },
   "liveMatchesPage": {
     "title": "Live matches",

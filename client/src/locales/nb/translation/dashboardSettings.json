@@ -889,7 +889,14 @@
     "noGuild": "Ingen",
     "guildSaved": "Discord-serveren er lagret",
     "movedHint": "Discord-boten er et tillegg nå: slå den på og sett den opp under Moduler.",
-    "open": "Åpne Discord-boten"
+    "open": "Åpne Discord-boten",
+    "voice": {
+      "label": "Talekanaler for lagene",
+      "help": "Mens en kamp er på serveren, får hvert lag sin egen private talekanal. Spillere som allerede er i en talekanal, flyttes dit, og resten får lenken som direktemelding. Kanalene fjernes noen minutter etter kampen.",
+      "category": "Kategori",
+      "noCategory": "Ingen (øverst på serveren)",
+      "saved": "Innstillingene for talekanaler er lagret"
+    }
   },
   "liveMatchesPage": {
     "title": "Direktekamper",

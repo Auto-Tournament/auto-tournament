@@ -77,7 +77,7 @@ export { ChannelError, discordBot };
 
 // ---- per player ----------------------------------------------------------------
 
-async function discordIdOf(playerId: string): Promise<string | null> {
+export async function discordIdOf(playerId: string): Promise<string | null> {
   const row = await db.queryOneAsync<{ id: string | null }>(
     `SELECT COALESCE(
         (SELECT provider_user_id FROM auth_identities WHERE provider = 'discord' AND steam_id = ? ORDER BY id DESC LIMIT 1),
