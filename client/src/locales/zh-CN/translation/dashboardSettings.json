@@ -919,6 +919,7 @@
       "category": "An \"Auto Tournament\" category, for the team channels",
       "results": "#results, for the match announcements",
       "lobby": "A Lobby, where players wait to be moved",
+      "spaces": "每个比赛开始时都会有自己的分类，只对参赛选手可见：比赛频道、等候大厅、各队频道和比赛语音。比赛结束三天后删除。",
       "allThere": "Your Discord server is set up",
       "missing_one": "{{count}} thing is missing on your Discord server",
       "missing_other": "{{count}} things are missing on your Discord server",

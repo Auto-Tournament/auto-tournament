@@ -919,6 +919,7 @@
       "category": "An \"Auto Tournament\" category, for the team channels",
       "results": "#results, for the match announcements",
       "lobby": "A Lobby, where players wait to be moved",
+      "spaces": "Cada torneio tem a sua própria categoria quando começa, só para os seus jogadores: o seu canal, um Lobby, os canais das equipas e a voz dos jogos. É removida três dias depois de o torneio acabar.",
       "allThere": "Your Discord server is set up",
       "missing_one": "{{count}} thing is missing on your Discord server",
       "missing_other": "{{count}} things are missing on your Discord server",

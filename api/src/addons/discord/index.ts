@@ -302,10 +302,10 @@ router.put('/team-channels', async (req: Request, res: Response) => {
  * /api/addons/discord/setup:
  *   post:
  *     tags: [Add-ons]
- *     summary: Set up the picked Discord server (category, #results, a Lobby nobody talks in) and use it
+ *     summary: Set up the picked Discord server (an Auto Tournament category with #results) and use it
  *     security: [{ BearerAuth: [] }]
  *     responses:
- *       200: { description: "`categoryId`, `resultsId`, `lobbyId`" }
+ *       200: { description: "`categoryId`, `resultsId`" }
  *       400: { description: No server picked, or Discord refused (the reason says why) }
  */
 router.post('/setup', async (_req: Request, res: Response) => {

@@ -15,7 +15,6 @@ const { color } = tokens;
 export interface SetupState {
   category: boolean;
   results: boolean;
-  lobby: boolean;
 }
 
 /**
@@ -37,7 +36,6 @@ export function SetupChecklist({
   const items: Array<{ key: keyof SetupState; label: string }> = [
     { key: 'category', label: t('discordBot.setup.category') },
     { key: 'results', label: t('discordBot.setup.results') },
-    { key: 'lobby', label: t('discordBot.setup.lobby') },
   ];
   const missing = items.filter((i) => !state[i.key]).length;
   const none = missing === items.length;
@@ -88,7 +86,7 @@ export function SetupChecklist({
           ))}
         </Box>
         <Typography sx={{ fontSize: '0.8125rem', color: color.muted, mt: 1.5 }}>
-          {t('discordBot.setup.help')}
+          {t('discordBot.setup.help')} {t('discordBot.setup.spaces')}
         </Typography>
         {missing > 0 && (
           <Button
