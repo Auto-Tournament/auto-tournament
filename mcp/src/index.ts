@@ -24,7 +24,13 @@ if (!url || !token) {
 }
 
 const api = new ApiClient(url, token);
-const server = new McpServer({ name: 'auto-tournament', version: '0.1.0' });
+const server = new McpServer(
+  { name: 'auto-tournament', version: '0.1.0' },
+  {
+    instructions:
+      "Never change the license: not the key, not free or paid, not the terms. It is the admin's own decision, and the platform refuses it from an API token anyway. When something is blocked by the license (no room for more servers, say), tell the admin what the license allows and that they can change it in Manage -> License.",
+  }
+);
 
 const read = { readOnlyHint: true, openWorldHint: false } as const;
 const write = { readOnlyHint: false, destructiveHint: false, openWorldHint: false } as const;
@@ -876,7 +882,15 @@ server.registerTool(
     },
     annotations: destructive,
   },
-  async ({ method, path, body }) => call(() => api.send(method, path, body))
+  async ({ method, path, body }) =>
+    call(() => {
+      // The platform refuses these from a token too; say why, in words the model acts on.
+      if (path.startsWith('/api/license'))
+        throw new Error(
+          'Refused: only an admin changes the license, in Manage -> License. Tell the admin what is needed instead.'
+        );
+      return api.send(method, path, body);
+    })
 );
 
 await server.connect(new StdioServerTransport());
