@@ -32,7 +32,7 @@ const MIX_DIR = path.join(HIGHLIGHTS_DIR, 'with-music');
  * (evened-out) loudness. The viewer picks it (1 = the whole track); this is
  * theirs until they do. The intro, with no game sound, keeps its own level.
  */
-export const MUSIC_GAIN = 0.4;
+export const MUSIC_GAIN = 0.5;
 export const MUSIC_INTRO_GAIN = 0.32;
 
 /** A viewer's music level from a request: 0 to 1, MUSIC_GAIN when absent or wrong. */

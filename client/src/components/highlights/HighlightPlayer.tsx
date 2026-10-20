@@ -108,7 +108,7 @@ export interface PlayerMusic {
 
 // The music's levels (the API's demos/music.ts): under the game a share of
 // the whole track (the viewer's, this until they pick one); the intro's own.
-export const MUSIC_GAIN = 0.4;
+export const MUSIC_GAIN = 0.5;
 const MUSIC_INTRO_GAIN = 0.32;
 const MUSIC_FADE_IN = 1.5;
 const MUSIC_FADE_OUT = 2.5;
