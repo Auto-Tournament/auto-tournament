@@ -14,7 +14,9 @@ test.describe('Add-on modules', () => {
     const state = async () => request.get('/api/addons/test-addon/state', { headers });
 
     expect((await request.get('/api/addons')).status()).toBe(401);
-    const list = await (await request.get('/api/addons', { headers })).json();
+    const listed = await request.get('/api/addons', { headers });
+    const list = await listed.json();
+    expect(listed.status(), JSON.stringify(list)).toBe(200);
     expect(list.addons.map((a: { id: string }) => a.id)).toContain('test-addon');
 
     await request.put('/api/addons/test-addon', { headers, data: { enabled: false } });
