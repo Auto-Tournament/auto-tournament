@@ -208,12 +208,13 @@ export function TournamentResults({
     whiteSpace: 'nowrap',
   } as const;
 
-  // The final: the champion's last match, for the banner's line and picture.
+  // The final: the champion's last match, for the banner's line and picture. By when it
+  // finished, not by round: a double-elimination grand final is round 1 of its own bracket.
   const champion = tournament.winner ?? null;
   const final = champion
     ? [...matches]
         .filter((m) => m.status === 'completed' && m.winner?.id === champion.id)
-        .sort((x, y) => y.round - x.round || (y.completedAt ?? 0) - (x.completedAt ?? 0))[0]
+        .sort((x, y) => (y.completedAt ?? 0) - (x.completedAt ?? 0) || y.round - x.round)[0]
     : undefined;
   const finalMap =
     final?.mapResults?.[final.mapResults.length - 1]?.mapName ?? final?.maps?.[0] ?? null;
@@ -239,16 +240,19 @@ export function TournamentResults({
     : null;
   const recent = [...matches]
     .filter((m) => m.status === 'completed')
-    .sort((x, y) => y.round - x.round || (y.completedAt ?? 0) - (x.completedAt ?? 0))
+    .sort((x, y) => (y.completedAt ?? 0) - (x.completedAt ?? 0) || y.round - x.round)
     .slice(0, 4);
   const lastRound = Math.max(0, ...matches.map((m) => m.round ?? 0));
   const isElim = /elimination/.test(tournament.type ?? '');
-  const stageOf = (m: Match) =>
-    isElim && m.round === lastRound
-      ? t('results.stage.final')
-      : isElim && m.round === lastRound - 1
-        ? t('results.stage.semi')
-        : t('results.stage.round', { n: m.round });
+  // With a grand final (double elimination) only it is "the final"; the rounds of the
+  // two brackets do not line up into a semifinal.
+  const hasGrandFinal = matches.some((m) => m.bracket === 'GF');
+  const stageOf = (m: Match) => {
+    if (m.bracket === 'GF') return t('results.stage.final');
+    if (isElim && !hasGrandFinal && m.round === lastRound) return t('results.stage.final');
+    if (isElim && !hasGrandFinal && m.round === lastRound - 1) return t('results.stage.semi');
+    return t('results.stage.round', { n: m.round });
+  };
 
   return (
     <Box data-testid="tournament-results" sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
