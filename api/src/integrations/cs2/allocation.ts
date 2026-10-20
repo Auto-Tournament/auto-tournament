@@ -28,7 +28,7 @@ import type { ServerStatus } from './services/serverStatusService';
 import { serverAllocationTracker } from './services/serverAllocationTracker';
 import { serverTurnoverTracker } from './utils/serverTurnover';
 import { driverFor } from './driver';
-import { execOnFleetServer, fleetServerIsIdle } from './fleet/driver';
+import { execOnFleetServer, fleetServerIsIdle, serverIsSilent } from './fleet/driver';
 import { reserveCount } from './fleet/failoverSettings';
 import { pickReserved } from './fleet/failoverPlan';
 
@@ -84,20 +84,6 @@ export type ServerActionResult =
       serverId?: string;
     }
   | { ok: false; error: string; conflict?: boolean };
-
-/**
- * Servers that did not answer a match.assign, passed over until then: a
- * silent server is otherwise free, so every pass picked it first and a match
- * waited 12 h on it (t10-r1m4, 2026-10-19).
- */
-const SILENT_SKIP_MS = 5 * 60_000;
-const silentUntil = new Map<string, number>();
-
-/** After a load attempt: a server that did not answer is passed over for a while. */
-function noteAnswer(serverId: string, result: { success: boolean; noAnswer?: boolean }): void {
-  if (result.noAnswer) silentUntil.set(serverId, Date.now() + SILENT_SKIP_MS);
-  else if (result.success) silentUntil.delete(serverId);
-}
 
 export class Cs2ServerPool {
   // How long callers that schedule a delayed allocation pass (shuffle round
@@ -425,7 +411,7 @@ export class Cs2ServerPool {
     for (const server of servers) {
       if (this.allocatingServers.has(server.id) || serverAllocationTracker.isBusy(server.id))
         continue;
-      if ((silentUntil.get(server.id) ?? 0) > Date.now()) {
+      if (serverIsSilent(server.id)) {
         log.debug(
           `Fleet server ${server.id} (${server.name}) skipped: it did not answer a match.assign`
         );
@@ -539,7 +525,6 @@ export class Cs2ServerPool {
 
       // Assign the match to the server (Ready Up validates the config)
       const loadResult = await driver.loadMatch(matchSlug, server.id);
-      noteAnswer(server.id, loadResult);
 
       if (loadResult.success) {
         log.matchAllocated(matchSlug, server.id, server.name);
@@ -772,7 +757,6 @@ export class Cs2ServerPool {
       // Load match on server
       const driver = await driverFor(server.id);
       const loadResult = await driver.loadMatch(matchSlug, server.id);
-      noteAnswer(server.id, loadResult);
 
       if (loadResult.success) {
         log.matchAllocated(matchSlug, server.id, server.name);
