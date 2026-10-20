@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState, type ComponentRef } from 'react';
 import { Link as RouterLink, useParams } from 'react-router-dom';
-import { Box, ButtonBase, CircularProgress, Container } from '@mui/material';
+import { Box, ButtonBase, CircularProgress, Container, Link } from '@mui/material';
 import { HeartIcon } from '@phosphor-icons/react';
 import {
   api,
+  fmtDate,
   fontDisplay,
   links,
   mono,
@@ -88,6 +89,13 @@ function inReelOrder(players: RelatedPlayer[], chapters: Chapter[]): RelatedPlay
     .sort((a, b) => first.get(a.playerId)! - first.get(b.playerId)!);
 }
 
+/** A match's tournament as the title line links it; null for a match outside one. */
+function tournamentOf(match: MatchRef): Watchable['tournament'] {
+  return match.tournamentId !== null && match.tournament
+    ? { id: match.tournamentId, name: match.tournament, at: null }
+    : null;
+}
+
 /** What one watch page shows, whatever kind of video it is. */
 interface Watchable {
   video: string;
@@ -105,6 +113,8 @@ interface Watchable {
   crowd: string | null;
   /** A clip's player, shown beside its title (the clip has no caption card). */
   player?: { id: string; name: string; avatarUrl: string | null };
+  /** The tournament it is from, linked in the title line; `at` when it was played (epoch s). */
+  tournament?: { id: number; name: string; at: number | null } | null;
 }
 
 const pill = {
@@ -273,7 +283,8 @@ export function WatchPage() {
               name: reel.playerName,
               map: mapLabel(t, reel.map, reel.mapNumber),
             }),
-            sub: [teamsLabel(reel.match), reel.match.tournament].filter(Boolean).join(' · '),
+            sub: teamsLabel(reel.match),
+            tournament: tournamentOf(reel.match),
             markers: null,
             chapters: reel.chapters,
             match: reel.match,
@@ -301,7 +312,8 @@ export function WatchPage() {
           done({
             video: reel.video,
             title: t('highlights.watch.matchReel', { map: mapLabel(t, reel.map, reel.mapNumber) }),
-            sub: [teamsLabel(reel.match), reel.match.tournament].filter(Boolean).join(' · '),
+            sub: teamsLabel(reel.match),
+            tournament: tournamentOf(reel.match),
             markers: null,
             chapters: reel.chapters,
             match: reel.match,
@@ -328,7 +340,8 @@ export function WatchPage() {
           done({
             video: reel.video,
             title: t('highlights.watch.teamReel', { team: reel.team ?? '' }),
-            sub: [teamsLabel(reel.match), reel.match.tournament].filter(Boolean).join(' · '),
+            sub: teamsLabel(reel.match),
+            tournament: tournamentOf(reel.match),
             markers: null,
             chapters: reel.chapters,
             match: reel.match,
@@ -342,14 +355,20 @@ export function WatchPage() {
         .catch(fail);
     } else if (kind === 'tournament') {
       api
-        .get<{ reel: { video: string; crowd?: string | null; chapters: Chapter[] } }>(
-          `/api/game/cs2/watch/tournament/${enc(a ?? '')}`
-        )
+        .get<{
+          reel: {
+            video: string;
+            crowd?: string | null;
+            chapters: Chapter[];
+            tournament?: { id: number; name: string; at: number | null } | null;
+          };
+        }>(`/api/game/cs2/watch/tournament/${enc(a ?? '')}`)
         .then(({ reel }) =>
           done({
             video: reel.video,
             title: t('highlights.watch.tournamentReel'),
             sub: t('highlights.watch.plays', { count: reel.chapters.length }),
+            tournament: reel.tournament ?? null,
             markers: null,
             chapters: reel.chapters,
             match: null,
@@ -554,7 +573,24 @@ export function WatchPage() {
                 >
                   {w.title}
                 </Box>
-                <Box sx={{ fontSize: textSize.sm, color: tokens.color.muted }}>{w.sub}</Box>
+                <Box sx={{ fontSize: textSize.sm, color: tokens.color.muted }}>
+                  {w.tournament && (
+                    <>
+                      <Link
+                        component={RouterLink}
+                        to={links.tournament(w.tournament.id)}
+                        underline="hover"
+                        data-testid="watch-tournament"
+                        sx={{ color: tokens.color.ink2, fontWeight: 600 }}
+                      >
+                        {w.tournament.name}
+                      </Link>
+                      {w.tournament.at ? ` · ${fmtDate(w.tournament.at)}` : ''}
+                      {w.sub ? ' · ' : ''}
+                    </>
+                  )}
+                  {w.sub}
+                </Box>
               </Box>
             </Box>
             <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center' }}>
