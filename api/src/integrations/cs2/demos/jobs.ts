@@ -18,6 +18,7 @@ import { log } from '../../../utils/logger';
 import { atRating } from '../rating';
 import { pickMoments, saveMoments } from './highlights';
 import { emitTopic } from '../../../services/socketService';
+import { standInsFor } from './standIns';
 import type { MomentKill } from './moments';
 import type { JsonValue } from '../../../utils/json';
 
@@ -33,6 +34,8 @@ export interface DemoJob {
   mapNumber: number;
   /** The map's name as the platform knows it (de_mirage), for the worker. */
   mapName?: string | null;
+  /** A simulated match: SteamID64 -> the roster name its bot plays under (standIns.ts). */
+  standIns?: Record<string, string> | null;
 }
 
 /** The worker's per-player numbers (worker/stats.go `PlayerStats`). */
@@ -170,6 +173,7 @@ async function claimDemoJobNow(worker: string, analyzerVersion: number): Promise
         matchSlug: row.match_slug,
         mapNumber: Number(row.map_number),
         mapName: map?.map_name ?? null,
+        standIns: await standInsFor(row.match_slug),
       };
     }
     if (pass > 1) break;

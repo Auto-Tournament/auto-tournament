@@ -1,5 +1,6 @@
 import { recordingWaiting, recordingFailureSql, renewRecordingLeases } from './recorderLeases';
 import { recordingTargetFilter } from './recorderFleet';
+import { standInsFor } from './standIns';
 /**
  * Highlights: each player's best moments of a map, picked from its analysis
  * (./jobs.ts), and the clip the recorder (worker/, `at-worker record`) makes
@@ -652,6 +653,7 @@ export async function claimMapJob(
     // dressed clips.
     keepClean: (await settingsService.getSetting('highlights_keep_clean'))?.trim() !== '0',
     players,
+    standIns: await standInsFor(best.match_slug),
   };
 }
 
@@ -665,6 +667,8 @@ export interface MapRecordJob {
   /** Upload each clip's clean twin and overlay recipe too. */
   keepClean: boolean;
   players: RecordJob[];
+  /** A simulated match: SteamID64 -> the roster name its bot plays under (standIns.ts). */
+  standIns?: Record<string, string> | null;
 }
 
 /** One player's job: their moments on the map and everything their clips show. */

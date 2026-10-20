@@ -195,6 +195,16 @@ func reasonName(r events.RoundEndReason) string {
 	return "other"
 }
 
+// standIn gives each bot named as a roster player that player's SteamID64.
+func standIn(players []*common.Player, byName map[string]uint64) {
+	for _, pl := range players {
+		if sid, ok := byName[pl.Name]; ok && pl.IsBot {
+			pl.SteamID64 = sid
+			pl.IsBot = false
+		}
+	}
+}
+
 func human(p *common.Player) bool { return p != nil && !p.IsBot && p.SteamID64 > 76561197960265728 }
 
 // replayKey is a player's key on the 2D replay: their SteamID64, or
@@ -253,10 +263,23 @@ func eyes(p *common.Player) [3]float64 {
 
 // Analyze reads a whole demo. mapName is the platform's (the demo's header
 // is not always exposed by the parser).
-func Analyze(r io.Reader, mapName string) (*Analysis, *Replay, error) {
+// Analyze reads a demo. standIns (a simulated match: SteamID64 -> roster name)
+// makes each bot named as a roster player that player: Ready Up names the bot
+// it plays them with, and its kills, stats and moments are theirs.
+func Analyze(r io.Reader, mapName string, standIns map[string]string) (*Analysis, *Replay, error) {
 	p := dem.NewParser(r)
 	defer p.Close()
 	gs := p.GameState()
+	if len(standIns) > 0 {
+		byName := map[string]uint64{}
+		for sid, name := range standIns {
+			if n, err := strconv.ParseUint(sid, 10, 64); err == nil && name != "" {
+				byName[name] = n
+			}
+		}
+		// Registered first, so it runs before every other handler of each event.
+		p.RegisterEventHandler(func(any) { standIn(gs.Participants().All(), byName) })
+	}
 
 	var (
 		liveTick  int

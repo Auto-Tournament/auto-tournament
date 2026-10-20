@@ -334,6 +334,8 @@ type mapJob struct {
 	MatchSlug string      `json:"matchSlug"`
 	MapNumber int         `json:"mapNumber"`
 	Players   []recordJob `json:"players"`
+	// A simulated match: SteamID64 -> the roster name its bot plays under.
+	StandIns map[string]string `json:"standIns"`
 	// Quality is the admin's video size and frame rate (older platforms: none).
 	Quality *videoQuality `json:"quality"`
 	// KeepClean: upload each clip's clean twin and overlay recipe too
@@ -1222,7 +1224,11 @@ func (r *recorder) recordMap(ctx context.Context, mj *mapJob) (kept, rejected, f
 	var rp *Replay // the demo's kills, read once for every player's kill feed
 	for i := range mj.Players {
 		p := &mj.Players[i]
-		name, err := demoName(demoPath, p.PlayerID)
+		// A simulated match: the bot that played them, under their roster name.
+		name, err := mj.StandIns[p.PlayerID], error(nil)
+		if name == "" {
+			name, err = demoName(demoPath, p.PlayerID)
+		}
 		if err == nil {
 			rememberAccount(name, p.PlayerID)
 		}
@@ -1239,7 +1245,7 @@ func (r *recorder) recordMap(ctx context.Context, mj *mapJob) (kept, rejected, f
 				rp = r.live.replay
 			}
 			if rp == nil {
-				rp = replayOf(demoPath, p.MapName)
+				rp = replayOf(demoPath, p.MapName, mj.StandIns)
 			}
 			look.replay, look.playerID = rp, p.PlayerID
 		}
@@ -1487,13 +1493,13 @@ func newRecorder(c *client) (*recorder, error) {
 
 // replayOf reads a demo's kills (the analyzer's replay) for the kill feed;
 // nil (CS2's feed is then used for nothing: the feed is just empty) on error.
-func replayOf(demoPath, mapName string) *Replay {
+func replayOf(demoPath, mapName string, standIns map[string]string) *Replay {
 	f, err := os.Open(demoPath)
 	if err != nil {
 		return nil
 	}
 	defer f.Close()
-	_, rp, err := Analyze(f, mapName)
+	_, rp, err := Analyze(f, mapName, standIns)
 	if err != nil {
 		log.Printf("no kill feed: reading the demo's kills: %v", err)
 		return nil
@@ -1743,7 +1749,7 @@ func recordDemo(args []string) error {
 	}
 	var replay *Replay
 	if r.icons != nil {
-		replay = replayOf(args[0], env("AT_MAP", ""))
+		replay = replayOf(args[0], env("AT_MAP", ""), nil)
 	}
 	var shots []shot
 	for player, p := range byPlayer {
@@ -1816,7 +1822,7 @@ func recordFile(args []string) error {
 		}
 	}
 	if r.icons != nil {
-		look.replay = replayOf(args[0], env("AT_MAP", ""))
+		look.replay = replayOf(args[0], env("AT_MAP", ""), nil)
 		look.playerID = args[1]
 		if look.replay != nil && strings.HasPrefix(args[1], "name:") {
 			for _, p := range look.replay.Players {
@@ -1963,7 +1969,7 @@ func markCheers(args []string) error {
 	if err := json.Unmarshal(b, &moments); err != nil {
 		return err
 	}
-	rp := replayOf(args[0], env("AT_MAP", ""))
+	rp := replayOf(args[0], env("AT_MAP", ""), nil)
 	for i, file := range args[3:] {
 		if i >= len(moments) {
 			break
