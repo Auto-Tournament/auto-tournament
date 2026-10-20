@@ -56,6 +56,9 @@ type client struct {
 	token      string
 	worker     string
 	http       *http.Client
+	// rejected: the platform refused this recorder's key (revoked, or never
+	// made there); it is not asked again until the recorder restarts.
+	rejected atomic.Bool
 }
 
 func env(key, fallback string) string {
@@ -329,7 +332,7 @@ func main() {
 			}
 		}
 		syncRadarsEvery6h(ctx, c, cs2Dir)
-		if err := runRecorder(ctx, c, time.Duration(poll)*time.Second); err != nil {
+		if err := runRecorder(ctx, platforms(c, os.Getenv("AT_PLATFORMS")), time.Duration(poll)*time.Second); err != nil {
 			log.Fatal(err)
 		}
 		return
@@ -354,6 +357,22 @@ func main() {
 			c.fail(context.Background(), j, err)
 		}
 	}
+}
+
+// platforms is home (AT_URL) and the other platforms this recorder records
+// for: AT_PLATFORMS, "url|key" entries split by commas. Each gives it work in
+// turn; a malformed entry is left out.
+func platforms(home *client, extra string) []*client {
+	out := []*client{home}
+	for _, entry := range strings.Split(extra, ",") {
+		base, key, ok := strings.Cut(strings.TrimSpace(entry), "|")
+		base = strings.TrimRight(strings.TrimSpace(base), "/")
+		if !ok || base == "" || strings.TrimSpace(key) == "" || base == home.base {
+			continue
+		}
+		out = append(out, &client{base: base, token: strings.TrimSpace(key), worker: home.worker, http: home.http})
+	}
+	return out
 }
 
 // syncRadarsEvery6h uploads the radars for the 2D replay from the game's own

@@ -46,7 +46,7 @@ func TestRecorderLink(t *testing.T) {
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	l := newRecorderLink(&client{base: srv.URL, token: "atr_test", worker: "spec-1"})
+	l := newRecorderLink(&client{base: srv.URL, token: "atr_test", worker: "spec-1"}, nil)
 	go l.run(ctx)
 
 	next := func() map[string]any {

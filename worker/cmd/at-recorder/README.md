@@ -72,7 +72,7 @@ established worker name. Each installation needs its own root/ID; do not clone t
 ## Fresh Ubuntu 24.04 NVIDIA host
 
 ```sh
-sudo ./at-recorder connect https://cs.sivert.io RECORDER_KEY
+sudo ./at-recorder connect https://at.example.com RECORDER_KEY
 sudo ./at-recorder setup --user YOUR_LINUX_USER
 ```
 
@@ -115,3 +115,22 @@ CI runs Linux tests. The installer synchronization test requires a repository
 checkout: embedded scripts must match `client/public/recorder/`. Installer tests
 exercise the command boundary; a fresh physical NVIDIA host still needs hardware
 verification. Existing-host adoption is verified separately on the NTLAN canary.
+
+## More than one platform
+
+A recorder can record for several AT platforms. The one it was connected to is
+home: it decides the recorder's image and updates. Add another with a key made
+on that platform's Recorders page:
+
+```bash
+sudo at-recorder link https://other.example.com OTHER_KEY
+sudo at-recorder restart
+```
+
+The recorder then asks each platform for work in turn, one job at a time, and
+each platform lists it as its own recorder. `sudo at-recorder unlink URL` stops
+recording for one.
+
+A platform that revokes the key is forgotten by itself: the recorder stops
+asking it. If that was home, the next platform becomes home; if it was the only
+one, the recorder stops and waits, unlinked, for `at-recorder connect`.

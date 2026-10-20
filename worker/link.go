@@ -53,8 +53,13 @@ type recorderLink struct {
 	kick    chan struct{}
 }
 
-func newRecorderLink(c *client) *recorderLink {
-	return &recorderLink{c: c, wake: make(chan struct{}, 1), kick: make(chan struct{}, 1)}
+// newRecorderLink makes the link to c's platform; links to several platforms
+// share wake, so a wake from any of them ends the wait for work.
+func newRecorderLink(c *client, wake chan struct{}) *recorderLink {
+	if wake == nil {
+		wake = make(chan struct{}, 1)
+	}
+	return &recorderLink{c: c, wake: wake, kick: make(chan struct{}, 1)}
 }
 
 // linkURL is the platform's link address: http(s) → ws(s).
@@ -80,7 +85,7 @@ func (l *recorderLink) Linked() bool {
 // drop, waiting longer each time (up to a minute).
 func (l *recorderLink) run(ctx context.Context) {
 	backoff := 2 * time.Second
-	for ctx.Err() == nil {
+	for ctx.Err() == nil && !l.c.rejected.Load() {
 		started := time.Now()
 		err := l.session(ctx)
 		if ctx.Err() != nil {

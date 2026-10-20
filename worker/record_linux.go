@@ -142,8 +142,13 @@ type liveGame struct {
 
 // liveKey is what a running CS2 must match to record a map job: the map,
 // the capture size and the refresh rate it was started with.
+// liveKey names the loaded map: platforms (AT_PLATFORMS) can each have a t1-r1m1.
 func (r *recorder) liveKey(slug string, mapNum int) string {
-	return fmt.Sprintf("%s/%d/%dx%d/%s", slug, mapNum, r.width, r.height, os.Getenv("AT_GAMESCOPE_HZ"))
+	base := ""
+	if r.client != nil {
+		base = r.client.base
+	}
+	return fmt.Sprintf("%s/%s/%d/%dx%d/%s", base, slug, mapNum, r.width, r.height, os.Getenv("AT_GAMESCOPE_HZ"))
 }
 
 // endLive closes the running CS2, if any, and drops its demo.
@@ -162,7 +167,8 @@ func (r *recorder) endLive() {
 
 // loadedMap is the map whose demo CS2 has loaded, for the claim; nil without one.
 func (r *recorder) loadedMap() map[string]any {
-	if r.live == nil || r.live.g == nil {
+	// Only to the platform whose map it is.
+	if r.live == nil || r.live.g == nil || r.live.key != r.liveKey(r.live.slug, r.live.mapNum) {
 		return nil
 	}
 	return map[string]any{"matchSlug": r.live.slug, "mapNumber": r.live.mapNum}
@@ -245,6 +251,10 @@ func (c *client) claimRecording(ctx context.Context, loaded map[string]any) (*ma
 		return nil, nil, nil, nil
 	}
 	if err := ok(res, "claim"); err != nil {
+		if res.StatusCode == http.StatusUnauthorized && strings.Contains(err.Error(), "recorder_key_rejected") {
+			c.rejected.Store(true)
+			log.Printf("%s rejected this recorder's key: not asking it for work again", c.base)
+		}
 		return nil, nil, nil, err
 	}
 	var body struct {
@@ -1508,22 +1518,36 @@ func replayOf(demoPath, mapName string, standIns map[string]string) *Replay {
 }
 
 // runRecorder is the record loop: one map's moments at a time, all players.
-func runRecorder(ctx context.Context, c *client, poll time.Duration) error {
+// With several platforms (AT_PLATFORMS) it asks each for work in turn and
+// runs a job against the platform it came from.
+func runRecorder(ctx context.Context, clients []*client, poll time.Duration) error {
+	c := clients[0]
 	r, err := newRecorder(c)
 	if err != nil {
 		return err
 	}
 	defer r.endLive()
-	// The live link (link.go): woken when there is work, progress out. With
-	// it up, the poll is only a fallback.
-	r.link = newRecorderLink(c)
-	go r.link.run(ctx)
+	// The live links (link.go), one per platform: woken when there is work,
+	// progress out. With one up, the poll is only a fallback.
+	wake := make(chan struct{}, 1)
+	links := make([]*recorderLink, len(clients))
+	for i, pc := range clients {
+		links[i] = newRecorderLink(pc, wake)
+		go links[i].run(ctx)
+	}
+	r.link = links[0]
+	next := 0
 	waitForWork := func() {
 		d := poll
-		if r.link.Linked() {
-			d = 2 * time.Minute
+		for _, l := range links {
+			if l.Linked() {
+				d = 2 * time.Minute
+			}
 		}
 		r.link.Wait(ctx, d)
+	}
+	if len(clients) > 1 {
+		log.Printf("recording for %d platforms, in turn", len(clients))
 	}
 	// Each job's log goes to the platform with its run report (runlog.go).
 	log.SetOutput(io.MultiWriter(os.Stderr, currentJobLog))
@@ -1562,7 +1586,9 @@ func runRecorder(ctx context.Context, c *client, poll time.Duration) error {
 				log.Printf("waiting for CS2 in %s (install it in Steam)", r.gameDir)
 				waitingForCS2 = true
 			}
-			c.hello(ctx, "CS2 is not installed yet")
+			for _, pc := range clients {
+				pc.hello(ctx, "CS2 is not installed yet")
+			}
 			select {
 			case <-ctx.Done():
 			case <-time.After(poll):
@@ -1577,10 +1603,25 @@ func runRecorder(ctx context.Context, c *client, poll time.Duration) error {
 		if idleFile != "" {
 			_ = os.Remove(idleFile)
 		}
-		j, reel, redress, err := c.claimRecording(ctx, r.loadedMap())
-		if err != nil {
-			log.Printf("cannot reach the platform: %v", err)
-			currentJobLog.take()
+		// Each platform in turn, from the one after the last that had work.
+		var j *mapJob
+		var reel *matchReelJob
+		var redress *redressJob
+		for i := range clients {
+			k := (next + i) % len(clients)
+			if clients[k].rejected.Load() {
+				continue
+			}
+			c, r.client, r.link = clients[k], clients[k], links[k]
+			j, reel, redress, err = c.claimRecording(ctx, r.loadedMap())
+			if err != nil {
+				log.Printf("cannot reach %s: %v", c.base, err)
+				currentJobLog.take()
+			}
+			if j != nil || reel != nil || redress != nil {
+				next = (k + 1) % len(clients)
+				break
+			}
 		}
 		if j != nil || reel != nil || redress != nil {
 			keep.hold()

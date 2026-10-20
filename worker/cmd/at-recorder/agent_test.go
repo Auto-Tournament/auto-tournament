@@ -410,3 +410,35 @@ func TestARejectedKeyForgetsThePlatformAndTheKey(t *testing.T) {
 		t.Fatalf("unlinked agent: %v %+v", err, again)
 	}
 }
+
+func TestLinkAnotherPlatformAndForgetOnlyTheOneThatRejects(t *testing.T) {
+	root := fixture(t)
+	a, err := newAgent(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	a.run = fakeDocker
+	ok := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		json.NewEncoder(w).Encode(map[string]string{"name": "original-host"})
+	}))
+	defer ok.Close()
+	if err = a.link(context.Background(), ok.URL, "test-key"); err != nil {
+		t.Fatal(err)
+	}
+	again, _ := newAgent(root)
+	if len(again.others) != 1 || again.others[0].base != ok.URL {
+		t.Fatalf("linked platform not saved: %+v", again.others)
+	}
+	// The home platform rejects the key: the other one becomes home, the container keeps running.
+	again.run = fakeDocker
+	if err = again.forget(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	b, _ := os.ReadFile(filepath.Join(root, "config/at-recorder.env"))
+	if !strings.Contains(string(b), "AT_URL="+ok.URL) || strings.Contains(string(b), "AT_PLATFORMS=") {
+		t.Fatalf("the other platform should be home now:\n%s", b)
+	}
+	if !strings.Contains(string(b), "AT_WORKER_NAME=original-host") {
+		t.Fatal("the name stays")
+	}
+}
