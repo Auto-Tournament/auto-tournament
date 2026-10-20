@@ -607,6 +607,8 @@
         "teamsPlanned": "{{count}} planned",
         "matches": "Matches",
         "matchesAfterSignUp": "After sign-up",
+        "duration": "Dura aprox.",
+        "durationValue": "{{hours}} h {{minutes}} min",
         "signUp": "Sign-up",
         "signUpOrganizer": "Picked by organiser",
         "signUpAfterCreate": "Opens after creating",
