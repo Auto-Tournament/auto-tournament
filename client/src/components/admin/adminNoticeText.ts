@@ -119,7 +119,9 @@ export function sortNotices(list: AdminNotice[]): AdminNotice[] {
 }
 
 /** A sorted list's open notices of one kind stack under the newest; resolved ones stand alone. */
-export function stackNotices(list: AdminNotice[]): Array<{ lead: AdminNotice; rest: AdminNotice[] }> {
+export function stackNotices(
+  list: AdminNotice[]
+): Array<{ lead: AdminNotice; rest: AdminNotice[] }> {
   const stacks: Array<{ lead: AdminNotice; rest: AdminNotice[] }> = [];
   const open = new Map<string, { lead: AdminNotice; rest: AdminNotice[] }>();
   for (const n of list) {
