@@ -48,6 +48,10 @@ import {
   isEventPageEmpty,
   restKeyOf,
 } from '../components/tournament/setup/tournamentForm';
+import {
+  tournamentChanges,
+  type ChangeItem,
+} from '../components/tournament/setup/tournamentChanges';
 import type { TournamentSetupContext } from '../integrations/types';
 import { getIntegration, useIntegration } from '../integrations/registry';
 import { useModuleState } from '../module-loader/useModuleState';
@@ -60,19 +64,11 @@ import { validateTeamCountForType } from '../utils/tournamentValidation';
 import { api } from '../utils/api';
 import { scopedSocket } from '../utils/sharedSocket';
 import { onSocketReconnect } from '../utils/socketResync';
-import { seriesLabel, typeLabel } from '../utils/tournamentSummary';
 import type { TournamentTemplate } from '../types/tournament.types';
 import type { ShuffleTournamentSettings } from '../components/tournament/ShuffleTournamentConfigStep';
 import type { EloCalculationTemplate } from '../types/elo.types';
 import { resetCurrentTournamentId } from '../hooks/useTournamentList';
 import type { Untrusted } from '../utils/untrusted';
-
-interface TournamentChange {
-  field: string;
-  label?: string;
-  oldValue?: string | string[];
-  newValue?: string | string[];
-}
 
 const Tournament: React.FC = () => {
   const navigate = useNavigate();
@@ -153,14 +149,7 @@ const Tournament: React.FC = () => {
   const StartPreflight = startSlot?.preflight?.view;
   const StartFailureView = startSlot?.failureView;
   const [showChangePreview, setShowChangePreview] = useState(false);
-  const [changes, setChanges] = useState<
-    Array<{
-      field: string;
-      label: string;
-      oldValue: string | string[];
-      newValue: string | string[];
-    }>
-  >([]);
+  const [changes, setChanges] = useState<ChangeItem[]>([]);
   const [bulkShuffleModalOpen, setBulkShuffleModalOpen] = useState(false);
 
   const [searchParams] = useSearchParams();
@@ -606,98 +595,16 @@ const Tournament: React.FC = () => {
 
     // Check for changes if editing
     if (tournament) {
-      const detectedChanges: TournamentChange[] = [];
-
-      if (name !== tournament.name) {
-        detectedChanges.push({
-          field: 'name',
-          label: t('tournament.review.summary.nameLabel'),
-          oldValue: tournament.name,
-          newValue: name,
-        });
-      }
-      if (type !== tournament.type) {
-        detectedChanges.push({
-          field: 'type',
-          label: t('tournament.review.summary.typeLabel'),
-          oldValue: typeLabel(t, tournament.type),
-          newValue: typeLabel(t, type),
-        });
-      }
-      if (type === 'double_elimination') {
-        // Not double elimination before: there was no grand final.
-        const oldMode =
-          tournament.type === 'double_elimination' ? grandFinalModeOf(tournament) : 'none';
-        if (grandFinalMode !== oldMode) {
-          detectedChanges.push({
-            field: 'grandFinalMode',
-            label: t('tournament.grandFinal.label'),
-            oldValue: t(`tournament.grandFinal.options.${oldMode}`),
-            newValue: t(`tournament.grandFinal.options.${grandFinalMode}`),
-          });
-        }
-      }
-      if (format !== tournament.format) {
-        detectedChanges.push({
-          field: 'format',
-          label: t('tournament.review.summary.formatLabel'),
-          oldValue: seriesLabel(tournament.format),
-          newValue: seriesLabel(format),
-        });
-      }
-      if (
-        JSON.stringify([...selectedTeams].sort()) !== JSON.stringify([...tournament.teamIds].sort())
-      ) {
-        const oldTeams = teams
-          .filter((tm) => tournament.teamIds.includes(tm.id))
-          .map((tm) => tm.name);
-        const newTeams = teams.filter((tm) => selectedTeams.includes(tm.id)).map((tm) => tm.name);
-        detectedChanges.push({
-          field: 'teamIds',
-          label: t('tournament.labels.teams'),
-          oldValue: oldTeams.length > 0 ? oldTeams : [],
-          newValue: newTeams.length > 0 ? newTeams : [],
-        });
-      }
-      // The game module's changes that ask for a confirmation (CS2: the map
-      // pool; its round rules have never asked).
-      for (const change of gameSettingsChanges(
+      const validChanges = tournamentChanges(
+        tournament,
+        form,
         savedForm?.gameSettings ?? {},
-        form.gameSettings,
+        teams,
         settingsCtx,
+        eloTemplateName,
         t
-      )) {
-        if (change.confirm === false) continue;
-        detectedChanges.push({
-          field: change.field,
-          label: change.label,
-          oldValue: change.oldValue,
-          newValue: change.newValue,
-        });
-      }
-      const savedElo = tournament.eloTemplateId || DEFAULT_ELO_TEMPLATE_ID;
-      if (eloTemplateId !== savedElo) {
-        detectedChanges.push({
-          field: 'eloTemplateId',
-          label: t('tournament.shuffleConfig.eloTemplateLabel'),
-          oldValue: eloTemplateName(savedElo),
-          newValue: eloTemplateName(eloTemplateId),
-        });
-      }
-
-      if (detectedChanges.length > 0) {
-        // Convert TournamentChange[] to ChangeItem[] format
-        const validChanges = detectedChanges
-          .filter(
-            (change) =>
-              change.oldValue !== undefined && change.newValue !== undefined && change.label
-          )
-          .map((change) => ({
-            field: change.field,
-            label: change.label!,
-            oldValue: change.oldValue!,
-            newValue: change.newValue!,
-          }));
+      );
+      if (validChanges.length > 0) {
         setChanges(validChanges);
         setShowChangePreview(true);
         return;
