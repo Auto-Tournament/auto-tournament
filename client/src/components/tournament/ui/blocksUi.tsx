@@ -3,7 +3,9 @@
  */
 import { SectionHead, panelPaddedSx } from '../../common/ui';
 import { type ReactNode } from 'react';
-import { Box, Dialog, Typography } from '@mui/material';
+import { Box, Dialog, Link, Typography } from '@mui/material';
+import { Link as RouterLink } from 'react-router-dom';
+import { teamProfilePath } from '../../../paths';
 import { getMapData, getMapDisplayName } from '../../../constants/maps';
 import { tokens, fontDisplay, mono, radii, textSize, withAlpha } from '../../../theme/tokens';
 import { type TeamLike, TeamLogo } from './teamUi';
@@ -345,7 +347,18 @@ export function ChampionHero({
                 overflowWrap: 'anywhere',
               }}
             >
-              {team.name}
+              {team.id ? (
+                <Link
+                  component={RouterLink}
+                  to={teamProfilePath(team.id)}
+                  underline="hover"
+                  sx={{ color: 'inherit' }}
+                >
+                  {team.name}
+                </Link>
+              ) : (
+                team.name
+              )}
             </Typography>
             {players && players.length > 0 && (
               <Typography sx={{ color: color.ink2 }}>{players.join(' · ')}</Typography>

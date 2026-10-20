@@ -23,7 +23,7 @@ import type {
 } from '../../../hooks/usePublicTournamentOverview';
 import { tournamentAwards, type AwardKey } from '../../../utils/tournamentAwards';
 import { getPlayerPageUrl } from '../../../utils/playerLinks';
-import { matchPagePath, tournamentTabPath } from '../../../paths';
+import { matchPagePath, teamProfilePath, tournamentTabPath } from '../../../paths';
 import { tokens, mono, radii } from '../../../theme/tokens';
 import { useInstalledIntegrations } from '../../../integrations/registry';
 import { fmtNum } from '../../../utils/number';
@@ -295,12 +295,18 @@ export function TournamentResults({
                 </Typography>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 0 }}>
                   <TeamLogo team={{ id: team.teamId, name: team.name, tag: team.tag }} size="sm" />
-                  <Typography
-                    component="span"
-                    sx={{ fontWeight: index < 2 ? 700 : 500, overflowWrap: 'anywhere' }}
+                  <Link
+                    component={RouterLink}
+                    to={teamProfilePath(team.teamId)}
+                    underline="hover"
+                    sx={{
+                      color: 'inherit',
+                      fontWeight: index < 2 ? 700 : 500,
+                      overflowWrap: 'anywhere',
+                    }}
                   >
                     {team.name}
-                  </Typography>
+                  </Link>
                 </Box>
               </Box>
             ))}
@@ -363,13 +369,23 @@ export function TournamentResults({
                       size={32}
                     />
                     <Box sx={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-                      <Typography sx={{ fontWeight: 700, overflowWrap: 'anywhere' }}>
+                      <Link
+                        component={RouterLink}
+                        to={getPlayerPageUrl(award.player.playerId)}
+                        underline="hover"
+                        sx={{ color: 'inherit', fontWeight: 700, overflowWrap: 'anywhere' }}
+                      >
                         {award.player.name}
-                      </Typography>
+                      </Link>
                       {award.player.team?.name && (
-                        <Typography sx={{ fontSize: '0.8125rem', color: color.muted }}>
+                        <Link
+                          component={RouterLink}
+                          to={teamProfilePath(award.player.team.id)}
+                          underline="hover"
+                          sx={{ fontSize: '0.8125rem', color: color.muted }}
+                        >
                           {award.player.team.name}
-                        </Typography>
+                        </Link>
                       )}
                     </Box>
                   </Box>
