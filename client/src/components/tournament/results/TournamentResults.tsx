@@ -1,3 +1,4 @@
+import { OpponentName } from '../../team/MatchRowLinks';
 import { useState, type ReactNode } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import { Box, Button, Link, TableSortLabel, Typography } from '@mui/material';
@@ -485,7 +486,7 @@ export function TournamentResults({
                               }}
                               size="sm"
                             />
-                            {player.team.name}
+                            <OpponentName id={player.team.id} name={player.team.name} />
                           </Box>
                         ) : (
                           ''

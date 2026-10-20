@@ -1,3 +1,5 @@
+import { RowCoverLink } from '../team/MatchRowLinks';
+import { manageMatchPath } from '../../paths';
 import React from 'react';
 import { Box, Typography } from '@mui/material';
 import { Row, RowList, SectionHead } from '../common/ui';
@@ -51,7 +53,12 @@ export const RecentLog: React.FC<RecentLogProps> = ({ events }) => {
       ) : (
         <RowList>
           {events.map((event) => (
-            <Row key={event.id} columns="auto minmax(0, 1fr)">
+            <Row
+              key={event.id}
+              columns="auto minmax(0, 1fr)"
+              sx={{ position: 'relative', '&:hover': { bgcolor: 'action.hover' } }}
+            >
+              <RowCoverLink to={manageMatchPath(event.slug)} label={event.title} />
               <KindDot color={tokens.color.muted} />
               <Box sx={{ minWidth: 0 }}>
                 <Typography variant="body1" fontWeight={600}>

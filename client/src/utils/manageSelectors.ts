@@ -149,6 +149,8 @@ export function computeNeedsYouItems(
 
 export interface RecentEvent {
   id: string;
+  /** The match it is about; its row opens the match. */
+  slug: string;
   title: string;
   detail: string;
   timestamp: number;
@@ -181,6 +183,7 @@ export function computeRecentEvents(matches: Match[], limit = 8): RecentEvent[] 
       const loserScore = winnerIsTeam1 ? result.team2Score : result.team1Score;
       events.push({
         id: `map-${match.slug}-${result.mapNumber}`,
+        slug: match.slug,
         title: i18n.t('managePage.recent.mapResult', {
           winner: winnerName,
           map: result.mapNumber + 1,
@@ -197,6 +200,7 @@ export function computeRecentEvents(matches: Match[], limit = 8): RecentEvent[] 
       const loserName = match.winner.id === match.team1?.id ? t2 : t1;
       events.push({
         id: `series-${match.slug}`,
+        slug: match.slug,
         title: i18n.t('managePage.recent.seriesEnd', {
           winner: winnerName,
           loser: loserName,

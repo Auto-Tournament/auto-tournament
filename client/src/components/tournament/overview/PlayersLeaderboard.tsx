@@ -4,6 +4,7 @@
  * with search and a CSV or JSON export. On a phone the team name, change,
  * K / D and win rate drop out; the avatar and the team logo stay.
  */
+import { OpponentName } from '../../team/MatchRowLinks';
 import { useEffect, useMemo, useState, type ChangeEvent } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import { Box, Button, Menu, MenuItem, Typography } from '@mui/material';
@@ -269,7 +270,7 @@ export function PlayersLeaderboard({
                           component="span"
                           sx={{ color: color.ink2, display: { xs: 'none', sm: 'inline' } }}
                         >
-                          {r.team.name}
+                          <OpponentName id={r.team.id} name={r.team.name} />
                         </Box>
                       </Box>
                     ) : (

@@ -11,6 +11,7 @@ import {
   api,
   fontDisplay,
   HighlightPlayer,
+  links,
   mono,
   radii,
   textSize,
@@ -402,7 +403,23 @@ export function MatchPublicPanel({ matchSlug, match }: MatchPublicPanelProps) {
                 >
                   <thead>
                     <tr>
-                      <th scope="col">{teamName(side)}</th>
+                      <th scope="col">
+                        {match[side]?.id ? (
+                          <Box
+                            component={RouterLink}
+                            to={links.team(match[side].id)}
+                            sx={{
+                              color: 'inherit',
+                              textDecoration: 'none',
+                              '&:hover': { textDecoration: 'underline' },
+                            }}
+                          >
+                            {teamName(side)}
+                          </Box>
+                        ) : (
+                          teamName(side)
+                        )}
+                      </th>
                       <th scope="col">K</th>
                       <th scope="col">D</th>
                       <Box component="th" scope="col" sx={opt}>
