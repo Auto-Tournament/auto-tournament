@@ -787,6 +787,12 @@
       "exitFullscreen": "Volledig scherm afsluiten",
       "shuffleNoVisual": "Shuffle-toernooien hebben geen visueel schema; gebruik de lijstweergave."
     },
+    "times": {
+      "toggle": "Tijden instellen",
+      "startsAt": "Begint om",
+      "clear": "Tijd van de ronde gebruiken",
+      "save": "Opslaan"
+    },
     "shuffleEmpty": {
       "title": "Geen schema voor shuffle-toernooien",
       "description": "Shuffle-toernooien gebruiken geen vast schema. Teams worden elke ronde opnieuw samengesteld op basis van spelers-ELO.",

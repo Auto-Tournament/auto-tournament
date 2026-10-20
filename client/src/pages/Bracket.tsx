@@ -1,4 +1,5 @@
 import { BracketPauseBar } from '../components/bracket/BracketPauseBar';
+import { MatchTimeDialog } from '../components/bracket/MatchTimeDialog';
 import { typeLabel } from '../utils/tournamentSummary';
 import { pageTitle } from '../utils/pageTitle';
 import { useState, useEffect, useRef, useCallback } from 'react';
@@ -14,6 +15,7 @@ import {
 } from '@mui/material';
 import {
   ArrowClockwiseIcon,
+  ClockIcon,
   CornersInIcon,
   CornersOutIcon,
   ListBulletsIcon,
@@ -70,6 +72,9 @@ export default function Bracket() {
     useResourceAvailability(integration);
 
   const [viewMode, setViewMode] = useState<'visual' | 'list'>('visual');
+  // "Set times": a click on a match sets its start time instead of opening it.
+  const [settingTimes, setSettingTimes] = useState(false);
+  const [timeFor, setTimeFor] = useState<Match | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [roundStatus, setRoundStatus] = useState<{
     roundNumber: number;
@@ -145,6 +150,7 @@ export default function Bracket() {
 
   // A match opens its match room, the page players and admins run it from.
   const handleMatchClick = (match: Match) => {
+    if (settingTimes && match.slug && match.status !== 'completed') return setTimeFor(match);
     if (!match.team1 || !match.team2 || !match.slug) return;
     navigate(manageMatchPath(match.slug, tournament?.id ?? null));
   };
@@ -356,6 +362,17 @@ export default function Bracket() {
         overflow: isFullscreen ? 'hidden' : 'visible',
       }}
     >
+      {timeFor && (
+        <MatchTimeDialog
+          match={timeFor}
+          title={`${getBracketRoundLabel(timeFor.round)} · ${timeFor.team1?.name ?? t('matchesPage.table.tbd')} vs ${timeFor.team2?.name ?? t('matchesPage.table.tbd')}`}
+          onClose={() => setTimeFor(null)}
+          onSaved={() => {
+            setTimeFor(null);
+            void loadBracket();
+          }}
+        />
+      )}
       {/* Header - hidden in fullscreen mode */}
       {!isFullscreen && (
         <>
@@ -399,6 +416,16 @@ export default function Bracket() {
                     },
                   ]}
                 />
+                <Button
+                  variant={settingTimes ? 'contained' : 'outlined'}
+                  startIcon={<ClockIcon />}
+                  onClick={() => setSettingTimes((on) => !on)}
+                  aria-pressed={settingTimes}
+                  size="small"
+                  data-testid="bracket-set-times"
+                >
+                  {t('bracket.times.toggle')}
+                </Button>
                 <Button
                   variant="outlined"
                   startIcon={<ArrowClockwiseIcon />}

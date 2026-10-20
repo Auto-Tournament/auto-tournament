@@ -787,6 +787,12 @@
       "exitFullscreen": "Vollbild beenden",
       "shuffleNoVisual": "Shuffle-Turniere haben keinen grafischen Turnierbaum; nutze stattdessen die Listenansicht."
     },
+    "times": {
+      "toggle": "Zeiten festlegen",
+      "startsAt": "Beginnt um",
+      "clear": "Zeit der Runde verwenden",
+      "save": "Speichern"
+    },
     "shuffleEmpty": {
       "title": "Kein Turnierbaum für Shuffle-Turniere",
       "description": "Shuffle-Turniere haben keinen festen Turnierbaum. Teams werden jede Runde anhand der Spieler-ELO neu gemischt.",

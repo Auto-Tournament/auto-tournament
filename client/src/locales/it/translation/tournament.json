@@ -787,6 +787,12 @@
       "exitFullscreen": "Esci da schermo intero",
       "shuffleNoVisual": "I tornei shuffle non hanno un tabellone grafico; usa la vista elenco."
     },
+    "times": {
+      "toggle": "Imposta orari",
+      "startsAt": "Inizia alle",
+      "clear": "Usa l’orario del turno",
+      "save": "Salva"
+    },
     "shuffleEmpty": {
       "title": "Nessun tabellone per i tornei shuffle",
       "description": "I tornei shuffle non usano un tabellone fisso. Le squadre vengono rimescolate ogni round in base all'ELO dei giocatori.",

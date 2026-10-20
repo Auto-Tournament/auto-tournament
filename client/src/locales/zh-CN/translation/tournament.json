@@ -787,6 +787,12 @@
       "exitFullscreen": "退出全屏",
       "shuffleNoVisual": "随机组队赛事没有图形对阵图，请使用列表视图。"
     },
+    "times": {
+      "toggle": "设置时间",
+      "startsAt": "开始时间",
+      "clear": "使用本轮时间",
+      "save": "保存"
+    },
     "shuffleEmpty": {
       "title": "随机组队赛事没有对阵图",
       "description": "随机组队赛事不使用固定对阵图。每轮会根据玩家 ELO 重新分队。",
