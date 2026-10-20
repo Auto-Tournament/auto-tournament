@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Box, Button, MenuItem, TextField, Typography } from '@mui/material';
+import { Box, Button, CircularProgress, MenuItem, TextField, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { api, apiErrorMessage } from '../../utils/api';
 import { useSnackbar } from '../../contexts/SnackbarContext';
@@ -22,6 +22,7 @@ interface BotStatus {
   announceChannelId?: string | null;
   teamChannels?: boolean;
   inviteUrl?: string | null;
+  stale?: boolean;
   setup?: SetupState | null;
 }
 
@@ -40,7 +41,10 @@ export function DiscordBotPage() {
 
   const load = useCallback(async () => {
     try {
-      setStatus(await api.get<BotStatus>('/api/addons/discord'));
+      const next = await api.get<BotStatus>('/api/addons/discord');
+      setStatus(next);
+      // Shown from the stored snapshot while the server reads Discord again: fetch it once more.
+      if (next.stale) setTimeout(() => void load(), 3000);
     } catch {
       setStatus({ set: false, name: null });
     }
@@ -138,6 +142,18 @@ export function DiscordBotPage() {
       setBusy(false);
     }
   };
+
+  // Only before the very first answer: after that the page shows the stored snapshot at once.
+  if (!status) {
+    return (
+      <Box
+        sx={{ display: 'flex', justifyContent: 'center', py: 6 }}
+        data-testid="discord-bot-loading"
+      >
+        <CircularProgress size={28} />
+      </Box>
+    );
+  }
 
   return (
     <Box data-testid="discord-bot">
