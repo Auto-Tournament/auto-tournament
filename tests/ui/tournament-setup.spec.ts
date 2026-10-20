@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import { setupTestContext } from '../helpers/setup';
-import { getAuthHeader } from '../helpers/auth';
+import { deleteAllTournaments } from '../helpers/tournaments';
 
 /**
  * Tournament setup flow: step navigation and the live summary.
@@ -19,7 +19,7 @@ test.describe.serial('Tournament setup flow', () => {
   test.beforeEach(async ({ page, request }) => {
     await setupTestContext(page, request);
     // The setup opens for a new tournament only when none exists.
-    await request.delete('/api/tournament', { headers: getAuthHeader() });
+    await deleteAllTournaments(request);
   });
 
   test(

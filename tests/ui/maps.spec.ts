@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { setupTestContext } from '../helpers/setup';
 import { getAuthHeader } from '../helpers/auth';
+import { deleteAllTournaments } from '../helpers/tournaments';
 
 /**
  * Maps UI tests
@@ -185,7 +186,7 @@ test.describe.serial('Tournament Map Pool Selection', () => {
     await setupTestContext(page, request);
     // The map-pool step lives inside the creation flow, which only opens when
     // no tournament exists yet.
-    await request.delete('/api/tournament', { headers: getAuthHeader() });
+    await deleteAllTournaments(request);
   });
 
   test(
