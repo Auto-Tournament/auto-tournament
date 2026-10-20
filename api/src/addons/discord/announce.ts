@@ -41,6 +41,7 @@ interface MatchState {
   round: number | null;
   next_match_id: number | null;
   config: string | null;
+  tournament_id: number | null;
   tournament: string | null;
 }
 
@@ -99,7 +100,15 @@ async function topPlayer(slug: string) {
 
 /** What the winner plays next: "Round 3 vs Halcyon", "... opponent to be decided", or none. */
 async function nextFor(m: MatchState, winnerName: string): Promise<string | null> {
-  if (!m.next_match_id) return null;
+  if (!m.next_match_id) {
+    // The last match of a finished tournament: its winner won the tournament.
+    if (!m.tournament_id || !m.tournament) return null;
+    const open = await db.queryOneAsync<{ n: number }>(
+      "SELECT COUNT(*)::int AS n FROM matches WHERE tournament_id = ? AND status <> 'completed'",
+      [m.tournament_id]
+    );
+    return open?.n === 0 ? `${winnerName} win ${m.tournament}.` : null;
+  }
   const next = await db.queryOneAsync<{
     slug: string;
     round: number;
@@ -134,6 +143,8 @@ function formatOf(config: string | null): { format: string | null; maps: string[
 
 /** The live card's message, and what it last said, so a change edits it once. */
 const liveCards = new Map<string, string>();
+/** The live card's last score, to leave it as "Over on Nuke: A 13–7 B" when the match ends. */
+const liveLast = new Map<string, NonNullable<CardInput['live']>>();
 
 /** The teams' roles (team channels and roles), newest tournament first. */
 async function rolesOf(m: MatchState): Promise<{ team1: string | null; team2: string | null }> {
@@ -159,7 +170,7 @@ async function announceNow(slug: string): Promise<void> {
   if (!token) return;
   const state = await db.queryOneAsync<MatchState>(
     `SELECT m.status, m.completed_at, m.winner_id, m.team1_id, m.team2_id, m.round, m.next_match_id,
-            m.config, tr.name AS tournament
+            m.config, m.tournament_id, tr.name AS tournament
        FROM matches m LEFT JOIN tournament tr ON tr.id = m.tournament_id
       WHERE m.slug = ?`,
     [slug]
@@ -175,7 +186,8 @@ async function announceNow(slug: string): Promise<void> {
   );
   const todo = due.filter((e) => !sent.some((s) => s.event === e));
   const liveSent = sent.find((s) => s.event === 'live' && s.message_id);
-  if (!todo.length && !(state.status === 'live' && liveSent)) return;
+  const overDue = state.status === 'completed' && !!liveSent && liveLast.has(slug);
+  if (!todo.length && !(state.status === 'live' && liveSent) && !overDue) return;
   const match = await matchRow(slug);
   const team1 = match?.t1;
   const team2 = match?.t2;
@@ -201,7 +213,8 @@ async function announceNow(slug: string): Promise<void> {
           mapNumber: s.mapNumber,
           totalMaps: s.totalMaps,
           score: [s.team1Score, s.team2Score],
-          round: s.roundNumber,
+          // The round being played: the live stats' counter can stay 0 (simulated matches).
+          round: s.roundNumber || s.team1Score + s.team2Score + 1,
           series: [s.team1SeriesScore, s.team2SeriesScore],
         };
       }
@@ -219,20 +232,32 @@ async function announceNow(slug: string): Promise<void> {
     return base;
   };
   // The live card follows the score: edited when what it says changes.
+  const editLive = (body: ReturnType<typeof announceMessage>, messageId: string) =>
+    discordFetch(token, `/channels/${channelId}/messages/${messageId}`, {
+      method: 'PATCH',
+      // The embed and button only: an edit pings no one.
+      body: {
+        embeds: body.embeds,
+        components: body.components ?? [],
+        allowed_mentions: { parse: [] },
+      },
+    });
+  const last = liveLast.get(slug);
+  if (state.status === 'completed' && liveSent?.message_id && last) {
+    liveLast.delete(slug);
+    await editLive(
+      announceMessage({ ...(await card('live')), live: last, over: true }),
+      liveSent.message_id
+    );
+  }
   if (state.status === 'live' && liveSent?.message_id) {
-    const body = announceMessage(await card('live'));
+    const live = await card('live');
+    if (live.live) liveLast.set(slug, live.live);
+    const body = announceMessage(live);
     const text = JSON.stringify(body.embeds);
     if (liveCards.get(slug) !== text) {
       liveCards.set(slug, text);
-      await discordFetch(token, `/channels/${channelId}/messages/${liveSent.message_id}`, {
-        method: 'PATCH',
-        // The embed and button only: an edit pings no one.
-        body: {
-          embeds: body.embeds,
-          components: body.components ?? [],
-          allowed_mentions: { parse: [] },
-        },
-      });
+      await editLive(body, liveSent.message_id);
     }
   }
   if (state.status !== 'live') liveCards.delete(slug);

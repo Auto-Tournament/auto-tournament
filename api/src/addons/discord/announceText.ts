@@ -25,6 +25,8 @@ export interface CardInput {
   stage?: string | null;
   format?: string | null;
   maps?: string[];
+  /** The live card once the match is over: its last score, "Over on ...". */
+  over?: boolean;
   /** The map being played, for the live card (edited as it goes). */
   live?: {
     map: string | null;
@@ -58,7 +60,8 @@ export function headline(c: CardInput): string {
     ]
       .filter(Boolean)
       .join(', ');
-    return `Live${where ? ` on ${where}` : ''}: ${a} **${c.live.score[0]}–${c.live.score[1]}** ${b}`;
+    const word = c.over ? 'Over' : 'Live';
+    return `${word}${where ? ` on ${where}` : ''}: ${a} **${c.live.score[0]}–${c.live.score[1]}** ${b}`;
   }
   if (!c.result) return `${a} vs ${b} is over.`;
   const [w, l] = c.result.winner === 1 ? [a, b] : [b, a];
@@ -77,7 +80,7 @@ function fields(c: CardInput): Field[] {
     if (c.format) out.push({ name: 'Format', value: c.format, inline: true });
     if (c.maps?.length) out.push({ name: 'Maps', value: c.maps.join(', '), inline: true });
   }
-  if (c.event === 'live' && c.live) {
+  if (c.event === 'live' && c.live && !c.over) {
     out.push({ name: 'Round', value: String(c.live.round), inline: true });
     if (c.live.totalMaps > 1) {
       out.push({ name: 'Series', value: `${c.live.series[0]}–${c.live.series[1]}`, inline: true });
