@@ -6,6 +6,7 @@ import { db } from '../../config/database';
 import { decryptSecret, encryptSecret } from '../../utils/secretBox';
 import type { Untrusted } from '../../utils/untrusted';
 import { discordFetch, type DiscordAnswer } from './rest';
+import { isAddonRunning } from '../registry';
 
 const BOT_TOKEN_KEY = 'discord_bot_token';
 const GUILD_KEY = 'discord_guild_id';
@@ -19,9 +20,15 @@ export class ChannelError extends Error {
   }
 }
 
-export async function botToken(): Promise<string | null> {
+/** The stored bot token, whether the add-on is on or not. */
+export async function botTokenStored(): Promise<string | null> {
   const stored = await db.getAppSettingAsync(BOT_TOKEN_KEY).catch(() => null);
   return decryptSecret(stored);
+}
+
+/** The bot token, while the Discord add-on is on; null while it is off. */
+export async function botToken(): Promise<string | null> {
+  return isAddonRunning('discord') ? botTokenStored() : null;
 }
 
 export const discordBot = {

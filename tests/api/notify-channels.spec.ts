@@ -48,23 +48,24 @@ test(
       expect((await put({ event: 'veto_turn', channel: 'sms', on: true })).status()).toBe(400);
       expect((await put({ event: 'veto_turn', channel: 'email', on: 'yes' })).status()).toBe(400);
 
-      // The bot: admins only; a bad token is refused; clearing works.
-      expect([401, 403]).toContain((await player.get('/api/settings/discord-bot')).status());
+      // The bot (the Discord add-on): admins only; a bad token is refused; clearing works.
       expect(await signInViaRequest(request)).toBe(true);
-      const status = await (await request.get('/api/settings/discord-bot')).json();
+      await request.put('/api/addons/discord', { data: { enabled: true } });
+      expect([401, 403]).toContain((await player.get('/api/addons/discord')).status());
+      const status = await (await request.get('/api/addons/discord')).json();
       expect(status).toMatchObject({ success: true });
       expect(JSON.stringify(status)).not.toMatch(/token/i);
-      const bad = await request.put('/api/settings/discord-bot', {
+      const bad = await request.put('/api/addons/discord/token', {
         data: { token: 'not-a-token' },
       });
       expect([400, 502]).toContain(bad.status());
       // The bot's Discord server: only one the bot is in; null clears it.
       expect(Array.isArray(status.guilds)).toBe(true);
-      const notIn = await request.put('/api/settings/discord-bot/guild', {
+      const notIn = await request.put('/api/addons/discord/guild', {
         data: { guildId: '123456789012345678' },
       });
       expect(notIn.status()).toBe(400);
-      const cleared = await request.put('/api/settings/discord-bot/guild', {
+      const cleared = await request.put('/api/addons/discord/guild', {
         data: { guildId: null },
       });
       expect((await cleared.json()).guildId).toBeNull();
@@ -73,7 +74,7 @@ test(
         baseURL: process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3069',
       });
       try {
-        const viaToken = await bare.put('/api/settings/discord-bot', {
+        const viaToken = await bare.put('/api/addons/discord/token', {
           headers: getAuthHeader(),
           data: { token: null },
         });

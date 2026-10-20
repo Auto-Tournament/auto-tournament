@@ -4,8 +4,8 @@ import { useTranslation } from 'react-i18next';
 import { api, apiErrorMessage } from '../../utils/api';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 import { tokens, radii } from '../../theme/tokens';
-import { SettingsCardHead } from './SettingsRow';
-import { ExternalLink } from '../common/ExternalLink';
+
+import { ExternalLink } from '../../components/common/ExternalLink';
 
 const { color } = tokens;
 
@@ -17,12 +17,12 @@ interface BotStatus {
 }
 
 /**
- * Settings → Integrations, "Discord bot": the bot that sends players their
- * Discord DMs (Account → Notifications), and the Discord server it works in.
- * Its token is checked with Discord and stored encrypted; it is never shown
- * again.
+ * Modules → Discord bot (the Discord add-on's page): the bot that sends
+ * players their Discord DMs (Account → Notifications), and the Discord server
+ * it works in. Its token is checked with Discord and stored encrypted; it is
+ * never shown again.
  */
-export function DiscordBotCard() {
+export function DiscordBotPage() {
   const { t } = useTranslation();
   const { showError, showSuccess } = useSnackbar();
   const [status, setStatus] = useState<BotStatus | null>(null);
@@ -31,7 +31,7 @@ export function DiscordBotCard() {
 
   const load = useCallback(async () => {
     try {
-      setStatus(await api.get<BotStatus>('/api/settings/discord-bot'));
+      setStatus(await api.get<BotStatus>('/api/addons/discord'));
     } catch {
       setStatus({ set: false, name: null });
     }
@@ -44,7 +44,7 @@ export function DiscordBotCard() {
   const save = async (value: string | null) => {
     setBusy(true);
     try {
-      const r = await api.put<{ set: boolean; name: string | null }>('/api/settings/discord-bot', {
+      const r = await api.put<{ set: boolean; name: string | null }>('/api/addons/discord/token', {
         token: value,
       });
       setToken('');
@@ -60,7 +60,7 @@ export function DiscordBotCard() {
   const pickGuild = async (guildId: string) => {
     setBusy(true);
     try {
-      await api.put('/api/settings/discord-bot/guild', { guildId: guildId || null });
+      await api.put('/api/addons/discord/guild', { guildId: guildId || null });
       setStatus((prev) => (prev ? { ...prev, guildId: guildId || null } : prev));
       showSuccess(t('discordBot.guildSaved'));
     } catch (error) {
@@ -71,8 +71,10 @@ export function DiscordBotCard() {
   };
 
   return (
-    <Box data-testid="discord-bot" sx={{ mt: 4 }}>
-      <SettingsCardHead title={t('discordBot.title')} hint={t('discordBot.hint')} />
+    <Box data-testid="discord-bot">
+      <Typography sx={{ fontSize: '0.875rem', color: color.muted, mb: 2 }}>
+        {t('discordBot.hint')}
+      </Typography>
       {status?.set && (
         <Box
           sx={{

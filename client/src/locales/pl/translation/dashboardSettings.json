@@ -891,7 +891,9 @@
     "guildHint": "Where the bot makes team channels and posts. Only servers the bot is in show here.",
     "noGuilds": "The bot is not in any Discord server yet. Invite it, then reload this page.",
     "noGuild": "None",
-    "guildSaved": "Discord server saved"
+    "guildSaved": "Discord server saved",
+    "movedHint": "The Discord bot is an add-on now: turn it on and set it up under Modules.",
+    "open": "Open the Discord bot"
   },
   "liveMatchesPage": {
     "title": "Live matches",

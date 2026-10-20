@@ -68,7 +68,7 @@ export function SiteOverview() {
       optional: true,
       done: discordBotSet,
       labelKey: 'dashboard.setup.discordBot',
-      to: `${paths.settings}?section=webhooks`,
+      to: `${paths.modules}/discord`,
     },
   ];
   const loading = tournamentsLoading || dataLoading || moduleSetupLoading;
@@ -148,13 +148,13 @@ export function SiteOverview() {
   );
 }
 
-/** Whether a Discord bot token is set (Settings → Integrations); false until known. */
+/** Whether the Discord add-on is on with a bot token (Modules → Discord); false until known. */
 function useDiscordBotSet(): boolean {
   const [set, setSet] = useState(false);
   useEffect(() => {
     let live = true;
     api
-      .get<{ set: boolean }>('/api/settings/discord-bot')
+      .get<{ set: boolean }>('/api/addons/discord')
       .then((r) => live && setSet(Boolean(r.set)))
       .catch(() => undefined);
     return () => {
