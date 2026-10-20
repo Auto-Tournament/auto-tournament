@@ -1,5 +1,10 @@
 import { useEffect, useState } from 'react';
-import { api, useModuleTranslation, type HighlightVideo, type PlayerHighlightsFeed } from '../../../module-sdk';
+import {
+  api,
+  useModuleTranslation,
+  type HighlightVideo,
+  type PlayerHighlightsFeed,
+} from '../../../module-sdk';
 import {
   clock,
   mapLabel,
@@ -20,12 +25,16 @@ import { KindBadge } from '../highlights/KindBadge';
  */
 export function useCs2PlayerHighlights(playerId: string): PlayerHighlightsFeed | null | undefined {
   const { t } = useModuleTranslation('cs2');
-  const [loaded, setLoaded] = useState<{ playerId: string; data: PlayerHighlights | null } | null>(null);
+  const [loaded, setLoaded] = useState<{ playerId: string; data: PlayerHighlights | null } | null>(
+    null
+  );
 
   useEffect(() => {
     let cancelled = false;
     api
-      .get<{ success: boolean } & PlayerHighlights>(`/api/game/cs2/players/${encodeURIComponent(playerId)}/highlights`)
+      .get<{ success: boolean } & PlayerHighlights>(
+        `/api/game/cs2/players/${encodeURIComponent(playerId)}/highlights`
+      )
       .then((res) => {
         if (!cancelled) setLoaded({ playerId, data: res.success ? res : null });
       })
@@ -51,10 +60,15 @@ export function useCs2PlayerHighlights(playerId: string): PlayerHighlightsFeed |
     markers: c.markers,
     duration: c.markers?.duration,
     title: playTitle(c.title),
-    sub: [teamsLabel(c.match), mapLabel(t, c.map, c.mapNumber), t('highlights.roundN', { n: c.round }), c.markers ? clock(c.markers.duration) : null]
+    sub: [
+      teamsLabel(c.match),
+      mapLabel(t, c.map, c.mapNumber),
+      t('highlights.roundN', { n: c.round }),
+      c.markers ? clock(c.markers.duration) : null,
+    ]
       .filter(Boolean)
       .join(' · '),
-    badge: <KindBadge kind={c.kind} clutch={c.clutch} />,
+    badge: <KindBadge kind={c.kind} clutch={c.clutch} simulated={c.simulated} />,
   });
   const reel = data.reels[0] ?? null;
   return {
