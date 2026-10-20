@@ -220,16 +220,16 @@ function NewTournamentDetails({
     if (hasServers) {
       rows.push({
         key: 'servers',
-      label: t('tournament.labels.servers'),
-      value: t(
-        hasEnoughServers
-          ? 'tournament.wizard.serversSummary'
-          : 'tournament.wizard.serversSummaryQueued',
-        {
-          servers: t('tournament.counts.servers', { count: serverCount }),
-          matches: t('tournament.counts.concurrentMatches', { count: requiredServers }),
-        }
-      ),
+        label: t('tournament.labels.servers'),
+        value: t(
+          hasEnoughServers
+            ? 'tournament.wizard.serversSummary'
+            : 'tournament.wizard.serversSummaryQueued',
+          {
+            servers: t('tournament.counts.servers', { count: serverCount }),
+            matches: t('tournament.counts.concurrentMatches', { count: requiredServers }),
+          }
+        ),
         tone: hasEnoughServers ? undefined : 'warning',
       });
     }

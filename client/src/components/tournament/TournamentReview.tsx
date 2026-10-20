@@ -192,8 +192,8 @@ export const TournamentReview: React.FC<TournamentReviewProps> = ({
                 ? t('tournament.reviewCard.startingSimulation')
                 : t('tournament.reviewCard.starting')
               : simulationEnabled
-              ? t('tournament.reviewCard.startSimulation')
-              : t('tournament.reviewCard.start')}
+                ? t('tournament.reviewCard.startSimulation')
+                : t('tournament.reviewCard.start')}
           </Button>
 
           {isShuffle && onBulkCreateShuffleMatches && (
