@@ -94,7 +94,6 @@ export const MAX_LINES_TODO = [
   'client/src/components/tournament/results/TournamentResults.tsx',
   'client/src/components/tournament/setup/TournamentSetup.tsx',
   'client/src/components/tournament/signup/RegisteredPanel.tsx',
-  'client/src/components/tournament/signup/ShuffleJoin.tsx',
   'client/src/components/visualizations/BracketsViewerVisualization.tsx',
   'client/src/integrations/cs2/cs2.types.ts',
   'client/src/integrations/cs2/demos/DemoAnalysisPage.tsx',

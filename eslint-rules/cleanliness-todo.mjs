@@ -180,6 +180,7 @@ export const NESTED_TERNARY = [
   'client/src/components/tournament/signup/CheckInPanel.tsx',
   'client/src/components/tournament/signup/RegisteredPanel.tsx',
   'client/src/components/tournament/signup/ShuffleJoin.tsx',
+  'client/src/components/tournament/signup/ShuffleRoundParts.tsx',
   'client/src/components/tournament/ui/teamUi.tsx',
   'client/src/components/visualizations/BracketsViewerVisualization.tsx',
   'client/src/components/visualizations/SwissView.tsx',
