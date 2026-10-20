@@ -65,6 +65,7 @@ import experimentalRoutes from './experimental';
 import matchmakingRoutes from './matchmaking';
 import leaderboardRoutes from './leaderboard';
 import socialRoutes from './social';
+import addonRoutes from './addons';
 
 export interface MountedRouter {
   /** Path prefix the router is mounted under. */
@@ -178,6 +179,13 @@ const coreRoutes: MountedRouter[] = [
     title: 'Team directory',
     description:
       "Every team (public), and the signed-in player's own teams: list them, make one (one owned team per account).",
+  },
+  {
+    prefix: '/api/addons',
+    router: addonRoutes,
+    title: 'Add-ons',
+    description:
+      'Add-on modules (features beside the games, e.g. the Discord bot): on and off, and their own API under /api/addons/<id>/.',
   },
   {
     prefix: '/api/settings',
