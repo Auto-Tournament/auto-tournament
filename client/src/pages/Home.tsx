@@ -1,3 +1,4 @@
+import { isUpcoming } from '../utils/tournamentStatus';
 import { pageTitle } from '../utils/pageTitle';
 import { fmtDate, fmtDayTime } from '../utils/time';
 import React, { useEffect, useMemo, useState } from 'react';
@@ -34,8 +35,6 @@ interface ViewerTeam {
   name: string;
   tag?: string;
 }
-
-const isUpcoming = (tour: TournamentSummary) => tour.status === 'setup' || tour.status === 'ready';
 
 function SectionTitle({
   id,
@@ -177,7 +176,7 @@ export default function Home() {
   const upcoming = useMemo(
     () =>
       shown
-        .filter(isUpcoming)
+        .filter((tour) => isUpcoming(tour.status))
         .sort(
           (a, b) =>
             Number(b.featured) - Number(a.featured) ||

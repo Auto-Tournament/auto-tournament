@@ -1,3 +1,4 @@
+import { isStarted } from '../utils/tournamentStatus';
 import { DEFAULT_GROUPS, groupsFormOf } from '../components/tournament/setup/GroupsFields';
 import {
   DEFAULT_MATCH_TIMES,
@@ -1087,7 +1088,7 @@ const Tournament: React.FC = () => {
     // is already live/completed (e.g. started from another tab), just
     // return after the refresh instead of attempting to start again.
     await refreshData();
-    if (tournament && (tournament.status === 'in_progress' || tournament.status === 'completed')) {
+    if (tournament && isStarted(tournament.status)) {
       return;
     }
 
@@ -1185,8 +1186,7 @@ const Tournament: React.FC = () => {
     );
   }
 
-  const isLive =
-    !!tournament && (tournament.status === 'in_progress' || tournament.status === 'completed');
+  const isLive = !!tournament && isStarted(tournament.status);
   const draftDirty =
     name.trim().length > 0 || selectedTeams.length > 0 || furthestStep > 0 || activeStep > 0;
 
@@ -1371,7 +1371,7 @@ const Tournament: React.FC = () => {
       <TournamentChangePreviewModal
         open={showChangePreview}
         changes={changes}
-        isLive={tournament?.status === 'in_progress' || tournament?.status === 'completed'}
+        isLive={isStarted(tournament?.status)}
         onConfirm={saveChanges}
         onCancel={() => setShowChangePreview(false)}
       />

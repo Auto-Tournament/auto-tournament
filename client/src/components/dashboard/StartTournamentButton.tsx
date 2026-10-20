@@ -11,6 +11,7 @@
  * dialog below, which names only what is true for every game.
  */
 
+import { isStarted } from '../../utils/tournamentStatus';
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button, CircularProgress, Alert, Snackbar, Typography, Box } from '@mui/material';
@@ -68,7 +69,7 @@ export const StartTournamentButton: React.FC<StartTournamentButtonProps> = ({
     // If the tournament is already live/completed (e.g. started from another tab),
     // just navigate the user into the bracket instead of attempting to start again.
     await refreshData();
-    if (tournament && (tournament.status === 'in_progress' || tournament.status === 'completed')) {
+    if (tournament && isStarted(tournament.status)) {
       // Tournament is already live/completed – go straight to the management
       // screen instead of trying to start again.
       if (onSuccess) {

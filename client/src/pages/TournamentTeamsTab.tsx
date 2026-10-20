@@ -1,3 +1,4 @@
+import { isUpcoming } from '../utils/tournamentStatus';
 import { Link as RouterLink } from 'react-router-dom';
 import { Box, Button } from '@mui/material';
 import { useTranslation } from 'react-i18next';
@@ -89,7 +90,7 @@ export default function TournamentTeamsTab() {
     );
   }
 
-  const played = tournament.status !== 'setup' && tournament.status !== 'ready';
+  const played = !isUpcoming(tournament.status);
   return (
     <TeamCards
       tournamentId={tournament.id}
