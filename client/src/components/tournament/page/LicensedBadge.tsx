@@ -10,7 +10,7 @@ import { DraftDialog } from '../ui/draftUi';
 const { color } = tokens;
 
 /**
- * The license line at the bottom of the public event page, always shown:
+ * The license line at the bottom of every page (SiteFooter), always shown:
  * licensed for commercial use (a paid key) or non-profit use (a free key),
  * or "No license key" without a valid key (`GET /api/license/badge`). It
  * opens a short explainer: what that means, and what to do if you were asked
@@ -39,13 +39,7 @@ export function LicensedBadge() {
 
   if (!badge) return null;
 
-  const wrap = {
-    mt: 6,
-    display: 'flex',
-    justifyContent: 'center',
-    fontSize: textSize.sm,
-    color: color.muted,
-  };
+  const wrap = { display: 'flex', fontSize: textSize.sm, color: color.muted };
   const licensed = badge.use !== 'none' && !!badge.verifyUrl;
   return (
     <Box sx={wrap} data-testid="tournament-licensed-badge" data-use={licensed ? badge.use : 'none'}>
