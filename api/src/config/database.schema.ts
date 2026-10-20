@@ -1121,6 +1121,7 @@ export function getSchemaSQL(): string {
       match_slug TEXT NOT NULL,
       event TEXT NOT NULL, -- 'ready' | 'live' | 'result'
       sent_at INTEGER NOT NULL,
+      message_id TEXT, -- the live card is edited as the score moves
       PRIMARY KEY (match_slug, event)
     );
 

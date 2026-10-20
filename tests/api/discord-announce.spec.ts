@@ -1,9 +1,5 @@
 import { test, expect } from '@playwright/test';
-import {
-  announceMessage,
-  announceText,
-  dueEvents,
-} from '../../api/src/addons/discord/announceText';
+import { announceMessage, dueEvents, headline } from '../../api/src/addons/discord/announceText';
 
 /**
  * Match announcements: which posts a match is due, and what they say.
@@ -22,24 +18,75 @@ test.describe('Discord match announcements', () => {
     expect(dueEvents('cancelled', false)).toEqual([]);
   });
 
-  test('says who won, from the winner’s side', () => {
-    expect(announceText('ready', 'A', 'B', null, null)).toBe(
+  const base = { team1: 'A', team2: 'B', url: null, roles: { team1: null, team2: null } };
+
+  test('says who won, from the winner’s side; live shows the score', () => {
+    expect(headline({ ...base, event: 'ready' })).toBe(
       '**A** vs **B** is ready: the server is up.'
     );
-    expect(announceText('live', 'A', 'B', null, 'https://x/match/m')).toBe(
-      '**A** vs **B** is live. https://x/match/m'
-    );
-    expect(announceText('result', 'A', 'B', { winner: 1, score: [2, 1] }, null)).toBe(
+    expect(headline({ ...base, event: 'live' })).toBe('**A** vs **B** is live.');
+    expect(
+      headline({
+        ...base,
+        event: 'live',
+        live: {
+          map: 'Mirage',
+          mapNumber: 1,
+          totalMaps: 3,
+          score: [7, 5],
+          round: 13,
+          series: [1, 0],
+        },
+      })
+    ).toBe('Live on map 2 of 3, Mirage: **A** **7–5** **B**');
+    const result = (winner: 1 | 2, score: [number, number]) => ({ winner, score, maps: [] });
+    expect(headline({ ...base, event: 'result', result: result(1, [2, 1]) })).toBe(
       '**A** beat **B** 2–1.'
     );
-    expect(announceText('result', 'A', 'B', { winner: 2, score: [0, 2] }, null)).toBe(
+    expect(headline({ ...base, event: 'result', result: result(2, [0, 2]) })).toBe(
       '**B** beat **A** 2–0.'
     );
   });
 
+  test('ready shows format and maps; a result each map, the top player and what is next', () => {
+    const ready = announceMessage({
+      ...base,
+      event: 'ready',
+      tournament: 'Winter LAN',
+      stage: 'Round 2',
+      format: 'Bo3',
+      maps: ['Mirage', 'Inferno', 'Nuke'],
+    });
+    expect(ready.embeds[0].fields).toEqual([
+      { name: 'Format', value: 'Bo3', inline: true },
+      { name: 'Maps', value: 'Mirage, Inferno, Nuke', inline: true },
+    ]);
+    expect(ready.embeds[0].footer).toEqual({ text: 'Winter LAN · Round 2' });
+    const done = announceMessage({
+      ...base,
+      event: 'result',
+      result: {
+        winner: 1,
+        score: [2, 1],
+        maps: [
+          { map: 'Mirage', score: [13, 7] },
+          { map: 'Inferno', score: [9, 13] },
+          { map: 'Nuke', score: [13, 11] },
+        ],
+        top: { name: 'Ada', kills: 61, deaths: 40, adr: 97.6 },
+        next: 'A plays C next (Grand final).',
+      },
+    });
+    expect(done.embeds[0].fields).toEqual([
+      { name: 'Maps', value: 'Mirage 13–7\nInferno 9–13\nNuke 13–11', inline: true },
+      { name: 'Top player', value: 'Ada: 61–40, 98 ADR', inline: true },
+      { name: 'Next', value: 'A plays C next (Grand final).' },
+    ]);
+  });
+
   test('a card with a button; ready and live ping both teams, a result nobody', () => {
     const roles = { team1: '11', team2: '22' };
-    const live = announceMessage('live', 'A', 'B', null, 'https://x/match/m', roles);
+    const live = announceMessage({ ...base, event: 'live', url: 'https://x/match/m', roles });
     expect(live.content).toBe('<@&11> vs <@&22>');
     expect(live.allowed_mentions.roles).toEqual(['11', '22']);
     expect(live.embeds[0].title).toBe('A vs B');
@@ -47,13 +94,18 @@ test.describe('Discord match announcements', () => {
       label: 'Go to match',
       url: 'https://x/match/m',
     });
-    const result = announceMessage('result', 'A', 'B', { winner: 1, score: [2, 0] }, null, roles);
+    const result = announceMessage({
+      ...base,
+      event: 'result',
+      roles,
+      result: { winner: 1, score: [2, 0], maps: [] },
+    });
     expect(result.content).toBeUndefined();
     expect(result.allowed_mentions.roles).toEqual([]);
     expect(result.components).toBeUndefined();
     // No roles yet: no ping.
     expect(
-      announceMessage('ready', 'A', 'B', null, null, { team1: null, team2: '22' }).content
+      announceMessage({ ...base, event: 'ready', roles: { team1: null, team2: '22' } }).content
     ).toBeUndefined();
   });
 });
