@@ -264,8 +264,9 @@ jobs:
           cp THIRD_PARTY_NOTICES.md "$out/"
 
       # buildx's own image and node:20-alpine come from Docker Hub, whose anonymous pull limit the
-      # shared runners hit (429). Logged in when the secrets are there; a fork's
-      # pull request has none and pulls anonymously as before.
+      # shared runners hit (429). Logged in when the secrets are there, and the base image is
+      # then pulled from Docker Hub as that account: mirror.gcr.io is anonymous and 429s on the
+      # shared runners too (2026-10-20). A fork's pull request has no secrets and uses the mirror.
       - name: Login to Docker Hub (for the base images)
         if: ${{ env.DOCKERHUB_USER != '' }}
         continue-on-error: true
@@ -284,7 +285,7 @@ jobs:
           file: docker/Dockerfile
           build-args: |
             APP_BUILD=prebuilt
-            NODE_REGISTRY=mirror.gcr.io/library
+            NODE_REGISTRY=${{ env.DOCKERHUB_USER != '' && 'docker.io/library' || 'mirror.gcr.io/library' }}
           tags: ${{ env.MAT_IMAGE }}
           outputs: type=docker,dest=${{ runner.temp }}/mat-image.tar
           cache-from: type=gha,scope=e2e-image
