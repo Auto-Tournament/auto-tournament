@@ -891,7 +891,14 @@
     "guildHint": "Where the bot makes team channels and posts. Only servers the bot is in show here.",
     "noGuilds": "The bot is not in any Discord server yet. Invite it, then reload this page.",
     "noGuild": "None",
-    "guildSaved": "Discord server saved"
+    "guildSaved": "Discord server saved",
+    "voice": {
+      "label": "Team voice channels",
+      "help": "While a match is on its server, each team gets a private voice channel. Players already in voice are moved there; the rest get a link by DM. The channels go a few minutes after the match.",
+      "category": "Category",
+      "noCategory": "None (top of the server)",
+      "saved": "Voice channel settings saved"
+    }
   },
   "liveMatchesPage": {
     "title": "Live matches",
