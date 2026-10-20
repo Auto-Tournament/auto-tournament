@@ -1642,7 +1642,10 @@
     "breakAfterRound": "After round",
     "breakMinutes": "Break (min)",
     "breakRemove": "Remove",
-    "breakAdd": "Add a longer break"
+    "breakAdd": "Add a longer break",
+    "fillStart": "First round at",
+    "fillEvery": "Minutes between rounds",
+    "fillApply": "Fill in the rounds"
   },
   "groups": {
     "groupN": "Group {{letter}}",

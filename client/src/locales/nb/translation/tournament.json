@@ -1642,7 +1642,10 @@
     "breakAfterRound": "Etter runde",
     "breakMinutes": "Pause (min)",
     "breakRemove": "Fjern",
-    "breakAdd": "Legg til en lengre pause"
+    "breakAdd": "Legg til en lengre pause",
+    "fillStart": "Første runde kl.",
+    "fillEvery": "Minutter mellom rundene",
+    "fillApply": "Fyll inn rundene"
   },
   "groups": {
     "groupN": "Gruppe {{letter}}",

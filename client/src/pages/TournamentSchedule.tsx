@@ -15,6 +15,7 @@ import { PageHead } from '../components/common/ui';
 import { SegmentedControl } from '../components/tournament/setup/SegmentedControl';
 import { TeamLogo, panel } from '../components/tournament/ui/draftUi';
 import { getRoundLabel } from '../utils/matchUtils';
+import { stepTimes } from '../utils/roundTimes';
 import { pageTitle } from '../utils/pageTitle';
 import { fontDisplay, radii, tokens } from '../theme/tokens';
 import type { Untrusted } from '../utils/untrusted';
@@ -116,6 +117,9 @@ export default function TournamentSchedule() {
   const [roundTimes, setRoundTimes] = useState<Record<string, string>>({});
   const [ownTimes, setOwnTimes] = useState<Record<string, string>>({});
   const [open, setOpen] = useState<Record<number, boolean>>({});
+  // "First round at …, then every … minutes" (fills the round times below).
+  const [fillStart, setFillStart] = useState('12:00');
+  const [fillEvery, setFillEvery] = useState('60');
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -260,6 +264,45 @@ export default function TournamentSchedule() {
 
         {timesMode && (
           <>
+            {rounds.length > 1 && (
+              <Box
+                data-testid="schedule-fill"
+                sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 1.5 }}
+              >
+                <TextField
+                  size="small"
+                  type="time"
+                  label={t('schedulePage.fillStart')}
+                  value={fillStart}
+                  onChange={(e) => setFillStart(e.target.value)}
+                  inputProps={{ 'data-testid': 'schedule-fill-start' }}
+                  sx={{ width: 150 }}
+                />
+                <TextField
+                  size="small"
+                  type="number"
+                  label={t('schedulePage.fillEvery')}
+                  value={fillEvery}
+                  onChange={(e) => setFillEvery(e.target.value)}
+                  inputProps={{ min: 1, 'data-testid': 'schedule-fill-every' }}
+                  sx={{ width: 150 }}
+                />
+                <Button
+                  variant="outlined"
+                  data-testid="schedule-fill-apply"
+                  sx={{ borderRadius: radii.pill }}
+                  onClick={() => {
+                    const filled = stepTimes(fillStart, Number(fillEvery), rounds.length);
+                    setRoundTimes((prev) => ({
+                      ...prev,
+                      ...Object.fromEntries(filled.map((at, i) => [String(rounds[i]), at])),
+                    }));
+                  }}
+                >
+                  {t('schedulePage.fillApply')}
+                </Button>
+              </Box>
+            )}
             {rounds.length === 0 && (
               <Typography sx={{ color: color.muted }}>{t('schedulePage.noRounds')}</Typography>
             )}
