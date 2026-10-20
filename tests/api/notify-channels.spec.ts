@@ -58,6 +58,16 @@ test(
         data: { token: 'not-a-token' },
       });
       expect([400, 502]).toContain(bad.status());
+      // The bot's Discord server: only one the bot is in; null clears it.
+      expect(Array.isArray(status.guilds)).toBe(true);
+      const notIn = await request.put('/api/settings/discord-bot/guild', {
+        data: { guildId: '123456789012345678' },
+      });
+      expect(notIn.status()).toBe(400);
+      const cleared = await request.put('/api/settings/discord-bot/guild', {
+        data: { guildId: null },
+      });
+      expect((await cleared.json()).guildId).toBeNull();
       // An API token alone (no session) cannot set it.
       const bare = await playwright.request.newContext({
         baseURL: process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3069',

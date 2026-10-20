@@ -882,7 +882,12 @@
     "cleared": "Discord bot removed",
     "saveFailed": "Could not save the bot token.",
     "howTo": "Make an application, add a bot, copy its token, and invite it to your Discord server:",
-    "portal": "Discord Developer Portal"
+    "portal": "Discord Developer Portal",
+    "guild": "Discord server",
+    "guildHint": "Where the bot makes team channels and posts. Only servers the bot is in show here.",
+    "noGuilds": "The bot is not in any Discord server yet. Invite it, then reload this page.",
+    "noGuild": "None",
+    "guildSaved": "Discord server saved"
   },
   "liveMatchesPage": {
     "title": "Live matches",

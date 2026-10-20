@@ -15458,7 +15458,7 @@
         "tags": [
           "Settings"
         ],
-        "summary": "Whether a Discord bot token is set (for players' DMs), and the bot's name",
+        "summary": "Whether a Discord bot token is set, the bot's name, its Discord servers and the one in use",
         "security": [
           {
             "bearerAuth": []
@@ -15469,7 +15469,7 @@
         ],
         "responses": {
           "200": {
-            "description": "`set`, `name`"
+            "description": "`set`, `name`, `guilds` ({ id, name }[]), `guildId`"
           }
         }
       },
@@ -15509,6 +15509,49 @@
           },
           "400": {
             "description": "Discord refused the token"
+          },
+          "403": {
+            "description": "Called with an API token"
+          }
+        }
+      }
+    },
+    "/api/settings/discord-bot/guild": {
+      "put": {
+        "tags": [
+          "Settings"
+        ],
+        "summary": "Pick the Discord server the bot works in (one it is in); null clears it",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "guildId": {
+                    "type": "string",
+                    "nullable": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "`guildId`"
+          },
+          "400": {
+            "description": "The bot is not in that server"
           },
           "403": {
             "description": "Called with an API token"

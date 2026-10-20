@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Box, Button, TextField, Typography } from '@mui/material';
+import { Box, Button, MenuItem, TextField, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { api, apiErrorMessage } from '../../utils/api';
 import { useSnackbar } from '../../contexts/SnackbarContext';
@@ -9,21 +9,29 @@ import { ExternalLink } from '../common/ExternalLink';
 
 const { color } = tokens;
 
+interface BotStatus {
+  set: boolean;
+  name: string | null;
+  guilds?: Array<{ id: string; name: string }>;
+  guildId?: string | null;
+}
+
 /**
  * Settings → Integrations, "Discord bot": the bot that sends players their
- * Discord DMs (Account → Notifications). Its token is checked with Discord
- * and stored encrypted; it is never shown again.
+ * Discord DMs (Account → Notifications), and the Discord server it works in.
+ * Its token is checked with Discord and stored encrypted; it is never shown
+ * again.
  */
 export function DiscordBotCard() {
   const { t } = useTranslation();
   const { showError, showSuccess } = useSnackbar();
-  const [status, setStatus] = useState<{ set: boolean; name: string | null } | null>(null);
+  const [status, setStatus] = useState<BotStatus | null>(null);
   const [token, setToken] = useState('');
   const [busy, setBusy] = useState(false);
 
   const load = useCallback(async () => {
     try {
-      setStatus(await api.get<{ set: boolean; name: string | null }>('/api/settings/discord-bot'));
+      setStatus(await api.get<BotStatus>('/api/settings/discord-bot'));
     } catch {
       setStatus({ set: false, name: null });
     }
@@ -39,9 +47,22 @@ export function DiscordBotCard() {
       const r = await api.put<{ set: boolean; name: string | null }>('/api/settings/discord-bot', {
         token: value,
       });
-      setStatus(r);
       setToken('');
+      await load();
       showSuccess(r.set ? t('discordBot.saved', { name: r.name ?? '' }) : t('discordBot.cleared'));
+    } catch (error) {
+      showError(apiErrorMessage(error, t('discordBot.saveFailed')));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const pickGuild = async (guildId: string) => {
+    setBusy(true);
+    try {
+      await api.put('/api/settings/discord-bot/guild', { guildId: guildId || null });
+      setStatus((prev) => (prev ? { ...prev, guildId: guildId || null } : prev));
+      showSuccess(t('discordBot.guildSaved'));
     } catch (error) {
       showError(apiErrorMessage(error, t('discordBot.saveFailed')));
     } finally {
@@ -75,6 +96,26 @@ export function DiscordBotCard() {
             {t('discordBot.remove')}
           </Button>
         </Box>
+      )}
+      {status?.set && (
+        <TextField
+          select
+          size="small"
+          label={t('discordBot.guild')}
+          value={status.guildId ?? ''}
+          disabled={busy}
+          onChange={(e) => void pickGuild(e.target.value)}
+          helperText={status.guilds?.length ? t('discordBot.guildHint') : t('discordBot.noGuilds')}
+          inputProps={{ 'data-testid': 'discord-bot-guild' }}
+          sx={{ minWidth: 280, maxWidth: 420, mb: 2, display: 'flex' }}
+        >
+          <MenuItem value="">{t('discordBot.noGuild')}</MenuItem>
+          {(status.guilds ?? []).map((g) => (
+            <MenuItem key={g.id} value={g.id}>
+              {g.name}
+            </MenuItem>
+          ))}
+        </TextField>
       )}
       <Box
         component="form"

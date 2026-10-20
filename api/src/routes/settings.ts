@@ -103,10 +103,10 @@ router.get('/site-url', (_req: Request, res: Response) => {
  * /api/settings/discord-bot:
  *   get:
  *     tags: [Settings]
- *     summary: Whether a Discord bot token is set (for players' DMs), and the bot's name
+ *     summary: Whether a Discord bot token is set, the bot's name, its Discord servers and the one in use
  *     security: [{ BearerAuth: [] }]
  *     responses:
- *       200: { description: "`set`, `name`" }
+ *       200: { description: "`set`, `name`, `guilds` ({ id, name }[]), `guildId`" }
  *   put:
  *     tags: [Settings]
  *     summary: Set (checked with Discord, stored encrypted) or clear the bot token
@@ -125,7 +125,12 @@ router.get('/site-url', (_req: Request, res: Response) => {
 router.get('/discord-bot', async (_req: Request, res: Response) => {
   try {
     const { discordBot } = await import('../services/notifyChannels');
-    return res.json({ success: true, ...(await discordBot.status()) });
+    const status = await discordBot.status();
+    return res.json({
+      success: true,
+      ...status,
+      ...(status.set ? await discordBot.guilds() : { guilds: [], guildId: null }),
+    });
   } catch (error) {
     log.error('Reading the Discord bot failed', error as Error);
     return res.status(500).json({ success: false, error: 'Could not read the Discord bot' });
@@ -151,6 +156,45 @@ router.put('/discord-bot', async (req: Request, res: Response) => {
   } catch (error) {
     log.error('Setting the Discord bot failed', error as Error);
     return res.status(500).json({ success: false, error: 'Could not save the Discord bot' });
+  }
+});
+
+/**
+ * @openapi
+ * /api/settings/discord-bot/guild:
+ *   put:
+ *     tags: [Settings]
+ *     summary: Pick the Discord server the bot works in (one it is in); null clears it
+ *     security: [{ BearerAuth: [] }]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema: { type: object, properties: { guildId: { type: string, nullable: true } } }
+ *     responses:
+ *       200: { description: "`guildId`" }
+ *       400: { description: The bot is not in that server }
+ *       403: { description: Called with an API token }
+ */
+router.put('/discord-bot/guild', async (req: Request, res: Response) => {
+  if ((req as AuthedRequest).serviceToken) {
+    return res.status(403).json({ success: false, error: 'Only a signed-in admin can set it' });
+  }
+  try {
+    const { discordBot, ChannelError } = await import('../services/notifyChannels');
+    const raw = (req.body ?? {}).guildId;
+    try {
+      const guildId = await discordBot.setGuild(typeof raw === 'string' && raw ? raw : null);
+      return res.json({ success: true, guildId });
+    } catch (error) {
+      if (error instanceof ChannelError) {
+        return res.status(error.status).json({ success: false, error: error.message });
+      }
+      throw error;
+    }
+  } catch (error) {
+    log.error('Setting the Discord server failed', error as Error);
+    return res.status(500).json({ success: false, error: 'Could not save the Discord server' });
   }
 });
 
