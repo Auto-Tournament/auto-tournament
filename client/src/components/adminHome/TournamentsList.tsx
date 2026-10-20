@@ -135,8 +135,16 @@ export function TournamentsList({ tournaments, loading }: TournamentsListProps) 
                 />
                 <Box sx={{ minWidth: 0 }}>
                   <Box
-                    component="b"
-                    sx={{ display: 'block', fontWeight: 600, overflowWrap: 'anywhere' }}
+                    component={RouterLink}
+                    to={manageTournamentPath(tournament.id)}
+                    sx={{
+                      display: 'block',
+                      fontWeight: 600,
+                      overflowWrap: 'anywhere',
+                      color: 'inherit',
+                      textDecoration: 'none',
+                      '&:hover': { textDecoration: 'underline' },
+                    }}
                   >
                     {tournament.name}
                   </Box>
