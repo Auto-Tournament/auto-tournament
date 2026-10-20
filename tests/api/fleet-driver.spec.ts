@@ -878,6 +878,42 @@ test.describe.serial('Fleet driver: Ready Up servers play matches (M1)', () => {
     await request.post(`/api/matches/${slug}/force-cancel`, { headers: getAuthHeader() });
   });
 
+  test('a server that does not answer the assign is passed over, not picked every pass', async ({
+    request,
+  }) => {
+    // t10-r1m4 (2026-10-19): the only free server never answered; every 15 s
+    // pass assigned it there again, for 12 hours.
+    test.setTimeout(150_000);
+    const silent = await FakeReadyUp.enroll(request);
+    cleanup.push(() => silent.close());
+    await silent.hello();
+    await link(request, silent.serverId);
+    cleanup.push(() => unlink(request, silent.serverId));
+
+    const slug = `fleet-silent-${Date.now()}`;
+    await createMatch(request, slug);
+    cleanup.push(async () => {
+      await request.post(`/api/matches/${slug}/force-cancel`, { headers: getAuthHeader() });
+    });
+    // It gets the assign and never answers.
+    await silent.client.next(assignFor(slug), 30_000);
+    // Past the 15 s answer wait and two sweeps: no second assign there.
+    await new Promise((resolve) => setTimeout(resolve, 50_000));
+    expect(silent.client.received.filter(assignFor(slug))).toHaveLength(0);
+    expect((await matchRow(request, slug))?.serverId ?? null).toBeNull();
+
+    // Another server that answers takes it.
+    const other = await FakeReadyUp.enroll(request);
+    cleanup.push(() => other.close());
+    await other.hello();
+    const otherId = await link(request, other.serverId);
+    cleanup.push(() => unlink(request, other.serverId));
+    await acceptAssign(other, slug);
+    await expect
+      .poll(async () => (await matchRow(request, slug))?.serverId, { timeout: 30_000 })
+      .toBe(otherId);
+  });
+
   test('a manual match with no free server waits, and takes the server once it is available', async ({
     request,
   }) => {

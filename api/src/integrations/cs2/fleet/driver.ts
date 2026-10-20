@@ -339,6 +339,8 @@ export interface FleetLoadResult {
   error?: string;
   /** The server cannot take it (busy, draining, offline, no answer): try another one. */
   retryElsewhere?: boolean;
+  /** The server did not answer at all (allocation passes it over for a while). */
+  noAnswer?: boolean;
   epoch?: number;
   /** The `match.assign` envelope id. */
   commandId?: string;
@@ -541,6 +543,7 @@ export async function assignMatch(
       success: false,
       error: 'The Ready Up server did not answer the assignment in time',
       retryElsewhere: true,
+      noAnswer: true,
       epoch,
       commandId: sent.id,
     };

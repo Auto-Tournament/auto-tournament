@@ -40,8 +40,38 @@ async function sweep(): Promise<void> {
   }
 }
 
+/**
+ * At start: a ready match that still has a server was being handed to it
+ * when the platform stopped (the assign waits at most 15 s). Nothing finishes
+ * that hand-off, so the match sat on the server for good (t10-r1m4, 12 h
+ * after a deploy, 2026-10-19). Take it back; the sweep allocates it again.
+ */
+export async function releaseInterruptedAssigns(): Promise<number> {
+  const rows = await db.queryAsync<{ slug: string; server_id: string }>(
+    `SELECT slug, server_id FROM matches
+      WHERE status = 'ready' AND server_id IS NOT NULL AND server_id != ''`
+  );
+  if (rows.length === 0) return 0;
+  const { unassignMatch } = await import('./fleet/driver');
+  for (const row of rows) {
+    await unassignMatch(row.server_id, row.slug, 'cancelled').catch(() => undefined);
+    await db.runAsync("UPDATE matches SET server_id = NULL WHERE slug = ? AND status = 'ready'", [
+      row.slug,
+    ]);
+    log.warn(
+      `[ALLOCATION] ${row.slug}: its hand-off to ${row.server_id} was cut off by a restart; allocating it again`
+    );
+  }
+  return rows.length;
+}
+
 export function startWaitingSweep(): void {
   if (timer) return;
+  void releaseInterruptedAssigns().catch((error: unknown) =>
+    log.warn('[ALLOCATION] could not release interrupted assignments', {
+      error: (error as Error).message,
+    })
+  );
   timer = setInterval(() => void sweep(), SWEEP_MS);
   timer.unref?.();
 }
