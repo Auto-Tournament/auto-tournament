@@ -126,7 +126,9 @@ export async function announceVetoTurn(
       { event: 'veto_turn', matchSlug: slug, name, action, tournamentId: match.tournament_id },
       key
     );
-    await notifyChannels.deliver(players, 'veto_turn', key, {
+    // A DM, email or push once per team per veto, not one for every step (a team
+    // with three steps got three in a row). The bell keeps one per step.
+    await notifyChannels.deliver(players, 'veto_turn', `match:${slug}:veto:${side}`, {
       subject: `Your turn in the veto: ${name}`,
       text: `It is your team's turn to ${verb}.`,
       url: `/match/${encodeURIComponent(slug)}`,

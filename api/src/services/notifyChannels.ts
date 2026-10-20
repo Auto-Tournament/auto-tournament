@@ -22,6 +22,7 @@ import { db } from '../config/database';
 import { log } from '../utils/logger';
 import { emailService } from './emailService';
 import { webPush } from './webPush';
+import { presenceStatus } from './socketService';
 import { botToken, ChannelError, discordBot } from '../addons/discord/bot';
 import type { Untrusted } from '../utils/untrusted';
 
@@ -213,6 +214,9 @@ export const notifyChannels = {
           // A new tournament's email goes out with the sign-up email itself.
           if (event === 'new_tournament' && channel === 'email') continue;
           if (!prefs.events[event][channel] || !prefs.channels[channel].available) continue;
+          // Someone active on the site sees it there (the bell): a Discord DM is for
+          // when they are away or gone. Not claimed, so nothing is marked sent.
+          if (channel === 'discord' && presenceStatus(playerId) === 'online') continue;
           const claimed = await db.queryAsync<{ player_id: string }>(
             `INSERT INTO notify_deliveries (player_id, dedupe_key, channel, sent_at) VALUES (?, ?, ?, ?)
              ON CONFLICT (player_id, dedupe_key, channel) DO NOTHING RETURNING player_id`,
