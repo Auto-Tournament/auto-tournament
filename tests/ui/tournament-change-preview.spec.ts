@@ -28,7 +28,15 @@ test.describe.serial('Tournament change preview', () => {
           name: `Change preview ${Date.now()}`,
           type: 'single_elimination',
           format: 'bo1',
-          maps: ['de_ancient', 'de_anubis', 'de_dust2', 'de_inferno', 'de_mirage'],
+          maps: [
+            'de_ancient',
+            'de_anubis',
+            'de_dust2',
+            'de_inferno',
+            'de_mirage',
+            'de_nuke',
+            'de_vertigo',
+          ],
           teamIds: teams!.map((team) => team.id),
         })
       ).toBeTruthy();
