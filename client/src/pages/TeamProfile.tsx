@@ -130,13 +130,14 @@ export default function TeamProfile() {
         .get<{
           success: boolean;
           accountUid: string;
-          owned: { id: string } | null;
+          owned: Array<{ id: string }>;
           memberOf: Array<{ id: string; role: 'captain' | 'member' }>;
         }>('/api/team-directory/mine')
         .then((res) => {
           if (cancelled) return;
-          const role =
-            res.owned?.id === teamId ? 'owner' : res.memberOf.find((m) => m.id === teamId)?.role;
+          const role = res.owned.some((o) => o.id === teamId)
+            ? 'owner'
+            : res.memberOf.find((m) => m.id === teamId)?.role;
           setOwn(role ? { role, uid: res.accountUid } : null);
         })
         .catch(() => undefined);

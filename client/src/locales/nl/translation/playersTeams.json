@@ -547,7 +547,10 @@
     "bestMap": "Best: {{map}}",
     "new": "New",
     "lookingFor_one": "Looking for {{count}}",
-    "lookingFor_other": "Looking for {{count}}"
+    "lookingFor_other": "Looking for {{count}}",
+    "anotherTitle": "Make another team",
+    "anotherBody_one": "You can own {{max}} teams. One more fits.",
+    "anotherBody_other": "You can own {{max}} teams. {{count}} more fit."
   },
   "teamManage": {
     "title": "Manage your team",

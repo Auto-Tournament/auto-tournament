@@ -150,11 +150,12 @@ async function foldInto(
     'UPDATE team_join_requests SET account_uid = $2 WHERE account_uid = $1',
     [from.uid, to.uid]
   );
-  // One owned team per account: when the Steam player already owns one, the
-  // other team keeps no owner rather than breaking the unique index.
+  // The merged account's teams move over while it stays within MAX_OWNED_TEAMS (3);
+  // the rest keep no owner (an admin can hand them on).
+  // shortcut: the count is read once for the whole update, so merging two accounts that both own teams can leave the Steam player over 3; check per row if it ever matters.
   await run(
     'teams',
-    `UPDATE teams SET owner_uid = CASE WHEN EXISTS (SELECT 1 FROM teams o WHERE o.owner_uid = $2) THEN NULL ELSE $2::uuid END
+    `UPDATE teams SET owner_uid = CASE WHEN (SELECT COUNT(*) FROM teams o WHERE o.owner_uid = $2) >= 3 THEN NULL ELSE $2::uuid END
       WHERE owner_uid = $1`,
     [from.uid, to.uid]
   );

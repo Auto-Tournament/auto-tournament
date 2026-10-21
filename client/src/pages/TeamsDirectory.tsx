@@ -55,7 +55,9 @@ interface ReceivedInvite {
 }
 
 interface MyTeams {
-  owned: DirectoryTeam | null;
+  /** Up to `ownedMax` (3), oldest first. */
+  owned: DirectoryTeam[];
+  ownedMax: number;
   memberOf: Array<DirectoryTeam & { role: 'captain' | 'member' }>;
   invites: ReceivedInvite[];
 }
@@ -110,7 +112,12 @@ export default function TeamsDirectory() {
         .then((res) =>
           setMine(
             res.success
-              ? { owned: res.owned, memberOf: res.memberOf ?? [], invites: res.invites ?? [] }
+              ? {
+                  owned: res.owned ?? [],
+                  ownedMax: res.ownedMax ?? 3,
+                  memberOf: res.memberOf ?? [],
+                  invites: res.invites ?? [],
+                }
               : null
           )
         )
@@ -170,8 +177,9 @@ export default function TeamsDirectory() {
               mb: 4,
             }}
           >
-            {mine.owned ? (
+            {mine.owned.map((team) => (
               <Panel
+                key={team.id}
                 data-testid="teams-directory-owned"
                 sx={{
                   p: 2.5,
@@ -181,7 +189,7 @@ export default function TeamsDirectory() {
                   borderColor: color.accent,
                 }}
               >
-                <TeamLogo team={mine.owned} size={72} />
+                <TeamLogo team={team} size={72} />
                 <Box sx={{ flex: 1, minWidth: 0 }}>
                   <Typography
                     sx={{ fontFamily: fontMono, fontSize: textSize.xs, color: color.accent }}
@@ -189,28 +197,25 @@ export default function TeamsDirectory() {
                     {t('teamsDirectory.yourTeam')}
                   </Typography>
                   <Typography noWrap sx={{ fontWeight: 600, fontSize: textSize.xl }}>
-                    {mine.owned.name}
+                    {team.name}
                   </Typography>
                   <Typography sx={{ fontSize: textSize.sm, color: color.muted }}>
                     {[
-                      t('teamsDirectory.members', { count: mine.owned.memberCount }),
-                      mine.owned.pendingInvites
-                        ? t('teamsDirectory.invitesPending', { count: mine.owned.pendingInvites })
+                      t('teamsDirectory.members', { count: team.memberCount }),
+                      team.pendingInvites
+                        ? t('teamsDirectory.invitesPending', { count: team.pendingInvites })
                         : null,
                     ]
                       .filter(Boolean)
                       .join(' · ')}
                   </Typography>
                 </Box>
-                <Button
-                  component={RouterLink}
-                  to={teamProfilePath(mine.owned.id)}
-                  variant="outlined"
-                >
+                <Button component={RouterLink} to={teamProfilePath(team.id)} variant="outlined">
                   {t('teamsDirectory.open')}
                 </Button>
               </Panel>
-            ) : (
+            ))}
+            {mine.owned.length < mine.ownedMax && (
               <Panel
                 sx={{
                   p: 2.5,
@@ -222,10 +227,17 @@ export default function TeamsDirectory() {
               >
                 <Box sx={{ flex: 1, minWidth: 0 }}>
                   <Typography sx={{ fontWeight: 600 }}>
-                    {t('teamsDirectory.noTeamTitle')}
+                    {mine.owned.length
+                      ? t('teamsDirectory.anotherTitle')
+                      : t('teamsDirectory.noTeamTitle')}
                   </Typography>
                   <Typography sx={{ fontSize: textSize.sm, color: color.muted }}>
-                    {t('teamsDirectory.noTeamBody')}
+                    {mine.owned.length
+                      ? t('teamsDirectory.anotherBody', {
+                          count: mine.ownedMax - mine.owned.length,
+                          max: mine.ownedMax,
+                        })
+                      : t('teamsDirectory.noTeamBody')}
                   </Typography>
                 </Box>
                 <Button
