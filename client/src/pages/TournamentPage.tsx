@@ -13,6 +13,7 @@ import { TopNavBar } from '../components/layout/TopNavBar';
 import { TournamentPageHeader } from '../components/tournament/overview/TournamentPageHeader';
 import { ArchivedNotice } from '../components/tournament/page/ArchivedNotice';
 import { TournamentRunState } from '../components/tournament/page/TournamentRunState';
+import { LobbyCallButton } from '../addons/discord/LobbyCallButton';
 import type { TournamentPageContext } from '../components/tournament/page/tournamentPageContext';
 import { usePublicTournamentOverview } from '../hooks/usePublicTournamentOverview';
 import { useAuth } from '../contexts/AuthContext';
@@ -193,6 +194,10 @@ export default function TournamentPage() {
               isAdmin={isAuthenticated && !impersonation}
             />
           )}
+          {tab === 'overview' &&
+            tournament.status === 'in_progress' &&
+            isAuthenticated &&
+            !impersonation && <LobbyCallButton tournamentId={tournament.id} />}
           <Outlet context={context} />
         </Box>
       </Container>
