@@ -926,7 +926,18 @@
       "notThere": "missing",
       "fix": "Fix what is missing"
     },
-    "invite": "Invite to a server"
+    "invite": "Invite to a server",
+    "lobbyCall": {
+      "button": "Call to the Lobby",
+      "title": "Call the players to the Lobby",
+      "message": "Message (optional)",
+      "placeholder": "Everyone to the Lobby, please.",
+      "includeLive": "Also players in a live match",
+      "cancel": "Cancel",
+      "send": "Call them",
+      "done": "Moved {{moved}} into the Lobby, sent {{messaged}} a DM.",
+      "failed": "Could not call the players"
+    }
   },
   "liveMatchesPage": {
     "title": "Live matches",
