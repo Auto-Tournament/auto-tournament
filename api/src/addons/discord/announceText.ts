@@ -206,3 +206,12 @@ export function announceMessage(c: CardInput, ping: string | null = null) {
     allowed_mentions: { parse: [], roles: ping ? [ping] : [] },
   };
 }
+
+/** What the team's channel is told when the veto timer ran out on its turn (pure). */
+export function timeoutText(action: string, map: string | null, side: string | null): string {
+  if (action === 'side_pick') {
+    return `Time ran out in the veto, so a side was picked for you${side ? `: ${side}` : ''}${map ? ` on ${map}` : ''}.`;
+  }
+  const verb = action === 'pick' ? 'picked' : 'banned';
+  return `Time ran out in the veto, so ${map ?? 'a map'} was ${verb} for you.`;
+}

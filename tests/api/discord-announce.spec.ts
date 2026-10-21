@@ -1,5 +1,10 @@
 import { test, expect } from '@playwright/test';
-import { announceMessage, feedStage, headline } from '../../api/src/addons/discord/announceText';
+import {
+  announceMessage,
+  feedStage,
+  headline,
+  timeoutText,
+} from '../../api/src/addons/discord/announceText';
 
 /**
  * Match announcements: which posts a match is due, and what they say.
@@ -169,6 +174,18 @@ test.describe('Discord match announcements', () => {
     );
     expect(announceMessage({ ...base, event: 'result', roles }).embeds[0].title).toBe(
       'A vs B · Done'
+    );
+  });
+
+  test('a veto step taken because time ran out says what was taken', () => {
+    expect(timeoutText('ban', 'Nuke', null)).toBe(
+      'Time ran out in the veto, so Nuke was banned for you.'
+    );
+    expect(timeoutText('pick', 'Mirage', null)).toBe(
+      'Time ran out in the veto, so Mirage was picked for you.'
+    );
+    expect(timeoutText('side_pick', 'Mirage', 'CT')).toBe(
+      'Time ran out in the veto, so a side was picked for you: CT on Mirage.'
     );
   });
 });
