@@ -16,9 +16,8 @@ import (
 	"github.com/coder/websocket"
 )
 
-// CS:DM's plugin is a WebSocket client. A loopback-only, ephemeral server
-// lets the worker reload its JSON action file without the CSDM application,
-// database, or a publicly exposed control port.
+// The native plugin is a WebSocket client. A loopback-only, ephemeral server
+// lets the worker reload its JSON action file without a public control port.
 type nativeBridge struct {
 	server  *http.Server
 	port    string
@@ -45,7 +44,7 @@ func newNativeBridge() (*nativeBridge, error) {
 }
 
 func (b *nativeBridge) handlePluginConnection(w http.ResponseWriter, r *http.Request) {
-	// The plugin's easywsclient build can omit the query when its URL
+	// A plugin WebSocket client can omit the query when its URL
 	// has no slash before '?'. Both root handshakes are game clients on
 	// this dedicated loopback endpoint; other roles/paths are rejected.
 	role := r.URL.Query().Get("process")
@@ -112,7 +111,7 @@ func (b *nativeBridge) play(ctx context.Context, demo string) error {
 		select {
 		case <-changed:
 		case <-wait.Done():
-			return fmt.Errorf("CS:DM native plugin did not connect: %w", wait.Err())
+			return fmt.Errorf("native recorder plugin did not connect: %w", wait.Err())
 		}
 	}
 }
