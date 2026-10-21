@@ -591,7 +591,6 @@ export function MatchServerPanel({
           </Button>
         </Box>
 
-
         {copyFallbackCommand && (
           <Typography
             variant="caption"
