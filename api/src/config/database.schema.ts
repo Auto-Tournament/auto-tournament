@@ -1105,8 +1105,8 @@ export function getSchemaSQL(): string {
       PRIMARY KEY (player_id, dedupe_key, channel)
     );
 
-    -- The Discord bot's team voice channels for a match (services/discord/matchVoice.ts).
-    -- ended_at: when the match stopped being on a server; the channels go a little later.
+    -- Which sides of a match were moved into their team's voice channel (addons/discord/matchVoice.ts).
+    -- ended_at: when the match stopped being on a server.
     CREATE TABLE IF NOT EXISTS discord_match_channels (
       match_slug TEXT NOT NULL,
       side TEXT NOT NULL, -- 'team1' | 'team2'
@@ -1142,6 +1142,7 @@ export function getSchemaSQL(): string {
       team_id TEXT NOT NULL,
       channel_id TEXT NOT NULL,
       role_id TEXT, -- the team's role (its colour), given to its players on the server
+      voice_id TEXT, -- the team's voice channel; its players are moved in when a match is ready
       PRIMARY KEY (tournament_id, team_id)
     );
 

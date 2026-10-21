@@ -1,6 +1,6 @@
 /**
- * A team voice channel's name and who may use it (matchVoice.ts), kept apart
- * from the database so they can be checked on their own.
+ * Who may use the bot's channels (teamChannels.ts, tournamentSpace.ts), kept
+ * apart from the database so it can be checked on its own.
  */
 
 // Discord permission bits.
@@ -70,10 +70,4 @@ export function teamOverwrites(
       deny: '0',
     })),
   ];
-}
-
-/** "Granite · R4 M2": the team and the match, as Discord allows (1–100 characters). */
-export function voiceChannelName(team: string, round: number, matchNumber: number): string {
-  const name = `${team.trim() || 'Team'} · R${round} M${matchNumber}`;
-  return name.slice(0, 100);
 }

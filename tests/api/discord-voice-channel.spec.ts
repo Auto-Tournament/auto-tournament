@@ -1,13 +1,8 @@
 import { test, expect } from '@playwright/test';
-import {
-  TEXT_MEMBER,
-  teamOverwrites,
-  voiceChannelName,
-} from '../../api/src/addons/discord/voiceChannel';
+import { TEXT_MEMBER, teamOverwrites } from '../../api/src/addons/discord/voiceChannel';
 
 /**
- * A match's team voice channel: named after the team and the match, and only
- * that team (and the bot) can see or join it.
+ * A team's voice and text channels: only that team (and the bot) can see or join them.
  *
  * @tag api
  */
@@ -34,11 +29,5 @@ test.describe('Discord team voice channel', () => {
     const send = 1n << 11n;
     const player = teamOverwrites('guild', 'bot', ['p1'], TEXT_MEMBER).find((x) => x.id === 'p1');
     expect(BigInt(player?.allow ?? '0') & send).toBe(send);
-  });
-
-  test('named after the team and the match, at most 100 characters', () => {
-    expect(voiceChannelName('Granite', 4, 2)).toBe('Granite · R4 M2');
-    expect(voiceChannelName('  ', 1, 1)).toBe('Team · R1 M1');
-    expect(voiceChannelName('x'.repeat(150), 1, 1)).toHaveLength(100);
   });
 });

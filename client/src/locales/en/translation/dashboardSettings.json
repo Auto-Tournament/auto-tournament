@@ -891,7 +891,7 @@
     "open": "Open the Discord bot",
     "voice": {
       "label": "Team voice channels",
-      "help": "While a match is on its server, each team gets a private voice channel. Players already in voice are moved there; the rest get a link by DM. The channels go a few minutes after the match.",
+      "help": "While a match is on its server, its players already in voice are moved into their team's voice channel; the rest get a link by DM.",
       "category": "Category",
       "noCategory": "None (top of the server)",
       "saved": "Voice channel settings saved"
@@ -904,7 +904,7 @@
     },
     "teamChannels": {
       "label": "Team channels",
-      "help": "While a tournament runs, each team gets a private text channel. Its players find the link on their team page.",
+      "help": "While a tournament runs, each team gets a private text and voice channel under \"Your team\". Its players find the text channel on their team page.",
       "link": "Team channel on Discord"
     },
     "commands": {
