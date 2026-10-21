@@ -1161,5 +1161,11 @@
   },
   "siteFooter": {
     "trademarks": "Counter-Strike, CS2 og Steam er varemerker som tilhører Valve Corporation. Andre spillnavn er varemerker som tilhører eierne sine. Auto Tournament er ikke tilknyttet eller godkjent av Valve eller noen spillutgiver."
+  },
+  "discordNotice": {
+    "link": "Koble til Discord-kontoen din, så kan boten flytte deg inn i talekanalen til laget ditt og finne deg i lagkanalen.",
+    "linkAction": "Koble til Discord",
+    "join": "Bli med på Discord-serveren vår. Der finner du kanalene til laget ditt og kampkortene.",
+    "joinAction": "Bli med på serveren"
   }
 }
