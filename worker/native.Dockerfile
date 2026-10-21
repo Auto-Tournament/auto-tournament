@@ -13,5 +13,4 @@ RUN apt-get update && apt-get install -y --no-install-recommends ffmpeg \
     && rm -rf /var/lib/apt/lists/*
 COPY --from=build /at-worker /usr/local/bin/at-worker
 COPY LICENSE THIRD_PARTY_NOTICES.md /licenses/at-worker/
-COPY assets/native/LICENSE assets/native/README.md assets/native/THIRD_PARTY_NOTICES.md /licenses/at-worker/csdm/
 COPY assets/fonts/OFL-Geist.txt assets/fonts/OFL-Sora.txt /licenses/at-worker/fonts/

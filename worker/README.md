@@ -141,7 +141,10 @@ The platform does the same for every video at once (Highlights settings,
 
 ## Native frame export (Intel/AMD or slower hardware)
 
-`AT_CAPTURE_BACKEND=native` uses CS Demo Manager's Linux CS2 plugin to expose
+`AT_CAPTURE_BACKEND=native` is the harness for Auto Tournament's planned native
+recorder plugin. Native deployment awaits its release and integration testing.
+No plugin is bundled. Once available, set `AT_NATIVE_PLUGIN` to its absolute
+`libserver.so` path. See the [plugin contract](NATIVE-PLUGIN.md). The plugin exposes
 `startmovie` and export every rendered frame as TGA plus engine-generated WAV
 audio. Game time advances at a fixed frame rate even when rendering is slower
 than playback. The editor still produces the same clean clips, overlays,
@@ -152,6 +155,7 @@ session and FFmpeg are required.
 For an i7-6700 with Intel integrated graphics, start with:
 
 ```sh
+AT_NATIVE_PLUGIN=/absolute/path/libserver.so \
 AT_CAPTURE_BACKEND=native AT_VIDEO=low AT_ENCODER=libx264 AT_GPU_BLUR=0 \
 AT_OUTPUT_HEIGHT=1080 AT_OUTPUT_FPS=60 AT_ENCODE_TIMEOUT_SECONDS=3600 \
 at-worker record-file demo.dem 'name:Player' moments.json ./native-test
@@ -221,12 +225,16 @@ CS2 still needs memory for map loading: a busy 16 GiB host can exhaust a
 4 GiB swap allocation even with low graphics. Allow NVMe swap for the peak;
 the worker reports a detected out-of-memory kill as a memory error.
 
-The plugin is bundled with its MIT license and pinned provenance in
-`assets/native/`. CS2 updates may require a newer plugin; select a replacement
-with `AT_CSDM_PLUGIN=/absolute/path/libserver.so`. Installation backs up
-`gameinfo.gi`, adds a private plugin search path, and restores the original
-after loading or a failed launch. Use a dedicated CS2 installation for the
-recorder, and do not share a running installation with another recorder.
+The native compose file mounts `worker/native-plugins/` read-only at
+`/opt/at-native-plugin/`. Once the Auto Tournament plugin is released, place its
+`libserver.so` there. Do not substitute an unverified external plugin or assume
+that the harness is compatible with an unreleased build.
+
+Installation backs up `gameinfo.gi` and adds a private plugin search path. The
+worker restores the original on shutdown, and a later worker can recover an
+interrupted installation when it exactly matches the saved backup and our
+search-path patch. Unrelated changes are preserved. Use a dedicated CS2
+installation for the recorder.
 
 ## Develop
 

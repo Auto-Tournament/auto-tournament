@@ -25,6 +25,7 @@ services:
       XDG_RUNTIME_DIR: /config/.XDG
       DRINODE: /dev/dri/renderD128
       AT_CAPTURE_BACKEND: native
+      AT_NATIVE_PLUGIN: /opt/at-native-plugin/libserver.so
       AT_NATIVE_DISPLAY_SETUP: "1"
       SELKIES_MANUAL_RESOLUTION: "true"
       SELKIES_MANUAL_WIDTH: "1920"
@@ -41,6 +42,7 @@ services:
       - native-home:/config
       - native-games:/mnt/games
       - native-clips:/mnt/clips
+      - ./native-plugins:/opt/at-native-plugin:ro
 volumes:
   native-home:
   native-games:

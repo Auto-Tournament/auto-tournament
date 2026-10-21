@@ -23,7 +23,9 @@ Recorders → Add a recorder**. Keep that key out of Git and public logs.
 | Default gamescope capture                         | Captures demo playback in real time                        | A GPU fast enough to keep up with the requested frame rate |
 | Native frame export (`AT_CAPTURE_BACKEND=native`) | Exports each frame and game audio, then encodes the result | Intel/AMD graphics and slower hosts; NVIDIA is optional    |
 
-Native export uses the CS Demo Manager plugin bundled with the worker. It can
+Native export is a harness for Auto Tournament's planned recorder plugin. The
+plugin is not bundled; native deployment awaits its release and integration
+testing against the [worker contract](../worker/NATIVE-PLUGIN.md). Once available, it can
 render more slowly than playback while preserving the requested video timing,
 including slow motion, overlays and reels. CS2 still needs a working Linux
 graphics driver, a display session, Steam and enough memory to load the map.
@@ -39,6 +41,8 @@ desktop only; it does not automatically start claiming recorder jobs.
 From the repository's `worker` directory on the recorder host:
 
 ```sh
+mkdir -p native-plugins
+# Once released, place Auto Tournament's libserver.so in native-plugins/.
 docker compose -f native.compose.yml up -d --build
 ```
 
@@ -74,7 +78,9 @@ docker exec --user abc \
 ```
 
 The compose defaults select native export, low graphics, CPU encoding and
-1080p60 output. The worker discovers CS2 in Steam's libraries. If discovery
+1080p60 output. It mounts `worker/native-plugins/` read-only and sets
+`AT_NATIVE_PLUGIN=/opt/at-native-plugin/libserver.so`. Recording requires the
+released plugin at that path. The worker discovers CS2 in Steam's libraries. If discovery
 fails, add `AT_CS2_GAME` to the private environment file, using the **container
 path** to the installation's `game` directory containing `cs2.sh`.
 
@@ -108,7 +114,8 @@ The UI shows a running benchmark, its successful result, or its failure reason.
 A new run hides the previous failure while it is in progress. For failures,
 check the run log: missing Steam authentication, map-loading memory exhaustion,
 display configuration and an incompatible CS2 plugin need different fixes.
-After a CS2 update, consult the [plugin provenance and replacement instructions](../worker/assets/native/README.md).
+After a CS2 update, use a compatible Auto Tournament plugin release and verify
+it against the [harness contract](../worker/NATIVE-PLUGIN.md).
 
 A local smoke test is also available with `at-worker record-benchmark
 demo.dem ./native-test`; it needs the same native environment, a readable demo
@@ -129,7 +136,7 @@ is no published native image or managed native host updater in this change.
   CS2's console log for its selected Vulkan physical device and use the host's
   GPU monitor during capture. Software drivers such as llvmpipe can be very
   slow. NVIDIA needs additional container runtime/driver configuration beyond
-  this Intel/AMD compose example. ARM is not supported by the bundled plugin.
+  this Intel/AMD compose example. Plugin architecture support must be checked against its release.
 - **Persistent, writable game files:** keep Steam's `/config` and CS2's
   `/mnt/games` volumes. The worker temporarily modifies `gameinfo.gi` and
   writes movie frames beside CS2, so a read-only installation will fail. Use a
@@ -159,7 +166,7 @@ is no published native image or managed native host updater in this change.
   enabled in AT after connecting.
 - **Job limits and updates:** set the API's and worker's job allowances
   together; increasing only one still allows the other to expire the job.
-  CS2 updates can invalidate the pinned plugin, and first-run shaders or a
+  CS2 updates can invalidate the installed plugin, and first-run shaders or a
   missing workshop map can delay startup. The example Steam desktop image
   uses a moving `latest` tag: pin a tested digest for a reproducible install.
   Drain the recorder before rebuilding or replacing its image/binary.
