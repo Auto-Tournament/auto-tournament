@@ -24,6 +24,9 @@ test(
     await expect(pc).toBeVisible();
     await expect(server).toBeVisible();
     await native.click();
+    await expect(
+      dialog.getByText(/Native recording awaits Auto Tournament's plugin release/)
+    ).toBeVisible();
     await dialog.getByTestId('recorder-make-key').click();
     const command = dialog.getByTestId('recorder-command');
     await expect(command).toContainText('native.compose.yml up -d --build');

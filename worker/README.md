@@ -145,7 +145,7 @@ The platform does the same for every video at once (Highlights settings,
 recorder plugin. Native deployment awaits its release and integration testing.
 No plugin is bundled. Once available, set `AT_NATIVE_PLUGIN` to its absolute
 `libserver.so` path. See the [plugin contract](NATIVE-PLUGIN.md). The plugin exposes
-`startmovie` and export every rendered frame as TGA plus engine-generated WAV
+`startmovie` and exports every rendered frame as TGA plus engine-generated WAV
 audio. Game time advances at a fixed frame rate even when rendering is slower
 than playback. The editor still produces the same clean clips, overlays,
 slow motion and reels. NVIDIA, NVENC, gamescope and PipeWire capture tools are

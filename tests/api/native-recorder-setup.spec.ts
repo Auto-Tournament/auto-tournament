@@ -58,6 +58,7 @@ test('native setup builds upstream with a private environment file', TAGS, () =>
       'AT_URL=https://example.test\nAT_WORKER_TOKEN=test-recorder-key\n'
     );
     expect(statSync(f.file).mode & 0o777).toBe(0o600);
+    expect(existsSync(join(f.root, 'at-native-recorder/worker/native-plugins'))).toBe(true);
     expect(readFileSync(f.env.AT_TEST_DOCKER_LOG, 'utf8')).toBe(
       'compose -f native.compose.yml up -d --build\n'
     );

@@ -5,6 +5,7 @@ export function nativeServerCommands(origin: string, token: string): string {
     'set -eu',
     'git clone --depth 1 https://github.com/Auto-Tournament/auto-tournament.git at-native-recorder',
     'cd at-native-recorder/worker',
+    'mkdir -p native-plugins',
     'install -d -m 700 "$HOME/.config/auto-tournament"',
     'install -m 600 /dev/null "$HOME/.config/auto-tournament/native-recorder.env"',
     'cat > "$HOME/.config/auto-tournament/native-recorder.env" <<\'AT_RECORDER_ENV\'',
