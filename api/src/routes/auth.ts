@@ -993,6 +993,18 @@ function linkResultRedirect(
  * Start linking `provider` to the signed-in account. Exported for the
  * test-only fake provider routes.
  */
+/**
+ * Discord with the bot set up on the same app: also guilds.join, so signing in
+ * or linking puts the player on the bot's server (addons/discord/serverJoin).
+ */
+async function scopeFor(provider: AuthProvider): Promise<{ scope?: string[] }> {
+  if (provider !== 'discord') return {};
+  const { joinReady } = await import('../addons/discord/serverJoin');
+  return (await joinReady().catch(() => false))
+    ? { scope: ['identify', 'email', 'guilds.join'] }
+    : {};
+}
+
 export function startAccountLink(strategyName: string, provider: AuthProvider) {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -1027,7 +1039,11 @@ export function startAccountLink(strategyName: string, provider: AuthProvider) {
       const intent: OAuthLinkIntent = { purpose: 'link', steamId: identity.realSteamId };
       (req as Request & LinkIntentRequest).oauthLinkIntent = intent;
       log.info('Account link started', { provider, steamId: identity.realSteamId });
-      return passport.authenticate(strategyName, { session: false })(req, res, next);
+      return passport.authenticate(strategyName, { session: false, ...(await scopeFor(provider)) })(
+        req,
+        res,
+        next
+      );
     } catch (error) {
       log.error('Account link start failed', error as Error);
       return linkResultRedirect(req, res, provider, 'failed');
@@ -1155,7 +1171,12 @@ export function ssoCallbackRoute(
  * SignedCookieStateStore (utils/oauthStateCookie).
  */
 function registerSsoRoutes(provider: AuthProvider) {
-  router.get(`/${provider}`, requireStrategy(provider, provider), passport.authenticate(provider));
+  router.get(
+    `/${provider}`,
+    requireStrategy(provider, provider),
+    async (req: Request, res: Response, next: NextFunction) =>
+      passport.authenticate(provider, await scopeFor(provider))(req, res, next)
+  );
   router.post(
     `/${provider}/link`,
     requireStrategy(provider, provider),
