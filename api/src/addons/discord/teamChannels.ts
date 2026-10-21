@@ -20,6 +20,8 @@ import { botToken, pickedGuildId } from './bot';
 import { discordFetch } from './rest';
 import { TEXT_MEMBER, teamOverwrites, VOICE_MEMBER } from './voiceChannel';
 import { KEEP_AFTER_S } from './tournamentSpace';
+import { categoryWithRoom } from './tournamentSpacePlan';
+import type { Untrusted } from '../../utils/untrusted';
 import { announceMatch } from './announce';
 import { syncMatchVoice, voiceSettings } from './matchVoice';
 
@@ -71,16 +73,22 @@ async function sweep(): Promise<void> {
   // Team voice is where match voice moves the players, so either feature makes them.
   const on = ((await teamChannelsOn()) || (await voiceSettings()).enabled) && !!token && !!guildId;
   const running = on
-    ? await db.queryAsync<{ id: number; team_ids: string | null }>(
+    ? await db.queryAsync<{ id: number; status: string; team_ids: string | null }>(
         // Running, or finished in the last few days: they go with the tournament's space.
-        `SELECT id, team_ids FROM tournament WHERE archived_at IS NULL
+        `SELECT id, status, team_ids FROM tournament WHERE archived_at IS NULL
            AND (status = 'in_progress' OR (status = 'completed' AND completed_at > ?))`,
         [Math.floor(Date.now() / 1000) - KEEP_AFTER_S]
       )
     : [];
+  // Kept while running or recently over; only made for a running one (not for every team
+  // of every tournament that ended this week).
   const want = new Set<string>();
+  const make = new Set<string>();
   for (const t of running) {
-    for (const teamId of JSON.parse(t.team_ids ?? '[]') as string[]) want.add(`${t.id}:${teamId}`);
+    for (const teamId of JSON.parse(t.team_ids ?? '[]') as string[]) {
+      want.add(`${t.id}:${teamId}`);
+      if (t.status === 'in_progress') make.add(`${t.id}:${teamId}`);
+    }
   }
   const rows = await db.queryAsync<{
     tournament_id: number;
@@ -104,25 +112,29 @@ async function sweep(): Promise<void> {
       );
     }
   }
-  const categoryId = await db.getAppSettingAsync(CATEGORY_KEY).catch(() => null);
+  const categoryIds = ((await db.getAppSettingAsync(CATEGORY_KEY).catch(() => null)) ?? '')
+    .split(',')
+    .filter(Boolean);
   if (want.size === 0) {
-    // The last team's channels went: the category goes with them.
-    if (categoryId && token) {
-      const gone = await discordFetch(token, `/channels/${categoryId}`, { method: 'DELETE' });
-      if (gone.ok || gone.status === 404) await db.setAppSettingAsync(CATEGORY_KEY, null);
+    // The last team's channels went: the categories go with them.
+    if (categoryIds.length && token) {
+      for (const id of categoryIds) {
+        await discordFetch(token, `/channels/${id}`, { method: 'DELETE' });
+      }
+      await db.setAppSettingAsync(CATEGORY_KEY, null);
     }
     return;
   }
   if (!on || !token || !guildId) return;
   const have = new Set(rows.map((r) => `${r.tournament_id}:${r.team_id}`));
-  if ([...want].every((key) => have.has(key))) return;
+  if ([...make].every((key) => have.has(key))) return;
   const me = await discordFetch(token, '/users/@me');
   const botId = typeof me.body.id === 'string' ? me.body.id : null;
   if (!botId) return;
-  const parentId = await teamCategory(token, guildId, botId, categoryId);
-  if (!parentId) return;
-  for (const key of want) {
+  for (const key of make) {
     if (have.has(key)) continue;
+    const parentId = await teamCategory(token, guildId, botId, categoryIds);
+    if (!parentId) return;
     const [tournamentId, teamId] = key.split(':');
     const team = await db.queryOneAsync<{
       name: string;
@@ -186,12 +198,21 @@ async function sweep(): Promise<void> {
       },
     });
     const voiceId = voice.ok && typeof voice.body.id === 'string' ? voice.body.id : null;
-    const channelId = typeof created.body.id === 'string' ? created.body.id : null;
-    if (!created.ok || !channelId) {
-      log.warn(`[Discord] Team channel for ${team.name} failed: ${created.status}`);
+    const channelId = created.ok && typeof created.body.id === 'string' ? created.body.id : null;
+    if (!channelId || !voiceId) {
+      // Nothing half-made is left behind: the next sweep tries again from scratch.
+      for (const id of [channelId, voiceId]) {
+        if (id) await discordFetch(token, `/channels/${id}`, { method: 'DELETE' });
+      }
+      if (roleId) {
+        await discordFetch(token, `/guilds/${guildId}/roles/${roleId}`, { method: 'DELETE' });
+      }
+      const failed = channelId ? voice : created;
+      const why = `Discord answered ${failed.status}: ${String(failed.body.message ?? 'no reason given')}`;
+      log.warn(`[Discord] Team channels for ${team.name} failed: ${why}`);
       await adminNoticeService.raise(
         'discord_failed',
-        { what: `Team channel for ${team.name}`, detail: `Discord answered ${created.status}` },
+        { what: `Team channels for ${team.name}`, detail: why },
         `discord_failed:team:${teamId}`
       );
       continue;
@@ -214,20 +235,34 @@ async function sweep(): Promise<void> {
   }
 }
 
-/** The "Your team" category, made when the first team needs it. Only the bot sees it bare. */
+/**
+ * A "Your team" category with room for a team's two channels, made when there is none:
+ * Discord holds 50 channels in a category, so a big tournament fills more than one.
+ * Only the bot sees it bare. `known` is updated in place.
+ */
 async function teamCategory(
   token: string,
   guildId: string,
   botId: string,
-  known: string | null
+  known: string[]
 ): Promise<string | null> {
-  if (known && (await discordFetch(token, `/channels/${known}`)).ok) return known;
+  const listed = await discordFetch(token, `/guilds/${guildId}/channels`);
+  if (!listed.ok || !Array.isArray(listed.body)) return null;
+  const channels = (listed.body as Array<Record<string, Untrusted>>).map((c) => ({
+    id: String(c.id),
+    parentId: typeof c.parent_id === 'string' ? c.parent_id : null,
+  }));
+  const there = known.filter((id) => channels.some((c) => c.id === id));
+  const room = categoryWithRoom(there, channels, 2);
+  if (room) return room;
   const made = await discordFetch(token, `/guilds/${guildId}/channels`, {
     method: 'POST',
     body: { name: 'Your team', type: 4, permission_overwrites: teamOverwrites(guildId, botId, []) },
   });
   const id = made.ok && typeof made.body.id === 'string' ? made.body.id : null;
-  if (id) await db.setAppSettingAsync(CATEGORY_KEY, id);
+  if (!id) return null;
+  known.splice(0, known.length, ...there, id);
+  await db.setAppSettingAsync(CATEGORY_KEY, known.join(','));
   return id;
 }
 
