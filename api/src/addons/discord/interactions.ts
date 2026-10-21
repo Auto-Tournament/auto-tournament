@@ -1,5 +1,5 @@
 /**
- * Slash commands (the Discord add-on): /matches and /mymatch. They
+ * Slash commands (the Discord add-on): /matches, /mymatch and /lobby. They
  * come over the bot's gateway connection (presence.ts), so nothing needs
  * setting up and the site needs no public address. An admin who sets the
  * app's Interactions Endpoint URL in the Discord Developer Portal gets them
@@ -16,10 +16,29 @@ import { matchNowPath } from '../../routes/players';
 import { botToken, pickedGuildId } from './bot';
 import { discordFetch } from './rest';
 import { verifyDiscordSignature } from './interactionVerify';
+import { callToLobby, LobbyCallError } from './lobbyCall';
+
+const ADMINISTRATOR = 1n << 3n;
+const MOVE_MEMBERS = 1n << 24n;
 
 const COMMANDS = [
   { name: 'matches', description: 'The matches on a server right now' },
   { name: 'mymatch', description: 'Your match: where it is and how to join' },
+  {
+    name: 'lobby',
+    description: "Call a tournament's players to its Lobby",
+    // Shown to those who may move members; checked again when it runs.
+    default_member_permissions: String(MOVE_MEMBERS),
+    dm_permission: false,
+    options: [
+      { type: 3, name: 'message', description: 'What to tell them', max_length: 500 },
+      {
+        type: 5,
+        name: 'include_live',
+        description: 'Also players in a match that is live (default: no)',
+      },
+    ],
+  },
 ];
 
 const EPHEMERAL = 64;
@@ -94,6 +113,50 @@ async function myMatch(discordUserId: string): Promise<string> {
   return path ? `Your match: ${siteUrl()}${path}` : 'You have no match right now.';
 }
 
+/**
+ * /lobby: the tournament whose #chat it is typed in, else the one running
+ * (tournamentSpace.ts); its players are called to its Lobby (lobbyCall.ts).
+ */
+async function lobbyCommand(
+  permissions: string | undefined,
+  channelId: string | null,
+  options: Untrusted
+): Promise<string> {
+  if ((BigInt(permissions ?? '0') & (ADMINISTRATOR | MOVE_MEMBERS)) === 0n) {
+    return 'Only those who can move members can do that.';
+  }
+  const opts = Array.isArray(options)
+    ? (options as Array<{ name?: string; value?: Untrusted }>)
+    : [];
+  const message = opts.find((o) => o.name === 'message')?.value;
+  const includeLive = opts.find((o) => o.name === 'include_live')?.value === true;
+  const here = channelId
+    ? await db.queryOneAsync<{ tournament_id: number }>(
+        'SELECT tournament_id FROM discord_tournament_spaces WHERE channel_id = ?',
+        [channelId]
+      )
+    : null;
+  const running = await db.queryAsync<{ id: number }>(
+    "SELECT id FROM tournament WHERE status = 'in_progress' AND archived_at IS NULL"
+  );
+  const tournamentId = here?.tournament_id ?? (running.length === 1 ? running[0].id : null);
+  if (!tournamentId) {
+    return running.length
+      ? "More than one tournament is running: type /lobby in that tournament's #chat."
+      : 'No tournament is running.';
+  }
+  try {
+    const done = await callToLobby(Number(tournamentId), {
+      message: typeof message === 'string' ? message : '',
+      includeLive,
+    });
+    return `Moved ${done.moved} into the Lobby and sent ${done.messaged} a DM.`;
+  } catch (error) {
+    if (error instanceof LobbyCallError) return error.message;
+    throw error;
+  }
+}
+
 /** What a slash command answers (only the asker sees it). */
 async function commandAnswer(interaction: Record<string, Untrusted>): Promise<string> {
   const data = interaction.data as Record<string, Untrusted> | undefined;
@@ -102,6 +165,13 @@ async function commandAnswer(interaction: Record<string, Untrusted>): Promise<st
   try {
     if (data?.name === 'matches') return await matchesNow();
     if (data?.name === 'mymatch' && user?.id) return await myMatch(user.id);
+    if (data?.name === 'lobby') {
+      return await lobbyCommand(
+        member?.permissions,
+        typeof interaction.channel_id === 'string' ? interaction.channel_id : null,
+        data.options
+      );
+    }
     return 'I do not know that command.';
   } catch (error) {
     log.warn('[Discord] A slash command failed', {
