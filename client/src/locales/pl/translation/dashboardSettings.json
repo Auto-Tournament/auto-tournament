@@ -918,7 +918,8 @@
       "ready": "On: players link Discord under Account → Connections.",
       "invite": "Players not on your server are asked to join with {{url}}.",
       "noInvite": "The bot can't make an invite to your server yet. Click Invite to a server again so it gets the Create Invite permission."
-    }
+    },
+    "missing": "The bot is missing {{list}} on your server, so parts of it won't work. Click Invite to a server above: it updates the bot's permissions without removing it."
   },
   "liveMatchesPage": {
     "title": "Live matches",
