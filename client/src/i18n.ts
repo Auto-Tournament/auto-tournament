@@ -3,74 +3,61 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 import { initReactI18next } from 'react-i18next';
 
 import en from './locales/en/translation';
-import zhCN from './locales/zh-CN/translation';
-import fr from './locales/fr/translation';
-import de from './locales/de/translation';
-import es from './locales/es/translation';
-import it from './locales/it/translation';
-import pt from './locales/pt-PT/translation';
-import pl from './locales/pl/translation';
-import nl from './locales/nl/translation';
-import nb from './locales/nb/translation';
 import bracketsViewerEn from './locales/brackets-viewer/en.json';
-import bracketsViewerZhCN from './locales/brackets-viewer/zh-CN.json';
-import bracketsViewerFr from './locales/brackets-viewer/fr.json';
-import bracketsViewerDe from './locales/brackets-viewer/de.json';
-import bracketsViewerEs from './locales/brackets-viewer/es.json';
-import bracketsViewerIt from './locales/brackets-viewer/it.json';
-import bracketsViewerPt from './locales/brackets-viewer/pt-PT.json';
-import bracketsViewerPl from './locales/brackets-viewer/pl.json';
-import bracketsViewerNl from './locales/brackets-viewer/nl.json';
-import bracketsViewerNb from './locales/brackets-viewer/nb.json';
 
 export const defaultNS = 'translation';
 
+/** English is built in (the fallback); every other language loads when it is used. */
 export const resources = {
   en: {
     translation: en,
     bracketsViewer: bracketsViewerEn,
   },
-  'zh-CN': {
-    translation: zhCN,
-    bracketsViewer: bracketsViewerZhCN,
-  },
-  fr: {
-    translation: fr,
-    bracketsViewer: bracketsViewerFr,
-  },
-  de: {
-    translation: de,
-    bracketsViewer: bracketsViewerDe,
-  },
-  es: {
-    translation: es,
-    bracketsViewer: bracketsViewerEs,
-  },
-  it: {
-    translation: it,
-    bracketsViewer: bracketsViewerIt,
-  },
-  'pt-PT': {
-    translation: pt,
-    bracketsViewer: bracketsViewerPt,
-  },
-  pl: {
-    translation: pl,
-    bracketsViewer: bracketsViewerPl,
-  },
-  nl: {
-    translation: nl,
-    bracketsViewer: bracketsViewerNl,
-  },
-  nb: {
-    translation: nb,
-    bracketsViewer: bracketsViewerNb,
-  },
 } as const;
+
+type Bundle = { translation: object; bracketsViewer: object };
+const LOADERS: Record<string, () => Promise<Bundle>> = {
+  'zh-CN': async () => ({
+    translation: (await import('./locales/zh-CN/translation')).default,
+    bracketsViewer: (await import('./locales/brackets-viewer/zh-CN.json')).default,
+  }),
+  fr: async () => ({
+    translation: (await import('./locales/fr/translation')).default,
+    bracketsViewer: (await import('./locales/brackets-viewer/fr.json')).default,
+  }),
+  de: async () => ({
+    translation: (await import('./locales/de/translation')).default,
+    bracketsViewer: (await import('./locales/brackets-viewer/de.json')).default,
+  }),
+  es: async () => ({
+    translation: (await import('./locales/es/translation')).default,
+    bracketsViewer: (await import('./locales/brackets-viewer/es.json')).default,
+  }),
+  it: async () => ({
+    translation: (await import('./locales/it/translation')).default,
+    bracketsViewer: (await import('./locales/brackets-viewer/it.json')).default,
+  }),
+  'pt-PT': async () => ({
+    translation: (await import('./locales/pt-PT/translation')).default,
+    bracketsViewer: (await import('./locales/brackets-viewer/pt-PT.json')).default,
+  }),
+  pl: async () => ({
+    translation: (await import('./locales/pl/translation')).default,
+    bracketsViewer: (await import('./locales/brackets-viewer/pl.json')).default,
+  }),
+  nl: async () => ({
+    translation: (await import('./locales/nl/translation')).default,
+    bracketsViewer: (await import('./locales/brackets-viewer/nl.json')).default,
+  }),
+  nb: async () => ({
+    translation: (await import('./locales/nb/translation')).default,
+    bracketsViewer: (await import('./locales/brackets-viewer/nb.json')).default,
+  }),
+};
 
 const i18n = createInstance();
 
-void i18n
+const initialized = i18n
   .use(LanguageDetector)
   .use(initReactI18next)
   .init({
@@ -88,8 +75,25 @@ void i18n
       order: ['localStorage', 'navigator'],
       caches: ['localStorage'],
     },
+    // A language that loads later (LOADERS) re-renders the page when its strings arrive.
+    react: { bindI18nStore: 'added' },
   });
 
+/** Load a language's strings once (English is built in). */
+async function loadLanguage(lng: string): Promise<void> {
+  const code =
+    (i18n.services.languageUtils?.getBestMatchFromCodes?.([lng]) as string | undefined) ?? lng;
+  const load = LOADERS[code];
+  if (!load || i18n.hasResourceBundle(code, 'translation')) return;
+  const bundle = await load();
+  i18n.addResourceBundle(code, 'translation', bundle.translation, true, true);
+  i18n.addResourceBundle(code, 'bracketsViewer', bundle.bracketsViewer, true, true);
+}
+
+/** The first language's strings: the app renders once they are in (main.tsx), English at once. */
+export const i18nReady: Promise<void> = initialized
+  .then(() => loadLanguage(i18n.language))
+  .catch(() => undefined);
+i18n.on('languageChanged', (lng) => void loadLanguage(lng).catch(() => undefined));
+
 export default i18n;
-
-
