@@ -135,7 +135,7 @@ func findNativeFiles(gameDir, prefix string) (nativeFiles, error) {
 	}
 	sort.Strings(out.frames)
 	if len(out.frames) == 0 || out.wav == "" {
-		return out, errors.New("native capture produced no image sequence or WAV; check CS:DM plugin compatibility with this CS2 build")
+		return out, errors.New("native capture produced no image sequence or WAV; check the native plugin compatibility with this CS2 build")
 	}
 	out.first, _ = strconv.Atoi(imageName.FindStringSubmatch(filepath.Base(out.frames[0]))[1])
 	for i, path := range out.frames {
