@@ -358,7 +358,8 @@
       "nextMap": "Next map",
       "goVeto": "Go to veto",
       "paused": "Paused",
-      "about": "~{{minutes}} min"
+      "about": "~{{minutes}} min",
+      "joinServer": "Join the server"
     }
   },
   "browsePage": {

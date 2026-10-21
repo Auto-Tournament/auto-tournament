@@ -358,7 +358,8 @@
       "nextMap": "Neste kart",
       "goVeto": "Gå til vetoen",
       "paused": "Pause",
-      "about": "~{{minutes}} min"
+      "about": "~{{minutes}} min",
+      "joinServer": "Bli med på serveren"
     }
   },
   "browsePage": {

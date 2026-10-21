@@ -86,7 +86,7 @@ export function NextMatchCard({
   const fixed =
     'text' in card.big ? card.big.text : t(`home.next.${card.big.key}`, card.big.values);
   const big = card.countdownTo !== undefined ? mmss(Math.max(0, card.countdownTo - now)) : fixed;
-  const button = { open: 'openMatch', veto: 'next.goVeto', join: 'next.join' }[card.action];
+  const button = { open: 'openMatch', veto: 'next.goVeto', join: 'next.joinServer' }[card.action];
 
   return (
     <Box
