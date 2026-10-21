@@ -1,7 +1,7 @@
 /**
  * The waiting room (each tournament's Lobby, tournamentSpace.ts): when a
- * tournament starts, each of its players gets one DM asking them to join the
- * Lobby, so the bot can move them into their team's voice channel when their
+ * tournament starts, each of its players who is not in voice on the server gets
+ * one DM asking them to join the Lobby, so the bot can move them into their team's voice channel when their
  * match is ready. Once per player and tournament (notify_deliveries).
  *
  * A sweep every minute: a tournament that started while the platform was down
@@ -11,6 +11,7 @@ import { db } from '../../config/database';
 import { log } from '../../utils/logger';
 import { discordIdOf } from '../../services/notifyChannels';
 import { botToken, discordBot, pickedGuildId } from './bot';
+import { discordFetch } from './rest';
 import { spaceOf } from './tournamentSpace';
 
 const SWEEP_MS = 60_000;
@@ -45,7 +46,8 @@ export async function playersOf(tournamentId: number, teamIds: string[]): Promis
 
 async function sweep(): Promise<void> {
   const guildId = await pickedGuildId();
-  if (!guildId || !(await botToken())) return;
+  const token = await botToken();
+  if (!guildId || !token) return;
   const running = await db.queryAsync<{ id: number; name: string; team_ids: string | null }>(
     "SELECT id, name, team_ids FROM tournament WHERE status = 'in_progress' AND archived_at IS NULL"
   );
@@ -64,6 +66,9 @@ async function sweep(): Promise<void> {
         [steamId, key, Math.floor(Date.now() / 1000)]
       );
       if (!claimed) continue;
+      // Already in voice on the server: they are moved from there when the match is ready.
+      const voice = await discordFetch(token, `/guilds/${guildId}/voice-states/${discordId}`);
+      if (voice.ok && typeof voice.body.channel_id === 'string') continue;
       const sent = await discordBot.sendDm(
         discordId,
         `**${t.name}** has started. Please join the Lobby voice channel and wait there: when your match is ready, you are moved into your team's voice channel automatically. ${link}`
