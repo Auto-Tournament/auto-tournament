@@ -15,8 +15,8 @@ import { adminNoticeService } from '../../services/adminNoticeService';
 import { discordIdOf } from '../../services/notifyChannels';
 import { botToken, pickedGuildId } from './bot';
 import { discordFetch } from './rest';
-import { voiceSettings } from './matchVoice';
 import { TEXT_MEMBER, teamOverwrites } from './voiceChannel';
+import { KEEP_AFTER_S, spaceOf } from './tournamentSpace';
 
 const ON_KEY = 'discord_team_channels';
 
@@ -65,7 +65,10 @@ async function sweep(): Promise<void> {
   const on = (await teamChannelsOn()) && !!token && !!guildId;
   const running = on
     ? await db.queryAsync<{ id: number; team_ids: string | null }>(
-        "SELECT id, team_ids FROM tournament WHERE status = 'in_progress' AND archived_at IS NULL"
+        // Running, or finished in the last few days: they go with the tournament's space.
+        `SELECT id, team_ids FROM tournament WHERE archived_at IS NULL
+           AND (status = 'in_progress' OR (status = 'completed' AND completed_at > ?))`,
+        [Math.floor(Date.now() / 1000) - KEEP_AFTER_S]
       )
     : [];
   const want = new Set<string>();
@@ -97,10 +100,12 @@ async function sweep(): Promise<void> {
   const me = await discordFetch(token, '/users/@me');
   const botId = typeof me.body.id === 'string' ? me.body.id : null;
   if (!botId) return;
-  const { categoryId } = await voiceSettings();
   for (const key of want) {
     if (have.has(key)) continue;
     const [tournamentId, teamId] = key.split(':');
+    // In the tournament's own category: wait for it (tournamentSpace.ts makes it on its sweep).
+    const space = await spaceOf(Number(tournamentId));
+    if (!space) continue;
     const team = await db.queryOneAsync<{
       name: string;
       players: string;
@@ -144,7 +149,7 @@ async function sweep(): Promise<void> {
       body: {
         name: team.name.slice(0, 100),
         type: 0,
-        ...(categoryId ? { parent_id: categoryId } : {}),
+        parent_id: space.categoryId,
         permission_overwrites: overwrites,
       },
     });

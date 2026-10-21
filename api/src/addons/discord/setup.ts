@@ -2,26 +2,24 @@
  * "Set up this server" (Modules → Discord): what the bot needs on the picked
  * Discord server, made in one click and reused when it is there already.
  *
- * - an "Auto Tournament" category, where the team channels go;
- * - #results in it, for the match announcements;
- * - a Lobby voice channel where players wait (they can join and listen, not
- *   talk) so the bot can move them into their team's channel.
+ * - an "Auto Tournament" category;
+ * - #results in it, for the match announcements (the whole server reads it;
+ *   it pings no one).
  *
- * It fills in the category, the announcement channel and the Lobby (whose
- * link players get by DM when a tournament starts, lobby.ts) and turns the
- * team voice channels on. It never deletes or renames what the admin made.
+ * Each tournament gets its own category when it starts, for its players only,
+ * with its Lobby and team channels (tournamentSpace.ts). It fills in the
+ * category and the announcement channel and turns the team voice channels on.
+ * It never deletes or renames what the admin made (a Lobby an older setup
+ * made stays, and is used when a tournament has no category of its own).
  */
 import type { Untrusted } from '../../utils/untrusted';
 import { announceChannel, setAnnounceChannel } from './announce';
 import { botToken, pickedGuildId } from './bot';
 import { setVoiceSettings, voiceSettings } from './matchVoice';
-import { lobbyChannel, setLobbyChannel } from './lobby';
 import { discordFetch } from './rest';
 
 const CATEGORY = 'Auto Tournament';
 const RESULTS = 'results';
-const LOBBY = 'Lobby';
-const SPEAK = 1n << 21n;
 
 interface Channel {
   id: string;
@@ -32,34 +30,28 @@ interface Channel {
 
 export class SetupError extends Error {}
 
-/** The category, #results and the Lobby the bot uses, as stored (null: none yet). */
+/** The category and #results the bot uses, as stored (null: none yet). */
 async function storedIds() {
   return {
     category: (await voiceSettings()).categoryId,
     results: await announceChannel(),
-    lobby: await lobbyChannel(),
   };
 }
 
 /** Which of them are on the server now (renamed counts; deleted does not). */
 export async function setupState(
   channels: Array<{ id: string; type: number }>
-): Promise<{ category: boolean; results: boolean; lobby: boolean }> {
+): Promise<{ category: boolean; results: boolean }> {
   const ids = await storedIds();
   const there = (id: string | null, types: number[]) =>
     id !== null && channels.some((c) => c.id === id && types.includes(c.type));
   return {
     category: there(ids.category, [4]),
     results: there(ids.results, [0, 5]),
-    lobby: there(ids.lobby, [2]),
   };
 }
 
-export async function setupServer(): Promise<{
-  categoryId: string;
-  resultsId: string;
-  lobbyId: string;
-}> {
+export async function setupServer(): Promise<{ categoryId: string; resultsId: string }> {
   const token = await botToken();
   const guildId = await pickedGuildId();
   if (!token || !guildId) throw new SetupError('Pick the Discord server first');
@@ -109,13 +101,8 @@ export async function setupServer(): Promise<{
 
   const categoryId = await ensure({ name: CATEGORY, type: 4, parent_id: null }, stored.category);
   const resultsId = await ensure({ name: RESULTS, type: 0, parent_id: categoryId }, stored.results);
-  // Everyone may join and listen; nobody talks (the server's admins still can).
-  const lobbyId = await ensure({ name: LOBBY, type: 2, parent_id: categoryId }, stored.lobby, {
-    permission_overwrites: [{ id: guildId, type: 0, allow: '0', deny: String(SPEAK) }],
-  });
 
   await setVoiceSettings({ enabled: true, categoryId });
   await setAnnounceChannel(resultsId);
-  await setLobbyChannel(lobbyId);
-  return { categoryId, resultsId, lobbyId };
+  return { categoryId, resultsId };
 }

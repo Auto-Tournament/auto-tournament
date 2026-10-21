@@ -22,6 +22,7 @@ import { currentView, refreshView } from './view';
 import { SetupError, setupServer, setupState } from './setup';
 import { restartPresence, startPresence, stopPresence } from './presence';
 import { startLobbyInvites, stopLobbyInvites } from './lobby';
+import { startTournamentSpaces, stopTournamentSpaces } from './tournamentSpace';
 import { setVoiceSettings, startMatchVoice, stopMatchVoice, voiceSettings } from './matchVoice';
 import {
   announceChannel,
@@ -301,10 +302,10 @@ router.put('/team-channels', async (req: Request, res: Response) => {
  * /api/addons/discord/setup:
  *   post:
  *     tags: [Add-ons]
- *     summary: Set up the picked Discord server (category, #results, a Lobby nobody talks in) and use it
+ *     summary: Set up the picked Discord server (an Auto Tournament category with #results) and use it
  *     security: [{ BearerAuth: [] }]
  *     responses:
- *       200: { description: "`categoryId`, `resultsId`, `lobbyId`" }
+ *       200: { description: "`categoryId`, `resultsId`" }
  *       400: { description: No server picked, or Discord refused (the reason says why) }
  */
 router.post('/setup', async (_req: Request, res: Response) => {
@@ -329,6 +330,7 @@ export const discordAddon: AddonModule = {
   // On: without a token it does nothing, and its page is where the token goes.
   defaultOn: true,
   start() {
+    startTournamentSpaces();
     startMatchVoice();
     startAnnouncements();
     startTeamChannels();
@@ -337,6 +339,7 @@ export const discordAddon: AddonModule = {
     void registerCommands();
   },
   stop() {
+    stopTournamentSpaces();
     stopMatchVoice();
     stopAnnouncements();
     stopTeamChannels();

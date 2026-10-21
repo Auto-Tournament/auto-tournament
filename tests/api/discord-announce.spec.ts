@@ -138,28 +138,18 @@ test.describe('Discord match announcements', () => {
     expect(done.allowed_mentions.roles).toEqual([]);
   });
 
-  test('a card with a button; ready and live ping both teams, a result nobody', () => {
+  test('a card with a button; #results pings no one, a team channel copy pings its team', () => {
     const roles = { team1: '11', team2: '22' };
     const live = announceMessage({ ...base, event: 'live', url: 'https://x/match/m', roles });
-    expect(live.content).toBe('<@&11> vs <@&22>');
-    expect(live.allowed_mentions.roles).toEqual(['11', '22']);
+    expect(live.content).toBeUndefined();
+    expect(live.allowed_mentions.roles).toEqual([]);
     expect(live.embeds[0].title).toBe('A vs B');
     expect(live.components?.[0].components[0]).toMatchObject({
       label: 'Go to match',
       url: 'https://x/match/m',
     });
-    const result = announceMessage({
-      ...base,
-      event: 'result',
-      roles,
-      result: { winner: 1, score: [2, 0], maps: [] },
-    });
-    expect(result.content).toBeUndefined();
-    expect(result.allowed_mentions.roles).toEqual([]);
-    expect(result.components).toBeUndefined();
-    // No roles yet: no ping.
-    expect(
-      announceMessage({ ...base, event: 'ready', roles: { team1: null, team2: '22' } }).content
-    ).toBeUndefined();
+    const own = announceMessage({ ...base, event: 'ready', roles }, '11');
+    expect(own.content).toBe('<@&11>, your match is ready.');
+    expect(own.allowed_mentions.roles).toEqual(['11']);
   });
 });
