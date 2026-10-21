@@ -54,11 +54,16 @@ function tournamentScope(): number | null {
 /** Fired when the API answers `license_expired` (api/src/middleware/licenseExpired.ts); components/license/LicenseGate.tsx shows the page. */
 export const LICENSE_EXPIRED_EVENT = 'at:license-expired';
 
+/** GETs on their way, by scope and URL (api.get). */
+const inFlight = new Map<string, Promise<Untrusted>>();
+
 export const api = {
   /**
    * Make an authenticated API request
    */
   async fetch(endpoint: string, options: RequestInit = {}) {
+    // A change may make a GET already on its way stale: the next one goes out fresh.
+    if (options.method && options.method !== 'GET') inFlight.clear();
     const { headers, ...rest } = options;
     const response = await fetch(endpoint, {
       // Send cookies for same-origin requests by default so admin-only routes
@@ -99,10 +104,20 @@ export const api = {
   },
 
   /**
-   * GET request
+   * GET request. The same GET already on its way is shared, not sent again: a page's parts
+   * often ask for the same list at once (the home page asked for the tournaments four times).
+   * Each caller gets its own copy.
    */
   async get<T = Untrusted>(endpoint: string): Promise<T> {
-    return this.fetch(endpoint, { method: 'GET' });
+    const key = `${tournamentScope() ?? ''} ${endpoint}`;
+    let pending = inFlight.get(key);
+    if (!pending) {
+      pending = this.fetch(endpoint, { method: 'GET' });
+      inFlight.set(key, pending);
+      const done = () => inFlight.delete(key);
+      pending.then(done, done);
+    }
+    return window.structuredClone(await pending) as T;
   },
 
   /**
