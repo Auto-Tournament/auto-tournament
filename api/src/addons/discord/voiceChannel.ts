@@ -26,8 +26,6 @@ export const TEXT_MEMBER = VIEW | SEND | HISTORY;
 
 /** What a tournament's players may not do in its Lobby: they wait and listen. */
 export const LISTEN_ONLY = SPEAK;
-/** What they may not do in #matches and #results, which the bot writes. */
-export const SEND_MESSAGES = SEND;
 
 /**
  * A tournament's category (tournamentSpace.ts): only its players' role sees it,

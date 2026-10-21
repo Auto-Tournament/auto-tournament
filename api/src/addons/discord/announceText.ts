@@ -3,14 +3,22 @@
  * database so they can be checked on their own.
  */
 
-export type AnnounceEvent = 'ready' | 'live' | 'result';
+/** A team's card for a match goes through these, edited each time, then 'result' (Done). */
+export type FeedStage = 'scheduled' | 'veto' | 'ready' | 'live';
+export type AnnounceEvent = FeedStage | 'result';
 
-/** Which posts a match is due, from where it is now. */
-export function dueEvents(status: string, hasWinner: boolean): AnnounceEvent[] {
-  if (status === 'loaded') return ['ready'];
-  if (status === 'live') return ['ready', 'live'];
-  if (status === 'completed' && hasWinner) return ['result'];
-  return [];
+/** Where the match's #matches message is, from where the match is now; null: it has none. */
+export function feedStage(
+  status: string,
+  vetoStatus: string | null,
+  bothTeams: boolean
+): FeedStage | null {
+  if (status === 'live') return 'live';
+  if (status === 'loaded') return 'ready';
+  if ((status === 'pending' || status === 'ready') && bothTeams) {
+    return vetoStatus === 'in_progress' ? 'veto' : 'scheduled';
+  }
+  return null;
 }
 
 /** Everything a card can show; what is not known is left out. */
@@ -25,8 +33,14 @@ export interface CardInput {
   stage?: string | null;
   format?: string | null;
   maps?: string[];
-  /** The live card once the match is over: its last score, "Over on ...". */
-  over?: boolean;
+  /** When a scheduled match starts (unix s). */
+  startsAt?: number | null;
+  /** The veto so far, and who is up: 'ban', 'pick' or 'side'. */
+  veto?: {
+    banned: string[];
+    picked: string[];
+    next: { team: 1 | 2; action: string } | null;
+  } | null;
   /** The map being played, for the live card (edited as it goes). */
   live?: {
     map: string | null;
@@ -63,6 +77,14 @@ export function teamLabel(name: string, roleId: string | null | undefined): stri
 export function headline(c: CardInput): string {
   const a = teamLabel(c.team1, c.roles.team1);
   const b = teamLabel(c.team2, c.roles.team2);
+  if (c.event === 'scheduled') {
+    return c.startsAt ? `${a} vs ${b} starts <t:${c.startsAt}:R>.` : `${a} vs ${b} is coming up.`;
+  }
+  if (c.event === 'veto') {
+    const next = c.veto?.next;
+    if (!next) return `${a} vs ${b}: map veto.`;
+    return `${a} vs ${b}: map veto, ${next.team === 1 ? a : b} to ${next.action}.`;
+  }
   if (c.event === 'ready') return `${a} vs ${b} is ready: the server is up.`;
   if (c.event === 'live') {
     if (!c.live) return `${a} vs ${b} is live.`;
@@ -72,8 +94,7 @@ export function headline(c: CardInput): string {
     ]
       .filter(Boolean)
       .join(', ');
-    const word = c.over ? 'Over' : 'Live';
-    return `${word}${where ? ` on ${where}` : ''}: ${a} **${c.live.score[0]}–${c.live.score[1]}** ${b}`;
+    return `Live${where ? ` on ${where}` : ''}: ${a} **${c.live.score[0]}–${c.live.score[1]}** ${b}`;
   }
   if (!c.result) return `${a} vs ${b} is over.`;
   const [w, l] = c.result.winner === 1 ? [a, b] : [b, a];
@@ -83,18 +104,49 @@ export function headline(c: CardInput): string {
   return `${w} beat ${l} ${s[0]}–${s[1]}.`;
 }
 
-const ACCENT = 0xff6a3d;
-const WON = 0x3ba55d;
+// The one ping, when the team's card is first posted (whatever stage it is at by then).
+const PING_TEXT: Record<AnnounceEvent, string> = {
+  scheduled: 'your next match.',
+  veto: 'your next match: the map veto is open.',
+  ready: 'your match is ready.',
+  live: 'your match is live.',
+  result: 'your match is done.',
+};
+
+const STAGE_WORD: Record<AnnounceEvent, string> = {
+  scheduled: 'Scheduled',
+  veto: 'Map veto',
+  ready: 'Ready',
+  live: 'Live',
+  result: 'Done',
+};
+
+// Discord's grey, amber and green; the results in Auto Tournament's orange.
+const COLORS: Record<AnnounceEvent, number> = {
+  scheduled: 0x80848e,
+  veto: 0xf0b232,
+  ready: 0x3ba55d,
+  live: 0x3ba55d,
+  result: 0xff6a3d,
+};
 
 type Field = { name: string; value: string; inline?: boolean };
 
 function fields(c: CardInput): Field[] {
   const out: Field[] = [];
-  if (c.event === 'ready') {
+  if (c.event === 'veto' && c.veto) {
+    if (c.veto.banned.length) {
+      out.push({ name: 'Banned', value: c.veto.banned.join(', '), inline: true });
+    }
+    if (c.veto.picked.length) {
+      out.push({ name: 'Picked', value: c.veto.picked.join(', '), inline: true });
+    }
+  }
+  if (c.event === 'scheduled' || c.event === 'ready') {
     if (c.format) out.push({ name: 'Format', value: c.format, inline: true });
     if (c.maps?.length) out.push({ name: 'Maps', value: c.maps.join(', '), inline: true });
   }
-  if (c.event === 'live' && c.live && !c.over) {
+  if (c.event === 'live' && c.live) {
     out.push({ name: 'Round', value: String(c.live.round), inline: true });
     if (c.live.totalMaps > 1) {
       out.push({ name: 'Series', value: `${c.live.series[0]}–${c.live.series[1]}`, inline: true });
@@ -125,21 +177,20 @@ function fields(c: CardInput): Field[] {
 
 /**
  * The post as Discord takes it: a card with the headline, the details for its
- * stage and a "Go to match" button. It pings no one in #results, which the
- * whole server reads; `ping` is a team's role, for the copy of the ready card
- * in that team's own channel ("@Kestrel, your match is ready").
- * The live card is edited as the score moves (announce.ts); an edit pings no one.
+ * stage and a "Go to match" button. `ping` is the team's role, when its card
+ * is first posted in its own channel ("@Kestrel, your next match"); the card
+ * is then edited as the match moves on (announce.ts), and an edit pings no one.
  */
 export function announceMessage(c: CardInput, ping: string | null = null) {
   const footer = [c.tournament, c.stage].filter(Boolean).join(' · ');
   const f = fields(c);
   return {
-    ...(ping ? { content: `<@&${ping}>, your match is ready.` } : {}),
+    ...(ping ? { content: `<@&${ping}>, ${PING_TEXT[c.event]}` } : {}),
     embeds: [
       {
-        title: `${c.team1} vs ${c.team2}`,
+        title: `${c.team1} vs ${c.team2} · ${STAGE_WORD[c.event]}`,
         description: headline(c),
-        color: c.event === 'result' ? WON : ACCENT,
+        color: COLORS[c.event],
         ...(f.length ? { fields: f } : {}),
         ...(footer ? { footer: { text: footer } } : {}),
         ...(c.url ? { url: c.url } : {}),
