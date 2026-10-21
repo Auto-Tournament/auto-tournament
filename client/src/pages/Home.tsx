@@ -17,6 +17,7 @@ import { PendingTeamInvites } from '../components/team/PendingTeamInvites';
 import { LiveChip, panelSx, panelBorderSx } from '../components/common/ui';
 import { useAuth } from '../contexts/AuthContext';
 import { useTeamMatchData } from '../hooks/useTeamMatchData';
+import { NextMatchCard } from '../components/home/NextMatchCard';
 import { useTournamentList, type TournamentSummary } from '../hooks/useTournamentList';
 import { usePublicTournamentOverview } from '../hooks/usePublicTournamentOverview';
 import { useMatchmaking } from '../components/matchmaking/matchmakingStore';
@@ -233,74 +234,22 @@ export default function Home() {
           <>
             <PendingTeamInvites />
             {showNextMatch && match && (
-              <Box
-                component="section"
-                aria-labelledby="home-next-match-title"
-                data-testid="home-next-match"
-                sx={{
-                  display: 'grid',
-                  // What it is on the left (label, teams, where), the one action on the right.
-                  gridTemplateColumns: { xs: 'minmax(0, 1fr)', sm: 'minmax(0, 1fr) auto' },
-                  gap: { xs: 2, sm: 3 },
-                  alignItems: 'center',
-                  px: { xs: 2, md: 3 },
-                  py: 2.5,
-                  borderRadius: radii.lg,
-                  bgcolor: 'rgba(255,106,61,0.14)',
-                  border: `1px solid ${color.accent}`,
-                }}
-              >
-                <Box sx={{ display: 'grid', gap: 0.5, minWidth: 0 }}>
-                  <Typography
-                    id="home-next-match-title"
-                    sx={{
-                      fontSize: '0.8125rem',
-                      color: color.accent,
-                      fontWeight: 600,
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.06em',
-                    }}
-                  >
-                    {t('home.nextMatch')}
-                    {match.status === 'live' ? ` · ${t('home.matchStatus.live')}` : ''}
-                  </Typography>
-                  <Typography
-                    sx={{
-                      fontFamily: fontDisplay,
-                      fontSize: '1.375rem',
-                      fontWeight: 600,
-                      overflowWrap: 'anywhere',
-                    }}
-                  >
-                    {myTeamMatchTeam?.name ?? myTeam?.name} {t('home.vs')}{' '}
-                    {match.opponent?.name ?? t('home.tbd')}
-                  </Typography>
-                  <Typography sx={{ fontSize: '0.875rem', color: color.ink2 }}>
-                    {[
-                      matchTournament?.name,
-                      getRoundLabel(
-                        match.round,
-                        matchTournament
-                          ? eliminationRoundCount(matchTournament.teamCount, matchTournament.type)
-                          : undefined
-                      ),
-                      formatBadge(match.matchFormat),
-                    ]
-                      .filter(Boolean)
-                      .join(' · ')}
-                  </Typography>
-                </Box>
-                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                  <Button
-                    component={RouterLink}
-                    to={paths.matchNow}
-                    variant="contained"
-                    data-testid="home-open-match"
-                  >
-                    {t('home.openMatch')}
-                  </Button>
-                </Box>
-              </Box>
+              <NextMatchCard
+                match={match}
+                teamName={myTeamMatchTeam?.name ?? myTeam?.name ?? ''}
+                where={[
+                  matchTournament?.name,
+                  getRoundLabel(
+                    match.round,
+                    matchTournament
+                      ? eliminationRoundCount(matchTournament.teamCount, matchTournament.type)
+                      : undefined
+                  ),
+                  formatBadge(match.matchFormat),
+                ]
+                  .filter(Boolean)
+                  .join(' · ')}
+              />
             )}
 
             <Box component="section" aria-labelledby="home-live-title">
