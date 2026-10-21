@@ -23,7 +23,7 @@ import { KEEP_AFTER_S } from './tournamentSpace';
 import { categoryWithRoom } from './tournamentSpacePlan';
 import type { Untrusted } from '../../utils/untrusted';
 import { announceMatch } from './announce';
-import { syncMatchVoice, voiceSettings } from './matchVoice';
+import { moveNow, voiceSettings } from './matchVoice';
 
 const ON_KEY = 'discord_team_channels';
 const CATEGORY_KEY = 'discord_team_category';
@@ -230,7 +230,7 @@ async function sweep(): Promise<void> {
     );
     for (const m of ready) {
       void announceMatch(m.slug);
-      void syncMatchVoice(m.slug);
+      void moveNow(m.slug);
     }
   }
 }
