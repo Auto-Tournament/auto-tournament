@@ -357,7 +357,9 @@
       "halftime": "Pause",
       "nextMap": "Neste kart",
       "goVeto": "Gå til vetoen",
-      "paused": "Pause"
+      "paused": "Pause",
+      "about": "~{{minutes}} min",
+      "joinServer": "Bli med på serveren"
     }
   },
   "browsePage": {

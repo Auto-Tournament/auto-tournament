@@ -43,6 +43,12 @@ test('before the match: opponent, start time, break, veto, server', () => {
   });
 });
 
+test('waiting on another match shows the estimate when there is one', () => {
+  const m = { ...base, opponent: null } as TeamMatchInfo;
+  expect(nextMatchCard(m, NOW, 12).big).toEqual({ key: 'about', values: { minutes: 12 } });
+  expect(nextMatchCard(m, NOW, null).big).toEqual({ text: 'TBD' });
+});
+
 test('on the server: join, warmup, live from our side, between maps', () => {
   expect(card({ status: 'loaded' })).toMatchObject({ tone: 'act', action: 'join' });
   const players = [

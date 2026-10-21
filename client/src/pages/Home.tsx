@@ -237,6 +237,7 @@ export default function Home() {
               <NextMatchCard
                 match={match}
                 teamName={myTeamMatchTeam?.name ?? myTeam?.name ?? ''}
+                tournamentId={matchTournament?.id}
                 where={[
                   matchTournament?.name,
                   getRoundLabel(

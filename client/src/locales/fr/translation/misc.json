@@ -357,7 +357,9 @@
       "halftime": "Half-time",
       "nextMap": "Next map",
       "goVeto": "Go to veto",
-      "paused": "Paused"
+      "paused": "Paused",
+      "about": "~{{minutes}} min",
+      "joinServer": "Join the server"
     }
   },
   "browsePage": {
