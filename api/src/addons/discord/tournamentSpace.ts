@@ -12,6 +12,8 @@ import { db } from '../../config/database';
 import type { Untrusted } from '../../utils/untrusted';
 import { log } from '../../utils/logger';
 import { discordIdOf } from '../../services/notifyChannels';
+import { notificationService } from '../../services/notificationService';
+import { authProviderSettingsService } from '../../services/authProviderSettingsService';
 import { botToken, discordBot, pickedGuildId } from './bot';
 import { discordFetch } from './rest';
 import { voiceSettings } from './matchVoice';
@@ -103,17 +105,31 @@ async function make(
      VALUES (?, ?, ?, ?, ?) ON CONFLICT (tournament_id) DO NOTHING`,
     [t.id, categoryId, roleId, chatId, lobbyId]
   );
-  // The players with a Discord account on this server get the role.
+  // The players with a Discord account on this server get the role; the rest are
+  // reminded once, in their bell, to link one (when they can: Discord sign-in on).
   if (!roleId) return;
+  const unlinked: string[] = [];
   for (const steamId of await playersOf(t.id, JSON.parse(t.team_ids ?? '[]') as string[])) {
     const discordId = await discordIdOf(steamId);
-    if (!discordId) continue;
+    if (!discordId) {
+      unlinked.push(steamId);
+      continue;
+    }
     const given = await discordFetch(
       token,
       `/guilds/${guildId}/members/${discordId}/roles/${roleId}`,
       { method: 'PUT' }
     );
     if (given.ok) await welcome(steamId, discordId, t.name, { chatId, lobbyId });
+  }
+  const discord = authProviderSettingsService.getEffective('discord');
+  if (unlinked.length && discord.enabled && discord.configured) {
+    await notificationService.notifyOnce(
+      unlinked,
+      'tournament',
+      { event: 'discord_link', name: t.name, tournamentId: t.id },
+      'discord_link'
+    );
   }
 }
 

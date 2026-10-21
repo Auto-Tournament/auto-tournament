@@ -53,7 +53,8 @@
       "startsSoon": "starts in {{minutes}} minutes. Get ready to join your first match.",
       "startsSoonUpdate": "starts in {{minutes}} minutes. Start your game now so any update is done before your first match.",
       "matchSoon": "your veto opens in {{minutes}} minutes and goes on without you. Be at your PC.",
-      "noShow": "you never joined your match, so you're out of the next rounds. Open the tournament and say you're back to play on."
+      "noShow": "you never joined your match, so you're out of the next rounds. Open the tournament and say you're back to play on.",
+      "discordLink": "link your Discord account to get your team's channels and be moved into its voice."
     },
     "toast": {
       "join": "Join party",

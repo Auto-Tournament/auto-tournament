@@ -64,7 +64,8 @@
       "startsSoon": "starter om {{minutes}} minutter. Gjør deg klar til den første kampen.",
       "startsSoonUpdate": "starter om {{minutes}} minutter. Start spillet nå, så er en ev. oppdatering ferdig før første kamp.",
       "matchSoon": "vetoen din åpner om {{minutes}} minutter og går videre uten deg. Sitt klar ved pc-en.",
-      "noShow": "du koblet aldri til kampen din, så du er ute av de neste rundene. Åpne turneringen og si fra at du er tilbake for å spille videre."
+      "noShow": "du koblet aldri til kampen din, så du er ute av de neste rundene. Åpne turneringen og si fra at du er tilbake for å spille videre.",
+      "discordLink": "koble til Discord-kontoen din for å få kanalene til laget ditt og bli flyttet inn i talekanalen."
     },
     "toast": {
       "join": "Bli med",
