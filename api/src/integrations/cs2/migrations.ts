@@ -1653,4 +1653,18 @@ export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
       CREATE INDEX IF NOT EXISTS cs2_moments_tournament_idx ON cs2_moments(tournament_id, seq);
     `,
   },
+  {
+    // Networks seen reaching a machine over its LAN (fleet/connectChoice.ts): a player's web
+    // address, learned when their client joined from the machine's LAN. Its next visitors get
+    // the LAN address recommended, even when the venue's internet goes out another way.
+    id: '060-lan-networks',
+    up: `
+      CREATE TABLE IF NOT EXISTS cs2_lan_networks (
+        public_host TEXT NOT NULL,
+        web_ip TEXT NOT NULL,
+        learned_at INTEGER NOT NULL,
+        PRIMARY KEY (public_host, web_ip)
+      );
+    `,
+  },
 ];

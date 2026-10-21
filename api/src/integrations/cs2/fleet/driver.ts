@@ -78,6 +78,7 @@ import type {
   UnassignReason,
   WelcomePayload,
 } from './protocol/v1';
+import { learnFromJoin } from './connectChoice';
 
 /** How long the allocator waits for Ready Up to accept a `match.assign`. */
 const ASSIGN_TIMEOUT_MS = Number(process.env.FLEET_ASSIGN_TIMEOUT_MS) || 15_000;
@@ -1135,6 +1136,13 @@ async function onFleetEvent(notice: FleetEventNotice): Promise<void> {
   ) {
     // The players' join panel says who the pause waits for: it re-reads now.
     emitMatchUpdate({ slug });
+  }
+  if (env.type === 'event.player_connect') {
+    // Where the client came from: a LAN join teaches the connect panel that network (connectChoice.ts).
+    const data = payload.data as FleetEventData['player_connect'];
+    void learnFromJoin(notice.serverId, String(data.steamid64), data.address).catch(
+      () => undefined
+    );
   }
   if (env.type === 'event.match_restored') {
     // The live score goes back to the restored backup's (the round's start).

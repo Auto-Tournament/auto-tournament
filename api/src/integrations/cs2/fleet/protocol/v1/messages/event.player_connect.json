@@ -4,13 +4,7 @@
   "title": "event.player_connect (server → platform, reliable)",
   "description": "Match event (FLEET.md §8.1), source: core events. Envelope epoch = the assignment's. `rev` / `patch` continue the MatchState stream (see match.defs.json#/$defs/rev); `data` holds the facts.",
   "type": "object",
-  "required": [
-    "match_id",
-    "map_number",
-    "rev",
-    "patch",
-    "data"
-  ],
+  "required": ["match_id", "map_number", "rev", "patch", "data"],
   "properties": {
     "match_id": {
       "$ref": "../match.defs.json#/$defs/matchId"
@@ -31,11 +25,7 @@
     },
     "data": {
       "type": "object",
-      "required": [
-        "steamid64",
-        "name",
-        "team"
-      ],
+      "required": ["steamid64", "name", "team"],
       "properties": {
         "steamid64": {
           "$ref": "../defs.json#/$defs/u64s"
@@ -45,12 +35,12 @@
           "maxLength": 128
         },
         "team": {
-          "enum": [
-            "team1",
-            "team2",
-            "spectator",
-            "none"
-          ]
+          "enum": ["team1", "team2", "spectator", "none"]
+        },
+        "address": {
+          "type": "string",
+          "maxLength": 64,
+          "description": "Where the client connected from, without the port (Ready Up 0.1.0-beta.76+)."
         }
       }
     }
