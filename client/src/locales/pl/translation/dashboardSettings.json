@@ -904,21 +904,10 @@
       "link": "Team channel on Discord"
     },
     "commands": {
-      "label": "Slash commands: /matches and /mymatch",
+      "label": "Slash commands: /matches, /mymatch and /lobby",
       "help": "They work as soon as the bot is connected. Optional: to have Discord send them to this site instead, paste this as your app's Interactions Endpoint URL in the Discord Developer Portal."
     },
     "invite": "Invite to a server",
-    "lobbyCall": {
-      "button": "Call to the Lobby",
-      "title": "Call the players to the Lobby",
-      "message": "Message (optional)",
-      "placeholder": "Everyone to the Lobby, please.",
-      "includeLive": "Also players in a live match",
-      "cancel": "Cancel",
-      "send": "Call them",
-      "done": "Moved {{moved}} into the Lobby, sent {{messaged}} a DM.",
-      "failed": "Could not call the players"
-    },
     "linking": {
       "label": "Players link their Discord",
       "help": "Uses your bot's own Discord app, so there's no second app to make. In the Developer Portal, open OAuth2 on your bot's app, add this redirect, then copy the client secret and paste it here.",

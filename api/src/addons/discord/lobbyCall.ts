@@ -1,5 +1,5 @@
 /**
- * Call to the Lobby (the Discord add-on; Manage, on a running tournament):
+ * Call to the Lobby (the Discord add-on; /lobby in Discord, interactions.ts):
  * the tournament's players who are in voice on the server are moved into its
  * Lobby, those who are not get a DM with the link, and #chat gets one post
  * that pings the "<tournament> players" role. Players in a live match are
@@ -10,14 +10,9 @@ import { discordIdOf } from '../../services/notifyChannels';
 import { botToken, discordBot, pickedGuildId } from './bot';
 import { discordFetch } from './rest';
 import { playersOf } from './lobby';
-import { ensureSpace, spaceOf } from './tournamentSpace';
+import { ensureSpace } from './tournamentSpace';
 
 export class LobbyCallError extends Error {}
-
-/** Whether the tournament has a Lobby to call players to. */
-export async function hasLobby(tournamentId: number): Promise<boolean> {
-  return !!(await spaceOf(tournamentId))?.lobbyId;
-}
 
 export async function callToLobby(
   tournamentId: number,

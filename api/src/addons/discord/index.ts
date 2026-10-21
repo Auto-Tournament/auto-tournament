@@ -5,7 +5,6 @@
  */
 import { Router, type Request, type Response } from 'express';
 import { requireAuth, type AuthedRequest } from '../../middleware/auth';
-import { callToLobby, hasLobby, LobbyCallError } from './lobbyCall';
 import { log } from '../../utils/logger';
 import type { Untrusted } from '../../utils/untrusted';
 import type { AddonModule } from '../types';
@@ -262,58 +261,6 @@ router.put('/team-channels', async (req: Request, res: Response) => {
   } catch (error) {
     log.error('Setting the Discord team channels failed', error as Error);
     return res.status(500).json({ success: false, error: 'Could not save the team channels' });
-  }
-});
-
-/**
- * @openapi
- * /api/addons/discord/tournaments/{id}/lobby:
- *   get:
- *     tags: [Add-ons]
- *     summary: Whether the tournament has a Lobby on Discord to call its players to
- *     security: [{ BearerAuth: [] }]
- *     parameters:
- *       - { in: path, name: id, required: true, schema: { type: integer } }
- *     responses:
- *       200: { description: "`lobby` (boolean)" }
- *   post:
- *     tags: [Add-ons]
- *     summary: Call the tournament's players to its Lobby (move those in voice, DM the rest, post in #chat)
- *     security: [{ BearerAuth: [] }]
- *     parameters:
- *       - { in: path, name: id, required: true, schema: { type: integer } }
- *     requestBody:
- *       content:
- *         application/json:
- *           schema: { type: object, properties: { message: { type: string, maxLength: 500 }, includeLive: { type: boolean } } }
- *     responses:
- *       200: { description: "`moved`, `messaged`: how many players were moved, and DMed" }
- *       400: { description: No Lobby, or a bad message }
- */
-router.get('/tournaments/:id/lobby', async (req: Request, res: Response) => {
-  return res.json({ success: true, lobby: await hasLobby(Number(req.params.id)) });
-});
-
-router.post('/tournaments/:id/lobby', async (req: Request, res: Response) => {
-  const body = (req.body as Record<string, Untrusted> | undefined) ?? {};
-  const message = body.message === undefined ? '' : body.message;
-  if (typeof message !== 'string' || message.length > 500) {
-    return res
-      .status(400)
-      .json({ success: false, error: 'message must be text, at most 500 characters' });
-  }
-  try {
-    const done = await callToLobby(Number(req.params.id), {
-      message,
-      includeLive: body.includeLive === true,
-    });
-    return res.json({ success: true, ...done });
-  } catch (error) {
-    if (error instanceof LobbyCallError) {
-      return res.status(400).json({ success: false, error: error.message });
-    }
-    log.error('Calling players to the Lobby failed', error as Error);
-    return res.status(500).json({ success: false, error: 'Could not call the players' });
   }
 });
 
