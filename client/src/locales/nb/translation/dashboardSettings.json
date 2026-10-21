@@ -926,7 +926,18 @@
       "notThere": "mangler",
       "fix": "Fiks det som mangler"
     },
-    "invite": "Inviter til en server"
+    "invite": "Inviter til en server",
+    "lobbyCall": {
+      "button": "Kall inn til lobbyen",
+      "title": "Kall spillerne inn til lobbyen",
+      "message": "Melding (valgfritt)",
+      "placeholder": "Alle til lobbyen, takk.",
+      "includeLive": "Også spillere i en kamp som pågår",
+      "cancel": "Avbryt",
+      "send": "Kall dem inn",
+      "done": "Flyttet {{moved}} til lobbyen og sendte {{messaged}} en direktemelding.",
+      "failed": "Kunne ikke kalle inn spillerne"
+    }
   },
   "liveMatchesPage": {
     "title": "Direktekamper",
