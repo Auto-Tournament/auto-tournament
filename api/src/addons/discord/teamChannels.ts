@@ -17,6 +17,7 @@ import { botToken, pickedGuildId } from './bot';
 import { discordFetch } from './rest';
 import { TEXT_MEMBER, teamOverwrites } from './voiceChannel';
 import { KEEP_AFTER_S, spaceOf } from './tournamentSpace';
+import { announceMatch } from './announce';
 
 const ON_KEY = 'discord_team_channels';
 
@@ -168,6 +169,13 @@ async function sweep(): Promise<void> {
        VALUES (?, ?, ?, ?) ON CONFLICT DO NOTHING`,
       [Number(tournamentId), teamId, channelId, roleId]
     );
+    // A match of the team that is ready already gets its ping in the new channel now.
+    const ready = await db.queryAsync<{ slug: string }>(
+      `SELECT slug FROM matches WHERE tournament_id = ? AND status IN ('loaded', 'live')
+         AND (team1_id = ? OR team2_id = ?)`,
+      [Number(tournamentId), teamId, teamId]
+    );
+    for (const m of ready) void announceMatch(m.slug);
   }
 }
 
