@@ -229,6 +229,13 @@ export async function recordAdminCall(
       log.warn('[ADMIN CALL] admin.called webhook failed', { error: String(err) })
     );
 
+  // The admins who are away hear it on Discord (the Discord add-on, when it has a bot).
+  void import('../addons/discord/adminCalls')
+    .then(({ dmAdminsAboutCall }) => dmAdminsAboutCall(call))
+    .catch((err: unknown) =>
+      log.warn('[ADMIN CALL] Discord DM to the admins failed', { error: String(err) })
+    );
+
   // Keep the table small: resolved calls go after RESOLVED_RETENTION_SECONDS.
   try {
     await db.runAsync('DELETE FROM admin_calls WHERE resolved_at IS NOT NULL AND resolved_at < ?', [
