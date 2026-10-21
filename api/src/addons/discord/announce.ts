@@ -1,10 +1,10 @@
 /**
- * Match announcements (the Discord add-on, Modules → Discord): a post in the
- * channel the admin picked when a match is ready on its server (format, maps),
- * when it goes live, and its result (each map's score, the top player, what
- * the winner plays next). Each once per match (discord_announcements); a match
- * that is reloaded (failover) is not announced again. The live card is edited
- * as the score moves, so the channel follows the match without a post a round.
+ * Match cards (the Discord add-on, Modules → Discord). Each match of a running
+ * tournament has one card in each team's own channel (teamChannels.ts),
+ * posted once with a ping to the team and then edited as it moves on:
+ * scheduled (its start time), the map veto (bans, picks, who is up), ready on
+ * its server, live (the score), and Done (each map's score, the top player,
+ * what the winner plays next). A cancelled match's card goes. Nothing public.
  *
  * Listens on the match change bus like the team voice channels.
  */
@@ -15,8 +15,8 @@ import { adminNoticeService } from '../../services/adminNoticeService';
 import { matchRow } from '../../services/matchNotices';
 import { botToken } from './bot';
 import { discordFetch } from './rest';
-import { ensureSpace } from './tournamentSpace';
-import { announceMessage, dueEvents, teamLabel, type CardInput } from './announceText';
+import { announceMessage, feedStage, teamLabel, type CardInput } from './announceText';
+import { matchTimeFields } from '../../services/matchTimes';
 import { discordIdOf } from '../../services/notifyChannels';
 import { matchLiveStatsService } from '../../services/matchLiveStatsService';
 import { mapLabel, roundLabel } from '../../services/shareCards/core';
@@ -47,6 +47,10 @@ interface MatchState {
   tournament_type: string | null;
   bracket: string | null;
   tournament: string | null;
+  tournament_status: string | null;
+  tournament_settings: string | null;
+  veto_state: string | null;
+  starts_at: number | null;
 }
 
 /** Each map's score, and maps won by each side (or the map's rounds for a Bo1). */
@@ -182,8 +186,49 @@ function formatOf(config: string | null): { format: string | null; maps: string[
   }
 }
 
-/** The live card's message, and what it last said, so a change edits it once. */
-const liveCards = new Map<string, string>();
+/** The veto so far from the match's veto state, and who is up. */
+function vetoOf(
+  raw: string | null
+): (NonNullable<CardInput['veto']> & { status: string | null }) | null {
+  try {
+    const v = JSON.parse(raw ?? 'null') as {
+      status?: string;
+      actions?: Array<{ action?: string; mapName?: string }>;
+      currentTurn?: string;
+      currentAction?: string;
+    } | null;
+    if (!v) return null;
+    const maps = (action: string) =>
+      (v.actions ?? [])
+        .filter((a) => a.action === action && a.mapName)
+        .map((a) => mapLabel(a.mapName ?? null) ?? '');
+    const team = ({ team1: 1, team2: 2 } as const)[v.currentTurn ?? ''] ?? null;
+    const action = v.currentAction === 'side_pick' ? 'pick a side' : v.currentAction;
+    return {
+      status: v.status ?? null,
+      banned: maps('ban'),
+      picked: maps('pick'),
+      next: team && action ? { team, action } : null,
+    };
+  } catch {
+    return null;
+  }
+}
+
+/** The start of a scheduled match (Manage › Schedule), or null. */
+function startsAtOf(m: MatchState): number | null {
+  try {
+    return matchTimeFields(
+      { round: m.round, starts_at: m.starts_at },
+      JSON.parse(m.tournament_settings ?? '{}')
+    ).startsAt;
+  } catch {
+    return null;
+  }
+}
+
+/** What each team's match card last said (by match and team), so a change edits it once. */
+const teamCards = new Map<string, string>();
 
 /** The teams' roles (team channels and roles), newest tournament first. */
 /** A team's own text channel in this tournament (teamChannels.ts), or null. */
@@ -221,43 +266,55 @@ async function announceNow(slug: string): Promise<void> {
   if (!token) return;
   const state = await db.queryOneAsync<MatchState>(
     `SELECT m.status, m.completed_at, m.winner_id, m.team1_id, m.team2_id, m.round, m.next_match_id,
-            m.config, m.tournament_id, tr.name AS tournament, tr.type AS tournament_type, m.bracket
+            m.config, m.tournament_id, tr.name AS tournament, tr.type AS tournament_type, m.bracket,
+            tr.status AS tournament_status, tr.settings AS tournament_settings, m.veto_state, m.starts_at
        FROM matches m LEFT JOIN tournament tr ON tr.id = m.tournament_id
       WHERE m.slug = ?`,
     [slug]
   );
   if (!state) return;
-  // The tournament's own #matches and #results (tournamentSpace.ts), else the channel setup picked.
-  const space = await ensureSpace(state.tournament_id);
-  const fallback = await announceChannel();
-  const matchesId = space?.matchesId ?? fallback;
-  const resultsId = space?.resultsId ?? fallback;
-  if (!matchesId || !resultsId) return;
   // A match that ended long ago (its clips or stats changed since) is not news.
   const fresh = (state.completed_at ?? 0) > Date.now() / 1000 - 30 * 60;
-  const due = dueEvents(state.status, state.winner_id !== null && fresh);
-  if (!due.length) return;
+  const resultDue = state.status === 'completed' && state.winner_id !== null && fresh;
+  // Only a running tournament's matches have a card in their teams' channels.
+  const stage =
+    state.tournament_status === 'in_progress'
+      ? feedStage(
+          state.status,
+          vetoOf(state.veto_state)?.status ?? null,
+          !!state.team1_id && !!state.team2_id
+        )
+      : null;
   const sent = await db.queryAsync<{ event: string; message_id: string | null }>(
     'SELECT event, message_id FROM discord_announcements WHERE match_slug = ?',
     [slug]
   );
-  const todo = due.filter((e) => !sent.some((s) => s.event === e));
-  const liveSent = sent.find((s) => s.event === 'live' && s.message_id);
-  // Once completed, the live card is left with the last map's score ("Over on Nuke: ...").
-  const overDue =
-    state.status === 'completed' && !!liveSent && !sent.some((s) => s.event === 'over');
-  // Each team is pinged in its own channel once it has one (#results pings no one): the
-  // match can be ready before the tournament's team channels are made (a minute's sweep).
-  const pingDue =
-    (state.status === 'loaded' || state.status === 'live') &&
-    [state.team1_id, state.team2_id].some(
-      (id) => id && !sent.some((s) => s.event === `ready:${id}`)
-    );
-  if (!todo.length && !(state.status === 'live' && liveSent) && !overDue && !pingDue) return;
+  // Each team's card: the stage it is at, then the result; a cancelled match's card goes.
+  const cardStage = stage ?? (resultDue ? 'result' : null);
+  const cancelled = state.status === 'cancelled' && sent.some((s) => s.event.startsWith('card:'));
+  if (!cardStage && !cancelled) return;
   const match = await matchRow(slug);
   const team1 = match?.t1;
   const team2 = match?.t2;
   if (!team1 || !team2) return;
+  const post = async (
+    channelId: string,
+    body: ReturnType<typeof announceMessage>,
+    what: string
+  ): Promise<string | null> => {
+    const posted = await discordFetch(token, `/channels/${channelId}/messages`, {
+      method: 'POST',
+      body,
+    });
+    if (posted.ok && typeof posted.body.id === 'string') return posted.body.id;
+    log.warn(`[Discord] ${what} for ${slug} failed: ${posted.status}`);
+    await adminNoticeService.raise(
+      'discord_failed',
+      { matchSlug: slug, what, detail: `Discord answered ${posted.status}` },
+      `discord_failed:announce:${channelId}`
+    );
+    return null;
+  };
   const site = siteUrl();
   const url = site ? `${site}/match/${encodeURIComponent(slug)}` : null;
   const card = async (event: CardInput['event']): Promise<CardInput> => {
@@ -270,6 +327,8 @@ async function announceNow(slug: string): Promise<void> {
       tournament: state.tournament,
       stage: await stageOf(slug, state),
       ...formatOf(state.config),
+      startsAt: startsAtOf(state),
+      veto: vetoOf(state.veto_state),
     };
     if (event === 'live') {
       const s = matchLiveStatsService.getStats(slug);
@@ -300,100 +359,57 @@ async function announceNow(slug: string): Promise<void> {
     }
     return base;
   };
-  // The live card follows the score: edited when what it says changes.
-  const editLive = (body: ReturnType<typeof announceMessage>, messageId: string) =>
-    discordFetch(token, `/channels/${matchesId}/messages/${messageId}`, {
-      method: 'PATCH',
-      // The embed and button only: an edit pings no one.
-      body: {
-        embeds: body.embeds,
-        components: body.components ?? [],
-        allowed_mentions: { parse: [] },
-      },
-    });
-  const liveId = liveSent ? liveSent.message_id : null;
-  if (overDue && liveId) {
-    // Claimed first, like the posts, so it is edited once.
-    const claimed = await db.queryOneAsync<{ event: string }>(
-      `INSERT INTO discord_announcements (match_slug, event, sent_at) VALUES (?, 'over', ?)
-       ON CONFLICT DO NOTHING RETURNING event`,
-      [slug, Math.floor(Date.now() / 1000)]
-    );
-    const won = await resultOf(slug, state);
-    const maps = won.maps;
-    if (claimed && maps.length > 0) {
-      const lastMap = maps[maps.length - 1];
-      const live: NonNullable<CardInput['live']> = {
-        map: lastMap.map,
-        mapNumber: maps.length - 1,
-        totalMaps: maps.length,
-        score: lastMap.score,
-        round: lastMap.score[0] + lastMap.score[1],
-        series: won.score,
-      };
-      await editLive(announceMessage({ ...(await card('live')), live, over: true }), liveId);
+  // One card per match in each team's own channel (teamChannels.ts): posted once with a
+  // ping, then edited as the match moves on (an edit pings no one). A team whose channel
+  // is not made yet gets it once it is (teamChannels.ts nudges this).
+  const roles = await rolesOf(state);
+  for (const [teamId, roleId] of [
+    [state.team1_id, roles.team1],
+    [state.team2_id, roles.team2],
+  ] as const) {
+    const own = await teamChannelOf(state.tournament_id, teamId);
+    if (!teamId || !own) continue;
+    const event = `card:${teamId}`;
+    const row = sent.find((s) => s.event === event);
+    const key = `${slug}:${teamId}`;
+    if (cancelled) {
+      if (row?.message_id) {
+        await discordFetch(token, `/channels/${own}/messages/${row.message_id}`, {
+          method: 'DELETE',
+        });
+      }
+      teamCards.delete(key);
+      continue;
     }
-  }
-  if (state.status === 'live' && liveSent?.message_id) {
-    const body = announceMessage(await card('live'));
-    const text = JSON.stringify(body.embeds);
-    if (liveCards.get(slug) !== text) {
-      liveCards.set(slug, text);
-      await editLive(body, liveSent.message_id);
-    }
-  }
-  if (state.status !== 'live') liveCards.delete(slug);
-  if (pingDue) {
-    const ready = await card('ready');
-    for (const [teamId, roleId] of [
-      [state.team1_id, ready.roles.team1],
-      [state.team2_id, ready.roles.team2],
-    ] as const) {
-      const own = await teamChannelOf(state.tournament_id, teamId);
-      if (!teamId || !own || !roleId) continue;
+    if (!cardStage) continue;
+    const body = announceMessage(await card(cardStage));
+    const text = JSON.stringify([body.embeds, body.components ?? []]);
+    if (!row) {
+      // Claimed first, like the result, so a burst of changes posts it once.
       const claimed = await db.queryOneAsync<{ event: string }>(
         `INSERT INTO discord_announcements (match_slug, event, sent_at) VALUES (?, ?, ?)
          ON CONFLICT DO NOTHING RETURNING event`,
-        [slug, `ready:${teamId}`, Math.floor(Date.now() / 1000)]
+        [slug, event, Math.floor(Date.now() / 1000)]
       );
-      if (claimed) {
-        await discordFetch(token, `/channels/${own}/messages`, {
-          method: 'POST',
-          body: announceMessage(ready, roleId),
-        });
+      if (!claimed) continue;
+      const posted = await post(own, announceMessage(await card(cardStage), roleId), 'Match card');
+      if (posted) {
+        teamCards.set(key, text);
+        await db.runAsync(
+          'UPDATE discord_announcements SET message_id = ? WHERE match_slug = ? AND event = ?',
+          [posted, slug, event]
+        );
       }
-    }
-  }
-  for (const event of todo) {
-    // Claimed first, so a burst of changes posts it once.
-    const claimed = await db.queryOneAsync<{ event: string }>(
-      `INSERT INTO discord_announcements (match_slug, event, sent_at) VALUES (?, ?, ?)
-       ON CONFLICT DO NOTHING RETURNING event`,
-      [slug, event, Math.floor(Date.now() / 1000)]
-    );
-    if (!claimed) continue;
-    const channelId = event === 'result' ? resultsId : matchesId;
-    const posted = await discordFetch(token, `/channels/${channelId}/messages`, {
-      method: 'POST',
-      body: announceMessage(await card(event)),
-    });
-    if (posted.ok && typeof posted.body.id === 'string') {
-      await db.runAsync(
-        'UPDATE discord_announcements SET message_id = ? WHERE match_slug = ? AND event = ?',
-        [posted.body.id, slug, event]
-      );
-    }
-    if (!posted.ok) {
-      log.warn(`[Discord] Announcing ${slug} (${event}) failed: ${posted.status}`);
-      await adminNoticeService.raise(
-        'discord_failed',
-        {
-          matchSlug: slug,
-          what: 'Match announcement',
-          detail: `Discord answered ${posted.status}`,
+    } else if (row.message_id && teamCards.get(key) !== text) {
+      teamCards.set(key, text);
+      await discordFetch(token, `/channels/${own}/messages/${row.message_id}`, {
+        method: 'PATCH',
+        body: {
+          embeds: body.embeds,
+          components: body.components ?? [],
+          allowed_mentions: { parse: [] },
         },
-        `discord_failed:announce:${channelId}`
-      );
+      });
     }
   }
 }

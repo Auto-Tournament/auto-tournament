@@ -1132,9 +1132,7 @@ export function getSchemaSQL(): string {
       category_id TEXT NOT NULL,
       role_id TEXT, -- "<tournament> players", given to its players on the server
       channel_id TEXT, -- #chat
-      lobby_id TEXT, -- a Stage (a voice channel where Discord has no Stages)
-      matches_id TEXT, -- #matches: one message per match
-      results_id TEXT -- #results: one card per finished match
+      lobby_id TEXT -- a Stage (a voice channel where Discord has no Stages)
     );
 
     CREATE TABLE IF NOT EXISTS discord_team_channels (

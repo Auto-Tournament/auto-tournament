@@ -1,9 +1,9 @@
 /**
  * A tournament's own place on the Discord server (Modules → Discord): when it
  * starts, a category named after it that only its players see, through a
- * "<tournament> players" role. In it: #matches (the bot's match cards),
- * #results (one card per finished match), #chat, and a Lobby Stage (join and
- * listen, not talk). The teams' own channels are in "Your team" (teamChannels.ts).
+ * "<tournament> players" role. In it: #chat (the start, announcements, the
+ * players' talk) and a Lobby Stage (join and listen, not talk). Each team's
+ * channels, with a card per match, are in "Your team" (teamChannels.ts).
  *
  * Three days after the tournament ends (time to say gg and find clips), the
  * category, its channels and the role go. A sweep every minute keeps it in step.
@@ -16,7 +16,7 @@ import { botToken, pickedGuildId } from './bot';
 import { discordFetch } from './rest';
 import { voiceSettings } from './matchVoice';
 import { playersOf } from './lobby';
-import { spaceOverwrites, LISTEN_ONLY, SEND_MESSAGES } from './voiceChannel';
+import { spaceOverwrites, LISTEN_ONLY } from './voiceChannel';
 import { KEEP_AFTER_S, spacePlan } from './tournamentSpacePlan';
 
 export { KEEP_AFTER_S };
@@ -28,8 +28,6 @@ export interface TournamentSpace {
   /** #chat: the start, the schedule, announcements. */
   channelId: string | null;
   lobbyId: string | null;
-  matchesId: string | null;
-  resultsId: string | null;
 }
 
 /** The tournament's category, role, channel and Lobby on the server, or null. */
@@ -40,10 +38,8 @@ export async function spaceOf(tournamentId: number | null): Promise<TournamentSp
     role_id: string | null;
     channel_id: string | null;
     lobby_id: string | null;
-    matches_id: string | null;
-    results_id: string | null;
   }>(
-    'SELECT category_id, role_id, channel_id, lobby_id, matches_id, results_id FROM discord_tournament_spaces WHERE tournament_id = ?',
+    'SELECT category_id, role_id, channel_id, lobby_id FROM discord_tournament_spaces WHERE tournament_id = ?',
     [tournamentId]
   );
   return row
@@ -52,8 +48,6 @@ export async function spaceOf(tournamentId: number | null): Promise<TournamentSp
         roleId: row.role_id,
         channelId: row.channel_id,
         lobbyId: row.lobby_id,
-        matchesId: row.matches_id,
-        resultsId: row.results_id,
       }
     : null;
 }
@@ -85,11 +79,6 @@ async function make(
   }
   const categoryId = category.body.id;
   const overwrites = spaceOverwrites(guildId, botId, roleId);
-  // The players read #matches and #results (the bot writes them) and talk in #chat.
-  const readOnly = [
-    ...overwrites,
-    ...(roleId ? [{ id: roleId, type: 0 as const, allow: '0', deny: String(SEND_MESSAGES) }] : []),
-  ];
   const channel = async (name: string, type: number, permission_overwrites = overwrites) => {
     const made = await discordFetch(token, `/guilds/${guildId}/channels`, {
       method: 'POST',
@@ -97,8 +86,6 @@ async function make(
     });
     return made.ok && typeof made.body.id === 'string' ? made.body.id : null;
   };
-  const matchesId = await channel('matches', 0, readOnly);
-  const resultsId = await channel('results', 0, readOnly);
   const chatId = await channel('chat', 0);
   // A Stage: everyone listens, the admins speak. Only Community servers have Stages;
   // elsewhere a voice channel the players cannot talk in.
@@ -110,9 +97,9 @@ async function make(
     (await channel('Lobby', 13, overwrites)) ?? (await channel('Lobby', 2, listenOnly));
   await db.runAsync(
     `INSERT INTO discord_tournament_spaces
-       (tournament_id, category_id, role_id, channel_id, lobby_id, matches_id, results_id)
-     VALUES (?, ?, ?, ?, ?, ?, ?) ON CONFLICT (tournament_id) DO NOTHING`,
-    [t.id, categoryId, roleId, chatId, lobbyId, matchesId, resultsId]
+       (tournament_id, category_id, role_id, channel_id, lobby_id)
+     VALUES (?, ?, ?, ?, ?) ON CONFLICT (tournament_id) DO NOTHING`,
+    [t.id, categoryId, roleId, chatId, lobbyId]
   );
   // The players with a Discord account on this server get the role.
   if (!roleId) return;
