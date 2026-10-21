@@ -25,7 +25,16 @@ const clock = (at: number) => {
   return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
 };
 
-export function nextMatchCard(m: TeamMatchInfo, now: number): NextMatchCard {
+/**
+ * `estimate`: about how many minutes until what the card waits on (the opponent's match, a free
+ * server) is over, from the bracket's live scores; null when unknown.
+ */
+export function nextMatchCard(
+  m: TeamMatchInfo,
+  now: number,
+  estimate: number | null = null
+): NextMatchCard {
+  const about = estimate !== null ? { key: 'about', values: { minutes: estimate } } : null;
   const mine = (a: number, b: number) => (m.isTeam1 ? [a, b] : [b, a]);
   const live = m.liveStats;
   // No veto state yet means it has not started (unless the match has no veto at all).
@@ -34,7 +43,7 @@ export function nextMatchCard(m: TeamMatchInfo, now: number): NextMatchCard {
   if (!m.opponent) {
     return {
       tone: 'calm',
-      big: { text: 'TBD' },
+      big: about ?? { text: 'TBD' },
       small: { key: 'opponent' },
       label: 'nextMatch',
       action: 'open',
@@ -148,7 +157,7 @@ export function nextMatchCard(m: TeamMatchInfo, now: number): NextMatchCard {
   if (vetoDone && !m.server) {
     return {
       tone: 'wait',
-      big: { key: 'waiting' },
+      big: about ?? { key: 'waiting' },
       small: { key: 'forServer' },
       label: 'nextMatch',
       action: 'open',

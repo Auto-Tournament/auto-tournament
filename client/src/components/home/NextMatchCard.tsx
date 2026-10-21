@@ -7,6 +7,9 @@ import { fontDisplay, mono, radii, tokens } from '../../theme/tokens';
 import { paths } from '../../paths';
 import type { TeamMatchInfo } from '../../types';
 import { nextMatchCard, type CardTone } from './nextMatchState';
+import { usePublicBracket } from '../../hooks/usePublicBracket';
+import { minutesLeft } from '../tournament/PlacementDialog';
+import type { Match, Tournament } from '../../types';
 
 const { color } = tokens;
 
@@ -16,6 +19,29 @@ const TONE: Record<CardTone, { main: string; wash: string }> = {
   wait: { main: color.warning, wash: alpha(color.warning, 0.12) },
   calm: { main: color.ink2, wash: color.paper3 },
 };
+
+/**
+ * About how many minutes until the card can move on: the opponent's feeder match ends, or (for a
+ * free server) the soonest live match of the tournament does. Null when nothing is live.
+ */
+function estimateFrom(
+  match: TeamMatchInfo,
+  matches: Match[],
+  tournament: Tournament | null
+): number | null {
+  const maxRounds =
+    tournament?.maxRounds ??
+    (tournament?.settings as { cs2?: { maxRounds?: number } } | undefined)?.cs2?.maxRounds ??
+    null;
+  const left = (m: Match) =>
+    m.status === 'live' ? minutesLeft(maxRounds, m.team1MapScore, m.team2MapScore) : null;
+  const next = matches.find((m) => m.slug === match.slug);
+  const pool = match.opponent
+    ? matches
+    : matches.filter((m) => next && m.nextMatchId === next.id && m.slug !== match.slug);
+  const times = pool.map(left).filter((n): n is number => n !== null);
+  return times.length ? Math.min(...times) : null;
+}
 
 const mmss = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 
@@ -28,14 +54,25 @@ export function NextMatchCard({
   match,
   teamName,
   where,
+  tournamentId,
 }: {
   match: TeamMatchInfo;
   teamName: string;
   where: string;
+  /** Its tournament: the bracket's live scores give the estimates (opponent, free server). */
+  tournamentId?: number;
 }) {
   const { t } = useTranslation();
   const [now, setNow] = useState(() => Math.floor(Date.now() / 1000));
-  const card = nextMatchCard(match, now);
+  // Only waiting on another match needs the bracket.
+  const waiting =
+    !match.opponent || (match.status !== 'loaded' && match.status !== 'live' && !match.server);
+  const bracket = usePublicBracket(waiting ? tournamentId : undefined);
+  const card = nextMatchCard(
+    match,
+    now,
+    waiting ? estimateFrom(match, bracket.matches, bracket.tournament) : null
+  );
   // A countdown ticks; everything else changes with the match itself.
   useEffect(() => {
     if (!card.countdownTo) return;
@@ -65,6 +102,18 @@ export function NextMatchCard({
         overflow: 'hidden',
         border: `1px solid ${act || card.tone !== 'calm' ? tone.main : color.rule}`,
         bgcolor: act ? color.accent : color.paper2,
+        // It needs you: the same growing ring as the chat button with unread lines.
+        ...(act && {
+          '@keyframes nextMatchPulse': {
+            '0%, 100%': { boxShadow: `0 0 0 0 ${alpha(color.accent, 0.35)}` },
+            '50%': { boxShadow: `0 0 0 10px ${alpha(color.accent, 0.35)}` },
+          },
+          animation: 'nextMatchPulse 1.6s ease-in-out infinite',
+          '@media (prefers-reduced-motion: reduce)': {
+            animation: 'none',
+            boxShadow: `0 0 0 6px ${alpha(color.accent, 0.35)}`,
+          },
+        }),
       }}
     >
       <Box
