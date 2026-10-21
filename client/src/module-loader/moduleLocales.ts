@@ -17,6 +17,8 @@
  * - A code module ships them on its default export (`locales`), so they come
  *   with its code and need no request of their own. A malformed `locales`
  *   refuses the module, like any other bad field.
+ * - A language may instead be a loader (`() => import('./nb.json')`): it is
+ *   fetched when it is the viewer's language, now or after they switch.
  *
  * Validation is pure; registration takes the i18next instance, so a spec can
  * run both in Node.
@@ -49,6 +51,7 @@ export function localesProblem(locales: Untrusted): string | null {
   if (!isObject(locales)) return 'locales is not an object of language bundles';
   for (const [language, bundle] of Object.entries(locales)) {
     if (!LANGUAGE_CODE.test(language)) return `locales.${language} is not a language code`;
+    if (typeof bundle === 'function') continue; // a loader: checked when it loads
     const problem = bundleProblem(bundle, `locales.${language}`);
     if (problem) return problem;
   }
@@ -64,6 +67,9 @@ export interface LocaleRegistry {
     deep?: boolean,
     overwrite?: boolean
   ): object;
+  /** The viewer's language, and its changes: when a loader's language is needed. */
+  language?: string;
+  on?(event: 'languageChanged', listener: (lng: string) => void): void;
 }
 
 /** Adds each language's bundle to i18next as namespace `moduleId`. */
@@ -73,7 +79,21 @@ export function registerModuleLocales(
   locales: ModuleLocales | undefined
 ): void {
   if (!locales) return;
+  const loaders = new Map<string, () => Promise<{ default: Record<string, Untrusted> }>>();
   for (const [language, bundle] of Object.entries(locales)) {
-    i18n.addResourceBundle(language, moduleId, bundle, true, true);
+    if (typeof bundle === 'function') loaders.set(language, bundle);
+    else i18n.addResourceBundle(language, moduleId, bundle, true, true);
   }
+  if (!loaders.size) return;
+  const load = (lng: string | undefined) => {
+    const language = lng && (loaders.has(lng) ? lng : lng.split('-')[0]);
+    const loader = language ? loaders.get(language) : undefined;
+    if (!language || !loader) return;
+    loaders.delete(language);
+    void loader()
+      .then((m) => i18n.addResourceBundle(language, moduleId, m.default, true, true))
+      .catch(() => loaders.set(language, loader));
+  };
+  load(i18n.language);
+  i18n.on?.('languageChanged', load);
 }

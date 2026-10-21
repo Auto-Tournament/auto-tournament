@@ -8,26 +8,18 @@
  */
 
 import type { ModuleLocales } from '../../types';
-import de from './de.json';
 import en from './en.json';
-import es from './es.json';
-import fr from './fr.json';
-import it from './it.json';
-import nb from './nb.json';
-import nl from './nl.json';
-import pl from './pl.json';
-import pt from './pt-PT.json';
-import zhCN from './zh-CN.json';
 
+/** English is in the bundle (the fallback); the rest load when they are the viewer's language. */
 export const cs2Locales: ModuleLocales = {
   en,
-  'zh-CN': zhCN,
-  fr,
-  de,
-  es,
-  it,
-  'pt-PT': pt,
-  pl,
-  nl,
-  nb,
+  'zh-CN': () => import('./zh-CN.json'),
+  fr: () => import('./fr.json'),
+  de: () => import('./de.json'),
+  es: () => import('./es.json'),
+  it: () => import('./it.json'),
+  'pt-PT': () => import('./pt-PT.json'),
+  pl: () => import('./pl.json'),
+  nl: () => import('./nl.json'),
+  nb: () => import('./nb.json'),
 };

@@ -64,6 +64,15 @@ test.describe('module locales', () => {
     ).toBeNull();
   });
 
+  test('a language may be a loader (fetched when it is the viewer language)', () => {
+    expect(
+      localesProblem({
+        en: { page: { title: 'Arena' } },
+        nb: () => Promise.resolve({ default: {} }),
+      })
+    ).toBeNull();
+  });
+
   test('a malformed set names what is wrong', () => {
     expect(localesProblem('en')).toBe('locales is not an object of language bundles');
     expect(localesProblem({ English: {} })).toBe('locales.English is not a language code');
