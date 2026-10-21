@@ -272,6 +272,14 @@ router.get('/mine', async (req: Request, res: Response) => {
       // Up to MAX_OWNED_TEAMS, oldest first; `ownedMax` for "make another".
       owned: owned.map((r) => ({ ...toDirectoryTeam(r), pendingInvites: pending.get(r.id) ?? 0 })),
       ownedMax: MAX_OWNED_TEAMS,
+      // The team shown under their name on their profile (PUT /api/players/me/shown-team).
+      shownTeamId:
+        (
+          await db.queryOneAsync<{ shown_team_id: string | null }>(
+            'SELECT shown_team_id FROM players WHERE uid = ?',
+            [viewer.uid]
+          )
+        )?.shown_team_id ?? null,
       memberOf: rows
         .filter((r) => !ownedIds.has(r.id))
         .map((r) => ({

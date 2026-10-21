@@ -337,6 +337,7 @@ export function getSchemaSQL(): string {
       match_count INTEGER NOT NULL DEFAULT 0,
       created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
       updated_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+      shown_team_id TEXT, -- the team the player chose to show under their name on their profile (one they are on)
       discord_id TEXT, -- Discord user ID (17-20 digit string). Contact data only, admin-only, not unique (a parent may list theirs on several children)
       discord_id_edited_at INTEGER, -- Epoch of the last explicit edit (admin or the player) that set OR cleared discord_id; NULL = only ever filled by an import. Imports never touch a row where this is set. Internal, never in a response
       oidc_subject TEXT, -- An integrator's OpenID Connect login (its sub, e.g. NTLAN's Keycloak) for this player, from a team or player import: an OpenID Connect sign-in with it lands on this player. Only ever filled by an import, never overwritten. Admin-only

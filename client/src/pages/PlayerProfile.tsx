@@ -1,4 +1,5 @@
 /* global AbortController */
+import { ShownTeamPicker } from '../components/player/profile/ShownTeamPicker';
 import { ProfileHighlights } from '../components/highlights/ProfileHighlights';
 import type { PlayerHighlightsFeed } from '../components/highlights/feed';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
@@ -437,7 +438,7 @@ export default function PlayerProfile() {
 
         // The team for the header chip, even when the player has no current match.
         try {
-          const teamResp = (await api.fetch(`/api/players/${steamId}/team`, {
+          const teamResp = (await api.fetch(`/api/players/${steamId}/team?for=profile`, {
             method: 'GET',
             signal: controller.signal,
           })) as {
@@ -1137,6 +1138,19 @@ export default function PlayerProfile() {
             isOwnProfile={isOwnProfile}
             lastResults={recentMatchEntries.map((m) => m.wonMatch)}
           />
+          {isOwnProfile && (
+            <ShownTeamPicker
+              current={headerTeam?.id ?? null}
+              onChosen={(team) =>
+                setAssignedTeam({
+                  id: team.id,
+                  name: team.name,
+                  tag: team.tag ?? undefined,
+                  role: null,
+                })
+              }
+            />
+          )}
 
           {/* Matchmaking level and commends; nothing while matchmaking is off. */}
           <PlayerProgress playerId={player.id} />
