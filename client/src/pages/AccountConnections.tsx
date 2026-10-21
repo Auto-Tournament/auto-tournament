@@ -909,7 +909,8 @@ export default function AccountConnections() {
                       end = (
                         <Button
                           size="small"
-                          variant="outlined"
+                          // Discord is how the Discord bot finds the player (the notice links here).
+                          variant={method.provider === 'discord' ? 'contained' : 'outlined'}
                           onClick={() => connect(method.provider)}
                           data-testid={`sign-in-connect-${method.provider}`}
                         >

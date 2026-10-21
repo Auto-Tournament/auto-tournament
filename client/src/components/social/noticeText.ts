@@ -115,6 +115,12 @@ export function describeNotice(notice: Notice, t: TFunction, viewerId: string | 
         out.to = `/match/${encodeURIComponent(str(d.matchSlug))}`;
         break;
       }
+      // No Discord linked while the tournament has Discord channels: link it.
+      if (d.event === 'discord_link') {
+        out.text = t('social.notice.discordLink');
+        out.to = '/me/connections';
+        break;
+      }
       // A shuffle no-show: out of the next draws until they say they are back
       // (the tournament page).
       if (d.event === 'no_show') {
