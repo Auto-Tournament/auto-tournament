@@ -22,7 +22,7 @@ import { discordIdOf } from '../../services/notifyChannels';
 import { botToken, discordBot, pickedGuildId } from './bot';
 import { discordFetch } from './rest';
 import { teamOverwrites, voiceChannelName } from './voiceChannel';
-import { spaceOf } from './tournamentSpace';
+import { ensureSpace } from './tournamentSpace';
 
 const ON_KEY = 'discord_match_voice';
 const CATEGORY_KEY = 'discord_voice_category';
@@ -113,7 +113,7 @@ async function createChannels(
   );
   if (!match || !state) return;
   // In the tournament's own category (tournamentSpace.ts), else the one from setup.
-  const parentId = (await spaceOf(match.tournament_id))?.categoryId ?? settings.categoryId;
+  const parentId = (await ensureSpace(match.tournament_id))?.categoryId ?? settings.categoryId;
   const bot = await botId(token);
   if (!bot) return failed(slug, 'Team voice channels', 'Discord did not say who the bot is');
   for (const side of sides) {

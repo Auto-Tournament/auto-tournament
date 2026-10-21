@@ -241,7 +241,14 @@ async function announceNow(slug: string): Promise<void> {
   // Once completed, the live card is left with the last map's score ("Over on Nuke: ...").
   const overDue =
     state.status === 'completed' && !!liveSent && !sent.some((s) => s.event === 'over');
-  if (!todo.length && !(state.status === 'live' && liveSent) && !overDue) return;
+  // Each team is pinged in its own channel once it has one (#results pings no one): the
+  // match can be ready before the tournament's team channels are made (a minute's sweep).
+  const pingDue =
+    (state.status === 'loaded' || state.status === 'live') &&
+    [state.team1_id, state.team2_id].some(
+      (id) => id && !sent.some((s) => s.event === `ready:${id}`)
+    );
+  if (!todo.length && !(state.status === 'live' && liveSent) && !overDue && !pingDue) return;
   const match = await matchRow(slug);
   const team1 = match?.t1;
   const team2 = match?.t2;
@@ -331,6 +338,27 @@ async function announceNow(slug: string): Promise<void> {
     }
   }
   if (state.status !== 'live') liveCards.delete(slug);
+  if (pingDue) {
+    const ready = await card('ready');
+    for (const [teamId, roleId] of [
+      [state.team1_id, ready.roles.team1],
+      [state.team2_id, ready.roles.team2],
+    ] as const) {
+      const own = await teamChannelOf(state.tournament_id, teamId);
+      if (!teamId || !own || !roleId) continue;
+      const claimed = await db.queryOneAsync<{ event: string }>(
+        `INSERT INTO discord_announcements (match_slug, event, sent_at) VALUES (?, ?, ?)
+         ON CONFLICT DO NOTHING RETURNING event`,
+        [slug, `ready:${teamId}`, Math.floor(Date.now() / 1000)]
+      );
+      if (claimed) {
+        await discordFetch(token, `/channels/${own}/messages`, {
+          method: 'POST',
+          body: announceMessage(ready, roleId),
+        });
+      }
+    }
+  }
   for (const event of todo) {
     // Claimed first, so a burst of changes posts it once.
     const claimed = await db.queryOneAsync<{ event: string }>(
@@ -348,22 +376,6 @@ async function announceNow(slug: string): Promise<void> {
         'UPDATE discord_announcements SET message_id = ? WHERE match_slug = ? AND event = ?',
         [posted.body.id, slug, event]
       );
-    }
-    // Ready: each team is pinged in its own channel (#results pings no one).
-    if (event === 'ready') {
-      const ready = await card('ready');
-      for (const [teamId, roleId] of [
-        [state.team1_id, ready.roles.team1],
-        [state.team2_id, ready.roles.team2],
-      ] as const) {
-        const own = await teamChannelOf(state.tournament_id, teamId);
-        if (own && roleId) {
-          await discordFetch(token, `/channels/${own}/messages`, {
-            method: 'POST',
-            body: announceMessage(ready, roleId),
-          });
-        }
-      }
     }
     if (!posted.ok) {
       log.warn(`[Discord] Announcing ${slug} (${event}) failed: ${posted.status}`);

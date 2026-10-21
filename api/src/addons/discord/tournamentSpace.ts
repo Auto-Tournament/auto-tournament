@@ -167,14 +167,39 @@ async function sweep(): Promise<void> {
     Math.floor(Date.now() / 1000)
   );
   for (const id of plan.remove) await remove(token, guildId, id);
-  if (!plan.make.length) return;
-  const me = await discordFetch(token, '/users/@me');
-  const botId = typeof me.body.id === 'string' ? me.body.id : null;
-  if (!botId) return;
-  for (const id of plan.make) {
-    const t = tournaments.find((x) => Number(x.id) === id);
-    if (t) await make(token, guildId, botId, t);
-  }
+  for (const id of plan.make) await ensureSpace(id);
+}
+
+const making = new Map<number, Promise<TournamentSpace | null>>();
+
+/**
+ * The tournament's space, made now if it runs and has none: a match can be
+ * ready seconds after the start, and its voice and team channels go in it.
+ * One at a time per tournament.
+ */
+export function ensureSpace(tournamentId: number | null): Promise<TournamentSpace | null> {
+  if (!tournamentId) return Promise.resolve(null);
+  const pending = making.get(tournamentId);
+  if (pending) return pending;
+  const run = (async () => {
+    const have = await spaceOf(tournamentId);
+    if (have) return have;
+    const token = await botToken();
+    const guildId = await pickedGuildId();
+    if (!token || !guildId || !(await voiceSettings()).enabled) return null;
+    const t = await db.queryOneAsync<{ id: number; name: string; team_ids: string | null }>(
+      "SELECT id, name, team_ids FROM tournament WHERE id = ? AND status = 'in_progress' AND archived_at IS NULL",
+      [tournamentId]
+    );
+    if (!t) return null;
+    const me = await discordFetch(token, '/users/@me');
+    const botId = typeof me.body.id === 'string' ? me.body.id : null;
+    if (!botId) return null;
+    await make(token, guildId, botId, { ...t, id: Number(t.id) });
+    return spaceOf(tournamentId);
+  })().finally(() => making.delete(tournamentId));
+  making.set(tournamentId, run);
+  return run;
 }
 
 let timer: NodeJS.Timeout | null = null;
