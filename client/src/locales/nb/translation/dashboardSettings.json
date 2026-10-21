@@ -914,6 +914,17 @@
       "send": "Kall dem inn",
       "done": "Flyttet {{moved}} til lobbyen og sendte {{messaged}} en direktemelding.",
       "failed": "Kunne ikke kalle inn spillerne"
+    },
+    "linking": {
+      "label": "Spillerne kobler til Discord",
+      "help": "Bruker Discord-appen til boten, så du trenger ikke lage en til. Åpne OAuth2 for appen i Developer Portal, legg til denne adressen under Redirects, og lim inn klienthemmeligheten (Client Secret) her.",
+      "portal": "Åpne OAuth2",
+      "secret": "Klienthemmelighet",
+      "save": "Slå på kobling",
+      "saved": "Spillerne kan koble til Discord nå",
+      "ready": "På: spillerne kobler til Discord under Konto → Tilkoblinger.",
+      "invite": "Spillere som ikke er på serveren din, blir bedt om å bli med via {{url}}.",
+      "noInvite": "Boten kan ikke lage en invitasjon til serveren ennå. Klikk på «Inviter til en server» igjen, så får den tillatelsen til å lage invitasjoner."
     }
   },
   "liveMatchesPage": {

@@ -20,6 +20,7 @@ import {
 import { resolveViewerAccount } from '../../utils/viewerIdentity';
 import { handleInteraction, inviteUrl, registerCommands } from './interactions';
 import { currentView, refreshView } from './view';
+import { serverInvite } from './serverInvite';
 import { restartPresence, startPresence, stopPresence } from './presence';
 import { startLobbyInvites, stopLobbyInvites } from './lobby';
 import { startTournamentSpaces, stopTournamentSpaces } from './tournamentSpace';
@@ -75,7 +76,7 @@ router.use(requireAuth);
  *     summary: Whether a Discord bot token is set, the bot's name, its Discord servers and the one in use
  *     security: [{ BearerAuth: [] }]
  *     responses:
- *       200: { description: "`set`, `name`, `guilds` ({ id, name }[]), `guildId`, `matchVoice` ({ enabled }), `inviteUrl` (adds the bot to a server), `stale` (answered from a snapshot that is being refreshed), `teamChannels` (on/off)" }
+ *       200: { description: "`set`, `name`, `guilds` ({ id, name }[]), `guildId`, `matchVoice` ({ enabled }), `inviteUrl` (adds the bot to a server), `appId` (the bot's Discord application), `serverInvite` (the server's invite link the bot made for players, or null), `stale` (answered from a snapshot that is being refreshed), `teamChannels` (on/off)" }
  */
 router.get('/', async (_req: Request, res: Response) => {
   try {
@@ -90,6 +91,8 @@ router.get('/', async (_req: Request, res: Response) => {
       guildId: view.guildId,
       matchVoice: await voiceSettings(),
       inviteUrl: view.appId ? inviteUrl(view.appId) : null,
+      appId: view.appId,
+      serverInvite: await serverInvite().catch(() => null),
       teamChannels: await teamChannelsOn(),
     });
   } catch (error) {

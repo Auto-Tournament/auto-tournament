@@ -7,6 +7,7 @@ import { tokens, radii } from '../../theme/tokens';
 
 import { ExternalLink } from '../../components/common/ExternalLink';
 import { SwitchRow } from '../../components/common/ui';
+import { PlayerLinkingCard } from './PlayerLinkingCard';
 
 const { color } = tokens;
 
@@ -18,6 +19,8 @@ interface BotStatus {
   matchVoice?: { enabled: boolean };
   teamChannels?: boolean;
   inviteUrl?: string | null;
+  appId?: string | null;
+  serverInvite?: string | null;
   stale?: boolean;
 }
 
@@ -224,6 +227,9 @@ export function DiscordBotPage() {
             data-testid="discord-bot-team-channels"
           />
         </Box>
+      )}
+      {status?.set && status.guildId && status.appId && (
+        <PlayerLinkingCard appId={status.appId} serverInvite={status.serverInvite ?? null} />
       )}
       <Box
         component="form"

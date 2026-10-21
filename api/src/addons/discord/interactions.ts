@@ -35,8 +35,8 @@ export async function appInfo(token: string): Promise<{ id: string; publicKey: s
   return app;
 }
 
-/** What the invite link asks for: Manage Channels, Manage Roles, Move Members, View Channels, Connect, Send Messages, Embed Links. */
-const INVITE_PERMISSIONS = '286280720';
+/** What the invite link asks for: Create Invite, Manage Channels, Manage Roles, Move Members, View Channels, Connect, Send Messages, Embed Links. */
+const INVITE_PERMISSIONS = '286280721';
 
 /** The link that adds the bot to a Discord server, with the permissions it needs. */
 export function inviteUrl(appId: string): string {
