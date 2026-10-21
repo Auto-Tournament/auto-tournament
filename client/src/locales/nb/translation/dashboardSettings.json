@@ -892,15 +892,7 @@
     "voice": {
       "label": "Talekanaler for lagene",
       "help": "Mens en kamp er på serveren, flyttes spillerne som allerede er i en talekanal, til talekanalen til laget sitt. Resten får lenken som direktemelding.",
-      "category": "Kategori",
-      "noCategory": "Ingen (øverst på serveren)",
       "saved": "Innstillingene for talekanaler er lagret"
-    },
-    "announce": {
-      "label": "Kampvarsler",
-      "help": "Poster når en kamp er klar, starter og er ferdig, med resultatet.",
-      "none": "Av",
-      "saved": "Kanalen for kampvarsler er lagret"
     },
     "teamChannels": {
       "label": "Lagkanaler",
@@ -908,23 +900,8 @@
       "link": "Lagkanalen på Discord"
     },
     "commands": {
-      "label": "Skråstrekkommandoer: /matches, /mymatch og /setup",
+      "label": "Skråstrekkommandoer: /matches og /mymatch",
       "help": "De virker så snart boten er tilkoblet. Valgfritt: Vil du at Discord skal sende dem til dette nettstedet i stedet, limer du inn denne som Interactions Endpoint URL for appen din i Discord Developer Portal."
-    },
-    "setup": {
-      "button": "Sett opp denne serveren",
-      "help": "Oppsettet lager det som mangler, og bruker det som finnes fra før, også om du har gitt det nytt navn. Ingenting du har laget, blir slettet.",
-      "done": "Discord-serveren er satt opp",
-      "failed": "Kunne ikke sette opp Discord-serveren.",
-      "category": "En «Auto Tournament»-kategori med #results",
-      "results": "#results, for kampvarslene",
-      "lobby": "En lobby der spillerne venter på å bli flyttet",
-      "spaces": "Hver turnering får sin egen kategori når den starter, bare for spillerne i den: en egen kanal, en lobby, lagkanalene og talekanalene til kampene. Den fjernes tre dager etter at turneringen er ferdig.",
-      "allThere": "Discord-serveren din er satt opp",
-      "missing_one": "{{count}} ting mangler på Discord-serveren din",
-      "missing_other": "{{count}} ting mangler på Discord-serveren din",
-      "notThere": "mangler",
-      "fix": "Fiks det som mangler"
     },
     "invite": "Inviter til en server",
     "lobbyCall": {

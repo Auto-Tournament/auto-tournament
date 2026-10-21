@@ -20,17 +20,11 @@ import {
 import { resolveViewerAccount } from '../../utils/viewerIdentity';
 import { handleInteraction, inviteUrl, registerCommands } from './interactions';
 import { currentView, refreshView } from './view';
-import { SetupError, setupServer, setupState } from './setup';
 import { restartPresence, startPresence, stopPresence } from './presence';
 import { startLobbyInvites, stopLobbyInvites } from './lobby';
 import { startTournamentSpaces, stopTournamentSpaces } from './tournamentSpace';
 import { setVoiceSettings, startMatchVoice, stopMatchVoice, voiceSettings } from './matchVoice';
-import {
-  announceChannel,
-  setAnnounceChannel,
-  startAnnouncements,
-  stopAnnouncements,
-} from './announce';
+import { startAnnouncements, stopAnnouncements } from './announce';
 
 const router = Router();
 
@@ -81,13 +75,12 @@ router.use(requireAuth);
  *     summary: Whether a Discord bot token is set, the bot's name, its Discord servers and the one in use
  *     security: [{ BearerAuth: [] }]
  *     responses:
- *       200: { description: "`set`, `name`, `guilds` ({ id, name }[]), `guildId`, `categories` ({ id, name }[] of the picked server), `matchVoice` ({ enabled, categoryId }), `textChannels` ({ id, name }[]), `announceChannelId`, `inviteUrl` (adds the bot to a server), `setup` ({ category, results, lobby }: which of what Set up makes are there), `stale` (answered from a snapshot that is being refreshed), `teamChannels` (on/off)" }
+ *       200: { description: "`set`, `name`, `guilds` ({ id, name }[]), `guildId`, `matchVoice` ({ enabled }), `inviteUrl` (adds the bot to a server), `stale` (answered from a snapshot that is being refreshed), `teamChannels` (on/off)" }
  */
 router.get('/', async (_req: Request, res: Response) => {
   try {
     // From the stored snapshot (view.ts): at once, refreshed behind the scenes.
     const { view, stale } = await currentView();
-    const { channels } = view;
     return res.json({
       success: true,
       stale,
@@ -95,12 +88,8 @@ router.get('/', async (_req: Request, res: Response) => {
       name: view.name,
       guilds: view.guilds,
       guildId: view.guildId,
-      categories: channels.filter((c) => c.type === 4),
-      textChannels: channels.filter((c) => c.type === 0 || c.type === 5),
-      setup: view.guildId ? await setupState(channels) : null,
       matchVoice: await voiceSettings(),
       inviteUrl: view.appId ? inviteUrl(view.appId) : null,
-      announceChannelId: await announceChannel(),
       teamChannels: await teamChannelsOn(),
     });
   } catch (error) {
@@ -196,7 +185,7 @@ router.put('/guild', async (req: Request, res: Response) => {
  * /api/addons/discord/match-voice:
  *   put:
  *     tags: [Add-ons]
- *     summary: Team voice channels per match (on/off, and the category they go in)
+ *     summary: Match voice (on/off): a ready match's players are moved into their team's voice channel
  *     security: [{ BearerAuth: [] }]
  *     requestBody:
  *       required: true
@@ -206,66 +195,19 @@ router.put('/guild', async (req: Request, res: Response) => {
  *             type: object
  *             properties:
  *               enabled: { type: boolean }
- *               categoryId: { type: string, nullable: true }
  *     responses:
- *       200: { description: "`matchVoice` ({ enabled, categoryId })" }
- *       400: { description: Not a category of the picked server }
+ *       200: { description: "`matchVoice` ({ enabled })" }
  */
 router.put('/match-voice', async (req: Request, res: Response) => {
   try {
     const body = (req.body as Record<string, Untrusted> | undefined) ?? {};
-    const patch: { enabled?: boolean; categoryId?: string | null } = {};
-    if (typeof body.enabled === 'boolean') patch.enabled = body.enabled;
-    if (body.categoryId === null || body.categoryId === '') patch.categoryId = null;
-    else if (typeof body.categoryId === 'string') {
-      const categories = await discordBot.channels([4]);
-      if (!categories.some((c) => c.id === body.categoryId)) {
-        return res
-          .status(400)
-          .json({ success: false, error: 'Not a category of the picked Discord server' });
-      }
-      patch.categoryId = body.categoryId;
-    }
+    const patch = typeof body.enabled === 'boolean' ? { enabled: body.enabled } : {};
     return res.json({ success: true, matchVoice: await setVoiceSettings(patch) });
   } catch (error) {
     log.error('Setting the Discord voice channels failed', error as Error);
     return res
       .status(500)
       .json({ success: false, error: 'Could not save the voice channel settings' });
-  }
-});
-
-/**
- * @openapi
- * /api/addons/discord/announce:
- *   put:
- *     tags: [Add-ons]
- *     summary: The channel match announcements go to (one of the picked server's); null turns them off
- *     security: [{ BearerAuth: [] }]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema: { type: object, properties: { channelId: { type: string, nullable: true } } }
- *     responses:
- *       200: { description: "`announceChannelId`" }
- *       400: { description: Not a text channel of the picked server }
- */
-router.put('/announce', async (req: Request, res: Response) => {
-  try {
-    const raw = (req.body as Record<string, Untrusted> | undefined)?.channelId;
-    if (raw === null || raw === '' || raw === undefined) {
-      return res.json({ success: true, announceChannelId: await setAnnounceChannel(null) });
-    }
-    if (typeof raw !== 'string' || !(await discordBot.channels([0, 5])).some((c) => c.id === raw)) {
-      return res
-        .status(400)
-        .json({ success: false, error: 'Not a text channel of the picked Discord server' });
-    }
-    return res.json({ success: true, announceChannelId: await setAnnounceChannel(raw) });
-  } catch (error) {
-    log.error('Setting the Discord announcement channel failed', error as Error);
-    return res.status(500).json({ success: false, error: 'Could not save the channel' });
   }
 });
 
@@ -295,31 +237,6 @@ router.put('/team-channels', async (req: Request, res: Response) => {
   } catch (error) {
     log.error('Setting the Discord team channels failed', error as Error);
     return res.status(500).json({ success: false, error: 'Could not save the team channels' });
-  }
-});
-
-/**
- * @openapi
- * /api/addons/discord/setup:
- *   post:
- *     tags: [Add-ons]
- *     summary: Set up the picked Discord server (an Auto Tournament category with #results) and use it
- *     security: [{ BearerAuth: [] }]
- *     responses:
- *       200: { description: "`categoryId`, `resultsId`" }
- *       400: { description: No server picked, or Discord refused (the reason says why) }
- */
-router.post('/setup', async (_req: Request, res: Response) => {
-  try {
-    const made = await setupServer();
-    await refreshView().catch(() => undefined);
-    return res.json({ success: true, ...made });
-  } catch (error) {
-    if (error instanceof SetupError) {
-      return res.status(400).json({ success: false, error: error.message });
-    }
-    log.error('Setting up the Discord server failed', error as Error);
-    return res.status(500).json({ success: false, error: 'Could not set up the Discord server' });
   }
 });
 

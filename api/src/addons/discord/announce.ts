@@ -21,17 +21,6 @@ import { discordIdOf } from '../../services/notifyChannels';
 import { matchLiveStatsService } from '../../services/matchLiveStatsService';
 import { mapLabel, roundLabel } from '../../services/shareCards/core';
 
-const CHANNEL_KEY = 'discord_announce_channel';
-
-export async function announceChannel(): Promise<string | null> {
-  return (await db.getAppSettingAsync(CHANNEL_KEY).catch(() => null)) ?? null;
-}
-
-export async function setAnnounceChannel(channelId: string | null): Promise<string | null> {
-  await db.setAppSettingAsync(CHANNEL_KEY, channelId);
-  return channelId;
-}
-
 const siteUrl = () => (process.env.FRONTEND_BASE_URL ?? '').trim().replace(/\/+$/, '') || null;
 
 interface MatchState {

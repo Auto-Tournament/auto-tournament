@@ -892,15 +892,7 @@
     "voice": {
       "label": "Team voice channels",
       "help": "While a match is on its server, each team gets a private voice channel. Players already in voice are moved there; the rest get a link by DM. The channels go a few minutes after the match.",
-      "category": "Category",
-      "noCategory": "None (top of the server)",
       "saved": "Voice channel settings saved"
-    },
-    "announce": {
-      "label": "Match announcements",
-      "help": "Posts when a match is ready, goes live, and its result.",
-      "none": "Off",
-      "saved": "Announcement channel saved"
     },
     "teamChannels": {
       "label": "Team channels",
@@ -908,23 +900,8 @@
       "link": "Team channel on Discord"
     },
     "commands": {
-      "label": "Slash commands: /matches, /mymatch and /setup",
+      "label": "Slash commands: /matches and /mymatch",
       "help": "They work as soon as the bot is connected. Optional: to have Discord send them to this site instead, paste this as your app's Interactions Endpoint URL in the Discord Developer Portal."
-    },
-    "setup": {
-      "button": "Set up this server",
-      "help": "Set up makes what is missing and reuses what is there, also if you renamed it. Nothing you made is deleted.",
-      "done": "The Discord server is set up",
-      "failed": "Could not set up the Discord server.",
-      "category": "An \"Auto Tournament\" category, for the team channels",
-      "results": "#results, for the match announcements",
-      "lobby": "A Lobby, where players wait to be moved",
-      "spaces": "每个比赛开始时都会有自己的分类，只对参赛选手可见：比赛频道、等候大厅、各队频道和比赛语音。比赛结束三天后删除。",
-      "allThere": "Your Discord server is set up",
-      "missing_one": "{{count}} thing is missing on your Discord server",
-      "missing_other": "{{count}} things are missing on your Discord server",
-      "notThere": "missing",
-      "fix": "Fix what is missing"
     },
     "invite": "Invite to a server",
     "lobbyCall": {
