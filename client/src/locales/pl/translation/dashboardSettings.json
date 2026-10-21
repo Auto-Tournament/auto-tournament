@@ -918,6 +918,17 @@
       "send": "Call them",
       "done": "Moved {{moved}} into the Lobby, sent {{messaged}} a DM.",
       "failed": "Could not call the players"
+    },
+    "linking": {
+      "label": "Players link their Discord",
+      "help": "Uses your bot's own Discord app, so there's no second app to make. In the Developer Portal, open OAuth2 on your bot's app, add this redirect, then copy the client secret and paste it here.",
+      "portal": "Open OAuth2",
+      "secret": "Client secret",
+      "save": "Turn on linking",
+      "saved": "Players can link Discord now",
+      "ready": "On: players link Discord under Account → Connections.",
+      "invite": "Players not on your server are asked to join with {{url}}.",
+      "noInvite": "The bot can't make an invite to your server yet. Click Invite to a server again so it gets the Create Invite permission."
     }
   },
   "liveMatchesPage": {
