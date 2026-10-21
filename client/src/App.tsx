@@ -5,77 +5,22 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { PageHeaderProvider } from './contexts/PageHeaderContext';
 import { SnackbarProvider, useSnackbar } from './contexts/SnackbarContext';
 import { AtIcon } from './components/common/AtIcon';
-import Login from './pages/Login';
-import Setup from './pages/Setup';
-import AdminLogin from './pages/AdminLogin';
-import FirstSignIn from './pages/FirstSignIn';
-import ForgotPassword from './pages/ForgotPassword';
-import ResetPassword from './pages/ResetPassword';
-import EmailLink from './pages/EmailLink';
 import { BlockedNotice } from './components/auth/BlockedNotice';
-import Reports from './pages/Reports';
-import Manage from './pages/Manage';
-import Teams from './pages/Teams';
-import Players from './pages/Players';
-import Tournament from './pages/Tournament';
-import Tournaments from './pages/Tournaments';
 import { ScopedTournamentRedirect, TournamentScope } from './components/manage/TournamentScope';
-import Bracket from './pages/Bracket';
-import ManageMatch from './pages/ManageMatch';
-import LiveMatches from './pages/LiveMatches';
-import Matches from './pages/Matches';
-import Disputes from './pages/Disputes';
-import PlayedMatches from './pages/PlayedMatches';
-import ImportMatch from './pages/ImportMatch';
-import HighlightsAdmin from './pages/HighlightsAdmin';
-import Modules from './pages/Modules';
-import AddonPage from './pages/AddonPage';
-import AdminTools from './pages/AdminTools';
-import Settings from './pages/Settings';
-import License from './pages/License';
-import Development from './pages/Development';
 import { useIsDevelopment } from './hooks/useIsDevelopment';
-import TeamProfile from './pages/TeamProfile';
-import PlayerProfile from './pages/PlayerProfile';
-import MatchPage from './pages/MatchPage';
-import TournamentLeaderboard from './pages/TournamentLeaderboard';
-import TournamentOverview from './pages/TournamentOverview';
 import TournamentPage, {
   LegacyLeaderboardRedirect,
   TournamentModuleTab,
 } from './pages/TournamentPage';
-import TournamentBracketTab from './pages/TournamentBracketTab';
-import TournamentMatchesTab from './pages/TournamentMatchesTab';
-import TournamentTeamsTab from './pages/TournamentTeamsTab';
-import TournamentRulesTab from './pages/TournamentRulesTab';
-import TournamentMatchRedirect from './pages/TournamentMatchRedirect';
-import TournamentSignupTab from './pages/TournamentSignupTab';
 import { TopNavBar } from './components/layout/TopNavBar';
 import { ModuleGlobalOverlays } from './components/layout/ModuleGlobalOverlays';
 import Home from './pages/Home';
-import Browse from './pages/Browse';
-import PlayersDirectory from './pages/PlayersDirectory';
-import Leaderboard from './pages/Leaderboard';
-import Friends from './pages/Friends';
-import Notifications from './pages/Notifications';
-import TeamsDirectory from './pages/TeamsDirectory';
-import TeamManage from './pages/TeamManage';
-import TournamentPrizes from './pages/TournamentPrizes';
-import TournamentSchedule from './pages/TournamentSchedule';
-import TeamJoin from './pages/TeamJoin';
-import Compatibility from './pages/Compatibility';
-import Play from './pages/Play';
-import PlayLobby from './pages/PlayLobby';
 import { MatchmakingOverlay } from './components/matchmaking/MatchmakingOverlay';
 import { useMatchRoomPath } from './components/matchmaking/matchRoomPath';
 import { ChatDock } from './components/chat/ChatDock';
 import { PartyInviteToast } from './components/social/PartyInviteToast';
 import { PresenceReporter } from './components/social/PresenceReporter';
 import { SocketIdentity } from './components/SocketIdentity';
-import AccountConnections from './pages/AccountConnections';
-import ConnectSteam from './pages/ConnectSteam';
-import Templates from './pages/Templates';
-import ELOTemplates from './pages/ELOTemplates';
 import Layout from './components/layout/Layout';
 import { SiteFooter } from './components/layout/SiteFooter';
 import { AdminTournamentProvider, useAdminTournament } from './contexts/AdminTournamentContext';
@@ -87,12 +32,9 @@ function ScopedLayout() {
 }
 import { AdminCallsHost } from './components/admin/AdminCallsHost';
 import NotFound from './pages/NotFound';
-import MatchNow from './pages/MatchNow';
 import { theme } from './theme';
 import { GamesOnboardingRedirect } from './components/games/GamesOnboardingRedirect';
 import { DisplayNamePrompt } from './components/account/DisplayName';
-import WelcomeGames from './pages/WelcomeGames';
-import LicenseConsent from './pages/LicenseConsent';
 import { LicenseConsentGate } from './components/license/LicenseConsentGate';
 import { AddressMismatchBanner } from './components/admin/AddressMismatchBanner';
 import { DiscordNotice } from './addons/discord/DiscordNotice';
@@ -112,6 +54,66 @@ import {
   paths,
   playerProfilePath,
 } from './paths';
+
+// Pages load when first opened: the first visit downloads Home, not all 60 pages.
+const Login = React.lazy(() => import('./pages/Login'));
+const Setup = React.lazy(() => import('./pages/Setup'));
+const AdminLogin = React.lazy(() => import('./pages/AdminLogin'));
+const FirstSignIn = React.lazy(() => import('./pages/FirstSignIn'));
+const ForgotPassword = React.lazy(() => import('./pages/ForgotPassword'));
+const ResetPassword = React.lazy(() => import('./pages/ResetPassword'));
+const EmailLink = React.lazy(() => import('./pages/EmailLink'));
+const Reports = React.lazy(() => import('./pages/Reports'));
+const Manage = React.lazy(() => import('./pages/Manage'));
+const Teams = React.lazy(() => import('./pages/Teams'));
+const Players = React.lazy(() => import('./pages/Players'));
+const Tournament = React.lazy(() => import('./pages/Tournament'));
+const Tournaments = React.lazy(() => import('./pages/Tournaments'));
+const Bracket = React.lazy(() => import('./pages/Bracket'));
+const ManageMatch = React.lazy(() => import('./pages/ManageMatch'));
+const LiveMatches = React.lazy(() => import('./pages/LiveMatches'));
+const Matches = React.lazy(() => import('./pages/Matches'));
+const Disputes = React.lazy(() => import('./pages/Disputes'));
+const PlayedMatches = React.lazy(() => import('./pages/PlayedMatches'));
+const ImportMatch = React.lazy(() => import('./pages/ImportMatch'));
+const HighlightsAdmin = React.lazy(() => import('./pages/HighlightsAdmin'));
+const Modules = React.lazy(() => import('./pages/Modules'));
+const AddonPage = React.lazy(() => import('./pages/AddonPage'));
+const AdminTools = React.lazy(() => import('./pages/AdminTools'));
+const Settings = React.lazy(() => import('./pages/Settings'));
+const License = React.lazy(() => import('./pages/License'));
+const Development = React.lazy(() => import('./pages/Development'));
+const TeamProfile = React.lazy(() => import('./pages/TeamProfile'));
+const PlayerProfile = React.lazy(() => import('./pages/PlayerProfile'));
+const MatchPage = React.lazy(() => import('./pages/MatchPage'));
+const TournamentLeaderboard = React.lazy(() => import('./pages/TournamentLeaderboard'));
+const TournamentOverview = React.lazy(() => import('./pages/TournamentOverview'));
+const TournamentBracketTab = React.lazy(() => import('./pages/TournamentBracketTab'));
+const TournamentMatchesTab = React.lazy(() => import('./pages/TournamentMatchesTab'));
+const TournamentTeamsTab = React.lazy(() => import('./pages/TournamentTeamsTab'));
+const TournamentRulesTab = React.lazy(() => import('./pages/TournamentRulesTab'));
+const TournamentMatchRedirect = React.lazy(() => import('./pages/TournamentMatchRedirect'));
+const TournamentSignupTab = React.lazy(() => import('./pages/TournamentSignupTab'));
+const Browse = React.lazy(() => import('./pages/Browse'));
+const PlayersDirectory = React.lazy(() => import('./pages/PlayersDirectory'));
+const Leaderboard = React.lazy(() => import('./pages/Leaderboard'));
+const Friends = React.lazy(() => import('./pages/Friends'));
+const Notifications = React.lazy(() => import('./pages/Notifications'));
+const TeamsDirectory = React.lazy(() => import('./pages/TeamsDirectory'));
+const TeamManage = React.lazy(() => import('./pages/TeamManage'));
+const TournamentPrizes = React.lazy(() => import('./pages/TournamentPrizes'));
+const TournamentSchedule = React.lazy(() => import('./pages/TournamentSchedule'));
+const TeamJoin = React.lazy(() => import('./pages/TeamJoin'));
+const Compatibility = React.lazy(() => import('./pages/Compatibility'));
+const Play = React.lazy(() => import('./pages/Play'));
+const PlayLobby = React.lazy(() => import('./pages/PlayLobby'));
+const AccountConnections = React.lazy(() => import('./pages/AccountConnections'));
+const ConnectSteam = React.lazy(() => import('./pages/ConnectSteam'));
+const Templates = React.lazy(() => import('./pages/Templates'));
+const ELOTemplates = React.lazy(() => import('./pages/ELOTemplates'));
+const MatchNow = React.lazy(() => import('./pages/MatchNow'));
+const WelcomeGames = React.lazy(() => import('./pages/WelcomeGames'));
+const LicenseConsent = React.lazy(() => import('./pages/LicenseConsent'));
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -336,359 +338,361 @@ function AppRoutes() {
   const integrationRoutes = listRouteIntegrations().flatMap((integration) => integration.routes);
 
   return (
-    <Routes>
-      <Route
-        path={paths.login}
-        element={
-          isAuthenticated ? (
-            // Admins leaving login should land on the dashboard
-            <Navigate to={paths.root} replace />
-          ) : playerSteamId ? (
-            // Signed-in but not admin → their player page (shows "not registered" if needed)
-            <Navigate to={playerProfilePath(playerSteamId)} replace />
-          ) : (
-            <Login />
-          )
-        }
-      />
+    <React.Suspense fallback={null}>
+      <Routes>
+        <Route
+          path={paths.login}
+          element={
+            isAuthenticated ? (
+              // Admins leaving login should land on the dashboard
+              <Navigate to={paths.root} replace />
+            ) : playerSteamId ? (
+              // Signed-in but not admin → their player page (shows "not registered" if needed)
+              <Navigate to={playerProfilePath(playerSteamId)} replace />
+            ) : (
+              <Login />
+            )
+          }
+        />
 
-      {/* Local admin sign-in; an admin already signed in goes to the dashboard. */}
-      <Route
-        path={paths.adminLogin}
-        element={isAuthenticated ? <Navigate to={paths.root} replace /> : <AdminLogin />}
-      />
+        {/* Local admin sign-in; an admin already signed in goes to the dashboard. */}
+        <Route
+          path={paths.adminLogin}
+          element={isAuthenticated ? <Navigate to={paths.root} replace /> : <AdminLogin />}
+        />
 
-      {/* First sign-in of an account an admin made, password recovery by
+        {/* First sign-in of an account an admin made, password recovery by
           email, and the links emails carry. Reachable signed in or not: each
           page asks the API what applies. */}
-      <Route path={paths.firstSignIn} element={<FirstSignIn />} />
-      <Route path={paths.forgotPassword} element={<ForgotPassword />} />
-      <Route path={paths.resetPassword} element={<ResetPassword />} />
-      <Route path={paths.emailVerify} element={<EmailLink kind="verify" />} />
-      <Route path={paths.emailUnsubscribe} element={<EmailLink kind="unsubscribe" />} />
+        <Route path={paths.firstSignIn} element={<FirstSignIn />} />
+        <Route path={paths.forgotPassword} element={<ForgotPassword />} />
+        <Route path={paths.resetPassword} element={<ResetPassword />} />
+        <Route path={paths.emailVerify} element={<EmailLink kind="verify" />} />
+        <Route path={paths.emailUnsubscribe} element={<EmailLink kind="unsubscribe" />} />
 
-      {/* First-admin setup / reset-admin recovery. Always reachable: the API
+        {/* First-admin setup / reset-admin recovery. Always reachable: the API
           says whether it is open. */}
-      <Route path={paths.setup} element={<Setup />} />
+        <Route path={paths.setup} element={<Setup />} />
 
-      {/* Linking Steam to an admin who signed in with another provider. Steam
+        {/* Linking Steam to an admin who signed in with another provider. Steam
           is the platform's sign-in, so this page is core's for every game. */}
-      <Route
-        path={paths.connectSteam}
-        element={
-          <ProtectedRoute>
-            <ConnectSteam />
-          </ProtectedRoute>
-        }
-      />
+        <Route
+          path={paths.connectSteam}
+          element={
+            <ProtectedRoute>
+              <ConnectSteam />
+            </ProtectedRoute>
+          }
+        />
 
-      {/* Accepting the license terms: required once before the admin UI
+        {/* Accepting the license terms: required once before the admin UI
           (LicenseConsentGate sends admins here). Admin only; players and
           public pages never see it. */}
-      <Route
-        path={paths.licenseConsent}
-        element={
-          <ProtectedRoute>
-            <LicenseConsent />
-          </ProtectedRoute>
-        }
-      />
+        <Route
+          path={paths.licenseConsent}
+          element={
+            <ProtectedRoute>
+              <LicenseConsent />
+            </ProtectedRoute>
+          }
+        />
 
-      {/* Admin-only pages outside the shell, owned by a game integration */}
-      {integrationRoutes
-        .filter((route) => route.scope === 'admin-standalone')
-        .map((route) => (
-          <Route
-            key={route.path}
-            path={route.path}
-            element={
-              <ProtectedRoute>
-                <LicenseConsentGate>{route.element}</LicenseConsentGate>
-              </ProtectedRoute>
-            }
-          />
+        {/* Admin-only pages outside the shell, owned by a game integration */}
+        {integrationRoutes
+          .filter((route) => route.scope === 'admin-standalone')
+          .map((route) => (
+            <Route
+              key={route.path}
+              path={route.path}
+              element={
+                <ProtectedRoute>
+                  <LicenseConsentGate>{route.element}</LicenseConsentGate>
+                </ProtectedRoute>
+              }
+            />
+          ))}
+
+        {/* Viewer & player-facing pages – require a signed-in identity (admin or player) */}
+        {/* A team's page. Its match is played in the match room (`/match/:slug`), which it links to. */}
+        <Route
+          path={paths.teamProfile}
+          element={
+            <ProtectedRoute adminOnly={false}>
+              <TeamProfile />
+            </ProtectedRoute>
+          }
+        />
+        {/* The public tournament page: one header, a tab per nested route. */}
+        <Route
+          path={paths.tournamentOverview}
+          element={
+            <ProtectedRoute adminOnly={false}>
+              <TournamentPage />
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<TournamentOverview />} />
+          <Route path="bracket" element={<TournamentBracketTab />} />
+          <Route path="matches" element={<TournamentMatchesTab />} />
+          <Route path="teams" element={<TournamentTeamsTab />} />
+          <Route path="standings" element={<TournamentLeaderboard />} />
+          <Route path="rules" element={<TournamentRulesTab />} />
+          {/* The old "Your match" tab: the player's match room now. */}
+          <Route path="match" element={<TournamentMatchRedirect />} />
+          <Route path="signup" element={<TournamentSignupTab />} />
+          {/* A module's own tab (CS2: highlights). */}
+          <Route path=":moduleTab" element={<TournamentModuleTab />} />
+        </Route>
+        {/* Standings' old address, still in bookmarks and older links. */}
+        <Route path={paths.tournamentLeaderboard} element={<LegacyLeaderboardRedirect />} />
+        {/* The old Find player page: the Players directory finds anyone now. */}
+        <Route path={paths.findPlayer} element={<Navigate to={paths.communityPlayers} replace />} />
+        {/* Public pages that moved (2026-10): their old addresses redirect, query kept. */}
+        {MOVED_PUBLIC_PATHS.map(({ from, to }) => (
+          <Route key={from} path={from} element={<MovedRedirect to={to} />} />
         ))}
-
-      {/* Viewer & player-facing pages – require a signed-in identity (admin or player) */}
-      {/* A team's page. Its match is played in the match room (`/match/:slug`), which it links to. */}
-      <Route
-        path={paths.teamProfile}
-        element={
-          <ProtectedRoute adminOnly={false}>
-            <TeamProfile />
-          </ProtectedRoute>
-        }
-      />
-      {/* The public tournament page: one header, a tab per nested route. */}
-      <Route
-        path={paths.tournamentOverview}
-        element={
-          <ProtectedRoute adminOnly={false}>
-            <TournamentPage />
-          </ProtectedRoute>
-        }
-      >
-        <Route index element={<TournamentOverview />} />
-        <Route path="bracket" element={<TournamentBracketTab />} />
-        <Route path="matches" element={<TournamentMatchesTab />} />
-        <Route path="teams" element={<TournamentTeamsTab />} />
-        <Route path="standings" element={<TournamentLeaderboard />} />
-        <Route path="rules" element={<TournamentRulesTab />} />
-        {/* The old "Your match" tab: the player's match room now. */}
-        <Route path="match" element={<TournamentMatchRedirect />} />
-        <Route path="signup" element={<TournamentSignupTab />} />
-        {/* A module's own tab (CS2: highlights). */}
-        <Route path=":moduleTab" element={<TournamentModuleTab />} />
-      </Route>
-      {/* Standings' old address, still in bookmarks and older links. */}
-      <Route path={paths.tournamentLeaderboard} element={<LegacyLeaderboardRedirect />} />
-      {/* The old Find player page: the Players directory finds anyone now. */}
-      <Route path={paths.findPlayer} element={<Navigate to={paths.communityPlayers} replace />} />
-      {/* Public pages that moved (2026-10): their old addresses redirect, query kept. */}
-      {MOVED_PUBLIC_PATHS.map(({ from, to }) => (
-        <Route key={from} path={from} element={<MovedRedirect to={to} />} />
-      ))}
-      {/* Old shared match links (`/matches/<slug>`), for anyone: the match page. */}
-      <Route path="/matches/:slug" element={<MatchSlugRedirect />} />
-      <Route
-        path={paths.match}
-        element={
-          <ProtectedRoute adminOnly={false}>
-            <MatchRoute>
-              <Box minHeight="100vh" bgcolor="transparent">
-                <TopNavBar />
-                <MatchPage />
-              </Box>
-            </MatchRoute>
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path={paths.playerProfile}
-        element={
-          <ProtectedRoute adminOnly={false}>
-            <PlayerProfile />
-          </ProtectedRoute>
-        }
-      />
-      {/* Pages for signed-in players, owned by a game integration (CS2: the
-          skin inventory), under the site's top bar. */}
-      {integrationRoutes
-        .filter((route) => route.scope === 'site')
-        .map((route) => (
-          <Route
-            key={route.path}
-            path={route.path}
-            element={
-              <ProtectedRoute adminOnly={false}>
+        {/* Old shared match links (`/matches/<slug>`), for anyone: the match page. */}
+        <Route path="/matches/:slug" element={<MatchSlugRedirect />} />
+        <Route
+          path={paths.match}
+          element={
+            <ProtectedRoute adminOnly={false}>
+              <MatchRoute>
                 <Box minHeight="100vh" bgcolor="transparent">
                   <TopNavBar />
-                  {route.element}
+                  <MatchPage />
                 </Box>
-              </ProtectedRoute>
-            }
-          />
-        ))}
-      <Route
-        path={paths.tournamentList}
-        element={
-          <ProtectedRoute adminOnly={false}>
-            <Browse />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path={paths.friends}
-        element={
-          <ProtectedRoute adminOnly={false}>
-            <Friends />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path={paths.notifications}
-        element={
-          <ProtectedRoute adminOnly={false}>
-            <Notifications />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path={paths.leaderboards}
-        element={
-          <ProtectedRoute adminOnly={false}>
-            <Leaderboard />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path={paths.communityPlayers}
-        element={
-          <ProtectedRoute adminOnly={false}>
-            <PlayersDirectory />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path={paths.teamManage}
-        element={
-          <ProtectedRoute adminOnly={false}>
-            <TeamManage />
-          </ProtectedRoute>
-        }
-      />
-      <Route path={paths.teamJoin} element={<TeamJoin />} />
-      <Route
-        path={paths.communityTeams}
-        element={
-          <ProtectedRoute adminOnly={false}>
-            <TeamsDirectory />
-          </ProtectedRoute>
-        }
-      />
+              </MatchRoute>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path={paths.playerProfile}
+          element={
+            <ProtectedRoute adminOnly={false}>
+              <PlayerProfile />
+            </ProtectedRoute>
+          }
+        />
+        {/* Pages for signed-in players, owned by a game integration (CS2: the
+          skin inventory), under the site's top bar. */}
+        {integrationRoutes
+          .filter((route) => route.scope === 'site')
+          .map((route) => (
+            <Route
+              key={route.path}
+              path={route.path}
+              element={
+                <ProtectedRoute adminOnly={false}>
+                  <Box minHeight="100vh" bgcolor="transparent">
+                    <TopNavBar />
+                    {route.element}
+                  </Box>
+                </ProtectedRoute>
+              }
+            />
+          ))}
+        <Route
+          path={paths.tournamentList}
+          element={
+            <ProtectedRoute adminOnly={false}>
+              <Browse />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path={paths.friends}
+          element={
+            <ProtectedRoute adminOnly={false}>
+              <Friends />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path={paths.notifications}
+          element={
+            <ProtectedRoute adminOnly={false}>
+              <Notifications />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path={paths.leaderboards}
+          element={
+            <ProtectedRoute adminOnly={false}>
+              <Leaderboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path={paths.communityPlayers}
+          element={
+            <ProtectedRoute adminOnly={false}>
+              <PlayersDirectory />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path={paths.teamManage}
+          element={
+            <ProtectedRoute adminOnly={false}>
+              <TeamManage />
+            </ProtectedRoute>
+          }
+        />
+        <Route path={paths.teamJoin} element={<TeamJoin />} />
+        <Route
+          path={paths.communityTeams}
+          element={
+            <ProtectedRoute adminOnly={false}>
+              <TeamsDirectory />
+            </ProtectedRoute>
+          }
+        />
 
-      {/* Ready Up compatibility: public, anonymous visitors included, and
+        {/* Ready Up compatibility: public, anonymous visitors included, and
           outside the admin shell so a signed-in admin sees the same page. */}
-      <Route path={paths.compatibility} element={<Compatibility />} />
+        <Route path={paths.compatibility} element={<Compatibility />} />
 
-      {/* The signed-in player's own account */}
-      <Route path={paths.me} element={<Navigate to={paths.meConnections} replace />} />
-      <Route
-        path={paths.meConnections}
-        element={
-          <RequireSignedIn>
-            <AccountConnections />
-          </RequireSignedIn>
-        }
-      />
+        {/* The signed-in player's own account */}
+        <Route path={paths.me} element={<Navigate to={paths.meConnections} replace />} />
+        <Route
+          path={paths.meConnections}
+          element={
+            <RequireSignedIn>
+              <AccountConnections />
+            </RequireSignedIn>
+          }
+        />
 
-      {/* "My match": wherever the signed-in player's match lives. */}
-      <Route
-        path={paths.matchNow}
-        element={
-          <RequireSignedIn>
-            <MatchNow />
-          </RequireSignedIn>
-        }
-      />
+        {/* "My match": wherever the signed-in player's match lives. */}
+        <Route
+          path={paths.matchNow}
+          element={
+            <RequireSignedIn>
+              <MatchNow />
+            </RequireSignedIn>
+          }
+        />
 
-      {/* Matchmaking: find a match, the match room. */}
-      <Route
-        path={paths.play}
-        element={
-          <RequireSignedIn>
-            <Play />
-          </RequireSignedIn>
-        }
-      />
-      {/* Public when an admin allows it; the API decides. */}
-      <Route
-        path={paths.playLobby}
-        element={
-          <RequireSignedIn>
-            <PlayLobby />
-          </RequireSignedIn>
-        }
-      />
+        {/* Matchmaking: find a match, the match room. */}
+        <Route
+          path={paths.play}
+          element={
+            <RequireSignedIn>
+              <Play />
+            </RequireSignedIn>
+          }
+        />
+        {/* Public when an admin allows it; the API decides. */}
+        <Route
+          path={paths.playLobby}
+          element={
+            <RequireSignedIn>
+              <PlayLobby />
+            </RequireSignedIn>
+          }
+        />
 
-      {/* "What do you play?" onboarding: first-visit redirect target, and
+        {/* "What do you play?" onboarding: first-visit redirect target, and
           "Edit games" (?edit=1) entry points navigate here too. */}
-      <Route
-        path={paths.welcomeGames}
-        element={
-          <RequireSignedIn>
-            <WelcomeGames />
-          </RequireSignedIn>
-        }
-      />
+        <Route
+          path={paths.welcomeGames}
+          element={
+            <RequireSignedIn>
+              <WelcomeGames />
+            </RequireSignedIn>
+          }
+        />
 
-      <Route path={paths.root} element={<RootRoute />}>
-        <Route path={adminRoute(paths.manage)} element={<Manage />} />
-        <Route path={adminRoute(paths.liveMatches)} element={<LiveMatches />} />
-        <Route path={adminRoute(paths.teams)} element={<Teams />} />
-        <Route path={adminRoute(paths.players)} element={<Players />} />
-        <Route path={adminRoute(paths.reports)} element={<Reports />} />
-        <Route path={adminRoute(paths.tournaments)} element={<Tournaments />} />
-        <Route path={adminRoute('/manage/match/:slug')} element={<ManageMatch />} />
-        {/* One tournament: its id in the address, its pages as tabs. */}
-        <Route path={adminRoute(paths.manageTournament)} element={<TournamentScope />}>
-          <Route index element={<Navigate to="matches" replace />} />
-          <Route path="matches" element={<Matches />} />
-          <Route path="matches/:slug" element={<ManageMatch />} />
-          <Route path="bracket" element={<Bracket />} />
-          <Route path="disputes" element={<Disputes />} />
-          <Route path="setup" element={<Tournament />} />
-          <Route path="prizes" element={<TournamentPrizes />} />
-          <Route path="schedule" element={<TournamentSchedule />} />
-        </Route>
-        {/* Their old addresses: the tournament Manage last had open. */}
-        <Route
-          path={adminRoute(paths.tournament)}
-          element={<ScopedTournamentRedirect tab="setup" />}
-        />
-        <Route
-          path={adminRoute(paths.bracket)}
-          element={<ScopedTournamentRedirect tab="bracket" />}
-        />
-        <Route
-          path={adminRoute(paths.matches)}
-          element={<ScopedTournamentRedirect tab="matches" />}
-        />
-        <Route path={`${adminRoute(paths.matches)}/:slug`} element={<MatchSlugRedirect />} />
-        {/* Mounted for every instance, not only one whose game can have a
+        <Route path={paths.root} element={<RootRoute />}>
+          <Route path={adminRoute(paths.manage)} element={<Manage />} />
+          <Route path={adminRoute(paths.liveMatches)} element={<LiveMatches />} />
+          <Route path={adminRoute(paths.teams)} element={<Teams />} />
+          <Route path={adminRoute(paths.players)} element={<Players />} />
+          <Route path={adminRoute(paths.reports)} element={<Reports />} />
+          <Route path={adminRoute(paths.tournaments)} element={<Tournaments />} />
+          <Route path={adminRoute('/manage/match/:slug')} element={<ManageMatch />} />
+          {/* One tournament: its id in the address, its pages as tabs. */}
+          <Route path={adminRoute(paths.manageTournament)} element={<TournamentScope />}>
+            <Route index element={<Navigate to="matches" replace />} />
+            <Route path="matches" element={<Matches />} />
+            <Route path="matches/:slug" element={<ManageMatch />} />
+            <Route path="bracket" element={<Bracket />} />
+            <Route path="disputes" element={<Disputes />} />
+            <Route path="setup" element={<Tournament />} />
+            <Route path="prizes" element={<TournamentPrizes />} />
+            <Route path="schedule" element={<TournamentSchedule />} />
+          </Route>
+          {/* Their old addresses: the tournament Manage last had open. */}
+          <Route
+            path={adminRoute(paths.tournament)}
+            element={<ScopedTournamentRedirect tab="setup" />}
+          />
+          <Route
+            path={adminRoute(paths.bracket)}
+            element={<ScopedTournamentRedirect tab="bracket" />}
+          />
+          <Route
+            path={adminRoute(paths.matches)}
+            element={<ScopedTournamentRedirect tab="matches" />}
+          />
+          <Route path={`${adminRoute(paths.matches)}/:slug`} element={<MatchSlugRedirect />} />
+          {/* Mounted for every instance, not only one whose game can have a
             dispute: the page itself says "nothing to settle here" when the
             tournament's module fills no queue, and a bookmarked URL is better
             answered that way than with a 404. */}
-        <Route
-          path={adminRoute(paths.disputes)}
-          element={<ScopedTournamentRedirect tab="disputes" />}
-        />
-        <Route path={adminRoute(paths.playedMatches)} element={<PlayedMatches />} />
-        <Route path={adminRoute(paths.importMatch)} element={<ImportMatch />} />
-        <Route path={adminRoute(paths.highlights)} element={<HighlightsAdmin />} />
-        <Route path={adminRoute(paths.modules)} element={<Modules />} />
-        <Route path={adminRoute(`${paths.modules}/:id`)} element={<AddonPage />} />
-        <Route path={adminRoute(paths.admin)} element={<AdminTools />} />
-        <Route path={adminRoute(paths.settings)} element={<Settings />} />
-        <Route path={adminRoute(paths.license)} element={<License />} />
-        {integrationRoutes
-          .filter((route) => route.scope === 'admin')
-          .map((route) => (
-            // A module names its page by URL (`links.servers()`); nested in
-            // the shell, the route is that URL without its leading slash.
-            <Route key={route.path} path={adminRoute(route.path)} element={route.element} />
-          ))}
-        <Route path={adminRoute(paths.templates)} element={<Templates />} />
-        <Route path={adminRoute(paths.eloTemplates)} element={<ELOTemplates />} />
-        {/* The page was renamed Ratings; old bookmarks still land on it. */}
-        <Route
-          path={adminRoute(paths.eloTemplatesLegacy)}
-          element={<Navigate to={paths.eloTemplates} replace />}
-        />
-        {isDevelopment && <Route path={adminRoute(paths.dev)} element={<Development />} />}
-        {/* The admin pages' old addresses (before /manage): redirect with
+          <Route
+            path={adminRoute(paths.disputes)}
+            element={<ScopedTournamentRedirect tab="disputes" />}
+          />
+          <Route path={adminRoute(paths.playedMatches)} element={<PlayedMatches />} />
+          <Route path={adminRoute(paths.importMatch)} element={<ImportMatch />} />
+          <Route path={adminRoute(paths.highlights)} element={<HighlightsAdmin />} />
+          <Route path={adminRoute(paths.modules)} element={<Modules />} />
+          <Route path={adminRoute(`${paths.modules}/:id`)} element={<AddonPage />} />
+          <Route path={adminRoute(paths.admin)} element={<AdminTools />} />
+          <Route path={adminRoute(paths.settings)} element={<Settings />} />
+          <Route path={adminRoute(paths.license)} element={<License />} />
+          {integrationRoutes
+            .filter((route) => route.scope === 'admin')
+            .map((route) => (
+              // A module names its page by URL (`links.servers()`); nested in
+              // the shell, the route is that URL without its leading slash.
+              <Route key={route.path} path={adminRoute(route.path)} element={route.element} />
+            ))}
+          <Route path={adminRoute(paths.templates)} element={<Templates />} />
+          <Route path={adminRoute(paths.eloTemplates)} element={<ELOTemplates />} />
+          {/* The page was renamed Ratings; old bookmarks still land on it. */}
+          <Route
+            path={adminRoute(paths.eloTemplatesLegacy)}
+            element={<Navigate to={paths.eloTemplates} replace />}
+          />
+          {isDevelopment && <Route path={adminRoute(paths.dev)} element={<Development />} />}
+          {/* The admin pages' old addresses (before /manage): redirect with
             the rest of the path and the query. /tournament/:id stays the
             public tournament page, so only bare /tournament moves. */}
-        {LEGACY_ADMIN_PATHS.flatMap((old) => [
-          <Route key={old} path={adminRoute(old)} element={<LegacyAdminRedirect />} />,
-          ...(old === '/tournament'
-            ? []
-            : [
-                <Route
-                  key={`${old}/*`}
-                  path={`${adminRoute(old)}/*`}
-                  element={<LegacyAdminRedirect />}
-                />,
-              ]),
-        ])}
-        <Route path="admin" element={<Navigate to={paths.admin} replace />} />
-        {/* Nested catch-all so removed/unknown child routes (e.g. /public) show a proper 404 within the app shell */}
-        {/* A path no route matches may be a code module's that has not
+          {LEGACY_ADMIN_PATHS.flatMap((old) => [
+            <Route key={old} path={adminRoute(old)} element={<LegacyAdminRedirect />} />,
+            ...(old === '/tournament'
+              ? []
+              : [
+                  <Route
+                    key={`${old}/*`}
+                    path={`${adminRoute(old)}/*`}
+                    element={<LegacyAdminRedirect />}
+                  />,
+                ]),
+          ])}
+          <Route path="admin" element={<Navigate to={paths.admin} replace />} />
+          {/* Nested catch-all so removed/unknown child routes (e.g. /public) show a proper 404 within the app shell */}
+          {/* A path no route matches may be a code module's that has not
             arrived yet: pending until the modules settle, then a 404. */}
+          <Route path="*" element={<ModulePendingRoute fallback={<NotFound />} />} />
+        </Route>
         <Route path="*" element={<ModulePendingRoute fallback={<NotFound />} />} />
-      </Route>
-      <Route path="*" element={<ModulePendingRoute fallback={<NotFound />} />} />
-    </Routes>
+      </Routes>
+    </React.Suspense>
   );
 }
 
