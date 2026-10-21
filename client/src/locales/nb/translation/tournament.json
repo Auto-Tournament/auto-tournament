@@ -1213,11 +1213,12 @@
     "wonBody": "Laget ditt vant turneringen. Godt spilt!",
     "close": "Lukk",
     "seeBracket": "Se turneringstreet",
-    "outBodyPlay": "Dere har ingen flere kamper i turneringen. Takk for innsatsen! Lyst på en kamp til? Matchmaking finner en til deg på et par minutter.",
+    "outBodyPlay": "Dere har ingen flere kamper i turneringen. Takk for innsatsen!",
     "championsEyebrow": "Vinnere",
     "teamPlaced": "{{team}} endte på",
     "wonTitleShort": "Du vant {{tournament}}!",
-    "wonFinalBody": "{{team}} vant finalen {{score}}. Godt spilt!"
+    "wonFinalBody": "{{team}} vant finalen {{score}}. Godt spilt!",
+    "playHint": "Lyst på en kamp til? Matchmaking finner en til deg på et par minutter."
   },
   "advance": {
     "title": "Bra, dere er fortsatt med!",
