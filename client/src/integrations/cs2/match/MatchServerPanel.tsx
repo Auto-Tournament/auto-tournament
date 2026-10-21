@@ -384,14 +384,6 @@ export function MatchServerPanel({
     );
   }
 
-  // The API sends an English label alongside the raw plugin status; translate
-  // the known statuses and fall back to that label for anything new.
-  const statusLabel = server.status
-    ? t(`matchInfo.server.statusLabels.${server.status}`, {
-        defaultValue: server.statusDescription?.label || server.status,
-      })
-    : '';
-
   return (
     <Box display="flex" flexDirection="column" gap={2}>
       <Box display="flex" flexDirection="column" gap={2}>
@@ -598,16 +590,6 @@ export function MatchServerPanel({
             {copied ? t('matchInfo.server.copied') : t('matchInfo.server.copyCommand')}
           </Button>
         </Box>
-
-        <Typography variant="caption" color="text.secondary">
-          {server.name}
-          {currentMapData ? ` · ${currentMapData.displayName}` : ''}
-          {server.status ? ` · ${statusLabel}` : ''}
-          {server.password
-            ? ''
-            : ` · ${t('matchInfo.server.noPassword', { defaultValue: "No password: you're on the list." })}`}
-          {` ${t('matchInfo.server.startsGame', { defaultValue: 'CS2 not open? The button starts it.' })}`}
-        </Typography>
 
         {copyFallbackCommand && (
           <Typography

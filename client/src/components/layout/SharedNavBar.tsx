@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Button, Link, Menu, MenuItem } from '@mui/material';
+import { Box, Button, Menu, MenuItem } from '@mui/material';
 import { CaretDownIcon } from '@phosphor-icons/react';
 import { Link as RouterLink, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -98,7 +98,7 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({ adminArea = false })
     vetoOff,
     matchup,
   } = useCurrentMatchStatus(playerSteamId ?? null);
-  const { showSnackbar, closeSnackbar } = useSnackbar();
+  const { showSnackbar } = useSnackbar();
 
   // Below `md` the site links do not fit next to the account button, so they
   // fold into one menu there.
@@ -166,50 +166,14 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({ adminArea = false })
     t,
   ]);
 
-  // "Match ready": one toast per match, with the match name and a link to the
-  // player's page (where the connect button is). It stays until dismissed and
-  // is not repeated on every page change (the navbar mounts per page), and the
-  // ready sound plays with it, whatever page the player is on.
-  const readyToastKey = matchSlug ? `match-ready-${matchSlug}` : null;
+  // "Match ready": the ready sound, once per match, whatever page the player is on. No toast:
+  // the navbar's match button says it and the home page's card lights up.
   React.useEffect(() => {
-    if (!playerSteamId || matchStatusLoading || !matchSlug || !readyToastKey) return;
-    if (matchStatus !== 'match_ready') {
-      closeSnackbar(readyToastKey);
-      return;
-    }
-    if (wasMatchReadyAnnounced(matchSlug)) return;
+    if (!playerSteamId || matchStatusLoading || !matchSlug) return;
+    if (matchStatus !== 'match_ready' || wasMatchReadyAnnounced(matchSlug)) return;
     markMatchReadyAnnounced(matchSlug);
-    showSnackbar(
-      <span>
-        {matchName
-          ? t('nav.matchStatus.matchReadyNamed', { match: matchName })
-          : t('nav.matchStatus.matchReady')}{' '}
-        <Link
-          component={RouterLink}
-          to={paths.matchNow}
-          onClick={() => closeSnackbar(readyToastKey)}
-          sx={{ color: 'inherit', fontWeight: 600, textDecorationColor: 'currentColor' }}
-          data-testid="match-ready-toast-link"
-        >
-          {t('nav.matchStatus.openMatch')}
-        </Link>
-      </span>,
-      'success',
-      // Gone by itself after 10 s: the navbar's match button stays (2026-10-15 crew test).
-      { autoHideMs: 10_000, key: readyToastKey }
-    );
     soundNotification.playNotification();
-  }, [
-    playerSteamId,
-    matchStatusLoading,
-    matchStatus,
-    matchSlug,
-    matchName,
-    readyToastKey,
-    showSnackbar,
-    closeSnackbar,
-    t,
-  ]);
+  }, [playerSteamId, matchStatusLoading, matchStatus, matchSlug]);
 
   const ctaLabels: Record<string, string> = {
     your_turn_veto: t('nav.matchStatus.yourTurnVeto'),
