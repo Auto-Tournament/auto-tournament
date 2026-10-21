@@ -3,8 +3,7 @@
  * starts, a category named after it that only its players see, through a
  * "<tournament> players" role. In it: #matches (the bot's match cards),
  * #results (one card per finished match), #chat, and a Lobby Stage (join and
- * listen, not talk); the team channels and the match voice channels go in it
- * too (teamChannels.ts, matchVoice.ts).
+ * listen, not talk). The teams' own channels are in "Your team" (teamChannels.ts).
  *
  * Three days after the tournament ends (time to say gg and find clips), the
  * category, its channels and the role go. A sweep every minute keeps it in step.

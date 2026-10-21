@@ -1,13 +1,11 @@
 /**
- * Team voice channels per match (the Discord add-on, Modules → Discord).
+ * Match voice (the Discord add-on, Modules → Discord).
  *
- * When a match is on its server, each team gets a private voice channel in the
- * picked category: only its players (by the Discord ID on their profile), the
- * bot and the server's admins see it. Players already in a voice channel on
- * the server are moved there; the rest get a DM with a link. Once the match
- * is over (or cancelled, reset, deleted) the channels go, a few minutes later
- * so a team can talk through the result. Shuffle works the same way: the
- * teams are the match's own.
+ * When a match is on its server, each team's players (by the Discord ID on
+ * their profile) already in a voice channel on the server are moved into
+ * their team's voice channel (teamChannels.ts); the rest get a DM with a
+ * link. Each side once per match. Shuffle works the same way: the teams are
+ * the match's own.
  *
  * Listens on the match change bus (core/matchChangeBus), like the webhooks;
  * a sweep catches what a restart missed. A failure raises a `discord_failed`
@@ -21,12 +19,10 @@ import { matchRow, sidePlayers } from '../../services/matchNotices';
 import { discordIdOf } from '../../services/notifyChannels';
 import { botToken, discordBot, pickedGuildId } from './bot';
 import { discordFetch } from './rest';
-import { teamOverwrites, voiceChannelName } from './voiceChannel';
-import { ensureSpace } from './tournamentSpace';
 
 const ON_KEY = 'discord_match_voice';
 const CATEGORY_KEY = 'discord_voice_category';
-/** How long after the match the channels stay. */
+/** How long after the match it is forgotten (moved again if it comes back on a server). */
 const CLEANUP_AFTER_S = 3 * 60;
 const SWEEP_MS = 60_000;
 
@@ -59,24 +55,10 @@ interface ChannelRow {
   ended_at: number | null;
 }
 
-interface MatchState {
-  status: string;
-  round: number;
-  match_number: number;
-}
-
 const now = () => Math.floor(Date.now() / 1000);
 const chains = new Map<string, Promise<void>>();
-/** When a match's missing channels were last tried: a failing one is tried again at most once a minute. */
+/** When a match's sides were last tried: one whose team voice is not made yet is tried again a minute later. */
 const lastTry = new Map<string, number>();
-let botIdCache: string | null = null;
-
-async function botId(token: string): Promise<string | null> {
-  if (botIdCache) return botIdCache;
-  const me = await discordFetch(token, '/users/@me');
-  botIdCache = me.ok && typeof me.body.id === 'string' ? me.body.id : null;
-  return botIdCache;
-}
 
 async function failed(slug: string, what: string, detail: string): Promise<void> {
   log.warn(`[Discord] ${what} for ${slug}: ${detail}`);
@@ -99,55 +81,29 @@ async function membersOf(token: string, guildId: string, steamIds: string[]): Pr
   return inServer;
 }
 
-async function createChannels(
-  slug: string,
-  sides: Side[],
-  token: string,
-  guildId: string,
-  settings: VoiceSettings
-): Promise<void> {
+async function moveIn(slug: string, sides: Side[], token: string, guildId: string): Promise<void> {
   const match = await matchRow(slug);
-  const state = await db.queryOneAsync<MatchState>(
-    'SELECT status, round, match_number FROM matches WHERE slug = ?',
+  const ids = await db.queryOneAsync<{ team1_id: string | null; team2_id: string | null }>(
+    'SELECT team1_id, team2_id FROM matches WHERE slug = ?',
     [slug]
   );
-  if (!match || !state) return;
-  // In the tournament's own category (tournamentSpace.ts), else the one from setup.
-  const parentId = (await ensureSpace(match.tournament_id))?.categoryId ?? settings.categoryId;
-  const bot = await botId(token);
-  if (!bot) return failed(slug, 'Team voice channels', 'Discord did not say who the bot is');
+  if (!match || !ids) return;
   for (const side of sides) {
     const team = side === 'team1' ? match.t1 : match.t2;
-    const inServer = await membersOf(token, guildId, await sidePlayers(match, side));
-    const created = await discordFetch(token, `/guilds/${guildId}/channels`, {
-      method: 'POST',
-      body: {
-        name: voiceChannelName(
-          team ?? (side === 'team1' ? 'Team 1' : 'Team 2'),
-          state.round,
-          state.match_number
-        ),
-        type: 2,
-        ...(parentId ? { parent_id: parentId } : {}),
-        permission_overwrites: teamOverwrites(guildId, bot, inServer),
-      },
-    });
-    const channelId = typeof created.body.id === 'string' ? created.body.id : null;
-    if (!created.ok || !channelId) {
-      await failed(
-        slug,
-        'Team voice channel',
-        `Discord answered ${created.status}: ${String(created.body.message ?? 'no reason given')}`
-      );
-      continue;
-    }
+    // The team's voice channel for the tournament (teamChannels.ts); not made yet: the next try.
+    const own = await db.queryOneAsync<{ voice_id: string | null }>(
+      'SELECT voice_id FROM discord_team_channels WHERE tournament_id = ? AND team_id = ?',
+      [match.tournament_id, side === 'team1' ? ids.team1_id : ids.team2_id]
+    );
+    const channelId = own?.voice_id;
+    if (!channelId) continue;
     await db.runAsync(
       `INSERT INTO discord_match_channels (match_slug, side, channel_id, created_at)
        VALUES (?, ?, ?, ?) ON CONFLICT (match_slug, side) DO NOTHING`,
       [slug, side, channelId, now()]
     );
     const link = `https://discord.com/channels/${guildId}/${channelId}`;
-    for (const discordId of inServer) {
+    for (const discordId of await membersOf(token, guildId, await sidePlayers(match, side))) {
       // Moved when they are in a voice channel; Discord refuses (40032) when not.
       const moved = await discordFetch(token, `/guilds/${guildId}/members/${discordId}`, {
         method: 'PATCH',
@@ -163,9 +119,16 @@ async function createChannels(
   }
 }
 
-async function deleteChannels(slug: string, token: string, rows: ChannelRow[]): Promise<void> {
+async function forget(slug: string, token: string, rows: ChannelRow[]): Promise<void> {
   for (const row of rows) {
-    const gone = await discordFetch(token, `/channels/${row.channel_id}`, { method: 'DELETE' });
+    // A match channel from before team voice (one per match) goes; a team's stays with the team.
+    const team = await db.queryOneAsync<{ voice_id: string }>(
+      'SELECT voice_id FROM discord_team_channels WHERE voice_id = ?',
+      [row.channel_id]
+    );
+    const gone = team
+      ? { ok: true, status: 200 }
+      : await discordFetch(token, `/channels/${row.channel_id}`, { method: 'DELETE' });
     // 404: someone deleted it already.
     if (gone.ok || gone.status === 404) {
       await db.runAsync('DELETE FROM discord_match_channels WHERE match_slug = ? AND side = ?', [
@@ -205,7 +168,7 @@ async function syncNow(slug: string): Promise<void> {
     const missing = SIDES.filter((side) => !rows.some((r) => r.side === side));
     if (missing.length && Date.now() - (lastTry.get(slug) ?? 0) >= SWEEP_MS) {
       lastTry.set(slug, Date.now());
-      await createChannels(slug, missing, token, guildId, settings);
+      await moveIn(slug, missing, token, guildId);
     }
     return;
   }
@@ -219,7 +182,7 @@ async function syncNow(slug: string): Promise<void> {
     ]);
     return;
   }
-  if (now() - ended >= CLEANUP_AFTER_S) await deleteChannels(slug, token, rows);
+  if (now() - ended >= CLEANUP_AFTER_S) await forget(slug, token, rows);
 }
 
 /** One sync of a match at a time. */

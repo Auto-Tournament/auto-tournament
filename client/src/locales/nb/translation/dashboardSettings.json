@@ -891,7 +891,7 @@
     "open": "Åpne Discord-boten",
     "voice": {
       "label": "Talekanaler for lagene",
-      "help": "Mens en kamp er på serveren, får hvert lag sin egen private talekanal. Spillere som allerede er i en talekanal, flyttes dit, og resten får lenken som direktemelding. Kanalene fjernes noen minutter etter kampen.",
+      "help": "Mens en kamp er på serveren, flyttes spillerne som allerede er i en talekanal, til talekanalen til laget sitt. Resten får lenken som direktemelding.",
       "category": "Kategori",
       "noCategory": "Ingen (øverst på serveren)",
       "saved": "Innstillingene for talekanaler er lagret"
@@ -904,7 +904,7 @@
     },
     "teamChannels": {
       "label": "Lagkanaler",
-      "help": "Mens en turnering pågår, får hvert lag sin egen private tekstkanal. Spillerne finner lenken på lagsiden sin.",
+      "help": "Mens en turnering pågår, får hvert lag sin egen private tekst- og talekanal under «Your team». Spillerne finner tekstkanalen på lagsiden sin.",
       "link": "Lagkanalen på Discord"
     },
     "commands": {
