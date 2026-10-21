@@ -42,6 +42,7 @@ import { recentMove } from '../fleet/failover';
 import { liveStateStore } from '../fleet/state';
 import { pauseView } from '../fleet/pauseView';
 import { connectChoice } from '../fleet/connectChoice';
+import { storedCs2Settings } from '../tournamentSettings';
 import { QUEUE_ORDER_SQL } from '../../../core/allocationQueue';
 import type { MatchState } from '../fleet/protocol/v1';
 
@@ -98,6 +99,18 @@ function viewerOnServer(
     if (p) return p.connected === true;
   }
   return null;
+}
+
+/** The tournament's choice of address for its players (settings.cs2.connectVia), 'auto' when none. */
+async function connectModeOf(
+  tournamentId: number | null | undefined
+): Promise<'auto' | 'lan' | 'public'> {
+  if (!tournamentId) return 'auto';
+  const row = await db.queryOneAsync<{ settings: string | null }>(
+    'SELECT settings FROM tournament WHERE id = ?',
+    [tournamentId]
+  );
+  return storedCs2Settings(row?.settings)?.connectVia ?? 'auto';
 }
 
 const router = Router();
@@ -272,7 +285,11 @@ router.get('/matches/:slug/connect', async (req: Request, res: Response) => {
     const viewerIp = req.get('cf-connecting-ip') || req.ip || null;
     const choice =
       canSeeServer && match.server_id && onFleet
-        ? await connectChoice(match.server_id, viewerIp).catch(() => null)
+        ? await connectChoice(
+            match.server_id,
+            viewerIp,
+            await connectModeOf(match.tournament_id)
+          ).catch(() => null)
         : null;
     const chosen = choice?.options.find((o) => o.kind === choice.recommended) ?? null;
     const host = chosen?.host ?? match.server_host;

@@ -85,7 +85,9 @@ export async function onServerNetwork(
  */
 export async function connectChoice(
   cs2ServerId: string,
-  viewerIp: string | null | undefined
+  viewerIp: string | null | undefined,
+  /** The tournament's choice (settings.cs2.connectVia): one address only, or 'auto'. */
+  mode: 'auto' | 'lan' | 'public' = 'auto'
 ): Promise<{ options: ConnectOption[]; recommended: 'lan' | 'public' } | null> {
   const row = await db.queryOneAsync<{ fleet_server_id: string | null }>(
     'SELECT fleet_server_id FROM cs2_servers WHERE id = ?',
@@ -101,6 +103,10 @@ export async function connectChoice(
     { kind: 'lan', host: lan.host, port: lan.port },
     { kind: 'public', host: publicHost, port: lan.port },
   ];
+  // The organizer decided: everyone gets that one address.
+  if (mode !== 'auto') {
+    return { options: options.filter((o) => o.kind === mode), recommended: mode };
+  }
   const preferLan =
     (await settingsService.getSetting('connect_prefer_lan').catch(() => null)) === '1';
   return {

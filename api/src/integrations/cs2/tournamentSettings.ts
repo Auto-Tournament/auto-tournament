@@ -153,6 +153,11 @@ export interface Cs2TournamentSettings {
    * from the pool (matchConfig.ts), and the pool needs only one map.
    */
   veto?: boolean;
+  /**
+   * Which address players get (fleet/connectChoice.ts): 'lan' only the LAN one, 'public' only
+   * the internet one, 'auto' (absent) both, with the one for where the viewer is recommended.
+   */
+  connectVia?: 'auto' | 'lan' | 'public';
   /** GOTV for this tournament's matches (gotv.ts); a field left out is the site's. */
   broadcast?: Cs2BroadcastSettings;
 }
@@ -455,6 +460,9 @@ function applyLayer(
   }
   if (typeof layer.esportsMode === 'boolean') into.esportsMode = layer.esportsMode;
   if (typeof layer.veto === 'boolean') into.veto = layer.veto;
+  if (layer.connectVia === 'lan' || layer.connectVia === 'public')
+    into.connectVia = layer.connectVia;
+  else if (layer.connectVia === 'auto' || layer.connectVia === null) delete into.connectVia;
   if (layer.broadcast === null) delete into.broadcast;
   else if (layer.broadcast !== undefined) {
     const broadcast = broadcastSetting(layer.broadcast);

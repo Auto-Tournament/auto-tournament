@@ -2335,6 +2335,13 @@
       "insecureObservers": "Tillat usikre observatører (HUD-verktøy som LHM)",
       "insecureObserversHelp": "Lar observatør-HUD-er som leser GOTV, koble til. Gjelder fra kampen lastes.",
       "manyViewersHint": "Mange seere på kampserveren koster båndbredde og CPU; bruk et GOTV-relé for store publikum."
+    },
+    "connectVia": {
+      "label": "Adressen spillerne får",
+      "help": "Alt på ett nettverk eller alt over internett? Velg én, så får alle den. «Begge» anbefaler den som passer der spilleren er.",
+      "auto": "Begge (anbefalt for hver spiller)",
+      "lan": "Bare LAN",
+      "public": "Bare internett"
     }
   },
   "library": {
