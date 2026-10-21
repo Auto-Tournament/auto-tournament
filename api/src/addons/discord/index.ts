@@ -21,6 +21,7 @@ import { resolveViewerAccount } from '../../utils/viewerIdentity';
 import { handleInteraction, inviteUrl, registerCommands } from './interactions';
 import { currentView, refreshView } from './view';
 import { serverInvite } from './serverInvite';
+import { noticeFor } from './playerNotice';
 import { restartPresence, startPresence, stopPresence } from './presence';
 import { startLobbyInvites, stopLobbyInvites } from './lobby';
 import { startTournamentSpaces, stopTournamentSpaces } from './tournamentSpace';
@@ -64,6 +65,27 @@ router.get('/team-channel/:teamId', async (req: Request, res: Response) => {
  *       401: { description: Not signed by this app's Discord key }
  */
 router.post('/interactions', (req: Request, res: Response) => void handleInteraction(req, res));
+
+/**
+ * @openapi
+ * /api/addons/discord/notice:
+ *   get:
+ *     tags: [Add-ons]
+ *     summary: What the Discord notice asks the signed-in player to do, if anything
+ *     responses:
+ *       200: { description: "`notice`: 'link' (link a Discord account), 'join' (join the server with `inviteUrl`) or null" }
+ */
+router.get('/notice', async (req: Request, res: Response) => {
+  try {
+    const viewer = await resolveViewerAccount(req);
+    return res.json({ success: true, ...(await noticeFor(viewer.playerId ?? null)) });
+  } catch (error) {
+    log.warn('[Discord] Reading the player notice failed', {
+      error: error instanceof Error ? error.message : String(error),
+    });
+    return res.json({ success: true, notice: null, inviteUrl: null });
+  }
+});
 
 // Everything below is the admin's.
 router.use(requireAuth);

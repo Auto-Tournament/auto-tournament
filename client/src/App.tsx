@@ -95,6 +95,7 @@ import WelcomeGames from './pages/WelcomeGames';
 import LicenseConsent from './pages/LicenseConsent';
 import { LicenseConsentGate } from './components/license/LicenseConsentGate';
 import { AddressMismatchBanner } from './components/admin/AddressMismatchBanner';
+import { DiscordNotice } from './addons/discord/DiscordNotice';
 import { AdminConsentRedirect } from './components/license/AdminConsentRedirect';
 import { LicenseGate } from './components/license/LicenseGate';
 import { ImpersonationBanner } from './components/common/ImpersonationBanner';
@@ -747,6 +748,8 @@ export default function App() {
               <LicenseGate />
               {/* Admins on another address than FRONTEND_BASE_URL (e.g. by IP). */}
               <AddressMismatchBanner />
+              {/* Players: link your Discord, or join the server (the Discord add-on). */}
+              <DiscordNotice />
               {/* Admins choose a license before anything else, on every page. */}
               <AdminConsentRedirect />
               <ModuleGlobalOverlays />
