@@ -333,7 +333,8 @@
         "vetoTurn": "Din tur i vetoen",
         "ready": "Kampen er klar",
         "warmup": "Oppvarming",
-        "live": "Live"
+        "live": "Live",
+        "paused": "Kampen er satt på pause"
       },
       "opponent": "Motstanderen spiller",
       "startsAt": "Starter",
@@ -355,7 +356,8 @@
       "round": "Runde {{round}}",
       "halftime": "Pause",
       "nextMap": "Neste kart",
-      "goVeto": "Gå til vetoen"
+      "goVeto": "Gå til vetoen",
+      "paused": "Pause"
     }
   },
   "browsePage": {

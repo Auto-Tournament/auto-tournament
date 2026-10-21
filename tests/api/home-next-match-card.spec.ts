@@ -79,6 +79,13 @@ test('on the server: join, warmup, live from our side, between maps', () => {
   expect(card({ status: 'live', isTeam1: false, liveStats: { ...stats } }).big).toEqual({
     text: '7 – 5',
   });
+  expect(
+    card({
+      status: 'live',
+      liveStats: { ...stats },
+      server: { id: 's', name: 's', host: 'h', port: 1, status: 'paused' },
+    })
+  ).toMatchObject({ tone: 'wait', small: { key: 'paused' }, big: { text: '5 – 7' } });
   expect(card({ status: 'live', liveStats: { ...stats, status: 'postgame' } })).toMatchObject({
     big: { text: '0 – 1' },
     small: { key: 'nextMap' },

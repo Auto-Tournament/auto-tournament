@@ -41,6 +41,16 @@ export function nextMatchCard(m: TeamMatchInfo, now: number): NextMatchCard {
     };
   }
   if (m.status === 'live' || m.status === 'loaded') {
+    if (m.server?.status === 'paused' && live) {
+      const [a, b] = mine(live.team1Score, live.team2Score);
+      return {
+        tone: 'wait',
+        big: { text: `${a} – ${b}` },
+        small: { key: 'paused' },
+        label: 'paused',
+        action: 'open',
+      };
+    }
     if (live && (live.status === 'live' || live.status === 'knife')) {
       const [a, b] = mine(live.team1Score, live.team2Score);
       return {

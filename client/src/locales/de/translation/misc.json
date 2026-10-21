@@ -333,7 +333,8 @@
         "vetoTurn": "Your turn in the veto",
         "ready": "Your match is ready",
         "warmup": "Warmup",
-        "live": "Live"
+        "live": "Live",
+        "paused": "Match paused"
       },
       "opponent": "Opponent playing",
       "startsAt": "Starts at",
@@ -355,7 +356,8 @@
       "round": "Round {{round}}",
       "halftime": "Half-time",
       "nextMap": "Next map",
-      "goVeto": "Go to veto"
+      "goVeto": "Go to veto",
+      "paused": "Paused"
     }
   },
   "browsePage": {
