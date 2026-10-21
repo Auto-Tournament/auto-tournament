@@ -1,5 +1,5 @@
 /**
- * Slash commands (the Discord add-on): /matches, /mymatch and /setup. They
+ * Slash commands (the Discord add-on): /matches and /mymatch. They
  * come over the bot's gateway connection (presence.ts), so nothing needs
  * setting up and the site needs no public address. An admin who sets the
  * app's Interactions Endpoint URL in the Discord Developer Portal gets them
@@ -16,21 +16,10 @@ import { matchNowPath } from '../../routes/players';
 import { botToken, pickedGuildId } from './bot';
 import { discordFetch } from './rest';
 import { verifyDiscordSignature } from './interactionVerify';
-import { setupServer } from './setup';
-
-const ADMINISTRATOR = 1n << 3n;
-const MANAGE_GUILD = 1n << 5n;
 
 const COMMANDS = [
   { name: 'matches', description: 'The matches on a server right now' },
   { name: 'mymatch', description: 'Your match: where it is and how to join' },
-  {
-    name: 'setup',
-    description: 'Set up this server for Auto Tournament: category, #results and a Lobby',
-    // Shown to the server's admins only; checked again when it runs.
-    default_member_permissions: String(ADMINISTRATOR),
-    dm_permission: false,
-  },
 ];
 
 const EPHEMERAL = 64;
@@ -105,18 +94,6 @@ async function myMatch(discordUserId: string): Promise<string> {
   return path ? `Your match: ${siteUrl()}${path}` : 'You have no match right now.';
 }
 
-async function setupCommand(permissions: string | undefined): Promise<string> {
-  const perms = BigInt(permissions ?? '0');
-  if ((perms & (ADMINISTRATOR | MANAGE_GUILD)) === 0n)
-    return "Only the server's admins can do that.";
-  try {
-    await setupServer();
-    return 'Done: the "Auto Tournament" category, #results for announcements, and a Lobby where players wait to be moved into their team\'s voice channel. When a tournament starts, its players get a DM with the Lobby link.';
-  } catch (error) {
-    return error instanceof Error ? error.message : 'Could not set up the server.';
-  }
-}
-
 /** What a slash command answers (only the asker sees it). */
 async function commandAnswer(interaction: Record<string, Untrusted>): Promise<string> {
   const data = interaction.data as Record<string, Untrusted> | undefined;
@@ -125,7 +102,6 @@ async function commandAnswer(interaction: Record<string, Untrusted>): Promise<st
   try {
     if (data?.name === 'matches') return await matchesNow();
     if (data?.name === 'mymatch' && user?.id) return await myMatch(user.id);
-    if (data?.name === 'setup') return await setupCommand(member?.permissions);
     return 'I do not know that command.';
   } catch (error) {
     log.warn('[Discord] A slash command failed', {

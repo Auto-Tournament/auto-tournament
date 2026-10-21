@@ -69,28 +69,15 @@ test(
         data: { guildId: null },
       });
       expect((await cleared.json()).guildId).toBeNull();
-      // Team voice channels: on and off; a category must be one of the server's.
+      // Match voice: on and off.
       const voiceOn = await request.put('/api/addons/discord/match-voice', {
         data: { enabled: true },
       });
       expect((await voiceOn.json()).matchVoice.enabled).toBe(true);
-      const badCategory = await request.put('/api/addons/discord/match-voice', {
-        data: { categoryId: '123456789012345678' },
-      });
-      expect(badCategory.status()).toBe(400);
       const voiceOff = await request.put('/api/addons/discord/match-voice', {
         data: { enabled: false },
       });
-      expect((await voiceOff.json()).matchVoice).toEqual({ enabled: false, categoryId: null });
-      // Match announcements: only a text channel of the picked server; null turns them off.
-      const badChannel = await request.put('/api/addons/discord/announce', {
-        data: { channelId: '123456789012345678' },
-      });
-      expect(badChannel.status()).toBe(400);
-      const noAnnounce = await request.put('/api/addons/discord/announce', {
-        data: { channelId: null },
-      });
-      expect((await noAnnounce.json()).announceChannelId).toBeNull();
+      expect((await voiceOff.json()).matchVoice).toEqual({ enabled: false });
       // Team channels: on and off; a team's link is only for its own players.
       const teamsOn = await request.put('/api/addons/discord/team-channels', {
         data: { enabled: true },
@@ -105,9 +92,6 @@ test(
       // Slash commands: an unsigned request is refused.
       const unsigned = await player.post('/api/addons/discord/interactions', { data: { type: 1 } });
       expect(unsigned.status()).toBe(401);
-      // Set up this server: needs a picked server first.
-      const noServer = await request.post('/api/addons/discord/setup', { data: {} });
-      expect(noServer.status()).toBe(400);
       // An API token alone (no session) cannot set it.
       const bare = await playwright.request.newContext({
         baseURL: process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3069',

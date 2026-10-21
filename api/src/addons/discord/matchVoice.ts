@@ -20,7 +20,6 @@ import { botToken, pickedGuildId } from './bot';
 import { discordFetch } from './rest';
 
 const ON_KEY = 'discord_match_voice';
-const CATEGORY_KEY = 'discord_voice_category';
 /** How long after the match it is forgotten (moved again if it comes back on a server). */
 const CLEANUP_AFTER_S = 3 * 60;
 const SWEEP_MS = 60_000;
@@ -30,21 +29,14 @@ type Side = (typeof SIDES)[number];
 
 export interface VoiceSettings {
   enabled: boolean;
-  /** The category the channels go in; null: at the top of the server. */
-  categoryId: string | null;
 }
 
 export async function voiceSettings(): Promise<VoiceSettings> {
-  const [on, category] = await Promise.all([
-    db.getAppSettingAsync(ON_KEY).catch(() => null),
-    db.getAppSettingAsync(CATEGORY_KEY).catch(() => null),
-  ]);
-  return { enabled: on === '1', categoryId: category ?? null };
+  return { enabled: (await db.getAppSettingAsync(ON_KEY).catch(() => null)) === '1' };
 }
 
 export async function setVoiceSettings(input: Partial<VoiceSettings>): Promise<VoiceSettings> {
   if (input.enabled !== undefined) await db.setAppSettingAsync(ON_KEY, input.enabled ? '1' : null);
-  if (input.categoryId !== undefined) await db.setAppSettingAsync(CATEGORY_KEY, input.categoryId);
   return voiceSettings();
 }
 

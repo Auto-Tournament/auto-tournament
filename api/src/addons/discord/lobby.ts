@@ -1,5 +1,5 @@
 /**
- * The waiting room (the Lobby that "Set up this server" makes): when a
+ * The waiting room (each tournament's Lobby, tournamentSpace.ts): when a
  * tournament starts, each of its players gets one DM asking them to join the
  * Lobby, so the bot can move them into their team's voice channel when their
  * match is ready. Once per player and tournament (notify_deliveries).
@@ -13,16 +13,7 @@ import { discordIdOf } from '../../services/notifyChannels';
 import { botToken, discordBot, pickedGuildId } from './bot';
 import { spaceOf } from './tournamentSpace';
 
-const LOBBY_KEY = 'discord_lobby_channel';
 const SWEEP_MS = 60_000;
-
-export async function lobbyChannel(): Promise<string | null> {
-  return (await db.getAppSettingAsync(LOBBY_KEY).catch(() => null)) ?? null;
-}
-
-export async function setLobbyChannel(channelId: string): Promise<void> {
-  await db.setAppSettingAsync(LOBBY_KEY, channelId);
-}
 
 /** Who plays in a tournament: its teams' rosters, or a shuffle's players. */
 export async function playersOf(tournamentId: number, teamIds: string[]): Promise<string[]> {
@@ -59,8 +50,7 @@ async function sweep(): Promise<void> {
     "SELECT id, name, team_ids FROM tournament WHERE status = 'in_progress' AND archived_at IS NULL"
   );
   for (const t of running) {
-    // The tournament's own Lobby (tournamentSpace.ts), else the server's from setup.
-    const lobbyId = (await spaceOf(t.id))?.lobbyId ?? (await lobbyChannel());
+    const lobbyId = (await spaceOf(t.id))?.lobbyId;
     if (!lobbyId) continue;
     const link = `https://discord.com/channels/${guildId}/${lobbyId}`;
     const key = `discord:lobby:${t.id}`;
