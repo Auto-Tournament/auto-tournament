@@ -272,8 +272,10 @@ async function access(viewer: ChatViewer, channel: string) {
 }
 
 /**
- * Unread messages for a reader. `myTeam`: a match player's team, so the other team's in-game
- * team chat (which they cannot read) is not counted; null reads every team's (an admin).
+ * Unread messages for a reader: what players and admins wrote, not system lines (joins,
+ * leaves, match events), the same as the live count in the dock. `myTeam`: a match player's
+ * team, so the other team's in-game team chat (which they cannot read) is not counted; null
+ * reads every team's (an admin).
  */
 async function unreadFor(
   steamId: string | null,
@@ -284,7 +286,8 @@ async function unreadFor(
   if (!steamId) return 0;
   const row = await db.queryOneAsync<{ n: number }>(
     `SELECT COUNT(*)::int AS n FROM chat_messages c
-      WHERE c.channel = ? AND c.created_at >= ? AND (c.sender_id IS NULL OR c.sender_id <> ?)
+      WHERE c.channel = ? AND c.created_at >= ? AND c.sender_kind <> 'system'
+        AND (c.sender_id IS NULL OR c.sender_id <> ?)
         AND (c.only_team IS NULL OR ?::text IS NULL OR c.only_team = ?)
         AND c.id > COALESCE((SELECT last_id FROM chat_reads WHERE player_id = ? AND channel = ?), 0)`,
     [channel, since, steamId, myTeam, myTeam, steamId, channel]
