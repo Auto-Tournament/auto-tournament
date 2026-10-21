@@ -93,6 +93,10 @@
     "yourMatch": "Your match",
     "tabs": {
       "overview": "Overview"
+    },
+    "shownTeam": {
+      "label": "Team shown on your profile",
+      "failed": "Could not save the team"
     }
   },
   "teamPage": {

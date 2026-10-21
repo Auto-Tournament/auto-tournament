@@ -343,7 +343,9 @@ router.get('/selection', requireAuth, async (req: Request, res: Response) => {
  *
  * Used by the public player page's team chip ("Nordlys · captain") even when
  * the player has no current/upcoming match. `role` is the player's role in it,
- * or null when `team_members` has no row for them.
+ * or null when `team_members` has no row for them. `?for=profile`: the team the
+ * player chose to show (PUT /me/shown-team) while they are still on it, else
+ * the same as without it (the most recently changed team they are on).
  */
 router.get('/:playerId/team', async (req: Request, res: Response) => {
   try {
@@ -442,10 +444,18 @@ router.get('/:playerId/team', async (req: Request, res: Response) => {
       return [];
     };
 
-    const matching = rows.find((team) => {
-      const players = parsePlayers(team.players);
-      return players.some((p) => p.steamId === playerId);
-    });
+    const onIt = (team: { players: string }) =>
+      parsePlayers(team.players).some((p) => p.steamId === playerId);
+    const chosen =
+      req.query.for === 'profile'
+        ? (
+            await db.queryOneAsync<{ shown_team_id: string | null }>(
+              'SELECT shown_team_id FROM players WHERE id = ?',
+              [playerId]
+            )
+          )?.shown_team_id
+        : null;
+    const matching = rows.find((team) => team.id === chosen && onIt(team)) ?? rows.find(onIt);
 
     if (!matching) {
       return res.json({
@@ -949,6 +959,60 @@ router.put('/me/discord-id', async (req: Request, res: Response) => {
     }
     log.error('Error updating own Discord ID', { error });
     return res.status(500).json({ success: false, error: 'Failed to save Discord ID' });
+  }
+});
+
+/**
+ * @openapi
+ * /api/players/me/shown-team:
+ *   put:
+ *     tags: [Players]
+ *     summary: Choose which of your teams shows under your name on your profile
+ *     description: A team the signed-in player is on, or null for the default (the team they were last active with).
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema: { type: object, properties: { teamId: { type: string, nullable: true } } }
+ *     responses:
+ *       200: { description: "`shownTeamId`" }
+ *       400: { description: Not a team the player is on }
+ *       401: { description: Not signed in }
+ */
+router.put('/me/shown-team', async (req: Request, res: Response) => {
+  try {
+    const steamId = await resolveSelfServiceSteamId(req, res);
+    if (!steamId) return;
+    const teamId = (req.body as { teamId?: Untrusted } | undefined)?.teamId ?? null;
+    if (teamId !== null && typeof teamId !== 'string') {
+      return res.status(400).json({ success: false, error: 'teamId must be a team id or null' });
+    }
+    if (teamId) {
+      const team = await db.queryOneAsync<{ players: string }>(
+        'SELECT players FROM teams WHERE id = ?',
+        [teamId]
+      );
+      let onIt = false;
+      try {
+        const list = JSON.parse(team?.players ?? '[]') as Array<{
+          steamId?: string;
+          steamid?: string;
+        }>;
+        onIt = Array.isArray(list) && list.some((p) => (p.steamId ?? p.steamid) === steamId);
+      } catch {
+        onIt = false;
+      }
+      if (!onIt) {
+        return res
+          .status(400)
+          .json({ success: false, error: 'You can only show a team you are on' });
+      }
+    }
+    await db.runAsync('UPDATE players SET shown_team_id = ? WHERE id = ?', [teamId, steamId]);
+    return res.json({ success: true, shownTeamId: teamId });
+  } catch (error) {
+    log.error('Error saving the shown team', { error });
+    return res.status(500).json({ success: false, error: 'Failed to save the team to show' });
   }
 });
 

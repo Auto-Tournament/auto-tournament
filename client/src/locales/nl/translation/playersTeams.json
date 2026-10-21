@@ -93,7 +93,11 @@
     "deletedChip": "Deleted",
     "deletedBody": "This account was deleted. Their matches are still in the history.",
     "bannedChip": "Banned",
-    "bannedBody": "This player is banned."
+    "bannedBody": "This player is banned.",
+    "shownTeam": {
+      "label": "Team shown on your profile",
+      "failed": "Could not save the team"
+    }
   },
   "teamPage": {
     "tournamentFinished": "Toernooi afgerond",

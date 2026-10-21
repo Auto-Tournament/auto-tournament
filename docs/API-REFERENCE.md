@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 750 of them, 473 behind auth —
+Every endpoint this API serves — 751 of them, 473 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -939,6 +939,7 @@ Player records, ratings, match history and profiles.
 | `GET` | `/api/players/me/match-status` | public |
 | `GET` | `/api/players/me/discord-id` | public |
 | `PUT` | `/api/players/me/discord-id` | public |
+| `PUT` | `/api/players/me/shown-team` | public |
 | `GET` | `/api/players/:playerId/current-match` | public |
 | `GET` | `/api/players/:playerId/summary` | public |
 | `GET` | `/api/players/:playerId/avatar.svg` | public |

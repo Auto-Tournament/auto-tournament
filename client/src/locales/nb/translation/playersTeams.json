@@ -93,6 +93,10 @@
     "yourMatch": "Kampen din",
     "tabs": {
       "overview": "Oversikt"
+    },
+    "shownTeam": {
+      "label": "Lag som vises på profilen",
+      "failed": "Kunne ikke lagre laget"
     }
   },
   "teamPage": {
