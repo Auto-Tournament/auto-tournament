@@ -57,6 +57,8 @@ export interface Cs2TournamentSettings {
   esportsMode?: boolean;
   /** The map veto (default on); off: each match draws its maps from the pool. */
   veto?: boolean;
+  /** Which address players get: only LAN, only internet, or both ('auto', absent). */
+  connectVia?: 'auto' | 'lan' | 'public';
   /** GOTV for this tournament's matches; a field left out is the site's (Settings › Spectators). */
   broadcast?: Cs2BroadcastSettings;
 }
@@ -119,6 +121,8 @@ function applyFields(into: Cs2TournamentSettings, source: Record<string, Untrust
     into.rewards = source.rewards as Cs2TournamentSettings['rewards'];
   if (typeof source.esportsMode === 'boolean') into.esportsMode = source.esportsMode;
   if (typeof source.veto === 'boolean') into.veto = source.veto;
+  if (source.connectVia === 'lan' || source.connectVia === 'public' || source.connectVia === 'auto')
+    into.connectVia = source.connectVia;
   if (isRecord(source.broadcast)) {
     const b = source.broadcast;
     into.broadcast = {

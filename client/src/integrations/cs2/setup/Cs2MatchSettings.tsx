@@ -116,6 +116,21 @@ export function Cs2MatchSettings({
           {t('tournament.botFill.help')}
         </Typography>
       </Box>
+      <TextField
+        select
+        size="small"
+        id="tournament-connect-via"
+        label={t('tournament.connectVia.label')}
+        helperText={t('tournament.connectVia.help')}
+        value={value.connectVia ?? 'auto'}
+        disabled={disabled}
+        onChange={(e) => update({ connectVia: e.target.value as 'auto' | 'lan' | 'public' })}
+        sx={{ maxWidth: 360 }}
+      >
+        <MenuItem value="auto">{t('tournament.connectVia.auto')}</MenuItem>
+        <MenuItem value="lan">{t('tournament.connectVia.lan')}</MenuItem>
+        <MenuItem value="public">{t('tournament.connectVia.public')}</MenuItem>
+      </TextField>
       <Box>
         <SwitchRow
           label={t('tournament.esportsMode.label')}

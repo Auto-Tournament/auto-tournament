@@ -2340,6 +2340,13 @@
       "insecureObservers": "Allow insecure observers (HUD tools like LHM)",
       "insecureObserversHelp": "Lets observer HUDs that read GOTV connect. Takes effect when a match loads.",
       "manyViewersHint": "Many viewers on the match server cost it bandwidth and CPU; for big audiences use a GOTV relay."
+    },
+    "connectVia": {
+      "label": "Address players connect to",
+      "help": "All on one network, or all over the internet? Pick one and everyone gets it. Both recommends the right one for where each player is.",
+      "auto": "Both (recommended per player)",
+      "lan": "LAN only",
+      "public": "Internet only"
     }
   },
   "library": {
