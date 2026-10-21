@@ -186,9 +186,29 @@ export function MatchServerPanel({
   const finished = isFinished(connect?.matchStatus) || isFinished(matchStatus);
   const server = connect && !finished ? effectiveServer(connect) : null;
   // LAN or internet: the platform picks for where the viewer is; they can switch.
-  const [via, setVia] = useState<'lan' | 'public' | null>(null);
+  const [via, setViaState] = useState<'lan' | 'public' | null>(null);
   const addresses = server?.addresses ?? null;
-  const chosen = addresses?.find((a) => a.kind === (via ?? server?.recommended)) ?? null;
+  // The viewer's last pick for this machine (its public address), per browser: the guess
+  // misses when the venue's internet goes out another way than the servers' (a tunnel).
+  const viaKey = `connectVia:${addresses?.find((a) => a.kind === 'public')?.host ?? ''}`;
+  const remembered = (() => {
+    try {
+      const v = window.localStorage.getItem(viaKey);
+      return v === 'lan' || v === 'public' ? v : null;
+    } catch {
+      return null;
+    }
+  })();
+  const setVia = (kind: 'lan' | 'public') => {
+    setViaState(kind);
+    try {
+      window.localStorage.setItem(viaKey, kind);
+    } catch {
+      // Not remembered: this page view only.
+    }
+  };
+  const picked = via ?? remembered ?? server?.recommended;
+  const chosen = addresses?.find((a) => a.kind === picked) ?? null;
   const targetNow = chosen
     ? { host: chosen.host, ip: chosen.ip ?? null, port: chosen.port }
     : server
@@ -208,7 +228,7 @@ export function MatchServerPanel({
   }, [attempt, reload]);
   const other =
     attempt && addresses && addresses.length > 1
-      ? (addresses.find((a) => a.kind !== (attempt.kind ?? server?.recommended)) ?? null)
+      ? (addresses.find((a) => a.kind !== (attempt.kind ?? picked)) ?? null)
       : null;
   const showOther = checkDue && !!other && server?.viewerConnected === false;
   const currentMapData = useMemo(
@@ -498,7 +518,7 @@ export function MatchServerPanel({
               }}
             >
               {addresses.map((a) => {
-                const on = a.kind === (via ?? server.recommended ?? 'public');
+                const on = a.kind === (picked ?? 'public');
                 return (
                   <Box
                     key={a.kind}
