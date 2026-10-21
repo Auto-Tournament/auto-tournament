@@ -2,6 +2,7 @@
  * The Counter-Strike 2 client integration: every CS2-only component the core
  * pages render goes through one of these slots (see ../types.ts).
  */
+import { lazy, Suspense } from 'react';
 
 import { vetoMapPickers } from './veto/vetoMapPickers';
 import { Cs2RulesSummary } from './rules/Cs2RulesSummary';
@@ -56,29 +57,58 @@ import {
   serversSetupItems,
   summarizeServerAvailability,
 } from './manage/cs2QueueSummary';
-import Servers from './pages/Servers';
-import Maps from './pages/Maps';
-import Cs2HighlightsAdmin from './pages/Highlights';
-import { MatchRulesPage } from './settings/MatchRulesPage';
-import { SkinsAdminPage } from './skins/SkinsAdminPage';
 import { cs2AdminPaths } from './adminPaths';
-import { InventoryPage } from './skins/InventoryPage';
-import { DropRatesPage } from './skins/DropRatesPage';
 import { ProfileLoadout } from './skins/ProfileLoadout';
 import { MapActions } from './demos/MapActions';
 import { highlightPaths } from './highlights/data';
-import { PlayerHighlightsPage } from './highlights/PlayerHighlightsPage';
-import { HighlightsLibraryPage } from './highlights/HighlightsLibraryPage';
 import { Cs2Leaderboards } from './profile/Cs2Leaderboards';
 import { TournamentHighlightsTab } from './highlights/TournamentHighlights';
-import { WatchPage } from './highlights/WatchPage';
 import { MatchPublicPanel } from './highlights/MatchPublicPanel';
-import { DemoAnalysisPage } from './demos/DemoAnalysisPage';
 import { demoPaths } from './demos/paths';
 import { skinPaths } from './skins/paths';
 import { skinsAccountMenuItems } from './skins/useSkins';
 import { cs2Locales } from './locales';
 import { PlayerRole } from './profile/PlayerRole';
+
+/** A page loaded when first opened (its own chunk of the module's bundle). */
+function lazyPage(load: Parameters<typeof lazy>[0]) {
+  const Page = lazy(load);
+  return function LazyPage() {
+    return (
+      <Suspense fallback={null}>
+        <Page />
+      </Suspense>
+    );
+  };
+}
+
+const Servers = lazyPage(() => import('./pages/Servers'));
+const Maps = lazyPage(() => import('./pages/Maps'));
+const Cs2HighlightsAdmin = lazyPage(() => import('./pages/Highlights'));
+const MatchRulesPage = lazyPage(() =>
+  import('./settings/MatchRulesPage').then((m) => ({ default: m.MatchRulesPage }))
+);
+const SkinsAdminPage = lazyPage(() =>
+  import('./skins/SkinsAdminPage').then((m) => ({ default: m.SkinsAdminPage }))
+);
+const InventoryPage = lazyPage(() =>
+  import('./skins/InventoryPage').then((m) => ({ default: m.InventoryPage }))
+);
+const DropRatesPage = lazyPage(() =>
+  import('./skins/DropRatesPage').then((m) => ({ default: m.DropRatesPage }))
+);
+const PlayerHighlightsPage = lazyPage(() =>
+  import('./highlights/PlayerHighlightsPage').then((m) => ({ default: m.PlayerHighlightsPage }))
+);
+const HighlightsLibraryPage = lazyPage(() =>
+  import('./highlights/HighlightsLibraryPage').then((m) => ({ default: m.HighlightsLibraryPage }))
+);
+const WatchPage = lazyPage(() =>
+  import('./highlights/WatchPage').then((m) => ({ default: m.WatchPage }))
+);
+const DemoAnalysisPage = lazyPage(() =>
+  import('./demos/DemoAnalysisPage').then((m) => ({ default: m.DemoAnalysisPage }))
+);
 
 /**
  * The profile's CS2 tab: the stats, then the player's loadout. Highlights are
