@@ -925,7 +925,8 @@
       "ready": "På: spillerne kobler til Discord under Konto → Tilkoblinger.",
       "invite": "Spillere som ikke er på serveren din, blir bedt om å bli med via {{url}}.",
       "noInvite": "Boten kan ikke lage en invitasjon til serveren ennå. Klikk på «Inviter til en server» igjen, så får den tillatelsen til å lage invitasjoner."
-    }
+    },
+    "missing": "Boten mangler {{list}} på serveren din, så deler av den virker ikke. Klikk på «Inviter til en server» over: det oppdaterer tillatelsene uten å fjerne boten."
   },
   "liveMatchesPage": {
     "title": "Direktekamper",

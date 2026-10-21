@@ -1,5 +1,13 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Box, Button, CircularProgress, MenuItem, TextField, Typography } from '@mui/material';
+import {
+  Alert,
+  Box,
+  Button,
+  CircularProgress,
+  MenuItem,
+  TextField,
+  Typography,
+} from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { api, apiErrorMessage } from '../../utils/api';
 import { useSnackbar } from '../../contexts/SnackbarContext';
@@ -20,6 +28,7 @@ interface BotStatus {
   teamChannels?: boolean;
   inviteUrl?: string | null;
   appId?: string | null;
+  missingPermissions?: string[];
   serverInvite?: string | null;
   stale?: boolean;
 }
@@ -188,6 +197,11 @@ export function DiscordBotPage() {
             </Button>
           )}
         </Box>
+      )}
+      {status?.set && status.guildId && !!status.missingPermissions?.length && (
+        <Alert severity="warning" data-testid="discord-bot-missing" sx={{ mb: 2, maxWidth: 620 }}>
+          {t('discordBot.missing', { list: status.missingPermissions.join(', ') })}
+        </Alert>
       )}
       {status?.set && status.guildId && (
         <Box sx={{ mb: 2, maxWidth: 520 }}>
