@@ -21,8 +21,8 @@ package main
 //	AT_RECORD_DIR    scratch space for raw frames (default: the system temp dir; ~6 GB a moment)
 //	AT_RESOLUTION    WIDTHxHEIGHT CS2 renders at (default: the output size)
 //	AT_ENCODER       ffmpeg video encoder (default: h264_nvenc on the GPU if it opens, else h264_vaapi, else libx264; H.264 in MP4)
-//	AT_CAPTURE_BACKEND stream (default) or native (CS:DM frame export; no PipeWire video)
-//	AT_CSDM_PLUGIN   optional replacement Linux libserver.so for the native backend
+//	AT_CAPTURE_BACKEND stream (default) or native (native plugin frame export; no PipeWire video)
+//	AT_NATIVE_PLUGIN path to Auto Tournament's native recorder libserver.so (required for native)
 //	AT_NATIVE_TIMEOUT_SECONDS maximum native export time per window (default 3600)
 //	AT_RECORDER_JOB_SECONDS platform attempt timeout (default 2700; match the API's CS2_RECORDER_JOB_SECONDS)
 //	AT_ENCODE_TIMEOUT_SECONDS maximum encode time (default 900)
@@ -111,7 +111,7 @@ type recorder struct {
 	width     int
 	height    int
 	encoder   string
-	backend   string // stream (PipeWire) or native (CS:DM startmovie)
+	backend   string // stream (PipeWire) or native (plugin startmovie)
 	nativeMap string // bootstrap the plugin on the demo's own map
 	sink      string
 	logo      string // the watermark PNG on disk

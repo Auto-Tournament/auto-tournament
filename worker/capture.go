@@ -277,7 +277,7 @@ func (r *recorder) launchGameOnce(ctx context.Context, logPath string) (*game, e
 	args = append(args, "./cs2.sh", "-steam", "-insecure", "-novid", "-console",
 		"-width", w, "-height", h)
 	if r.backend == "native" {
-		// Match CSDM's video launcher. Fullscreen mode switching is unreliable
+		// Fullscreen mode switching is unreliable
 		// on Linux and is unnecessary for engine frame export.
 		args = append(args, "-sw")
 	} else {
@@ -294,7 +294,7 @@ func (r *recorder) launchGameOnce(ctx context.Context, logPath string) (*game, e
 	cmd.Dir = r.gameDir
 	cmd.Env = append(os.Environ(), "SteamAppId=730", "SteamGameId=730")
 	if g.native != nil {
-		cmd.Env = append(cmd.Env, "CSDM_WS_PORT="+g.native.port)
+		cmd.Env = append(cmd.Env, "AT_NATIVE_WS_PORT="+g.native.port)
 	}
 	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 	logFile, err := os.Create(logPath)
@@ -373,7 +373,7 @@ func (r *recorder) launchGameOnce(ctx context.Context, logPath string) (*game, e
 			g.stop()
 			return nil, err
 		}
-		if _, _, err := g.con.expect(regexp.MustCompile(`CSDM: Hooked (FrameStageNotify)`), time.Duration(envPositive("AT_NATIVE_LOAD_SECONDS", 600))*time.Second); err != nil {
+		if _, _, err := g.con.expect(regexp.MustCompile(`^(AT_NATIVE_PLUGIN_READY)$`), time.Duration(envPositive("AT_NATIVE_LOAD_SECONDS", 600))*time.Second); err != nil {
 			g.stop()
 			return nil, fmt.Errorf("native plugin playback hook did not initialize: %w", err)
 		}
