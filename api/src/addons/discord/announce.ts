@@ -15,6 +15,7 @@ import { adminNoticeService } from '../../services/adminNoticeService';
 import { matchRow } from '../../services/matchNotices';
 import { botToken } from './bot';
 import { discordFetch } from './rest';
+import { ensureSpace } from './tournamentSpace';
 import { announceMessage, dueEvents, teamLabel, type CardInput } from './announceText';
 import { discordIdOf } from '../../services/notifyChannels';
 import { matchLiveStatsService } from '../../services/matchLiveStatsService';
@@ -216,8 +217,6 @@ async function rolesOf(m: MatchState): Promise<{ team1: string | null; team2: st
 const chains = new Map<string, Promise<void>>();
 
 async function announceNow(slug: string): Promise<void> {
-  const channelId = await announceChannel();
-  if (!channelId) return;
   const token = await botToken();
   if (!token) return;
   const state = await db.queryOneAsync<MatchState>(
@@ -228,6 +227,12 @@ async function announceNow(slug: string): Promise<void> {
     [slug]
   );
   if (!state) return;
+  // The tournament's own #matches and #results (tournamentSpace.ts), else the channel setup picked.
+  const space = await ensureSpace(state.tournament_id);
+  const fallback = await announceChannel();
+  const matchesId = space?.matchesId ?? fallback;
+  const resultsId = space?.resultsId ?? fallback;
+  if (!matchesId || !resultsId) return;
   // A match that ended long ago (its clips or stats changed since) is not news.
   const fresh = (state.completed_at ?? 0) > Date.now() / 1000 - 30 * 60;
   const due = dueEvents(state.status, state.winner_id !== null && fresh);
@@ -297,7 +302,7 @@ async function announceNow(slug: string): Promise<void> {
   };
   // The live card follows the score: edited when what it says changes.
   const editLive = (body: ReturnType<typeof announceMessage>, messageId: string) =>
-    discordFetch(token, `/channels/${channelId}/messages/${messageId}`, {
+    discordFetch(token, `/channels/${matchesId}/messages/${messageId}`, {
       method: 'PATCH',
       // The embed and button only: an edit pings no one.
       body: {
@@ -367,6 +372,7 @@ async function announceNow(slug: string): Promise<void> {
       [slug, event, Math.floor(Date.now() / 1000)]
     );
     if (!claimed) continue;
+    const channelId = event === 'result' ? resultsId : matchesId;
     const posted = await discordFetch(token, `/channels/${channelId}/messages`, {
       method: 'POST',
       body: announceMessage(await card(event)),
