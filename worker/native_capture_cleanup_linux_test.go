@@ -97,7 +97,7 @@ func testNativeCancellationCleanup(t *testing.T, confirm bool) {
 				return
 			}
 			marker := strings.TrimPrefix(scanner.Text(), "echo ")
-			g.con.lines <- "CSDM: Executing: echo " + marker
+			g.con.lines <- "Native: Executing: echo " + marker
 			if confirm {
 				g.con.lines <- marker
 			} else {

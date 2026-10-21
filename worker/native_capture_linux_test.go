@@ -130,7 +130,7 @@ func testNativeCaptureCamera(t *testing.T, position string, wantFailure bool) {
 			pluginError <- fmt.Errorf("no paused camera checkpoint")
 			return
 		}
-		g.con.lines <- "CSDM: [96] Executing: echo AT_NATIVE_READY_" + prefix
+		g.con.lines <- "Native: [96] Executing: echo AT_NATIVE_READY_" + prefix
 		g.con.lines <- "AT_NATIVE_READY_" + prefix
 		select {
 		case <-resumed:
@@ -173,8 +173,8 @@ func testNativeCaptureCamera(t *testing.T, position string, wantFailure bool) {
 			pluginError <- err
 			return
 		}
-		g.con.lines <- "CSDM: [100] Executing: startmovie " + prefix
-		g.con.lines <- "CSDM: [164] Executing: echo AT_NATIVE_DONE_" + prefix // must not finish on the log line
+		g.con.lines <- "Native: [100] Executing: startmovie " + prefix
+		g.con.lines <- "Native: [164] Executing: echo AT_NATIVE_DONE_" + prefix // must not finish on the log line
 		g.con.lines <- "AT_NATIVE_DONE_" + prefix
 		pluginError <- nil
 	}()
