@@ -963,10 +963,21 @@ router.put('/me/discord-id', async (req: Request, res: Response) => {
 });
 
 /**
- * PUT /api/players/me/shown-team
- * The team shown under the signed-in player's name on their profile: `teamId`
- * of a team they are on, or null to go back to the default (the team they
- * were last active with).
+ * @openapi
+ * /api/players/me/shown-team:
+ *   put:
+ *     tags: [Players]
+ *     summary: Choose which of your teams shows under your name on your profile
+ *     description: A team the signed-in player is on, or null for the default (the team they were last active with).
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema: { type: object, properties: { teamId: { type: string, nullable: true } } }
+ *     responses:
+ *       200: { description: "`shownTeamId`" }
+ *       400: { description: Not a team the player is on }
+ *       401: { description: Not signed in }
  */
 router.put('/me/shown-team', async (req: Request, res: Response) => {
   try {
