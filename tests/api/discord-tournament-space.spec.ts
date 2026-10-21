@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import {
   KEEP_AFTER_S,
+  categoryWithRoom,
   spacePlan,
   welcomeText,
 } from '../../api/src/addons/discord/tournamentSpacePlan';
@@ -37,4 +38,12 @@ test('the welcome DM links the tournament channels and says when the bot writes'
   expect(welcomeText('W', { chatId: null, lobbyId: null }, null)).not.toContain(
     'Change what you get'
   );
+});
+
+test('a full "Your team" category (50 channels) is passed over for one with room', () => {
+  const full = Array.from({ length: 49 }, () => ({ parentId: 'a' }));
+  expect(categoryWithRoom(['a', 'b'], [...full, { parentId: 'b' }], 2)).toBe('b');
+  expect(categoryWithRoom(['a'], full, 2)).toBeNull();
+  expect(categoryWithRoom(['a'], full.slice(1), 2)).toBe('a');
+  expect(categoryWithRoom([], [], 2)).toBeNull();
 });

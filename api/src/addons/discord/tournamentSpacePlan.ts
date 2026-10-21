@@ -45,3 +45,19 @@ export function welcomeText(
     ...(site ? [`Change what you get: ${site}/me/connections`] : []),
   ].join('\n');
 }
+
+/** Discord holds this many channels in one category. */
+export const CATEGORY_MAX = 50;
+
+/** The first of these categories with room for `need` more channels, or null (pure). */
+export function categoryWithRoom(
+  categoryIds: string[],
+  channels: Array<{ parentId: string | null }>,
+  need: number
+): string | null {
+  return (
+    categoryIds.find(
+      (id) => channels.filter((c) => c.parentId === id).length + need <= CATEGORY_MAX
+    ) ?? null
+  );
+}
