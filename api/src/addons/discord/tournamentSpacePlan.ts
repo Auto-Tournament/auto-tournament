@@ -27,3 +27,21 @@ export function spacePlan(
     remove: spaces.filter((id) => !keep.has(id)),
   };
 }
+
+/** The welcome DM (pure): the tournament's channels, the team's, and when the bot writes. */
+export function welcomeText(
+  tournament: string,
+  ids: { chatId: string | null; lobbyId: string | null },
+  site: string | null
+): string {
+  const ch = (id: string | null, name: string) => (id ? `<#${id}>` : name);
+  return [
+    '**Welcome to Auto Tournament!**',
+    `You're playing in **${tournament}**, so you have its channels on this server now:`,
+    `• ${ch(ids.chatId, '#chat')} is the tournament's channel: the start, announcements, and everyone playing.`,
+    `• ${ch(ids.lobbyId, 'The Lobby')}: wait there, and you're moved into your team's voice when your match is ready.`,
+    '• Your team has its own text and voice channel under "Your team". Each of your matches gets a card there, kept up to date from the veto to the result.',
+    "I only DM you when you have something to do and you're not on the site: your veto turn, your match being ready, the tournament starting.",
+    ...(site ? [`Change what you get: ${site}/me/connections`] : []),
+  ].join('\n');
+}

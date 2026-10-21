@@ -12,12 +12,14 @@ import { db } from '../../config/database';
 import type { Untrusted } from '../../utils/untrusted';
 import { log } from '../../utils/logger';
 import { discordIdOf } from '../../services/notifyChannels';
-import { botToken, pickedGuildId } from './bot';
+import { botToken, discordBot, pickedGuildId } from './bot';
 import { discordFetch } from './rest';
 import { voiceSettings } from './matchVoice';
 import { playersOf } from './lobby';
 import { spaceOverwrites, LISTEN_ONLY } from './voiceChannel';
-import { KEEP_AFTER_S, spacePlan } from './tournamentSpacePlan';
+import { KEEP_AFTER_S, spacePlan, welcomeText } from './tournamentSpacePlan';
+
+const siteUrl = () => (process.env.FRONTEND_BASE_URL ?? '').trim().replace(/\/+$/, '') || null;
 
 export { KEEP_AFTER_S };
 
@@ -105,12 +107,31 @@ async function make(
   if (!roleId) return;
   for (const steamId of await playersOf(t.id, JSON.parse(t.team_ids ?? '[]') as string[])) {
     const discordId = await discordIdOf(steamId);
-    if (discordId) {
-      await discordFetch(token, `/guilds/${guildId}/members/${discordId}/roles/${roleId}`, {
-        method: 'PUT',
-      });
-    }
+    if (!discordId) continue;
+    const given = await discordFetch(
+      token,
+      `/guilds/${guildId}/members/${discordId}/roles/${roleId}`,
+      { method: 'PUT' }
+    );
+    if (given.ok) await welcome(steamId, discordId, t.name, { chatId, lobbyId });
   }
+}
+
+/** Once per player, the first time they get a tournament's channels: what the bot is for. */
+async function welcome(
+  steamId: string,
+  discordId: string,
+  tournament: string,
+  ids: { chatId: string | null; lobbyId: string | null }
+): Promise<void> {
+  const claimed = await db.queryAsync<{ player_id: string }>(
+    `INSERT INTO notify_deliveries (player_id, dedupe_key, channel, sent_at)
+     VALUES (?, 'discord_welcome', 'discord', ?)
+     ON CONFLICT (player_id, dedupe_key, channel) DO NOTHING RETURNING player_id`,
+    [steamId, Math.floor(Date.now() / 1000)]
+  );
+  if (claimed.length === 0) return;
+  await discordBot.sendDm(discordId, welcomeText(tournament, ids, siteUrl()));
 }
 
 async function remove(token: string, guildId: string, tournamentId: number): Promise<void> {
