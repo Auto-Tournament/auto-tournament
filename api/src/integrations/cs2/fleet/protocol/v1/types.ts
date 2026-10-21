@@ -736,7 +736,8 @@ export interface FleetEventPayload<D = object> {
 export type PresenceTeam = TeamKey | 'spectator' | 'none';
 
 export interface FleetEventData {
-  player_connect: { steamid64: U64s; name: string; team: PresenceTeam };
+  /** `address`: where the client connected from, port stripped (Ready Up 0.1.0-beta.76+). */
+  player_connect: { steamid64: U64s; name: string; team: PresenceTeam; address?: string };
   player_disconnect: { steamid64: U64s; name: string; team: PresenceTeam; reason?: string };
   player_team: { steamid64: U64s; team: PresenceTeam; side: Side | 'spectator' | 'none' };
   player_ready: {

@@ -41,7 +41,7 @@ import { connectPasswordFor, fleetServerStatus } from '../fleet/driver';
 import { recentMove } from '../fleet/failover';
 import { liveStateStore } from '../fleet/state';
 import { pauseView } from '../fleet/pauseView';
-import { connectChoice } from '../fleet/connectChoice';
+import { connectChoice, noteViewerIp } from '../fleet/connectChoice';
 import { storedCs2Settings } from '../tournamentSettings';
 import { QUEUE_ORDER_SQL } from '../../../core/allocationQueue';
 import type { MatchState } from '../fleet/protocol/v1';
@@ -283,6 +283,8 @@ router.get('/matches/:slug/connect', async (req: Request, res: Response) => {
     // A LAN address and a public one: the viewer gets the one for where they are (on the
     // server's network: LAN), and both are listed to pick from (fleet/connectChoice.ts).
     const viewerIp = req.get('cf-connecting-ip') || req.ip || null;
+    // Paired with where their client joins from, to learn a LAN network (connectChoice.ts).
+    if (viewerIsTeamMember) noteViewerIp(effectiveSteamId, viewerIp);
     const choice =
       canSeeServer && match.server_id && onFleet
         ? await connectChoice(

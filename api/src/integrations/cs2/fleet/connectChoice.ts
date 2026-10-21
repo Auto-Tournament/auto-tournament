@@ -11,7 +11,11 @@
  * Behind Cloudflare that guess can miss: at NTLAN (2026-10-16) players at the venue reached the
  * site by another address (IPv6, most likely) and were told to use the public one, whose new
  * ports the router did not forward. The `connect_prefer_lan` site setting skips the guess: LAN
- * for everyone.
+ * for everyone. And it misses when the venue's internet goes out another way than the
+ * servers' (a tunnel). So it also learns: when a player's game client joins from the
+ * machine's LAN (Ready Up reports the address), the web address they used the site from is
+ * remembered for that machine (cs2_lan_networks), and everyone coming from it is recommended
+ * the LAN address from then on.
  */
 import { lookup } from 'node:dns/promises';
 import { isIP } from 'node:net';
@@ -79,6 +83,67 @@ export async function onServerNetwork(
   return (await resolveAll(publicHost)).some((a) => bare(a) === ip);
 }
 
+/** How long a learned network counts. */
+const LEARNED_FOR_S = 30 * 24 * 60 * 60;
+/** How long a player's web address is kept to pair with their client joining. */
+const VIEWER_FOR_MS = 2 * 60 * 60 * 1000;
+const viewers = new Map<string, { ip: string; at: number }>();
+
+/** A player looked at their match's connect panel from this web address (the join comes next). */
+export function noteViewerIp(
+  steamId: string | null | undefined,
+  ip: string | null | undefined
+): void {
+  if (steamId && ip) viewers.set(steamId, { ip: bare(ip), at: Date.now() });
+}
+
+/** On one LAN (pure): the same IPv4 /24 as the machine's own address. */
+export function sameLan(clientIp: string, machineIp: string): boolean {
+  const a = bare(clientIp).split('.');
+  const b = bare(machineIp).split('.');
+  // shortcut: a /24 stands for the LAN; a venue on a wider subnet is learned only for its /24s.
+  return a.length === 4 && b.length === 4 && a.slice(0, 3).join('.') === b.slice(0, 3).join('.');
+}
+
+/**
+ * A player's client joined a fleet server from `address`: when that is the machine's LAN, the
+ * web address they used the site from (noteViewerIp) reaches the machine over LAN.
+ */
+export async function learnFromJoin(
+  fleetServerId: string,
+  steamId: string,
+  address: string | undefined
+): Promise<void> {
+  const viewer = viewers.get(steamId);
+  if (!address || !viewer || Date.now() - viewer.at > VIEWER_FOR_MS) return;
+  const fleet = await getFleetServer(fleetServerId);
+  if (!fleet) return;
+  const [machines, publics] = await Promise.all([machineAddresses(), machinePublicAddresses()]);
+  const lan = detectedAddress(fleet, machineAddressOf(machines, fleet));
+  const publicHost = machineAddressOf(publics, fleet);
+  if (!lan || !publicHost || !sameLan(address, lan.host)) return;
+  await db.runAsync(
+    `INSERT INTO cs2_lan_networks (public_host, web_ip, learned_at) VALUES (?, ?, ?)
+     ON CONFLICT (public_host, web_ip) DO UPDATE SET learned_at = EXCLUDED.learned_at`,
+    [publicHost, viewer.ip, Math.floor(Date.now() / 1000)]
+  );
+}
+
+/** This web address was seen reaching the machine (by its public host) over LAN lately. */
+async function learnedLan(
+  publicHost: string,
+  viewerIp: string | null | undefined
+): Promise<boolean> {
+  if (!viewerIp) return false;
+  const row = await db
+    .queryOneAsync<{ n: number }>(
+      'SELECT 1 AS n FROM cs2_lan_networks WHERE public_host = ? AND web_ip = ? AND learned_at > ?',
+      [publicHost, bare(viewerIp), Math.floor(Date.now() / 1000) - LEARNED_FOR_S]
+    )
+    .catch(() => null);
+  return !!row;
+}
+
 /**
  * The LAN and public addresses of a match's server (when it has both and they differ), and
  * which one this viewer should use. Null when there is no choice to make.
@@ -111,6 +176,11 @@ export async function connectChoice(
     (await settingsService.getSetting('connect_prefer_lan').catch(() => null)) === '1';
   return {
     options,
-    recommended: preferLan || (await onServerNetwork(viewerIp, publicHost)) ? 'lan' : 'public',
+    recommended:
+      preferLan ||
+      (await onServerNetwork(viewerIp, publicHost)) ||
+      (await learnedLan(publicHost, viewerIp))
+        ? 'lan'
+        : 'public',
   };
 }

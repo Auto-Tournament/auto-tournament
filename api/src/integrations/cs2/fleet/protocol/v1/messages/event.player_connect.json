@@ -51,6 +51,11 @@
             "spectator",
             "none"
           ]
+        },
+        "address": {
+          "type": "string",
+          "maxLength": 64,
+          "description": "Where the client connected from, without the port (Ready Up 0.1.0-beta.76+)."
         }
       }
     }

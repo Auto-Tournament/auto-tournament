@@ -1,5 +1,9 @@
 import { test, expect } from '@playwright/test';
-import { isPrivateIp, onServerNetwork } from '../../api/src/integrations/cs2/fleet/connectChoice';
+import {
+  isPrivateIp,
+  onServerNetwork,
+  sameLan,
+} from '../../api/src/integrations/cs2/fleet/connectChoice';
 
 /**
  * LAN or public address (fleet/connectChoice.ts): a viewer on the server's network (a private
@@ -28,5 +32,16 @@ test.describe('connect choice', { tag: ['@api', '@unit'] }, () => {
     expect(await onServerNetwork('81.166.209.188', '93.124.130.170')).toBe(false);
     expect(await onServerNetwork(null, '93.124.130.170')).toBe(false);
     expect(await onServerNetwork('81.166.209.188', null)).toBe(false);
+  });
+
+  test('a join from the machine LAN: same /24 as its own address', () => {
+    expect(sameLan('192.168.50.108', '192.168.50.196')).toBe(true);
+    // Through the router (hairpin): still the LAN.
+    expect(sameLan('192.168.50.1', '192.168.50.196')).toBe(true);
+    expect(sameLan('::ffff:192.168.50.7', '192.168.50.196')).toBe(true);
+    // A tunnel's address or a remote player: not the LAN.
+    expect(sameLan('10.8.0.2', '192.168.50.196')).toBe(false);
+    expect(sameLan('81.166.209.188', '192.168.50.196')).toBe(false);
+    expect(sameLan('loopback', '192.168.50.196')).toBe(false);
   });
 });
