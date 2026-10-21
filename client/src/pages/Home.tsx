@@ -239,8 +239,9 @@ export default function Home() {
                 data-testid="home-next-match"
                 sx={{
                   display: 'grid',
-                  gridTemplateColumns: { xs: 'minmax(0, 1fr)', md: 'auto minmax(0, 1fr) auto' },
-                  gap: { xs: 1.5, md: 3 },
+                  // What it is on the left (label, teams, where), the one action on the right.
+                  gridTemplateColumns: { xs: 'minmax(0, 1fr)', sm: 'minmax(0, 1fr) auto' },
+                  gap: { xs: 2, sm: 3 },
                   alignItems: 'center',
                   px: { xs: 2, md: 3 },
                   py: 2.5,
@@ -249,7 +250,7 @@ export default function Home() {
                   border: `1px solid ${color.accent}`,
                 }}
               >
-                <Box>
+                <Box sx={{ display: 'grid', gap: 0.5, minWidth: 0 }}>
                   <Typography
                     id="home-next-match-title"
                     sx={{
@@ -261,6 +262,7 @@ export default function Home() {
                     }}
                   >
                     {t('home.nextMatch')}
+                    {match.status === 'live' ? ` · ${t('home.matchStatus.live')}` : ''}
                   </Typography>
                   <Typography
                     sx={{
@@ -273,20 +275,7 @@ export default function Home() {
                     {myTeamMatchTeam?.name ?? myTeam?.name} {t('home.vs')}{' '}
                     {match.opponent?.name ?? t('home.tbd')}
                   </Typography>
-                </Box>
-                <Box
-                  sx={{
-                    display: 'flex',
-                    gap: 1.25,
-                    flexWrap: 'wrap',
-                    fontSize: '0.875rem',
-                    color: color.ink2,
-                  }}
-                >
-                  <Box
-                    component="span"
-                    sx={{ px: 1.5, py: 0.75, borderRadius: radii.pill, bgcolor: color.paper3 }}
-                  >
+                  <Typography sx={{ fontSize: '0.875rem', color: color.ink2 }}>
                     {[
                       matchTournament?.name,
                       getRoundLabel(
@@ -299,10 +288,7 @@ export default function Home() {
                     ]
                       .filter(Boolean)
                       .join(' · ')}
-                  </Box>
-                  {match.status === 'live' && (
-                    <LiveChip label={t(`home.matchStatus.${match.status}`)} />
-                  )}
+                  </Typography>
                 </Box>
                 <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
                   <Button
