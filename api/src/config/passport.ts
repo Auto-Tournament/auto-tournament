@@ -205,11 +205,15 @@ function configureDiscordStrategy(): void {
         store: new SignedCookieStateStore({ provider: 'discord', callbackURL }),
       },
       (
-        _accessToken: string,
+        accessToken: string,
         _refreshToken: string,
         profile: DiscordProfile,
         done: (err: Untrusted, user?: Untrusted) => void
       ) => {
+        // With guilds.join granted (addons/discord/serverJoin), the bot puts them on its server.
+        void import('../addons/discord/serverJoin')
+          .then(({ joinServer }) => joinServer(profile.id, accessToken))
+          .catch(() => undefined);
         const safeProfile = {
           id: profile.id,
           username: profile.username,
