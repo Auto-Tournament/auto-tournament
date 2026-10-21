@@ -215,6 +215,20 @@ function PlacementWatch({
             ? t('placement.outBodyPlay')
             : t('placement.outBody')}
       </Typography>
+      {!placement.champion && matchmakingAvailable && (
+        // A hint next to the result, not part of it: set apart and quieter.
+        <Typography
+          sx={{
+            mt: 2,
+            pt: 2,
+            borderTop: `1px solid ${tokens.color.rule}`,
+            color: tokens.color.muted,
+            fontSize: '0.875rem',
+          }}
+        >
+          {t('placement.playHint')}
+        </Typography>
+      )}
     </DraftDialog>
   );
 }
