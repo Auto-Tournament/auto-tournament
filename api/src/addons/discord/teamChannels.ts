@@ -16,7 +16,7 @@ import { discordIdOf } from '../../services/notifyChannels';
 import { botToken, pickedGuildId } from './bot';
 import { discordFetch } from './rest';
 import { TEXT_MEMBER, teamOverwrites } from './voiceChannel';
-import { KEEP_AFTER_S, spaceOf } from './tournamentSpace';
+import { KEEP_AFTER_S, ensureSpace } from './tournamentSpace';
 import { announceMatch } from './announce';
 
 const ON_KEY = 'discord_team_channels';
@@ -104,8 +104,8 @@ async function sweep(): Promise<void> {
   for (const key of want) {
     if (have.has(key)) continue;
     const [tournamentId, teamId] = key.split(':');
-    // In the tournament's own category: wait for it (tournamentSpace.ts makes it on its sweep).
-    const space = await spaceOf(Number(tournamentId));
+    // In the tournament's own category (made now if it is not there yet).
+    const space = await ensureSpace(Number(tournamentId));
     if (!space) continue;
     const team = await db.queryOneAsync<{
       name: string;
