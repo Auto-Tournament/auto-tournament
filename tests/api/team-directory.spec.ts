@@ -53,14 +53,23 @@ test.describe('Team directory', () => {
       const team = (await created.json()).team;
       expect(team).toMatchObject({ name, tag: 'DT', memberCount: 1 });
 
-      const second = await player.post('/api/team-directory/mine', {
-        data: { name: `${name} 2`, tag: 'DT2' },
+      // Up to three teams of your own; a fourth is refused.
+      for (const n of [2, 3]) {
+        const more = await player.post('/api/team-directory/mine', {
+          data: { name: `${name} ${n}`, tag: `DT${n}` },
+        });
+        expect(more.status(), await more.text()).toBe(201);
+      }
+      const fourth = await player.post('/api/team-directory/mine', {
+        data: { name: `${name} 4`, tag: 'DT4' },
       });
-      expect(second.status()).toBe(409);
-      expect(await second.json()).toMatchObject({ code: 'already_owner', teamId: team.id });
+      expect(fourth.status()).toBe(409);
+      expect(await fourth.json()).toMatchObject({ code: 'owner_limit' });
 
       const mine = await (await player.get('/api/team-directory/mine')).json();
-      expect(mine.owned).toMatchObject({ id: team.id, name });
+      expect(mine.ownedMax).toBe(3);
+      expect(mine.owned).toHaveLength(3);
+      expect(mine.owned[0]).toMatchObject({ id: team.id, name });
       expect(mine.memberOf).toEqual([]);
 
       const list = await (await anon.get('/api/team-directory')).json();

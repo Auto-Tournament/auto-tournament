@@ -547,7 +547,10 @@
     "bestMap": "Best: {{map}}",
     "new": "Nytt",
     "lookingFor_one": "Søker {{count}}",
-    "lookingFor_other": "Søker {{count}}"
+    "lookingFor_other": "Søker {{count}}",
+    "anotherTitle": "Lag et lag til",
+    "anotherBody_one": "Du kan eie {{max}} lag. Du har plass til ett til.",
+    "anotherBody_other": "Du kan eie {{max}} lag. Du har plass til {{count}} til."
   },
   "teamManage": {
     "title": "Administrer laget",

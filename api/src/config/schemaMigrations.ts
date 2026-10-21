@@ -409,6 +409,14 @@ export const SCHEMA_MIGRATIONS: readonly SchemaMigration[] = [
       );
     },
   },
+  {
+    id: '2026-10-21-teams-own-three',
+    description: 'A player may own up to three teams: the one-owner-one-team index goes',
+    async up(client) {
+      // The schema's plain index (idx_teams_owner) takes over the lookups.
+      await client.query('DROP INDEX IF EXISTS idx_teams_owner_uid');
+    },
+  },
 ];
 
 /** A fixed key for the advisory lock, so two API processes never run one migration twice. */

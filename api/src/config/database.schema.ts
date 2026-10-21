@@ -46,7 +46,7 @@ export function getSchemaSQL(): string {
       tag TEXT,
       discord_role_id TEXT,
       players TEXT NOT NULL,
-      owner_uid UUID, -- players.uid of the player who made the team; one owned team per account
+      owner_uid UUID, -- players.uid of the player who made the team; at most MAX_OWNED_TEAMS per account
       invite_code TEXT, -- the team's join link code; anyone with it can ask to join
       logo BYTEA, -- the team's logo (PNG, JPEG or WEBP, at most 256 KB)
       logo_type TEXT, -- its media type
@@ -61,7 +61,7 @@ export function getSchemaSQL(): string {
     );
 
     CREATE INDEX IF NOT EXISTS idx_teams_name ON teams(name);
-    CREATE UNIQUE INDEX IF NOT EXISTS idx_teams_owner_uid ON teams(owner_uid) WHERE owner_uid IS NOT NULL;
+    CREATE INDEX IF NOT EXISTS idx_teams_owner ON teams(owner_uid) WHERE owner_uid IS NOT NULL;
     CREATE UNIQUE INDEX IF NOT EXISTS idx_teams_invite_code ON teams(invite_code) WHERE invite_code IS NOT NULL;
 
     -- Players the owner or a captain asked onto the team by name; the player

@@ -205,6 +205,18 @@ async function accountsBySteamId(
 /** The invited player's notice for one team's invite (answered or taken back by it). */
 export const teamInviteKey = (teamId: string) => `team_invite:${teamId}`;
 
+/** How many teams one player may own (make, or be handed). Member of any number. */
+export const MAX_OWNED_TEAMS = 3;
+
+/** How many teams this account owns. */
+export async function ownedCount(uid: string): Promise<number> {
+  const row = await db.queryOneAsync<{ n: number }>(
+    'SELECT COUNT(*)::int AS n FROM teams WHERE owner_uid = ?',
+    [uid]
+  );
+  return row?.n ?? 0;
+}
+
 export const teamSelfService = {
   /** Everything the owner view shows. Owner and captains only. */
   async manageView(teamId: string, uid: string) {
@@ -633,11 +645,13 @@ export const teamSelfService = {
     if (newOwnerUid === uid) return;
     if (!(await teamMembers.roleFor(team.id, newOwnerUid)))
       throw new TeamActionError(404, 'Not on this team.');
-    const owns = await db.queryOneAsync<{ id: string }>(
-      'SELECT id FROM teams WHERE owner_uid = ?',
-      [newOwnerUid]
-    );
-    if (owns) throw new TeamActionError(409, 'That player already owns a team.', 'already_owner');
+    if ((await ownedCount(newOwnerUid)) >= MAX_OWNED_TEAMS) {
+      throw new TeamActionError(
+        409,
+        `That player already owns ${MAX_OWNED_TEAMS} teams.`,
+        'owner_limit'
+      );
+    }
     await db.runAsync('UPDATE teams SET owner_uid = ? WHERE id = ?', [newOwnerUid, team.id]);
     await teamMembers.setRole(team.id, newOwnerUid, 'captain');
   },
