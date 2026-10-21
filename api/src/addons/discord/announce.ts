@@ -15,7 +15,7 @@ import { adminNoticeService } from '../../services/adminNoticeService';
 import { matchRow } from '../../services/matchNotices';
 import { botToken } from './bot';
 import { discordFetch } from './rest';
-import { announceMessage, feedStage, teamLabel, type CardInput } from './announceText';
+import { announceMessage, feedStage, teamLabel, timeoutText, type CardInput } from './announceText';
 import { matchTimeFields } from '../../services/matchTimes';
 import { discordIdOf } from '../../services/notifyChannels';
 import { matchLiveStatsService } from '../../services/matchLiveStatsService';
@@ -187,13 +187,24 @@ function formatOf(config: string | null): { format: string | null; maps: string[
 }
 
 /** The veto so far from the match's veto state, and who is up. */
-function vetoOf(
-  raw: string | null
-): (NonNullable<CardInput['veto']> & { status: string | null }) | null {
+function vetoOf(raw: string | null):
+  | (NonNullable<CardInput['veto']> & {
+      status: string | null;
+      /** Steps the platform took because the team ran out of time. */
+      timedOut: Array<{ step: number; team: 1 | 2; text: string }>;
+    })
+  | null {
   try {
     const v = JSON.parse(raw ?? 'null') as {
       status?: string;
-      actions?: Array<{ action?: string; mapName?: string }>;
+      actions?: Array<{
+        step?: number;
+        team?: string;
+        action?: string;
+        mapName?: string;
+        side?: string;
+        timedOut?: boolean;
+      }>;
       currentTurn?: string;
       currentAction?: string;
     } | null;
@@ -209,6 +220,12 @@ function vetoOf(
       banned: maps('ban'),
       picked: maps('pick'),
       next: team && action ? { team, action } : null,
+      timedOut: (v.actions ?? []).flatMap((a) => {
+        const side = ({ team1: 1, team2: 2 } as const)[a.team ?? ''];
+        if (!a.timedOut || !side || a.step === undefined) return [];
+        const text = timeoutText(a.action ?? '', mapLabel(a.mapName ?? null), a.side ?? null);
+        return [{ step: a.step, team: side, text }];
+      }),
     };
   } catch {
     return null;
@@ -292,6 +309,28 @@ async function announceNow(slug: string): Promise<void> {
   // Each team's card: the stage it is at, then the result; a cancelled match's card goes.
   const cardStage = stage ?? (resultDue ? 'result' : null);
   const cancelled = state.status === 'cancelled' && sent.some((s) => s.event.startsWith('card:'));
+  // A veto step the team ran out of time for: said once in that team's channel, no ping.
+  const timedOut = (vetoOf(state.veto_state)?.timedOut ?? []).filter(
+    (t) => !sent.some((s) => s.event === `timeout:${t.step}`)
+  );
+  for (const t of timedOut) {
+    const own = await teamChannelOf(
+      state.tournament_id,
+      t.team === 1 ? state.team1_id : state.team2_id
+    );
+    if (!own) continue;
+    const claimed = await db.queryOneAsync<{ event: string }>(
+      `INSERT INTO discord_announcements (match_slug, event, sent_at) VALUES (?, ?, ?)
+       ON CONFLICT DO NOTHING RETURNING event`,
+      [slug, `timeout:${t.step}`, Math.floor(Date.now() / 1000)]
+    );
+    if (claimed) {
+      await discordFetch(token, `/channels/${own}/messages`, {
+        method: 'POST',
+        body: { content: t.text, allowed_mentions: { parse: [] } },
+      });
+    }
+  }
   if (!cardStage && !cancelled) return;
   const match = await matchRow(slug);
   const team1 = match?.t1;
