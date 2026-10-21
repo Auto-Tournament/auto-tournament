@@ -410,8 +410,9 @@ async function announceNow(slug: string): Promise<void> {
       continue;
     }
     if (!cardStage) continue;
-    const body = announceMessage(await card(cardStage));
-    const text = JSON.stringify([body.embeds, body.components ?? []]);
+    // With the team's role: the line above the card follows the stage too ("…is done").
+    const body = announceMessage(await card(cardStage), roleId);
+    const text = JSON.stringify([body.content ?? null, body.embeds, body.components ?? []]);
     if (!row) {
       // Claimed first, like the result, so a burst of changes posts it once.
       const claimed = await db.queryOneAsync<{ event: string }>(
@@ -420,7 +421,7 @@ async function announceNow(slug: string): Promise<void> {
         [slug, event, Math.floor(Date.now() / 1000)]
       );
       if (!claimed) continue;
-      const posted = await post(own, announceMessage(await card(cardStage), roleId), 'Match card');
+      const posted = await post(own, body, 'Match card');
       if (posted) {
         teamCards.set(key, text);
         await db.runAsync(
@@ -433,6 +434,7 @@ async function announceNow(slug: string): Promise<void> {
       await discordFetch(token, `/channels/${own}/messages/${row.message_id}`, {
         method: 'PATCH',
         body: {
+          ...(body.content ? { content: body.content } : {}),
           embeds: body.embeds,
           components: body.components ?? [],
           allowed_mentions: { parse: [] },
