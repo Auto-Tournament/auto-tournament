@@ -3,9 +3,8 @@
  *
  * When a match is on its server, each team's players (by the Discord ID on
  * their profile) already in a voice channel on the server are moved into
- * their team's voice channel (teamChannels.ts); the rest get a DM with a
- * link. Each side once per match. Shuffle works the same way: the teams are
- * the match's own.
+ * their team's voice channel (teamChannels.ts). Each side once per match.
+ * Shuffle works the same way: the teams are the match's own.
  *
  * Listens on the match change bus (core/matchChangeBus), like the webhooks;
  * a sweep catches what a restart missed. A failure raises a `discord_failed`
@@ -17,7 +16,7 @@ import { log } from '../../utils/logger';
 import { adminNoticeService } from '../../services/adminNoticeService';
 import { matchRow, sidePlayers } from '../../services/matchNotices';
 import { discordIdOf } from '../../services/notifyChannels';
-import { botToken, discordBot, pickedGuildId } from './bot';
+import { botToken, pickedGuildId } from './bot';
 import { discordFetch } from './rest';
 
 const ON_KEY = 'discord_match_voice';
@@ -89,7 +88,6 @@ async function moveIn(slug: string, sides: Side[], token: string, guildId: strin
   );
   if (!match || !ids) return;
   for (const side of sides) {
-    const team = side === 'team1' ? match.t1 : match.t2;
     // The team's voice channel for the tournament (teamChannels.ts); not made yet: the next try.
     const own = await db.queryOneAsync<{ voice_id: string | null }>(
       'SELECT voice_id FROM discord_team_channels WHERE tournament_id = ? AND team_id = ?',
@@ -102,19 +100,13 @@ async function moveIn(slug: string, sides: Side[], token: string, guildId: strin
        VALUES (?, ?, ?, ?) ON CONFLICT (match_slug, side) DO NOTHING`,
       [slug, side, channelId, now()]
     );
-    const link = `https://discord.com/channels/${guildId}/${channelId}`;
     for (const discordId of await membersOf(token, guildId, await sidePlayers(match, side))) {
-      // Moved when they are in a voice channel; Discord refuses (40032) when not.
-      const moved = await discordFetch(token, `/guilds/${guildId}/members/${discordId}`, {
+      // Moved when they are in a voice channel; Discord refuses (40032) when not. No DM:
+      // the match-ready one reaches them when they are away, the team channel's ping otherwise.
+      await discordFetch(token, `/guilds/${guildId}/members/${discordId}`, {
         method: 'PATCH',
         body: { channel_id: channelId },
       });
-      if (!moved.ok) {
-        await discordBot.sendDm(
-          discordId,
-          `Your team's voice channel for ${team ?? 'your match'}: ${link}`
-        );
-      }
     }
   }
 }
