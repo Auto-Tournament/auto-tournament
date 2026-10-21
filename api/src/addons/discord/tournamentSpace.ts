@@ -107,7 +107,8 @@ async function make(
     ...overwrites,
     ...(roleId ? [{ id: roleId, type: 0 as const, allow: '0', deny: String(LISTEN_ONLY) }] : []),
   ];
-  const lobbyId = (await channel('Lobby', 13, overwrites)) ?? (await channel('Lobby', 2, listenOnly));
+  const lobbyId =
+    (await channel('Lobby', 13, overwrites)) ?? (await channel('Lobby', 2, listenOnly));
   await db.runAsync(
     `INSERT INTO discord_tournament_spaces
        (tournament_id, category_id, role_id, channel_id, lobby_id, matches_id, results_id)
