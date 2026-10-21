@@ -327,6 +327,37 @@
       "title": "Encontrar jogadores e equipas",
       "hint": "Veja quem joga aqui e encontre uma equipa.",
       "cta": "Ver jogadores"
+    },
+    "next": {
+      "label": {
+        "vetoTurn": "Your turn in the veto",
+        "ready": "Your match is ready",
+        "warmup": "Warmup",
+        "live": "Live",
+        "paused": "Match paused"
+      },
+      "opponent": "Opponent playing",
+      "startsAt": "Starts at",
+      "untilVeto": "Until the veto",
+      "untilMatch": "Until the match",
+      "veto": "Veto",
+      "yourTurn": "Your turn",
+      "ban": "Ban a map",
+      "pick": "Pick a map",
+      "side": "Pick a side",
+      "theirTurn": "Their turn",
+      "vetoOpen": "Veto open",
+      "waiting": "Waiting",
+      "forServer": "For a server",
+      "join": "Join",
+      "serverReady": "Server ready",
+      "ready": "Ready",
+      "mapRound": "{{map}} · R{{round}}",
+      "round": "Round {{round}}",
+      "halftime": "Half-time",
+      "nextMap": "Next map",
+      "goVeto": "Go to veto",
+      "paused": "Paused"
     }
   },
   "browsePage": {

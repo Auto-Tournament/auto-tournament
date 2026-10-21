@@ -51,6 +51,9 @@ export interface TeamMatchVetoSummary {
   team1Name?: string;
   team2Name?: string;
   pickedMaps: VetoMapResult[];
+  /** Whose turn it is, and to do what ('ban', 'pick', 'side_pick'), while it runs. */
+  currentTurn?: 'team1' | 'team2' | null;
+  currentAction?: string | null;
   actions: VetoAction[];
 }
 
@@ -94,6 +97,9 @@ export interface TeamMatchInfo {
   loadedAt?: number;
   /** Held until then (unix s): the break before its veto, or an admin's hold. */
   heldUntil?: number | null;
+  /** Its start time and when its veto opens (unix s, Manage › Schedule), when it has one. */
+  startsAt?: number | null;
+  vetoOpensAt?: number | null;
   /**
    * NOTE: this mirrors `MatchConfig` in match.types.ts rather than reusing it,
    * and the two have already drifted — `cvars` was missing here while callers

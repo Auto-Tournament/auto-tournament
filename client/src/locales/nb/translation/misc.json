@@ -327,6 +327,37 @@
       "title": "Finn spillere og lag",
       "hint": "Se hvem som spiller her, og finn et lag å bli med i.",
       "cta": "Se spillere"
+    },
+    "next": {
+      "label": {
+        "vetoTurn": "Din tur i vetoen",
+        "ready": "Kampen er klar",
+        "warmup": "Oppvarming",
+        "live": "Live",
+        "paused": "Kampen er satt på pause"
+      },
+      "opponent": "Motstanderen spiller",
+      "startsAt": "Starter",
+      "untilVeto": "Til vetoen",
+      "untilMatch": "Til kampen",
+      "veto": "Veto",
+      "yourTurn": "Din tur",
+      "ban": "Fjern et kart",
+      "pick": "Velg et kart",
+      "side": "Velg side",
+      "theirTurn": "Deres tur",
+      "vetoOpen": "Vetoen er åpen",
+      "waiting": "Venter",
+      "forServer": "På en server",
+      "join": "Bli med",
+      "serverReady": "Serveren er klar",
+      "ready": "Klare",
+      "mapRound": "{{map}} · R{{round}}",
+      "round": "Runde {{round}}",
+      "halftime": "Pause",
+      "nextMap": "Neste kart",
+      "goVeto": "Gå til vetoen",
+      "paused": "Pause"
     }
   },
   "browsePage": {

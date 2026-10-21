@@ -254,6 +254,8 @@ router.get('/:teamId/match', async (req: Request, res: Response) => {
         sideTeam2?: string;
         knifeRound?: boolean;
       }>;
+      currentTurn: 'team1' | 'team2' | null;
+      currentAction: string | null;
       actions: Array<{
         step: number;
         team: 'team1' | 'team2';
@@ -282,6 +284,13 @@ router.get('/:teamId/match', async (req: Request, res: Response) => {
             team1Name: vetoState.team1Name || match.team1_name || 'Team 1',
             team2Name: vetoState.team2Name || match.team2_name || 'Team 2',
             pickedMaps: orderedPickedMaps,
+            // Whose turn it is and what they do ('ban', 'pick', 'side_pick'), while it runs.
+            currentTurn:
+              vetoState.currentTurn === 'team1' || vetoState.currentTurn === 'team2'
+                ? vetoState.currentTurn
+                : null,
+            currentAction:
+              typeof vetoState.currentAction === 'string' ? vetoState.currentAction : null,
             actions: Array.isArray(vetoState.actions)
               ? [...vetoState.actions].sort(
                   (a: { step?: number }, b: { step?: number }) => (a.step || 0) - (b.step || 0)
