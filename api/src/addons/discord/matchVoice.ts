@@ -169,6 +169,12 @@ async function syncNow(slug: string): Promise<void> {
   if (now() - ended >= CLEANUP_AFTER_S) await forget(slug, token, rows);
 }
 
+/** A team's voice channel was just made: try the match now, not after the minute's wait. */
+export function moveNow(slug: string): Promise<void> {
+  lastTry.delete(slug);
+  return syncMatchVoice(slug);
+}
+
 /** One sync of a match at a time. */
 export function syncMatchVoice(slug: string): Promise<void> {
   const next = (chains.get(slug) ?? Promise.resolve())
