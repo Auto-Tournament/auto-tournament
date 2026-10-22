@@ -149,7 +149,7 @@ test.describe.serial('Code modules in the browser', () => {
     {
       tag: ['@ui', '@modules'],
     },
-    async ({ page, request }) => {
+    async ({ page }) => {
       // CS2 is a code module on every instance that runs it (CI installs it
       // from the catalog), so the manifest is answered here as an instance with
       // no code module enabled answers it.
