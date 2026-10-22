@@ -471,7 +471,15 @@ function RailBody({ onNavigate }: { onNavigate?: () => void }) {
           </Box>
         ))}
       </Box>
-      <Box sx={{ display: 'grid', gap: 0.25, borderTop: `1px solid ${color.rule}`, pt: 1.5 }}>
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: 'minmax(0, 1fr)',
+          gap: 0.25,
+          borderTop: `1px solid ${color.rule}`,
+          pt: 1.5,
+        }}
+      >
         <Box
           component={RouterLink}
           to={paths.root}
