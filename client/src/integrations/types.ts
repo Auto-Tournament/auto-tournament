@@ -1,3 +1,4 @@
+/* eslint-disable max-lines -- the typed game-integration contract is intentionally broad. */
 /**
  * Client side of the game-integration contract (3.0 phase C, PR 12).
  *
