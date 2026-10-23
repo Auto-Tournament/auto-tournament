@@ -97,7 +97,8 @@ func fbfRestore(gi string) {
 
 // fbfUnhidden reports whether startmovie can be used: the plugin says so in
 // the game's output as CS2 starts (before the console connects), and `find`
-// lists the command once it is no longer hidden.
+// lists the command once it is no longer hidden. Asked with a demo loaded:
+// the movie commands register after the main menu.
 func fbfUnhidden(g *game) bool {
 	if f, err := os.Open(g.logPath); err == nil {
 		sc := bufio.NewScanner(f)
@@ -125,11 +126,11 @@ func fbfUnhidden(g *game) bool {
 			if !ok {
 				return false
 			}
-			if strings.Contains(line, "startmovie") {
+			// find lists everything that mentions it (movie_fixwave's help
+			// does): only a line that starts with the command counts.
+			if f := strings.Fields(line); len(f) > 0 && f[0] == "startmovie" {
 				log.Printf("frame by frame: find startmovie: %s", strings.TrimSpace(line))
-				if !strings.Contains(strings.ToLower(line), "unknown") {
-					return true
-				}
+				return true
 			}
 		case <-timer.C:
 			return false
@@ -321,7 +322,7 @@ func fbfConvert(csgo, movie string, use []int, w, h int, raw string, paused func
 			continue
 		}
 		if time.Now().After(deadline) {
-			werr = fmt.Errorf("CS2 got to frame %d of %d in time", next, last)
+			werr = fmt.Errorf("CS2 did not get past frame %d of %d in time", next, last)
 			break
 		}
 		ended = paused()

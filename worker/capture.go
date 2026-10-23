@@ -197,10 +197,11 @@ type game struct {
 	startTick int // the demo's first tick: the console's ticks count from it
 	lastTick  int // the demo's length in ticks (the analyzer's last tick)
 	logPath   string
-	// fbf: Frame by Frame unhid startmovie (framebyframe_linux.go); gameinfo
-	// is the gameinfo.gi it patched, restored when CS2 stops.
-	fbf      bool
-	gameinfo string
+	// fbf: Frame by Frame unhid startmovie (framebyframe_linux.go), known
+	// once fbfChecked; gameinfo is the gameinfo.gi it patched, restored when
+	// CS2 stops.
+	fbf, fbfChecked bool
+	gameinfo        string
 	// follow, when set, is where the followed player stands at a tick (the
 	// demo's replay frames): the capture checks the camera is with them.
 	follow func(tick int) ([3]float64, bool)
@@ -298,13 +299,6 @@ func (r *recorder) launchGameOnce(ctx context.Context, logPath string) (*game, e
 	}
 	// The main menu loads after the console opens.
 	time.Sleep(10 * time.Second)
-	if gameinfo != "" {
-		if g.fbf = fbfUnhidden(g); g.fbf {
-			log.Printf("frame by frame: on")
-		} else {
-			log.Printf("frame by frame: the plugin did not unhide startmovie; capturing the stream")
-		}
-	}
 	return g, nil
 }
 

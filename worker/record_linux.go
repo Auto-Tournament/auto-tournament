@@ -823,6 +823,14 @@ func (r *recorder) recordWindow(g *game, look clipLook, card *cardRender, name s
 	var frames []frameRef
 	var audioAt float64
 	var err error
+	if g.gameinfo != "" && !g.fbfChecked {
+		g.fbfChecked = true
+		if g.fbf = fbfUnhidden(g); g.fbf {
+			log.Printf("frame by frame: on")
+		} else {
+			log.Printf("frame by frame: the plugin did not unhide startmovie; capturing the stream")
+		}
+	}
 	if g.fbf {
 		// CS2 writes every frame and the sound itself: one pass, nothing slowed.
 		if frames, audioAt, err = r.fbfCapture(g, name, w.from-lead, w.to, w.from, segs, main, wav); err != nil {
