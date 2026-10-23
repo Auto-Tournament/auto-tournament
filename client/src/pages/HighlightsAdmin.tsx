@@ -111,8 +111,8 @@ function HighlightSettings() {
           highlightsPerPlayer:
             typeof s.highlightsPerPlayer === 'number' ? s.highlightsPerPlayer : 6,
           highlightsResolution:
-            typeof s.highlightsResolution === 'number' ? s.highlightsResolution : 1080,
-          highlightsFps: typeof s.highlightsFps === 'number' ? s.highlightsFps : 60,
+            typeof s.highlightsResolution === 'number' ? s.highlightsResolution : 720,
+          highlightsFps: typeof s.highlightsFps === 'number' ? s.highlightsFps : 240,
           highlightsMusic: typeof s.highlightsMusic === 'string' ? s.highlightsMusic : '',
           reels: Object.fromEntries(
             REEL_LIMITS.map(([field, , , fallback]) => [

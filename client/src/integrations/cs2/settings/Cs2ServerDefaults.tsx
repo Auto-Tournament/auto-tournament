@@ -101,8 +101,8 @@ type Key = keyof Cs2DefaultsValues;
 const DEFAULTS: Cs2DefaultsValues = {
   highlightsWatermark: true,
   highlightsPerPlayer: 6,
-  highlightsResolution: 1080,
-  highlightsFps: 60,
+  highlightsResolution: 720,
+  highlightsFps: 240,
   highlightsMusic: '',
   highlightsKeepClean: true,
   atMinimumReadyRequired: 0,
