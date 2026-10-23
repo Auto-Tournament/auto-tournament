@@ -263,7 +263,7 @@ jobs:
           node scripts/third-party-notices.mjs
           cp THIRD_PARTY_NOTICES.md "$out/"
 
-      # buildx's own image and node:20-alpine come from Docker Hub, whose anonymous pull limit the
+      # buildx's own image and node:24-alpine come from Docker Hub, whose anonymous pull limit the
       # shared runners hit (429). Logged in when the secrets are there, and the base image is
       # then pulled from Docker Hub as that account: mirror.gcr.io is anonymous and 429s on the
       # shared runners too (2026-10-20). A fork's pull request has no secrets and uses the mirror.

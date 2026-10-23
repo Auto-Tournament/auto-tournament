@@ -10,7 +10,7 @@ ARG NODE_REGISTRY=public.ecr.aws/docker/library
 # Using Alpine for smallest possible image size
 # node from AWS ECR Public, the mirror of Docker's official images: Docker Hub
 # rate-limits and times out on CI runners (2026-10-09).
-FROM ${NODE_REGISTRY}/node:20-alpine AS base
+FROM ${NODE_REGISTRY}/node:24-alpine AS base
 WORKDIR /app
 
 # Install necessary build tools for Alpine (only in build stages)
@@ -32,7 +32,7 @@ RUN corepack enable && corepack prepare yarn@1.22.19 --activate
 # byte-identical across version bumps, and COPY --from is cached on content, so
 # deps keeps hitting the layer cache. The real package.json files still reach
 # the image through `COPY . .` in the build stage.
-FROM ${NODE_REGISTRY}/node:20-alpine AS manifests
+FROM ${NODE_REGISTRY}/node:24-alpine AS manifests
 WORKDIR /app
 COPY package.json yarn.lock ./
 COPY api/package.json ./api/package.json
@@ -122,7 +122,7 @@ COPY worker/*.go ./
 COPY worker/assets ./assets
 RUN CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o /at-worker .
 
-FROM ${NODE_REGISTRY}/node:20-alpine AS release
+FROM ${NODE_REGISTRY}/node:24-alpine AS release
 WORKDIR /app
 
 # Build arguments for platform detection
