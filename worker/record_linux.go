@@ -245,12 +245,16 @@ func (c *client) claimRecording(ctx context.Context, loaded map[string]any) (*ma
 	if loaded != nil {
 		ask["loaded"] = loaded
 	}
+	if !c.claimed.Load() {
+		ask["fresh"] = true
+	}
 	res, err := c.postJSON(ctx, "/api/game/cs2/recorder/claim", ask)
 	if err != nil {
 		return nil, nil, nil, err
 	}
 	defer res.Body.Close()
 	if res.StatusCode == http.StatusNoContent {
+		c.claimed.Store(true)
 		return nil, nil, nil, nil
 	}
 	if err := ok(res, "claim"); err != nil {
@@ -267,6 +271,7 @@ func (c *client) claimRecording(ctx context.Context, loaded map[string]any) (*ma
 	if err := json.NewDecoder(res.Body).Decode(&body); err != nil {
 		return nil, nil, nil, err
 	}
+	c.claimed.Store(true)
 	c.claimToken.Store(&body.ClaimToken)
 	var kind struct {
 		Kind string `json:"kind"`

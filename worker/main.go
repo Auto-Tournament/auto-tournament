@@ -59,6 +59,9 @@ type client struct {
 	// rejected: the platform refused this recorder's key (revoked, or never
 	// made there); it is not asked again until the recorder restarts.
 	rejected atomic.Bool
+	// claimed: this process has asked for work before; until then its claims say
+	// it is fresh, so the platform hands back a job a previous run left behind.
+	claimed atomic.Bool
 }
 
 func env(key, fallback string) string {

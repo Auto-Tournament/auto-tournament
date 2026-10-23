@@ -3,6 +3,7 @@ import {
   recoverRecordingLeases,
   recorderHasActiveClaim,
   registerRecorderClaim,
+  releaseRecorderWork,
 } from '../demos/recorderLeases';
 import { db } from '../../../config/database';
 import {
@@ -285,6 +286,8 @@ export function registerRecorderJobRoutes(router: Router): void {
           { version, gpu: req.body?.gpu, platform: req.body?.platform },
           (res.locals.recorderKey as { name?: string } | undefined)?.name
         );
+        // A recorder's first claim since it started: what it held before is orphaned.
+        if (req.body?.fresh === true) await queueMatchReelFor(await releaseRecorderWork(recorder));
         await queueMatchReelFor(await recoverRecordingLeases());
         if (await recorderHasActiveClaim(recorder)) return res.status(204).end();
         // Paused after too many turned-down clips (demos/recorders.ts).
