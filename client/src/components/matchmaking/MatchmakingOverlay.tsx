@@ -125,9 +125,11 @@ export function MatchmakingOverlay() {
           data-testid="mm-queue-bar"
           sx={(theme) => ({
             position: 'fixed',
-            left: '50%',
+            left: 16,
+            right: 16,
+            width: 'fit-content',
+            mx: 'auto',
             bottom: 16,
-            transform: 'translateX(-50%)',
             zIndex: theme.zIndex.snackbar - 1,
             display: 'flex',
             alignItems: 'center',
@@ -142,7 +144,7 @@ export function MatchmakingOverlay() {
           })}
         >
           <CircularProgress size={16} thickness={5} aria-hidden />
-          <Typography variant="body2" sx={{ whiteSpace: 'nowrap' }}>
+          <Typography variant="body2" sx={{ minWidth: 0 }}>
             {t('matchmaking.queue.searching', { mode: me.queue?.mode ?? '5v5' })}{' '}
             <Box
               component="span"
@@ -171,6 +173,7 @@ export function MatchmakingOverlay() {
           {isLeader && (
             <Button
               size="small"
+              sx={{ flexShrink: 0 }}
               onClick={() => void cancel()}
               disabled={busy}
               data-testid="mm-queue-cancel"
