@@ -52,6 +52,15 @@ func fbfInstall(gameDir string) (string, error) {
 	if err := exec.Command("cp", "-r", fbfSource, dst).Run(); err != nil {
 		return "", fmt.Errorf("copy the plugin: %w", err)
 	}
+	// CS2 writes the frames under the plugin's folder: into RAM when there is
+	// some, so the disk's speed does not hold the rendering back. Only a few
+	// frames are there at once (fbfConvert takes them as they come).
+	if shm := env("AT_FBF_RAM", "/dev/shm"); shm != "off" && exists(shm) {
+		ram := filepath.Join(shm, "at-frame-by-frame")
+		if err := os.MkdirAll(ram, 0o755); err == nil {
+			_ = os.Symlink(ram, filepath.Join(dst, "movie"))
+		}
+	}
 	gi := filepath.Join(gameDir, "csgo", "gameinfo.gi")
 	data, err := os.ReadFile(gi)
 	if err != nil {
@@ -229,7 +238,9 @@ func (r *recorder) fbfCapture(g *game, name string, from, to, wantFrom int, segs
 		_, _, err := g.con.expect(rePaused, 50*time.Millisecond)
 		return err == nil
 	}
-	_, convErr := fbfConvert(csgo, movie, order, g.width, g.height, raw, paused, deadline)
+	began := time.Now()
+	progress := func(frac float64) { r.reportPart(frac) }
+	rendered, convErr := fbfConvert(csgo, movie, order, g.width, g.height, raw, paused, deadline, progress)
 	// The last frame the clip uses is in: CS2 has played (and recorded the
 	// sound) at least that far, so the movie stops there, not at `to`.
 	_ = g.con.send("endmovie", "host_framerate 0", "demo_pause")
@@ -255,7 +266,9 @@ func (r *recorder) fbfCapture(g *game, name string, from, to, wantFrom int, segs
 	if err := copyFile(wavs[0], wav); err != nil {
 		return nil, 0, err
 	}
-	log.Printf("frame by frame: ticks %d → %d at %g frames a game second, %d of %d frames used", t0, to, fps, len(order), n)
+	took := time.Since(began).Seconds()
+	log.Printf("frame by frame: ticks %d → %d at %g frames a game second, %d of %d frames used; %d rendered in %.1f s (%.0f a second)",
+		t0, to, fps, len(order), n, rendered, took, float64(rendered)/took)
 	return frames, float64(wantFrom-t0) / tickrate, nil
 }
 
@@ -263,19 +276,20 @@ func (r *recorder) fbfCapture(g *game, name string, from, to, wantFrom int, segs
 // them: the frames in `use` (by number, ascending) go in, the others are
 // deleted unread, so the disk only ever holds a few. paused reports whether
 // CS2 got to the end (ended): frames after that are not waited for.
-func fbfConvert(csgo, movie string, use []int, w, h int, raw string, paused func() bool, deadline time.Time) (ended bool, werr error) {
+func fbfConvert(csgo, movie string, use []int, w, h int, raw string, paused func() bool, deadline time.Time, progress func(float64)) (rendered int, werr error) {
 	ff := exec.Command("ffmpeg", "-y", "-hide_banner", "-loglevel", "error",
 		"-f", "rawvideo", "-pix_fmt", "bgr24", "-s", fmt.Sprintf("%dx%d", w, h), "-i", "pipe:0",
 		"-pix_fmt", "yuv420p", "-f", "rawvideo", raw)
 	stdin, err := ff.StdinPipe()
 	if err != nil {
-		return false, err
+		return 0, err
 	}
 	var stderr strings.Builder
 	ff.Stderr = &stderr
 	if err := ff.Start(); err != nil {
-		return false, err
+		return 0, err
 	}
+	ended := false
 	want := map[int]bool{}
 	last := -1
 	for _, i := range use {
@@ -286,6 +300,7 @@ func fbfConvert(csgo, movie string, use []int, w, h int, raw string, paused func
 	for _, i := range use {
 		next = min(next, i)
 	}
+	first := next
 	base := -1
 	started := time.Now()
 	for next <= last && werr == nil {
@@ -311,8 +326,12 @@ func fbfConvert(csgo, movie string, use []int, w, h int, raw string, paused func
 				for next++; next <= last && !want[next]; next++ {
 				}
 			}
+			rendered = max(rendered, num+1)
 			os.Remove(files[0].path)
 			files = files[1:]
+		}
+		if last > first {
+			progress(float64(next-first) / float64(last-first))
 		}
 		if werr != nil || next > last {
 			break
@@ -333,7 +352,7 @@ func fbfConvert(csgo, movie string, use []int, w, h int, raw string, paused func
 	if err := ff.Wait(); err != nil && werr == nil {
 		werr = fmt.Errorf("ffmpeg: %v %s", err, strings.TrimSpace(stderr.String()))
 	}
-	return ended, werr
+	return rendered, werr
 }
 
 type fbfFrame struct {

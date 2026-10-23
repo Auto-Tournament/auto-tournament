@@ -703,7 +703,10 @@ func (r *recorder) recordMoment(g *game, look clipLook, name string, m moment, o
 	var edits [][]segment
 	var encodes []func() error
 	var parts []overlayPart
+	r.job.windows = len(windows)
+	defer func() { r.job.windows = 0 }()
 	for i, w := range windows {
+		r.job.window = i
 		piece := filepath.Join(dir, fmt.Sprintf("piece-%d.mp4", i))
 		// The first piece plays the card's entrance; the later ones (after a
 		// jump cut) keep it small at the bottom.
@@ -1733,24 +1736,46 @@ type jobProgress struct {
 	matchSlug string
 	mapNumber *int
 	started   time.Time
+	// The last report, and which of the clip's windows is being captured:
+	// reportPart moves the percent within a clip as its frames come in.
+	step, detail    string
+	done, total     int
+	window, windows int
+	lastPart        time.Time
 }
 
 // report tells the platform what this recorder is doing (link.go), with the
 // job's time so far and, from the clips done, an estimate of the rest.
 func (r *recorder) report(step, detail string, done, total int) {
+	r.job.step, r.job.detail, r.job.done, r.job.total = step, detail, done, total
+	r.reportAt(float64(done))
+}
+
+// reportPart reports the current clip `frac` of the way done (its window's
+// frames so far), at most once a second.
+func (r *recorder) reportPart(frac float64) {
+	if r.job.total == 0 || r.job.windows == 0 || time.Since(r.job.lastPart) < time.Second {
+		return
+	}
+	r.job.lastPart = time.Now()
+	r.reportAt(float64(r.job.done) + (float64(r.job.window)+frac)/float64(r.job.windows))
+}
+
+func (r *recorder) reportAt(done float64) {
 	if r.link == nil {
 		return
 	}
-	p := Progress{Step: step, Detail: detail, MatchSlug: r.job.matchSlug, MapNumber: r.job.mapNumber}
+	total := r.job.total
+	p := Progress{Step: r.job.step, Detail: r.job.detail, MatchSlug: r.job.matchSlug, MapNumber: r.job.mapNumber}
 	if total > 0 {
-		p.Done, p.Total = ptrInt(done), ptrInt(total)
-		p.Percent = ptrFloat(float64(done) * 100 / float64(total))
+		p.Done, p.Total = ptrInt(int(done)), ptrInt(total)
+		p.Percent = ptrFloat(done * 100 / float64(total))
 	}
 	if !r.job.started.IsZero() {
 		el := time.Since(r.job.started).Seconds()
 		p.Elapsed = ptrFloat(el)
-		if done > 0 && total > done {
-			p.ETA = ptrFloat(el / float64(done) * float64(total-done))
+		if done > 0 && float64(total) > done {
+			p.ETA = ptrFloat(el / done * (float64(total) - done))
 		}
 	}
 	r.link.Report(p)
