@@ -284,7 +284,10 @@ func fbfConvert(csgo, movie string, use []int, w, h int, raw string, paused func
 		want[i] = true
 		last = max(last, i)
 	}
-	next := 0 // the next frame number wanted in order
+	next := last // the next frame number wanted in order: the first one
+	for _, i := range use {
+		next = min(next, i)
+	}
 	base := -1
 	started := time.Now()
 	for next <= last && werr == nil {
