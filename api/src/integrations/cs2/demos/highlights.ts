@@ -795,6 +795,8 @@ export interface ClipMarkers {
   slowmo: [number, number] | null;
   /** The kills the crowd reacts to (seconds in, how impressive): the reel's crowd track. */
   reactions?: { t: number; score: number; aww?: boolean }[];
+  /** For each of `kills`, whether it was a headshot (absent: not known). */
+  headshots?: boolean[];
   /**
    * The clip itself starts this far into its clean twin (worker/standalone.go:
    * on its own it skips the caption card's opening). The times above are the
@@ -811,11 +813,13 @@ export function markersOnItsOwn(m: ClipMarkers | null): ClipMarkers | null {
   const reactions = (m.reactions ?? [])
     .filter((x) => x.t >= at)
     .map((x) => ({ ...x, t: r(x.t - at) }));
+  const kept = m.kills.map((k) => k >= at);
   return {
     duration: r(Math.max(0, m.duration - at)),
-    kills: m.kills.filter((k) => k >= at).map((k) => r(k - at)),
+    kills: m.kills.filter((_k, i) => kept[i]).map((k) => r(k - at)),
     slowmo: m.slowmo ? [r(Math.max(0, m.slowmo[0] - at)), r(Math.max(0, m.slowmo[1] - at))] : null,
     ...(reactions.length ? { reactions } : {}),
+    ...(m.headshots ? { headshots: m.headshots.filter((_h, i) => kept[i]) } : {}),
   };
 }
 
@@ -838,11 +842,19 @@ export function parseMarkers(raw: Untrusted): ClipMarkers | null {
           .map((x) => ({ t: r(x.t), score: r(x.score), ...(x.aww === true ? { aww: true } : {}) }))
       : [];
     const start = num(m.start) && m.start! < m.duration! ? r(m.start!) : 0;
+    const kills = m.kills.slice(0, 30);
+    const headshots =
+      Array.isArray(m.headshots) &&
+      m.headshots.length === m.kills.length &&
+      m.headshots.every((h) => typeof h === 'boolean')
+        ? (m.headshots.slice(0, 30) as boolean[])
+        : null;
     return {
       duration: r(m.duration!),
-      kills: m.kills.slice(0, 30).map(r),
+      kills: kills.map(r),
       slowmo: slowmo ? [r(slowmo[0]), r(slowmo[1])] : null,
       ...(reactions.length ? { reactions } : {}),
+      ...(headshots ? { headshots } : {}),
       ...(start > 0 ? { start } : {}),
     };
   } catch {

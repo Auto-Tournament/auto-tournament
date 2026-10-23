@@ -195,6 +195,29 @@ func deathTick(rp *Replay, player string, m moment) int {
 	return -1
 }
 
+// headshots says for each of the moment's kills (by tick) whether the player
+// made it with a headshot; nil when they don't line up with the clip's n kills.
+func headshots(rp *Replay, player string, killTicks []int, n int) []bool {
+	if rp == nil || len(killTicks) != n || n == 0 {
+		return nil
+	}
+	out := make([]bool, n)
+	some := false
+	for i, t := range killTicks {
+		for _, k := range rp.Kills {
+			if k.Tick == t && k.Attacker != nil && *k.Attacker == player {
+				out[i] = k.Headshot
+				some = some || k.Headshot
+				break
+			}
+		}
+	}
+	if !some {
+		return nil
+	}
+	return out
+}
+
 // withAww adds the crowd's groan at the player's death (`at` seconds into
 // the clip; none when at < 0), in time order with the cheers.
 func withAww(reactions []reaction, at float64) []reaction {
