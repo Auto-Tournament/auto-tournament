@@ -42,6 +42,7 @@ import { mono, radii, tokens, withAlpha } from '../../theme/tokens';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 import { clock, type ClipMarkers } from './media';
 import { VideoThumb } from './HighlightCard';
+import { EventMark } from './EventMark';
 
 const SPEEDS = [1, 0.5, 0.25] as const;
 const SKIP = 5;
@@ -705,7 +706,8 @@ export const HighlightPlayer = forwardRef<HighlightPlayerHandle, HighlightPlayer
                 width: pct(time),
                 height: 5,
                 borderRadius: 999,
-                bgcolor: tokens.color.accent,
+                // Darker than the event icons on it, so they stand out.
+                bgcolor: 'rgba(244,237,235,0.5)',
               }}
             />
             {hover &&
@@ -808,26 +810,29 @@ export const HighlightPlayer = forwardRef<HighlightPlayerHandle, HighlightPlayer
             {kills.map((k, i) => {
               const last = k === lastKill && i === kills.length - 1;
               return (
-                <Box
+                <EventMark
                   key={`${k}-${i}`}
+                  at={pct(k)}
+                  kind={markers?.headshots?.[i] ? 'headshot' : 'kill'}
+                  color={last ? tokens.color.accent : '#f4edeb'}
+                  ring={tokens.color.accent}
                   title={t(
                     last ? 'videoHighlights.player.lastKill' : 'videoHighlights.player.kill'
                   )}
-                  sx={{
-                    position: 'absolute',
-                    left: pct(k),
-                    width: last ? 11 : 9,
-                    height: last ? 11 : 9,
-                    ml: last ? '-5.5px' : '-4.5px',
-                    borderRadius: 999,
-                    bgcolor: last ? tokens.color.accent : '#f4edeb',
-                    border: '2px solid #000',
-                    boxSizing: 'content-box',
-                    pointerEvents: 'none',
-                  }}
                 />
               );
             })}
+            {(markers?.reactions ?? [])
+              .filter((r) => r.aww)
+              .map((r) => (
+                <EventMark
+                  key={`death-${r.t}`}
+                  at={pct(r.t)}
+                  kind="death"
+                  color="#F09595"
+                  title={t('videoHighlights.player.death')}
+                />
+              ))}
             <Box
               sx={{
                 position: 'absolute',

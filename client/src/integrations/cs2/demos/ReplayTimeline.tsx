@@ -1,5 +1,12 @@
 import { useRef, useState, type KeyboardEvent, type PointerEvent } from 'react';
 import { Box } from '@mui/material';
+import {
+  BombIcon,
+  CrosshairSimpleIcon,
+  FlameIcon,
+  SkullIcon,
+  WrenchIcon,
+} from '@phosphor-icons/react';
 import { mono, radii, textSize, tokens, withAlpha } from '../../../module-sdk';
 
 const { color } = tokens;
@@ -28,15 +35,32 @@ function roundAt(rounds: TimelineRound[], t: number): TimelineRound | undefined 
 const SIDE: Record<string, string> = { CT: '#8fc0f2', T: '#eac65a' };
 const SIDE_NUM: Record<number, string> = { 2: '#eac65a', 3: '#8fc0f2' };
 const BOMB: Record<string, string> = {
-  planted: '#ff3b30',
-  defused: '#3ecf8e',
-  exploded: '#ff7a1a',
+  planted: '#EF9F27',
+  defused: '#85B7EB',
+  exploded: '#E24B4A',
 };
+const BOMB_ICON = { planted: BombIcon, defused: WrenchIcon, exploded: FlameIcon } as const;
+
+/** A mark's icon: the bomb's, or a kill's skull (in a crosshair for a headshot) in the killer's colour. */
+function MarkIcon({ m, size }: { m: TimelineMark; size: number }) {
+  if (m.kind !== 'kill') {
+    const Icon = BOMB_ICON[m.kind];
+    return <Icon size={size} weight="fill" color={BOMB[m.kind]} />;
+  }
+  const c = SIDE_NUM[m.side ?? 0] ?? '#fff';
+  if (!m.headshot) return <SkullIcon size={size} weight="fill" color={c} />;
+  return (
+    <Box sx={{ display: 'grid', placeItems: 'center', width: size, height: size }}>
+      <CrosshairSimpleIcon size={size} weight="bold" color={c} style={{ gridArea: '1 / 1' }} />
+      <SkullIcon size={size / 2} weight="fill" color={c} style={{ gridArea: '1 / 1' }} />
+    </Box>
+  );
+}
 
 /**
  * The replay's timeline: the whole map as round segments (number on top,
  * the winning side's colour underneath), each kill as a tick in the killer's
- * side colour, the bomb's plant, defuse and explosion as small markers, and
+ * side colour, the bomb's plant, defuse and explosion as their icons, and
  * the playhead. Click or drag to jump; arrows step 5 s, Page Up/Down a round.
  */
 export function ReplayTimeline({
@@ -155,19 +179,11 @@ export function ReplayTimeline({
               key={`${m.tick}-${i}`}
               sx={{ display: 'flex', alignItems: 'center', gap: 0.75, py: 0.25 }}
             >
-              <Box
-                aria-hidden
-                sx={{
-                  width: m.kind === 'kill' ? 3 : 8,
-                  height: m.kind === 'kill' ? 12 : 7,
-                  borderRadius: '2px',
-                  flex: 'none',
-                  bgcolor: m.kind === 'kill' ? (SIDE_NUM[m.side ?? 0] ?? '#fff') : BOMB[m.kind],
-                }}
-              />
+              <Box aria-hidden sx={{ flex: 'none', display: 'flex' }}>
+                <MarkIcon m={m} size={14} />
+              </Box>
               <Box sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                 {m.label}
-                {m.headshot ? ' ◎' : ''}
               </Box>
             </Box>
           ))}
@@ -261,7 +277,7 @@ export function ReplayTimeline({
             />
           ))}
 
-        {/* The bomb. */}
+        {/* The bomb: a few a round, so each gets its icon. */}
         {marks
           .filter((m) => m.kind !== 'kill')
           .map((m, i) => (
@@ -271,16 +287,15 @@ export function ReplayTimeline({
               sx={{
                 position: 'absolute',
                 left: pct(m.tick),
-                top: 20,
-                width: 10,
-                height: 8,
-                ml: '-5px',
-                borderRadius: '2px',
-                bgcolor: BOMB[m.kind],
-                border: '1px solid #0b0d10',
+                top: 16,
+                ml: '-7px',
+                display: 'flex',
                 pointerEvents: 'none',
+                filter: 'drop-shadow(0 0 1px #000)',
               }}
-            />
+            >
+              <MarkIcon m={m} size={14} />
+            </Box>
           ))}
 
         {/* The playhead. */}
