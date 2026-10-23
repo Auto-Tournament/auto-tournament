@@ -367,6 +367,8 @@ type recorderSettings struct {
 type videoQuality struct {
 	Height int `json:"height"`
 	FPS    int `json:"fps"`
+	// Mbps: the bitrate ceiling an admin set; 0 works it out (maxBitrate).
+	Mbps int `json:"mbps,omitempty"`
 }
 
 // useQuality makes the next videos at q: CS2 captured at that size (a
@@ -375,6 +377,10 @@ type videoQuality struct {
 // q the recorder goes back to what it started with.
 func (r *recorder) useQuality(q *videoQuality) {
 	width, height, outH, fps := r.base.width, r.base.height, r.base.outputHeight, r.base.outputFPS
+	setMbps = 0
+	if q != nil && q.Mbps > 0 && q.Mbps <= 200 {
+		setMbps = q.Mbps
+	}
 	if q != nil && q.Height >= 360 && q.Height <= 2160 && q.FPS >= 24 && q.FPS <= 240 {
 		h := q.Height &^ 1
 		if os.Getenv("AT_RESOLUTION") == "" {

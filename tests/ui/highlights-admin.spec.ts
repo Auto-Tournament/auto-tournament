@@ -8,7 +8,12 @@ test.describe('Highlights page', () => {
     await page.goto('/manage/highlights');
     await expect(page.getByTestId('highlights-admin-page')).toBeVisible({ timeout: 15000 });
     await expect(page.getByTestId('highlights-settings')).toBeVisible();
+    // The quality is a preset; Custom shows resolution, frame rate and bitrate.
+    await expect(page.getByTestId('highlights-preset')).toBeVisible();
+    await page.getByRole('combobox', { name: 'Video quality' }).click();
+    await page.getByRole('option', { name: 'Custom', exact: true }).click();
     await expect(page.getByTestId('highlights-resolution')).toBeVisible();
+    await expect(page.getByTestId('highlights-bitrate')).toBeVisible();
 
     const cs2 = page.getByTestId('highlights-tab-cs2');
     await expect(cs2).toBeVisible({ timeout: 30000 });
