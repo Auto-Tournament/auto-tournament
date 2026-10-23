@@ -1049,6 +1049,8 @@ const ADDED_SETTINGS: Array<{ key: string; field: string | null }> = [
   { key: 'highlights_per_player', field: 'highlightsPerPlayer' },
   { key: 'highlights_resolution', field: 'highlightsResolution' },
   { key: 'highlights_fps', field: 'highlightsFps' },
+  // The bitrate ceiling the recorders encode at; 0 is automatic.
+  { key: 'highlights_bitrate', field: 'highlightsBitrate' },
   { key: 'highlights_music', field: 'highlightsMusic' },
   { key: 'highlights_keep_clean', field: 'highlightsKeepClean' },
   // The reels' sizes (services/highlights/settings.ts REEL_LIMITS).

@@ -211,3 +211,19 @@ func TestVulkanBlurPasses(t *testing.T) {
 		t.Fatalf("small: %s", got)
 	}
 }
+
+func TestMaxBitrate(t *testing.T) {
+	h, fps := outputHeight, outputFPS
+	defer func() { outputHeight, outputFPS, setMbps = h, fps, 0 }()
+	outputHeight, outputFPS = 720, 240
+	for enc, want := range map[string]int{"h264_nvenc": 10, "hevc_nvenc": 8, "av1_nvenc": 6} {
+		if got := maxBitrate(enc); got != want {
+			t.Errorf("%s at 720p240: %d Mbit/s, want %d", enc, got, want)
+		}
+	}
+	// An admin's ceiling is used as it is, whatever the codec.
+	setMbps = 40
+	if got := maxBitrate("av1_nvenc"); got != 40 {
+		t.Errorf("set 40: got %d", got)
+	}
+}

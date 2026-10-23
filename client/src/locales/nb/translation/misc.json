@@ -1088,6 +1088,18 @@
       "label": "Klipp per spiller per kart",
       "helper": "1 til 6. Flere klipp gjør at highlightene fra en kamp tar lengre tid å lage."
     },
+    "preset": {
+      "label": "Videokvalitet",
+      "smooth": "Jevn (anbefalt): 720p, 240 fps",
+      "crisp": "Skarp: 1080p, 120 fps",
+      "lan": "LAN, maks: 1440p, 240 fps, 60 Mbit/s",
+      "custom": "Egendefinert"
+    },
+    "bitrate": {
+      "label": "Bitrate",
+      "auto": "Automatisk (anbefalt)",
+      "option": "{{mbps}} Mbit/s"
+    },
     "resolution": {
       "label": "Oppløsning"
     },

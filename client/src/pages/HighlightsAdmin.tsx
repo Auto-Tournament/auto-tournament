@@ -40,6 +40,14 @@ type ReelField = (typeof REEL_LIMITS)[number][0];
 /** The settings field without its `highlights` prefix: the label's key under highlightsPage.reels. */
 const reelKey = (field: ReelField) => field.charAt(10).toLowerCase() + field.slice(11);
 const HIGHLIGHT_FPS = [30, 60, 90, 120, 180, 240] as const;
+/** Bitrate ceilings (Mbit/s; api: HIGHLIGHT_BITRATES); 0 is automatic. */
+const HIGHLIGHT_BITRATES = [0, 5, 10, 20, 40, 60] as const;
+/** Ready-made qualities; anything else is Custom. */
+const QUALITY_PRESETS = [
+  { id: 'smooth', highlightsResolution: 720, highlightsFps: 240, highlightsBitrate: 0 },
+  { id: 'crisp', highlightsResolution: 1080, highlightsFps: 120, highlightsBitrate: 0 },
+  { id: 'lan', highlightsResolution: 1440, highlightsFps: 240, highlightsBitrate: 60 },
+] as const;
 
 export default function HighlightsAdmin() {
   const { t } = useTranslation();
@@ -92,6 +100,7 @@ interface HighlightValues {
   highlightsPerPlayer: number | null;
   highlightsResolution: number;
   highlightsFps: number;
+  highlightsBitrate: number;
   highlightsMusic: string;
   reels: Record<ReelField, number | null>;
 }
@@ -100,6 +109,8 @@ function HighlightSettings() {
   const { t } = useTranslation();
   const { showSuccess, showError } = useSnackbar();
   const [vals, setVals] = useState<HighlightValues | null>(null);
+  // Custom picked while the values still match a preset: show the fields anyway.
+  const [custom, setCustom] = useState(false);
 
   useEffect(() => {
     api
@@ -113,6 +124,7 @@ function HighlightSettings() {
           highlightsResolution:
             typeof s.highlightsResolution === 'number' ? s.highlightsResolution : 720,
           highlightsFps: typeof s.highlightsFps === 'number' ? s.highlightsFps : 240,
+          highlightsBitrate: typeof s.highlightsBitrate === 'number' ? s.highlightsBitrate : 0,
           highlightsMusic: typeof s.highlightsMusic === 'string' ? s.highlightsMusic : '',
           reels: Object.fromEntries(
             REEL_LIMITS.map(([field, , , fallback]) => [
@@ -143,43 +155,95 @@ function HighlightSettings() {
   };
 
   if (!vals) return <CircularProgress />;
+  const preset = custom
+    ? undefined
+    : QUALITY_PRESETS.find(
+        (p) =>
+          p.highlightsResolution === vals.highlightsResolution &&
+          p.highlightsFps === vals.highlightsFps &&
+          p.highlightsBitrate === vals.highlightsBitrate
+      );
   return (
     <Box
       data-testid="highlights-settings"
       sx={{ display: 'flex', flexDirection: 'column', gap: 2, maxWidth: 720 }}
     >
-      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ maxWidth: 480 }}>
-        <TextField
-          select
-          label={t('highlightsPage.resolution.label')}
-          value={vals.highlightsResolution}
-          onChange={(e) => void save({ highlightsResolution: Number(e.target.value) })}
-          size="small"
-          fullWidth
-          inputProps={{ 'data-testid': 'highlights-resolution' }}
-        >
-          {HIGHLIGHT_HEIGHTS.map((h) => (
-            <MenuItem key={h} value={h}>
-              {h === 2160 ? '4K (2160p)' : `${h}p`}
-            </MenuItem>
-          ))}
-        </TextField>
-        <TextField
-          select
-          label={t('highlightsPage.fps.label')}
-          value={vals.highlightsFps}
-          onChange={(e) => void save({ highlightsFps: Number(e.target.value) })}
-          size="small"
-          fullWidth
-          inputProps={{ 'data-testid': 'highlights-fps' }}
-        >
-          {HIGHLIGHT_FPS.map((f) => (
-            <MenuItem key={f} value={f}>
-              {t('highlightsPage.fps.option', { fps: f })}
-            </MenuItem>
-          ))}
-        </TextField>
-      </Stack>
+      <TextField
+        select
+        label={t('highlightsPage.preset.label')}
+        value={preset?.id ?? 'custom'}
+        onChange={(e) => {
+          const picked = QUALITY_PRESETS.find((p) => p.id === e.target.value);
+          setCustom(!picked);
+          if (picked)
+            void save({
+              highlightsResolution: picked.highlightsResolution,
+              highlightsFps: picked.highlightsFps,
+              highlightsBitrate: picked.highlightsBitrate,
+            });
+        }}
+        size="small"
+        sx={{ maxWidth: 480 }}
+        inputProps={{ 'data-testid': 'highlights-preset' }}
+      >
+        {QUALITY_PRESETS.map((p) => (
+          <MenuItem key={p.id} value={p.id}>
+            {t(`highlightsPage.preset.${p.id}`)}
+          </MenuItem>
+        ))}
+        <MenuItem value="custom">{t('highlightsPage.preset.custom')}</MenuItem>
+      </TextField>
+      {!preset && (
+        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ maxWidth: 720 }}>
+          <TextField
+            select
+            label={t('highlightsPage.resolution.label')}
+            value={vals.highlightsResolution}
+            onChange={(e) => void save({ highlightsResolution: Number(e.target.value) })}
+            size="small"
+            fullWidth
+            inputProps={{ 'data-testid': 'highlights-resolution' }}
+          >
+            {HIGHLIGHT_HEIGHTS.map((h) => (
+              <MenuItem key={h} value={h}>
+                {h === 2160 ? '4K (2160p)' : `${h}p`}
+              </MenuItem>
+            ))}
+          </TextField>
+          <TextField
+            select
+            label={t('highlightsPage.fps.label')}
+            value={vals.highlightsFps}
+            onChange={(e) => void save({ highlightsFps: Number(e.target.value) })}
+            size="small"
+            fullWidth
+            inputProps={{ 'data-testid': 'highlights-fps' }}
+          >
+            {HIGHLIGHT_FPS.map((f) => (
+              <MenuItem key={f} value={f}>
+                {t('highlightsPage.fps.option', { fps: f })}
+              </MenuItem>
+            ))}
+          </TextField>
+          <TextField
+            select
+            label={t('highlightsPage.bitrate.label')}
+            value={vals.highlightsBitrate}
+            onChange={(e) => void save({ highlightsBitrate: Number(e.target.value) })}
+            size="small"
+            fullWidth
+            inputProps={{ 'data-testid': 'highlights-bitrate' }}
+          >
+            {HIGHLIGHT_BITRATES.map((b) => (
+              <MenuItem key={b} value={b}>
+                {b === 0
+                  ? t('highlightsPage.bitrate.auto')
+                  : t('highlightsPage.bitrate.option', { mbps: b })}
+              </MenuItem>
+            ))}
+          </TextField>
+        </Stack>
+      )}
       <Typography variant="caption" color="text.secondary">
         {t('highlightsPage.quality.helper')}
       </Typography>

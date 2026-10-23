@@ -1,34 +1,39 @@
 import { settingsService } from '../../../services/settingsService';
-import { HIGHLIGHT_FPS, HIGHLIGHT_HEIGHTS } from '../settings';
+import { HIGHLIGHT_BITRATES, HIGHLIGHT_FPS, HIGHLIGHT_HEIGHTS } from '../settings';
 
 /** The size (height, 16:9) and frame rate the recorder makes highlight videos at. */
 export interface HighlightQuality {
   height: number;
   fps: number;
+  /** The bitrate ceiling (Mbit/s) an admin set; absent: the recorder works it out. */
+  mbps?: number;
 }
 
 /** What the settings say, falling back to 720p at 240 fps (still 60 fps at 0.25x). */
 export async function readHighlightQuality(): Promise<HighlightQuality> {
   const height = Number(await settingsService.getSetting('highlights_resolution'));
   const fps = Number(await settingsService.getSetting('highlights_fps'));
+  const mbps = Number(await settingsService.getSetting('highlights_bitrate'));
   return {
     height: (HIGHLIGHT_HEIGHTS as readonly number[]).includes(height) ? height : 720,
     fps: (HIGHLIGHT_FPS as readonly number[]).includes(fps) ? fps : 240,
+    ...(mbps > 0 && (HIGHLIGHT_BITRATES as readonly number[]).includes(mbps) ? { mbps } : {}),
   };
 }
 
-/** How a clip or reel records what it was made at: "1440p120". */
+/** How a clip or reel records what it was made at: "1440p120", or "1440p120 40M" with a set bitrate. */
 export function qualityLabel(q: HighlightQuality): string {
-  return `${q.height}p${q.fps}`;
+  return `${q.height}p${q.fps}${q.mbps ? ` ${q.mbps}M` : ''}`;
 }
 
 /** The settings page's fields. */
 export async function highlightQuality(): Promise<{
   highlightsResolution: number;
   highlightsFps: number;
+  highlightsBitrate: number;
 }> {
   const q = await readHighlightQuality();
-  return { highlightsResolution: q.height, highlightsFps: q.fps };
+  return { highlightsResolution: q.height, highlightsFps: q.fps, highlightsBitrate: q.mbps ?? 0 };
 }
 
 /**

@@ -114,6 +114,8 @@ function integer(
 /** Highlight video heights (16:9) and frame rates the recorder offers. */
 export const HIGHLIGHT_HEIGHTS = [720, 1080, 1440, 2160] as const;
 export const HIGHLIGHT_FPS = [30, 60, 90, 120, 180, 240] as const;
+/** Bitrate ceilings (Mbit/s) an admin can pick; 0 is automatic (from the size and frame rate). */
+export const HIGHLIGHT_BITRATES = [0, 5, 10, 20, 40, 60] as const;
 
 function kickDelay(key: Cs2SettingKey, field: string, order: number): Cs2Setting {
   return integer(key, field, order, { min: 0, max: 600, message: `${key} must be 0-600 seconds` });

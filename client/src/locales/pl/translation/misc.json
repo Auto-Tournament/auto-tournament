@@ -1157,6 +1157,18 @@
       "tournamentReelMax": "Clips in a tournament reel",
       "tournamentReelPerPlayer": "Clips per player in a tournament reel",
       "range": "{{min}} to {{max}}"
+    },
+    "preset": {
+      "label": "Video quality",
+      "smooth": "Smooth (recommended): 720p, 240 fps",
+      "crisp": "Crisp: 1080p, 120 fps",
+      "lan": "LAN, maximum: 1440p, 240 fps, 60 Mbit/s",
+      "custom": "Custom"
+    },
+    "bitrate": {
+      "label": "Bitrate",
+      "auto": "Automatic (recommended)",
+      "option": "{{mbps}} Mbit/s"
     }
   },
   "update": {

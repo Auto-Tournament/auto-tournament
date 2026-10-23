@@ -636,6 +636,9 @@ func focusCommands(at []float64) string {
 // H.264 1080p60 (and 90 at 240 fps) clips stopped to buffer for viewers on
 // ordinary connections.
 func maxBitrate(encoder string) int {
+	if setMbps > 0 {
+		return setMbps
+	}
 	w, h := outputSize()
 	scale := float64(w*h) / (1920 * 1080) * math.Sqrt(outputFPS/60)
 	rate := math.Min(60, math.Max(10, 10*scale))
@@ -647,6 +650,10 @@ func maxBitrate(encoder string) int {
 	}
 	return int(math.Max(1, math.Round(rate)))
 }
+
+// setMbps is the bitrate ceiling the job's quality sets (an admin's choice
+// on the platform), used as it is for any codec; 0: maxBitrate works it out.
+var setMbps int
 
 // isVAAPI: the encoder runs through VAAPI (AMD, Intel).
 func isVAAPI(encoder string) bool { return strings.HasSuffix(encoder, "_vaapi") }
