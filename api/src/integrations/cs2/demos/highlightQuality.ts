@@ -7,13 +7,13 @@ export interface HighlightQuality {
   fps: number;
 }
 
-/** What the settings say, falling back to 1080p at 60 fps. */
+/** What the settings say, falling back to 720p at 240 fps (still 60 fps at 0.25x). */
 export async function readHighlightQuality(): Promise<HighlightQuality> {
   const height = Number(await settingsService.getSetting('highlights_resolution'));
   const fps = Number(await settingsService.getSetting('highlights_fps'));
   return {
-    height: (HIGHLIGHT_HEIGHTS as readonly number[]).includes(height) ? height : 1080,
-    fps: (HIGHLIGHT_FPS as readonly number[]).includes(fps) ? fps : 60,
+    height: (HIGHLIGHT_HEIGHTS as readonly number[]).includes(height) ? height : 720,
+    fps: (HIGHLIGHT_FPS as readonly number[]).includes(fps) ? fps : 240,
   };
 }
 

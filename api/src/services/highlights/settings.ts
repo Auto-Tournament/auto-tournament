@@ -4,7 +4,7 @@
  * same keys, so nothing stored changes):
  *
  * - highlights_resolution / highlights_fps: the size and frame rate the
- *   recorders make (1080p60 unless set);
+ *   recorders make (720p240 unless set: smooth at 0.25x, and small);
  * - highlights_per_player: clips per player per map (6 unless set);
  * - highlights_watermark: the Auto Tournament logo (on unless "0");
  * - highlights_music: '' (every track), 'off', or the picked track ids;
@@ -150,8 +150,8 @@ export async function readHighlightSettings(
   return {
     highlightsWatermark: (await get('highlights_watermark'))?.trim() !== '0',
     highlightsPerPlayer: Number(await get('highlights_per_player')) || 6,
-    highlightsResolution: (HIGHLIGHT_HEIGHTS as readonly number[]).includes(height) ? height : 1080,
-    highlightsFps: (HIGHLIGHT_FPS as readonly number[]).includes(fps) ? fps : 60,
+    highlightsResolution: (HIGHLIGHT_HEIGHTS as readonly number[]).includes(height) ? height : 720,
+    highlightsFps: (HIGHLIGHT_FPS as readonly number[]).includes(fps) ? fps : 240,
     highlightsMusic: (await get('highlights_music'))?.trim() ?? '',
     highlightsKeepClean: (await get('highlights_keep_clean'))?.trim() !== '0',
     ...(await readReelLimits((key) => get(key as HighlightSettingKey))),
