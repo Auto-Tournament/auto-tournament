@@ -1,7 +1,11 @@
 # Auto Tournament worker: reads CS2 demos after the match.
 # One static Go binary; the same code builds for Windows (see README).
 # The Go version follows go.mod's `go` line.
-FROM public.ecr.aws/docker/library/golang:1.26-alpine AS build
+# GO_REGISTRY: ECR Public's copy of Docker's official images for builds without
+# a Docker Hub login; CI is logged in and takes Docker Hub's (docker.io/library),
+# as ECR's anonymous data limit failed its builds (toomanyrequests, 2026-10-23).
+ARG GO_REGISTRY=public.ecr.aws/docker/library
+FROM ${GO_REGISTRY}/golang:1.26-alpine AS build
 WORKDIR /src
 COPY go.mod go.sum ./
 RUN go mod download
