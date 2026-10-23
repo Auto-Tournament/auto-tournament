@@ -289,7 +289,7 @@ export function registerHighlightReadRoutes(router: Router): void {
       // A reel's crowd track (played beside it), or a video's overlay recipe.
       const twin = path.join(path.dirname(clipFile(0)), req.params.file);
       if (!fs.existsSync(twin)) return res.status(404).end();
-      res.setHeader('Cache-Control', 'public, max-age=3600');
+      res.setHeader('Cache-Control', 'public, max-age=300');
       return res.sendFile(twin, {
         headers: { 'Content-Type': TWIN_CONTENT_TYPE[twinOf[2] as VideoTwin] },
       });
@@ -320,7 +320,9 @@ export function registerHighlightReadRoutes(router: Router): void {
       );
     }
     if (req.query.clean === '1') return res.download(file, downloadName);
-    res.setHeader('Cache-Control', 'public, max-age=86400');
+    // A redone clip or reel keeps its name: cached for a day, viewers (and the
+    // CDN) kept the old video. Five minutes still spares repeat views.
+    res.setHeader('Cache-Control', 'public, max-age=300');
     return res.sendFile(file, { headers: { 'Content-Type': 'video/mp4' } });
   });
 
