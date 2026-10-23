@@ -697,7 +697,7 @@ export async function matchReelView(matchSlug: string, mapNumber: number) {
       WHERE r.match_slug = ? AND r.map_number = ?`,
     [matchSlug, mapNumber]
   );
-  if (!row || row.status !== 'done' || !row.clip_path) return null;
+  if (!row || !isShown(row.status, row.clip_path) || !row.clip_path) return null;
   return {
     matchSlug,
     mapNumber,
