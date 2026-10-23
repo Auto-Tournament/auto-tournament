@@ -46,11 +46,7 @@ test(
     await expect(state).toContainText('turn to ban');
     await page.getByTestId('manage-state-act-for').click();
     const dialog = page.getByTestId('manage-act-for');
-    await dialog
-      .getByRole('button')
-      .filter({ hasNotText: /choose|ban /i })
-      .first()
-      .click();
+    await dialog.locator('button[aria-pressed="false"]:enabled').first().click();
     await page.getByTestId('manage-act-for-run').click();
     await expect(state).toContainText('Banned:', { timeout: 10_000 });
 
