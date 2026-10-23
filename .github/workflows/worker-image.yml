@@ -34,6 +34,8 @@ jobs:
       - uses: docker/build-push-action@v6
         with:
           context: worker
+          # Docker Hub, as the login above: ECR's anonymous limit failed builds.
+          build-args: GO_REGISTRY=docker.io/library
           platforms: linux/amd64,linux/arm64
           push: true
           tags: |
