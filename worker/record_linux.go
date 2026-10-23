@@ -1958,27 +1958,33 @@ const encodeTimeout = 15 * time.Minute
 // pickEncoder is the GPU's H.264 encoder when it opens (a second of test
 // video), else x264 on the CPU: same codec and container either way.
 func pickEncoder() string {
+	// The smallest file for the quality first: AV1, then H.265, then H.264
+	// (the sustainable web design study: the codec decides the size, the
+	// container barely does). The GPU's own encoders only: on the CPU AV1 and
+	// H.265 are many times slower, so the CPU fallback stays H.264.
+	for _, enc := range []string{"av1_nvenc", "hevc_nvenc", "h264_nvenc", "av1_vaapi", "hevc_vaapi", "h264_vaapi"} {
+		if encoderWorks(enc) {
+			log.Printf("encoding with %s", enc)
+			return enc
+		}
+	}
+	log.Printf("no GPU encoder works: encoding H.264 on the CPU")
+	return "libx264"
+}
+
+// encoderWorks tries a second of video through the encoder.
+func encoderWorks(enc string) bool {
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancel()
-	cmd := exec.CommandContext(ctx, "ffmpeg", "-v", "error", "-f", "lavfi", "-i", "testsrc=size=1280x720:rate=30", "-t", "1",
-		"-c:v", "h264_nvenc", "-f", "null", "-")
-	if out, err := cmd.CombinedOutput(); err != nil {
-		reason := strings.TrimSpace(string(out))
-		if i := strings.IndexByte(reason, '\n'); i > 0 {
-			reason = reason[:i]
-		}
-		vctx, vcancel := context.WithTimeout(context.Background(), 20*time.Second)
-		defer vcancel()
-		vaapi := exec.CommandContext(vctx, "ffmpeg", "-v", "error", "-init_hw_device", "vaapi=va:"+vaapiDevice, "-filter_hw_device", "va",
-			"-f", "lavfi", "-i", "testsrc=size=1280x720:rate=30", "-t", "1", "-vf", "format=nv12,hwupload", "-c:v", "h264_vaapi", "-f", "null", "-")
-		if vaapi.Run() == nil {
-			log.Printf("NVENC is not available (%s): encoding H.264 with VAAPI", reason)
-			return "h264_vaapi"
-		}
-		log.Printf("NVENC is not available (%s): encoding H.264 on the CPU", reason)
-		return "libx264"
+	args := []string{"-v", "error"}
+	if isVAAPI(enc) {
+		args = append(args, "-init_hw_device", "vaapi=va:"+vaapiDevice, "-filter_hw_device", "va")
 	}
-	return "h264_nvenc"
+	args = append(args, "-f", "lavfi", "-i", "testsrc=size=1280x720:rate=30", "-t", "1")
+	if isVAAPI(enc) {
+		args = append(args, "-vf", "format=nv12,hwupload")
+	}
+	return exec.CommandContext(ctx, "ffmpeg", append(args, "-c:v", enc, "-f", "null", "-")...).Run() == nil
 }
 
 // joinReelFiles is `at-worker join-reel <out.mp4> <clip.mp4>...`: local clips

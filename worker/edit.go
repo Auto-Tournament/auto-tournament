@@ -369,27 +369,38 @@ const reelCrossfade = 0.4
 // H.265 stays available with AT_ENCODER=hevc_nvenc or libx265.
 func encodeArgs(encoder string) []string {
 	args := []string{"-c:v", encoder, "-r", fmt.Sprint(outputFPS), "-g", fmt.Sprint(2 * outputFPS)}
-	if encoder != "h264_vaapi" { // VAAPI's frames are scaled before they go up to the GPU (hwEncode)
+	if !isVAAPI(encoder) { // VAAPI's frames are scaled before they go up to the GPU (hwEncode)
 		args = append(args, "-s", fmt.Sprintf("%dx%d", outputHeight*16/9, outputHeight), "-sws_flags", "lanczos")
 	}
+	rate := maxBitrate(encoder)
+	ceiling := []string{"-maxrate", fmt.Sprintf("%dM", rate), "-bufsize", fmt.Sprintf("%dM", 2*rate)}
 	switch encoder {
-	case "h264_vaapi":
+	case "h264_vaapi", "hevc_vaapi", "av1_vaapi":
 		// AMD and Intel: quality-defined VBR with the same ceiling as NVENC.
-		rate := maxBitrate()
-		args = append(args, "-rc_mode", "QVBR", "-global_quality", env("AT_VAAPI_QUALITY", "18"), "-b:v", fmt.Sprintf("%dM", rate),
-			"-maxrate", fmt.Sprintf("%dM", rate), "-bufsize", fmt.Sprintf("%dM", 2*rate), "-profile:v", "high")
+		args = append(args, "-rc_mode", "QVBR", "-global_quality", env("AT_VAAPI_QUALITY", "18"), "-b:v", fmt.Sprintf("%dM", rate))
+		args = append(args, ceiling...)
+		if encoder == "h264_vaapi" {
+			args = append(args, "-profile:v", "high")
+		}
+		if encoder == "hevc_vaapi" {
+			args = append(args, "-tag:v", "hvc1")
+		}
 	case "libx265":
 		args = append(args, "-preset", "fast", "-crf", "24", "-tag:v", "hvc1", "-x265-params", "log-level=error")
+		args = append(args, ceiling...)
 	case "hevc_nvenc":
-		args = append(args, "-preset", nvencPreset, "-tune", "hq", "-rc", "vbr", "-cq", "26", "-b:v", "0", "-tag:v", "hvc1")
+		args = append(args, "-preset", nvencPreset, "-tune", "hq", "-rc", "vbr", "-cq", "26", "-b:v", "0", "-tag:v", "hvc1", "-pix_fmt", "yuv420p")
+		args = append(args, ceiling...)
+	case "av1_nvenc":
+		args = append(args, "-preset", nvencPreset, "-tune", "hq", "-rc", "vbr", "-cq", "32", "-b:v", "0", "-pix_fmt", "yuv420p")
+		args = append(args, ceiling...)
 	case "libx264":
 		args = append(args, "-preset", "fast", "-crf", "21", "-profile:v", "high", "-pix_fmt", "yuv420p")
+		args = append(args, ceiling...)
 	default: // h264_nvenc
-		// The ceiling grows with the pixels a second: 16 Mbit/s was set for
-		// 1080p60, and 1440p120 (3.6 times the pixels) came out blocky at it.
-		rate := maxBitrate()
-		args = append(args, "-preset", nvencPreset, "-tune", "hq", "-rc", "vbr", "-cq", "17", "-b:v", "0",
-			"-maxrate", fmt.Sprintf("%dM", rate), "-bufsize", fmt.Sprintf("%dM", 2*rate), "-profile:v", "high", "-level", "5.2", "-pix_fmt", "yuv420p")
+		args = append(args, "-preset", nvencPreset, "-tune", "hq", "-rc", "vbr", "-cq", "17", "-b:v", "0")
+		args = append(args, ceiling...)
+		args = append(args, "-profile:v", "high", "-level", "5.2", "-pix_fmt", "yuv420p")
 	}
 	return append(args, "-c:a", "aac", "-b:a", "192k", "-ar", "48000", "-ac", "2")
 }
@@ -401,7 +412,7 @@ var vaapiDevice = env("AT_VAAPI_DEVICE", "/dev/dri/renderD128")
 // the GPU and sends each video output ([v], [clean]) through a scale to the
 // output size and up to the GPU; other encoders take the frames as they are.
 func hwEncode(args []string, encoder string) []string {
-	if encoder != "h264_vaapi" {
+	if !isVAAPI(encoder) {
 		return args
 	}
 	out := []string{"-init_hw_device", "vaapi=va:" + vaapiDevice, "-filter_hw_device", "va"}
@@ -549,7 +560,7 @@ func gpuBlur(encoder string) string {
 			return
 		}
 		mode := blurVulkan
-		if encoder == "h264_vaapi" {
+		if isVAAPI(encoder) {
 			mode = blurVulkanVA
 		}
 		f := focusFilter("0:v", "v", []float64{0}, 64, mode)
@@ -617,13 +628,25 @@ func focusCommands(at []float64) string {
 	return strings.Join(cmds, ";")
 }
 
-// maxBitrate is the H.264 ceiling (Mbit/s) for the clip's size and frame
-// rate: 10 at 1080p60, scaled by the pixels and by the square root of the
-// frame rate (frames that close together are much alike: 20 at 1080p240,
-// 25 at 1440p120), between 10 and 60. At 24 for 1080p60 (and 90 at 240 fps)
-// clips stopped to buffer for viewers on ordinary connections.
-func maxBitrate() int {
+// maxBitrate is the ceiling (Mbit/s) for the clip's size, frame rate and
+// codec: for H.264 10 at 1080p60, scaled by the pixels and by the square
+// root of the frame rate (frames that close together are much alike: 20 at
+// 1080p240, 25 at 1440p120), between 10 and 60. H.265 needs about three
+// quarters of that for the same picture and AV1 about 60 %. At 24 for
+// H.264 1080p60 (and 90 at 240 fps) clips stopped to buffer for viewers on
+// ordinary connections.
+func maxBitrate(encoder string) int {
 	w, h := outputSize()
 	scale := float64(w*h) / (1920 * 1080) * math.Sqrt(outputFPS/60)
-	return int(math.Min(60, math.Max(10, math.Round(10*scale))))
+	rate := math.Min(60, math.Max(10, 10*scale))
+	switch {
+	case strings.HasPrefix(encoder, "av1"):
+		rate *= 0.6
+	case strings.HasPrefix(encoder, "hevc"), encoder == "libx265":
+		rate *= 0.75
+	}
+	return int(math.Max(1, math.Round(rate)))
 }
+
+// isVAAPI: the encoder runs through VAAPI (AMD, Intel).
+func isVAAPI(encoder string) bool { return strings.HasSuffix(encoder, "_vaapi") }
