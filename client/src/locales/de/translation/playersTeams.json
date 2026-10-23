@@ -715,7 +715,8 @@
         "main-title": "Main title",
         "rock": "Rock",
         "metal": "Metal"
-      }
+      },
+      "buffering": "Loading the video"
     }
   },
   "leaderboard": {

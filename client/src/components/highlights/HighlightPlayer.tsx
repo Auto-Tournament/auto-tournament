@@ -12,6 +12,7 @@ import {
 import {
   Box,
   ButtonBase,
+  CircularProgress,
   Divider,
   ListItemIcon,
   ListItemText,
@@ -332,6 +333,8 @@ export const HighlightPlayer = forwardRef<HighlightPlayerHandle, HighlightPlayer
     const video = useRef<ComponentRef<'video'>>(null);
     const track = useRef<HTMLDivElement>(null);
     const [playing, setPlaying] = useState(false);
+    // The video stopped to load more: a spinner, so it doesn't look frozen.
+    const [waiting, setWaiting] = useState(false);
     const [time, setTime] = useState(0);
     const [duration, setDuration] = useState(markers?.duration ?? 0);
     const [muted, setMuted] = useState(() => stored(PLAYER_MUTED_KEY) === '1');
@@ -541,6 +544,9 @@ export const HighlightPlayer = forwardRef<HighlightPlayerHandle, HighlightPlayer
           }}
           onPause={() => setPlaying(false)}
           onEnded={() => setPlaying(false)}
+          onWaiting={() => setWaiting(true)}
+          onPlaying={() => setWaiting(false)}
+          onCanPlay={() => setWaiting(false)}
           onLoadedMetadata={(e) => setDuration(e.currentTarget.duration || markers?.duration || 0)}
           onTimeUpdate={(e) => {
             setTime(e.currentTarget.currentTime);
@@ -584,6 +590,21 @@ export const HighlightPlayer = forwardRef<HighlightPlayerHandle, HighlightPlayer
           }}
         />
 
+        {waiting && playing && (
+          <CircularProgress
+            size={48}
+            aria-label={t('videoHighlights.player.buffering')}
+            sx={{
+              position: 'absolute',
+              left: '50%',
+              top: '50%',
+              ml: '-24px',
+              mt: '-24px',
+              color: '#fff',
+              pointerEvents: 'none',
+            }}
+          />
+        )}
         {!playing && (
           <ButtonBase
             onClick={toggle}
