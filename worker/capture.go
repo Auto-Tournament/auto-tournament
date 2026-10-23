@@ -168,6 +168,8 @@ func (c *console) drain() {
 	}
 }
 
+var errConsoleClosed = errors.New("CS2's console closed")
+
 // expect waits for a line matching re and returns its first group.
 func (c *console) expect(re *regexp.Regexp, wait time.Duration) (string, time.Time, error) {
 	timer := time.NewTimer(wait)
@@ -176,7 +178,7 @@ func (c *console) expect(re *regexp.Regexp, wait time.Duration) (string, time.Ti
 		select {
 		case line, ok := <-c.lines:
 			if !ok {
-				return "", time.Time{}, errors.New("CS2's console closed")
+				return "", time.Time{}, errConsoleClosed
 			}
 			if m := re.FindStringSubmatch(line); m != nil {
 				return m[1], time.Now(), nil

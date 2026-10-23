@@ -234,9 +234,11 @@ func (r *recorder) fbfCapture(g *game, name string, from, to, wantFrom int, segs
 	// CS2 renders slower than real time (10 frames a second at least): the
 	// pause at `to` comes when it gets there.
 	deadline := time.Now().Add(time.Duration(float64(n)/10*float64(time.Second)) + time.Minute)
+	// CS2 gone (its console closed) or the job cancelled ends the wait like
+	// the pause does: no more frames are coming.
 	paused := func() bool {
 		_, _, err := g.con.expect(rePaused, 50*time.Millisecond)
-		return err == nil
+		return err == nil || errors.Is(err, errConsoleClosed) || (r.jobContext != nil && r.jobContext.Err() != nil)
 	}
 	began := time.Now()
 	progress := func(frac float64) { r.reportPart(frac) }
