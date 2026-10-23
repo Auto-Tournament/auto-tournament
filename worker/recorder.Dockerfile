@@ -15,7 +15,7 @@ RUN CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o /at-worker .
 # Frame by Frame, the CS2 plugin that unhides startmovie (framebyframe_linux.go),
 # pinned. FBF_ZIP may also be a zip in the build context (a build not released yet).
 FROM alpine:3.22 AS fbf
-ARG FBF_VERSION=0.1.0
+ARG FBF_VERSION=0.2.0
 ARG FBF_ZIP=https://github.com/Auto-Tournament/frame-by-frame/releases/download/v${FBF_VERSION}/frame-by-frame-${FBF_VERSION}-linuxsteamrt64.zip
 ADD ${FBF_ZIP} /fbf.zip
 RUN unzip -q /fbf.zip -d /out && test -f /out/frame-by-frame/bin/linuxsteamrt64/libserver.so

@@ -204,6 +204,8 @@ type game struct {
 	// CS2 stops.
 	fbf, fbfChecked bool
 	gameinfo        string
+	// fbfActionsOn: the plugin runs frame actions (its frame hook is on), asked once.
+	fbfActionsOn, fbfActionsChecked bool
 	// pausedAt is the analyzer tick the last seek landed and paused on.
 	pausedAt int
 	// follow, when set, is where the followed player stands at a tick (the
