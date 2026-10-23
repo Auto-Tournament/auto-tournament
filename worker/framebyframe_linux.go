@@ -147,21 +147,85 @@ func fbfUnhidden(g *game) bool {
 	}
 }
 
-// fbfFPS is how many frames a game second CS2 writes: enough for the slowest
-// part of the edit to get a frame of its own for every frame of video.
+// fbfFPS is how many frames a game second CS2 writes where the edit is
+// slowed: enough for its slowest part to get a frame of its own for every
+// frame of video.
 func fbfFPS() float64 {
 	return math.Ceil(outputFPS / slowmoSpeed)
+}
+
+// fbfRun is a stretch of ticks [from, to) CS2 renders at one rate, as a movie
+// of its own; the run-up before the clip is played with no movie.
+type fbfRun struct {
+	from, to int
+	fps      float64
+	runUp    bool
+}
+
+// fbfMinRun: a stretch at the output's own rate shorter than this goes at the
+// slowed rate with its neighbours instead, not worth a movie of its own.
+const fbfMinRun = int(tickrate / 4)
+
+// fbfRunUpFPS: the run-up (the camera settling) plays a frame a tick; none of
+// it is kept, so it is not in a movie either.
+const fbfRunUpFPS = tickrate
+
+// fbfRuns splits ticks from → to (the clip starts at wantFrom; segs are in
+// seconds from there) into runs: the run-up, then the slowed rate (fbfFPS)
+// wherever any part of a tick is slowed and the output's own rate elsewhere.
+// Rendering only the frames a part needs roughly halves a clip's frames.
+func fbfRuns(from, wantFrom, to int, segs []segment) []fbfRun {
+	normal, slow := math.Ceil(outputFPS), fbfFPS()
+	rate := func(t int) float64 {
+		a, b := float64(t-wantFrom)/tickrate, float64(t+1-wantFrom)/tickrate
+		for _, s := range segs {
+			if s.Speed < 1 && s.From < b && s.To > a {
+				return slow
+			}
+		}
+		return normal
+	}
+	merge := func(in []fbfRun) []fbfRun {
+		var out []fbfRun
+		for _, r := range in {
+			if n := len(out); n > 0 && out[n-1].fps == r.fps {
+				out[n-1].to = r.to
+				continue
+			}
+			out = append(out, r)
+		}
+		return out
+	}
+	start := max(from, wantFrom)
+	var clip []fbfRun
+	for t := start; t < to; t++ {
+		clip = merge(append(clip, fbfRun{from: t, to: t + 1, fps: rate(t)}))
+	}
+	for i := range clip {
+		if clip[i].fps == normal && clip[i].to-clip[i].from < fbfMinRun && i > 0 && i < len(clip)-1 {
+			clip[i].fps = slow
+		}
+	}
+	if clip = merge(clip); len(clip) == 0 {
+		clip = []fbfRun{{from: start, to: to, fps: normal}}
+	}
+	clip[len(clip)-1].to = to
+	if from < start {
+		return append([]fbfRun{{from: from, to: start, fps: fbfRunUpFPS, runUp: true}}, clip...)
+	}
+	return clip
 }
 
 // fbfCapture records analyzer ticks from → to frame by frame and returns the
 // clip's frames (timeline over segs, which starts at wantFrom) in a raw I420
 // file at raw, holding only the frames the clip uses, plus the sound at wav
-// and where wantFrom is in it (seconds).
+// and where wantFrom is in it (seconds). With the plugin's frame actions, each
+// run (fbfRuns) is a movie of its own, started on its exact frame; without
+// them, it is one movie at the slowed rate from `from`.
 func (r *recorder) fbfCapture(g *game, name string, from, to, wantFrom int, segs []segment, raw, wav string) ([]frameRef, float64, error) {
 	if g.lastTick > 0 && to > g.lastTick-endMargin {
 		to = g.lastTick - endMargin
 	}
-	fps := fbfFPS()
 	if err := g.con.send("host_timescale 1", "host_framerate 0", "fps_max 0", "demo_timescale 1"); err != nil {
 		return nil, 0, err
 	}
@@ -178,35 +242,84 @@ func (r *recorder) fbfCapture(g *game, name string, from, to, wantFrom int, segs
 	if err := g.checkFollow(name, from); err != nil {
 		return nil, 0, err
 	}
-	movie := fmt.Sprintf("atfbf%d_", time.Now().UnixNano())
-	csgo := filepath.Join(r.gameDir, "csgo")
-	defer fbfCleanMovie(csgo, movie)
+	// Spectating can set the demo playing again: stop it and take the tick it
+	// stopped on, or the clip's timing is planned from the seek's tick while
+	// the demo is already past it.
 	g.con.drain()
-	// startmovie and the resume on one line: the same frame, so no frames of
-	// the paused demo go first and frame i is i/fps game seconds after the resume.
-	if err := g.con.send(fmt.Sprintf("host_framerate %g", fps), fmt.Sprintf("demo_pauseatservertick %d", g.startTick+to),
-		fmt.Sprintf("startmovie %s tga wav; demo_resume", movie)); err != nil {
+	if err := g.con.send("demo_pause"); err != nil {
 		return nil, 0, err
 	}
-	// It plays on from where the seek paused it; CS2 does not always say so.
+	if v, _, err := g.con.expect(rePaused, time.Second); err == nil {
+		t, _ := strconv.Atoi(v)
+		g.pausedAt = t - g.startTick
+	}
+	csgo := filepath.Join(r.gameDir, "csgo")
+	actions := r.fbfActions(g)
+	runs := []fbfRun{{from: g.pausedAt, to: to, fps: fbfFPS()}}
+	if actions {
+		runs = fbfRuns(g.pausedAt, wantFrom, to, segs)
+	}
+	// Each run's frames, planned from where the demo stands; the last one through `to`.
+	counts := make([]int, len(runs))
+	at := float64(g.pausedAt)
+	for k, run := range runs {
+		step := tickrate / run.fps
+		if k < len(runs)-1 {
+			counts[k] = int(math.Round((float64(run.to) - at) / step))
+		} else {
+			counts[k] = int(math.Ceil((float64(to)-at)/step)) + 1
+		}
+		at += float64(counts[k]) * step
+	}
+	stamp := time.Now().UnixNano()
+	movies := make([]string, len(runs))
+	for k, run := range runs {
+		if !run.runUp {
+			movies[k] = fmt.Sprintf("atfbf%d_%d_", stamp, k)
+			defer fbfCleanMovie(csgo, movies[k])
+		}
+	}
+	g.con.drain()
+	// The movie and the resume on the same frame, so no frames of the paused
+	// demo go first and frame i is i/fps game seconds after the resume.
+	if actions {
+		if err := writeFbfActions(csgo, fbfPlan(runs, counts, movies)); err != nil {
+			return nil, 0, err
+		}
+		defer func() { _ = writeFbfActions(csgo, "") }()
+	} else if err := g.con.send(fmt.Sprintf("host_framerate %g", runs[0].fps), fmt.Sprintf("demo_pauseatservertick %d", g.startTick+to),
+		fmt.Sprintf("startmovie %s tga wav; demo_resume", movies[0])); err != nil {
+		return nil, 0, err
+	}
 	t0 := g.pausedAt
 	if v, _, err := g.con.expect(reUnpaused, 5*time.Second); err == nil {
 		t, _ := strconv.Atoi(v)
 		t0 = t - g.startTick
 	} else {
+		// It plays on from where the seek paused it; CS2 does not always say so.
 		log.Printf("frame by frame: no word of the resume; going from the seek's tick %d", t0)
 	}
 	_ = g.spectate(name)
 
-	// Which frames the clip uses, from where each one is in the game.
-	n := int(math.Ceil(float64(to-t0)/tickrate*fps)) + 1
-	ticks := make([]float64, n)
-	for i := range ticks {
-		ticks[i] = float64(t0) + float64(i)*tickrate/fps
+	// Every kept frame's place in the game: each movie from where the runs
+	// before it took the demo, at its own rate.
+	var ticks []float64
+	firsts := make([]int, len(runs)+1) // the run's first frame among ticks
+	at = float64(t0)
+	for k, run := range runs {
+		firsts[k] = len(ticks)
+		step := tickrate / run.fps
+		if !run.runUp {
+			for i := 0; i < counts[k]; i++ {
+				ticks = append(ticks, at+float64(i)*step)
+			}
+		}
+		at += float64(counts[k]) * step
 	}
+	firsts[len(runs)] = len(ticks)
 	frames, err := timeline([][]float64{ticks}, segs, wantFrom)
 	if err != nil {
-		_ = g.con.send("endmovie", "host_framerate 0")
+		_ = g.con.send("endmovie", "host_framerate 0", "demo_pause")
 		return nil, 0, err
 	}
 	// Each used frame's place in raw, in order (timeline's frames only go forward).
@@ -231,28 +344,171 @@ func (r *recorder) fbfCapture(g *game, name string, from, to, wantFrom int, segs
 		}
 	}
 
-	// CS2 renders slower than real time (10 frames a second at least): the
-	// pause at `to` comes when it gets there.
-	deadline := time.Now().Add(time.Duration(float64(n)/10*float64(time.Second)) + time.Minute)
-	// CS2 gone (its console closed) or the job cancelled ends the wait like
-	// the pause does: no more frames are coming.
-	paused := func() bool {
-		_, _, err := g.con.expect(rePaused, 50*time.Millisecond)
-		return err == nil || errors.Is(err, errConsoleClosed) || (r.jobContext != nil && r.jobContext.Err() != nil)
+	ff := exec.Command("ffmpeg", "-y", "-hide_banner", "-loglevel", "error",
+		"-f", "rawvideo", "-pix_fmt", "bgr24", "-s", fmt.Sprintf("%dx%d", g.width, g.height), "-i", "pipe:0",
+		"-pix_fmt", "yuv420p", "-f", "rawvideo", raw)
+	stdin, err := ff.StdinPipe()
+	if err != nil {
+		return nil, 0, err
 	}
+	var stderr strings.Builder
+	ff.Stderr = &stderr
+	if err := ff.Start(); err != nil {
+		return nil, 0, err
+	}
+	defer func() {
+		if ff.ProcessState == nil {
+			stdin.Close()
+			_ = ff.Wait()
+		}
+	}()
+	stop := func() { _ = g.con.send("endmovie", "host_framerate 0", "demo_pause") }
+
 	began := time.Now()
-	progress := func(frac float64) { r.reportPart(frac) }
-	rendered, convErr := fbfConvert(csgo, movie, order, g.width, g.height, raw, paused, deadline, progress)
-	// The last frame the clip uses is in: CS2 has played (and recorded the
-	// sound) at least that far, so the movie stops there, not at `to`.
-	_ = g.con.send("endmovie", "host_framerate 0", "demo_pause")
-	if convErr != nil {
-		return nil, 0, fmt.Errorf("frame by frame: %w", convErr)
+	rendered := 0
+	var sounds []string
+	for k, run := range runs {
+		if run.runUp {
+			continue
+		}
+		var use []int
+		for _, i := range order {
+			if i >= firsts[k] && i < firsts[k+1] {
+				use = append(use, i-firsts[k])
+			}
+		}
+		// CS2 renders slower than real time (10 frames a second at least): the
+		// movie's end comes when it gets there.
+		deadline := time.Now().Add(time.Duration(float64(counts[k])/10*float64(time.Second)) + time.Minute)
+		// The movie ended (frame actions), the demo paused (no actions), CS2
+		// gone or the job cancelled: no more frames are coming.
+		ended := regexp.MustCompile(`(?:^|[^n])paused on tick (\d+)`)
+		if actions {
+			ended = regexp.MustCompile(`Finishing movie: .*` + movies[k] + `()`)
+		}
+		finished := false // CS2 says it once, and the converter may be the one to hear it
+		done := func() bool {
+			if finished {
+				return true
+			}
+			_, _, err := g.con.expect(ended, 50*time.Millisecond)
+			finished = err == nil
+			return err == nil || errors.Is(err, errConsoleClosed) || (r.jobContext != nil && r.jobContext.Err() != nil)
+		}
+		base, total := float64(firsts[k]), float64(len(ticks))
+		n := float64(firsts[k+1] - firsts[k])
+		progress := func(frac float64) { r.reportPart((base + frac*n) / total) }
+		got, convErr := fbfConvert(csgo, movies[k], use, g.width, g.height, stdin, done, deadline, progress)
+		rendered += got
+		if !actions {
+			// The last frame the clip uses is in: CS2 has played (and recorded
+			// the sound) at least that far, so the movie stops there.
+			stop()
+		}
+		if convErr != nil {
+			stop()
+			return nil, 0, fmt.Errorf("frame by frame: %w", convErr)
+		}
+		if actions {
+			// The plugin ends the movie on its frame: wait for it, for its sound.
+			for !done() {
+				if time.Now().After(deadline) {
+					stop()
+					return nil, 0, fmt.Errorf("frame by frame: movie %d did not end", k)
+				}
+			}
+		}
+		path, err := fbfWav(csgo, movies[k])
+		if err != nil {
+			return nil, 0, err
+		}
+		sounds = append(sounds, path)
 	}
+	stdin.Close()
+	if err := ff.Wait(); err != nil {
+		return nil, 0, fmt.Errorf("frame by frame: ffmpeg: %v %s", err, strings.TrimSpace(stderr.String()))
+	}
+	if err := joinSounds(sounds, wav); err != nil {
+		return nil, 0, err
+	}
+	took := time.Since(began).Seconds()
+	log.Printf("frame by frame: ticks %d → %d in %d run(s), %d of %d frames used; %d rendered in %.1f s (%.0f a second)",
+		t0, to, len(runs), len(order), len(ticks), rendered, took, float64(rendered)/took)
+	// The sound starts where the first movie does: after the run-up, if any.
+	soundFrom := float64(t0)
+	if runs[0].runUp {
+		soundFrom += float64(counts[0]) * tickrate / runs[0].fps
+	}
+	return frames, (float64(wantFrom) - soundFrom) / tickrate, nil
+}
+
+// fbfPlan is the actions file (the plugin's frame_hook) for runs of `counts`
+// frames: the first starts on frame 0 with the demo's resume, each next one on
+// the frame the one before ends, and after the last the demo pauses.
+func fbfPlan(runs []fbfRun, counts []int, movies []string) string {
+	var b strings.Builder
+	frame := 0
+	for k, run := range runs {
+		if k > 0 && !runs[k-1].runUp {
+			fmt.Fprintf(&b, "%d endmovie\n", frame)
+		}
+		fmt.Fprintf(&b, "%d host_framerate %g\n", frame, run.fps)
+		resume := ""
+		if k == 0 {
+			resume = "; demo_resume"
+		}
+		if run.runUp {
+			fmt.Fprintf(&b, "%d demo_resume\n", frame)
+		} else {
+			fmt.Fprintf(&b, "%d startmovie %s tga wav%s\n", frame, movies[k], resume)
+		}
+		frame += counts[k]
+	}
+	fmt.Fprintf(&b, "%d endmovie\n%d host_framerate 0\n%d demo_pause\n", frame, frame, frame)
+	return b.String()
+}
+
+// writeFbfActions replaces the plugin's actions file in one step: the plugin
+// reads a new file from its frame 0.
+func writeFbfActions(csgo, plan string) error {
+	path := filepath.Join(csgo, "frame-by-frame", "actions.txt")
+	if err := os.WriteFile(path+".tmp", []byte(plan), 0o644); err != nil {
+		return err
+	}
+	return os.Rename(path+".tmp", path)
+}
+
+// fbfActions reports whether the plugin runs frame actions in this CS2 (its
+// frame hook is on), asked once a session with an echo.
+func (r *recorder) fbfActions(g *game) bool {
+	if g.fbfActionsChecked {
+		return g.fbfActionsOn
+	}
+	g.fbfActionsChecked = true
+	if env("AT_FBF_ACTIONS", "1") == "0" {
+		return false
+	}
+	csgo := filepath.Join(r.gameDir, "csgo")
+	nonce := fmt.Sprintf("%d", time.Now().UnixNano())
+	g.con.drain()
+	if err := writeFbfActions(csgo, "0 echo [Frame by Frame] actions "+nonce+"\n"); err != nil {
+		return false
+	}
+	_, _, err := g.con.expect(regexp.MustCompile(`actions `+nonce+`()`), 3*time.Second)
+	if g.fbfActionsOn = err == nil; g.fbfActionsOn {
+		log.Printf("frame by frame: frame actions on")
+	} else {
+		log.Printf("frame by frame: no frame actions (the plugin's frame hook is off); one movie at the slowed rate")
+	}
+	return g.fbfActionsOn
+}
+
+// fbfWav is the sound CS2 wrote for a movie, once endmovie has finished it.
+func fbfWav(csgo, movie string) (string, error) {
 	wavs, _ := filepath.Glob(filepath.Join(csgo, "*", "movie", "*", movie+"*.wav"))
 	more, _ := filepath.Glob(filepath.Join(csgo, "movie", "*", movie+"*.wav"))
 	if wavs = append(wavs, more...); len(wavs) == 0 {
-		return nil, 0, errors.New("frame by frame: CS2 wrote no sound")
+		return "", errors.New("frame by frame: CS2 wrote no sound")
 	}
 	// endmovie finishes the WAV: wait for its size to settle.
 	for last, tries := int64(-1), 0; tries < 30; tries++ {
@@ -265,31 +521,36 @@ func (r *recorder) fbfCapture(g *game, name string, from, to, wantFrom int, segs
 			last = st.Size()
 		}
 	}
-	if err := copyFile(wavs[0], wav); err != nil {
-		return nil, 0, err
-	}
-	took := time.Since(began).Seconds()
-	log.Printf("frame by frame: ticks %d → %d at %g frames a game second, %d of %d frames used; %d rendered in %.1f s (%.0f a second)",
-		t0, to, fps, len(order), n, rendered, took, float64(rendered)/took)
-	return frames, float64(wantFrom-t0) / tickrate, nil
+	return wavs[0], nil
 }
 
-// fbfConvert turns the movie's TGA frames into one raw I420 file as CS2 writes
-// them: the frames in `use` (by number, ascending) go in, the others are
-// deleted unread, so the disk only ever holds a few. paused reports whether
-// CS2 got to the end (ended): frames after that are not waited for.
-func fbfConvert(csgo, movie string, use []int, w, h int, raw string, paused func() bool, deadline time.Time, progress func(float64)) (rendered int, werr error) {
-	ff := exec.Command("ffmpeg", "-y", "-hide_banner", "-loglevel", "error",
-		"-f", "rawvideo", "-pix_fmt", "bgr24", "-s", fmt.Sprintf("%dx%d", w, h), "-i", "pipe:0",
-		"-pix_fmt", "yuv420p", "-f", "rawvideo", raw)
-	stdin, err := ff.StdinPipe()
-	if err != nil {
-		return 0, err
+// joinSounds writes the movies' sound one after another into out: each one
+// is exactly as long as its frames.
+func joinSounds(paths []string, out string) error {
+	if len(paths) == 1 {
+		return copyFile(paths[0], out)
 	}
-	var stderr strings.Builder
-	ff.Stderr = &stderr
-	if err := ff.Start(); err != nil {
-		return 0, err
+	args := []string{"-y", "-hide_banner", "-loglevel", "error"}
+	var labels strings.Builder
+	for i, p := range paths {
+		args = append(args, "-i", p)
+		fmt.Fprintf(&labels, "[%d:a]", i)
+	}
+	args = append(args, "-filter_complex", fmt.Sprintf("%sconcat=n=%d:v=0:a=1[a]", labels.String(), len(paths)),
+		"-map", "[a]", "-c:a", "pcm_s16le", out)
+	if b, err := exec.Command("ffmpeg", args...).CombinedOutput(); err != nil {
+		return fmt.Errorf("frame by frame: joining the sound: %v %s", err, strings.TrimSpace(string(b)))
+	}
+	return nil
+}
+
+// fbfConvert writes a movie's TGA frames to out as BGR24 as CS2 writes them:
+// the frames in `use` (by number, ascending) go in, the others are deleted
+// unread, so the disk only ever holds a few. paused reports whether CS2 got to
+// the end (ended): frames after that are not waited for.
+func fbfConvert(csgo, movie string, use []int, w, h int, out io.Writer, paused func() bool, deadline time.Time, progress func(float64)) (rendered int, werr error) {
+	if len(use) == 0 {
+		return 0, nil
 	}
 	ended := false
 	want := map[int]bool{}
@@ -322,7 +583,7 @@ func fbfConvert(csgo, movie string, use []int, w, h int, raw string, paused func
 					werr = fmt.Errorf("frame %d missing (got %d)", next, num)
 					break
 				}
-				if werr = tgaToBGR(files[0].path, w, h, stdin); werr != nil {
+				if werr = tgaToBGR(files[0].path, w, h, out); werr != nil {
 					break
 				}
 				for next++; next <= last && !want[next]; next++ {
@@ -349,10 +610,6 @@ func fbfConvert(csgo, movie string, use []int, w, h int, raw string, paused func
 			break
 		}
 		ended = paused()
-	}
-	stdin.Close()
-	if err := ff.Wait(); err != nil && werr == nil {
-		werr = fmt.Errorf("ffmpeg: %v %s", err, strings.TrimSpace(stderr.String()))
 	}
 	return rendered, werr
 }
