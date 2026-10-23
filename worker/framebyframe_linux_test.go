@@ -21,7 +21,8 @@ func TestFbfGameinfoPatchAndRestore(t *testing.T) {
 	if err := os.MkdirAll(filepath.Join(game, "csgo"), 0o755); err != nil {
 		t.Fatal(err)
 	}
-	orig := "SearchPaths\n{\n\t\tGame_LowViolence\tcsgo_lv\n\t\tGame\tcsgo\n\t\tGame\tcsgo_imported\n}\n"
+	// CRLF, as CS2's own gameinfo.gi.
+	orig := "SearchPaths\r\n{\r\n\t\tGame_LowViolence\tcsgo_lv\r\n\t\tGame\tcsgo\r\n\t\tGame\tcore\r\n}\r\n"
 	gi := filepath.Join(game, "csgo", "gameinfo.gi")
 	if err := os.WriteFile(gi, []byte(orig), 0o644); err != nil {
 		t.Fatal(err)
@@ -33,7 +34,7 @@ func TestFbfGameinfoPatchAndRestore(t *testing.T) {
 		}
 	}
 	got, _ := os.ReadFile(gi)
-	want := "SearchPaths\n{\n\t\tGame_LowViolence\tcsgo_lv\n\t\tGame\tcsgo/frame-by-frame\n\t\tGame\tcsgo\n\t\tGame\tcsgo_imported\n}\n"
+	want := "SearchPaths\r\n{\r\n\t\tGame_LowViolence\tcsgo_lv\r\n\t\tGame\tcsgo/frame-by-frame\r\n\t\tGame\tcsgo\r\n\t\tGame\tcore\r\n}\r\n"
 	if string(got) != want {
 		t.Fatalf("patched:\n%q\nwant\n%q", got, want)
 	}

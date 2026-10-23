@@ -60,7 +60,12 @@ func fbfInstall(gameDir string) (string, error) {
 	lines := strings.Split(string(fbfStrip(data)), "\n")
 	for i, l := range lines {
 		if m := reGameCsgo.FindStringSubmatch(l); m != nil {
-			lines = append(lines[:i], append([]string{m[1] + fbfGameLine}, lines[i:]...)...)
+			// gameinfo.gi has CRLF line ends: the new line gets the same.
+			cr := ""
+			if strings.HasSuffix(l, "\r") {
+				cr = "\r"
+			}
+			lines = append(lines[:i], append([]string{m[1] + fbfGameLine + cr}, lines[i:]...)...)
 			return gi, os.WriteFile(gi, []byte(strings.Join(lines, "\n")), 0o644)
 		}
 	}
@@ -90,22 +95,46 @@ func fbfRestore(gi string) {
 	}
 }
 
-// fbfUnhidden reports whether the plugin said it unhid the movie commands:
-// it says so in the game's output (the gamescope log) as CS2 starts.
-func fbfUnhidden(logPath string) bool {
-	f, err := os.Open(logPath)
-	if err != nil {
+// fbfUnhidden reports whether startmovie can be used: the plugin says so in
+// the game's output as CS2 starts (before the console connects), and `find`
+// lists the command once it is no longer hidden.
+func fbfUnhidden(g *game) bool {
+	if f, err := os.Open(g.logPath); err == nil {
+		sc := bufio.NewScanner(f)
+		sc.Buffer(make([]byte, 64*1024), 1024*1024)
+		for sc.Scan() {
+			if strings.Contains(sc.Text(), "[Frame by Frame]") {
+				log.Printf("%s", strings.TrimSpace(sc.Text()))
+			}
+			if reFbfUnhid.MatchString(sc.Text()) {
+				f.Close()
+				return true
+			}
+		}
+		f.Close()
+	}
+	g.con.drain()
+	if err := g.con.send("find startmovie"); err != nil {
 		return false
 	}
-	defer f.Close()
-	sc := bufio.NewScanner(f)
-	sc.Buffer(make([]byte, 64*1024), 1024*1024)
-	for sc.Scan() {
-		if reFbfUnhid.MatchString(sc.Text()) {
-			return true
+	timer := time.NewTimer(3 * time.Second)
+	defer timer.Stop()
+	for {
+		select {
+		case line, ok := <-g.con.lines:
+			if !ok {
+				return false
+			}
+			if strings.Contains(line, "startmovie") {
+				log.Printf("frame by frame: find startmovie: %s", strings.TrimSpace(line))
+				if !strings.Contains(strings.ToLower(line), "unknown") {
+					return true
+				}
+			}
+		case <-timer.C:
+			return false
 		}
 	}
-	return false
 }
 
 // fbfFPS is how many frames a game second CS2 writes: enough for the slowest

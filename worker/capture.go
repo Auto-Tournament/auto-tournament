@@ -299,7 +299,7 @@ func (r *recorder) launchGameOnce(ctx context.Context, logPath string) (*game, e
 	// The main menu loads after the console opens.
 	time.Sleep(10 * time.Second)
 	if gameinfo != "" {
-		if g.fbf = fbfUnhidden(logPath); g.fbf {
+		if g.fbf = fbfUnhidden(g); g.fbf {
 			log.Printf("frame by frame: on")
 		} else {
 			log.Printf("frame by frame: the plugin did not unhide startmovie; capturing the stream")
