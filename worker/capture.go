@@ -168,6 +168,8 @@ func (c *console) drain() {
 	}
 }
 
+var errConsoleClosed = errors.New("CS2's console closed")
+
 // expect waits for a line matching re and returns its first group.
 func (c *console) expect(re *regexp.Regexp, wait time.Duration) (string, time.Time, error) {
 	timer := time.NewTimer(wait)
@@ -176,7 +178,7 @@ func (c *console) expect(re *regexp.Regexp, wait time.Duration) (string, time.Ti
 		select {
 		case line, ok := <-c.lines:
 			if !ok {
-				return "", time.Time{}, errors.New("CS2's console closed")
+				return "", time.Time{}, errConsoleClosed
 			}
 			if m := re.FindStringSubmatch(line); m != nil {
 				return m[1], time.Now(), nil
@@ -197,6 +199,13 @@ type game struct {
 	startTick int // the demo's first tick: the console's ticks count from it
 	lastTick  int // the demo's length in ticks (the analyzer's last tick)
 	logPath   string
+	// fbf: Frame by Frame unhid startmovie (framebyframe_linux.go), known
+	// once fbfChecked; gameinfo is the gameinfo.gi it patched, restored when
+	// CS2 stops.
+	fbf, fbfChecked bool
+	gameinfo        string
+	// pausedAt is the analyzer tick the last seek landed and paused on.
+	pausedAt int
 	// follow, when set, is where the followed player stands at a tick (the
 	// demo's replay frames): the capture checks the camera is with them.
 	follow func(tick int) ([3]float64, bool)
@@ -226,6 +235,13 @@ func (r *recorder) launchGameOnce(ctx context.Context, logPath string) (*game, e
 		return nil, err
 	}
 	setRecordingVideo(r.width, r.height)
+	gameinfo := ""
+	if fbfWanted() {
+		var err error
+		if gameinfo, err = fbfInstall(r.gameDir); err != nil {
+			log.Printf("frame by frame: not installed (%v); capturing the stream", err)
+		}
+	}
 	w, h := strconv.Itoa(r.width), strconv.Itoa(r.height)
 	args := []string{"--backend", "headless", "-W", w, "-H", h, "-w", w, "-h", h, "-r", strconv.Itoa(envPositive("AT_GAMESCOPE_HZ", 120)), "--"}
 	if r.sniper != "" {
@@ -242,6 +258,7 @@ func (r *recorder) launchGameOnce(ctx context.Context, logPath string) (*game, e
 	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 	logFile, err := os.Create(logPath)
 	if err != nil {
+		fbfRestore(gameinfo)
 		return nil, err
 	}
 	pr, pw := io.Pipe()
@@ -249,9 +266,10 @@ func (r *recorder) launchGameOnce(ctx context.Context, logPath string) (*game, e
 	cmd.Stderr = cmd.Stdout
 	if err := cmd.Start(); err != nil {
 		logFile.Close()
+		fbfRestore(gameinfo)
 		return nil, fmt.Errorf("start gamescope: %w", err)
 	}
-	g := &game{cmd: cmd, width: r.width, height: r.height, logPath: logPath}
+	g := &game{cmd: cmd, width: r.width, height: r.height, logPath: logPath, gameinfo: gameinfo}
 	nodeCh := make(chan string, 1)
 	go func() {
 		sc := bufio.NewScanner(pr)
@@ -309,6 +327,7 @@ func (g *game) stop() {
 			_ = syscall.Kill(-g.cmd.Process.Pid, syscall.SIGKILL)
 		}
 	}
+	fbfRestore(g.gameinfo)
 }
 
 // loadDemo applies the recorder's look, plays the demo (a path under
@@ -455,7 +474,8 @@ func (g *game) awaitSeek(target int) (int, error) {
 		}
 		if v, _, err := g.con.expect(rePaused, 2*time.Second); err == nil {
 			if tick, err := strconv.Atoi(v); err == nil && seekLanded(tick-g.startTick, target) {
-				return tick - g.startTick, nil
+				g.pausedAt = tick - g.startTick
+				return g.pausedAt, nil
 			}
 		}
 		if time.Now().After(deadline) {

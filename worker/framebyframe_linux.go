@@ -1,0 +1,447 @@
+package main
+
+import (
+	"bufio"
+	"encoding/binary"
+	"errors"
+	"fmt"
+	"io"
+	"log"
+	"math"
+	"os"
+	"os/exec"
+	"path/filepath"
+	"regexp"
+	"sort"
+	"strconv"
+	"strings"
+	"time"
+)
+
+// Frame by Frame (github.com/Auto-Tournament/frame-by-frame) is our CS2
+// plugin that unhides startmovie: CS2 then writes every frame of a demo and
+// its sound itself, at whatever pace the GPU manages. The recorder image ships
+// it in fbfSource (recorder.Dockerfile); without it, or when it reports the
+// movie commands still hidden (a CS2 update), the recorder captures the
+// stream as before. AT_FRAME_BY_FRAME=0 turns it off.
+
+var fbfSource = env("AT_FBF_DIR", "/opt/frame-by-frame")
+
+// fbfGameLine is the search path the plugin loads from, above `Game csgo`.
+const fbfGameLine = "Game\tcsgo/frame-by-frame"
+
+var (
+	reGameCsgo   = regexp.MustCompile(`^(\s*)Game\s+csgo\s*$`)
+	reFbfUnhid   = regexp.MustCompile(`\[Frame by Frame\] movie commands unhidden`)
+	reFbfOurLine = regexp.MustCompile(`csgo/frame-by-frame`)
+)
+
+func fbfWanted() bool {
+	return env("AT_FRAME_BY_FRAME", "1") != "0" && exists(filepath.Join(fbfSource, "bin", "linuxsteamrt64", "libserver.so"))
+}
+
+// fbfInstall copies the plugin into the game and adds its search path to
+// gameinfo.gi; restore with fbfRestore once CS2 has quit. The line is only
+// there while the recorder's CS2 runs: on a PC someone plays on, their CS2
+// must start without it.
+func fbfInstall(gameDir string) (string, error) {
+	dst := filepath.Join(gameDir, "csgo", "frame-by-frame")
+	if err := os.RemoveAll(dst); err != nil {
+		return "", err
+	}
+	if err := exec.Command("cp", "-r", fbfSource, dst).Run(); err != nil {
+		return "", fmt.Errorf("copy the plugin: %w", err)
+	}
+	// CS2 writes the frames under the plugin's folder: into RAM when there is
+	// some, so the disk's speed does not hold the rendering back. Only a few
+	// frames are there at once (fbfConvert takes them as they come).
+	if shm := env("AT_FBF_RAM", "/dev/shm"); shm != "off" && exists(shm) {
+		ram := filepath.Join(shm, "at-frame-by-frame")
+		if err := os.MkdirAll(ram, 0o755); err == nil {
+			_ = os.Symlink(ram, filepath.Join(dst, "movie"))
+		}
+	}
+	gi := filepath.Join(gameDir, "csgo", "gameinfo.gi")
+	data, err := os.ReadFile(gi)
+	if err != nil {
+		return "", err
+	}
+	lines := strings.Split(string(fbfStrip(data)), "\n")
+	for i, l := range lines {
+		if m := reGameCsgo.FindStringSubmatch(l); m != nil {
+			// gameinfo.gi has CRLF line ends: the new line gets the same.
+			cr := ""
+			if strings.HasSuffix(l, "\r") {
+				cr = "\r"
+			}
+			lines = append(lines[:i], append([]string{m[1] + fbfGameLine + cr}, lines[i:]...)...)
+			return gi, os.WriteFile(gi, []byte(strings.Join(lines, "\n")), 0o644)
+		}
+	}
+	return "", errors.New("gameinfo.gi has no `Game csgo` line")
+}
+
+// fbfStrip is gameinfo.gi without our search path.
+func fbfStrip(data []byte) []byte {
+	var out []string
+	for _, l := range strings.Split(string(data), "\n") {
+		if !reFbfOurLine.MatchString(l) {
+			out = append(out, l)
+		}
+	}
+	return []byte(strings.Join(out, "\n"))
+}
+
+// fbfRestore takes our search path out of gameinfo.gi again. Run at start too:
+// a recorder killed while CS2 ran left it in.
+func fbfRestore(gi string) {
+	data, err := os.ReadFile(gi)
+	if err != nil || !reFbfOurLine.Match(data) {
+		return
+	}
+	if err := os.WriteFile(gi, fbfStrip(data), 0o644); err != nil {
+		log.Printf("frame by frame: could not restore %s: %v", gi, err)
+	}
+}
+
+// fbfUnhidden reports whether startmovie can be used: the plugin says so in
+// the game's output as CS2 starts (before the console connects), and `find`
+// lists the command once it is no longer hidden. Asked with a demo loaded:
+// the movie commands register after the main menu.
+func fbfUnhidden(g *game) bool {
+	if f, err := os.Open(g.logPath); err == nil {
+		sc := bufio.NewScanner(f)
+		sc.Buffer(make([]byte, 64*1024), 1024*1024)
+		for sc.Scan() {
+			if strings.Contains(sc.Text(), "[Frame by Frame]") {
+				log.Printf("%s", strings.TrimSpace(sc.Text()))
+			}
+			if reFbfUnhid.MatchString(sc.Text()) {
+				f.Close()
+				return true
+			}
+		}
+		f.Close()
+	}
+	g.con.drain()
+	if err := g.con.send("find startmovie"); err != nil {
+		return false
+	}
+	timer := time.NewTimer(3 * time.Second)
+	defer timer.Stop()
+	for {
+		select {
+		case line, ok := <-g.con.lines:
+			if !ok {
+				return false
+			}
+			// find lists everything that mentions it (movie_fixwave's help
+			// does): only a line that starts with the command counts.
+			if f := strings.Fields(line); len(f) > 0 && f[0] == "startmovie" {
+				log.Printf("frame by frame: find startmovie: %s", strings.TrimSpace(line))
+				return true
+			}
+		case <-timer.C:
+			return false
+		}
+	}
+}
+
+// fbfFPS is how many frames a game second CS2 writes: enough for the slowest
+// part of the edit to get a frame of its own for every frame of video.
+func fbfFPS() float64 {
+	return math.Ceil(outputFPS / slowmoSpeed)
+}
+
+// fbfCapture records analyzer ticks from → to frame by frame and returns the
+// clip's frames (timeline over segs, which starts at wantFrom) in a raw I420
+// file at raw, holding only the frames the clip uses, plus the sound at wav
+// and where wantFrom is in it (seconds).
+func (r *recorder) fbfCapture(g *game, name string, from, to, wantFrom int, segs []segment, raw, wav string) ([]frameRef, float64, error) {
+	if g.lastTick > 0 && to > g.lastTick-endMargin {
+		to = g.lastTick - endMargin
+	}
+	fps := fbfFPS()
+	if err := g.con.send("host_timescale 1", "host_framerate 0", "fps_max 0", "demo_timescale 1"); err != nil {
+		return nil, 0, err
+	}
+	if err := g.seekForCapture(max(0, from), 1); err != nil {
+		return nil, 0, err
+	}
+	if err := g.spectate(name); err != nil {
+		return nil, 0, err
+	}
+	time.Sleep(500 * time.Millisecond)
+	if err := g.spectate(name); err != nil {
+		return nil, 0, err
+	}
+	if err := g.checkFollow(name, from); err != nil {
+		return nil, 0, err
+	}
+	movie := fmt.Sprintf("atfbf%d_", time.Now().UnixNano())
+	csgo := filepath.Join(r.gameDir, "csgo")
+	defer fbfCleanMovie(csgo, movie)
+	g.con.drain()
+	// startmovie and the resume on one line: the same frame, so no frames of
+	// the paused demo go first and frame i is i/fps game seconds after the resume.
+	if err := g.con.send(fmt.Sprintf("host_framerate %g", fps), fmt.Sprintf("demo_pauseatservertick %d", g.startTick+to),
+		fmt.Sprintf("startmovie %s tga wav; demo_resume", movie)); err != nil {
+		return nil, 0, err
+	}
+	// It plays on from where the seek paused it; CS2 does not always say so.
+	t0 := g.pausedAt
+	if v, _, err := g.con.expect(reUnpaused, 5*time.Second); err == nil {
+		t, _ := strconv.Atoi(v)
+		t0 = t - g.startTick
+	} else {
+		log.Printf("frame by frame: no word of the resume; going from the seek's tick %d", t0)
+	}
+	_ = g.spectate(name)
+
+	// Which frames the clip uses, from where each one is in the game.
+	n := int(math.Ceil(float64(to-t0)/tickrate*fps)) + 1
+	ticks := make([]float64, n)
+	for i := range ticks {
+		ticks[i] = float64(t0) + float64(i)*tickrate/fps
+	}
+	frames, err := timeline([][]float64{ticks}, segs, wantFrom)
+	if err != nil {
+		_ = g.con.send("endmovie", "host_framerate 0")
+		return nil, 0, err
+	}
+	// Each used frame's place in raw, in order (timeline's frames only go forward).
+	keep := map[int]int{}
+	var order []int
+	for _, f := range frames {
+		for _, i := range []int{f.index, f.next} {
+			if _, ok := keep[i]; i >= 0 && !ok {
+				keep[i] = 0
+				order = append(order, i)
+			}
+		}
+	}
+	sort.Ints(order)
+	for k, i := range order {
+		keep[i] = k
+	}
+	for k := range frames {
+		frames[k].index = keep[frames[k].index]
+		if frames[k].next >= 0 {
+			frames[k].next = keep[frames[k].next]
+		}
+	}
+
+	// CS2 renders slower than real time (10 frames a second at least): the
+	// pause at `to` comes when it gets there.
+	deadline := time.Now().Add(time.Duration(float64(n)/10*float64(time.Second)) + time.Minute)
+	// CS2 gone (its console closed) or the job cancelled ends the wait like
+	// the pause does: no more frames are coming.
+	paused := func() bool {
+		_, _, err := g.con.expect(rePaused, 50*time.Millisecond)
+		return err == nil || errors.Is(err, errConsoleClosed) || (r.jobContext != nil && r.jobContext.Err() != nil)
+	}
+	began := time.Now()
+	progress := func(frac float64) { r.reportPart(frac) }
+	rendered, convErr := fbfConvert(csgo, movie, order, g.width, g.height, raw, paused, deadline, progress)
+	// The last frame the clip uses is in: CS2 has played (and recorded the
+	// sound) at least that far, so the movie stops there, not at `to`.
+	_ = g.con.send("endmovie", "host_framerate 0", "demo_pause")
+	if convErr != nil {
+		return nil, 0, fmt.Errorf("frame by frame: %w", convErr)
+	}
+	wavs, _ := filepath.Glob(filepath.Join(csgo, "*", "movie", "*", movie+"*.wav"))
+	more, _ := filepath.Glob(filepath.Join(csgo, "movie", "*", movie+"*.wav"))
+	if wavs = append(wavs, more...); len(wavs) == 0 {
+		return nil, 0, errors.New("frame by frame: CS2 wrote no sound")
+	}
+	// endmovie finishes the WAV: wait for its size to settle.
+	for last, tries := int64(-1), 0; tries < 30; tries++ {
+		time.Sleep(300 * time.Millisecond)
+		st, err := os.Stat(wavs[0])
+		if err == nil && st.Size() == last {
+			break
+		}
+		if err == nil {
+			last = st.Size()
+		}
+	}
+	if err := copyFile(wavs[0], wav); err != nil {
+		return nil, 0, err
+	}
+	took := time.Since(began).Seconds()
+	log.Printf("frame by frame: ticks %d → %d at %g frames a game second, %d of %d frames used; %d rendered in %.1f s (%.0f a second)",
+		t0, to, fps, len(order), n, rendered, took, float64(rendered)/took)
+	return frames, float64(wantFrom-t0) / tickrate, nil
+}
+
+// fbfConvert turns the movie's TGA frames into one raw I420 file as CS2 writes
+// them: the frames in `use` (by number, ascending) go in, the others are
+// deleted unread, so the disk only ever holds a few. paused reports whether
+// CS2 got to the end (ended): frames after that are not waited for.
+func fbfConvert(csgo, movie string, use []int, w, h int, raw string, paused func() bool, deadline time.Time, progress func(float64)) (rendered int, werr error) {
+	ff := exec.Command("ffmpeg", "-y", "-hide_banner", "-loglevel", "error",
+		"-f", "rawvideo", "-pix_fmt", "bgr24", "-s", fmt.Sprintf("%dx%d", w, h), "-i", "pipe:0",
+		"-pix_fmt", "yuv420p", "-f", "rawvideo", raw)
+	stdin, err := ff.StdinPipe()
+	if err != nil {
+		return 0, err
+	}
+	var stderr strings.Builder
+	ff.Stderr = &stderr
+	if err := ff.Start(); err != nil {
+		return 0, err
+	}
+	ended := false
+	want := map[int]bool{}
+	last := -1
+	for _, i := range use {
+		want[i] = true
+		last = max(last, i)
+	}
+	next := last // the next frame number wanted in order: the first one
+	for _, i := range use {
+		next = min(next, i)
+	}
+	first := next
+	base := -1
+	started := time.Now()
+	for next <= last && werr == nil {
+		files := fbfFrames(csgo, movie)
+		// CS2 numbers from 0 or 1: count from the first it wrote.
+		if base < 0 && len(files) > 0 {
+			base = files[0].num
+		}
+		for i := range files {
+			files[i].num -= base
+		}
+		// A frame is complete once the one after it exists (or CS2 stopped).
+		for len(files) > 0 && (len(files) > 1 || ended) && next <= last {
+			num := files[0].num
+			if want[num] {
+				if num != next {
+					werr = fmt.Errorf("frame %d missing (got %d)", next, num)
+					break
+				}
+				if werr = tgaToBGR(files[0].path, w, h, stdin); werr != nil {
+					break
+				}
+				for next++; next <= last && !want[next]; next++ {
+				}
+			}
+			rendered = max(rendered, num+1)
+			os.Remove(files[0].path)
+			files = files[1:]
+		}
+		if last > first {
+			progress(float64(next-first) / float64(last-first))
+		}
+		if werr != nil || next > last {
+			break
+		}
+		if ended {
+			if len(fbfFrames(csgo, movie)) == 0 {
+				werr = fmt.Errorf("CS2 stopped at frame %d of %d", next, last)
+			}
+			continue
+		}
+		if time.Now().After(deadline) || (base < 0 && time.Since(started) > 30*time.Second) {
+			werr = fmt.Errorf("CS2 did not get past frame %d of %d in time (movie folders hold: %s)", next, last, fbfMovieFiles(csgo))
+			break
+		}
+		ended = paused()
+	}
+	stdin.Close()
+	if err := ff.Wait(); err != nil && werr == nil {
+		werr = fmt.Errorf("ffmpeg: %v %s", err, strings.TrimSpace(stderr.String()))
+	}
+	return rendered, werr
+}
+
+type fbfFrame struct {
+	path string
+	num  int
+}
+
+// fbfFrames is the movie's TGA frames on disk, in order.
+func fbfFrames(csgo, movie string) []fbfFrame {
+	paths, _ := filepath.Glob(filepath.Join(csgo, "*", "movie", "*", movie+"*.tga"))
+	more, _ := filepath.Glob(filepath.Join(csgo, "movie", "*", movie+"*.tga"))
+	var out []fbfFrame
+	for _, p := range append(paths, more...) {
+		// <movie><frame number>.tga: the movie's own name is digits too.
+		num := strings.TrimSuffix(strings.TrimPrefix(filepath.Base(p), movie), ".tga")
+		if n, err := strconv.Atoi(num); err == nil {
+			out = append(out, fbfFrame{p, n})
+		}
+	}
+	sort.Slice(out, func(i, j int) bool { return out[i].num < out[j].num })
+	return out
+}
+
+// fbfMovieFiles names a few files in the movie folders, for an error.
+func fbfMovieFiles(csgo string) string {
+	a, _ := filepath.Glob(filepath.Join(csgo, "*", "movie", "*", "*"))
+	b, _ := filepath.Glob(filepath.Join(csgo, "movie", "*", "*"))
+	all := append(a, b...)
+	if len(all) > 5 {
+		all = all[len(all)-5:]
+	}
+	for i := range all {
+		all[i] = strings.TrimPrefix(all[i], csgo+"/")
+	}
+	if len(all) == 0 {
+		return "nothing"
+	}
+	return strings.Join(all, ", ")
+}
+
+// fbfCleanMovie deletes what is left of a movie (its frames and sound).
+func fbfCleanMovie(csgo, movie string) {
+	for _, pattern := range []string{filepath.Join(csgo, "*", "movie", "*", movie+"*"), filepath.Join(csgo, "movie", "*", movie+"*")} {
+		paths, _ := filepath.Glob(pattern)
+		for _, p := range paths {
+			os.Remove(p)
+		}
+	}
+}
+
+// tgaToBGR writes an uncompressed 24- or 32-bit TGA of w×h as top-down BGR24.
+func tgaToBGR(path string, w, h int, out io.Writer) error {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return err
+	}
+	if len(data) < 18 {
+		return fmt.Errorf("%s: not a TGA", path)
+	}
+	idLen, kind, bpp, desc := int(data[0]), data[2], int(data[16]), data[17]
+	tw, th := int(binary.LittleEndian.Uint16(data[12:])), int(binary.LittleEndian.Uint16(data[14:]))
+	if kind != 2 || (bpp != 24 && bpp != 32) || tw != w || th != h {
+		return fmt.Errorf("%s: TGA type %d, %d bits, %dx%d (want uncompressed, 24/32 bits, %dx%d)", path, kind, bpp, tw, th, w, h)
+	}
+	px := data[18+idLen:]
+	step := bpp / 8
+	if len(px) < w*h*step {
+		return fmt.Errorf("%s: short TGA", path)
+	}
+	row := make([]byte, w*3)
+	topDown := desc&0x20 != 0
+	for y := 0; y < h; y++ {
+		src := y
+		if !topDown {
+			src = h - 1 - y
+		}
+		line := px[src*w*step : (src+1)*w*step]
+		if step == 3 {
+			copy(row, line)
+		} else {
+			for x := 0; x < w; x++ {
+				copy(row[x*3:x*3+3], line[x*4:x*4+3])
+			}
+		}
+		if _, err := out.Write(row); err != nil {
+			return err
+		}
+	}
+	return nil
+}
