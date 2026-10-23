@@ -251,6 +251,7 @@
         "nameHelp": "Valgfritt. Vises på siden. Er feltet tomt, brukes brukernavnet.",
         "password": "Passord",
         "makeAdmin": "Admin",
+        "createNeedsInput": "Skriv inn brukernavn og passord først.",
         "create": "Opprett konto",
         "created": "Kontoen {{username}} er opprettet",
         "madeAdmin": "{{username}} er nå admin",

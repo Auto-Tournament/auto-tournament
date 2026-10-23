@@ -101,6 +101,7 @@
         "nameHelp": "Optional. Shown on the site; the username is used when left empty.",
         "password": "Password",
         "makeAdmin": "Admin",
+        "createNeedsInput": "Inserisci prima un nome utente e una password.",
         "create": "Create account",
         "created": "Account {{username}} created",
         "madeAdmin": "{{username}} is now an admin",
