@@ -596,6 +596,11 @@ test.describe('fleet pushes: plugin sets', () => {
     expect(bundleFor(presetSet('fun'))).toBe('skins');
   });
 
+  test("bundle: full (skins) while the platform's skins are on, whatever the set", () => {
+    expect(bundleFor(null, true)).toBe('skins');
+    expect(bundleFor(presetSet('practice'), true)).toBe('skins');
+  });
+
   test('state: differs when an enabled plugin is off or a disabled one is not; missing ones listed', () => {
     const cmd = pluginSetCommand(presetSet('practice'));
     const off = [

@@ -124,4 +124,31 @@ test.describe('Platform-driven updates', () => {
     expect(plan.plugins).toBeNull();
     expect(plan.status.readyUp).toContain('Up to date');
   });
+
+  test(
+    'an up-to-date server without the skins plugin gets the release again',
+    { tag: ['@api'] },
+    () => {
+      const plan = planHostUpdates(
+        input({
+          cs2Behind: { behind: false, detail: 'CS2 1.41.8.9 is up to date.' },
+          servers: [
+            {
+              name: 'server-1',
+              running: true,
+              matchInProgress: false,
+              readyUp: '0.1.0-beta.14',
+              missingSkins: true,
+            },
+            { name: 'server-2', running: true, matchInProgress: false, readyUp: '0.1.0-beta.14' },
+          ],
+        })
+      );
+      expect(plan.plugins).toEqual({
+        servers: ['server-1'],
+        version: '0.1.0-beta.14',
+        reason: 'Ready Up 0.1.0-beta.14',
+      });
+    }
+  );
 });

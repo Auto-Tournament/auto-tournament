@@ -160,8 +160,13 @@ export function pluginSetFromStored(stored: StoredPlugins | null | undefined): P
   return { preset, plugins };
 }
 
-/** csm's bundle for `host.update_plugins`: `skins` (full) when the set has a plugin essentials lacks. */
-export function bundleFor(set: PluginSet | null | undefined): 'default' | 'skins' {
+/**
+ * csm's bundle for `host.update_plugins`: `skins` (full) when the set has a
+ * plugin essentials lacks, or while the platform's skins are on (the skins
+ * plugin follows the platform whatever the set says).
+ */
+export function bundleFor(set: PluginSet | null | undefined, skinsOn = false): 'default' | 'skins' {
+  if (skinsOn) return 'skins';
   if (!set) return 'default';
   return set.plugins.some((p) => !ESSENTIALS_BUNDLE_PLUGINS.includes(p)) ? 'skins' : 'default';
 }

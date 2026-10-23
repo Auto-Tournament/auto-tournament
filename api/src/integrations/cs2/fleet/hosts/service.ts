@@ -311,10 +311,16 @@ export const PLATFORM_ACTOR = 'platform';
 
 /**
  * The Ready Up bundle new servers get (csm decision 12: default = install.sh
- * essentials). A create whose plugin set needs more gets `skins` (full):
- * ../push/pluginSets.ts bundleFor.
+ * essentials). A create whose plugin set needs more, or one while the
+ * platform's skins are on, gets `skins` (full): ../push/pluginSets.ts bundleFor.
  */
 export const NEW_SERVER_READYUP = { version: 'latest', bundle: 'default' } as const;
+
+/** The platform's skins are on (Skins settings). */
+export async function platformSkinsOn(): Promise<boolean> {
+  const { skinService } = await import('../../skins/skinService');
+  return (await skinService.config()).enabled === true;
+}
 
 /**
  * csm creates servers as copies of its master install, which has no Ready Up
@@ -343,7 +349,10 @@ async function followUpCreate(hostId: string, record: registry.HostCommandRecord
     'host.update_plugins',
     {
       servers,
-      readyup: { ...NEW_SERVER_READYUP, bundle: bundleFor(pluginSetOfMeta(record.meta)) },
+      readyup: {
+        ...NEW_SERVER_READYUP,
+        bundle: bundleFor(pluginSetOfMeta(record.meta), await platformSkinsOn()),
+      },
     },
     { issuedBy: PLATFORM_ACTOR, meta: { followUpOf: record.id } }
   );

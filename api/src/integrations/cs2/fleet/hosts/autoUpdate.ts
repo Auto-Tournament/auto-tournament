@@ -10,6 +10,8 @@
  *   from a server log (older csm). Behind → `host.update_game`.
  * - Ready Up: the newest release on the servers' channel against what each
  *   server last reported. Behind → `host.update_plugins` with that version.
+ *   A server without the skins plugin while the platform's skins are on is
+ *   behind too: the same version again, in the full bundle.
  *
  * Which servers a command names follows the update rules decided on
  * 2026-09-22: a server with a match in progress is never named; while a
@@ -30,10 +32,21 @@ import { cs2UpdateService } from '../../services/cs2UpdateService';
 import { getLatestReadyUpRelease } from '../../services/pluginVersionService';
 import { compareVersions, parseVersion } from '../../services/readyUpVersion';
 import { getUpdateHoldStatus } from '../../services/updateHoldService';
-import { bundleFor, pluginSetFromStored, type StoredPlugins } from '../push/pluginSets';
+import {
+  bundleFor,
+  pluginSetFromStored,
+  pluginsStateOf,
+  type StoredPlugins,
+} from '../push/pluginSets';
 import { db } from '../../../../config/database';
 import * as registry from './registry';
-import { hostServers, PLATFORM_ACTOR, sendHostCommand, type HostCommandError } from './service';
+import {
+  hostServers,
+  PLATFORM_ACTOR,
+  platformSkinsOn,
+  sendHostCommand,
+  type HostCommandError,
+} from './service';
 
 const TICK_MS = 5 * 60 * 1000;
 const FIRST_TICK_MS = 60 * 1000;
@@ -50,6 +63,8 @@ export interface PlannerServer {
   matchInProgress: boolean;
   /** Ready Up core version the server last reported, or null. */
   readyUp: string | null;
+  /** The platform's skins are on and the server's Ready Up has no skins plugin. */
+  missingSkins?: boolean;
 }
 
 export interface PlannerInput {
@@ -137,7 +152,10 @@ export function planHostUpdates(input: PlannerInput): UpdatePlan {
   const target = input.readyUpTarget;
   const behind = target
     ? input.servers.filter(
-        (s) => s.readyUp && parseVersion(s.readyUp) && (compareVersions(s.readyUp, target) ?? 0) < 0
+        (s) =>
+          s.readyUp &&
+          parseVersion(s.readyUp) &&
+          (s.missingSkins === true || (compareVersions(s.readyUp, target) ?? 0) < 0)
       )
     : [];
   if (!target) {
@@ -196,8 +214,11 @@ function recentOf(
   };
 }
 
-async function hostBundle(fleetServerIds: string[]): Promise<'default' | 'skins'> {
-  if (fleetServerIds.length === 0) return 'default';
+async function hostBundle(
+  fleetServerIds: string[],
+  skinsOn: boolean
+): Promise<'default' | 'skins'> {
+  if (skinsOn || fleetServerIds.length === 0) return bundleFor(null, skinsOn);
   const rows = await db.queryAsync<{ plugins: string | null }>(
     `SELECT plugins FROM cs2_fleet_server_prefs WHERE server_id IN (${fleetServerIds.map(() => '?').join(', ')})`,
     fleetServerIds
@@ -215,6 +236,28 @@ async function hostBundle(fleetServerIds: string[]): Promise<'default' | 'skins'
     }
   }
   return 'default';
+}
+
+/** The fleet servers on this machine whose last hello had no skins plugin installed. */
+async function serversWithoutSkins(
+  view: Array<{ fleetServer: { id: string } | null }>
+): Promise<Set<string>> {
+  const ids = view.map((s) => s.fleetServer?.id).filter((id): id is string => !!id);
+  if (ids.length === 0) return new Set();
+  const rows = await db.queryAsync<{ id: string; plugins_state: string | null }>(
+    `SELECT id, plugins_state FROM cs2_fleet_servers WHERE id IN (${ids.map(() => '?').join(', ')})`,
+    ids
+  );
+  const out = new Set<string>();
+  for (const row of rows) {
+    try {
+      const state = pluginsStateOf({ plugins_state: JSON.parse(row.plugins_state ?? 'null') });
+      if (state && !state.installed.includes('skins')) out.add(row.id);
+    } catch {
+      // An unreadable state counts as unknown.
+    }
+  }
+  return out;
 }
 
 async function cs2BehindFor(inventory: NonNullable<registry.FleetHostView['inventory']>): Promise<{
@@ -261,6 +304,8 @@ async function tickHost(
   const inventory = host.inventory;
   if (!inventory) return;
   const view = await hostServers(host.id);
+  const skinsOn = await platformSkinsOn();
+  const withoutSkins = skinsOn ? await serversWithoutSkins(view) : new Set<string>();
   const servers: PlannerServer[] = view.map((s) => {
     const installed =
       s.readyup.installed && parseVersion(s.readyup.installed) ? s.readyup.installed : null;
@@ -269,6 +314,7 @@ async function tickHost(
       running: s.process.running,
       matchInProgress: s.matchInProgress,
       readyUp: installed ?? s.fleetServer?.readyUpVersion ?? null,
+      missingSkins: !!s.fleetServer && withoutSkins.has(s.fleetServer.id),
     };
   });
   const newest = servers
@@ -325,7 +371,7 @@ async function tickHost(
   }
   if (plan.plugins) {
     const ids = view.map((s) => s.fleetServer?.id).filter((id): id is string => !!id);
-    const bundle = await hostBundle(ids);
+    const bundle = await hostBundle(ids, skinsOn);
     await send(
       'host.update_plugins',
       { servers: plan.plugins.servers, readyup: { version: plan.plugins.version, bundle } },

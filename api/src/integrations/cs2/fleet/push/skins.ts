@@ -112,19 +112,25 @@ export async function playersSeen(fleetServerId: string, steamids: string[] | nu
 
 async function hasMatch(fleetServerId: string): Promise<boolean> {
   const row = await db.queryOneAsync<{ slug: string }>(
-    "SELECT slug FROM matches WHERE server_id = ? AND status IN ('loaded', 'live') LIMIT 1",
+    `SELECT m.slug FROM matches m JOIN cs2_servers s ON s.id = m.server_id
+      WHERE s.fleet_server_id = ? AND m.status IN ('loaded', 'live') LIMIT 1`,
     [fleetServerId]
   );
   return !!row;
 }
 
-/** The matches on a fleet server right now, with their connected players. */
+/**
+ * The matches on a fleet server right now, with their connected players.
+ * Matches point at `cs2_servers`, whose row keeps its own id when a fleet
+ * server was linked onto it (../link.ts).
+ */
 async function connectedOn(
   fleetServerId: string
 ): Promise<Array<{ slug: string; steamid64: string }>> {
   const { playerConnectionService } = await import('../../../../services/playerConnectionService');
   const rows = await db.queryAsync<{ slug: string }>(
-    "SELECT slug FROM matches WHERE server_id = ? AND status IN ('loaded', 'live')",
+    `SELECT m.slug FROM matches m JOIN cs2_servers s ON s.id = m.server_id
+      WHERE s.fleet_server_id = ? AND m.status IN ('loaded', 'live')`,
     [fleetServerId]
   );
   return rows.flatMap((row) =>
@@ -255,17 +261,19 @@ export async function pushLoadoutLive(steamid64: string): Promise<void> {
   try {
     const { playerConnectionService } =
       await import('../../../../services/playerConnectionService');
-    const rows = await db.queryAsync<{ slug: string; server_id: string; status: string }>(
-      "SELECT slug, server_id, status FROM matches WHERE status IN ('loaded', 'live') AND server_id IS NOT NULL AND server_id <> ''"
+    const rows = await db.queryAsync<{ slug: string; fleet_server_id: string; status: string }>(
+      `SELECT m.slug, s.fleet_server_id, m.status
+         FROM matches m JOIN cs2_servers s ON s.id = m.server_id
+        WHERE m.status IN ('loaded', 'live') AND s.transport = 'fleet' AND s.fleet_server_id IS NOT NULL`
     );
     for (const row of rows) {
       const here = playerConnectionService
         .getStatus(row.slug)
         ?.connectedPlayers.some((p) => p.steamId === steamid64);
       if (!here) continue;
-      const pending = pendingByServer.get(row.server_id) ?? new Map<string, string>();
+      const pending = pendingByServer.get(row.fleet_server_id) ?? new Map<string, string>();
       pending.set(steamid64, row.slug);
-      pendingByServer.set(row.server_id, pending);
+      pendingByServer.set(row.fleet_server_id, pending);
       // Only a round being played waits for its end. A match is `live` from its
       // first map to its last, so warmup, knife and between maps go by the
       // map's own phase: there no round ends to carry the change.
@@ -273,12 +281,12 @@ export async function pushLoadoutLive(steamid64: string): Promise<void> {
         row.status === 'live'
           ? (await getLiveState(row.slug).catch(() => null))?.state?.phase
           : null;
-      if (!waitsForRoundEnd(row.status, phase) && !outsideLiveTimers.has(row.server_id)) {
+      if (!waitsForRoundEnd(row.status, phase) && !outsideLiveTimers.has(row.fleet_server_id)) {
         outsideLiveTimers.set(
-          row.server_id,
+          row.fleet_server_id,
           setTimeout(() => {
-            outsideLiveTimers.delete(row.server_id);
-            void flushRoundLoadouts(row.server_id);
+            outsideLiveTimers.delete(row.fleet_server_id);
+            void flushRoundLoadouts(row.fleet_server_id);
           }, OUTSIDE_LIVE_DELAY_MS)
         );
       }
