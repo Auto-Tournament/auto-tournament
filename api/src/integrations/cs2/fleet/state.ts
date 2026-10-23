@@ -195,6 +195,18 @@ export class LiveStateStore {
     });
   }
 
+  /**
+   * Put back the record an assignment replaced (a failover whose target
+   * refused): the old epoch and state count again, so the old server is not
+   * taken for a stale one.
+   */
+  restoreRecord(record: LiveMatchRecord): Promise<void> {
+    return this.locked(record.matchSlug, async () => {
+      await this.persistence.save({ ...record, updatedAt: nowS() });
+      this.emit(record, 'assign');
+    });
+  }
+
   /** The server acked a `match.update` (`cmd.result ok`, `rev` = config_rev). */
   setConfigRev(matchSlug: string, configRev: number): Promise<LiveMatchRecord | null> {
     return this.locked(matchSlug, async () => {

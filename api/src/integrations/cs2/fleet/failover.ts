@@ -57,7 +57,7 @@ import type { DbMatchRow } from '../../../types/database.types';
 import { ulid } from './credentials';
 import { roundBackupStore, type RoundBackupMeta } from './backups';
 import { inlineBackupFor } from './restore';
-import { assignMatch, fenceEpoch, getAssignment } from './driver';
+import { assignMatch, fenceEpoch, getAssignment, restoreAssignment } from './driver';
 import { fleetBus, onFleetServerReady } from './service';
 import { liveStateStore } from './state';
 import { cs2ServerIdOf } from './link';
@@ -916,21 +916,8 @@ export async function acceptFailover(id: string, req: AcceptRequest): Promise<Ac
       `${target.fleetServerId}, map ${proposal.mapNumber} ${how}${req.auto ? ' (auto)' : ''}`,
   });
 
-  // Fence the old epoch (§11.4) before the new one exists. In place, the
-  // server holds nothing: the new assignment replaces the old one.
-  if (!inPlace && assignment && assignment.endedAt === null && assignment.serverId) {
-    const alive = fleetBus().isConnected(assignment.serverId);
-    await fenceEpoch(
-      assignment.serverId,
-      slug,
-      assignment.epoch,
-      proposal.reason === 'manual' && alive ? 'moved' : 'superseded'
-    ).catch((error) =>
-      log.warn(
-        `[FAILOVER] ${slug}: fencing epoch ${assignment.epoch} failed: ${(error as Error).message}`
-      )
-    );
-  }
+  // What the move replaces, put back if the target refuses (the old server keeps the match).
+  const previousRecord = inPlace ? null : await liveStateStore.getLiveState(slug);
 
   const { serverAllocationTracker } = await import('../services/serverAllocationTracker');
   const previousServer = match.server_id ?? proposal.fromCs2ServerId;
@@ -948,11 +935,34 @@ export async function acceptFailover(id: string, req: AcceptRequest): Promise<Ac
       `UPDATE cs2_fleet_failovers SET status = 'open', last_error = ?, decided_by = NULL, decided_at = NULL, updated_at = ? WHERE id = ?`,
       [error.slice(0, 500), nowS(), id]
     );
+    if (!inPlace && assignment && assignment.endedAt === null) {
+      await restoreAssignment(assignment).catch((e) =>
+        log.warn(`[FAILOVER] ${slug}: restoring the assignment failed: ${(e as Error).message}`)
+      );
+      if (previousRecord) await liveStateStore.restoreRecord(previousRecord).catch(() => undefined);
+    }
     await settleAudit(auditId, 'failed', load.commandId ?? null, error.slice(0, 500));
     log.warn(`[FAILOVER] ${slug}: moving to ${target.cs2ServerId} failed: ${error}`);
     const back = await getProposal(id);
     announce(slug, back);
     return refuse(502, 'assign_failed', error, back, target.cs2ServerId);
+  }
+
+  // The target took it: now fence the old epoch (§11.4). Fencing only after
+  // the accept means a refused move leaves the old server its match. In place,
+  // the server holds nothing: the new assignment replaces the old one.
+  if (!inPlace && assignment && assignment.endedAt === null && assignment.serverId) {
+    const alive = fleetBus().isConnected(assignment.serverId);
+    await fenceEpoch(
+      assignment.serverId,
+      slug,
+      assignment.epoch,
+      proposal.reason === 'manual' && alive ? 'moved' : 'superseded'
+    ).catch((error) =>
+      log.warn(
+        `[FAILOVER] ${slug}: fencing epoch ${assignment.epoch} failed: ${(error as Error).message}`
+      )
+    );
   }
 
   await db.runAsync(

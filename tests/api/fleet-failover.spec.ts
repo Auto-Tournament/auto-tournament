@@ -494,6 +494,24 @@ test.describe.serial('Fleet failover (FLEET.md §11)', () => {
     });
     expect(zombie.epoch).toBe(epoch);
     a.answer(zombie);
+
+    // A, now available, is back in the pool: free or held as the spare, never busy.
+    a.availability('available', 'idle');
+    await expect
+      .poll(async () => {
+        const pool = await (
+          await request.get('/api/tournament/server-availability', { headers: getAuthHeader() })
+        ).json();
+        const entry = (
+          pool.servers as Array<{
+            id: string;
+            allocatable: boolean;
+            notAllocatableReason: string | null;
+          }>
+        ).find((s) => s.id === cs2A);
+        return entry ? entry.allocatable || entry.notAllocatableReason === 'reserved' : false;
+      })
+      .toBe(true);
   });
 
   test('the same server comes back without the match: it resumes there', async ({ request }) => {
@@ -889,6 +907,103 @@ test.describe.serial('Fleet failover (FLEET.md §11)', () => {
       }
     );
     expect(again.status()).toBe(409);
+  });
+
+  test('a refused move leaves the old server assigned and nothing fenced', async ({ request }) => {
+    test.setTimeout(180_000);
+    await setFailover(request, { auto: false });
+    const a = await FakeReadyUp.enroll(request);
+    cleanup.push(() => a.close());
+    await a.hello();
+    const cs2A = await link(request, a.serverId);
+    cleanup.push(() => unlink(request, a.serverId));
+
+    const slug = `fleet-fo-refused-${Date.now()}`;
+    cleanup.push(async () => {
+      await request.post(`/api/matches/${slug}/force-cancel`, { headers: getAuthHeader() });
+    });
+    const { epoch, backup } = await liveWithBackup(request, a, slug);
+    const b = await FakeReadyUp.enroll(request);
+    cleanup.push(() => b.close());
+    await b.hello();
+    const cs2B = await link(request, b.serverId);
+    cleanup.push(() => unlink(request, b.serverId));
+
+    a.kill();
+    const proposal = await scanUntilProposed(request, slug);
+    const accepting = request.post(`/api/game/cs2/matches/${slug}/failover/${proposal.id}/accept`, {
+      headers: getAuthHeader(),
+      data: { targetServerId: cs2B, round: backup.round },
+    });
+    const assign = await b.next('match.assign', 30_000);
+    b.answer(assign, 'rejected', { error: { code: 'busy', message: 'busy' } });
+    const res = await accepting;
+    expect(res.status()).toBe(502);
+
+    // Nothing moved: the match is still A's, the failover open with the error.
+    expect((await matchRow(request, slug))?.serverId).toBe(cs2A);
+    const view = await failoverView(request, slug);
+    expect(view.proposal).toMatchObject({ id: proposal.id, status: 'open' });
+    expect(view.proposal.lastError).toBeTruthy();
+
+    // A comes back holding its epoch: not superseded, its events still count.
+    const state = JSON.parse(JSON.stringify(example('live.state.snapshot.json').payload))
+      .state as Record<string, unknown>;
+    state.match_id = slug;
+    state.epoch = epoch;
+    await a.reconnect({ state, availability: 'busy' });
+    expect(await a.next('match.unassign', 3_000).catch(() => null)).toBeNull();
+    a.event('live.event.phase.json', {
+      slug,
+      epoch,
+      rev: 3,
+      patch: { phase: 'paused' },
+      data: { from: 'live', to: 'paused', reason: 'flow' },
+    });
+    expect(await a.next('match.unassign', 3_000).catch(() => null)).toBeNull();
+    expect((await matchRow(request, slug))?.serverId).toBe(cs2A);
+  });
+
+  test('a live old server is not superseded while its match is being moved', async ({
+    request,
+  }) => {
+    test.setTimeout(180_000);
+    await setFailover(request, { auto: false });
+    const a = await FakeReadyUp.enroll(request);
+    cleanup.push(() => a.close());
+    await a.hello();
+    const cs2A = await link(request, a.serverId);
+    cleanup.push(() => unlink(request, a.serverId));
+    const slug = `fleet-fo-alive-${Date.now()}`;
+    cleanup.push(async () => {
+      await request.post(`/api/matches/${slug}/force-cancel`, { headers: getAuthHeader() });
+    });
+    const { epoch, backup } = await liveWithBackup(request, a, slug);
+    const b = await FakeReadyUp.enroll(request);
+    cleanup.push(() => b.close());
+    await b.hello();
+    const cs2B = await link(request, b.serverId);
+    cleanup.push(() => unlink(request, b.serverId));
+
+    // An admin moves the match off A, which is still alive and playing.
+    const accepting = request.post(`/api/game/cs2/matches/${slug}/failover/move`, {
+      headers: getAuthHeader(),
+      data: { targetServerId: cs2B, round: backup.round },
+    });
+    const assign = await b.next('match.assign', 30_000);
+    // While B thinks it over, A plays on and reports at its epoch.
+    a.event('live.event.phase.json', {
+      slug,
+      epoch,
+      rev: 3,
+      patch: { phase: 'paused' },
+      data: { from: 'live', to: 'paused', reason: 'flow' },
+    });
+    await new Promise((r) => setTimeout(r, 1500));
+    b.answer(assign, 'rejected', { error: { code: 'busy', message: 'busy' } });
+    expect((await accepting).status()).toBe(502);
+    expect(await a.next('match.unassign', 3_000).catch(() => null)).toBeNull();
+    expect((await matchRow(request, slug))?.serverId).toBe(cs2A);
   });
 
   test('settings: validated, admin only', async ({ request, playwright, baseURL }) => {

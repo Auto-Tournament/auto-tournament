@@ -160,6 +160,29 @@ export async function getAssignment(matchSlug: string): Promise<FleetAssignment 
   return row ? fromRow(row) : null;
 }
 
+/** Put back an assignment a failed move replaced (one row per match: the move overwrote it). */
+export async function restoreAssignment(prev: FleetAssignment): Promise<void> {
+  if (!prev.serverId || !prev.cs2ServerId) return;
+  const now = nowS();
+  await db.runAsync(
+    `INSERT INTO cs2_fleet_assignments (match_slug, epoch, server_id, cs2_server_id, password, config, created_at, updated_at, ended_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, NULL)
+     ON CONFLICT (match_slug) DO UPDATE SET epoch = EXCLUDED.epoch, server_id = EXCLUDED.server_id,
+       cs2_server_id = EXCLUDED.cs2_server_id, password = EXCLUDED.password, config = EXCLUDED.config,
+       updated_at = EXCLUDED.updated_at, ended_at = NULL`,
+    [
+      prev.matchSlug,
+      prev.epoch,
+      prev.serverId,
+      prev.cs2ServerId,
+      prev.password,
+      prev.config ? JSON.stringify(prev.config) : null,
+      now,
+      now,
+    ]
+  );
+}
+
 /** The assignment a fleet server holds now (not unassigned), newest first. */
 async function openAssignmentsOf(fleetServerId: string): Promise<FleetAssignment[]> {
   const rows = await db.queryAsync<AssignmentRow>(
@@ -1005,6 +1028,19 @@ async function supersede(
 ): Promise<void> {
   const key = `${fleetServerId}:${matchSlug}:${epoch}`;
   if (supersededSent.has(key)) return;
+  // A failover is moving the match off this server right now: its epoch is
+  // not dead until the target accepts (the move fences it then, failover.ts);
+  // if the target refuses, this server keeps the match.
+  const moving = await db.queryOneAsync<{ id: string }>(
+    `SELECT id FROM cs2_fleet_failovers WHERE match_slug = ? AND from_server_id = ? AND status = 'moving' LIMIT 1`,
+    [matchSlug, fleetServerId]
+  );
+  if (moving) {
+    log.info(
+      `[FLEET] ${fleetServerId}: ${matchSlug} epoch ${epoch} is being moved; not superseding it yet (${why})`
+    );
+    return;
+  }
   supersededSent.add(key);
   if (supersededSent.size > 10_000) supersededSent.clear();
   log.warn(
