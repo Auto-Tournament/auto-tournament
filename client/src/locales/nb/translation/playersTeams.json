@@ -657,6 +657,7 @@
     "readyIn": "klar om omtrent {{minutes}} min",
     "reelBadge": "SAMMENDRAG",
     "player": {
+      "death": "Døde",
       "buffering": "Laster inn videoen",
       "play": "Spill av",
       "pause": "Pause",

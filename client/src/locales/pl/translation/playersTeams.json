@@ -724,7 +724,8 @@
         "rock": "Rock",
         "metal": "Metal"
       },
-      "buffering": "Loading the video"
+      "buffering": "Loading the video",
+      "death": "Died"
     }
   },
   "leaderboard": {

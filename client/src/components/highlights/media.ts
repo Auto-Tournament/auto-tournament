@@ -3,6 +3,10 @@ export interface ClipMarkers {
   duration: number;
   kills: number[];
   slowmo: [number, number] | null;
+  /** For each of `kills`, whether it was a headshot (absent: not known). */
+  headshots?: boolean[];
+  /** The crowd's reactions; `aww` is the player dying. */
+  reactions?: { t: number; score: number; aww?: boolean }[];
 }
 
 /** m:ss */
