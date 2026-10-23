@@ -286,6 +286,7 @@ func fbfConvert(csgo, movie string, use []int, w, h int, raw string, paused func
 	}
 	next := 0 // the next frame number wanted in order
 	base := -1
+	started := time.Now()
 	for next <= last && werr == nil {
 		files := fbfFrames(csgo, movie)
 		// CS2 numbers from 0 or 1: count from the first it wrote.
@@ -321,8 +322,8 @@ func fbfConvert(csgo, movie string, use []int, w, h int, raw string, paused func
 			}
 			continue
 		}
-		if time.Now().After(deadline) {
-			werr = fmt.Errorf("CS2 did not get past frame %d of %d in time", next, last)
+		if time.Now().After(deadline) || (base < 0 && time.Since(started) > 30*time.Second) {
+			werr = fmt.Errorf("CS2 did not get past frame %d of %d in time (movie folders hold: %s)", next, last, fbfMovieFiles(csgo))
 			break
 		}
 		ended = paused()
@@ -354,6 +355,23 @@ func fbfFrames(csgo, movie string) []fbfFrame {
 	}
 	sort.Slice(out, func(i, j int) bool { return out[i].num < out[j].num })
 	return out
+}
+
+// fbfMovieFiles names a few files in the movie folders, for an error.
+func fbfMovieFiles(csgo string) string {
+	a, _ := filepath.Glob(filepath.Join(csgo, "*", "movie", "*", "*"))
+	b, _ := filepath.Glob(filepath.Join(csgo, "movie", "*", "*"))
+	all := append(a, b...)
+	if len(all) > 5 {
+		all = all[len(all)-5:]
+	}
+	for i := range all {
+		all[i] = strings.TrimPrefix(all[i], csgo+"/")
+	}
+	if len(all) == 0 {
+		return "nothing"
+	}
+	return strings.Join(all, ", ")
 }
 
 // fbfCleanMovie deletes what is left of a movie (its frames and sound).
