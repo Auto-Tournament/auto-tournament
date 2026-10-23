@@ -179,13 +179,14 @@ func (r *recorder) fbfCapture(g *game, name string, from, to, wantFrom int, segs
 		fmt.Sprintf("startmovie %s tga wav; demo_resume", movie)); err != nil {
 		return nil, 0, err
 	}
-	v, _, err := g.con.expect(reUnpaused, 10*time.Second)
-	if err != nil {
-		_ = g.con.send("endmovie", "host_framerate 0")
-		return nil, 0, fmt.Errorf("frame by frame: %w", err)
+	// It plays on from where the seek paused it; CS2 does not always say so.
+	t0 := g.pausedAt
+	if v, _, err := g.con.expect(reUnpaused, 5*time.Second); err == nil {
+		t, _ := strconv.Atoi(v)
+		t0 = t - g.startTick
+	} else {
+		log.Printf("frame by frame: no word of the resume; going from the seek's tick %d", t0)
 	}
-	t0, _ := strconv.Atoi(v)
-	t0 -= g.startTick
 	_ = g.spectate(name)
 
 	// Which frames the clip uses, from where each one is in the game.

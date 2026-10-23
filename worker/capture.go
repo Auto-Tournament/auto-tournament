@@ -202,6 +202,8 @@ type game struct {
 	// CS2 stops.
 	fbf, fbfChecked bool
 	gameinfo        string
+	// pausedAt is the analyzer tick the last seek landed and paused on.
+	pausedAt int
 	// follow, when set, is where the followed player stands at a tick (the
 	// demo's replay frames): the capture checks the camera is with them.
 	follow func(tick int) ([3]float64, bool)
@@ -470,7 +472,8 @@ func (g *game) awaitSeek(target int) (int, error) {
 		}
 		if v, _, err := g.con.expect(rePaused, 2*time.Second); err == nil {
 			if tick, err := strconv.Atoi(v); err == nil && seekLanded(tick-g.startTick, target) {
-				return tick - g.startTick, nil
+				g.pausedAt = tick - g.startTick
+				return g.pausedAt, nil
 			}
 		}
 		if time.Now().After(deadline) {
