@@ -259,6 +259,23 @@ yarn test:veto
 yarn test:cs-major
 ```
 
+### Parallel local stacks
+
+`scripts/test-local-shards.sh` runs the suite on N local stacks (own database, API from source, vite dev), no Docker. It needs Postgres on `DB_HOST:DB_PORT` (default `127.0.0.1:5432`, postgres/postgres).
+
+```bash
+# 4 stacks, whole suite
+scripts/test-local-shards.sh
+
+# 1 stack on ports 4200-4201, given specs
+scripts/test-local-shards.sh -n 1 -p 4200 tests/auth.spec.ts
+
+# only the specs the changes since main reach
+scripts/test-local-shards.sh --since origin/main
+```
+
+Logs and results go to `logs/local-shards-<base-port>/`.
+
 ### Advanced Usage
 
 ```bash
