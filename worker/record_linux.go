@@ -812,39 +812,47 @@ func (r *recorder) recordWindow(g *game, look clipLook, card *cardRender, name s
 		g.follow = func(tick int) ([3]float64, bool) { return rp.PositionAt(id, tick) }
 		defer func() { g.follow = nil }()
 	}
-	mainTicks, err := r.capturePicture(g, name, w.from-lead, picturePhases(w, introEnd, slowFrom, speedsFor(r.rate.fps)), main)
-	if err != nil {
-		return nil, nil, fmt.Errorf("picture: %w", err)
-	}
-	sources := [][]float64{mainTicks}
-	raws := []string{main}
-
-	// The sound, at real speed.
-	wav := prefix + "-audio.wav"
-	var ac *audioCapture
-	as, err := g.play(w.from-lead, w.to, 1, name, func() (err error) {
-		ac, err = startAudioCapture(r.sink, wav)
-		return err
-	})
-	if ac != nil {
-		ac.stop()
-	}
-	if err != nil {
-		return nil, nil, fmt.Errorf("sound: %w", err)
-	}
-	// What CS2 plays reaches the recording audioLatency later: start that much
-	// further in, or every shot is heard after the kill it made.
-	audioAt := as.resumed.Sub(ac.fileStart()).Seconds() + float64(w.from-as.fromTick)/tickrate + audioLatency()
-
 	length := float64(w.to-w.from) / tickrate
 	kill := -1.0
 	if w.slowmo >= 0 {
 		kill = float64(w.slowmo-w.from) / tickrate
 	}
 	segs := editPlan(length, card != nil && !card.settled, kill)
-	frames, err := timeline(sources, segs, w.from)
-	if err != nil {
-		return nil, nil, err
+	raws := []string{main}
+	wav := prefix + "-audio.wav"
+	var frames []frameRef
+	var audioAt float64
+	var err error
+	if g.fbf {
+		// CS2 writes every frame and the sound itself: one pass, nothing slowed.
+		if frames, audioAt, err = r.fbfCapture(g, name, w.from-lead, w.to, w.from, segs, main, wav); err != nil {
+			return nil, nil, err
+		}
+	} else {
+		mainTicks, err := r.capturePicture(g, name, w.from-lead, picturePhases(w, introEnd, slowFrom, speedsFor(r.rate.fps)), main)
+		if err != nil {
+			return nil, nil, fmt.Errorf("picture: %w", err)
+		}
+		sources := [][]float64{mainTicks}
+
+		// The sound, at real speed.
+		var ac *audioCapture
+		as, err := g.play(w.from-lead, w.to, 1, name, func() (err error) {
+			ac, err = startAudioCapture(r.sink, wav)
+			return err
+		})
+		if ac != nil {
+			ac.stop()
+		}
+		if err != nil {
+			return nil, nil, fmt.Errorf("sound: %w", err)
+		}
+		// What CS2 plays reaches the recording audioLatency later: start that much
+		// further in, or every shot is heard after the kill it made.
+		audioAt = as.resumed.Sub(ac.fileStart()).Seconds() + float64(w.from-as.fromTick)/tickrate + audioLatency()
+		if frames, err = timeline(sources, segs, w.from); err != nil {
+			return nil, nil, err
+		}
 	}
 	// The kill feed: what carried over, then this piece's kills where the edit puts them.
 	var feed *feedRender
@@ -1485,6 +1493,8 @@ func newRecorder(c *client) (*recorder, error) {
 		return nil, fmt.Errorf("AT_RECORD_DIR: %w", err)
 	}
 	cleanScratch(r.scratch, 6*time.Hour)
+	// A recorder stopped while its CS2 ran left Frame by Frame in gameinfo.gi.
+	fbfRestore(filepath.Join(gameDir, "csgo", "gameinfo.gi"))
 	r.logo = filepath.Join(r.scratch, "at-watermark.png")
 	if err := os.WriteFile(r.logo, watermarkPNG, 0o644); err != nil {
 		return nil, err

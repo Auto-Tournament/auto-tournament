@@ -197,6 +197,10 @@ type game struct {
 	startTick int // the demo's first tick: the console's ticks count from it
 	lastTick  int // the demo's length in ticks (the analyzer's last tick)
 	logPath   string
+	// fbf: Frame by Frame unhid startmovie (framebyframe_linux.go); gameinfo
+	// is the gameinfo.gi it patched, restored when CS2 stops.
+	fbf      bool
+	gameinfo string
 	// follow, when set, is where the followed player stands at a tick (the
 	// demo's replay frames): the capture checks the camera is with them.
 	follow func(tick int) ([3]float64, bool)
@@ -226,6 +230,13 @@ func (r *recorder) launchGameOnce(ctx context.Context, logPath string) (*game, e
 		return nil, err
 	}
 	setRecordingVideo(r.width, r.height)
+	gameinfo := ""
+	if fbfWanted() {
+		var err error
+		if gameinfo, err = fbfInstall(r.gameDir); err != nil {
+			log.Printf("frame by frame: not installed (%v); capturing the stream", err)
+		}
+	}
 	w, h := strconv.Itoa(r.width), strconv.Itoa(r.height)
 	args := []string{"--backend", "headless", "-W", w, "-H", h, "-w", w, "-h", h, "-r", strconv.Itoa(envPositive("AT_GAMESCOPE_HZ", 120)), "--"}
 	if r.sniper != "" {
@@ -242,6 +253,7 @@ func (r *recorder) launchGameOnce(ctx context.Context, logPath string) (*game, e
 	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 	logFile, err := os.Create(logPath)
 	if err != nil {
+		fbfRestore(gameinfo)
 		return nil, err
 	}
 	pr, pw := io.Pipe()
@@ -249,9 +261,10 @@ func (r *recorder) launchGameOnce(ctx context.Context, logPath string) (*game, e
 	cmd.Stderr = cmd.Stdout
 	if err := cmd.Start(); err != nil {
 		logFile.Close()
+		fbfRestore(gameinfo)
 		return nil, fmt.Errorf("start gamescope: %w", err)
 	}
-	g := &game{cmd: cmd, width: r.width, height: r.height, logPath: logPath}
+	g := &game{cmd: cmd, width: r.width, height: r.height, logPath: logPath, gameinfo: gameinfo}
 	nodeCh := make(chan string, 1)
 	go func() {
 		sc := bufio.NewScanner(pr)
@@ -285,6 +298,13 @@ func (r *recorder) launchGameOnce(ctx context.Context, logPath string) (*game, e
 	}
 	// The main menu loads after the console opens.
 	time.Sleep(10 * time.Second)
+	if gameinfo != "" {
+		if g.fbf = fbfUnhidden(logPath); g.fbf {
+			log.Printf("frame by frame: on")
+		} else {
+			log.Printf("frame by frame: the plugin did not unhide startmovie; capturing the stream")
+		}
+	}
 	return g, nil
 }
 
@@ -309,6 +329,7 @@ func (g *game) stop() {
 			_ = syscall.Kill(-g.cmd.Process.Pid, syscall.SIGKILL)
 		}
 	}
+	fbfRestore(g.gameinfo)
 }
 
 // loadDemo applies the recorder's look, plays the demo (a path under
