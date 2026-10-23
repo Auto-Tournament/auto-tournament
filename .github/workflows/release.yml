@@ -336,7 +336,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # The base images (node:20-alpine) come from Docker Hub, whose anonymous
+      # The base images (node:24-alpine) come from Docker Hub, whose anonymous
       # pull limit the shared runners hit (429 on 2026-10-09, twice in a row).
       - name: Login to Docker Hub (for the base images)
         uses: docker/login-action@v3
@@ -353,7 +353,7 @@ jobs:
         run: |
           set -uo pipefail
           for i in 1 2 3; do
-            if docker buildx imagetools inspect public.ecr.aws/docker/library/node:20-alpine >/dev/null 2>&1; then
+            if docker buildx imagetools inspect public.ecr.aws/docker/library/node:24-alpine >/dev/null 2>&1; then
               echo "node_registry=public.ecr.aws/docker/library" >> "$GITHUB_OUTPUT"; exit 0
             fi
             sleep $((i * 10))
