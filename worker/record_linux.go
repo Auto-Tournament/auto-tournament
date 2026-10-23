@@ -50,6 +50,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"syscall"
 	"time"
 
@@ -99,6 +100,8 @@ type recorder struct {
 	link *recorderLink
 	// job: what the current platform job is, for its progress reports.
 	job jobProgress
+	// moved: when the job last reported progress (unix ms), for stallWatch.
+	moved atomic.Int64
 	*client
 	gameDir string
 	sniper  string
@@ -1660,7 +1663,9 @@ func runRecorder(ctx context.Context, clients []*client, poll time.Duration) err
 			r.endLive()
 		}
 		started := time.Now()
-		jobCtx, cancelJob := context.WithTimeout(ctx, 45*time.Minute)
+		jobCtx, cancelJob := context.WithCancel(ctx)
+		r.moved.Store(time.Now().UnixMilli())
+		go r.stallWatch(jobCtx, cancelJob)
 		r.jobContext = jobCtx
 		r.link.Job(cancelJob)
 		r.job = jobProgress{started: started}
@@ -1754,6 +1759,29 @@ type jobProgress struct {
 	recording time.Time
 }
 
+// A job may run as long as it keeps moving: one map job is every player's
+// moments in one CS2 session, which can take hours on one recorder. One that
+// reports no progress for jobStall is stuck. shortcut: a single ffmpeg step
+// reports nothing while it runs; if one ever takes longer, report its progress.
+var jobStall, stallTick = 30 * time.Minute, time.Minute
+
+func (r *recorder) stallWatch(ctx context.Context, cancel context.CancelFunc) {
+	t := time.NewTicker(stallTick)
+	defer t.Stop()
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-t.C:
+			if idle := time.Since(time.UnixMilli(r.moved.Load())); idle > jobStall {
+				log.Printf("job: no progress for %s; stopping it", idle.Round(time.Second))
+				cancel()
+				return
+			}
+		}
+	}
+}
+
 // report tells the platform what this recorder is doing (link.go), with the
 // job's time so far and, from the clips done, an estimate of the rest.
 func (r *recorder) report(step, detail string, done, total int) {
@@ -1772,6 +1800,7 @@ func (r *recorder) reportPart(frac float64) {
 }
 
 func (r *recorder) reportAt(done float64) {
+	r.moved.Store(time.Now().UnixMilli())
 	if r.link == nil {
 		return
 	}
