@@ -23,6 +23,7 @@ import type { ComponentType, ReactElement, ReactNode } from 'react';
 import type { TFunction } from 'i18next';
 import type { NoticeFilter } from '../components/social/noticeFilters';
 import type { Untrusted } from '../utils/untrusted';
+import type { ModuleLocales } from '../module-loader/moduleLocales';
 
 export type { Untrusted };
 
@@ -985,21 +986,7 @@ export interface PlayerProfileTabProps extends PlayerProfileSectionProps {
 // The integration
 // ---------------------------------------------------------------------------
 
-/**
- * A module's own strings: one i18next resource bundle per language code
- * (`en`, `de`, `pt-PT`, …), each the same nested JSON core's locale files use.
- */
-/**
- * A module's strings by language: the bundle itself, or a function that loads it (a dynamic
- * import), so only the viewer's language is downloaded. `en` should be a bundle: it is the
- * fallback.
- */
-export type ModuleLocales = Readonly<
-  Record<
-    string,
-    Record<string, Untrusted> | (() => Promise<{ default: Record<string, Untrusted> }>)
-  >
->;
+export type { ModuleLocales };
 
 export interface PinnedNoticesProps {
   onNavigate: () => void;

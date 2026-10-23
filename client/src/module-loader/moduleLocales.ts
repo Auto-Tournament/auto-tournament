@@ -24,8 +24,19 @@
  * run both in Node.
  */
 
-import type { ModuleLocales } from '../integrations/types';
 import type { Untrusted } from '../utils/untrusted';
+
+/**
+ * A module's strings by language: one i18next resource bundle per language code
+ * (`en`, `de`, `pt-PT`, …), or a function that loads it (a dynamic import), so only
+ * the viewer's language is downloaded. `en` should be a bundle: it is the fallback.
+ */
+export type ModuleLocales = Readonly<
+  Record<
+    string,
+    Record<string, Untrusted> | (() => Promise<{ default: Record<string, Untrusted> }>)
+  >
+>;
 
 /** Language codes as i18next spells them: `en`, `nb`, `pt-PT`, `zh-CN`. */
 const LANGUAGE_CODE = /^[a-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$/;
