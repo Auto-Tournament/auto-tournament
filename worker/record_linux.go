@@ -1742,6 +1742,9 @@ type jobProgress struct {
 	done, total     int
 	window, windows int
 	lastPart        time.Time
+	// recording: when the first clip started recording; the ETA counts from
+	// there, not from the job's start (the download and CS2's start-up).
+	recording time.Time
 }
 
 // report tells the platform what this recorder is doing (link.go), with the
@@ -1771,11 +1774,17 @@ func (r *recorder) reportAt(done float64) {
 		p.Done, p.Total = ptrInt(int(done)), ptrInt(total)
 		p.Percent = ptrFloat(done * 100 / float64(total))
 	}
+	if r.job.step == "recording" && r.job.recording.IsZero() {
+		r.job.recording = time.Now()
+	}
 	if !r.job.started.IsZero() {
-		el := time.Since(r.job.started).Seconds()
-		p.Elapsed = ptrFloat(el)
+		p.Elapsed = ptrFloat(time.Since(r.job.started).Seconds())
+		from := r.job.started
+		if !r.job.recording.IsZero() {
+			from = r.job.recording
+		}
 		if done > 0 && float64(total) > done {
-			p.ETA = ptrFloat(el / done * (float64(total) - done))
+			p.ETA = ptrFloat(time.Since(from).Seconds() / done * (float64(total) - done))
 		}
 	}
 	r.link.Report(p)
