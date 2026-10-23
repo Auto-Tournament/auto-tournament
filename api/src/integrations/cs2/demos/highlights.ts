@@ -1,3 +1,4 @@
+import { isShown } from './shown';
 import { recordingWaiting, recordingFailureSql, renewRecordingLeases } from './recorderLeases';
 import { recordingTargetFilter } from './recorderFleet';
 import { standInsFor } from './standIns';
@@ -1633,7 +1634,7 @@ export async function matchReels(matchSlug: string) {
     status: r.status,
     clips: r.clips === null ? null : Number(r.clips),
     video:
-      r.status === 'done' && r.clip_path
+      isShown(r.status, r.clip_path) && r.clip_path
         ? `/api/game/cs2/highlights/${encodeURIComponent(r.clip_path)}`
         : null,
   }));
