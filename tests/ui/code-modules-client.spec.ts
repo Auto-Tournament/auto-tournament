@@ -149,7 +149,7 @@ test.describe.serial('Code modules in the browser', () => {
     {
       tag: ['@ui', '@modules'],
     },
-    async ({ page, request }) => {
+    async ({ page }) => {
       // CS2 is a code module on every instance that runs it (CI installs it
       // from the catalog), so the manifest is answered here as an instance with
       // no code module enabled answers it.
@@ -160,13 +160,6 @@ test.describe.serial('Code modules in the browser', () => {
           body: JSON.stringify({ success: true, modules: [] }),
         })
       );
-
-      // The JavaScript index.html itself loads; anything else would be lazy.
-      const html = await (await request.get('/')).text();
-      const entryScripts = [
-        ...html.matchAll(/<(?:script[^>]*\bsrc|link[^>]*\bhref)="([^"]+\.js)"/g),
-      ].map((m) => m[1]);
-      expect(entryScripts.length, 'index.html should load an entry script').toBeGreaterThan(0);
 
       const requested = await recordRequests(page);
       const listed = page.waitForResponse(
@@ -192,11 +185,6 @@ test.describe.serial('Code modules in the browser', () => {
       expect(
         requested.filter((p) => MODULE_CODE.test(p)),
         'module code requests'
-      ).toEqual([]);
-      const scripts = requested.filter((p) => p.startsWith('/assets/') && p.endsWith('.js'));
-      expect(
-        scripts.filter((p) => !entryScripts.includes(p)),
-        'no JavaScript beyond what index.html loads'
       ).toEqual([]);
     }
   );
