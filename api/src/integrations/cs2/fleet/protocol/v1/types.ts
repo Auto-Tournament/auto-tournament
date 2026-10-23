@@ -252,6 +252,8 @@ export interface AssignMap {
 }
 
 export interface AssignConfig {
+  /** The match's DB id: unique where slugs (`r1m1`) repeat across tournaments. */
+  id?: number;
   num_maps: number;
   maps: AssignMap[];
   team1: AssignTeam;

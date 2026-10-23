@@ -7,6 +7,7 @@
     "tv_maxclients": 8,
     "tv_password": "<tv_password>"
   },
+  "id": "<match-db-id>",
   "maps": [
     {
       "name": "de_ancient",
@@ -63,6 +64,10 @@
     },
     "tiebreak": {
       "damage": true
+    },
+    "stop": {
+      "enabled": false,
+      "no_damage": false
     },
     "whitelist": true
   },

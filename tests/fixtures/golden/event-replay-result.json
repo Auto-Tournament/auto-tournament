@@ -101,6 +101,7 @@
     "demoFilePath": null,
     "game": "cs2",
     "id": "<matchid>",
+    "liveStatus": null,
     "loadedAt": null,
     "mapNumber": 2,
     "mapResults": [

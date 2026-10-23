@@ -436,6 +436,12 @@
       "type": "object",
       "required": ["num_maps", "maps", "team1", "team2", "password"],
       "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 4503599627370495,
+          "description": "the platform's numeric match id, unique where match_id slugs repeat; Ready Up names its round backups and demos with it. Absent = a hash of match_id."
+        },
         "num_maps": {
           "type": "integer",
           "minimum": 1,

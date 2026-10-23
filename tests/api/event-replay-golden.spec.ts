@@ -91,7 +91,9 @@ async function fetchAssignConfig(request: APIRequestContext, match: MatchListRow
     headers: getAuthHeader(),
   });
   expect(res.ok(), `config for ${match.slug}: ${res.status()} ${await res.text()}`).toBe(true);
-  return ((await res.json()) as { config: Record<string, unknown> }).config;
+  const { config } = (await res.json()) as { config: Record<string, unknown> };
+  // The match's database id (fork feat/fleet-assign-match-id) changes with every run.
+  return typeof config.id === 'number' ? { ...config, id: '<match-db-id>' } : config;
 }
 
 test.describe.serial('Golden Ready Up BO3 event replay', () => {

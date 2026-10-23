@@ -12,6 +12,7 @@
         "tv_maxclients": 8,
         "tv_password": "<tv_password>"
       },
+      "id": "<match-db-id>",
       "maps": [
         {
           "name": "de_mirage",
@@ -53,6 +54,10 @@
           "allow_force_ready": true,
           "autoready": false,
           "min_per_team": 5
+        },
+        "stop": {
+          "enabled": false,
+          "no_damage": false
         },
         "whitelist": true
       },

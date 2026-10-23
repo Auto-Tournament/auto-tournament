@@ -9,6 +9,8 @@
  * serves it and passes the admin's server defaults in.
  *
  * What goes where:
+ * - `id`: the match's DB id (`matchid`), so Ready Up's round backups of one
+ *   tournament's `r1m1` never pass for another's.
  * - teams: players (steamId -> name) become `{steamid64, name, role:
  *   'player'}`, coaches `role: 'coach'`; spectators and admins are lists of
  *   SteamID64 strings. Ids that are not SteamID64 strings are dropped.
@@ -323,6 +325,7 @@ export function buildAssignConfig(
   }));
 
   const out: AssignConfig = {
+    ...(Number.isSafeInteger(config.matchid) && config.matchid > 0 ? { id: config.matchid } : {}),
     num_maps: numMaps,
     maps,
     team1: team(config.team1, 'Team 1'),
