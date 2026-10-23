@@ -14,7 +14,7 @@ Open the imported match in the Highlights clips list, select its recording group
 
 A failed attempt gives the original recorder one retry, reserved for 90 seconds. After its second failure, another eligible recorder in the selected group is preferred. Three failed attempts mark the job failed. A recorder with repeated game-start faults is temporarily paused.
 
-Workers heartbeat every five minutes. An attempt with no heartbeat for twelve minutes is recovered, and an attempt has a maximum lifetime of 45 minutes even if it keeps heartbeating. AT checks abandoned attempts every minute, including when all recorders have disconnected. Pending work still needs an enabled, connected recorder to finish.
+Workers heartbeat every five minutes. An attempt with no heartbeat for twelve minutes is recovered, and an attempt has a maximum lifetime of 3 hours even if it keeps heartbeating (frame by frame renders as slowly as the GPU needs). AT checks abandoned attempts every minute, including when all recorders have disconnected. Pending work still needs an enabled, connected recorder to finish.
 
 Updated workers use an attempt token, so requests from an expired attempt are rejected. AT also serializes claims per recorder and prevents it taking a second job while it holds work. Upgrade existing workers after they drain to use the new attempt protocol.
 

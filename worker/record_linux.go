@@ -1660,7 +1660,7 @@ func runRecorder(ctx context.Context, clients []*client, poll time.Duration) err
 			r.endLive()
 		}
 		started := time.Now()
-		jobCtx, cancelJob := context.WithTimeout(ctx, 45*time.Minute)
+		jobCtx, cancelJob := context.WithTimeout(ctx, 3*time.Hour) // the platform's RECORDER_JOB_SECONDS
 		r.jobContext = jobCtx
 		r.link.Job(cancelJob)
 		r.job = jobProgress{started: started}
