@@ -27,11 +27,18 @@ yarn dev              # API and client together
 
 ## Pull requests
 
-- Keep each PR to one fix or feature.
-- Test what you changed.
-- Follow the existing code style.
-- Update the docs if behaviour changes.
-- Write commit messages that say what changed and why.
+Every pull request is read line by line. Before you open one:
+
+- Keep it to one fix or feature: under ~10 files and a few hundred changed
+  lines. [CONTRIBUTING.md](../CONTRIBUTING.md) has the details and the checks
+  to run.
+- Run it yourself, and say in the PR what you ran and what you saw.
+- If an AI tool wrote any of it, say which one, and read and understand every
+  line before you open the PR.
+- Leave the UI and the docs alone unless you've asked first: the maintainer
+  does those.
+- Follow the existing code style, and write commit messages that say what
+  changed and why.
 
 ## Releases
 
