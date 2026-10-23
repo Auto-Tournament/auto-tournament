@@ -324,7 +324,7 @@ export async function teamReelView(matchSlug: string, teamId: string) {
       WHERE r.match_slug = ? AND r.team_id = ?`,
     [matchSlug, teamId]
   );
-  if (!row || row.status !== 'done' || !row.clip_path) return null;
+  if (!row || !isShown(row.status, row.clip_path) || !row.clip_path) return null;
   return {
     matchSlug,
     teamId,
