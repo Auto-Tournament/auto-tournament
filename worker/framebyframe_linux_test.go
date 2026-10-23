@@ -68,3 +68,21 @@ func TestTgaToBGR(t *testing.T) {
 		t.Fatal("a frame of the wrong size was taken")
 	}
 }
+
+func TestFbfFramesNumbers(t *testing.T) {
+	csgo := t.TempDir()
+	dir := filepath.Join(csgo, "frame-by-frame", "movie", "2026_10_23_11_49_42")
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	movie := "atfbf1792756182640161686_"
+	for _, n := range []string{"00000010", "00000002", "00000001"} {
+		if err := os.WriteFile(filepath.Join(dir, movie+n+".tga"), nil, 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	got := fbfFrames(csgo, movie)
+	if len(got) != 3 || got[0].num != 1 || got[1].num != 2 || got[2].num != 10 {
+		t.Fatalf("frames %+v", got)
+	}
+}

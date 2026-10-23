@@ -169,7 +169,7 @@ func (r *recorder) fbfCapture(g *game, name string, from, to, wantFrom int, segs
 	if err := g.checkFollow(name, from); err != nil {
 		return nil, 0, err
 	}
-	movie := fmt.Sprintf("atfbf%d", time.Now().UnixNano())
+	movie := fmt.Sprintf("atfbf%d_", time.Now().UnixNano())
 	csgo := filepath.Join(r.gameDir, "csgo")
 	defer fbfCleanMovie(csgo, movie)
 	g.con.drain()
@@ -340,16 +340,15 @@ type fbfFrame struct {
 	num  int
 }
 
-var reFrameNum = regexp.MustCompile(`(\d+)\.tga$`)
-
 // fbfFrames is the movie's TGA frames on disk, in order.
 func fbfFrames(csgo, movie string) []fbfFrame {
 	paths, _ := filepath.Glob(filepath.Join(csgo, "*", "movie", "*", movie+"*.tga"))
 	more, _ := filepath.Glob(filepath.Join(csgo, "movie", "*", movie+"*.tga"))
 	var out []fbfFrame
 	for _, p := range append(paths, more...) {
-		if m := reFrameNum.FindStringSubmatch(p); m != nil {
-			n, _ := strconv.Atoi(m[1])
+		// <movie><frame number>.tga: the movie's own name is digits too.
+		num := strings.TrimSuffix(strings.TrimPrefix(filepath.Base(p), movie), ".tga")
+		if n, err := strconv.Atoi(num); err == nil {
 			out = append(out, fbfFrame{p, n})
 		}
 	}
