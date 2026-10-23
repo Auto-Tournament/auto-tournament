@@ -637,6 +637,47 @@ test(
   }
 );
 
+test('a restarted recorder gets back at once the job it was doing', TAGS, async ({ request }) => {
+  expect(await signInViaRequest(request)).toBe(true);
+  const name = `restart-${Date.now()}`;
+  await request.post('/api/game/cs2/recorder/claim', {
+    data: { recorder: name, version: 8, notReady: 'register only' },
+  });
+  const { id: groupId } = await (
+    await request.post('/api/game/cs2/recorder-groups', { data: { name } })
+  ).json();
+  await request.put(`/api/game/cs2/recorders/${name}/controls`, { data: { groupId } });
+  const slug = await matchWithMoments(request, groupId);
+  await request.post('/api/game/cs2/recorder/benchmark', {
+    data: {
+      recorder: name,
+      tries: [{ gamescopeHz: 120, seconds: 60, captureFps: 118, ok: true }],
+    },
+  });
+  const claim = (fresh?: boolean) =>
+    request.post('/api/game/cs2/recorder/claim', {
+      headers: { 'X-AT-Recorder': name },
+      data: { recorder: name, version: 8, ...(fresh ? { fresh } : {}) },
+    });
+  const first = await (await claim(true)).json();
+  expect(first.job.matchSlug).toBe(slug);
+  // the same run asking again while it holds the job: nothing more
+  expect((await claim()).status()).toBe(204);
+  // a new run of the recorder: the job it was doing comes back, under a new attempt
+  const again = await (await claim(true)).json();
+  expect(again.job.matchSlug).toBe(slug);
+  expect(again.claimToken).not.toBe(first.claimToken);
+  expect(
+    (
+      await request.post('/api/game/cs2/recorder/heartbeat', {
+        headers: { 'X-AT-Recorder': name, 'X-AT-Claim': first.claimToken },
+        data: { recorder: name },
+      })
+    ).status()
+  ).toBe(409);
+  await request.put(`/api/game/cs2/recorder-groups/${groupId}`, { data: { enabled: false } });
+});
+
 test(
   'host agent keeps identity and enabled settings, reporting separate builds',
   TAGS,

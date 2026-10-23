@@ -63,6 +63,28 @@ export const recordingFailureSql = `status = CASE WHEN attempts >= ${RECORDING_A
   retry_until = CASE WHEN attempts = 1 THEN EXTRACT(EPOCH FROM NOW())::INTEGER + ${SAME_RECORDER_RETRY_SECONDS} ELSE NULL END,
   avoid_recorder = CASE WHEN attempts >= 2 THEN recorder ELSE NULL END`;
 
+/**
+ * A recorder that has just started can't be recording anything: what is still
+ * claimed in its name was left by its previous run (a restart or crash). That
+ * goes back now instead of when its lease runs out.
+ */
+export async function releaseRecorderWork(recorder: string): Promise<number[]> {
+  const name = recorder.slice(0, 120);
+  await db.runAsync('DELETE FROM cs2_recorder_claims WHERE recorder = ?', [name]);
+  const failed: number[] = [];
+  for (const table of RECORDING_TABLES) {
+    const rows = await db.queryAsync<{ id?: number; status: string }>(
+      `UPDATE ${table} SET ${recordingFailureSql} WHERE recorder = ? AND status = 'recording'
+       RETURNING ${table === 'cs2_highlights' ? 'id, ' : ''}status`,
+      ['The recorder restarted during the job', name]
+    );
+    if (table === 'cs2_highlights') {
+      failed.push(...rows.filter((r) => r.status === 'failed').map((r) => Number(r.id)));
+    }
+  }
+  return failed;
+}
+
 export async function renewRecordingLeases(recorder: string): Promise<number> {
   let renewed = 0;
   for (const table of RECORDING_TABLES) {
