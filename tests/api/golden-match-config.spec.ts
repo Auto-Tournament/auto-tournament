@@ -109,7 +109,9 @@ async function fetchAssignConfig(
     const served = body.served as Record<string, unknown>;
     return { notAssignable: body.notAssignable, served: { ...served, matchid: '<matchid>' } };
   }
-  return body.config as Config;
+  const config = body.config as Config & { id?: unknown };
+  // The match's database id changes with every run.
+  return (typeof config.id === 'number' ? { ...config, id: '<match-db-id>' } : config) as Config;
 }
 
 async function tournamentMatches(request: APIRequestContext): Promise<MatchListRow[]> {

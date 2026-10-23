@@ -75,6 +75,7 @@ test.describe('Fleet match.assign config', () => {
       pauseAfterRestore: true,
     });
 
+    expect(config.id).toBe(42);
     expect(config.num_maps).toBe(3);
     expect(config.maps).toEqual([
       { number: 1, name: 'de_mirage', sides: 'team1_ct' },
@@ -277,6 +278,11 @@ test.describe('Fleet match.assign config', () => {
       ok: true,
       errors: [],
     });
+  });
+
+  test('the DB match id goes as config.id; no id without one', () => {
+    expect(buildAssignConfig(tournamentConfig({ matchid: 7 }), 'x').id).toBe(7);
+    expect(buildAssignConfig(tournamentConfig({ matchid: 0 }), 'x')).not.toHaveProperty('id');
   });
 
   test('a match that cannot be played yet is refused before it is sent', () => {
