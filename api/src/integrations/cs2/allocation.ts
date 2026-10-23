@@ -518,7 +518,10 @@ export class Cs2ServerPool {
       serverAllocationTracker.markAllocated(server.id, matchSlug);
 
       // Persist server_id on the match so UIs and webhooks see the assignment
-      await db.updateAsync('matches', { server_id: server.id }, 'slug = ?', [matchSlug]);
+      if (!(await this.claimMatch(matchSlug, server.id))) {
+        serverAllocationTracker.markIdle(server.id);
+        return { matchSlug, success: false, error: 'Match already has a server allocated' };
+      }
 
       // Emit websocket event for server assignment
       await this.emitServerAssigned(matchSlug, server.id);
@@ -587,6 +590,15 @@ export class Cs2ServerPool {
       // Clear the "allocating" flag for this server for future attempts
       this.allocatingServers.delete(server.id);
     }
+  }
+
+  /** Sets the match's server unless another allocation got there first. */
+  private async claimMatch(matchSlug: string, serverId: string): Promise<boolean> {
+    const claimed = await db.runAsync(
+      `UPDATE matches SET server_id = ? WHERE slug = ? AND (server_id IS NULL OR server_id = '')`,
+      [serverId, matchSlug]
+    );
+    return claimed.changes > 0;
   }
 
   private async emitServerAssigned(matchSlug: string, serverId: string): Promise<void> {
@@ -749,7 +761,10 @@ export class Cs2ServerPool {
       serverAllocationTracker.markAllocated(server.id, matchSlug);
 
       // Update match with server_id
-      await db.updateAsync('matches', { server_id: server.id }, 'slug = ?', [matchSlug]);
+      if (!(await this.claimMatch(matchSlug, server.id))) {
+        serverAllocationTracker.markIdle(server.id);
+        return { matchSlug, success: false, error: 'Match already has a server allocated' };
+      }
 
       // Emit websocket event for server assignment
       await this.emitServerAssigned(matchSlug, server.id);

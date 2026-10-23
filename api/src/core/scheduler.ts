@@ -304,6 +304,37 @@ export class Scheduler {
     rows: DbMatchRow[],
     baseUrl: string
   ): Promise<MatchAllocationResult[]> {
+    // A match another caller is allocating right now stays queued.
+    const free = rows.filter((row) => !this.allocatingMatches.has(row.slug));
+    const wave =
+      free.length === 0
+        ? Promise.resolve<MatchAllocationResult[]>([])
+        : this.runWave(tournamentId, free, baseUrl);
+    free.forEach((row, i) => {
+      const own = wave
+        .then((results) => results[i])
+        .finally(() => {
+          this.allocatingMatches.delete(row.slug);
+        });
+      own.catch(() => undefined);
+      this.allocatingMatches.set(row.slug, own);
+    });
+    const results = await wave;
+    return rows.map(
+      (row) =>
+        results[free.indexOf(row)] ?? {
+          matchSlug: row.slug,
+          success: false,
+          error: 'No available servers',
+        }
+    );
+  }
+
+  private async runWave(
+    tournamentId: number,
+    rows: DbMatchRow[],
+    baseUrl: string
+  ): Promise<MatchAllocationResult[]> {
     const integration = await this.integrationForTournament(tournamentId);
     const ctxs = await Promise.all(rows.map((row) => matchContextFor(row)));
     const outcomes = integration.allocateBatch
@@ -395,11 +426,22 @@ export class Scheduler {
       availableServers = await this.getAvailableServerCount(tournamentId);
     }
 
+    // The wait above can take minutes: allocate what is still ready and unassigned.
+    const stillReady = new Set((await this.getReadyMatchRows(tournamentId)).map((m) => m.slug));
+    const toAllocate = readyMatches.filter((m) => stillReady.has(m.slug));
+    const gone = readyMatches
+      .filter((m) => !stillReady.has(m.slug))
+      .map((m) => ({
+        matchSlug: m.slug,
+        success: false,
+        error: 'Match is not ready or does not exist',
+      }));
+
     // The integration takes the final snapshot of free servers as it allocates.
     log.info(
-      `[ALLOCATION] Allocating ${readyMatches.length} specific match(es) (required=${requiredServers})`
+      `[ALLOCATION] Allocating ${toAllocate.length} specific match(es) (required=${requiredServers})`
     );
-    const results = await this.allocateWave(tournamentId, readyMatches, baseUrl);
+    const results = [...(await this.allocateWave(tournamentId, toAllocate, baseUrl)), ...gone];
 
     log.info(
       `[ALLOCATION] Specific allocation complete: ${
@@ -414,7 +456,30 @@ export class Scheduler {
    * Allocate a single specific match to the first available server, once it
    * is its turn in the queue.
    */
-  async allocateSingleMatch(
+  allocateSingleMatch(
+    matchSlug: string,
+    baseUrl: string
+  ): Promise<{
+    success: boolean;
+    serverId?: string;
+    error?: string;
+  }> {
+    // One allocation per match at a time: concurrent callers share its result.
+    const running = this.allocatingMatches.get(matchSlug);
+    if (running) return running;
+    const started = this.allocateSingleMatchOnce(matchSlug, baseUrl).finally(() => {
+      this.allocatingMatches.delete(matchSlug);
+    });
+    this.allocatingMatches.set(matchSlug, started);
+    return started;
+  }
+
+  private allocatingMatches = new Map<
+    string,
+    Promise<{ success: boolean; serverId?: string; error?: string }>
+  >();
+
+  private async allocateSingleMatchOnce(
     matchSlug: string,
     baseUrl: string
   ): Promise<{
@@ -1352,7 +1417,10 @@ export class Scheduler {
       `[POLLING] Starting server polling for match ${matchSlug} (checking every 10 seconds)`
     );
 
+    let polling = false;
     const pollInterval = setInterval(async () => {
+      if (polling) return;
+      polling = true;
       try {
         // Check if match still exists and is ready
         const match = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [
@@ -1397,6 +1465,8 @@ export class Scheduler {
       } catch (error) {
         log.error(`Error during polling for match ${matchSlug}`, error);
         // Continue polling even on error
+      } finally {
+        polling = false;
       }
     }, 10000); // Check every 10 seconds
 
