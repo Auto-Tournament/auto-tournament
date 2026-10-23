@@ -123,10 +123,8 @@ const KILL_SHOWN_TICKS = 3 * 64;
 /** A loaded image (the DOM type, through window: eslint has no browser globals here). */
 type HTMLImageElementLike = InstanceType<typeof window.Image>;
 
-/** Dot radius, and how far the view cone reaches, in canvas pixels (half of the first size: the dots hid the map). */
+/** Dot radius in canvas pixels (half of the first size: the dots hid the map). */
 const DOT = 8;
-const CONE = 60;
-const CONE_HALF_ANGLE = (38 * Math.PI) / 180;
 
 const sideColor = (side: number) => (side === 3 ? color.sideCt : color.sideT);
 
@@ -551,38 +549,9 @@ export function ReplayViewer({
       const here = onLevel(z);
       ctx.globalAlpha = here ? 1 : 0.3;
       const c = sideColor(side);
-      // Where they look: a soft cone, and a pointer on the ring.
+      // Where they look: a pointer on the ring (a view cone hid the map around them).
       const a = (-yaw * Math.PI) / 180;
       if (hp > 0) {
-        const wedge = () => {
-          ctx.beginPath();
-          ctx.moveTo(x, y);
-          ctx.arc(x, y, CONE, a - CONE_HALF_ANGLE, a + CONE_HALF_ANGLE);
-          ctx.closePath();
-        };
-        // A dark wedge first, so the colour stands off the radar's own colours.
-        const shade = ctx.createRadialGradient(x, y, DOT, x, y, CONE);
-        shade.addColorStop(0, 'rgba(0,0,0,0.45)');
-        shade.addColorStop(1, 'rgba(0,0,0,0)');
-        ctx.fillStyle = shade;
-        wedge();
-        ctx.fill();
-        const cone = ctx.createRadialGradient(x, y, DOT, x, y, CONE);
-        cone.addColorStop(0, withAlpha(c, 0.95));
-        cone.addColorStop(0.55, withAlpha(c, 0.45));
-        cone.addColorStop(1, withAlpha(c, 0));
-        ctx.fillStyle = cone;
-        wedge();
-        ctx.fill();
-        // Its edges drawn light, so the direction reads on any part of the radar.
-        ctx.strokeStyle = 'rgba(255,255,255,0.75)';
-        ctx.lineWidth = 1.5;
-        ctx.beginPath();
-        for (const edge of [a - CONE_HALF_ANGLE, a + CONE_HALF_ANGLE]) {
-          ctx.moveTo(x + Math.cos(edge) * (DOT + 3), y + Math.sin(edge) * (DOT + 3));
-          ctx.lineTo(x + Math.cos(edge) * CONE * 0.85, y + Math.sin(edge) * CONE * 0.85);
-        }
-        ctx.stroke();
         // The pointer, outlined dark so it shows on light ground too.
         ctx.strokeStyle = 'rgba(0,0,0,0.75)';
         ctx.lineWidth = 2;
