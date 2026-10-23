@@ -7,6 +7,7 @@
 import { db } from '../config/database';
 import { log } from '../utils/logger';
 import { integrationForMatch } from '../integrations/registry';
+import { matchContextFor } from '../utils/matchIntegration';
 import type { DbMatchRow } from '../types/database.types';
 
 export interface RecoveryResult {
@@ -14,6 +15,33 @@ export interface RecoveryResult {
   success: boolean;
   stateSynced: boolean;
   error?: string;
+}
+
+/**
+ * A crash mid-allocation leaves a `ready` match holding the server it was being
+ * loaded on. Run once at startup, before anything allocates: tells that server
+ * to drop the match and frees the match for a new allocation.
+ */
+export async function releaseStrandedReadyMatches(): Promise<number> {
+  const rows = await db.queryAsync<DbMatchRow>(
+    `SELECT * FROM matches WHERE status = 'ready' AND server_id IS NOT NULL`
+  );
+  for (const row of rows) {
+    try {
+      const integration = integrationForMatch(row);
+      await integration.cancel?.(await matchContextFor(row), 'force-cancel');
+    } catch (error) {
+      log.warn(`[Recovery] ${row.slug}: could not tell ${row.server_id} to drop the match`, {
+        error: String(error),
+      });
+    }
+    await db.runAsync(`UPDATE matches SET server_id = NULL WHERE slug = ? AND status = 'ready'`, [
+      row.slug,
+    ]);
+  }
+  if (rows.length > 0)
+    log.warn(`[Recovery] Released ${rows.length} ready match(es) left on a server`);
+  return rows.length;
 }
 
 /**
