@@ -235,12 +235,12 @@ test('clips: the per-player limit, made-with, outdated and redo', TAGS, async ({
         await request.get(`/api/game/cs2/clips${outdated ? '?outdated=1' : ''}`)
       ).json()) as Listed;
     let listed = await list();
-    expect(listed.current).toBe('720p240');
+    expect(listed.current).toBe('1080p60');
     const ours = () => listed.matches.find((m) => m.slug === slug)!;
     const done = ours().clips.filter((c) => mine.moments.some((m) => m.id === c.id));
     expect(done.map((c) => [c.status, c.madeWith, c.outdated])).toEqual([
-      ['done', '720p240', false],
-      ['done', '720p240', false],
+      ['done', '1080p60', false],
+      ['done', '1080p60', false],
     ]);
     // Each recorded clip comes with its video, to watch from the list.
     for (const c of done) {
