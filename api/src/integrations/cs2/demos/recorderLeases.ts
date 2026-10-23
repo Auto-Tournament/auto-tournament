@@ -3,10 +3,10 @@ import { db } from '../../../config/database';
 
 // Older recorders heartbeat every five minutes. Allow two missed heartbeats.
 export const RECORDER_LEASE_SECONDS = 12 * 60;
-// One attempt's limit, heartbeats or not. Frame by frame renders as slowly as the GPU needs: a
-// 1080p240 map job of six clips takes ~45 minutes on an RTX 3060. shortcut: a fixed cap still
-// kills honest work on a slow enough GPU; replace it with a no-progress watchdog if that happens.
-export const RECORDER_JOB_SECONDS = 3 * 60 * 60;
+// One attempt's limit, heartbeats or not: only a backstop. A job may take hours (one map job is
+// every player's moments, rendered as slowly as the GPU needs); the recorder stops one that
+// stops moving itself (stallWatch), and the lease catches one that went away.
+export const RECORDER_JOB_SECONDS = 24 * 60 * 60;
 export const SAME_RECORDER_RETRY_SECONDS = 90;
 export const RECORDING_ATTEMPTS = 3;
 export const RECORDING_TABLES = [
@@ -33,7 +33,7 @@ export async function recoverRecordingLeases(): Promise<number[]> {
     const rows = await db.queryAsync<{ id?: number; status: string }>(
       `UPDATE ${table} SET
         status = CASE WHEN attempts >= ${RECORDING_ATTEMPTS} THEN 'failed' ELSE 'pending' END,
-        error = 'Recorder lease expired or job exceeded 3 hours',
+        error = 'Recorder lease expired or job exceeded 24 hours',
         retry_until = CASE WHEN attempts = 1 THEN EXTRACT(EPOCH FROM NOW())::INTEGER + ${SAME_RECORDER_RETRY_SECONDS} ELSE NULL END,
         avoid_recorder = CASE WHEN attempts >= 2 THEN recorder ELSE NULL END
        WHERE (status = 'pending' AND attempts >= ${RECORDING_ATTEMPTS}) OR (status = 'recording' AND (
