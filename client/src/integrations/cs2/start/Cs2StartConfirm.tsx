@@ -75,7 +75,7 @@ export const Cs2StartConfirm: React.FC<TournamentStartConfirmProps> = ({ open })
   return (
     <>
       <Typography variant="body2" color="text.secondary" paragraph>
-        🚀 Ready to start the tournament?
+        Ready to start the tournament?
       </Typography>
       <Typography variant="body2" fontWeight={600} gutterBottom>
         This will:
@@ -88,7 +88,7 @@ export const Cs2StartConfirm: React.FC<TournamentStartConfirmProps> = ({ open })
           Automatically allocate servers to ready matches
         </Typography>
         <Typography component="li" variant="body2" color="text.secondary">
-          Load matches on servers via RCON
+          Send matches to servers
         </Typography>
         <Typography component="li" variant="body2" color="text.secondary">
           Set servers to warmup mode
@@ -100,7 +100,7 @@ export const Cs2StartConfirm: React.FC<TournamentStartConfirmProps> = ({ open })
       {!loadingServers && availableServerCount !== null && availableServerCount === 0 && (
         <Alert severity="warning" sx={{ mb: 2 }}>
           <Typography variant="body2" fontWeight={600} gutterBottom>
-            ⚠️ No servers are currently available for new matches
+            No servers are currently available for new matches
           </Typography>
           {onlineServerCount && onlineServerCount > 0 ? (
             <Typography variant="body2">
