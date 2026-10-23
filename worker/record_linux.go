@@ -748,6 +748,7 @@ func (r *recorder) recordMoment(g *game, look clipLook, name string, m moment, o
 	if t := deathTick(look.replay, look.playerID, m); t >= 0 {
 		markers.Reactions = withAww(markers.Reactions, tickAt(windows, edits, t))
 	}
+	markers.Headshots = headshots(look.replay, look.playerID, m.KillTicks, len(markers.Kills))
 	width, height := ow, oh
 	finish := func() error {
 		defer cleanup()

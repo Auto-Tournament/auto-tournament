@@ -176,6 +176,9 @@ type clipMarkers struct {
 	// Reactions are the kills the crowd reacts to (cheers.go), among Kills,
 	// with how impressive each was.
 	Reactions []reaction `json:"reactions,omitempty"`
+	// Headshots: for each of Kills, whether it was a headshot (the player's
+	// timeline draws those apart).
+	Headshots []bool `json:"headshots,omitempty"`
 	// Start: the clip itself starts this far into its clean twin (the times
 	// above are the twin's): standalone.go.
 	Start float64 `json:"start,omitempty"`
