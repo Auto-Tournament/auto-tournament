@@ -618,11 +618,12 @@ func focusCommands(at []float64) string {
 }
 
 // maxBitrate is the H.264 ceiling (Mbit/s) for the clip's size and frame
-// rate: 24 at 1080p60, scaled by the pixels a second (85 at 1440p120), at
-// most 150. Quality over size: the clips are shared and shown on big
-// screens, and the GPU's encoder is nowhere near the bottleneck.
+// rate: 10 at 1080p60, scaled by the pixels and by the square root of the
+// frame rate (frames that close together are much alike: 20 at 1080p240,
+// 25 at 1440p120), between 10 and 60. At 24 for 1080p60 (and 90 at 240 fps)
+// clips stopped to buffer for viewers on ordinary connections.
 func maxBitrate() int {
 	w, h := outputSize()
-	scale := float64(w*h) * outputFPS / (1920 * 1080 * 60)
-	return int(math.Min(150, math.Max(24, math.Round(24*scale))))
+	scale := float64(w*h) / (1920 * 1080) * math.Sqrt(outputFPS/60)
+	return int(math.Min(60, math.Max(10, math.Round(10*scale))))
 }
