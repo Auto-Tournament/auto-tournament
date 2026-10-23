@@ -891,6 +891,39 @@ test.describe.serial('Fleet failover (FLEET.md §11)', () => {
     expect(again.status()).toBe(409);
   });
 
+  test('a practice server does not count for the reserve: one tournament server is never held back', async ({
+    request,
+  }) => {
+    const a = await FakeReadyUp.enroll(request);
+    cleanup.push(() => a.close());
+    await a.hello();
+    const cs2A = await link(request, a.serverId);
+    cleanup.push(() => unlink(request, a.serverId));
+
+    const b = await FakeReadyUp.enroll(request);
+    cleanup.push(() => b.close());
+    await b.hello();
+    const cs2B = await link(request, b.serverId);
+    cleanup.push(() => unlink(request, b.serverId));
+    const practice = await request.put(`/api/servers/${cs2B}`, {
+      headers: getAuthHeader(),
+      data: { tournamentUse: false },
+    });
+    expect(practice.ok(), await practice.text()).toBeTruthy();
+    cleanup.push(async () => {
+      await request.put(`/api/servers/${cs2B}`, {
+        headers: getAuthHeader(),
+        data: { tournamentUse: true },
+      });
+    });
+
+    const res = await request.get('/api/fleet/failover/settings', { headers: getAuthHeader() });
+    expect(res.ok(), await res.text()).toBe(true);
+    const body = await res.json();
+    expect(body.reserve).toMatchObject({ configured: null, effective: 0, poolSize: 1 });
+    expect(body.reserve.held.map((s: { id: string }) => s.id)).not.toContain(cs2A);
+  });
+
   test('settings: validated, admin only', async ({ request, playwright, baseURL }) => {
     const bad = await request.put('/api/fleet/failover/settings', {
       headers: getAuthHeader(),

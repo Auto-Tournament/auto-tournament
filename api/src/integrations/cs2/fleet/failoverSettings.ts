@@ -80,10 +80,10 @@ export async function setFailoverSettings(
   return getFailoverSettings();
 }
 
-/** Ready Up servers in the pool: linked, enabled and online. */
+/** Ready Up servers in the pool: linked, enabled, tournament use and online. */
 export async function fleetPoolSize(): Promise<number> {
   const rows = await db.queryAsync<{ fleet_server_id: string | null }>(
-    `SELECT fleet_server_id FROM cs2_servers WHERE transport = 'fleet' AND enabled = 1 AND fleet_server_id IS NOT NULL`
+    `SELECT fleet_server_id FROM cs2_servers WHERE transport = 'fleet' AND enabled = 1 AND COALESCE(tournament_use, 1) = 1 AND fleet_server_id IS NOT NULL`
   );
   const bus = fleetBus();
   return rows.filter((r) => r.fleet_server_id && bus.isConnected(r.fleet_server_id)).length;
