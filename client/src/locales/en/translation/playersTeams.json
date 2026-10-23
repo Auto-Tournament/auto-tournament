@@ -657,6 +657,7 @@
     "readyIn": "ready in about {{minutes}} min",
     "reelBadge": "REEL",
     "player": {
+      "buffering": "Loading the video",
       "play": "Play",
       "pause": "Pause",
       "back": "Back 5 seconds",
