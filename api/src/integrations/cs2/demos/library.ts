@@ -10,6 +10,7 @@
  * is one per signed-in player per video.
  */
 
+import { shownSql } from './shown';
 import { db } from '../../../config/database';
 import type { Untrusted } from '../../../utils/untrusted';
 import type { SqlValue } from '../../../config/database';
@@ -77,7 +78,7 @@ const ITEMS = `
          h.kind AS play, h.title, h.round, h.match_slug, h.map_number, h.player_id, NULL::text AS team_id,
          NULL::integer AS tournament_id, COALESCE(h.done_at, h.created_at) AS created_at
     FROM cs2_highlights h
-   WHERE h.status = 'done' AND h.kind <> 'funny' AND h.clip_path IS NOT NULL
+   WHERE ${shownSql('h')} AND h.kind <> 'funny' AND h.clip_path IS NOT NULL
   UNION ALL
   SELECT 'reel/' || r.match_slug || '/' || r.map_number || '/' || r.player_id, 'player',
          '/api/game/cs2/highlights/' || r.clip_path, NULL, NULL, NULL, r.match_slug, r.map_number,
@@ -88,17 +89,17 @@ const ITEMS = `
          '/api/game/cs2/highlights/' || r.clip_path, NULL, NULL, NULL, r.match_slug, r.map_number,
          NULL, NULL, NULL, r.created_at
     FROM cs2_match_reels r
-   WHERE r.status = 'done' AND r.clip_path IS NOT NULL
+   WHERE ${shownSql('r')} AND r.clip_path IS NOT NULL
   UNION ALL
   SELECT 'team/' || r.match_slug || '/' || r.team_id, 'team', '/api/game/cs2/highlights/' || r.clip_path,
          NULL, NULL, NULL, r.match_slug, NULL, NULL, r.team_id, NULL, r.created_at
     FROM cs2_team_reels r
-   WHERE r.status = 'done' AND r.clip_path IS NOT NULL
+   WHERE ${shownSql('r')} AND r.clip_path IS NOT NULL
   UNION ALL
   SELECT 'tournament/' || r.tournament_id, 'tournament', '/api/game/cs2/highlights/' || r.clip_path,
          NULL, NULL, NULL, NULL, NULL, NULL, NULL, r.tournament_id, r.created_at
     FROM cs2_tournament_reels r
-   WHERE r.status = 'done' AND r.clip_path IS NOT NULL`;
+   WHERE ${shownSql('r')} AND r.clip_path IS NOT NULL`;
 
 interface Row {
   key: string;

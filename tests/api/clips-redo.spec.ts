@@ -269,6 +269,9 @@ test('clips: the per-player limit, made-with, outdated and redo', TAGS, async ({
     listed = await list();
     expect(ours().clips.find((c) => c.id === mine.moments[0].id)?.status).toBe('pending');
     expect(ours().clips.find((c) => c.id === mine.moments[1].id)?.status).toBe('done');
+    // While it is made again, viewers keep its old video.
+    const stillShown = await request.get(`/api/game/cs2/watch/clip/${mine.moments[0].id}`);
+    expect((await stillShown.json()).clip.video).toBeTruthy();
   } finally {
     await settings(request, {
       highlightsPerPlayer: before.highlightsPerPlayer ?? 6,

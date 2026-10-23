@@ -1,3 +1,4 @@
+import { isShown, shownSql } from './shown';
 import { recordingWaiting, recordingFailureSql } from './recorderLeases';
 import { recordingTargetFilter } from './recorderFleet';
 /**
@@ -38,7 +39,7 @@ const REEL_CROSSFADE = 0.4;
 const TOURNAMENT_REEL_MIN = 3;
 
 const CLIP_SELECT = `
-  SELECT h.id, h.match_slug, h.map_number, h.player_id, h.kind, h.title, h.score, h.status, h.round,
+  SELECT h.id, h.match_slug, h.map_number, h.player_id, h.kind, h.title, h.score, h.status, h.round, h.clip_path,
          h.markers, h.created_at, h.slowmo_tick, j.map_name, p.name AS player_name, p.avatar_url,
          t1.name AS team1, t2.name AS team2, m.tournament_id, COALESCE(tr.name, m.played_in) AS tournament,
          m.round AS match_round, m.bracket, m.match_number,
@@ -62,6 +63,7 @@ interface ClipRow {
   score: number;
   status: string;
   round: number;
+  clip_path: string | null;
   markers: string | null;
   created_at: number;
   slowmo_tick: number;
@@ -139,7 +141,7 @@ function toClip(r: ClipRow): ClipView {
     score: Number(r.score),
     status: r.status,
     round: Number(r.round),
-    video: r.status === 'done' ? `/api/game/cs2/highlights/${Number(r.id)}.mp4` : null,
+    video: isShown(r.status, r.clip_path) ? `/api/game/cs2/highlights/${Number(r.id)}.mp4` : null,
     markers: markersOnItsOwn(parseMarkers(r.markers)),
     reelMarkers: parseMarkers(r.markers),
     match: {
@@ -389,7 +391,7 @@ export async function tournamentReel(tournamentId: number) {
     started_at: number | null;
     completed_at: number | null;
   }>('SELECT name, started_at, completed_at FROM tournament WHERE id = ?', [tournamentId]);
-  const done = row.status === 'done' && !!row.clip_path;
+  const done = isShown(row.status, row.clip_path) && !!row.clip_path;
   const chapters = done ? await chaptersOf(row.clip_ids, row.clip_starts) : [];
   const last = chapters[chapters.length - 1];
   const lastClip = last ? await clipView(last.highlightId) : null;
@@ -419,7 +421,7 @@ export async function tournamentHighlights(tournamentId: number) {
   const plays = (
     await db.queryAsync<ClipRow>(
       `${CLIP_SELECT}
-        WHERE m.tournament_id = ? AND h.status = 'done'
+        WHERE m.tournament_id = ? AND ${shownSql('h')}
         ORDER BY h.score DESC, h.id
         LIMIT 60`,
       [tournamentId]
@@ -489,7 +491,7 @@ export async function tournamentHighlights(tournamentId: number) {
           map: r.map_name,
           status: r.status,
           clips: r.clips === null ? null : Number(r.clips),
-          video: r.status === 'done' && r.clip_path ? fileUrl(r.clip_path) : null,
+          video: isShown(r.status, r.clip_path) && r.clip_path ? fileUrl(r.clip_path) : null,
         })),
       };
     }),
@@ -563,7 +565,7 @@ export async function watchRelated(
          FROM cs2_highlights h
          LEFT JOIN players p ON p.id = h.player_id
         WHERE h.match_slug = ? AND (?::integer IS NULL OR h.map_number = ?::integer)
-          AND h.status = 'done' AND h.kind <> 'funny'
+          AND ${shownSql('h')} AND h.kind <> 'funny'
         GROUP BY h.player_id, p.name, p.avatar_url
         ORDER BY COUNT(*) DESC, p.name`,
       [matchSlug, mapNumber, matchSlug, mapNumber, mapNumber]
@@ -587,7 +589,7 @@ export async function watchRelated(
          FROM cs2_highlights h
          JOIN matches m ON m.slug = h.match_slug
          LEFT JOIN players p ON p.id = h.player_id
-        WHERE m.tournament_id = ? AND h.status = 'done' AND h.kind <> 'funny'
+        WHERE m.tournament_id = ? AND ${shownSql('h')} AND h.kind <> 'funny'
         GROUP BY h.player_id, p.name, p.avatar_url
         ORDER BY COUNT(*) DESC, p.name`,
       [tournamentId]
@@ -624,7 +626,7 @@ export async function watchRelated(
        LEFT JOIN cs2_demo_jobs j ON j.match_slug = r.match_slug AND j.map_number = r.map_number
        LEFT JOIN teams t1 ON t1.id = m.team1_id
        LEFT JOIN teams t2 ON t2.id = m.team2_id
-      WHERE r.status = 'done' AND r.clip_path IS NOT NULL
+      WHERE ${shownSql('r')} AND r.clip_path IS NOT NULL
         AND (r.match_slug = ? OR m.tournament_id = ?::integer)
         AND NOT (r.match_slug = ? AND r.map_number = ?)
       ORDER BY (r.match_slug = ?) DESC, r.created_at DESC, r.map_number
@@ -836,7 +838,7 @@ export async function claimTournamentReel(recorder: string): Promise<TournamentR
   if (!row) return null;
   const tournamentId = Number(row.tournament_id);
   const rows = await db.queryAsync<ClipRow>(
-    `${CLIP_SELECT} WHERE m.tournament_id = ? AND h.status = 'done'`,
+    `${CLIP_SELECT} WHERE m.tournament_id = ? AND ${shownSql('h')}`,
     [tournamentId]
   );
   const clips = rows.map(toClip);

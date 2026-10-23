@@ -9,6 +9,7 @@
  * failed clip holds its reels the same way until it is redone or dropped.
  */
 
+import { isShown } from './shown';
 import { db } from '../../../config/database';
 import { wakeRecorders } from './recorderLink';
 import { emitHighlightsChanged } from '../../../services/socketService';
@@ -182,7 +183,7 @@ export async function listClips(
         recorder: c.recorder,
         recordSeconds: c.record_seconds === null ? null : Number(c.record_seconds),
         doneAt: c.done_at === null ? null : Number(c.done_at),
-        video: c.status === 'done' && c.clip_path ? c.clip_path : null,
+        video: isShown(c.status, c.clip_path) && c.clip_path ? c.clip_path : null,
         review: c.review,
         reviewNote: c.review_note,
       }));

@@ -4,6 +4,7 @@
  * servers and machines, and the recorders. Core ranks (its fuzzy `rank`) and
  * merges the hits with its own.
  */
+import { shownSql } from './demos/shown';
 import { db } from '../../config/database';
 import type { GameIntegration, SiteSearchHit } from '../types';
 
@@ -28,7 +29,7 @@ export async function cs2SiteSearch({ admin, rank }: SearchCtx): Promise<SiteSea
   const players = await db.queryAsync<{ id: string; name: string | null; clips: number }>(
     `SELECT h.player_id AS id, p.name, COUNT(*)::int AS clips
        FROM cs2_highlights h JOIN players p ON p.id = h.player_id
-      WHERE h.status = 'done' AND h.clip_path IS NOT NULL AND p.deleted_at IS NULL AND p.banned_at IS NULL
+      WHERE ${shownSql('h')} AND h.clip_path IS NOT NULL AND p.deleted_at IS NULL AND p.banned_at IS NULL
       GROUP BY h.player_id, p.name`
   );
   for (const { item, score } of rank(players, (p) => [p.name ?? ''], PER_GROUP)) {
@@ -43,9 +44,9 @@ export async function cs2SiteSearch({ admin, rank }: SearchCtx): Promise<SiteSea
   }
   const teams = await db.queryAsync<{ id: string; name: string }>(
     `SELECT DISTINCT t.id, t.name FROM teams t
-      WHERE EXISTS (SELECT 1 FROM cs2_team_reels r WHERE r.team_id = t.id AND r.status = 'done')
+      WHERE EXISTS (SELECT 1 FROM cs2_team_reels r WHERE r.team_id = t.id AND ${shownSql('r')})
          OR EXISTS (SELECT 1 FROM matches m JOIN cs2_highlights h ON h.match_slug = m.slug
-                     WHERE (m.team1_id = t.id OR m.team2_id = t.id) AND h.status = 'done')`
+                     WHERE (m.team1_id = t.id OR m.team2_id = t.id) AND ${shownSql('h')})`
   );
   for (const { item, score } of rank(teams, (t) => [t.name], PER_GROUP)) {
     hits.push({
@@ -60,7 +61,7 @@ export async function cs2SiteSearch({ admin, rank }: SearchCtx): Promise<SiteSea
     `SELECT mp.id, mp.display_name AS name,
             (SELECT COUNT(*)::int FROM cs2_highlights h
                JOIN cs2_demo_jobs j ON j.match_slug = h.match_slug AND j.map_number = h.map_number
-              WHERE j.map_name = mp.id AND h.status = 'done') AS clips
+              WHERE j.map_name = mp.id AND ${shownSql('h')}) AS clips
        FROM cs2_maps mp`
   );
   const mapFields = (m: { id: string; name: string }) => [
