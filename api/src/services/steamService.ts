@@ -196,7 +196,7 @@ class SteamService {
 
     try {
       const url = `${this.baseUrl}/ISteamUser/ResolveVanityURL/v0001/?key=${apiKey}&vanityurl=${vanityUrl}`;
-      const response = await fetch(url);
+      const response = await fetch(url, { timeout: 10_000 });
       const data = (await response.json()) as SteamAPIResponse;
 
       if (data.response.success === 1 && data.response.steamid) {
@@ -225,7 +225,7 @@ class SteamService {
 
     try {
       const url = `${this.baseUrl}/ISteamUser/GetPlayerSummaries/v0002/?key=${apiKey}&steamids=${steamId}`;
-      const response = await fetch(url);
+      const response = await fetch(url, { timeout: 10_000 });
       const data = (await response.json()) as SteamPlayerSummaryResponse;
 
       if (data.response.players.length > 0) {

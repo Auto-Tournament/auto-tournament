@@ -36,6 +36,7 @@ async function callUpToDateCheck(installedBuildId: number | string, apiKey: stri
   const url = apiKey ? `${base}&key=${encodeURIComponent(apiKey)}` : base;
 
   const response = await fetch(url, {
+    timeout: 10_000,
     headers: {
       Accept: 'application/json',
       'User-Agent': 'Auto-Tournament',
