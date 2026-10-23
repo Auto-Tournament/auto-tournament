@@ -229,14 +229,11 @@ func (r *recorder) fbfCapture(g *game, name string, from, to, wantFrom int, segs
 		_, _, err := g.con.expect(rePaused, 50*time.Millisecond)
 		return err == nil
 	}
-	ended, convErr := fbfConvert(csgo, movie, order, g.width, g.height, raw, paused, deadline)
-	// The frames past the clip's last are not needed, but the sound is up to `to`.
-	for !ended && convErr == nil && time.Now().Before(deadline) {
-		ended = paused()
-	}
-	_ = g.con.send("endmovie", "host_framerate 0")
+	_, convErr := fbfConvert(csgo, movie, order, g.width, g.height, raw, paused, deadline)
+	// The last frame the clip uses is in: CS2 has played (and recorded the
+	// sound) at least that far, so the movie stops there, not at `to`.
+	_ = g.con.send("endmovie", "host_framerate 0", "demo_pause")
 	if convErr != nil {
-		_ = g.pause()
 		return nil, 0, fmt.Errorf("frame by frame: %w", convErr)
 	}
 	wavs, _ := filepath.Glob(filepath.Join(csgo, "*", "movie", "*", movie+"*.wav"))
