@@ -1080,6 +1080,7 @@ router.post(
  *                                               once done)
  *   POST /api/test/cs2-tables/foreign-keys      probe the keys onto them, in a
  *                                               transaction that is rolled back
+ *   POST /api/test/cs2-tables/match-runtime     seed and count a match's runtime rows
  *   POST /api/test/cs2-tables/handover-probe    run the handover on a 2.4-shaped
  *        Body: { scenario }                     copy in a scratch schema, twice
  *
@@ -1348,6 +1349,61 @@ router.post(
     } catch (err) {
       log.error('Error in POST /api/test/cs2-tables/foreign-keys', err as Error);
       res.status(500).json({ success: false, error: 'Failed to probe the foreign keys' });
+    }
+  }
+);
+
+const MATCH_RUNTIME_SEEDS: Record<string, string> = {
+  cs2_match_live_state: `INSERT INTO cs2_match_live_state (match_slug) VALUES ($1)`,
+  cs2_fleet_assignments: `INSERT INTO cs2_fleet_assignments (match_slug, epoch, password) VALUES ($1, 1, 'x')`,
+  cs2_fleet_failovers: `INSERT INTO cs2_fleet_failovers (id, match_slug, reason, from_epoch, map_number) VALUES ('probe-' || $1::text, $1, 'offline', 1, 1)`,
+  cs2_match_round_backups: `INSERT INTO cs2_match_round_backups (match_slug, map_number, round, file, size, sha256, data) VALUES ($1, 1, 1, 'f', 1, 'h', 'd')`,
+  cs2_match_round_backup_parts: `INSERT INTO cs2_match_round_backup_parts (match_slug, map_number, round, sha256, part, parts, data) VALUES ($1, 1, 1, 'h', 1, 1, 'd')`,
+  cs2_match_round_restores: `INSERT INTO cs2_match_round_restores (id, match_slug, map_number, round, transport) VALUES ('probe-' || $1::text, $1, 1, 1, 'fleet')`,
+};
+
+/**
+ * Test-only helper: the CS2 runtime rows of a match.
+ *
+ * POST /api/test/cs2-tables/match-runtime  { slug, seed?: boolean }
+ *
+ * With `seed`, inserts one row per runtime table for the slug; always answers
+ * with the row count per table, so a spec can see what a match delete left,
+ * and the foreign keys on those tables.
+ */
+router.post(
+  '/cs2-tables/match-runtime',
+  requireAuth,
+  async (req: Request, res: Response): Promise<void> => {
+    if (isTestHelperDisabled(res)) return;
+    const { slug, seed } = (req.body || {}) as { slug?: string; seed?: boolean };
+    if (!slug) {
+      res.status(400).json({ success: false, error: 'slug is required' });
+      return;
+    }
+    try {
+      const { counts, foreignKeys } = await db.withClient(async (client) => {
+        const out: Record<string, number> = {};
+        for (const [table, insert] of Object.entries(MATCH_RUNTIME_SEEDS)) {
+          if (seed) await client.query(insert, [slug]);
+          const { rows } = await client.query<{ n: string }>(
+            `SELECT COUNT(*)::text AS n FROM ${table} WHERE match_slug = $1`,
+            [slug]
+          );
+          out[table] = Number(rows[0]?.n ?? 0);
+        }
+        const { rows: keys } = await client.query<{ conname: string; def: string }>(
+          `SELECT c.conname, pg_get_constraintdef(c.oid) AS def
+             FROM pg_constraint c JOIN pg_class cl ON cl.oid = c.conrelid
+            WHERE c.contype = 'f' AND cl.relname = ANY($1::text[])`,
+          [Object.keys(MATCH_RUNTIME_SEEDS)]
+        );
+        return { counts: out, foreignKeys: keys };
+      });
+      res.json({ success: true, counts, foreignKeys });
+    } catch (err) {
+      log.error('Error in POST /api/test/cs2-tables/match-runtime', err as Error);
+      res.status(500).json({ success: false, error: 'Failed to read the match runtime rows' });
     }
   }
 );

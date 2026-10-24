@@ -120,6 +120,7 @@ export const CS2_RECORDER_KEYS_MIGRATION_ID = '035-recorder-keys';
 export const CS2_RECORDER_FAULTS_MIGRATION_ID = '036-recorder-faults';
 export const CS2_CLIP_REVIEW_MIGRATION_ID = '037-clip-review';
 export const CS2_REEL_FAILOVER_MIGRATION_ID = '038-reel-failover';
+export const CS2_MATCH_RUNTIME_CASCADE_MIGRATION_ID = '061-match-runtime-cascade';
 
 export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
   {
@@ -1666,5 +1667,30 @@ export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
         PRIMARY KEY (public_host, web_ip)
       );
     `,
+  },
+  {
+    // Runtime state follows its match row: a deleted match leaves none behind
+    // for a reused slug. Logs, audit and media rows stay.
+    id: CS2_MATCH_RUNTIME_CASCADE_MIGRATION_ID,
+    up: `
+    DELETE FROM cs2_match_live_state WHERE NOT EXISTS (SELECT 1 FROM matches m WHERE m.slug = cs2_match_live_state.match_slug);
+    DELETE FROM cs2_fleet_assignments WHERE NOT EXISTS (SELECT 1 FROM matches m WHERE m.slug = cs2_fleet_assignments.match_slug);
+    DELETE FROM cs2_fleet_failovers WHERE NOT EXISTS (SELECT 1 FROM matches m WHERE m.slug = cs2_fleet_failovers.match_slug);
+    DELETE FROM cs2_match_round_backups WHERE NOT EXISTS (SELECT 1 FROM matches m WHERE m.slug = cs2_match_round_backups.match_slug);
+    DELETE FROM cs2_match_round_backup_parts WHERE NOT EXISTS (SELECT 1 FROM matches m WHERE m.slug = cs2_match_round_backup_parts.match_slug);
+    DELETE FROM cs2_match_round_restores WHERE NOT EXISTS (SELECT 1 FROM matches m WHERE m.slug = cs2_match_round_restores.match_slug);
+    ALTER TABLE cs2_match_live_state DROP CONSTRAINT IF EXISTS cs2_match_live_state_match_slug_fkey;
+    ALTER TABLE cs2_match_live_state ADD CONSTRAINT cs2_match_live_state_match_slug_fkey FOREIGN KEY (match_slug) REFERENCES matches(slug) ON DELETE CASCADE;
+    ALTER TABLE cs2_fleet_assignments DROP CONSTRAINT IF EXISTS cs2_fleet_assignments_match_slug_fkey;
+    ALTER TABLE cs2_fleet_assignments ADD CONSTRAINT cs2_fleet_assignments_match_slug_fkey FOREIGN KEY (match_slug) REFERENCES matches(slug) ON DELETE CASCADE;
+    ALTER TABLE cs2_fleet_failovers DROP CONSTRAINT IF EXISTS cs2_fleet_failovers_match_slug_fkey;
+    ALTER TABLE cs2_fleet_failovers ADD CONSTRAINT cs2_fleet_failovers_match_slug_fkey FOREIGN KEY (match_slug) REFERENCES matches(slug) ON DELETE CASCADE;
+    ALTER TABLE cs2_match_round_backups DROP CONSTRAINT IF EXISTS cs2_match_round_backups_match_slug_fkey;
+    ALTER TABLE cs2_match_round_backups ADD CONSTRAINT cs2_match_round_backups_match_slug_fkey FOREIGN KEY (match_slug) REFERENCES matches(slug) ON DELETE CASCADE;
+    ALTER TABLE cs2_match_round_backup_parts DROP CONSTRAINT IF EXISTS cs2_match_round_backup_parts_match_slug_fkey;
+    ALTER TABLE cs2_match_round_backup_parts ADD CONSTRAINT cs2_match_round_backup_parts_match_slug_fkey FOREIGN KEY (match_slug) REFERENCES matches(slug) ON DELETE CASCADE;
+    ALTER TABLE cs2_match_round_restores DROP CONSTRAINT IF EXISTS cs2_match_round_restores_match_slug_fkey;
+    ALTER TABLE cs2_match_round_restores ADD CONSTRAINT cs2_match_round_restores_match_slug_fkey FOREIGN KEY (match_slug) REFERENCES matches(slug) ON DELETE CASCADE;
+`,
   },
 ];

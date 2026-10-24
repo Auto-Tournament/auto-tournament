@@ -113,7 +113,7 @@ router.post(
  * Test-only fleet match helpers (step 3: fleet/state.ts, fleet/reliable.ts,
  * fleet/inbound.ts), until the fleet driver has real routes:
  *
- * POST /api/test/fleet/assign { matchSlug, serverId, configRev? }   new epoch (beginAssignment)
+ * POST /api/test/fleet/assign { matchSlug, serverId, configRev? }   new epoch (beginAssignment); a slug with no match gets a bare one
  * POST /api/test/fleet/send { serverId, type, payload, epoch? }     sendReliable
  * GET  /api/test/fleet/live-state/:slug                             the stored LiveMatchRecord
  * GET  /api/test/fleet/events/:serverId                             cs2_fleet_events rows (no message bodies)
@@ -140,6 +140,10 @@ router.post('/fleet/assign', requireAuth, async (req: Request, res: Response): P
     res.status(400).json({ success: false, error: 'matchSlug and serverId are required' });
     return;
   }
+  await db.runAsync(
+    `INSERT INTO matches (slug, tournament_id, round, match_number, config) VALUES (?, NULL, 0, 0, '{}') ON CONFLICT (slug) DO NOTHING`,
+    [matchSlug]
+  );
   const record = await liveStateStore.beginAssignment(matchSlug, serverId, configRev ?? 1);
   res.json({ success: true, epoch: record.epoch, record });
 });

@@ -1,5 +1,6 @@
 import { noticeTournamentStarted } from '../services/tournamentNotices';
 import { licenseService } from '../services/license/licenseService';
+import { matchLiveStatsService } from '../services/matchLiveStatsService';
 import type { Request, Response } from 'express';
 import express, { Router } from 'express';
 import { tournamentService } from '../services/tournamentService';
@@ -2024,6 +2025,7 @@ router.post('/wipe-table/:table', async (req: Request, res: Response) => {
       await db.execAsync('DELETE FROM match_map_results');
       await db.execAsync('DELETE FROM player_match_stats');
       await db.execAsync('DELETE FROM matches');
+      matchLiveStatsService.clearAll();
     } else if (table === 'players') {
       // Delete related data first
       await db.execAsync('DELETE FROM player_rating_history');
@@ -2141,6 +2143,7 @@ router.post('/dev/reset-simulation-state', async (req: Request, res: Response) =
     // it is cleared explicitly; ratings are reset to starting values below.
     await db.execAsync('DELETE FROM player_rating_history');
     await db.execAsync('DELETE FROM matches');
+    matchLiveStatsService.clearAll();
 
     // 3) Reset tournament status back to setup so the existing config can be reused.
     // We preserve name, type, maps, team_ids, settings, and shuffle-specific fields.
