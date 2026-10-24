@@ -68,6 +68,7 @@ export function registerReelRoutes(router: Router): void {
       const twin = req.params.twin as VideoTwin;
       const cut = CUT_NAME.test(req.params.twin);
       const type = cut ? 'video/mp4' : TWIN_CONTENT_TYPE[twin];
+      if (!type) return res.status(400).json({ success: false, error: 'Which twin or quality' });
       if (!String(req.headers['content-type'] ?? '').startsWith(type)) {
         return res.status(400).json({ success: false, error: `A ${type} body` });
       }
