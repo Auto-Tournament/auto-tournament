@@ -12,7 +12,11 @@ import { passport, isStrategyConfigured } from '../config/passport';
 import { settingsService } from '../services/settingsService';
 import type { AuthProvider } from '../services/authIdentityService';
 import { authIdentityService } from '../services/authIdentityService';
-import { signPlayerSteamId, getVerifiedPlayerSteamId } from '../utils/signedPlayerCookie';
+import {
+  signPlayerSteamId,
+  getVerifiedPlayerSteamId,
+  PLAYER_COOKIE_MAX_AGE_MS,
+} from '../utils/signedPlayerCookie';
 import {
   PENDING_STEAM_LINK_COOKIE_NAME,
   PENDING_STEAM_LINK_TTL_MS,
@@ -121,7 +125,7 @@ export function setPlayerSteamCookie(req: Request, res: Response, steamId: strin
     secure: shouldUseSecureCookie(req),
     sameSite: 'lax',
     path: '/',
-    maxAge: 1000 * 60 * 60 * 24 * 30, // 30 days
+    maxAge: PLAYER_COOKIE_MAX_AGE_MS,
   });
 }
 
