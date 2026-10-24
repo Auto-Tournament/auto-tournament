@@ -40,6 +40,7 @@ import { seedBundledPacks } from './services/gamePackService';
 import { applyLicenseEnvironment } from './services/license/consent';
 import { PUBLIC_DIR, MAP_IMAGES_DIR, SWAGGER_UI_DIR } from './config/publicPaths';
 import { DATA_DIR } from './config/dataDir';
+import { sessionSecret as getSessionSecret } from './config/sessionSecret';
 import { getOpenApiSpec } from './config/swagger';
 import { log, logger, LOG_HTTP_REQUESTS, LOG_DB_VERBOSE, LOG_DB_VALUES } from './utils/logger';
 import { cleanupOldLogs } from './utils/eventLogger';
@@ -129,7 +130,7 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // Session + Passport
-const sessionSecret = process.env.SESSION_SECRET || 'auto-tournament-dev-session-secret';
+const sessionSecret = getSessionSecret();
 const PgSession = connectPgSimple(session);
 
 // Reuse the same connection string logic as the main DatabaseManager so the
