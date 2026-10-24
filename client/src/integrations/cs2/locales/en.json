@@ -2195,6 +2195,8 @@
       "emptyOutdated": "Everything is made at the current settings.",
       "redo": "Redo",
       "redone": "Queued {{clips}} clips and {{reels}} reels",
+      "stopRedo": "Keep the old videos ({{count}})",
+      "stopped": "Kept the old video for {{clips}} clips and {{reels}} reels",
       "madeWith": "Made at {{quality}}",
       "madeUnknown": "Made before this was kept",
       "mapN": "Map {{n}}",

@@ -61,6 +61,7 @@ export function ClipsTab() {
   const [data, setData] = useState<{
     current: string;
     outdated: number;
+    queued?: number;
     matches: AdminMatch[];
   } | null>(null);
   const [onlyOutdated, setOnlyOutdated] = useState(false);
@@ -105,6 +106,23 @@ export function ClipsTab() {
         body
       );
       showSuccess(t('highlightsAdmin.clips.redone', { clips: res.clips, reels: res.reels }));
+      await load();
+    } catch (err) {
+      showError(err instanceof Error ? err.message : t('highlightsAdmin.actionError'));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  // Clips queued again keep their old video instead (api clipsAdmin.stopRedo).
+  const stopRedo = async () => {
+    setBusy(true);
+    try {
+      const res = await api.post<{ clips: number; reels: number }>(
+        '/api/game/cs2/clips/redo/stop',
+        {}
+      );
+      showSuccess(t('highlightsAdmin.clips.stopped', { clips: res.clips, reels: res.reels }));
       await load();
     } catch (err) {
       showError(err instanceof Error ? err.message : t('highlightsAdmin.actionError'));
@@ -194,6 +212,17 @@ export function ClipsTab() {
         >
           {t('highlightsAdmin.clips.redoOutdated')}
         </Button>
+        {(data.queued ?? 0) > 0 && (
+          <Button
+            size="small"
+            variant="outlined"
+            disabled={busy}
+            onClick={() => void stopRedo()}
+            data-testid="clips-stop-redo"
+          >
+            {t('highlightsAdmin.clips.stopRedo', { count: data.queued })}
+          </Button>
+        )}
       </Stack>
       {data.matches.length === 0 && (
         <Typography variant="body2" color="text.secondary">

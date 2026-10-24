@@ -2219,7 +2219,9 @@
       "heldByFailed_other": "{{count}} 个片段失败。会用到它们的集锦将等待你重做或丢弃它们。",
       "reelElapsed": "ready {{time}} after its first clip started",
       "reelAssembly": "joined in {{time}}",
-      "reelRender": "its clips: {{time}} of recording added up"
+      "reelRender": "its clips: {{time}} of recording added up",
+      "stopRedo": "Keep the old videos ({{count}})",
+      "stopped": "Kept the old video for {{clips}} clips and {{reels}} reels"
     },
     "add": {
       "button": "Add a recorder",

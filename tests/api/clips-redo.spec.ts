@@ -272,6 +272,23 @@ test('clips: the per-player limit, made-with, outdated and redo', TAGS, async ({
     // While it is made again, viewers keep its old video.
     const stillShown = await request.get(`/api/game/cs2/watch/clip/${mine.moments[0].id}`);
     expect((await stillShown.json()).clip.video).toBeTruthy();
+
+    // Stopping the redo puts it back to the video it has, except in a match kept queued.
+    expect(((await list()) as Listed & { queued: number }).queued).toBeGreaterThan(0);
+    const stop = (keepMatchSlugs?: string[]) =>
+      request.post('/api/game/cs2/clips/redo/stop', {
+        data: keepMatchSlugs ? { keepMatchSlugs } : {},
+      });
+    await stop([slug]);
+    listed = await list();
+    expect(ours().clips.find((c) => c.id === mine.moments[0].id)?.status).toBe('pending');
+    expect((await (await stop()).json()).clips).toBeGreaterThanOrEqual(1);
+    listed = await list();
+    expect(ours().clips.find((c) => c.id === mine.moments[0].id)).toMatchObject({
+      status: 'done',
+      madeWith: '1080p60',
+      outdated: true,
+    });
   } finally {
     await settings(request, {
       highlightsPerPlayer: before.highlightsPerPlayer ?? 6,

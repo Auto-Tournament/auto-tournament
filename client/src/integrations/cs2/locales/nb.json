@@ -2195,6 +2195,8 @@
       "emptyOutdated": "Alt er laget med dagens innstillinger.",
       "redo": "Lag på nytt",
       "redone": "La {{clips}} klipp og {{reels}} sammendrag i kø",
+      "stopRedo": "Behold de gamle videoene ({{count}})",
+      "stopped": "Beholdt den gamle videoen for {{clips}} klipp og {{reels}} sammendrag",
       "madeWith": "Laget i {{quality}}",
       "madeUnknown": "Laget før dette ble lagret",
       "mapN": "Kart {{n}}",

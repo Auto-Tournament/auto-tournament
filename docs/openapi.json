@@ -5238,6 +5238,34 @@
         ]
       }
     },
+    "/api/game/cs2/clips/redo/stop": {
+      "post": {
+        "tags": [
+          "Highlights"
+        ],
+        "summary": "Stop redoing clips (admin)",
+        "description": "Clips queued again that still have their video go back to it, as made before, and the reels that waited only for them too. `keepMatchSlugs`: matches whose clips stay queued. A clip never recorded stays queued.",
+        "responses": {
+          "200": {
+            "description": "How many clips and reels went back"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          },
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
     "/api/game/cs2/clips/{id}/review": {
       "post": {
         "tags": [
