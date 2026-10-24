@@ -32,6 +32,8 @@ export type Cs2SettingKey =
   | 'at_allow_force_ready'
   | 'at_team_ready'
   | 'at_pause_after_restore'
+  | 'at_stop_command_available'
+  | 'at_stop_command_no_damage'
   | 'at_join_password'
   | 'at_autostart_after_minutes'
   | 'at_veto_turn_seconds'
@@ -209,6 +211,9 @@ export const CS2_INSTANCE_SETTINGS: ReadonlyArray<Cs2Setting> = [
   flag('at_team_ready', 'atTeamReady', 125),
   flag('at_pause_after_restore', 'atPauseAfterRestore', 150),
   flag('at_join_password', 'atJoinPassword', 155),
+  // `.stop` (a team asks to restore the round), sent as match.assign rules.stop (fleet/assignConfig.ts)
+  flag('at_stop_command_available', 'atStopCommandAvailable', 160),
+  flag('at_stop_command_no_damage', 'atStopCommandNoDamage', 170),
   // Seconds players stay on after a series before they are kicked (allocation.ts waits for it)
   kickDelay('at_series_end_kick_delay_no_demo', 'atSeriesEndKickDelayNoDemo', 220),
   // Minutes a loaded match waits in warmup before it starts, ready or not (0 = never).

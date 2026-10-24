@@ -287,6 +287,8 @@ export interface SettingsResponse extends ApiResponse {
     atAllowForceReady?: boolean;
     atTeamReady?: boolean;
     atPauseAfterRestore?: boolean;
+    atStopCommandAvailable?: boolean;
+    atStopCommandNoDamage?: boolean;
     atJoinPassword?: boolean;
     atAutostartAfterMinutes?: number;
     atSeriesEndKickDelayNoDemo?: number;

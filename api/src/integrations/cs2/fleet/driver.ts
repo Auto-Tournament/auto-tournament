@@ -423,6 +423,8 @@ async function assignDefaults(
 ): Promise<{
   allowForceReady?: boolean;
   pauseAfterRestore?: boolean;
+  stopCommandAvailable?: boolean;
+  stopCommandNoDamage?: boolean;
   teamReady?: boolean;
 }> {
   try {
@@ -433,6 +435,8 @@ async function assignDefaults(
     return {
       allowForceReady: core.allowForceReady,
       pauseAfterRestore: core.pauseAfterRestore,
+      stopCommandAvailable: core.stopCommandAvailable,
+      stopCommandNoDamage: core.stopCommandNoDamage,
       ...(teamReady ? { teamReady } : {}),
     };
   } catch {

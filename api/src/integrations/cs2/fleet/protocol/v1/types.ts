@@ -212,6 +212,7 @@ export interface MatchRules {
     team_absent_seconds?: number;
     gg_vote?: { enabled?: boolean; threshold?: number; min_score_diff?: number };
   };
+  stop?: { enabled?: boolean; no_damage?: boolean };
   demo?: { record?: boolean; upload?: boolean };
   /** GOTV, for Ready Up's `tv` plugin. Older Ready Ups ignore it (the tv_* cvars still go). */
   broadcast?: {

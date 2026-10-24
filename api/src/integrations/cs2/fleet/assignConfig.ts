@@ -18,7 +18,7 @@
  *   else `knife`).
  * - `rules` replaces what the plugin took as `maxRounds`, `overtimeMode` /
  *   `overtimeSegments` and the `at_*` cvars (ready, knife side pick, pauses,
- *   .gg, forfeit, demo recording).
+ *   .gg, forfeit, demo recording), plus the `.stop` settings.
  * - `rules.broadcast`: GOTV (delay, seats, insecure observers) for Ready Up's
  *   `tv` plugin, read from the same `tv_*` cvars, which still go too: a server
  *   without the plugin ignores the field and runs on the cvars as before.
@@ -43,6 +43,8 @@ import type {
 export interface AssignDefaults {
   allowForceReady?: boolean;
   pauseAfterRestore?: boolean;
+  stopCommandAvailable?: boolean;
+  stopCommandNoDamage?: boolean;
   /**
    * One player's `.ready` readies their whole team (`rules.ready.team_ready`): a
    * tournament match with the admin's `at_team_ready` on. Not shuffle, not matchmaking.
@@ -236,6 +238,11 @@ export function rulesFromMatchConfig(
     forfeit.gg_vote = ggVote;
   }
   if (Object.keys(forfeit).length) rules.forfeit = forfeit;
+
+  const stop: NonNullable<MatchRules['stop']> = {};
+  if (defaults.stopCommandAvailable !== undefined) stop.enabled = defaults.stopCommandAvailable;
+  if (defaults.stopCommandNoDamage !== undefined) stop.no_damage = defaults.stopCommandNoDamage;
+  if (Object.keys(stop).length) rules.stop = stop;
 
   // Demos: recorded unless the match turns it off; uploaded (streamed over
   // the link, FLEET.md §12.2) when the server can.

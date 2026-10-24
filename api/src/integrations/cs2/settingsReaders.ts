@@ -58,6 +58,21 @@ class Cs2Settings {
     return normalized === '1' || normalized === 'true' || normalized === 'yes';
   }
 
+  /** `.stop` (a team asks to restore the round): sent to Ready Up as match.assign rules.stop. */
+  async isAtStopCommandAvailable(): Promise<boolean> {
+    const value = await this.getSetting('at_stop_command_available');
+    if (!value) return false;
+    const normalized = value.toLowerCase();
+    return normalized === '1' || normalized === 'true' || normalized === 'yes';
+  }
+
+  async isAtStopCommandNoDamage(): Promise<boolean> {
+    const value = await this.getSetting('at_stop_command_no_damage');
+    if (!value) return false;
+    const normalized = value.toLowerCase();
+    return normalized === '1' || normalized === 'true' || normalized === 'yes';
+  }
+
   /**
    * Ready Up match servers get a join password (sv_password). Off by default: the
    * roster whitelist already keeps everyone else out, and a password only made
@@ -115,16 +130,33 @@ class Cs2Settings {
     minimumReadyRequired: number;
     allowForceReady: boolean;
     pauseAfterRestore: boolean;
+    stopCommandAvailable: boolean;
+    stopCommandNoDamage: boolean;
     seriesEndKickDelayNoDemo: number;
   }> {
-    const [minimumReadyRequired, allowForceReady, pauseAfterRestore, seriesEndKickDelayNoDemo] =
-      await Promise.all([
-        this.getAtMinimumReadyRequired(),
-        this.isAtAllowForceReadyEnabled(),
-        this.isAtPauseAfterRestoreEnabled(),
-        this.getAtSeriesEndKickDelayNoDemo(),
-      ]);
-    return { minimumReadyRequired, allowForceReady, pauseAfterRestore, seriesEndKickDelayNoDemo };
+    const [
+      minimumReadyRequired,
+      allowForceReady,
+      pauseAfterRestore,
+      stopCommandAvailable,
+      stopCommandNoDamage,
+      seriesEndKickDelayNoDemo,
+    ] = await Promise.all([
+      this.getAtMinimumReadyRequired(),
+      this.isAtAllowForceReadyEnabled(),
+      this.isAtPauseAfterRestoreEnabled(),
+      this.isAtStopCommandAvailable(),
+      this.isAtStopCommandNoDamage(),
+      this.getAtSeriesEndKickDelayNoDemo(),
+    ]);
+    return {
+      minimumReadyRequired,
+      allowForceReady,
+      pauseAfterRestore,
+      stopCommandAvailable,
+      stopCommandNoDamage,
+      seriesEndKickDelayNoDemo,
+    };
   }
 
   /**
@@ -204,6 +236,8 @@ export async function readCs2InstanceSettings(): Promise<object> {
     atAllowForceReady: atCore.allowForceReady,
     atTeamReady: await cs2Settings.isAtTeamReadyEnabled(),
     atPauseAfterRestore: atCore.pauseAfterRestore,
+    atStopCommandAvailable: atCore.stopCommandAvailable,
+    atStopCommandNoDamage: atCore.stopCommandNoDamage,
     atJoinPassword: await cs2Settings.isAtJoinPasswordEnabled(),
     atAutostartAfterMinutes: await cs2Settings.getAtAutostartAfterMinutes(),
     vetoTurnSeconds: await cs2Settings.getVetoTurnSeconds(),

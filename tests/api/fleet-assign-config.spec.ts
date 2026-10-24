@@ -178,9 +178,34 @@ test.describe('Fleet match.assign config', () => {
     ).toEqual({ ok: true, errors: [] });
   });
 
+  test('rules.stop follows the .stop settings', () => {
+    const on = rulesFromMatchConfig(tournamentConfig(), {
+      stopCommandAvailable: true,
+      stopCommandNoDamage: true,
+    });
+    expect(on.stop).toEqual({ enabled: true, no_damage: true });
+    const payload = {
+      match_id: 'r1m1',
+      epoch: 1,
+      config_rev: 1,
+      config: buildAssignConfig(tournamentConfig(), 'Pw7kQ2mZ9x', {
+        stopCommandAvailable: true,
+        stopCommandNoDamage: false,
+      }),
+    };
+    expect(payload.config.rules?.stop).toEqual({ enabled: true, no_damage: false });
+    expect(validatePayload('match.assign', payload)).toEqual({ ok: true, errors: [] });
+    expect(rulesFromMatchConfig(tournamentConfig()).stop).toBeUndefined();
+  });
+
   test('rules replace maxRounds, overtime and the at_* cvars', () => {
     expect(
-      rulesFromMatchConfig(tournamentConfig(), { allowForceReady: false, pauseAfterRestore: true })
+      rulesFromMatchConfig(tournamentConfig(), {
+        allowForceReady: false,
+        pauseAfterRestore: true,
+        stopCommandAvailable: false,
+        stopCommandNoDamage: false,
+      })
     ).toEqual({
       max_rounds: 24,
       overtime: { enabled: true, max_overtimes: -1 },
@@ -192,6 +217,7 @@ test.describe('Fleet match.assign config', () => {
         team_absent_seconds: 240,
         gg_vote: { enabled: true, threshold: 0.8, min_score_diff: 8 },
       },
+      stop: { enabled: false, no_damage: false },
       demo: { record: true, upload: false },
       broadcast: { delay_seconds: 90 },
     });
