@@ -444,7 +444,10 @@ export class Cs2ServerPool {
     // (the 2026-10-12 final waited behind a reserve of one).
     if (includeReserve || available.length <= 1 || dbBusyServers.size === 0) return available;
     const { effective } = await reserveCount();
-    const held = pickReserved(available, Math.min(effective, available.length - 1));
+    const held = pickReserved(
+      available.filter((server) => server.failoverUse !== false),
+      Math.min(effective, available.length - 1)
+    );
     if (held.size > 0)
       log.debug(`Fleet servers held in reserve for failover: ${[...held].join(', ')}`);
     return available.filter((server) => !held.has(server.id));

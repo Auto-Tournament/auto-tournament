@@ -1667,4 +1667,12 @@ export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
       );
     `,
   },
+  {
+    // 0 = automatic failover never moves a match to this server or keeps it
+    // as a spare; an admin can still move one there.
+    id: '063-server-failover-use',
+    up: `
+      ALTER TABLE cs2_servers ADD COLUMN IF NOT EXISTS failover_use INTEGER NOT NULL DEFAULT 1;
+    `,
+  },
 ];

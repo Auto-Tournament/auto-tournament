@@ -521,6 +521,8 @@
     "enabledHelper": "Deaktiverte servere brukes ikke til kamper",
     "tournamentUseLabel": "Bruk til turneringskamper",
     "tournamentUseHelper": "Av: en trenings- eller fellesskapsserver. Turneringskamper, autoskalering og failover bruker den aldri. Den teller likevel med i lisensen din.",
+    "failoverUseLabel": "Bruk til failover",
+    "failoverUseHelper": "Av: automatisk failover flytter aldri en kamp hit og holder den heller ikke som reserve.",
     "errors": {
       "nameRequired": "Servernavn er påkrevd",
       "hostRequired": "Vert er påkrevd",
@@ -1282,6 +1284,7 @@
     "reserveAuto": "Automatisk (1 når 2 servere er online)",
     "reserveStatus": "{{effective}} av {{pool}} online server(e) holdes ledige for failover",
     "reserveHelp": "Reserveservere står ledige: kamper legges ikke på dem, så én er klar når en server går ned. Minst én server tar alltid imot kamper. Reserveservere teller med i lisensen din som alle andre servere.",
+    "noTarget": "Ingen server er ledig til å ta over ved failover.",
     "summaryOn": "Automatisk flytting på",
     "summaryOff": "Automatisk flytting av"
   },

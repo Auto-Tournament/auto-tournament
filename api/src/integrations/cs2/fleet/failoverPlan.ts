@@ -177,6 +177,13 @@ export interface FailoverCandidate {
   name: string;
   cs2Build: number | null;
   capabilities: readonly string[];
+  /** false: an admin's pick only; automatic failover and the reserve skip it. */
+  failoverUse: boolean;
+}
+
+/** The candidates automatic failover may pick. */
+export function failoverTargets(candidates: readonly FailoverCandidate[]): FailoverCandidate[] {
+  return candidates.filter((c) => c.failoverUse);
 }
 
 /**

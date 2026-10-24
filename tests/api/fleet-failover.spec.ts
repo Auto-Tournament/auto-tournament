@@ -42,7 +42,9 @@ import {
  * - with csm on the dead server's machine: csm restarts it first and the
  *   match resumes there; with no free server, csm creates one, it joins the
  *   pool and takes the match (fleet/failoverRecovery.ts);
- * - auto-failover off: the admin moves the match from the match page.
+ * - auto-failover off: the admin moves the match from the match page;
+ * - a server with failoverUse off is never picked or held in reserve, and an
+ *   admin can still move a match to it.
  *
  * @tag api
  * @tag fleet
@@ -351,6 +353,18 @@ async function setFailover(
   const res = await request.put('/api/fleet/failover/settings', { headers: getAuthHeader(), data });
   expect(res.ok(), await res.text()).toBe(true);
   return res.json();
+}
+
+async function setFailoverUse(
+  request: APIRequestContext,
+  cs2ServerId: string,
+  failoverUse: boolean
+) {
+  const res = await request.put(`/api/servers/${cs2ServerId}`, {
+    headers: getAuthHeader(),
+    data: { failoverUse },
+  });
+  expect(res.ok(), await res.text()).toBe(true);
 }
 
 test.describe.serial('Fleet failover (FLEET.md §11)', () => {
@@ -889,6 +903,76 @@ test.describe.serial('Fleet failover (FLEET.md §11)', () => {
       }
     );
     expect(again.status()).toBe(409);
+  });
+
+  test('failoverUse off: no automatic move to the server, an admin can still move the match there', async ({
+    request,
+  }) => {
+    test.setTimeout(180_000);
+    const a = await FakeReadyUp.enroll(request);
+    cleanup.push(() => a.close());
+    await a.hello();
+    await link(request, a.serverId);
+    cleanup.push(() => unlink(request, a.serverId));
+
+    const slug = `fleet-fo-optout-${Date.now()}`;
+    cleanup.push(async () => {
+      await request.post(`/api/matches/${slug}/force-cancel`, { headers: getAuthHeader() });
+    });
+    const { epoch, backup } = await liveWithBackup(request, a, slug);
+    const b = await FakeReadyUp.enroll(request);
+    cleanup.push(() => b.close());
+    await b.hello();
+    const cs2B = await link(request, b.serverId);
+    cleanup.push(() => unlink(request, b.serverId));
+    await setFailoverUse(request, cs2B, false);
+
+    a.kill();
+    const proposal = await scanUntilProposed(request, slug);
+    const view = await failoverView(request, slug);
+    expect(view.proposal).toMatchObject({
+      id: proposal.id,
+      status: 'open',
+      targetCs2ServerId: null,
+    });
+    expect(view.candidates.map((c: { id: string }) => c.id)).toContain(cs2B);
+    expect((await matchRow(request, slug))?.serverId).not.toBe(cs2B);
+
+    const moving = request.post(`/api/game/cs2/matches/${slug}/failover/move`, {
+      headers: getAuthHeader(),
+      data: { targetServerId: cs2B, round: backup.round },
+    });
+    const assign = await acceptAssign(b, slug);
+    expect(assign.epoch).toBe(epoch + 1);
+    const res = await moving;
+    expect(res.status(), await res.text()).toBe(200);
+    expect((await matchRow(request, slug))?.serverId).toBe(cs2B);
+  });
+
+  test('settings: servers opted out of failover are not counted free and never held in reserve', async ({
+    request,
+  }) => {
+    const b = await FakeReadyUp.enroll(request);
+    cleanup.push(() => b.close());
+    await b.hello();
+    const cs2B = await link(request, b.serverId);
+    cleanup.push(() => unlink(request, b.serverId));
+    const c = await FakeReadyUp.enroll(request);
+    cleanup.push(() => c.close());
+    await c.hello();
+    const cs2C = await link(request, c.serverId);
+    cleanup.push(() => unlink(request, c.serverId));
+    await setFailoverUse(request, cs2B, false);
+    await setFailoverUse(request, cs2C, false);
+
+    const off = await setFailover(request, { reserve: 1 });
+    expect(off.reserve.failoverFree).toBe(0);
+    expect(off.reserve.held).toEqual([]);
+
+    await setFailoverUse(request, cs2C, true);
+    const on = await setFailover(request, { reserve: 1 });
+    expect(on.reserve.failoverFree).toBe(1);
+    expect(on.reserve.held.map((h: { id: string }) => h.id)).toEqual([cs2C]);
   });
 
   test('settings: validated, admin only', async ({ request, playwright, baseURL }) => {

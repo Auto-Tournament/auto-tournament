@@ -7,6 +7,7 @@ import {
   detectFailure,
   effectiveReserve,
   failoverGraceFromEnv,
+  failoverTargets,
   graceSecondsFor,
   maxBackupRound,
   pickBackup,
@@ -159,6 +160,7 @@ test.describe('failover: what to resume with', () => {
     name,
     cs2Build,
     capabilities,
+    failoverUse: true,
   });
   const failed = {
     cs2ServerId: 'a',
@@ -183,6 +185,13 @@ test.describe('failover: what to resume with', () => {
     expect(pickTarget(list, failed, null, ['d'])?.cs2ServerId).toBe('c');
     expect(pickTarget([c('a', 'A', 100)], failed)).toBeNull();
     expect(pickTarget([], failed)).toBeNull();
+  });
+
+  test('opted out: automatic failover skips a server with failoverUse false; an admin pick still finds it', () => {
+    const list = [{ ...c('b', 'B', 100), failoverUse: false }, c('c', 'C', 99)];
+    expect(failoverTargets(list).map((x) => x.cs2ServerId)).toEqual(['c']);
+    expect(pickTarget(failoverTargets(list), failed, 'b')?.cs2ServerId).toBe('c');
+    expect(pickTarget(list, failed, 'b')?.cs2ServerId).toBe('b');
   });
 
   test('reserve: 1 once two servers are online unless set; never the whole pool; the same servers each pass', () => {

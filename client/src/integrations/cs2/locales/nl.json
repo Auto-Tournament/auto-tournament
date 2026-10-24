@@ -521,6 +521,8 @@
     "enabledHelper": "Uitgeschakelde servers worden niet gebruikt voor wedstrijden",
     "tournamentUseLabel": "Use for tournament matches",
     "tournamentUseHelper": "Off: a practice or community server. Tournament matches, auto-scaling and failover never use it. It still counts toward your license.",
+    "failoverUseLabel": "Gebruiken voor failover",
+    "failoverUseHelper": "Uit: automatische failover zet hier nooit een match neer en houdt hem ook niet als reserve.",
     "errors": {
       "nameRequired": "Servernaam is verplicht",
       "hostRequired": "Host is verplicht",
@@ -1282,6 +1284,7 @@
     "reserveAuto": "Automatic (1 once 2 servers are online)",
     "reserveStatus": "{{effective}} of {{pool}} online server(s) kept free for failover",
     "reserveHelp": "Spare servers stay idle: matches are not put on them, so one is ready when a server goes down. At least one server always takes matches. Spare servers count toward your license like any other server.",
+    "noTarget": "Geen enkele server is vrij om een failover over te nemen.",
     "summaryOn": "Automatic moves on",
     "summaryOff": "Automatic moves off"
   },

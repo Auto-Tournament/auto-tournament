@@ -11,6 +11,8 @@ export interface Server {
   enabled: number; // PostgreSQL stores boolean as 0/1 in INTEGER column
   /** 0 = practice/community server: never given tournament matches. */
   tournament_use?: number | null;
+  /** 0 = automatic failover never uses this server; an admin can still move a match to it. */
+  failover_use?: number | null;
   /** 1 = the platform's virtual skins go to this server (fleet servers). */
   skins?: number | null;
   at_config?: string | null; // JSON blob with per-server MatchZy Enhanced ConVar overrides
@@ -53,6 +55,7 @@ export interface CreateServerInput {
   password: string;
   enabled?: boolean; // Optional, defaults to true
   tournamentUse?: boolean; // Optional, defaults to true
+  failoverUse?: boolean; // Optional, defaults to true
   skins?: boolean; // Optional, defaults to false
   atConfig?: AtServerConfigInput;
 }
@@ -64,6 +67,7 @@ export interface UpdateServerInput {
   password?: string;
   enabled?: boolean;
   tournamentUse?: boolean;
+  failoverUse?: boolean;
   skins?: boolean;
   atConfig?: AtServerConfigInput | null;
 }
@@ -82,6 +86,8 @@ export interface ServerResponse {
   enabled: boolean;
   /** False: a practice/community server that tournament matches never go to. */
   tournamentUse: boolean;
+  /** False: automatic failover never moves a match here or keeps it as a spare; an admin still can. */
+  failoverUse: boolean;
   /** The platform's virtual skins go to this server. */
   skins: boolean;
   /** Fleet servers: it runs with a Valve game server token, so skins stay off. Null when unknown. */

@@ -160,6 +160,7 @@ export class ServerService {
       password: input.password,
       enabled: input.enabled !== undefined ? (input.enabled ? 1 : 0) : 1,
       tournament_use: input.tournamentUse === false ? 0 : 1,
+      failover_use: input.failoverUse === false ? 0 : 1,
       skins: input.skins === true ? 1 : 0,
       at_config: atConfig,
     });
@@ -217,6 +218,7 @@ export class ServerService {
     if (input.password !== undefined) updateData.password = input.password;
     if (input.enabled !== undefined) updateData.enabled = input.enabled ? 1 : 0;
     if (input.tournamentUse !== undefined) updateData.tournament_use = input.tournamentUse ? 1 : 0;
+    if (input.failoverUse !== undefined) updateData.failover_use = input.failoverUse ? 1 : 0;
     if (input.skins !== undefined) updateData.skins = input.skins ? 1 : 0;
 
     if (input.atConfig !== undefined) {
@@ -343,6 +345,7 @@ export class ServerService {
       password: server.password,
       enabled: server.enabled === 1,
       tournamentUse: server.tournament_use !== 0,
+      failoverUse: server.failover_use !== 0,
       skins: server.skins === 1,
       atConfig,
       created_at: server.created_at,

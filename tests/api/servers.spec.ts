@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { getAuthHeader } from '../helpers/auth';
 import { setupTestContext } from '../helpers/setup';
 import { createTestServer, deleteServer, type Server } from '../helpers/servers';
 
@@ -46,6 +47,36 @@ test.describe.serial('Server API', () => {
       // Verify server is deleted
       const getDeletedResponse = await request.get(`/api/servers/${server!.id}`);
       expect(getDeletedResponse.status()).toBe(404);
+    }
+  );
+
+  test(
+    'should keep failoverUse across create and update, on by default',
+    {
+      tag: ['@api', '@servers', '@crud'],
+    },
+    async ({ request }) => {
+      const server = await createTestServer(request, 'failover-use');
+      expect(server).toBeTruthy();
+      const read = async () =>
+        (await (await request.get(`/api/servers/${server!.id}`)).json()).server.failoverUse;
+      expect(await read()).toBe(true);
+
+      const off = await request.put(`/api/servers/${server!.id}`, {
+        headers: getAuthHeader(),
+        data: { failoverUse: false },
+      });
+      expect(off.ok()).toBeTruthy();
+      expect(await read()).toBe(false);
+
+      const on = await request.put(`/api/servers/${server!.id}`, {
+        headers: getAuthHeader(),
+        data: { failoverUse: true },
+      });
+      expect(on.ok()).toBeTruthy();
+      expect(await read()).toBe(true);
+
+      expect(await deleteServer(request, server!.id)).toBe(true);
     }
   );
 });

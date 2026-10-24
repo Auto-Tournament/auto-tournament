@@ -58,6 +58,7 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
   const [password, setPassword] = useState('');
   const [enabled, setEnabled] = useState(true);
   const [tournamentUse, setTournamentUse] = useState(true);
+  const [failoverUse, setFailoverUse] = useState(true);
   const [skins, setSkins] = useState(false);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
@@ -75,6 +76,7 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
       setPassword(server.password);
       setEnabled(server.enabled);
       setTournamentUse(server.tournamentUse !== false);
+      setFailoverUse(server.failoverUse !== false);
       setSkins(server.skins === true);
     } else {
       resetForm();
@@ -176,6 +178,7 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
         password: password.trim(),
         enabled,
         tournamentUse,
+        failoverUse,
         skins,
         atConfig: null,
       };
@@ -189,6 +192,7 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
             : { host: payload.host, port: payload.port, password: payload.password }),
           enabled: payload.enabled,
           tournamentUse: payload.tournamentUse,
+          ...(isFleet ? { failoverUse: payload.failoverUse } : {}),
           skins: payload.skins,
           atConfig: payload.atConfig,
         });
@@ -398,6 +402,26 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
               inputProps={{ 'aria-label': t('serverModal.tournamentUseLabel') }}
               data-testid="server-tournament-use"
             />
+
+            {isFleet && (
+              <SwitchRow
+                label={
+                  <Box>
+                    <Typography variant="body2" fontWeight={500}>
+                      {t('serverModal.failoverUseLabel')}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      {t('serverModal.failoverUseHelper')}
+                    </Typography>
+                  </Box>
+                }
+                checked={failoverUse && tournamentUse}
+                disabled={!tournamentUse}
+                onChange={(e) => setFailoverUse(e.target.checked)}
+                inputProps={{ 'aria-label': t('serverModal.failoverUseLabel') }}
+                data-testid="server-failover-use"
+              />
+            )}
 
             {skins && server?.steamToken === true && (
               <Alert severity="warning" data-testid="server-skins-token-warning">
