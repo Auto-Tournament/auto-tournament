@@ -1,4 +1,4 @@
-import { Card, CardContent, Typography, Box, Chip } from '@mui/material';
+import { Card, CardActionArea, CardContent, Typography, Box, Chip } from '@mui/material';
 import { MapTrifoldIcon } from '@phosphor-icons/react';
 import type { Map } from '../cs2.types';
 import { FadeInImage } from '../common/FadeInImage';
@@ -32,93 +32,94 @@ export function MapCard({ map, onClick }: MapCardProps) {
   return (
     <Card
       data-testid={`map-card-${map.id}`}
-      onClick={() => onClick(map)}
       elevation={1}
       sx={{
         height: '100%',
-        display: 'flex',
-        flexDirection: 'column',
         width: '100%',
         transition: 'background-color 0.2s',
-        cursor: 'pointer',
         '&:hover': {
           bgcolor: 'var(--at-paper3)',
         },
       }}
     >
-      <Box
-        sx={{
-          height: '140px',
-          width: '100%',
-          position: 'relative',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          overflow: 'hidden',
-        }}
-      >
-        {!showPlaceholder && preferredImageUrl ? (
-          <FadeInImage
-            src={preferredImageUrl}
-            alt={map.displayName}
-            height="100%"
-            width="100%"
-            sx={{}}
-          />
-        ) : (
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              height: '100%',
-              width: '100%',
-              color: 'text.disabled',
-            }}
-          >
-            <MapTrifoldIcon size={48} />
-          </Box>
-        )}
-      </Box>
-      <CardContent
-        sx={{
-          flexGrow: 1,
-          display: 'flex',
-          flexDirection: 'column',
-          pt: 2,
-          px: 2,
-          pb: 1.5,
-          '&:last-child': {
-            pb: 1.5,
-          },
-        }}
+      <CardActionArea
+        onClick={() => onClick(map)}
+        sx={{ height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'stretch' }}
       >
         <Box
           sx={{
+            height: '140px',
+            width: '100%',
+            position: 'relative',
             display: 'flex',
-            alignItems: 'flex-start',
-            justifyContent: 'space-between',
-            gap: 1,
+            alignItems: 'center',
+            justifyContent: 'center',
+            overflow: 'hidden',
           }}
         >
-          <Typography variant="h6" component="div" gutterBottom>
-            {map.displayName}
-          </Typography>
-          {mode && (
-            <Chip
-              label={t(mapModeKey(mode))}
-              size="small"
-              color={mapModeColor(mode)}
-              variant="outlined"
-              data-testid={`map-card-mode-${map.id}`}
-              sx={{ flexShrink: 0, mt: 0.25 }}
+          {!showPlaceholder && preferredImageUrl ? (
+            <FadeInImage
+              src={preferredImageUrl}
+              alt={map.displayName}
+              height="100%"
+              width="100%"
+              sx={{}}
             />
+          ) : (
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                height: '100%',
+                width: '100%',
+                color: 'text.disabled',
+              }}
+            >
+              <MapTrifoldIcon size={48} />
+            </Box>
           )}
         </Box>
-        <Typography variant="body2" color="text.secondary">
-          {map.id}
-        </Typography>
-      </CardContent>
+        <CardContent
+          sx={{
+            flexGrow: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            pt: 2,
+            px: 2,
+            pb: 1.5,
+            '&:last-child': {
+              pb: 1.5,
+            },
+          }}
+        >
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'flex-start',
+              justifyContent: 'space-between',
+              gap: 1,
+            }}
+          >
+            <Typography variant="h6" component="div" gutterBottom>
+              {map.displayName}
+            </Typography>
+            {mode && (
+              <Chip
+                label={t(mapModeKey(mode))}
+                size="small"
+                color={mapModeColor(mode)}
+                variant="outlined"
+                data-testid={`map-card-mode-${map.id}`}
+                sx={{ flexShrink: 0, mt: 0.25 }}
+              />
+            )}
+          </Box>
+          <Typography variant="body2" color="text.secondary">
+            {map.id}
+          </Typography>
+        </CardContent>
+      </CardActionArea>
     </Card>
   );
 }

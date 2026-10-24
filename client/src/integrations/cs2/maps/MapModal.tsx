@@ -190,11 +190,17 @@ export default function MapModal({ open, map, onClose, onSave }: MapModalProps) 
     setSelectedFile(file);
     setError('');
 
-    // Create preview
+    // Create preview, once the browser can decode it
     const reader = new FileReader();
     reader.onload = (e) => {
       const result = e.target?.result as string;
-      setPreviewUrl(result);
+      const probe = new window.Image();
+      probe.onload = () => setPreviewUrl(result);
+      probe.onerror = () => {
+        setError(t('mapModal.errors.readFileFailed'));
+        setSelectedFile(null);
+      };
+      probe.src = result;
     };
     reader.readAsDataURL(file);
   };
@@ -359,7 +365,7 @@ export default function MapModal({ open, map, onClose, onSave }: MapModalProps) 
           justifyContent: 'space-between',
         }}
       >
-        <Typography variant="h6" fontWeight={600}>
+        <Typography variant="h6" component="span" fontWeight={600}>
           {isEditing ? t('mapModal.titleEdit') : t('mapModal.titleCreate')}
         </Typography>
         <IconButton onClick={onClose} size="small" aria-label="close">

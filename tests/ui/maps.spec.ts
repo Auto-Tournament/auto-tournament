@@ -1,7 +1,13 @@
+import fs from 'fs';
+import path from 'path';
 import { test, expect } from '@playwright/test';
 import { setupTestContext } from '../helpers/setup';
 import { getAuthHeader } from '../helpers/auth';
 import { deleteAllTournaments } from '../helpers/tournaments';
+
+const readFileFailed: string = JSON.parse(
+  fs.readFileSync(path.join(__dirname, '../../client/src/integrations/cs2/locales/en.json'), 'utf8')
+).mapModal.errors.readFileFailed;
 
 /**
  * Maps UI tests
@@ -177,6 +183,36 @@ test.describe.serial('Maps UI', () => {
       await expect(page.getByTestId(`map-card-mode-${mapId}`)).toHaveText('Wingman');
       // A de_ map with no type given is a defusal map.
       await expect(page.getByTestId('maps-section-defusal')).toBeVisible();
+    }
+  );
+
+  test(
+    'a map card opens its actions from the keyboard',
+    { tag: ['@ui', '@maps', '@a11y'] },
+    async ({ page }) => {
+      await page.goto('/manage/maps');
+      const card = page.getByTestId('maps-list').getByRole('button').first();
+      await expect(card).toBeVisible();
+      await card.focus();
+      await page.keyboard.press('Enter');
+      await expect(page.getByTestId('map-actions-modal')).toBeVisible();
+    }
+  );
+
+  test(
+    'a file that is not an image is refused when chosen',
+    { tag: ['@ui', '@maps', '@validation'] },
+    async ({ page }) => {
+      await page.goto('/manage/maps');
+      await page.getByTestId('add-map-button').click();
+      const modal = page.getByTestId('map-modal');
+      await expect(modal).toBeVisible();
+      await modal.locator('#map-image-upload').setInputFiles({
+        name: 'notimg.png',
+        mimeType: 'image/png',
+        buffer: Buffer.from('this is not an image'),
+      });
+      await expect(modal.getByRole('alert')).toContainText(readFileFailed);
     }
   );
 });
