@@ -717,6 +717,11 @@
         "main-title": "Main title",
         "rock": "Rock",
         "metal": "Metal"
+      },
+      "quality": {
+        "label": "Quality: {{quality}}",
+        "auto": "Auto",
+        "highest": "Highest"
       }
     }
   },

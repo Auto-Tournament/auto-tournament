@@ -43,6 +43,8 @@ import { useSnackbar } from '../../contexts/SnackbarContext';
 import { clock, type ClipMarkers } from './media';
 import { VideoThumb } from './HighlightCard';
 import { EventMark } from './EventMark';
+import { QualityMenu } from './QualityMenu';
+import { sourceFor, type QualityPick, type VideoCut } from './qualitySource';
 
 const SPEEDS = [1, 0.5, 0.25] as const;
 const SKIP = 5;
@@ -292,6 +294,8 @@ export interface HighlightPlayerProps {
   music?: PlayerMusic | null;
   /** The reel's crowd track (its own file), played beside it unless turned off. */
   crowd?: string | null;
+  /** The lower qualities cut from `src`, highest first: a quality menu when there are any. */
+  cuts?: VideoCut[];
   autoPlay?: boolean;
   onTime?: (seconds: number) => void;
 }
@@ -323,6 +327,7 @@ export const HighlightPlayer = forwardRef<HighlightPlayerHandle, HighlightPlayer
       shareUrl,
       music,
       crowd = null,
+      cuts = [],
       autoPlay = false,
       onTime,
     },
@@ -332,6 +337,15 @@ export const HighlightPlayer = forwardRef<HighlightPlayerHandle, HighlightPlayer
     const { showSuccess } = useSnackbar();
     const box = useRef<HTMLDivElement>(null);
     const video = useRef<ComponentRef<'video'>>(null);
+    // The quality: what plays; downloads, sharing and the music still use `src`.
+    const [quality, setQuality] = useState<QualityPick>('auto');
+    const source = sourceFor(quality, src, cuts);
+    const resumeAt = useRef<{ at: number; play: boolean } | null>(null);
+    const pickQuality = (pick: QualityPick) => {
+      const v = video.current;
+      if (v) resumeAt.current = { at: v.currentTime, play: !v.paused };
+      setQuality(pick);
+    };
     const track = useRef<HTMLDivElement>(null);
     const [playing, setPlaying] = useState(false);
     // The video stopped to load more: a spinner, so it doesn't look frozen.
@@ -533,7 +547,7 @@ export const HighlightPlayer = forwardRef<HighlightPlayerHandle, HighlightPlayer
         <Box
           component="video"
           ref={video}
-          src={src}
+          src={source}
           playsInline
           autoPlay={autoPlay}
           muted={muted}
@@ -548,7 +562,15 @@ export const HighlightPlayer = forwardRef<HighlightPlayerHandle, HighlightPlayer
           onWaiting={() => setWaiting(true)}
           onPlaying={() => setWaiting(false)}
           onCanPlay={() => setWaiting(false)}
-          onLoadedMetadata={(e) => setDuration(e.currentTarget.duration || markers?.duration || 0)}
+          onLoadedMetadata={(e) => {
+            setDuration(e.currentTarget.duration || markers?.duration || 0);
+            // Another quality: on from the same moment, playing if it was.
+            const r = resumeAt.current;
+            if (!r) return;
+            resumeAt.current = null;
+            e.currentTarget.currentTime = r.at;
+            if (r.play) void e.currentTarget.play();
+          }}
           onTimeUpdate={(e) => {
             setTime(e.currentTarget.currentTime);
             onTime?.(e.currentTarget.currentTime);
@@ -922,6 +944,14 @@ export const HighlightPlayer = forwardRef<HighlightPlayerHandle, HighlightPlayer
               {clock(time)} / {clock(duration)}
             </Box>
             <Box sx={{ flex: 1 }} />
+            {cuts.length > 0 && (
+              <QualityMenu
+                cuts={cuts}
+                pick={quality}
+                onPick={pickQuality}
+                container={box.current}
+              />
+            )}
             <ButtonBase
               onClick={() => setSpeed((s) => SPEEDS[(SPEEDS.indexOf(s) + 1) % SPEEDS.length]!)}
               aria-label={t('videoHighlights.player.speed', { speed })}
