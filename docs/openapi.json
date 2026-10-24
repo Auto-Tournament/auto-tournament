@@ -809,11 +809,11 @@
     },
     {
       "name": "Test helpers",
-      "description": "E2E helpers. Disabled in production unless ENABLE_TEST_ENDPOINTS is set."
+      "description": "E2E helpers. Disabled unless ENABLE_TEST_ENDPOINTS is set."
     },
     {
       "name": "Test helpers (CS2)",
-      "description": "E2E helpers that stand in for a CS2 server. Disabled in production unless ENABLE_TEST_ENDPOINTS is set."
+      "description": "E2E helpers that stand in for a CS2 server. Disabled unless ENABLE_TEST_ENDPOINTS is set."
     },
     {
       "name": "Tournament",
@@ -20224,7 +20224,7 @@
           "Testing"
         ],
         "summary": "Reset database (development only)",
-        "description": "Drops and recreates the entire database schema and re-initializes default data. This endpoint is **development only** and is disabled when NODE_ENV=production.\n",
+        "description": "Drops and recreates the entire database schema and re-initializes default data. This endpoint is disabled unless ENABLE_TEST_ENDPOINTS is on.\n",
         "security": [
           {
             "bearerAuth": []

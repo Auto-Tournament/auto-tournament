@@ -42,6 +42,7 @@ import { PUBLIC_DIR, MAP_IMAGES_DIR, SWAGGER_UI_DIR } from './config/publicPaths
 import { DATA_DIR } from './config/dataDir';
 import { getOpenApiSpec } from './config/swagger';
 import { log, logger, LOG_HTTP_REQUESTS, LOG_DB_VERBOSE, LOG_DB_VALUES } from './utils/logger';
+import { warnIfTestEndpointsInProduction } from './utils/testEndpoints';
 import { cleanupOldLogs } from './utils/eventLogger';
 import { getIO, initializeSocket, type HandshakeMiddleware } from './services/socketService';
 import { matchmakingService } from './services/matchmaking/matchmakingService';
@@ -653,6 +654,7 @@ void (async () => {
       log.server(`Server running on port ${PORT}`);
       log.server(`Listening on: all interfaces (IPv4 & IPv6)`);
       log.server(`Environment: ${process.env.NODE_ENV || 'development'}`);
+      warnIfTestEndpointsInProduction((message) => log.warn(`[SECURITY] ${message}`));
       log.server(
         `Logging: LOG_LEVEL=${process.env.LOG_LEVEL || 'info'} (Pino actual: ${logger.level}) | ` +
           `DB verbose=${LOG_DB_VERBOSE} | DB values=${LOG_DB_VALUES} | ` +

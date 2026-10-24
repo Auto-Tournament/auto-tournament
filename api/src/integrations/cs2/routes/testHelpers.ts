@@ -1,7 +1,7 @@
 /**
  * CS2 test helpers, mounted at /api/test next to the core ones.
  *
- * Only for E2E runs: disabled in production unless ENABLE_TEST_ENDPOINTS is set,
+ * Only for E2E runs: disabled unless ENABLE_TEST_ENDPOINTS is set,
  * the same switch as the core test helpers.
  */
 
@@ -19,13 +19,9 @@ import type { Untrusted } from '../../../utils/untrusted';
 import type { MatchState, StateSnapshotPayload } from '../fleet/protocol/v1';
 import type { JsonObject } from '../../../utils/json';
 import type { SqlValue } from '../../../config/database';
+import { testEndpointsFlag } from '../../../utils/testEndpoints';
 
 const router = Router();
-
-function isE2eTestHelperEnabled(): boolean {
-  const enabled = (process.env.ENABLE_TEST_ENDPOINTS || '').toLowerCase();
-  return enabled === '1' || enabled === 'true' || enabled === 'yes';
-}
 
 /**
  * Test-only helper: set clips' status (a recorder that failed them).
@@ -36,7 +32,7 @@ router.post(
   '/highlights/status',
   requireAuth,
   async (req: Request, res: Response): Promise<void> => {
-    if (process.env.NODE_ENV === 'production' && !isE2eTestHelperEnabled()) {
+    if (!testEndpointsFlag()) {
       res.status(403).json({ success: false, error: 'Disabled in production' });
       return;
     }
@@ -63,7 +59,7 @@ router.post(
  * POST /api/test/fleet/expire-key { keyId }   make a fleet key's expiry pass
  */
 router.post('/fleet/reset-enroll-rate-limit', requireAuth, (_req: Request, res: Response): void => {
-  if (process.env.NODE_ENV === 'production' && !isE2eTestHelperEnabled()) {
+  if (!testEndpointsFlag()) {
     res.status(403).json({ success: false, error: 'Disabled in production' });
     return;
   }
@@ -72,7 +68,7 @@ router.post('/fleet/reset-enroll-rate-limit', requireAuth, (_req: Request, res: 
 });
 
 router.post('/fleet/age-token', requireAuth, async (req: Request, res: Response): Promise<void> => {
-  if (process.env.NODE_ENV === 'production' && !isE2eTestHelperEnabled()) {
+  if (!testEndpointsFlag()) {
     res.status(403).json({ success: false, error: 'Disabled in production' });
     return;
   }
@@ -92,7 +88,7 @@ router.post(
   '/fleet/expire-key',
   requireAuth,
   async (req: Request, res: Response): Promise<void> => {
-    if (process.env.NODE_ENV === 'production' && !isE2eTestHelperEnabled()) {
+    if (!testEndpointsFlag()) {
       res.status(403).json({ success: false, error: 'Disabled in production' });
       return;
     }
@@ -122,7 +118,7 @@ router.post(
  *   with its own grace (default 0 / 0: a server that is down now counts as down)
  */
 function fleetTestGuard(res: Response): boolean {
-  if (process.env.NODE_ENV === 'production' && !isE2eTestHelperEnabled()) {
+  if (!testEndpointsFlag()) {
     res.status(403).json({ success: false, error: 'Disabled in production' });
     return false;
   }
@@ -446,7 +442,7 @@ router.get(
  * → { tournamentIds }
  */
 router.post('/stats-fixture', requireAuth, async (req: Request, res: Response): Promise<void> => {
-  if (process.env.NODE_ENV === 'production' && !isE2eTestHelperEnabled()) {
+  if (!testEndpointsFlag()) {
     res.status(403).json({ success: false, error: 'Disabled in production' });
     return;
   }
@@ -557,7 +553,7 @@ router.post(
   '/stats-fixture/cleanup',
   requireAuth,
   async (req: Request, res: Response): Promise<void> => {
-    if (process.env.NODE_ENV === 'production' && !isE2eTestHelperEnabled()) {
+    if (!testEndpointsFlag()) {
       res.status(403).json({ success: false, error: 'Disabled in production' });
       return;
     }

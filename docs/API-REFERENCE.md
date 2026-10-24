@@ -544,7 +544,7 @@ Automatic server scaling on csm machines: start stopped Ready Up servers ahead o
 
 ### Test helpers (CS2)
 
-E2E helpers that stand in for a CS2 server. Disabled in production unless ENABLE_TEST_ENDPOINTS is set.
+E2E helpers that stand in for a CS2 server. Disabled unless ENABLE_TEST_ENDPOINTS is set.
 
 | Method | Path | Auth |
 | --- | --- | --- |
@@ -1238,7 +1238,7 @@ Parties, the queue, matches and the matchmaking leaderboard (docs/design/matchma
 
 ### Test helpers
 
-E2E helpers. Disabled in production unless ENABLE_TEST_ENDPOINTS is set.
+E2E helpers. Disabled unless ENABLE_TEST_ENDPOINTS is set.
 
 | Method | Path | Auth |
 | --- | --- | --- |

@@ -319,6 +319,6 @@ export const cs2LegacyRoutes: LegacyRouteMount[] = [
     router: testHelperRoutes,
     title: 'Test helpers (CS2)',
     description:
-      'E2E helpers that stand in for a CS2 server. Disabled in production unless ENABLE_TEST_ENDPOINTS is set.',
+      'E2E helpers that stand in for a CS2 server. Disabled unless ENABLE_TEST_ENDPOINTS is set.',
   },
 ];

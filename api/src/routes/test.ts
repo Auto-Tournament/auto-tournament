@@ -58,13 +58,12 @@ import fs from 'fs';
 import path from 'path';
 import type { SqlValue } from '../config/database';
 import type { Untrusted } from '../utils/untrusted';
+import { requireLoopback, requireTestEndpoints, testEndpointsFlag } from '../utils/testEndpoints';
 
 const router = Router();
 
-function isE2eTestHelperEnabled(): boolean {
-  const enabled = (process.env.ENABLE_TEST_ENDPOINTS || '').toLowerCase();
-  return enabled === '1' || enabled === 'true' || enabled === 'yes';
-}
+// Every helper here is off unless ENABLE_TEST_ENDPOINTS is on, whatever NODE_ENV says.
+router.use(requireTestEndpoints({ tier: 'flag' }));
 
 /**
  * Test sign-ins skip the "What do you play?" dialog unless the test asks for
@@ -203,7 +202,7 @@ router.post('/marker', requireAuth, (req: Request, res: Response): void => {
  *     summary: Reset database (development only)
  *     description: >
  *       Drops and recreates the entire database schema and re-initializes default data.
- *       This endpoint is **development only** and is disabled when NODE_ENV=production.
+ *       This endpoint is disabled unless ENABLE_TEST_ENDPOINTS is on.
  *     security:
  *       - BearerAuth: []
  *     responses:
@@ -215,14 +214,6 @@ router.post('/marker', requireAuth, (req: Request, res: Response): void => {
  *         description: Failed to reset database
  */
 router.post('/reset-database', requireAuth, async (_req: Request, res: Response): Promise<void> => {
-  if (process.env.NODE_ENV === 'production' && !isE2eTestHelperEnabled()) {
-    res.status(403).json({
-      success: false,
-      error: 'Database reset endpoint is disabled in production',
-    });
-    return;
-  }
-
   try {
     log.warn('[DEV-TOOLS] Full database reset requested via /api/test/reset-database');
     await db.resetDatabase();
@@ -258,11 +249,6 @@ router.post('/reset-database', requireAuth, async (_req: Request, res: Response)
  * NOTE: This endpoint is only available in non-production environments.
  */
 router.post('/match-state', requireAuth, async (req: Request, res: Response): Promise<void> => {
-  if (process.env.NODE_ENV === 'production' && !isE2eTestHelperEnabled()) {
-    res.status(403).json({ success: false, error: 'Disabled in production' });
-    return;
-  }
-
   const { slug, status, serverId, loadedAt } = (req.body || {}) as {
     slug?: string;
     status?: string;
@@ -330,10 +316,6 @@ router.post(
   '/shuffle-no-shows',
   requireAuth,
   async (req: Request, res: Response): Promise<void> => {
-    if (process.env.NODE_ENV === 'production' && !isE2eTestHelperEnabled()) {
-      res.status(403).json({ success: false, error: 'Disabled in production' });
-      return;
-    }
     const { slug, seen } = (req.body || {}) as { slug?: string; seen?: string[] };
     const match = slug
       ? await db.queryOneAsync<{
@@ -368,11 +350,6 @@ router.post(
  * NOTE: This endpoint is only available in non-production environments.
  */
 router.post('/series-result', requireAuth, async (req: Request, res: Response): Promise<void> => {
-  if (process.env.NODE_ENV === 'production' && !isE2eTestHelperEnabled()) {
-    res.status(403).json({ success: false, error: 'Disabled in production' });
-    return;
-  }
-
   const { slug, result, meta } = (req.body || {}) as {
     slug?: string;
     result?: SeriesResult;
@@ -411,10 +388,6 @@ router.post(
   '/passkey-verifier',
   requireAuth,
   async (req: Request, res: Response): Promise<void> => {
-    if (process.env.NODE_ENV === 'production' && !isE2eTestHelperEnabled()) {
-      res.status(403).json({ success: false, error: 'disabled in production' });
-      return;
-    }
     const { setPasskeyVerifier } = await import('../services/localAdminPasskeys');
     if ((req.body ?? {}).fake === false) {
       setPasskeyVerifier(null);
@@ -467,15 +440,7 @@ router.post(
  *
  * NOTE: This endpoint is only available in non-production environments.
  */
-router.post('/login-admin', async (req: Request, res: Response): Promise<void> => {
-  if (process.env.NODE_ENV === 'production' && !isE2eTestHelperEnabled()) {
-    res.status(403).json({
-      success: false,
-      error: 'login-admin test helper is disabled in production',
-    });
-    return;
-  }
-
+router.post('/login-admin', requireLoopback, async (req: Request, res: Response): Promise<void> => {
   const anyReq = req as Request & {
     login?: (user: Untrusted, cb: (err: Untrusted) => void) => void;
   };
@@ -548,68 +513,64 @@ router.post('/login-admin', async (req: Request, res: Response): Promise<void> =
  *
  * NOTE: This endpoint is only available in non-production environments.
  */
-router.post('/login-player', async (req: Request, res: Response): Promise<void> => {
-  if (process.env.NODE_ENV === 'production' && !isE2eTestHelperEnabled()) {
-    res.status(403).json({
-      success: false,
-      error: 'login-player test helper is disabled in production',
-    });
-    return;
-  }
+router.post(
+  '/login-player',
+  requireLoopback,
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { steamId: raw, name: rawName } = req.body as { steamId?: string; name?: string };
+      const steamId = raw && raw.trim().length > 0 ? raw.trim() : '76561198000000002';
+      // `name` is only used when the player is first created (getOrCreatePlayer
+      // does not rename an existing player), so it is safe to pass on every
+      // call without affecting an existing test player's name.
+      const name = rawName && rawName.trim().length > 0 ? rawName.trim() : `Test Player ${steamId}`;
 
-  try {
-    const { steamId: raw, name: rawName } = req.body as { steamId?: string; name?: string };
-    const steamId = raw && raw.trim().length > 0 ? raw.trim() : '76561198000000002';
-    // `name` is only used when the player is first created (getOrCreatePlayer
-    // does not rename an existing player), so it is safe to pass on every
-    // call without affecting an existing test player's name.
-    const name = rawName && rawName.trim().length > 0 ? rawName.trim() : `Test Player ${steamId}`;
-
-    await playerService.getOrCreatePlayer(steamId, name);
-    await playerService.updatePlayer(steamId, { isAdmin: false });
-    await setGamesPromptForTest(steamId, req.body);
-    // `games`: put these games on the player's profile (matchmaking needs its game there).
-    const games = (req.body as { games?: Untrusted }).games;
-    if (Array.isArray(games)) {
-      for (const game of games) {
-        if (typeof game !== 'string') continue;
-        const gameId = await gameRowId(game);
-        if (gameId === null) continue;
-        await db.runAsync(
-          `INSERT INTO player_games (player_uid, game_id) SELECT uid, ? FROM players WHERE id = ? ON CONFLICT DO NOTHING`,
-          [gameId, steamId]
-        );
+      await playerService.getOrCreatePlayer(steamId, name);
+      await playerService.updatePlayer(steamId, { isAdmin: false });
+      await setGamesPromptForTest(steamId, req.body);
+      // `games`: put these games on the player's profile (matchmaking needs its game there).
+      const games = (req.body as { games?: Untrusted }).games;
+      if (Array.isArray(games)) {
+        for (const game of games) {
+          if (typeof game !== 'string') continue;
+          const gameId = await gameRowId(game);
+          if (gameId === null) continue;
+          await db.runAsync(
+            `INSERT INTO player_games (player_uid, game_id) SELECT uid, ? FROM players WHERE id = ? ON CONFLICT DO NOTHING`,
+            [gameId, steamId]
+          );
+        }
       }
+      // A sign-in, like the real callbacks record (admin home's "Signed in this week").
+      await playerService.recordSignIn(steamId);
+
+      res.cookie('player_steam_id', signPlayerSteamId(steamId), {
+        httpOnly: false,
+        // Test helpers must work over plain HTTP in E2E containers.
+        secure: false,
+        sameSite: 'lax',
+        path: '/',
+        maxAge: 1000 * 60 * 60 * 24 * 30,
+      });
+
+      res.json({
+        success: true,
+        steamId,
+      });
+    } catch (err) {
+      const error = err as Error;
+      log.error('Error in /api/test/login-player', error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to create player session',
+        details: error.message,
+      });
     }
-    // A sign-in, like the real callbacks record (admin home's "Signed in this week").
-    await playerService.recordSignIn(steamId);
-
-    res.cookie('player_steam_id', signPlayerSteamId(steamId), {
-      httpOnly: false,
-      // Test helpers must work over plain HTTP in E2E containers.
-      secure: false,
-      sameSite: 'lax',
-      path: '/',
-      maxAge: 1000 * 60 * 60 * 24 * 30,
-    });
-
-    res.json({
-      success: true,
-      steamId,
-    });
-  } catch (err) {
-    const error = err as Error;
-    log.error('Error in /api/test/login-player', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to create player session',
-      details: error.message,
-    });
   }
-});
+);
 
 function isTestHelperDisabled(res: Response): boolean {
-  if (process.env.NODE_ENV === 'production' && !isE2eTestHelperEnabled()) {
+  if (!testEndpointsFlag()) {
     res.status(403).json({ success: false, error: 'Disabled in production' });
     return true;
   }
@@ -1838,7 +1799,7 @@ function parseFakeOAuthProvider(value: Untrusted): FakeOAuthProvider | null {
 /** The fake provider only exists when test endpoints are explicitly enabled. */
 function fakeOAuthProviderFrom(req: Request, res: Response): FakeOAuthProvider | null {
   const provider = parseFakeOAuthProvider(req.params.provider);
-  if (!isE2eTestHelperEnabled() || !provider) {
+  if (!testEndpointsFlag() || !provider) {
     res.status(404).json({ success: false, error: 'Not found' });
     return null;
   }
@@ -1882,7 +1843,7 @@ router.get('/oauth/:provider/callback', (req: Request, res: Response, next: Next
  *   POST /api/test/steam-link/callback { steamId }   as the Steam callback once Steam proved `steamId`
  */
 router.post('/steam-link/start', async (req: Request, res: Response): Promise<void> => {
-  if (!isE2eTestHelperEnabled()) {
+  if (!testEndpointsFlag()) {
     res.status(404).json({ success: false, error: 'Not found' });
     return;
   }
@@ -1890,7 +1851,7 @@ router.post('/steam-link/start', async (req: Request, res: Response): Promise<vo
 });
 
 router.post('/steam-link/callback', async (req: Request, res: Response): Promise<void> => {
-  if (!isE2eTestHelperEnabled()) {
+  if (!testEndpointsFlag()) {
     res.status(404).json({ success: false, error: 'Not found' });
     return;
   }
@@ -1933,7 +1894,7 @@ router.get('/fake-oauth/:provider/userinfo', (req: Request, res: Response): void
 
 /** True when the E2E test helper endpoints are enabled (404s them otherwise). */
 function testHelperEnabled(res: Response): boolean {
-  if (!isE2eTestHelperEnabled()) {
+  if (!testEndpointsFlag()) {
     res.status(404).json({ success: false, error: 'Not found' });
     return false;
   }
@@ -2082,7 +2043,7 @@ const FAKE_WIKIDATA_ITEMS: FakeWikidataItem[] = [
 const fakeWikidataCounters = { searchRequests: 0, getEntitiesRequests: 0 };
 
 function fakeWikidataEnabled(res: Response): boolean {
-  if (!isE2eTestHelperEnabled()) {
+  if (!testEndpointsFlag()) {
     res.status(404).json({ success: false, error: 'Not found' });
     return false;
   }
@@ -3017,10 +2978,6 @@ registerWebhookTestRoutes(router, testHelperEnabled);
  *         description: Done
  */
 router.post('/license-consent', requireAuth, async (req: Request, res: Response): Promise<void> => {
-  if (process.env.NODE_ENV === 'production' && !isE2eTestHelperEnabled()) {
-    res.status(404).json({ success: false, error: 'Not found' });
-    return;
-  }
   const { action, record } = (req.body ?? {}) as { action?: Untrusted; record?: Untrusted };
   try {
     if (action === 'clear') {
@@ -3061,14 +3018,14 @@ router.post('/license-consent', requireAuth, async (req: Request, res: Response)
  *   POST /api/test/env-import { env, forget?: string[] }      run the boot-time env import with `env`
  */
 function refuseInProduction(res: Response): boolean {
-  if (process.env.NODE_ENV === 'production' && !isE2eTestHelperEnabled()) {
+  if (!testEndpointsFlag()) {
     res.status(403).json({ success: false, error: 'Test helpers are disabled in production' });
     return true;
   }
   return false;
 }
 
-router.post('/setup-code', async (req: Request, res: Response) => {
+router.post('/setup-code', requireLoopback, async (req: Request, res: Response) => {
   if (refuseInProduction(res)) return;
   const purpose = (req.body as { purpose?: Untrusted })?.purpose === 'reset' ? 'reset' : 'setup';
   const { code } = await localAdminService.createCode(purpose);
@@ -3081,7 +3038,7 @@ router.post('/setup-code/expire', async (_req: Request, res: Response) => {
   res.json({ success: true });
 });
 
-router.post('/clear-admins', async (_req: Request, res: Response) => {
+router.post('/clear-admins', requireLoopback, async (_req: Request, res: Response) => {
   if (refuseInProduction(res)) return;
   await db.queryAsync('UPDATE players SET is_admin = 0 WHERE is_admin = 1', []);
   res.json({ success: true });
@@ -3094,7 +3051,7 @@ router.post('/login-throttle/reset', (_req: Request, res: Response) => {
   res.json({ success: true });
 });
 
-router.post('/env-import', async (req: Request, res: Response) => {
+router.post('/env-import', requireLoopback, async (req: Request, res: Response) => {
   if (refuseInProduction(res)) return;
   const body = (req.body ?? {}) as { env?: Record<string, string>; forget?: string[] };
   if (Array.isArray(body.forget) && body.forget.length > 0) {
@@ -3116,10 +3073,6 @@ router.post('/env-import', async (req: Request, res: Response) => {
  * only follow the redirect's Location, never the provider.
  */
 router.get('/oidc/.well-known/openid-configuration', (req: Request, res: Response) => {
-  if (process.env.NODE_ENV === 'production' && !isE2eTestHelperEnabled()) {
-    res.status(404).end();
-    return;
-  }
   res.json({
     issuer: `http://${req.headers.host}/api/test/oidc`,
     authorization_endpoint: 'https://sso.invalid/protocol/openid-connect/auth',

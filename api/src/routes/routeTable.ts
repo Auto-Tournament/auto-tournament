@@ -371,7 +371,7 @@ const coreRoutes: MountedRouter[] = [
     prefix: '/api/test',
     router: testRoutes,
     title: 'Test helpers',
-    description: 'E2E helpers. Disabled in production unless ENABLE_TEST_ENDPOINTS is set.',
+    description: 'E2E helpers. Disabled unless ENABLE_TEST_ENDPOINTS is set.',
   },
   {
     prefix: '/api/setup',
