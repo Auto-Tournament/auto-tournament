@@ -205,11 +205,11 @@ class EmailService {
 
   /**
    * Where links in emails start: the saved site address, else
-   * FRONTEND_BASE_URL, else `fallback` (the request's own origin).
+   * FRONTEND_BASE_URL, else '' (never the request's own origin).
    */
-  async siteUrl(fallback?: string): Promise<string> {
+  async siteUrl(): Promise<string> {
     const r = await this.row();
-    return trimUrl(r?.site_url) || trimUrl(process.env.FRONTEND_BASE_URL) || trimUrl(fallback);
+    return trimUrl(r?.site_url) || trimUrl(process.env.FRONTEND_BASE_URL);
   }
 
   private async transporter(): Promise<{ transporter: Transporter; from: string } | null> {

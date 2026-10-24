@@ -131,11 +131,19 @@ class PlayerEmailService {
    * Set (or change) the player's address and send a confirmation link to it.
    * Changing it unconfirms it until the new link is opened.
    */
-  async setEmail(playerId: string, input: Untrusted, origin: string): Promise<PlayerEmailView> {
+  async setEmail(playerId: string, input: Untrusted): Promise<PlayerEmailView> {
     const email = normalizeEmail(input);
     if (!email) throw new PlayerEmailError(400, 'That is not an email address', 'invalid');
     if (!(await emailService.isReady())) {
       throw new PlayerEmailError(409, 'This site cannot send email yet', 'notConfigured');
+    }
+    const base = await emailService.siteUrl();
+    if (!base) {
+      throw new PlayerEmailError(
+        409,
+        'This site has no address for email links yet (Settings -> Email, or FRONTEND_BASE_URL)',
+        'noSiteUrl'
+      );
     }
     const current = await this.row(playerId);
     const same = current && current.email.toLowerCase() === email.toLowerCase();
@@ -155,7 +163,7 @@ class PlayerEmailService {
       [playerId, email, newToken(), t, t]
     );
     try {
-      await this.sendVerification(playerId, email, await emailService.siteUrl(origin));
+      await this.sendVerification(playerId, email, base);
     } catch (error) {
       log.error('[EMAIL] Could not send a confirmation email', error as Error);
       throw new PlayerEmailError(
@@ -213,7 +221,7 @@ class PlayerEmailService {
    * a reset link when it finds a username and password account with a
    * confirmed address, and says nothing either way (no account fishing).
    */
-  async requestPasswordReset(identifier: Untrusted, origin: string): Promise<void> {
+  async requestPasswordReset(identifier: Untrusted): Promise<void> {
     if (typeof identifier !== 'string' || !identifier.trim() || identifier.length > 254) return;
     const value = identifier.trim();
     const rows = await db.queryAsync<{ player_id: string; email: string; username: string }>(
@@ -225,9 +233,15 @@ class PlayerEmailService {
     );
     const row = rows[0];
     if (!row || !(await emailService.isReady())) return;
+    const base = await emailService.siteUrl();
+    if (!base) {
+      log.error(
+        '[AUTH] Password reset email not sent: no site address (Settings -> Email, or FRONTEND_BASE_URL)'
+      );
+      return;
+    }
     const token = await this.issueToken(row.player_id, 'reset', row.email, RESET_TTL);
     const site = await settingsService.getSiteName().catch(() => 'Auto Tournament');
-    const base = await emailService.siteUrl(origin);
     try {
       await emailService.send({
         to: row.email,

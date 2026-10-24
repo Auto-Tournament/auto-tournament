@@ -999,9 +999,8 @@ localAuthRouter.post('/forgot', guardWrite, async (req: Request, res: Response) 
   if (wait > 0) return tooMany(res, wait);
   // Counted as a failure every time: a few requests per address, then a pause.
   loginThrottle.recordFailure(ip, target);
-  const origin = req.get('origin') || `${req.protocol}://${req.get('host') ?? 'localhost'}`;
   try {
-    await playerEmailService.requestPasswordReset(identifier, origin);
+    await playerEmailService.requestPasswordReset(identifier);
   } catch (error) {
     log.error('[AUTH] Password reset request failed', error as Error);
   }
