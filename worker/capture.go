@@ -413,15 +413,9 @@ func (g *game) checkFollow(name string, from int) error {
 		// with where they are on the tick the demo stands on, not at `from`
 		// (2026-10-24: the camera was on the player, 306 units from where they
 		// had been, and every attempt failed).
-		g.con.drain()
-		if err := g.con.send("demo_pause"); err != nil {
-			return err
-		}
-		if v, _, err := g.con.expect(rePaused, time.Second); err == nil {
-			if t, err := strconv.Atoi(v); err == nil {
-				if at, ok := g.follow(t - g.startTick); ok {
-					want = at
-				}
+		if t, ok := g.pausedTick(); ok {
+			if at, ok := g.follow(t); ok {
+				want = at
 			}
 		}
 		g.con.drain()
@@ -464,6 +458,25 @@ func (g *game) checkFollow(name string, from int) error {
 
 // pause pauses the demo. CS2 says "paused on tick" when it pauses and
 // nothing when it already was.
+// pausedTick pauses the demo and returns the analyzer tick it stands on. A
+// demo that is already paused answers nothing (see AT_REPAUSE), so it then
+// plays a frame and pauses again: trusting an older tick put every frame of
+// a clip 48 ticks off (2026-10-24, "no frame near tick" on every attempt).
+func (g *game) pausedTick() (int, bool) {
+	for _, cmds := range [][]string{{"demo_pause"}, {"demo_resume", "demo_pause"}} {
+		g.con.drain()
+		if err := g.con.send(cmds...); err != nil {
+			return 0, false
+		}
+		if v, _, err := g.con.expect(rePaused, time.Second); err == nil {
+			if t, err := strconv.Atoi(v); err == nil {
+				return t - g.startTick, true
+			}
+		}
+	}
+	return 0, false
+}
+
 func (g *game) pause() error {
 	g.con.drain()
 	if err := g.con.send("demo_pause"); err != nil {

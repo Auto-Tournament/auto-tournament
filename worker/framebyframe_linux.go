@@ -245,13 +245,8 @@ func (r *recorder) fbfCapture(g *game, name string, from, to, wantFrom int, segs
 	// Spectating can set the demo playing again: stop it and take the tick it
 	// stopped on, or the clip's timing is planned from the seek's tick while
 	// the demo is already past it.
-	g.con.drain()
-	if err := g.con.send("demo_pause"); err != nil {
-		return nil, 0, err
-	}
-	if v, _, err := g.con.expect(rePaused, time.Second); err == nil {
-		t, _ := strconv.Atoi(v)
-		g.pausedAt = t - g.startTick
+	if t, ok := g.pausedTick(); ok {
+		g.pausedAt = t
 	}
 	// Each follow-check retry spectates again, and the demo plays on meanwhile:
 	// one retry took it 48 ticks past the run-up into the clip, whose first
@@ -308,6 +303,11 @@ func (r *recorder) fbfCapture(g *game, name string, from, to, wantFrom int, segs
 	} else {
 		// It plays on from where the seek paused it; CS2 does not always say so.
 		log.Printf("frame by frame: no word of the resume; going from the seek's tick %d", t0)
+	}
+	// The frames were planned from pausedAt: from anywhere else, every one is off.
+	if d := t0 - g.pausedAt; d > 2 || d < -2 {
+		_ = g.con.send("endmovie", "host_framerate 0", "demo_pause")
+		return nil, 0, fmt.Errorf("the demo resumed at tick %d, not %d as planned", t0, g.pausedAt)
 	}
 	_ = g.spectate(name)
 
