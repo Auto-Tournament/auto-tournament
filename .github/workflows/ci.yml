@@ -372,6 +372,11 @@ jobs:
             # No autoscaler timer: it would send csm commands to other specs'
             # fake machines. tests/api/fleet-autoscale.spec.ts runs passes itself.
             echo "FLEET_AUTOSCALE_INTERVAL_MS=0"
+            # The failover scan runs when a spec triggers it, not on a platform timer; fleet
+            # waits run at test pace (fleet-failover, fleet-driver).
+            echo "FLEET_FAILOVER_CHECK_MS=600000"
+            echo "FLEET_SERVER_BACK_GRACE_MS=1500"
+            echo "FLEET_ASSIGN_TIMEOUT_MS=3000"
             echo "STEAM_API_KEY="
             echo "LOG_LEVEL=info"
           } >> .env
