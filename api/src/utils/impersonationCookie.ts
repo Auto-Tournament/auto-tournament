@@ -59,7 +59,13 @@ export function getSignedImpersonatedSteamId(cookieHeader: string | undefined): 
       .filter(Boolean)
       .map((p) => {
         const [k, ...v] = p.split('=');
-        return [k, decodeURIComponent((v.join('=') ?? '').trim())];
+        const value = v.join('=').trim();
+        // A malformed %-escape in any cookie must not throw.
+        try {
+          return [k, decodeURIComponent(value)];
+        } catch {
+          return [k, value];
+        }
       })
   );
 
