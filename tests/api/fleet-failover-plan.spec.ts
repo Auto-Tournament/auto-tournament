@@ -305,6 +305,47 @@ test.describe('failover: the resume block', () => {
     expect(valid(resume)).toEqual({ ok: true, errors: [] });
   });
 
+  test('round_sides: set with a known backup round (inline and backup_ref), omitted when unknown or round 0', () => {
+    const base = { fromEpoch: 1, mapNumber: 2, state: state(), mapStats: null };
+    const inline = buildResume({
+      ...base,
+      round: backup.round,
+      backup,
+      backupRef: null,
+      roundSides: 'team1_ct',
+    });
+    expect(inline.round_sides).toBe('team1_ct');
+    expect(valid(inline)).toEqual({ ok: true, errors: [] });
+    const ref = buildResume({
+      ...base,
+      round: 9,
+      backup: null,
+      backupRef: { file: backup.file, sha256: backup.sha256 },
+      roundSides: 'team2_ct',
+    });
+    expect(ref.round_sides).toBe('team2_ct');
+    expect(valid(ref)).toEqual({ ok: true, errors: [] });
+    const unknown = buildResume({
+      ...base,
+      round: backup.round,
+      backup,
+      backupRef: null,
+      roundSides: null,
+    });
+    expect(unknown.round_sides).toBeUndefined();
+    expect(
+      buildResume({ ...base, round: backup.round, backup, backupRef: null }).round_sides
+    ).toBeUndefined();
+    const warmup = buildResume({
+      ...base,
+      round: 0,
+      backup: null,
+      backupRef: null,
+      roundSides: 'team1_ct',
+    });
+    expect(warmup.round_sides).toBeUndefined();
+  });
+
   test('no backup yet: the map restarts from warmup (round 0), sides kept only when decided', () => {
     const s = state();
     s.series.maps['2'].sides = 'knife';

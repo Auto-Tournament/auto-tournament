@@ -232,6 +232,7 @@ test.describe
       size: sent.size,
       sha256: sent.sha256,
       score: sent.score,
+      round_sides: sent.round_sides,
       encoding: 'base64',
       data: sent.data,
     });

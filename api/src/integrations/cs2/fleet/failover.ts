@@ -952,6 +952,7 @@ export async function acceptFailover(id: string, req: AcceptRequest): Promise<Ac
     backupRef: !inline && backupMeta ? { file: backupMeta.file, sha256: backupMeta.sha256 } : null,
     state,
     mapStats,
+    roundSides: backupMeta?.roundSides ?? null,
   });
   const how = round >= 1 ? `round ${round} (${inline ? 'backup inline' : 'backup_ref'})` : 'warmup';
   const auditId = await writeAudit({

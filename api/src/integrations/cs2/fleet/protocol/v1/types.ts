@@ -272,6 +272,8 @@ export interface InlineBackup {
   size: number;
   sha256: string;
   score: Score;
+  /** The sides played in `round`. */
+  round_sides?: 'team1_ct' | 'team2_ct';
   encoding: 'base64';
   data: string;
   part?: number;
@@ -288,6 +290,8 @@ export interface ResumeBlock {
   series_score?: Score;
   maps?: Record<string, { score?: Score; winner?: TeamKey | 'none' }>;
   sides?: 'team1_ct' | 'team2_ct';
+  /** The sides played in `round`. */
+  round_sides?: 'team1_ct' | 'team2_ct';
   score?: Score;
   map_stats?: MapStats;
   state?: MatchState;

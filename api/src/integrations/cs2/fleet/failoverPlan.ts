@@ -243,6 +243,8 @@ export interface ResumeInput {
   /** The platform's last state of the match (from the failed epoch). */
   state: MatchState | null;
   mapStats: MapStats | null;
+  /** The sides played in the backup's round, when the backup recorded them. */
+  roundSides?: 'team1_ct' | 'team2_ct' | null;
 }
 
 /**
@@ -260,6 +262,7 @@ export function buildResume(input: ResumeInput): ResumeBlock {
     if (input.backup) resume.backup = input.backup;
     else if (input.backupRef)
       resume.backup_ref = { file: input.backupRef.file, sha256: input.backupRef.sha256 };
+    if (input.roundSides) resume.round_sides = input.roundSides;
   }
   const series = input.state?.series;
   if (series) {

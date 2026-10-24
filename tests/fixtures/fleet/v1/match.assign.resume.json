@@ -69,12 +69,8 @@
           }
         ]
       },
-      "spectators": [
-        "76561198000000099"
-      ],
-      "admins": [
-        "76561198000000077"
-      ],
+      "spectators": ["76561198000000099"],
+      "admins": ["76561198000000077"],
       "password": "k3y-7Hq2",
       "rules": {
         "max_rounds": 24,
@@ -130,6 +126,7 @@
           "team1": 5,
           "team2": 3
         },
+        "round_sides": "team1_ct",
         "encoding": "base64",
         "data": "IlNhdmVGaWxlIgp7CgkiRmlyc3RIYWxmU2NvcmUiCgl7CgkJInRlYW0xIgkiNSIKCQkidGVhbTIiCSIzIgoJfQp9Cg=="
       },
@@ -146,7 +143,8 @@
           "winner": "team1"
         }
       },
-      "sides": "team2_ct"
+      "sides": "team2_ct",
+      "round_sides": "team1_ct"
     }
   }
 }

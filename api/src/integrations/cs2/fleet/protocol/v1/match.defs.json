@@ -534,6 +534,10 @@
         "score": {
           "$ref": "#/$defs/score"
         },
+        "round_sides": {
+          "enum": ["team1_ct", "team2_ct"],
+          "description": "the sides played in `round` (team1 on CT or team2 on CT); optional"
+        },
         "encoding": {
           "const": "base64"
         },
@@ -618,6 +622,10 @@
         "sides": {
           "enum": ["team1_ct", "team2_ct"],
           "description": "the resumed map's starting sides (the knife result). Default: state.series.maps[map_number].sides, else config.maps[].sides; a resume at round >= 1 of a map still on knife is rejected"
+        },
+        "round_sides": {
+          "enum": ["team1_ct", "team2_ct"],
+          "description": "the sides played in `round`. Default: backup.round_sides, else state.teams.team1.side"
         },
         "score": {
           "$ref": "#/$defs/score",

@@ -55,6 +55,8 @@ const PART_TTL_S = 24 * 60 * 60;
 
 const PRUNE_INTERVAL_MS = 60 * 60 * 1000;
 
+export type RoundSides = 'team1_ct' | 'team2_ct';
+
 /** A stored backup without its file. */
 export interface RoundBackupMeta {
   id: number;
@@ -70,6 +72,8 @@ export interface RoundBackupMeta {
   sha256: string;
   /** Map score at the start of the round. */
   score: Score;
+  /** The sides played in the round, when the server sent them. */
+  roundSides: RoundSides | null;
   /** Unix seconds; set when a restore voided this round. */
   supersededAt: number | null;
   /** Unix seconds: first stored. */
@@ -109,6 +113,7 @@ export interface RoundBackupWrite {
   size: number;
   sha256: string;
   score: Score;
+  roundSides: RoundSides | null;
   data: string;
 }
 
@@ -181,6 +186,7 @@ export function toInlineBackup(row: StoredRoundBackup): InlineBackup {
     size: row.size,
     sha256: row.sha256,
     score: { team1: row.score.team1, team2: row.score.team2 },
+    ...(row.roundSides ? { round_sides: row.roundSides } : {}),
     encoding: 'base64',
     data: row.data,
   };
@@ -262,6 +268,8 @@ export class RoundBackupStore {
         size: b.size,
         sha256: sha,
         score: { team1: b.score.team1, team2: b.score.team2 },
+        roundSides:
+          b.round_sides === 'team1_ct' || b.round_sides === 'team2_ct' ? b.round_sides : null,
         data: parts > 1 ? file.toString('base64') : b.data,
       },
       now
@@ -438,6 +446,7 @@ interface BackupRow {
   sha256: string;
   score_team1: number;
   score_team2: number;
+  round_sides: string | null;
   data?: string;
   superseded_at: number | null;
   stored_at: number;
@@ -445,7 +454,7 @@ interface BackupRow {
 }
 
 const META_COLUMNS =
-  'id, match_slug, map_number, round, epoch, server_id, file, size, sha256, score_team1, score_team2, superseded_at, stored_at, updated_at';
+  'id, match_slug, map_number, round, epoch, server_id, file, size, sha256, score_team1, score_team2, round_sides, superseded_at, stored_at, updated_at';
 
 function fromRow(row: BackupRow): StoredRoundBackup {
   const n = (v: number | string | null | undefined) =>
@@ -461,6 +470,8 @@ function fromRow(row: BackupRow): StoredRoundBackup {
     size: Number(row.size),
     sha256: row.sha256,
     score: { team1: Number(row.score_team1), team2: Number(row.score_team2) },
+    roundSides:
+      row.round_sides === 'team1_ct' || row.round_sides === 'team2_ct' ? row.round_sides : null,
     data: row.data ?? '',
     supersededAt: n(row.superseded_at),
     storedAt: Number(row.stored_at),
@@ -490,12 +501,12 @@ export function createDbRoundBackupPersistence(): RoundBackupPersistence {
     async upsert(w, now) {
       const row = await db.queryOneAsync<BackupRow>(
         `INSERT INTO cs2_match_round_backups
-           (match_slug, map_number, round, epoch, server_id, file, size, sha256, score_team1, score_team2, data, superseded_at, stored_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, ?, ?)
+           (match_slug, map_number, round, epoch, server_id, file, size, sha256, score_team1, score_team2, round_sides, data, superseded_at, stored_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, ?, ?)
          ON CONFLICT (match_slug, map_number, round) DO UPDATE SET
            epoch = EXCLUDED.epoch, server_id = EXCLUDED.server_id, file = EXCLUDED.file,
            size = EXCLUDED.size, sha256 = EXCLUDED.sha256, score_team1 = EXCLUDED.score_team1,
-           score_team2 = EXCLUDED.score_team2, data = EXCLUDED.data, superseded_at = NULL,
+           score_team2 = EXCLUDED.score_team2, round_sides = EXCLUDED.round_sides, data = EXCLUDED.data, superseded_at = NULL,
            updated_at = EXCLUDED.updated_at
          RETURNING ${META_COLUMNS}`,
         [
@@ -509,6 +520,7 @@ export function createDbRoundBackupPersistence(): RoundBackupPersistence {
           w.sha256,
           w.score.team1,
           w.score.team2,
+          w.roundSides,
           w.data,
           now,
           now,

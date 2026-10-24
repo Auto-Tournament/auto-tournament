@@ -1675,4 +1675,11 @@ export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
       ALTER TABLE cs2_servers ADD COLUMN IF NOT EXISTS failover_use INTEGER NOT NULL DEFAULT 1;
     `,
   },
+  {
+    // The sides played in the round, sent back with a resume / restore.
+    id: '064-round-backup-sides',
+    up: `
+      ALTER TABLE cs2_match_round_backups ADD COLUMN IF NOT EXISTS round_sides TEXT;
+`,
+  },
 ];

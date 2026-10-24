@@ -8,6 +8,7 @@ import {
   backupRetentionDays,
   createMemoryRoundBackupPersistence,
   handleBackupEvent,
+  toInlineBackup,
 } from '../../api/src/integrations/cs2/fleet/backups';
 import {
   RestoreError,
@@ -126,6 +127,29 @@ test.describe('Round backup store', () => {
       storedAt: 100,
       updatedAt: 300,
     });
+  });
+
+  test('round_sides is stored and sent back inline; an invalid value is ignored without rejecting the backup', async () => {
+    const { store, persistence } = newStore();
+    const withSides = backupOf('with sides', { round_sides: 'team2_ct' });
+    expect(
+      (await store.ingest({ matchSlug: SLUG, serverId: 's1', epoch: 1, backup: withSides }, 100))
+        .kind
+    ).toBe('stored');
+    expect(persistence.rows[0].roundSides).toBe('team2_ct');
+    const stored = await store.get(SLUG, 1, 5);
+    expect(toInlineBackup(stored!).round_sides).toBe('team2_ct');
+
+    const bad = backupOf('bad sides', { round: 6, round_sides: 'both' as unknown as 'team1_ct' });
+    expect(
+      (await store.ingest({ matchSlug: SLUG, serverId: 's1', epoch: 1, backup: bad }, 100)).kind
+    ).toBe('stored');
+    expect(persistence.rows[1].roundSides).toBeNull();
+    expect('round_sides' in toInlineBackup((await store.get(SLUG, 1, 6))!)).toBe(false);
+
+    const none = backupOf('no sides', { round: 7 });
+    await store.ingest({ matchSlug: SLUG, serverId: 's1', epoch: 1, backup: none }, 100);
+    expect(persistence.rows[2].roundSides).toBeNull();
   });
 
   test('forget: a fresh start drops every backup and staged part of that slug, and only that slug', async () => {
