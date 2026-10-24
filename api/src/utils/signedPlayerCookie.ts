@@ -10,14 +10,12 @@
  */
 
 import crypto from 'crypto';
+import { sessionSecret } from '../config/sessionSecret';
 
 const COOKIE_NAME = 'player_steam_id';
 const SEP = '.';
 
-function getSecret(): string {
-  const s = process.env.SESSION_SECRET;
-  return typeof s === 'string' && s.trim().length > 0 ? s.trim() : 'auto-tournament-dev-session-secret';
-}
+const getSecret = sessionSecret;
 
 function hmac(key: string, value: string): string {
   return crypto.createHmac('sha256', key).update(value, 'utf8').digest('base64url');
