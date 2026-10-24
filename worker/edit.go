@@ -371,11 +371,16 @@ const reelCrossfade = 0.4
 // people watch is 1080p60, about half the size of the H.265 1440p120 one.
 // H.265 stays available with AT_ENCODER=hevc_nvenc or libx265.
 func encodeArgs(encoder string) []string {
-	args := []string{"-c:v", encoder, "-r", fmt.Sprint(outputFPS), "-g", fmt.Sprint(2 * outputFPS)}
+	return encodeArgsAt(encoder, outputHeight, outputFPS, maxBitrate(encoder))
+}
+
+// encodeArgsAt is encodeArgs for a video `height` tall at `fps`, at most
+// `rate` Mbit/s: a lower quality cut from the video (cuts.go).
+func encodeArgsAt(encoder string, height int, fps float64, rate int) []string {
+	args := []string{"-c:v", encoder, "-r", fmt.Sprint(fps), "-g", fmt.Sprint(2 * fps)}
 	if !isVAAPI(encoder) { // VAAPI's frames are scaled before they go up to the GPU (hwEncode)
-		args = append(args, "-s", fmt.Sprintf("%dx%d", outputHeight*16/9, outputHeight), "-sws_flags", "lanczos")
+		args = append(args, "-s", fmt.Sprintf("%dx%d", height*16/9, height), "-sws_flags", "lanczos")
 	}
-	rate := maxBitrate(encoder)
 	ceiling := []string{"-maxrate", fmt.Sprintf("%dM", rate), "-bufsize", fmt.Sprintf("%dM", 2*rate)}
 	switch encoder {
 	case "h264_vaapi", "hevc_vaapi", "av1_vaapi":
@@ -415,6 +420,11 @@ var vaapiDevice = env("AT_VAAPI_DEVICE", "/dev/dri/renderD128")
 // the GPU and sends each video output ([v], [clean]) through a scale to the
 // output size and up to the GPU; other encoders take the frames as they are.
 func hwEncode(args []string, encoder string) []string {
+	return hwEncodeAt(args, encoder, outputHeight)
+}
+
+// hwEncodeAt is hwEncode for a video `height` tall.
+func hwEncodeAt(args []string, encoder string, height int) []string {
 	if !isVAAPI(encoder) {
 		return args
 	}
@@ -428,7 +438,7 @@ func hwEncode(args []string, encoder string) []string {
 		}
 		if a == "-map" && i+1 < len(args) && (args[i+1] == "[v]" || args[i+1] == "[clean]") {
 			label := strings.Trim(args[i+1], "[]")
-			up = append(up, fmt.Sprintf("[%s]scale=%d:%d:flags=lanczos,format=nv12,hwupload[%s_hw]", label, outputHeight*16/9, outputHeight, label))
+			up = append(up, fmt.Sprintf("[%s]scale=%d:%d:flags=lanczos,format=nv12,hwupload[%s_hw]", label, height*16/9, height, label))
 			out = append(out, a, "["+label+"_hw]")
 			i++
 			continue
@@ -440,7 +450,7 @@ func hwEncode(args []string, encoder string) []string {
 	} else if fc < 0 {
 		// Simple transcodes (notably reel trimming) have no labelled graph
 		// output to rewrite. They still need hardware frames for VAAPI.
-		upload := fmt.Sprintf("scale=%d:%d:flags=lanczos,format=nv12,hwupload", outputHeight*16/9, outputHeight)
+		upload := fmt.Sprintf("scale=%d:%d:flags=lanczos,format=nv12,hwupload", height*16/9, height)
 		for i, arg := range out {
 			if arg == "-vf" && i+1 < len(out) {
 				out[i+1] += "," + upload
@@ -643,7 +653,12 @@ func maxBitrate(encoder string) int {
 		return setMbps
 	}
 	w, h := outputSize()
-	scale := float64(w*h) / (1920 * 1080) * math.Sqrt(outputFPS/60)
+	return autoBitrate(encoder, w, h, outputFPS)
+}
+
+// autoBitrate is the ceiling worked out for a w×h video at fps.
+func autoBitrate(encoder string, w, h int, fps float64) int {
+	scale := float64(w*h) / (1920 * 1080) * math.Sqrt(fps/60)
 	rate := math.Min(60, math.Max(10, 10*scale))
 	switch {
 	case strings.HasPrefix(encoder, "av1"):

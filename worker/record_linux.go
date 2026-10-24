@@ -379,6 +379,8 @@ type videoQuality struct {
 	FPS    int `json:"fps"`
 	// Mbps: the bitrate ceiling an admin set; 0 works it out (maxBitrate).
 	Mbps int `json:"mbps,omitempty"`
+	// Cuts: the lower qualities to cut from each video (cuts.go); none: the video alone.
+	Cuts []videoCut `json:"cuts,omitempty"`
 }
 
 // useQuality makes the next videos at q: CS2 captured at that size (a
@@ -387,7 +389,7 @@ type videoQuality struct {
 // q the recorder goes back to what it started with.
 func (r *recorder) useQuality(q *videoQuality) {
 	width, height, outH, fps := r.base.width, r.base.height, r.base.outputHeight, r.base.outputFPS
-	setMbps = 0
+	setMbps, cuts = 0, nil
 	if q != nil && q.Mbps > 0 && q.Mbps <= 200 {
 		setMbps = q.Mbps
 	}
@@ -409,6 +411,9 @@ func (r *recorder) useQuality(q *videoQuality) {
 		r.rate.fps = float64(envPositive("AT_CAPTURE_FPS", 30))
 	}
 	r.width, r.height, outputHeight, outputFPS = width, height, outH, fps
+	if q != nil {
+		cuts = validCuts(q.Cuts) // against the output just set
+	}
 }
 
 func (mj *mapJob) moments() int {
@@ -1337,6 +1342,7 @@ func (r *recorder) recordMap(ctx context.Context, mj *mapJob) (kept, rejected, f
 		if mj.KeepClean {
 			r.uploadTwins(ctx, c.path, route)
 		}
+		r.uploadCuts(ctx, c.path, route)
 	}
 	if err != nil {
 		return kept, rejected, len(failed), err
@@ -1423,6 +1429,7 @@ func (r *recorder) uploadReel(ctx context.Context, dir string, j *recordJob, cli
 		return err
 	}
 	r.uploadCrowd(ctx, reel, route)
+	r.uploadCuts(ctx, reel, route)
 	return nil
 }
 
