@@ -24,7 +24,7 @@ import {
   type HostForce,
   type HostInventoryPayload,
 } from '../protocol/host/v1';
-import { HostGateway, hostEvents } from './gateway';
+import { HostGateway, hostEvents, setQueuedVetter } from './gateway';
 import { pushHostChanged } from './adminPush';
 import {
   commandTargets,
@@ -32,6 +32,7 @@ import {
   newServersOf,
   joinInventory,
   toServerRef,
+  type CommandTargetsPayload,
   type FleetServerIndex,
   type FleetServerJoinRow,
   type HostFleetServerRef,
@@ -192,6 +193,8 @@ export async function sendHostCommand<T extends HostCommandType>(
     issuedBy: string | null;
     force?: { reason: string } | null;
     meta?: registry.HostCommandMeta;
+    /** How long it may wait for an offline machine (default 10 min, 2 min when forced by the platform). */
+    expiresInMs?: number;
   } = { issuedBy: null }
 ): Promise<SentHostCommand> {
   const host = await registry.getHost(hostId);
@@ -279,6 +282,15 @@ export async function sendHostCommand<T extends HostCommandType>(
     else delete meta.plugins;
   }
 
+  // A disruptive command that waits for an offline machine is not run long after: the
+  // platform checks this deadline when it delivers it (vetQueued). It stays out of the
+  // payload, which csm judges against its own clock.
+  if (HOST_DISRUPTIVE_TYPES.has(type)) {
+    const ttl =
+      opts.expiresInMs ?? (force?.by.startsWith('platform:') ? FORCED_TTL_MS : QUEUED_TTL_MS);
+    meta = { ...(meta ?? {}), deadlineMs: Date.now() + ttl };
+  }
+
   const id = ulid();
   await registry.recordHostCommand({
     id,
@@ -305,6 +317,48 @@ export async function sendHostCommand<T extends HostCommandType>(
   pushHostChanged(hostId);
   return { command, delivered };
 }
+
+/** How long a disruptive command may wait for its machine: the platform's own forced ones, and the rest. */
+const FORCED_TTL_MS = 2 * 60_000;
+const QUEUED_TTL_MS = 10 * 60_000;
+
+/**
+ * Before a queued disruptive command is written to a machine that came back: past its
+ * expiry, or (not forced) a match started on its server meanwhile, it is rewritten as
+ * expired in place (same seq) so csm answers `expired` and does not run it.
+ */
+setQueuedVetter(async (hostId, env) => {
+  if (env.type === 'auth.rotate' || !HOST_DISRUPTIVE_TYPES.has(env.type)) return env;
+  const record = await registry.getHostCommand(env.id);
+  if (!record || record.status !== 'pending') return env;
+  const deadline = Number(record.meta?.deadlineMs);
+  let why: { code: string; message: string } | null = null;
+  if (Number.isFinite(deadline) && deadline <= Date.now()) {
+    why = {
+      code: 'expired',
+      message: 'The machine was offline too long; the command was not run.',
+    };
+  } else if (!record.forcedBy) {
+    const view = await hostServers(hostId);
+    const target: CommandTargetsPayload = {};
+    if ('server' in env.payload && env.payload.server) target.server = env.payload.server;
+    if ('servers' in env.payload && env.payload.servers) target.servers = env.payload.servers;
+    const targets = commandTargets(env.type, target, view);
+    const busy = view.filter((s) => targets.includes(s.name) && s.matchInProgress);
+    if (busy.length > 0)
+      why = {
+        code: 'match_in_progress',
+        message: `A match started on ${busy.map((s) => s.name).join(', ')} while the command waited; it was not run.`,
+      };
+  }
+  if (!why) return env;
+  env.payload.expires_at = 1;
+  const rewritten = env;
+  await registry.rewriteHostOutbox(hostId, env.seq as number, rewritten);
+  await registry.failHostCommand(record.id, why.code, why.message);
+  log.warn(`[FLEET-HOST] ${hostId}: queued ${env.type} dropped at delivery (${why.code})`);
+  return rewritten;
+});
 
 /** Who the platform's own follow-up commands are issued by. */
 export const PLATFORM_ACTOR = 'platform';
@@ -421,7 +475,9 @@ async function resendBusy(hostId: string, id: string): Promise<void> {
   const record = await registry.getHostCommand(id);
   if (!record || !retriesBusy(record)) return;
   const attempts = Number(record.meta?.busyRetries ?? 0) + 1;
-  const payload = Object.fromEntries(Object.entries(record.payload).filter(([k]) => k !== 'force'));
+  const payload = Object.fromEntries(
+    Object.entries(record.payload).filter(([k]) => k !== 'force' && k !== 'expires_at')
+  );
   try {
     const sent = await sendHostCommand(hostId, record.type as HostCommandType, payload as never, {
       issuedBy: record.issuedBy,

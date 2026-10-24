@@ -158,6 +158,7 @@ export async function restartBeforeMove(f: RecoveryFailover, now = nowS()): Prom
         issuedBy: RECOVERY_ACTOR,
         force: { reason: `auto-failover for ${f.matchSlug}` },
         meta: { failover: f.id },
+        expiresInMs: restartWaitS() * 1000,
       }
     );
     restarts.set(f.id, {

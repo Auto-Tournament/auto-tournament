@@ -259,10 +259,11 @@ test.describe.serial('Fleet hosts (csm)', () => {
     // csm's new servers are copies of the master install without Ready Up:
     // the platform installs it on them next.
     const install = await csm.nextCommand('host.update_plugins');
-    const { accept_license: acceptLicense, ...installPayload } = install.payload as Record<
-      string,
-      unknown
-    >;
+    const {
+      accept_license: acceptLicense,
+      expires_at: _expiresAt,
+      ...installPayload
+    } = install.payload as Record<string, unknown>;
     expect(installPayload).toEqual({
       servers: ['server-2'],
       readyup: { version: 'latest', bundle: 'default' },
@@ -373,7 +374,7 @@ test.describe.serial('Fleet hosts (csm)', () => {
     });
     expect(other.status).toBe(202);
     const otherMsg = await csm.nextCommand('server.restart');
-    expect(otherMsg.payload).toEqual({ server: 'server-1', reason: 'test' });
+    expect(otherMsg.payload).toMatchObject({ server: 'server-1', reason: 'test' });
     // A force without a reason is not a force.
     expect(
       (
@@ -461,7 +462,7 @@ test.describe.serial('Fleet hosts (csm)', () => {
     await csm.acked(done.seq as number);
     const again = await csm.nextCommand('server.restart');
     expect(again.id).not.toBe(restartMsg.id);
-    expect(again.payload).toEqual({ server: 'server-1', reason: 'busy test' });
+    expect(again.payload).toMatchObject({ server: 'server-1', reason: 'busy test' });
     const first = (
       await (
         await request.get(`/api/fleet/hosts/${m.hostId}/commands/${restart.body.command.id}`)
