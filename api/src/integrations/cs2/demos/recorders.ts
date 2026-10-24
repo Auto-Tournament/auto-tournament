@@ -78,6 +78,9 @@ export interface RecorderRow {
   benchmark_at: number | null;
   benchmark_wanted: number;
   gamescope_hz: number | null;
+  fbf_status?: string | null;
+  fbf_cs2?: string | null;
+  fbf_checked_at?: number | null;
 }
 
 const text = (v: Untrusted, max: number): string | null =>
@@ -186,6 +189,13 @@ export async function saveRun(name: string, body: Record<string, Untrusted>): Pr
       logText,
     ]
   );
+  // Frame by Frame's state in the CS2 it ran (worker/runlog.go), for the Recorders tab.
+  if (body.fbf === 'actions' || body.fbf === 'movie' || body.fbf === 'off') {
+    await db.runAsync(
+      'UPDATE cs2_recorders SET fbf_status = ?, fbf_cs2 = ?, fbf_checked_at = ? WHERE name = ?',
+      [body.fbf, text(body.cs2, 40), now(), name.slice(0, 120)]
+    );
+  }
   // Keep the newest runs per recorder.
   await db.runAsync(
     `DELETE FROM cs2_recorder_runs WHERE recorder = ? AND id NOT IN (
@@ -305,6 +315,15 @@ export async function listRecorders() {
       updateRequestedAt: r.update_requested_at != null ? Number(r.update_requested_at) : null,
       lastError: r.last_error,
       lastRunFailed: r.last_run_ok === 0,
+      /** Frame by Frame in the last CS2 it ran: "actions" is all on; "movie" (frame actions
+       * off: slower) and "off" (no movie commands: the stream) mean a CS2 update broke it. */
+      frameByFrame: r.fbf_status
+        ? {
+            status: r.fbf_status,
+            cs2: r.fbf_cs2 ?? null,
+            checkedAt: r.fbf_checked_at != null ? Number(r.fbf_checked_at) : null,
+          }
+        : null,
     };
   });
 }

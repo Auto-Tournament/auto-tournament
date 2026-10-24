@@ -478,6 +478,20 @@ func writeFbfActions(csgo, plan string) error {
 	return os.Rename(path+".tmp", path)
 }
 
+// cs2Version is the installed CS2's patch version (csgo/steam.inf), or "".
+func cs2Version(gameDir string) string {
+	data, err := os.ReadFile(filepath.Join(gameDir, "csgo", "steam.inf"))
+	if err != nil {
+		return ""
+	}
+	for _, l := range strings.Split(string(data), "\n") {
+		if v, ok := strings.CutPrefix(strings.TrimSpace(l), "PatchVersion="); ok {
+			return v
+		}
+	}
+	return ""
+}
+
 // fbfActions reports whether the plugin runs frame actions in this CS2 (its
 // frame hook is on), asked once a session with an echo.
 func (r *recorder) fbfActions(g *game) bool {
@@ -497,8 +511,10 @@ func (r *recorder) fbfActions(g *game) bool {
 	_, _, err := g.con.expect(regexp.MustCompile(`actions `+nonce+`()`), 3*time.Second)
 	if g.fbfActionsOn = err == nil; g.fbfActionsOn {
 		log.Printf("frame by frame: frame actions on")
+		setFbfReport("actions", cs2Version(r.gameDir))
 	} else {
 		log.Printf("frame by frame: no frame actions (the plugin's frame hook is off); one movie at the slowed rate")
+		setFbfReport("movie", cs2Version(r.gameDir))
 	}
 	return g.fbfActionsOn
 }

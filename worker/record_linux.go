@@ -847,6 +847,7 @@ func (r *recorder) recordWindow(g *game, look clipLook, card *cardRender, name s
 			log.Printf("frame by frame: on")
 		} else {
 			log.Printf("frame by frame: the plugin did not unhide startmovie; capturing the stream")
+			setFbfReport("off", cs2Version(r.gameDir))
 		}
 	}
 	if g.fbf {

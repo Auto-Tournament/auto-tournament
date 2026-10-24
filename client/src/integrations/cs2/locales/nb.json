@@ -2137,6 +2137,8 @@
     "unknownGpu": "GPU ukjent",
     "lastSeen": "sist sett {{time}}",
     "pausedUntil": "Intet arbeid før {{time}}: {{reason}}",
+    "fbfMovie": "CS2 {{cs2}} har slått av de bildepresise kommandoene i Frame by Frame. Klippene tar lengre tid å ta opp. Oppdater opptakeren når det kommer en ny versjon av Frame by Frame.",
+    "fbfOff": "CS2 {{cs2}} har slått av Frame by Frame. Klippene tas opp fra videostrømmen, slik de ble før Frame by Frame. Oppdater opptakeren når det kommer en ny versjon av Frame by Frame.",
     "stat": {
       "perClip": "Per klipp",
       "kept": "Klipp beholdt",
