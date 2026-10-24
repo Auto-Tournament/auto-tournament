@@ -975,6 +975,58 @@ test.describe.serial('Fleet failover (FLEET.md §11)', () => {
     expect(on.reserve.held.map((h: { id: string }) => h.id)).toEqual([cs2C]);
   });
 
+  test('the server shown as the spare is the one failover picks', async ({ request }) => {
+    test.setTimeout(180_000);
+    await setFailover(request, { auto: true, reserve: 1 });
+    const fakes = await Promise.all([0, 1, 2].map(() => FakeReadyUp.enroll(request)));
+    const cs2Ids = new Map<string, string>();
+    for (const f of fakes) {
+      cleanup.push(() => f.close());
+      await f.hello();
+      cs2Ids.set(f.serverId, await link(request, f.serverId));
+      cleanup.push(() => unlink(request, f.serverId));
+    }
+    const held = async (): Promise<string[]> =>
+      (
+        (
+          await (
+            await request.get('/api/fleet/failover/settings', { headers: getAuthHeader() })
+          ).json()
+        ).reserve.held as Array<{ id: string }>
+      )
+        .map((h) => h.id)
+        .filter((id) => [...cs2Ids.values()].includes(id));
+    await expect.poll(async () => (await held()).length).toBe(1);
+    const [spareCs2Id] = await held();
+    const spare = fakes.find((f) => cs2Ids.get(f.serverId) === spareCs2Id)!;
+
+    // The match goes to a server that is not the spare (allocation leaves the spare alone).
+    const slug = `fleet-fo-spare-${Date.now()}`;
+    cleanup.push(async () => {
+      await request.post(`/api/matches/${slug}/force-cancel`, { headers: getAuthHeader() });
+    });
+    await createMatch(request, slug);
+    const first = await Promise.race(
+      fakes
+        .filter((f) => f !== spare)
+        .map((f) => f.next('match.assign', 30_000).then((m) => ({ f, m })))
+    );
+    first.f.answer(first.m, 'ok');
+    const epoch = first.m.epoch as number;
+    await expect
+      .poll(async () => (await matchRow(request, slug))?.status, { timeout: 20_000 })
+      .toBe('loaded');
+    first.f.availability('busy', 'assigned');
+    first.f.snapshot(slug, epoch);
+
+    first.f.kill();
+    const moved = spare.next('match.assign', 60_000);
+    await scanUntilProposed(request, slug);
+    const assign = await moved;
+    expect((assign.payload as { match_id: string }).match_id).toBe(slug);
+    spare.answer(assign, 'ok');
+  });
+
   test('settings: validated, admin only', async ({ request, playwright, baseURL }) => {
     const bad = await request.put('/api/fleet/failover/settings', {
       headers: getAuthHeader(),

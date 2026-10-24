@@ -201,7 +201,9 @@ export function pickTarget(
     capabilities: readonly string[];
   },
   preferred?: string | null,
-  exclude: readonly string[] = []
+  exclude: readonly string[] = [],
+  /** The spares held back for failover (heldIn): first among equally fit servers. */
+  held: ReadonlySet<string> = new Set()
 ): FailoverCandidate | null {
   const usable = candidates.filter(
     (c) =>
@@ -218,9 +220,11 @@ export function pickTarget(
     const hasCaps = failed.capabilities.every((cap) => c.capabilities.includes(cap));
     return (sameBuild ? 0 : 2) + (hasCaps ? 0 : 1);
   };
+  const spare = (c: FailoverCandidate) => (held.has(c.cs2ServerId) ? 0 : 1);
   const sorted = [...usable].sort(
     (a, b) =>
       rank(a) - rank(b) ||
+      spare(a) - spare(b) ||
       a.name.localeCompare(b.name) ||
       a.cs2ServerId.localeCompare(b.cs2ServerId)
   );

@@ -183,6 +183,23 @@ test.describe('failover: what to resume with', () => {
     expect(pickTarget(list, failed, 'zz')?.cs2ServerId).toBe('d');
     // Excluded (it refused before): the next one.
     expect(pickTarget(list, failed, null, ['d'])?.cs2ServerId).toBe('c');
+    // The spare held back for failover goes first among equally fit servers.
+    const twins = [
+      c('e', 'E', 100, ['match.v1', 'demo.stream.v1']),
+      c('z', 'Z', 100, ['match.v1', 'demo.stream.v1']),
+    ];
+    expect(pickTarget(twins, failed)?.cs2ServerId).toBe('e');
+    expect(pickTarget(twins, failed, null, [], new Set(['z']))?.cs2ServerId).toBe('z');
+    // A fitter server still wins over a spare on another CS2 build.
+    expect(
+      pickTarget(
+        [c('b', 'B', 99, ['match.v1', 'demo.stream.v1']), ...twins],
+        failed,
+        null,
+        [],
+        new Set(['b'])
+      )?.cs2ServerId
+    ).toBe('e');
     expect(pickTarget([c('a', 'A', 100)], failed)).toBeNull();
     expect(pickTarget([], failed)).toBeNull();
   });

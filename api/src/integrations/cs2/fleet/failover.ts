@@ -62,7 +62,7 @@ import { fleetBus, onFleetServerReady } from './service';
 import { liveStateStore } from './state';
 import { cs2ServerIdOf } from './link';
 import { hostEvents, hostServers } from './hosts/service';
-import { getFailoverSettings } from './failoverSettings';
+import { getFailoverSettings, reserveCount } from './failoverSettings';
 import { createWhenNoneFree, linkCreatedServers, restartBeforeMove } from './failoverRecovery';
 import {
   buildResume,
@@ -71,6 +71,7 @@ import {
   failoverTargets,
   maxBackupRound,
   pickBackup,
+  pickReserved,
   pickTarget,
   type FailoverCandidate,
   type FailoverGrace,
@@ -356,6 +357,15 @@ export async function serverChoices(exceptId: string | null): Promise<ServerChoi
 }
 
 /** The fleet servers that could take a match right now, the failover reserve included. */
+/** Which of these free servers are the ones held back for failover (cs2 ids). */
+async function heldIn(free: readonly FailoverCandidate[]): Promise<Set<string>> {
+  const reserve = await reserveCount();
+  return pickReserved(
+    failoverTargets(free).map((c) => ({ id: c.cs2ServerId, name: c.name })),
+    reserve.effective
+  );
+}
+
 export async function freeFleetServers(): Promise<FailoverCandidate[]> {
   const { cs2ServerPool } = await import('../allocation');
   const free = (await cs2ServerPool.getAvailableServers({ includeFleetReserve: true })).filter(
@@ -569,11 +579,17 @@ async function runScan(options: ScanOptions): Promise<ScanResult> {
     if (p.reason === 'restarted') continue;
     free ??= failoverTargets(await freeFleetServers());
     if (!p.targetCs2ServerId || !free.some((c) => c.cs2ServerId === p.targetCs2ServerId)) {
-      const target = pickTarget(free, {
-        cs2ServerId: p.fromCs2ServerId,
-        fleetServerId: p.fromServerId,
-        ...(await serverTraits(p.fromServerId)),
-      });
+      const target = pickTarget(
+        free,
+        {
+          cs2ServerId: p.fromCs2ServerId,
+          fleetServerId: p.fromServerId,
+          ...(await serverTraits(p.fromServerId)),
+        },
+        null,
+        [],
+        await heldIn(free)
+      );
       if ((target?.cs2ServerId ?? null) !== p.targetCs2ServerId) {
         await db.runAsync(
           'UPDATE cs2_fleet_failovers SET target_cs2_server_id = ?, updated_at = ? WHERE id = ?',
@@ -655,11 +671,22 @@ async function createProposal(input: {
   const target =
     input.targetCs2ServerId !== undefined
       ? input.targetCs2ServerId
-      : (pickTarget(failoverTargets(await freeFleetServers()), {
-          cs2ServerId: input.cs2ServerId,
-          fleetServerId: input.fleetServerId,
-          ...(await serverTraits(input.fleetServerId)),
-        })?.cs2ServerId ?? null);
+      : await (async () => {
+          const free = await freeFleetServers();
+          return (
+            pickTarget(
+              failoverTargets(free),
+              {
+                cs2ServerId: input.cs2ServerId,
+                fleetServerId: input.fleetServerId,
+                ...(await serverTraits(input.fleetServerId)),
+              },
+              null,
+              [],
+              await heldIn(free)
+            )?.cs2ServerId ?? null
+          );
+        })();
   const id = ulid();
   const now = nowS();
   const inserted = await db.runAsync(
@@ -851,7 +878,8 @@ export async function acceptFailover(id: string, req: AcceptRequest): Promise<Ac
         ...(await serverTraits(proposal.fromServerId)),
       },
       req.targetServerId ?? proposal.targetCs2ServerId,
-      req.exclude ?? []
+      req.exclude ?? [],
+      await heldIn(free)
     );
     if (req.targetServerId && target?.cs2ServerId !== req.targetServerId) {
       return refuse(409, 'target_unavailable', 'That server is not free for a match now', proposal);
