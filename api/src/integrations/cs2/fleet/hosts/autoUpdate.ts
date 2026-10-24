@@ -354,6 +354,8 @@ export async function runAutoUpdates(): Promise<void> {
         log.warn(`[FLEET-UPDATES] ${host.name}: ${(error as Error).message}`)
       );
     }
+  } catch (error) {
+    log.warn(`[FLEET-UPDATES] pass failed: ${(error as Error).message}`);
   } finally {
     running = false;
   }
