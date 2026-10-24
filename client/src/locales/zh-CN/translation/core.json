@@ -100,6 +100,10 @@
     "needsYou": "Needs you",
     "settingsTitle": "Admin notifications",
     "settingsHint": "What reaches the admins' bell, and which kinds also play a sound. Every admin sees the same notices.",
+    "updateBanner": {
+      "title": "更新横幅",
+      "hint": "有更新的版本、模块或游戏包时，向管理员显示横幅。"
+    },
     "saveFailed": "Could not save",
     "group": {
       "matches": "Matches",

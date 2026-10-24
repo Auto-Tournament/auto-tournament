@@ -10,6 +10,7 @@ import { isSameSiteRequest } from '../utils/accountConnections';
 import { restartSupport, scheduleRestart } from '../utils/restart';
 import { checkPlatformUpdate } from '../services/platform/updateCheck';
 import { listModuleUpdates } from '../services/platform/moduleUpdates';
+import { adminNoticeService } from '../services/adminNoticeService';
 
 const router = Router();
 
@@ -26,7 +27,8 @@ router.use(requireAuth);
  *       channel (a beta sees betas too). `latest` is null when GitHub could not
  *       be asked. Looked up once an hour. `modules`: each installed module or
  *       pack with an update (`available`), or whose last update did not take
- *       (`problem`).
+ *       (`problem`). `banner`: whether the admins' update banner shows (a
+ *       setting, on unless an admin turned it off).
  *     responses:
  *       200:
  *         description: "{ running, latest, available, releaseUrl, modules }"
@@ -42,11 +44,16 @@ router.get('/update', async (_req: Request, res: Response) => {
       available: false,
       releaseUrl: null,
       modules: [],
+      banner: false,
     });
     return;
   }
-  const [platform, modules] = await Promise.all([checkPlatformUpdate(), listModuleUpdates()]);
-  res.json({ success: true, ...platform, modules });
+  const [platform, modules, banner] = await Promise.all([
+    checkPlatformUpdate(),
+    listModuleUpdates(),
+    adminNoticeService.updateBanner(),
+  ]);
+  res.json({ success: true, ...platform, modules, banner });
 });
 
 /**

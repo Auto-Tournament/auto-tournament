@@ -100,6 +100,10 @@
     "needsYou": "Needs you",
     "settingsTitle": "Admin notifications",
     "settingsHint": "What reaches the admins' bell, and which kinds also play a sound. Every admin sees the same notices.",
+    "updateBanner": {
+      "title": "Banner de actualización",
+      "hint": "Muestra a los admins un banner cuando hay una versión, módulo o pack de juego más nuevo."
+    },
     "saveFailed": "Could not save",
     "group": {
       "matches": "Matches",

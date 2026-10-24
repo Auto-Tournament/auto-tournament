@@ -3,12 +3,12 @@
  * bell with a sound (api services/adminNoticeService.ts). Saved per change.
  */
 import React from 'react';
-import { Box, MenuItem, Select, Typography } from '@mui/material';
+import { Box, MenuItem, Select, Switch, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { api } from '../../utils/api';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 import { tokens } from '../../theme/tokens';
-import { SettingsCardHead } from './SettingsRow';
+import { SettingsCardHead, SettingsRow } from './SettingsRow';
 import { NOTICE_GROUPS, type AdminNoticeDelivery } from '../admin/adminNoticeText';
 
 const { color } = tokens;
@@ -17,13 +17,19 @@ export function AdminNoticesCard() {
   const { t } = useTranslation();
   const { showError } = useSnackbar();
   const [settings, setSettings] = React.useState<Record<string, AdminNoticeDelivery> | null>(null);
+  const [updateBanner, setUpdateBanner] = React.useState(true);
 
   React.useEffect(() => {
     api
-      .get<{ success: boolean; settings: Record<string, AdminNoticeDelivery> }>(
-        '/api/admin-notices/settings'
-      )
-      .then((res) => setSettings(res.settings))
+      .get<{
+        success: boolean;
+        settings: Record<string, AdminNoticeDelivery>;
+        updateBanner?: boolean;
+      }>('/api/admin-notices/settings')
+      .then((res) => {
+        setSettings(res.settings);
+        setUpdateBanner(res.updateBanner !== false);
+      })
       .catch(() => setSettings({}));
   }, []);
 
@@ -44,12 +50,41 @@ export function AdminNoticesCard() {
     }
   };
 
+  const changeBanner = async (enabled: boolean) => {
+    setUpdateBanner(enabled);
+    try {
+      await api.put('/api/admin-notices/update-banner', { enabled });
+    } catch (error) {
+      setUpdateBanner(!enabled);
+      showError((error as Error).message || t('adminNotices.saveFailed'));
+    }
+  };
+
+  const bannerInput: React.InputHTMLAttributes<HTMLInputElement> & Record<'data-testid', string> = {
+    'aria-label': t('adminNotices.updateBanner.title'),
+    'data-testid': 'admin-update-banner-setting',
+  };
+
   return (
     <Box data-testid="admin-notices-settings">
       <SettingsCardHead
         title={t('adminNotices.settingsTitle')}
         hint={t('adminNotices.settingsHint')}
       />
+      {settings && (
+        <SettingsRow
+          title={t('adminNotices.updateBanner.title')}
+          sub={t('adminNotices.updateBanner.hint')}
+          control={
+            <Switch
+              checked={updateBanner}
+              onChange={(e) => void changeBanner(e.target.checked)}
+              color="primary"
+              slotProps={{ input: bannerInput }}
+            />
+          }
+        />
+      )}
       {settings && (
         <Box sx={{ display: 'grid', gap: 2, mt: 1 }}>
           {Object.entries(NOTICE_GROUPS).map(([group, kinds]) => (

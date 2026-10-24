@@ -1217,7 +1217,7 @@
         ],
         "responses": {
           "200": {
-            "description": "The settings"
+            "description": "The settings, and updateBanner: whether the update banner shows"
           }
         }
       },
@@ -1254,6 +1254,48 @@
         "responses": {
           "200": {
             "description": "The saved settings"
+          }
+        }
+      }
+    },
+    "/api/admin-notices/update-banner": {
+      "put": {
+        "tags": [
+          "Admin notices"
+        ],
+        "summary": "Show or hide the banner that says a newer version, module or game pack is out",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "enabled"
+                ],
+                "properties": {
+                  "enabled": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "{ updateBanner }"
+          },
+          "400": {
+            "description": "enabled is not true or false"
           }
         }
       }
@@ -17260,7 +17302,7 @@
           "System"
         ],
         "summary": "Whether a newer Auto Tournament, module or game pack is out",
-        "description": "The running version against the platform's GitHub releases on the same\nchannel (a beta sees betas too). `latest` is null when GitHub could not\nbe asked. Looked up once an hour. `modules`: each installed module or\npack with an update (`available`), or whose last update did not take\n(`problem`).\n",
+        "description": "The running version against the platform's GitHub releases on the same\nchannel (a beta sees betas too). `latest` is null when GitHub could not\nbe asked. Looked up once an hour. `modules`: each installed module or\npack with an update (`available`), or whose last update did not take\n(`problem`). `banner`: whether the admins' update banner shows (a\nsetting, on unless an admin turned it off).\n",
         "responses": {
           "200": {
             "description": "{ running, latest, available, releaseUrl, modules }"

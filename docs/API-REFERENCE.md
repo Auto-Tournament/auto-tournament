@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 753 of them, 475 behind auth —
+Every endpoint this API serves — 754 of them, 476 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -1138,6 +1138,7 @@ The admins' bell: what needs an admin (a match stuck without a server, a crashed
 | `POST` | `/api/admin-notices/:id/dismiss` | admin |
 | `GET` | `/api/admin-notices/settings` | admin |
 | `PUT` | `/api/admin-notices/settings` | admin |
+| `PUT` | `/api/admin-notices/update-banner` | admin |
 
 ### Admin calls
 

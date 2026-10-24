@@ -9,6 +9,8 @@
  * `{ ongoing: true }`: that adds nothing while the notice is open, and nothing
  * after an admin dismissed it until the problem has cleared once.
  * Per kind, admins choose off, bell, or bell with a sound (settings).
+ * The dismissible "a newer version is out" banner (client UpdateBanner) has
+ * its own switch, on unless an admin turned it off.
  * Raising never throws: a notice is a courtesy, not part of what failed.
  */
 import { db } from '../config/database';
@@ -76,6 +78,7 @@ interface Row {
 }
 
 const SETTINGS_KEY = 'admin_notice_settings';
+const UPDATE_BANNER_KEY = 'admin_update_banner';
 /** Resolved notices stay listed this long. */
 const KEEP_RESOLVED_SECONDS = 3 * 24 * 3600;
 /** How long a dismissal keeps a lasting problem quiet, at most. */
@@ -135,6 +138,17 @@ export const adminNoticeService = {
     const next = normalizeNoticeSettings({ ...(await this.settings()), ...(input as object) });
     await db.setAppSettingAsync(SETTINGS_KEY, JSON.stringify(next));
     return next;
+  },
+
+  /** Whether admins see the update banner: on unless turned off. */
+  async updateBanner(): Promise<boolean> {
+    const raw = await db.getAppSettingAsync(UPDATE_BANNER_KEY).catch(() => null);
+    return raw !== 'off';
+  },
+
+  async setUpdateBanner(on: boolean): Promise<boolean> {
+    await db.setAppSettingAsync(UPDATE_BANNER_KEY, on ? 'on' : 'off');
+    return on;
   },
 
   /**

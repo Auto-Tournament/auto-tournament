@@ -8,6 +8,7 @@ import { Router } from 'express';
 import { requireAuth, requestActorId } from '../middleware/auth';
 import { log } from '../utils/logger';
 import { adminNoticeService } from '../services/adminNoticeService';
+import type { Untrusted } from '../utils/untrusted';
 
 const router = Router();
 router.use(requireAuth);
@@ -92,7 +93,7 @@ router.post('/:id/dismiss', async (req: Request, res: Response) => {
  *     summary: Per kind, off, bell, or bell with a sound
  *     security: [{ BearerAuth: [] }]
  *     responses:
- *       200: { description: The settings }
+ *       200: { description: "The settings, and updateBanner: whether the update banner shows" }
  *   put:
  *     tags: [Admin notices]
  *     summary: Change how a kind of notice reaches the admins
@@ -106,7 +107,11 @@ router.post('/:id/dismiss', async (req: Request, res: Response) => {
  */
 router.get('/settings', async (_req: Request, res: Response) => {
   try {
-    return res.json({ success: true, settings: await adminNoticeService.settings() });
+    return res.json({
+      success: true,
+      settings: await adminNoticeService.settings(),
+      updateBanner: await adminNoticeService.updateBanner(),
+    });
   } catch (error) {
     log.error('Failed to read admin notice settings', error as Error);
     return res.status(500).json({ success: false, error: 'Failed to read the settings' });
@@ -121,6 +126,38 @@ router.put('/settings', async (req: Request, res: Response) => {
   } catch (error) {
     log.error('Failed to save admin notice settings', error as Error);
     return res.status(500).json({ success: false, error: 'Failed to save the settings' });
+  }
+});
+
+/**
+ * @openapi
+ * /api/admin-notices/update-banner:
+ *   put:
+ *     tags: [Admin notices]
+ *     summary: Show or hide the banner that says a newer version, module or game pack is out
+ *     security: [{ BearerAuth: [] }]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema: { type: object, required: [enabled], properties: { enabled: { type: boolean } } }
+ *     responses:
+ *       200: { description: "{ updateBanner }" }
+ *       400: { description: enabled is not true or false }
+ */
+router.put('/update-banner', async (req: Request, res: Response) => {
+  const enabled = (req.body as { enabled?: Untrusted } | undefined)?.enabled;
+  if (typeof enabled !== 'boolean') {
+    return res.status(400).json({ success: false, error: 'enabled must be true or false' });
+  }
+  try {
+    return res.json({
+      success: true,
+      updateBanner: await adminNoticeService.setUpdateBanner(enabled),
+    });
+  } catch (error) {
+    log.error('Failed to save the update banner setting', error as Error);
+    return res.status(500).json({ success: false, error: 'Failed to save the setting' });
   }
 });
 

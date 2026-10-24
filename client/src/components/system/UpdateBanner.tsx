@@ -54,6 +54,8 @@ interface UpdateInfo {
   available: boolean;
   releaseUrl: string | null;
   modules?: ModuleUpdate[];
+  /** Off when an admin turned the banner off (Settings → Admin notifications). */
+  banner?: boolean;
 }
 
 interface Notice {
@@ -81,7 +83,7 @@ export function UpdateBanner() {
     };
   }, []);
 
-  if (!info) return null;
+  if (!info || info.banner === false) return null;
   const notices: Notice[] = [];
   if (info.available && info.latest) {
     notices.push({

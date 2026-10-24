@@ -100,6 +100,10 @@
     "needsYou": "Trenger deg",
     "settingsTitle": "Adminvarsler",
     "settingsHint": "Hva som når klokka til adminene, og hvilke typer som også spiller av en lyd. Alle admins ser de samme varslene.",
+    "updateBanner": {
+      "title": "Oppdateringsbanner",
+      "hint": "Viser admins et banner når en nyere versjon, modul eller spillpakke er ute."
+    },
     "saveFailed": "Kunne ikke lagre",
     "group": {
       "matches": "Kamper",
