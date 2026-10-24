@@ -527,7 +527,8 @@ export type CmdName =
   | 'whitelist.set'
   | 'practice.set'
   | 'settings.set'
-  | 'tv.set';
+  | 'tv.set'
+  | 'reset';
 
 export interface CmdPayload {
   match_id?: string;
@@ -576,12 +577,20 @@ export interface SkinsInvalidatePayload {
 export type CmdResultStatus = 'ok' | 'rejected' | 'failed' | 'expired';
 
 /** The one answer to every match.* / cmd message; envelope `ref` = that message's id. */
+/** What `reset` ended: the platform's assignment, a match loaded on the server itself, or nothing. */
+export interface ResetCmdResult {
+  ended?: 'assignment' | 'local' | 'none';
+  match_id?: string | null;
+}
+
 export interface CmdResultPayload {
   status: CmdResultStatus;
   error?: { code: string; message?: string };
   /** config_rev after a match.update (or the server's on `conflict`). */
   rev?: number;
   output?: string;
+  /** What the command did, when it says more than ok: reset {ended, match_id}. */
+  result?: ResetCmdResult;
   audit_id?: string;
 }
 

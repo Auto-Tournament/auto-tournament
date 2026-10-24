@@ -1,0 +1,15 @@
+{
+  "v": 1,
+  "type": "cmd.result",
+  "id": "01J8ZQ4T8W6N3X0F2R5K7M9R02",
+  "ts": 1790340012345,
+  "seq": 1901,
+  "ref": "01J8ZQ4T8W6N3X0F2R5K7M9R01",
+  "payload": {
+    "status": "ok",
+    "result": {
+      "ended": "local",
+      "match_id": "cup-final"
+    }
+  }
+}

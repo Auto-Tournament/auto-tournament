@@ -17,10 +17,7 @@ import type { DbMatchRow } from '../types/database.types';
  * Shared by the admin End Match control and by force-cancel so the two cannot
  * drift apart.
  */
-export async function settleEndedMatch(
-  match: DbMatchRow,
-  reason: string
-): Promise<void> {
+export async function settleEndedMatch(match: DbMatchRow, reason: string): Promise<void> {
   await db.updateAsync(
     'matches',
     { status: 'cancelled', completed_at: Math.floor(Date.now() / 1000) },
@@ -55,4 +52,23 @@ export async function findActiveMatchForServer(serverId: string): Promise<DbMatc
     [serverId]
   );
   return row ?? null;
+}
+
+/**
+ * Settle the match a server was running (loaded or live), after the server was
+ * told to end it. The settled match's slug, or null when there was none.
+ */
+export async function settleActiveMatchOn(
+  serverId: string,
+  reason: string
+): Promise<string | null> {
+  const match = await findActiveMatchForServer(serverId);
+  if (!match) {
+    log.warn(
+      `[MATCH] ${reason} on ${serverId}: no loaded/live match was found for it; nothing to settle`
+    );
+    return null;
+  }
+  await settleEndedMatch(match, reason);
+  return match.slug;
 }

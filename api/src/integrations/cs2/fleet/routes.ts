@@ -58,6 +58,7 @@ import { getAssignment, syncMatch } from './driver';
 import { listCommands } from './reliable';
 import { liveStateStore } from './state';
 import { withBusyReasons } from './busyView';
+import { resetHandler } from './reset';
 import { enrollHostHandler } from './hosts/routes';
 import { fleetChangedOnWrite } from './adminTopics';
 
@@ -376,6 +377,12 @@ fleetAdminRouter.post('/servers/:id/rotate', async (req: Request, res: Response)
     return res.status(500).json({ success: false, error: 'Rotation failed' });
   }
 });
+
+/**
+ * Reset: cmd reset ends whatever the server holds; the platform's match there
+ * is settled like End match (reset.ts). Any admin.
+ */
+fleetAdminRouter.post('/servers/:id/reset', resetHandler);
 
 /**
  * Take matches: link the server to a cs2_servers row (`serverId`, an

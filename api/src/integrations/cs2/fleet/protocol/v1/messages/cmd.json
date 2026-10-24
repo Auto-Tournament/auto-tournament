@@ -33,7 +33,8 @@
         "whitelist.set",
         "practice.set",
         "settings.set",
-        "tv.set"
+        "tv.set",
+        "reset"
       ]
     },
     "args": {

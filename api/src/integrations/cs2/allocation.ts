@@ -116,6 +116,11 @@ export class Cs2ServerPool {
    */
   private readonly allocatingServers = new Set<string>();
 
+  /** A match is being handed to this server right now. */
+  isAllocating(serverId: string): boolean {
+    return this.allocatingServers.has(serverId);
+  }
+
   /**
    * Effective grace period to use for allocations in the current mode.
    * Mirrors the constants above so callers (e.g. shuffle round advancement)

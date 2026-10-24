@@ -4,23 +4,14 @@
   "title": "cmd.result (server → platform, reliable (critical))",
   "description": "The answer to match.assign / match.update / match.unassign / cmd; envelope `ref` = that message's id, `epoch` = its epoch. Error codes: invalid_config, invalid_update, busy, stale_epoch, not_assigned, conflict, bad_phase, bad_args, bad_request, already_paused, not_paused, no_backup, checksum, not_connected, gotv_off, forbidden, invalid_command, unknown_command, unsupported, engine, io, offline.",
   "type": "object",
-  "required": [
-    "status"
-  ],
+  "required": ["status"],
   "properties": {
     "status": {
-      "enum": [
-        "ok",
-        "rejected",
-        "failed",
-        "expired"
-      ]
+      "enum": ["ok", "rejected", "failed", "expired"]
     },
     "error": {
       "type": "object",
-      "required": [
-        "code"
-      ],
+      "required": ["code"],
       "properties": {
         "code": {
           "type": "string",
@@ -41,6 +32,10 @@
     "output": {
       "type": "string",
       "maxLength": 8192
+    },
+    "result": {
+      "type": "object",
+      "description": "What the command did, when it says more than ok: reset {ended: assignment|local|none, match_id: string|null}."
     },
     "audit_id": {
       "type": "string",

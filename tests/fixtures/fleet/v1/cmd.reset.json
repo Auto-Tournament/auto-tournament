@@ -1,0 +1,18 @@
+{
+  "v": 1,
+  "type": "cmd",
+  "id": "01J8ZQ4T8W6N3X0F2R5K7M9R01",
+  "ts": 1790340012345,
+  "seq": 82,
+  "payload": {
+    "name": "reset",
+    "args": {},
+    "issued_by": {
+      "user_id": "u_1",
+      "name": "Root",
+      "root": true
+    },
+    "expires_at": 0,
+    "audit_id": "aud_01J8ZQ"
+  }
+}

@@ -115,6 +115,23 @@ test.describe('Fleet protocol schemas', () => {
     expect(bad.errors.join()).toContain('boot_id');
   });
 
+  test('cmd reset validates without match_id; its cmd.result says what it ended', () => {
+    const cmd = {
+      name: 'reset',
+      args: {},
+      issued_by: { user_id: 'u', name: 'u', root: false },
+      expires_at: 0,
+    };
+    expect(validatePayload('cmd', cmd)).toEqual({ ok: true, errors: [] });
+    expect(
+      validatePayload('cmd.result', {
+        status: 'ok',
+        result: { ended: 'local', match_id: 'cup-final' },
+      }).ok
+    ).toBe(true);
+    expect(validatePayload('cmd.result', { status: 'ok', result: 'local' }).ok).toBe(false);
+  });
+
   test('hello, state.snapshot and server.availability carry a busy reason', () => {
     const hello = helloPayload('fs_x', 'install-12345678', {
       availability: 'busy',
