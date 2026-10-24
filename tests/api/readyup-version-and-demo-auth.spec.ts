@@ -86,6 +86,28 @@ test.describe('Ready Up version status', () => {
       resetReadyUpReleaseCache();
     }
   );
+
+  test(
+    'concurrent lookups share one GitHub request, and a failed one is not cached',
+    { tag: ['@api'] },
+    async () => {
+      resetReadyUpReleaseCache();
+      let calls = 0;
+      const failing = async () => {
+        calls++;
+        await new Promise((resolve) => setTimeout(resolve, 20));
+        return { ok: false, status: 403, json: async () => ({}) };
+      };
+      const results = await Promise.all(
+        Array.from({ length: 25 }, () => getLatestReadyUpRelease({ fetchImpl: failing }))
+      );
+      expect(results.every((r) => r === null)).toBe(true);
+      expect(calls).toBe(1);
+      await getLatestReadyUpRelease({ fetchImpl: failing });
+      expect(calls).toBe(2);
+      resetReadyUpReleaseCache();
+    }
+  );
 });
 
 const rel = (tag: string, prerelease = false, draft = false) => ({
