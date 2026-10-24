@@ -19,7 +19,7 @@ async function main() {
     );
     for (const table of lease.RECORDING_TABLES) {
       await db.runAsync(
-        `CREATE TABLE ${table} (id SERIAL PRIMARY KEY, status TEXT, attempts INTEGER, recorder TEXT, claimed_at INTEGER, claim_started_at INTEGER, retry_until INTEGER, avoid_recorder TEXT, error TEXT)`
+        `CREATE TABLE ${table} (id SERIAL PRIMARY KEY, status TEXT, attempts INTEGER, recorder TEXT, claimed_at INTEGER, claim_started_at INTEGER, retry_until INTEGER, avoid_recorder TEXT, error TEXT, clip_path TEXT)`
       );
     }
     const now = Math.floor(Date.now() / 1000);
@@ -124,6 +124,20 @@ async function main() {
       assert.equal(row!.status, attempts === 3 ? 'failed' : 'pending');
       assert.equal(row!.avoid_recorder, attempts >= 2 ? 'csrender5' : null);
     }
+    // A redo out of attempts keeps the video it already has.
+    const keptRedo = await put('cs2_highlights', 3, now, now);
+    await db.runAsync("UPDATE cs2_highlights SET clip_path = 'old.mp4' WHERE id = ?", [keptRedo]);
+    await db.runAsync(`UPDATE cs2_highlights SET ${lease.recordingFailureSql} WHERE id = ?`, [
+      'test fault',
+      keptRedo,
+    ]);
+    assert.equal(
+      (await db.queryOneAsync<{ status: string }>(
+        'SELECT status FROM cs2_highlights WHERE id = ?',
+        [keptRedo]
+      ))!.status,
+      'done'
+    );
 
     await db.runAsync(
       `CREATE TABLE cs2_recorders (name TEXT PRIMARY KEY, enabled INTEGER DEFAULT 1, group_id INTEGER, paused_until INTEGER, last_seen INTEGER, update_status TEXT DEFAULT 'current', update_error TEXT, update_agent_seen INTEGER, recorder_image TEXT, latest_image TEXT, update_target TEXT, recorder_revision TEXT, updated_at INTEGER, agent_version TEXT, latest_agent_version TEXT, latest_agent_url TEXT, latest_agent_sha TEXT, update_agent_version TEXT, update_agent_url TEXT, update_agent_sha TEXT, update_id TEXT, update_requested_at INTEGER, update_seen INTEGER, update_protocol INTEGER)`
