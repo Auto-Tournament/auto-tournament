@@ -40,6 +40,22 @@ function assignSnapshot(): StateSnapshotPayload {
 
 function newStore() {
   const persistence = createMemoryLiveStatePersistence();
+  // The fixtures' matches, assigned to SERVER at their epochs: only the holder moves a match.
+  for (const file of ['live.state.snapshot.json', 'live.state.snapshot.restored.json']) {
+    const state = (load(file).payload as unknown as StateSnapshotPayload).state as MatchState;
+    persistence.records.set(state.match_id, {
+      matchSlug: state.match_id,
+      epoch: state.epoch,
+      serverId: SERVER,
+      liveRev: 0,
+      configRev: 1,
+      state: null,
+      mapStats: null,
+      mapRounds: {},
+      needsSnapshot: false,
+      updatedAt: 0,
+    });
+  }
   const store = new LiveStateStore(persistence);
   const changes: LiveStateChange[] = [];
   store.onLiveStateChange((c) => changes.push(c));

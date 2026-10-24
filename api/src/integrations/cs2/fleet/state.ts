@@ -3,8 +3,8 @@
  * docs/fleet-step3-platform-notes.md §3): one MatchState per match, kept in
  * step with the Ready Up server that plays it.
  *
- * - `state.snapshot` replaces the stored state when its epoch is the match's
- *   current one (or newer); `periodic` / `hello` snapshots are also a drift
+ * - `state.snapshot` replaces the stored state when its sender holds the
+ *   match at that epoch, the current one; `periodic` / `hello` snapshots are also a drift
  *   check against what the patches built (logged, then the snapshot wins).
  *   `state: null` is an idle server and changes nothing here.
  * - `state.patch` and every `event.*` carry `rev` and a merge `patch`. One
@@ -13,7 +13,9 @@
  *   the caller sends `state.request`; the snapshot that answers it releases
  *   the held patches that follow on from it.
  * - Epoch fence (§11.4): anything from an epoch below the match's current one
- *   is `stale_epoch` and ignored, so a zombie server cannot move the match.
+ *   is `stale_epoch` and ignored, so a zombie server cannot move the match;
+ *   so is anything from a server that does not hold the match at its current
+ *   epoch, or naming an epoch the platform did not give it.
  * - Round summaries per map (`event.round_end`), pruned by
  *   `event.rounds_voided` and seeded from a snapshot's `map_stats`, so the
  *   normalizer can report per-player map totals while a map is live.
@@ -222,10 +224,11 @@ export class LiveStateStore {
         );
         return { kind: 'stale_epoch' as const, currentEpoch: record.epoch };
       }
-      if (state.epoch > record.epoch && record.epoch > 0) {
+      if (state.epoch !== record.epoch || record.serverId !== serverId) {
         log.warn(
-          `[FLEET] ${serverId}: ${slug} snapshot has epoch ${state.epoch}, platform had ${record.epoch}; taking it`
+          `[FLEET] ${serverId}: ignoring a ${payload.reason} snapshot of ${slug} for epoch ${state.epoch}: not its assignment (epoch ${record.epoch} on ${record.serverId ?? 'none'})`
         );
+        return { kind: 'stale_epoch' as const, currentEpoch: record.epoch };
       }
 
       let drift: string[] = [];
@@ -298,7 +301,8 @@ export class LiveStateStore {
 
   /**
    * A `state.patch` or `event.*` for `matchSlug` from `serverId`: its envelope
-   * `epoch` (undefined = the current one), payload `rev` and `patch`.
+   * `epoch` (undefined = the sender's), payload `rev` and `patch`. Anything
+   * but the holder at the current epoch is `stale_epoch`.
    */
   applyPatch(
     serverId: string,
@@ -307,9 +311,10 @@ export class LiveStateStore {
     return this.locked(input.matchSlug, async () => {
       const slug = input.matchSlug;
       const record = await this.loadRecord(slug);
-      const epoch = input.epoch ?? record?.epoch ?? 0;
-      if (record && epoch < record.epoch) {
-        return { kind: 'stale_epoch' as const, currentEpoch: record.epoch };
+      // Only the server holding the match at its epoch moves it; no epoch is its epoch.
+      const epoch = input.epoch ?? (record?.serverId === serverId ? record.epoch : 0);
+      if (!record || epoch !== record.epoch || record.serverId !== serverId) {
+        return { kind: 'stale_epoch' as const, currentEpoch: record?.epoch ?? 0 };
       }
       const hold = () => {
         const list = this.held.get(slug) ?? [];

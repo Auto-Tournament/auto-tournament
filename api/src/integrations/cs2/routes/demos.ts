@@ -182,6 +182,22 @@ router.post(
       }
       matchSlug = match.slug;
 
+      // A Ready Up server uploads only demos of matches it holds or held.
+      const uploader: string | undefined = res.locals[FLEET_UPLOAD_SERVER_ID];
+      if (uploader) {
+        const { checkFleetAssignment } = await import('../fleet/demoStream');
+        if ((await checkFleetAssignment(uploader, matchSlug, undefined)) === 'not_assigned') {
+          log.warn('[Demo Upload] Rejected: the server never held this match', {
+            matchSlug,
+            fleetServerId: uploader,
+          });
+          return res.status(403).json({
+            success: false,
+            error: `This server did not play match '${matchSlug}'`,
+          });
+        }
+      }
+
       // Create match-specific folder (following MatchZy Enhanced pattern)
       const matchFolder = path.join(DEMOS_DIR, matchSlug);
       if (!fs.existsSync(matchFolder)) {

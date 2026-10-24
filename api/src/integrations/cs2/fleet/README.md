@@ -154,17 +154,22 @@ mapStats, mapRounds: { "<map>": RoundSummary[] }, needsSnapshot, updatedAt }`.
 
 Rules (the notes §3), applied by the gateway through `inbound.ts`:
 
-- `state.snapshot` replaces the state when its epoch is ≥ the stored one
-  (lower = `stale_epoch`, ignored). `periodic` / `hello` at the same
+- `state.snapshot` replaces the state when its sender holds the match at
+  that epoch, the stored one (anything else = `stale_epoch`, ignored).
+  `periodic` / `hello` at the same
   `live_rev` are a drift check (logged). `state: null` = idle server.
   `map_stats`, when present, seeds that map's round summaries.
 - `state.patch` / `event.*`: `rev == liveRev + 1` applied, `rev <= liveRev`
   duplicate, `rev > liveRev + 1` gap → held + `state.request`; the snapshot
   releases the held patches that follow on from it. No state yet for the
   epoch (before the `assign` snapshot) is handled like a gap.
-- Epoch fence: an envelope epoch below the match's current one is ignored
-  (the event is not ingested either); `fleetInbound.onEvent` still reports
-  it with `patch: 'stale_epoch'` so the driver can unassign the zombie.
+- Epoch fence: an envelope epoch below the match's current one, or from a
+  server that does not hold the match at it (no epoch = the sender's), is
+  ignored (the event is not ingested either; `event.admin_called` is kept
+  from a server that ever held the match); `fleetInbound.onEvent` still
+  reports it with `patch: 'stale_epoch'` so the driver can unassign the
+  zombie. An HTTP demo upload with a fleet token needs the same: a server
+  that never held the match gets 403.
 
 ## Receiving: `inbound.ts`
 
