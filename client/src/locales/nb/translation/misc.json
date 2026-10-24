@@ -1090,10 +1090,11 @@
     },
     "preset": {
       "label": "Videokvalitet",
-      "smooth": "Jevn (anbefalt): 720p, 240 fps",
-      "crisp": "Skarp: 1080p, 120 fps",
-      "lan": "LAN, maks: 1440p, 240 fps, 60 Mbit/s",
-      "custom": "Egendefinert"
+      "smooth": "Jevn (anbefalt): opptil 1080p, 240 fps",
+      "crisp": "Skarp: opptil 1440p, 120 fps",
+      "lan": "LAN, maks: opptil 4K, 240 fps",
+      "custom": "Egendefinert",
+      "light": "Lett: bare 720p, 60 fps"
     },
     "bitrate": {
       "label": "Bitrate",
@@ -1101,14 +1102,14 @@
       "option": "{{mbps}} Mbit/s"
     },
     "resolution": {
-      "label": "Oppløsning"
+      "label": "Høyeste oppløsning"
     },
     "fps": {
-      "label": "Bildefrekvens",
+      "label": "Høyeste bildefrekvens",
       "option": "{{fps}} fps"
     },
     "quality": {
-      "helper": "Mindre og færre bilder tar opp raskere: 720p i 30 fps tar omtrent halvparten så lang tid som 1440p i 120 fps. Klipp som allerede er laget, beholder størrelsen sin."
+      "helper": "Opptakerne lager hvert klipp og hvert sammendrag én gang, i høyeste kvalitet, og lager de lavere kvalitetene av den. Sakte film blir jevn uansett bildefrekvens. Klipp som allerede er laget, beholder kvaliteten sin til de lages på nytt."
     },
     "music": {
       "label": "Musikk under sammendrag",
@@ -1167,6 +1168,20 @@
       "tournamentReelMax": "Klipp i en turneringsreel",
       "tournamentReelPerPlayer": "Klipp per spiller i en turneringsreel",
       "range": "{{min}} til {{max}}"
+    },
+    "minResolution": {
+      "label": "Laveste oppløsning"
+    },
+    "ladder": {
+      "title": "Kvaliteter seerne kan velge",
+      "recordedAt": "Tatt opp i {{quality}}",
+      "highest": "Høyeste",
+      "lowest": "Mobil og trege forbindelser",
+      "rate": "≈{{mbps}} Mbit/s"
+    },
+    "cost": {
+      "single": "Opptak tar omtrent {{time}} ganger så lang tid som 1080p i 120 fps. Et anslag.",
+      "withCuts": "Opptak tar omtrent {{time}} ganger så lang tid som 1080p i 120 fps, og alle kvalitetene lagres: omtrent {{storage}} ganger så mye plass. Anslag."
     }
   },
   "update": {
