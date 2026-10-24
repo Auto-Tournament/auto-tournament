@@ -92,3 +92,20 @@ test(
     expect(failures, `accessibility violations:\n${failures.join('\n')}`).toEqual([]);
   }
 );
+
+test(
+  'a button reached with the keyboard shows a focus ring',
+  { tag: ['@ui', '@a11y'] },
+  async ({ page }) => {
+    await ensureSignedIn(page);
+    await page.goto('/manage/settings', { waitUntil: 'domcontentloaded' });
+    const button = page.locator('button.MuiButton-root, button.MuiIconButton-root').first();
+    await expect(button).toBeVisible();
+    // Arrive by keyboard: focus the button, step off it and back on.
+    await button.focus();
+    await page.keyboard.press('Shift+Tab');
+    await page.keyboard.press('Tab');
+    await expect(button).toBeFocused();
+    await expect(button).toHaveCSS('outline-style', 'solid');
+  }
+);

@@ -60,8 +60,18 @@ const tint = (main: string) => ({
 export const theme = createTheme({
   palette: {
     mode: 'dark',
-    primary: { main: color.accent, light: color.accent2, dark: color.accent, contrastText: color.accentInk },
-    secondary: { main: color.ink2, light: color.ink, dark: color.muted, contrastText: color.accentInk },
+    primary: {
+      main: color.accent,
+      light: color.accent2,
+      dark: color.accent,
+      contrastText: color.accentInk,
+    },
+    secondary: {
+      main: color.ink2,
+      light: color.ink,
+      dark: color.muted,
+      contrastText: color.accentInk,
+    },
     success: { main: color.live, contrastText: color.accentInk },
     error: { main: color.ban, contrastText: color.accentInk },
     warning: { main: color.warning, contrastText: color.accentInk },
@@ -152,15 +162,23 @@ export const theme = createTheme({
         body: {
           backgroundColor: color.paper,
           scrollbarColor: `${color.rule} transparent`,
-          '&::-webkit-scrollbar, & *::-webkit-scrollbar': { width: 10, height: 10, backgroundColor: 'transparent' },
+          '&::-webkit-scrollbar, & *::-webkit-scrollbar': {
+            width: 10,
+            height: 10,
+            backgroundColor: 'transparent',
+          },
           '&::-webkit-scrollbar-thumb, & *::-webkit-scrollbar-thumb': {
             borderRadius: radius.pill,
             backgroundColor: color.rule,
             border: `2px solid ${color.paper}`,
             minHeight: 24,
           },
-          '&::-webkit-scrollbar-thumb:hover, & *::-webkit-scrollbar-thumb:hover': { backgroundColor: color.muted },
-          '&::-webkit-scrollbar-corner, & *::-webkit-scrollbar-corner': { backgroundColor: 'transparent' },
+          '&::-webkit-scrollbar-thumb:hover, & *::-webkit-scrollbar-thumb:hover': {
+            backgroundColor: color.muted,
+          },
+          '&::-webkit-scrollbar-corner, & *::-webkit-scrollbar-corner': {
+            backgroundColor: 'transparent',
+          },
         },
         ':focus-visible': { outline: `2px solid ${color.focus}`, outlineOffset: 3 },
         '::selection': { backgroundColor: withAlpha(color.accent, 0.35), color: color.ink },
@@ -179,6 +197,7 @@ export const theme = createTheme({
           padding: '0.5rem 1.1rem',
           transition: `background-color ${duration.fast}ms ${ease.out}, border-color ${duration.fast}ms ${ease.out}, box-shadow ${duration.base}ms ${ease.out}, transform ${duration.fast}ms ${ease.out}`,
           '&:active': { transform: 'translateY(1px)' },
+          '&.Mui-focusVisible': { outline: `2px solid ${color.focus}`, outlineOffset: 3 },
         },
         containedPrimary: {
           '&:hover': { backgroundColor: color.accent2 },
@@ -209,7 +228,10 @@ export const theme = createTheme({
     MuiIconButton: {
       defaultProps: { disableFocusRipple: true },
       styleOverrides: {
-        root: { '&:hover': { backgroundColor: color.paper3 } },
+        root: {
+          '&:hover': { backgroundColor: color.paper3 },
+          '&.Mui-focusVisible': { outline: `2px solid ${color.focus}`, outlineOffset: 3 },
+        },
       },
     },
     MuiFab: {
@@ -395,13 +417,21 @@ export const theme = createTheme({
     MuiBackdrop: {
       styleOverrides: {
         root: {
-          '&:not(.MuiBackdrop-invisible)': { backgroundColor: color.scrim, backdropFilter: 'blur(2px)' },
+          '&:not(.MuiBackdrop-invisible)': {
+            backgroundColor: color.scrim,
+            backdropFilter: 'blur(2px)',
+          },
         },
       },
     },
     MuiDialogTitle: {
       styleOverrides: {
-        root: { fontFamily: fontDisplay, fontWeight: 700, letterSpacing: '-0.01em', fontSize: '1.25rem' },
+        root: {
+          fontFamily: fontDisplay,
+          fontWeight: 700,
+          letterSpacing: '-0.01em',
+          fontSize: '1.25rem',
+        },
       },
     },
     MuiDialogActions: {
@@ -427,9 +457,18 @@ export const theme = createTheme({
         iconSmall: { width: '1em', height: '1em' },
       },
       variants: [
-        { props: { variant: 'filled', color: 'default' }, style: { backgroundColor: color.paper3, color: color.ink2 } },
-        { props: { variant: 'filled', color: 'primary' }, style: { backgroundColor: color.accent, color: color.accentInk } },
-        { props: { variant: 'filled', color: 'secondary' }, style: { backgroundColor: color.paper3, color: color.ink } },
+        {
+          props: { variant: 'filled', color: 'default' },
+          style: { backgroundColor: color.paper3, color: color.ink2 },
+        },
+        {
+          props: { variant: 'filled', color: 'primary' },
+          style: { backgroundColor: color.accent, color: color.accentInk },
+        },
+        {
+          props: { variant: 'filled', color: 'secondary' },
+          style: { backgroundColor: color.paper3, color: color.ink },
+        },
         { props: { variant: 'filled', color: 'success' }, style: tint(color.live) },
         { props: { variant: 'filled', color: 'error' }, style: tint(color.ban) },
         { props: { variant: 'filled', color: 'warning' }, style: tint(color.warning) },
@@ -447,13 +486,20 @@ export const theme = createTheme({
           borderRadius: radius.md,
           backgroundColor: withAlpha(color.paper, 0.5),
           '& .MuiOutlinedInput-notchedOutline': { borderColor: color.rule },
-          '&:hover:not(.Mui-disabled):not(.Mui-error) .MuiOutlinedInput-notchedOutline': { borderColor: color.muted },
-          '&.Mui-focused:not(.Mui-error) .MuiOutlinedInput-notchedOutline': { borderColor: color.accent, borderWidth: 1 },
+          '&:hover:not(.Mui-disabled):not(.Mui-error) .MuiOutlinedInput-notchedOutline': {
+            borderColor: color.muted,
+          },
+          '&.Mui-focused:not(.Mui-error) .MuiOutlinedInput-notchedOutline': {
+            borderColor: color.accent,
+            borderWidth: 1,
+          },
         },
       },
     },
     MuiInputLabel: {
-      styleOverrides: { root: { color: color.muted, '&.Mui-focused:not(.Mui-error)': { color: color.accent2 } } },
+      styleOverrides: {
+        root: { color: color.muted, '&.Mui-focused:not(.Mui-error)': { color: color.accent2 } },
+      },
     },
     MuiFormHelperText: {
       styleOverrides: { root: { color: color.muted } },
@@ -525,10 +571,26 @@ export const theme = createTheme({
     MuiAlert: {
       styleOverrides: {
         root: { borderRadius: radius.md, alignItems: 'flex-start' },
-        standardSuccess: { backgroundColor: withAlpha(color.live, 0.08), border: `1px solid ${withAlpha(color.live, 0.32)}`, color: color.ink },
-        standardError: { backgroundColor: withAlpha(color.ban, 0.08), border: `1px solid ${withAlpha(color.ban, 0.32)}`, color: color.ink },
-        standardWarning: { backgroundColor: withAlpha(color.warning, 0.08), border: `1px solid ${withAlpha(color.warning, 0.32)}`, color: color.ink },
-        standardInfo: { backgroundColor: withAlpha(color.info, 0.07), border: `1px solid ${withAlpha(color.info, 0.28)}`, color: color.ink },
+        standardSuccess: {
+          backgroundColor: withAlpha(color.live, 0.08),
+          border: `1px solid ${withAlpha(color.live, 0.32)}`,
+          color: color.ink,
+        },
+        standardError: {
+          backgroundColor: withAlpha(color.ban, 0.08),
+          border: `1px solid ${withAlpha(color.ban, 0.32)}`,
+          color: color.ink,
+        },
+        standardWarning: {
+          backgroundColor: withAlpha(color.warning, 0.08),
+          border: `1px solid ${withAlpha(color.warning, 0.32)}`,
+          color: color.ink,
+        },
+        standardInfo: {
+          backgroundColor: withAlpha(color.info, 0.07),
+          border: `1px solid ${withAlpha(color.info, 0.28)}`,
+          color: color.ink,
+        },
         outlined: { backgroundColor: 'transparent' },
         filled: { fontWeight: 600 },
         icon: { opacity: 1 },
@@ -539,7 +601,12 @@ export const theme = createTheme({
     },
     MuiSnackbarContent: {
       styleOverrides: {
-        root: { backgroundColor: color.paper3, color: color.ink, border: `1px solid ${color.rule}`, borderRadius: radius.md },
+        root: {
+          backgroundColor: color.paper3,
+          color: color.ink,
+          border: `1px solid ${color.rule}`,
+          borderRadius: radius.md,
+        },
       },
     },
 
