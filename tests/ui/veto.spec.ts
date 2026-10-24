@@ -99,7 +99,7 @@ test.describe.serial('Veto UI', () => {
 
       // Team1 acts first: the tile is an enabled button named after the action.
       await viewVetoPageAs(page, actingSteamIdFor(team1));
-      const tile = page.getByRole('button', { name: /^Ban .*Inferno$/i });
+      const tile = page.getByRole('button', { name: /^Select .*Inferno$/i });
       await expect(tile).toBeVisible();
       await expect(tile).toHaveAttribute('aria-disabled', 'false');
 
@@ -110,6 +110,7 @@ test.describe.serial('Veto UI', () => {
       );
       await tile.focus();
       await page.keyboard.press('Enter');
+      await page.getByTestId('veto-confirm-button').click();
       expect((await actionResponse).ok()).toBe(true);
 
       // The banned map leaves the grid and is listed in the decided line instead.
@@ -119,6 +120,56 @@ test.describe.serial('Veto UI', () => {
       // History renders a translated action label, never the raw enum.
       const historyChip = page.getByTestId('veto-history-action').first();
       await expect(historyChip).toHaveText('BAN');
+    }
+  );
+
+  test(
+    'a map is selected first and only committed on confirm',
+    { tag: ['@ui', '@veto'] },
+    async ({ page }) => {
+      await viewVetoPageAs(page, actingSteamIdFor(team1));
+      let posted = 0;
+      await page.route(`**/api/veto/${matchSlug}/action`, async (route) => {
+        posted += 1;
+        await route.continue();
+      });
+      const inferno = page.getByRole('button', { name: /^Select .*Inferno$/i });
+      const ancient = page.getByRole('button', { name: /^Select .*Ancient$/i });
+      const confirm = page.getByTestId('veto-confirm-button');
+      await expect(confirm).toHaveCount(0);
+
+      // The first tap only selects.
+      await inferno.click();
+      await expect(inferno).toHaveAttribute('aria-pressed', 'true');
+      await expect(confirm).toBeVisible();
+      await expect(confirm).toContainText(/Inferno/i);
+      expect(posted).toBe(0);
+
+      // The selection is announced.
+      await expect(page.getByRole('status').filter({ hasText: /Inferno selected/i })).toHaveCount(
+        1
+      );
+
+      // Another tap moves the selection.
+      await ancient.click();
+      await expect(ancient).toHaveAttribute('aria-pressed', 'true');
+      await expect(inferno).toHaveAttribute('aria-pressed', 'false');
+      expect(posted).toBe(0);
+
+      // Escape clears it.
+      await page.keyboard.press('Escape');
+      await expect(confirm).toHaveCount(0);
+      await expect(ancient).toHaveAttribute('aria-pressed', 'false');
+
+      // A second tap on the same map commits it.
+      const actionResponse = page.waitForResponse(
+        (r) => r.url().includes(`/api/veto/${matchSlug}/action`) && r.request().method() === 'POST',
+        { timeout: 20000 }
+      );
+      await ancient.click();
+      await ancient.click();
+      expect((await actionResponse).ok()).toBe(true);
+      expect(posted).toBe(1);
     }
   );
 

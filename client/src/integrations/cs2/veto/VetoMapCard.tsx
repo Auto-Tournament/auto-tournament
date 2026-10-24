@@ -17,6 +17,8 @@ interface VetoMapCardProps {
   side?: MapSide; // For picked maps with side selection
   onClick?: () => void;
   disabled?: boolean;
+  /** Set when a tap only selects: chosen by a first tap, waiting for the confirm. */
+  selected?: boolean;
   /** This card is a choice for the viewer right now (their turn, the map still in the pool). */
   isCurrentTurn?: boolean;
   /** The veto step in progress: the hover says BAN or PICK, and names the button. */
@@ -50,6 +52,7 @@ export const VetoMapCard: React.FC<VetoMapCardProps> = ({
   side,
   onClick,
   disabled,
+  selected,
   isCurrentTurn,
   currentAction,
   isDecider,
@@ -64,11 +67,15 @@ export const VetoMapCard: React.FC<VetoMapCardProps> = ({
       ? t('vetoInterface.mapCardAria.banned', { map: displayName })
       : state === 'picked'
         ? t('vetoInterface.mapCardAria.picked', { map: displayName })
-        : currentAction === 'pick'
-          ? t('vetoInterface.mapCardAria.pick', { map: displayName })
-          : currentAction === 'ban'
-            ? t('vetoInterface.mapCardAria.ban', { map: displayName })
-            : displayName;
+        : isClickable &&
+            selected !== undefined &&
+            (currentAction === 'pick' || currentAction === 'ban')
+          ? t('vetoInterface.mapCardAria.select', { map: displayName })
+          : currentAction === 'pick'
+            ? t('vetoInterface.mapCardAria.pick', { map: displayName })
+            : currentAction === 'ban'
+              ? t('vetoInterface.mapCardAria.ban', { map: displayName })
+              : displayName;
   const actionColor = currentAction === 'pick' ? color.pick : color.ban;
   const actionLabel =
     currentAction === 'pick'
@@ -231,7 +238,8 @@ export const VetoMapCard: React.FC<VetoMapCardProps> = ({
         aspectRatio: '16 / 9',
         maxWidth: '100%',
         borderRadius: `${radius.md}px`,
-        border: `2px solid ${state === 'picked' ? color.pick : chosen ? actionColor : 'transparent'}`,
+        border: `2px solid ${state === 'picked' ? color.pick : chosen || selected ? actionColor : 'transparent'}`,
+        ...(selected ? { boxShadow: `0 0 0 3px ${actionColor}` } : {}),
         bgcolor: color.paper3,
         transition: `transform ${duration.base}ms ${ease.out}, border-color ${duration.fast}ms ${ease.out}`,
         ...(isClickable
@@ -243,6 +251,7 @@ export const VetoMapCard: React.FC<VetoMapCardProps> = ({
               },
               '&:hover, &:focus-within': { borderColor: actionColor, animation: 'none' },
               '&:hover .veto-hover-action, &:focus-within .veto-hover-action': { opacity: 1 },
+              ...(selected ? { '& .veto-hover-action': { opacity: 1 } } : {}),
               '@media (hover: hover) and (prefers-reduced-motion: no-preference)': {
                 '&:hover': { transform: 'translateY(-3px)' },
               },
@@ -257,6 +266,7 @@ export const VetoMapCard: React.FC<VetoMapCardProps> = ({
           data-testid={`veto-map-button-${mapName}`}
           aria-label={accessibleName}
           aria-disabled={!isClickable}
+          aria-pressed={isClickable && selected !== undefined ? selected : undefined}
           onClick={isClickable ? onClick : undefined}
           sx={{
             all: 'unset',

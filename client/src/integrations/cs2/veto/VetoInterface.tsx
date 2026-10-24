@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { Box, Typography, Alert, Dialog, Paper, LinearProgress } from '@mui/material';
+import { Box, Button, Typography, Alert, Dialog, Paper, LinearProgress } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { ArrowsLeftRightIcon, CheckCircleIcon, ProhibitIcon } from '@phosphor-icons/react';
@@ -246,6 +246,35 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
   // player click both sides, and the last click won).
   const [submitting, setSubmitting] = useState(false);
 
+  // The map picked out by a first tap; a second tap on it, or the confirm button, commits it.
+  // A vote is not committed by a tap, so it needs no confirm.
+  const [selectedMap, setSelectedMap] = useState<string | null>(null);
+  useEffect(() => {
+    setSelectedMap(null);
+  }, [vetoState?.currentStep, vetoState?.currentTurn, vetoState?.status, actFor]);
+  useEffect(() => {
+    if (!selectedMap) return undefined;
+    const onKey = (event: { key: string; defaultPrevented: boolean; target: object | null }) => {
+      if (event.key !== 'Escape' || event.defaultPrevented) return;
+      const target = event.target;
+      if (
+        target instanceof window.HTMLElement &&
+        target.closest('[role="dialog"], input, textarea')
+      )
+        return;
+      setSelectedMap(null);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [selectedMap]);
+
+  const handleMapClick = (mapName: string) => {
+    if (!vetoState || vetoState.status === 'completed' || !isMyTurn || submitting) return;
+    if (vetoState.currentAction === 'side_pick') return;
+    if (vote || selectedMap === mapName) void handleMapAction(mapName);
+    else setSelectedMap(mapName);
+  };
+
   const handleMapAction = async (mapName: string) => {
     if (!vetoState || vetoState.status === 'completed' || !isMyTurn || submitting) return;
 
@@ -256,7 +285,7 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
       return;
     }
 
-    // For ban/pick actions, submit immediately
+    // For ban/pick actions, submit
     setSubmitting(true);
     try {
       const response = await fetch(`/api/veto/${matchSlug}/action`, {
@@ -283,6 +312,7 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
       setActionError(t('vetoInterface.errors.failedToSubmitVetoAction'));
     } finally {
       setSubmitting(false);
+      setSelectedMap(null);
     }
   };
 
@@ -697,6 +727,29 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
                   ? t('vetoInterface.spectatorNote')
                   : t('vetoInterface.pageUpdatesAutomatically')}
           </Typography>
+          <Box
+            role="status"
+            aria-live="polite"
+            sx={{
+              position: 'absolute',
+              width: 1,
+              height: 1,
+              overflow: 'hidden',
+              clip: 'rect(0 0 0 0)',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {!vote && !choosingSide && selectedMap
+              ? t(
+                  currentAction === 'ban'
+                    ? 'vetoInterface.selectedBan'
+                    : 'vetoInterface.selectedPick',
+                  {
+                    map: nameFor(selectedMap),
+                  }
+                )
+              : ''}
+          </Box>
           {!viewerTeamSlug && isAdmin && (
             <Box
               role="radiogroup"
@@ -804,6 +857,8 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
                 sm: 'repeat(auto-fill, minmax(min(100%, 14rem), 1fr))',
               },
               gap: { xs: 1, sm: 1.5 },
+              // Room under the last row for the fixed confirm button.
+              pb: selectedMap ? 10 : undefined,
               // Not your turn: the pool steps back (fades), so it is plain you are waiting.
               '& > *': { transition: 'opacity 260ms' },
               // A vote: everyone follows the votes, so nothing fades.
@@ -836,7 +891,8 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
                     displayName={map.displayName}
                     imageUrl={map.image}
                     state="available"
-                    onClick={() => handleMapAction(map.name)}
+                    onClick={() => handleMapClick(map.name)}
+                    selected={vote ? undefined : selectedMap === map.name}
                     disabled={!isMyTurn || submitting}
                     isCurrentTurn={isMyTurn}
                     currentAction={currentAction}
@@ -850,6 +906,33 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
                     }
                     chosen={!!myVote && myVote === map.name}
                   />
+                  {!vote && selectedMap === map.name && (
+                    <Button
+                      variant="contained"
+                      data-testid="veto-confirm-button"
+                      disabled={submitting}
+                      onClick={() => void handleMapAction(map.name)}
+                      sx={{
+                        position: 'fixed',
+                        bottom: 16,
+                        left: '50%',
+                        transform: 'translateX(-50%)',
+                        zIndex: (theme) => theme.zIndex.snackbar - 1,
+                        boxShadow: 6,
+                        maxWidth: 'calc(100vw - 176px)',
+                        bgcolor: actionColor,
+                        color: color.accentInk,
+                        '&:hover': { bgcolor: actionColor, filter: 'brightness(1.1)' },
+                      }}
+                    >
+                      {t(
+                        currentAction === 'ban'
+                          ? 'vetoInterface.confirmBan'
+                          : 'vetoInterface.confirmPick',
+                        { map: map.displayName }
+                      )}
+                    </Button>
+                  )}
                 </Box>
               ))}
             </AnimatePresence>

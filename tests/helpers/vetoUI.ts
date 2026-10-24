@@ -78,6 +78,7 @@ export async function performVetoActionUI(page: Page, action: VetoUIAction): Pro
     const mapCard = page.getByTestId(`veto-map-card-${action.mapName}`);
     await expect(mapCard).toBeVisible({ timeout: 20000 });
     await mapCard.click();
+    await page.getByTestId('veto-confirm-button').click();
   }
 
   const response = await actionResponse;
