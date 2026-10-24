@@ -1721,6 +1721,13 @@
     },
     "stattrak": "StatTrak™",
     "stattrakKills": "StatTrak™-drap",
+    "picked": "Valgt",
+    "pickedOrigin": "Valgt fra katalogen",
+    "view": {
+      "label": "Inventarvisning",
+      "owned": "Eide",
+      "catalog": "Katalog"
+    },
     "takeOffSide": "Ta {{name}} av på {{side}}",
     "takeOffOn": "Ta av på {{side}}",
     "keepAll": "Behold alle {{count}}",
@@ -1843,7 +1850,11 @@
       "chanceHelp": "Sjansen for akkurat denne skinen per valg i et drop",
       "price": "Markedspris {{price}}",
       "more_one": "Vis flere ({{count}} igjen)",
-      "more_other": "Vis flere ({{count}} igjen)"
+      "more_other": "Vis flere ({{count}} igjen)",
+      "loadFailed": "Kunne ikke laste katalogen",
+      "wear": "Slitasje",
+      "cancel": "Avbryt",
+      "equip": "Ta i bruk"
     }
   },
   "matchRules": {

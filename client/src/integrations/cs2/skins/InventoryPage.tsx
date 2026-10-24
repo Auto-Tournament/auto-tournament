@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Link as RouterLink, useLocation, useParams } from 'react-router-dom';
 import { skinPaths } from './paths';
 import {
@@ -10,6 +10,8 @@ import {
   Dialog,
   MenuItem,
   Select,
+  ToggleButton,
+  ToggleButtonGroup,
   Typography,
 } from '@mui/material';
 import { PlayCircleIcon, QuestionIcon, TrophyIcon } from '@phosphor-icons/react';
@@ -24,7 +26,15 @@ import {
   dialogPaperSx,
 } from '../../../module-sdk';
 import { InspectSkinDialog, SkinCard, SlotTile, VirtualNotice } from './SkinParts';
-import { loadoutSlots, useMySkins, useSkinsEnabled, type OwnedSkin, type Rarity } from './useSkins';
+import { CatalogPicker } from './CatalogPicker';
+import {
+  loadoutSlots,
+  useCatalogWeapons,
+  useMySkins,
+  useSkinsStatus,
+  type OwnedSkin,
+  type Rarity,
+} from './useSkins';
 import { equippedFor, type LoadoutTeam } from './loadoutSides';
 import { canPick, togglePick } from './tradeUp';
 import { TradeUpPanel } from './TradeUpPanel';
@@ -44,7 +54,7 @@ const RARITY_ORDER: Rarity[] = [
 
 type Filter = 'all' | SkinCategory;
 
-function category(skin: OwnedSkin): Filter {
+function category(skin: Pick<OwnedSkin, 'slot' | 'weapon'>): Filter {
   return skinCategory(skin);
 }
 
@@ -61,9 +71,14 @@ export function InventoryPage() {
   const { steamId } = useParams<{ steamId?: string }>();
   // /inventory is your own; /player/:steamId/inventory is anyone's, read only.
   const own = !steamId;
-  const enabled = useSkinsEnabled();
+  const status = useSkinsStatus();
+  const enabled = status ? status.enabled : null;
+  const catalogUnlocked = own && Boolean(status?.catalogUnlocked);
   const mine = useMySkins();
-  const [theirs, setTheirs] = useState<OwnedSkin[] | null>(null);
+  const [theirs, setTheirs] = useState<{ inventory: OwnedSkin[]; picks: OwnedSkin[] } | null>(null);
+  // Own page with the catalogue unlocked: earned skins, or every catalogue skin (one slot when chosen).
+  const [view, setView] = useState<'owned' | 'catalog'>('owned');
+  const [slotFilter, setSlotFilter] = useState<string | null>(null);
   const [filter, setFilter] = useState<Filter>('all');
   const [sort, setSort] = useState<'rarity' | 'newest'>('rarity');
   // `#skin-<id>` (a new-skin notification, a shared link) opens that skin.
@@ -104,18 +119,26 @@ export function InventoryPage() {
     if (own || !steamId) return;
     let cancelled = false;
     api
-      .get<{ inventory: OwnedSkin[] }>(`/api/skins/players/${steamId}`)
-      .then((r) => !cancelled && setTheirs(r.inventory ?? []))
-      .catch(() => !cancelled && setTheirs([]));
+      .get<{ inventory: OwnedSkin[]; picks?: OwnedSkin[] }>(`/api/skins/players/${steamId}`)
+      .then((r) => !cancelled && setTheirs({ inventory: r.inventory ?? [], picks: r.picks ?? [] }))
+      .catch(() => !cancelled && setTheirs({ inventory: [], picks: [] }));
     return () => {
       cancelled = true;
     };
   }, [own, steamId]);
 
   const inventory = useMemo(
-    () => (own ? mine.inventory : (theirs ?? [])),
+    () => (own ? mine.inventory : (theirs?.inventory ?? [])),
     [own, mine.inventory, theirs]
   );
+  const picks = useMemo(
+    () => (own ? mine.picks : (theirs?.picks ?? [])),
+    [own, mine.picks, theirs]
+  );
+  // What each side has on: earned skins and catalogue picks together.
+  const loadout = useMemo(() => [...inventory, ...picks], [inventory, picks]);
+  const inCatalog = catalogUnlocked && view === 'catalog';
+  const catalogWeapons = useCatalogWeapons(catalogUnlocked);
   const loading = enabled === null || (own ? mine.loading : theirs === null);
   const shown = useMemo(() => {
     const list = inventory.filter((s) => filter === 'all' || category(s) === filter);
@@ -125,12 +148,15 @@ export function InventoryPage() {
         : RARITY_ORDER.indexOf(a.rarity) - RARITY_ORDER.indexOf(b.rarity)
     );
   }, [inventory, filter, sort]);
-  const slots = loadoutSlots(inventory);
+  const slots = loadoutSlots(inventory, picks, catalogWeapons);
 
   const chip = (key: Filter) => (
     <ButtonBase
       key={key}
-      onClick={() => setFilter(key)}
+      onClick={() => {
+        setFilter(key);
+        setSlotFilter(null);
+      }}
       aria-pressed={filter === key}
       sx={{
         px: 1.75,
@@ -216,12 +242,14 @@ export function InventoryPage() {
                 {t('skins.equippedTitle')}
               </Typography>
               {([3, 2] as const).map((team) => {
-                const on = equippedFor(inventory, team);
-                // This side's slots: knife, gloves, and the weapons it buys that have a skin.
+                const on = equippedFor(loadout, team);
+                // This side's slots: knife, gloves, the weapons it buys that have a skin, and
+                // every weapon it buys while the catalogue is unlocked.
                 const sideSlots = slots.filter(
                   (slot) =>
-                    inventory.some(
-                      (s) => s.slot === slot && (s.side === null || s.side === team)
+                    loadout.some((s) => s.slot === slot && (s.side === null || s.side === team)) ||
+                    catalogWeapons.some(
+                      (w) => w.slot === slot && (w.side === null || w.side === team)
                     ) ||
                     slot === 'knife' ||
                     slot === 'gloves'
@@ -255,7 +283,8 @@ export function InventoryPage() {
                             ? t('skins.slot.knife')
                             : slot === 'gloves'
                               ? t('skins.slot.gloves')
-                              : (inventory.find((s) => s.slot === slot)?.weaponName ?? slot);
+                              : ([...loadout, ...catalogWeapons].find((s) => s.slot === slot)
+                                  ?.weaponName ?? slot);
                         // An equipped slot opens its skin; an empty one shows the skins that fit it.
                         return (
                           <SlotTile
@@ -276,7 +305,12 @@ export function InventoryPage() {
                             }
                             onTakeOff={
                               own && skin
-                                ? () => void mine.equip(skin, team).catch(equipFailed)
+                                ? () =>
+                                    void (
+                                      skin.source === 'catalog'
+                                        ? mine.unequipPick(skin, team)
+                                        : mine.equip(skin, team)
+                                    ).catch(equipFailed)
                                 : undefined
                             }
                             takeOffLabel={
@@ -290,6 +324,12 @@ export function InventoryPage() {
                             onClick={() => {
                               if (skin) {
                                 setInspect(skin.id);
+                                return;
+                              }
+                              if (catalogUnlocked) {
+                                setView('catalog');
+                                setFilter('all');
+                                setSlotFilter(slot);
                                 return;
                               }
                               const owned = inventory.find((s) => s.slot === slot);
@@ -312,6 +352,29 @@ export function InventoryPage() {
               })}
             </Box>
 
+            {catalogUnlocked && (
+              <ToggleButtonGroup
+                exclusive
+                size="small"
+                value={view}
+                onChange={(_, next: 'owned' | 'catalog' | null) => {
+                  if (!next) return;
+                  setView(next);
+                  setSlotFilter(null);
+                }}
+                aria-label={t('skins.view.label')}
+                data-testid="inventory-view"
+                sx={{ alignSelf: 'flex-start' }}
+              >
+                <ToggleButton value="owned" sx={{ px: 2, borderRadius: radii.pill }}>
+                  {t('skins.view.owned')}
+                </ToggleButton>
+                <ToggleButton value="catalog" sx={{ px: 2, borderRadius: radii.pill }}>
+                  {t('skins.view.catalog')}
+                </ToggleButton>
+              </ToggleButtonGroup>
+            )}
+
             <Box
               sx={{
                 display: 'flex',
@@ -326,7 +389,7 @@ export function InventoryPage() {
                   ['all', 'rifles', 'pistols', 'smgs', 'heavy', 'knives', 'gloves'] as Filter[]
                 ).map(chip)}
               </Box>
-              {own && tradeUpCount !== null && !trading && (
+              {own && tradeUpCount !== null && !trading && !inCatalog && (
                 <Button
                   variant="outlined"
                   onClick={() => {
@@ -339,16 +402,18 @@ export function InventoryPage() {
                   {t('skins.tradeUp.start')}
                 </Button>
               )}
-              <Select
-                size="small"
-                value={sort}
-                onChange={(e) => setSort(e.target.value as 'rarity' | 'newest')}
-                sx={{ borderRadius: radii.pill, minWidth: 180 }}
-                inputProps={{ 'aria-label': t('skins.sortLabel') }}
-              >
-                <MenuItem value="rarity">{t('skins.sort.rarity')}</MenuItem>
-                <MenuItem value="newest">{t('skins.sort.newest')}</MenuItem>
-              </Select>
+              {!inCatalog && (
+                <Select
+                  size="small"
+                  value={sort}
+                  onChange={(e) => setSort(e.target.value as 'rarity' | 'newest')}
+                  sx={{ borderRadius: radii.pill, minWidth: 180 }}
+                  inputProps={{ 'aria-label': t('skins.sortLabel') }}
+                >
+                  <MenuItem value="rarity">{t('skins.sort.rarity')}</MenuItem>
+                  <MenuItem value="newest">{t('skins.sort.newest')}</MenuItem>
+                </Select>
+              )}
             </Box>
 
             {trading && tradeUpCount !== null && (
@@ -368,7 +433,9 @@ export function InventoryPage() {
               />
             )}
 
-            {shown.length === 0 ? (
+            {inCatalog ? (
+              <CatalogPicker slot={slotFilter} category={filter} picks={picks} onPick={mine.pick} />
+            ) : shown.length === 0 ? (
               <Typography sx={{ color: color.ink2 }}>
                 {inventory.length
                   ? t('skins.noneInFilter')
@@ -506,29 +573,49 @@ export function InventoryPage() {
 /**
  * Which side a skin both sides can use goes on (a click or Enter on its card):
  * CT, T or both, or off again. Dragging it onto a side's slot does the same.
+ * A catalogue pick passes its float and seed fields as children, `again` to
+ * let a side that has the skin take new values, and `oneSide` for a weapon one
+ * side buys (one button).
  */
-function SidePicker({
+export function SidePicker({
   skin,
   onPick,
   onTakeOff,
   onTakeOffSide,
   onClose,
+  oneSide = false,
+  again = false,
+  disabled = false,
+  testId = 'side-picker',
+  children,
 }: {
-  skin: OwnedSkin;
+  skin: Pick<OwnedSkin, 'weaponName' | 'name' | 'equippedSides' | 'equipped'>;
   onPick: (team: LoadoutTeam) => void;
-  onTakeOff: () => void;
+  onTakeOff?: () => void;
   /** Off one side (CT or T), kept on the other. */
-  onTakeOffSide: (team: 2 | 3) => void;
+  onTakeOffSide?: (team: 2 | 3) => void;
   onClose: () => void;
+  oneSide?: boolean;
+  again?: boolean;
+  disabled?: boolean;
+  testId?: string;
+  children?: ReactNode;
 }) {
   const { t } = useModuleTranslation('cs2');
   const on = (team: LoadoutTeam) =>
-    skin.equippedSides.includes(team) || skin.equippedSides.includes(0);
-  const actions: Array<{ team: LoadoutTeam; label: string; id: string; done: boolean }> = [
-    { team: 3, label: t('skins.equipOnCt'), id: 'ct', done: on(3) },
-    { team: 2, label: t('skins.equipOnT'), id: 't', done: on(2) },
-    { team: 0, label: t('skins.equipOnBoth'), id: 'both', done: skin.equippedSides.includes(0) },
-  ];
+    !again && (skin.equippedSides.includes(team) || skin.equippedSides.includes(0));
+  const actions: Array<{ team: LoadoutTeam; label: string; id: string; done: boolean }> = oneSide
+    ? [{ team: 0, label: t('skins.catalog.equip'), id: 'both', done: false }]
+    : [
+        { team: 3, label: t('skins.equipOnCt'), id: 'ct', done: on(3) },
+        { team: 2, label: t('skins.equipOnT'), id: 't', done: on(2) },
+        {
+          team: 0,
+          label: t('skins.equipOnBoth'),
+          id: 'both',
+          done: !again && skin.equippedSides.includes(0),
+        },
+      ];
   const sideName = (team: LoadoutTeam) => (team === 3 ? t('skins.side.ct') : t('skins.side.t'));
   return (
     <Dialog
@@ -540,7 +627,7 @@ function SidePicker({
       }}
     >
       <Box
-        data-testid="side-picker"
+        data-testid={testId}
         sx={{ p: 3, display: 'flex', flexDirection: 'column', gap: 2, width: 'min(360px, 85vw)' }}
       >
         <Typography
@@ -550,15 +637,16 @@ function SidePicker({
         >
           {skin.weaponName} | {skin.name}
         </Typography>
+        {children}
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
           {actions.map((a) =>
             // A side it is on (not "both") takes it off that side in one click.
-            a.done && a.team !== 0 ? (
+            a.done && a.team !== 0 && onTakeOffSide ? (
               <Button
                 key={a.id}
                 variant="outlined"
                 onClick={() => onTakeOffSide(a.team as 2 | 3)}
-                data-testid={`side-picker-off-${a.id}`}
+                data-testid={`${testId}-off-${a.id}`}
                 sx={{ borderRadius: radii.pill, justifyContent: 'center' }}
               >
                 {t('skins.takeOffOn', { side: sideName(a.team) })}
@@ -567,19 +655,28 @@ function SidePicker({
               <Button
                 key={a.id}
                 variant={a.done ? 'outlined' : 'contained'}
-                disabled={a.done}
+                disabled={a.done || disabled}
                 onClick={() => onPick(a.team)}
-                data-testid={`side-picker-${a.id}`}
+                data-testid={`${testId}-${a.id}`}
                 sx={{ borderRadius: radii.pill, justifyContent: 'center' }}
               >
                 {a.label}
               </Button>
             )
           )}
-          {skin.equipped && (
+          {again && (
+            <Button
+              onClick={onClose}
+              data-testid={`${testId}-cancel`}
+              sx={{ borderRadius: radii.pill, color: color.ink2 }}
+            >
+              {t('skins.catalog.cancel')}
+            </Button>
+          )}
+          {onTakeOff && skin.equipped && (
             <Button
               onClick={onTakeOff}
-              data-testid="side-picker-off"
+              data-testid={`${testId}-off`}
               sx={{ borderRadius: radii.pill, color: color.ink2 }}
             >
               {t('skins.takeOff')}

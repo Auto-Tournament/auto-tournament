@@ -1731,6 +1731,13 @@
     },
     "stattrak": "StatTrak™",
     "stattrakKills": "StatTrak™ kills",
+    "picked": "Wybrany",
+    "pickedOrigin": "Wybrany z katalogu",
+    "view": {
+      "label": "Widok ekwipunku",
+      "owned": "Posiadane",
+      "catalog": "Katalog"
+    },
     "takeOffSide": "Take {{name}} off {{side}}",
     "takeOffOn": "Take off {{side}}",
     "keepAll": "Zatrzymaj wszystkie ({{count}})",
@@ -1853,7 +1860,11 @@
       "chanceHelp": "The chance of this exact skin per option in a drop",
       "price": "Market price {{price}}",
       "more_one": "Show more ({{count}} left)",
-      "more_other": "Show more ({{count}} left)"
+      "more_other": "Show more ({{count}} left)",
+      "loadFailed": "Nie udało się wczytać katalogu",
+      "wear": "Zużycie",
+      "cancel": "Anuluj",
+      "equip": "Załóż"
     }
   },
   "matchRules": {

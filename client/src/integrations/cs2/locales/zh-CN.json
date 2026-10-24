@@ -1721,6 +1721,13 @@
     },
     "stattrak": "StatTrak™",
     "stattrakKills": "StatTrak™ kills",
+    "picked": "自选",
+    "pickedOrigin": "从图鉴中自选",
+    "view": {
+      "label": "库存视图",
+      "owned": "已拥有",
+      "catalog": "图鉴"
+    },
     "takeOffSide": "Take {{name}} off {{side}}",
     "takeOffOn": "Take off {{side}}",
     "keepAll": "全部保留（{{count}}）",
@@ -1843,7 +1850,11 @@
       "chanceHelp": "The chance of this exact skin per option in a drop",
       "price": "Market price {{price}}",
       "more_one": "Show more ({{count}} left)",
-      "more_other": "Show more ({{count}} left)"
+      "more_other": "Show more ({{count}} left)",
+      "loadFailed": "无法加载图鉴",
+      "wear": "磨损",
+      "cancel": "取消",
+      "equip": "装备"
     }
   },
   "matchRules": {

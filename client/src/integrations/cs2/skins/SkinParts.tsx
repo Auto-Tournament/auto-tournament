@@ -382,6 +382,7 @@ export function SlotTile({
   onTakeOff?: () => void;
   takeOffLabel?: string;
 }) {
+  const { t } = useModuleTranslation('cs2');
   const [over, setOver] = useState(false);
   return (
     <Box sx={{ position: 'relative', display: 'flex', flexDirection: 'column' }}>
@@ -474,6 +475,11 @@ export function SlotTile({
             textOverflow: 'ellipsis',
           }}
         >
+          {skin?.source === 'catalog' && (
+            <Box component="span" data-testid="slot-picked" sx={{ color: color.accent }}>
+              {t('skins.picked')}{' '}
+            </Box>
+          )}
           {label}
         </Typography>
       </Box>
@@ -665,7 +671,9 @@ export function InspectSkinDialog({
                         ? t('skins.tradeUp.origin')
                         : skin.source === 'admin'
                           ? t('skins.givenByAdmin')
-                          : t('skins.wonMatchmaking')}
+                          : skin.source === 'catalog'
+                            ? t('skins.pickedOrigin')
+                            : t('skins.wonMatchmaking')}
                 </Typography>
                 <Typography sx={{ fontSize: '0.8125rem', color: color.ink2 }}>
                   {[skin.sourceLabel ? sourceLabel(skin.sourceLabel) : null, date]

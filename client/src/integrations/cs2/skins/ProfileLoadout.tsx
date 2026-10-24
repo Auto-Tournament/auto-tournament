@@ -181,9 +181,11 @@ export function ProfileLoadout({
   const { t } = useModuleTranslation('cs2');
   const enabled = useSkinsEnabled();
   const mine = useMySkins();
-  const [data, setData] = useState<{ inventory: OwnedSkin[]; showcase: ShowcaseItem[] } | null>(
-    null
-  );
+  const [data, setData] = useState<{
+    inventory: OwnedSkin[];
+    picks: OwnedSkin[];
+    showcase: ShowcaseItem[];
+  } | null>(null);
   const [inspect, setInspect] = useState<number | null>(null);
   const [arranging, setArranging] = useState(false);
   const [draft, setDraft] = useState<Array<{ skinId: number; big: boolean }>>([]);
@@ -194,8 +196,10 @@ export function ProfileLoadout({
     if (!enabled) return;
     let cancelled = false;
     api
-      .get<{ inventory: OwnedSkin[]; showcase: ShowcaseItem[] }>(`/api/skins/players/${steamId}`)
-      .then((r) => !cancelled && setData(r))
+      .get<{ inventory: OwnedSkin[]; picks?: OwnedSkin[]; showcase: ShowcaseItem[] }>(
+        `/api/skins/players/${steamId}`
+      )
+      .then((r) => !cancelled && setData({ ...r, picks: r.picks ?? [] }))
       .catch(() => !cancelled && setData(null));
     return () => {
       cancelled = true;
@@ -203,7 +207,9 @@ export function ProfileLoadout({
   }, [enabled, steamId, version]);
 
   // Something to show: skins on, and an owned skin (or it's your own profile).
-  const available = Boolean(enabled && data && (data.inventory.length > 0 || isOwn));
+  const available = Boolean(
+    enabled && data && (data.inventory.length > 0 || data.picks.length > 0 || isOwn)
+  );
   useEffect(() => {
     onAvailability?.(available);
   }, [available, onAvailability]);
@@ -211,7 +217,7 @@ export function ProfileLoadout({
   if (probe || !enabled || !data) return null;
   // Your own profile keeps the section with nothing in it, so the inventory
   // is one click away from day one; someone else's empty loadout stays hidden.
-  if (data.inventory.length === 0) {
+  if (data.inventory.length === 0 && data.picks.length === 0) {
     if (!isOwn) return null;
     return (
       <Box
@@ -347,8 +353,16 @@ export function ProfileLoadout({
           gap: { xs: 3, md: 4 },
         }}
       >
-        <SideLoadout team={3} inventory={data.inventory} onInspect={setInspect} />
-        <SideLoadout team={2} inventory={data.inventory} onInspect={setInspect} />
+        <SideLoadout
+          team={3}
+          inventory={[...data.inventory, ...data.picks]}
+          onInspect={setInspect}
+        />
+        <SideLoadout
+          team={2}
+          inventory={[...data.inventory, ...data.picks]}
+          onInspect={setInspect}
+        />
       </Box>
       <Typography sx={{ fontSize: '0.75rem', color: color.muted }}>{t('skins.notice')}</Typography>
 
