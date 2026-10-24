@@ -51,6 +51,16 @@
       "description": "MatchState (FLEET.md §9); null or absent when idle. Not interpreted in step 1."
     },
     "availability": { "$ref": "../defs.json#/$defs/availability" },
+    "reason": {
+      "type": ["string", "null"],
+      "maxLength": 64,
+      "description": "Busy reason, as in server.availability (local_match, awaiting_reset, assigned, match_disabled, draining); null when available. Absent on older Ready Up."
+    },
+    "detail": {
+      "type": ["string", "null"],
+      "maxLength": 128,
+      "description": "What the busy reason refers to, as server.availability detail; null when nothing."
+    },
     "admins_rev": {
       "type": "integer",
       "minimum": 0,

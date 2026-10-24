@@ -1667,4 +1667,13 @@ export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
       );
     `,
   },
+  {
+    // Why a Ready Up server is busy (fleet/busyReason.ts): the reason and its
+    // detail from hello, state.snapshot and server.availability.
+    id: '062-fleet-availability-reason',
+    up: `
+      ALTER TABLE cs2_fleet_servers ADD COLUMN IF NOT EXISTS availability_reason TEXT;
+      ALTER TABLE cs2_fleet_servers ADD COLUMN IF NOT EXISTS availability_detail TEXT;
+    `,
+  },
 ];

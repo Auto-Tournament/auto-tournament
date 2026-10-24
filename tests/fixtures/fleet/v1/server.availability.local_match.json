@@ -1,0 +1,14 @@
+{
+  "v": 1,
+  "type": "server.availability",
+  "id": "01M3BAZ4FY7SGTCD0XHZCS194A",
+  "seq": 2,
+  "ack": 1,
+  "ts": 1790308225534,
+  "ref": null,
+  "payload": {
+    "availability": "busy",
+    "reason": "local_match",
+    "detail": "cup-final"
+  }
+}

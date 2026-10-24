@@ -8,6 +8,7 @@
   "ref": null,
   "payload": {
     "availability": "busy",
-    "reason": "assigned"
+    "reason": "assigned",
+    "detail": "m_01M3BAZ4FY7SGTCD0XHZCS1900"
   }
 }

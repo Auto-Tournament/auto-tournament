@@ -115,6 +115,51 @@ test.describe('Fleet protocol schemas', () => {
     expect(bad.errors.join()).toContain('boot_id');
   });
 
+  test('hello, state.snapshot and server.availability carry a busy reason', () => {
+    const hello = helloPayload('fs_x', 'install-12345678', {
+      availability: 'busy',
+      reason: 'local_match',
+      detail: 'cup-final',
+    });
+    expect(validatePayload('hello', hello)).toEqual({ ok: true, errors: [] });
+    expect(validatePayload('hello', { ...hello, reason: null, detail: null }).ok).toBe(true);
+    expect(validatePayload('hello', { ...hello, reason: 1 }).ok).toBe(false);
+    expect(validatePayload('hello', { ...hello, detail: 'x'.repeat(129) }).ok).toBe(false);
+    // Older Ready Up sends free text as the reason: still valid.
+    expect(
+      validatePayload('server.availability', { availability: 'busy', reason: 'series_end' }).ok
+    ).toBe(true);
+    expect(
+      validatePayload('server.availability', {
+        availability: 'busy',
+        reason: 'local_match',
+        detail: 'cup-final',
+      }).ok
+    ).toBe(true);
+    expect(
+      validatePayload('server.availability', {
+        availability: 'busy',
+        reason: 'local_match',
+        detail: 3,
+      }).ok
+    ).toBe(false);
+    const snap = {
+      reason: 'request',
+      state: null,
+      availability: 'busy',
+      config_rev: 0,
+      admins_rev: 0,
+    };
+    expect(
+      validatePayload('state.snapshot', {
+        ...snap,
+        availability_reason: 'awaiting_reset',
+        availability_detail: 'm1',
+      }).ok
+    ).toBe(true);
+    expect(validatePayload('state.snapshot', { ...snap, availability_reason: 1 }).ok).toBe(false);
+  });
+
   test('welcome, ping, pong, ack, error, auth.*, server.config', () => {
     expect(
       validatePayload('welcome', {

@@ -22,6 +22,16 @@
     "availability": {
       "$ref": "../defs.json#/$defs/availability"
     },
+    "availability_reason": {
+      "type": ["string", "null"],
+      "maxLength": 64,
+      "description": "Busy reason, as in server.availability; null when available or on older Ready Up."
+    },
+    "availability_detail": {
+      "type": ["string", "null"],
+      "maxLength": 128,
+      "description": "What the busy reason refers to, as server.availability detail."
+    },
     "config_rev": {
       "type": "integer",
       "minimum": 0

@@ -2,12 +2,9 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://auto-tournament.dev/fleet/v1/messages/server.availability.json",
   "title": "server.availability (server → platform, reliable)",
-  "description": "Availability changed: `busy` on assign, `available` after unassign or when the finished match was unloaded (ServerReset, reason `series_end`).",
+  "description": "Availability changed. `reason` when busy: `local_match` (a match loaded on the server itself, detail = its slug), `awaiting_reset` (the assigned series is over and waits for the reset, detail = match id), `assigned` (an assigned match runs, detail = match id), `match_disabled` (no match plugin), `draining` (detail = the drain reason). When available: `idle`, `series_end` or `reset`. Older Ready Up sends other free text.",
   "type": "object",
-  "required": [
-    "availability",
-    "reason"
-  ],
+  "required": ["availability", "reason"],
   "properties": {
     "availability": {
       "$ref": "../defs.json#/$defs/availability"
@@ -15,6 +12,11 @@
     "reason": {
       "type": "string",
       "maxLength": 64
+    },
+    "detail": {
+      "type": ["string", "null"],
+      "maxLength": 128,
+      "description": "What the reason refers to (match id, local slug, drain reason); null when nothing."
     }
   }
 }
