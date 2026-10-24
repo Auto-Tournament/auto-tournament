@@ -305,6 +305,7 @@ export default function MatchPage() {
 
   return (
     <Container
+      component="main"
       maxWidth="lg"
       sx={{ py: { xs: 3, md: 5 }, display: 'flex', flexDirection: 'column', gap: 3 }}
       data-testid="match-page"

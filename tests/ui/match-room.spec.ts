@@ -77,6 +77,9 @@ test.describe.serial('Match room', () => {
   test('someone not in the match sees the room and the veto, read-only', TAGS, async ({ page }) => {
     await page.goto(`/match/${encodeURIComponent(slug)}`, { waitUntil: 'domcontentloaded' });
     await expect(page.getByTestId('match-page')).toBeVisible({ timeout: 15000 });
+    // The room is the page's main landmark.
+    await expect(page.getByRole('main')).toHaveCount(1);
+    await expect(page.getByRole('main')).toHaveAttribute('data-testid', 'match-page');
     await expect(page.getByTestId('match-room-player')).toHaveCount(0);
     // The MatchRoom board: steps, the server state and both rosters...
     await expect(page.getByTestId('match-spectator-room')).toBeVisible({ timeout: 15000 });
