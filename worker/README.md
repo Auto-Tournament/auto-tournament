@@ -85,6 +85,12 @@ recorder (one per GPU) can use the same Steam account. Sign in once, then
 switch Steam to offline mode (in `loginusers.vdf`: `"WantsOfflineMode" "1"` and
 `"SkipOfflineModeWarning" "1"`).
 
+In offline mode Steam never updates CS2, so the recorder does it. While idle,
+it asks Steam every 30 minutes whether its CS2 is current. If not, it takes
+Steam online with the stored login, waits for Steam to update CS2, and puts
+Steam back in offline mode. If Steam can't sign in, the Recorders tab says so:
+sign Steam in again on the recorder's desktop. `AT_CS2_UPDATE=0` turns it off.
+
 ### Recorder container
 
 `sivertio/auto-tournament-recorder` (amd64) is the recorder with the userland
