@@ -20,7 +20,12 @@ test.describe('Session secret', () => {
     expect(fs.existsSync(path.join(dir, 'session-secret'))).toBe(false);
   });
 
-  for (const value of [undefined, '', 'change-this-session-secret', 'auto-tournament-dev-session-secret']) {
+  for (const value of [
+    undefined,
+    '',
+    'change-this-session-secret',
+    'auto-tournament-dev-session-secret',
+  ]) {
     test(`makes and keeps a random one for ${JSON.stringify(value)}`, TAGS, () => {
       const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'at-secret-'));
       const first = resolveSessionSecret({ SESSION_SECRET: value }, dir);
