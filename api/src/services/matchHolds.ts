@@ -24,6 +24,7 @@ import { integrationForMatch } from '../integrations/registry';
 import { matchContextFor } from '../utils/matchIntegration';
 import { emitBracketUpdate, emitTournamentUpdate } from './socketService';
 import type { JsonObject } from '../utils/json';
+import { guarded } from '../utils/guarded';
 
 /** held_until for a hold with no end: released by an admin. */
 export const HOLD_FOREVER = 2147483647;
@@ -293,8 +294,9 @@ let timer: ReturnType<typeof setInterval> | null = null;
 
 export function startHoldTimer(): void {
   if (timer) return;
+  const tick = guarded(tickHolds);
   timer = setInterval(() => {
-    tickHolds().catch((error: unknown) => log.warn('[HOLD] tick failed', { error: String(error) }));
+    tick().catch((error: unknown) => log.warn('[HOLD] tick failed', { error: String(error) }));
   }, 5_000);
   timer.unref?.();
 }

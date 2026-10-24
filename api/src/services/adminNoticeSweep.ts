@@ -7,6 +7,7 @@
 import { db } from '../config/database';
 import { log } from '../utils/logger';
 import { adminNoticeService, type AdminNoticeKind } from './adminNoticeService';
+import { guarded } from '../utils/guarded';
 
 /** How long before a stuck match is worth an admin's look. */
 export const STUCK_AFTER = {
@@ -184,14 +185,16 @@ let started = false;
 export function startAdminNoticeSweep(): void {
   if (started) return;
   started = true;
+  const sweep = guarded(sweepStuckMatches);
   const run = () =>
-    sweepStuckMatches().catch((error) =>
-      log.debug('[ADMIN-NOTICES] stuck-match sweep failed', { error })
-    );
+    sweep().catch((error) => log.debug('[ADMIN-NOTICES] stuck-match sweep failed', { error }));
   setTimeout(run, 30_000).unref?.();
   setInterval(run, 60_000).unref?.();
+  const sweepOfPlatform = guarded(sweepPlatform);
   const platform = () =>
-    sweepPlatform().catch((error) => log.debug('[ADMIN-NOTICES] platform sweep failed', { error }));
+    sweepOfPlatform().catch((error) =>
+      log.debug('[ADMIN-NOTICES] platform sweep failed', { error })
+    );
   setTimeout(platform, 60_000).unref?.();
   setInterval(platform, 3600_000).unref?.();
   setInterval(

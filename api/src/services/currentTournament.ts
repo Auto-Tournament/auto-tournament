@@ -19,6 +19,7 @@
 import { db } from '../config/database';
 import { log } from '../utils/logger';
 import { resolveTournamentId, setCurrentTournamentId } from '../utils/tournamentRow';
+import { guarded } from '../utils/guarded';
 
 const FEATURED_KEY = 'featured_tournament_id';
 const REFRESH_MS = 30_000;
@@ -101,7 +102,10 @@ let refreshTimer: NodeJS.Timeout | null = null;
 /** Keep the featured id fresh in the background (see the file comment). */
 export function startCurrentTournamentRefresh(): void {
   if (refreshTimer) return;
-  refreshTimer = setInterval(() => void refreshCurrentTournamentId(), REFRESH_MS);
+  const refresh = guarded(async () => {
+    await refreshCurrentTournamentId();
+  });
+  refreshTimer = setInterval(() => void refresh(), REFRESH_MS);
   refreshTimer.unref?.();
 }
 

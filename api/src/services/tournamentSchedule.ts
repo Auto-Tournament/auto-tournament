@@ -25,6 +25,7 @@ import { notificationService } from './notificationService';
 import { notifyChannels } from './notifyChannels';
 import { tournamentPlayers } from './tournamentNotices';
 import type { Untrusted } from '../utils/untrusted';
+import { guarded } from '../utils/guarded';
 
 export const DEFAULT_START_REMINDERS = [60, 30, 5];
 /** A reminder this late is not sent at all. */
@@ -170,8 +171,9 @@ export function startTournamentSchedule(apiPort: number): void {
   port = apiPort;
   secret = crypto.randomBytes(32).toString('hex');
   addInternalServiceToken('tournament-schedule', secret);
+  const guardedSweep = guarded(sweep);
   const run = () =>
-    sweep().catch((error) => {
+    guardedSweep().catch((error) => {
       log.debug('[SCHEDULE] sweep failed', { error });
     });
   setTimeout(run, 10_000).unref?.();
