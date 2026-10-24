@@ -1854,7 +1854,9 @@
       "loadFailed": "Impossibile caricare il catalogo",
       "wear": "Usura",
       "cancel": "Annulla",
-      "equip": "Equipaggia"
+      "equip": "Equipaggia",
+      "floatRange": "da 0 a 1",
+      "patternRange": "Numero intero, da 0 a 1000"
     }
   },
   "matchRules": {

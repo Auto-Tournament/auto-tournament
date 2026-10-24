@@ -1854,7 +1854,9 @@
       "loadFailed": "Impossible de charger le catalogue",
       "wear": "Usure",
       "cancel": "Annuler",
-      "equip": "Équiper"
+      "equip": "Équiper",
+      "floatRange": "0 à 1",
+      "patternRange": "Nombre entier, 0 à 1000"
     }
   },
   "matchRules": {

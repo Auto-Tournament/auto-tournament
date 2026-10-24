@@ -220,6 +220,7 @@ function PickDialog({
           value={float}
           onChange={(e) => setFloat(e.target.value)}
           error={!floatOk}
+          helperText={floatOk ? undefined : t('skins.catalog.floatRange')}
           label={t('skins.float')}
           inputProps={{ min: 0, max: 1, step: 0.0001, 'data-testid': 'catalog-float' }}
         />
@@ -230,6 +231,7 @@ function PickDialog({
         value={seed}
         onChange={(e) => setSeed(e.target.value)}
         error={!seedOk}
+        helperText={seedOk ? undefined : t('skins.catalog.patternRange')}
         label={t('skins.pattern')}
         inputProps={{ min: 0, max: 1000, step: 1, 'data-testid': 'catalog-seed' }}
       />

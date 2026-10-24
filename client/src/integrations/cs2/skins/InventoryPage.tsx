@@ -628,7 +628,13 @@ export function SidePicker({
     >
       <Box
         data-testid={testId}
-        sx={{ p: 3, display: 'flex', flexDirection: 'column', gap: 2, width: 'min(360px, 85vw)' }}
+        sx={{
+          p: 3,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 2,
+          width: 'min(360px, calc(100vw - 72px))',
+        }}
       >
         <Typography
           id="side-picker-title"

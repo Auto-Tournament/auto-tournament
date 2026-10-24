@@ -1864,7 +1864,9 @@
       "loadFailed": "Nie udało się wczytać katalogu",
       "wear": "Zużycie",
       "cancel": "Anuluj",
-      "equip": "Załóż"
+      "equip": "Załóż",
+      "floatRange": "od 0 do 1",
+      "patternRange": "Liczba całkowita, od 0 do 1000"
     }
   },
   "matchRules": {

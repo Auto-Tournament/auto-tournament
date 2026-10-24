@@ -1854,7 +1854,9 @@
       "loadFailed": "De catalogus kon niet worden geladen",
       "wear": "Slijtage",
       "cancel": "Annuleren",
-      "equip": "Uitrusten"
+      "equip": "Uitrusten",
+      "floatRange": "0 tot 1",
+      "patternRange": "Geheel getal, 0 tot 1000"
     }
   },
   "matchRules": {

@@ -1854,7 +1854,9 @@
       "loadFailed": "Kunne ikke laste katalogen",
       "wear": "Slitasje",
       "cancel": "Avbryt",
-      "equip": "Ta i bruk"
+      "equip": "Ta i bruk",
+      "floatRange": "0 til 1",
+      "patternRange": "Heltall, 0 til 1000"
     }
   },
   "matchRules": {

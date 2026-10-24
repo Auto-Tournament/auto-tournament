@@ -1854,7 +1854,9 @@
       "loadFailed": "Katalog konnte nicht geladen werden",
       "wear": "Abnutzung",
       "cancel": "Abbrechen",
-      "equip": "Ausrüsten"
+      "equip": "Ausrüsten",
+      "floatRange": "0 bis 1",
+      "patternRange": "Ganze Zahl, 0 bis 1000"
     }
   },
   "matchRules": {
