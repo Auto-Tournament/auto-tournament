@@ -513,6 +513,52 @@ test('a redo that fails every attempt keeps the old video', TAGS, async ({ reque
 });
 
 test(
+  'a clip keeps the lower qualities the recorder cut from it until it is made again',
+  TAGS,
+  async ({ request }) => {
+    expect(await signInViaRequest(request)).toBe(true);
+    const { slug, star } = await matchWithMoments(request);
+    const name = `spec-cuts-${Date.now()}`;
+    let job: {
+      kind: string;
+      matchSlug: string;
+      players: Array<{ playerId: string; moments: Array<{ id: number }> }>;
+    } | null = null;
+    for (let i = 0; i < 30 && !job; i++) {
+      const res = await request.post('/api/game/cs2/recorder/claim', {
+        data: { recorder: name, version: 7 },
+      });
+      expect(res.status()).toBe(200);
+      const j = (await res.json()).job;
+      if (j?.kind === 'benchmark') {
+        await request.post('/api/game/cs2/recorder/benchmark', {
+          data: { recorder: name, tries: [] },
+        });
+      } else if (j?.matchSlug === slug) job = j;
+    }
+    expect(job).not.toBeNull();
+    const id = job!.players.find((p) => p.playerId === star)!.moments[0].id;
+    const put = (route: string, body: string) =>
+      request.put(route, { headers: { 'Content-Type': 'video/mp4' }, data: Buffer.from(body) });
+    expect((await put(`/api/game/cs2/recorder/jobs/${id}/clip`, 'the highest')).status()).toBe(200);
+    expect(
+      (await put(`/api/game/cs2/recorder/jobs/${id}/clip/720p60`, 'a lower one')).status()
+    ).toBe(200);
+
+    const watched = (await (await request.get(`/api/game/cs2/watch/clip/${id}`)).json()).clip as {
+      cuts: Array<{ height: number; fps: number; url: string }>;
+    };
+    expect(watched.cuts.map((c) => [c.height, c.fps])).toEqual([[720, 60]]);
+    expect(await (await request.get(watched.cuts[0].url)).text()).toBe('a lower one');
+
+    // Made again: the old cut no longer matches the new video.
+    expect((await put(`/api/game/cs2/recorder/jobs/${id}/clip`, 'made again')).status()).toBe(200);
+    const again = (await (await request.get(`/api/game/cs2/watch/clip/${id}`)).json()).clip;
+    expect(again.cuts).toEqual([]);
+  }
+);
+
+test(
   'a failed clip holds its reels, and the Clips list says so until it is redone',
   TAGS,
   async ({ request }) => {

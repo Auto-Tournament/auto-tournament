@@ -1064,13 +1064,59 @@ export function crowdFileOf(reel: string): string {
   return twinFileOf(reel, 'crowd');
 }
 
-/** Store one of a video's twins (the recorder streams it up). */
-export async function saveTwin(
-  video: string,
-  twin: VideoTwin,
-  body: NodeJS.ReadableStream
-): Promise<number> {
-  const file = twinFileOf(video, twin);
+/**
+ * A lower quality the recorder cut from a video (its highest), kept next to it
+ * as `<video>.<height>p<fps>.mp4`: "1080p120".
+ */
+export const CUT_NAME = /^\d{3,4}p\d{2,3}$/;
+
+export function cutFileOf(video: string, cut: string): string {
+  return video.replace(/\.mp4$/, `.${cut}.mp4`);
+}
+
+/** A video's lower qualities, highest first, as the player lists them. */
+export interface VideoCut {
+  height: number;
+  fps: number;
+  url: string;
+}
+
+// The cut files in HIGHLIGHTS_DIR, listed once for many videos (a page of
+// clips asks for each); a new or removed cut lists them again.
+let cutList = { at: 0, names: [] as string[] };
+function cutNames(): string[] {
+  if (Date.now() - cutList.at > 10_000) {
+    let names: string[] = [];
+    try {
+      names = fs.readdirSync(HIGHLIGHTS_DIR).filter((n) => /\.\d{3,4}p\d{2,3}\.mp4$/.test(n));
+    } catch {
+      // no highlights yet
+    }
+    cutList = { at: Date.now(), names };
+  }
+  return cutList.names;
+}
+
+export function cutsOf(clipPath: string | null): VideoCut[] {
+  if (!clipPath) return [];
+  const base = path.basename(clipPath).replace(/\.mp4$/, '');
+  return cutNames()
+    .flatMap((n) => {
+      const m = /^(.+)\.(\d{3,4})p(\d{2,3})\.mp4$/.exec(n);
+      return m && m[1] === base
+        ? [
+            {
+              height: Number(m[2]),
+              fps: Number(m[3]),
+              url: `/api/game/cs2/highlights/${encodeURIComponent(n)}`,
+            },
+          ]
+        : [];
+    })
+    .sort((a, b) => b.height - a.height || b.fps - a.fps);
+}
+
+async function streamTo(file: string, body: NodeJS.ReadableStream): Promise<string> {
   const tmp = `${file}.part`;
   await new Promise<void>((resolve, reject) => {
     const out = fs.createWriteStream(tmp);
@@ -1079,6 +1125,31 @@ export async function saveTwin(
     out.on('error', reject);
     body.on('error', reject);
   });
+  return tmp;
+}
+
+/** Store a lower quality of a video (the recorder streams it up after the video). */
+export async function saveCut(
+  video: string,
+  cut: string,
+  body: NodeJS.ReadableStream
+): Promise<number> {
+  const file = cutFileOf(video, cut);
+  const tmp = await streamTo(file, body);
+  const { size } = await fs.promises.stat(tmp);
+  await fs.promises.rename(tmp, file);
+  cutList.at = 0;
+  return size;
+}
+
+/** Store one of a video's twins (the recorder streams it up). */
+export async function saveTwin(
+  video: string,
+  twin: VideoTwin,
+  body: NodeJS.ReadableStream
+): Promise<number> {
+  const file = twinFileOf(video, twin);
+  const tmp = await streamTo(file, body);
   const { size } = await fs.promises.stat(tmp);
   if (twin === 'overlay') {
     // A recipe the redress can read, or nothing.
@@ -1098,13 +1169,15 @@ export async function saveCrowd(reel: string, body: NodeJS.ReadableStream): Prom
   return saveTwin(reel, 'crowd', body);
 }
 
-/** A new video: the twins of the one it replaces no longer match it. */
+/** A new video: the twins and lower qualities of the one it replaces no longer match it. */
 export async function removeTwins(video: string): Promise<void> {
+  const cuts = cutsOf(path.basename(video)).map((c) => cutFileOf(video, `${c.height}p${c.fps}`));
   await Promise.all(
-    (Object.keys(TWIN_SUFFIX) as VideoTwin[]).map((t) =>
-      fs.promises.rm(twinFileOf(video, t), { force: true })
+    [...(Object.keys(TWIN_SUFFIX) as VideoTwin[]).map((t) => twinFileOf(video, t)), ...cuts].map(
+      (f) => fs.promises.rm(f, { force: true })
     )
   );
+  cutList.at = 0;
 }
 
 /** A reel's crowd track for the player, when the recorder made one. */

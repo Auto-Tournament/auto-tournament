@@ -25,6 +25,7 @@ import { chaptersOf } from './highlightViews';
 import {
   removeTwins,
   crowdUrlOf,
+  cutsOf,
   HIGHLIGHTS_DIR,
   parseMarkers,
   reelDate,
@@ -331,6 +332,7 @@ export async function teamReelView(matchSlug: string, teamId: string) {
     team: row.team,
     video: `/api/game/cs2/highlights/${encodeURIComponent(row.clip_path)}`,
     crowd: crowdUrlOf(row.clip_path),
+    cuts: cutsOf(row.clip_path),
     chapters: await chaptersOf(row.clip_ids, row.clip_starts),
     match: {
       slug: matchSlug,

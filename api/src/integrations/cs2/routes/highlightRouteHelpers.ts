@@ -63,7 +63,8 @@ export const claimLock = async (
   }
 };
 
-export const TWIN = ':twin(crowd|clean|overlay)';
+/** What goes next to a video: a twin (demos/highlights.ts VideoTwin) or a lower quality ("1080p120"). */
+export const TWIN = ':twin(crowd|clean|overlay|\\d{3,4}p\\d{2,3})';
 
 export const recorderName = (req: Request): string =>
   typeof req.body?.recorder === 'string' && req.body.recorder ? req.body.recorder : 'recorder';
