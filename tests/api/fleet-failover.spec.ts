@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { test, expect, type APIRequestContext } from '@playwright/test';
+import { Client } from 'pg';
 import { getAuthHeader, signInViaRequest } from '../helpers/auth';
 import {
   FleetTestClient,
@@ -42,7 +43,9 @@ import {
  * - with csm on the dead server's machine: csm restarts it first and the
  *   match resumes there; with no free server, csm creates one, it joins the
  *   pool and takes the match (fleet/failoverRecovery.ts);
- * - auto-failover off: the admin moves the match from the match page.
+ * - auto-failover off: the admin moves the match from the match page;
+ * - a failover is never left in `moving`: a move that throws, or a row nobody
+ *   carries out, is open again.
  *
  * @tag api
  * @tag fleet
@@ -889,6 +892,100 @@ test.describe.serial('Fleet failover (FLEET.md §11)', () => {
       }
     );
     expect(again.status()).toBe(409);
+  });
+
+  /** Runs `sql` on the stack's database. */
+  async function sql(text: string): Promise<void> {
+    const db = new Client({
+      host: process.env.DB_HOST || '127.0.0.1',
+      port: Number(process.env.DB_PORT || 5432),
+      user: process.env.DB_USER || 'postgres',
+      password: process.env.DB_PASSWORD || 'postgres',
+      database: process.env.DB_NAME ?? 'auto_tournament',
+    });
+    await db.connect();
+    try {
+      await db.query(text);
+    } finally {
+      await db.end();
+    }
+  }
+
+  /** A is live with a backup, then dead; B is free; auto-failover is off. Returns the open failover. */
+  async function deadServerWithSpare(request: APIRequestContext, slug: string) {
+    await setFailover(request, { auto: false });
+    const a = await FakeReadyUp.enroll(request);
+    cleanup.push(() => a.close());
+    await a.hello();
+    const cs2A = await link(request, a.serverId);
+    cleanup.push(() => unlink(request, a.serverId));
+    cleanup.push(async () => {
+      await request.post(`/api/matches/${slug}/force-cancel`, { headers: getAuthHeader() });
+    });
+    await liveWithBackup(request, a, slug);
+    const b = await FakeReadyUp.enroll(request);
+    cleanup.push(() => b.close());
+    await b.hello();
+    const cs2B = await link(request, b.serverId);
+    cleanup.push(() => unlink(request, b.serverId));
+    a.kill();
+    const proposal = await scanUntilProposed(request, slug);
+    return { b, cs2A, cs2B, proposal };
+  }
+
+  test('a move that throws after the claim reopens the failover and keeps the old server', async ({
+    request,
+  }) => {
+    test.setTimeout(180_000);
+    const slug = `fleet-fo-throw-${Date.now()}`;
+    const { b, cs2A, cs2B, proposal } = await deadServerWithSpare(request, slug);
+
+    // The write that points the match at B fails.
+    await sql(
+      `CREATE OR REPLACE FUNCTION fo_move_fails() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'fo_move_fails'; END $$`
+    );
+    await sql(
+      `CREATE TRIGGER fo_move_fails BEFORE UPDATE OF server_id ON matches FOR EACH ROW WHEN (NEW.server_id = '${cs2B}') EXECUTE FUNCTION fo_move_fails()`
+    );
+    cleanup.push(() => sql('DROP TRIGGER IF EXISTS fo_move_fails ON matches'));
+    const failed = await request.post(
+      `/api/game/cs2/matches/${slug}/failover/${proposal.id}/accept`,
+      { headers: getAuthHeader(), data: { targetServerId: cs2B } }
+    );
+    expect(failed.status(), await failed.text()).toBe(500);
+    const view = await failoverView(request, slug);
+    expect(view.proposal).toMatchObject({ id: proposal.id, status: 'open' });
+    expect(view.proposal.lastError).toBeTruthy();
+    expect((await matchRow(request, slug))?.serverId).toBe(cs2A);
+
+    // The same failover moves once the fault is gone.
+    await sql('DROP TRIGGER IF EXISTS fo_move_fails ON matches');
+    const again = request.post(`/api/game/cs2/matches/${slug}/failover/${proposal.id}/accept`, {
+      headers: getAuthHeader(),
+      data: { targetServerId: cs2B },
+    });
+    await acceptAssign(b, slug);
+    expect((await again).status()).toBe(200);
+    expect((await matchRow(request, slug))?.serverId).toBe(cs2B);
+  });
+
+  test('a moving failover nobody carries out is opened again by the next pass', async ({
+    request,
+  }) => {
+    test.setTimeout(180_000);
+    const slug = `fleet-fo-stuck-${Date.now()}`;
+    const { cs2A, proposal } = await deadServerWithSpare(request, slug);
+
+    await sql(
+      `UPDATE cs2_fleet_failovers SET status = 'moving', updated_at = updated_at - 600 WHERE id = '${proposal.id}'`
+    );
+    expect((await failoverView(request, slug)).proposal.status).toBe('moving');
+
+    await request.post('/api/test/fleet/failover/scan', { headers: getAuthHeader(), data: {} });
+    const after = (await failoverView(request, slug)).proposal;
+    expect(after).toMatchObject({ id: proposal.id, status: 'open' });
+    expect(after.lastError).toBeTruthy();
+    expect((await matchRow(request, slug))?.serverId).toBe(cs2A);
   });
 
   test('settings: validated, admin only', async ({ request, playwright, baseURL }) => {
