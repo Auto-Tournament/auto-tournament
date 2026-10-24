@@ -16,7 +16,7 @@ import { validateMessage, type Envelope } from '../../api/src/integrations/cs2/f
  * The fleet WebSocket gateway, `/api/fleet/ws` (FLEET.md §5, §6), driven by a
  * test client the way Ready Up's fleet.so will drive it:
  *
- * - auth on upgrade: no / bad token → 4401, revoked → 4403;
+ * - auth on upgrade: no / junk token → HTTP 401, unknown token → 4401, revoked → 4403;
  * - hello → welcome (schema-valid, `ref` = hello id), the server shows online
  *   with its versions, and offline after the socket closes;
  * - identity and protocol checks: wrong server_id → 4403, no common protocol
@@ -56,13 +56,11 @@ test.describe.serial('Fleet gateway', () => {
     if (!key) key = await createFleetKey(request, { name: 'gateway-tests' });
   });
 
-  test('no token or a bad token closes with 4401', async () => {
-    const none = await FleetTestClient.connect(null);
-    expect(await none.waitClosed()).toMatchObject({ code: 4401 });
+  test('no token or junk is HTTP 401; an unknown token closes with 4401', async () => {
+    await expect(FleetTestClient.connect(null)).rejects.toThrow('unexpected HTTP 401');
     const bad = await FleetTestClient.connect('rus_000000000000_' + 'A'.repeat(43));
     expect(await bad.waitClosed()).toMatchObject({ code: 4401 });
-    const junk = await FleetTestClient.connect('not-a-token');
-    expect(await junk.waitClosed()).toMatchObject({ code: 4401 });
+    await expect(FleetTestClient.connect('not-a-token')).rejects.toThrow('unexpected HTTP 401');
   });
 
   test('hello → welcome; online with versions; offline after close', async ({ request }) => {

@@ -130,12 +130,15 @@ Upgrade: websocket
 Authorization: Bearer rus_…
 ```
 
-The handshake always completes; a bad token is answered with a **close
-code**, so it lands in the same place as every other close in FLEET.md §6.3:
+No `Authorization`, or one that is not a `rus_` token, is answered with HTTP
+401 before the handshake; more than 20 upgrades from one address (200 in all)
+waiting on their token check get HTTP 429. Otherwise the handshake completes
+once the token is checked, and a bad token is answered with a **close code**,
+so it lands in the same place as every other close in FLEET.md §6.3:
 
 | Close | When                                                                                           |
 | ----- | ---------------------------------------------------------------------------------------------- |
-| 4401  | no/malformed `Authorization`, unknown token, wrong secret                                      |
+| 4401  | unknown token, wrong secret                                                                    |
 | 4403  | revoked or expired token, revoked server, `hello.server_id`/`install_id` not the enrolled ones |
 | 4400  | first frame is not `hello`, invalid JSON/envelope/hello, `seq` gap, no `hello` within 10 s     |
 | 4409  | a newer session for the same server connected                                                  |

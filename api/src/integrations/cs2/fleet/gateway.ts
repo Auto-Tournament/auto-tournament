@@ -31,7 +31,8 @@ import { WebSocketServer, WebSocket, type RawData } from 'ws';
 import { log } from '../../../utils/logger';
 import { clearCs2UpdateIfCurrent } from './serverNotices';
 import { peerAddressOf } from './address';
-import { redactFleetSecrets, ulid } from './credentials';
+import { PendingUpgrades, rejectUpgrade, upgradeAfter } from './upgradeGate';
+import { parseServerToken, redactFleetSecrets, ulid } from './credentials';
 import {
   FLEET_CLOSE,
   FLEET_MESSAGES,
@@ -775,6 +776,7 @@ export class FleetGateway {
   private readonly wss: WebSocketServer;
   private readonly sessions = new Map<string, FleetSession>();
   private readonly connections = new Set<FleetSession>();
+  private readonly pending = new PendingUpgrades();
   private server: HttpServer | null = null;
   private readyListeners: Array<(serverId: string, hello: HelloPayload) => Promise<void> | void> =
     [];
@@ -805,17 +807,26 @@ export class FleetGateway {
     }
     // Other upgrades (socket.io) are not ours.
     if (pathname !== FLEET_WS_PATH) return;
-    // The check starts now; the handshake completes regardless so a rejection
-    // can be a close code rather than a bare HTTP status.
+    // A bearer that is not a server token gets a bare 401. Otherwise the
+    // handshake completes once the check is done, so a rejection can be a
+    // close code and no frame arrives before it.
     const token = bearer(req);
-    const auth: Promise<Auth> = token
-      ? registry.verifyServerToken(token)
-      : Promise.resolve({ ok: false as const, reason: 'bad' as const });
+    if (!parseServerToken(token)) return rejectUpgrade(socket, 401);
     const peer = peerAddressOf(req);
-    this.wss.handleUpgrade(req, socket, head, (ws) => {
-      const session = new FleetSession(this, ws, auth, this.timings, peer);
-      this.connections.add(session);
-    });
+    const release = this.pending.acquire(peer);
+    if (!release) return rejectUpgrade(socket, 429);
+    const auth: Promise<Auth> = registry.verifyServerToken(token);
+    upgradeAfter(
+      auth,
+      socket,
+      release,
+      () => this.server !== null,
+      () =>
+        this.wss.handleUpgrade(req, socket, head, (ws) => {
+          const session = new FleetSession(this, ws, auth, this.timings, peer);
+          this.connections.add(session);
+        })
+    );
   };
 
   attach(server: HttpServer): void {

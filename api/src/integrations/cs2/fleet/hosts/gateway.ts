@@ -29,7 +29,9 @@ import type { IncomingMessage, Server as HttpServer } from 'http';
 import type { Duplex } from 'stream';
 import { WebSocketServer, WebSocket, type RawData } from 'ws';
 import { log } from '../../../../utils/logger';
-import { redactFleetSecrets, ulid } from '../credentials';
+import { parseHostToken, redactFleetSecrets, ulid } from '../credentials';
+import { peerAddressOf } from '../address';
+import { PendingUpgrades, rejectUpgrade, upgradeAfter } from '../upgradeGate';
 import { FLEET_CLOSE, type Envelope } from '../protocol/v1';
 import {
   HOST_MESSAGES,
@@ -683,6 +685,7 @@ export class HostGateway {
   private readonly wss: WebSocketServer;
   private readonly sessions = new Map<string, HostSession>();
   private readonly connections = new Set<HostSession>();
+  private readonly pending = new PendingUpgrades();
   private server: HttpServer | null = null;
   private readyListeners: Array<(hostId: string) => Promise<void> | void> = [];
   private readonly timings: HostGatewayTimings;
@@ -709,12 +712,20 @@ export class HostGateway {
     }
     if (pathname !== FLEET_HOST_WS_PATH) return;
     const token = bearer(req);
-    const auth: Promise<Auth> = token
-      ? registry.verifyHostToken(token)
-      : Promise.resolve({ ok: false as const, reason: 'bad' as const });
-    this.wss.handleUpgrade(req, socket, head, (ws) => {
-      this.connections.add(new HostSession(this, ws, auth, this.timings));
-    });
+    if (!parseHostToken(token)) return rejectUpgrade(socket, 401);
+    const release = this.pending.acquire(peerAddressOf(req));
+    if (!release) return rejectUpgrade(socket, 429);
+    const auth: Promise<Auth> = registry.verifyHostToken(token);
+    upgradeAfter(
+      auth,
+      socket,
+      release,
+      () => this.server !== null,
+      () =>
+        this.wss.handleUpgrade(req, socket, head, (ws) => {
+          this.connections.add(new HostSession(this, ws, auth, this.timings));
+        })
+    );
   };
 
   attach(server: HttpServer): void {

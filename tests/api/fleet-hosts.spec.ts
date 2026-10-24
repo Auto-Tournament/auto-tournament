@@ -128,8 +128,7 @@ test.describe.serial('Fleet hosts (csm)', () => {
     expect(res.status, JSON.stringify(res.body)).toBe(201);
     expect(res.body.token.startsWith('rhs_')).toBe(true);
     // Wrong channel: the server gateway rejects a host token.
-    const wrong = await FleetTestClient.connect(res.body.token);
-    expect(await wrong.waitClosed()).toMatchObject({ code: 4401 });
+    await expect(FleetTestClient.connect(res.body.token)).rejects.toThrow('unexpected HTTP 401');
   });
 
   test("two csm users on one machine are two hosts; an older csm keeps the machine's", async ({

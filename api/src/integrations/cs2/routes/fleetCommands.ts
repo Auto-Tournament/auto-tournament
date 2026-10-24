@@ -16,6 +16,7 @@ import {
   type IssuedBy,
 } from '../fleet/driver';
 import type { CmdName } from '../fleet/protocol/v1';
+import { hasControlChars } from '../fleet/push/settings';
 import type { Untrusted } from '../../../utils/untrusted';
 
 /**
@@ -63,6 +64,20 @@ export async function answerWithFleetCommand(
   res.status(outcome.httpStatus).json(fleetResponseBody(outcome));
 }
 
+/** Why `line` cannot go to the console as one command, else null. */
+export function execLineError(line: string): string | null {
+  const text = line.trim();
+  if (
+    !text ||
+    text.includes('\n') ||
+    hasControlChars(text) ||
+    Buffer.byteLength(text, 'utf8') > 512
+  ) {
+    return 'exec takes one line of at most 512 bytes';
+  }
+  return null;
+}
+
 /** `exec` (root only, audited). 403 for anyone else. */
 export async function fleetExec(
   req: Request,
@@ -84,12 +99,8 @@ export async function fleetExec(
     };
   }
   const line = command.trim();
-  if (!line || line.includes('\n') || Buffer.byteLength(line, 'utf8') > 512) {
-    return {
-      httpStatus: 400,
-      body: { success: false, error: 'exec takes one line of at most 512 bytes' },
-    };
-  }
+  const lineError = execLineError(line);
+  if (lineError) return { httpStatus: 400, body: { success: false, error: lineError } };
   const outcome = await execOnFleetServer(serverId, line, who);
   return { httpStatus: outcome.httpStatus, body: fleetResponseBody(outcome) };
 }
