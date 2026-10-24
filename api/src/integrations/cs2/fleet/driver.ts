@@ -105,6 +105,7 @@ const MATCH_COMMANDS: ReadonlySet<CmdName> = new Set<CmdName>([
   'swap_teams',
   'restart_round',
   'end',
+  'add_time',
 ]);
 
 // ---------------------------------------------------------------------------

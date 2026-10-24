@@ -43,6 +43,7 @@ export const MANAGE_MATCH_COMMANDS: ReadonlySet<CmdName> = new Set<CmdName>([
   'kick',
   'say',
   'end',
+  'add_time',
   'exec',
 ]);
 
@@ -278,7 +279,7 @@ router.get('/matches/:slug/manage', requireAuth, async (req: Request, res: Respo
  *             type: object
  *             required: [name]
  *             properties:
- *               name: { type: string, enum: [pause, unpause, force_ready, start, restore_round, restart_round, restart_map, change_map, swap_teams, kick, say, end, exec] }
+ *               name: { type: string, enum: [pause, unpause, force_ready, start, restore_round, restart_round, restart_map, change_map, swap_teams, kick, say, end, add_time, exec] }
  *               args: { type: object }
  *     responses:
  *       200: { description: The server ran it }
@@ -309,6 +310,14 @@ router.post('/matches/:slug/manage/command', requireAuth, async (req: Request, r
       : {};
   if (!MANAGE_MATCH_COMMANDS.has(name)) {
     return res.status(400).json({ success: false, error: `Unknown command: ${name}` });
+  }
+  if (name === 'add_time') {
+    const seconds = (args as { seconds?: Untrusted }).seconds;
+    if (typeof seconds !== 'number' || !Number.isInteger(seconds) || seconds < 1 || seconds > 600) {
+      return res
+        .status(400)
+        .json({ success: false, error: 'add_time takes seconds from 1 to 600' });
+    }
   }
   try {
     const match = await db.queryOneAsync<{ server_id: string | null }>(

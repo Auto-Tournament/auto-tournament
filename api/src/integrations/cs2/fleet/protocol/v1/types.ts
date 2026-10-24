@@ -528,7 +528,8 @@ export type CmdName =
   | 'practice.set'
   | 'settings.set'
   | 'tv.set'
-  | 'reset';
+  | 'reset'
+  | 'add_time';
 
 export interface CmdPayload {
   match_id?: string;
