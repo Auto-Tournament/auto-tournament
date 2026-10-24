@@ -274,6 +274,8 @@ scripts/test-local-shards.sh -n 1 -p 4200 tests/auth.spec.ts
 scripts/test-local-shards.sh --since origin/main
 ```
 
+Without `-n` the runner picks the stack count from free Postgres connections and RAM. Stacks use small pools (`DB_POOL_MAX=6`, `SESSION_DB_POOL_MAX=2`) and share one prebuilt client; `--dev` gives each stack its own vite dev server. Each run records spec timings in `logs/local-shard-weights.json` and the next run splits specs by them.
+
 Logs and results go to `logs/local-shards-<base-port>/`.
 
 ### Advanced Usage
