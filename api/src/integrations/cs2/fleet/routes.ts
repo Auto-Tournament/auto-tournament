@@ -14,6 +14,8 @@
  *   POST   /api/fleet/servers/:id/revoke     revoke its tokens, close its socket (4403)
  *   POST   /api/fleet/servers/:id/rotate     rotate its token now (or on its next connect)
  *   POST   /api/fleet/servers/:id/reset      cmd reset; settles the platform's match there (./reset.ts)
+ *   POST   /api/fleet/servers/:id/kick       cmd kick a player (./players.ts)
+ *   GET    /api/fleet/servers/:id/players    who its last snapshot listed (./players.ts)
  *   POST   /api/fleet/servers/:id/link       take matches: link it to a cs2_servers row (./link.ts)
  *   DELETE /api/fleet/servers/:id/link       stop taking matches
  *   GET    /api/fleet/matches/:slug          a match on the fleet: assignment, live state, commands
@@ -59,7 +61,7 @@ import { getAssignment, syncMatch } from './driver';
 import { listCommands } from './reliable';
 import { liveStateStore } from './state';
 import { withBusyReasons } from './busyView';
-import { resetHandler } from './reset';
+import { mountServerActions } from './serverActions';
 import { enrollHostHandler } from './hosts/routes';
 import { fleetChangedOnWrite } from './adminTopics';
 
@@ -383,7 +385,7 @@ fleetAdminRouter.post('/servers/:id/rotate', async (req: Request, res: Response)
  * Reset: cmd reset ends whatever the server holds; the platform's match there
  * is settled like End match (reset.ts). Any admin.
  */
-fleetAdminRouter.post('/servers/:id/reset', resetHandler);
+mountServerActions(fleetAdminRouter);
 
 /**
  * Take matches: link the server to a cs2_servers row (`serverId`, an
