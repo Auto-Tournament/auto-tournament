@@ -247,6 +247,26 @@ router.post('/reset-database', requireAuth, async (_req: Request, res: Response)
 });
 
 /**
+ * Test-only: hold one checked-out pooled connection idle inside a transaction for
+ * `seconds` (pool resilience spec).
+ *
+ * POST /api/test/db-hold  { seconds? }
+ */
+router.post('/db-hold', requireAuth, async (req: Request, res: Response): Promise<void> => {
+  const seconds = Math.min(Number((req.body || {}).seconds) || 5, 30);
+  try {
+    await db.withClient(async (client) => {
+      await client.query('BEGIN');
+      await new Promise((resolve) => setTimeout(resolve, seconds * 1000));
+      await client.query('COMMIT');
+    });
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ success: false, error: (err as Error).message });
+  }
+});
+
+/**
  * Test-only helper: put a match into a given state.
  *
  * POST /api/test/match-state  { slug, status?, serverId?, loadedAt? }

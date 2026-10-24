@@ -102,6 +102,16 @@ class DatabaseManager {
         idleTimeoutMillis: 30000,
         connectionTimeoutMillis: 2000,
       });
+      // An idle client dropped by the server must not crash the process: the pool discards it.
+      this.pool.on('error', (err) => {
+        log.warn(`[PostgreSQL] idle client error (pool recovers): ${err.message}`);
+      });
+      // The pool drops its own listener while a client is checked out.
+      this.pool.on('connect', (client) => {
+        client.on('error', (err) => {
+          log.warn(`[PostgreSQL] client error (pool recovers): ${err.message}`);
+        });
+      });
       log.database(
         `[PostgreSQL] Database pool created: ${this.connectionString.replace(/:[^:@]+@/, ':****@')}`
       );
