@@ -508,7 +508,9 @@
       "over": "your license covers {{max}}, {{over}} over the limit"
     },
     "machineCount_one": "{{count}} machine",
-    "machineCount_other": "{{count}} machines"
+    "machineCount_other": "{{count}} machines",
+    "loadError": "Nie udało się wczytać serwerów",
+    "retry": "Spróbuj ponownie"
   },
   "serverModal": {
     "fleetAddress": "Reported by Ready Up over the fleet link.",
@@ -1234,7 +1236,8 @@
       "save": "Save",
       "clear": "Use the reported address",
       "failed": "Could not save the address"
-    }
+    },
+    "codeExpired": "Kod wygasł: wygeneruj nowy"
   },
   "failover": {
     "title": "Failover",
@@ -2096,7 +2099,9 @@
       "stopping": "Stopping…",
       "updating": "Updating…",
       "veto": "Veto",
-      "warmup": "Warmup"
+      "warmup": "Warmup",
+      "knife": "Runda knife",
+      "live": "Na żywo"
     },
     "stoppedLine": "Starts when a match needs it",
     "summary": "All servers",
@@ -2109,7 +2114,8 @@
     "createN_other": "Create {{count}} servers",
     "restarts_one": "{{count}} restart in 24 h",
     "restarts_other": "{{count}} restarts in 24 h",
-    "offlineFor": "Offline for {{time}}"
+    "offlineFor": "Offline for {{time}}",
+    "offlineLastSeen": "Offline, ostatnio widziany {{time}}"
   },
   "matchPage": {
     "recordingClips": "Recording clips",
@@ -2613,5 +2619,17 @@
     "copyFailed": "Could not copy; select the text instead",
     "onStage": "On stage: every GOTV seat, for the casters and the stream",
     "stageFailed": "Could not change the stage match"
+  },
+  "serversList": {
+    "connectCopied": "Skopiowano polecenie connect",
+    "copyConnect": "Kopiuj polecenie connect",
+    "guessedBanner": "Niektóre adresy odgadnięto na podstawie miejsca, z którego łączy się serwer. Sprawdź je lub ustaw adres używany przez graczy.",
+    "menu": "Więcej dla {{name}}",
+    "noMachine": "Bez maszyny",
+    "noMachineAbout": "Serwery Ready Up, które zarejestrowały się samodzielnie.",
+    "open": "Otwórz",
+    "seen": "Widziany {{time}}",
+    "address": "Adres",
+    "lastSeen": "Ostatnio widziany"
   }
 }

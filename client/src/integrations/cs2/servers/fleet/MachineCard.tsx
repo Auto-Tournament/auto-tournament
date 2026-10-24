@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import type { ReactNode } from 'react';
 import { Box, Button, ButtonBase, IconButton, LinearProgress } from '@mui/material';
 import { CheckIcon, DotsThreeIcon, PlusIcon, WarningCircleIcon } from '@phosphor-icons/react';
 import {
@@ -9,28 +9,17 @@ import {
   tokens,
   useModuleTranslation,
   withAlpha,
-  fmtDateTime,
   panelSx,
   panelBorderSx,
 } from '../../../../module-sdk';
 import type { FleetHost, FleetHostCommand, FleetHostCommandType } from '../../cs2.types';
-import { activeCommand, latestProblem, serverState } from '../machineState';
-import { CreatingTile, ServerTile } from './ServerTile';
-import type { ServerMatch } from './useServerMatches';
+import { activeCommand, latestProblem } from '../machineState';
+import { StateMark } from './serverStateMark';
+import { formatAgo, formatWhen, useNow } from '../time';
 
 const { color } = tokens;
 
 const pending = (c: FleetHostCommand) => c.status === 'pending';
-
-/** Seconds since the epoch, updated each minute. */
-function useNow(): number {
-  const [now, setNow] = useState(() => Date.now() / 1000);
-  useEffect(() => {
-    const id = setInterval(() => setNow(Date.now() / 1000), 60_000);
-    return () => clearInterval(id);
-  }, []);
-  return now;
-}
 
 /** The pending command of `type` on this machine (the newest), if any. */
 export function runningOf(host: FleetHost, type: FleetHostCommandType): FleetHostCommand | null {
@@ -171,37 +160,34 @@ function VersionChip({
 
 export interface MachineCardProps {
   host: FleetHost;
-  matchByServer: Record<string, ServerMatch>;
-  isDeleting: (host: FleetHost, name: string) => boolean;
   onOpenMachine: () => void;
-  onOpenServer: (server: string) => void;
   onMenu: (anchor: HTMLElement) => void;
   onAddServers: () => void;
   onUpdateGame: () => void;
   onUpdateReadyUp: () => void;
   onNewCode: () => void;
   onRetry: (c: FleetHostCommand) => void;
+  /** Its servers, one row each. */
+  children?: ReactNode;
 }
 
 /**
  * One machine: whether it is online, its CS2 and Ready Up as chips (an
- * update shows its progress in place), its servers as tiles, the servers csm
- * is creating, and the last thing that went wrong with a way to try again.
+ * update shows its progress in place), its servers (`children`), the servers
+ * csm is creating, and the last thing that went wrong with a way to try again.
  */
 export function MachineCard({
   host,
-  matchByServer,
-  isDeleting,
   onOpenMachine,
-  onOpenServer,
   onMenu,
   onAddServers,
   onUpdateGame,
   onUpdateReadyUp,
   onNewCode,
   onRetry,
+  children,
 }: MachineCardProps) {
-  const { t } = useModuleTranslation('cs2');
+  const { t, i18n } = useModuleTranslation('cs2');
   const now = useNow();
   const commandLabel = useCommandLabel();
   const problemText = useProblemText();
@@ -214,16 +200,7 @@ export function MachineCard({
   const updatingPlugins = runningOf(host, 'host.update_plugins');
   const creating = host.commands.filter((c) => pending(c) && c.type === 'server.create');
   const creatingCount = creating.reduce((n, c) => n + Math.max(1, Number(c.payload.count) || 1), 0);
-  const when = (s: number | null | undefined) => (s ? fmtDateTime(s) : '—');
-  // "3 min", "4 h", "2 d": how long ago, short (the clock ticks each minute).
-  const since = (s: number) => {
-    const d = Math.max(0, Math.floor(now - s));
-    return d < 3600
-      ? `${Math.max(1, Math.round(d / 60))} min`
-      : d < 86400
-        ? `${Math.round(d / 3600)} h`
-        : `${Math.round(d / 86400)} d`;
-  };
+  const when = (s: number | null | undefined) => formatWhen(s);
   const tone =
     host.status === 'revoked'
       ? color.ban
@@ -241,16 +218,17 @@ export function MachineCard({
             defaultValue: 'Code valid until {{time}}',
             time: when(host.codeExpiresAt),
           })
-        : t('machinesPanel.hostStatus.pending', { defaultValue: 'Waiting to be linked' })
+        : // A pending machine always gets a code; none left means it expired.
+          t('machinesPanel.codeExpired', { defaultValue: 'Code expired: get a new one' })
       : host.status === 'revoked'
         ? t('machinesPanel.hostStatus.revoked', { defaultValue: 'Revoked' })
         : online
           ? t('machinesPanel.hostStatus.online', { defaultValue: 'Online' })
           : [
               host.lastSeen
-                ? t('serversBoard.offlineFor', {
-                    defaultValue: 'Offline for {{time}}',
-                    time: since(host.lastSeen),
+                ? t('serversBoard.offlineLastSeen', {
+                    defaultValue: 'Offline, last seen {{time}}',
+                    time: formatAgo(host.lastSeen, i18n.language, now),
                   })
                 : t('machinesPanel.hostStatus.offline', { defaultValue: 'Offline' }),
               waiting > 0
@@ -271,32 +249,47 @@ export function MachineCard({
       sx={{
         ...panelSx,
         ...panelBorderSx,
-        p: { xs: 2, md: 2.75 },
+        p: { xs: 1.5, md: 2 },
         display: 'flex',
         flexDirection: 'column',
-        gap: 2,
+        gap: 1,
         opacity: host.status === 'enrolled' && !host.online ? 0.75 : 1,
       }}
     >
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
         <Box
-          sx={{ display: 'flex', alignItems: 'center', gap: 1.25, flex: '1 1 16rem', minWidth: 0 }}
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            columnGap: 1.25,
+            rowGap: 0.25,
+            flexWrap: 'wrap',
+            flex: '1 1 16rem',
+            minWidth: 0,
+          }}
         >
           <ButtonBase
             onClick={onOpenMachine}
             data-testid={`machine-open-${host.id}`}
+            title={host.name}
             sx={{
               fontFamily: fontDisplay,
               fontSize: textSize.lg,
               fontWeight: 600,
-              whiteSpace: 'nowrap',
+              minWidth: 0,
+              maxWidth: '100%',
               borderRadius: radii.sm,
               px: 0.5,
               '&:hover': { color: color.accent },
               '&.Mui-focusVisible': { outline: `2px solid ${color.focus}` },
             }}
           >
-            {host.name}
+            <Box
+              component="span"
+              sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+            >
+              {host.name}
+            </Box>
           </ButtonBase>
           <Box
             component="span"
@@ -306,7 +299,7 @@ export function MachineCard({
               gap: 0.75,
               fontSize: '0.75rem',
               color: tone === color.muted ? color.ink2 : tone,
-              whiteSpace: 'nowrap',
+              minWidth: 0,
             }}
           >
             <Box
@@ -314,6 +307,7 @@ export function MachineCard({
               sx={{
                 width: 8,
                 height: 8,
+                flex: 'none',
                 borderRadius: radii.pill,
                 bgcolor: tone,
                 boxShadow: online ? `0 0 0 3px ${withAlpha(tone, 0.2)}` : 'none',
@@ -372,6 +366,16 @@ export function MachineCard({
             )}
           </Box>
         )}
+        {online && (
+          <Button
+            size="small"
+            startIcon={<PlusIcon size={14} />}
+            onClick={onAddServers}
+            data-testid={`machine-create-${host.id}`}
+          >
+            {t('machinesPanel.addServers', { defaultValue: 'Add servers' })}
+          </Button>
+        )}
         {host.status === 'pending' && (
           <Button size="small" variant="outlined" onClick={onNewCode}>
             {t('machinesPanel.newCode', { defaultValue: 'New code' })}
@@ -391,63 +395,51 @@ export function MachineCard({
         </IconButton>
       </Box>
 
-      {host.status === 'enrolled' && (
-        <Box
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 11.5rem), 1fr))',
-            gap: 1.25,
-          }}
-        >
-          {host.servers.map((s) => {
-            const deleting = isDeleting(host, s.name);
-            const state = serverState(host, s, deleting);
-            const own =
-              host.commands.find(
-                (c) => pending(c) && (c.server === s.name || c.payload.server === s.name)
-              ) ??
-              updatingGame ??
-              updatingPlugins;
-            return (
-              <ServerTile
-                key={s.name}
-                host={host}
-                server={s}
-                state={state}
-                match={s.fleetServer ? (matchByServer[s.fleetServer.id] ?? null) : null}
-                command={own}
-                onOpen={() => onOpenServer(s.name)}
-              />
-            );
-          })}
+      {children}
+      {creating.length > 0 && (
+        <Box role="list">
           {Array.from({ length: creatingCount }, (_, i) => (
-            <CreatingTile
+            <Box
               key={`creating-${i}`}
-              n={host.servers.length + i + 1}
-              command={creating[0]}
-            />
-          ))}
-          {online && (
-            <ButtonBase
-              onClick={onAddServers}
-              data-testid={`machine-create-${host.id}`}
+              role="listitem"
+              data-testid="machine-row-creating"
               sx={{
-                minHeight: 92,
-                borderRadius: radii.md,
-                border: `1px dashed ${color.rule}`,
-                color: color.ink2,
-                gap: 1,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1.5,
+                px: 1.5,
+                minHeight: 40,
                 fontSize: textSize.sm,
-                '&:hover': { borderColor: color.ink2, color: color.ink },
-                '&.Mui-focusVisible': { outline: `2px solid ${color.focus}` },
+                color: color.ink2,
               }}
             >
-              <PlusIcon size={16} />
-              {host.servers.length === 0 && creatingCount === 0
-                ? t('serversBoard.addFirstServers', { defaultValue: 'Add the first servers' })
-                : t('machinesPanel.addServers', { defaultValue: 'Add servers' })}
-            </ButtonBase>
-          )}
+              <StateMark state="starting" />
+              <Box component="span" sx={{ fontWeight: 600 }}>
+                {t('serversBoard.newServer', {
+                  defaultValue: 'New server {{n}}',
+                  n: host.servers.length + i + 1,
+                })}
+              </Box>
+              <Box
+                component="span"
+                sx={{
+                  color: color.muted,
+                  minWidth: 0,
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {creating[0].progress.step ??
+                  t('serversBoard.waitingForCsm', { defaultValue: 'Waiting for csm' })}
+              </Box>
+            </Box>
+          ))}
+        </Box>
+      )}
+      {online && host.servers.length === 0 && creatingCount === 0 && (
+        <Box component="span" sx={{ px: 1.5, fontSize: textSize.sm, color: color.muted }}>
+          {t('serversBoard.addFirstServers', { defaultValue: 'Add the first servers' })}
         </Box>
       )}
 

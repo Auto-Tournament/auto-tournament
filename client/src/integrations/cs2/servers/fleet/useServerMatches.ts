@@ -4,53 +4,45 @@
  * match pairs come from the allocation status; each match is read once and
  * again when the socket says it changed.
  */
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { api, useSocket, useTopic } from '../../../../module-sdk';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { api, useSocket } from '../../../../module-sdk';
+import type { ServerAllocationInfo } from '../../cs2.types';
 import { toServerMatch, type MatchResponse, type ServerMatch } from './serverMatchPhase';
 
 export type { ServerMatch };
 
-interface Availability {
-  success: boolean;
-  servers?: Array<{ id: string; matchSlug: string | null }>;
-}
-
-/** Fleet server id → the match on it. */
-export function useServerMatches(): Record<string, ServerMatch> {
+/** Fleet server id → the match on it, for the servers `useServerAvailability` answered. */
+export function useServerMatches(
+  servers: readonly ServerAllocationInfo[] | undefined
+): Record<string, ServerMatch> {
   const socket = useSocket();
-  const [slugByServer, setSlugByServer] = useState<Record<string, string>>({});
-  const [matches, setMatches] = useState<Record<string, ServerMatch>>({});
+  const [matches, setMatches] = useState<Record<string, ServerMatch | null>>({});
   const wanted = useRef<Set<string>>(new Set());
 
-  const loadAvailability = useCallback(async () => {
-    try {
-      const res = await api.get<Availability>('/api/tournament/server-availability');
-      const next: Record<string, string> = {};
-      for (const s of res.servers ?? []) if (s.matchSlug) next[s.id] = s.matchSlug;
-      setSlugByServer(next);
-    } catch {
-      // No tournament or no access: no matches to show.
-    }
-  }, []);
+  // Keyed on content: an availability reload with the same pairs must not refetch every match.
+  const pairsKey = (servers ?? [])
+    .filter((s) => s.matchSlug && !s.allocatable)
+    .map((s) => `${s.id}:${s.matchSlug}`)
+    .sort()
+    .join('\n');
+  const slugByServer = useMemo(() => {
+    const next: Record<string, string> = {};
+    for (const s of servers ?? []) if (s.matchSlug && !s.allocatable) next[s.id] = s.matchSlug;
+    return next;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pairsKey]);
 
   const loadMatch = useCallback(async (slug: string) => {
     try {
       const res = await api.get<MatchResponse>(`/api/matches/${encodeURIComponent(slug)}`);
       if (res.success && res.match) {
-        const m = toServerMatch(res.match);
+        const m = res.match.status === 'completed' ? null : toServerMatch(res.match);
         setMatches((prev) => ({ ...prev, [slug]: m }));
       }
     } catch {
       // Left without details; the tile still says it is in a match.
     }
   }, []);
-
-  useEffect(() => {
-    const first = setTimeout(() => void loadAvailability(), 0);
-    return () => clearTimeout(first);
-  }, [loadAvailability]);
-  // Which match is on which server changes with the fleet and the matches.
-  useTopic('fleet', loadAvailability, { admin: true, events: ['match:update', 'bracket:update'] });
 
   useEffect(() => {
     const slugs = new Set(Object.values(slugByServer));
@@ -61,27 +53,27 @@ export function useServerMatches(): Record<string, ServerMatch> {
     return () => clearTimeout(id);
   }, [slugByServer, loadMatch]);
 
+  // A match on a server changed: read it again. Which server holds which match is
+  // the availability's to re-read.
   useEffect(() => {
     const onMatch = (data: { slug?: string } | undefined) => {
       if (data?.slug && wanted.current.has(data.slug)) void loadMatch(data.slug);
-      else void loadAvailability();
     };
-    const onBracket = () => void loadAvailability();
     socket.on('match:update', onMatch);
-    socket.on('bracket:update', onBracket);
     return () => {
       socket.off('match:update', onMatch);
-      socket.off('bracket:update', onBracket);
     };
-  }, [socket, loadMatch, loadAvailability]);
+  }, [socket, loadMatch]);
 
   const out: Record<string, ServerMatch> = {};
   for (const [serverId, slug] of Object.entries(slugByServer)) {
+    if (matches[slug] === null) continue;
     out[serverId] = matches[slug] ?? {
       slug,
       team1: '',
       team2: '',
       score: null,
+      series: null,
       map: null,
       mapNumber: null,
       maps: 0,

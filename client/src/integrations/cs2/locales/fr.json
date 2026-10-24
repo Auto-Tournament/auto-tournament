@@ -502,7 +502,9 @@
       "over": "your license covers {{max}}, {{over}} over the limit"
     },
     "machineCount_one": "{{count}} machine",
-    "machineCount_other": "{{count}} machines"
+    "machineCount_other": "{{count}} machines",
+    "loadError": "Impossible de charger les serveurs",
+    "retry": "Réessayer"
   },
   "serverModal": {
     "fleetAddress": "Reported by Ready Up over the fleet link.",
@@ -1224,7 +1226,8 @@
       "save": "Save",
       "clear": "Use the reported address",
       "failed": "Could not save the address"
-    }
+    },
+    "codeExpired": "Code expiré : générez-en un nouveau"
   },
   "failover": {
     "title": "Failover",
@@ -2086,7 +2089,9 @@
       "stopping": "Stopping…",
       "updating": "Updating…",
       "veto": "Veto",
-      "warmup": "Warmup"
+      "warmup": "Warmup",
+      "knife": "Manche knife",
+      "live": "Live"
     },
     "stoppedLine": "Starts when a match needs it",
     "summary": "All servers",
@@ -2099,7 +2104,8 @@
     "createN_other": "Create {{count}} servers",
     "restarts_one": "{{count}} restart in 24 h",
     "restarts_other": "{{count}} restarts in 24 h",
-    "offlineFor": "Offline for {{time}}"
+    "offlineFor": "Offline for {{time}}",
+    "offlineLastSeen": "Hors ligne, vu pour la dernière fois {{time}}"
   },
   "matchPage": {
     "recordingClips": "Recording clips",
@@ -2603,5 +2609,17 @@
     "copyFailed": "Could not copy; select the text instead",
     "onStage": "On stage: every GOTV seat, for the casters and the stream",
     "stageFailed": "Could not change the stage match"
+  },
+  "serversList": {
+    "connectCopied": "Commande connect copiée",
+    "copyConnect": "Copier la commande connect",
+    "guessedBanner": "Certaines adresses ont été devinées d'après la connexion du serveur. Vérifiez-les, ou définissez l'adresse utilisée par les joueurs.",
+    "menu": "Plus pour {{name}}",
+    "noMachine": "Sans machine",
+    "noMachineAbout": "Serveurs Ready Up inscrits d’eux-mêmes.",
+    "open": "Ouvrir",
+    "seen": "Vu à {{time}}",
+    "address": "Adresse",
+    "lastSeen": "Vu pour la dernière fois"
   }
 }

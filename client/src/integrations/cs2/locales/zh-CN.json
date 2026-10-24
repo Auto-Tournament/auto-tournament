@@ -502,7 +502,9 @@
       "over": "your license covers {{max}}, {{over}} over the limit"
     },
     "machineCount_one": "{{count}} machine",
-    "machineCount_other": "{{count}} machines"
+    "machineCount_other": "{{count}} machines",
+    "loadError": "无法加载服务器",
+    "retry": "重试"
   },
   "serverModal": {
     "fleetAddress": "Reported by Ready Up over the fleet link.",
@@ -1224,7 +1226,8 @@
       "save": "Save",
       "clear": "Use the reported address",
       "failed": "Could not save the address"
-    }
+    },
+    "codeExpired": "代码已过期：请生成新代码"
   },
   "failover": {
     "title": "Failover",
@@ -2086,7 +2089,9 @@
       "stopping": "Stopping…",
       "updating": "Updating…",
       "veto": "Veto",
-      "warmup": "Warmup"
+      "warmup": "Warmup",
+      "knife": "刀局",
+      "live": "进行中"
     },
     "stoppedLine": "Starts when a match needs it",
     "summary": "All servers",
@@ -2099,7 +2104,8 @@
     "createN_other": "Create {{count}} servers",
     "restarts_one": "{{count}} restart in 24 h",
     "restarts_other": "{{count}} restarts in 24 h",
-    "offlineFor": "Offline for {{time}}"
+    "offlineFor": "Offline for {{time}}",
+    "offlineLastSeen": "离线，最后在线 {{time}}"
   },
   "matchPage": {
     "recordingClips": "Recording clips",
@@ -2603,5 +2609,17 @@
     "copyFailed": "Could not copy; select the text instead",
     "onStage": "On stage: every GOTV seat, for the casters and the stream",
     "stageFailed": "Could not change the stage match"
+  },
+  "serversList": {
+    "connectCopied": "已复制 connect 命令",
+    "copyConnect": "复制 connect 命令",
+    "guessedBanner": "部分地址是根据服务器的连接来源推测的。请检查，或设置玩家使用的地址。",
+    "menu": "{{name}} 的更多操作",
+    "noMachine": "无机器",
+    "noMachineAbout": "自行注册的 Ready Up 服务器。",
+    "open": "打开",
+    "seen": "最后在线 {{time}}",
+    "address": "地址",
+    "lastSeen": "最后在线"
   }
 }

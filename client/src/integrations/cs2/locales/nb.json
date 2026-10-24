@@ -39,7 +39,7 @@
       "online": "kjører",
       "inMatch": "I kamp",
       "free": "Ledig",
-      "offline": "I dvale",
+      "offline": "Frakoblet",
       "plugin": "Plugin",
       "pluginSame": "{{version}}, alle servere matcher",
       "pluginMixed": "{{count}} plugin-versjoner i bruk",
@@ -502,7 +502,9 @@
       "over": "lisensen dekker {{max}}, {{over}} over grensen"
     },
     "machineCount_one": "{{count}} maskin",
-    "machineCount_other": "{{count}} maskiner"
+    "machineCount_other": "{{count}} maskiner",
+    "loadError": "Kunne ikke laste serverne",
+    "retry": "Prøv igjen"
   },
   "serverModal": {
     "fleetAddress": "Rapportert av Ready Up over fleet-koblingen.",
@@ -1224,7 +1226,8 @@
       "save": "Lagre",
       "clear": "Bruk den rapporterte adressen",
       "failed": "Kunne ikke lagre adressen"
-    }
+    },
+    "codeExpired": "Koden er utløpt: lag en ny"
   },
   "failover": {
     "title": "Failover",
@@ -2097,9 +2100,12 @@
       "offline": "Nede",
       "veto": "Veto",
       "warmup": "Oppvarming",
-      "creating": "Lager…"
+      "creating": "Lager…",
+      "knife": "Knivrunde",
+      "live": "Live"
     },
-    "offlineFor": "Frakoblet i {{time}}"
+    "offlineFor": "Frakoblet i {{time}}",
+    "offlineLastSeen": "Frakoblet, sist sett {{time}}"
   },
   "matchPage": {
     "recordingClips": "Tar opp klipp",
@@ -2598,5 +2604,17 @@
     "copyFailed": "Klarte ikke å kopiere. Marker teksten i stedet",
     "onStage": "På scenen: alle GOTV-plasser, for casterne og strømmen",
     "stageFailed": "Klarte ikke å endre scenekampen"
+  },
+  "serversList": {
+    "connectCopied": "Connect-kommando kopiert",
+    "copyConnect": "Kopier connect-kommandoen",
+    "guessedBanner": "Noen adresser ble gjettet ut fra hvor serveren kobler til fra. Sjekk dem, eller angi adressen spillerne bruker.",
+    "menu": "Mer for {{name}}",
+    "noMachine": "Uten maskin",
+    "noMachineAbout": "Ready Up-servere som meldte seg på selv.",
+    "open": "Åpne",
+    "seen": "Sist sett {{time}}",
+    "address": "Adresse",
+    "lastSeen": "Sist sett"
   }
 }

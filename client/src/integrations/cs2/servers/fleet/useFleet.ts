@@ -53,6 +53,7 @@ export function useFleet() {
   const socket = useSocket();
   const [hosts, setHosts] = useState<FleetHost[]>([]);
   const [loaded, setLoaded] = useState(false);
+  const [failed, setFailed] = useState(false);
   const [force, setForce] = useState<ForcePrompt | null>(null);
   // Servers asked to be deleted here (`hostId/server`): deleting until csm no longer lists them.
   const [removing, setRemoving] = useState<Set<string>>(() => new Set());
@@ -69,8 +70,10 @@ export function useFleet() {
     try {
       const res = await api.get<FleetHostsResponse>('/api/fleet/hosts');
       setHosts(res.hosts || []);
+      setFailed(false);
     } catch (err) {
       console.error('Failed to load machines', err);
+      setFailed(true);
     } finally {
       setLoaded(true);
       loading.current = false;
@@ -212,7 +215,7 @@ export function useFleet() {
     [removing]
   );
 
-  return { hosts, loaded, load, send, force, setForce, removeServer, isDeleting };
+  return { hosts, loaded, failed, load, send, force, setForce, removeServer, isDeleting };
 }
 
 export type Fleet = ReturnType<typeof useFleet>;

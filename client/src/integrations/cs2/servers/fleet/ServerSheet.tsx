@@ -11,7 +11,7 @@ import type { FleetHost } from '../../cs2.types';
 import { getMapDisplayName } from '../../maps/mapData';
 import { serverState } from '../machineState';
 import { Facts, SideSheet } from './SideSheet';
-import { StateMark, useStateLabel } from './ServerTile';
+import { StateMark, useStateLabel } from './serverStateMark';
 import type { Fleet } from './useFleet';
 import type { ServerMatch } from './useServerMatches';
 

@@ -69,29 +69,3 @@ export function latestProblem(host: FleetHost, nowS = Date.now() / 1000): FleetH
   }
   return null;
 }
-
-export interface ServerCounts {
-  free: number;
-  match: number;
-  busy: number;
-  down: number;
-}
-
-/** The page's summary: free, in a match, being changed, and stopped or offline. */
-export function countServers(
-  hosts: FleetHost[],
-  isDeleting: (h: FleetHost, s: string) => boolean
-): ServerCounts {
-  const counts: ServerCounts = { free: 0, match: 0, busy: 0, down: 0 };
-  for (const host of hosts) {
-    if (host.status !== 'enrolled') continue;
-    for (const s of host.servers) {
-      const state = serverState(host, s, isDeleting(host, s.name));
-      if (state === 'free') counts.free += 1;
-      else if (state === 'match') counts.match += 1;
-      else if (state === 'stopped' || state === 'offline') counts.down += 1;
-      else counts.busy += 1;
-    }
-  }
-  return counts;
-}

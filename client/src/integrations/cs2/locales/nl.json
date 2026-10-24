@@ -502,7 +502,9 @@
       "over": "your license covers {{max}}, {{over}} over the limit"
     },
     "machineCount_one": "{{count}} machine",
-    "machineCount_other": "{{count}} machines"
+    "machineCount_other": "{{count}} machines",
+    "loadError": "De servers konden niet worden geladen",
+    "retry": "Opnieuw proberen"
   },
   "serverModal": {
     "fleetAddress": "Reported by Ready Up over the fleet link.",
@@ -1224,7 +1226,8 @@
       "save": "Save",
       "clear": "Use the reported address",
       "failed": "Could not save the address"
-    }
+    },
+    "codeExpired": "Code verlopen: maak een nieuwe"
   },
   "failover": {
     "title": "Failover",
@@ -2086,7 +2089,9 @@
       "stopping": "Stopping…",
       "updating": "Updating…",
       "veto": "Veto",
-      "warmup": "Warmup"
+      "warmup": "Warmup",
+      "knife": "Knife-round",
+      "live": "Live"
     },
     "stoppedLine": "Starts when a match needs it",
     "summary": "All servers",
@@ -2099,7 +2104,8 @@
     "createN_other": "Create {{count}} servers",
     "restarts_one": "{{count}} restart in 24 h",
     "restarts_other": "{{count}} restarts in 24 h",
-    "offlineFor": "Offline for {{time}}"
+    "offlineFor": "Offline for {{time}}",
+    "offlineLastSeen": "Offline, laatst gezien {{time}}"
   },
   "matchPage": {
     "recordingClips": "Recording clips",
@@ -2603,5 +2609,17 @@
     "copyFailed": "Could not copy; select the text instead",
     "onStage": "On stage: every GOTV seat, for the casters and the stream",
     "stageFailed": "Could not change the stage match"
+  },
+  "serversList": {
+    "connectCopied": "Connect-opdracht gekopieerd",
+    "copyConnect": "Connect-opdracht kopiëren",
+    "guessedBanner": "Sommige adressen zijn geraden op basis van waar de server vandaan verbindt. Controleer ze, of stel het adres in dat spelers gebruiken.",
+    "menu": "Meer voor {{name}}",
+    "noMachine": "Zonder machine",
+    "noMachineAbout": "Ready Up-servers die zich zelf hebben aangemeld.",
+    "open": "Openen",
+    "seen": "Gezien {{time}}",
+    "address": "Adres",
+    "lastSeen": "Laatst gezien"
   }
 }

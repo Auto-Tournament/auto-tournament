@@ -9,6 +9,7 @@ export interface ServerMatch {
   team1: string;
   team2: string;
   score: [number, number] | null;
+  series: [number, number] | null;
   map: string | null;
   mapNumber: number | null;
   maps: number;
@@ -23,6 +24,8 @@ export interface MatchResponse {
     team2?: { name?: string } | null;
     team1MapScore?: number | null;
     team2MapScore?: number | null;
+    team1SeriesScore?: number | null;
+    team2SeriesScore?: number | null;
     currentMap?: string | null;
     mapNumber?: number | null;
     maps?: string[];
@@ -49,12 +52,16 @@ export function toServerMatch(m: NonNullable<MatchResponse['match']>): ServerMat
             : null;
   const s1 = m.team1MapScore;
   const s2 = m.team2MapScore;
+  const w1 = m.team1SeriesScore;
+  const w2 = m.team2SeriesScore;
   return {
     slug: m.slug,
     team1: m.team1?.name ?? '',
     team2: m.team2?.name ?? '',
     score: typeof s1 === 'number' && typeof s2 === 'number' ? [s1, s2] : null,
-    map: m.currentMap ?? null,
+    series: typeof w1 === 'number' && typeof w2 === 'number' ? [w1, w2] : null,
+    map:
+      m.currentMap ?? (typeof m.mapNumber === 'number' ? m.maps?.[m.mapNumber] : undefined) ?? null,
     mapNumber: typeof m.mapNumber === 'number' ? m.mapNumber : null,
     maps: m.maps?.length ?? 0,
     phase,
