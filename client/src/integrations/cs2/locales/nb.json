@@ -40,7 +40,6 @@
       "inMatch": "I kamp",
       "free": "Ledig",
       "offline": "I dvale",
-      "plugin": "Plugin",
       "pluginSame": "{{version}}, alle servere matcher",
       "pluginMixed": "{{count}} plugin-versjoner i bruk",
       "none": "Ingen servere tilkoblet enda.",
@@ -117,7 +116,6 @@
     },
     "errors": {
       "loadMaps": "Klarte ikke å laste kart",
-      "loadPools": "Klarte ikke å laste kartutvalg",
       "defaultPoolCannotDelete": "Standard kartutvalg kan ikke slettes.",
       "setDefaultPool": "Klarte ikke å sette standard kartutvalg",
       "togglePool": "Klarte ikke å endre status på kartutvalg",
@@ -191,7 +189,6 @@
     },
     "buttons": {
       "cancel": "Avbryt",
-      "saving": "Lagrer…",
       "update": "Oppdater",
       "create": "Opprett"
     }
@@ -216,87 +213,6 @@
       "enable": "Aktiver",
       "disable": "Deaktiver",
       "setDefault": "Sett som standard"
-    }
-  },
-  "batchServerModal": {
-    "title": "Opprett servere i bulk",
-    "info": "Opprett flere servere med porter som øker med 10 (27015, 27025, 27035…). Perfekt for LAN-oppsett med servere på samme maskin.",
-    "sections": {
-      "identification": {
-        "title": "Serveridentifikasjon"
-      },
-      "connection": {
-        "title": "Tilkoblingsinnstillinger"
-      },
-      "configuration": {
-        "title": "Serverkonfigurasjon"
-      }
-    },
-    "baseId": {
-      "label": "Basis-ID",
-      "placeholder": "server",
-      "helper": "Server-ID-er blir: base_1, base_2, base_3…"
-    },
-    "baseName": {
-      "label": "Basisnavn",
-      "placeholder": "Auto Tournament",
-      "helper": "Servernavn blir: Base #1, Base #2, Base #3…"
-    },
-    "host": {
-      "label": "Vert / IP-adresse",
-      "placeholder": "192.168.1.100"
-    },
-    "rconPassword": {
-      "label": "RCON-passord",
-      "placeholder": "shared-rcon-password",
-      "helper": "Samme passord for alle servere"
-    },
-    "numServers": {
-      "label": "Antall servere",
-      "placeholder": "3",
-      "helper": "Maks: 50"
-    },
-    "assignPorts": {
-      "label": "Tildel porter",
-      "helper": "API → server (RCON-test)"
-    },
-    "serverPortLabel": "Server nr. {{index}}",
-    "portPlaceholder": "27015",
-    "enabled": {
-      "label": "Servere aktivert",
-      "helper": "Alle servere opprettes som aktivert/deaktivert"
-    },
-    "preview": {
-      "more": "…og {{count}} flere",
-      "titleFirst10": "Forhåndsvisning (de første 10)",
-      "titleAll": "Forhåndsvisning (alle)"
-    },
-    "checkServersButton": {
-      "default": "Sjekk servere",
-      "checking": "Sjekker…"
-    },
-    "createServersButton": {
-      "creating": "Oppretter…",
-      "default_one": "Opprett {{count}} server",
-      "default_other": "Opprett {{count}} servere"
-    },
-    "warnings": {
-      "notAllVerified": "Noen servere bestod ikke tilkoblingssjekkene. De lagres likevel, men kan vises som offline til RCON og webhook er konfigurert."
-    },
-    "success": {
-      "createdAll_one": "Opprettet {{count}} server",
-      "createdAll_other": "Opprettet {{count}} servere"
-    },
-    "errors": {
-      "baseNameRequired": "Basisnavn er påkrevd",
-      "baseIdRequired": "Basis-ID er påkrevd",
-      "hostRequired": "Vert er påkrevd",
-      "countRange": "Antall servere må være mellom 1 og 50",
-      "passwordRequired": "RCON-passord er påkrevd",
-      "portRange": "Porten til server #{{index}} må være mellom 1 og 65 535",
-      "connectionFailed": "Tilkobling feilet",
-      "createFailed": "Klarte ikke å opprette servere",
-      "partialCreate": "Opprettet {{created}}/{{total}} servere. Feil:\n{{details}}"
     }
   },
   "matchesPage": {
@@ -333,31 +249,19 @@
     "vetoCompleted": "Veto fullført!",
     "vetoCompletedSubtitle": "Kartvalget er fullført. Kampen starter snart.",
     "selectedMaps": "Valgte kart",
-    "yourTurnToBan": "DITT LAGS TUR TIL Å FJERNE ET KART",
-    "yourTurnToPick": "DITT LAGS TUR TIL Å VELGE ET KART",
-    "yourTurnToChooseSide": "DITT LAGS TUR TIL Å VELGE SIDE",
     "clickMapToConfirm": "Klikk på ett av de uthevede kartene nedenfor for å bekrefte valget ditt.",
     "waitingToBan": "Venter på at {{team}} fjerner et kart",
     "waitingToPick": "Venter på at {{team}} velger et kart",
     "waitingToChooseSide": "Venter på at {{team}} velger side",
     "pageUpdatesAutomatically": "Hold denne siden åpen – den oppdateres automatisk når det er turen din.",
     "stepOf": "Trinn {{current}} av {{total}}",
-    "banPhase": "Fjerningsfase",
-    "pickPhase": "Valgfase",
-    "sideChoice": "Sidevalg",
-    "chooseYourStartingSide": "Velg startsiden din",
-    "waitingForSidePick": "Venter på at {{team}} velger startside…",
-    "counterTerrorist": "Kontraterrorist",
-    "terrorist": "Terrorist",
     "vetoHistory": "Veto-historikk",
     "pickSummary": {
       "map": "Kart {{number}}",
       "pickedBy": "valgt av {{team}}",
-      "decider": "avgjørende kart",
-      "starts": "{{team}} starter {{side}}"
+      "decider": "avgjørende kart"
     },
     "historyStep": "Trinn {{step}}:",
-    "startingSide": "Starter som {{side}}",
     "otherTeam": "det andre laget",
     "actionLabels": {
       "ban": "FJERNET",
@@ -391,23 +295,18 @@
       "side": "Hvilken side vil dere starte på?"
     },
     "decided": {
-      "map": "Kart {{number}}",
-      "pickedBy": "valgt av {{team}}",
       "out": "Ute:"
     },
     "timeUp": "Tiden er ute",
     "yourTurnClock": "Turen din",
     "theirTurnClock": "Deres tur",
     "strip": {
-      "you": "dere",
-      "them": "de",
       "timedOut": "tiden gikk ut"
     },
     "actFor": {
       "label": "Handle for:",
       "watch": "Bare se"
     },
-    "opensIn": "Vetoen åpner om {{clock}}",
     "opening": "Vetoen åpner …",
     "opensBreak": "En kort pause mellom kampene. Gjør deg klar – første tur får ekstra tid.",
     "breakEyebrow": "Pause mellom kampene",
@@ -446,34 +345,17 @@
       "finishedTitle": "Denne kampen er ferdig",
       "finishedBody": "Du spiller en annen kamp nå, på en annen server.",
       "finishedGoToCurrent": "Gå til kampen du spiller nå",
-      "serverName": "Server: {{name}}",
-      "status": "Status: {{status}}",
       "connect": "Koble til server",
       "connecting": "✓ Kobler til…",
       "copyCommand": "Kopier konsollkommando",
       "copied": "✓ Kopiert!",
-      "statusLabels": {
-        "idle": "Ledig",
-        "loading": "Laster",
-        "warmup": "Oppvarming – bli med nå!",
-        "knife": "Kniverunde",
-        "live": "Direkte",
-        "paused": "Pauset",
-        "halftime": "Pause",
-        "postgame": "Kampen er ferdig",
-        "queued": "Neste kamp i kø",
-        "error": "Feil"
-      },
       "movedTitle": "Kampen er flyttet til en ny server",
       "movedBody": "Den gamle serveren gikk ned. Koble til serveren under (den har et nytt passord): kampen fortsetter fra den siste rundesikkerhetskopien.",
       "resumedTitle": "Serveren startet på nytt",
       "resumedBody": "Koble til igjen: kampen fortsetter fra den siste rundesikkerhetskopien.",
-      "noPassword": "Uten passord: dere står på listen.",
-      "startsGame": "Er ikke CS2 åpent? Knappen starter det.",
       "via": "Koble til via",
       "viaLan": "LAN",
       "viaPublic": "Internett",
-      "viaRecommended": "for deg",
       "vetoDoneChip": "Veto ferdig · {{map}}",
       "queueNext": "i kø for en server: den neste som blir ledig er din.",
       "queueInLine": "i kø for en server. Kampene foran deg får en først. Det skjer av seg selv.",
@@ -914,8 +796,6 @@
     "keyUsage_one": "{{count}} server innmeldt",
     "keyUsage_other": "{{count}} servere innmeldt",
     "keyUsageLimited": "{{n}} av {{max}} servere innmeldt",
-    "keyPrefix": "navneprefiks {{prefix}}",
-    "keyExpires": "utløper {{time}}",
     "revokeKey": "Tilbakekall nøkkel",
     "serverName": "Servernavn (valgfritt)",
     "addServerHelp": "Oppretter en engangskode som gjelder i 15 minutter. Skriv den inn på serveren med kommandoen som vises etterpå.",
@@ -958,7 +838,6 @@
     },
     "connectAddress": "Tilkoblingsadresse",
     "addressHelp": "Spillerne kobler til denne adressen. La feltet stå tomt for å bruke adressen serveren oppgir, eller den den kobler til fra.",
-    "addressCurrent": "Nå",
     "addressNone": "Ingen adresse funnet ennå: serveren har ikke koblet til.",
     "addressHost": "Vert eller IP",
     "addressPort": "Port",
@@ -1033,43 +912,23 @@
       "add": "Klarte ikke å legge til maskinen",
       "command": "Kommandoen mislyktes"
     },
-    "sent": "Sendt til {{name}}",
-    "queued": "{{name}} er frakoblet. Kommandoen kjører når csm kobler til igjen",
     "rotateSent": "Nytt token sendt",
     "rotateQueued": "Maskinen får et nytt token neste gang den kobler til",
-    "process": {
-      "running": "Kjører",
-      "stopped": "Stoppet"
-    },
-    "restarts": "{{count}} omstarter på 24 t",
     "readyUp": "Ready Up {{version}}",
     "noReadyUp": "Ingen Ready Up",
-    "matchInProgress": "Kamp pågår",
-    "linked": "på flåtekoblingen",
-    "linkedOffline": "flåtekobling frakoblet",
     "start": "Start",
     "restart": "Start på nytt",
     "stop": "Stopp",
     "forced": "Tvunget",
     "queuedShort": "I kø",
-    "waiting": "Venter på csm …",
     "refusedMatch": "csm avviste: en kamp pågår",
-    "title": "Maskiner",
     "add": "Legg til maskin",
-    "description": "Maskiner kjører CS2 Server Manager (csm). Koble til en med én kommando, og opprett, start, stopp og oppdater serverne på den herfra.",
-    "empty": "Ingen maskiner ennå.",
     "codeExpires": "Koden gjelder til {{time}}",
-    "lastSeen": "Sist sett {{time}}",
-    "resources": "{{cpus}} CPU · belastning {{load}} · {{free}}/{{total}} GB RAM ledig",
-    "disk": "{{mount}}: {{free}} GB ledig",
-    "cs2Build": "CS2 {{build}}",
     "cs2UpdateAvailable": "CS2-oppdatering tilgjengelig",
     "newCode": "Ny kode",
     "rotate": "Bytt token",
     "revoke": "Tilbakekall maskin",
     "remove": "Fjern",
-    "createServer": "Opprett server",
-    "createN": "Opprett flere …",
     "updateGame": "Oppdater CS2",
     "updateReadyUp": "Oppdater Ready Up …",
     "updatesHold": "Automatiske oppdateringer",
@@ -1078,7 +937,6 @@
       "on": "På pause",
       "off": "Alltid (også under turneringer)"
     },
-    "noServers": "Ingen servere på denne maskinen ennå.",
     "enrolledElsewhere": "Meldt inn fra denne maskinen: {{names}}",
     "activity": "Nylige handlinger",
     "addHelp": "Du får én linje å lime inn på maskinen (Linux): den installerer CS2 Server Manager (csm) om nødvendig og kobler til maskinen.",
@@ -1091,7 +949,6 @@
     "linkWaiting": "Venter på at maskinen kobler til …",
     "insecureNote": "Denne siden kjører på ukryptert http://, så kommandoen har --insecure og tokenet sendes ukryptert. Kjør plattformen over https:// hvis du kan.",
     "done": "Ferdig",
-    "createHelp": "Nye servere får Ready Up og kobler seg til denne plattformen av seg selv.",
     "count": "Hvor mange",
     "create": "Opprett",
     "version": "Versjon",
@@ -1119,10 +976,7 @@
       "revoked": "Tilbakekalt"
     },
     "status": {
-      "pending": "Pågår",
-      "ok": "Ferdig",
-      "rejected": "Avvist",
-      "failed": "Mislyktes"
+      "ok": "Ferdig"
     },
     "health": {
       "ok": "Ready Up fungerer",
@@ -1152,49 +1006,12 @@
       "logs_stop": "Stopp logger"
     },
     "updateIdleOnly": "Bare de ledige serverne ({{count}})",
-    "errorCodes": {
-      "bad_args": "csm godtok ikke forespørselen",
-      "unknown_server": "Finner ingen slik server på denne maskinen. Opprett den først, eller vent til listen er oppdatert.",
-      "busy": "Maskinen er opptatt med en annen jobb. Prøv igjen når den er ferdig.",
-      "expired": "Gikk ut på tid før maskinen fikk den. Prøv igjen når maskinen er tilkoblet.",
-      "stale": "Sendt for lenge siden, så csm kjørte den ikke. Prøv igjen.",
-      "unsupported": "csm støtter ikke dette",
-      "no_enroll_key": "Ingen flåtenøkkel for den nye serveren",
-      "no_release": "Fant ingen Ready Up-utgave",
-      "license_not_accepted": "Ready Up-lisensen er ikke godtatt på denne maskinen (csm agent config readyup_accept_license)",
-      "install_failed": "Installasjonen av Ready Up mislyktes",
-      "not_found": "Ikke funnet",
-      "limit": "For mange loggstrømmer",
-      "failed": "Mislyktes",
-      "timeout": "Fikk ikke svar fra csm"
-    },
-    "summary": "{{machines}} maskin(er), {{online}} tilkoblet · {{servers}} server(e)",
-    "about": "Maskiner kjører CS2 Server Manager (csm). Plattformen starter, stopper og lager servere på dem selv.",
     "deleteServer": "Slett server",
-    "deleting": "Sletter…",
-    "ago": {
-      "seconds": "{{count}} s siden",
-      "minutes": "{{count}} min siden"
-    },
     "working": "csm jobber med det",
-    "tile": {
-      "free": "Ledig",
-      "match": "I en kamp",
-      "starting": "Starter …",
-      "stopping": "Stopper …",
-      "restarting": "Starter på nytt …",
-      "updating": "Oppdaterer …",
-      "deleting": "Sletter …",
-      "stopped": "Stoppet",
-      "offline": "Frakoblet"
-    },
     "tryAgain": "Prøv igjen",
-    "load": "Last {{load}} · {{free}} GB RAM ledig",
-    "offlineSince": "Frakoblet siden {{time}}",
     "waitingFor_one": "{{count}} handling venter på den",
     "waitingFor_other": "{{count}} handlinger venter på den",
     "addServers": "Legg til servere",
-    "back": "Alle maskiner",
     "more": "Mer for {{name}}",
     "machine": "Maskin",
     "cpu": "CPU-last",
@@ -1420,7 +1237,6 @@
     "notReal": "Ikke ekte CS2-skins.",
     "notice": "De finnes bare på dette nettstedet: de er ikke Steam-gjenstander, har ingen pengeverdi og kan ikke byttes eller selges, og ingen arrangør eller sponsor deler ut ekte skins gjennom dem. Du ser dem i spillet på serverne til dette nettstedet.",
     "equipLabel": "Ta i bruk {{name}}",
-    "equippedLabel": "{{name}}, i bruk",
     "new": "NY",
     "inspect": "Se på {{name}}",
     "rarity": {
@@ -1483,11 +1299,8 @@
     "howTournament": "Plasser deg i en turnering: de beste lagene får en skin hver.",
     "off": "Skins er ikke slått på her.",
     "loadout": "Utrustning",
-    "arrange": "Ordne",
     "showInventory": "Vis utrustning",
-    "arrangeTitle": "Ordne utrustningen",
     "arrangeHint": "Velg opptil {{max}} skins for profilen, i rekkefølge. De to første vises store.",
-    "big": "Stor",
     "moveUp": "Flytt opp",
     "moveDown": "Flytt ned",
     "hide": "Skjul",
@@ -1497,13 +1310,8 @@
       "title": "Skins",
       "mainHint": "Av skjuler inventar, utrustning og premier for alle. Ingenting slettes.",
       "matchmaking": "Matchmaking",
-      "dropChance": "Sjanse for en skin når du vinner",
-      "whichRarity": "Hvilken sjeldenhet som faller (relativ vekt)",
       "tournaments": "Turneringer",
       "tournamentHint": "Alle spillerne på laget får skinen, hver med egen tilfeldig float og mønster, som å åpne en kasse. En turnering kan slå av premiene.",
-      "place1": "1.",
-      "place2": "2.",
-      "place3": "3.",
       "random": "Tilfeldig",
       "pickSkin": "Velg en skin",
       "anyRarity": "En {{rarity}}",
@@ -1513,12 +1321,9 @@
       "highest": "Høyest",
       "seedsHint": "Tomt betyr hvilket som helst. Skriv et og trykk Enter.",
       "addSeed": "Legg til et seed",
-      "notice": "Melding som vises med skins",
-      "noticeFixed": "Vises alltid. Kan ikke endres.",
       "saved": "Skins-innstillinger lagret",
       "inv": {
         "title": "Spillernes skins",
-        "hint": "Velg en spiller for å se skinsene deres, gi dem et eller ta et bort.",
         "player": "Spiller",
         "playerHint": "Navn eller Steam-ID",
         "give": "Gi et skin",
@@ -1540,7 +1345,6 @@
         "floatBad": "Mellom 0 og 1",
         "patternBad": "Et heltall fra 0 til 1000",
         "given": "Skin gitt til {{player}}",
-        "equipped": "utstyrt",
         "source": {
           "matchmaking": "Matchmaking",
           "tournament": "Turnering",
@@ -1555,7 +1359,6 @@
         "giveShort": "Gi",
         "nobodyYet": "Ingen har en skin ennå. Søk etter en spiller for å gi en."
       },
-      "playDropChance": "Sjanse for et skin når du taper eller spiller uavgjort",
       "knivesByPrice": "Kniver og hansker får sjeldenhet etter markedspris (Skinport, oppdatert daglig): billige er vanlige, dyre er sjeldne.",
       "pageHint": "Virtuelle skins spillerne vinner her. Utstyrte skins vises på Ready Up-servere mellom kartene.",
       "on": "På",
@@ -1629,8 +1432,6 @@
       "statTrakChance": "StatTrak™-sjanse (%)",
       "statTrakHelp": "Hvor ofte et våpen eller en kniv som droppes er StatTrak™ (CS2-kasser: 10).",
       "repeatOpponentCut": "Sjeldnere fra den tredje kampen mot samme motstandere samme døgn (slå av for en liten plattform eller et LAN)",
-      "place4": "4.",
-      "place0": "Alle andre",
       "noReward": "Ingen premie"
     },
     "tournamentRewardsSwitch": "Skin-premier for topp tre (når skins er slått på)",
@@ -1659,7 +1460,6 @@
       "ct": "CT",
       "t": "T",
       "both": "Begge",
-      "equipFor": "Utstyr for",
       "defaults": "Standard-skins"
     },
     "favourites": "Favoritter",
@@ -1738,14 +1538,9 @@
     "pinned": "Festet til du velger",
     "toastWhyLevel": "Du har fått en skin for nivå {{level}}",
     "pickLater": "Velg senere",
-    "toastDrop": "Skin-drop",
-    "toastMore_one": "+{{count}} til",
-    "toastMore_other": "+{{count}} til",
     "toastSee": "Se den",
     "toastHide": "Skjul til senere",
     "prizesManage": {
-      "title": "Premier",
-      "intro": "Skins for en plassering, gitt til hver spiller på laget når turneringen er over. Bare skins på nettstedet: ingen Steam-gjenstander og ingen pengeverdi.",
       "off": "Skins er av for denne turneringen (esports-modus, eller skinpremier slått av i oppsettet). Disse premiene blir ikke delt ut.",
       "byPlace": "Etter plassering",
       "placeN_ordinal_one": "{{count}}.",
@@ -1808,19 +1603,9 @@
       "mvpAdmin": "Valgt av arrangøren.",
       "mvpWinsPick": "Vinner 1 av 3 {{rarity}}-skins.",
       "mvpWinsOne": "Vinner en {{rarity}}-skin.",
-      "linePick": "Premien din venter: velg 1 av 3 {{rarity}}-skins.",
       "lineGot": "Premien din ligger i inventaret ditt: en {{rarity}}-skin.",
-      "kinds": {
-        "friendly": "Vennlig",
-        "leader": "Leder",
-        "teacher": "Lærer",
-        "good_sport": "Sportslig",
-        "team_player": "Lagspiller",
-        "good_comms": "God kommunikasjon"
-      },
       "eyebrowPlayed": "Premien din · for å ha spilt"
     },
-    "toastPrize": "Premie · {{place}}",
     "mvpPlace": "MVP i en turnering",
     "catalog": {
       "title": "Alle skins",
@@ -1942,8 +1727,6 @@
   },
   "highlights": {
     "title": "Høydepunkter",
-    "queued_one": "{{count}} til på vei",
-    "queued_other": "{{count}} til på vei",
     "pending": "Venter på opptak",
     "recording": "Tar opp …",
     "mapN": "Kart {{n}}",
@@ -1951,17 +1734,10 @@
     "moments_one": "{{count}} øyeblikk",
     "moments_other": "{{count}} øyeblikk",
     "matchReel": "Kamp-høydepunkter",
-    "close": "Lukk",
     "roundN": "Runde {{n}}",
-    "seeAll": "Se alle {{count}}",
     "reelBadge": "SAMMENDRAG",
-    "simulated": "Simulert spiller",
     "favourite": "Favoritt",
-    "makeFavourite": "Gjør til favoritt",
-    "unfavourite": "Ikke favoritt lenger",
     "favouriteFailed": "Kunne ikke lagre favoritten",
-    "beingRecorded_one": "{{count}} høydepunkt tas opp.",
-    "beingRecorded_other": "{{count}} høydepunkter tas opp.",
     "pageTitle": "Høydepunktene til {{name}}",
     "summary": "{{clips}} klipp · {{reels}} sammendrag · fra {{maps}} kart",
     "loading": "Laster høydepunkter",
@@ -2023,13 +1799,11 @@
       "progress": "{{done}} av {{total}} spillere ferdig",
       "players_one": "{{count}} spiller",
       "players_other": "{{count}} spillere",
-      "none": "Ingen høydepunkter ennå. De dukker opp her etter hvert som demoene tas opp.",
       "playOfTheTournament": "Turneringens spill",
       "firstSoon": "De første spillene dukker opp her snart",
       "noneTitle": "Ingen høydepunkter ennå",
       "noneBody": "De dukker opp her etter hvert som demoene fra kampene blir tatt opp. De første klippene kommer snart."
     },
-    "readyIn": "klar om omtrent {{minutes}} min",
     "matchReelRecording": "Kampreel · tas opp",
     "teamReelButton": "Høydepunkter for {{team}}",
     "wholeSeries": "Hele serien",
@@ -2108,7 +1882,6 @@
     "inThisReel": "I dette sammendraget",
     "openReel": "Åpne på se-siden",
     "scoreboard": "Resultattavle",
-    "player": "Spiller",
     "openingKills": "Åpningskills",
     "highlights": "Høydepunkter",
     "rating": "Rating",
@@ -2118,11 +1891,8 @@
     "teamHighlights": "Høydepunkter for {{team}}"
   },
   "highlightsAdmin": {
-    "title": "Høydepunkter",
-    "subtitle": "Opptakerne som gjør demoer om til høydepunktklipp og sammendrag: hvordan det går med dem, hva de lager og hvordan du legger til en.",
     "tabs": {
       "recorders": "Opptakere",
-      "settings": "Innstillinger",
       "overlays": "Overlegg",
       "clips": "Klipp"
     },
@@ -2130,7 +1900,6 @@
     "actionError": "Det gikk ikke",
     "empty": "Ingen opptaker har bedt om arbeid ennå",
     "emptyHelp": "Legg til en med knappen over. Den dukker opp her når den ber om arbeid første gang.",
-    "online": "Tilkoblet",
     "offline": "Frakoblet",
     "paused": "Pauset",
     "oldVersion": "Versjon {{version}}: oppdater den for bildesjekker og benchmarks",
@@ -2184,7 +1953,6 @@
     "forget": "Glem",
     "forgotten": "Glemt. Den dukker opp igjen hvis den ber om arbeid.",
     "clips": {
-      "tab": "Klipp",
       "current": "Klipp og sammendrag lages nå i {{quality}}.",
       "outdated_other": "{{count}} laget med andre innstillinger",
       "redoOutdated": "Lag de utdaterte på nytt",
@@ -2294,8 +2062,6 @@
       "updateAll": "Oppdater alle",
       "updateProgress": "Oppdaterer: {{done}} av {{total}} oppdatert",
       "updateDone": "{{done}} av {{total}} oppdatert",
-      "updateFailed_one": "{{count}} feilet",
-      "updateFailed_other": "{{count}} feilet",
       "build": "Build {{revision}}",
       "latest": "Oppdater alle installerer image {{image}}, agent {{agent}}",
       "behind_one": "{{count}} opptaker er utdatert",
@@ -2402,7 +2168,6 @@
     "post": "Kommenter",
     "signIn": "Logg inn for å kommentere.",
     "none": "Ingen kommentarer ennå.",
-    "edited": "redigert",
     "edit": "Rediger",
     "delete": "Slett",
     "cancel": "Avbryt",
@@ -2499,8 +2264,7 @@
       "checking": "Sjekker helse",
       "applying": "Installerer"
     },
-    "clipOf": "klipp {{n}} av {{total}}",
-    "left": "~{{time}} igjen"
+    "clipOf": "klipp {{n}} av {{total}}"
   },
   "crash": {
     "downTitle": "Kampserveren krasjet",
@@ -2522,7 +2286,6 @@
     "pickedBy": "valgt av {{team}}",
     "decider": "avgjørende kart",
     "live": "Direkte",
-    "round": "Runde {{n}}",
     "upNext": "Neste",
     "notPlayed": "Ikke spilt",
     "won": "{{team}} vant",
@@ -2552,13 +2315,7 @@
     "veto": "Kart: lagene bannlyser (og velger) dem i kartvetoen før hver kamp.",
     "mapsDrawn": "Kart: hver kamp trekker ett fra kartutvalget. Ingen veto.",
     "shuffleMaps": "Kart: hver runde spiller neste kart på listen, med nye lag hver runde.",
-    "bots": "Ledige plasser fylles med boter.",
-    "beThere_one": "Sitt klar ved PC-en {{count}} minutt før kampen din.",
-    "beThere_other": "Sitt klar ved PC-en {{count}} minutter før kampen din.",
-    "beThereWhy_one": "Vetoen åpner av seg selv {{count}} minutt før starttidspunktet. Hvis laget ditt ikke banner eller velger i tide, velges et kart for dere.",
-    "beThereWhy_other": "Vetoen åpner av seg selv {{count}} minutter før starttidspunktet. Hvis laget ditt ikke banner eller velger i tide, velges et kart for dere.",
-    "beThereOnTime": "Sitt klar ved PC-en når kampen din starter.",
-    "beThereOnTimeWhy": "Vetoen åpner av seg selv ved starttidspunktet. Hvis laget ditt ikke banner eller velger i tide, velges et kart for dere."
+    "bots": "Ledige plasser fylles med boter."
   },
   "movement": {
     "title": "Surf- og KZ-rekorder",

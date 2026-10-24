@@ -40,7 +40,6 @@
       "inMatch": "In a match",
       "free": "Free",
       "offline": "Offline",
-      "plugin": "Plugin",
       "pluginSame": "{{version}}, all servers match",
       "pluginMixed": "{{count}} plugin versions in use",
       "none": "No servers connected yet.",
@@ -117,7 +116,6 @@
     },
     "errors": {
       "loadMaps": "Impossible de charger les cartes",
-      "loadPools": "Impossible de charger les pools de cartes",
       "defaultPoolCannotDelete": "Le pool de cartes par défaut ne peut pas être supprimé.",
       "setDefaultPool": "Impossible de définir le pool de cartes par défaut",
       "togglePool": "Impossible de changer le statut du pool de cartes",
@@ -191,7 +189,6 @@
     },
     "buttons": {
       "cancel": "Annuler",
-      "saving": "Enregistrement…",
       "update": "Mettre à jour",
       "create": "Créer"
     }
@@ -216,87 +213,6 @@
       "enable": "Activer",
       "disable": "Désactiver",
       "setDefault": "Définir par défaut"
-    }
-  },
-  "batchServerModal": {
-    "title": "Créer des serveurs en lot",
-    "info": "Créez plusieurs serveurs avec des ports qui augmentent par 10 (27015, 27025, 27035...). Parfait pour les LAN avec des serveurs sur la même machine.",
-    "sections": {
-      "identification": {
-        "title": "Identification du serveur"
-      },
-      "connection": {
-        "title": "Paramètres de connexion"
-      },
-      "configuration": {
-        "title": "Configuration du serveur"
-      }
-    },
-    "baseId": {
-      "label": "ID de base",
-      "placeholder": "server",
-      "helper": "Les ID de serveur seront : base_1, base_2, base_3..."
-    },
-    "baseName": {
-      "label": "Nom de base",
-      "placeholder": "Auto Tournament",
-      "helper": "Les noms de serveur seront : Base #1, Base #2, Base #3..."
-    },
-    "host": {
-      "label": "Hôte / adresse IP",
-      "placeholder": "192.168.1.100"
-    },
-    "rconPassword": {
-      "label": "Mot de passe RCON",
-      "placeholder": "shared-rcon-password",
-      "helper": "Même mot de passe pour tous les serveurs"
-    },
-    "numServers": {
-      "label": "Nombre de serveurs",
-      "placeholder": "3",
-      "helper": "Max : 50"
-    },
-    "assignPorts": {
-      "label": "Attribuer les ports",
-      "helper": "API → serveur (test RCON)"
-    },
-    "serverPortLabel": "Serveur #{{index}}",
-    "portPlaceholder": "27015",
-    "enabled": {
-      "label": "Serveurs activés",
-      "helper": "Tous les serveurs seront créés comme activés/désactivés"
-    },
-    "preview": {
-      "more": "...et {{count}} de plus",
-      "titleFirst10": "Aperçu (10 premiers)",
-      "titleAll": "Aperçu (tous)"
-    },
-    "checkServersButton": {
-      "default": "Vérifier les serveurs",
-      "checking": "Vérification…"
-    },
-    "createServersButton": {
-      "creating": "Création…",
-      "default_one": "Créer {{count}} serveur",
-      "default_other": "Créer {{count}} serveurs"
-    },
-    "warnings": {
-      "notAllVerified": "Certains serveurs n’ont pas passé les vérifications de connectivité. Ils seront enregistrés, mais peuvent apparaître hors ligne jusqu’à ce que RCON et le webhook soient configurés."
-    },
-    "success": {
-      "createdAll_one": "{{count}} serveur créé",
-      "createdAll_other": "{{count}} serveurs créés"
-    },
-    "errors": {
-      "baseNameRequired": "Le nom de base est requis",
-      "baseIdRequired": "L’ID de base est requis",
-      "hostRequired": "L’hôte est requis",
-      "countRange": "Le nombre de serveurs doit être compris entre 1 et 50",
-      "passwordRequired": "Le mot de passe RCON est requis",
-      "portRange": "Le port du serveur #{{index}} doit être compris entre 1 et 65535",
-      "connectionFailed": "Connexion échouée",
-      "createFailed": "Impossible de créer les serveurs",
-      "partialCreate": "{{created}}/{{total}} serveurs créés. Erreurs :\n{{details}}"
     }
   },
   "matchesPage": {
@@ -333,31 +249,19 @@
     "vetoCompleted": "Veto terminé !",
     "vetoCompletedSubtitle": "La sélection de cartes est terminée. Le match va démarrer prochainement.",
     "selectedMaps": "Cartes sélectionnées",
-    "yourTurnToBan": "C'EST LE TOUR DE VOTRE ÉQUIPE DE BANNIR UNE CARTE",
-    "yourTurnToPick": "C'EST LE TOUR DE VOTRE ÉQUIPE DE CHOISIR UNE CARTE",
-    "yourTurnToChooseSide": "C'EST LE TOUR DE VOTRE ÉQUIPE DE CHOISIR UN CÔTÉ",
     "clickMapToConfirm": "Cliquez sur l'une des cartes surlignées ci-dessous pour confirmer votre choix.",
     "waitingToBan": "En attente que {{team}} bannisse une carte",
     "waitingToPick": "En attente que {{team}} choisisse une carte",
     "waitingToChooseSide": "En attente que {{team}} choisisse un côté",
     "pageUpdatesAutomatically": "Gardez cette page ouverte – elle se mettra à jour automatiquement quand ce sera votre tour.",
     "stepOf": "Étape {{current}} sur {{total}}",
-    "banPhase": "Phase de ban",
-    "pickPhase": "Phase de pick",
-    "sideChoice": "Choix de côté",
-    "chooseYourStartingSide": "Choisissez votre côté de départ",
-    "waitingForSidePick": "En attente que {{team}} choisisse son côté de départ...",
-    "counterTerrorist": "Anti-Terroriste",
-    "terrorist": "Terroriste",
     "vetoHistory": "Historique du veto",
     "pickSummary": {
       "map": "Map {{number}}",
       "pickedBy": "picked by {{team}}",
-      "decider": "decider",
-      "starts": "{{team}} starts {{side}}"
+      "decider": "decider"
     },
     "historyStep": "Étape {{step}} :",
-    "startingSide": "Départ {{side}}",
     "otherTeam": "l'autre équipe",
     "actionLabels": {
       "ban": "BAN",
@@ -391,23 +295,18 @@
       "side": "Which side do you want to start on?"
     },
     "decided": {
-      "map": "Map {{number}}",
-      "pickedBy": "picked by {{team}}",
       "out": "Out:"
     },
     "timeUp": "Temps écoulé",
     "yourTurnClock": "À vous",
     "theirTurnClock": "À eux",
     "strip": {
-      "you": "vous",
-      "them": "eux",
       "timedOut": "temps écoulé"
     },
     "actFor": {
       "label": "Act for:",
       "watch": "Just watch"
     },
-    "opensIn": "The veto opens in {{clock}}",
     "opening": "The veto is opening…",
     "opensBreak": "A short break between matches: get ready, the first turn gets extra time.",
     "breakEyebrow": "Break between matches",
@@ -446,34 +345,17 @@
       "finishedTitle": "This match is over",
       "finishedBody": "You are playing another match now, on another server.",
       "finishedGoToCurrent": "Go to your current match",
-      "serverName": "Serveur : {{name}}",
-      "status": "Statut : {{status}}",
       "connect": "Se connecter au serveur",
       "connecting": "✓ Connexion...",
       "copyCommand": "Copier la commande console",
       "copied": "✓ Copié !",
-      "statusLabels": {
-        "idle": "Disponible",
-        "loading": "Chargement",
-        "warmup": "Échauffement – rejoignez maintenant !",
-        "knife": "Manche knife",
-        "live": "En direct",
-        "paused": "En pause",
-        "halftime": "Mi-temps",
-        "postgame": "Match terminé",
-        "queued": "Prochain match en file d’attente",
-        "error": "Erreur"
-      },
       "movedTitle": "The match moved to a new server",
       "movedBody": "The old server went down. Connect to the server below (it has a new password): the match continues from the last round backup.",
       "resumedTitle": "The server restarted",
       "resumedBody": "Connect again: the match continues from the last round backup.",
-      "noPassword": "No password: you're on the list.",
-      "startsGame": "CS2 n’est pas ouvert ? Le bouton le lance.",
       "via": "Se connecter via",
       "viaLan": "LAN",
       "viaPublic": "Internet",
-      "viaRecommended": "pour vous",
       "vetoDoneChip": "Veto done · {{map}}",
       "queueNext": "in line for a server: the next one that is free is yours.",
       "queueInLine": "in line for a server. The matches ahead of you get one first; it goes by itself.",
@@ -914,8 +796,6 @@
     "keyUsage_one": "{{count}} serveur inscrit",
     "keyUsage_other": "{{count}} serveurs inscrits",
     "keyUsageLimited": "{{n}} sur {{max}} serveurs inscrits",
-    "keyPrefix": "préfixe de nom {{prefix}}",
-    "keyExpires": "expire le {{time}}",
     "revokeKey": "Révoquer la clé",
     "serverName": "Nom du serveur (facultatif)",
     "addServerHelp": "Crée un code à usage unique valable 15 minutes. Saisissez-le sur le serveur avec la commande affichée.",
@@ -958,7 +838,6 @@
     },
     "connectAddress": "Adresse de connexion",
     "addressHelp": "Les joueurs se connectent à cette adresse. Laissez vide pour utiliser l’adresse annoncée par le serveur, ou celle depuis laquelle il se connecte.",
-    "addressCurrent": "Actuelle",
     "addressNone": "Aucune adresse détectée : le serveur ne s’est pas encore connecté.",
     "addressHost": "Hôte ou IP",
     "addressPort": "Port",
@@ -1033,43 +912,23 @@
       "add": "Could not add the machine",
       "command": "The command failed"
     },
-    "sent": "Sent to {{name}}",
-    "queued": "{{name}} is offline; it runs when csm reconnects",
     "rotateSent": "New token sent",
     "rotateQueued": "The machine gets a new token when it next connects",
-    "process": {
-      "running": "Running",
-      "stopped": "Stopped"
-    },
-    "restarts": "{{count}} restarts in 24 h",
     "readyUp": "Ready Up {{version}}",
     "noReadyUp": "No Ready Up",
-    "matchInProgress": "Match in progress",
-    "linked": "on the fleet link",
-    "linkedOffline": "fleet link offline",
     "start": "Start",
     "restart": "Restart",
     "stop": "Stop",
     "forced": "Forced",
     "queuedShort": "Queued",
-    "waiting": "Waiting for csm…",
     "refusedMatch": "csm refused: a match is in progress",
-    "title": "Machines",
     "add": "Add machine",
-    "description": "Machines run CS2 Server Manager (csm). Link one with a single command, then create, start, stop and update its servers from here.",
-    "empty": "No machines yet.",
     "codeExpires": "Code valid until {{time}}",
-    "lastSeen": "Last seen {{time}}",
-    "resources": "{{cpus}} CPU · load {{load}} · {{free}}/{{total}} GB RAM free",
-    "disk": "{{mount}}: {{free}} GB free",
-    "cs2Build": "CS2 {{build}}",
     "cs2UpdateAvailable": "CS2 update available",
     "newCode": "New code",
     "rotate": "Rotate token",
     "revoke": "Revoke machine",
     "remove": "Remove",
-    "createServer": "Create server",
-    "createN": "Create several…",
     "updateGame": "Update CS2",
     "updateReadyUp": "Update Ready Up…",
     "updatesHold": "Automatic updates",
@@ -1078,7 +937,6 @@
       "on": "Paused",
       "off": "Always (even during tournaments)"
     },
-    "noServers": "No servers on this machine yet.",
     "enrolledElsewhere": "Enrolled from this machine: {{names}}",
     "activity": "Recent actions",
     "addHelp": "You get one command to run on the machine. It needs CS2 Server Manager (csm) installed.",
@@ -1091,7 +949,6 @@
     "linkWaiting": "Waiting for the machine to connect…",
     "insecureNote": "Ce site est en http:// non chiffré : la commande contient donc --insecure et le jeton circule en clair. Servez la plateforme en https:// si possible.",
     "done": "Done",
-    "createHelp": "New servers get Ready Up and connect to this platform on their own.",
     "count": "How many",
     "create": "Create",
     "version": "Version",
@@ -1119,10 +976,7 @@
       "revoked": "Revoked"
     },
     "status": {
-      "pending": "In progress",
-      "ok": "Done",
-      "rejected": "Refused",
-      "failed": "Failed"
+      "ok": "Done"
     },
     "health": {
       "ok": "Ready Up healthy",
@@ -1152,49 +1006,12 @@
       "logs_stop": "Stop logs"
     },
     "updateIdleOnly": "Only the idle servers ({{count}})",
-    "errorCodes": {
-      "bad_args": "csm did not accept the request",
-      "unknown_server": "No such server on this machine",
-      "busy": "The machine is busy with another job",
-      "expired": "Expired before the machine got it",
-      "stale": "Sent too long ago; not run",
-      "unsupported": "csm does not support this",
-      "no_enroll_key": "No fleet key for the new server",
-      "no_release": "No Ready Up release found",
-      "license_not_accepted": "Ready Up license not accepted on this machine (csm agent config readyup_accept_license)",
-      "install_failed": "Ready Up install failed",
-      "not_found": "Not found",
-      "limit": "Too many log streams",
-      "failed": "Failed",
-      "timeout": "No answer from csm"
-    },
-    "summary": "{{machines}} machine(s), {{online}} online · {{servers}} server(s)",
-    "about": "Machines run CS2 Server Manager (csm). The platform starts, stops and creates servers on them by itself.",
     "deleteServer": "Delete server",
-    "deleting": "Deleting…",
-    "ago": {
-      "seconds": "{{count}} s ago",
-      "minutes": "{{count}} min ago"
-    },
     "working": "csm is on it",
-    "tile": {
-      "free": "Free",
-      "match": "In a match",
-      "starting": "Starting…",
-      "stopping": "Stopping…",
-      "restarting": "Restarting…",
-      "updating": "Updating…",
-      "deleting": "Deleting…",
-      "stopped": "Stopped",
-      "offline": "Offline"
-    },
     "tryAgain": "Try again",
-    "load": "Load {{load}} · {{free}} GB RAM free",
-    "offlineSince": "Offline since {{time}}",
     "waitingFor_one": "{{count}} action waits for it",
     "waitingFor_other": "{{count}} actions wait for it",
     "addServers": "Add servers",
-    "back": "All machines",
     "more": "More for {{name}}",
     "machine": "Machine",
     "cpu": "CPU load",
@@ -1420,7 +1237,6 @@
     "notReal": "Ce ne sont pas de vrais skins CS2.",
     "notice": "Ils n'existent que sur ce site : ce ne sont pas des objets Steam, ils n'ont aucune valeur marchande, ne peuvent être ni échangés ni vendus, et aucun organisateur ni sponsor n'offre de vrais skins par ce biais. Tu les vois en jeu sur les serveurs de ce site.",
     "equipLabel": "Equip {{name}}",
-    "equippedLabel": "{{name}}, equipped",
     "new": "NEW",
     "inspect": "Inspect {{name}}",
     "rarity": {
@@ -1483,11 +1299,8 @@
     "howTournament": "Place in a tournament: the top teams get a skin each.",
     "off": "Skins are not turned on here.",
     "loadout": "Loadout",
-    "arrange": "Arrange",
     "showInventory": "Show inventory",
-    "arrangeTitle": "Arrange your loadout",
     "arrangeHint": "Pick up to {{max}} skins to show on your profile, their order, and which are big.",
-    "big": "Big",
     "moveUp": "Move up",
     "moveDown": "Move down",
     "hide": "Hide",
@@ -1497,13 +1310,8 @@
       "title": "Skins",
       "mainHint": "Off hides inventories, loadouts and rewards for everyone. Nothing is deleted.",
       "matchmaking": "Matchmaking",
-      "dropChance": "Chance of a skin when you win",
-      "whichRarity": "Which rarity drops (relative weights)",
       "tournaments": "Tournaments",
       "tournamentHint": "Every player in the team gets the skin, each with their own random float and pattern, like opening a case. A tournament can turn its rewards off.",
-      "place1": "1st",
-      "place2": "2nd",
-      "place3": "3rd",
       "random": "Random",
       "pickSkin": "Pick a skin",
       "anyRarity": "Any {{rarity}}",
@@ -1513,12 +1321,9 @@
       "highest": "Highest",
       "seedsHint": "Empty means any seed. Type one and press Enter.",
       "addSeed": "Add a seed",
-      "notice": "Notice shown with skins",
-      "noticeFixed": "Always shown. It can't be changed.",
       "saved": "Skins settings saved",
       "inv": {
         "title": "Player inventories",
-        "hint": "Pick a player to see their skins, give them one or take one away.",
         "player": "Player",
         "playerHint": "Name or Steam ID",
         "give": "Give a skin",
@@ -1540,7 +1345,6 @@
         "floatBad": "Between 0 and 1",
         "patternBad": "A whole number, 0 to 1000",
         "given": "Skin given to {{player}}",
-        "equipped": "equipped",
         "source": {
           "matchmaking": "Matchmaking",
           "tournament": "Tournament",
@@ -1555,7 +1359,6 @@
         "nobodyYet": "Personne n’a encore de skin. Cherchez un joueur pour lui en donner un.",
         "giveShort": "Donner"
       },
-      "playDropChance": "Chance of a skin when you lose or draw",
       "knivesByPrice": "Knives and gloves get their rarity from market price (Skinport, updated daily): cheap ones are common, expensive ones rare.",
       "pageHint": "Des skins virtuels que les joueurs gagnent ici. Ceux équipés apparaissent sur les serveurs Ready Up entre les cartes.",
       "on": "Activé",
@@ -1629,8 +1432,6 @@
       "statTrakChance": "StatTrak™ chance (%)",
       "statTrakHelp": "How often a dropped weapon or knife is StatTrak™ (CS2 cases: 10).",
       "repeatOpponentCut": "Less from the third game against the same opponents in a day (turn off for a small platform or a LAN)",
-      "place4": "4th",
-      "place0": "Everyone",
       "noReward": "No reward"
     },
     "tournamentRewardsSwitch": "Skin rewards for the top three (when skins are on)",
@@ -1659,7 +1460,6 @@
       "ct": "CT",
       "t": "T",
       "both": "Both",
-      "equipFor": "Equip for",
       "defaults": "Default skins"
     },
     "favourites": "Favourites",
@@ -1727,18 +1527,13 @@
       "custom": "Own prizes",
       "label": "Prizes"
     },
-    "toastDrop": "Skin drop",
     "toastNew": "New skin in your inventory.",
-    "toastMore_one": "+{{count}} more",
-    "toastMore_other": "+{{count}} more",
     "toastPick_one": "It stays until you look.",
     "toastPick_other": "Pick one of three. It stays until you do.",
     "toastChoose": "Pick",
     "toastSee": "See it",
     "toastHide": "Hide until later",
     "prizesManage": {
-      "title": "Prizes",
-      "intro": "Skins for a placing, given to every player on the team when the tournament ends. Site skins only: no Steam items, no money value.",
       "off": "Skins are off for this tournament (esports mode, or skin rewards turned off in Setup). These prizes are not given.",
       "byPlace": "By place",
       "placeN_ordinal_one": "{{count}}st",
@@ -1801,19 +1596,9 @@
       "mvpAdmin": "Picked by the organizer.",
       "mvpWinsPick": "Wins 1 of 3 {{rarity}} skins.",
       "mvpWinsOne": "Wins a {{rarity}} skin.",
-      "linePick": "Your prize is waiting: pick 1 of 3 {{rarity}} skins.",
       "lineGot": "Your prize is in your inventory: a {{rarity}} skin.",
-      "kinds": {
-        "friendly": "Friendly",
-        "leader": "Leader",
-        "teacher": "Teacher",
-        "good_sport": "Good sport",
-        "team_player": "Team player",
-        "good_comms": "Good comms"
-      },
       "eyebrowPlayed": "Your prize · for playing"
     },
-    "toastPrize": "Prize · {{place}}",
     "mvpPlace": "MVP of a tournament",
     "toastWhyPlayed": "You earned a skin for playing",
     "toastWhyPlace": "You earned a skin for {{place}} place",
@@ -1942,8 +1727,6 @@
   },
   "highlights": {
     "title": "Highlights",
-    "queued_one": "{{count}} more on the way",
-    "queued_other": "{{count}} more on the way",
     "pending": "Waiting for the recorder",
     "recording": "Recording…",
     "mapN": "Map {{n}}",
@@ -1951,17 +1734,10 @@
     "moments_one": "{{count}} moment",
     "moments_other": "{{count}} moments",
     "matchReel": "Match reel",
-    "close": "Close",
     "roundN": "Round {{n}}",
-    "seeAll": "See all {{count}}",
     "reelBadge": "REEL",
-    "simulated": "Joueur simulé",
     "favourite": "Favourite",
-    "makeFavourite": "Make it your favourite",
-    "unfavourite": "No longer your favourite",
     "favouriteFailed": "Could not save your favourite",
-    "beingRecorded_one": "{{count}} highlight is being recorded.",
-    "beingRecorded_other": "{{count}} highlights are being recorded.",
     "pageTitle": "{{name}}'s highlights",
     "summary": "{{clips}} clips · {{reels}} reels · from {{maps}} maps",
     "loading": "Loading highlights",
@@ -2023,13 +1799,11 @@
       "progress": "{{done}} of {{total}} players done",
       "players_one": "{{count}} player",
       "players_other": "{{count}} players",
-      "none": "No highlights yet. They show up here as the matches' demos are recorded.",
       "playOfTheTournament": "Play of the tournament",
       "firstSoon": "The first plays show up here soon",
       "noneTitle": "No highlights yet",
       "noneBody": "They show up here as the matches' demos are recorded. The first plays show up soon."
     },
-    "readyIn": "ready in about {{minutes}} min",
     "matchReelRecording": "Match reel · being recorded",
     "teamReelButton": "{{team}} highlights",
     "wholeSeries": "Whole series",
@@ -2108,7 +1882,6 @@
     "inThisReel": "In this reel",
     "openReel": "Open in the watch page",
     "scoreboard": "Scoreboard",
-    "player": "Player",
     "openingKills": "Opening kills",
     "highlights": "Highlights",
     "rating": "Rating",
@@ -2118,11 +1891,8 @@
     "teamHighlights": "{{team}} highlights"
   },
   "highlightsAdmin": {
-    "title": "Highlights",
-    "subtitle": "The recorders that turn demos into highlight clips and reels: how they're doing, what they make, and how to add one.",
     "tabs": {
       "recorders": "Recorders",
-      "settings": "Settings",
       "overlays": "Overlays",
       "clips": "Clips"
     },
@@ -2130,7 +1900,6 @@
     "actionError": "That didn't work",
     "empty": "No recorder has asked for work yet",
     "emptyHelp": "Start one with the steps under Add a recorder; it shows up here when it first asks for work.",
-    "online": "Online",
     "offline": "Offline",
     "paused": "Paused",
     "oldVersion": "Version {{version}}: update it for frame checks and benchmarks",
@@ -2184,7 +1953,6 @@
     "forget": "Forget",
     "forgotten": "Forgotten. It shows up again if it asks for work.",
     "clips": {
-      "tab": "Clips",
       "current": "Clips and reels are made at {{quality}} now.",
       "outdated_other": "{{count}} made at other settings",
       "redoOutdated": "Make the outdated ones again",
@@ -2230,12 +1998,7 @@
       "revoke": "Revoke",
       "revoked": "Revoked. A recorder with that key gets no more work.",
       "title": "Add a recorder",
-      "needs": "Run this on a Linux PC with Docker, Steam (signed in) and CS2 installed, from its desktop session. The recorder uses its GPU and finds CS2 in its Steam libraries.",
-      "name": "Name for this PC",
-      "nvidia": "NVIDIA graphics card",
-      "make": "Make the command",
       "once": "This key is shown once. Copy the command now; to add another PC, make a new one.",
-      "after": "Paste it in a terminal on the PC. It starts now and again whenever Docker does.",
       "copy": "Copy command",
       "copied": "Copied",
       "copyFailed": "Could not copy: select the command and copy it",
@@ -2299,8 +2062,6 @@
       "updateAll": "Update all",
       "updateProgress": "Mise à jour : {{done}} sur {{total}} à jour",
       "updateDone": "{{done}} sur {{total}} à jour",
-      "updateFailed_one": "{{count}} en échec",
-      "updateFailed_other": "{{count}} en échec",
       "build": "Build {{revision}}",
       "latest": "Update all installs image {{image}}, agent {{agent}}",
       "behind_one": "{{count}} recorder behind",
@@ -2407,7 +2168,6 @@
     "post": "Comment",
     "signIn": "Sign in to comment.",
     "none": "No comments yet.",
-    "edited": "edited",
     "edit": "Edit",
     "delete": "Delete",
     "cancel": "Cancel",
@@ -2504,8 +2264,7 @@
       "checking": "Checking health",
       "applying": "Installing"
     },
-    "clipOf": "clip {{n}} of {{total}}",
-    "left": "~{{time}} left"
+    "clipOf": "clip {{n}} of {{total}}"
   },
   "crash": {
     "downTitle": "The match server crashed",
@@ -2527,7 +2286,6 @@
     "pickedBy": "{{team}}'s pick",
     "decider": "Decider",
     "live": "Live",
-    "round": "Round {{n}}",
     "upNext": "Up next",
     "notPlayed": "To play",
     "won": "{{team}} won",
@@ -2557,13 +2315,7 @@
     "veto": "Maps: the two teams ban (and pick) them in the map veto before each match.",
     "mapsDrawn": "Maps: each match draws one from the pool. No veto.",
     "shuffleMaps": "Maps: every round plays the next map in the list, with new teams each round.",
-    "bots": "Empty seats are filled with bots.",
-    "beThere_one": "Be at your PC {{count}} minute before your match.",
-    "beThere_other": "Be at your PC {{count}} minutes before your match.",
-    "beThereWhy_one": "The veto opens by itself {{count}} minute before the start time. If your team does not ban or pick in time, a map is chosen for you.",
-    "beThereWhy_other": "The veto opens by itself {{count}} minutes before the start time. If your team does not ban or pick in time, a map is chosen for you.",
-    "beThereOnTime": "Be at your PC when your match starts.",
-    "beThereOnTimeWhy": "The veto opens by itself at the start time. If your team does not ban or pick in time, a map is chosen for you."
+    "bots": "Empty seats are filled with bots."
   },
   "movement": {
     "title": "Surf & KZ records",

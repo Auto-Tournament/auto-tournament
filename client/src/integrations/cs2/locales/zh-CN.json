@@ -40,7 +40,6 @@
       "inMatch": "In a match",
       "free": "Free",
       "offline": "Offline",
-      "plugin": "Plugin",
       "pluginSame": "{{version}}, all servers match",
       "pluginMixed": "{{count}} plugin versions in use",
       "none": "No servers connected yet.",
@@ -117,7 +116,6 @@
     },
     "errors": {
       "loadMaps": "加载地图失败",
-      "loadPools": "加载地图池失败",
       "defaultPoolCannotDelete": "默认地图池无法删除。",
       "setDefaultPool": "设置默认地图池失败",
       "togglePool": "切换地图池状态失败",
@@ -191,7 +189,6 @@
     },
     "buttons": {
       "cancel": "取消",
-      "saving": "正在保存…",
       "update": "更新",
       "create": "创建"
     }
@@ -216,87 +213,6 @@
       "enable": "启用",
       "disable": "禁用",
       "setDefault": "设为默认"
-    }
-  },
-  "batchServerModal": {
-    "title": "批量创建服务器",
-    "info": "按端口递增 10（27015、27025、27035…）批量创建多台服务器，非常适合多台服务器位于同一机器的 LAN 环境。",
-    "sections": {
-      "identification": {
-        "title": "服务器标识"
-      },
-      "connection": {
-        "title": "连接设置"
-      },
-      "configuration": {
-        "title": "服务器配置"
-      }
-    },
-    "baseId": {
-      "label": "基础 ID",
-      "placeholder": "server",
-      "helper": "服务器 ID 示例：base_1、base_2、base_3…"
-    },
-    "baseName": {
-      "label": "基础名称",
-      "placeholder": "Auto Tournament",
-      "helper": "服务器名称示例：Base #1、Base #2、Base #3…"
-    },
-    "host": {
-      "label": "主机 / IP 地址",
-      "placeholder": "192.168.1.100"
-    },
-    "rconPassword": {
-      "label": "RCON 密码",
-      "placeholder": "shared-rcon-password",
-      "helper": "所有服务器共用同一密码"
-    },
-    "numServers": {
-      "label": "服务器数量",
-      "placeholder": "3",
-      "helper": "最大值：50"
-    },
-    "assignPorts": {
-      "label": "端口分配",
-      "helper": "API → 服务器（RCON 测试）"
-    },
-    "serverPortLabel": "服务器 #{{index}}",
-    "portPlaceholder": "27015",
-    "enabled": {
-      "label": "服务器启用状态",
-      "helper": "所有服务器将按此设置为启用或禁用"
-    },
-    "preview": {
-      "more": "……以及另外 {{count}} 台",
-      "titleFirst10": "预览（前 10 条）",
-      "titleAll": "预览（全部）"
-    },
-    "checkServersButton": {
-      "default": "检查服务器",
-      "checking": "正在检查…"
-    },
-    "createServersButton": {
-      "creating": "正在创建…",
-      "default_one": "创建 {{count}} 台服务器",
-      "default_other": "创建 {{count}} 台服务器"
-    },
-    "warnings": {
-      "notAllVerified": "部分服务器尚未通过连通性测试。它们仍会被保存，但在正确配置 RCON 和 Webhook 之前可能显示为离线。"
-    },
-    "success": {
-      "createdAll_one": "已创建 {{count}} 台服务器",
-      "createdAll_other": "已创建 {{count}} 台服务器"
-    },
-    "errors": {
-      "baseNameRequired": "基础名称为必填项",
-      "baseIdRequired": "基础 ID 为必填项",
-      "hostRequired": "主机地址为必填项",
-      "countRange": "服务器数量必须在 1 到 50 之间",
-      "passwordRequired": "RCON 密码为必填项",
-      "portRange": "服务器 #{{index}} 端口必须在 1 到 65535 之间",
-      "connectionFailed": "连接失败",
-      "createFailed": "创建服务器失败",
-      "partialCreate": "已创建 {{created}}/{{total}} 台服务器。错误详情：\n{{details}}"
     }
   },
   "matchesPage": {
@@ -333,31 +249,19 @@
     "vetoCompleted": "禁选完成！",
     "vetoCompletedSubtitle": "地图选择已完成。比赛即将开始。",
     "selectedMaps": "已选地图",
-    "yourTurnToBan": "轮到你的队伍禁用地图",
-    "yourTurnToPick": "轮到你的队伍选择地图",
-    "yourTurnToChooseSide": "轮到你的队伍选择阵营",
     "clickMapToConfirm": "点击下方高亮地图以确认你的选择。",
     "waitingToBan": "等待 {{team}} 禁用地图",
     "waitingToPick": "等待 {{team}} 选择地图",
     "waitingToChooseSide": "等待 {{team}} 选择阵营",
     "pageUpdatesAutomatically": "请保持此页面打开——轮到你时将自动更新。",
     "stepOf": "第 {{current}} 步，共 {{total}} 步",
-    "banPhase": "禁用阶段",
-    "pickPhase": "选择阶段",
-    "sideChoice": "阵营选择",
-    "chooseYourStartingSide": "选择你的初始阵营",
-    "waitingForSidePick": "等待 {{team}} 选择初始阵营...",
-    "counterTerrorist": "反恐精英",
-    "terrorist": "恐怖分子",
     "vetoHistory": "禁选历史",
     "pickSummary": {
       "map": "Map {{number}}",
       "pickedBy": "picked by {{team}}",
-      "decider": "decider",
-      "starts": "{{team}} starts {{side}}"
+      "decider": "decider"
     },
     "historyStep": "第 {{step}} 步：",
-    "startingSide": "初始 {{side}}",
     "otherTeam": "另一支队伍",
     "actionLabels": {
       "ban": "禁用",
@@ -391,23 +295,18 @@
       "side": "Which side do you want to start on?"
     },
     "decided": {
-      "map": "Map {{number}}",
-      "pickedBy": "picked by {{team}}",
       "out": "Out:"
     },
     "timeUp": "时间到",
     "yourTurnClock": "轮到你们",
     "theirTurnClock": "轮到对方",
     "strip": {
-      "you": "你们",
-      "them": "对方",
       "timedOut": "超时"
     },
     "actFor": {
       "label": "Act for:",
       "watch": "Just watch"
     },
-    "opensIn": "The veto opens in {{clock}}",
     "opening": "The veto is opening…",
     "opensBreak": "A short break between matches: get ready, the first turn gets extra time.",
     "breakEyebrow": "Break between matches",
@@ -446,34 +345,17 @@
       "finishedTitle": "This match is over",
       "finishedBody": "You are playing another match now, on another server.",
       "finishedGoToCurrent": "Go to your current match",
-      "serverName": "服务器：{{name}}",
-      "status": "状态：{{status}}",
       "connect": "连接服务器",
       "connecting": "✓ 正在连接...",
       "copyCommand": "复制控制台命令",
       "copied": "✓ 已复制！",
-      "statusLabels": {
-        "idle": "空闲",
-        "loading": "加载中",
-        "warmup": "热身中 – 立即加入！",
-        "knife": "刀局",
-        "live": "进行中",
-        "paused": "已暂停",
-        "halftime": "半场休息",
-        "postgame": "比赛已结束",
-        "queued": "下一场比赛排队中",
-        "error": "错误"
-      },
       "movedTitle": "The match moved to a new server",
       "movedBody": "The old server went down. Connect to the server below (it has a new password): the match continues from the last round backup.",
       "resumedTitle": "The server restarted",
       "resumedBody": "Connect again: the match continues from the last round backup.",
-      "noPassword": "No password: you're on the list.",
-      "startsGame": "没开 CS2？按钮会启动它。",
       "via": "连接方式",
       "viaLan": "局域网",
       "viaPublic": "互联网",
-      "viaRecommended": "推荐",
       "vetoDoneChip": "Veto done · {{map}}",
       "queueNext": "in line for a server: the next one that is free is yours.",
       "queueInLine": "in line for a server. The matches ahead of you get one first; it goes by itself.",
@@ -914,8 +796,6 @@
     "keyUsage_one": "已注册 {{count}} 台服务器",
     "keyUsage_other": "已注册 {{count}} 台服务器",
     "keyUsageLimited": "已注册 {{n}} / {{max}} 台服务器",
-    "keyPrefix": "名称前缀 {{prefix}}",
-    "keyExpires": "到期：{{time}}",
     "revokeKey": "吊销密钥",
     "serverName": "服务器名称（可选）",
     "addServerHelp": "创建一个 15 分钟内有效的一次性代码。在服务器上用接下来显示的命令输入它。",
@@ -958,7 +838,6 @@
     },
     "connectAddress": "连接地址",
     "addressHelp": "玩家连接到此地址。留空则使用服务器报告的地址，或其连接来源地址。",
-    "addressCurrent": "当前",
     "addressNone": "尚未检测到地址：服务器还未连接。",
     "addressHost": "主机或 IP",
     "addressPort": "端口",
@@ -1033,43 +912,23 @@
       "add": "Could not add the machine",
       "command": "The command failed"
     },
-    "sent": "Sent to {{name}}",
-    "queued": "{{name}} is offline; it runs when csm reconnects",
     "rotateSent": "New token sent",
     "rotateQueued": "The machine gets a new token when it next connects",
-    "process": {
-      "running": "Running",
-      "stopped": "Stopped"
-    },
-    "restarts": "{{count}} restarts in 24 h",
     "readyUp": "Ready Up {{version}}",
     "noReadyUp": "No Ready Up",
-    "matchInProgress": "Match in progress",
-    "linked": "on the fleet link",
-    "linkedOffline": "fleet link offline",
     "start": "Start",
     "restart": "Restart",
     "stop": "Stop",
     "forced": "Forced",
     "queuedShort": "Queued",
-    "waiting": "Waiting for csm…",
     "refusedMatch": "csm refused: a match is in progress",
-    "title": "Machines",
     "add": "Add machine",
-    "description": "Machines run CS2 Server Manager (csm). Link one with a single command, then create, start, stop and update its servers from here.",
-    "empty": "No machines yet.",
     "codeExpires": "Code valid until {{time}}",
-    "lastSeen": "Last seen {{time}}",
-    "resources": "{{cpus}} CPU · load {{load}} · {{free}}/{{total}} GB RAM free",
-    "disk": "{{mount}}: {{free}} GB free",
-    "cs2Build": "CS2 {{build}}",
     "cs2UpdateAvailable": "CS2 update available",
     "newCode": "New code",
     "rotate": "Rotate token",
     "revoke": "Revoke machine",
     "remove": "Remove",
-    "createServer": "Create server",
-    "createN": "Create several…",
     "updateGame": "Update CS2",
     "updateReadyUp": "Update Ready Up…",
     "updatesHold": "Automatic updates",
@@ -1078,7 +937,6 @@
       "on": "Paused",
       "off": "Always (even during tournaments)"
     },
-    "noServers": "No servers on this machine yet.",
     "enrolledElsewhere": "Enrolled from this machine: {{names}}",
     "activity": "Recent actions",
     "addHelp": "You get one command to run on the machine. It needs CS2 Server Manager (csm) installed.",
@@ -1091,7 +949,6 @@
     "linkWaiting": "Waiting for the machine to connect…",
     "insecureNote": "此站点使用未加密的 http://，因此命令带有 --insecure，令牌将以明文传输。请尽量通过 https:// 提供平台。",
     "done": "Done",
-    "createHelp": "New servers get Ready Up and connect to this platform on their own.",
     "count": "How many",
     "create": "Create",
     "version": "Version",
@@ -1119,10 +976,7 @@
       "revoked": "Revoked"
     },
     "status": {
-      "pending": "In progress",
-      "ok": "Done",
-      "rejected": "Refused",
-      "failed": "Failed"
+      "ok": "Done"
     },
     "health": {
       "ok": "Ready Up healthy",
@@ -1152,49 +1006,12 @@
       "logs_stop": "Stop logs"
     },
     "updateIdleOnly": "Only the idle servers ({{count}})",
-    "errorCodes": {
-      "bad_args": "csm did not accept the request",
-      "unknown_server": "No such server on this machine",
-      "busy": "The machine is busy with another job",
-      "expired": "Expired before the machine got it",
-      "stale": "Sent too long ago; not run",
-      "unsupported": "csm does not support this",
-      "no_enroll_key": "No fleet key for the new server",
-      "no_release": "No Ready Up release found",
-      "license_not_accepted": "Ready Up license not accepted on this machine (csm agent config readyup_accept_license)",
-      "install_failed": "Ready Up install failed",
-      "not_found": "Not found",
-      "limit": "Too many log streams",
-      "failed": "Failed",
-      "timeout": "No answer from csm"
-    },
-    "summary": "{{machines}} machine(s), {{online}} online · {{servers}} server(s)",
-    "about": "Machines run CS2 Server Manager (csm). The platform starts, stops and creates servers on them by itself.",
     "deleteServer": "Delete server",
-    "deleting": "Deleting…",
-    "ago": {
-      "seconds": "{{count}} s ago",
-      "minutes": "{{count}} min ago"
-    },
     "working": "csm is on it",
-    "tile": {
-      "free": "Free",
-      "match": "In a match",
-      "starting": "Starting…",
-      "stopping": "Stopping…",
-      "restarting": "Restarting…",
-      "updating": "Updating…",
-      "deleting": "Deleting…",
-      "stopped": "Stopped",
-      "offline": "Offline"
-    },
     "tryAgain": "Try again",
-    "load": "Load {{load}} · {{free}} GB RAM free",
-    "offlineSince": "Offline since {{time}}",
     "waitingFor_one": "{{count}} action waits for it",
     "waitingFor_other": "{{count}} actions wait for it",
     "addServers": "Add servers",
-    "back": "All machines",
     "more": "More for {{name}}",
     "machine": "Machine",
     "cpu": "CPU load",
@@ -1420,7 +1237,6 @@
     "notReal": "这些不是真正的 CS2 皮肤。",
     "notice": "它们只存在于本站：不是 Steam 物品，没有任何金钱价值，不能交易或出售，也没有任何赛事主办方或赞助商通过它们赠送真实皮肤。你可以在本站的服务器上于游戏中看到它们。",
     "equipLabel": "Equip {{name}}",
-    "equippedLabel": "{{name}}, equipped",
     "new": "NEW",
     "inspect": "Inspect {{name}}",
     "rarity": {
@@ -1483,11 +1299,8 @@
     "howTournament": "Place in a tournament: the top teams get a skin each.",
     "off": "Skins are not turned on here.",
     "loadout": "Loadout",
-    "arrange": "Arrange",
     "showInventory": "Show inventory",
-    "arrangeTitle": "Arrange your loadout",
     "arrangeHint": "Pick up to {{max}} skins to show on your profile, their order, and which are big.",
-    "big": "Big",
     "moveUp": "Move up",
     "moveDown": "Move down",
     "hide": "Hide",
@@ -1497,13 +1310,8 @@
       "title": "Skins",
       "mainHint": "Off hides inventories, loadouts and rewards for everyone. Nothing is deleted.",
       "matchmaking": "Matchmaking",
-      "dropChance": "Chance of a skin when you win",
-      "whichRarity": "Which rarity drops (relative weights)",
       "tournaments": "Tournaments",
       "tournamentHint": "Every player in the team gets the skin, each with their own random float and pattern, like opening a case. A tournament can turn its rewards off.",
-      "place1": "1st",
-      "place2": "2nd",
-      "place3": "3rd",
       "random": "Random",
       "pickSkin": "Pick a skin",
       "anyRarity": "Any {{rarity}}",
@@ -1513,12 +1321,9 @@
       "highest": "Highest",
       "seedsHint": "Empty means any seed. Type one and press Enter.",
       "addSeed": "Add a seed",
-      "notice": "Notice shown with skins",
-      "noticeFixed": "Always shown. It can't be changed.",
       "saved": "Skins settings saved",
       "inv": {
         "title": "Player inventories",
-        "hint": "Pick a player to see their skins, give them one or take one away.",
         "player": "Player",
         "playerHint": "Name or Steam ID",
         "give": "Give a skin",
@@ -1540,7 +1345,6 @@
         "floatBad": "Between 0 and 1",
         "patternBad": "A whole number, 0 to 1000",
         "given": "Skin given to {{player}}",
-        "equipped": "equipped",
         "source": {
           "matchmaking": "Matchmaking",
           "tournament": "Tournament",
@@ -1555,7 +1359,6 @@
         "nobodyYet": "还没有人拥有皮肤。搜索一名玩家来给他一个。",
         "giveShort": "给予"
       },
-      "playDropChance": "Chance of a skin when you lose or draw",
       "knivesByPrice": "Knives and gloves get their rarity from market price (Skinport, updated daily): cheap ones are common, expensive ones rare.",
       "pageHint": "玩家在这里赢得的虚拟皮肤。已装备的皮肤会在换图之间出现在 Ready Up 服务器上。",
       "on": "开",
@@ -1629,8 +1432,6 @@
       "statTrakChance": "StatTrak™ chance (%)",
       "statTrakHelp": "How often a dropped weapon or knife is StatTrak™ (CS2 cases: 10).",
       "repeatOpponentCut": "Less from the third game against the same opponents in a day (turn off for a small platform or a LAN)",
-      "place4": "4th",
-      "place0": "Everyone",
       "noReward": "No reward"
     },
     "tournamentRewardsSwitch": "Skin rewards for the top three (when skins are on)",
@@ -1659,7 +1460,6 @@
       "ct": "CT",
       "t": "T",
       "both": "Both",
-      "equipFor": "Equip for",
       "defaults": "Default skins"
     },
     "favourites": "Favourites",
@@ -1727,18 +1527,13 @@
       "custom": "Own prizes",
       "label": "Prizes"
     },
-    "toastDrop": "Skin drop",
     "toastNew": "New skin in your inventory.",
-    "toastMore_one": "+{{count}} more",
-    "toastMore_other": "+{{count}} more",
     "toastPick_one": "It stays until you look.",
     "toastPick_other": "Pick one of three. It stays until you do.",
     "toastChoose": "Pick",
     "toastSee": "See it",
     "toastHide": "Hide until later",
     "prizesManage": {
-      "title": "Prizes",
-      "intro": "Skins for a placing, given to every player on the team when the tournament ends. Site skins only: no Steam items, no money value.",
       "off": "Skins are off for this tournament (esports mode, or skin rewards turned off in Setup). These prizes are not given.",
       "byPlace": "By place",
       "placeN_ordinal_one": "{{count}}st",
@@ -1801,19 +1596,9 @@
       "mvpAdmin": "Picked by the organizer.",
       "mvpWinsPick": "Wins 1 of 3 {{rarity}} skins.",
       "mvpWinsOne": "Wins a {{rarity}} skin.",
-      "linePick": "Your prize is waiting: pick 1 of 3 {{rarity}} skins.",
       "lineGot": "Your prize is in your inventory: a {{rarity}} skin.",
-      "kinds": {
-        "friendly": "Friendly",
-        "leader": "Leader",
-        "teacher": "Teacher",
-        "good_sport": "Good sport",
-        "team_player": "Team player",
-        "good_comms": "Good comms"
-      },
       "eyebrowPlayed": "Your prize · for playing"
     },
-    "toastPrize": "Prize · {{place}}",
     "mvpPlace": "MVP of a tournament",
     "toastWhyPlayed": "You earned a skin for playing",
     "toastWhyPlace": "You earned a skin for {{place}} place",
@@ -1942,8 +1727,6 @@
   },
   "highlights": {
     "title": "Highlights",
-    "queued_one": "{{count}} more on the way",
-    "queued_other": "{{count}} more on the way",
     "pending": "Waiting for the recorder",
     "recording": "Recording…",
     "mapN": "Map {{n}}",
@@ -1951,17 +1734,10 @@
     "moments_one": "{{count}} moment",
     "moments_other": "{{count}} moments",
     "matchReel": "Match reel",
-    "close": "Close",
     "roundN": "Round {{n}}",
-    "seeAll": "See all {{count}}",
     "reelBadge": "REEL",
-    "simulated": "模拟玩家",
     "favourite": "Favourite",
-    "makeFavourite": "Make it your favourite",
-    "unfavourite": "No longer your favourite",
     "favouriteFailed": "Could not save your favourite",
-    "beingRecorded_one": "{{count}} highlight is being recorded.",
-    "beingRecorded_other": "{{count}} highlights are being recorded.",
     "pageTitle": "{{name}}'s highlights",
     "summary": "{{clips}} clips · {{reels}} reels · from {{maps}} maps",
     "loading": "Loading highlights",
@@ -2023,13 +1799,11 @@
       "progress": "{{done}} of {{total}} players done",
       "players_one": "{{count}} player",
       "players_other": "{{count}} players",
-      "none": "No highlights yet. They show up here as the matches' demos are recorded.",
       "playOfTheTournament": "Play of the tournament",
       "firstSoon": "The first plays show up here soon",
       "noneTitle": "No highlights yet",
       "noneBody": "They show up here as the matches' demos are recorded. The first plays show up soon."
     },
-    "readyIn": "ready in about {{minutes}} min",
     "matchReelRecording": "Match reel · being recorded",
     "teamReelButton": "{{team}} highlights",
     "wholeSeries": "Whole series",
@@ -2108,7 +1882,6 @@
     "inThisReel": "In this reel",
     "openReel": "Open in the watch page",
     "scoreboard": "Scoreboard",
-    "player": "Player",
     "openingKills": "Opening kills",
     "highlights": "Highlights",
     "rating": "Rating",
@@ -2118,11 +1891,8 @@
     "teamHighlights": "{{team}} highlights"
   },
   "highlightsAdmin": {
-    "title": "Highlights",
-    "subtitle": "The recorders that turn demos into highlight clips and reels: how they're doing, what they make, and how to add one.",
     "tabs": {
       "recorders": "Recorders",
-      "settings": "Settings",
       "overlays": "Overlays",
       "clips": "Clips"
     },
@@ -2130,7 +1900,6 @@
     "actionError": "That didn't work",
     "empty": "No recorder has asked for work yet",
     "emptyHelp": "Start one with the steps under Add a recorder; it shows up here when it first asks for work.",
-    "online": "Online",
     "offline": "Offline",
     "paused": "Paused",
     "oldVersion": "Version {{version}}: update it for frame checks and benchmarks",
@@ -2184,7 +1953,6 @@
     "forget": "Forget",
     "forgotten": "Forgotten. It shows up again if it asks for work.",
     "clips": {
-      "tab": "Clips",
       "current": "Clips and reels are made at {{quality}} now.",
       "outdated_other": "{{count}} made at other settings",
       "redoOutdated": "Make the outdated ones again",
@@ -2230,12 +1998,7 @@
       "revoke": "Revoke",
       "revoked": "Revoked. A recorder with that key gets no more work.",
       "title": "Add a recorder",
-      "needs": "Run this on a Linux PC with Docker, Steam (signed in) and CS2 installed, from its desktop session. The recorder uses its GPU and finds CS2 in its Steam libraries.",
-      "name": "Name for this PC",
-      "nvidia": "NVIDIA graphics card",
-      "make": "Make the command",
       "once": "This key is shown once. Copy the command now; to add another PC, make a new one.",
-      "after": "Paste it in a terminal on the PC. It starts now and again whenever Docker does.",
       "copy": "Copy command",
       "copied": "Copied",
       "copyFailed": "Could not copy: select the command and copy it",
@@ -2299,8 +2062,6 @@
       "updateAll": "Update all",
       "updateProgress": "正在更新：已更新 {{done}}/{{total}}",
       "updateDone": "已更新 {{done}}/{{total}}",
-      "updateFailed_one": "{{count}} 个失败",
-      "updateFailed_other": "{{count}} 个失败",
       "build": "Build {{revision}}",
       "latest": "Update all installs image {{image}}, agent {{agent}}",
       "behind_one": "{{count}} recorder behind",
@@ -2407,7 +2168,6 @@
     "post": "Comment",
     "signIn": "Sign in to comment.",
     "none": "No comments yet.",
-    "edited": "edited",
     "edit": "Edit",
     "delete": "Delete",
     "cancel": "Cancel",
@@ -2504,8 +2264,7 @@
       "checking": "Checking health",
       "applying": "Installing"
     },
-    "clipOf": "clip {{n}} of {{total}}",
-    "left": "~{{time}} left"
+    "clipOf": "clip {{n}} of {{total}}"
   },
   "crash": {
     "downTitle": "The match server crashed",
@@ -2527,7 +2286,6 @@
     "pickedBy": "{{team}}'s pick",
     "decider": "Decider",
     "live": "Live",
-    "round": "Round {{n}}",
     "upNext": "Up next",
     "notPlayed": "To play",
     "won": "{{team}} won",
@@ -2557,13 +2315,7 @@
     "veto": "Maps: the two teams ban (and pick) them in the map veto before each match.",
     "mapsDrawn": "Maps: each match draws one from the pool. No veto.",
     "shuffleMaps": "Maps: every round plays the next map in the list, with new teams each round.",
-    "bots": "Empty seats are filled with bots.",
-    "beThere_one": "Be at your PC {{count}} minute before your match.",
-    "beThere_other": "Be at your PC {{count}} minutes before your match.",
-    "beThereWhy_one": "The veto opens by itself {{count}} minute before the start time. If your team does not ban or pick in time, a map is chosen for you.",
-    "beThereWhy_other": "The veto opens by itself {{count}} minutes before the start time. If your team does not ban or pick in time, a map is chosen for you.",
-    "beThereOnTime": "Be at your PC when your match starts.",
-    "beThereOnTimeWhy": "The veto opens by itself at the start time. If your team does not ban or pick in time, a map is chosen for you."
+    "bots": "Empty seats are filled with bots."
   },
   "movement": {
     "title": "Surf & KZ records",
