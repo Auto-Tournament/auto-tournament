@@ -53,6 +53,8 @@ a server enrolled with a fleet key created with `autoLink: true`
 (`cs2_fleet_enrollment_keys.auto_link`, migration `032-fleet-key-auto-link`;
 `cs2_fleet_servers.auto_linked_at` marks the link, so deleting the server
 sticks too). A revoked or expired key links nothing.
+Unlinking deletes the `cs2_servers` row and sets `cs2_fleet_servers.auto_linked_at`,
+so no first-hello or failover link takes the server back.
 The linked row's `host` / `port` are the connect address (`address.ts`,
 FLEET.md §6.1): each hello refreshes them (`syncLinkedAddress`) unless
 `cs2_servers.host_override = 1` (an admin set them: `host` / `port` on the
