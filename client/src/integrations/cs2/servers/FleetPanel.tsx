@@ -58,6 +58,7 @@ import {
 import type { FleetKey, FleetKeysResponse, FleetServer, FleetServersResponse } from '../cs2.types';
 import { insecureFlag, platformIsPlainHttp } from './insecureLink';
 import { ServerSection } from './ServerSection';
+import { ResetServerButton } from './ResetServerButton';
 import { useTopic } from '../../../module-sdk';
 import type { Untrusted } from '../../types';
 
@@ -571,6 +572,9 @@ export default function FleetPanel() {
                       </IconButton>
                     </Tooltip>
                   </>
+                )}
+                {server.status === 'enrolled' && (
+                  <ResetServerButton server={server} onDone={() => void load()} />
                 )}
                 <Tooltip title={t('fleetPanel.rename')}>
                   <IconButton

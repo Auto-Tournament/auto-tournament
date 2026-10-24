@@ -975,7 +975,16 @@
     "renamed": "Navnet er endret",
     "renameSave": "Lagre",
     "summary": "{{servers}} Ready Up-server(e), {{online}} tilkoblet · {{keys}} flåtenøkkel(er)",
-    "connectGuessed": "Gjettet ut fra hvor serveren kobler seg til fra. Sjekk den, eller sett adressen spillerne bruker."
+    "connectGuessed": "Gjettet ut fra hvor serveren kobler seg til fra. Sjekk den, eller sett adressen spillerne bruker.",
+    "reset": {
+      "action": "Tilbakestill",
+      "title": "Tilbakestille {{name}}?",
+      "message": "Laster ut det som er på serveren, så den kan ta neste kamp.",
+      "messageMatch": "Kamp {{slug}} lastes ut og avsluttes. Deretter kan serveren ta neste kamp.",
+      "done": "{{name}} tilbakestilt",
+      "doneMatch": "{{name}} tilbakestilt. Kamp {{slug}} avsluttet.",
+      "failed": "Kunne ikke tilbakestille serveren"
+    }
   },
   "roundBackups": {
     "title": "Rundesikkerhetskopier",

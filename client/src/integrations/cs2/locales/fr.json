@@ -975,7 +975,16 @@
     "renamed": "Renamed",
     "renameSave": "Save",
     "summary": "{{servers}} Ready Up server(s), {{online}} online · {{keys}} fleet key(s)",
-    "connectGuessed": "Guessed from where the server connects from. Check it, or set the address players use."
+    "connectGuessed": "Guessed from where the server connects from. Check it, or set the address players use.",
+    "reset": {
+      "action": "Réinitialiser",
+      "title": "Réinitialiser {{name}} ?",
+      "message": "Décharge ce qui tourne sur le serveur pour qu’il puisse prendre le match suivant.",
+      "messageMatch": "Le match {{slug}} est déchargé et clôturé. Le serveur peut ensuite prendre le match suivant.",
+      "done": "{{name}} réinitialisé",
+      "doneMatch": "{{name}} réinitialisé. Match {{slug}} clôturé.",
+      "failed": "Impossible de réinitialiser le serveur"
+    }
   },
   "roundBackups": {
     "title": "Round backups",

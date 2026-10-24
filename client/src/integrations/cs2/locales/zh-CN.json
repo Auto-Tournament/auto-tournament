@@ -975,7 +975,16 @@
     "renamed": "Renamed",
     "renameSave": "Save",
     "summary": "{{servers}} Ready Up server(s), {{online}} online · {{keys}} fleet key(s)",
-    "connectGuessed": "Guessed from where the server connects from. Check it, or set the address players use."
+    "connectGuessed": "Guessed from where the server connects from. Check it, or set the address players use.",
+    "reset": {
+      "action": "重置",
+      "title": "重置 {{name}}？",
+      "message": "卸载服务器上的内容，使其可以承接下一场比赛。",
+      "messageMatch": "比赛 {{slug}} 将被卸载并结算，之后服务器可以承接下一场比赛。",
+      "done": "{{name}} 已重置",
+      "doneMatch": "{{name}} 已重置，比赛 {{slug}} 已结算。",
+      "failed": "无法重置服务器"
+    }
   },
   "roundBackups": {
     "title": "Round backups",

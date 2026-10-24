@@ -452,6 +452,9 @@ export interface FleetServer {
   enrollmentKeyId: string | null;
   online: boolean;
   availability: string | null;
+  /** What a busy server says it is busy with (api fleet/busyReason.ts), and the detail. */
+  availabilityReason?: string | null;
+  availabilityDetail?: string | null;
   versions: {
     core: string;
     plugin_api: string;

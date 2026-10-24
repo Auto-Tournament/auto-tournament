@@ -975,7 +975,16 @@
     "renamed": "Renamed",
     "renameSave": "Save",
     "summary": "{{servers}} Ready Up server(s), {{online}} online · {{keys}} fleet key(s)",
-    "connectGuessed": "Guessed from where the server connects from. Check it, or set the address players use."
+    "connectGuessed": "Guessed from where the server connects from. Check it, or set the address players use.",
+    "reset": {
+      "action": "Reiniciar",
+      "title": "¿Reiniciar {{name}}?",
+      "message": "Descarga lo que haya en el servidor para que pueda tomar la siguiente partida.",
+      "messageMatch": "La partida {{slug}} se descarga y se cierra. Después el servidor puede tomar la siguiente.",
+      "done": "{{name}} reiniciado",
+      "doneMatch": "{{name}} reiniciado. Partida {{slug}} cerrada.",
+      "failed": "No se pudo reiniciar el servidor"
+    }
   },
   "roundBackups": {
     "title": "Round backups",
