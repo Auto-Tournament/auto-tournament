@@ -1048,6 +1048,8 @@ const ADDED_SETTINGS: Array<{ key: string; field: string | null }> = [
   // Clips per player per map (demos/highlights.ts).
   { key: 'highlights_per_player', field: 'highlightsPerPlayer' },
   { key: 'highlights_resolution', field: 'highlightsResolution' },
+  // The lowest quality; the ones between are cut from the highest.
+  { key: 'highlights_min_resolution', field: 'highlightsMinResolution' },
   { key: 'highlights_fps', field: 'highlightsFps' },
   // The bitrate ceiling the recorders encode at; 0 is automatic.
   { key: 'highlights_bitrate', field: 'highlightsBitrate' },

@@ -64,6 +64,7 @@ export type Cs2SettingKey =
   | 'highlights_watermark'
   | 'highlights_per_player'
   | 'highlights_resolution'
+  | 'highlights_min_resolution'
   | 'highlights_fps'
   | 'highlights_music'
   | 'highlights_keep_clean';
@@ -112,8 +113,8 @@ function integer(
 }
 
 /** Highlight video heights (16:9) and frame rates the recorder offers. */
-export const HIGHLIGHT_HEIGHTS = [720, 1080, 1440, 2160] as const;
-export const HIGHLIGHT_FPS = [30, 60, 90, 120, 180, 240] as const;
+export const HIGHLIGHT_HEIGHTS = [480, 720, 1080, 1440, 2160] as const;
+export const HIGHLIGHT_FPS = [60, 120, 240] as const;
 /** Bitrate ceilings (Mbit/s) an admin can pick; 0 is automatic (from the size and frame rate). */
 export const HIGHLIGHT_BITRATES = [0, 5, 10, 20, 40, 60] as const;
 

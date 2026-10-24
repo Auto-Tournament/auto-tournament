@@ -1090,10 +1090,11 @@
     },
     "preset": {
       "label": "Video quality",
-      "smooth": "Smooth (recommended): 720p, 240 fps",
-      "crisp": "Crisp: 1080p, 120 fps",
-      "lan": "LAN, maximum: 1440p, 240 fps, 60 Mbit/s",
-      "custom": "Custom"
+      "smooth": "Smooth (recommended): up to 1080p, 240 fps",
+      "crisp": "Crisp: up to 1440p, 120 fps",
+      "lan": "LAN, maximum: up to 4K, 240 fps",
+      "custom": "Custom",
+      "light": "Light: 720p, 60 fps only"
     },
     "bitrate": {
       "label": "Bitrate",
@@ -1101,14 +1102,14 @@
       "option": "{{mbps}} Mbit/s"
     },
     "resolution": {
-      "label": "Resolution"
+      "label": "Highest resolution"
     },
     "fps": {
-      "label": "Frame rate",
+      "label": "Highest frame rate",
       "option": "{{fps}} fps"
     },
     "quality": {
-      "helper": "Smaller and fewer frames record faster: 720p at 30 fps takes about half as long as 1440p at 120 fps. Clips already made keep their size."
+      "helper": "Recorders make each clip and reel once, at the highest quality, and cut the lower ones from it. Slow motion stays smooth at any frame rate. Clips already made keep their quality until they're made again."
     },
     "music": {
       "label": "Music under reels",
@@ -1167,6 +1168,20 @@
       "tournamentReelMax": "Clips in a tournament reel",
       "tournamentReelPerPlayer": "Clips per player in a tournament reel",
       "range": "{{min}} to {{max}}"
+    },
+    "minResolution": {
+      "label": "Lowest resolution"
+    },
+    "ladder": {
+      "title": "Qualities viewers can pick",
+      "recordedAt": "Recorded at {{quality}}",
+      "highest": "Highest",
+      "lowest": "Phones, slow connections",
+      "rate": "≈{{mbps}} Mbit/s"
+    },
+    "cost": {
+      "single": "Recording takes about {{time}}× as long as 1080p at 120 fps. An estimate.",
+      "withCuts": "Recording takes about {{time}}× as long as 1080p at 120 fps, and every quality is kept: about {{storage}}× the space. Estimates."
     }
   },
   "update": {
