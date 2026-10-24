@@ -174,6 +174,22 @@ test.describe.serial('Veto UI', () => {
   );
 
   test(
+    'selecting a map does not widen the page on a phone',
+    { tag: ['@ui', '@veto'] },
+    async ({ page }) => {
+      await page.setViewportSize({ width: 390, height: 844 });
+      await viewVetoPageAs(page, actingSteamIdFor(team1));
+      const tile = page.getByRole('button', { name: /^Select .*Inferno$/i });
+      await tile.click();
+      await expect(page.getByTestId('veto-confirm-button')).toBeVisible();
+      const overflow = await page.evaluate(
+        () => document.documentElement.scrollWidth - window.innerWidth
+      );
+      expect(overflow).toBeLessThanOrEqual(0);
+    }
+  );
+
+  test(
     "should not expose the veto board on another player's page",
     { tag: ['@ui', '@veto', '@security'] },
     async ({ page }) => {
