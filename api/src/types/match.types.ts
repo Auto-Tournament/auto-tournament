@@ -1,3 +1,5 @@
+import type { LiveStatus } from '../services/matchLiveStatsService';
+
 export interface MatchPlayer {
   [steamId: string]: string; // steamId -> player name
 }
@@ -216,6 +218,8 @@ export interface MatchListItem {
   /** Rounds on the map being played (0-0 during warmup; last map once completed; null before any map). */
   team1MapScore?: number | null;
   team2MapScore?: number | null;
+  /** Live phase from the plugin; null once completed or without live stats. */
+  liveStatus?: LiveStatus | null;
   currentMap?: string | null;
   mapNumber?: number;
   mapResults?: MatchMapResult[];

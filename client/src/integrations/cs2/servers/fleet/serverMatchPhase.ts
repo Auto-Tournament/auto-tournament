@@ -26,7 +26,7 @@ export interface MatchResponse {
     currentMap?: string | null;
     mapNumber?: number | null;
     maps?: string[];
-    matchPhase?: string | null;
+    liveStatus?: string | null;
     status?: string;
     vetoing?: boolean;
     vetoCompleted?: boolean;
@@ -38,13 +38,15 @@ export function toServerMatch(m: NonNullable<MatchResponse['match']>): ServerMat
   // match is still pending; a match that skips it (shuffle) is ready with
   // vetoCompleted false and must not read "Veto" while players join.
   const phase =
-    m.matchPhase === 'warmup' || m.matchPhase === 'knife' || m.matchPhase === 'live'
-      ? m.matchPhase
-      : m.matchPhase === 'post_match'
-        ? 'post'
-        : m.vetoing || (m.status === 'pending' && m.vetoCompleted === false)
-          ? 'veto'
-          : null;
+    m.liveStatus === 'warmup' || m.liveStatus === 'knife' || m.liveStatus === 'live'
+      ? m.liveStatus
+      : m.liveStatus === 'halftime'
+        ? 'live'
+        : m.liveStatus === 'postgame'
+          ? 'post'
+          : m.vetoing || (m.status === 'pending' && m.vetoCompleted === false)
+            ? 'veto'
+            : null;
   const s1 = m.team1MapScore;
   const s2 = m.team2MapScore;
   return {

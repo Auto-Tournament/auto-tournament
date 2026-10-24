@@ -286,11 +286,13 @@ async function getMatchDetailsBySlug(slug: string): Promise<MatchListItem | null
 
   // Enrich match with player stats and scores from events
   await enrichMatch(match, row.slug);
+  const liveStats = row.status !== 'completed' ? matchLiveStatsService.getStats(row.slug) : null;
   applyScoreFields(match, {
     status: row.status,
     mapResults,
-    liveStats: row.status !== 'completed' ? matchLiveStatsService.getStats(row.slug) : null,
+    liveStats,
   });
+  match.liveStatus = liveStats?.status ?? null;
 
   // For shuffle tournaments, enrich players with ELO
   if (isShuffleTournament && (enrichedTeam1Players.length > 0 || enrichedTeam2Players.length > 0)) {
@@ -828,11 +830,14 @@ router.get('/', async (req: Request, res: Response) => {
 
         // Normalise score fields: series (maps won), current map rounds, and the
         // headline team1Score/team2Score. See applyScoreFields for semantics.
+        const liveStats =
+          row.status !== 'completed' ? matchLiveStatsService.getStats(row.slug) : null;
         applyScoreFields(match, {
           status: row.status,
           mapResults,
-          liveStats: row.status !== 'completed' ? matchLiveStatsService.getStats(row.slug) : null,
+          liveStats,
         });
+        match.liveStatus = liveStats?.status ?? null;
 
         // For COMPLETED matches, if we still don't have any non‑zero score, fall
         // back to the final map result so the admin never sees "0‑0" after a

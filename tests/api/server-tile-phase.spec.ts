@@ -13,7 +13,7 @@ const base = { slug: 's', team1: { name: 'A' }, team2: { name: 'B' } };
 test.describe('Server tile phase', () => {
   test('a shuffle match being joined is warmup, not veto', { tag: ['@api', '@servers'] }, () => {
     expect(
-      toServerMatch({ ...base, status: 'loaded', vetoCompleted: false, matchPhase: 'warmup' }).phase
+      toServerMatch({ ...base, status: 'loaded', vetoCompleted: false, liveStatus: 'warmup' }).phase
     ).toBe('warmup');
     expect(toServerMatch({ ...base, status: 'ready', vetoCompleted: false }).phase).toBeNull();
   });
@@ -21,9 +21,9 @@ test.describe('Server tile phase', () => {
   test('a match still in its veto reads veto', { tag: ['@api', '@servers'] }, () => {
     expect(toServerMatch({ ...base, status: 'pending', vetoCompleted: false }).phase).toBe('veto');
     expect(
-      toServerMatch({ ...base, status: 'loaded', vetoCompleted: true, matchPhase: 'live' }).phase
+      toServerMatch({ ...base, status: 'loaded', vetoCompleted: true, liveStatus: 'live' }).phase
     ).toBe('live');
-    expect(toServerMatch({ ...base, status: 'completed', matchPhase: 'post_match' }).phase).toBe(
+    expect(toServerMatch({ ...base, status: 'completed', liveStatus: 'postgame' }).phase).toBe(
       'post'
     );
   });
