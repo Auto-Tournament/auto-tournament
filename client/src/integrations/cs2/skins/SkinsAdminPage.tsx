@@ -77,6 +77,7 @@ interface Reward {
 
 interface Config {
   enabled: boolean;
+  catalogUnlocked: boolean;
   matchmakingDrops: boolean;
   dropChance: number;
   playDropChance: number;
@@ -1111,6 +1112,19 @@ export function SkinsAdminPage() {
             {t('skins.admin.tournamentHint')}
           </Typography>
         </SkinsCard>
+
+        <Box sx={{ gridColumn: { md: '1 / -1' } }}>
+          <SkinsCard
+            id="skins-catalog"
+            title={t('skins.admin.catalogUnlocked')}
+            checked={config.catalogUnlocked}
+            onToggle={(on) => set({ catalogUnlocked: on })}
+          >
+            <Typography sx={{ fontSize: '0.8125rem', color: color.muted }}>
+              {t('skins.admin.catalogUnlockedHelp')}
+            </Typography>
+          </SkinsCard>
+        </Box>
       </Box>
 
       <GiveDropsAdmin onGiven={() => setStatsVersion((v) => v + 1)} />

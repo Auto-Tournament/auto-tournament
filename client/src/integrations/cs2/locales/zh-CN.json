@@ -1628,6 +1628,8 @@
       },
       "statTrakChance": "StatTrak™ chance (%)",
       "statTrakHelp": "How often a dropped weapon or knife is StatTrak™ (CS2 cases: 10).",
+      "catalogUnlocked": "解锁图鉴",
+      "catalogUnlockedHelp": "玩家可以装备图鉴中的任意皮肤，并自选磨损值和图案种子。",
       "repeatOpponentCut": "Less from the third game against the same opponents in a day (turn off for a small platform or a LAN)",
       "place4": "4th",
       "place0": "Everyone",

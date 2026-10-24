@@ -212,6 +212,33 @@ export async function skinsTurnedOff(fleetServerId: string): Promise<void> {
 }
 
 /**
+ * The catalogue mode flipped: everyone connected to a fleet server gets their
+ * loadout again, under the new rules (pushSkinsOnConnect). Never rejects.
+ */
+export async function repushConnectedLoadouts(): Promise<void> {
+  try {
+    const { fleetBus } = await import('../service');
+    const bus = fleetBus();
+    const rows = await db.queryAsync<{ id: string }>('SELECT id FROM cs2_fleet_servers');
+    for (const row of rows) {
+      if (!bus.isConnected(row.id)) continue;
+      try {
+        for (const { slug, steamid64 } of await connectedOn(row.id)) {
+          await pushSkinsOnConnect(row.id, slug, steamid64);
+        }
+      } catch (error) {
+        log.warn('[FLEET] skins: loadouts not re-pushed', {
+          fleetServerId: row.id,
+          error: (error as Error).message,
+        });
+      }
+    }
+  } catch (error) {
+    log.warn('[FLEET] skins: loadouts not re-pushed', { error: (error as Error).message });
+  }
+}
+
+/**
  * Loadout changes waiting for the round to end, per server: the latest per
  * player, sent once at round end (flushRoundLoadouts). Spamming equip and
  * unequip mid-round costs the server one message per player per round.

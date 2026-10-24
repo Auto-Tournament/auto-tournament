@@ -244,6 +244,17 @@ router.post('/fleet/stattrak', requireAuth, async (req: Request, res: Response):
   res.json({ success: true, counted: await skinService.addStatTrakKills(increments) });
 });
 
+/** GET /api/test/fleet/skins-loadout/:steamId: the `skins.loadout` items a server would get for a player. */
+router.get(
+  '/fleet/skins-loadout/:steamId',
+  requireAuth,
+  async (req: Request, res: Response): Promise<void> => {
+    if (!fleetTestGuard(res)) return;
+    const { skinService } = await import('../skins/skinService');
+    res.json({ success: true, items: await skinService.loadoutItems(req.params.steamId) });
+  }
+);
+
 /** POST /api/test/fleet/movement-record  { ...movement.record payload }: a finished run, as from a server. */
 router.post(
   '/fleet/movement-record',

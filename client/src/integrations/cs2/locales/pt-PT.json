@@ -1628,6 +1628,8 @@
       },
       "statTrakChance": "StatTrak™ chance (%)",
       "statTrakHelp": "How often a dropped weapon or knife is StatTrak™ (CS2 cases: 10).",
+      "catalogUnlocked": "Catálogo desbloqueado",
+      "catalogUnlockedHelp": "Os jogadores podem equipar qualquer skin do catálogo, com o float e a seed que escolherem.",
       "repeatOpponentCut": "Less from the third game against the same opponents in a day (turn off for a small platform or a LAN)",
       "place4": "4th",
       "place0": "Everyone",

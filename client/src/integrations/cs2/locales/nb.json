@@ -1628,6 +1628,8 @@
       },
       "statTrakChance": "StatTrak™-sjanse (%)",
       "statTrakHelp": "Hvor ofte et våpen eller en kniv som droppes er StatTrak™ (CS2-kasser: 10).",
+      "catalogUnlocked": "Åpne katalogen",
+      "catalogUnlockedHelp": "Spillere kan ta i bruk hvilken som helst skin fra katalogen, med float og seed de velger selv.",
       "repeatOpponentCut": "Sjeldnere fra den tredje kampen mot samme motstandere samme døgn (slå av for en liten plattform eller et LAN)",
       "place4": "4.",
       "place0": "Alle andre",
