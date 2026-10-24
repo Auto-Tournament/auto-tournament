@@ -253,6 +253,16 @@ func (r *recorder) fbfCapture(g *game, name string, from, to, wantFrom int, segs
 		t, _ := strconv.Atoi(v)
 		g.pausedAt = t - g.startTick
 	}
+	// Each follow-check retry spectates again, and the demo plays on meanwhile:
+	// one retry took it 48 ticks past the run-up into the clip, whose first
+	// frames were then never captured (2026-10-24, "no frame near tick" on
+	// every attempt). Seek back; the camera stays on the player.
+	if g.pausedAt > from+lead/2 {
+		log.Printf("frame by frame: the demo played on to tick %d while following; seeking back to %d", g.pausedAt, from)
+		if err := g.seekForCapture(max(0, from), 1); err != nil {
+			return nil, 0, err
+		}
+	}
 	csgo := filepath.Join(r.gameDir, "csgo")
 	actions := r.fbfActions(g)
 	runs := []fbfRun{{from: g.pausedAt, to: to, fps: fbfFPS()}}
