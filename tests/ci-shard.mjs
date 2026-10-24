@@ -21,11 +21,13 @@
  * run — the weights only affect balance. Refresh them from a CI run's
  * per-test durations when the balance drifts.
  */
-import { readdirSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const DEFAULT_WEIGHT = 5;
+// Exit status of a shard that has no spec files (not a failure).
+const NO_FILES_EXIT = 3;
 const testsDir = dirname(fileURLToPath(import.meta.url));
 const repoRoot = dirname(testsDir);
 
@@ -45,14 +47,41 @@ function listSpecs(dir) {
 
 function partition(total) {
   const weights = JSON.parse(readFileSync(join(testsDir, 'ci-shard-weights.json'), 'utf8'));
+  // CI_SHARD_WEIGHTS: measured durations of a local run (path to a JSON like the file above). Files it does not
+  // know keep their committed weight, scaled to the local timings so both stay comparable.
+  let defaultWeight = DEFAULT_WEIGHT;
+  if (process.env.CI_SHARD_WEIGHTS && existsSync(process.env.CI_SHARD_WEIGHTS)) {
+    let local = {};
+    try {
+      local = JSON.parse(readFileSync(process.env.CI_SHARD_WEIGHTS, 'utf8'));
+    } catch (e) {
+      console.error(
+        `ci-shard: ignoring unparseable CI_SHARD_WEIGHTS ${process.env.CI_SHARD_WEIGHTS}: ${e.message}`
+      );
+    }
+    let measured = 0;
+    let committed = 0;
+    for (const [file, w] of Object.entries(local)) {
+      if (file in weights) {
+        measured += w;
+        committed += weights[file];
+      }
+    }
+    const scale = committed > 0 && measured > 0 ? measured / committed : 1;
+    for (const file of Object.keys(weights)) weights[file] *= scale;
+    defaultWeight *= scale;
+    Object.assign(weights, local);
+  }
   // CI_SPECS: the affected specs (tests/ci-affected.mjs); unset runs them all.
-  const only = process.env.CI_SPECS?.trim() ? new Set(process.env.CI_SPECS.trim().split(/\s+/)) : null;
+  const only = process.env.CI_SPECS?.trim()
+    ? new Set(process.env.CI_SPECS.trim().split(/\s+/))
+    : null;
   const files = listSpecs(testsDir)
     .filter((file) => !only || only.has(file))
     .map((file) => ({
-    file,
-    weight: weights[file] ?? DEFAULT_WEIGHT,
-  }));
+      file,
+      weight: weights[file] ?? defaultWeight,
+    }));
   // Heaviest first into the lightest shard. Ties break on name and shard index
   // so every shard computes the same partition.
   files.sort((a, b) => b.weight - a.weight || a.file.localeCompare(b.file));
@@ -72,8 +101,8 @@ if (args[0] === '--count') {
   // How many shards the selected specs need: ~SECONDS_PER_SHARD of tests each, 1 to max.
   const SECONDS_PER_SHARD = 40;
   const max = Number(args[1]);
-  const total = partition(1)[0].weight;
-  console.log(Math.max(1, Math.min(max, Math.ceil(total / SECONDS_PER_SHARD))));
+  const { weight, files } = partition(1)[0];
+  console.log(Math.max(1, Math.min(max, files.length, Math.ceil(weight / SECONDS_PER_SHARD))));
 } else if (args[0] === '--summary') {
   const total = Number(args[1]);
   partition(total).forEach((s, i) => {
@@ -90,7 +119,7 @@ if (args[0] === '--count') {
   const { files } = partition(total)[shard - 1];
   if (files.length === 0) {
     console.error(`shard ${shard}/${total} has no spec files`);
-    process.exit(1);
+    process.exit(NO_FILES_EXIT);
   }
   console.log(files.join(' '));
 }
