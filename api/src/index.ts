@@ -80,6 +80,12 @@ import { authProviderSettingsService } from './services/authProviderSettingsServ
 import session from 'express-session';
 import connectPgSimple from 'connect-pg-simple';
 import { isIP } from 'net';
+import { Pool } from 'pg';
+import {
+  SESSION_COOKIE_MAX_AGE_MS,
+  createInsecureSessionWarner,
+  useHostOnlySession,
+} from './utils/sessionCookies';
 import { DATABASE_NAME, DatabaseRenameRefused } from './config/databaseRename';
 import { TRUST_PROXY_HOPS } from './config/trustProxy';
 import { COMPAT_MAX_BYTES } from './utils/compatPayload';
@@ -173,11 +179,13 @@ const sessionCookie: {
   sameSite: 'lax' | 'strict' | 'none';
   secure: boolean;
   httpOnly: boolean;
+  maxAge: number;
   domain?: string;
 } = {
   sameSite: 'lax',
   secure: useSecureCookies,
   httpOnly: true, // Prevent JavaScript access to cookie (security best practice)
+  maxAge: SESSION_COOKIE_MAX_AGE_MS,
 };
 if (sessionCookieDomain) {
   sessionCookie.domain = sessionCookieDomain;
@@ -186,11 +194,18 @@ if (sessionCookieDomain) {
 // Persist sessions in PostgreSQL so admin logins survive API restarts.
 // Note: Session table is created by our database schema, so we don't need
 // connect-pg-simple to create it (which would require table.sql file).
-const sessionStore = new PgSession({
-  conString: sessionDbConnectionString,
-  tableName: 'session',
-  createTableIfMissing: false, // Table is created by our schema
-});
+const sessionPool = new Pool({ connectionString: sessionDbConnectionString });
+sessionPool.on('error', (err) => log.error('Session store connection error', err));
+const newSessionStore = (opts: { pruneSessionInterval?: false } = {}) =>
+  new PgSession({
+    pool: sessionPool,
+    tableName: 'session',
+    createTableIfMissing: false, // Table is created by our schema
+    ...opts,
+  });
+// express-session installs its cookie options on the store it is given, so
+// each middleware needs a store of its own.
+const sessionStore = newSessionStore();
 // The session cookie's own name: express-session's default `connect.sid` is
 // shared with every other Express app, and one on a parent domain (e.g.
 // another site on *.example.com with Domain=example.com) is sent along too.
@@ -204,6 +219,9 @@ const sessionMiddleware = session({
   secret: sessionSecret,
   resave: false,
   saveUninitialized: false,
+  // The Secure decision follows X-Forwarded-Proto even when Express does not
+  // trust the proxy that sent it.
+  proxy: true,
   cookie: sessionCookie,
 });
 // Opened by IP address (a fresh install before its domain points here, e.g.
@@ -213,17 +231,21 @@ const sessionMiddleware = session({
 // came on, Secure only over https.
 const addressSessionMiddleware = session({
   name: SESSION_COOKIE_NAME,
-  store: sessionStore,
+  store: newSessionStore({ pruneSessionInterval: false }),
   secret: sessionSecret,
   resave: false,
   saveUninitialized: false,
-  cookie: { sameSite: 'lax', secure: 'auto', httpOnly: true },
+  proxy: true,
+  cookie: { sameSite: 'lax', secure: 'auto', httpOnly: true, maxAge: SESSION_COOKIE_MAX_AGE_MS },
 });
+const warnInsecureSession = createInsecureSessionWarner((message) => log.warn(message));
 const passportInitialize = passport.initialize();
 const passportSession = passport.session();
-app.use((req, res, next) =>
-  (isIP(req.hostname) !== 0 ? addressSessionMiddleware : sessionMiddleware)(req, res, next)
-);
+app.use((req, res, next) => {
+  if (useHostOnlySession(req, sessionCookieDomain)) return addressSessionMiddleware(req, res, next);
+  warnInsecureSession(req, useSecureCookies);
+  return sessionMiddleware(req, res, next);
+});
 app.use(passportInitialize);
 app.use(passportSession);
 // A banned or deleted player is signed out on their next request.

@@ -17,9 +17,9 @@ import { test, expect, type APIResponse, type PlaywrightWorkerArgs } from '@play
  * runs the callback's own linking step (`completePendingSteamLink`) as if Steam
  * had just proven the given Steam ID, and `/api/test/pending-steam-link` issues
  * a cookie with the real writer. Every call goes out on a brand-new request
- * context whose only cookies are the ones in its explicit `Cookie` header: an
- * admin cookie for the helper's guard, plus the pending link under test. No
- * session rides along, so the cookie is the only possible source.
+ * context whose only cookies are the ones in its explicit `Cookie` header:
+ * the admin session and cookie for the helper's guard, plus the pending link
+ * under test.
  *
  * @tag api
  * @tag auth
@@ -87,13 +87,16 @@ test.describe('Steam callback: pending Steam link cookie', () => {
   let adminCookie: string;
 
   test.beforeEach(async ({ playwright }) => {
-    // An admin player_steam_id cookie, sent by hand with each helper call.
+    // An admin session and player_steam_id cookie, sent by hand with each helper call.
     adminCookie = await withCookie(playwright, '', async (ctx) => {
       const res = await ctx.post('/api/test/login-admin', { data: {} });
       expect(res.ok(), `login-admin failed: ${await res.text()}`).toBe(true);
-      const value = setCookies(res).get('player_steam_id');
+      const jar = setCookies(res);
+      const value = jar.get('player_steam_id');
+      const sid = jar.get('at.sid');
       expect(value, 'login-admin set no player_steam_id cookie').toBeTruthy();
-      return `player_steam_id=${value}`;
+      expect(sid, 'login-admin set no session cookie').toBeTruthy();
+      return `player_steam_id=${value}; at.sid=${sid}`;
     });
   });
 

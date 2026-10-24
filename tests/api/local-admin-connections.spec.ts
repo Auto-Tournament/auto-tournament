@@ -369,7 +369,8 @@ test.describe.serial('local admin connects sign-in methods', () => {
       expect(
         (await (await player.get(`/api/players/${steamId}/summary`)).json()).player?.name
       ).toBe('Returning Player');
-      expect(await adminMe(player)).toMatchObject({ authenticated: true, steamId });
+      // The player's own jar holds the cookie only: admin needs the session.
+      expect(await adminMe(player)).toMatchObject({ authenticated: false, reason: 'no_session' });
       await player.dispose();
 
       const again = await localLogin(username);

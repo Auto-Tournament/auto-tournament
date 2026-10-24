@@ -22,7 +22,11 @@ import {
 } from '../utils/signedPendingSteamLink';
 import { shouldBlockAdminAsDirectAccess } from '../utils/canonicalOrigin';
 import { signImpersonatedSteamId, IMPERSONATION_COOKIE_NAME } from '../utils/impersonationCookie';
-import { resolveViewerAccount, resolveViewerIdentity } from '../utils/viewerIdentity';
+import {
+  accountNeedsSession,
+  resolveViewerAccount,
+  resolveViewerIdentity,
+} from '../utils/viewerIdentity';
 import { authenticateServiceToken, requireAuth } from '../middleware/auth';
 import {
   peekOAuthLinkIntent,
@@ -760,7 +764,9 @@ export function ssoCallbackHandler(expectedProvider: AuthProvider) {
       log.info(`${label} callback: checking for existing player_steam_id cookie`, {
         cookieSteamId: cookieSteamId ?? null,
       });
-      if (cookieSteamId) {
+      // Not for an admin or local-login account: the cookie must not decide who
+      // the browser signs in as; the normal lookup below applies.
+      if (cookieSteamId && !(await accountNeedsSession(cookieSteamId))) {
         const outcome = await authIdentityService.linkIdentityUnlessOwnedElsewhere(
           provider,
           providerUserId,
@@ -1025,6 +1031,11 @@ export function startAccountLink(strategyName: string, provider: AuthProvider) {
       const player = await playerService.getPlayerById(identity.realSteamId);
       if (!player) {
         return res.status(404).json({ success: false, error: 'No player record for this account' });
+      }
+      if (!identity.hasSession && (await accountNeedsSession(identity.realSteamId))) {
+        return res
+          .status(401)
+          .json({ success: false, error: 'Sign in again to connect an account' });
       }
 
       // An account with a local admin login re-confirms its password first.
@@ -1299,6 +1310,10 @@ export async function beginSteamLink(req: Request, res: Response): Promise<boole
       success: false,
       error: 'You are impersonating a player. Stop impersonating to manage your own account.',
     });
+    return false;
+  }
+  if (!identity.hasSession && (await accountNeedsSession(identity.realSteamId))) {
+    res.status(401).json({ success: false, error: 'Sign in again to connect an account' });
     return false;
   }
   if (
@@ -1672,6 +1687,7 @@ router.get('/admin-status', async (req: Request, res: Response) => {
     }
 
     const steamId = getVerifiedPlayerSteamId(req.headers.cookie);
+    const hasSession = (req as Request & { user?: { steamId?: string } }).user?.steamId === steamId;
 
     if (!steamId) {
       return res.json({
@@ -1686,13 +1702,15 @@ router.get('/admin-status', async (req: Request, res: Response) => {
 
     const player = await playerService.getPlayerById(steamId);
     const hasPlayerRecord = !!player;
-    const isAdmin = player?.isAdmin === true;
+    const isAdmin = player?.isAdmin === true && hasSession;
 
     let reason: string;
     if (!hasPlayerRecord) {
       reason = 'no_player_record';
     } else if (isAdmin) {
       reason = 'admin';
+    } else if (player?.isAdmin === true) {
+      reason = 'no_session';
     } else {
       reason = 'not_admin';
     }
@@ -1700,11 +1718,13 @@ router.get('/admin-status', async (req: Request, res: Response) => {
     const hasAnyAdmin = await playerService.hasAnyAdmin();
     const hint = !hasPlayerRecord
       ? 'You are not in the players table. Ask an admin to add you, or enable self-registration.'
-      : !isAdmin && hasAnyAdmin
-        ? 'An admin already exists. Only the first user to sign in (after DB reset) is auto-promoted. Ask an existing admin to grant you access.'
-        : !isAdmin
-          ? 'No admins exist yet. The first user to sign in with Steam is auto-promoted. Ensure you are the only player, then sign in again.'
-          : undefined;
+      : reason === 'no_session'
+        ? 'Admin access needs a signed-in session: sign in again.'
+        : !isAdmin && hasAnyAdmin
+          ? 'An admin already exists. Only the first user to sign in (after DB reset) is auto-promoted. Ask an existing admin to grant you access.'
+          : !isAdmin
+            ? 'No admins exist yet. The first user to sign in with Steam is auto-promoted. Ensure you are the only player, then sign in again.'
+            : undefined;
 
     log.debug('[auth/admin-status]', { steamId, isAdmin, hasPlayerRecord, reason });
 
@@ -1729,14 +1749,9 @@ router.get('/admin-status', async (req: Request, res: Response) => {
  * Admin "who am I" endpoint.
  * Returns basic info about the authenticated admin session (if any).
  *
- * We accept two ways to be "admin" (same as requireAuth):
- *  1. Passport session (at.sid) — Steam/SSO login with session.
- *  2. player_steam_id cookie + DB is_admin — used when session cookie is dropped
- *     (e.g. Cloudflare Tunnel, Chrome + OAuth redirect). Same as /admin-status.
- *
- * Steam ID resolution (when session exists):
- * - Prefer steamId from the Passport user object.
- * - Fallback to the player_steam_id cookie for SSO logins that linked Steam.
+ * Admin needs the Passport session (at.sid), as in requireAuth; the
+ * player_steam_id cookie alone is not admin. It still names the player in the
+ * denial reason.
  */
 router.get('/admin/me', async (req: Request, res: Response) => {
   // A service token identifies an integration, not a person, so there is no
@@ -1793,7 +1808,7 @@ router.get('/admin/me', async (req: Request, res: Response) => {
   if (anyReq.isAuthenticated && anyReq.isAuthenticated() && anyReq.user) {
     const user = anyReq.user;
     const userSteamId = (user as { steamId?: string }).steamId;
-    steamId = userSteamId || cookieSteamId || null;
+    steamId = userSteamId || null;
     provider = (user as { provider?: string }).provider ?? 'steam';
 
     if (provider === 'steam') {
@@ -1838,31 +1853,6 @@ router.get('/admin/me', async (req: Request, res: Response) => {
     }
   }
 
-  if (cookieSteamId) {
-    try {
-      const player = await playerService.getPlayerById(cookieSteamId);
-      if (player?.isAdmin) {
-        steamId = cookieSteamId;
-        profileName = player.name ?? null;
-        profileAvatarUrl =
-          typeof player.avatar === 'string' && player.avatar.startsWith('http')
-            ? player.avatar
-            : null;
-        log.info('/api/auth/admin/me: returning authenticated admin identity (cookie)', {
-          steamId,
-        });
-        return res.json({
-          authenticated: true,
-          provider: 'steam',
-          steamId,
-          providerProfile: { name: profileName, avatarUrl: profileAvatarUrl },
-        });
-      }
-    } catch (err) {
-      log.warn('Failed to resolve admin/me from player_steam_id cookie', err as Error);
-    }
-  }
-
   // Say *why* admin was refused.
   //
   // This used to return a bare `authenticated: false`, and the client silently
@@ -1872,7 +1862,7 @@ router.get('/admin/me', async (req: Request, res: Response) => {
   // exactly why the reports of "redirected to my player page even though
   // is_admin = 1" could never be diagnosed: there was nothing to collect.
   const resolvedSteamId = steamId ?? cookieSteamId ?? null;
-  let reason: 'not_signed_in' | 'no_player_record' | 'not_admin' = 'not_signed_in';
+  let reason: 'not_signed_in' | 'no_player_record' | 'not_admin' | 'no_session' = 'not_signed_in';
   let message = 'You are not signed in.';
 
   if (resolvedSteamId) {
@@ -1886,6 +1876,9 @@ router.get('/admin/me', async (req: Request, res: Response) => {
     if (!player) {
       reason = 'no_player_record';
       message = `Signed in as ${resolvedSteamId}, but there is no player with that Steam ID.`;
+    } else if (!steamId && player.isAdmin) {
+      reason = 'no_session';
+      message = `Signed in as ${player.name || resolvedSteamId} (${resolvedSteamId}) without an admin session: sign in again.`;
     } else {
       reason = 'not_admin';
       message = `Signed in as ${player.name || resolvedSteamId} (${resolvedSteamId}), but this account is not an admin.`;
@@ -1912,8 +1905,7 @@ router.post('/admin/logout', (req: Request, res: Response) => {
     session?: { destroy?: (cb: (err: unknown) => void) => void };
   };
 
-  // The signed player_steam_id cookie is itself an admin credential (see
-  // middleware/auth), so destroying only the Passport session is not a logout.
+  // The identity cookies go with the session: this is a full sign-out.
   clearIdentityCookies(req, res);
 
   if (!anyReq.logout) {

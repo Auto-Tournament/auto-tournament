@@ -5,22 +5,19 @@ import { isIP } from 'net';
  * Admin access restriction for "direct" container access.
  *
  * Context:
- * - Reverse proxy sometimes drops session cookies (e.g. Chrome + 302 on OAuth).
- *   We use a cookie fallback (player_steam_id + DB is_admin) so admin still works.
  * - Some users run without a reverse proxy and set FRONTEND_BASE_URL to IP:port.
- *   We must not break them; the cookie fallback must always be used when applicable.
+ *   We must not break them.
  *
  * We only restrict admin when **both**:
  *  1. FRONTEND_BASE_URL is set to a **domain** (not localhost, not 127.0.0.1, not an IP).
  *  2. The request appears **direct** (no X-Forwarded-For / X-Forwarded-Proto), i.e. not
  *     through a reverse proxy.
  *
- * In that case we block admin (403 / unauthenticated). Otherwise we always run the full
- * auth check (session + cookie fallback), so the alternative admin check is never skipped.
+ * In that case we block admin (403 / unauthenticated). Otherwise we run the full auth check.
  *
- * - Proxy + domain: X-Forwarded-* present → no restrict → full auth, cookie fallback works.
+ * - Proxy + domain: X-Forwarded-* present → no restrict → full auth.
  * - Direct + domain: no X-Forwarded-* → restrict → block admin.
- * - FRONTEND_BASE_URL = IP or localhost: we never restrict → full auth, cookie fallback works.
+ * - FRONTEND_BASE_URL = IP or localhost: we never restrict → full auth.
  */
 
 function getCanonicalDomain(): string | null {
@@ -49,7 +46,7 @@ function isRequestProxied(req: Request): boolean {
 /**
  * Returns true if we should block admin access for this request.
  * Block only when a canonical **domain** is configured and the request looks **direct**
- * (no proxy headers). Otherwise we always allow the normal auth flow (session + cookie).
+ * (no proxy headers). Otherwise we always allow the normal auth flow (session).
  */
 export function shouldBlockAdminAsDirectAccess(req: Request): boolean {
   const domain = getCanonicalDomain();

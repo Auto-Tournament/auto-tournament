@@ -21,7 +21,7 @@ import {
   type PlayerAccount,
 } from '../services/gameCatalogService';
 import { scheduleGameIconRefresh } from '../services/gameIconService';
-import { resolveViewerIdentity } from '../utils/viewerIdentity';
+import { accountNeedsSession, resolveViewerIdentity } from '../utils/viewerIdentity';
 import { log } from '../utils/logger';
 import { getAuthProvidersConfig } from '../config/authProviders';
 import { authIdentityService } from '../services/authIdentityService';
@@ -62,6 +62,11 @@ async function resolveAccount(
       success: false,
       error: `You are impersonating a player. Stop impersonating to manage your own ${what}.`,
     });
+    return null;
+  }
+
+  if (write && !identity.hasSession && (await accountNeedsSession(identity.realSteamId))) {
+    res.status(401).json({ success: false, error: `Sign in again to manage your ${what}` });
     return null;
   }
 

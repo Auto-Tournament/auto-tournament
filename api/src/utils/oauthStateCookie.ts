@@ -9,10 +9,8 @@
  * player_steam_id fast path, links that account to the victim's Steam ID).
  *
  * Why a cookie and not `state: true` (session store): the Express session
- * cookie is documented to sometimes not survive the OAuth round trip (behind
- * Cloudflare Tunnel, Chrome + 302). That is the reason the signed
- * player_steam_id cookie fallback exists at all, so tying state to the session
- * would break logins for exactly those deployments.
+ * cookie can fail to survive the OAuth round trip (a proxy that drops it, Chrome
+ * + 302), so tying state to the session would break logins for those deployments.
  *
  * How it works:
  *  - On the initial redirect we generate a random nonce, send it to the

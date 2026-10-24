@@ -21,16 +21,11 @@ import type { Untrusted } from '../utils/untrusted';
  * Steam account and `acc_…` for one made by another provider; the variables
  * and the cookie still say "steamId" for historical reasons.
  *
- * We accept **two** ways to prove admin access:
- *  1. **Passport session** (at.sid) — used when it works (e.g. same-origin, no tunnel).
- *  2. **Signed player_steam_id cookie** — verified with SESSION_SECRET. Used when the
- *     session cookie is dropped (e.g. Cloudflare Tunnel, Chrome + 302). Steam ID must
- *     map to admin in DB.
+ * A person proves admin access with the **Passport session** (at.sid) only; the
+ * signed player_steam_id cookie names a player and never grants admin.
  *
  * **Direct access block:** Only when FRONTEND_BASE_URL is a **domain** (not IP/localhost)
  * and the request has **no** X-Forwarded-* (direct to container) do we block admin.
- * Otherwise we always run full auth (session + cookie fallback) so the alternative
- * admin check is never skipped.
  *
  * There is a third way in, for machines rather than people: a **service token**
  * from `API_TOKENS` / `API_TOKENS_READONLY`, presented as `Authorization: Bearer
@@ -117,14 +112,14 @@ export function authenticateServiceToken(
 
 /**
  * Who made a request that `requireAuth` let through, for audit records: the
- * admin's Steam ID (session or signed cookie), or `token:<label>` for an API
+ * admin's Steam ID (session), or `token:<label>` for an API
  * token. Null when neither is known.
  */
 export function requestActorId(req: Request): string | null {
   const token = (req as AuthedRequest).serviceToken;
   if (token) return `token:${token.label}`;
   const sessionSteamId = (req as Request & { user?: { steamId?: string } }).user?.steamId;
-  return sessionSteamId || getVerifiedPlayerSteamId(req.headers.cookie) || null;
+  return sessionSteamId || null;
 }
 
 /**
@@ -183,31 +178,29 @@ export async function checkAdminAccess(req: Request): Promise<AdminAccessResult>
     isAuthenticated?: () => boolean;
   };
 
-  const cookieSteamId = getVerifiedPlayerSteamId(req.headers.cookie);
-
-  let steamId: string | null = null;
-
-  if (anyReq.isAuthenticated && anyReq.isAuthenticated() && anyReq.user) {
-    const userSteamId = (anyReq.user as { steamId?: string }).steamId;
-    steamId = userSteamId || cookieSteamId || null;
-    if (!steamId) {
+  if (!(anyReq.isAuthenticated && anyReq.isAuthenticated() && anyReq.user)) {
+    if (getVerifiedPlayerSteamId(req.headers.cookie)) {
       return {
         ok: false,
         status: 403,
-        error: 'Forbidden - Admin account must be linked to a Steam ID',
-        logReason: 'Authenticated session has no linked Steam ID',
+        error: 'Forbidden - Admin access required',
+        logReason: 'Player cookie without an admin session',
       };
     }
-  } else if (cookieSteamId) {
-    steamId = cookieSteamId;
-  }
-
-  if (!steamId) {
     return {
       ok: false,
       status: 401,
       error: 'Unauthorized - Admin session required',
       logReason: 'Missing or invalid admin session',
+    };
+  }
+  const steamId = (anyReq.user as { steamId?: string }).steamId;
+  if (!steamId) {
+    return {
+      ok: false,
+      status: 403,
+      error: 'Forbidden - Admin account must be linked to a Steam ID',
+      logReason: 'Authenticated session has no linked Steam ID',
     };
   }
 

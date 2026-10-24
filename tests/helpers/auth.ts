@@ -1,4 +1,4 @@
-import { Page, APIRequestContext, expect } from '@playwright/test';
+import { Page, APIRequestContext, Playwright, expect } from '@playwright/test';
 
 /**
  * Authentication helper functions
@@ -151,7 +151,11 @@ export async function signInAsPlayerViaRequest(
 ): Promise<boolean> {
   try {
     const response = await request.post('/api/test/login-player', {
-      data: { steamId, ...(name ? { name } : {}), ...(options.games ? { games: options.games } : {}) },
+      data: {
+        steamId,
+        ...(name ? { name } : {}),
+        ...(options.games ? { games: options.games } : {}),
+      },
     });
     if (!response.ok()) {
       console.error('login-player test helper failed:', await response.text());
@@ -216,4 +220,18 @@ export async function stopImpersonating(request: APIRequestContext): Promise<boo
  */
 export function getAuthHeader(): { Authorization: string } {
   return { Authorization: '' };
+}
+
+/**
+ * A fresh request context holding only the signed player cookie of `from`
+ * (no Passport session), as a browser that lost its session cookie would.
+ */
+export async function playerCookieOnlyContext(
+  playwright: Playwright,
+  from: APIRequestContext,
+  baseURL: string
+): Promise<APIRequestContext> {
+  const state = await from.storageState();
+  const cookies = state.cookies.filter((c) => c.name === 'player_steam_id');
+  return playwright.request.newContext({ baseURL, storageState: { cookies, origins: [] } });
 }
