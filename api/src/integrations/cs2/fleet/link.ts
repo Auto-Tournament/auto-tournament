@@ -88,11 +88,6 @@ export async function cs2ServerIdOf(fleetServerId: string): Promise<string | nul
   return row?.id ?? null;
 }
 
-/** Every link, keyed by fleet server id (for the fleet list). */
-export async function listFleetLinks(): Promise<Map<string, string>> {
-  return new Map([...(await listLinkAddresses())].map(([fleetId, a]) => [fleetId, a.cs2ServerId]));
-}
-
 /** Every link with its connect address, keyed by fleet server id. */
 export async function listLinkAddresses(): Promise<Map<string, LinkAddress>> {
   const rows = await db.queryAsync<LinkRow>(

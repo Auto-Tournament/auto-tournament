@@ -456,34 +456,6 @@ hostEvents.on('result', (hostId: string, record: registry.HostCommandRecord) => 
   for (const id of [...(busyWaiting.get(hostId)?.keys() ?? [])]) void resendBusy(hostId, id);
 });
 
-/** The answer to command `id`: resolves once it is not pending, or null after `timeoutMs`. */
-export async function awaitHostResult(
-  id: string,
-  timeoutMs = 15_000
-): Promise<registry.HostCommandRecord | null> {
-  return new Promise((resolve) => {
-    let done = false;
-    const finish = (record: registry.HostCommandRecord | null) => {
-      if (done) return;
-      done = true;
-      clearTimeout(timer);
-      hostEvents.off('result', onResult);
-      resolve(record);
-    };
-    const onResult = (_hostId: string, record: registry.HostCommandRecord) => {
-      if (record.id === id) finish(record);
-    };
-    const timer = setTimeout(() => finish(null), timeoutMs);
-    hostEvents.on('result', onResult);
-    void registry
-      .getHostCommand(id)
-      .then((record) => {
-        if (record && record.status !== 'pending') finish(record);
-      })
-      .catch(() => undefined);
-  });
-}
-
 // ---------------------------------------------------------------------------
 // Inventory ↔ Ready Up (FLEET.md §18.3)
 // ---------------------------------------------------------------------------

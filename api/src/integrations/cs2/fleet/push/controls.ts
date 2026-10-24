@@ -327,8 +327,6 @@ export async function pluginsOnHello(
   }
   const state = pluginsStateOf(hello);
   if (!state) return null;
-  // No set of ours yet: the skins plugin still follows the platform.
-  if (!prefs.plugins) return (await skinsFollowPlatform(serverId, state)) ? 'resync' : null;
   const last = prefs.pushed.plugins;
   if (last?.seq !== undefined && last.seq > hello.stream.last_rx_seq) return null;
   // This hello's capabilities: the stored ones may still be the previous Ready Up's.

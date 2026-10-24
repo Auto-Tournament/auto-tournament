@@ -64,11 +64,6 @@ const restarts = new Map<
 /** Create requested per failover. */
 const creates = new Map<string, { at: number; hostId: string; commandId: string }>();
 
-export function resetRecoveryState(): void {
-  restarts.clear();
-  creates.clear();
-}
-
 async function audit(
   serverId: string | null,
   matchSlug: string,

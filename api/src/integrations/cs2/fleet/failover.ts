@@ -63,7 +63,12 @@ import { liveStateStore } from './state';
 import { cs2ServerIdOf } from './link';
 import { hostEvents, hostServers } from './hosts/service';
 import { getFailoverSettings } from './failoverSettings';
-import { createWhenNoneFree, linkCreatedServers, restartBeforeMove } from './failoverRecovery';
+import {
+  createWhenNoneFree,
+  linkCreatedServers,
+  RECOVERY_ACTOR,
+  restartBeforeMove,
+} from './failoverRecovery';
 import {
   buildResume,
   detectFailure,
@@ -82,9 +87,6 @@ import { fleetChanged } from './adminTopics';
 const CHECK_MS = Number(process.env.FLEET_FAILOVER_CHECK_MS) || 10_000;
 /** How long a server that came back without its match has to report it (restored locally). */
 const SERVER_BACK_GRACE_MS = Number(process.env.FLEET_SERVER_BACK_GRACE_MS ?? 8_000);
-
-/** Who auto-failover acts as in the records. */
-export const FAILOVER_PLATFORM_ACTOR = 'platform:auto-failover';
 
 export type FailoverStatus = 'open' | 'moving' | 'moved' | 'dismissed' | 'withdrawn';
 
@@ -588,7 +590,7 @@ const failedTargets = new Map<string, Set<string>>();
 async function autoAccept(proposal: FailoverProposal): Promise<AcceptOutcome> {
   const exclude = [...(failedTargets.get(proposal.id) ?? [])];
   const outcome = await acceptFailover(proposal.id, {
-    actor: FAILOVER_PLATFORM_ACTOR,
+    actor: RECOVERY_ACTOR,
     auto: true,
     exclude,
   });
