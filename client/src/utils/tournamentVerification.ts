@@ -5,7 +5,7 @@
  * Makes it easy to add new tournament types and their specific rules.
  */
 
-export interface MapValidationRule {
+interface MapValidationRule {
   minMaps?: number;
   maxMaps?: number;
   exactMaps?: number;
@@ -13,7 +13,7 @@ export interface MapValidationRule {
   message?: string;
 }
 
-export interface TeamValidationRule {
+interface TeamValidationRule {
   minTeams?: number;
   maxTeams?: number;
   requirePowerOfTwo?: boolean;
@@ -21,7 +21,7 @@ export interface TeamValidationRule {
   message?: string;
 }
 
-export interface TournamentValidationRules {
+interface TournamentValidationRules {
   type: string;
   format?: string; // Optional format-specific rules
   maps: MapValidationRule;
@@ -37,10 +37,7 @@ export interface TournamentValidationRules {
 /**
  * Get verification rules for a tournament type and format
  */
-export function getTournamentVerificationRules(
-  type: string,
-  format?: string
-): TournamentValidationRules {
+function getTournamentVerificationRules(type: string, format?: string): TournamentValidationRules {
   // Shuffle tournaments
   if (type === 'shuffle') {
     return {
@@ -127,72 +124,4 @@ export function validateMapCount(
 export function requiresVeto(type: string, format?: string): boolean {
   const rules = getTournamentVerificationRules(type, format);
   return rules.maps.requiresVeto === true;
-}
-
-/**
- * Validate team count based on tournament rules
- */
-export function validateTeamCount(
-  teamCount: number,
-  type: string,
-  format?: string
-): { valid: boolean; message?: string } {
-  const rules = getTournamentVerificationRules(type, format);
-  const teamRule = rules.teams;
-
-  if (!teamRule) {
-    return { valid: true };
-  }
-
-  if (teamRule.minTeams !== undefined && teamCount < teamRule.minTeams) {
-    return {
-      valid: false,
-      message: `${teamRule.message || `Minimum ${teamRule.minTeams} teams required.`} You have ${teamCount}.`,
-    };
-  }
-
-  if (teamRule.maxTeams !== undefined && teamCount > teamRule.maxTeams) {
-    return {
-      valid: false,
-      message: `${teamRule.message || `Maximum ${teamRule.maxTeams} teams allowed.`} You have ${teamCount}.`,
-    };
-  }
-
-  if (teamRule.requirePowerOfTwo && teamRule.validCounts) {
-    if (!teamRule.validCounts.includes(teamCount)) {
-      return {
-        valid: false,
-        message: `${teamRule.message || 'Team count must be a power of 2.'} Valid options: ${teamRule.validCounts.join(', ')}.`,
-      };
-    }
-  }
-
-  return { valid: true };
-}
-
-/**
- * Validate player count for shuffle tournaments
- */
-export function validatePlayerCount(
-  playerCount: number,
-  teamSize: number
-): { valid: boolean; message?: string; warning?: string } {
-  const minPlayers = teamSize * 2;
-  const isEven = playerCount % 2 === 0;
-
-  if (playerCount > 0 && playerCount < minPlayers) {
-    return {
-      valid: false,
-      message: `Minimum ${minPlayers} players required for ${teamSize}v${teamSize} matches. You have ${playerCount}.`,
-    };
-  }
-
-  if (playerCount > 0 && !isEven) {
-    return {
-      valid: true, // Still valid, but with warning
-      warning: `Odd player count: ${playerCount} players cannot form even teams. The extra player will wait one round (walkover).`,
-    };
-  }
-
-  return { valid: true };
 }

@@ -99,40 +99,6 @@ export interface ServersResponse extends Cs2ApiResponse {
   servers: Server[];
 }
 
-/** `GET /api/servers/:id/status`: one server's live (or cached) status. */
-export interface ServerStatusResponse extends Cs2ApiResponse {
-  serverId: string;
-  status: string;
-  isAvailable: boolean;
-  currentMatch: string | null;
-  queuedMatch?: string | null;
-  playerCount?: number;
-  reachableFromApi?: boolean;
-  serverCanReachApi?: boolean;
-  pluginStatus?: string | null;
-  allocationState?: string | null;
-  allocationMatchSlug?: string | null;
-  ipBanned?: boolean; // True if server has banned our IP address
-  cs2BuildId?: number | null;
-  cs2VersionString?: string | null;
-  cs2VersionFetchedAt?: number | null;
-  /** If set, Steam reports this server is out of date (required_version). */
-  cs2RequiredVersion?: number | null;
-  /** Best-effort: phase of the update signal ('available'|'shutdown'). */
-  cs2UpdatePhase?: string | null;
-  /** Unix timestamp when the platform last checked UpToDateCheck for this server. */
-  cs2UpdateCheckedAt?: number | null;
-}
-
-/**
- * `GET /api/matches?serverId=…`, read by the Servers page only to find the
- * match a server is running: the platform's match list, of which this module
- * needs the slug and status.
- */
-export interface ServerMatchesResponse extends Cs2ApiResponse {
-  matches: Array<{ slug: string; status: string }>;
-}
-
 /** One server as `/api/tournament/server-availability` describes it. */
 export interface ServerAllocationInfo {
   id: string;
@@ -403,19 +369,6 @@ export interface MapPoolResponse extends Cs2ApiResponse {
 // Admin tools: RCON and the server events monitor
 // ---------------------------------------------------------------------------
 
-/** One server's answer to an RCON command (`POST /api/rcon/command`). */
-export interface RconResult {
-  serverId: string;
-  serverName: string;
-  success: boolean;
-  error?: string;
-  response?: string;
-}
-
-export interface RconResultsResponse extends Cs2ApiResponse {
-  results?: RconResult[];
-}
-
 /** One event a server sent, as the events monitor shows it. */
 export interface ServerEvent {
   timestamp: number;
@@ -496,7 +449,7 @@ export interface FleetServer {
   connect?: FleetConnect | null;
 }
 
-export interface FleetConnect {
+interface FleetConnect {
   host: string;
   port: number;
   /** `host:port` as typed after `connect`. */
@@ -563,7 +516,7 @@ export interface FleetHostServer {
   matchInProgress: boolean;
 }
 
-export interface FleetHostServerRef {
+interface FleetHostServerRef {
   id: string;
   name: string;
   status: string;
