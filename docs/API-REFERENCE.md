@@ -328,11 +328,11 @@ Each player's best moments, picked from the demo analysis, and the clips the rec
 | `PUT` | `/api/game/cs2/recorder/match-reels/:slug/:map` | recorder key or admin |
 | `POST` | `/api/game/cs2/recorder/match-reels/:slug/:map/fail` | recorder key or admin |
 | `GET` | `/api/game/cs2/matches/:slug/reels` | recorder key or admin |
-| `PUT` | `/api/game/cs2/recorder/jobs/:id/clip/:twin(crowd|clean|overlay)` | recorder key or admin |
-| `PUT` | `/api/game/cs2/recorder/reels/:slug/:map/:player/:twin(crowd|clean|overlay)` | recorder key or admin |
-| `PUT` | `/api/game/cs2/recorder/match-reels/:slug/:map/:twin(crowd|clean|overlay)` | recorder key or admin |
-| `PUT` | `/api/game/cs2/recorder/team-reels/:slug/:team/:twin(crowd|clean|overlay)` | recorder key or admin |
-| `PUT` | `/api/game/cs2/recorder/tournament-reels/:id/:twin(crowd|clean|overlay)` | recorder key or admin |
+| `PUT` | `/api/game/cs2/recorder/jobs/:id/clip/:twin(crowd|clean|overlay|\d+p\d+)` | recorder key or admin |
+| `PUT` | `/api/game/cs2/recorder/reels/:slug/:map/:player/:twin(crowd|clean|overlay|\d+p\d+)` | recorder key or admin |
+| `PUT` | `/api/game/cs2/recorder/match-reels/:slug/:map/:twin(crowd|clean|overlay|\d+p\d+)` | recorder key or admin |
+| `PUT` | `/api/game/cs2/recorder/team-reels/:slug/:team/:twin(crowd|clean|overlay|\d+p\d+)` | recorder key or admin |
+| `PUT` | `/api/game/cs2/recorder/tournament-reels/:id/:twin(crowd|clean|overlay|\d+p\d+)` | recorder key or admin |
 | `PUT` | `/api/game/cs2/recorder/team-reels/:slug/:team` | recorder key or admin |
 | `POST` | `/api/game/cs2/recorder/team-reels/:slug/:team/fail` | recorder key or admin |
 | `PUT` | `/api/game/cs2/recorder/redress/:file` | recorder key or admin |

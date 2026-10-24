@@ -302,6 +302,17 @@ export function registerHighlightReadRoutes(router: Router): void {
         headers: { 'Content-Type': TWIN_CONTENT_TYPE[twinOf[2] as VideoTwin] },
       });
     }
+    // A lower quality of a video (demos/highlights.ts cutFileOf).
+    if (
+      /^(\d+|(?:reel|match|tournament|team)-[A-Za-z0-9_-][A-Za-z0-9_.-]*?)\.\d{3,4}p\d{2,3}\.mp4$/.test(
+        req.params.file
+      )
+    ) {
+      const cut = path.join(path.dirname(clipFile(0)), req.params.file);
+      if (!fs.existsSync(cut)) return res.status(404).end();
+      res.setHeader('Cache-Control', 'public, max-age=300');
+      return res.sendFile(cut, { headers: { 'Content-Type': 'video/mp4' } });
+    }
     // A video, or its clean twin (as recorded: no caption card, kill feed or logo).
     const named =
       /^(\d+|(?:reel|match|tournament|team)-[A-Za-z0-9_-][A-Za-z0-9_.-]*?)(\.clean)?\.mp4$/.exec(

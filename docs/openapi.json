@@ -7180,12 +7180,12 @@
         ]
       }
     },
-    "/api/game/cs2/recorder/jobs/{id}/clip/{twin}(crowd|clean|overlay)": {
+    "/api/game/cs2/recorder/jobs/{id}/clip/{twin}(crowd|clean|overlay|\\d+p\\d+)": {
       "put": {
         "tags": [
           "Highlights"
         ],
-        "summary": "PUT /api/game/cs2/recorder/jobs/:id/clip/:twin(crowd|clean|overlay)",
+        "summary": "PUT /api/game/cs2/recorder/jobs/:id/clip/:twin(crowd|clean|overlay|\\d+p\\d+)",
         "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
         "responses": {
           "200": {
@@ -7300,12 +7300,12 @@
         ]
       }
     },
-    "/api/game/cs2/recorder/match-reels/{slug}/{map}/{twin}(crowd|clean|overlay)": {
+    "/api/game/cs2/recorder/match-reels/{slug}/{map}/{twin}(crowd|clean|overlay|\\d+p\\d+)": {
       "put": {
         "tags": [
           "Highlights"
         ],
-        "summary": "PUT /api/game/cs2/recorder/match-reels/:slug/:map/:twin(crowd|clean|overlay)",
+        "summary": "PUT /api/game/cs2/recorder/match-reels/:slug/:map/:twin(crowd|clean|overlay|\\d+p\\d+)",
         "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
         "responses": {
           "200": {
@@ -7460,12 +7460,12 @@
         ]
       }
     },
-    "/api/game/cs2/recorder/reels/{slug}/{map}/{player}/{twin}(crowd|clean|overlay)": {
+    "/api/game/cs2/recorder/reels/{slug}/{map}/{player}/{twin}(crowd|clean|overlay|\\d+p\\d+)": {
       "put": {
         "tags": [
           "Highlights"
         ],
-        "summary": "PUT /api/game/cs2/recorder/reels/:slug/:map/:player/:twin(crowd|clean|overlay)",
+        "summary": "PUT /api/game/cs2/recorder/reels/:slug/:map/:player/:twin(crowd|clean|overlay|\\d+p\\d+)",
         "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
         "responses": {
           "200": {
@@ -7618,12 +7618,12 @@
         ]
       }
     },
-    "/api/game/cs2/recorder/team-reels/{slug}/{team}/{twin}(crowd|clean|overlay)": {
+    "/api/game/cs2/recorder/team-reels/{slug}/{team}/{twin}(crowd|clean|overlay|\\d+p\\d+)": {
       "put": {
         "tags": [
           "Highlights"
         ],
-        "summary": "PUT /api/game/cs2/recorder/team-reels/:slug/:team/:twin(crowd|clean|overlay)",
+        "summary": "PUT /api/game/cs2/recorder/team-reels/:slug/:team/:twin(crowd|clean|overlay|\\d+p\\d+)",
         "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
         "responses": {
           "200": {
@@ -7730,12 +7730,12 @@
         ]
       }
     },
-    "/api/game/cs2/recorder/tournament-reels/{id}/{twin}(crowd|clean|overlay)": {
+    "/api/game/cs2/recorder/tournament-reels/{id}/{twin}(crowd|clean|overlay|\\d+p\\d+)": {
       "put": {
         "tags": [
           "Highlights"
         ],
-        "summary": "PUT /api/game/cs2/recorder/tournament-reels/:id/:twin(crowd|clean|overlay)",
+        "summary": "PUT /api/game/cs2/recorder/tournament-reels/:id/:twin(crowd|clean|overlay|\\d+p\\d+)",
         "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
         "responses": {
           "200": {

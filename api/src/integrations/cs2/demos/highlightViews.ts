@@ -22,6 +22,8 @@ import { reelFailoverFilter } from './reelFailover';
 import {
   removeTwins,
   crowdUrlOf,
+  cutsOf,
+  type VideoCut,
   HIGHLIGHTS_DIR,
   markersOnItsOwn,
   matchLine,
@@ -107,6 +109,8 @@ export interface ClipView {
   status: string;
   round: number;
   video: string | null;
+  /** Its lower qualities, highest first (none: the video alone). */
+  cuts: VideoCut[];
   /** Its kills and slow motion as the clip itself plays. */
   markers: ClipMarkers | null;
   /** As its clean twin has them: where they are in a reel joined from it. */
@@ -142,6 +146,7 @@ function toClip(r: ClipRow): ClipView {
     status: r.status,
     round: Number(r.round),
     video: isShown(r.status, r.clip_path) ? `/api/game/cs2/highlights/${Number(r.id)}.mp4` : null,
+    cuts: isShown(r.status, r.clip_path) ? cutsOf(r.clip_path) : [],
     markers: markersOnItsOwn(parseMarkers(r.markers)),
     reelMarkers: parseMarkers(r.markers),
     match: {
@@ -290,6 +295,7 @@ export async function playerReelViews(playerId: string, limit: number) {
       moments: Number(r.moments),
       video: fileUrl(r.clip_path),
       crowd: crowdUrlOf(r.clip_path),
+      cuts: cutsOf(r.clip_path),
       chapters: await chaptersOf(r.clip_ids, r.clip_starts),
       match: {
         slug: r.match_slug,
@@ -408,6 +414,7 @@ export async function tournamentReel(tournamentId: number) {
       : null,
     video: done ? fileUrl(row.clip_path!) : null,
     crowd: done ? crowdUrlOf(row.clip_path) : null,
+    cuts: done ? cutsOf(row.clip_path) : [],
     chapters,
     duration:
       last && last.at !== null && lastClip?.reelMarkers
@@ -704,6 +711,7 @@ export async function matchReelView(matchSlug: string, mapNumber: number) {
     map: row.map_name,
     video: fileUrl(row.clip_path),
     crowd: crowdUrlOf(row.clip_path),
+    cuts: cutsOf(row.clip_path),
     chapters: await chaptersOf(row.clip_ids, row.clip_starts),
     match: {
       slug: matchSlug,

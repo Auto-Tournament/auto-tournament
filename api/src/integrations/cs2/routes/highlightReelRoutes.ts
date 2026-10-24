@@ -22,6 +22,8 @@ import {
   matchReelFile,
   reelFile,
   saveTwin,
+  saveCut,
+  CUT_NAME,
   TWIN_CONTENT_TYPE,
   type VideoTwin,
   SERIES_REEL,
@@ -64,13 +66,19 @@ export function registerReelRoutes(router: Router): void {
       const video = fileOf(req);
       if (!video) return res.status(400).json({ success: false, error: 'Which video' });
       const twin = req.params.twin as VideoTwin;
-      if (!String(req.headers['content-type'] ?? '').startsWith(TWIN_CONTENT_TYPE[twin])) {
-        return res.status(400).json({ success: false, error: `A ${TWIN_CONTENT_TYPE[twin]} body` });
+      const cut = CUT_NAME.test(req.params.twin);
+      const type = cut ? 'video/mp4' : TWIN_CONTENT_TYPE[twin];
+      if (!type) return res.status(400).json({ success: false, error: 'Which twin or quality' });
+      if (!String(req.headers['content-type'] ?? '').startsWith(type)) {
+        return res.status(400).json({ success: false, error: `A ${type} body` });
       }
       if (!fs.existsSync(video))
         return res.status(404).json({ success: false, error: 'Upload the video first' });
       try {
-        return res.json({ success: true, bytes: await saveTwin(video, twin, bodyOf(req)) });
+        const bytes = cut
+          ? await saveCut(video, req.params.twin, bodyOf(req))
+          : await saveTwin(video, twin, bodyOf(req));
+        return res.json({ success: true, bytes });
       } catch (error) {
         log.error('[HIGHLIGHTS] twin save failed', { error, video: path.basename(video), twin });
         return res.status(500).json({ success: false, error: `Could not store the ${twin} file` });
