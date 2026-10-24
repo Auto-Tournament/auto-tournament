@@ -3,6 +3,8 @@
  * and the admin settings. Every player route answers 404 while skins are off.
  *
  * GET    /status                   public: on or off, and whether the catalogue is unlocked
+ * GET    /catalog/search?q=&weapon=&slot=&category=  signed in: search the catalogue (while it is unlocked)
+ * GET    /catalog/weapons          signed in: every weapon slot (while it is unlocked)
  * GET    /odds                     public: drop odds per rarity and per skin, and when drops happen
  * GET    /me                       signed in: your inventory, showcase, catalogue picks and new skins
  * PUT    /me/picks                 equip any catalogue skin ({ weapon, paintKit, float, seed, team? })
@@ -23,13 +25,14 @@ import { requireAuth } from '../../../middleware/auth';
 import { log } from '../../../utils/logger';
 import { resolveViewerAccount } from '../../../utils/viewerIdentity';
 import { knifeAndGlovePrices, priceFor, priceKey } from './skinPrices';
+import { WEAPON_DEFINDEX } from './skinDefindex';
+import { catalogWeapons, pickableSkin, searchCatalog } from './catalogSearch';
 import {
   RARITIES,
   SKIN_IMAGES_BASE,
   SkinError,
   type Rarity,
   skinService,
-  variantOf,
   type SkinsConfig,
   type DropTarget,
   MVP_PLACE,
@@ -404,6 +407,65 @@ async function catalogPlayerOrStop(req: Request, res: Response): Promise<string 
   return uid;
 }
 
+/** The catalogue skins a player can equip: the game plugin needs a definition index for the weapon. */
+async function pickableCatalog() {
+  return (await skinService.catalog()).filter((s) => WEAPON_DEFINDEX[s.weapon]);
+}
+
+/**
+ * @openapi
+ * /api/skins/catalog/weapons:
+ *   get:
+ *     tags: [Skins]
+ *     summary: Every weapon slot of the catalogue (while it is unlocked)
+ *     responses:
+ *       200: { description: "{ weapons: [{ weapon, weaponName, slot, category, side }] }, knife and gloves first" }
+ *       401: { description: Not signed in }
+ *       404: { description: The catalogue is not unlocked }
+ */
+router.get('/catalog/weapons', async (req, res) => {
+  try {
+    if (!(await catalogPlayerOrStop(req, res))) return;
+    return res.json({ success: true, weapons: catalogWeapons(await pickableCatalog()) });
+  } catch (error) {
+    return fail(res, error, 'Listing the weapons');
+  }
+});
+
+/**
+ * @openapi
+ * /api/skins/catalog/search:
+ *   get:
+ *     tags: [Skins]
+ *     summary: Search the catalogue to pick a skin (while it is unlocked)
+ *     parameters:
+ *       - { in: query, name: q, schema: { type: string } }
+ *       - { in: query, name: weapon, schema: { type: string }, description: Only this weapon }
+ *       - { in: query, name: slot, schema: { type: string }, description: Only this loadout slot (every knife, every glove) }
+ *       - { in: query, name: category, schema: { type: string, enum: [knives, gloves, pistols, smgs, rifles, heavy] }, description: Only this weapon group (the Zeus is a pistol) }
+ *     responses:
+ *       200: { description: "Up to 60 skins, one per paint kit, each with its slot and the one side that buys the weapon" }
+ *       401: { description: Not signed in }
+ *       404: { description: The catalogue is not unlocked }
+ */
+router.get('/catalog/search', async (req, res) => {
+  try {
+    if (!(await catalogPlayerOrStop(req, res))) return;
+    const skins = searchCatalog(await pickableCatalog(), {
+      q: req.query.q,
+      weapon: req.query.weapon,
+      slot: req.query.slot,
+      category: req.query.category,
+      all: true,
+    })
+      .slice(0, 60)
+      .map(pickableSkin);
+    return res.json({ success: true, skins });
+  } catch (error) {
+    return fail(res, error, 'Searching the catalogue');
+  }
+});
+
 /**
  * @openapi
  * /api/skins/me/picks:
@@ -739,34 +801,12 @@ router.put('/admin/config', requireAuth, async (req, res) => {
  */
 router.get('/admin/catalog', requireAuth, async (req, res) => {
   try {
-    const words = String(req.query.q ?? '')
-      .trim()
-      .toLowerCase()
-      .split(/\s+/)
-      .filter(Boolean);
-    // `all=1`: every paint kit, so each phase of a Doppler is its own row.
-    const all = req.query.all === '1';
-    const seen = new Set<string>();
     const prices = await knifeAndGlovePrices();
-    const skins = (await skinService.catalog())
-      .map((s) => {
-        const variant = variantOf(s.paintKitName);
-        return {
-          ...s,
-          variant,
-          imageUrl: `${SKIN_IMAGES_BASE}/${s.image}`,
-        };
-      })
-      .filter((s) => {
-        const text = `${s.weaponName} ${s.name} ${s.variant ?? ''}`.toLowerCase();
-        return words.every((w) => text.includes(w));
-      })
-      .filter((s) => {
-        const key = all ? `${s.weapon}|${s.paintKit}` : `${s.weapon}|${s.name}`;
-        if (seen.has(key)) return false;
-        seen.add(key);
-        return true;
-      })
+    // `all=1`: every paint kit, so each phase of a Doppler is its own row.
+    const skins = searchCatalog(await skinService.catalog(), {
+      q: req.query.q,
+      all: req.query.all === '1',
+    })
       .slice(0, 50)
       .map((s) => ({
         ...s,
