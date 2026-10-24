@@ -265,10 +265,12 @@ class LocalAdminService {
         lastStep: row.totp_last_step === null ? null : Number(row.totp_last_step),
       });
       if (step === null) return { ok: false, reason: 'totp_invalid' };
-      await db.queryAsync('UPDATE local_admins SET totp_last_step = ? WHERE id = ?', [
-        step,
-        row.id,
-      ]);
+      const claimed = await db.queryAsync<{ id: number }>(
+        `UPDATE local_admins SET totp_last_step = ?
+          WHERE id = ? AND (totp_last_step IS NULL OR totp_last_step < ?) RETURNING id`,
+        [step, row.id, step]
+      );
+      if (claimed.length === 0) return { ok: false, reason: 'totp_invalid' };
     }
     // A local account without admin (made on Settings -> Sign-in, or demoted
     // on the Players page) signs in as a regular player.

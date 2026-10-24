@@ -102,34 +102,42 @@ test.describe('TOTP (pure)', () => {
 });
 
 test.describe('login throttle (pure)', () => {
-  test('locks a target after 5 failures, doubling; limits an IP', TAGS, () => {
-    const th = new LoginThrottle({
-      ipLimit: 20,
-      ipWindowMs: 900_000,
-      freeFailures: 5,
-      baseLockMs: 30_000,
-      maxLockMs: 3_600_000,
-    });
+  const opts = {
+    ipLimit: 20,
+    ipWindowMs: 900_000,
+    freeFailures: 5,
+    baseLockMs: 30_000,
+    maxLockMs: 3_600_000,
+    targetLimit: 200,
+  };
+
+  test('locks a target per IP after 5 failures, doubling; limits an IP', TAGS, () => {
+    const th = new LoginThrottle(opts);
     const t0 = 1_000_000;
     for (let i = 0; i < 4; i++) th.recordFailure('1.1.1.1', 'user:a', t0);
     expect(th.retryAfterMs('1.1.1.1', 'user:a', t0)).toBe(0);
     th.recordFailure('1.1.1.1', 'user:a', t0);
-    expect(th.retryAfterMs('9.9.9.9', 'user:a', t0)).toBe(30_000);
+    expect(th.retryAfterMs('1.1.1.1', 'user:a', t0)).toBe(30_000);
+    // Someone else's failures never lock the owner out.
+    expect(th.retryAfterMs('9.9.9.9', 'user:a', t0)).toBe(0);
     th.recordFailure('1.1.1.1', 'user:a', t0 + 30_000);
-    expect(th.retryAfterMs('9.9.9.9', 'user:a', t0 + 30_000)).toBe(60_000);
-    th.recordSuccess('user:a');
-    expect(th.retryAfterMs('9.9.9.9', 'user:a', t0 + 30_000)).toBe(0);
+    expect(th.retryAfterMs('1.1.1.1', 'user:a', t0 + 30_000)).toBe(60_000);
+    th.recordSuccess('1.1.1.1', 'user:a');
+    expect(th.retryAfterMs('1.1.1.1', 'user:a', t0 + 30_000)).toBe(0);
 
-    const ip = new LoginThrottle({
-      ipLimit: 3,
-      ipWindowMs: 60_000,
-      freeFailures: 100,
-      baseLockMs: 1,
-      maxLockMs: 1,
-    });
+    const ip = new LoginThrottle({ ...opts, ipLimit: 3, ipWindowMs: 60_000, freeFailures: 100 });
     for (let i = 0; i < 3; i++) ip.recordFailure('2.2.2.2', `user:${i}`, t0);
     expect(ip.retryAfterMs('2.2.2.2', 'user:new', t0)).toBe(60_000);
     expect(ip.retryAfterMs('3.3.3.3', 'user:new', t0)).toBe(0);
+  });
+
+  test('a target has a much higher ceiling across all IPs', TAGS, () => {
+    const th = new LoginThrottle({ ...opts, targetLimit: 10 });
+    const t0 = 1_000_000;
+    for (let i = 0; i < 10; i++) th.recordFailure(`10.0.0.${i}`, 'user:a', t0 + i);
+    expect(th.retryAfterMs('10.0.1.1', 'user:a', t0 + 10)).toBe(899_990);
+    expect(th.retryAfterMs('10.0.1.1', 'user:b', t0 + 10)).toBe(0);
+    expect(th.retryAfterMs('10.0.1.1', 'user:a', t0 + 900_001)).toBe(0);
   });
 });
 
@@ -321,11 +329,29 @@ test.describe.serial('setup, local login, TOTP and reset-admin', () => {
     await anon.dispose();
   });
 
+  test('TOTP: a code signs in once, even twice at the same time', TAGS, async ({ playwright }) => {
+    test.setTimeout(60_000);
+    // The enrolment test spent the next step: wait for a fresh one.
+    const startStep = totpStep();
+    while (totpStep() <= startStep) await new Promise((r) => setTimeout(r, 500));
+    const totp = totpAt(totpSecret, totpStep() + 1);
+    const a = await fresh(playwright);
+    const b = await fresh(playwright);
+    const results = await Promise.all(
+      [a, b].map((ctx) =>
+        ctx.post('/api/auth/local/login', { data: { username: USER, password: PASSWORD, totp } })
+      )
+    );
+    expect(results.map((r) => r.status()).sort()).toEqual([200, 401]);
+    await a.dispose();
+    await b.dispose();
+  });
+
   test(
     'TOTP: turned off from the account with the password and a code',
     TAGS,
     async ({ playwright }) => {
-      test.setTimeout(60_000);
+      test.setTimeout(120_000);
       // Signed in with the password and a code; the enrolment test may have
       // spent the next step already, so wait for a later one when it has.
       const ctx = await fresh(playwright);
