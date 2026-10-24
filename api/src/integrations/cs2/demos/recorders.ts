@@ -462,7 +462,7 @@ export async function recorderFault(recorder: string, ids: number[], error: stri
       const recorders = new Set([...before.map((r) => r.recorder), recorder]);
       if (recorders.size < 2) continue;
       const gone = await db.runAsync(
-        `UPDATE cs2_highlights SET status = 'failed',
+        `UPDATE cs2_highlights SET status = CASE WHEN clip_path IS NOT NULL THEN 'done' ELSE 'failed' END,
                 error = 'This demo does not play in the current CS2 build (it never reached its first tick on two recorders)'
           WHERE match_slug = ? AND map_number = ? AND status IN ('pending', 'recording')`,
         [m.match_slug, m.map_number]

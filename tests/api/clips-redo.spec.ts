@@ -452,6 +452,66 @@ test(
   }
 );
 
+test('a redo that fails every attempt keeps the old video', TAGS, async ({ request }) => {
+  expect(await signInViaRequest(request)).toBe(true);
+  const { slug, star } = await matchWithMoments(request);
+  const name = `spec-keep-${Date.now()}`;
+  type Job = {
+    kind: string;
+    matchSlug: string;
+    players: Array<{ playerId: string; moments: Array<{ id: number }> }>;
+  };
+  const claim = async (recorder: string, has: (job: Job) => boolean) => {
+    for (let i = 0; i < 30; i++) {
+      const res = await request.post('/api/game/cs2/recorder/claim', {
+        data: { recorder, version: 7 },
+      });
+      if (res.status() !== 200) return null;
+      const job = (await res.json()).job as Job;
+      if (job?.kind === 'benchmark') {
+        await request.post('/api/game/cs2/recorder/benchmark', { data: { recorder, tries: [] } });
+        continue;
+      }
+      if (job && has(job)) return job;
+    }
+    return null;
+  };
+  const first = await claim(name, (j) => j.matchSlug === slug);
+  expect(first).not.toBeNull();
+  const id = first!.players.find((p) => p.playerId === star)!.moments[0].id;
+  const up = await request.put(`/api/game/cs2/recorder/jobs/${id}/clip`, {
+    headers: { 'Content-Type': 'video/mp4' },
+    data: Buffer.from('not really a video'),
+  });
+  expect(up.status()).toBe(200);
+
+  expect((await request.post('/api/game/cs2/clips/redo', { data: { clipIds: [id] } })).ok()).toBe(
+    true
+  );
+  // Three failed attempts: a recorder holding a job gets no other, a failed
+  // clip waits for the same recorder once, then avoids it.
+  for (const recorder of [`${name}-b`, `${name}-b`, `${name}-c`]) {
+    const job = await claim(recorder, (j) =>
+      j.players.some((p) => p.moments.some((m) => m.id === id))
+    );
+    expect(job).not.toBeNull();
+    const ids = job!.players.flatMap((p) => p.moments.map((m) => m.id));
+    const fail = await request.post('/api/game/cs2/recorder/fail', {
+      data: { ids, error: 'no frame near tick 1' },
+    });
+    expect(fail.ok()).toBe(true);
+  }
+  const listed = (await (await request.get('/api/game/cs2/clips')).json()) as {
+    matches: Array<{
+      slug: string;
+      clips: Array<{ id: number; status: string; video: string | null }>;
+    }>;
+  };
+  const clip = listed.matches.find((m) => m.slug === slug)!.clips.find((c) => c.id === id)!;
+  expect(clip.status).toBe('done');
+  expect(clip.video).toBeTruthy();
+});
+
 test(
   'a failed clip holds its reels, and the Clips list says so until it is redone',
   TAGS,
