@@ -518,6 +518,9 @@ export interface HostAdminView extends registry.FleetHostView {
 
 /** How long after a create, an install or an enroll a machine's unenrolled servers are left alone. */
 const ENROLL_QUIET_S = 15 * 60;
+/** At most this many server.enroll per machine in the window; an admin links the server by hand after. */
+const ENROLL_GIVE_UP_AFTER = 4;
+const ENROLL_GIVE_UP_WINDOW_S = 6 * 60 * 60;
 
 /**
  * A machine's servers with Ready Up that are not enrolled here (a machine
@@ -545,6 +548,12 @@ async function enrollStrayServers(hostId: string): Promise<void> {
     [hostId, Math.floor(Date.now() / 1000) - ENROLL_QUIET_S]
   );
   if (Number(recent?.n ?? 0) > 0) return;
+  // Servers that keep being refused (another machine's record) are asked at most this often by the platform; an admin's own enrolls do not count.
+  const tried = await db.queryOneAsync<{ n: number | string }>(
+    `SELECT COUNT(*) AS n FROM cs2_fleet_host_commands WHERE host_id = ? AND type = 'server.enroll' AND issued_by = ? AND created_at > ?`,
+    [hostId, PLATFORM_ACTOR, Math.floor(Date.now() / 1000) - ENROLL_GIVE_UP_WINDOW_S]
+  );
+  if (Number(tried?.n ?? 0) >= ENROLL_GIVE_UP_AFTER) return;
   await sendHostCommand(hostId, 'server.enroll', { servers: stray }, { issuedBy: PLATFORM_ACTOR });
   log.info(`[FLEET-HOST] ${hostId}: ${stray.join(', ')} not enrolled here; sent server.enroll`);
 }

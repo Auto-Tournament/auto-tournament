@@ -200,16 +200,13 @@ test.describe.serial('Fleet enrollment', () => {
     expect(fresh.body.server_id).not.toBe(enrolled.body.server_id);
   });
 
-  test('a code for an install that already has a record reuses it', async ({ request }) => {
+  test('a code for an install that is enrolled already is refused', async ({ request }) => {
     const key = await createFleetKey(request, { name: 'reuse' });
     const installId = newInstallId();
-    const byKey = await enroll(request, { key: key.value }, installId);
-    const { serverId: placeholder, code } = await createPendingServer(request, 'placeholder');
+    await enroll(request, { key: key.value }, installId);
+    const { code } = await createPendingServer(request, 'placeholder');
     const byCode = await enroll(request, { code }, installId);
-    expect(byCode.status).toBe(201);
-    expect(byCode.body.server_id).toBe(byKey.body.server_id);
-    expect(byCode.body.reenrolled).toBe(true);
-    const list = await (await request.get('/api/fleet/servers')).json();
-    expect(list.servers.some((s: { id: string }) => s.id === placeholder)).toBe(false);
+    expect(byCode.status).toBe(409);
+    expect(byCode.body.code).toBe('install_conflict');
   });
 });

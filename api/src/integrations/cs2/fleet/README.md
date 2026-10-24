@@ -407,7 +407,9 @@ Up, logs); Ready Up's own link stays for the match.
 - **Enroll**: Servers → Machines → Add machine gives one command,
   `csm link <url> <code>`. csm posts `{kind: "host", code | key, machine_id,
 hostname, os, csm_version}` to `/api/fleet/enroll` and gets `rhs_…`. The
-  same `machine_id` gets its record back. A fleet key (`rfk_`) enrolls a
+  same `machine_id` (and csm user) gets its record back from the key that
+  enrolled it; another key, or a code for another placeholder, gets 409
+  `host_conflict` until an admin removes the machine. A fleet key (`rfk_`) enrolls a
   machine too, except the keys minted for a `server.create`.
 - **Commands** (`POST /api/fleet/hosts/:id/commands {type, payload, force?}`)
   are recorded in `cs2_fleet_host_commands` (the audit row, `forced_by` /

@@ -1667,4 +1667,18 @@ export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
       );
     `,
   },
+  {
+    // The csm machine (and csm user) a host key was minted for, kept when the machine is
+    // removed (host_id is then nulled): a removed machine's keys match a new link only on
+    // machine id and csm user.
+    id: '0xx-fleet-key-machine-id',
+    up: `
+      ALTER TABLE cs2_fleet_enrollment_keys ADD COLUMN IF NOT EXISTS host_machine_id TEXT;
+      ALTER TABLE cs2_fleet_enrollment_keys ADD COLUMN IF NOT EXISTS host_csm_user TEXT;
+      UPDATE cs2_fleet_enrollment_keys k
+         SET host_machine_id = (SELECT h.machine_id FROM cs2_fleet_hosts h WHERE h.id = k.host_id),
+             host_csm_user = (SELECT h.csm_user FROM cs2_fleet_hosts h WHERE h.id = k.host_id)
+       WHERE k.host_machine_id IS NULL AND k.host_id IS NOT NULL;
+    `,
+  },
 ];

@@ -110,6 +110,11 @@ export interface FleetKeyRow {
   revoked_at: number | null;
   auto_link: number;
   skins: number;
+  /** A key minted for one csm machine's command (server.create, server.enroll). */
+  host_id: string | null;
+  /** That machine's id and csm user, kept after the machine is removed (host_id is then null). */
+  host_machine_id: string | null;
+  host_csm_user: string | null;
 }
 
 async function tx<T>(fn: (client: PoolClient) => Promise<T>): Promise<T> {
@@ -422,6 +427,14 @@ const invalid = (code: string, error: string, status: 401 | 403 | 409 = 401): En
   error,
 });
 
+/** An install enrolled as another server: only the key that enrolled it, or an admin's delete, frees it. */
+const installConflict = (): EnrollOutcome =>
+  invalid(
+    'install_conflict',
+    'This install is enrolled as another server. Enroll it with the key that enrolled it, or delete that server first.',
+    409
+  );
+
 async function issueTokenFor(c: PoolClient, serverId: string): Promise<string> {
   const now = nowS();
   // A (re-)enrollment replaces every token the server had.
@@ -465,7 +478,10 @@ async function findByInstall(
 /**
  * `POST /api/fleet/enroll`, after schema validation. Returns the server
  * record and its new token, or why not. The code or key is checked first; a
- * known `install_id` gets its existing record back (and a new token).
+ * known `install_id` gets its existing record back (and a new token) from the
+ * key that enrolled it, or from a later key minted for the same csm machine
+ * (its server.enroll after a re-link, a create), and 409 `install_conflict`
+ * from anything else.
  */
 export async function enrollServer(req: EnrollRequest): Promise<EnrollOutcome> {
   if (req.code !== undefined) return enrollWithCode(req);
@@ -491,6 +507,9 @@ async function enrollWithCode(req: EnrollRequest): Promise<EnrollOutcome> {
     if (!code || code.used_at !== null || Number(code.expires_at) <= now) {
       return invalid('invalid_code', 'Invalid or expired enrollment code');
     }
+    const owner = await findByInstall(c, req.install_id);
+    if (owner && owner.id !== code.server_id && owner.status === 'enrolled')
+      return installConflict();
     await c.query(`UPDATE cs2_fleet_enrollment_codes SET used_at = $1 WHERE id = $2`, [
       now,
       code.id,
@@ -524,6 +543,35 @@ async function enrollWithCode(req: EnrollRequest): Promise<EnrollOutcome> {
     ).rows[0];
     return { ok: true as const, server, token, reenrolled };
   });
+}
+
+/**
+ * Both keys were minted for the same csm machine's commands: the same machine record, or
+ * (the earlier machine removed, its keys' host_id null) the same machine id and csm user.
+ * Another csm user on the same machine is another machine record.
+ */
+async function sameMachineKey(
+  c: PoolClient,
+  enrolledWith: string | null,
+  key: FleetKeyRow
+): Promise<boolean> {
+  if (!enrolledWith || !key.host_id) return false;
+  const r = await c.query<{
+    host_id: string | null;
+    host_machine_id: string | null;
+    host_csm_user: string | null;
+  }>(
+    `SELECT host_id, host_machine_id, host_csm_user FROM cs2_fleet_enrollment_keys WHERE id = $1 AND tenant_id = $2`,
+    [enrolledWith, FLEET_TENANT]
+  );
+  const earlier = r.rows[0];
+  if (!earlier) return false;
+  if (earlier.host_id !== null) return earlier.host_id === key.host_id;
+  return (
+    !!earlier.host_machine_id &&
+    earlier.host_machine_id === key.host_machine_id &&
+    (earlier.host_csm_user ?? '') === (key.host_csm_user ?? '')
+  );
 }
 
 async function enrollWithKey(req: EnrollRequest): Promise<EnrollOutcome> {
@@ -571,6 +619,12 @@ async function enrollWithKey(req: EnrollRequest): Promise<EnrollOutcome> {
           403
         );
       }
+      if (
+        existing.status === 'enrolled' &&
+        existing.enrollment_key_id !== key.id &&
+        !(await sameMachineKey(c, existing.enrollment_key_id, key))
+      )
+        return installConflict();
       serverId = existing.id;
       await c.query(
         `UPDATE cs2_fleet_servers SET status = 'enrolled', host = $2, versions = COALESCE($3, versions),
