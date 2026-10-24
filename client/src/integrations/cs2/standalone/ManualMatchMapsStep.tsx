@@ -77,14 +77,12 @@ export const ManualMatchMapsStep: React.FC<ManualMatchMapsStepProps> = ({
       {(hasVetoMapCountError || hasSeriesMapCountError) && (
         <Typography variant="body2" color="error" sx={{ mt: 1 }}>
           {useVeto
-            ? `Map veto requires exactly 7 maps. You have selected ${selectedMapsCount}.`
+            ? `Map veto needs between ${requiredMaps} and 7 maps. You have selected ${selectedMapsCount}.`
             : requiredMaps === 1
-            ? 'Best of 1 requires exactly 1 map.'
-            : `Best of ${requiredMaps} requires exactly ${requiredMaps} maps. You have selected ${selectedMapsCount}.`}
+              ? 'Best of 1 requires exactly 1 map.'
+              : `Best of ${requiredMaps} requires exactly ${requiredMaps} maps. You have selected ${selectedMapsCount}.`}
         </Typography>
       )}
     </>
   );
 };
-
-

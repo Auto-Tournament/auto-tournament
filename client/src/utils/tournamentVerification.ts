@@ -8,7 +8,6 @@
 export interface MapValidationRule {
   minMaps?: number;
   maxMaps?: number;
-  exactMaps?: number;
   requiresVeto?: boolean;
   message?: string;
 }
@@ -57,16 +56,19 @@ export function getTournamentVerificationRules(
     };
   }
 
-  // Veto formats (BO1, BO3, BO5) - require exactly 7 maps
+  // Veto formats (BO1, BO3, BO5) - between the format minimum and 7 maps
+  const vetoMinMaps: Record<string, number> = { bo1: 1, bo3: 3, bo5: 5 };
   const isVetoFormat = format && ['bo1', 'bo3', 'bo5'].includes(format);
-  if (isVetoFormat) {
+  if (format && isVetoFormat) {
+    const min = vetoMinMaps[format];
     return {
       type,
       format,
       maps: {
-        exactMaps: 7,
+        minMaps: min,
+        maxMaps: 7,
         requiresVeto: true,
-        message: 'Map veto requires exactly 7 maps.',
+        message: `Map veto needs between ${min} and 7 maps.`,
       },
     };
   }
@@ -94,15 +96,6 @@ export function validateMapCount(
   const rules = getTournamentVerificationRules(type, format);
   const mapRule = rules.maps;
   const count = maps.length;
-
-  if (mapRule.exactMaps !== undefined) {
-    if (count !== mapRule.exactMaps) {
-      return {
-        valid: false,
-        message: `${mapRule.message || `Exactly ${mapRule.exactMaps} maps required.`} You have selected ${count}.`,
-      };
-    }
-  }
 
   if (mapRule.minMaps !== undefined && count < mapRule.minMaps) {
     return {

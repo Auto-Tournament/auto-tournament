@@ -5,15 +5,17 @@
  * `utils/tournamentVerification.ts` (DESIGN-module-client-api.md §2.4: the
  * rules are CS2's, and a module built on its own cannot reach core's file).
  * Same rules, same messages: shuffle takes at least one map, a bo1/bo3/bo5
- * veto exactly 7, anything else at least one.
+ * veto from its format minimum up to 7, anything else at least one.
  */
 
 interface MapRule {
   minMaps?: number;
-  exactMaps?: number;
+  maxMaps?: number;
   requiresVeto: boolean;
   message: string;
 }
+
+const VETO_MIN_MAPS: Record<string, number> = { bo1: 1, bo3: 3, bo5: 5 };
 
 function mapRule(type: string, format?: string, veto = true): MapRule {
   if (type === 'shuffle') {
@@ -32,7 +34,13 @@ function mapRule(type: string, format?: string, veto = true): MapRule {
     };
   }
   if (format && ['bo1', 'bo3', 'bo5'].includes(format)) {
-    return { exactMaps: 7, requiresVeto: true, message: 'Map veto requires exactly 7 maps.' };
+    const min = VETO_MIN_MAPS[format];
+    return {
+      minMaps: min,
+      maxMaps: 7,
+      requiresVeto: true,
+      message: `Map veto needs between ${min} and 7 maps.`,
+    };
   }
   return { minMaps: 1, requiresVeto: false, message: 'Select at least one map.' };
 }
@@ -47,10 +55,10 @@ export function validateMapCount(
   const rule = mapRule(type, format, veto);
   const count = maps.length;
 
-  if (rule.exactMaps !== undefined && count !== rule.exactMaps) {
+  if (rule.minMaps !== undefined && count < rule.minMaps) {
     return { valid: false, message: `${rule.message} You have selected ${count}.` };
   }
-  if (rule.minMaps !== undefined && count < rule.minMaps) {
+  if (rule.maxMaps !== undefined && count > rule.maxMaps) {
     return { valid: false, message: `${rule.message} You have selected ${count}.` };
   }
   return { valid: true };

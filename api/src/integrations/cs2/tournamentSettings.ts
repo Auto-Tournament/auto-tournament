@@ -252,10 +252,32 @@ function mapModeErrors(mode: Untrusted, maps: Untrusted): string[] {
 }
 
 function settingsErrors(settings: Untrusted, mapCount: number | undefined): string[] {
-  // `mapCount` is undefined when a create sends a `maps` without a length,
-  // exactly as it was passed before.
-  const result = validateCustomVetoOrderSetting(settings, mapCount as number);
+  // `mapCount` is undefined when the pool size is not known (a `maps` without
+  // a length): the order is then not checked against a pool.
+  if (typeof mapCount !== 'number') return [];
+  const result = validateCustomVetoOrderSetting(settings, mapCount);
   return result.valid ? [] : [result.error];
+}
+
+/** The pool sizes a veto of each match format can run on. */
+const VETO_POOL_LIMITS = { bo1: [1, 7], bo3: [3, 7], bo5: [5, 7] } as const;
+
+/**
+ * The veto format's pool-size error, or none. Only bo1/bo3/bo5 brackets
+ * run a veto; `format` or `mapCount` unknown passes, and so does a tournament
+ * with the veto turned off (its matches draw from the pool).
+ */
+function poolLimitErrors(
+  format: Untrusted,
+  type: Untrusted,
+  mapCount: number | undefined,
+  vetoOff: boolean
+): string[] {
+  if (typeof mapCount !== 'number' || type === 'shuffle' || vetoOff) return [];
+  if (format !== 'bo1' && format !== 'bo3' && format !== 'bo5') return [];
+  const [min, max] = VETO_POOL_LIMITS[format];
+  if (mapCount >= min && mapCount <= max) return [];
+  return [`A ${format} map veto needs between ${min} and ${max} maps, got ${mapCount}`];
 }
 
 function done(parts: {
@@ -288,7 +310,15 @@ function validateCreate(input: TournamentSettingsInput): TournamentSettingsValid
   }
   return done({
     requiredFields: CREATE_REQUIRED,
-    fieldErrors: mapModeErrors(requestedMapMode(input.body), maps),
+    fieldErrors: [
+      ...mapModeErrors(requestedMapMode(input.body), maps),
+      ...poolLimitErrors(
+        input.body?.format,
+        input.body?.type,
+        mapCount,
+        objectIn(input.body?.settings ?? input.settings, CS2_SETTINGS_KEY).veto === false
+      ),
+    ],
     errors: settingsErrors(input.settings, mapCount),
   });
 }
@@ -334,9 +364,11 @@ function validateShuffleCreate(input: TournamentSettingsInput): TournamentSettin
 }
 
 /**
- * PUT /api/tournament: only the veto order, against the pool the tournament
- * will run on: the request's `maps` when it sends them, else the stored pool,
- * else 7.
+ * PUT /api/tournament: the pool size against the format, and the veto order,
+ * on the pool the tournament will run on: the request's `maps` when it sends
+ * them, else the stored pool. The pool limits are checked when the request
+ * sends `maps` or `format`; the format is the request's, else the stored one.
+ * With no known pool the veto order is not checked.
  */
 function validateUpdate(input: TournamentSettingsInput): TournamentSettingsValidation {
   const stored = storedCs2Settings(input.stored?.settings);
@@ -346,9 +378,21 @@ function validateUpdate(input: TournamentSettingsInput): TournamentSettingsValid
     mapCount = lengthOf(stored?.maps);
   }
   const mode = requestedMapMode(input.body);
+  const requestedVeto = objectIn(input.body?.settings, CS2_SETTINGS_KEY).veto;
+  const changesPool = requestedMaps(input.body) !== undefined || input.body?.format !== undefined;
   return done({
-    fieldErrors: mapModeErrors(mode === undefined ? stored?.mapMode : mode, maps),
-    errors: settingsErrors(input.settings, mapCount ?? DEFAULT_MAP_COUNT),
+    fieldErrors: [
+      ...mapModeErrors(mode === undefined ? stored?.mapMode : mode, maps),
+      ...(changesPool
+        ? poolLimitErrors(
+            input.body?.format ?? input.stored?.format,
+            input.body?.type ?? input.stored?.type,
+            mapCount,
+            (requestedVeto ?? stored?.veto) === false
+          )
+        : []),
+    ],
+    errors: settingsErrors(input.settings, mapCount),
   });
 }
 

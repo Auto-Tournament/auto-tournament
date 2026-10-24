@@ -1228,7 +1228,7 @@ router.put('/', async (req: Request, res: Response) => {
     const tournamentId = resolveTournamentId(req);
     const input: UpdateTournamentInput = req.body;
 
-    if (input.settings) {
+    if (input.settings || input.maps !== undefined || input.format !== undefined) {
       // The stored row lets the integration fall back to the stored values
       // the update leaves alone (CS2: the map pool the veto order runs on).
       const existing = await db.queryOneAsync<DbTournamentRow>(
@@ -1248,7 +1248,9 @@ router.put('/', async (req: Request, res: Response) => {
           error: gameError,
         });
       }
+    }
 
+    if (input.settings) {
       const eventPageCheck = validateEventPageSettings(input.settings);
       if (!eventPageCheck.valid) {
         return res.status(400).json({

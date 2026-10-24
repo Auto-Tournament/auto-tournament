@@ -323,7 +323,7 @@ export interface TournamentSettingsInput {
    * Update: the stored tournament row (its `settings` as the stored JSON
    * text), for fields the request leaves alone.
    */
-  stored?: { settings?: string | null } | null;
+  stored?: { settings?: string | null; format?: string | null; type?: string | null } | null;
 }
 
 /**
