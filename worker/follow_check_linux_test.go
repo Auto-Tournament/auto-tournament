@@ -46,3 +46,32 @@ func TestCheckFollowComparesRealPositions(t *testing.T) {
 		t.Fatalf("far from the player = %v, want errNotFollowing", err)
 	}
 }
+
+// Spectating plays the demo on: the camera is compared with the player where
+// the demo stands, not where they were at the clip's start.
+func TestCheckFollowUsesTheTickTheDemoIsOn(t *testing.T) {
+	conn, peer := net.Pipe()
+	defer conn.Close()
+	defer peer.Close()
+	con := &console{conn: conn, lines: make(chan string, 16)}
+	go func() {
+		sc := bufio.NewScanner(peer)
+		for sc.Scan() {
+			switch sc.Text() {
+			case "demo_pause":
+				con.lines <- "Demo playback paused on tick 1148"
+			case "getpos":
+				con.lines <- "setpos -1012.0 -733.0 99.0;setang 0 0 0"
+			}
+		}
+	}()
+	g := &game{con: con, startTick: 1000, follow: func(tick int) ([3]float64, bool) {
+		if tick == 148 {
+			return [3]float64{-1010, -730, 95}, true // where the player ran to
+		}
+		return [3]float64{-1193, -972, 38}, true // where they were at `from`
+	}}
+	if err := g.checkFollow("dem0n", 100); err != nil {
+		t.Fatalf("camera on the player at the demo's tick: %v", err)
+	}
+}

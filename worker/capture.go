@@ -409,6 +409,21 @@ func (g *game) checkFollow(name string, from int) error {
 		return nil
 	}
 	for attempt := 0; attempt < 3; attempt++ {
+		// Spectating plays the demo on, and the player runs on with it: compare
+		// with where they are on the tick the demo stands on, not at `from`
+		// (2026-10-24: the camera was on the player, 306 units from where they
+		// had been, and every attempt failed).
+		g.con.drain()
+		if err := g.con.send("demo_pause"); err != nil {
+			return err
+		}
+		if v, _, err := g.con.expect(rePaused, time.Second); err == nil {
+			if t, err := strconv.Atoi(v); err == nil {
+				if at, ok := g.follow(t - g.startTick); ok {
+					want = at
+				}
+			}
+		}
 		g.con.drain()
 		if err := g.con.send("getpos"); err != nil {
 			return err
