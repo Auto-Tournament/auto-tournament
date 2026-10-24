@@ -1,6 +1,8 @@
+import { useEffect, useState } from 'react';
 import { Box, Button, Stack, Typography } from '@mui/material';
 import { ArrowClockwiseIcon, PlayIcon, StopIcon, TrashIcon } from '@phosphor-icons/react';
 import {
+  api,
   mono,
   openMatchDetails,
   tokens,
@@ -11,6 +13,7 @@ import type { FleetHost } from '../../cs2.types';
 import { getMapDisplayName } from '../../maps/mapData';
 import { serverState } from '../machineState';
 import { Facts, SideSheet } from './SideSheet';
+import { ServerSettings } from './ServerSettings';
 import { StateMark, useStateLabel } from './serverStateMark';
 import type { Fleet } from './useFleet';
 import type { ServerMatch } from './useServerMatches';
@@ -40,8 +43,25 @@ export function ServerSheet({
 }) {
   const { t } = useModuleTranslation('cs2');
   const label = useStateLabel();
+  const [linked, setLinked] = useState<{ fleetId: string; id: string | null } | null>(null);
   const s = host && serverName ? (host.servers.find((x) => x.name === serverName) ?? null) : null;
   const open = !!host && !!s;
+  // The platform server it plays matches as, when it is in the match pool.
+  const fleetId = s?.fleetServer?.id ?? null;
+  useEffect(() => {
+    if (!open || !fleetId) return;
+    let live = true;
+    api
+      .get<{ server?: { linkedServerId?: string | null } }>(
+        `/api/fleet/servers/${encodeURIComponent(fleetId)}`
+      )
+      .then((res) => live && setLinked({ fleetId, id: res.server?.linkedServerId ?? null }))
+      .catch(() => undefined);
+    return () => {
+      live = false;
+    };
+  }, [open, fleetId]);
+  const linkedId = linked?.fleetId === fleetId ? linked.id : null;
   const deleting = host && s ? fleet.isDeleting(host, s.name) : false;
   const state = host && s ? serverState(host, s, deleting) : 'offline';
   const canAct = !!host?.online && !deleting;
@@ -174,6 +194,7 @@ export function ServerSheet({
                 </Button>
               </>
             )}
+            {linkedId && <ServerSettings linkedId={linkedId} />}
             {last && (
               <Button
                 size="small"

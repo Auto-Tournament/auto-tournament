@@ -2,6 +2,7 @@
 import { Button, Stack } from '@mui/material';
 import { openMatchDetails, useModuleTranslation } from '../../../../module-sdk';
 import type { FleetServer } from '../../cs2.types';
+import { ServerSettings } from '../fleet/ServerSettings';
 import { Facts, SideSheet } from '../fleet/SideSheet';
 import { StateChip, stateTone, useMatchLine, useStateLabel } from '../fleet/serverStateMark';
 import type { ServerMatch } from '../fleet/useServerMatches';
@@ -74,6 +75,7 @@ export function ReadyUpSheet({
                 {t('serversBoard.openMatch', { defaultValue: 'Open the match' })}
               </Button>
             )}
+            {server.linkedServerId && <ServerSettings linkedId={server.linkedServerId} />}
           </Stack>
         </>
       )}

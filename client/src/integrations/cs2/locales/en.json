@@ -2072,6 +2072,7 @@
     "newServer": "New server {{n}}",
     "notAnswering": "Not answering",
     "openMatch": "Open the match",
+    "settings": "Settings",
     "other": {
       "about": "Added by address, or enrolled on their own. They keep working; new servers are made on a machine.",
       "disabled": "Disabled",
