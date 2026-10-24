@@ -96,8 +96,14 @@ const isOutdated = (status: string, madeWith: string | null, current: string) =>
 
 export async function listClips(
   onlyOutdated = false
-): Promise<{ current: string; outdated: number; matches: AdminMatch[] }> {
+): Promise<{ current: string; outdated: number; queued: number; matches: AdminMatch[] }> {
   const current = qualityLabel(await readHighlightQuality());
+  // Clips queued again that still have their video (stopRedo puts them back).
+  const queuedRow = await db.queryOneAsync<{ n: number | string }>(
+    `SELECT COUNT(*) AS n FROM cs2_highlights WHERE status = 'pending' AND clip_path IS NOT NULL AND done_at IS NOT NULL`,
+    []
+  );
+  const queued = Number(queuedRow?.n ?? 0);
   const matches = await db.queryAsync<{
     slug: string;
     team1: string | null;
@@ -111,7 +117,7 @@ export async function listClips(
       WHERE m.slug IN (SELECT match_slug FROM cs2_highlights GROUP BY match_slug ORDER BY MAX(id) DESC LIMIT ${MATCHES})`
   );
   const slugs = matches.map((m) => m.slug);
-  if (slugs.length === 0) return { current, outdated: 0, matches: [] };
+  if (slugs.length === 0) return { current, outdated: 0, queued, matches: [] };
   const marks = slugs.map(() => '?').join(', ');
   const clips = await db.queryAsync<{
     id: number;
@@ -216,7 +222,7 @@ export async function listClips(
       reels: onlyOutdated ? ownReels.filter((r) => r.outdated) : ownReels,
     });
   }
-  return { current, outdated, matches: out };
+  return { current, outdated, queued, matches: out };
 }
 
 /** What to make again: clips by id, reels by match and map, or everything outdated. */
@@ -312,6 +318,44 @@ export async function redo(req: RedoRequest): Promise<{ clips: number; reels: nu
     reelCount += result.changes ?? 0;
   }
   return { clips, reels: reelCount };
+}
+
+/**
+ * Stop redoing: clips queued again that still have their video go back to it
+ * ('done', as made before), and the reels that waited only for them too. The
+ * clips of `keepMatchSlugs` stay queued, and so does a clip never recorded.
+ */
+export async function stopRedo(
+  keepMatchSlugs: string[] = []
+): Promise<{ clips: number; reels: number }> {
+  const keep = [
+    ...new Set(keepMatchSlugs.filter((s) => typeof s === 'string' && s && s.length <= 200)),
+  ].slice(0, 100);
+  const notKept = keep.length ? `AND match_slug NOT IN (${keep.map(() => '?').join(', ')})` : '';
+  const touched = await db.queryAsync<{ match_slug: string; map_number: number }>(
+    `UPDATE cs2_highlights SET status = 'done', claimed_at = NULL, recorder = NULL, claim_started_at = NULL, retry_until = NULL
+      WHERE status = 'pending' AND clip_path IS NOT NULL AND done_at IS NOT NULL ${notKept}
+      RETURNING match_slug, map_number`,
+    keep
+  );
+  const seen = new Set<string>();
+  let reels = 0;
+  for (const t of touched) {
+    for (const mapNumber of [Number(t.map_number), SERIES_REEL]) {
+      const key = `${t.match_slug}#${mapNumber}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      const result = await db.runAsync(
+        `UPDATE cs2_match_reels SET status = 'done'
+          WHERE match_slug = ? AND map_number = ? AND status IN ('waiting', 'pending') AND clip_path IS NOT NULL
+            AND NOT EXISTS (SELECT 1 FROM cs2_highlights h WHERE h.match_slug = ? AND (h.map_number = ? OR ? = ${SERIES_REEL})
+              AND h.kind <> 'funny' AND h.status IN ('pending', 'recording'))`,
+        [t.match_slug, mapNumber, t.match_slug, mapNumber, mapNumber]
+      );
+      reels += result.changes ?? 0;
+    }
+  }
+  return { clips: touched.length, reels };
 }
 
 /**

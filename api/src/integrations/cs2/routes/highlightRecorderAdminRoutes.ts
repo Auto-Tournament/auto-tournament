@@ -14,6 +14,7 @@ import { renewClaims } from '../demos/highlights';
 import {
   listClips,
   redo,
+  stopRedo,
   reviewClip,
   type RedoRequest,
   type ReviewVerdict,
@@ -272,6 +273,29 @@ export function registerRecorderAdminRoutes(router: Router): void {
     } catch (error) {
       log.error('[HIGHLIGHTS] redo failed', { error });
       return res.status(500).json({ success: false, error: 'Could not queue the clips' });
+    }
+  });
+
+  /**
+   * @openapi
+   * /api/game/cs2/clips/redo/stop:
+   *   post:
+   *     tags: [Highlights]
+   *     summary: Stop redoing clips (admin)
+   *     description: "Clips queued again that still have their video go back to it, as made before, and the reels that waited only for them too. `keepMatchSlugs`: matches whose clips stay queued. A clip never recorded stays queued."
+   *     responses:
+   *       200:
+   *         description: How many clips and reels went back
+   */
+  router.post('/clips/redo/stop', requireAuth, async (req: Request, res: Response) => {
+    try {
+      const keep = Array.isArray(req.body?.keepMatchSlugs)
+        ? (req.body.keepMatchSlugs as string[])
+        : [];
+      return res.json({ success: true, ...(await stopRedo(keep)) });
+    } catch (error) {
+      log.error('[HIGHLIGHTS] stop redo failed', { error });
+      return res.status(500).json({ success: false, error: 'Could not stop redoing the clips' });
     }
   });
 

@@ -2219,7 +2219,9 @@
       "heldByFailed_other": "{{count}} clips fallaron. Los reels que los usarían esperan a que los rehagas o los descartes.",
       "reelElapsed": "ready {{time}} after its first clip started",
       "reelAssembly": "joined in {{time}}",
-      "reelRender": "its clips: {{time}} of recording added up"
+      "reelRender": "its clips: {{time}} of recording added up",
+      "stopRedo": "Keep the old videos ({{count}})",
+      "stopped": "Kept the old video for {{clips}} clips and {{reels}} reels"
     },
     "add": {
       "button": "Add a recorder",
