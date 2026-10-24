@@ -31,6 +31,7 @@ import type {
   Versions,
   SelftestSummary,
 } from './protocol/v1';
+import { parseJson } from './util';
 
 export const FLEET_TENANT = 'default';
 /** One-time code lifetime (FLEET.md §4.1). */
@@ -124,15 +125,6 @@ async function tx<T>(fn: (client: PoolClient) => Promise<T>): Promise<T> {
       throw error;
     }
   });
-}
-
-function parseJson<T>(raw: string | null): T | null {
-  if (!raw) return null;
-  try {
-    return JSON.parse(raw) as T;
-  } catch {
-    return null;
-  }
 }
 
 function newServerId(): string {

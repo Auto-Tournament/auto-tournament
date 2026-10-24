@@ -78,6 +78,7 @@ import {
 import type { HostHealthPayload } from './protocol/host/v1';
 import type { HelloPayload, MapStats, MatchPhase, MatchState, Score } from './protocol/v1';
 import { fleetChanged } from './adminTopics';
+import { parseJson } from './util';
 
 const CHECK_MS = Number(process.env.FLEET_FAILOVER_CHECK_MS) || 10_000;
 /** How long a server that came back without its match has to report it (restored locally). */
@@ -155,15 +156,6 @@ interface ProposalRow {
 const nowS = () => Math.floor(Date.now() / 1000);
 const num = (v: number | string | null | undefined): number | null =>
   v === null || v === undefined ? null : Number(v);
-
-function parseJson<T>(text: string | null): T | null {
-  if (!text) return null;
-  try {
-    return JSON.parse(text) as T;
-  } catch {
-    return null;
-  }
-}
 
 function fromRow(row: ProposalRow): FailoverProposal {
   return {
