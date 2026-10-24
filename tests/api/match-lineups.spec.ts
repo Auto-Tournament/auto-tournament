@@ -126,6 +126,13 @@ test.describe('Match lineups', () => {
       });
       expect(fakeAdmin.status()).toBe(403);
 
+      // The owner from another site: refused.
+      const crossSite = await owner.put(`/api/match-lineups/${slug}/${a.side}`, {
+        data: { players: [mates[2], mates[3]] },
+        headers: { Origin: 'https://elsewhere.example' },
+      });
+      expect(crossSite.status()).toBe(403);
+
       // The owner: wrong count and a stranger are rejected; two of the team are saved.
       const tooMany = await owner.put(`/api/match-lineups/${slug}/${a.side}`, {
         data: { players: [mates[1], mates[2], mates[3]] },

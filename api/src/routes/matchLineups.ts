@@ -10,6 +10,7 @@ import { Router, type Request, type Response } from 'express';
 import { log } from '../utils/logger';
 import { resolveViewerAccount } from '../utils/viewerIdentity';
 import { checkAdminAccess } from '../middleware/auth';
+import { isSameSiteRequest } from '../utils/accountConnections';
 import {
   LineupError,
   getMatchLineups,
@@ -106,6 +107,10 @@ router.get('/:slug', async (req: Request, res: Response) => {
  *       409: { description: Locked (live), or the team has no lineup to pick }
  */
 router.put('/:slug/:side', async (req: Request, res: Response) => {
+  // Cookie-signed writes only from this site (the session cookie is Lax, so this is for sibling origins).
+  if (!isSameSiteRequest(req) && !req.headers.authorization) {
+    return res.status(403).json({ success: false, error: 'Request refused' });
+  }
   try {
     const side = req.params.side;
     if (side !== 'team1' && side !== 'team2') {
