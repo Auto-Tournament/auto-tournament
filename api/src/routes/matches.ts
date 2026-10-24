@@ -948,11 +948,12 @@ router.get('/', async (req: Request, res: Response) => {
  *   get:
  *     tags:
  *       - Matches
- *     summary: Every played match (tournament, standalone, matchmaking, imported), newest first, with its demos
+ *     summary: Every current and played match (tournament, standalone, matchmaking, imported), with its demos
  *     description: |
- *       Admin only. Includes the matches of deleted tournaments (their name is
- *       kept as `tournamentName`). `demos` lists the maps that have a demo; a
- *       match-level demo is map 0.
+ *       Admin only. Current matches (`status` loaded or live) come first, by
+ *       `loadedAt`, then played ones newest first. Includes the matches of
+ *       deleted tournaments (their name is kept as `tournamentName`). `demos`
+ *       lists the maps that have a demo; a match-level demo is map 0.
  *     security:
  *       - BearerAuth: []
  *     parameters:
@@ -974,6 +975,8 @@ router.get('/played', requireAuth, async (req: Request, res: Response) => {
       tournament_name: string | null;
       round: number;
       match_number: number;
+      status: 'loaded' | 'live' | 'completed';
+      loaded_at: number | null;
       completed_at: number | null;
       config: string | null;
       team1_name: string | null;
@@ -984,14 +987,16 @@ router.get('/played', requireAuth, async (req: Request, res: Response) => {
       demo_file_path: string | null;
     }>(
       `SELECT m.slug, m.game, m.source, m.tournament_id, COALESCE(t.name, m.played_in) AS tournament_name,
-              m.round, m.match_number, m.completed_at, m.config, m.winner_id, m.team1_id, m.team2_id,
+              m.round, m.match_number, m.status, m.loaded_at, m.completed_at, m.config, m.winner_id, m.team1_id, m.team2_id,
               m.demo_file_path, t1.name AS team1_name, t2.name AS team2_name
          FROM matches m
          LEFT JOIN tournament t ON t.id = m.tournament_id
          LEFT JOIN teams t1 ON t1.id = m.team1_id
          LEFT JOIN teams t2 ON t2.id = m.team2_id
-        WHERE m.status = 'completed'
-        ORDER BY m.completed_at DESC NULLS LAST, m.id DESC
+        WHERE m.status IN ('loaded', 'live', 'completed')
+        ORDER BY m.status = 'completed',
+                 CASE WHEN m.status <> 'completed' THEN m.loaded_at END DESC NULLS LAST,
+                 m.completed_at DESC NULLS LAST, m.id DESC
         LIMIT ${limit}`
     );
     const slugs = rows.map((r) => r.slug);
@@ -1027,17 +1032,20 @@ router.get('/played', requireAuth, async (req: Request, res: Response) => {
         .filter((m) => m.demo_file_path)
         .map((m) => ({ mapNumber: m.map_number, map: m.map_name }));
       if (demos.length === 0 && r.demo_file_path) demos.push({ mapNumber: 0, map: null });
-      const winner = r.winner_id
-        ? r.winner_id === r.team1_id
-          ? 'team1'
-          : r.winner_id === r.team2_id
-            ? 'team2'
-            : null
-        : team1Maps > team2Maps
-          ? 'team1'
-          : team2Maps > team1Maps
-            ? 'team2'
-            : null;
+      const winner =
+        r.status !== 'completed'
+          ? null
+          : r.winner_id
+            ? r.winner_id === r.team1_id
+              ? 'team1'
+              : r.winner_id === r.team2_id
+                ? 'team2'
+                : null
+            : team1Maps > team2Maps
+              ? 'team1'
+              : team2Maps > team1Maps
+                ? 'team2'
+                : null;
       return {
         slug: r.slug,
         game: r.game,
@@ -1053,6 +1061,8 @@ router.get('/played', requireAuth, async (req: Request, res: Response) => {
         tournamentName: r.tournament_name,
         round: r.round,
         matchNumber: r.match_number,
+        status: r.status,
+        loadedAt: r.loaded_at,
         completedAt: r.completed_at,
         team1: r.team1_name ?? configName(r.config, 'team1') ?? 'Team 1',
         team2: r.team2_name ?? configName(r.config, 'team2') ?? 'Team 2',

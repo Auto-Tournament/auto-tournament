@@ -782,7 +782,11 @@
   },
   "playedMatches": {
     "title": "Alle kamper",
-    "subtitle": "Alle kamper spilt på denne siden: turneringer (også slettede), frittstående kamper og matchmaking, med demoer.",
+    "subtitle": "Alle kamper på denne siden, pågående og spilte: turneringer (også slettede), frittstående kamper og matchmaking, med demoer.",
+    "status": {
+      "live": "Live",
+      "loaded": "Starter"
+    },
     "downloadAll_one": "Last ned demoene fra {{count}} kamp",
     "downloadAll_other": "Last ned demoene fra {{count}} kamper",
     "search": "Søk etter lag eller turneringer",

@@ -782,7 +782,11 @@
   },
   "playedMatches": {
     "title": "All matches",
-    "subtitle": "Every match played on this site: tournaments (deleted ones too), standalone matches and matchmaking, with their demos.",
+    "subtitle": "Every match on this site, current and played: tournaments (deleted ones too), standalone matches and matchmaking, with their demos.",
+    "status": {
+      "live": "Live",
+      "loaded": "In avvio"
+    },
     "downloadAll_one": "Download {{count}} match's demos",
     "downloadAll_other": "Download demos of {{count}} matches",
     "search": "Search teams or tournaments",
