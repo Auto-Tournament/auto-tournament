@@ -192,6 +192,11 @@ recovery waits for "Move match" on the match page). Table (migration
 `013-fleet-failover`): `cs2_fleet_failovers`, one row per failover, which is
 also its record; settings are the `failover` row of `cs2_fleet_lists`.
 
+- **Lost unassigns**: a server that says hello or availability busy with
+  `local_match` / `awaiting_reset` naming a platform match it no longer holds
+  (Ready Up recovered it from state.json after losing the fence) is sent
+  `match.unassign {superseded}` again, once per connection
+  (`supersedeStaleLocalCopy`).
 - **Detection** (`scanForFailovers`, every `FLEET_FAILOVER_CHECK_MS` = 10 s,
   and after hellos and `host.health`): a match with an acked, open
   assignment that is `loaded` / `live` whose server's link has been down for
