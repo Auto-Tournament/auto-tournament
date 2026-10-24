@@ -35,7 +35,7 @@ import express from 'express';
 import cors from 'cors';
 import { createServer } from 'http';
 import swaggerUi from 'swagger-ui-express';
-import { db } from './config/database';
+import { db, poolSizeFromEnv } from './config/database';
 import { seedBundledPacks } from './services/gamePackService';
 import { applyLicenseEnvironment } from './services/license/consent';
 import { PUBLIC_DIR, MAP_IMAGES_DIR, SWAGGER_UI_DIR } from './config/publicPaths';
@@ -78,6 +78,7 @@ import { adminAccessSettings } from './services/adminAccessSettings';
 import { localAdminService } from './services/localAdminService';
 import { authProviderSettingsService } from './services/authProviderSettingsService';
 import session from 'express-session';
+import { Pool } from 'pg';
 import connectPgSimple from 'connect-pg-simple';
 import { isIP } from 'net';
 import { DATABASE_NAME, DatabaseRenameRefused } from './config/databaseRename';
@@ -186,8 +187,13 @@ if (sessionCookieDomain) {
 // Persist sessions in PostgreSQL so admin logins survive API restarts.
 // Note: Session table is created by our database schema, so we don't need
 // connect-pg-simple to create it (which would require table.sql file).
+const sessionPool = new Pool({
+  connectionString: sessionDbConnectionString,
+  max: poolSizeFromEnv('SESSION_DB_POOL_MAX', 5),
+});
+sessionPool.on('error', (err) => log.error('Session store connection error', err));
 const sessionStore = new PgSession({
-  conString: sessionDbConnectionString,
+  pool: sessionPool,
   tableName: 'session',
   createTableIfMissing: false, // Table is created by our schema
 });

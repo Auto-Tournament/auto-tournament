@@ -22,6 +22,12 @@ import { setCurrentTournamentId } from '../utils/tournamentRow';
 
 const MAX_DB_VALUES_SAMPLE = 5;
 
+/** A pool size from the environment; anything but a positive integer falls back. */
+export function poolSizeFromEnv(name: string, fallback: number): number {
+  const value = Number(process.env[name]);
+  return Number.isInteger(value) && value > 0 ? value : fallback;
+}
+
 /**
  * A value pg sends as a query parameter: scalars, dates, buffers, arrays for
  * `= ANY($1)`, and objects pg writes as JSON (jsonb columns).
@@ -98,7 +104,7 @@ class DatabaseManager {
       }
       this.pool = new Pool({
         connectionString: this.connectionString,
-        max: 20,
+        max: poolSizeFromEnv('DB_POOL_MAX', 20),
         idleTimeoutMillis: 30000,
         connectionTimeoutMillis: 2000,
       });
