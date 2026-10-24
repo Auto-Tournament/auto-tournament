@@ -146,6 +146,7 @@ func (r *recorder) makeMatchReel(ctx context.Context, j *matchReelJob) error {
 		return err
 	}
 	r.uploadCrowd(ctx, reel, j.uploadRoute(len(tagged)))
+	r.uploadCuts(ctx, reel, j.uploadRoute(len(tagged)))
 	return nil
 }
 
