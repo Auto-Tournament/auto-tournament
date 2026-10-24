@@ -891,6 +891,74 @@ test.describe.serial('Fleet failover (FLEET.md §11)', () => {
     expect(again.status()).toBe(409);
   });
 
+  test('a csm health signal from before the assignment does not open a failover on the new match', async ({
+    request,
+  }) => {
+    test.setTimeout(120_000);
+    await setFailover(request, { auto: false, csm: false });
+    const a = await FakeReadyUp.enroll(request);
+    cleanup.push(() => a.close());
+    await a.hello();
+    await link(request, a.serverId);
+    cleanup.push(() => unlink(request, a.serverId));
+    const m = await linkMachine(request, 'failover-health');
+    const csm = await FakeCsm.connect(m.token, m.hostId, m.machineId);
+    cleanup.push(() => csm.close());
+    await csm.handshake();
+    csm.sendEphemeral(
+      'host.inventory',
+      inventory(m.hostId, [
+        inventoryServer('server-1', {
+          readyup: { installed: '0.5.0', install_id: a.installId, health: 'ok', phase: 'idle' },
+        }),
+      ])
+    );
+    await expect
+      .poll(async () => {
+        const host = (
+          await (
+            await request.get(`/api/fleet/hosts/${m.hostId}`, { headers: getAuthHeader() })
+          ).json()
+        ).host;
+        return host.servers?.[0]?.fleetServer?.id ?? null;
+      })
+      .toBe(a.serverId);
+
+    // The server was hung while idle; csm's `recovered` never arrived.
+    const hung = csm.sendReliable('host.health', {
+      server: 'server-1',
+      event: 'hung',
+      detail: '/health silent for 30 s',
+    });
+    await csm.acked(hung.seq as number);
+    await new Promise((r) => setTimeout(r, 2500));
+
+    const slug = `fleet-fo-health-${Date.now()}`;
+    cleanup.push(async () => {
+      await request.post(`/api/matches/${slug}/force-cancel`, { headers: getAuthHeader() });
+    });
+    await createMatch(request, slug);
+    const assign = await acceptAssign(a, slug);
+    await expect
+      .poll(async () => (await matchRow(request, slug))?.status, { timeout: 20_000 })
+      .toBe('loaded');
+    a.availability('busy', 'assigned');
+    a.snapshot(slug, assign.epoch as number);
+
+    const res = await request.post('/api/test/fleet/failover/scan', {
+      headers: getAuthHeader(),
+      data: {},
+    });
+    expect(res.ok(), await res.text()).toBe(true);
+    expect(
+      (await res.json()).proposed.filter((p: { matchSlug: string }) => p.matchSlug === slug)
+    ).toEqual([]);
+    const view = await (
+      await request.get(`/api/game/cs2/matches/${slug}/failover`, { headers: getAuthHeader() })
+    ).json();
+    expect(view.proposal).toBeNull();
+  });
+
   test('settings: validated, admin only', async ({ request, playwright, baseURL }) => {
     const bad = await request.put('/api/fleet/failover/settings', {
       headers: getAuthHeader(),

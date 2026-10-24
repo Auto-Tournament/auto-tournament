@@ -402,7 +402,31 @@ async function serverTraits(
 // ---------------------------------------------------------------------------
 
 /** csm's last `host.health` per fleet server (process gone / hung), cleared by `recovered` / `restarted`. */
-const healthByServer = new Map<string, HostHealthSignal>();
+const healthByServer = new Map<string, HostHealthSignal & { epoch: number | null }>();
+/** The epoch of the assignment a fleet server holds now (newest), null when it holds none. */
+async function openEpochOn(fleetServerId: string): Promise<number | null> {
+  const row = await db.queryOneAsync<{ epoch: number }>(
+    'SELECT epoch FROM cs2_fleet_assignments WHERE server_id = ? AND ended_at IS NULL ORDER BY updated_at DESC LIMIT 1',
+    [fleetServerId]
+  );
+  return row ? Number(row.epoch) : null;
+}
+
+/**
+ * csm's word on a server counts for the match it holds now only if it was sent while that
+ * assignment (epoch) was open on the server: an `exited` / `hung` from before is the
+ * previous match's (or the idle server's), and a lost `recovered` must not fail a new match over.
+ */
+function currentHealth(fleetServerId: string, epoch: number): HostHealthSignal | null {
+  const health = healthByServer.get(fleetServerId);
+  if (!health) return null;
+  if (health.epoch !== epoch) {
+    healthByServer.delete(fleetServerId);
+    return null;
+  }
+  return health;
+}
+
 /** When this process first saw a server of an open assignment offline. */
 const offlineSeen = new Map<string, number>();
 /** Links are all down while the platform starts: their clock starts no earlier than this. */
@@ -480,7 +504,7 @@ async function runScan(options: ScanOptions): Promise<ScanResult> {
       offlineSince,
       now,
       phase,
-      health: healthByServer.get(row.server_id) ?? null,
+      health: currentHealth(row.server_id, epoch),
       grace,
     });
 
@@ -1132,6 +1156,7 @@ async function onHostHealth(hostId: string, payload: HostHealthPayload): Promise
     healthByServer.set(fleetServerId, {
       event: payload.event,
       at: nowS(),
+      epoch: await openEpochOn(fleetServerId),
       ...(payload.detail ? { detail: payload.detail } : {}),
     });
   }
