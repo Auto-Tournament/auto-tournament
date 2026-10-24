@@ -38,6 +38,9 @@ import {
 } from './address';
 import type { HostInfo } from './protocol/v1';
 import { getFleetServer, type FleetServerRow } from './registry';
+import { fleetServerJoinRows } from './hosts/registry';
+import { claimableIndex, joinInventory } from './hosts/join';
+import type { HostInventoryServer } from './protocol/host/v1';
 
 export interface FleetLink {
   /** cs2_servers.id (matches.server_id). */
@@ -123,26 +126,42 @@ export function detectedAddress(
 /**
  * The address of the csm machine each fleet server runs on
  * (`host.inventory.address`, csm 1.21+), keyed by fleet server id and by
- * `install:<install id>`, from the machines' inventories.
+ * `install:<install id>`, from the machines' inventories: only for the
+ * servers each machine may claim (./hosts/join.ts claimableIndex).
  */
 export async function machineAddresses(): Promise<Map<string, string>> {
-  const rows = await db.queryAsync<{ inventory: string | null }>(
-    `SELECT inventory FROM cs2_fleet_hosts WHERE status = 'enrolled' AND inventory IS NOT NULL`
+  const hosts = await db.queryAsync<{ id: string; inventory: string | null }>(
+    `SELECT id, inventory FROM cs2_fleet_hosts WHERE status = 'enrolled' AND inventory IS NOT NULL`
   );
-  const out = new Map<string, string>();
-  for (const row of rows) {
+  const inventories = hosts.map((h) => {
     try {
-      const inv = JSON.parse(row.inventory as string) as {
+      const inv = JSON.parse(h.inventory as string) as {
         address?: string;
-        servers?: Array<{ readyup?: { server_id?: string; install_id?: string } }>;
+        servers?: Array<Partial<Pick<HostInventoryServer, 'readyup'>>>;
       };
-      if (typeof inv.address !== 'string' || !inv.address) continue;
-      for (const s of inv.servers ?? []) {
-        if (s.readyup?.server_id) out.set(s.readyup.server_id, inv.address);
-        if (s.readyup?.install_id) out.set(`install:${s.readyup.install_id}`, inv.address);
-      }
+      return {
+        id: h.id,
+        address: inv.address,
+        servers: (inv.servers ?? []).filter(
+          (s): s is Pick<HostInventoryServer, 'readyup'> => !!s.readyup
+        ),
+      };
     } catch {
       // An inventory that does not parse names no machine.
+      return { id: h.id, address: undefined, servers: [] };
+    }
+  });
+  const rows = await fleetServerJoinRows();
+  const out = new Map<string, string>();
+  for (const inv of inventories) {
+    if (typeof inv.address !== 'string' || !inv.address) continue;
+    const others = inventories.filter((o) => o.id !== inv.id).map((o) => o.servers);
+    const index = claimableIndex(inv.id, rows, others);
+    for (const s of joinInventory(inv.servers as HostInventoryServer[], index, () => false)) {
+      if (!s.fleetServer) continue;
+      out.set(s.fleetServer.id, inv.address);
+      const installId = index.byId.get(s.fleetServer.id)?.install_id;
+      if (installId) out.set(`install:${installId}`, inv.address);
     }
   }
   return out;

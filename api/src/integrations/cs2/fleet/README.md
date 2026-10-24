@@ -439,7 +439,10 @@ set_launch_args`, `host.update_game/update_plugins`) for a server whose
   idle servers onto what is installed. The admin page shows the last plan
   per machine (`autoUpdate`).
 - **Inventory join** (§18.3): each `server-N` joins its Ready Up server on
-  `readyup.install_id`, else `readyup.server_id`.
+  `readyup.install_id`, else `readyup.server_id`: one enrolled with a key
+  minted for that machine, or one no other machine's inventory names. The
+  join decides the machine's address for the server and what a
+  `server.remove` deletes.
 
 ## Automatic scaling: `autoscale/`
 

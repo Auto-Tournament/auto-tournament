@@ -48,6 +48,8 @@ export interface FleetServerJoinRow {
   install_id: string | null;
   availability: string | null;
   versions: string | null;
+  /** The machine whose `server.create` key enrolled it, if one did. */
+  key_host_id?: string | null;
 }
 
 export interface FleetServerIndex {
@@ -60,6 +62,39 @@ export function indexFleetServers(rows: FleetServerJoinRow[]): FleetServerIndex 
     byInstall: new Map(rows.filter((r) => r.install_id).map((r) => [r.install_id as string, r])),
     byId: new Map(rows.map((r) => [r.id, r])),
   };
+}
+
+function rowOf(
+  s: Pick<HostInventoryServer, 'readyup'>,
+  index: FleetServerIndex
+): FleetServerJoinRow | undefined {
+  return (
+    (s.readyup.install_id ? index.byInstall.get(s.readyup.install_id) : undefined) ??
+    (s.readyup.server_id ? index.byId.get(s.readyup.server_id) : undefined)
+  );
+}
+
+/**
+ * The servers `hostId`'s inventory may join: those enrolled with a key minted
+ * for it, and those enrolled otherwise that no other machine's inventory
+ * (`others`) names. Another machine's servers are never joined.
+ */
+export function claimableIndex(
+  hostId: string,
+  rows: FleetServerJoinRow[],
+  others: Array<Array<Pick<HostInventoryServer, 'readyup'>>>
+): FleetServerIndex {
+  const all = indexFleetServers(rows);
+  const elsewhere = new Set<string>();
+  for (const servers of others) {
+    for (const s of servers) {
+      const r = rowOf(s, all);
+      if (r) elsewhere.add(r.id);
+    }
+  }
+  return indexFleetServers(
+    rows.filter((r) => (r.key_host_id ? r.key_host_id === hostId : !elsewhere.has(r.id)))
+  );
 }
 
 function readyUpVersion(row: FleetServerJoinRow): string | null {
@@ -93,10 +128,7 @@ export function joinInventory(
   isOnline: (serverId: string) => boolean
 ): HostServerView[] {
   return servers.map((s) => {
-    const row =
-      (s.readyup.install_id ? index.byInstall.get(s.readyup.install_id) : undefined) ??
-      (s.readyup.server_id ? index.byId.get(s.readyup.server_id) : undefined) ??
-      null;
+    const row = rowOf(s, index) ?? null;
     const fleetServer = row ? toServerRef(row, isOnline(row.id)) : null;
     return {
       ...s,

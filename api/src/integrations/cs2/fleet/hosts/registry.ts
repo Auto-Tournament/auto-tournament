@@ -46,6 +46,7 @@ import type {
   HostCommands,
   HostCommandType,
 } from '../protocol/host/v1';
+import type { FleetServerJoinRow } from './join';
 
 /** How long a fleet key minted for a `server.create` stays usable (FLEET.md §4.1 B). */
 export const CREATE_KEY_TTL_S = 24 * 3600;
@@ -233,6 +234,16 @@ export async function listHosts(): Promise<FleetHostView[]> {
 
 export async function getHostView(id: string): Promise<FleetHostView | null> {
   return (await listHosts()).find((h) => h.id === id) ?? null;
+}
+
+/** Every Ready Up server record, for the inventory join (./join.ts), with the machine its key was minted for. */
+export async function fleetServerJoinRows(): Promise<FleetServerJoinRow[]> {
+  return db.queryAsync<FleetServerJoinRow>(
+    `SELECT s.id, s.name, s.status, s.install_id, s.availability, s.versions, k.host_id AS key_host_id
+       FROM cs2_fleet_servers s LEFT JOIN cs2_fleet_enrollment_keys k ON k.id = s.enrollment_key_id
+      WHERE s.tenant_id = ?`,
+    [FLEET_TENANT]
+  );
 }
 
 export async function getHost(id: string): Promise<FleetHostRow | undefined> {

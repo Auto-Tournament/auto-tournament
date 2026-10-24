@@ -27,6 +27,7 @@ import {
 import { HostGateway, hostEvents } from './gateway';
 import { pushHostChanged } from './adminPush';
 import {
+  claimableIndex,
   commandTargets,
   indexFleetServers,
   newServersOf,
@@ -263,10 +264,8 @@ export async function sendHostCommand<T extends HostCommandType>(
   // server.remove: remember the Ready Up fleet server that lives in it, so
   // its fleet entry goes too once csm has removed the server.
   if (type === 'server.remove') {
-    const inventory = (await registry.getHostView(hostId))?.inventory;
-    const target = inventory?.servers.find((sv) => sv.name === body.server);
-    if (target?.readyup?.server_id)
-      meta = { ...(meta ?? {}), fleetServerId: target.readyup.server_id };
+    const target = (await hostServers(hostId)).find((sv) => sv.name === body.server);
+    if (target?.fleetServer) meta = { ...(meta ?? {}), fleetServerId: target.fleetServer.id };
   }
   if (type === 'server.create') {
     const inventory = (await registry.getHostView(hostId))?.inventory;
@@ -488,21 +487,28 @@ export async function awaitHostResult(
 // Inventory ↔ Ready Up (FLEET.md §18.3)
 // ---------------------------------------------------------------------------
 
-async function fleetServerIndex(): Promise<FleetServerIndex> {
-  const rows = await db.queryAsync<FleetServerJoinRow>(
-    'SELECT id, name, status, install_id, availability, versions FROM cs2_fleet_servers WHERE tenant_id = ?',
-    [FLEET_TENANT]
-  );
-  return indexFleetServers(rows);
+/** What `hostId`'s inventory may join, given every machine's inventory (./join.ts). */
+function claimsOf(
+  hosts: registry.FleetHostView[],
+  rows: FleetServerJoinRow[],
+  hostId: string
+): FleetServerIndex {
+  const others = hosts
+    .filter((h) => h.id !== hostId && h.status === 'enrolled')
+    .map((h) => h.inventory?.servers ?? []);
+  return claimableIndex(hostId, rows, others);
 }
 
 /** One machine's servers: csm's process view next to Ready Up's. */
 export async function hostServers(hostId: string): Promise<HostServerView[]> {
-  const host = await registry.getHostView(hostId);
+  const hosts = await registry.listHosts();
+  const host = hosts.find((h) => h.id === hostId);
   if (!host?.inventory) return [];
   const bus = fleetBus();
-  return joinInventory(host.inventory.servers, await fleetServerIndex(), (id) =>
-    bus.isConnected(id)
+  return joinInventory(
+    host.inventory.servers,
+    claimsOf(hosts, await registry.fleetServerJoinRows(), hostId),
+    (id) => bus.isConnected(id)
   );
 }
 
@@ -554,7 +560,8 @@ export async function listHostViews(
 ): Promise<HostAdminView[]> {
   const hosts = await registry.listHosts();
   if (hosts.length === 0) return [];
-  const index = await fleetServerIndex();
+  const rows = await registry.fleetServerJoinRows();
+  const index = indexFleetServers(rows);
   const bus = fleetBus();
   const keyed = await db.queryAsync<{ host_id: string; id: string }>(
     `SELECT k.host_id, s.id FROM cs2_fleet_servers s JOIN cs2_fleet_enrollment_keys k ON k.id = s.enrollment_key_id
@@ -563,8 +570,10 @@ export async function listHostViews(
   );
   const out: HostAdminView[] = [];
   for (const host of hosts) {
-    const servers = joinInventory(host.inventory?.servers ?? [], index, (id) =>
-      bus.isConnected(id)
+    const servers = joinInventory(
+      host.inventory?.servers ?? [],
+      claimsOf(hosts, rows, host.id),
+      (id) => bus.isConnected(id)
     );
     const listed = new Set(servers.map((s) => s.fleetServer?.id).filter(Boolean));
     const enrolledServers = keyed
