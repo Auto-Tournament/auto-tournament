@@ -32,6 +32,7 @@ import {
   type ClipMarkers,
   type MatchRef,
   type PlayerHighlights,
+  type VideoCut,
 } from './data';
 import {
   HighlightPlayer,
@@ -111,6 +112,8 @@ interface Watchable {
   file: string;
   /** A reel's crowd track, played beside it. */
   crowd: string | null;
+  /** The lower qualities cut from the video, highest first. */
+  cuts: VideoCut[];
   /** A clip's player, shown beside its title (the clip has no caption card). */
   player?: { id: string; name: string; avatarUrl: string | null };
   /** The tournament it is from, linked in the title line; `at` when it was played (epoch s). */
@@ -259,6 +262,7 @@ export function WatchPage() {
             playerId: clip.playerId,
             file: `${clip.playerName}-${clip.kind}-${clip.id}.mp4`,
             crowd: null,
+            cuts: clip.cuts ?? [],
             player: { id: clip.playerId, name: clip.playerName, avatarUrl: clip.avatarUrl },
           })
         )
@@ -269,6 +273,7 @@ export function WatchPage() {
           reel: {
             video: string;
             crowd?: string | null;
+            cuts?: VideoCut[];
             map: string | null;
             mapNumber: number;
             chapters: Chapter[];
@@ -293,6 +298,7 @@ export function WatchPage() {
             playerId: c ?? null,
             file: `${reel.playerName}-reel.mp4`,
             crowd: reel.crowd ?? null,
+            cuts: reel.cuts ?? [],
           })
         )
         .catch(fail);
@@ -302,6 +308,7 @@ export function WatchPage() {
           reel: {
             video: string;
             crowd?: string | null;
+            cuts?: VideoCut[];
             map: string | null;
             mapNumber: number;
             chapters: Chapter[];
@@ -322,6 +329,7 @@ export function WatchPage() {
             playerId: null,
             file: 'match-reel.mp4',
             crowd: reel.crowd ?? null,
+            cuts: reel.cuts ?? [],
           })
         )
         .catch(fail);
@@ -331,6 +339,7 @@ export function WatchPage() {
           reel: {
             video: string;
             crowd?: string | null;
+            cuts?: VideoCut[];
             team: string | null;
             chapters: Chapter[];
             match: MatchRef;
@@ -350,6 +359,7 @@ export function WatchPage() {
             playerId: null,
             file: `${reel.team ?? 'team'}-highlights.mp4`,
             crowd: reel.crowd ?? null,
+            cuts: reel.cuts ?? [],
           })
         )
         .catch(fail);
@@ -359,6 +369,7 @@ export function WatchPage() {
           reel: {
             video: string;
             crowd?: string | null;
+            cuts?: VideoCut[];
             chapters: Chapter[];
             tournament?: { id: number; name: string; at: number | null } | null;
           };
@@ -377,6 +388,7 @@ export function WatchPage() {
             playerId: null,
             file: 'tournament-reel.mp4',
             crowd: reel.crowd ?? null,
+            cuts: reel.cuts ?? [],
           })
         )
         .catch(fail);
@@ -532,6 +544,7 @@ export function WatchPage() {
             )}
             downloadName={w.file}
             crowd={w.crowd}
+            cuts={w.cuts}
             music={
               tracks.length > 0 ? { tracks, introEnd: Math.max(0, w.chapters[0]?.at ?? 0) } : null
             }

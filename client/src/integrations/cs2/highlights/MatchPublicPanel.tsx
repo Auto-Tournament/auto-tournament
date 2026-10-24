@@ -24,7 +24,15 @@ import {
   fmtNum,
 } from '../../../module-sdk';
 import type { MatchPublicPanelProps } from '../../types';
-import { clock, kindLabel, libraryPath, mapLabel, watchTeamReelPath, type Chapter } from './data';
+import {
+  clock,
+  kindLabel,
+  libraryPath,
+  mapLabel,
+  watchTeamReelPath,
+  type Chapter,
+  type VideoCut,
+} from './data';
 import { MatchClipGrid, type MatchClip } from './MatchClipGrid';
 
 /** A recorder working on this match, as its link reports it. */
@@ -48,6 +56,7 @@ interface TeamReelRow {
 interface TeamReel {
   video: string;
   crowd?: string | null;
+  cuts?: VideoCut[];
   team: string | null;
   chapters: Chapter[];
 }
@@ -266,6 +275,7 @@ export function MatchPublicPanel({ matchSlug, match }: MatchPublicPanelProps) {
               }))}
               downloadName={`${reel.team ?? 'team'}-highlights.mp4`}
               crowd={reel.crowd ?? null}
+              cuts={reel.cuts ?? []}
               music={
                 tracks.length > 0 ? { tracks, introEnd: Math.max(0, chapters[0]?.at ?? 0) } : null
               }

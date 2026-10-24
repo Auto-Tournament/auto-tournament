@@ -717,7 +717,12 @@
         "metal": "Metal"
       },
       "buffering": "Loading the video",
-      "death": "Died"
+      "death": "Died",
+      "quality": {
+        "label": "Quality: {{quality}}",
+        "auto": "Auto",
+        "highest": "Highest"
+      }
     }
   },
   "leaderboard": {

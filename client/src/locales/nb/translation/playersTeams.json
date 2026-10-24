@@ -717,6 +717,11 @@
         "main-title": "Hovedtema",
         "rock": "Rock",
         "metal": "Metal"
+      },
+      "quality": {
+        "label": "Kvalitet: {{quality}}",
+        "auto": "Automatisk",
+        "highest": "Høyeste"
       }
     }
   },

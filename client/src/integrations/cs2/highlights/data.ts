@@ -22,6 +22,13 @@ export interface MatchRef {
   matchNumber: number | null;
 }
 
+/** A lower quality of a video (the api's VideoCut), highest first. */
+export interface VideoCut {
+  height: number;
+  fps: number;
+  url: string;
+}
+
 export interface Clip {
   id: number;
   matchSlug: string;
@@ -37,6 +44,8 @@ export interface Clip {
   status: 'done' | 'pending' | 'recording';
   round: number;
   video: string | null;
+  /** Its lower qualities, highest first. */
+  cuts?: VideoCut[];
   markers: ClipMarkers | null;
   match: MatchRef;
   createdAt: number;
