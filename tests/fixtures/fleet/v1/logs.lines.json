@@ -1,0 +1,14 @@
+{
+  "v": 1,
+  "type": "logs.lines",
+  "id": "01J8ZQ4T8W6N3X0F2R5K7M9P42",
+  "ts": 1790340012445,
+  "payload": {
+    "lines": [
+      "L 10/12/2026 - 20:00:12.445: \"Player<2><STEAM_1:0:12345><CT>\" say \"gg\"",
+      "[ReadyUp] ready: 10/10"
+    ],
+    "backlog": false,
+    "dropped": 0
+  }
+}

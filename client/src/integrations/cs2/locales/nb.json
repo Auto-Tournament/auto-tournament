@@ -2128,7 +2128,12 @@
     "console": {
       "title": "Konsoll",
       "placeholder": "Kommando",
-      "noOutput": "Ingen utdata"
+      "rootOnly": "Bare for root-administratorer",
+      "noOutput": "Ingen utdata",
+      "live": "Live",
+      "offline": "Serveren er frakoblet",
+      "unsupported": "Oppdater Ready Up for å se live-konsollen",
+      "dropped": "{{count}} linjer hoppet over"
     }
   },
   "matchPage": {

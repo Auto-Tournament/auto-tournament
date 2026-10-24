@@ -1,0 +1,8 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-tournament.dev/fleet/v1/messages/logs.stop.json",
+  "title": "logs.stop (platform → server, ephemeral)",
+  "description": "Close the live console stream early (docs/FLEET.md §7.6). Without it the stream expires 90 s after the last logs.start.",
+  "type": "object",
+  "properties": {}
+}

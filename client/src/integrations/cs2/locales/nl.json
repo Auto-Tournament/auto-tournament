@@ -2128,7 +2128,12 @@
     "console": {
       "title": "Console",
       "placeholder": "Opdracht",
-      "noOutput": "Geen uitvoer"
+      "rootOnly": "Alleen voor root-beheerders",
+      "noOutput": "Geen uitvoer",
+      "live": "Live",
+      "offline": "Server offline",
+      "unsupported": "Werk Ready Up bij om de live console te zien",
+      "dropped": "{{count}} regels overgeslagen"
     }
   },
   "matchPage": {

@@ -3,8 +3,8 @@ import { setupTestContext } from '../helpers/setup';
 import { fleetHost, stubFleet, stubHosts } from '../helpers/fleetUi';
 
 /**
- * A Ready Up server's sheet has a console line for root admins only; others
- * do not see it.
+ * A Ready Up server's sheet has a console: the live view for admins, the command
+ * box for root admins only.
  *
  * @tag ui
  * @tag fleet
@@ -42,7 +42,7 @@ test.describe('Ready Up fleet: console', () => {
     expect(sent).toEqual({ command: 'status' });
   });
 
-  test('anyone else gets no console', async ({ page }) => {
+  test('anyone else gets the live view but no command box', async ({ page }) => {
     await page.route(
       (url) => url.pathname === '/api/fleet/root',
       (route) => route.fulfill({ json: { success: true, root: false } })
@@ -50,6 +50,8 @@ test.describe('Ready Up fleet: console', () => {
     await page.goto('/servers');
     await page.getByTestId('machine-tile-h1-server-1').click();
     await expect(page.getByTestId('server-sheet')).toBeVisible();
-    await expect(page.getByTestId('fleet-console')).toHaveCount(0);
+    await expect(page.getByText('Console', { exact: true })).toBeVisible();
+    await expect(page.getByText('Root admins only')).toBeVisible();
+    await expect(page.getByTestId('fleet-console-input')).toHaveCount(0);
   });
 });

@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-tournament.dev/fleet/v1/messages/logs.lines.json",
+  "title": "logs.lines (server → platform, ephemeral)",
+  "description": "Console lines while a logs stream is open (docs/FLEET.md §7.6). `backlog` true marks the one frame that answers logs.start with backlog. `dropped` counts streamed lines cut by the 100 lines/s limit since the previous frame. Lines are redacted before they are sent.",
+  "type": "object",
+  "required": ["lines", "backlog", "dropped"],
+  "properties": {
+    "lines": {
+      "type": "array",
+      "maxItems": 200,
+      "items": {
+        "type": "string",
+        "maxLength": 600
+      }
+    },
+    "backlog": {
+      "type": "boolean"
+    },
+    "dropped": {
+      "type": "integer",
+      "minimum": 0
+    }
+  }
+}

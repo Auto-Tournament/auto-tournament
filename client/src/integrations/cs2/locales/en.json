@@ -2128,7 +2128,12 @@
     "console": {
       "title": "Console",
       "placeholder": "Command",
-      "noOutput": "No output"
+      "rootOnly": "Root admins only",
+      "noOutput": "No output",
+      "live": "Live",
+      "offline": "Server offline",
+      "unsupported": "Update Ready Up to see the live console",
+      "dropped": "{{count}} lines skipped"
     }
   },
   "matchPage": {

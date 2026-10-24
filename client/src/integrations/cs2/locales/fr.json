@@ -2128,7 +2128,12 @@
     "console": {
       "title": "Console",
       "placeholder": "Commande",
-      "noOutput": "Aucune sortie"
+      "rootOnly": "Réservé aux admins root",
+      "noOutput": "Aucune sortie",
+      "live": "En direct",
+      "offline": "Serveur hors ligne",
+      "unsupported": "Mettez à jour Ready Up pour voir la console en direct",
+      "dropped": "{{count}} lignes ignorées"
     }
   },
   "matchPage": {

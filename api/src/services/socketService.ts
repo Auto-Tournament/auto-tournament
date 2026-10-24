@@ -74,6 +74,20 @@ function handshakeAsRequest(socket: Socket): Request {
   return req as Request;
 }
 
+/** Whether the socket's handshake is an admin's (the check `admin:subscribe` makes). */
+export async function socketHasAdminAccess(socket: Socket): Promise<boolean> {
+  return (await checkAdminAccess(handshakeAsRequest(socket))).ok;
+}
+
+type ConnectionListener = (socket: Socket) => void;
+const connectionListeners = new Set<ConnectionListener>();
+
+/** Run `listener` for every socket that connects (integrations attach their own events). Returns the remover. */
+export function onSocketConnection(listener: ConnectionListener): () => void {
+  connectionListeners.add(listener);
+  return () => connectionListeners.delete(listener);
+}
+
 async function joinAdminRoom(socket: Socket, ack?: Untrusted): Promise<void> {
   const reply = typeof ack === 'function' ? (ack as (body: object) => void) : () => undefined;
   try {
@@ -120,6 +134,15 @@ export function initializeSocket(
 
   io.on('connection', (socket) => {
     log.debug(`Socket client connected: ${socket.id}`);
+    for (const listener of connectionListeners) {
+      try {
+        listener(socket);
+      } catch (error) {
+        log.error(
+          `[SOCKET] connection listener failed: ${error instanceof Error ? error.message : String(error)}`
+        );
+      }
+    }
 
     // The public Ready Up compatibility page. Anyone may listen (the data is
     // public), but only sockets that ask get `compat:update`, so every other

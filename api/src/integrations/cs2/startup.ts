@@ -24,6 +24,7 @@ import { startDemoStreams, stopDemoStreams } from './fleet/demoStream';
 import { startFleetHosts, stopFleetHosts } from './fleet/hosts/service';
 import { recorderLink, startRecorderLink } from './demos/recorderLink';
 import { startServerNotices, stopServerNotices } from './fleet/serverNotices';
+import { startLogRelay, stopLogRelay } from './fleet/logRelay';
 import { startTvState, stopTvState } from './fleet/tvState';
 import { startMovementRecords, stopMovementRecords } from './movement/records';
 import { startFleetPush, stopFleetPush } from './fleet/push';
@@ -65,6 +66,7 @@ export async function startCs2(): Promise<void> {
   startDemoStreams();
   // server.cs2_update_required / server.selftest from Ready Up servers.
   startServerNotices();
+  startLogRelay();
   // GOTV state from Ready Up's tv plugin (server.tv).
   startTvState();
   // Surf / bhop / kz runs from Ready Up's movement plugin (movement.record).
@@ -143,6 +145,7 @@ export function stopCs2(): void {
   recorderLink.shutdown();
   stopFleetFailover();
   stopServerNotices();
+  stopLogRelay();
   stopTvState();
   stopMovementRecords();
   stopFleetPush();

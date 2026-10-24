@@ -747,6 +747,22 @@ export interface DemoAckPayload {
   error?: { code: DemoAckErrorCode; message?: string };
 }
 
+// --- Live console (FLEET.md §7.6) -----------------------------------------
+
+/** Platform -> server (ephemeral): open or renew the stream; `backlog` sends the last 200 lines first. */
+export interface LogsStartPayload {
+  backlog: boolean;
+}
+
+/** Server -> platform (ephemeral): console lines while a stream is open. */
+export interface LogsLinesPayload {
+  lines: string[];
+  /** true on the one frame that answers logs.start with backlog. */
+  backlog: boolean;
+  /** Lines cut by the 200 lines/s limit since the previous frame. */
+  dropped: number;
+}
+
 /** Every `event.*` payload: a merge patch with its rev, plus the event's `data`. */
 export interface FleetEventPayload<D = object> {
   match_id: string;
@@ -1001,6 +1017,9 @@ export interface FleetMessages {
   'demo.chunk': DemoChunkPayload;
   'demo.end': DemoEndPayload;
   'demo.ack': DemoAckPayload;
+  'logs.start': LogsStartPayload;
+  'logs.stop': Record<string, never>;
+  'logs.lines': LogsLinesPayload;
 }
 
 export type FleetMessageType = keyof FleetMessages;
@@ -1083,6 +1102,9 @@ export const FLEET_MESSAGES: Record<FleetMessageType, { direction: Direction; re
     'demo.chunk': { direction: 'server_to_platform', reliable: false },
     'demo.end': { direction: 'server_to_platform', reliable: false },
     'demo.ack': { direction: 'platform_to_server', reliable: false },
+    'logs.start': { direction: 'platform_to_server', reliable: false },
+    'logs.stop': { direction: 'platform_to_server', reliable: false },
+    'logs.lines': { direction: 'server_to_platform', reliable: false },
   };
 
 // --- HTTP ------------------------------------------------------------------

@@ -2128,7 +2128,12 @@
     "console": {
       "title": "Konsole",
       "placeholder": "Befehl",
-      "noOutput": "Keine Ausgabe"
+      "rootOnly": "Nur für Root-Admins",
+      "noOutput": "Keine Ausgabe",
+      "live": "Live",
+      "offline": "Server offline",
+      "unsupported": "Ready Up aktualisieren, um die Live-Konsole zu sehen",
+      "dropped": "{{count}} Zeilen übersprungen"
     }
   },
   "matchPage": {

@@ -2128,7 +2128,12 @@
     "console": {
       "title": "Consola",
       "placeholder": "Comando",
-      "noOutput": "Sem saída"
+      "rootOnly": "Só para administradores root",
+      "noOutput": "Sem saída",
+      "live": "Em direto",
+      "offline": "Servidor offline",
+      "unsupported": "Atualize o Ready Up para ver a consola em direto",
+      "dropped": "{{count}} linhas ignoradas"
     }
   },
   "matchPage": {

@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-tournament.dev/fleet/v1/messages/logs.start.json",
+  "title": "logs.start (platform → server, ephemeral)",
+  "description": "Open or renew the live console stream (docs/FLEET.md §7.6). `backlog` true sends the last 200 lines first. The stream expires 90 s after the last logs.start; the platform renews every 30 s.",
+  "type": "object",
+  "required": ["backlog"],
+  "properties": {
+    "backlog": {
+      "type": "boolean"
+    }
+  },
+  "additionalProperties": false
+}

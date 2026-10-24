@@ -2138,7 +2138,12 @@
     "console": {
       "title": "Konsola",
       "placeholder": "Polecenie",
-      "noOutput": "Brak wyniku"
+      "rootOnly": "Tylko dla administratorów root",
+      "noOutput": "Brak wyniku",
+      "live": "Na żywo",
+      "offline": "Serwer offline",
+      "unsupported": "Zaktualizuj Ready Up, aby zobaczyć konsolę na żywo",
+      "dropped": "Pominięto wierszy: {{count}}"
     }
   },
   "matchPage": {
