@@ -11123,8 +11123,8 @@
         "tags": [
           "Matches"
         ],
-        "summary": "Every played match (tournament, standalone, matchmaking, imported), newest first, with its demos",
-        "description": "Admin only. Includes the matches of deleted tournaments (their name is\nkept as `tournamentName`). `demos` lists the maps that have a demo; a\nmatch-level demo is map 0.\n",
+        "summary": "Every current and played match (tournament, standalone, matchmaking, imported), with its demos",
+        "description": "Admin only. Current matches (`status` loaded or live) come first, by\n`loadedAt`, then played ones newest first. Includes the matches of\ndeleted tournaments (their name is kept as `tournamentName`). `demos`\nlists the maps that have a demo; a match-level demo is map 0.\n",
         "security": [
           {
             "bearerAuth": []
