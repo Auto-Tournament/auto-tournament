@@ -613,7 +613,7 @@
     "errors": {
       "slugAndMapsRequired": "Sono necessari lo slug e almeno una mappa.",
       "teamsMustDiffer": "Il team 1 e il team 2 devono essere diversi.",
-      "invalidMapSelectionVeto": "Selezione mappe non valida per il veto. Seleziona esattamente 7 mappe o disabilita il veto.",
+      "invalidMapSelectionVeto": "Il veto richiede tra {{min}} e 7 mappe.",
       "invalidMapSelectionFormat": "Selezione mappe non valida per questo formato. Seleziona il numero corretto di mappe.",
       "configIncomplete": "La configurazione della partita è incompleta. Controlla le impostazioni.",
       "createFailed": "Impossibile creare la partita. Riprova."

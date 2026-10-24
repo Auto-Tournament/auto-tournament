@@ -34,7 +34,7 @@
         "selectLabel": "Choisir un pool de cartes",
         "customOption": "Personnalisé",
         "selectedLabel": "Cartes sélectionnées ({{count}}) :",
-        "vetoWarning": "Les formats veto (BO1/BO3/BO5) exigent exactement 7 cartes. Sélection actuelle : {{count}}",
+        "vetoWarning": "Le veto nécessite entre {{min}} et 7 cartes. Sélection actuelle : {{count}}",
         "chooseMaps": "Choose maps..."
       },
       "save": "Enregistrer"

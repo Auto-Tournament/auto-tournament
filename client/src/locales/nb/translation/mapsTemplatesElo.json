@@ -34,7 +34,7 @@
         "selectLabel": "Velg en kartutvalg",
         "customOption": "Egendefinert",
         "selectedLabel": "Valgte kart ({{count}}):",
-        "vetoWarning": "Veto-formater (BO1/BO3/BO5) krever nøyaktig 7 kart. Valgt nå: {{count}}",
+        "vetoWarning": "Veto krever mellom {{min}} og 7 kart. Valgt nå: {{count}}",
         "chooseMaps": "Velg kart..."
       },
       "save": "Lagre"

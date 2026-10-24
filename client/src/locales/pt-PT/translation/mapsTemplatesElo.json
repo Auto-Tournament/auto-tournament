@@ -34,7 +34,7 @@
         "selectLabel": "Escolha um pool de mapas",
         "customOption": "Personalizado",
         "selectedLabel": "Mapas selecionados ({{count}}):",
-        "vetoWarning": "Os formatos com veto (BO1/BO3/BO5) exigem exatamente 7 mapas. Atualmente selecionados: {{count}}",
+        "vetoWarning": "O veto exige entre {{min}} e 7 mapas. Atualmente selecionados: {{count}}",
         "chooseMaps": "Choose maps..."
       },
       "save": "Guardar"

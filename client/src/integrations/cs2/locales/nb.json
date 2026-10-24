@@ -613,7 +613,7 @@
     "errors": {
       "slugAndMapsRequired": "Slug og minst ett kart er påkrevd.",
       "teamsMustDiffer": "Lag 1 og lag 2 må være forskjellige.",
-      "invalidMapSelectionVeto": "Ugyldig kartvalg for veto. Velg nøyaktig 7 kart eller deaktiver veto.",
+      "invalidMapSelectionVeto": "Veto krever mellom {{min}} og 7 kart.",
       "invalidMapSelectionFormat": "Ugyldig kartvalg for dette serieformatet. Velg riktig antall kart.",
       "configIncomplete": "Kampkonfigurasjonen er ufullstendig. Kontroller innstillingene.",
       "createFailed": "Kunne ikke opprette kampen. Prøv igjen."

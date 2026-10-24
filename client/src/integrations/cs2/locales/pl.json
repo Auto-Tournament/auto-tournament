@@ -619,7 +619,7 @@
     "errors": {
       "slugAndMapsRequired": "Wymagany jest slug i co najmniej jedna mapa.",
       "teamsMustDiffer": "Drużyna 1 i drużyna 2 muszą być różne.",
-      "invalidMapSelectionVeto": "Nieprawidłowy wybór map dla veto. Wybierz dokładnie 7 map lub wyłącz veto.",
+      "invalidMapSelectionVeto": "Veto wymaga od {{min}} do 7 map.",
       "invalidMapSelectionFormat": "Nieprawidłowy wybór map dla tego formatu. Wybierz właściwą liczbę map.",
       "configIncomplete": "Konfiguracja meczu jest niekompletna. Sprawdź ustawienia.",
       "createFailed": "Nie udało się utworzyć meczu. Spróbuj ponownie."

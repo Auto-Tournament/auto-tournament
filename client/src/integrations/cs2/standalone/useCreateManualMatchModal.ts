@@ -389,7 +389,10 @@ export function useCreateManualMatchModal({
   const selectedMapsCount = maps.filter((m) => m.length > 0).length;
 
   const hasVetoMapCountError =
-    submitAttempted && useVeto && selectedMapsCount !== 7 && maps.length > 0;
+    submitAttempted &&
+    useVeto &&
+    (selectedMapsCount < requiredMaps || selectedMapsCount > 7) &&
+    maps.length > 0;
   const hasSeriesMapCountError =
     submitAttempted && !useVeto && selectedMapsCount !== requiredMaps && maps.length > 0;
 
@@ -446,10 +449,10 @@ export function useCreateManualMatchModal({
     const selectedMatchMaps = maps.filter((m) => m.length > 0);
     if (
       (!useVeto && selectedMatchMaps.length === requiredMaps) ||
-      (useVeto && selectedMatchMaps.length === 7)
+      (useVeto && selectedMatchMaps.length >= requiredMaps && selectedMatchMaps.length <= 7)
     ) {
       const matchMaps = selectedMatchMaps.slice(0, requiredMaps);
-      // When veto enabled, store full 7-map pool for veto; otherwise store match maps only.
+      // When veto enabled, store the full veto pool; otherwise store match maps only.
       const maplistForConfig = useVeto ? selectedMatchMaps : matchMaps;
       const safePlayersPerTeam =
         typeof playersPerTeam === 'number' && playersPerTeam > 0 ? playersPerTeam : 5;
@@ -817,8 +820,10 @@ export function useCreateManualMatchModal({
     }
 
     if (useVeto) {
-      if (selectedMatchMaps.length !== 7) {
-        const message = t('manualMatchModal.errors.invalidMapSelectionVeto');
+      if (selectedMatchMaps.length < requiredMaps || selectedMatchMaps.length > 7) {
+        const message = t('manualMatchModal.errors.invalidMapSelectionVeto', {
+          min: requiredMaps,
+        });
         setError(message);
         showError(message);
         return;

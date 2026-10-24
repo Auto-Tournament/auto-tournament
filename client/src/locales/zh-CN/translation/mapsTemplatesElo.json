@@ -34,7 +34,7 @@
         "selectLabel": "选择地图池",
         "customOption": "自定义",
         "selectedLabel": "已选地图（{{count}} 张）：",
-        "vetoWarning": "Veto formats (BO1/BO3/BO5) require exactly 7 maps. 当前已选：{{count}}",
+        "vetoWarning": "禁选需要 {{min}} 至 7 张地图。当前已选：{{count}}",
         "chooseMaps": "Choose maps..."
       },
       "save": "保存"

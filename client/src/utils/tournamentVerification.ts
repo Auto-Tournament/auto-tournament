@@ -33,6 +33,8 @@ export interface TournamentValidationRules {
   };
 }
 
+export const VETO_MIN_MAPS: Record<string, number> = { bo1: 1, bo3: 3, bo5: 5 };
+
 /**
  * Get verification rules for a tournament type and format
  */
@@ -57,10 +59,9 @@ export function getTournamentVerificationRules(
   }
 
   // Veto formats (BO1, BO3, BO5) - between the format minimum and 7 maps
-  const vetoMinMaps: Record<string, number> = { bo1: 1, bo3: 3, bo5: 5 };
   const isVetoFormat = format && ['bo1', 'bo3', 'bo5'].includes(format);
   if (format && isVetoFormat) {
-    const min = vetoMinMaps[format];
+    const min = VETO_MIN_MAPS[format];
     return {
       type,
       format,

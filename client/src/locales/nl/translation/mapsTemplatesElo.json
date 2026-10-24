@@ -34,7 +34,7 @@
         "selectLabel": "Kies een kaartpool",
         "customOption": "Aangepast",
         "selectedLabel": "Geselecteerde kaarten ({{count}}):",
-        "vetoWarning": "Veto-formaten (BO1/BO3/BO5) vereisen precies 7 kaarten. Nu geselecteerd: {{count}}",
+        "vetoWarning": "Veto vereist tussen {{min}} en 7 kaarten. Nu geselecteerd: {{count}}",
         "chooseMaps": "Choose maps..."
       },
       "save": "Opslaan"
