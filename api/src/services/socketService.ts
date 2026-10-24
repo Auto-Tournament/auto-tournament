@@ -91,6 +91,24 @@ async function joinAdminRoom(socket: Socket, ack?: Untrusted): Promise<void> {
   }
 }
 
+/**
+ * `next` for a handshake middleware, passed on once. express-session reports a
+ * store failure at commit with a second `next(err)` after the response went
+ * out; engine.io would answer it with a second response, which throws and
+ * takes the API down. That late error is only logged.
+ */
+export function nextOnce(next: (err?: unknown) => void): (err?: unknown) => void {
+  let called = false;
+  return (err) => {
+    if (called) {
+      if (err) log.warn('Socket handshake: session not saved', { error: err });
+      return;
+    }
+    called = true;
+    next(err);
+  };
+}
+
 export function initializeSocket(
   httpServer: HTTPServer,
   options: SocketOptions = {}
@@ -112,7 +130,7 @@ export function initializeSocket(
         next: (err?: unknown) => void
       ) => {
         const isHandshake = req._query?.sid === undefined;
-        if (isHandshake) middleware(req, res, next);
+        if (isHandshake) middleware(req, res, nextOnce(next));
         else next();
       }
     );
