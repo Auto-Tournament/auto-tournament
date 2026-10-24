@@ -70,7 +70,9 @@
     "cancel": "Cancelar",
     "remove": "Remove",
     "close": "Close",
-    "opensInNewTab": "(opens in a new tab)"
+    "opensInNewTab": "(opens in a new tab)",
+    "retry": "Tentar novamente",
+    "loadFailed": "Não foi possível carregar esta página."
   },
   "app": {
     "name": "Auto Tournament"

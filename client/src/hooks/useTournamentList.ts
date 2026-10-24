@@ -110,6 +110,7 @@ interface UseTournamentListResult {
   tournaments: TournamentSummary[];
   loading: boolean;
   error: string;
+  reload: () => Promise<void>;
 }
 
 /**
@@ -184,5 +185,5 @@ export function useTournamentList(): UseTournamentListResult {
     void load();
   }, [load]);
 
-  return { tournaments, loading, error };
+  return { tournaments, loading, error, reload: load };
 }

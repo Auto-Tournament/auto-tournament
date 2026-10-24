@@ -117,6 +117,7 @@
     },
     "errors": {
       "loadMaps": "Impossibile caricare le mappe",
+      "retryLoadMaps": "Riprova",
       "loadPools": "Impossibile caricare i pool mappe",
       "defaultPoolCannotDelete": "Il pool mappe predefinito non può essere eliminato.",
       "setDefaultPool": "Impossibile impostare il pool mappe predefinito",

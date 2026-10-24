@@ -117,6 +117,7 @@
     },
     "errors": {
       "loadMaps": "Klarte ikke å laste kart",
+      "retryLoadMaps": "Prøv igjen",
       "loadPools": "Klarte ikke å laste kartutvalg",
       "defaultPoolCannotDelete": "Standard kartutvalg kan ikke slettes.",
       "setDefaultPool": "Klarte ikke å sette standard kartutvalg",

@@ -68,4 +68,22 @@ test.describe.serial('Home', () => {
       );
     }
   );
+
+  test(
+    'a failed tournament list shows an error with Retry instead of the empty home',
+    { tag: ['@ui', '@home'] },
+    async ({ page }) => {
+      expect(await signInAsPlayer(page, uniqueSteamId(), 'Outage Player')).toBe(true);
+      const failing = (route: import('@playwright/test').Route) =>
+        route.fulfill({ status: 500, contentType: 'application/json', body: '{"success":false}' });
+      await page.route('**/api/tournaments', failing);
+      await page.goto('/');
+      const alert = page.getByTestId('load-error');
+      await expect(alert).toBeVisible();
+      await page.unroute('**/api/tournaments', failing);
+      await alert.getByRole('button').click();
+      await expect(alert).toHaveCount(0);
+      await expect(page.getByTestId('home-page')).toBeVisible();
+    }
+  );
 });

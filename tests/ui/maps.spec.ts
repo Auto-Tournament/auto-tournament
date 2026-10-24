@@ -179,6 +179,23 @@ test.describe.serial('Maps UI', () => {
       await expect(page.getByTestId('maps-section-defusal')).toBeVisible();
     }
   );
+
+  test(
+    'a failed load shows an error with Retry instead of the empty state',
+    { tag: ['@ui', '@maps'] },
+    async ({ page }) => {
+      const failing = (route: import('@playwright/test').Route) =>
+        route.fulfill({ status: 500, contentType: 'application/json', body: '{"success":false}' });
+      await page.route('**/api/maps', failing);
+      await page.goto('/manage/maps');
+      const alert = page.getByTestId('maps-load-error');
+      await expect(alert).toBeVisible();
+      await expect(page.getByTestId('maps-empty-state')).toHaveCount(0);
+      await page.unroute('**/api/maps', failing);
+      await alert.getByRole('button').click();
+      await expect(page.getByTestId('maps-list')).toBeVisible();
+    }
+  );
 });
 
 test.describe.serial('Tournament Map Pool Selection', () => {

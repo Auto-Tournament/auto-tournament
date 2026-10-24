@@ -14,6 +14,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { TopNavBar } from '../components/layout/TopNavBar';
 import { PendingTeamInvites } from '../components/team/PendingTeamInvites';
+import { LoadError } from '../components/shared/LoadError';
 import { LiveChip, panelSx, panelBorderSx } from '../components/common/ui';
 import { useAuth } from '../contexts/AuthContext';
 import { useTeamMatchData } from '../hooks/useTeamMatchData';
@@ -129,7 +130,12 @@ export default function Home() {
   const { playerSteamId, isAuthenticated: isAdmin } = useAuth();
   const [myTeam, setMyTeam] = useState<ViewerTeam | null>(null);
   const [teamLoading, setTeamLoading] = useState(true);
-  const { tournaments, loading: tournamentsLoading } = useTournamentList();
+  const {
+    tournaments,
+    loading: tournamentsLoading,
+    error: tournamentsError,
+    reload: reloadTournaments,
+  } = useTournamentList();
   const { available: matchmakingAvailable } = useMatchmaking();
   const {
     team: myTeamMatchTeam,
@@ -230,6 +236,11 @@ export default function Home() {
           <Box display="flex" justifyContent="center" py={6}>
             <CircularProgress aria-label={t('home.loading')} />
           </Box>
+        ) : tournamentsError ? (
+          <>
+            <PendingTeamInvites />
+            <LoadError onRetry={() => void reloadTournaments()} />
+          </>
         ) : (
           <>
             <PendingTeamInvites />

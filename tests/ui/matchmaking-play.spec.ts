@@ -157,4 +157,22 @@ test.describe.serial('matchmaking: Play page', () => {
     await expect(page.getByTestId('mm-queue-bar')).toHaveCount(0);
     await expect(page.getByTestId('mm-find')).toBeEnabled();
   });
+
+  test(
+    'a failing matchmaking API shows an error with Retry, not "not open"',
+    TAGS,
+    async ({ page }) => {
+      expect(await signInAsPlayer(page, steamId(), 'Outage Player', { games: ['cs2'] })).toBe(true);
+      const failing = (route: import('@playwright/test').Route) =>
+        route.fulfill({ status: 500, contentType: 'application/json', body: '{"success":false}' });
+      await page.route('**/api/matchmaking/me', failing);
+      await page.goto('/play');
+      const alert = page.getByTestId('load-error');
+      await expect(alert).toBeVisible();
+      await expect(page.getByTestId('mm-unavailable')).toHaveCount(0);
+      await page.unroute('**/api/matchmaking/me', failing);
+      await alert.getByRole('button').click();
+      await expect(page.getByTestId('mm-find')).toBeVisible();
+    }
+  );
 });

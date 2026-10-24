@@ -101,6 +101,8 @@ interface State {
   me: MatchmakingMe | null;
   /** Server time minus local time, seconds; for countdowns. */
   skew: number;
+  /** The last answer was a server error, not "not open to you". */
+  failed?: boolean;
 }
 
 let state: State = { available: null, me: null, skew: 0 };
@@ -155,7 +157,7 @@ export async function refreshMatchmaking(): Promise<void> {
       // uses this store on every page, for everyone.
       if (users > 0) openSocket();
     } else {
-      emit({ available: false, me: null, skew: 0 });
+      emit({ available: false, me: null, skew: 0, failed: res.status >= 500 });
       closeSocket();
     }
   } catch {

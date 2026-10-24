@@ -117,6 +117,7 @@
     },
     "errors": {
       "loadMaps": "Nie udało się wczytać map",
+      "retryLoadMaps": "Spróbuj ponownie",
       "loadPools": "Nie udało się wczytać pul map",
       "defaultPoolCannotDelete": "Nie można usunąć domyślnej puli map.",
       "setDefaultPool": "Nie udało się ustawić domyślnej puli map",

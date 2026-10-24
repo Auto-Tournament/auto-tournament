@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { PageHead, pageTitle, useSnackbar, useModuleTranslation } from '../../../module-sdk';
-import { Box, Button, CircularProgress, Stack, Tabs, Tab } from '@mui/material';
+import { Alert, Box, Button, CircularProgress, Stack, Tabs, Tab } from '@mui/material';
 import { ArrowsClockwiseIcon, ImagesIcon, MapTrifoldIcon, PlusIcon } from '@phosphor-icons/react';
 import { api } from '../../../module-sdk';
 import MapModal from '../maps/MapModal';
@@ -19,6 +19,7 @@ export default function Maps() {
   const [maps, setMaps] = useState<Map[]>([]);
   const [mapPools, setMapPools] = useState<MapPool[]>([]);
   const [loading, setLoading] = useState(true);
+  const [mapsFailed, setMapsFailed] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [editingMap, setEditingMap] = useState<Map | null>(null);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
@@ -75,16 +76,16 @@ export default function Maps() {
   const loadMaps = useCallback(async () => {
     try {
       setLoading(true);
+      setMapsFailed(false);
       const data = await api.get<MapsResponse>('/api/maps');
       setMaps(data.maps || []);
     } catch (err) {
-      const errorMessage = t('mapsPage.errors.loadMaps');
-      showError(errorMessage);
+      setMapsFailed(true);
       console.error(err);
     } finally {
       setLoading(false);
     }
-  }, [showError, t]);
+  }, []);
 
   const loadMapPools = useCallback(async () => {
     try {
@@ -321,7 +322,21 @@ export default function Maps() {
         />
       </Tabs>
 
-      {activeTab === 0 && (
+      {activeTab === 0 && mapsFailed && (
+        <Alert
+          severity="error"
+          data-testid="maps-load-error"
+          action={
+            <Button color="inherit" size="small" onClick={() => void loadMaps()}>
+              {t('mapsPage.errors.retryLoadMaps')}
+            </Button>
+          }
+        >
+          {t('mapsPage.errors.loadMaps')}
+        </Alert>
+      )}
+
+      {activeTab === 0 && !mapsFailed && (
         <MapsTab maps={maps} onAddMap={() => handleOpenModal()} onMapClick={handleMapCardClick} />
       )}
 

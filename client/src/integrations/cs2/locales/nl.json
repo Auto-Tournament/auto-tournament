@@ -117,6 +117,7 @@
     },
     "errors": {
       "loadMaps": "Kan kaarten niet laden",
+      "retryLoadMaps": "Opnieuw proberen",
       "loadPools": "Kan kaartpools niet laden",
       "defaultPoolCannotDelete": "De standaard kaartpool kan niet worden verwijderd.",
       "setDefaultPool": "Kan de standaard kaartpool niet instellen",

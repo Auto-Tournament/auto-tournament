@@ -78,7 +78,9 @@
     "cancel": "Avbryt",
     "remove": "Fjern",
     "close": "Lukk",
-    "opensInNewTab": "(åpnes i en ny fane)"
+    "opensInNewTab": "(åpnes i en ny fane)",
+    "retry": "Prøv igjen",
+    "loadFailed": "Kunne ikke laste denne siden."
   },
   "theme": {
     "label": "Fargetema"

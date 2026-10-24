@@ -78,7 +78,9 @@
     "cancel": "Cancel",
     "remove": "Remove",
     "close": "Close",
-    "opensInNewTab": "(opens in a new tab)"
+    "opensInNewTab": "(opens in a new tab)",
+    "retry": "Retry",
+    "loadFailed": "Could not load this page."
   },
   "theme": {
     "label": "Color theme"

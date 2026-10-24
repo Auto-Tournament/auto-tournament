@@ -78,7 +78,9 @@
     "cancel": "取消",
     "remove": "Remove",
     "close": "Close",
-    "opensInNewTab": "(opens in a new tab)"
+    "opensInNewTab": "(opens in a new tab)",
+    "retry": "重试",
+    "loadFailed": "无法加载此页面。"
   },
   "theme": {
     "label": "Color theme"

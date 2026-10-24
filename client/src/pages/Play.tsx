@@ -21,12 +21,14 @@ import { useTranslation } from 'react-i18next';
 import { matchPagePath } from '../paths';
 import { TopNavBar } from '../components/layout/TopNavBar';
 import { Panel, SwitchRow } from '../components/common/ui';
+import { LoadError } from '../components/shared/LoadError';
 import { useSnackbar } from '../contexts/SnackbarContext';
 import { useAuth } from '../contexts/AuthContext';
 import { pageTitle } from '../utils/pageTitle';
 import {
   matchmakingAction,
   playersFor,
+  refreshMatchmaking,
   teamSizeOf,
   searchWindowElo,
   secondsUntil,
@@ -259,7 +261,7 @@ function PersonChip({
 
 export default function Play() {
   const { t } = useTranslation();
-  const { available, me, skew } = useMatchmaking();
+  const { available, me, skew, failed } = useMatchmaking();
   const { playerSteamId, isAuthenticated: isAdmin } = useAuth();
   const { showError, showSnackbar } = useSnackbar();
   const [params, setParams] = useSearchParams();
@@ -368,7 +370,9 @@ export default function Play() {
     <Box minHeight="100vh">
       <TopNavBar />
       <Container maxWidth="lg" sx={{ py: { xs: 3, md: 5 } }}>
-        {!available ? (
+        {failed ? (
+          <LoadError onRetry={() => void refreshMatchmaking()} />
+        ) : !available ? (
           <Panel sx={{ p: 3 }} data-testid="mm-unavailable">
             <Typography>{t('matchmaking.play.unavailable')}</Typography>
           </Panel>
