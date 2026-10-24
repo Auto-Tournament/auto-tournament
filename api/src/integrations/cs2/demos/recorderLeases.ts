@@ -23,6 +23,14 @@ export function recordingWaiting(alias = ''): string {
     AND (${p}retry_until IS NULL OR ${p}retry_until <= EXTRACT(EPOCH FROM NOW()) OR ${p}recorder = ?))`;
 }
 
+/**
+ * Out of attempts: failed, unless it was a redo of something that already has a
+ * video. That keeps its old video (done) instead of holding its reel back
+ * (2026-10-24: one failed redo of 16 held the series reel for hours).
+ */
+const outOfAttemptsStatus = `CASE WHEN attempts < ${RECORDING_ATTEMPTS} THEN 'pending'
+  WHEN clip_path IS NOT NULL THEN 'done' ELSE 'failed' END`;
+
 /** Run before claims, including claims by paused workers. No healthy peer, no work. */
 export async function recoverRecordingLeases(): Promise<number[]> {
   await db.runAsync(
@@ -32,7 +40,7 @@ export async function recoverRecordingLeases(): Promise<number[]> {
   for (const table of RECORDING_TABLES) {
     const rows = await db.queryAsync<{ id?: number; status: string }>(
       `UPDATE ${table} SET
-        status = CASE WHEN attempts >= ${RECORDING_ATTEMPTS} THEN 'failed' ELSE 'pending' END,
+        status = ${outOfAttemptsStatus},
         error = 'Recorder lease expired or job exceeded 24 hours',
         retry_until = CASE WHEN attempts = 1 THEN EXTRACT(EPOCH FROM NOW())::INTEGER + ${SAME_RECORDER_RETRY_SECONDS} ELSE NULL END,
         avoid_recorder = CASE WHEN attempts >= 2 THEN recorder ELSE NULL END
@@ -58,7 +66,7 @@ export async function recorderHasActiveClaim(recorder: string): Promise<boolean>
 }
 
 /** Failure reports and lease expiry follow the same retry policy. */
-export const recordingFailureSql = `status = CASE WHEN attempts >= ${RECORDING_ATTEMPTS} THEN 'failed' ELSE 'pending' END,
+export const recordingFailureSql = `status = ${outOfAttemptsStatus},
   error = ?,
   retry_until = CASE WHEN attempts = 1 THEN EXTRACT(EPOCH FROM NOW())::INTEGER + ${SAME_RECORDER_RETRY_SECONDS} ELSE NULL END,
   avoid_recorder = CASE WHEN attempts >= 2 THEN recorder ELSE NULL END`;
