@@ -1014,7 +1014,7 @@ test.describe.serial('Fleet driver: Ready Up servers play matches (M1)', () => {
     await request.post(`/api/matches/${slug}/force-cancel`, { headers: getAuthHeader() });
   });
 
-  test('link to an existing server row, unlink gives it back; an unlinked row takes no commands', async ({
+  test('link to an existing server row, unlink deletes it; an unlinked row takes no commands', async ({
     request,
   }) => {
     const rcon = await createTestServer(request, 'fleet-rcon');
@@ -1037,7 +1037,7 @@ test.describe.serial('Fleet driver: Ready Up servers play matches (M1)', () => {
     ).json();
     expect(row.server ?? row).toMatchObject({ transport: 'rcon', fleetServerId: null });
 
-    // A fleet server takes over that row, then gives it back.
+    // A fleet server takes over that row; unlinking deletes it.
     const fake = await FakeReadyUp.enroll(request);
     cleanup.push(() => fake.close());
     expect(await link(request, fake.serverId, rcon!.id)).toBe(rcon!.id);
@@ -1060,13 +1060,7 @@ test.describe.serial('Fleet driver: Ready Up servers play matches (M1)', () => {
     });
     expect(elsewhere.status()).toBe(409);
     await unlink(request, fake.serverId);
-    const back = await (
-      await request.get(`/api/servers/${rcon!.id}`, { headers: getAuthHeader() })
-    ).json();
-    expect(back.server ?? back).toMatchObject({
-      transport: 'rcon',
-      fleetServerId: null,
-      enabled: true,
-    });
+    const gone = await request.get(`/api/servers/${rcon!.id}`, { headers: getAuthHeader() });
+    expect(gone.status()).toBe(404);
   });
 });

@@ -29,6 +29,7 @@
 
 import type { Untrusted } from '../../../utils/untrusted';
 import { db } from '../../../config/database';
+import { serverService } from '../services/serverService';
 import { log } from '../../../utils/logger';
 import {
   chooseConnectAddress,
@@ -313,19 +314,18 @@ export async function linkFleetServer(
   return { ok: true, link: { cs2ServerId: fleetServerId, fleetServerId }, created: !taken };
 }
 
-/** Undo a link. Returns the row that was linked, or null when there was none. */
+/**
+ * Undo a link: the server's row goes. `auto_linked_at` is set so the first-hello
+ * links (push/controls.ts) do not link it again. Returns the row that was
+ * linked, or null when there was none.
+ */
 export async function unlinkFleetServer(fleetServerId: string): Promise<string | null> {
   const cs2ServerId = await cs2ServerIdOf(fleetServerId);
   if (!cs2ServerId) return null;
-  const now = Math.floor(Date.now() / 1000);
-  // A row the link created has no RCON password: disable it rather than leave
-  // an RCON server nobody can reach in the pool.
+  await serverService.deleteServer(cs2ServerId);
   await db.runAsync(
-    `UPDATE cs2_servers
-        SET transport = 'rcon', fleet_server_id = NULL, updated_at = ?,
-            enabled = CASE WHEN id = ? AND password = '' THEN 0 ELSE enabled END
-      WHERE id = ?`,
-    [now, fleetServerId, cs2ServerId]
+    'UPDATE cs2_fleet_servers SET auto_linked_at = COALESCE(auto_linked_at, ?) WHERE id = ?',
+    [Math.floor(Date.now() / 1000), fleetServerId]
   );
   return cs2ServerId;
 }

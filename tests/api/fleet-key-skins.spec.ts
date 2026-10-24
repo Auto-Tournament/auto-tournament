@@ -106,7 +106,7 @@ test.describe.serial('fleet key: skins', () => {
     expect(await skinsOf(request, id)).toBe(false);
   });
 
-  test('an admin turning skins off sticks through unlink and link again', async ({ request }) => {
+  test('unlinking deletes the row, so linking again starts from the key', async ({ request }) => {
     const id = await enrolledWith(
       request,
       await createFleetKey(request, { name: 'skins-relink', skins: true })
@@ -124,7 +124,9 @@ test.describe.serial('fleet key: skins', () => {
       headers: getAuthHeader(),
     });
     expect(unlink.ok(), await unlink.text()).toBeTruthy();
+    const gone = await request.get(`/api/servers/${id}`, { headers: getAuthHeader() });
+    expect(gone.status()).toBe(404);
     await link(request, id);
-    expect(await skinsOf(request, id)).toBe(false);
+    expect(await skinsOf(request, id)).toBe(true);
   });
 });

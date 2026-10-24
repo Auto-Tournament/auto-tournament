@@ -254,6 +254,7 @@ export async function linkCreatedServers(): Promise<string[]> {
        JOIN cs2_fleet_enrollment_keys k ON k.id = s.enrollment_key_id
        JOIN cs2_fleet_host_commands c ON c.message_id = k.command_id
       WHERE s.status = 'enrolled' AND c.type = 'server.create' AND c.issued_by = ?
+        AND s.auto_linked_at IS NULL
         AND NOT EXISTS (SELECT 1 FROM cs2_servers v WHERE v.fleet_server_id = s.id)`,
     [RECOVERY_ACTOR]
   );

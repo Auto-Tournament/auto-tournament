@@ -228,7 +228,7 @@ const PLATFORM_ISSUER: IssuedBy = { user_id: 'platform', name: 'Auto Tournament'
  * A server csm created (an admin's Create server, not only the scaler's or a
  * failover's), or one of a machine's servers enrolled again (server.enroll), joins the match pool on its first hello, unless its plugin set
  * turns match off (a practice server). Once: a cs2_servers row for it means
- * it was linked before, and an admin's unlink keeps that row, so it sticks.
+ * it was linked before, and an admin's unlink sets auto_linked_at, so it sticks.
  */
 async function linkCreatedOnce(serverId: string): Promise<void> {
   // The scaler and failover link what they create themselves (with their own records).
@@ -252,8 +252,10 @@ async function linkCreatedOnce(serverId: string): Promise<void> {
     return;
   }
   const seen = await db.queryOneAsync<{ id: string }>(
-    'SELECT id FROM cs2_servers WHERE id = ? OR fleet_server_id = ?',
-    [serverId, serverId]
+    `SELECT id FROM cs2_servers WHERE id = ? OR fleet_server_id = ?
+     UNION ALL
+     SELECT id FROM cs2_fleet_servers WHERE id = ? AND auto_linked_at IS NOT NULL`,
+    [serverId, serverId, serverId]
   );
   if (seen) return;
   const { linkFleetServer } = await import('../link');

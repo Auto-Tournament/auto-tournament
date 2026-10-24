@@ -437,6 +437,39 @@ test.describe.serial('Fleet plugin sets', () => {
     }
   });
 
+  test("a created server joins the match pool on its first hello; an admin's unlink sticks", async ({
+    request,
+  }) => {
+    test.setTimeout(60_000);
+    const linkedServerId = async (id: string): Promise<string | null> => {
+      const servers = (await (await request.get('/api/fleet/servers')).json()).servers as Array<{
+        id: string;
+        linkedServerId: string | null;
+      }>;
+      return servers.find((s) => s.id === id)?.linkedServerId ?? null;
+    };
+    const m = await machine(request, 'plugins-link');
+    try {
+      const created = await createServer(request, m, { preset: 'fun' });
+      const ru = await readyUpServer(request, created.enrollKey);
+      const first = await hello(ru);
+      await expect.poll(() => linkedServerId(ru.serverId)).toBe(ru.serverId);
+      first.close();
+      await first.waitClosed();
+
+      const unlink = await request.delete(`/api/fleet/servers/${ru.serverId}/link`);
+      expect(unlink.ok(), await unlink.text()).toBe(true);
+      expect(await linkedServerId(ru.serverId)).toBeNull();
+
+      const again = await hello(ru, { lastTx: 1 });
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+      expect(await linkedServerId(ru.serverId)).toBeNull();
+      again.close();
+    } finally {
+      m.csm.close();
+    }
+  });
+
   test('the fleet default goes to a created server without its own set; a preset changes it later', async ({
     request,
   }) => {
