@@ -6089,6 +6089,7 @@
                       "kick",
                       "say",
                       "end",
+                      "add_time",
                       "exec"
                     ]
                   },
