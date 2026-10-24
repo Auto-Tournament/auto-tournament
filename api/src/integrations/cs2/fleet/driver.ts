@@ -63,6 +63,7 @@ import {
   type FleetCommandRecord,
 } from './reliable';
 import { liveStateStore } from './state';
+import { dropOrphanAssignment, forgetDroppedOrphans } from './orphans';
 import { roundBackupStore } from './backups';
 import { DEMO_STREAM_CAPABILITY } from './limits';
 import { matchPluginDisabled } from './push/pluginSets';
@@ -639,7 +640,7 @@ export async function assignMatch(
 // Unassign
 // ---------------------------------------------------------------------------
 
-async function unassignEpoch(
+export async function unassignEpoch(
   fleetServerId: string,
   matchSlug: string,
   epoch: number,
@@ -1074,8 +1075,15 @@ export async function resolveWelcomeAssignment(
   return null;
 }
 
+function matchState(
+  state: { match_id: string; epoch: number } | null | undefined
+): { match_id: string; epoch: number } | null {
+  return state ? { match_id: state.match_id, epoch: state.epoch } : null;
+}
+
 /** After a welcome: a server holding a match the platform has moved on from gets `superseded` (§6.1, §11.4). */
 async function checkHello(fleetServerId: string, hello: HelloPayload): Promise<void> {
+  forgetDroppedOrphans(fleetServerId);
   const state = hello.state;
   if (state && typeof state.match_id === 'string' && typeof state.epoch === 'number') {
     // A match the platform never assigned (a local `ru match load`) has no
@@ -1098,6 +1106,14 @@ async function checkHello(fleetServerId: string, hello: HelloPayload): Promise<v
       );
     }
   }
+  // Not awaited: the server's answer to the unassign is not worth holding the hello for.
+  void dropOrphanAssignment(fleetServerId, {
+    reason: typeof hello.reason === 'string' ? hello.reason : null,
+    detail: typeof hello.detail === 'string' ? hello.detail : null,
+    state: matchState(hello.state),
+  }).catch((error) => {
+    log.warn(`[FLEET] ${fleetServerId}: orphan check failed: ${(error as Error).message}`);
+  });
   if (hello.availability === 'available' && (await cs2ServerIdOf(fleetServerId))) {
     availableSince.set(fleetServerId, nowS());
     triggerAllocation();
@@ -1255,6 +1271,15 @@ export function startFleetDriver(): void {
       log.warn(
         `[FLEET] ${notice.serverId}: driver hook for ${notice.envelope.type} failed: ${(error as Error).message}`
       );
+    });
+  });
+  fleetInbound.onSnapshot(({ serverId, payload }) => {
+    void dropOrphanAssignment(serverId, {
+      reason: payload.availability_reason ?? null,
+      detail: payload.availability_detail ?? null,
+      state: matchState(payload.state),
+    }).catch((error) => {
+      log.warn(`[FLEET] ${serverId}: orphan check failed: ${(error as Error).message}`);
     });
   });
   fleetInbound.onAvailability(({ serverId, availability }) => {
