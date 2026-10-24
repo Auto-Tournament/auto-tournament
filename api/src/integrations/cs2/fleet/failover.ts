@@ -56,7 +56,7 @@ import {
 import type { DbMatchRow } from '../../../types/database.types';
 import { ulid } from './credentials';
 import { roundBackupStore, type RoundBackupMeta } from './backups';
-import { inlineBackupFor } from './restore';
+import { inlineBackupFor, sendBackupParts } from './restore';
 import { assignMatch, fenceEpoch, getAssignment } from './driver';
 import { fleetBus, onFleetServerReady } from './service';
 import { liveStateStore } from './state';
@@ -906,6 +906,18 @@ export async function acceptFailover(id: string, req: AcceptRequest): Promise<Ac
       );
   }
   const inline = round >= 1 ? await inlineBackupFor(slug, proposal.mapNumber, round) : null;
+  // Too large to go inline: the server that wrote it uses its own file (backup_ref);
+  // another server gets it in parts first (backup.part), or cannot take this round.
+  const sendParts =
+    !!backupMeta && !inline && !inPlace && backupMeta.serverId !== target.fleetServerId;
+  if (sendParts && !target.capabilities.includes('match.backup_parts.v1')) {
+    return refuse(
+      409,
+      'backup_too_large',
+      'This backup is too large to send to that server: pick an earlier round or a server with a newer Ready Up',
+      proposal
+    );
+  }
 
   // Claim it: one move wins.
   const claimed = await db.runAsync(
@@ -974,6 +986,10 @@ export async function acceptFailover(id: string, req: AcceptRequest): Promise<Ac
   serverAllocationTracker.markAllocated(target.cs2ServerId, slug);
   await db.updateAsync('matches', { server_id: target.cs2ServerId }, 'slug = ?', [slug]);
 
+  if (sendParts && backupMeta) {
+    const row = await roundBackupStore.get(slug, proposal.mapNumber, round);
+    if (row) await sendBackupParts(target.fleetServerId, slug, row);
+  }
   const load = await assignMatch(slug, target.cs2ServerId, { resume });
   if (!load.success) {
     const error = load.error ?? 'The server did not take the match';

@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-tournament.dev/fleet/v1/messages/backup.part.json",
+  "title": "backup.part (platform → server, reliable)",
+  "description": "A round backup too large to go inline, sent in parts before the failover match.assign that names it by resume.backup_ref (FLEET.md §11.3). Only to a server with the match.backup_parts.v1 capability. The server keeps the parts in memory by sha256 (at most 4 files, 16 MiB, two minutes after the last part) and assembles them when the assign asks for that file.",
+  "type": "object",
+  "required": ["match_id", "backup"],
+  "additionalProperties": false,
+  "properties": {
+    "match_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64
+    },
+    "backup": {
+      "$ref": "../match.defs.json#/$defs/inlineBackup"
+    }
+  }
+}

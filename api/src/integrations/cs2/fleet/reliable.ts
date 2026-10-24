@@ -39,7 +39,8 @@ export type ReliableType =
   | 'admins.set'
   | 'skins.loadout'
   | 'skins.invalidate'
-  | 'server.config';
+  | 'server.config'
+  | 'backup.part';
 
 export interface ReliableMessage<T extends ReliableType = ReliableType> {
   type: T;

@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
 import { test, expect, type APIRequestContext } from '@playwright/test';
@@ -1025,6 +1026,94 @@ test.describe.serial('Fleet failover (FLEET.md §11)', () => {
     const assign = await moved;
     expect((assign.payload as { match_id: string }).match_id).toBe(slug);
     spare.answer(assign, 'ok');
+  });
+
+  test('a backup too large to go inline reaches the new server in parts', async ({ request }) => {
+    test.setTimeout(180_000);
+    await setFailover(request, { auto: true, reserve: null });
+    const a = await FakeReadyUp.enroll(request);
+    cleanup.push(() => a.close());
+    await a.hello();
+    await link(request, a.serverId);
+    cleanup.push(() => unlink(request, a.serverId));
+    const slug = `fleet-fo-parts-${Date.now()}`;
+    cleanup.push(async () => {
+      await request.post(`/api/matches/${slug}/force-cancel`, { headers: getAuthHeader() });
+    });
+    const { epoch } = await liveWithBackup(request, a, slug);
+
+    // A stores a 1 MB backup of round 2 in three parts (event.backup, 384 KiB raw each).
+    const raw = crypto.randomBytes(1_000_000);
+    const sha256 = crypto.createHash('sha256').update(raw).digest('hex');
+    const partRaw = 384 * 1024;
+    const parts = Math.ceil(raw.length / partRaw);
+    for (let i = 0; i < parts; i++) {
+      a.event('live.event.backup.json', {
+        slug,
+        epoch,
+        rev: 3 + i,
+        data: {
+          map_number: 1,
+          round: 2,
+          file: 'readyup_backup_big_map1__round01.txt',
+          size: raw.length,
+          sha256,
+          score: { team1: 1, team2: 0 },
+          encoding: 'base64',
+          data: raw.subarray(i * partRaw, (i + 1) * partRaw).toString('base64'),
+          part: i + 1,
+          parts,
+        },
+      });
+    }
+    await expect
+      .poll(async () => {
+        const res = await request.get(`/api/game/cs2/matches/${slug}/round-backups`, {
+          headers: getAuthHeader(),
+        });
+        return ((await res.json()).backups ?? []).some((b: { round: number }) => b.round === 2);
+      })
+      .toBe(true);
+
+    const b = await FakeReadyUp.enroll(request);
+    cleanup.push(() => b.close());
+    await b.hello({ capabilities: ['match.v1', 'match.resume.v1', 'match.backup_parts.v1'] });
+    await link(request, b.serverId);
+    cleanup.push(() => unlink(request, b.serverId));
+
+    a.kill();
+    const got: Envelope[] = [];
+    const collecting = (async () => {
+      for (;;) {
+        const m = await b.client.next(
+          (x) => x.type === 'backup.part' || x.type === 'match.assign',
+          60_000
+        );
+        got.push(m);
+        if (m.type === 'match.assign') return m;
+      }
+    })();
+    await scanUntilProposed(request, slug);
+    const assign = await collecting;
+    b.answer(assign, 'ok');
+    const sent = got.filter((m) => m.type === 'backup.part');
+    expect(sent).toHaveLength(parts);
+    for (const m of sent) expect(validateMessage(m)).toEqual({ ok: true, errors: [] });
+    const joined = Buffer.concat(
+      sent
+        .map((m) => (m.payload as { backup: { part: number; data: string } }).backup)
+        .sort((x, y) => x.part - y.part)
+        .map((x) => Buffer.from(x.data, 'base64'))
+    );
+    expect(crypto.createHash('sha256').update(joined).digest('hex')).toBe(sha256);
+    const resume = (
+      assign.payload as {
+        resume: { round: number; backup?: unknown; backup_ref?: { sha256: string } };
+      }
+    ).resume;
+    expect(resume.round).toBe(2);
+    expect(resume.backup).toBeUndefined();
+    expect(resume.backup_ref?.sha256).toBe(sha256);
   });
 
   test('settings: validated, admin only', async ({ request, playwright, baseURL }) => {

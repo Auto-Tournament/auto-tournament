@@ -454,3 +454,38 @@ export function stopRestoreAudit(): void {
   unsubscribeResults?.();
   unsubscribeResults = null;
 }
+
+/** Raw bytes per backup.part (as event.backup, FLEET.md §12.3). */
+const PART_RAW = 384 * 1024;
+
+/**
+ * Send a stored backup to a server in `backup.part` frames (reliable, in
+ * order), for a failover assign that then names it by `backup_ref`: the file
+ * is too large to go inline. Only for servers with match.backup_parts.v1.
+ * Returns the number of parts.
+ */
+export async function sendBackupParts(
+  fleetServerId: string,
+  matchSlug: string,
+  row: StoredRoundBackup
+): Promise<number> {
+  const { sendReliable } = await import('./reliable');
+  const raw = Buffer.from(row.data, 'base64');
+  const parts = Math.max(1, Math.ceil(raw.length / PART_RAW));
+  const base = toInlineBackup(row);
+  for (let i = 0; i < parts; i++) {
+    await sendReliable(fleetServerId, {
+      type: 'backup.part',
+      payload: {
+        match_id: matchSlug,
+        backup: {
+          ...base,
+          data: raw.subarray(i * PART_RAW, (i + 1) * PART_RAW).toString('base64'),
+          part: i + 1,
+          parts,
+        },
+      },
+    });
+  }
+  return parts;
+}

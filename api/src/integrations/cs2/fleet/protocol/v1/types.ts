@@ -496,6 +496,12 @@ export interface MatchUpdatePayload {
 
 export type UnassignReason = 'ended' | 'cancelled' | 'superseded' | 'moved' | 'admin';
 
+/** backup.part (platform → server): one part of a round backup too large to go inline. */
+export interface BackupPartPayload {
+  match_id: string;
+  backup: InlineBackup;
+}
+
 export interface MatchUnassignPayload {
   match_id: string;
   epoch: number;
@@ -932,6 +938,7 @@ export interface FleetMessages {
   'match.assign': MatchAssignPayload;
   'match.update': MatchUpdatePayload;
   'match.unassign': MatchUnassignPayload;
+  'backup.part': BackupPartPayload;
   cmd: CmdPayload;
   'cmd.result': CmdResultPayload;
   'state.request': StateRequestPayload;
@@ -1014,6 +1021,7 @@ export const FLEET_MESSAGES: Record<FleetMessageType, { direction: Direction; re
     'match.assign': P2S_RELIABLE,
     'match.update': P2S_RELIABLE,
     'match.unassign': P2S_RELIABLE,
+    'backup.part': P2S_RELIABLE,
     cmd: P2S_RELIABLE,
     'state.request': { direction: 'platform_to_server', reliable: false },
     'admins.set': P2S_RELIABLE,

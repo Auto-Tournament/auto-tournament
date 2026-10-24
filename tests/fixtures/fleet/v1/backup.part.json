@@ -1,0 +1,25 @@
+{
+  "v": 1,
+  "type": "backup.part",
+  "id": "01J8ZQ4T8W6N3X0F2R5K7M9S01",
+  "ts": 1790340012345,
+  "seq": 90,
+  "payload": {
+    "match_id": "m_01M3BAZ4FY7SGTCD0XHZCS1900",
+    "backup": {
+      "map_number": 1,
+      "round": 5,
+      "file": "backup_round04.txt",
+      "size": 150,
+      "sha256": "5d08a580448e3c0f046f85dd72b839b76f1d226b8a5f0b1e8f67492bef91cddd",
+      "score": {
+        "team1": 2,
+        "team2": 2
+      },
+      "encoding": "base64",
+      "data": "ZXhhbXBsZSBiYWNrdXAKZXhhbXBsZSBiYWNrdXAKZXhhbXBsZSBiYWNrdXAKZXhhbXBsZSBiYWNrdXAKZXhhbXBsZSBiYWNrdXAKZXhhbXBsZSBiYWNrdXAKZXhhbXBsZSBiYWNrdXAKZXhhbXBsZSBiYWNrdXAKZXhhbXBsZSBiYWNrdXAKZXhhbXBsZSBiYWNrdXAK",
+      "part": 1,
+      "parts": 1
+    }
+  }
+}

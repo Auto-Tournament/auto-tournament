@@ -26,6 +26,7 @@ import authRotated from './messages/auth.rotated.json';
 import matchAssign from './messages/match.assign.json';
 import matchUpdate from './messages/match.update.json';
 import matchUnassign from './messages/match.unassign.json';
+import backupPart from './messages/backup.part.json';
 import cmd from './messages/cmd.json';
 import cmdResult from './messages/cmd.result.json';
 import stateRequest from './messages/state.request.json';
@@ -93,6 +94,7 @@ export const FLEET_MESSAGE_SCHEMAS: Record<FleetMessageType, AnySchemaObject> = 
   'match.assign': matchAssign,
   'match.update': matchUpdate,
   'match.unassign': matchUnassign,
+  'backup.part': backupPart,
   cmd: cmd,
   'cmd.result': cmdResult,
   'state.request': stateRequest,
