@@ -55,6 +55,7 @@ import { recorderFleetRouter } from './recorderFleet';
  *   PUT  /api/game/cs2/watch/comments/:id             { body }: its author edits it
  *   DELETE /api/game/cs2/watch/comments/:id           its author or an admin removes it
  *   GET  /api/game/cs2/watch/related                  ?match&map | ?tournament: the players on that map and more reels
+ *   GET  /api/game/cs2/frame-by-frame                 Frame by Frame in the newest recorder report: { status, cs2, checkedAt } or null
  *   GET  /api/game/cs2/highlights/:file               a clip (`<id>.mp4`) or reel (`reel-…`, `match-…`, `tournament-…`), with range requests;
  *                                                     ?crowd=1, ?music=<track>&intro=<s>[&level=<0–2>]: a download with its crowd track and/or that music mixed in (../demos/music.ts)
  *                                                     ?clean=1: its clean twin instead (as recorded: no card, kill feed or logo)

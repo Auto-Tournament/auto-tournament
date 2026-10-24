@@ -794,3 +794,21 @@ test(
     expect((await request.get('/api/game/cs2/recorder/update/available')).status()).toBe(400);
   }
 );
+
+test('the newest Frame by Frame report is public', TAGS, async ({ request }) => {
+  expect(await signInViaRequest(request)).toBe(true);
+  const name = `fbf-${Date.now()}`;
+  await request.post('/api/game/cs2/recorder/claim', {
+    data: { recorder: name, version: 8, notReady: 'register only' },
+  });
+  const run = await request.post('/api/game/cs2/recorder/runs', {
+    headers: { 'X-AT-Recorder': name },
+    data: { recorder: name, kind: 'map', ok: true, clips: 1, fbf: 'actions', cs2: '1.41.9.2' },
+  });
+  expect(run.status()).toBe(200);
+  const res = await request.get('/api/game/cs2/frame-by-frame');
+  expect(res.status()).toBe(200);
+  const { frameByFrame } = await res.json();
+  expect(frameByFrame).toMatchObject({ status: 'actions', cs2: '1.41.9.2' });
+  expect(frameByFrame.checkedAt).toBeGreaterThan(0);
+});

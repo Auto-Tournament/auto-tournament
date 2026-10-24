@@ -328,6 +328,25 @@ export async function listRecorders() {
   });
 }
 
+/**
+ * Frame by Frame in the newest recorder report (saveRun): whether a recent CS2
+ * still runs it, for the website's compatibility page. Null before any report.
+ */
+export async function frameByFrameStatus() {
+  const row = await db.queryOneAsync<{
+    fbf_status: string;
+    fbf_cs2: string | null;
+    fbf_checked_at: number;
+  }>(
+    `SELECT fbf_status, fbf_cs2, fbf_checked_at FROM cs2_recorders
+      WHERE fbf_status IS NOT NULL ORDER BY fbf_checked_at DESC LIMIT 1`,
+    []
+  );
+  return row
+    ? { status: row.fbf_status, cs2: row.fbf_cs2, checkedAt: Number(row.fbf_checked_at) }
+    : null;
+}
+
 /** A recorder's recent runs, newest first (without their logs). */
 export async function listRuns(name: string, limit = 50) {
   const rows = await db.queryAsync<{

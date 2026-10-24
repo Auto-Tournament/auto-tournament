@@ -5,6 +5,7 @@ import path from 'path';
 import { URLSearchParams } from 'url';
 import { Router, type Request, type Response } from 'express';
 import { checkAdminAccess, requestActorId } from '../../../middleware/auth';
+import { frameByFrameStatus } from '../demos/recorders';
 import { resolveViewerAccount } from '../../../utils/viewerIdentity';
 import { countView, libraryPage, setLike, videoKey, videoStats } from '../demos/library';
 import {
@@ -65,6 +66,13 @@ export function registerHighlightReadRoutes(router: Router): void {
       const id = idOf(req);
       if (!id) return res.status(400).json({ success: false, error: 'A tournament id' });
       return res.json({ success: true, ...(await tournamentHighlights(id)) });
+    })
+  );
+
+  router.get(
+    '/frame-by-frame',
+    read('Frame by Frame status', async (_req: Request, res: Response) => {
+      return res.json({ success: true, frameByFrame: await frameByFrameStatus() });
     })
   );
 
