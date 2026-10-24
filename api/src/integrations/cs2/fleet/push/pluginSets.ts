@@ -266,6 +266,23 @@ export async function matchPluginDisabled(fleetServerId: string): Promise<boolea
   }
 }
 
+/** Every fleet server whose stored plugin set turns match off (one query, for lists). */
+export async function matchDisabledServerIds(): Promise<Set<string>> {
+  const rows = await db.queryAsync<{ server_id: string; plugins: string | null }>(
+    'SELECT server_id, plugins FROM cs2_fleet_server_prefs WHERE plugins IS NOT NULL'
+  );
+  const out = new Set<string>();
+  for (const r of rows) {
+    try {
+      const stored = JSON.parse(r.plugins ?? '') as Partial<StoredPlugins>;
+      if (Array.isArray(stored.disable) && stored.disable.includes('match')) out.add(r.server_id);
+    } catch {
+      // unreadable set: not for matches is not something to guess
+    }
+  }
+  return out;
+}
+
 // ---------------------------------------------------------------------------
 // The fleet default set
 // ---------------------------------------------------------------------------

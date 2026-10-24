@@ -62,13 +62,14 @@ import { fleetBus, onFleetServerReady } from './service';
 import { liveStateStore } from './state';
 import { cs2ServerIdOf } from './link';
 import { hostEvents, hostServers } from './hosts/service';
-import { getFailoverSettings } from './failoverSettings';
+import { getFailoverSettings, reserveCount } from './failoverSettings';
 import { createWhenNoneFree, linkCreatedServers, restartBeforeMove } from './failoverRecovery';
 import {
   buildResume,
   detectFailure,
   failoverGraceFromEnv,
   pickBackup,
+  pickReserved,
   pickTarget,
   type FailoverCandidate,
   type FailoverGrace,
@@ -354,6 +355,16 @@ export async function serverChoices(exceptId: string | null): Promise<ServerChoi
 }
 
 /** The fleet servers that could take a match right now, the failover reserve included. */
+/** The free servers held back for failover right now (the reserve, FLEET.md §11). */
+export async function heldFleetSpares(): Promise<FailoverCandidate[]> {
+  const [reserve, free] = await Promise.all([reserveCount(), freeFleetServers()]);
+  const held = pickReserved(
+    free.map((c) => ({ id: c.cs2ServerId, name: c.name })),
+    reserve.effective
+  );
+  return free.filter((c) => held.has(c.cs2ServerId));
+}
+
 export async function freeFleetServers(): Promise<FailoverCandidate[]> {
   const { cs2ServerPool } = await import('../allocation');
   const free = (await cs2ServerPool.getAvailableServers({ includeFleetReserve: true })).filter(

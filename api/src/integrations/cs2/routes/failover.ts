@@ -36,6 +36,7 @@ import {
   dismissFailover,
   freeFleetServers,
   getProposal,
+  heldFleetSpares,
   listProposals,
   moveMatch,
   type AcceptOutcome,
@@ -47,7 +48,6 @@ import {
   reserveCount,
   setFailoverSettings,
 } from '../fleet/failoverSettings';
-import { pickReserved } from '../fleet/failoverPlan';
 import { liveStateStore } from '../fleet/state';
 import { getAssignment } from '../fleet/driver';
 import { db } from '../../../config/database';
@@ -243,24 +243,18 @@ failoverMatchRouter.post(
 );
 
 async function settingsView() {
-  const [settings, reserve, free] = await Promise.all([
+  const [settings, reserve, held] = await Promise.all([
     getFailoverSettings(),
     reserveCount(),
-    freeFleetServers(),
+    heldFleetSpares(),
   ]);
-  const held = pickReserved(
-    free.map((c) => ({ id: c.cs2ServerId, name: c.name })),
-    reserve.effective
-  );
   return {
     settings,
     reserve: {
       configured: reserve.configured,
       effective: reserve.effective,
       poolSize: reserve.poolSize,
-      held: free
-        .filter((c) => held.has(c.cs2ServerId))
-        .map((c) => ({ id: c.cs2ServerId, name: c.name })),
+      held: held.map((c) => ({ id: c.cs2ServerId, name: c.name })),
     },
   };
 }

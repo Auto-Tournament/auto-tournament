@@ -31,6 +31,7 @@ import { driverFor } from './driver';
 import { execOnFleetServer, fleetServerIsIdle, serverIsSilent } from './fleet/driver';
 import { reserveCount } from './fleet/failoverSettings';
 import { pickReserved } from './fleet/failoverPlan';
+import type { BusyReason } from './fleet/protocol/v1/types';
 
 /** One attempt to put a match on a server, as the allocator reports it. */
 export interface ServerAllocationResult {
@@ -64,11 +65,15 @@ export type ServerPoolEntry = {
   notAllocatableReason:
     | 'offline'
     | 'busy'
+    | 'reserved'
     | 'grace-window'
     | 'demo-upload'
     | 'cs2-out-of-date'
     | 'cs2-unverified'
     | null;
+  /** Why the server takes no match (fleet/busyReason.ts). */
+  busyReason: BusyReason | null;
+  busyDetail: string | null;
 };
 
 /** Ready Up's series-end kick delay when its server settings name none (match_end.h). */
@@ -178,6 +183,8 @@ export class Cs2ServerPool {
             updatedAt: fleet.idleSince,
             online: fleet.online,
             fleetIdle: fleet.idle,
+            busyReason: fleet.busyReason,
+            busyDetail: fleet.busyDetail,
           };
         } catch {
           return {
@@ -187,6 +194,8 @@ export class Cs2ServerPool {
             updatedAt: null as number | null,
             online: false,
             fleetIdle: false,
+            busyReason: null as BusyReason | null,
+            busyDetail: null as string | null,
           };
         }
       })
@@ -243,6 +252,11 @@ export class Cs2ServerPool {
     let busyCount = 0;
     const graceWindowCount = 0;
 
+    // Idle Ready Up servers held back for failover (FLEET.md §11): not allocatable, shown as spares.
+    const spareIds = new Set(
+      (await (await import('./fleet/failover')).heldFleetSpares()).map((c) => c.cs2ServerId)
+    );
+
     for (const check of statusChecks) {
       const { server, status, matchSlug, updatedAt, online } = check;
 
@@ -276,6 +290,7 @@ export class Cs2ServerPool {
 
       let demoUploadPending = false;
       let secondsUntilReady: number | null = null;
+      let reserved = false;
       let allocatable = false;
 
       const turnover = isIdle
@@ -290,7 +305,8 @@ export class Cs2ServerPool {
       } else if (isIdle) {
         // Ready Up says `available` only once the previous match is unloaded
         // and its players are gone: no grace window on top.
-        allocatable = true;
+        reserved = spareIds.has(server.id);
+        allocatable = !reserved;
       }
 
       if (!isIdle && online) {
@@ -305,6 +321,7 @@ export class Cs2ServerPool {
       if (!allocatable) {
         if (!online) notAllocatableReason = 'offline';
         else if (!isIdle) notAllocatableReason = 'busy';
+        else if (reserved) notAllocatableReason = 'reserved';
         else if (demoUploadPending) notAllocatableReason = 'demo-upload';
       }
 
@@ -322,6 +339,8 @@ export class Cs2ServerPool {
         secondsUntilReady,
         allocatable,
         notAllocatableReason,
+        busyReason: reserved ? 'reserved' : check.busyReason,
+        busyDetail: reserved ? null : check.busyDetail,
         staleMatchSlug: dbRecordIsStale ? (dbBusy?.slug ?? null) : null,
       });
     }

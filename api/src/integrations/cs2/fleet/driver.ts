@@ -66,6 +66,8 @@ import { liveStateStore } from './state';
 import { roundBackupStore } from './backups';
 import { DEMO_STREAM_CAPABILITY } from './limits';
 import { matchPluginDisabled } from './push/pluginSets';
+import { effectiveBusyReason, parseBusyReason } from './busyReason';
+import type { BusyReason } from './protocol/v1/types';
 import { fleetBus, onFleetServerReady, setFleetAssignmentResolver } from './service';
 import type {
   AssignConfig,
@@ -244,6 +246,11 @@ export interface FleetServerStatus {
   phase: MatchPhase | null;
   /** The phase in the plugin's status words, for the views that show those. */
   status: ServerStatus | null;
+  /** The plugin set turns match off (a practice server). */
+  matchDisabled: boolean;
+  /** Why it takes no match (busyReason.ts), and what that refers to. */
+  busyReason: BusyReason | null;
+  busyDetail: string | null;
 }
 
 const PHASE_STATUS: Record<MatchPhase, ServerStatus> = {
@@ -271,14 +278,22 @@ export async function fleetServerStatus(cs2ServerId: string): Promise<FleetServe
       matchSlug: null,
       phase: null,
       status: null,
+      matchDisabled: false,
+      busyReason: null,
+      busyDetail: null,
     };
   }
   const online = fleetBus().isConnected(fleetServerId);
-  const row = await db.queryOneAsync<{ availability: string | null }>(
-    'SELECT availability FROM cs2_fleet_servers WHERE id = ?',
+  const row = await db.queryOneAsync<{
+    availability: string | null;
+    availability_reason: string | null;
+    availability_detail: string | null;
+  }>(
+    'SELECT availability, availability_reason, availability_detail FROM cs2_fleet_servers WHERE id = ?',
     [fleetServerId]
   );
   const availability = row?.availability ?? null;
+  const matchDisabled = await matchPluginDisabled(fleetServerId);
   const [assignment] = await openAssignmentsOf(fleetServerId);
   let phase: MatchPhase | null = null;
   if (assignment) {
@@ -300,6 +315,12 @@ export async function fleetServerStatus(cs2ServerId: string): Promise<FleetServe
     matchSlug: assignment?.matchSlug ?? null,
     phase,
     status,
+    matchDisabled,
+    busyReason: effectiveBusyReason(parseBusyReason(row?.availability_reason), {
+      matchDisabled,
+      reserved: false,
+    }),
+    busyDetail: row?.availability_detail ?? null,
   };
 }
 
@@ -315,18 +336,19 @@ export async function fleetServerIsIdle(cs2ServerId: string): Promise<{
   online: boolean;
   status: ServerStatus | null;
   idleSince: number | null;
+  busyReason: BusyReason | null;
+  busyDetail: string | null;
 }> {
   const s = await fleetServerStatus(cs2ServerId);
   // Ready Up's availability is the truth: a finished match it has unloaded
   // does not block it even before the platform's unassign (the notes §4).
-  const idle =
-    s.online &&
-    s.availability === 'available' &&
-    !(s.fleetServerId && (await matchPluginDisabled(s.fleetServerId)));
+  const idle = s.online && s.availability === 'available' && !s.matchDisabled;
   return {
     idle,
     online: s.online,
     status: s.status,
+    busyReason: s.busyReason,
+    busyDetail: s.busyDetail,
     idleSince: s.fleetServerId ? (availableSince.get(s.fleetServerId) ?? null) : null,
   };
 }

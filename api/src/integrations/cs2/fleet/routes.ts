@@ -57,6 +57,7 @@ import { formatConnectAddress, unmapV4, type ConnectSource } from './address';
 import { getAssignment, syncMatch } from './driver';
 import { listCommands } from './reliable';
 import { liveStateStore } from './state';
+import { withBusyReasons } from './busyView';
 import { enrollHostHandler } from './hosts/routes';
 import { fleetChangedOnWrite } from './adminTopics';
 
@@ -264,7 +265,9 @@ function optionalPositiveInt(value: Untrusted): number | null | undefined {
 
 fleetAdminRouter.get('/servers', async (_req: Request, res: Response) => {
   try {
-    const live = await withLinks(withLiveState(await registry.listFleetServers()));
+    const live = await withBusyReasons(
+      await withLinks(withLiveState(await registry.listFleetServers()))
+    );
     // Pre-release servers compare against the newest release incl. betas,
     // stable ones against stable releases only (both lookups are cached).
     const servers = await Promise.all(
