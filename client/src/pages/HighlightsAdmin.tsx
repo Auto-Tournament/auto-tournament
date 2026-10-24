@@ -6,14 +6,7 @@
  * overlays and how to add a recorder). `?tab=` picks the tab.
  */
 import { useEffect, useState } from 'react';
-import {
-  Box,
-  CircularProgress,
-  Tab,
-  Tabs,
-  TextField,
-  Typography,
-} from '@mui/material';
+import { Box, CircularProgress, Tab, Tabs, TextField, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 import { PageHead, SwitchRow } from '../components/common/ui';
