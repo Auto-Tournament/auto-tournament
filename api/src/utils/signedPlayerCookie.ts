@@ -6,7 +6,10 @@
  * after Steam/OAuth login. To prevent forgery (e.g. setting it to an admin's
  * Steam ID in devtools), we sign it with SESSION_SECRET and verify on read.
  *
- * Old unsigned cookies are rejected; users must sign in again after deploy.
+ * The value carries its own expiry, so a copied cookie stops working after
+ * PLAYER_COOKIE_MAX_AGE_MS even where the browser would have kept it.
+ * Older forms (unsigned, or signed without an expiry) are rejected; users
+ * sign in again.
  */
 
 import crypto from 'crypto';
@@ -17,6 +20,8 @@ const SEP = '.';
 
 const getSecret = sessionSecret;
 
+export const PLAYER_COOKIE_MAX_AGE_MS = 1000 * 60 * 60 * 24 * 30;
+
 function hmac(key: string, value: string): string {
   return crypto.createHmac('sha256', key).update(value, 'utf8').digest('base64url');
 }
@@ -25,17 +30,19 @@ function hmac(key: string, value: string): string {
  * Produce a signed cookie value for the given Steam ID.
  * Use this when setting the player_steam_id cookie.
  */
-export function signPlayerSteamId(steamId: string): string {
-  const trimmed = steamId.trim();
-  const sig = hmac(getSecret(), trimmed);
-  return `${trimmed}${SEP}${sig}`;
+export function signPlayerSteamId(steamId: string, now = Date.now()): string {
+  const payload = `${steamId.trim()}${SEP}${Math.floor((now + PLAYER_COOKIE_MAX_AGE_MS) / 1000)}`;
+  return `${payload}${SEP}${hmac(getSecret(), payload)}`;
 }
 
 /**
  * Parse Cookie header, extract player_steam_id, verify signature, and return
  * the Steam ID. Returns null if missing, invalid, or verification fails.
  */
-export function getVerifiedPlayerSteamId(cookieHeader: string | undefined): string | null {
+export function getVerifiedPlayerSteamId(
+  cookieHeader: string | undefined,
+  now = Date.now()
+): string | null {
   if (!cookieHeader || typeof cookieHeader !== 'string') return null;
   const map = Object.fromEntries(
     cookieHeader
@@ -55,12 +62,17 @@ export function getVerifiedPlayerSteamId(cookieHeader: string | undefined): stri
   );
   const raw = map[COOKIE_NAME];
   if (!raw || typeof raw !== 'string') return null;
+  // `<steamId>.<expires, unix seconds>.<signature>`
   const i = raw.lastIndexOf(SEP);
   if (i <= 0) return null;
-  const steamId = raw.slice(0, i).trim();
+  const payload = raw.slice(0, i);
   const sig = raw.slice(i + 1);
-  if (!steamId || !sig) return null;
-  const expected = hmac(getSecret(), steamId);
+  const j = payload.lastIndexOf(SEP);
+  if (j <= 0 || !sig) return null;
+  const steamId = payload.slice(0, j).trim();
+  const expires = Number(payload.slice(j + 1));
+  if (!steamId || !Number.isInteger(expires) || expires * 1000 <= now) return null;
+  const expected = hmac(getSecret(), payload);
   try {
     const a = Buffer.from(sig, 'base64url');
     const b = Buffer.from(expected, 'base64url');
