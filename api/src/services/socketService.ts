@@ -4,6 +4,7 @@ import type { Request } from 'express';
 import { log, onLogEntry } from '../utils/logger';
 import { getRealViewerSteamId } from '../utils/viewerIdentity';
 import { checkAdminAccess } from '../middleware/auth';
+import { configuredSocketOrigins, socketOriginAllowed } from '../utils/socketOrigin';
 import { matchChanged } from '../core/matchChangeBus';
 import { PresenceTracker, type PresenceChange, type PresenceStatus } from './presenceTracker';
 import type {
@@ -97,8 +98,15 @@ export function initializeSocket(
 ): SocketIOServer {
   io = new SocketIOServer(httpServer, {
     cors: {
-      origin: process.env.CORS_ORIGIN || '*',
+      origin: configuredSocketOrigins() ?? '*',
       methods: ['GET', 'POST'],
+    },
+    allowRequest: (req, callback) => {
+      const allowed = socketOriginAllowed(req.headers.origin, req.headers);
+      if (!allowed) {
+        log.warn('Socket handshake refused: foreign Origin', { origin: req.headers.origin });
+      }
+      callback(null, allowed);
     },
   });
 
