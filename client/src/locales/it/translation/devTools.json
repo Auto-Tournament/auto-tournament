@@ -1,6 +1,7 @@
 {
   "devToolsPage": {
     "alert": "Questi strumenti sono disponibili solo in modalità sviluppo. Usali per generare rapidamente dati di test e testare l’applicazione.",
+    "typeToConfirm": "Digita «{{value}}» per confermare",
     "sections": {
       "testData": {
         "title": "Crea dati di test"
@@ -65,6 +66,8 @@
       "title": "Svuota tabelle specifiche",
       "description": "Elimina tutti i dati da una tabella specifica. Utile per ripulire senza resettare tutto. Le tabelle sono organizzate per categoria.",
       "confirmPrompt": "Sei sicuro di voler svuotare la tabella {{table}}? Questo eliminerà tutti i dati della tabella.",
+      "confirmTitle": "Svuotare la tabella {{table}}?",
+      "confirmButton": "Svuota tabella",
       "success": "Tabella {{table}} svuotata con successo!",
       "error": "Impossibile svuotare la tabella {{table}}",
       "core": {
@@ -104,7 +107,10 @@
       "button": "Reimposta stato simulazione (mantieni config)",
       "reset": {
         "success": "Stato simulazione reimpostato. Match e statistiche cancellati; server, team e configurazione torneo mantenuti.",
-        "error": "Impossibile reimpostare lo stato simulazione"
+        "error": "Impossibile reimpostare lo stato simulazione",
+        "confirmTitle": "Reimpostare lo stato della simulazione?",
+        "confirmBody": "Partite e statistiche vengono cancellate; server, squadre, mappe e configurazione del torneo restano.",
+        "confirmButton": "Reimposta"
       }
     },
     "wipeDatabase": {

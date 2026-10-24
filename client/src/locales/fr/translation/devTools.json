@@ -1,6 +1,7 @@
 {
   "devToolsPage": {
     "alert": "Ces outils sont uniquement disponibles en mode développement. Utilisez-les pour générer rapidement des données de test afin de tester l’application.",
+    "typeToConfirm": "Saisissez « {{value}} » pour confirmer",
     "sections": {
       "testData": {
         "title": "Créer des données de test"
@@ -65,6 +66,8 @@
       "title": "Vider des tables spécifiques",
       "description": "Supprime toutes les données d’une table spécifique. Utile pour nettoyer sans tout réinitialiser. Les tables sont organisées par catégorie.",
       "confirmPrompt": "Êtes-vous sûr de vouloir vider la table {{table}} ? Cela supprimera toutes les données de cette table.",
+      "confirmTitle": "Vider la table {{table}} ?",
+      "confirmButton": "Vider la table",
       "success": "La table {{table}} a été vidée avec succès !",
       "error": "Impossible de vider la table {{table}}",
       "core": {
@@ -104,7 +107,10 @@
       "button": "Réinitialiser l’état de simulation (conserver la config)",
       "reset": {
         "success": "État de simulation réinitialisé. Matchs et stats effacés ; serveurs, équipes et config du tournoi conservés.",
-        "error": "Impossible de réinitialiser l’état de simulation"
+        "error": "Impossible de réinitialiser l’état de simulation",
+        "confirmTitle": "Réinitialiser l’état de la simulation ?",
+        "confirmBody": "Les matchs et les statistiques sont effacés ; les serveurs, les équipes, les cartes et la configuration du tournoi sont conservés.",
+        "confirmButton": "Réinitialiser"
       }
     },
     "wipeDatabase": {

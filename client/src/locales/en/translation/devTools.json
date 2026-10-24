@@ -1,6 +1,7 @@
 {
   "devToolsPage": {
     "alert": "These tools are only available in development mode. Use them to quickly generate test data for testing the application.",
+    "typeToConfirm": "Type “{{value}}” to confirm",
     "sections": {
       "testData": {
         "title": "Create Test Data"
@@ -65,6 +66,8 @@
       "title": "Wipe Specific Tables",
       "description": "Delete all data from a specific table. Useful for cleaning up without resetting everything. Tables are organized by category.",
       "confirmPrompt": "Are you sure you want to wipe the {{table}} table? This will delete all data in that table.",
+      "confirmTitle": "Wipe the {{table}} table?",
+      "confirmButton": "Wipe table",
       "success": "Table {{table}} wiped successfully!",
       "error": "Failed to wipe {{table}} table",
       "core": {
@@ -104,7 +107,10 @@
       "button": "Reset Simulation State (preserve config)",
       "reset": {
         "success": "Simulation state reset. Matches and stats cleared; servers, teams, and tournament setup preserved.",
-        "error": "Failed to reset simulation state"
+        "error": "Failed to reset simulation state",
+        "confirmTitle": "Reset the simulation state?",
+        "confirmBody": "Matches and stats are cleared; servers, teams, maps and the tournament setup are kept.",
+        "confirmButton": "Reset"
       }
     },
     "wipeDatabase": {

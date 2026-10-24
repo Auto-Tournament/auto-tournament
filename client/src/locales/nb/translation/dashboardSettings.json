@@ -223,6 +223,7 @@
         "localLoginLocked": "Må være på til en annen admin kan logge inn med en tjeneste som er slått på.",
         "steamIds": "Admin-Steam-ID-er",
         "steamIdsHelp": "Steam64-ID-er, skilt med komma. Blir admin når du lagrer og ved hver oppstart. Å fjerne en tar ikke bort admin.",
+        "rootOnly": "Bare en root-admin kan endre dette.",
         "emails": "Admin-e-poster",
         "emailsHelp": "Adresser som blir admin når eieren logger inn med en tjeneste som har bekreftet adressen (Google, Discord, GitHub).",
         "unsaved": "Ikke lagret ennå.",

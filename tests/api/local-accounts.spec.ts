@@ -11,6 +11,10 @@ import { signInViaRequest } from '../helpers/auth';
 
 const TAGS = { tag: ['@api', '@auth'] };
 const BASE = process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3069';
+/** Granting admin to a local account is root only (an admin token is root). */
+const ROOT = {
+  Authorization: `Bearer ${(process.env.API_TOKENS || 'ci-admin:ci-admin-token-0123456789abcdef').split(',')[0].split(':').slice(1).join(':')}`,
+};
 
 function fresh(playwright: PlaywrightWorkerArgs['playwright']) {
   return playwright.request.newContext({ baseURL: BASE });
@@ -75,11 +79,15 @@ test.describe.serial('local accounts', () => {
     'an admin makes it an admin, then sets a new password',
     TAGS,
     async ({ request, playwright }) => {
-      const made = await request.put(`/api/local-accounts/${user}`, { data: { isAdmin: true } });
+      const made = await request.put(`/api/local-accounts/${user}`, {
+        headers: ROOT,
+        data: { isAdmin: true },
+      });
       expect(made.status(), await made.text()).toBe(200);
       expect(((await made.json()) as { account: { isAdmin: boolean } }).account.isAdmin).toBe(true);
 
       const reset = await request.put(`/api/local-accounts/${user}/password`, {
+        headers: ROOT,
         data: { password: next },
       });
       expect(reset.status(), await reset.text()).toBe(200);
@@ -161,6 +169,7 @@ test.describe.serial('local accounts', () => {
 
       // The name is free again, for a new player with its own id.
       const again = await request.post('/api/local-accounts', {
+        headers: ROOT,
         data: { username: user, password, name: 'E2E Again', isAdmin: true },
       });
       expect(again.status(), await again.text()).toBe(201);

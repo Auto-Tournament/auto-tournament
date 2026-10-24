@@ -28,6 +28,12 @@ function clearCachedPlayerAvatarUrl(steamId: string): void {
 
 interface AuthContextType {
   /**
+   * A root admin (/api/auth/me `root`): an admin-scope token, the local admin,
+   * or a listed admin Steam ID. Only they change who is root. Not a security
+   * boundary: the API checks it.
+   */
+  isRoot: boolean;
+  /**
    * Steam ID for the current player (if any), derived from the lightweight
    * player_steam_id cookie exposed by /api/auth/me.
    *
@@ -132,6 +138,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isAdmin, setIsAdmin] = useState(false);
   const [playerSteamId, setPlayerSteamId] = useState<string | null>(null);
   const [playerUid, setPlayerUid] = useState<string | null>(null);
+  const [isRoot, setIsRoot] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [adminHasSteamLinked, setAdminHasSteamLinked] = useState(false);
   const [adminProvider, setAdminProvider] = useState<string | null>(null);
@@ -169,6 +176,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
           const data: {
             authenticated?: boolean;
+            root?: boolean;
             steamId?: string;
             uid?: string | null;
             hasPlayerRecord?: boolean;
@@ -180,6 +188,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               realSteamId?: string | null;
             };
           } = await response.json();
+
+          setIsRoot(data.root === true);
 
           // The effective identity's account id. /api/auth/me resolves the
           // identity the same way /api/auth/admin/me does (session first,
@@ -271,15 +281,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setIsAdmin(Boolean(data.authenticated));
           // Keep the explanation only while it is true; a later successful
           // check must not leave a stale "you are not an admin" behind.
-          setAdminDenialMessage(data.authenticated ? null : data.message ?? null);
+          setAdminDenialMessage(data.authenticated ? null : (data.message ?? null));
           setAdminProvider(data.provider ?? null);
           if (data.authenticated) setHasPlayerRecord(true);
 
           const profile = data.providerProfile || {};
           const profileName =
-            typeof profile.name === 'string' && profile.name.trim() !== ''
-              ? profile.name
-              : null;
+            typeof profile.name === 'string' && profile.name.trim() !== '' ? profile.name : null;
           const profileAvatarUrl =
             typeof profile.avatarUrl === 'string' && profile.avatarUrl.trim() !== ''
               ? profile.avatarUrl
@@ -398,6 +406,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsAdmin(false);
     setPlayerSteamId(null);
     setPlayerUid(null);
+    setIsRoot(false);
     setImpersonation(null);
     setHasPlayerRecord(false);
     setAdminProvider(null);
@@ -448,6 +457,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         loginWithSteam,
         logout,
         isAuthenticated: isAdmin,
+        isRoot,
         playerSteamId,
         playerUid,
         isPlayerAuthenticated: !!playerSteamId,

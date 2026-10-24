@@ -6,9 +6,9 @@
  * the result `status` / `errorCode` and the command id.
  */
 
-import { isSavedAdminSteamId } from '../../../utils/adminSteamIds';
 import type { Request, Response } from 'express';
-import { requestActorId, type AuthedRequest } from '../../../middleware/auth';
+import { requestActorId } from '../../../middleware/auth';
+import { isRootRequest } from '../../../utils/rootAccess';
 import {
   execOnFleetServer,
   runFleetCommand,
@@ -18,19 +18,7 @@ import {
 import type { CmdName } from '../fleet/protocol/v1';
 import type { Untrusted } from '../../../utils/untrusted';
 
-/**
- * Root (FLEET.md D10: `exec`): an admin-scope API token, the local admin
- * account (created on /setup by whoever runs the instance), or a signed-in
- * admin whose Steam ID is in Settings -> Sign-in -> Admin Steam IDs (the
- * instance's operators). Other admins drive matches but cannot run raw
- * console commands on a Ready Up server.
- */
-export function isRootRequest(req: Request): boolean {
-  const token = (req as AuthedRequest).serviceToken;
-  if (token) return token.scope === 'admin';
-  const actor = requestActorId(req);
-  return !!actor && (actor.startsWith('local-') || isSavedAdminSteamId(actor));
-}
+export { isRootRequest } from '../../../utils/rootAccess';
 
 export function issuedBy(req: Request): IssuedBy & { actor: string | null } {
   const actor = requestActorId(req);

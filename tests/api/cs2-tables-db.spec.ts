@@ -368,7 +368,11 @@ test.describe.serial('CS2 tables on the database', () => {
     test(`a wipe leaves the same schema (${wipe})`, async ({ request }) => {
       const before = await view(request);
 
-      const res = await request.post(wipe, { headers: getAuthHeader(), timeout: 60_000 });
+      const res = await request.post(wipe, {
+        headers: getAuthHeader(),
+        data: { confirm: 'wipe' },
+        timeout: 60_000,
+      });
       expect(res.ok(), await res.text()).toBe(true);
       expect(await signInViaRequest(request)).toBe(true);
 

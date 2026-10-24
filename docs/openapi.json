@@ -10301,6 +10301,9 @@
           "400": {
             "description": "Username or password not accepted"
           },
+          "403": {
+            "description": "isAdmin from an admin who is not root"
+          },
           "409": {
             "description": "The username is taken"
           }
@@ -10325,6 +10328,9 @@
         "responses": {
           "200": {
             "description": "Saved"
+          },
+          "403": {
+            "description": "Making an admin, from an admin who is not root"
           },
           "404": {
             "description": "No such account"
@@ -10402,6 +10408,9 @@
           },
           "400": {
             "description": "Password not accepted"
+          },
+          "403": {
+            "description": "An admin account's password, from an admin who is not root"
           },
           "404": {
             "description": "No such account"
@@ -15780,6 +15789,9 @@
           },
           "400": {
             "description": "Invalid field"
+          },
+          "403": {
+            "description": "adminSteamIds from an admin who is not root"
           },
           "409": {
             "description": "Turning local admin login off would lock every admin out"
@@ -21631,7 +21643,7 @@
           "Tournament"
         ],
         "summary": "Reset simulation state while preserving core configuration (DEV ONLY)",
-        "description": "Clears all matches, match events, map results, player match stats, and rating history so you can restart simulations from a clean slate, while preserving servers, teams, maps, map pools, and the current tournament configuration (name, type, maps, teams, settings). Player records are kept, but their current ELO and match counts are reset based on their starting values.\n",
+        "description": "Clears all matches, match events, map results, player match stats, and rating history so you can restart simulations from a clean slate, while preserving servers, teams, maps, map pools, and the current tournament configuration (name, type, maps, teams, settings). Player records are kept, but their current ELO and match counts are reset based on their starting values. A signed-in admin session only (no API token), same-site JSON, `{ \"confirm\": \"reset\" }`.\n",
         "security": [
           {
             "bearerAuth": []
@@ -21640,9 +21652,31 @@
             "apiToken": []
           }
         ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "confirm": {
+                    "type": "string",
+                    "description": "\"reset\""
+                  }
+                }
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Simulation state reset successfully"
+          },
+          "400": {
+            "description": "Missing or wrong confirmation"
+          },
+          "403": {
+            "description": "An API token, or a cross-site request"
           },
           "500": {
             "description": "Failed to reset simulation state"
@@ -21911,8 +21945,13 @@
         "tags": [
           "Tournament"
         ],
-        "summary": "Reset entire database (DEV ONLY)",
-        "description": "Drops all tables and reinitializes the database schema with default data (maps, map pools). This resets the database to its initial state as if starting fresh. USE WITH CAUTION!",
+        "summary": "POST /api/tournament/wipe-database",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
         "security": [
           {
             "bearerAuth": []
@@ -21920,12 +21959,7 @@
           {
             "apiToken": []
           }
-        ],
-        "responses": {
-          "200": {
-            "description": "Database reset successfully"
-          }
-        }
+        ]
       }
     },
     "/api/tournament/wipe-table/{table}": {
@@ -21933,8 +21967,23 @@
         "tags": [
           "Tournament"
         ],
-        "summary": "Wipe specific table (DEV ONLY)",
-        "description": "Deletes all data from a specific table",
+        "summary": "POST /api/tournament/wipe-table/:table",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "table",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "security": [
           {
             "bearerAuth": []
@@ -21942,39 +21991,7 @@
           {
             "apiToken": []
           }
-        ],
-        "parameters": [
-          {
-            "name": "table",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "enum": [
-                "teams",
-                "servers",
-                "tournament",
-                "matches",
-                "players",
-                "maps",
-                "map_pools",
-                "tournament_templates",
-                "elo_calculation_templates",
-                "match_events",
-                "match_map_results",
-                "player_rating_history",
-                "player_match_stats",
-                "shuffle_tournament_players",
-                "app_settings"
-              ]
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Table wiped successfully"
-          }
-        }
+        ]
       }
     },
     "/api/tournament/{id}/banner": {

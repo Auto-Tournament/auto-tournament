@@ -15,6 +15,7 @@ import { useTranslation } from 'react-i18next';
 import { api, apiErrorMessage } from '../../utils/api';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 import { SettingsRow } from './SettingsRow';
+import { useAuth } from '../../contexts/AuthContext';
 import { SwitchRow } from '../../components/common/ui';
 import type { Untrusted } from '../../utils/untrusted';
 
@@ -36,6 +37,7 @@ interface LocalAccount {
 export function LocalAccountsSection() {
   const { t } = useTranslation();
   const { showSuccess, showError } = useSnackbar();
+  const { isRoot } = useAuth();
   const [accounts, setAccounts] = useState<LocalAccount[] | null>(null);
   const [busy, setBusy] = useState(false);
   const [username, setUsername] = useState('');
@@ -157,7 +159,7 @@ export function LocalAccountsSection() {
                     label={t('settingsPage.signIn.accounts.admin')}
                     size="small"
                     checked={a.isAdmin}
-                    disabled={busy}
+                    disabled={busy || (!isRoot && !a.isAdmin)}
                     onChange={(e) =>
                       void run(
                         () =>
@@ -183,7 +185,7 @@ export function LocalAccountsSection() {
                   />
                   <Button
                     size="small"
-                    disabled={busy}
+                    disabled={busy || (!isRoot && a.isAdmin)}
                     sx={{ whiteSpace: 'nowrap' }}
                     onClick={() => {
                       setResetFor(a);
@@ -253,7 +255,8 @@ export function LocalAccountsSection() {
             <SwitchRow
               label={t('settingsPage.signIn.accounts.makeAdmin')}
               size="small"
-              checked={isAdmin}
+              checked={isAdmin && isRoot}
+              disabled={!isRoot}
               onChange={(e) => setIsAdmin(e.target.checked)}
               inputProps={{ 'data-testid': 'local-account-new-admin' } as Record<string, string>}
             />

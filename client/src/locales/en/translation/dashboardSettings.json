@@ -223,6 +223,7 @@
         "localLoginLocked": "Stays on until another admin can sign in with a provider that is turned on.",
         "steamIds": "Admin Steam IDs",
         "steamIdsHelp": "Steam64 IDs, separated by commas. Made admin when saved and at every start. Removing one does not take admin away.",
+        "rootOnly": "Only a root admin can change this.",
         "emails": "Admin emails",
         "emailsHelp": "Addresses that get admin when their owner signs in with a provider that verified them (Google, Discord, GitHub).",
         "unsaved": "Not saved yet.",

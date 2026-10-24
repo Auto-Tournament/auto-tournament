@@ -1,6 +1,7 @@
 {
   "devToolsPage": {
     "alert": "Diese Tools sind nur im Entwicklungsmodus verfügbar. Verwende sie, um schnell Testdaten zu erzeugen und die Anwendung zu testen.",
+    "typeToConfirm": "Zum Bestätigen „{{value}}“ eingeben",
     "sections": {
       "testData": {
         "title": "Testdaten erstellen"
@@ -65,6 +66,8 @@
       "title": "Bestimmte Tabellen leeren",
       "description": "Löscht alle Daten aus einer bestimmten Tabelle. Nützlich zum Aufräumen, ohne alles zurückzusetzen. Tabellen sind nach Kategorie organisiert.",
       "confirmPrompt": "Möchtest du wirklich die Tabelle {{table}} leeren? Dadurch werden alle Daten in dieser Tabelle gelöscht.",
+      "confirmTitle": "Tabelle {{table}} leeren?",
+      "confirmButton": "Tabelle leeren",
       "success": "Tabelle {{table}} wurde erfolgreich geleert!",
       "error": "Tabelle {{table}} konnte nicht geleert werden",
       "core": {
@@ -104,7 +107,10 @@
       "button": "Simulationszustand zurücksetzen (Konfiguration behalten)",
       "reset": {
         "success": "Simulationszustand zurückgesetzt. Matches und Statistiken gelöscht; Server, Teams und Turnierkonfiguration beibehalten.",
-        "error": "Simulationszustand konnte nicht zurückgesetzt werden"
+        "error": "Simulationszustand konnte nicht zurückgesetzt werden",
+        "confirmTitle": "Simulationsstatus zurücksetzen?",
+        "confirmBody": "Matches und Statistiken werden gelöscht; Server, Teams, Maps und die Turniereinrichtung bleiben erhalten.",
+        "confirmButton": "Zurücksetzen"
       }
     },
     "wipeDatabase": {

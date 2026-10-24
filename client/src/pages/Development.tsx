@@ -45,7 +45,24 @@ const Development: React.FC = () => {
   const [customPlayerCount, setCustomPlayerCount] = useState(60);
   const [customServerCount, setCustomServerCount] = useState(3);
   const [resettingSimulation, setResettingSimulation] = useState(false);
+  // The typed confirmation the destructive routes ask for ('wipe', the table, 'reset').
+  const [typedConfirm, setTypedConfirm] = useState('');
+  const [wipeTableTarget, setWipeTableTarget] = useState<string | null>(null);
+  const [confirmResetOpen, setConfirmResetOpen] = useState(false);
   const { t } = useTranslation();
+
+  const confirmField = (value: string) => (
+    <TextField
+      autoFocus
+      fullWidth
+      size="small"
+      sx={{ mt: 2 }}
+      label={t('devToolsPage.typeToConfirm', { value })}
+      value={typedConfirm}
+      onChange={(e) => setTypedConfirm(e.target.value)}
+      inputProps={{ 'data-testid': 'dev-confirm-input', spellCheck: false }}
+    />
+  );
 
   // Set dynamic page title
   document.title = pageTitle(t('layout.pageTitle.devTools'));
@@ -200,9 +217,7 @@ const Development: React.FC = () => {
     } catch (error) {
       console.error('Error creating test servers:', error);
       const errorMessage =
-        error instanceof Error
-          ? error.message
-          : t('devToolsPage.testServers.errors.create');
+        error instanceof Error ? error.message : t('devToolsPage.testServers.errors.create');
       showError(errorMessage);
     } finally {
       setLoading(false);
@@ -275,9 +290,7 @@ const Development: React.FC = () => {
     } catch (error) {
       console.error('Error creating test players:', error);
       const errorMessage =
-        error instanceof Error
-          ? error.message
-          : t('devToolsPage.testPlayers.errors.create');
+        error instanceof Error ? error.message : t('devToolsPage.testPlayers.errors.create');
       showError(errorMessage);
     } finally {
       setLoading(false);
@@ -341,11 +354,10 @@ const Development: React.FC = () => {
 
     try {
       const response: { success: boolean; message: string } = await api.post(
-        '/api/tournament/wipe-database'
+        '/api/tournament/wipe-database',
+        { confirm: 'wipe' }
       );
-      showSuccess(
-        response.message || t('devToolsPage.wipeDatabase.successRedirect')
-      );
+      showSuccess(response.message || t('devToolsPage.wipeDatabase.successRedirect'));
 
       // Refresh page after 2 seconds
       setTimeout(() => {
@@ -359,25 +371,21 @@ const Development: React.FC = () => {
     }
   };
 
-  const handleWipeTable = async (table: string) => {
-    if (
-      !(globalThis as { confirm?: (message: string) => boolean }).confirm?.(
-        t('devToolsPage.wipeTable.confirmPrompt', { table })
-      )
-    ) {
-      return;
-    }
+  const handleWipeTable = (table: string) => {
+    setTypedConfirm('');
+    setWipeTableTarget(table);
+  };
 
+  const wipeTable = async (table: string) => {
+    setWipeTableTarget(null);
     setLoading(true);
 
     try {
       const response: { success: boolean; message: string } = await api.post(
-        `/api/tournament/wipe-table/${table}`
+        `/api/tournament/wipe-table/${table}`,
+        { confirm: table }
       );
-      showSuccess(
-        response.message ||
-          t('devToolsPage.wipeTable.success', { table })
-      );
+      showSuccess(response.message || t('devToolsPage.wipeTable.success', { table }));
     } catch (error) {
       console.error(`Error wiping ${table}:`, error);
       showError(t('devToolsPage.wipeTable.error', { table }));
@@ -387,19 +395,17 @@ const Development: React.FC = () => {
   };
 
   const handleResetSimulationState = async () => {
+    setConfirmResetOpen(false);
     setResettingSimulation(true);
     try {
       const response: { success: boolean; message?: string; error?: string } = await api.post(
-        '/api/tournament/dev/reset-simulation-state'
+        '/api/tournament/dev/reset-simulation-state',
+        { confirm: 'reset' }
       );
       if (response.success) {
-        showSuccess(
-          response.message || t('devToolsPage.simulation.reset.success')
-        );
+        showSuccess(response.message || t('devToolsPage.simulation.reset.success'));
       } else {
-        showError(
-          response.error || t('devToolsPage.simulation.reset.error')
-        );
+        showError(response.error || t('devToolsPage.simulation.reset.error'));
       }
     } catch (error) {
       console.error('Error resetting simulation state:', error);
@@ -492,9 +498,7 @@ const Development: React.FC = () => {
                     label={t('devToolsPage.testTeams.customLabel')}
                     size="small"
                     value={customTeamCount}
-                    onChange={(e) =>
-                      setCustomTeamCount(Math.max(1, Number(e.target.value) || 0))
-                    }
+                    onChange={(e) => setCustomTeamCount(Math.max(1, Number(e.target.value) || 0))}
                     disabled={loading}
                     fullWidth
                     slotProps={{
@@ -586,9 +590,7 @@ const Development: React.FC = () => {
                     label={t('devToolsPage.testPlayers.customLabel')}
                     size="small"
                     value={customPlayerCount}
-                    onChange={(e) =>
-                      setCustomPlayerCount(Math.max(1, Number(e.target.value) || 0))
-                    }
+                    onChange={(e) => setCustomPlayerCount(Math.max(1, Number(e.target.value) || 0))}
                     disabled={loading}
                     fullWidth
                     slotProps={{
@@ -682,9 +684,7 @@ const Development: React.FC = () => {
                     label={t('devToolsPage.testServers.customLabel')}
                     size="small"
                     value={customServerCount}
-                    onChange={(e) =>
-                      setCustomServerCount(Math.max(1, Number(e.target.value) || 0))
-                    }
+                    onChange={(e) => setCustomServerCount(Math.max(1, Number(e.target.value) || 0))}
                     disabled={loading}
                     fullWidth
                     slotProps={{
@@ -757,9 +757,7 @@ const Development: React.FC = () => {
                 <AccordionSummary expandIcon={<CaretDownIcon />}>
                   <Box display="flex" alignItems="center" gap={1}>
                     <HardDrivesIcon />
-                    <Typography fontWeight={600}>
-                      {t('devToolsPage.wipeTable.title')}
-                    </Typography>
+                    <Typography fontWeight={600}>{t('devToolsPage.wipeTable.title')}</Typography>
                   </Box>
                 </AccordionSummary>
                 <AccordionDetails>
@@ -973,7 +971,10 @@ const Development: React.FC = () => {
                   <Button
                     variant="outlined"
                     color="warning"
-                    onClick={handleResetSimulationState}
+                    onClick={() => {
+                      setTypedConfirm('');
+                      setConfirmResetOpen(true);
+                    }}
                     disabled={loading || wiping || resettingSimulation}
                     fullWidth
                     size="small"
@@ -1011,9 +1012,7 @@ const Development: React.FC = () => {
                 <AccordionSummary expandIcon={<CaretDownIcon />}>
                   <Box display="flex" alignItems="center" gap={1}>
                     <TrashIcon />
-                    <Typography fontWeight={600}>
-                      {t('devToolsPage.wipeDatabase.title')}
-                    </Typography>
+                    <Typography fontWeight={600}>{t('devToolsPage.wipeDatabase.title')}</Typography>
                   </Box>
                 </AccordionSummary>
                 <AccordionDetails>
@@ -1049,7 +1048,10 @@ const Development: React.FC = () => {
                   <Button
                     variant="contained"
                     color="error"
-                    onClick={() => setConfirmWipeOpen(true)}
+                    onClick={() => {
+                      setTypedConfirm('');
+                      setConfirmWipeOpen(true);
+                    }}
                     disabled={loading || wiping}
                     startIcon={<TrashIcon />}
                     fullWidth
@@ -1095,6 +1097,7 @@ const Development: React.FC = () => {
           <Alert severity="error" sx={{ mt: 2 }}>
             <strong>{t('devToolsPage.wipeDatabase.dialog.cannotUndo')}</strong>
           </Alert>
+          {confirmField('wipe')}
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
           <Button onClick={() => setConfirmWipeOpen(false)} disabled={wiping} variant="outlined">
@@ -1102,15 +1105,74 @@ const Development: React.FC = () => {
           </Button>
           <Button
             onClick={handleWipeDatabase}
-            disabled={wiping}
+            disabled={wiping || typedConfirm.trim() !== 'wipe'}
             variant="contained"
             color="error"
             startIcon={<TrashIcon />}
-            autoFocus
+            data-testid="dev-confirm-submit"
           >
             {wiping
               ? t('devToolsPage.wipeDatabase.dialog.wiping')
               : t('devToolsPage.wipeDatabase.dialog.yesWipe')}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        open={wipeTableTarget !== null}
+        onClose={() => setWipeTableTarget(null)}
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogTitle>
+          {t('devToolsPage.wipeTable.confirmTitle', { table: wipeTableTarget ?? '' })}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            {t('devToolsPage.wipeTable.confirmPrompt', { table: wipeTableTarget ?? '' })}
+          </DialogContentText>
+          {confirmField(wipeTableTarget ?? '')}
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={() => setWipeTableTarget(null)} variant="outlined">
+            {t('common.cancel')}
+          </Button>
+          <Button
+            onClick={() => wipeTableTarget && void wipeTable(wipeTableTarget)}
+            disabled={!wipeTableTarget || typedConfirm.trim() !== wipeTableTarget}
+            variant="contained"
+            color="error"
+            startIcon={<TrashIcon />}
+            data-testid="dev-confirm-submit"
+          >
+            {t('devToolsPage.wipeTable.confirmButton')}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        open={confirmResetOpen}
+        onClose={() => setConfirmResetOpen(false)}
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogTitle>{t('devToolsPage.simulation.reset.confirmTitle')}</DialogTitle>
+        <DialogContent>
+          <DialogContentText>{t('devToolsPage.simulation.reset.confirmBody')}</DialogContentText>
+          {confirmField('reset')}
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={() => setConfirmResetOpen(false)} variant="outlined">
+            {t('common.cancel')}
+          </Button>
+          <Button
+            onClick={() => void handleResetSimulationState()}
+            disabled={typedConfirm.trim() !== 'reset'}
+            variant="contained"
+            color="warning"
+            data-testid="dev-confirm-submit"
+          >
+            {t('devToolsPage.simulation.reset.confirmButton')}
           </Button>
         </DialogActions>
       </Dialog>

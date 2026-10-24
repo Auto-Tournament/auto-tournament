@@ -1,6 +1,7 @@
 {
   "devToolsPage": {
     "alert": "这些工具仅在开发模式下可用，可用于快速生成测试数据以验证应用功能。",
+    "typeToConfirm": "输入“{{value}}”以确认",
     "sections": {
       "testData": {
         "title": "创建测试数据"
@@ -65,6 +66,8 @@
       "title": "清空指定数据表",
       "description": "清空某张数据表中的所有数据。适用于在不重置全部数据的情况下进行局部清理。数据表按类别分组展示。",
       "confirmPrompt": "确定要清空 {{table}} 表吗？此操作将删除该表中的所有数据。",
+      "confirmTitle": "清空 {{table}} 表？",
+      "confirmButton": "清空表",
       "success": "{{table}} 表已成功清空！",
       "error": "清空 {{table}} 表失败",
       "core": {
@@ -104,7 +107,10 @@
       "button": "重置模拟状态（保留配置）",
       "reset": {
         "success": "模拟状态已重置。比赛与统计已清空；服务器、战队与锦标赛配置已保留。",
-        "error": "重置模拟状态失败"
+        "error": "重置模拟状态失败",
+        "confirmTitle": "重置模拟状态？",
+        "confirmBody": "比赛和统计数据将被清除；服务器、队伍、地图和赛事设置会保留。",
+        "confirmButton": "重置"
       }
     },
     "wipeDatabase": {

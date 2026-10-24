@@ -6,6 +6,7 @@ import TextField from '@mui/material/TextField';
 import { useTranslation } from 'react-i18next';
 import { api, apiErrorMessage } from '../../utils/api';
 import { useSnackbar } from '../../contexts/SnackbarContext';
+import { useAuth } from '../../contexts/AuthContext';
 import { SettingsRow } from './SettingsRow';
 import { SwitchRow } from '../../components/common/ui';
 
@@ -23,6 +24,7 @@ interface AdminAccess {
 export function AdminAccessSection() {
   const { t } = useTranslation();
   const { showSuccess, showError } = useSnackbar();
+  const { isRoot } = useAuth();
   const [data, setData] = useState<AdminAccess | null>(null);
   const [steamIds, setSteamIds] = useState('');
   const [emails, setEmails] = useState('');
@@ -85,12 +87,16 @@ export function AdminAccessSection() {
           label={t('settingsPage.signIn.adminAccess.steamIds')}
           value={steamIds}
           onChange={(e) => setSteamIds(e.target.value)}
-          helperText={t('settingsPage.signIn.adminAccess.steamIdsHelp')}
+          helperText={t(
+            isRoot
+              ? 'settingsPage.signIn.adminAccess.steamIdsHelp'
+              : 'settingsPage.signIn.adminAccess.rootOnly'
+          )}
           size="small"
           fullWidth
           multiline
           minRows={1}
-          disabled={busy}
+          disabled={busy || !isRoot}
           inputProps={{ 'data-testid': 'admin-access-steam-ids', spellCheck: false }}
         />
         <TextField
@@ -115,7 +121,11 @@ export function AdminAccessSection() {
             variant="contained"
             size="small"
             disabled={busy}
-            onClick={() => void save({ adminSteamIds: steamIds, adminEmails: emails })}
+            onClick={() =>
+              void save(
+                isRoot ? { adminSteamIds: steamIds, adminEmails: emails } : { adminEmails: emails }
+              )
+            }
             data-testid="admin-access-save"
           >
             {t('settingsPage.signIn.save')}

@@ -1,6 +1,7 @@
 {
   "devToolsPage": {
     "alert": "Disse verktøyene er bare tilgjengelige i utviklingsmodus. Bruk dem til raskt å lage testdata for å teste appen.",
+    "typeToConfirm": "Skriv «{{value}}» for å bekrefte",
     "sections": {
       "testData": {
         "title": "Lag testdata"
@@ -65,6 +66,8 @@
       "title": "Tøm bestemte tabeller",
       "description": "Slett alle data fra en bestemt tabell. Nyttig for å rydde opp uten å nullstille alt. Tabeller er organisert etter kategori.",
       "confirmPrompt": "Er du sikker på at du vil tømme tabellen {{table}}? Dette vil slette alle data i tabellen.",
+      "confirmTitle": "Tømme tabellen {{table}}?",
+      "confirmButton": "Tøm tabell",
       "success": "Tabellen {{table}} ble tømt!",
       "error": "Kunne ikke tømme tabellen {{table}}",
       "core": {
@@ -104,7 +107,10 @@
       "button": "Tilbakestill simuleringsstatus (behold oppsett)",
       "reset": {
         "success": "Simuleringsstatus tilbakestilt. Kamper og statistikk er slettet, og servere, lag og turneringsoppsett er beholdt.",
-        "error": "Kunne ikke tilbakestille simuleringsstatus"
+        "error": "Kunne ikke tilbakestille simuleringsstatus",
+        "confirmTitle": "Tilbakestille simuleringstilstanden?",
+        "confirmBody": "Kamper og statistikk slettes; servere, lag, kart og turneringsoppsettet beholdes.",
+        "confirmButton": "Tilbakestill"
       }
     },
     "wipeDatabase": {

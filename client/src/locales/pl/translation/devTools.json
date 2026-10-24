@@ -1,6 +1,7 @@
 {
   "devToolsPage": {
     "alert": "Te narzędzia są dostępne tylko w trybie deweloperskim. Użyj ich, aby szybko wygenerować dane testowe do testowania aplikacji.",
+    "typeToConfirm": "Wpisz „{{value}}”, aby potwierdzić",
     "sections": {
       "testData": {
         "title": "Utwórz dane testowe"
@@ -67,6 +68,8 @@
       "title": "Wyczyść wybrane tabele",
       "description": "Usuń wszystkie dane z wybranej tabeli. Przydatne do sprzątania bez resetowania wszystkiego. Tabele są pogrupowane według kategorii.",
       "confirmPrompt": "Czy na pewno chcesz wyczyścić tabelę {{table}}? Spowoduje to usunięcie wszystkich danych z tej tabeli.",
+      "confirmTitle": "Wyczyścić tabelę {{table}}?",
+      "confirmButton": "Wyczyść tabelę",
       "success": "Tabela {{table}} została wyczyszczona!",
       "error": "Nie udało się wyczyścić tabeli {{table}}",
       "core": {
@@ -106,7 +109,10 @@
       "button": "Resetuj stan symulacji (zachowaj konfigurację)",
       "reset": {
         "success": "Stan symulacji zresetowany. Mecze i statystyki wyczyszczone; serwery, drużyny i konfiguracja turnieju zachowane.",
-        "error": "Nie udało się zresetować stanu symulacji"
+        "error": "Nie udało się zresetować stanu symulacji",
+        "confirmTitle": "Zresetować stan symulacji?",
+        "confirmBody": "Mecze i statystyki zostaną usunięte; serwery, drużyny, mapy i konfiguracja turnieju pozostaną.",
+        "confirmButton": "Resetuj"
       }
     },
     "wipeDatabase": {

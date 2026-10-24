@@ -15,6 +15,7 @@ import { TrashIcon, XIcon } from '@phosphor-icons/react';
 import { api } from '../../utils/api';
 import { isInvalidDiscordIdInput, normalizeDiscordId } from '../../utils/discordId';
 import { useSnackbar } from '../../contexts/SnackbarContext';
+import { useAuth } from '../../contexts/AuthContext';
 import ConfirmDialog from './ConfirmDialog';
 import { PlayerAvatar } from '../player/PlayerAvatar';
 import type { PlayerDetail } from '../../types/api.types';
@@ -33,6 +34,7 @@ interface PlayerModalProps {
 export default function PlayerModal({ open, player, onClose, onSave, onDelete }: PlayerModalProps) {
   const { t } = useTranslation();
   const { showSuccess, showError, showWarning } = useSnackbar();
+  const { isRoot } = useAuth();
   const [steamId, setSteamId] = useState('');
   const [name, setName] = useState('');
   const [avatar, setAvatar] = useState('');
@@ -54,6 +56,9 @@ export default function PlayerModal({ open, player, onClose, onSave, onDelete }:
   const [pendingElo, setPendingElo] = useState<number | ''>('');
 
   const isEditing = !!player;
+  // A local account that becomes an admin is root: only a root admin grants that.
+  const adminLocked =
+    !isRoot && !player?.isAdmin && (player?.id ?? steamId.trim()).startsWith('local-');
   // The Steam field is for games that use Steam (CS2), or a player who is a Steam player.
   const showSteam = gameAccounts.steam || isSteamId64(player?.id);
   const steamGames =
@@ -401,6 +406,7 @@ export default function PlayerModal({ open, player, onClose, onSave, onDelete }:
             <SwitchRow
               label={t('playerModal.isAdminLabel')}
               checked={isAdmin}
+              disabled={adminLocked}
               onChange={(e) => setIsAdmin(e.target.checked)}
             />
 

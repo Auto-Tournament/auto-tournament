@@ -45,6 +45,7 @@ import {
 import { isLocalReauthFresh, markLocalReauth } from '../utils/localReauth';
 import { effectiveProviderSettings, parseLogoDataUrl } from '../config/signInProviders';
 import type { Untrusted } from '../utils/untrusted';
+import { viewerIsRoot } from '../utils/rootAccess';
 
 const router = Router();
 
@@ -1518,6 +1519,7 @@ router.get('/me', async (req: Request, res: Response) => {
     // will actually authorize.
     const identity = await resolveViewerIdentity(req);
     const steamId = identity.effectiveSteamId;
+    const root = await viewerIsRoot(req).catch(() => false);
 
     log.debug('/api/auth/me: evaluated cookie state', {
       steamId: steamId ?? null,
@@ -1528,6 +1530,7 @@ router.get('/me', async (req: Request, res: Response) => {
       log.debug('/api/auth/me: no Steam ID cookie present; returning unauthenticated');
       return res.json({
         authenticated: false,
+        root,
       });
     }
 
@@ -1571,6 +1574,7 @@ router.get('/me', async (req: Request, res: Response) => {
       steamId,
       uid,
       hasPlayerRecord,
+      root,
       namePrompt,
       impersonation: identity.isImpersonating
         ? {

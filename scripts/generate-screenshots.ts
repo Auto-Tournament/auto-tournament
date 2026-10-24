@@ -257,6 +257,7 @@ async function wipeDatabase(request: APIRequestContext): Promise<boolean> {
     // Use the correct endpoint: POST /api/tournament/wipe-database
     const response = await apiRequest(request, 'post', '/api/tournament/wipe-database', {
       headers: getAuthHeader(),
+      data: { confirm: 'wipe' },
     });
     if (response.ok()) {
       const data = await response.json();

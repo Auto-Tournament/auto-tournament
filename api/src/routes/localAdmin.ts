@@ -41,6 +41,7 @@ import { playerEmailService } from '../services/playerEmailService';
 import { emailService } from '../services/emailService';
 import { deletePlayer } from '../services/playerModeration';
 import type { Untrusted } from '../utils/untrusted';
+import { isRootRequest, ROOT_ONLY } from '../utils/rootAccess';
 
 export const setupRouter = Router();
 export const localAuthRouter = Router();
@@ -1103,6 +1104,8 @@ localAccountsRouter.get('/', async (_req: Request, res: Response) => {
  *         description: Created
  *       400:
  *         description: Username or password not accepted
+ *       403:
+ *         description: isAdmin from an admin who is not root
  *       409:
  *         description: The username is taken
  */
@@ -1121,6 +1124,8 @@ localAccountsRouter.post('/', guardWrite, async (req: Request, res: Response) =>
   if (body.isAdmin !== undefined && typeof body.isAdmin !== 'boolean') {
     return res.status(400).json({ success: false, error: 'isAdmin must be true or false' });
   }
+  if (body.isAdmin === true && !isRootRequest(req))
+    return res.status(403).json({ success: false, error: ROOT_ONLY });
   const name = typeof body.name === 'string' ? body.name.slice(0, 64) : null;
   try {
     const result = await localAdminService.createAccount(
@@ -1148,6 +1153,8 @@ localAccountsRouter.post('/', guardWrite, async (req: Request, res: Response) =>
  *     responses:
  *       200:
  *         description: Saved
+ *       403:
+ *         description: Making an admin, from an admin who is not root
  *       404:
  *         description: No such account
  *       409:
@@ -1158,6 +1165,8 @@ localAccountsRouter.put('/:username', guardWrite, async (req: Request, res: Resp
   const isAdmin = (req.body ?? {}).isAdmin;
   if (typeof isAdmin !== 'boolean')
     return res.status(400).json({ success: false, error: 'isAdmin must be true or false' });
+  if (isAdmin && !isRootRequest(req))
+    return res.status(403).json({ success: false, error: ROOT_ONLY });
   try {
     const row = username ? await localAdminService.findByUsername(username) : null;
     if (!row) return res.status(404).json({ success: false, error: 'No such account' });
@@ -1196,6 +1205,8 @@ localAccountsRouter.put('/:username', guardWrite, async (req: Request, res: Resp
  *         description: Saved
  *       400:
  *         description: Password not accepted
+ *       403:
+ *         description: An admin account's password, from an admin who is not root
  *       404:
  *         description: No such account
  */
@@ -1207,6 +1218,10 @@ localAccountsRouter.put('/:username/password', guardWrite, async (req: Request, 
   if (problem)
     return res.status(400).json({ success: false, error: 'Password not accepted', problem });
   try {
+    const row = await localAdminService.findByUsername(username);
+    const target = row ? await playerService.getPlayerById(row.player_id) : null;
+    if (target?.isAdmin && !isRootRequest(req))
+      return res.status(403).json({ success: false, error: ROOT_ONLY });
     if (!(await localAdminService.setPassword(username, password as string, requestActorId(req)))) {
       return res.status(404).json({ success: false, error: 'No such account' });
     }

@@ -161,7 +161,11 @@ test.describe.serial('module migrations on the database', () => {
       await run(request, 'v1');
       expect(ids(await view(request))).toEqual(['001-items', '002-items-label']);
 
-      const res = await request.post(wipe, { headers: getAuthHeader(), timeout: 60_000 });
+      const res = await request.post(wipe, {
+        headers: getAuthHeader(),
+        data: { confirm: 'wipe' },
+        timeout: 60_000,
+      });
       expect(res.ok(), await res.text()).toBe(true);
       expect(await signInViaRequest(request)).toBe(true);
 

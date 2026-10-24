@@ -1,6 +1,7 @@
 {
   "devToolsPage": {
     "alert": "Estas ferramentas só estão disponíveis em modo de desenvolvimento. Usa-as para gerar rapidamente dados de teste para testar a aplicação.",
+    "typeToConfirm": "Escreva «{{value}}» para confirmar",
     "sections": {
       "testData": {
         "title": "Criar dados de teste"
@@ -65,6 +66,8 @@
       "title": "Limpar tabelas específicas",
       "description": "Apaga todos os dados de uma tabela específica. Útil para limpar sem repor tudo. As tabelas estão organizadas por categoria.",
       "confirmPrompt": "Tens a certeza de que queres limpar a tabela {{table}}? Isto irá apagar todos os dados dessa tabela.",
+      "confirmTitle": "Limpar a tabela {{table}}?",
+      "confirmButton": "Limpar tabela",
       "success": "Tabela {{table}} limpa com sucesso!",
       "error": "Falha ao limpar a tabela {{table}}",
       "core": {
@@ -104,7 +107,10 @@
       "button": "Repor estado de simulação (manter config)",
       "reset": {
         "success": "Estado de simulação reposto. Jogos e estatísticas limpos; servidores, equipas e configuração do torneio mantidos.",
-        "error": "Falha ao repor o estado de simulação"
+        "error": "Falha ao repor o estado de simulação",
+        "confirmTitle": "Repor o estado da simulação?",
+        "confirmBody": "Os jogos e as estatísticas são apagados; os servidores, as equipas, os mapas e a configuração do torneio mantêm-se.",
+        "confirmButton": "Repor"
       }
     },
     "wipeDatabase": {

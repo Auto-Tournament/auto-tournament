@@ -1,5 +1,13 @@
 import { test, expect } from '@playwright/test';
-import { getAuthHeader, signInViaRequest } from '../helpers/auth';
+import { DEFAULT_ADMIN_STEAM_ID, getAuthHeader, signInViaRequest } from '../helpers/auth';
+
+const ROOT = {
+  Authorization: `Bearer ${(process.env.API_TOKENS || 'ci-admin:ci-admin-token-0123456789abcdef')
+    .split(',')[0]
+    .split(':')
+    .slice(1)
+    .join(':')}`,
+};
 
 /**
  * API tokens made in Settings: a signed-in admin makes one and sees its
@@ -54,10 +62,30 @@ test(
         ).status()
       ).toBe(403);
 
+      // An admin-scope token is root: a plain admin is refused, a root one (on Admin Steam IDs) makes it.
+      expect(
+        (
+          await request.post('/api/settings/api-tokens', {
+            data: { label: `mcp-plain-${stamp}`, scope: 'admin' },
+          })
+        ).status()
+      ).toBe(403);
+      const access = (await (
+        await bare.get('/api/sign-in-providers/admin-access', { headers: ROOT })
+      ).json()) as { adminSteamIds: string };
+      const setRoots = (ids: string) =>
+        bare.put('/api/sign-in-providers/admin-access', {
+          headers: ROOT,
+          data: { adminSteamIds: ids },
+        });
+      expect(
+        (await setRoots(`${access.adminSteamIds}\n${DEFAULT_ADMIN_STEAM_ID}`.trim())).ok()
+      ).toBe(true);
       // An admin token still cannot make tokens.
       const admin = await request.post('/api/settings/api-tokens', {
         data: { label: `mcp-admin-${stamp}`, scope: 'admin' },
       });
+      expect((await setRoots(access.adminSteamIds)).ok()).toBe(true);
       expect(admin.status()).toBe(201);
       const adminSecret = ((await admin.json()) as { secret: string }).secret;
       const minted = await bare.post('/api/settings/api-tokens', {

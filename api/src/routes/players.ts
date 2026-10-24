@@ -44,6 +44,7 @@ import {
   unbanPlayer,
 } from '../services/playerModeration';
 import type { Actor } from '../services/matchHolds';
+import { adminIsRoot, isRootRequest, ROOT_ONLY } from '../utils/rootAccess';
 import { PresetAccountError, presetAccounts } from '../services/gameAccounts';
 import { CURRENT_MATCH_ORDER, CURRENT_MATCH_TOURNAMENT_JOIN } from '../utils/currentMatchOrder';
 
@@ -2064,6 +2065,9 @@ router.post('/', async (req: Request, res: Response) => {
     }
     // Steam is optional: a player without a Steam ID gets an account id of its own.
     if (!input.id) input.id = `acc_${randomBytes(12).toString('hex')}`;
+    if (input.isAdmin === true && adminIsRoot(String(input.id)) && !isRootRequest(req)) {
+      return res.status(403).json({ success: false, error: ROOT_ONLY });
+    }
 
     // An explicit edit: an invalid discordId refuses the whole create (400).
     const created = await playerService.createPlayer(input);
@@ -2155,6 +2159,9 @@ router.post('/bulk-import', async (req: Request, res: Response) => {
         });
       }
       if (!player.id) player.id = `acc_${randomBytes(12).toString('hex')}`;
+      if (player.isAdmin === true && adminIsRoot(String(player.id)) && !isRootRequest(req)) {
+        return res.status(403).json({ success: false, error: ROOT_ONLY });
+      }
     }
 
     const result = await playerService.bulkImportPlayers(players);
@@ -2260,6 +2267,9 @@ router.put('/:playerId', async (req: Request, res: Response) => {
       before && input.isAdmin !== undefined && before.isAdmin !== input.isAdmin
         ? input.isAdmin
         : undefined;
+    if (adminChange === true && adminIsRoot(playerId) && !isRootRequest(req)) {
+      return res.status(403).json({ success: false, error: ROOT_ONLY });
+    }
     if (
       adminChange === false &&
       removesLastAdmin({ targetIsAdmin: true, adminCount: await playerService.countAdmins() })

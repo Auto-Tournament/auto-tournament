@@ -1,6 +1,7 @@
 {
   "devToolsPage": {
     "alert": "Deze tools zijn alleen beschikbaar in ontwikkelmodus. Gebruik ze om snel testdata te genereren om de applicatie te testen.",
+    "typeToConfirm": "Typ ‘{{value}}’ om te bevestigen",
     "sections": {
       "testData": {
         "title": "Testdata maken"
@@ -65,6 +66,8 @@
       "title": "Specifieke tabellen leegmaken",
       "description": "Verwijder alle data uit een specifieke tabel. Handig om op te schonen zonder alles te resetten. Tabellen zijn per categorie gegroepeerd.",
       "confirmPrompt": "Weet je zeker dat je de tabel {{table}} wilt leegmaken? Dit verwijdert alle data in die tabel.",
+      "confirmTitle": "Tabel {{table}} leegmaken?",
+      "confirmButton": "Tabel leegmaken",
       "success": "Tabel {{table}} succesvol leeggemaakt!",
       "error": "Tabel {{table}} leegmaken mislukt",
       "core": {
@@ -104,7 +107,10 @@
       "button": "Simulatiestatus resetten (config behouden)",
       "reset": {
         "success": "Simulatiestatus gereset. Wedstrijden en statistieken gewist; servers, teams en toernooiconfig behouden.",
-        "error": "Simulatiestatus resetten mislukt"
+        "error": "Simulatiestatus resetten mislukt",
+        "confirmTitle": "Simulatiestatus resetten?",
+        "confirmBody": "Wedstrijden en statistieken worden gewist; servers, teams, maps en de toernooi-instellingen blijven behouden.",
+        "confirmButton": "Resetten"
       }
     },
     "wipeDatabase": {
