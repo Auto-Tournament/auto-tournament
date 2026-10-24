@@ -1252,6 +1252,57 @@ test.describe.serial('matchmaking queue (phase 1)', () => {
     // Too late to answer now.
     expect(await vote(team2[0], lobbyId, true)).toEqual({ status: 'declined' });
   });
+
+  test('a lobby whose match is deleted is cancelled and no longer shown', TAGS, async () => {
+    expect(
+      (await admin.put('/api/matchmaking/admin/settings', { data: { modes: ['5v5', '1v1'] } })).ok()
+    ).toBe(true);
+    const [a, b] = await Promise.all([player(), player()]);
+    contexts.push(a.ctx, b.ctx);
+    for (const p of [a, b])
+      expect((await p.ctx.post('/api/matchmaking/queue', { data: { mode: '1v1' } })).ok()).toBe(
+        true
+      );
+    const lobby = await lobbyOf(a.ctx);
+    for (const p of [a, b])
+      expect(
+        (await p.ctx.post(`/api/matchmaking/lobbies/${lobby.id}/accept`, { data: {} })).ok()
+      ).toBe(true);
+    const room = (await (await a.ctx.get(`/api/matchmaking/lobbies/${lobby.id}`)).json()).lobby;
+    expect(room.status).toBe('ready');
+    expect((await admin.delete(`/api/matches/${room.matchSlug}`)).ok()).toBe(true);
+    expect((await me(a.ctx)).lobby).toBeNull();
+    const gone = (await (await a.ctx.get(`/api/matchmaking/lobbies/${lobby.id}`)).json()).lobby;
+    expect(gone.status).toBe('cancelled');
+    expect(gone.matchSlug).toBeNull();
+    await expect
+      .poll(
+        async () =>
+          (await (await a.ctx.get(`/api/matchmaking/lobbies/${lobby.id}`)).json()).lobby.status,
+        { timeout: 5_000 }
+      )
+      .toBe('cancelled');
+  });
+
+  test('an accepting lobby is not swept', TAGS, async () => {
+    expect(
+      (await admin.put('/api/matchmaking/admin/settings', { data: { modes: ['5v5', '1v1'] } })).ok()
+    ).toBe(true);
+    const [a, b] = await Promise.all([player(), player()]);
+    contexts.push(a.ctx, b.ctx);
+    for (const p of [a, b])
+      expect((await p.ctx.post('/api/matchmaking/queue', { data: { mode: '1v1' } })).ok()).toBe(
+        true
+      );
+    const lobby = await lobbyOf(a.ctx);
+    expect(
+      (await a.ctx.post(`/api/matchmaking/lobbies/${lobby.id}/accept`, { data: {} })).ok()
+    ).toBe(true);
+    await new Promise((r) => setTimeout(r, 3_000));
+    const after = (await me(a.ctx)).lobby;
+    expect(after?.id).toBe(lobby.id);
+    expect(after?.status).toBe('accepting');
+  });
 });
 
 test.describe('team captain (pure)', () => {

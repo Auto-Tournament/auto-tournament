@@ -1334,6 +1334,7 @@ export class MatchmakingService {
    * loss. One per player per match.
    */
   private async watchPresence(): Promise<void> {
+    await this.cancelOrphanLobbies();
     const rows = await db.queryAsync<{
       lobby_id: string;
       match_slug: string;
@@ -1394,6 +1395,18 @@ export class MatchmakingService {
       }
     }
     for (const slug of [...this.presence.keys()]) if (!live.has(slug)) this.presence.delete(slug);
+  }
+
+  private async cancelOrphanLobbies(): Promise<void> {
+    const orphans = await db.queryAsync<{ id: string; match_slug: string }>(
+      `SELECT id, match_slug FROM mm_lobbies
+        WHERE status = 'ready' AND match_slug IS NOT NULL
+          AND NOT EXISTS (SELECT 1 FROM matches m WHERE m.slug = mm_lobbies.match_slug)`
+    );
+    for (const { id, match_slug: slug } of orphans) {
+      await this.cancel(id, 'match-deleted');
+      this.presence.delete(slug);
+    }
   }
 
   private async penalizeAbandon(playerId: string, lobbyId: string): Promise<void> {
@@ -1617,6 +1630,7 @@ export class MatchmakingService {
       `SELECT l.*, lp.team, lp.accepted_at FROM mm_lobbies l
          JOIN mm_lobby_players lp ON lp.lobby_id = l.id
         WHERE lp.player_id = ? AND l.status IN ('accepting', 'ready')
+          AND (l.match_slug IS NULL OR EXISTS (SELECT 1 FROM matches m WHERE m.slug = l.match_slug))
         ORDER BY l.created_at DESC LIMIT 1`,
       [playerId]
     );
@@ -1893,12 +1907,13 @@ export class MatchmakingService {
     );
     const autostartMinutes =
       Number.isInteger(autostartRaw) && autostartRaw > 0 ? Math.min(autostartRaw, 120) : 0;
+    const orphaned = Boolean(row.match_slug) && !match;
     return {
       id: lobby.id,
-      status: lobby.status,
+      status: orphaned ? 'cancelled' : lobby.status,
       mode: lobby.mode,
       map: row.map ?? vetoedMap,
-      matchSlug: row.match_slug ?? null,
+      matchSlug: orphaned ? null : (row.match_slug ?? null),
       matchStatus: match?.status ?? null,
       mapPool,
       veto,
