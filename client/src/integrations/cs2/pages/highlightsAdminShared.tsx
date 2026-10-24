@@ -59,6 +59,8 @@ export interface Recorder {
   avgClipSeconds: number | null;
   lastError: string | null;
   lastRunFailed: boolean;
+  /** Frame by Frame in the last CS2 it ran (api demos/recorders.ts). */
+  frameByFrame?: { status: string; cs2: string | null; checkedAt: number | null } | null;
   updateSupported: boolean;
   updateAvailable: boolean;
   recorderRevision: string | null;

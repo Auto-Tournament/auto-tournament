@@ -1667,4 +1667,14 @@ export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
       );
     `,
   },
+  {
+    // Frame by Frame's state in the CS2 a recorder last ran (worker/runlog.go): the
+    // Recorders tab warns when a CS2 update turned its frame actions or movie commands off.
+    id: '061-recorder-fbf-status',
+    up: `
+      ALTER TABLE cs2_recorders ADD COLUMN IF NOT EXISTS fbf_status TEXT;
+      ALTER TABLE cs2_recorders ADD COLUMN IF NOT EXISTS fbf_cs2 TEXT;
+      ALTER TABLE cs2_recorders ADD COLUMN IF NOT EXISTS fbf_checked_at INTEGER;
+    `,
+  },
 ];

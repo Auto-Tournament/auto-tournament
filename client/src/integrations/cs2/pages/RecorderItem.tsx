@@ -248,6 +248,16 @@ export function RecorderItem({
               })}
             </Alert>
           )}
+          {r.frameByFrame && r.frameByFrame.status !== 'actions' && (
+            <Alert severity="warning" sx={{ py: 0 }} data-testid={`recorder-fbf-${r.name}`}>
+              {t(
+                r.frameByFrame.status === 'off'
+                  ? 'highlightsAdmin.fbfOff'
+                  : 'highlightsAdmin.fbfMovie',
+                { cs2: r.frameByFrame.cs2 ?? '' }
+              )}
+            </Alert>
+          )}
           <Box
             sx={{
               display: 'grid',

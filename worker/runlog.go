@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"log"
 	"sync"
+	"sync/atomic"
 	"time"
 )
 
@@ -57,13 +58,26 @@ type jobRun struct {
 	// Failed: moments that could not be recorded (each told to the platform).
 	Failed int    `json:"failed"`
 	Error  string `json:"error,omitempty"`
+	// Frame by Frame's state in the last CS2 this recorder ran, and that CS2's
+	// version (setFbfReport): the platform warns when an update turned it off.
+	Fbf string `json:"fbf,omitempty"`
+	CS2 string `json:"cs2,omitempty"`
 }
+
+// fbfReport is Frame by Frame's state ("actions", "movie" or "off") and the
+// CS2 version it was found in, sent with every run report.
+var fbfReport atomic.Pointer[[2]string]
+
+func setFbfReport(state, cs2 string) { fbfReport.Store(&[2]string{state, cs2}) }
 
 // reportRun sends a finished job's timings and log. Best effort: a platform
 // without the route (older) answers 404, which is fine.
 func (c *client) reportRun(run jobRun, started time.Time) {
 	run.StartedAt = started.Unix()
 	run.Seconds = time.Since(started).Seconds()
+	if f := fbfReport.Load(); f != nil {
+		run.Fbf, run.CS2 = f[0], f[1]
+	}
 	body := map[string]any{"recorder": c.worker, "log": currentJobLog.take()}
 	b, _ := jsonMap(run)
 	for k, v := range b {

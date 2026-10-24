@@ -127,3 +127,19 @@ func TestFbfPlanSwitchesMoviesOnTheirFrames(t *testing.T) {
 		t.Fatalf("plan:\n%s\nwant:\n%s", got, want)
 	}
 }
+
+func TestCS2VersionFromSteamInf(t *testing.T) {
+	dir := t.TempDir()
+	if err := os.MkdirAll(filepath.Join(dir, "csgo"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "csgo", "steam.inf"), []byte("ClientVersion=2000935\r\nPatchVersion=1.41.9.2\r\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if v := cs2Version(dir); v != "1.41.9.2" {
+		t.Fatalf("cs2Version = %q", v)
+	}
+	if v := cs2Version(t.TempDir()); v != "" {
+		t.Fatalf("no steam.inf: %q", v)
+	}
+}
