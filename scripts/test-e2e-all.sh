@@ -42,6 +42,8 @@ fi
 
 # Set test environment variables
 export SERVER_TOKEN="${SERVER_TOKEN:-server123}"
+# The image runs with NODE_ENV=production, which needs a real session secret.
+export SESSION_SECRET="${SESSION_SECRET:-e2e-session-secret-0123456789abcdef}"
 export DB_USER="${DB_USER:-postgres}"
 export DB_PASSWORD="${DB_PASSWORD:-postgres}"
 export DB_NAME="${DB_NAME:-auto_tournament}"

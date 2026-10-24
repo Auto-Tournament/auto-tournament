@@ -11,10 +11,10 @@
  * Stored form: `v1.<iv>.<tag>.<ciphertext>`, each part base64url.
  */
 import crypto from 'crypto';
+import { getSessionSecret } from './sessionSecret';
 
 const VERSION = 'v1';
 const HKDF_INFO = 'auto-tournament:secret-box:v1';
-const DEV_FALLBACK = 'auto-tournament-dev-session-secret';
 
 export type SecretsKeySource = 'SECRETS_KEY' | 'SESSION_SECRET' | 'default';
 
@@ -26,7 +26,7 @@ export function secretsKeySource(env: NodeJS.ProcessEnv = process.env): SecretsK
 }
 
 function keyMaterial(env: NodeJS.ProcessEnv): string {
-  return env.SECRETS_KEY?.trim() || env.SESSION_SECRET?.trim() || DEV_FALLBACK;
+  return env.SECRETS_KEY?.trim() || getSessionSecret(env);
 }
 
 function deriveKey(env: NodeJS.ProcessEnv): Buffer {

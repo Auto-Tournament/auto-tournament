@@ -82,7 +82,13 @@ import connectPgSimple from 'connect-pg-simple';
 import { isIP } from 'net';
 import { DATABASE_NAME, DatabaseRenameRefused } from './config/databaseRename';
 import { TRUST_PROXY_HOPS } from './config/trustProxy';
+import {
+  getSessionSecret,
+  MIN_SESSION_SECRET_LENGTH,
+  sessionSecretProblem,
+} from './utils/sessionSecret';
 import { COMPAT_MAX_BYTES } from './utils/compatPayload';
+import { checkStoredSecretsKey } from './services/secretsKeyCheck';
 import { reportCompatConfig } from './services/compatService';
 import { startCompatFeed, stopCompatFeed } from './services/compatFeedService';
 import { startLicenseCheckin, stopLicenseCheckin } from './services/license/checkinService';
@@ -92,6 +98,14 @@ import {
   refreshCurrentTournamentId,
   startCurrentTournamentRefresh,
 } from './services/currentTournament';
+
+const sessionSecretRefusal = sessionSecretProblem();
+if (sessionSecretRefusal) {
+  log.error(
+    `[FATAL] ${sessionSecretRefusal}. Refusing to start in production: set SESSION_SECRET to a random value of at least ${MIN_SESSION_SECRET_LENGTH} characters (openssl rand -base64 32). First set SECRETS_KEY to the previous value (the old SESSION_SECRET, or auto-tournament-dev-session-secret if it was unset), or the secrets saved in the UI (sign-in providers, Steam Web API key, two-step verification, SMTP password) can no longer be read.`
+  );
+  process.exit(1);
+}
 
 const app = express();
 const httpServer = createServer(app);
@@ -129,7 +143,7 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // Session + Passport
-const sessionSecret = process.env.SESSION_SECRET || 'auto-tournament-dev-session-secret';
+const sessionSecret = getSessionSecret();
 const PgSession = connectPgSimple(session);
 
 // Reuse the same connection string logic as the main DatabaseManager so the
@@ -573,6 +587,8 @@ void (async () => {
     } catch (error) {
       log.warn('[SIGN-IN] Could not load the saved sign-in settings', { error });
     }
+    // A SESSION_SECRET change can leave saved secrets under the old key. Never throws.
+    await checkStoredSecretsKey();
 
     // Admin Steam IDs / emails (imported once from ADMIN_STEAM_IDS /
     // ADMIN_EMAILS), applied before deciding whether this install still

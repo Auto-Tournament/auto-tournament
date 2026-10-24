@@ -44,6 +44,7 @@
  */
 
 import crypto from 'crypto';
+import { getSessionSecret } from './sessionSecret';
 import type { Untrusted } from './untrusted';
 
 /** Lifetime of a pending OAuth authorization, in milliseconds. */
@@ -117,10 +118,7 @@ export function oauthStateCookieName(provider: string): string {
 }
 
 function defaultSecret(): string {
-  const s = process.env.SESSION_SECRET;
-  return typeof s === 'string' && s.trim().length > 0
-    ? s.trim()
-    : 'auto-tournament-dev-session-secret';
+  return getSessionSecret();
 }
 
 function sign(

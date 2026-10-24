@@ -342,7 +342,7 @@ jobs:
         run: |
           cp example.env .env
           {
-            echo "SESSION_SECRET=ci-session-secret"
+            echo "SESSION_SECRET=ci-session-secret-0123456789abcdef"
             echo "SERVER_TOKEN=server123"
             echo "ENABLE_TEST_ENDPOINTS=true"
             echo "MAT_TEST_INTEGRATION=1"

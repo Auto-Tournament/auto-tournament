@@ -21,14 +21,14 @@
  */
 
 import crypto from 'crypto';
+import { getSessionSecret } from './sessionSecret';
 
 const COOKIE_NAME = 'mat_impersonate';
 const SEP = '.';
 const PAYLOAD_PREFIX = 'impersonate:';
 
 function getSecret(): string {
-  const s = process.env.SESSION_SECRET;
-  return typeof s === 'string' && s.trim().length > 0 ? s.trim() : 'auto-tournament-dev-session-secret';
+  return getSessionSecret();
 }
 
 function hmac(key: string, value: string): string {
