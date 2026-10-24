@@ -2124,6 +2124,11 @@
         "spectator": "Toeschouwer",
         "none": "Geen team"
       }
+    },
+    "console": {
+      "title": "Console",
+      "placeholder": "Opdracht",
+      "noOutput": "Geen uitvoer"
     }
   },
   "matchPage": {

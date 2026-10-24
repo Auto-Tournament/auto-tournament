@@ -2134,6 +2134,11 @@
         "spectator": "Widz",
         "none": "Bez drużyny"
       }
+    },
+    "console": {
+      "title": "Konsola",
+      "placeholder": "Polecenie",
+      "noOutput": "Brak wyniku"
     }
   },
   "matchPage": {

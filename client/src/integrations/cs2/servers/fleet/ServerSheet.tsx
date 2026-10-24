@@ -10,6 +10,7 @@ import {
 import type { FleetHost } from '../../cs2.types';
 import { getMapDisplayName } from '../../maps/mapData';
 import { serverState } from '../machineState';
+import { FleetConsole } from './FleetConsole';
 import { FleetPlayers } from './FleetPlayers';
 import { Facts, SideSheet } from './SideSheet';
 import { StateMark, useStateLabel } from './ServerTile';
@@ -189,6 +190,7 @@ export function ServerSheet({
             )}
           </Stack>
           {s.fleetServer && <FleetPlayers server={s.fleetServer} />}
+          {s.fleetServer && <FleetConsole server={s.fleetServer} />}
           {match && s.process.running && (
             <Typography variant="body2" sx={{ color: color.muted }}>
               {t('serversBoard.matchHint', {

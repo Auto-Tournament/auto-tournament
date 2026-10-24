@@ -2124,6 +2124,11 @@
         "spectator": "Tilskuer",
         "none": "Uten lag"
       }
+    },
+    "console": {
+      "title": "Konsoll",
+      "placeholder": "Kommando",
+      "noOutput": "Ingen utdata"
     }
   },
   "matchPage": {

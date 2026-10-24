@@ -2124,6 +2124,11 @@
         "spectator": "Spectator",
         "none": "No team"
       }
+    },
+    "console": {
+      "title": "Console",
+      "placeholder": "Command",
+      "noOutput": "No output"
     }
   },
   "matchPage": {
