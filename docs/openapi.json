@@ -4813,6 +4813,38 @@
         ]
       }
     },
+    "/api/fleet/servers/{id}/kick": {
+      "post": {
+        "tags": [
+          "Fleet"
+        ],
+        "summary": "POST /api/fleet/servers/:id/kick",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
     "/api/fleet/servers/{id}/link": {
       "post": {
         "tags": [
@@ -4849,6 +4881,38 @@
           "Fleet"
         ],
         "summary": "DELETE /api/fleet/servers/:id/link",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/fleet/servers/{id}/players": {
+      "get": {
+        "tags": [
+          "Fleet"
+        ],
+        "summary": "GET /api/fleet/servers/:id/players",
         "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
         "responses": {
           "200": {
