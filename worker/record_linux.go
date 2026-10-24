@@ -102,6 +102,8 @@ type recorder struct {
 	job jobProgress
 	// moved: when the job last reported progress (unix ms), for stallWatch.
 	moved atomic.Int64
+	// cs2Checked: when it last asked Steam whether CS2 is current (maybeUpdateCS2).
+	cs2Checked time.Time
 	*client
 	gameDir string
 	sniper  string
@@ -1716,6 +1718,8 @@ func runRecorder(ctx context.Context, clients []*client, poll time.Duration) err
 			keep.release()
 			r.job = jobProgress{}
 			r.link.Idle()
+			// Idle, with CS2 closed: the moment to bring CS2 up to date (cs2update_linux.go).
+			r.maybeUpdateCS2(ctx, c)
 			waitForWork()
 			continue
 		}
