@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 751 of them, 473 behind auth —
+Every endpoint this API serves — 753 of them, 474 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -92,6 +92,7 @@ Virtual CS2 skins: inventories, loadouts, showcases and the admin inventory mana
 | `DELETE` | `/api/skins/me/equip/:slot` | public |
 | `POST` | `/api/skins/me/seen` | public |
 | `PUT` | `/api/skins/me/showcase` | public |
+| `PUT` | `/api/skins/me/picks` | public |
 | `GET` | `/api/skins/players/:steamId` | public |
 | `GET` | `/api/skins/skin/:id` | public |
 | `GET` | `/api/skins/tournaments/:id/rewards` | public |
@@ -556,6 +557,7 @@ E2E helpers that stand in for a CS2 server. Disabled in production unless ENABLE
 | `POST` | `/api/test/highlights/repick` | admin |
 | `POST` | `/api/test/fleet/snapshot` | admin |
 | `POST` | `/api/test/fleet/stattrak` | admin |
+| `GET` | `/api/test/fleet/skins-loadout/:steamId` | admin |
 | `POST` | `/api/test/fleet/movement-record` | admin |
 | `POST` | `/api/test/fleet/events` | admin |
 | `GET` | `/api/test/fleet/assign-config/:slug` | admin |

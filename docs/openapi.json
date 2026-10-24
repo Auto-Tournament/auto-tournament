@@ -16319,6 +16319,20 @@
         ]
       }
     },
+    "/api/skins/me/picks": {
+      "put": {
+        "tags": [
+          "Skins"
+        ],
+        "summary": "PUT /api/skins/me/picks",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
     "/api/skins/me/seen": {
       "post": {
         "tags": [
@@ -19209,6 +19223,38 @@
             "description": "Success"
           }
         },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/test/fleet/skins-loadout/{steamId}": {
+      "get": {
+        "tags": [
+          "Test helpers (CS2)"
+        ],
+        "summary": "GET /api/test/fleet/skins-loadout/:steamId",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "steamId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "security": [
           {
             "bearerAuth": []
