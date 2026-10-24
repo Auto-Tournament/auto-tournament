@@ -891,6 +891,52 @@ test.describe.serial('Fleet failover (FLEET.md §11)', () => {
     expect(again.status()).toBe(409);
   });
 
+  test('a server back busy with a match that moved away is told to drop it', async ({
+    request,
+  }) => {
+    test.setTimeout(180_000);
+    await setFailover(request, { auto: true });
+    const a = await FakeReadyUp.enroll(request);
+    cleanup.push(() => a.close());
+    await a.hello();
+    await link(request, a.serverId);
+    cleanup.push(() => unlink(request, a.serverId));
+    const slug = `fleet-fo-lost-${Date.now()}`;
+    cleanup.push(async () => {
+      await request.post(`/api/matches/${slug}/force-cancel`, { headers: getAuthHeader() });
+    });
+    const { epoch } = await liveWithBackup(request, a, slug);
+    const b = await FakeReadyUp.enroll(request);
+    cleanup.push(() => b.close());
+    await b.hello();
+    const cs2B = await link(request, b.serverId);
+    cleanup.push(() => unlink(request, b.serverId));
+
+    a.kill();
+    const assigned = acceptAssign(b, slug);
+    await scanUntilProposed(request, slug);
+    await assigned;
+    await expect
+      .poll(async () => (await matchRow(request, slug))?.serverId, { timeout: 15_000 })
+      .toBe(cs2B);
+
+    // The fence reaches A on its next connect (outbox replay)...
+    await a.reconnect({ availability: 'busy' });
+    a.answer(await a.next('match.unassign'));
+    await new Promise((r) => setTimeout(r, 1500)); // the ack empties the outbox
+    // ...but say Ready Up lost it and recovered the match from its state.json:
+    // A says it is busy with that match as its own. It is told again.
+    await a.reconnect({ availability: 'busy', reason: 'local_match', detail: slug });
+    const again = await a.next('match.unassign', 10_000);
+    expect(again.payload).toMatchObject({ match_id: slug, epoch, reason: 'superseded' });
+    a.answer(again);
+    await new Promise((r) => setTimeout(r, 1500));
+
+    // A match the platform does not know is the server's own business.
+    await a.reconnect({ availability: 'busy', reason: 'local_match', detail: 'cup-final-local' });
+    expect(await a.next('match.unassign', 3_000).catch(() => null)).toBeNull();
+  });
+
   test('settings: validated, admin only', async ({ request, playwright, baseURL }) => {
     const bad = await request.put('/api/fleet/failover/settings', {
       headers: getAuthHeader(),
