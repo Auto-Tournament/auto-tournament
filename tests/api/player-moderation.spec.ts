@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { getAuthHeader, signInAsPlayerViaRequest, signInViaRequest } from '../helpers/auth';
 import { createTournament } from '../helpers/tournaments';
+import { uniqueSteamId } from '../helpers/steamIds';
 
 /**
  * Banning and deleting players (services/playerModeration.ts): a banned
@@ -120,12 +121,6 @@ test.describe.serial('player moderation', () => {
   );
 });
 
-function steamId(): string {
-  return `7656119${String(Date.now()).slice(-7)}${Math.floor(Math.random() * 1000)
-    .toString()
-    .padStart(3, '0')}`;
-}
-
 test.describe('a banned starter leaves the lineup', () => {
   test(
     'the team gets a gap to fill and fills it with its sub',
@@ -133,9 +128,9 @@ test.describe('a banned starter leaves the lineup', () => {
     async ({ request, playwright, baseURL }) => {
       expect(await signInViaRequest(request)).toBe(true);
       const owner = await playwright.request.newContext({ baseURL });
-      const ownerId = steamId();
-      const mates = [steamId(), steamId(), steamId(), steamId()];
-      const sub = steamId();
+      const ownerId = uniqueSteamId();
+      const mates = [uniqueSteamId(), uniqueSteamId(), uniqueSteamId(), uniqueSteamId()];
+      const sub = uniqueSteamId();
       expect(await signInAsPlayerViaRequest(owner, ownerId, `Owner ${ownerId.slice(-4)}`)).toBe(
         true
       );

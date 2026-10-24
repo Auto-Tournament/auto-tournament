@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { getAuthHeader, signInAsPlayerViaRequest, signInViaRequest } from '../helpers/auth';
+import { uniqueSteamId } from '../helpers/steamIds';
 
 /**
  * Player reports (services/playerReports.ts): a signed-in player reports
@@ -11,19 +12,13 @@ import { getAuthHeader, signInAsPlayerViaRequest, signInViaRequest } from '../he
 
 const TAGS = { tag: ['@api'] };
 
-function steamId(): string {
-  return `7656119${String(Date.now()).slice(-7)}${Math.floor(Math.random() * 1000)
-    .toString()
-    .padStart(3, '0')}`;
-}
-
 test(
   'a player reports another; an admin dismisses, then bans from a report',
   TAGS,
   async ({ request, playwright, baseURL }) => {
     expect(await signInViaRequest(request)).toBe(true);
-    const reporterId = steamId();
-    const targetId = steamId();
+    const reporterId = uniqueSteamId();
+    const targetId = uniqueSteamId();
     await request.post('/api/players', {
       headers: getAuthHeader(),
       data: { id: targetId, name: 'Reported Player' },

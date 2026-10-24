@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { getAuthHeader, signInAsPlayerViaRequest, signInViaRequest } from '../helpers/auth';
 import { createTournament } from '../helpers/tournaments';
+import { uniqueSteamId } from '../helpers/steamIds';
 
 /**
  * Teams signing themselves up for a tournament with a lineup, and the lineup
@@ -11,12 +12,6 @@ import { createTournament } from '../helpers/tournaments';
  * @tag tournament
  */
 
-function steamId(): string {
-  return `7656119${String(Date.now()).slice(-7)}${Math.floor(Math.random() * 1000)
-    .toString()
-    .padStart(3, '0')}`;
-}
-
 test.describe('Tournament sign-up', () => {
   test(
     'an owner signs a team up with a lineup, and withdraws it',
@@ -26,8 +21,8 @@ test.describe('Tournament sign-up', () => {
 
       // The owner makes a team, and an admin fills its roster.
       const owner = await playwright.request.newContext({ baseURL });
-      const ownerId = steamId();
-      const mates = [steamId(), steamId(), steamId(), steamId()];
+      const ownerId = uniqueSteamId();
+      const mates = [uniqueSteamId(), uniqueSteamId(), uniqueSteamId(), uniqueSteamId()];
       expect(await signInAsPlayerViaRequest(owner, ownerId, `Owner ${ownerId.slice(-4)}`)).toBe(
         true
       );
@@ -86,7 +81,7 @@ test.describe('Tournament sign-up', () => {
       // A player plays for one team per tournament: a second team with one of
       // these players in its lineup is refused (GitHub #125).
       const other = await playwright.request.newContext({ baseURL });
-      const otherId = steamId();
+      const otherId = uniqueSteamId();
       expect(await signInAsPlayerViaRequest(other, otherId, `Other ${otherId.slice(-4)}`)).toBe(
         true
       );
@@ -95,7 +90,7 @@ test.describe('Tournament sign-up', () => {
       });
       expect(second.status(), await second.text()).toBe(201);
       const team2 = (await second.json()).team as { id: string };
-      const others = [steamId(), steamId(), steamId()];
+      const others = [uniqueSteamId(), uniqueSteamId(), uniqueSteamId()];
       const roster2 = await request.put(`/api/teams/${team2.id}`, {
         headers: getAuthHeader(),
         data: {
