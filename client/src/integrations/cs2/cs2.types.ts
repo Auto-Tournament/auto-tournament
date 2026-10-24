@@ -566,6 +566,13 @@ export interface FleetHostServer {
   matchInProgress: boolean;
 }
 
+/** A human on a Ready Up server (api fleet/players.ts). */
+export interface FleetPlayer {
+  steamid64: string;
+  name: string;
+  team: 'none' | 'spectator' | 't' | 'ct';
+}
+
 export interface FleetHostServerRef {
   id: string;
   name: string;

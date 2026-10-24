@@ -2108,7 +2108,23 @@
     "createN_other": "Create {{count}} servers",
     "restarts_one": "{{count}} restart in 24 h",
     "restarts_other": "{{count}} restarts in 24 h",
-    "offlineFor": "Offline for {{time}}"
+    "offlineFor": "Offline for {{time}}",
+    "players": {
+      "title": "Players",
+      "empty": "Nobody on the server",
+      "kick": "Kick",
+      "kickTitle": "Kick {{name}}?",
+      "kickMessage": "Leaves the server and can join again.",
+      "kickReason": "Message shown on kick (optional)",
+      "kicked": "{{name}} kicked",
+      "kickFailed": "Could not kick the player",
+      "team": {
+        "ct": "CT",
+        "t": "T",
+        "spectator": "Spectator",
+        "none": "No team"
+      }
+    }
   },
   "matchPage": {
     "recordingClips": "Recording clips",

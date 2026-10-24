@@ -2118,7 +2118,23 @@
     "createN_other": "Create {{count}} servers",
     "restarts_one": "{{count}} restart in 24 h",
     "restarts_other": "{{count}} restarts in 24 h",
-    "offlineFor": "Offline for {{time}}"
+    "offlineFor": "Offline for {{time}}",
+    "players": {
+      "title": "Gracze",
+      "empty": "Nikogo na serwerze",
+      "kick": "Wyrzuć",
+      "kickTitle": "Wyrzucić {{name}}?",
+      "kickMessage": "Opuszcza serwer i może wrócić.",
+      "kickReason": "Wiadomość przy wyrzuceniu (opcjonalna)",
+      "kicked": "{{name}} wyrzucony",
+      "kickFailed": "Nie udało się wyrzucić gracza",
+      "team": {
+        "ct": "CT",
+        "t": "T",
+        "spectator": "Widz",
+        "none": "Bez drużyny"
+      }
+    }
   },
   "matchPage": {
     "recordingClips": "Recording clips",

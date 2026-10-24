@@ -2108,7 +2108,23 @@
     "createN_other": "Create {{count}} servers",
     "restarts_one": "{{count}} restart in 24 h",
     "restarts_other": "{{count}} restarts in 24 h",
-    "offlineFor": "Offline for {{time}}"
+    "offlineFor": "Offline for {{time}}",
+    "players": {
+      "title": "玩家",
+      "empty": "服务器上没有人",
+      "kick": "踢出",
+      "kickTitle": "踢出 {{name}}？",
+      "kickMessage": "离开服务器，之后可以重新加入。",
+      "kickReason": "踢出时显示的消息（可选）",
+      "kicked": "{{name}} 已被踢出",
+      "kickFailed": "无法踢出该玩家",
+      "team": {
+        "ct": "CT",
+        "t": "T",
+        "spectator": "观众",
+        "none": "无队伍"
+      }
+    }
   },
   "matchPage": {
     "recordingClips": "Recording clips",

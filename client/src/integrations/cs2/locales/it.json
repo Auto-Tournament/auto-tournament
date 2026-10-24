@@ -2108,7 +2108,23 @@
     "createN_other": "Create {{count}} servers",
     "restarts_one": "{{count}} restart in 24 h",
     "restarts_other": "{{count}} restarts in 24 h",
-    "offlineFor": "Offline for {{time}}"
+    "offlineFor": "Offline for {{time}}",
+    "players": {
+      "title": "Giocatori",
+      "empty": "Nessuno sul server",
+      "kick": "Espelli",
+      "kickTitle": "Espellere {{name}}?",
+      "kickMessage": "Lascia il server e può rientrare.",
+      "kickReason": "Messaggio mostrato all’espulsione (facoltativo)",
+      "kicked": "{{name}} espulso",
+      "kickFailed": "Impossibile espellere il giocatore",
+      "team": {
+        "ct": "CT",
+        "t": "T",
+        "spectator": "Spettatore",
+        "none": "Nessuna squadra"
+      }
+    }
   },
   "matchPage": {
     "recordingClips": "Recording clips",

@@ -2108,7 +2108,23 @@
       "warmup": "Oppvarming",
       "creating": "Lager…"
     },
-    "offlineFor": "Frakoblet i {{time}}"
+    "offlineFor": "Frakoblet i {{time}}",
+    "players": {
+      "title": "Spillere",
+      "empty": "Ingen på serveren",
+      "kick": "Kast ut",
+      "kickTitle": "Kaste ut {{name}}?",
+      "kickMessage": "Forlater serveren og kan bli med igjen.",
+      "kickReason": "Melding ved utkasting (valgfritt)",
+      "kicked": "{{name}} kastet ut",
+      "kickFailed": "Kunne ikke kaste ut spilleren",
+      "team": {
+        "ct": "CT",
+        "t": "T",
+        "spectator": "Tilskuer",
+        "none": "Uten lag"
+      }
+    }
   },
   "matchPage": {
     "recordingClips": "Tar opp klipp",

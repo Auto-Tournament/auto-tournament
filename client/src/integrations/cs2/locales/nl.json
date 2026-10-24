@@ -2108,7 +2108,23 @@
     "createN_other": "Create {{count}} servers",
     "restarts_one": "{{count}} restart in 24 h",
     "restarts_other": "{{count}} restarts in 24 h",
-    "offlineFor": "Offline for {{time}}"
+    "offlineFor": "Offline for {{time}}",
+    "players": {
+      "title": "Spelers",
+      "empty": "Niemand op de server",
+      "kick": "Kicken",
+      "kickTitle": "{{name}} kicken?",
+      "kickMessage": "Verlaat de server en kan weer meedoen.",
+      "kickReason": "Bericht bij het kicken (optioneel)",
+      "kicked": "{{name}} gekickt",
+      "kickFailed": "Kon de speler niet kicken",
+      "team": {
+        "ct": "CT",
+        "t": "T",
+        "spectator": "Toeschouwer",
+        "none": "Geen team"
+      }
+    }
   },
   "matchPage": {
     "recordingClips": "Recording clips",
