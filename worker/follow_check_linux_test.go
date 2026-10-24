@@ -75,3 +75,31 @@ func TestCheckFollowUsesTheTickTheDemoIsOn(t *testing.T) {
 		t.Fatalf("camera on the player at the demo's tick: %v", err)
 	}
 }
+
+// A demo that is already paused answers nothing to demo_pause: pausedTick plays
+// a frame and pauses again, and reports that tick, not an older one.
+func TestPausedTickWhenAlreadyPaused(t *testing.T) {
+	conn, peer := net.Pipe()
+	defer conn.Close()
+	defer peer.Close()
+	con := &console{conn: conn, lines: make(chan string, 16)}
+	go func() {
+		sc := bufio.NewScanner(peer)
+		playing := false
+		for sc.Scan() {
+			switch sc.Text() {
+			case "demo_resume":
+				playing = true
+			case "demo_pause":
+				if playing {
+					con.lines <- "Demo playback paused on tick 1049"
+				}
+				playing = false
+			}
+		}
+	}()
+	g := &game{con: con, startTick: 1000}
+	if at, ok := g.pausedTick(); !ok || at != 49 {
+		t.Fatalf("pausedTick = %d, %v; want 49, true", at, ok)
+	}
+}
