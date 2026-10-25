@@ -508,11 +508,16 @@ func focusFilter(in, out string, at []float64, width int, blur string) string {
 	// 1440p frame: ~6 ms on an RTX 3060 against 28 ms on the VM's CPU); else
 	// on the CPU, in the windows only.
 	blurStep := fmt.Sprintf("gblur=sigma=%.1f:enable='%s'", sigma, enable)
+	// On the GPU a quarter-size copy is blurred and scaled back: a blur that
+	// strong looks the same, and the frames it holds on the GPU are 16 times
+	// smaller (4K beside CS2 on a 12 GB card ran out of memory, 2026-10-25).
+	small := fmt.Sprintf("scale=%d:%d:flags=bilinear,", (width/4)&^1, (width*9/64)&^1)
+	back := fmt.Sprintf(",scale=%d:%d:flags=bilinear", width&^1, (width*9/16)&^1)
 	switch blur {
 	case blurVulkan:
-		blurStep = "hwupload," + vulkanBlur(sigma) + ",hwdownload,format=yuv420p"
+		blurStep = small + "hwupload," + vulkanBlur(sigma/4) + ",hwdownload,format=yuv420p" + back
 	case blurVulkanVA:
-		blurStep = "hwupload=derive_device=vulkan," + vulkanBlur(sigma) + ",hwdownload,format=yuv420p"
+		blurStep = small + "hwupload=derive_device=vulkan," + vulkanBlur(sigma/4) + ",hwdownload,format=yuv420p" + back
 	}
 	fmt.Fprintf(&b, ";[%s_fx]%s,drawbox=color=0x080504@%.2f:t=fill:enable='%s',vignette=angle=PI/4:enable='%s'[%s_fxd]",
 		out, blurStep, focusShade, enable, enable, out)
