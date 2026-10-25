@@ -912,7 +912,17 @@ func (r *recorder) recordWindow(g *game, look clipLook, card *cardRender, name s
 	}
 	width, height := g.width, g.height
 	return &windowCut{segs: segs, kept: kept, rows: rows}, func() error {
-		return r.encodeMoment(raws, frames, width, height, wav, audioAt, length, segs, look.watermark, card, feed, out, cleanPathOf(out))
+		encode := func(blur string) error {
+			return r.encodeMoment(raws, frames, width, height, wav, audioAt, length, segs, look.watermark, card, feed, out, cleanPathOf(out), blur)
+		}
+		err := encode(gpuBlur(r.encoder))
+		if err != nil && strings.Contains(err.Error(), "VK_ERROR_OUT_OF_DEVICE_MEMORY") {
+			// The GPU had no memory left for the blur (4K beside CS2 on a 12 GB
+			// card failed every clip, 2026-10-25): the CPU blurs this one.
+			log.Printf("the focus blur ran out of GPU memory; encoding %s with the CPU blur", filepath.Base(out))
+			err = encode("")
+		}
+		return err
 	}, nil
 }
 
@@ -927,7 +937,7 @@ type windowCut struct {
 // encodeMoment streams the timeline's frames into ffmpeg at outputFPS with the
 // sound, the slow motion on both, and the caption.
 func (r *recorder) encodeMoment(raws []string, frames []frameRef, w, h int, wav string, audioAt, length float64,
-	segs []segment, watermark bool, card *cardRender, feed *feedRender, out, clean string) error {
+	segs []segment, watermark bool, card *cardRender, feed *feedRender, out, clean, blur string) error {
 	files := make([]*os.File, len(raws))
 	for i, p := range raws {
 		f, err := os.Open(p)
@@ -942,7 +952,7 @@ func (r *recorder) encodeMoment(raws []string, frames []frameRef, w, h int, wav 
 		"-ss", fmt.Sprintf("%.4f", maxf(0, audioAt)), "-i", wav}
 	ow, oh := outputSize()
 	o := overlay{card: -1, logo: -1, feed: -1, width: ow, height: oh, clean: clean != ""}
-	o.blur = gpuBlur(r.encoder)
+	o.blur = blur
 	if card != nil && !card.settled {
 		o.focus = []float64{0}
 	}
