@@ -31,6 +31,21 @@ export function recordingWaiting(alias = ''): string {
 const outOfAttemptsStatus = `CASE WHEN attempts < ${RECORDING_ATTEMPTS} THEN 'pending'
   WHEN clip_path IS NOT NULL THEN 'done' ELSE 'failed' END`;
 
+/**
+ * Clips and match reels label what they were made at (made_with), set when a
+ * recorder claims one. A redo's first claim keeps the label it had; a redo
+ * that runs out of attempts keeps its old video (outOfAttemptsStatus) and gets
+ * that label back (2026-10-25: 7 of 16 clips said 2160p240 on 1080p videos).
+ */
+export const KEEP_LABEL_ON_CLAIM =
+  'kept_made_with = CASE WHEN attempts = 0 AND clip_path IS NOT NULL THEN made_with ELSE kept_made_with END,';
+const LABELLED = new Set(['cs2_highlights', 'cs2_match_reels']);
+export function keptLabelSql(table: string): string {
+  return LABELLED.has(table)
+    ? `, made_with = CASE WHEN attempts >= ${RECORDING_ATTEMPTS} AND clip_path IS NOT NULL THEN COALESCE(kept_made_with, made_with) ELSE made_with END`
+    : '';
+}
+
 /** Run before claims, including claims by paused workers. No healthy peer, no work. */
 export async function recoverRecordingLeases(): Promise<number[]> {
   await db.runAsync(
@@ -43,7 +58,7 @@ export async function recoverRecordingLeases(): Promise<number[]> {
         status = ${outOfAttemptsStatus},
         error = 'Recorder lease expired or job exceeded 24 hours',
         retry_until = CASE WHEN attempts = 1 THEN EXTRACT(EPOCH FROM NOW())::INTEGER + ${SAME_RECORDER_RETRY_SECONDS} ELSE NULL END,
-        avoid_recorder = CASE WHEN attempts >= 2 THEN recorder ELSE NULL END
+        avoid_recorder = CASE WHEN attempts >= 2 THEN recorder ELSE NULL END${keptLabelSql(table)}
        WHERE (status = 'pending' AND attempts >= ${RECORDING_ATTEMPTS}) OR (status = 'recording' AND (
          claimed_at IS NULL OR claimed_at < EXTRACT(EPOCH FROM NOW()) - ${RECORDER_LEASE_SECONDS}
          OR claim_started_at < EXTRACT(EPOCH FROM NOW()) - ${RECORDER_JOB_SECONDS}))
@@ -82,7 +97,7 @@ export async function releaseRecorderWork(recorder: string): Promise<number[]> {
   const failed: number[] = [];
   for (const table of RECORDING_TABLES) {
     const rows = await db.queryAsync<{ id?: number; status: string }>(
-      `UPDATE ${table} SET ${recordingFailureSql} WHERE recorder = ? AND status = 'recording'
+      `UPDATE ${table} SET ${recordingFailureSql}${keptLabelSql(table)} WHERE recorder = ? AND status = 'recording'
        RETURNING ${table === 'cs2_highlights' ? 'id, ' : ''}status`,
       ['The recorder restarted during the job', name]
     );

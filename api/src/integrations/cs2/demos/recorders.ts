@@ -3,7 +3,7 @@ import {
   newerRecorderAgent,
   expireRecorderUpdateRequests,
 } from './recorderUpdates';
-import { recordingFailureSql } from './recorderLeases';
+import { keptLabelSql, recordingFailureSql } from './recorderLeases';
 /**
  * The highlight recorders as the platform sees them: who they are, how fast
  * and how fast they record, and a run log of every job.
@@ -438,7 +438,7 @@ export async function setRecorderLabel(name: string, label: string | null): Prom
 export async function recorderFault(recorder: string, ids: number[], error: string): Promise<void> {
   if (ids.length > 0) {
     await db.runAsync(
-      `UPDATE cs2_highlights SET ${recordingFailureSql}
+      `UPDATE cs2_highlights SET ${recordingFailureSql}${keptLabelSql('cs2_highlights')}
         WHERE id IN (${ids.map(() => '?').join(', ')}) AND status = 'recording'`,
       [error.slice(0, 500), ...ids]
     );

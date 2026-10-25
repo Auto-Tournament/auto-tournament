@@ -1677,4 +1677,13 @@ export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
       ALTER TABLE cs2_recorders ADD COLUMN IF NOT EXISTS fbf_checked_at INTEGER;
     `,
   },
+  {
+    // A redo's label before it was claimed (demos/recorderLeases.ts keptLabelSql): a redo
+    // that fails every attempt keeps its old video, and with it this label.
+    id: '062-kept-made-with',
+    up: `
+      ALTER TABLE cs2_highlights ADD COLUMN IF NOT EXISTS kept_made_with TEXT;
+      ALTER TABLE cs2_match_reels ADD COLUMN IF NOT EXISTS kept_made_with TEXT;
+    `,
+  },
 ];
