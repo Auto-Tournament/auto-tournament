@@ -25,7 +25,7 @@ import {
   type HighlightFilter,
   type PlayerHighlights,
 } from './data';
-import { HighlightCard } from '../../../module-sdk';
+import { HighlightCard, REEL_THUMB_AT } from '../../../module-sdk';
 import { KindBadge } from './KindBadge';
 
 type Filter = HighlightFilter | 'reels';
@@ -233,6 +233,7 @@ export function PlayerHighlightsPage() {
                 testId="cs2-highlight-reel"
                 to={watchReelPath(r.matchSlug, r.mapNumber, playerId)}
                 video={r.video}
+                at={REEL_THUMB_AT}
                 title={[mapLabel(t, r.map, r.mapNumber), teamsLabel(r.match)]
                   .filter(Boolean)
                   .join(' · ')}

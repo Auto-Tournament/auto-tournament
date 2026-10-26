@@ -8,7 +8,7 @@ export interface HighlightVideo {
   to: string;
   /** The video file. */
   video: string;
-  /** Where its still is taken, in seconds (default: from `markers`, else 1.5). */
+  /** Where its still is taken, in seconds (default: from `markers`, else past the caption card). */
   at?: number;
   markers?: ClipMarkers | null;
   duration?: number;

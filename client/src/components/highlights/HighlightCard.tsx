@@ -79,13 +79,20 @@ export function VideoThumb({
   );
 }
 
-/** Where a clip's still is taken: as the slow motion starts, else a second and a half in. */
-export const thumbAt = (markers: ClipMarkers | null | undefined) => markers?.slowmo?.[0] ?? 1.5;
+/** Seconds into a clip where its caption card (the first ~2.5 s) has gone. */
+export const CLIP_THUMB_AT = 3;
+/** Seconds into a reel: past its intro (worker/intro.go introSec, 4.4 s) and its first clip's card. */
+export const REEL_THUMB_AT = 4.4 + CLIP_THUMB_AT;
+/** Where a clip's still is taken: as the slow motion starts, else past its caption card. */
+export const thumbAt = (markers: ClipMarkers | null | undefined) =>
+  markers?.slowmo?.[0] ?? CLIP_THUMB_AT;
 
 export interface HighlightCardProps {
   to: string;
   video: string | null;
   markers?: ClipMarkers | null;
+  /** Where its still is taken (a reel: REEL_THUMB_AT); default from `markers`. */
+  at?: number;
   title: string;
   sub: ReactNode;
   badge?: ReactNode;
@@ -105,6 +112,7 @@ export function HighlightCard({
   to,
   video,
   markers,
+  at,
   title,
   sub,
   badge,
@@ -125,7 +133,7 @@ export function HighlightCard({
       }}
     >
       {video ? (
-        <VideoThumb src={video} at={thumbAt(markers)} sharp={large} />
+        <VideoThumb src={video} at={at ?? thumbAt(markers)} sharp={large} />
       ) : (
         <>
           <Skeleton

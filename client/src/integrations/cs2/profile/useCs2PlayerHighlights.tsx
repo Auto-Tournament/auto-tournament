@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import {
   api,
+  REEL_THUMB_AT,
   useModuleTranslation,
   type HighlightVideo,
   type PlayerHighlightsFeed,
@@ -78,7 +79,7 @@ export function useCs2PlayerHighlights(playerId: string): PlayerHighlightsFeed |
           id: `reel:${reel.matchSlug}:${reel.mapNumber}`,
           to: watchReelPath(reel.matchSlug, reel.mapNumber, playerId),
           video: reel.video,
-          at: 2,
+          at: REEL_THUMB_AT,
           title: t('highlights.reelOf', { map: mapLabel(t, reel.map, reel.mapNumber) }),
           sub: t('highlights.moments', { count: reel.moments }),
         }

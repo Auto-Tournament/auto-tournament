@@ -7,7 +7,13 @@ import { useEffect, useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import { Box, Button } from '@mui/material';
 import { ArrowRightIcon } from '@phosphor-icons/react';
-import { api, HighlightCard, SectionHead, useModuleTranslation } from '../../../module-sdk';
+import {
+  api,
+  HighlightCard,
+  REEL_THUMB_AT,
+  SectionHead,
+  useModuleTranslation,
+} from '../../../module-sdk';
 import { kindLabel, libraryPath, mapLabel, playTitle } from './data';
 import { libraryWatchPath, type LibraryItem } from './HighlightsLibraryPage';
 
@@ -73,6 +79,7 @@ export function LibraryStrip({
             key={i.key}
             to={libraryWatchPath(i)}
             video={i.video}
+            at={i.kind === 'clip' ? undefined : REEL_THUMB_AT}
             title={
               i.kind === 'clip'
                 ? `${i.playerName ?? ''} · ${playTitle(i.title ?? '')}`
