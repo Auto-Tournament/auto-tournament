@@ -119,23 +119,10 @@ func (r *recorder) buildReelSound(paths []string, joins []join, intro *reelIntro
 		hasIntro = true
 		sound.reactions = append([][]reaction{nil}, sound.reactions...)
 	}
-	args := []string{"-y", "-hide_banner", "-loglevel", "error"}
-	for _, p := range paths {
-		args = append(args, "-i", p)
-	}
-	musicIn := -1
-	if sound.music != "" {
-		musicIn = len(paths)
-		args = append(args, "-stream_loop", "-1", "-i", sound.music)
-	}
-	filter := reelFilter(plan) + soundFilter(plan, sound, musicIn, hasIntro)
-	args = append(args, "-filter_complex", filter, "-map", "[v]", "-map", "[amix]")
-	args = append(args, encodeArgs(r.encoder)...)
-	args = append(args, "-movflags", "+faststart", out)
 	// AT_CROWD_ONLY=1 (local tests): the reel is already made, only its crowd track is wanted.
 	if _, err := os.Stat(out); env("AT_CROWD_ONLY", "") != "1" || err != nil {
-		if b, err := exec.CommandContext(r.commandContext(), "ffmpeg", hwEncode(args, r.encoder)...).CombinedOutput(); err != nil {
-			return nil, fmt.Errorf("ffmpeg reel: %v %s", err, strings.TrimSpace(string(b)))
+		if err := r.renderReel(paths, plan, sound, hasIntro, out); err != nil {
+			return nil, err
 		}
 	}
 	if sound.crowd != "" && sound.crowdOut != "" {
@@ -166,6 +153,65 @@ func (r *recorder) buildReelSound(paths []string, joins []join, intro *reelIntro
 		}
 	}
 	return starts, nil
+}
+
+// renderReel makes the reel's video at out: its picture piece by piece
+// (reelpieces.go), its sound in one pass, then the two put together.
+func (r *recorder) renderReel(paths []string, plan reelPlan, sound reelSound, hasIntro bool, out string) error {
+	dir, err := os.MkdirTemp(filepath.Dir(out), "reel-pieces-")
+	if err != nil {
+		return err
+	}
+	defer os.RemoveAll(dir)
+	ffmpeg := func(what string, args []string) error {
+		args = append([]string{"-y", "-hide_banner", "-loglevel", "error"}, args...)
+		if b, err := exec.CommandContext(r.commandContext(), "ffmpeg", args...).CombinedOutput(); err != nil {
+			return fmt.Errorf("ffmpeg reel (%s): %v %s", what, err, strings.TrimSpace(string(b)))
+		}
+		return nil
+	}
+	pieces := reelPieces(plan)
+	var list strings.Builder
+	for i, pc := range pieces {
+		file := filepath.Join(dir, fmt.Sprintf("piece-%03d.mp4", i))
+		args := pieceInputs(plan, pc, paths)
+		args = append(args, "-filter_complex", pieceFilter(plan, pc, i == 0, i == len(pieces)-1), "-map", "[v]", "-an")
+		args = append(args, encodeArgs(r.encoder)...)
+		args = append(args, "-frames:v", strconv.Itoa(pc.frames), file)
+		if err := ffmpeg(fmt.Sprintf("piece %d of %d", i+1, len(pieces)), hwEncode(args, r.encoder)); err != nil {
+			return err
+		}
+		fmt.Fprintf(&list, "file '%s'\n", file)
+		r.report("joining", "reel pieces", i+1, len(pieces))
+	}
+	listFile := filepath.Join(dir, "pieces.txt")
+	if err := os.WriteFile(listFile, []byte(list.String()), 0o644); err != nil {
+		return err
+	}
+	picture := filepath.Join(dir, "picture.mp4")
+	if err := ffmpeg("join", []string{"-f", "concat", "-safe", "0", "-i", listFile, "-c", "copy", picture}); err != nil {
+		return err
+	}
+	// The sound: the parts' own, joined the way the picture is, with the crowd and music.
+	args := []string{}
+	for _, p := range paths {
+		args = append(args, "-vn", "-i", p)
+	}
+	musicIn := -1
+	if sound.music != "" {
+		musicIn = len(paths)
+		args = append(args, "-stream_loop", "-1", "-i", sound.music)
+	}
+	audio := plan
+	audio.audioOnly = true
+	soundFile := filepath.Join(dir, "sound.m4a")
+	args = append(args, "-filter_complex", reelFilter(audio)+soundFilter(audio, sound, musicIn, hasIntro),
+		"-map", "[amix]", "-c:a", "aac", "-b:a", "192k", "-ar", "48000", "-ac", "2", soundFile)
+	if err := ffmpeg("sound", args); err != nil {
+		return err
+	}
+	return ffmpeg("mux", []string{"-i", picture, "-i", soundFile, "-map", "0:v", "-map", "1:a", "-c", "copy",
+		"-shortest", "-movflags", "+faststart", out})
 }
 
 // cutFrom re-encodes `in` from `at` seconds on (to the frame) into `out`.
