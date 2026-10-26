@@ -1686,4 +1686,15 @@ export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
       ALTER TABLE cs2_match_reels ADD COLUMN IF NOT EXISTS kept_made_with TEXT;
     `,
   },
+  {
+    // When a video's highest quality was dropped for its top cut (demos/masterSweep.ts).
+    id: '063-master-dropped-at',
+    up: `
+      ALTER TABLE cs2_highlights ADD COLUMN IF NOT EXISTS master_dropped_at INTEGER;
+      ALTER TABLE cs2_highlight_reels ADD COLUMN IF NOT EXISTS master_dropped_at INTEGER;
+      ALTER TABLE cs2_match_reels ADD COLUMN IF NOT EXISTS master_dropped_at INTEGER;
+      ALTER TABLE cs2_team_reels ADD COLUMN IF NOT EXISTS master_dropped_at INTEGER;
+      ALTER TABLE cs2_tournament_reels ADD COLUMN IF NOT EXISTS master_dropped_at INTEGER;
+    `,
+  },
 ];

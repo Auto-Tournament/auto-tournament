@@ -1182,6 +1182,14 @@
     "cost": {
       "single": "Recording takes about {{time}}× as long as 1080p at 120 fps. An estimate.",
       "withCuts": "Recording takes about {{time}}× as long as 1080p at 120 fps, and every quality is kept: about {{storage}}× the space. Estimates."
+    },
+    "keepMasters": {
+      "7": "For 7 days",
+      "30": "For 30 days",
+      "label": "Keep the highest quality",
+      "always": "Always",
+      "reels": "Until the reels are made",
+      "helper": "Then the next quality takes its place and the clean copy goes, which saves most of the space. A video without its highest quality can't have its overlay redrawn or be joined into a new reel at that quality; it has to be recorded again."
     }
   },
   "update": {

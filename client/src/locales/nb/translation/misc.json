@@ -1182,6 +1182,14 @@
     "cost": {
       "single": "Opptak tar omtrent {{time}} ganger så lang tid som 1080p i 120 fps. Et anslag.",
       "withCuts": "Opptak tar omtrent {{time}} ganger så lang tid som 1080p i 120 fps, og alle kvalitetene lagres: omtrent {{storage}} ganger så mye plass. Anslag."
+    },
+    "keepMasters": {
+      "label": "Behold høyeste kvalitet",
+      "always": "Alltid",
+      "30": "I 30 dager",
+      "7": "I 7 dager",
+      "reels": "Til sammendragene er laget",
+      "helper": "Deretter tar den nest høyeste kvaliteten plassen, og den rene kopien slettes. Det sparer mest plass. En video uten høyeste kvalitet kan ikke få overlegget tegnet på nytt eller bli med i et nytt sammendrag i den kvaliteten. Da må den tas opp på nytt."
     }
   },
   "update": {
