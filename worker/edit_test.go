@@ -50,7 +50,7 @@ func TestVideoFilterCardAndLogo(t *testing.T) {
 	f := videoFilter(overlay{card: 2, cardAt: image.Pt(48, 938), logo: 3, feed: -1, width: 2560, height: 1440})
 	for _, want := range []string{
 		"[base][2:v]overlay=48:938:eof_action=repeat:alpha=premultiplied[withcard]",
-		"[3:v]scale=42:42,format=rgba,colorchannelmixer=aa=0.3", "[withcard][logo]overlay=W-w-48:H-h-42:shortest=1",
+		"[3:v]scale=-2:42:flags=lanczos,format=rgba,colorchannelmixer=aa=0.85", "[withcard][logo]overlay=W-w-48:H-h-42:shortest=1",
 	} {
 		if !strings.Contains(f, want) {
 			t.Fatalf("%q missing from %s", want, f)

@@ -242,7 +242,11 @@ func (r *recorder) overlayTools() error {
 	}
 	if r.logo == "" {
 		r.logo = filepath.Join(dir, "at-watermark.png")
-		if err := os.WriteFile(r.logo, watermarkPNG, 0o644); err != nil {
+		mark, err := playedOnPNG()
+		if err != nil {
+			return err
+		}
+		if err := os.WriteFile(r.logo, mark, 0o644); err != nil {
 			return err
 		}
 	}
