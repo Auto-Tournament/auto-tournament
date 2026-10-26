@@ -439,10 +439,13 @@ async function completeDemoJobNow(job: DemoJob, analysis: DemoAnalysisPayload): 
     [job.matchSlug, job.mapNumber]
   );
   const rounds = (analysis.rounds ?? []).map((r) => r.number).filter((r) => Number.isFinite(r));
+  // Highlights turned off for this match or its tournament: none (the map's pending ones go too).
+  const { recordsHighlights } = await import('./highlightPolicy');
+  const record = await recordsHighlights(job.matchSlug);
   await saveMoments(
     job.matchSlug,
     job.mapNumber,
-    pickMoments(analysis, perPlayer, funny),
+    record ? pickMoments(analysis, perPlayer, funny) : [],
     demo
       ? { demoPath: demo.demo_path, firstRound: rounds.length ? Math.min(...rounds) : 1 }
       : undefined

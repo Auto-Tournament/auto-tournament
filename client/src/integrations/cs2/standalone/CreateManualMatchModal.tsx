@@ -68,6 +68,7 @@ export const CreateManualMatchModal: React.FC<StandaloneMatchProps> = ({
       bestOf,
       startingSide,
       useVeto,
+      highlights,
       maxRounds,
       overtimeEnabled,
       overtimeMaxRounds,
@@ -107,6 +108,7 @@ export const CreateManualMatchModal: React.FC<StandaloneMatchProps> = ({
       // setKnifeMode,
       setStartingSide,
       setUseVeto,
+      setHighlights,
       setMaxRounds,
       setOvertimeEnabled,
       setOvertimeMaxRounds,
@@ -186,6 +188,8 @@ export const CreateManualMatchModal: React.FC<StandaloneMatchProps> = ({
                 activeStep={activeStep}
                 useVeto={useVeto}
                 onUseVetoChange={setUseVeto}
+                highlights={highlights}
+                onHighlightsChange={setHighlights}
                 bestOf={bestOf}
                 onBestOfChange={(format) => setBestOf(format)}
                 requiredMaps={requiredMaps}
@@ -280,11 +284,7 @@ export const CreateManualMatchModal: React.FC<StandaloneMatchProps> = ({
             {t('common.cancel')}
           </Button>
           {activeStep === 0 && (
-            <Button
-              variant="contained"
-              onClick={handleNextStep}
-              disabled={saving}
-            >
+            <Button variant="contained" onClick={handleNextStep} disabled={saving}>
               {t('manualMatchModal.buttons.next')}
             </Button>
           )}
@@ -293,11 +293,7 @@ export const CreateManualMatchModal: React.FC<StandaloneMatchProps> = ({
               <Button onClick={() => setActiveStep(0)} disabled={saving}>
                 {t('manualMatchModal.buttons.back')}
               </Button>
-              <Button
-                variant="contained"
-                onClick={handleNextStep}
-                disabled={saving}
-              >
+              <Button variant="contained" onClick={handleNextStep} disabled={saving}>
                 {t('manualMatchModal.buttons.next')}
               </Button>
             </>
@@ -384,9 +380,7 @@ export const CreateManualMatchModal: React.FC<StandaloneMatchProps> = ({
           </Stack>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setSaveTemplateDialogOpen(false)}>
-            {t('common.cancel')}
-          </Button>
+          <Button onClick={() => setSaveTemplateDialogOpen(false)}>{t('common.cancel')}</Button>
           <Button
             variant="contained"
             onClick={handleSaveTemplate}

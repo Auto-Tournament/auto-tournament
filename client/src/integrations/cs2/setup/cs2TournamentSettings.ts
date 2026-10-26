@@ -49,6 +49,8 @@ export interface Cs2TournamentSettings {
   mapMode?: MapGameMode;
   /** False: the top three get no skin rewards. Absent: on. */
   skinRewards?: boolean;
+  /** False: the tournament's matches get no clips or reels. Absent: on. */
+  highlights?: boolean;
   /** This tournament's own prizes per place (0 = everyone else); absent: the site's. */
   rewards?: Array<{ place: number; mode: 'random' | 'none'; rarity?: string }> | null;
   /** Opt-in anonymous bots up to teamSize; humans keep normal ready-up. */
@@ -117,6 +119,7 @@ function applyFields(into: Cs2TournamentSettings, source: Record<string, Untrust
   if (typeof source.fillTeamsWithBots === 'boolean')
     into.fillTeamsWithBots = source.fillTeamsWithBots;
   if (typeof source.skinRewards === 'boolean') into.skinRewards = source.skinRewards;
+  if (typeof source.highlights === 'boolean') into.highlights = source.highlights;
   if (Array.isArray(source.rewards))
     into.rewards = source.rewards as Cs2TournamentSettings['rewards'];
   if (typeof source.esportsMode === 'boolean') into.esportsMode = source.esportsMode;
@@ -177,6 +180,7 @@ export function cs2Patch(next: Cs2TournamentSettings): Record<string, Untrusted>
   stored.veto = next.veto !== false;
   if (next.broadcast !== undefined) stored.broadcast = next.broadcast;
   if (next.skinRewards !== undefined) stored.skinRewards = next.skinRewards;
+  if (next.highlights !== undefined) stored.highlights = next.highlights;
   // null goes back to the site's prizes.
   if (next.rewards !== undefined) stored.rewards = next.rewards;
   // null clears a type set before (the API keeps a field a patch leaves out).

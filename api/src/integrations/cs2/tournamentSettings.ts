@@ -135,6 +135,8 @@ export interface Cs2TournamentSettings {
   mapMode?: MapMode;
   /** False: the top three get no skin rewards (skins/skinService). Absent: on. */
   skinRewards?: boolean;
+  /** False: its matches get no clips or reels (demos/highlightPolicy). Absent: on. */
+  highlights?: boolean;
   /** This tournament's own prizes per place (skinService.parseRewards); absent: the site's. */
   rewards?: TournamentRewardSetting[];
   /** False: its matches drop no skins (the placings still get prizes). Absent: on. */
@@ -450,6 +452,7 @@ function applyLayer(
   if (typeof layer.fillTeamsWithBots === 'boolean')
     into.fillTeamsWithBots = layer.fillTeamsWithBots;
   if (typeof layer.skinRewards === 'boolean') into.skinRewards = layer.skinRewards;
+  if (typeof layer.highlights === 'boolean') into.highlights = layer.highlights;
   if (Array.isArray(layer.rewards)) into.rewards = rewardSettings(layer.rewards);
   else if (layer.rewards === null) delete into.rewards;
   if (typeof layer.matchDrops === 'boolean') into.matchDrops = layer.matchDrops;
@@ -533,6 +536,7 @@ export const cs2TournamentSettings: ModuleTournamentSettings<Cs2TournamentSettin
         ? { fillTeamsWithBots: value.fillTeamsWithBots }
         : {}),
       ...(value?.skinRewards !== undefined ? { skinRewards: value.skinRewards } : {}),
+      ...(value?.highlights !== undefined ? { highlights: value.highlights } : {}),
       ...(value?.rewards ? { rewards: value.rewards } : {}),
       ...(value?.matchDrops !== undefined ? { matchDrops: value.matchDrops } : {}),
       ...(value?.mvp ? { mvp: value.mvp } : {}),
