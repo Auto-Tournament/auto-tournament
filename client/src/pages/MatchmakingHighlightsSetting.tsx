@@ -30,7 +30,10 @@ export function MatchmakingHighlightsSetting({
   const k = 'highlightsPage.matchmaking';
   const kills = t(`${k}.killsInline.${vals.highlightsMatchmakingMinKills}`);
   return (
-    <Box data-testid="highlights-matchmaking" sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+    <Box
+      data-testid="highlights-matchmaking"
+      sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}
+    >
       <Box>
         <Typography variant="subtitle2">{t(`${k}.title`)}</Typography>
         <Typography variant="caption" color="text.secondary" display="block">
@@ -90,7 +93,10 @@ export function MatchmakingHighlightsSetting({
             size="small"
             data-testid="highlights-matchmaking-clutch"
           />
-          <Typography variant="body2" sx={{ px: 2, py: 1.5, borderRadius: 2, bgcolor: 'background.surface3' }}>
+          <Typography
+            variant="body2"
+            sx={{ px: 2, py: 1.5, borderRadius: 2, bgcolor: 'background.surface3' }}
+          >
             {t(vals.highlightsMatchmakingClutch ? `${k}.summaryClutch` : `${k}.summary`, {
               count: vals.highlightsMatchmakingClips,
               clips:
