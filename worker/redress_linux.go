@@ -117,6 +117,9 @@ func (r *recorder) dress(clean, recipe, out string, alone bool) (float64, error)
 	if err := cmd.Start(); err != nil {
 		return 0, err
 	}
+	// A 4K reel's overlay runs for over half an hour and says nothing meanwhile:
+	// its output growing is its progress (the stall watch stopped it, 2026-10-26).
+	defer r.whileGrowing(out)()
 	done := make(chan error, len(streams))
 	frames := track.Frames()
 	for _, s := range streams {

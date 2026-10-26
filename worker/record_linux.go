@@ -1811,6 +1811,32 @@ func (r *recorder) stallWatch(ctx context.Context, cancel context.CancelFunc) {
 
 // report tells the platform what this recorder is doing (link.go), with the
 // job's time so far and, from the clips done, an estimate of the rest.
+// growTick is how often whileGrowing looks at the file.
+var growTick = 30 * time.Second
+
+// whileGrowing counts `path` growing as progress for the stall watch until
+// the returned stop is called: for a long ffmpeg step that reports nothing.
+func (r *recorder) whileGrowing(path string) (stop func()) {
+	done := make(chan struct{})
+	go func() {
+		var last int64
+		tick := time.NewTicker(growTick)
+		defer tick.Stop()
+		for {
+			select {
+			case <-done:
+				return
+			case <-tick.C:
+				if fi, err := os.Stat(path); err == nil && fi.Size() > last {
+					last = fi.Size()
+					r.moved.Store(time.Now().UnixMilli())
+				}
+			}
+		}
+	}()
+	return func() { close(done) }
+}
+
 func (r *recorder) report(step, detail string, done, total int) {
 	r.job.step, r.job.detail, r.job.done, r.job.total = step, detail, done, total
 	r.reportAt(float64(done))
