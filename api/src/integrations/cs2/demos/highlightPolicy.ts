@@ -6,6 +6,7 @@
  */
 import { db } from '../../../config/database';
 import { storedCs2Settings } from '../tournamentSettings';
+import type { Untrusted } from '../../../utils/untrusted';
 
 export async function recordsHighlights(matchSlug: string): Promise<boolean> {
   const row = await db
@@ -18,7 +19,7 @@ export async function recordsHighlights(matchSlug: string): Promise<boolean> {
   if (!row) return true;
   if (storedCs2Settings(row.settings)?.highlights === false) return false;
   try {
-    return (JSON.parse(row.config ?? '{}') as { highlights?: unknown }).highlights !== false;
+    return (JSON.parse(row.config ?? '{}') as { highlights?: Untrusted }).highlights !== false;
   } catch {
     return true;
   }
