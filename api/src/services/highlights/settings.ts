@@ -93,8 +93,15 @@ export function highlightFps(n: number): number {
   return HIGHLIGHT_FPS.find((f) => f >= n && n > 0) ?? 240;
 }
 
-const oneOf = (n: number, options: readonly number[], fallback: number) =>
-  options.includes(n) ? n : fallback;
+/** A stored choice as a number, its fallback when unset (Number('') and Number(null) are 0, a real choice here). */
+export const oneOf = (
+  raw: string | null | undefined,
+  options: readonly number[],
+  fallback: number
+) => {
+  const n = raw === null || raw === undefined || raw.trim() === '' ? NaN : Number(raw);
+  return options.includes(n) ? n : fallback;
+};
 
 function choice(
   key: HighlightSettingKey,
@@ -243,12 +250,8 @@ export async function readHighlightSettings(
     highlightsKeepClean: (await get('highlights_keep_clean'))?.trim() !== '0',
     highlightsKeepMasters: (await get('highlights_keep_masters'))?.trim() ?? '',
     highlightsMatchmaking: (await get('highlights_mm'))?.trim() !== '0',
-    highlightsMatchmakingClips: oneOf(Number(await get('highlights_mm_clips')), MM_CLIPS, 3),
-    highlightsMatchmakingMinKills: oneOf(
-      Number(await get('highlights_mm_min_kills')),
-      MM_MIN_KILLS,
-      3
-    ),
+    highlightsMatchmakingClips: oneOf(await get('highlights_mm_clips'), MM_CLIPS, 3),
+    highlightsMatchmakingMinKills: oneOf(await get('highlights_mm_min_kills'), MM_MIN_KILLS, 3),
     highlightsMatchmakingClutch: (await get('highlights_mm_clutch'))?.trim() !== '0',
     ...(await readReelLimits((key) => get(key as HighlightSettingKey))),
   };

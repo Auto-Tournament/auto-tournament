@@ -8,6 +8,7 @@
  */
 import { db } from '../../../config/database';
 import { settingsService } from '../../../services/settingsService';
+import { MM_CLIPS, MM_MIN_KILLS, oneOf } from '../../../services/highlights/settings';
 import { storedCs2Settings } from '../tournamentSettings';
 import type { Moment } from './highlights';
 import type { Untrusted } from '../../../utils/untrusted';
@@ -28,11 +29,9 @@ export interface HighlightPlan {
 async function matchmakingBudget(): Promise<MatchmakingBudget | null> {
   const get = (key: string) => settingsService.getSetting(key);
   if ((await get('highlights_mm'))?.trim() === '0') return null;
-  const clips = Number(await get('highlights_mm_clips'));
-  const minKills = Number(await get('highlights_mm_min_kills'));
   return {
-    clips: Number.isInteger(clips) && clips >= 0 ? clips : 3,
-    minKills: Number.isInteger(minKills) && minKills >= 2 && minKills <= 5 ? minKills : 3,
+    clips: oneOf(await get('highlights_mm_clips'), MM_CLIPS, 3),
+    minKills: oneOf(await get('highlights_mm_min_kills'), MM_MIN_KILLS, 3),
     clutch: (await get('highlights_mm_clutch'))?.trim() !== '0',
   };
 }
