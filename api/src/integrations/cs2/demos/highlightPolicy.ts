@@ -8,7 +8,6 @@
  */
 import { db } from '../../../config/database';
 import { settingsService } from '../../../services/settingsService';
-import { MM_CLIPS, MM_MIN_KILLS, oneOf } from '../../../services/highlights/settings';
 import { storedCs2Settings } from '../tournamentSettings';
 import type { Moment } from './highlights';
 import type { Untrusted } from '../../../utils/untrusted';
@@ -24,6 +23,20 @@ export interface HighlightPlan {
   record: boolean;
   /** Set for a matchmaking match. */
   budget: MatchmakingBudget | null;
+}
+
+// The choices of services/highlights/settings.ts (MM_CLIPS, MM_MIN_KILLS, oneOf): the module
+// can't import core code its bridge doesn't export, so these mirror them.
+const MM_CLIPS = [0, 1, 2, 3, 5, 10];
+const MM_MIN_KILLS = [2, 3, 4, 5];
+/** A stored choice as a number, its fallback when unset (Number(null) is 0, the "all" choice). */
+function oneOf(
+  raw: string | null | undefined,
+  options: readonly number[],
+  fallback: number
+): number {
+  const n = raw === null || raw === undefined || raw.trim() === '' ? NaN : Number(raw);
+  return options.includes(n) ? n : fallback;
 }
 
 async function matchmakingBudget(): Promise<MatchmakingBudget | null> {
