@@ -12,6 +12,9 @@
  * - highlights_music: '' (every track), 'off', or the picked track ids;
  * - highlights_keep_clean: keep each clip's clean twin and overlay recipe
  *   (on unless "0");
+ * - highlights_keep_masters: how long a video keeps its highest quality when
+ *   lower ones were cut from it: '' always, 'reels' until its match's reels
+ *   are made, or a number of days (cs2 demos/masterSweep.ts);
  * - the reels' sizes (REEL_LIMITS): funny clips per player per map, clips per
  *   player in a map reel, a series reel's total and per player, a team reel's
  *   per player and a tournament reel's total and per player.
@@ -31,6 +34,8 @@ export const HIGHLIGHT_HEIGHTS = [480, 720, 1080, 1440, 2160] as const;
 export const HIGHLIGHT_FPS = [60, 120, 240] as const;
 /** Bitrate ceilings (Mbit/s) an admin can pick; 0 is automatic (from the size and frame rate). */
 export const HIGHLIGHT_BITRATES = [0, 5, 10, 20, 40, 60] as const;
+/** How long a video keeps its highest quality ('' always, 'reels', days). */
+export const KEEP_MASTERS = ['', 'reels', '7', '30'] as const;
 
 export type HighlightSettingKey =
   | 'highlights_watermark'
@@ -41,6 +46,7 @@ export type HighlightSettingKey =
   | 'highlights_bitrate'
   | 'highlights_music'
   | 'highlights_keep_clean'
+  | 'highlights_keep_masters'
   | ReelLimitKey;
 
 /**
@@ -151,6 +157,21 @@ export const HIGHLIGHT_SETTINGS: ReadonlyArray<SettingDefinition & { key: Highli
     normalize: normalizeFlag('Clean copies of highlight clips'),
     applyRequest: booleanRequest('highlightsKeepClean'),
   },
+  {
+    key: 'highlights_keep_masters',
+    field: 'highlightsKeepMasters',
+    order: 425,
+    normalize(trimmed) {
+      const value = trimmed === 'always' ? '' : trimmed;
+      if (!KEEP_MASTERS.includes(value as (typeof KEEP_MASTERS)[number])) {
+        throw new Error(
+          `highlights_keep_masters must be one of always, ${KEEP_MASTERS.slice(1).join(', ')}`
+        );
+      }
+      return { value, message: 'How long highlights keep their highest quality updated' };
+    },
+    applyRequest: stringRequest('highlightsKeepMasters'),
+  },
   ...REEL_LIMITS.map(([key, field, min, max], i) => ({
     key,
     field,
@@ -179,6 +200,7 @@ export async function readHighlightSettings(
     highlightsBitrate: (HIGHLIGHT_BITRATES as readonly number[]).includes(mbps) ? mbps : 0,
     highlightsMusic: (await get('highlights_music'))?.trim() ?? '',
     highlightsKeepClean: (await get('highlights_keep_clean'))?.trim() !== '0',
+    highlightsKeepMasters: (await get('highlights_keep_masters'))?.trim() ?? '',
     ...(await readReelLimits((key) => get(key as HighlightSettingKey))),
   };
 }

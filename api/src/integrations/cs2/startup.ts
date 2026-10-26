@@ -10,6 +10,7 @@ import { startRecorderRecovery, stopRecorderRecovery } from './demos/recorderRec
 import { startAutoStart } from './fleet/autoStart';
 import { startVetoTimer, stopVetoTimer } from './veto/timer';
 import { startWaitingSweep, stopWaitingSweep } from './waitingSweep';
+import { startMasterSweep, stopMasterSweep } from './demos/masterSweep';
 import { startCs2AdminNotices, stopCs2AdminNotices } from './adminNotices';
 import { startGameMessages, stopGameMessages } from './fleet/gameMessages';
 import { startChatBridge, stopChatBridge } from './fleet/chatBridge';
@@ -75,6 +76,7 @@ export async function startCs2(): Promise<void> {
   startVetoTimer();
   // Ready matches still without a server get another try every 15 s.
   startWaitingSweep();
+  startMasterSweep();
   // The admins' bell: crashed servers, failed updates, recorders, failing clips.
   startCs2AdminNotices();
   // The Servers page and match panels re-read on fleet changes (the `fleet` topic).
@@ -132,6 +134,7 @@ export function stopCs2(): void {
   stopGameMessages();
   stopChatBridge();
   stopWaitingSweep();
+  stopMasterSweep();
   stopMapAutoSync();
   stopFleet();
   stopTurnoverRetry?.();

@@ -23,6 +23,9 @@ export interface QualityValues {
   highlightsBitrate: number;
 }
 
+/** How long a video keeps its highest quality ('' always, 'reels', days: api KEEP_MASTERS). */
+const KEEP_MASTERS = ['', '30', '7', 'reels'] as const;
+
 /** Ready-made qualities; anything else is Custom. */
 const QUALITY_PRESETS: ReadonlyArray<QualityValues & { id: string }> = [
   {
@@ -67,8 +70,8 @@ export function HighlightQualitySetting({
   vals,
   save,
 }: {
-  vals: QualityValues;
-  save: (patch: Partial<QualityValues>) => void;
+  vals: QualityValues & { highlightsKeepMasters: string };
+  save: (patch: Partial<QualityValues & { highlightsKeepMasters: string }>) => void;
 }) {
   const { t } = useTranslation();
   // Custom picked while the values still match a preset: show the fields anyway.
@@ -225,6 +228,24 @@ export function HighlightQualitySetting({
           </Box>
         ))}
       </Box>
+      {ladder.length > 1 && (
+        <TextField
+          select
+          label={t('highlightsPage.keepMasters.label')}
+          value={vals.highlightsKeepMasters}
+          onChange={(e) => save({ highlightsKeepMasters: e.target.value })}
+          size="small"
+          sx={{ maxWidth: 480 }}
+          helperText={t('highlightsPage.keepMasters.helper')}
+          inputProps={{ 'data-testid': 'highlights-keepmasters' }}
+        >
+          {KEEP_MASTERS.map((k) => (
+            <MenuItem key={k || 'always'} value={k}>
+              {t(`highlightsPage.keepMasters.${k || 'always'}`)}
+            </MenuItem>
+          ))}
+        </TextField>
+      )}
       <Alert severity={time >= 2 ? 'warning' : 'info'} variant="outlined">
         {t(ladder.length > 1 ? 'highlightsPage.cost.withCuts' : 'highlightsPage.cost.single', {
           time,

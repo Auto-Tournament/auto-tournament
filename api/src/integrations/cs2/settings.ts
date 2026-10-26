@@ -67,7 +67,8 @@ export type Cs2SettingKey =
   | 'highlights_min_resolution'
   | 'highlights_fps'
   | 'highlights_music'
-  | 'highlights_keep_clean';
+  | 'highlights_keep_clean'
+  | 'highlights_keep_masters';
 
 type Cs2Setting = SettingDefinition & { key: Cs2SettingKey; schema: JSONSchema };
 

@@ -1103,6 +1103,11 @@ function cutNames(): string[] {
   return cutList.names;
 }
 
+/** The cut files changed on disk outside saveCut and removeTwins: list them again. */
+export function forgetCutList(): void {
+  cutList.at = 0;
+}
+
 export function cutsOf(clipPath: string | null): VideoCut[] {
   if (!clipPath) return [];
   const base = path.basename(clipPath).replace(/\.mp4$/, '');

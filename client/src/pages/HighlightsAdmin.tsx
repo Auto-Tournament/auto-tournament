@@ -82,6 +82,7 @@ interface HighlightValues {
   highlightsPerPlayer: number | null;
   highlightsResolution: number;
   highlightsMinResolution: number;
+  highlightsKeepMasters: string;
   highlightsFps: number;
   highlightsBitrate: number;
   highlightsMusic: string;
@@ -108,6 +109,8 @@ function HighlightSettings() {
           highlightsMinResolution:
             typeof s.highlightsMinResolution === 'number' ? s.highlightsMinResolution : highest,
           highlightsFps: typeof s.highlightsFps === 'number' ? s.highlightsFps : 240,
+          highlightsKeepMasters:
+            typeof s.highlightsKeepMasters === 'string' ? s.highlightsKeepMasters : '',
           highlightsBitrate: typeof s.highlightsBitrate === 'number' ? s.highlightsBitrate : 0,
           highlightsMusic: typeof s.highlightsMusic === 'string' ? s.highlightsMusic : '',
           reels: Object.fromEntries(
