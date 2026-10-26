@@ -77,15 +77,6 @@ func (in reelIntro) layout(w, h int) (*introRender, error) {
 	if err != nil {
 		return nil, err
 	}
-	playedFace, err := face(geistRegular, 16*k)
-	if err != nil {
-		return nil, err
-	}
-	playedBold, err := face(geistMedium, 16*k)
-	if err != nil {
-		return nil, err
-	}
-
 	r := &introRender{w: w, h: h, k: k, ruleW: px(154), ruleH: max(2, px(4)), gap: px(18)}
 	r.kicker = textImage([]textRun{{strings.ToUpper(in.Kicker), kickerFace, introAccent}}, 0.22*17*k)
 	r.title = textImage([]textRun{{in.Title, titleFace, cardInk}}, -0.02*titleSize*k)
@@ -97,16 +88,9 @@ func (in reelIntro) layout(w, h int) (*introRender, error) {
 	}
 	r.meta = stackCentered(metaLines, px(4))
 
-	// "Played on Auto Tournament" with the logo before it.
-	logo, err := png.Decode(bytes.NewReader(watermarkPNG))
-	if err != nil {
+	if r.played, err = playedOn(k); err != nil {
 		return nil, err
 	}
-	words := textImage([]textRun{{"Played on ", playedFace, cardInk2}, {"Auto Tournament", playedBold, cardInk}}, 0)
-	size := px(28)
-	r.played = image.NewRGBA(image.Rect(0, 0, size+px(12)+words.Bounds().Dx(), max(size, words.Bounds().Dy())))
-	draw.CatmullRom.Scale(r.played, image.Rect(0, (r.played.Bounds().Dy()-size)/2, size, (r.played.Bounds().Dy()-size)/2+size), logo, logo.Bounds(), draw.Over, nil)
-	draw.Draw(r.played, image.Rect(size+px(12), (r.played.Bounds().Dy()-words.Bounds().Dy())/2, r.played.Bounds().Dx(), r.played.Bounds().Dy()), words, image.Point{}, draw.Over)
 
 	stackH := r.kicker.Bounds().Dy() + r.gap + r.title.Bounds().Dy() + r.gap + r.ruleH + r.gap + r.meta.Bounds().Dy()
 	r.stackY = (h - stackH) / 2
@@ -122,6 +106,45 @@ type textRun struct {
 }
 
 // textImage draws runs of text on one line, `track` pixels between letters.
+// playedOn draws "Played on Auto Tournament" with the logo before it, at k
+// times its 720p size: the intro's closing line, and the corner watermark
+// on every clip and reel (playedOnPNG).
+func playedOn(k float64) (*image.RGBA, error) {
+	px := func(v float64) int { return int(math.Round(v * k)) }
+	regular, err := face(geistRegular, 16*k)
+	if err != nil {
+		return nil, err
+	}
+	medium, err := face(geistMedium, 16*k)
+	if err != nil {
+		return nil, err
+	}
+	logo, err := png.Decode(bytes.NewReader(watermarkPNG))
+	if err != nil {
+		return nil, err
+	}
+	words := textImage([]textRun{{"Played on ", regular, cardInk2}, {"Auto Tournament", medium, cardInk}}, 0)
+	size := px(28)
+	img := image.NewRGBA(image.Rect(0, 0, size+px(12)+words.Bounds().Dx(), max(size, words.Bounds().Dy())))
+	draw.CatmullRom.Scale(img, image.Rect(0, (img.Bounds().Dy()-size)/2, size, (img.Bounds().Dy()-size)/2+size), logo, logo.Bounds(), draw.Over, nil)
+	draw.Draw(img, image.Rect(size+px(12), (img.Bounds().Dy()-words.Bounds().Dy())/2, img.Bounds().Dx(), img.Bounds().Dy()), words, image.Point{}, draw.Over)
+	return img, nil
+}
+
+// playedOnPNG is the corner watermark's image: playedOn drawn large (1440p)
+// so it stays sharp when videoFilter scales it down to the corner.
+func playedOnPNG() ([]byte, error) {
+	img, err := playedOn(2)
+	if err != nil {
+		return nil, err
+	}
+	var b bytes.Buffer
+	if err := png.Encode(&b, img); err != nil {
+		return nil, err
+	}
+	return b.Bytes(), nil
+}
+
 func textImage(runs []textRun, track float64) *image.RGBA {
 	width, ascent, descent := 0.0, 0, 0
 	for _, run := range runs {

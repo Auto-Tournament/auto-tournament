@@ -308,7 +308,7 @@ type overlay struct {
 }
 
 // videoFilter dresses the frames: the animated caption card for the first
-// seconds, and the logo small and faint in the lower right throughout (the
+// seconds, and "Played on Auto Tournament" small in the lower right throughout (the
 // top right is the kill feed's). Output [v].
 func videoFilter(o overlay) string {
 	var b strings.Builder
@@ -345,10 +345,12 @@ func videoFilter(o overlay) string {
 		last = "withfeed"
 	}
 	if o.logo >= 0 {
-		// The drafts: 16 px tall, 18 px from the right and 16 from the bottom of 540, at 30 %.
+		// "Played on Auto Tournament" as the intro shows it, 16 px tall of 540
+		// (the logo's height; the words follow), 18 px from the right and 16
+		// from the bottom, at 85 % so it sits back a little over the game.
 		size := o.height * 16 / 540 &^ 1
-		fmt.Fprintf(&b, ";[%d:v]scale=%d:%d,format=rgba,colorchannelmixer=aa=0.3[logo]"+
-			";[%s][logo]overlay=W-w-%d:H-h-%d:shortest=1", o.logo, size, size, last, o.height*18/540, o.height*16/540)
+		fmt.Fprintf(&b, ";[%d:v]scale=-2:%d:flags=lanczos,format=rgba,colorchannelmixer=aa=0.85[logo]"+
+			";[%s][logo]overlay=W-w-%d:H-h-%d:shortest=1", o.logo, size, last, o.height*18/540, o.height*16/540)
 	} else {
 		fmt.Fprintf(&b, ";[%s]null", last)
 	}
