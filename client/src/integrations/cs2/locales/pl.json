@@ -2043,7 +2043,9 @@
     "matchReelRecording": "Match reel · being recorded",
     "teamReelButton": "{{team}} highlights",
     "wholeSeries": "Whole series",
-    "seriesReel": "Series reel"
+    "seriesReel": "Series reel",
+    "recordSwitch": "Record highlights",
+    "recordSwitchHelp": "Clips of the best plays and reels of every map, made after each match. Off: the recorder skips this tournament."
   },
   "serversBoard": {
     "addFirstServers": "Add the first servers",
