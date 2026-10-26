@@ -1057,6 +1057,11 @@ const ADDED_SETTINGS: Array<{ key: string; field: string | null }> = [
   { key: 'highlights_keep_clean', field: 'highlightsKeepClean' },
   // How long a video keeps its highest quality when lower ones were cut (demos/masterSweep.ts).
   { key: 'highlights_keep_masters', field: 'highlightsKeepMasters' },
+  // Matchmaking's clip budget (cs2 demos/highlightPolicy.ts).
+  { key: 'highlights_mm', field: 'highlightsMatchmaking' },
+  { key: 'highlights_mm_clips', field: 'highlightsMatchmakingClips' },
+  { key: 'highlights_mm_min_kills', field: 'highlightsMatchmakingMinKills' },
+  { key: 'highlights_mm_clutch', field: 'highlightsMatchmakingClutch' },
   // The reels' sizes (services/highlights/settings.ts REEL_LIMITS).
   { key: 'highlights_funny_per_player', field: 'highlightsFunnyPerPlayer' },
   { key: 'highlights_map_reel_per_player', field: 'highlightsMapReelPerPlayer' },
