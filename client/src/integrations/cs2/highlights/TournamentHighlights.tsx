@@ -28,7 +28,13 @@ import {
   type HighlightFilter,
   type TournamentHighlights,
 } from './data';
-import { HighlightCard, RecordingCard, thumbAt, VideoThumb } from '../../../module-sdk';
+import {
+  HighlightCard,
+  RecordingCard,
+  REEL_THUMB_AT,
+  thumbAt,
+  VideoThumb,
+} from '../../../module-sdk';
 import { KindBadge } from './KindBadge';
 import { Chip } from './PlayerHighlightsPage';
 
@@ -90,7 +96,10 @@ function Hero({
         '&:focus-visible': { outline: `2px solid ${tokens.color.accent}`, outlineOffset: 2 },
       }}
     >
-      <VideoThumb src={reel ? reel.video! : top!.video!} at={reel ? 6 : thumbAt(top!.markers)} />
+      <VideoThumb
+        src={reel ? reel.video! : top!.video!}
+        at={reel ? REEL_THUMB_AT : thumbAt(top!.markers)}
+      />
       <Box
         sx={{
           position: 'absolute',

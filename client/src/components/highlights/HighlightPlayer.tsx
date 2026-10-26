@@ -41,7 +41,7 @@ import { useTranslation } from 'react-i18next';
 import { mono, radii, tokens, withAlpha } from '../../theme/tokens';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 import { clock, type ClipMarkers } from './media';
-import { VideoThumb } from './HighlightCard';
+import { CLIP_THUMB_AT, VideoThumb } from './HighlightCard';
 import { EventMark } from './EventMark';
 import { QualityMenu } from './QualityMenu';
 import { sourceFor, type QualityPick, type VideoCut } from './qualitySource';
@@ -773,7 +773,7 @@ export const HighlightPlayer = forwardRef<HighlightPlayerHandle, HighlightPlayer
                           bgcolor: '#000',
                         }}
                       >
-                        <VideoThumb src={info.thumb} at={1.5} />
+                        <VideoThumb src={info.thumb} at={CLIP_THUMB_AT} />
                       </Box>
                     )}
                     {info && (

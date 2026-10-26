@@ -15,6 +15,7 @@ import {
   HighlightCard,
   PageHead,
   pageTitle,
+  REEL_THUMB_AT,
   SegmentedControl,
   textSize,
   tokens,
@@ -232,6 +233,7 @@ export function HighlightsLibraryPage() {
               key={i.key}
               to={libraryWatchPath(i)}
               video={i.video}
+              at={i.kind === 'clip' ? undefined : REEL_THUMB_AT}
               title={titleOf(t, i)}
               badge={badgeOf(t, i)}
               sub={

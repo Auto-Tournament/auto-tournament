@@ -163,6 +163,8 @@ export {
   HighlightCard,
   VideoThumb,
   thumbAt,
+  CLIP_THUMB_AT,
+  REEL_THUMB_AT,
   FavouriteChip,
   RecordingDot,
   RecordingCard,
