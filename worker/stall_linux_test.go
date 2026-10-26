@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"os"
+	"path/filepath"
 	"testing"
 	"time"
 )
@@ -28,5 +30,23 @@ func TestStallWatchStopsAStuckJobOnly(t *testing.T) {
 	case <-ctx.Done():
 	case <-time.After(3 * time.Second):
 		t.Fatal("did not stop a stuck job")
+	}
+}
+
+// A file growing counts as progress for the stall watch.
+func TestWhileGrowingIsProgress(t *testing.T) {
+	defer func(d time.Duration) { growTick = d }(growTick)
+	growTick = 20 * time.Millisecond
+	r := &recorder{}
+	r.moved.Store(0)
+	path := filepath.Join(t.TempDir(), "out.mp4")
+	stop := r.whileGrowing(path)
+	defer stop()
+	if err := os.WriteFile(path, []byte("frames"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	time.Sleep(100 * time.Millisecond)
+	if r.moved.Load() == 0 {
+		t.Fatal("a growing file did not count as progress")
 	}
 }
