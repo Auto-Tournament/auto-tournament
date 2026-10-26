@@ -1,26 +1,79 @@
 /**
- * Whether a match gets highlights at all: an organizer turns them off for a
- * tournament (`settings.cs2.highlights: false`) or for one match (its config's
- * `highlights: false`, from the manual match dialog). The map is still
- * analysed (stats, notable moments); only the clips and reels are skipped.
+ * Which highlights a match gets. An organizer turns them off for a tournament
+ * (`settings.cs2.highlights: false`) or for one match (its config's
+ * `highlights: false`, from the manual match dialog): the map is still
+ * analysed (stats, notable moments), only the clips and reels are skipped.
+ * Matchmaking matches (`matches.source = 'matchmaking'`) get the admin's
+ * budget instead (`highlights_mm*`): a few of their best plays, not every one.
  */
 import { db } from '../../../config/database';
+import { settingsService } from '../../../services/settingsService';
 import { storedCs2Settings } from '../tournamentSettings';
+import type { Moment } from './highlights';
 import type { Untrusted } from '../../../utils/untrusted';
 
-export async function recordsHighlights(matchSlug: string): Promise<boolean> {
+/** A matchmaking match's clips: how many (0: every one), the fewest kills, and whether a clutch always counts. */
+export interface MatchmakingBudget {
+  clips: number;
+  minKills: number;
+  clutch: boolean;
+}
+
+export interface HighlightPlan {
+  record: boolean;
+  /** Set for a matchmaking match. */
+  budget: MatchmakingBudget | null;
+}
+
+async function matchmakingBudget(): Promise<MatchmakingBudget | null> {
+  const get = (key: string) => settingsService.getSetting(key);
+  if ((await get('highlights_mm'))?.trim() === '0') return null;
+  const clips = Number(await get('highlights_mm_clips'));
+  const minKills = Number(await get('highlights_mm_min_kills'));
+  return {
+    clips: Number.isInteger(clips) && clips >= 0 ? clips : 3,
+    minKills: Number.isInteger(minKills) && minKills >= 2 && minKills <= 5 ? minKills : 3,
+    clutch: (await get('highlights_mm_clutch'))?.trim() !== '0',
+  };
+}
+
+export async function highlightPlan(matchSlug: string): Promise<HighlightPlan> {
   const row = await db
-    .queryOneAsync<{ config: string | null; settings: string | null }>(
-      `SELECT m.config, t.settings FROM matches m LEFT JOIN tournament t ON t.id = m.tournament_id
+    .queryOneAsync<{ config: string | null; source: string | null; settings: string | null }>(
+      `SELECT m.config, m.source, t.settings FROM matches m LEFT JOIN tournament t ON t.id = m.tournament_id
         WHERE m.slug = ?`,
       [matchSlug]
     )
     .catch(() => null);
-  if (!row) return true;
-  if (storedCs2Settings(row.settings)?.highlights === false) return false;
-  try {
-    return (JSON.parse(row.config ?? '{}') as { highlights?: Untrusted }).highlights !== false;
-  } catch {
-    return true;
+  if (!row) return { record: true, budget: null };
+  if (row.source === 'matchmaking') {
+    const budget = await matchmakingBudget();
+    return { record: budget !== null, budget };
   }
+  if (storedCs2Settings(row.settings)?.highlights === false) return { record: false, budget: null };
+  try {
+    const off = (JSON.parse(row.config ?? '{}') as { highlights?: Untrusted }).highlights === false;
+    return { record: !off, budget: null };
+  } catch {
+    return { record: true, budget: null };
+  }
+}
+
+/**
+ * A matchmaking map's moments cut to the budget (pure: tested on its own):
+ * only plays of `minKills` or more (or a clutch, when they count), best
+ * first, as many as the match has room for after `already` (its other maps'
+ * clips). Funny moments aren't a play, so they're left out.
+ */
+export function withinBudget(
+  moments: Moment[],
+  budget: MatchmakingBudget,
+  already: number
+): Moment[] {
+  const plays = moments
+    .filter((m) => m.kind !== 'funny')
+    .filter((m) => m.killTicks.length >= budget.minKills || (budget.clutch && m.clutch === true))
+    .sort((a, b) => b.score - a.score);
+  if (budget.clips === 0) return plays;
+  return plays.slice(0, Math.max(0, budget.clips - already));
 }

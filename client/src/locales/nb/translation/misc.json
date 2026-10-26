@@ -1082,7 +1082,7 @@
     },
     "watermark": {
       "label": "Auto Tournament-logo på høydepunkt-videoene",
-      "description": "Vises svakt nede til høyre. Det hjelper oss mye om du lar den stå på."
+      "description": "Vises nede til høyre som «Played on Auto Tournament», slik introen til sammendragene slutter. Det hjelper oss mye om du lar den stå på."
     },
     "perPlayer": {
       "label": "Klipp per spiller per kart",
@@ -1190,6 +1190,36 @@
       "7": "I 7 dager",
       "reels": "Til sammendragene er laget",
       "helper": "Deretter tar den nest høyeste kvaliteten plassen, og den rene kopien slettes. Det sparer mest plass. En video uten høyeste kvalitet kan ikke få overlegget tegnet på nytt eller bli med i et nytt sammendrag i den kvaliteten. Da må den tas opp på nytt."
+    },
+    "matchmaking": {
+      "title": "Høydepunkter fra matchmaking",
+      "description": "Matchmaking spiller mange kamper. Behold bare de beste øyeblikkene fra hver kamp, så opptakerne ikke er opptatt hele dagen.",
+      "on": "Lag høydepunkter fra matchmaking",
+      "onHelp": "Slått av får matchmaking-kamper ingen klipp eller sammendrag.",
+      "clips": "Klipp per kamp",
+      "clipsHelp": "De beste øyeblikkene kommer først. Sammendraget til hver spiller lages av de samme klippene.",
+      "all": "Alle",
+      "minKills": "Færrest drap i et klipp",
+      "minKillsHelp": "Øyeblikk med færre drap blir aldri et klipp, selv om det er plass.",
+      "kills": {
+        "2": "2 drap",
+        "3": "3 drap",
+        "4": "4 drap",
+        "5": "Ace"
+      },
+      "killsInline": {
+        "2": "2 drap",
+        "3": "3 drap",
+        "4": "4 drap",
+        "5": "en ace"
+      },
+      "clutch": "Clutcher teller alltid",
+      "clutchHelp": "En vunnet 1vX teller selv med færre drap enn grensen.",
+      "summary": "Hver matchmaking-kamp får {{clips}} med {{kills}} eller flere.",
+      "summaryClutch": "Hver matchmaking-kamp får {{clips}} med {{kills}} eller flere, og alle clutcher.",
+      "summaryEvery": "alle øyeblikkene",
+      "summaryBest_one": "det beste øyeblikket",
+      "summaryBest_other": "de {{count}} beste øyeblikkene"
     }
   },
   "update": {

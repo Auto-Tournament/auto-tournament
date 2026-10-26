@@ -1192,6 +1192,36 @@
       "always": "Always",
       "reels": "Until the reels are made",
       "helper": "Then the next quality takes its place and the clean copy goes, which saves most of the space. A video without its highest quality can't have its overlay redrawn or be joined into a new reel at that quality; it has to be recorded again."
+    },
+    "matchmaking": {
+      "title": "Matchmaking highlights",
+      "description": "Matchmaking plays a lot of matches. Keep only the best few from each, so the recorders aren't busy all day.",
+      "on": "Record matchmaking highlights",
+      "onHelp": "Off: matchmaking matches get no clips or reels.",
+      "clips": "Clips per match",
+      "clipsHelp": "The best plays first. A player's reel is made from the same clips.",
+      "all": "All",
+      "minKills": "Smallest play to keep",
+      "minKillsHelp": "Plays below this never become a clip, even when there's room.",
+      "kills": {
+        "2": "2 kills",
+        "3": "3 kills",
+        "4": "4 kills",
+        "5": "Ace"
+      },
+      "killsInline": {
+        "2": "2 kills",
+        "3": "3 kills",
+        "4": "4 kills",
+        "5": "an ace"
+      },
+      "clutch": "Clutches always count",
+      "clutchHelp": "A won 1vX counts even with fewer kills than the smallest play.",
+      "summary": "Each matchmaking match gets {{clips}} of {{kills}} or more.",
+      "summaryClutch": "Each matchmaking match gets {{clips}} of {{kills}} or more, and any clutch.",
+      "summaryEvery": "every play",
+      "summaryBest_one": "its best play",
+      "summaryBest_other": "its best {{count}} plays"
     }
   },
   "update": {
