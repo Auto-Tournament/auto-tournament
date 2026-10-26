@@ -25,14 +25,26 @@ export interface HighlightPlan {
   budget: MatchmakingBudget | null;
 }
 
+// The choices of services/highlights/settings.ts (MM_CLIPS, MM_MIN_KILLS, oneOf): the module
+// can't import core code its bridge doesn't export, so these mirror them.
+const MM_CLIPS = [0, 1, 2, 3, 5, 10];
+const MM_MIN_KILLS = [2, 3, 4, 5];
+/** A stored choice as a number, its fallback when unset (Number(null) is 0, the "all" choice). */
+function oneOf(
+  raw: string | null | undefined,
+  options: readonly number[],
+  fallback: number
+): number {
+  const n = raw === null || raw === undefined || raw.trim() === '' ? NaN : Number(raw);
+  return options.includes(n) ? n : fallback;
+}
+
 async function matchmakingBudget(): Promise<MatchmakingBudget | null> {
   const get = (key: string) => settingsService.getSetting(key);
   if ((await get('highlights_mm'))?.trim() === '0') return null;
-  const clips = Number(await get('highlights_mm_clips'));
-  const minKills = Number(await get('highlights_mm_min_kills'));
   return {
-    clips: Number.isInteger(clips) && clips >= 0 ? clips : 3,
-    minKills: Number.isInteger(minKills) && minKills >= 2 && minKills <= 5 ? minKills : 3,
+    clips: oneOf(await get('highlights_mm_clips'), MM_CLIPS, 3),
+    minKills: oneOf(await get('highlights_mm_min_kills'), MM_MIN_KILLS, 3),
     clutch: (await get('highlights_mm_clutch'))?.trim() !== '0',
   };
 }

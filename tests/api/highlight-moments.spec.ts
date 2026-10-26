@@ -19,6 +19,7 @@ import {
 } from '../../api/src/integrations/cs2/demos/highlights';
 import { pickTournamentReel } from '../../api/src/integrations/cs2/demos/highlightViews';
 import { withinBudget } from '../../api/src/integrations/cs2/demos/highlightPolicy';
+import { MM_CLIPS, oneOf } from '../../api/src/services/highlights/settings';
 
 /**
  * The highlight picker (api/src/integrations/cs2/demos/highlights.ts) on
@@ -439,4 +440,12 @@ test('a matchmaking match keeps only its best plays, within its budget', { tag: 
   ]);
   // 0 clips: every play that qualifies.
   expect(withinBudget(picks, { clips: 0, minKills: 2, clutch: false }, 9)).toHaveLength(4);
+});
+
+test('an unset matchmaking clip count is the default, not "all"', { tag: ['@api'] }, () => {
+  expect(oneOf(null, MM_CLIPS, 3)).toBe(3);
+  expect(oneOf('', MM_CLIPS, 3)).toBe(3);
+  expect(oneOf('0', MM_CLIPS, 3)).toBe(0);
+  expect(oneOf('5', MM_CLIPS, 3)).toBe(5);
+  expect(oneOf('7', MM_CLIPS, 3)).toBe(3);
 });
