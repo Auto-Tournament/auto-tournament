@@ -2033,7 +2033,9 @@
     "matchReelRecording": "Kampreel · tas opp",
     "teamReelButton": "Høydepunkter for {{team}}",
     "wholeSeries": "Hele serien",
-    "seriesReel": "Seriesammendrag"
+    "seriesReel": "Seriesammendrag",
+    "recordSwitch": "Lag høydepunkter",
+    "recordSwitchHelp": "Etter hver kamp lager opptakeren klipp av de beste øyeblikkene og et sammendrag av hvert kart. Slått av får turneringen ingen høydepunkter."
   },
   "serversBoard": {
     "addFirstServers": "Legg til de første serverne",

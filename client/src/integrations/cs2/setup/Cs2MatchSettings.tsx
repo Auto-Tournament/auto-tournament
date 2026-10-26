@@ -292,6 +292,14 @@ export function Cs2MatchSettings({
         />
       </Box>
       <SwitchRow
+        label={t('highlights.recordSwitch')}
+        help={t('highlights.recordSwitchHelp')}
+        checked={value.highlights !== false}
+        onChange={(event) => update({ highlights: event.target.checked })}
+        disabled={disabled}
+        data-testid="tournament-highlights"
+      />
+      <SwitchRow
         label={t('skins.tournamentRewardsSwitch')}
         checked={value.skinRewards !== false}
         onChange={(event) => update({ skinRewards: event.target.checked })}

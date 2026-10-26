@@ -137,6 +137,8 @@ export function useCreateManualMatchModal({
   const [knifeMode, setKnifeMode] = useState<'default' | 'enabled' | 'disabled'>('default');
   const [startingSide, setStartingSide] = useState<'knife' | 'team1_ct' | 'team2_ct'>('knife');
   const [useVeto, setUseVeto] = useState(false);
+  // Off: the recorder makes no clips or reels of this match (a scrim, a test).
+  const [highlights, setHighlights] = useState(true);
   const [maxRounds, setMaxRounds] = useState<number>(24);
   const [overtimeEnabled, setOvertimeEnabled] = useState<boolean>(true);
   const [overtimeMaxRounds, setOvertimeMaxRounds] = useState<number | null>(null);
@@ -182,6 +184,7 @@ export function useCreateManualMatchModal({
     setKnifeMode('default');
     setStartingSide('knife');
     setUseVeto(false);
+    setHighlights(true);
     setMapSideSelections(['knife']);
     setError(null);
     setSubmitAttempted(false);
@@ -523,6 +526,7 @@ export function useCreateManualMatchModal({
         },
         ...(map_sides ? { map_sides } : {}),
         ...(Object.keys(cvars).length > 0 ? { cvars } : {}),
+        ...(highlights ? {} : { highlights: false as const }),
       };
     }
   }
@@ -923,6 +927,7 @@ export function useCreateManualMatchModal({
       knifeMode,
       startingSide,
       useVeto,
+      highlights,
       maxRounds,
       overtimeEnabled,
       overtimeMaxRounds,
@@ -962,6 +967,7 @@ export function useCreateManualMatchModal({
       setKnifeMode,
       setStartingSide,
       setUseVeto,
+      setHighlights,
       setMaxRounds,
       setOvertimeEnabled,
       setOvertimeMaxRounds,

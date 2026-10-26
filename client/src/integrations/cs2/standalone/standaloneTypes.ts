@@ -84,6 +84,8 @@ export interface StandaloneMatchConfig {
   team2: StandaloneMatchTeam;
   map_sides?: StartingSide[];
   cvars?: Record<string, string | number>;
+  /** Only when off: no clips or reels of this match (api: demos/highlightPolicy). */
+  highlights?: false;
 }
 
 /** `POST /api/matches`. */

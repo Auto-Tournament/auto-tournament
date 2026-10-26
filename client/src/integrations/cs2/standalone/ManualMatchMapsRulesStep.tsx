@@ -13,6 +13,9 @@ interface ManualMatchMapsRulesStepProps {
   useVeto: boolean;
   onUseVetoChange: (value: boolean) => void;
 
+  highlights: boolean;
+  onHighlightsChange: (value: boolean) => void;
+
   requiredMaps: number;
   selectedMapsCount: number;
   hasVetoMapCountError: boolean;
@@ -42,6 +45,8 @@ export const ManualMatchMapsRulesStep: React.FC<ManualMatchMapsRulesStepProps> =
   requiredMaps,
   useVeto,
   onUseVetoChange,
+  highlights,
+  onHighlightsChange,
   startingSide,
   onStartingSideChange,
   mapSideSelections,
@@ -84,6 +89,13 @@ export const ManualMatchMapsRulesStep: React.FC<ManualMatchMapsRulesStepProps> =
           checked={useVeto}
           onChange={(e) => onUseVetoChange(e.target.checked)}
           sx={{ mt: 1 }}
+        />
+        <SwitchRow
+          label="Record highlights"
+          help="Off for a scrim or a test match: the recorder skips it."
+          checked={highlights}
+          onChange={(e) => onHighlightsChange(e.target.checked)}
+          data-testid="manual-match-highlights"
         />
 
         {/* When veto is disabled, allow selecting who starts CT directly on this step. */}
