@@ -12,6 +12,10 @@ import { useSearchParams } from 'react-router-dom';
 import { PageHead, SwitchRow } from '../components/common/ui';
 import { HighlightMusicSetting } from '../components/highlights/HighlightMusicSetting';
 import { HighlightQualitySetting } from './HighlightQualitySetting';
+import {
+  MatchmakingHighlightsSetting,
+  type MatchmakingHighlightValues,
+} from './MatchmakingHighlightsSetting';
 import { useSnackbar } from '../contexts/SnackbarContext';
 import { useInstalledIntegrations } from '../integrations/registry';
 import { api } from '../utils/api';
@@ -77,7 +81,7 @@ export default function HighlightsAdmin() {
   );
 }
 
-interface HighlightValues {
+interface HighlightValues extends MatchmakingHighlightValues {
   highlightsWatermark: boolean;
   highlightsPerPlayer: number | null;
   highlightsResolution: number;
@@ -113,6 +117,14 @@ function HighlightSettings() {
             typeof s.highlightsKeepMasters === 'string' ? s.highlightsKeepMasters : '',
           highlightsBitrate: typeof s.highlightsBitrate === 'number' ? s.highlightsBitrate : 0,
           highlightsMusic: typeof s.highlightsMusic === 'string' ? s.highlightsMusic : '',
+          highlightsMatchmaking: s.highlightsMatchmaking !== false,
+          highlightsMatchmakingClips:
+            typeof s.highlightsMatchmakingClips === 'number' ? s.highlightsMatchmakingClips : 3,
+          highlightsMatchmakingMinKills:
+            typeof s.highlightsMatchmakingMinKills === 'number'
+              ? s.highlightsMatchmakingMinKills
+              : 3,
+          highlightsMatchmakingClutch: s.highlightsMatchmakingClutch !== false,
           reels: Object.fromEntries(
             REEL_LIMITS.map(([field, , , fallback]) => [
               field,
@@ -176,6 +188,7 @@ function HighlightSettings() {
           help={t('highlightsPage.watermark.description')}
         />
       </Box>
+      <MatchmakingHighlightsSetting vals={vals} save={(patch) => void save(patch)} />
       <Box data-testid="highlights-reel-sizes">
         <Typography variant="subtitle2">{t('highlightsPage.reels.title')}</Typography>
         <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 1.5 }}>

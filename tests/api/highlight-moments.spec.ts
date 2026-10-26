@@ -15,8 +15,10 @@ import {
   seriesReelReady,
   reelReady,
   pickMapClips,
+  type Moment,
 } from '../../api/src/integrations/cs2/demos/highlights';
 import { pickTournamentReel } from '../../api/src/integrations/cs2/demos/highlightViews';
+import { withinBudget } from '../../api/src/integrations/cs2/demos/highlightPolicy';
 
 /**
  * The highlight picker (api/src/integrations/cs2/demos/highlights.ts) on
@@ -402,4 +404,39 @@ test('a reel is made once the clips it takes are recorded', { tag: ['@api'] }, (
   expect(pickMapClips(map0, 1).map((x) => x.id)).toEqual([1, 2]);
   expect(reelReady(pickMapClips(map0, 1))).toBe(true);
   expect(reelReady(pickMapClips(map0, 2))).toBe(false);
+});
+
+test('a matchmaking match keeps only its best plays, within its budget', { tag: ['@api'] }, () => {
+  const m = (score: number, kills: number, kind = `${kills}k`, clutch = false): Moment => ({
+    playerId: A,
+    kind,
+    score,
+    round: 1,
+    startTick: score,
+    endTick: score + 1,
+    slowmoTick: score,
+    killTicks: Array.from({ length: kills }, (_, i) => i),
+    title: '',
+    clutch,
+  });
+  const picks = [
+    m(90, 4),
+    m(40, 2),
+    m(70, 3),
+    m(60, 1, 'clutch', true),
+    m(30, 0, 'funny'),
+    m(50, 2, '2k', true),
+  ];
+  const budget = { clips: 3, minKills: 3, clutch: true };
+  // 3 kills or more, or a clutch; best first; funny moments are no play.
+  expect(withinBudget(picks, budget, 0).map((p) => p.score)).toEqual([90, 70, 60]);
+  // The match's other maps already have two: room for one.
+  expect(withinBudget(picks, budget, 2).map((p) => p.score)).toEqual([90]);
+  expect(withinBudget(picks, budget, 5)).toEqual([]);
+  // Clutches don't count: only the 3k and 4k.
+  expect(withinBudget(picks, { ...budget, clutch: false }, 0).map((p) => p.score)).toEqual([
+    90, 70,
+  ]);
+  // 0 clips: every play that qualifies.
+  expect(withinBudget(picks, { clips: 0, minKills: 2, clutch: false }, 9)).toHaveLength(4);
 });

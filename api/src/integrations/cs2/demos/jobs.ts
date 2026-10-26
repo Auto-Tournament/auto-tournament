@@ -440,12 +440,22 @@ async function completeDemoJobNow(job: DemoJob, analysis: DemoAnalysisPayload): 
   );
   const rounds = (analysis.rounds ?? []).map((r) => r.number).filter((r) => Number.isFinite(r));
   // Highlights turned off for this match or its tournament: none (the map's pending ones go too).
-  const { recordsHighlights } = await import('./highlightPolicy');
-  const record = await recordsHighlights(job.matchSlug);
+  // A matchmaking match: its best few, within the admin's budget for the whole match.
+  const { highlightPlan, withinBudget } = await import('./highlightPolicy');
+  const plan = await highlightPlan(job.matchSlug);
+  let moments = plan.record ? pickMoments(analysis, perPlayer, funny) : [];
+  if (plan.budget) {
+    const others = await db.queryOneAsync<{ n: number }>(
+      `SELECT COUNT(*)::int AS n FROM cs2_highlights
+        WHERE match_slug = ? AND map_number <> ? AND status NOT IN ('superseded', 'failed', 'skipped')`,
+      [job.matchSlug, job.mapNumber]
+    );
+    moments = withinBudget(moments, plan.budget, others?.n ?? 0);
+  }
   await saveMoments(
     job.matchSlug,
     job.mapNumber,
-    record ? pickMoments(analysis, perPlayer, funny) : [],
+    moments,
     demo
       ? { demoPath: demo.demo_path, firstRound: rounds.length ? Math.min(...rounds) : 1 }
       : undefined

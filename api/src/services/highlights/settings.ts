@@ -15,6 +15,9 @@
  * - highlights_keep_masters: how long a video keeps its highest quality when
  *   lower ones were cut from it: '' always, 'reels' until its match's reels
  *   are made, or a number of days (cs2 demos/masterSweep.ts);
+ * - highlights_mm / _mm_clips / _mm_min_kills / _mm_clutch: matchmaking's
+ *   budget: on unless "0", clips per match (3; 0 every one), the fewest
+ *   kills a play needs (3), and whether a clutch always counts (on);
  * - the reels' sizes (REEL_LIMITS): funny clips per player per map, clips per
  *   player in a map reel, a series reel's total and per player, a team reel's
  *   per player and a tournament reel's total and per player.
@@ -36,6 +39,9 @@ export const HIGHLIGHT_FPS = [60, 120, 240] as const;
 export const HIGHLIGHT_BITRATES = [0, 5, 10, 20, 40, 60] as const;
 /** How long a video keeps its highest quality ('' always, 'reels', days). */
 export const KEEP_MASTERS = ['', 'reels', '7', '30'] as const;
+/** Matchmaking's clips per match an admin can pick (0: every one), and the fewest kills (5: an ace). */
+export const MM_CLIPS = [0, 1, 2, 3, 5, 10] as const;
+export const MM_MIN_KILLS = [2, 3, 4, 5] as const;
 
 export type HighlightSettingKey =
   | 'highlights_watermark'
@@ -47,6 +53,10 @@ export type HighlightSettingKey =
   | 'highlights_music'
   | 'highlights_keep_clean'
   | 'highlights_keep_masters'
+  | 'highlights_mm'
+  | 'highlights_mm_clips'
+  | 'highlights_mm_min_kills'
+  | 'highlights_mm_clutch'
   | ReelLimitKey;
 
 /**
@@ -82,6 +92,9 @@ export async function readReelLimits(
 export function highlightFps(n: number): number {
   return HIGHLIGHT_FPS.find((f) => f >= n && n > 0) ?? 240;
 }
+
+const oneOf = (n: number, options: readonly number[], fallback: number) =>
+  options.includes(n) ? n : fallback;
 
 function choice(
   key: HighlightSettingKey,
@@ -172,6 +185,34 @@ export const HIGHLIGHT_SETTINGS: ReadonlyArray<SettingDefinition & { key: Highli
     },
     applyRequest: stringRequest('highlightsKeepMasters'),
   },
+  {
+    key: 'highlights_mm',
+    field: 'highlightsMatchmaking',
+    order: 426,
+    normalize: normalizeFlag('Matchmaking highlights'),
+    applyRequest: booleanRequest('highlightsMatchmaking'),
+  },
+  choice(
+    'highlights_mm_clips',
+    'highlightsMatchmakingClips',
+    427,
+    MM_CLIPS,
+    'Clips per matchmaking match'
+  ),
+  choice(
+    'highlights_mm_min_kills',
+    'highlightsMatchmakingMinKills',
+    428,
+    MM_MIN_KILLS,
+    'Fewest kills in a matchmaking clip'
+  ),
+  {
+    key: 'highlights_mm_clutch',
+    field: 'highlightsMatchmakingClutch',
+    order: 429,
+    normalize: normalizeFlag('Clutches always count in matchmaking'),
+    applyRequest: booleanRequest('highlightsMatchmakingClutch'),
+  },
   ...REEL_LIMITS.map(([key, field, min, max], i) => ({
     key,
     field,
@@ -201,6 +242,14 @@ export async function readHighlightSettings(
     highlightsMusic: (await get('highlights_music'))?.trim() ?? '',
     highlightsKeepClean: (await get('highlights_keep_clean'))?.trim() !== '0',
     highlightsKeepMasters: (await get('highlights_keep_masters'))?.trim() ?? '',
+    highlightsMatchmaking: (await get('highlights_mm'))?.trim() !== '0',
+    highlightsMatchmakingClips: oneOf(Number(await get('highlights_mm_clips')), MM_CLIPS, 3),
+    highlightsMatchmakingMinKills: oneOf(
+      Number(await get('highlights_mm_min_kills')),
+      MM_MIN_KILLS,
+      3
+    ),
+    highlightsMatchmakingClutch: (await get('highlights_mm_clutch'))?.trim() !== '0',
     ...(await readReelLimits((key) => get(key as HighlightSettingKey))),
   };
 }

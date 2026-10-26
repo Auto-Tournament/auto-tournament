@@ -107,6 +107,8 @@ export interface Moment {
   slowmoTick: number;
   killTicks: number[];
   title: string;
+  /** A won 1vX (pickMoments); the matchmaking budget keeps these when asked to. */
+  clutch?: boolean;
 }
 
 /** Per round, the last tick a clip of it may reach: the next round's start, else its end plus a tail. */
@@ -217,6 +219,7 @@ export function pickMoments(
       endTick: end,
       slowmoTick: last,
       killTicks: run.map((k) => k.tick),
+      clutch,
       title: `${n === 5 ? 'Ace' : `${n} kill${n === 1 ? '' : 's'}`}${clutch ? ' clutch' : ''}${weapons ? ` · ${weapons}` : ''} · round ${run[0]!.round}`,
     };
   });
