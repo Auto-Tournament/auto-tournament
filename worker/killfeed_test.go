@@ -69,10 +69,10 @@ func TestFeedRowsStayOrGo(t *testing.T) {
 	if got := rows(0); got != 1 {
 		t.Fatalf("at 0 s: %d rows, want the carried-over one", got)
 	}
-	if got := rows(3); got != 3 {
-		t.Fatalf("at 3 s: %d rows, want 3", got)
+	// Only the player's own rows are drawn: someone else's kill isn't.
+	if got := rows(3); got != 2 {
+		t.Fatalf("at 3 s: %d rows, want the player's 2", got)
 	}
-	// Someone else's kill goes after killFeedHoldSec; the player's stay.
 	if got := rows(1 + killFeedHoldSec + killFeedFadeSec + 0.1); got != 2 {
 		t.Fatalf("after the hold: %d rows, want 2", got)
 	}

@@ -149,7 +149,10 @@ type feedRow struct {
 	persistent bool
 }
 
-// layoutFeed draws each kill's row for a video w×h and the piece's length.
+// layoutFeed draws the clip's player's rows (their kills and their death)
+// for a video w×h and the piece's length. Other kills in the window stay in
+// the recipe (overlay.json) but aren't drawn: in a highlight they only take
+// attention from the play. A re-dress picks this up too.
 func layoutFeed(kills []feedKill, w, h int, length float64, icons *iconSet) (*feedRender, error) {
 	k := float64(h) / 720
 	px := func(v float64) int { return int(math.Round(v * k)) }
@@ -160,6 +163,9 @@ func layoutFeed(kills []feedKill, w, h int, length float64, icons *iconSet) (*fe
 	r := &feedRender{gap: px(4), length: length}
 	maxW, totalH := 0, 0
 	for _, kl := range kills {
+		if !kl.Own {
+			continue
+		}
 		img := drawFeedRow(kl, nameFace, icons, px)
 		r.rows = append(r.rows, feedRow{img: img, at: kl.At, persistent: kl.Own})
 		maxW = max(maxW, img.Bounds().Dx())
