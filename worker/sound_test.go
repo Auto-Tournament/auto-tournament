@@ -39,8 +39,8 @@ func TestCrowdIsPartOfEachClip(t *testing.T) {
 		"sidechaingate=",
 		fmt.Sprintf("asetrate=%d", int(48000*slowmoSpeed)), // the opening's murmur, slowed
 		"[a1game][bed1]amix=inputs=2:duration=first:normalize=0[a1in]",
-		fmt.Sprintf("volume=%g,adelay=%d:all=1[react0]", heyGain, int(math.Round((starts[1]+6+crowdDelay)*1000))),
-		fmt.Sprintf("volume=%g,adelay=%d:all=1[react1]", wowGain, int(math.Round((starts[2]+7.5+crowdDelay)*1000))),
+		fmt.Sprintf("volume=%g,adelay=%d:all=1[react0]", math.Round(heyGain*heyTakes[0].lift*1000)/1000, int(math.Round((starts[1]+6+crowdDelay)*1000))),
+		fmt.Sprintf("volume=%g,adelay=%d:all=1[react1]", math.Round(wowGain*wowTakes[0].lift*1000)/1000, int(math.Round((starts[2]+7.5+crowdDelay)*1000))),
 		"[a][music][reacts]amix=inputs=3",
 	} {
 		if !strings.Contains(f, want) {
@@ -174,5 +174,44 @@ func TestTickAtFollowsTheEdit(t *testing.T) {
 	}
 	if got := tickAt(ws, segs, 800); got != -1 {
 		t.Fatalf("between windows: %v", got)
+	}
+}
+
+func TestReactionsComeFromSeveralRecordings(t *testing.T) {
+	p := reelPlan{durations: []float64{60}}
+	var rs []reaction
+	for i := 0; i < 8; i++ {
+		rs = append(rs, reaction{T: float64(i * 7), Score: 3}) // eight cheers
+	}
+	out := crowdReactions(p, 0, [][]reaction{rs})
+	srcs := map[int]bool{}
+	for k, r := range out {
+		srcs[r.src] = true
+		if r.lift <= 0 {
+			t.Fatalf("reaction %d has no lift: %+v", k, r)
+		}
+		if k > 0 && out[k-1].src == r.src && out[k-1].from == r.from {
+			t.Fatalf("reactions %d and %d are the same take: %+v", k-1, k, r)
+		}
+	}
+	if len(srcs) < 3 {
+		t.Fatalf("eight cheers from only %d recordings: %+v", len(srcs), out)
+	}
+	// The same reel sounds the same when made again.
+	if again := crowdReactions(p, 0, [][]reaction{rs}); fmt.Sprint(again) != fmt.Sprint(out) {
+		t.Fatalf("not deterministic:\n%+v\n%+v", out, again)
+	}
+	// Every take is a recording we have.
+	for _, takes := range [][]crowdTake{heyTakes, cheerTakes, wowTakes} {
+		for _, tk := range takes {
+			if tk.src < 0 || tk.src > 6 || tk.lift <= 0 || tk.from < 0 {
+				t.Fatalf("bad take %+v", tk)
+			}
+		}
+	}
+	// The lift reaches the mix.
+	f := reactFilter([]crowdReact{{in: 1, at: 1, score: 5, length: 3, lift: 2}})
+	if !strings.Contains(f, fmt.Sprintf("volume=%g", wowGain*2)) {
+		t.Fatalf("lift not in %s", f)
 	}
 }

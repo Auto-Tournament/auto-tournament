@@ -25,7 +25,18 @@ This is a summary for convenience, not legal advice; the license itself is what 
 
 ## Crowd
 
-The crowd under reels is one recording, "Crowd Cheering in Stadium" by vishiv via Pixabay ([435357](https://pixabay.com/sound-effects/people-crowd-cheering-in-stadium-435357/)). Each recorder downloads it once to build reels' crowd tracks, where it is cut, gated by the game's sound and mixed into a new track; it is never offered as a file.
+The crowd under reels is cut from these recordings, all via Pixabay. Each recorder downloads them once to build reels' crowd tracks, where they are cut, gated by the game's sound and mixed into a new track; they are never offered as files.
+
+| Recording | By | ID | Used for |
+| --- | --- | --- | --- |
+| Crowd Cheering in Stadium | vishiv | [435357](https://pixabay.com/sound-effects/people-crowd-cheering-in-stadium-435357/) | the murmur under every clip, and cheers |
+| Free Crowd Cheering Sounds - 01 - Strong cheering / rhythmic cheering | GregorQuendel | [116188](https://pixabay.com/sound-effects/people-free-crowd-cheering-sounds-01-strong-cheering-rhythmic-cheering-116188/) | cheers, big reactions |
+| Free Crowd Cheering Sounds - 02 - Strong cheering / rhythmic cheering | GregorQuendel | [116190](https://pixabay.com/sound-effects/people-free-crowd-cheering-sounds-02-strong-cheering-rhythmic-cheering-116190/) | big reactions |
+| Free Crowd Cheering Sounds - 03 - Strong cheering - I | GregorQuendel | [116189](https://pixabay.com/sound-effects/people-free-crowd-cheering-sounds-03-strong-cheering-i-116189/) | cheers, big reactions |
+| Free Crowd Cheering Sounds - 04 - Strong cheering - II - Short | GregorQuendel | [116191](https://pixabay.com/sound-effects/people-free-crowd-cheering-sounds-04-strong-cheering-ii-short-116191/) | cheers |
+| Free Crowd Cheering Sounds - 05 - Soft cheering - I | GregorQuendel | [116192](https://pixabay.com/sound-effects/people-free-crowd-cheering-sounds-05-soft-cheering-i-116192/) | small reactions |
+| football game in a big arena | freesound_community | [31575](https://pixabay.com/sound-effects/city-football-game-in-a-big-arena-31575/) | the arena roar on big reactions |
+| Crowd Disappointment Reaction | Universfield | [352718](https://pixabay.com/sound-effects/people-crowd-disappointment-reaction-352718/) | the groan when the player dies |
 
 ## Suggested tracks, credited
 
