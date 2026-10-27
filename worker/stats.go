@@ -59,6 +59,14 @@ type Kill struct {
 	Trade bool `json:"trade"`
 	// Traded: the victim was avenged within five seconds.
 	Traded bool `json:"traded"`
+	// The moment as a caster would describe it: where (the map's place
+	// names), the killer's health after the kill, seconds left on the round
+	// clock (the bomb's once planted).
+	AttackerPlace  string `json:"attackerPlace,omitempty"`
+	VictimPlace    string `json:"victimPlace,omitempty"`
+	AttackerHealth int    `json:"attackerHealth,omitempty"`
+	TimeLeft       int    `json:"timeLeft"`
+	BombPlanted    bool   `json:"bombPlanted,omitempty"`
 }
 
 // PlayerStats are one player's numbers on the map.
