@@ -89,11 +89,13 @@ type partCrowd struct {
 	reacts []crowdReact
 }
 
-// crowdReact is one reaction: input `in` (a stretch of the recording from
-// `from`, `length` long), at `at` seconds into the reel.
+// crowdReact is one reaction: input `in` (a stretch of recording `src` from
+// `from`, `length` long, lifted by `lift`), at `at` seconds into the reel.
 type crowdReact struct {
 	in     int
+	src    int // crowdRecordings index; 0 is the main recording (reelSound.crowd)
 	from   float64
+	lift   float64 // gain on top of the reaction's own, so every recording peaks alike (0: 1)
 	at     float64
 	score  float64
 	length float64
@@ -103,6 +105,59 @@ type crowdReact struct {
 // crowdLoud are where the crowd recording cheers loudest: each reaction is
 // cut from one of them, in turn, so it is never a quiet stretch.
 var crowdLoud = []float64{7.0, 24.0, 8.6, 25.2, 9.6}
+
+// crowdTake is one loud stretch to cheer with: recording `src` (crowdRecordings)
+// from `from`, lifted by `lift` to peak like the main recording (its loud
+// stretches measure about -7.4 LUFS momentary; 2026-10-27).
+type crowdTake struct {
+	src  int
+	from float64
+	lift float64
+}
+
+// The takes each kind of reaction picks from, in turn. Neighbours come from
+// different recordings, so two reactions in a row never sound the same: the
+// main stadium crowd, Gregor Quendel's cheering (01 to 05) and the arena.
+var (
+	// heyTakes: a short "heeey" for a kill worth a little noise.
+	heyTakes = []crowdTake{
+		{src: 5, from: 9.0, lift: 1.2},  // 05 soft cheering
+		{src: 0, from: 7.0, lift: 0.8},  // the stadium, a little back
+		{src: 5, from: 12.0, lift: 1.4}, // 05 soft cheering, later
+		{src: 0, from: 24.0, lift: 0.8},
+	}
+	// cheerTakes: a cheer.
+	cheerTakes = []crowdTake{
+		{src: 0, from: 7.0, lift: 1},
+		{src: 3, from: 6.5, lift: 1.05}, // 03 strong cheering I
+		{src: 0, from: 24.0, lift: 1},
+		{src: 4, from: 5.4, lift: 1.15}, // 04 strong cheering II
+		{src: 0, from: 8.6, lift: 1},
+		{src: 1, from: 16.4, lift: 1.4}, // 01 strong, rhythmic
+		{src: 0, from: 25.2, lift: 1},
+	}
+	// wowTakes: the big "whoaaa", with the arena's roar among them.
+	wowTakes = []crowdTake{
+		{src: 2, from: 4.6, lift: 1}, // 02 strong, rhythmic
+		{src: 0, from: 9.6, lift: 1},
+		{src: 1, from: 5.4, lift: 1.15}, // 01 strong, rhythmic
+		{src: 6, from: 47.4, lift: 2.4}, // the arena
+		{src: 3, from: 6.5, lift: 1.05},
+		{src: 6, from: 13.1, lift: 2.8},
+	}
+)
+
+// cheerTake is the take for the n-th reaction of its kind.
+func cheerTake(score float64, n int) crowdTake {
+	takes := heyTakes
+	switch {
+	case score >= reactWow:
+		takes = wowTakes
+	case score >= reactCheer:
+		takes = cheerTakes
+	}
+	return takes[n%len(takes)]
+}
 
 // crowdBedSpan is the stretch of the recording part i's murmur plays: its
 // slowed opening takes slowmoSpeed as much.
@@ -118,7 +173,7 @@ func crowdBedSpan(p reelPlan, first, i int) (start, length float64) {
 func crowdReactions(p reelPlan, first int, reactions [][]reaction) []crowdReact {
 	starts := partStarts(p)
 	var out []crowdReact
-	n := 0
+	seen := map[int]int{} // per kind (reactionShape's gain): how many so far
 	for i := first; i < len(p.durations) && i < len(reactions); i++ {
 		for _, r := range reactions[i] {
 			at := r.T + crowdDelay
@@ -130,10 +185,12 @@ func crowdReactions(p reelPlan, first int, reactions [][]reaction) []crowdReact 
 				out = append(out, crowdReact{at: starts[i] + at, length: length, from: awwFrom, aww: true})
 				continue
 			}
-			_, length, _ := reactionShape(r.Score)
+			gain, length, _ := reactionShape(r.Score)
 			length = math.Min(length, p.durations[i]-at+crowdSpill)
-			out = append(out, crowdReact{at: starts[i] + at, score: r.Score, length: length, from: crowdLoud[n%len(crowdLoud)]})
-			n++
+			kind := int(gain * 100)
+			take := cheerTake(r.Score, seen[kind])
+			seen[kind]++
+			out = append(out, crowdReact{at: starts[i] + at, score: r.Score, length: length, src: take.src, from: take.from, lift: take.lift})
 		}
 	}
 	return out
@@ -249,6 +306,9 @@ func reactFilter(reacts []crowdReact) string {
 		gain, _, fall := reactionShape(r.score)
 		if r.aww {
 			gain, fall = awwGain, awwFall
+		}
+		if r.lift > 0 {
+			gain = math.Round(gain*r.lift*1000) / 1000
 		}
 		// Played a little faster or slower (and so higher or lower), so the
 		// same recording does not sound the same twice: bigger reactions a

@@ -40,6 +40,43 @@ func (r *recorder) crowdSource(ctx context.Context) string {
 	return file
 }
 
+// crowdRecordings are the recordings reactions are cut from (sound.go
+// crowdTake.src). 0 is the main one (crowdSourceURL); the rest are fetched
+// next to it the first time a reaction needs them. All Pixabay, under its
+// licence, so like the main one they are fetched, never shipped. 1 to 5 are
+// "Free Crowd Cheering Sounds" 01 to 05 by Gregor Quendel (Pixabay 116188 to
+// 116192: strong, rhythmic and soft cheering); 6 is "football game in a big
+// arena" by freesound_community (Pixabay 31575). THIRD-PARTY-MEDIA.md links them.
+var crowdRecordings = []struct{ file, url string }{
+	{"", crowdSourceURL},
+	{"crowd-116188.mp3", "https://cdn.pixabay.com/download/audio/2022/08/02/audio_af174e495b.mp3"},
+	{"crowd-116190.mp3", "https://cdn.pixabay.com/download/audio/2022/08/02/audio_4d8bda8a46.mp3"},
+	{"crowd-116189.mp3", "https://cdn.pixabay.com/download/audio/2022/08/02/audio_26fcce2399.mp3"},
+	{"crowd-116191.mp3", "https://cdn.pixabay.com/download/audio/2022/08/02/audio_4c4a0a97d1.mp3"},
+	{"crowd-116192.mp3", "https://cdn.pixabay.com/download/audio/2022/08/02/audio_227e55a82e.mp3"},
+	{"crowd-31575.mp3", "https://cdn.pixabay.com/download/audio/2022/03/10/audio_88abbe3f06.mp3"},
+}
+
+// crowdRecording is recording i on disk, next to the main one (`crowd`), or
+// "" when it cannot be had: that reaction then comes from the main one.
+func crowdRecording(crowd string, i int) string {
+	if i == 0 || crowd == "" {
+		return crowd
+	}
+	if i < 0 || i >= len(crowdRecordings) {
+		return ""
+	}
+	file := filepath.Join(filepath.Dir(crowd), crowdRecordings[i].file)
+	if st, err := os.Stat(file); err == nil && st.Size() > 100_000 {
+		return file
+	}
+	if err := fetchFile(context.Background(), crowdRecordings[i].url, file); err != nil {
+		log.Printf("crowd recording %s: %v", crowdRecordings[i].file, err)
+		return ""
+	}
+	return file
+}
+
 // awwSourceURL is the crowd's groan when the player dies: "Crowd
 // Disappointment Reaction" by Universfield on Pixabay (pixabay.com/
 // sound-effects/people-crowd-disappointment-reaction-352718). Fetched like

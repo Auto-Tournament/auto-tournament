@@ -280,8 +280,22 @@ func buildCrowdTrack(ctx context.Context, paths []string, plan reelPlan, first i
 	args = []string{"-i", joined}
 	var reacts []crowdReact
 	aww := ""
-	for _, r := range crowdReactions(plan, first, sound.reactions) {
+	recordings := map[int]string{}
+	for k, r := range crowdReactions(plan, first, sound.reactions) {
 		src := sound.crowd
+		if r.src > 0 && !r.aww {
+			got, ok := recordings[r.src]
+			if !ok {
+				got = crowdRecording(sound.crowd, r.src)
+				recordings[r.src] = got
+			}
+			if got != "" {
+				src = got
+			} else {
+				// That recording could not be had: a loud stretch of the main one.
+				r.src, r.from, r.lift = 0, crowdLoud[k%len(crowdLoud)], 1
+			}
+		}
 		if r.aww {
 			if aww == "" {
 				aww = awwSource(sound.crowd)
