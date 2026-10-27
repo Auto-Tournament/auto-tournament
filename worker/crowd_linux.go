@@ -43,12 +43,10 @@ func (r *recorder) crowdSource(ctx context.Context) string {
 // crowdRecordings are the recordings reactions are cut from (sound.go
 // crowdTake.src). 0 is the main one (crowdSourceURL); the rest are fetched
 // next to it the first time a reaction needs them. All Pixabay, under its
-// licence, so like the main one they are fetched, never shipped:
-//   1-5: "Free Crowd Cheering Sounds" 01 to 05 by Gregor Quendel
-//        (pixabay.com/sound-effects/people-free-crowd-cheering-sounds-…-116188
-//        … -116192), strong, rhythmic and soft cheering
-//   6:   "football game in a big arena" by freesound_community
-//        (pixabay.com/sound-effects/city-football-game-in-a-big-arena-31575)
+// licence, so like the main one they are fetched, never shipped. 1 to 5 are
+// "Free Crowd Cheering Sounds" 01 to 05 by Gregor Quendel (Pixabay 116188 to
+// 116192: strong, rhythmic and soft cheering); 6 is "football game in a big
+// arena" by freesound_community (Pixabay 31575). THIRD-PARTY-MEDIA.md links them.
 var crowdRecordings = []struct{ file, url string }{
 	{"", crowdSourceURL},
 	{"crowd-116188.mp3", "https://cdn.pixabay.com/download/audio/2022/08/02/audio_af174e495b.mp3"},
