@@ -1082,7 +1082,8 @@
     },
     "watermark": {
       "label": "Auto Tournament logo on highlight videos",
-      "description": "Shown faintly in the lower right. Leaving it on helps us a lot."
+      "description": "Shown faintly in the lower right. Leaving it on helps us a lot.",
+      "paidOnly": "Mostrato in basso a destra come «Played on Auto Tournament». Sempre attivo con l'uso gratuito; con una licenza a pagamento puoi disattivarlo."
     },
     "perPlayer": {
       "label": "Clips per player per map",
