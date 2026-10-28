@@ -5,6 +5,7 @@ import type { DbTeamRow, DbMatchRow } from '../../types/database.types';
 import type { TournamentResponse } from '../../types/tournament.types';
 import type { MatchConfig, MatchPlayer } from '../../types/match.types';
 import { log } from '../../utils/logger';
+import { isEliminationTournamentType } from '../../utils/matchStatusHelpers';
 import { settingsService } from '../../services/settingsService';
 import { tournamentSignupService } from '../../services/tournamentSignupService';
 import { cs2Settings } from './settingsReaders';
@@ -357,7 +358,10 @@ export const generateMatchConfig = async (
 
     // Explicit round-limit metadata for MatchZy Enhanced JSON consumers
     maxRounds,
-    overtimeMode: tournament.overtimeMode,
+    // An elimination match needs a winner: a tie plays overtime, whatever the setting (#419).
+    overtimeMode: isEliminationTournamentType(tournament.type)
+      ? 'enabled'
+      : tournament.overtimeMode,
     overtimeSegments: tournament.overtimeSegments,
 
     // Custom fields used by your frontend
