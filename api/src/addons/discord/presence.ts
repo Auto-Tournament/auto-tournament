@@ -25,9 +25,9 @@ let backoffMs = 5_000;
 let running = false;
 let lastStatus = '';
 
-/** "Watching 2 matches", or "Watching the tournaments" with none live. */
+/** "Watching 2 matches", or "Watching autotournament.gg" with none live. */
 export function statusText(live: number): string {
-  if (live === 0) return 'the tournaments';
+  if (live === 0) return 'autotournament.gg';
   return live === 1 ? '1 match' : `${live} matches`;
 }
 
