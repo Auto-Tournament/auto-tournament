@@ -490,7 +490,7 @@ func (r *recorder) recordMoments(ctx context.Context, demoPath string, shots []s
 			r.live.pos = 0
 		}
 	} else {
-		if err := copyFile(demoPath, inGame); err != nil {
+		if err := copyDemoWithoutAddons(demoPath, inGame); err != nil {
 			return nil, nil, err
 		}
 		if keep != "" {
