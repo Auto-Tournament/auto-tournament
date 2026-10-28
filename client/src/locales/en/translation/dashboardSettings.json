@@ -570,7 +570,7 @@
     "warningsNote": "Nothing is blocked or limited. This is only a notice.",
     "label": "License key",
     "replaceLabel": "Replace the license key",
-    "helper": "Starts with ATL1. Copy it from <consoleLink>your licenses in the Auto Tournament console</consoleLink>. After saving, only the license ID is shown.",
+    "helper": "Starts with ATL1. Copy it from <consoleLink>your licenses in the Auto Tournament console</consoleLink>. After saving, only the license ID is shown. No internet where you play? Paste the offline lease from the console here too.",
     "checkInNote": "Without a license key, nothing is sent to Auto Tournament. With a key, this server checks in once a day with the key's id and its server count.",
     "save": "Save key",
     "saved": "License key saved",
@@ -676,6 +676,7 @@
     },
     "checkin": {
       "last": "Last license check-in: {{time}}",
+      "offlineUntil": "Offline lease: new servers work without internet until {{date}}.",
       "never": "No license check-in yet. The first one runs shortly after a key is saved.",
       "whatIsSent": "What is sent",
       "intro": "Once a day, and only while a key is saved, this server sends:",

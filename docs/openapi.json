@@ -10075,7 +10075,7 @@
           "License"
         ],
         "summary": "Save the license key",
-        "description": "Body `{ \"key\": \"ATL1.…\" }`. Replaces any saved key. Refused (400) only\nwhen it isn't an `ATL1.` key at all; a key that fails the signature\ncheck is saved and reported as `invalid`. The declared use follows\nthe key: a genuine paid key records commercial use, a free or\ninvalid one non-commercial (when the terms were accepted). Same-site\nJSON only.\n",
+        "description": "Body `{ \"key\": \"ATL1.…\" }`. Replaces any saved key. Refused (400) only\nwhen it isn't an `ATL1.` key at all; a key that fails the signature\ncheck is saved and reported as `invalid`. The declared use follows\nthe key: a genuine paid key records commercial use, a free or\ninvalid one non-commercial (when the terms were accepted). Same-site\nJSON only.\n\nAn offline lease from the console (an `ATL1.` lease) goes in the same\nfield: it is stored next to the saved key, which it must belong to\n(400 otherwise), and until its `offline_until` a paid install creates\nservers without reaching autotournament.gg.\n",
         "requestBody": {
           "required": true,
           "content": {

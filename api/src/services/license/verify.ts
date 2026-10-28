@@ -51,6 +51,11 @@ export interface LicensePayload {
   valid_to?: string;
   /** Only on a lease (the current terms from a check-in, ./gate.ts): never accepted as the key. */
   lease?: true;
+  /**
+   * YYYY-MM-DD, inclusive. Only on an offline lease (downloaded from the console and pasted):
+   * until then a paid install may create servers without reaching autotournament.gg.
+   */
+  offline_until?: string;
 }
 
 export type LicenseWarningCode =
@@ -131,6 +136,7 @@ export function payloadProblem(p: Untrusted): string | null {
     return 'bad valid_from/valid_to';
   }
   if (o.licensee !== undefined && typeof o.licensee !== 'string') return 'bad licensee';
+  if (o.offline_until !== undefined && !isDate(o.offline_until)) return 'bad offline_until';
   return null;
 }
 

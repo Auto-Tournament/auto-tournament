@@ -670,6 +670,7 @@
     },
     "checkin": {
       "last": "Laatste licentiemelding: {{time}}",
+      "offlineUntil": "Offline lease: new servers work without internet until {{date}}.",
       "never": "Nog geen licentiemelding. De eerste volgt kort nadat een sleutel is opgeslagen.",
       "whatIsSent": "Wat er wordt verstuurd",
       "intro": "Eén keer per dag, en alleen zolang er een sleutel is opgeslagen, stuurt deze server:",

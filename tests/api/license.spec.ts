@@ -12,10 +12,16 @@ import {
 import { lineDateFor, buildLineDate } from '../../api/src/services/license/lineDate';
 import {
   statusFor,
+  isLeaseInput,
   keyInputProblem,
   verifyUrlFor,
 } from '../../api/src/services/license/licenseService';
-import { checkCreate, standingFor, LicenseLimitError } from '../../api/src/services/license/gate';
+import {
+  checkCreate,
+  offlineLeaseCovers,
+  standingFor,
+  LicenseLimitError,
+} from '../../api/src/services/license/gate';
 
 /**
  * License keys (api/src/services/license): the offline check ported from the
@@ -487,6 +493,34 @@ test.describe('the paid server limit and late payment (gate)', () => {
     expect(
       standingFor(month(), null, '2026-10-10', publicKeys, lease.slice(0, -4) + 'AAAA').maxServers
     ).toBe(5);
+  });
+
+  test('an offline lease lets a paid install create servers offline until its offline_until', () => {
+    const offline = (extra: object) =>
+      signToken(
+        payload({
+          kind: 'month',
+          updates_until: '2026-12-08',
+          issued_at: '2026-11-08T10:00:00Z',
+          lease: true,
+          offline_until: '2026-12-08',
+          ...extra,
+        }),
+        key
+      );
+    expect(offlineLeaseCovers(month(), offline({}), '2026-12-08', publicKeys)).toBe(true);
+    expect(offlineLeaseCovers(month(), offline({}), '2026-12-09', publicKeys)).toBe(false);
+    // A check-in lease (no offline_until), another license's, or no key: no.
+    expect(
+      offlineLeaseCovers(month(), offline({ offline_until: undefined }), '2026-11-30', publicKeys)
+    ).toBe(false);
+    expect(offlineLeaseCovers(month(), offline({ id: 'L-other' }), '2026-11-30', publicKeys)).toBe(
+      false
+    );
+    expect(offlineLeaseCovers(null, offline({}), '2026-11-30', publicKeys)).toBe(false);
+    // Pasted in the key field, it is told apart from a key.
+    expect(isLeaseInput(` ${offline({})} `)).toBe(true);
+    expect(isLeaseInput(month())).toBe(false);
   });
 
   test('a replaced key gets its day, then stops; a key in use elsewhere stops at once', () => {

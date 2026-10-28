@@ -146,6 +146,33 @@ export function standingFor(
   return { ...base, status, stopsOn, reason: status === 'active' ? null : 'unpaid' };
 }
 
+/**
+ * Pure: whether `lease` is an offline lease (console, "Download offline
+ * lease") of the license of `key` that still covers `today`. New servers then
+ * don't need the license server (no `checkin_stale`).
+ */
+export function offlineLeaseCovers(
+  key: string | null,
+  lease: string | null,
+  today: string,
+  publicKeys?: Readonly<Record<string, LicensePublicKey>>
+): boolean {
+  if (!key || !lease) return false;
+  const opts = { now: today, ...(publicKeys ? { publicKeys } : {}) };
+  const k = verifyLicense(key, opts).license;
+  const l = verifyLicense(lease, opts);
+  return (
+    !!k &&
+    l.valid &&
+    l.license?.lease === true &&
+    l.license.id === k.id &&
+    l.license.kind === k.kind &&
+    l.license.issued_at >= k.issued_at &&
+    !!l.license.offline_until &&
+    l.license.offline_until >= today
+  );
+}
+
 export class LicenseLimitError extends Error {
   readonly statusCode = 402;
   readonly code: 'server_limit' | 'license_expired' | 'checkin_stale';

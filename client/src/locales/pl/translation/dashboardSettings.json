@@ -674,6 +674,7 @@
     },
     "checkin": {
       "last": "Ostatnie zgłoszenie licencji: {{time}}",
+      "offlineUntil": "Offline lease: new servers work without internet until {{date}}.",
       "never": "Jeszcze nie było zgłoszenia licencji. Pierwsze nastąpi wkrótce po zapisaniu klucza.",
       "whatIsSent": "Co jest wysyłane",
       "intro": "Raz dziennie i tylko wtedy, gdy zapisany jest klucz, ten serwer wysyła:",

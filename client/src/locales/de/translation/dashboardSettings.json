@@ -670,6 +670,7 @@
     },
     "checkin": {
       "last": "Letzte Lizenzmeldung: {{time}}",
+      "offlineUntil": "Offline lease: new servers work without internet until {{date}}.",
       "never": "Noch keine Lizenzmeldung. Die erste folgt kurz nach dem Speichern eines Schlüssels.",
       "whatIsSent": "Was gesendet wird",
       "intro": "Einmal täglich, und nur solange ein Schlüssel gespeichert ist, sendet dieser Server:",
