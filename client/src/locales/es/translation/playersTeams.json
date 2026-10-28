@@ -689,6 +689,11 @@
       "downloadCrowd": "With the crowd",
       "downloadCrowdHint": "The game and the crowd's cheers, no music.",
       "downloadCrowdAndMusic": "With the crowd and {{title}}",
+      "energy": {
+        "1": "Tranquila",
+        "2": "Media",
+        "3": "Hype"
+      },
       "genres": {
         "drum-n-bass": "Drum & bass",
         "phonk": "Phonk",

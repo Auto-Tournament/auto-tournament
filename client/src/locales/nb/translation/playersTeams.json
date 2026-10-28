@@ -691,6 +691,11 @@
       "downloadCrowd": "Med publikum",
       "downloadCrowdHint": "Spillet og publikums jubel, uten musikk.",
       "downloadCrowdAndMusic": "Med publikum og {{title}}",
+      "energy": {
+        "1": "Rolig",
+        "2": "Middels",
+        "3": "Hype"
+      },
       "genres": {
         "drum-n-bass": "Drum & bass",
         "phonk": "Phonk",

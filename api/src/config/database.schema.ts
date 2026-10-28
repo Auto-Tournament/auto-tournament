@@ -26,6 +26,10 @@ export function getSchemaSQL(): string {
       file TEXT NOT NULL, -- under DATA_DIR/highlights/music
       seconds INTEGER,
       gain_db REAL, -- evens its loudness out with the others
+      hf_lufs REAL, -- loudness above 200 Hz (what gain_db is from)
+      flux REAL, -- spectral flux, centroid and loudness range: its energy
+      centroid REAL,
+      lra REAL,
       created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
     );
 

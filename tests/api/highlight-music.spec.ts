@@ -1,5 +1,10 @@
 import { expect, test } from '@playwright/test';
-import { musicFilter, parseMusicSetting } from '../../api/src/services/highlights/music';
+import {
+  gainFor,
+  musicFilter,
+  parseMusicSetting,
+  rateEnergy,
+} from '../../api/src/services/highlights/music';
 import { MUSIC_SUGGESTIONS } from '../../api/src/services/highlights/musicSuggestions';
 
 test.describe('reel music', () => {
@@ -37,6 +42,39 @@ test.describe('reel music', () => {
     const loud = musicFilter(20, 3, 0, 0.8);
     expect(loud).toContain("volume='if(lt(t,3.000),0.32,");
     expect(loud).toContain(',0.8))');
+    // A raised track gets a limiter (no auto level) before the reel's level.
+    expect(musicFilter(20, 0, 2.5)).toContain(
+      'volume=2.5dB,alimiter=limit=0.891:level=0,volume=0.5,'
+    );
+  });
+
+  test(
+    'tracks are evened out by their loudness above 200 Hz, within ±4 dB',
+    { tag: ['@api'] },
+    () => {
+      expect(gainFor(-13.1)).toBe(0);
+      expect(gainFor(-15.2)).toBe(2.1);
+      expect(gainFor(-25)).toBe(4);
+      expect(gainFor(-3)).toBe(-4);
+    }
+  );
+
+  test('energy: hype, mid and calm against the other tracks', { tag: ['@api'] }, () => {
+    const track = (genre: string, flux: number) => ({ genre, flux, centroid: 2000, lra: 6 });
+    // Too few to compare: no rating.
+    expect(rateEnergy([1, 2, 3].map((f) => track('phonk', f)))).toEqual([]);
+    // A third each, by how much the spectrum moves.
+    expect(rateEnergy([0.1, 0.2, 0.3, 0.4, 0.5, 0.6].map((f) => track('phonk', f)))).toEqual([
+      1, 1, 2, 2, 3, 3,
+    ]);
+    // A genre with 10 or more is rated on its own: its quietest is calm even
+    // when it moves more than every track of another genre.
+    const loud = Array.from({ length: 10 }, (_, i) => track('drum-n-bass', 1 + i / 10));
+    const calm = [0.1, 0.2, 0.3].map((f) => track('lofi', f));
+    const rated = rateEnergy([...loud, ...calm]);
+    expect(rated[0]).toBe(1);
+    expect(rated[9]).toBe(3);
+    expect(rated.slice(10)).toEqual([1, 1, 1]);
   });
 });
 

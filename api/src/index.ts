@@ -555,7 +555,12 @@ void (async () => {
 
     // Music an earlier beta downloaded by itself, gone (bring your own now).
     void import('./services/highlights/music')
-      .then((m) => m.removeDownloadedCatalogue())
+      .then(async (m) => {
+        m.removeDownloadedCatalogue();
+        // Tracks from before loudness above 200 Hz and energy: measured once.
+        const n = await m.measureOldTracks();
+        if (n) log.info(`[HIGHLIGHTS] Measured ${n} music track(s) again`);
+      })
       .catch(() => undefined);
 
     // Which tournament is featured (services/currentTournament.ts), kept fresh.

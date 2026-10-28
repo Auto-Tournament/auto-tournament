@@ -689,6 +689,11 @@
       "downloadCrowd": "With the crowd",
       "downloadCrowdHint": "The game and the crowd's cheers, no music.",
       "downloadCrowdAndMusic": "With the crowd and {{title}}",
+      "energy": {
+        "1": "舒缓",
+        "2": "中等",
+        "3": "燃"
+      },
       "genres": {
         "drum-n-bass": "Drum & bass",
         "phonk": "Phonk",
