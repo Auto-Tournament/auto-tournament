@@ -198,6 +198,17 @@ export async function resolveViewerTeamForMatch(
  * step) on the match page, read-only. Choosing bans and picks is protected
  * at the /action endpoint.
  */
+/**
+ * A match with its veto turned off (`vetoDisabled`: a manual match with preset sides) has no
+ * veto: reading one used to start it, and its side pick re-allocated the running match (#1020).
+ */
+function noVeto(res: Response) {
+  return res.status(409).json({
+    success: false,
+    error: 'This match has no veto: its maps and sides are set.',
+  });
+}
+
 router.get('/:matchSlug', async (req: Request, res: Response) => {
   try {
     const { matchSlug } = req.params;
@@ -213,8 +224,9 @@ router.get('/:matchSlug', async (req: Request, res: Response) => {
       });
     }
 
-    const isManualMatch = match.round === 0 || match.tournament_id == null;
     const description = describeMatch(match);
+    if (description.skipPreMatchPhase === true) return noVeto(res);
+    const isManualMatch = match.round === 0 || match.tournament_id == null;
 
     let team1Id: string | null = match.team1_id ?? null;
     let team2Id: string | null = match.team2_id ?? null;
@@ -396,6 +408,7 @@ async function vetoAction(req: Request, res: Response) {
         error: 'Match not found',
       });
     }
+    if (describeMatch(match).skipPreMatchPhase === true) return noVeto(res);
     // The break between a team's matches (or an admin's hold): the veto opens when it ends.
     const opensAt = await vetoWaitingOnHold(matchSlug);
     if (opensAt) {
