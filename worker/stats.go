@@ -1,6 +1,9 @@
 package main
 
-import "math"
+import (
+	"math"
+	"strings"
+)
 
 // AnalyzerVersion goes up when the numbers change meaning; the platform
 // re-queues older analyses. 10: bots' damage, bullets, grenades and blinds on the replay.
@@ -49,6 +52,7 @@ type Kill struct {
 	NoScope       bool        `json:"noScope,omitempty"`
 	AttackerBlind bool        `json:"attackerBlind,omitempty"`
 	InAir         bool        `json:"inAir,omitempty"`
+	OneTap        bool        `json:"oneTap,omitempty"` // the only bullet he fired then, a headshot (oneTap)
 	AttackerSide  *string     `json:"attackerSide"`
 	VictimSide    *string     `json:"victimSide"`
 	AttackerPos   *[2]float64 `json:"attackerPos"`
@@ -111,6 +115,35 @@ type PlayerStats struct {
 type Shot struct {
 	Tick   int
 	Weapon string
+}
+
+// oneTapSec is how far back a one-tap looks for other shots: one bullet in this
+// long, and it killed.
+const oneTapSec = 1.0
+
+// oneTap says whether a kill at `tick` was a one-tap: a headshot with a gun that
+// isn't a sniper rifle or a shotgun, and the killer's only shot with it in the
+// oneTapSec before (shots are his, in tick order). A headshot after a missed
+// first bullet is not one.
+func oneTap(shots []Shot, tick int, rate float64, weapon string, headshot bool) bool {
+	if !headshot || !isTapGun(weapon) {
+		return false
+	}
+	n := 0
+	for i := len(shots) - 1; i >= 0 && float64(tick-shots[i].Tick) <= oneTapSec*rate; i-- {
+		if shots[i].Tick <= tick && shots[i].Weapon == weapon {
+			n++
+		}
+	}
+	return n == 1
+}
+
+func isTapGun(weapon string) bool {
+	switch weapon {
+	case "AWP", "SSG 08", "G3SG1", "SCAR-20", "Nova", "XM1014", "Sawed-Off", "MAG-7", "world":
+		return false
+	}
+	return !strings.HasPrefix(weapon, "Knife") && !strings.Contains(weapon, "Grenade") && weapon != "Molotov"
 }
 
 // AimError is the angle in degrees between where (pitch, yaw) looks from eye

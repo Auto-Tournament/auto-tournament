@@ -17,7 +17,7 @@ import { standInsFor } from './standIns';
  * recorder cuts out the wait between them). It scores by kill count (an ace far above a double), a
  * clutch (the last of their side alive against two or more, and the round
  * won), and flair
- * (wallbangs, through smoke, headshots, the round's opening kill). The best
+ * (wallbangs, through smoke, one-taps, headshots, the round's opening kill). The best
  * six per player per map are kept, if they score at all: each is a clip of
  * its own, and the recorder joins them into the player's reel of the map.
  *
@@ -171,6 +171,7 @@ export function pickMoments(
       if (k.noScope) score += 15;
       if (k.attackerBlind) score += 20;
       if (k.inAir) score += 10;
+      if (k.oneTap) score += 10;
       if (k.opening) score += 5;
     }
     // Clutch: before the run, everyone else on their side in this round died,

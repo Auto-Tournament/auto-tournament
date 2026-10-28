@@ -463,6 +463,9 @@ func Analyze(r io.Reader, mapName string, standIns map[string]string) (*Analysis
 			pos := [2]float64{e.Killer.Position().X, e.Killer.Position().Y}
 			k.AttackerPos = &pos
 			k.AttackerPlace, k.AttackerHealth = e.Killer.LastPlaceName(), e.Killer.Health()
+			if key, ok := replayKey(e.Killer); ok {
+				k.OneTap = oneTap(shots[key], gs.IngameTick(), p.TickRate(), k.Weapon, k.Headshot)
+			}
 			named(e.Killer)
 		}
 		if human(e.Assister) {
