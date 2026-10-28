@@ -9,7 +9,7 @@
  * (reelMusic), cut to the reel, evened out to the other tracks' loudness and
  * faded, the sound a download mixes in (withSound) too.
  *
- * `highlights_music`: empty (every track), `off`, or the track ids the admin
+ * `highlights_music`: empty (no music, the default), `all`, `off`, or the track ids the admin
  * picked, comma separated.
  */
 
@@ -122,7 +122,9 @@ export function parseMusicSetting(
   known: Set<string>
 ): 'all' | 'off' | string[] {
   const v = (value ?? '').trim();
-  if (!v || v === 'all') return 'all';
+  // Unset: no music. Reels sound like a broadcast with the game and the crowd alone.
+  if (!v) return 'off';
+  if (v === 'all') return 'all';
   if (v === 'off') return 'off';
   const ids = v
     .split(',')

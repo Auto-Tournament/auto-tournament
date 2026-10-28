@@ -43,7 +43,8 @@ type Mode = 'all' | 'off' | 'pick';
 
 function modeOf(value: string): Mode {
   const v = value.trim();
-  if (!v || v === 'all') return 'all';
+  if (!v) return 'off'; // unset: no music
+  if (v === 'all') return 'all';
   if (v === 'off') return 'off';
   return 'pick';
 }
@@ -219,7 +220,7 @@ export function HighlightMusicSetting({
         value={mode}
         onChange={(e) => {
           const next = e.target.value as Mode;
-          if (next === 'all') onChange('');
+          if (next === 'all') onChange('all');
           else if (next === 'off') onChange('off');
           else setPicked(new Set(all.map((x) => x.id)));
         }}

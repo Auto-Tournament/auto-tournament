@@ -8,7 +8,7 @@
  * - highlights_min_resolution: the lowest size; the qualities between are cut
  *   from the highest (the highest alone unless set);
  * - highlights_per_player: clips per player per map (6 unless set);
- * - highlights_music: '' (every track), 'off', or the picked track ids;
+ * - highlights_music: '' (no music, the default), 'all', 'off', or the picked track ids;
  * - highlights_keep_clean: keep each clip's clean twin and overlay recipe
  *   (on unless "0");
  * - highlights_keep_masters: how long a video keeps its highest quality when
@@ -157,7 +157,7 @@ export const HIGHLIGHT_SETTINGS: ReadonlyArray<SettingDefinition & { key: Highli
       if (!/^(all|off|\d+(,\d+)*)?$/.test(trimmed)) {
         throw new Error('highlights_music must be all, off, or track ids separated by commas');
       }
-      return { value: trimmed === 'all' ? '' : trimmed, message: 'Highlight music updated' };
+      return { value: trimmed, message: 'Highlight music updated' };
     },
     applyRequest: stringRequest('highlightsMusic'),
   },

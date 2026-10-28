@@ -13,8 +13,9 @@ test.describe('reel music', () => {
     { tag: ['@api'] },
     () => {
       const library = new Set(['1', '2', '3']);
-      expect(parseMusicSetting(null, library)).toBe('all');
-      expect(parseMusicSetting('', library)).toBe('all');
+      // Unset: no music, the default.
+      expect(parseMusicSetting(null, library)).toBe('off');
+      expect(parseMusicSetting('', library)).toBe('off');
       expect(parseMusicSetting('all', library)).toBe('all');
       expect(parseMusicSetting('off', library)).toBe('off');
       expect(parseMusicSetting('1,99,3', library)).toEqual(['1', '3']);
