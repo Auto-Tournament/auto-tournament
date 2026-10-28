@@ -1,6 +1,6 @@
 /**
- * The bottom of every page: the license line (LicensedBadge) and a link to
- * Auto Tournament on one row, then Valve's trademarks and that Auto
+ * The bottom of every page: the license line (LicensedBadge), a link to
+ * support the project (Ko-fi) and one to Auto Tournament on one row, then Valve's trademarks and that Auto
  * Tournament is not affiliated with Valve (the website's footer says the
  * same), small underneath.
  */
@@ -30,13 +30,18 @@ export function SiteFooter() {
         }}
       >
         <LicensedBadge />
-        <ExternalLink
-          href="https://autotournament.gg"
-          underline="hover"
-          sx={{ color: color.ink2, fontWeight: 600 }}
-        >
-          Auto Tournament
-        </ExternalLink>
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 2 }}>
+          <ExternalLink href="https://ko-fi.com/sivert" underline="hover" sx={{ color: 'inherit' }}>
+            {t('siteFooter.support')}
+          </ExternalLink>
+          <ExternalLink
+            href="https://autotournament.gg"
+            underline="hover"
+            sx={{ color: color.ink2, fontWeight: 600 }}
+          >
+            Auto Tournament
+          </ExternalLink>
+        </Box>
       </Box>
       <Box
         component="p"
