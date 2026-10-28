@@ -579,7 +579,7 @@ export const MUSIC_SUGGESTIONS: readonly MusicSuggestion[] = [
     contentId: false,
   },
   {
-    title: "測らないで (Don't measure)",
+    title: '測らないで (Don\'t measure)',
     artist: 'yoshiyuki_tatsuya',
     genre: 'pop',
     page: 'https://pixabay.com/music/pop-%E6%B8%AC%E3%82%89%E3%81%AA%E3%81%84%E3%81%A7donx27t-measure-583230/',
