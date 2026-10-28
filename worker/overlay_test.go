@@ -99,3 +99,14 @@ func TestOverlayRecipeRoundTrip(t *testing.T) {
 		t.Fatal("twin paths")
 	}
 }
+
+func TestOverlayDrawnAtOutputSize(t *testing.T) {
+	o := clipOverlay(3840, 2160, []float64{10}, []overlayPart{{}})
+	if got := o.atMost(1080); got.Width != 1920 || got.Height != 1080 {
+		t.Fatalf("4K recipe at 1080p: %dx%d", got.Width, got.Height)
+	}
+	// Never drawn bigger than it was made.
+	if got := clipOverlay(1280, 720, []float64{10}, []overlayPart{{}}).atMost(1080); got.Width != 1280 || got.Height != 720 {
+		t.Fatalf("720p recipe at 1080p: %dx%d", got.Width, got.Height)
+	}
+}
