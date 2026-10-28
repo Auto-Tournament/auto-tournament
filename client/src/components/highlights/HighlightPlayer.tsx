@@ -65,6 +65,33 @@ export interface MusicTrack {
   contentId: boolean;
   /** Evens its loudness out with the other tracks', in dB (already in the reel's mix). */
   gainDb?: number;
+  /** 3 hype, 2 mid, 1 calm against the other tracks (api rateEnergy); absent until rated. */
+  energy?: 1 | 2 | 3;
+}
+
+/** One to three bars, lit up to `level`, as the website's reel player shows a song's energy. */
+export function EnergyBars({ level, label }: { level: number; label: string }) {
+  return (
+    <Box
+      component="span"
+      role="img"
+      aria-label={label}
+      sx={{ display: 'inline-flex', alignItems: 'flex-end', gap: '2px', flex: 'none' }}
+    >
+      {[6, 9, 12].map((h, i) => (
+        <Box
+          key={h}
+          component="span"
+          sx={{
+            width: 3,
+            height: h,
+            borderRadius: '1px',
+            bgcolor: i < level ? tokens.color.accent : withAlpha(tokens.color.ink, 0.25),
+          }}
+        />
+      ))}
+    </Box>
+  );
 }
 
 /** The genres the menu lists first, in this order; any other label after them. */
@@ -1071,16 +1098,51 @@ export const HighlightPlayer = forwardRef<HighlightPlayerHandle, HighlightPlayer
             >
               {t(`videoHighlights.player.genres.${genre}`, { defaultValue: genre })}
             </ListSubheader>,
-            ...list.map((tr) => (
-              <MenuItem key={tr.id} selected={tr.id === song?.id} onClick={() => chooseTrack(tr)}>
-                <ListItemIcon>{tr.id === song?.id && <CheckIcon size={16} />}</ListItemIcon>
-                <ListItemText
-                  primary={tr.title}
-                  secondary={tr.artist}
-                  slotProps={{ primary: { noWrap: true }, secondary: { noWrap: true } }}
-                />
-              </MenuItem>
-            )),
+            // Hype, mid, then calm, each under its own line (once rated); unrated last.
+            ...[3, 2, 1, undefined].flatMap((level) => {
+              const rows = list.filter((tr) => tr.energy === level);
+              if (rows.length === 0) return [];
+              const name = level ? t(`videoHighlights.player.energy.${level}`) : '';
+              return [
+                ...(level
+                  ? [
+                      <Box
+                        key={`${genre}-energy-${level}`}
+                        sx={{
+                          px: 2,
+                          pt: 1,
+                          pb: 0.5,
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 1,
+                          fontSize: '0.6875rem',
+                          fontWeight: 600,
+                          letterSpacing: '0.08em',
+                          textTransform: 'uppercase',
+                          color: 'text.secondary',
+                        }}
+                      >
+                        <EnergyBars level={level} label={name} />
+                        {name}
+                      </Box>,
+                    ]
+                  : []),
+                ...rows.map((tr) => (
+                  <MenuItem
+                    key={tr.id}
+                    selected={tr.id === song?.id}
+                    onClick={() => chooseTrack(tr)}
+                  >
+                    <ListItemIcon>{tr.id === song?.id && <CheckIcon size={16} />}</ListItemIcon>
+                    <ListItemText
+                      primary={tr.title}
+                      secondary={tr.artist}
+                      slotProps={{ primary: { noWrap: true }, secondary: { noWrap: true } }}
+                    />
+                  </MenuItem>
+                )),
+              ];
+            }),
           ])}
           <Box
             sx={{

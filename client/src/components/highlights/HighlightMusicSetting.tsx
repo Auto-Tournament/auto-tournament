@@ -23,7 +23,12 @@ import { PauseIcon, PlayIcon, TrashIcon, UploadSimpleIcon } from '@phosphor-icon
 import { useTranslation } from 'react-i18next';
 import { api } from '../../utils/api';
 import { ExternalLink } from '../common/ExternalLink';
-import { MUSIC_GAIN, PLAYER_VOLUME_DEFAULT, PLAYER_VOLUME_KEY } from './HighlightPlayer';
+import {
+  EnergyBars,
+  MUSIC_GAIN,
+  PLAYER_VOLUME_DEFAULT,
+  PLAYER_VOLUME_KEY,
+} from './HighlightPlayer';
 import type { MusicTrack } from './HighlightPlayer';
 
 interface Suggestion {
@@ -268,9 +273,7 @@ export function HighlightMusicSetting({
                 size="small"
                 onClick={() => listen(x.id)}
                 aria-label={t(
-                  playing === x.id
-                    ? 'highlightsPage.music.stop'
-                    : 'highlightsPage.music.listen',
+                  playing === x.id ? 'highlightsPage.music.stop' : 'highlightsPage.music.listen',
                   { title: x.title }
                 )}
               >
@@ -288,9 +291,13 @@ export function HighlightMusicSetting({
                   {[x.artist, x.genre].filter(Boolean).join(' · ')}
                 </Typography>
               </Box>
-              {x.contentId && (
-                <Chip size="small" label={t('highlightsPage.music.contentId')} />
+              {x.energy && (
+                <EnergyBars
+                  level={x.energy}
+                  label={t(`videoHighlights.player.energy.${x.energy}`)}
+                />
               )}
+              {x.contentId && <Chip size="small" label={t('highlightsPage.music.contentId')} />}
               {removing === x.id ? (
                 <>
                   <Button size="small" color="error" onClick={() => void remove(x.id)}>

@@ -13,13 +13,15 @@
  * picked, comma separated.
  */
 
-import { spawn } from 'child_process';
 import fs from 'fs';
 import path from 'path';
 import { db } from '../../config/database';
 import { DATA_DIR } from '../../config/dataDir';
 import { settingsService } from '../settingsService';
 import type { Untrusted } from '../../utils/untrusted';
+import { gainFor, measure, rateEnergy, run } from './musicMeasure';
+
+export { gainFor, MUSIC_TARGET_LUFS, rateEnergy } from './musicMeasure';
 
 /** Where highlight videos are kept (every game's recorder uploads here). */
 export const HIGHLIGHTS_DIR = path.join(DATA_DIR, 'highlights');
@@ -44,8 +46,6 @@ export function musicLevel(value: Untrusted): number {
 }
 const FADE_IN = 1.5;
 const FADE_OUT = 2.5;
-/** What every track is evened out to (EBU R128 integrated): the level the reel music was tuned at. */
-export const MUSIC_TARGET_LUFS = -9.6;
 /** An upload's limits. */
 export const MUSIC_MAX_BYTES = 40 * 1024 * 1024;
 const MIN_SECONDS = 20;
@@ -61,6 +61,8 @@ export interface MusicTrack {
   gainDb: number;
   /** Registered with YouTube Content ID (the admin says so): an upload with it can get a claim. */
   contentId: boolean;
+  /** 3 hype, 2 mid, 1 calm, against the other tracks (its genre's when it has 10 or more); absent until measured. */
+  energy?: 1 | 2 | 3;
   /** Where it came from (a page), for credit; "" when not given. */
   source: string;
 }
@@ -72,6 +74,9 @@ interface TrackRow {
   genre: string | null;
   seconds: number | string | null;
   gain_db: number | string | null;
+  flux: number | string | null;
+  centroid: number | string | null;
+  lra: number | string | null;
   content_id: number | boolean | null;
   source: string | null;
   file: string;
@@ -88,12 +93,27 @@ const toTrack = (r: TrackRow): MusicTrack => ({
   source: r.source ?? '',
 });
 
-/** Every track in the library, grouped by genre. */
+/** Every track in the library, grouped by genre, with its energy once measured. */
 export async function allTracks(): Promise<MusicTrack[]> {
   const rows = await db.queryAsync<TrackRow>(
     'SELECT * FROM highlight_music_tracks ORDER BY genre, lower(title), id'
   );
-  return rows.map(toTrack);
+  const tracks = rows.map(toTrack);
+  const measured = rows.flatMap((r, i) =>
+    r.flux == null || r.centroid == null || r.lra == null
+      ? []
+      : [
+          {
+            i,
+            genre: r.genre ?? '',
+            flux: Number(r.flux),
+            centroid: Number(r.centroid),
+            lra: Number(r.lra),
+          },
+        ]
+  );
+  rateEnergy(measured).forEach((e, k) => (tracks[measured[k].i].energy = e));
+  return tracks;
 }
 
 /** What `highlights_music` holds, read: every track, none, or the ones picked that exist. */
@@ -137,36 +157,33 @@ export function trackFile(track: { file: string }): string {
   return track.file;
 }
 
-/** Loudness (EBU R128 integrated, LUFS) and length of an audio file; null when it is not audio. */
-async function measure(file: string): Promise<{ lufs: number; seconds: number } | null> {
-  try {
-    const out = await run('ffprobe', [
-      '-v',
-      'error',
-      '-show_entries',
-      'format=duration',
-      '-of',
-      'csv=p=0',
-      file,
-    ]);
-    const seconds = Number(out.trim());
-    if (!(seconds > 0)) return null;
-    const err = await runStderr('ffmpeg', [
-      '-hide_banner',
-      '-nostats',
-      '-i',
-      file,
-      '-af',
-      'ebur128',
-      '-f',
-      'null',
-      '-',
-    ]);
-    const m = [...err.matchAll(/I:\s+(-?[\d.]+) LUFS/g)].pop();
-    return { seconds, lufs: m ? Number(m[1]) : MUSIC_TARGET_LUFS };
-  } catch {
-    return null;
+/** Mixes made with track `id` (reels, downloads): stale once its level changes. */
+function dropMixes(id: string): void {
+  for (const f of fs.existsSync(MIX_DIR) ? fs.readdirSync(MIX_DIR) : []) {
+    if (f.includes(`-m${id}-`)) fs.rmSync(path.join(MIX_DIR, f), { force: true });
   }
+}
+
+/**
+ * Measures the tracks added before loudness above 200 Hz and energy were
+ * measured (once: they keep their numbers after), and re-levels them.
+ */
+export async function measureOldTracks(): Promise<number> {
+  const rows = await db.queryAsync<{ id: number; file: string }>(
+    'SELECT id, file FROM highlight_music_tracks WHERE flux IS NULL ORDER BY id'
+  );
+  let done = 0;
+  for (const r of rows) {
+    const m = await measure(path.join(MUSIC_DIR, r.file));
+    if (!m) continue;
+    await db.runAsync(
+      'UPDATE highlight_music_tracks SET gain_db = ?, hf_lufs = ?, flux = ?, centroid = ?, lra = ? WHERE id = ?',
+      [gainFor(m.hfLufs), m.hfLufs, m.flux, m.centroid, m.lra, r.id]
+    );
+    dropMixes(String(r.id));
+    done++;
+  }
+  return done;
 }
 
 export class MusicUploadError extends Error {}
@@ -208,10 +225,9 @@ export async function addTrack(
     fs.rmSync(file, { force: true });
     throw new MusicUploadError(`A track has to be at least ${MIN_SECONDS} seconds long.`);
   }
-  const gainDb = Math.max(-12, Math.min(12, Math.round((MUSIC_TARGET_LUFS - m.lufs) * 10) / 10));
   const row = await db.queryOneAsync<TrackRow>(
-    `INSERT INTO highlight_music_tracks (title, artist, genre, source, content_id, file, seconds, gain_db)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING *`,
+    `INSERT INTO highlight_music_tracks (title, artist, genre, source, content_id, file, seconds, gain_db, hf_lufs, flux, centroid, lra)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING *`,
     [
       meta.title.slice(0, 120),
       meta.artist.slice(0, 120),
@@ -220,10 +236,14 @@ export async function addTrack(
       meta.contentId ? 1 : 0,
       name,
       Math.round(m.seconds),
-      gainDb,
+      gainFor(m.hfLufs),
+      m.hfLufs,
+      m.flux,
+      m.centroid,
+      m.lra,
     ]
   );
-  return toTrack(row!);
+  return (await allTracks()).find((t) => t.id === String(row!.id)) ?? toTrack(row!);
 }
 
 /**
@@ -294,36 +314,8 @@ export async function removeTrack(id: string): Promise<boolean> {
   if (!t) return false;
   await db.runAsync('DELETE FROM highlight_music_tracks WHERE id = ?', [Number(id)]);
   fs.rmSync(t.file, { force: true });
-  for (const f of fs.existsSync(MIX_DIR) ? fs.readdirSync(MIX_DIR) : []) {
-    if (f.includes(`-m${id}-`)) fs.rmSync(path.join(MIX_DIR, f), { force: true });
-  }
+  dropMixes(id);
   return true;
-}
-
-function runStderr(cmd: string, args: string[]): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const p = spawn(cmd, args, { stdio: ['ignore', 'ignore', 'pipe'] });
-    let err = '';
-    p.stderr.on('data', (d) => (err += d));
-    p.on('error', reject);
-    p.on('close', (code) =>
-      code === 0 ? resolve(err) : reject(new Error(`${cmd} exited ${code}`))
-    );
-  });
-}
-
-function run(cmd: string, args: string[]): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const p = spawn(cmd, args, { stdio: ['ignore', 'pipe', 'pipe'] });
-    let out = '';
-    let err = '';
-    p.stdout.on('data', (d) => (out += d));
-    p.stderr.on('data', (d) => (err = (err + d).slice(-2000)));
-    p.on('error', reject);
-    p.on('close', (code) =>
-      code === 0 ? resolve(out) : reject(new Error(`${cmd} exited ${code}: ${err}`))
-    );
-  });
 }
 
 /** The video's length in seconds and whether it has sound. */
@@ -372,7 +364,8 @@ export function musicFilter(
   return (
     `aresample=48000,aformat=channel_layouts=stereo,atrim=duration=${seconds.toFixed(3)},asetpts=PTS-STARTPTS,` +
     // The track's own loudness evened out first (MusicTrack.gainDb), then the reel's level.
-    `${gainDb ? `volume=${gainDb.toFixed(1)}dB,` : ''}volume=${gain},afade=t=in:d=${FADE_IN},afade=t=out:st=${Math.max(0, seconds - FADE_OUT).toFixed(3)}:d=${FADE_OUT}`
+    // A raised track gets a limiter at -1 dBFS, no auto level, so its peaks don't clip.
+    `${gainDb ? `volume=${gainDb.toFixed(1)}dB,` : ''}${gainDb > 0 ? 'alimiter=limit=0.891:level=0,' : ''}volume=${gain},afade=t=in:d=${FADE_IN},afade=t=out:st=${Math.max(0, seconds - FADE_OUT).toFixed(3)}:d=${FADE_OUT}`
   );
 }
 
