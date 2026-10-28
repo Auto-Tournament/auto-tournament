@@ -3,6 +3,7 @@ import { setupTestContext } from '../helpers/setup';
 import { createTestTeams } from '../helpers/teams';
 import { createTestServer } from '../helpers/servers';
 import { findMatchByTeams } from '../helpers/matches';
+import { getAuthHeader } from '../helpers/auth';
 import type { Team } from '../helpers/teams';
 import { sendReadyUpEvents, mapResult as readyUpMapResult } from '../helpers/readyUp';
 
@@ -38,22 +39,21 @@ const MAPS = [
   'de_nuke',
 ];
 
-/** Create and start a BO1 tournament with overtime explicitly disabled. */
+/** Create and start a BO3 tournament with overtime explicitly disabled. */
 async function startTournamentWithoutOvertime(
   request: APIRequestContext,
   teams: Team[],
-  overtimeSegments?: number
+  type: 'round_robin' | 'single_elimination' = 'round_robin'
 ) {
   await request.delete('/api/tournament');
   const created = await request.post('/api/tournament', {
     data: {
       name: `Draw Test ${Date.now()}`,
-      type: 'single_elimination',
+      type,
       format: 'bo3',
       maps: MAPS,
       teamIds: teams.map((t) => t.id),
       overtimeMode: 'disabled',
-      ...(overtimeSegments === undefined ? {} : { overtimeSegments }),
     },
   });
   expect(created.ok(), `tournament create failed: ${await created.text()}`).toBe(true);
@@ -127,6 +127,28 @@ test.describe.serial('Drawn match with overtime disabled', () => {
           { timeout: 15000, message: 'a drawn decider should complete the series' }
         )
         .toBe('completed');
+    }
+  );
+
+  test(
+    'an elimination match plays overtime on a tie, even with overtime off (#419)',
+    { tag: ['@api', '@regression'] },
+    async ({ request }) => {
+      await startTournamentWithoutOvertime(request, [team1, team2], 'single_elimination');
+      const slug = (await findMatchByTeams(request, team1.id, team2.id))!.slug;
+
+      const res = await request.get(`/api/test/fleet/assign-config/${slug}`, {
+        headers: getAuthHeader(),
+      });
+      expect(res.ok(), await res.text()).toBe(true);
+      const body = (await res.json()) as {
+        config?: { rules?: { overtime?: { enabled?: boolean } } };
+        served?: { overtimeMode?: string };
+      };
+      const enabled = body.config
+        ? body.config.rules?.overtime?.enabled
+        : body.served?.overtimeMode === 'enabled';
+      expect(enabled).toBe(true);
     }
   );
 });
