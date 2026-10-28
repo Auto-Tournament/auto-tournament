@@ -157,7 +157,7 @@ func isTapGun(weapon string) bool {
 // A flick: the killer's aim swung at least flickDegree in the flickSec before
 // the kill. A snap: the victim was in his view for less than snapSec.
 const (
-	flickDegree = 60.0
+	flickDegree = 20.0 // pros pre-aim: median 2°, 20°+ on 3 of 121 kills in a pro Mirage
 	flickSec    = 0.3
 	snapSec     = 0.3
 	movingSpeed = 150.0 // units a second: walking is 130 or less
