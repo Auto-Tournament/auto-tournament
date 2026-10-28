@@ -256,3 +256,14 @@ export async function readHighlightSettings(
     ...(await readReelLimits((key) => get(key as HighlightSettingKey))),
   };
 }
+
+/**
+ * The logo on highlight videos. Free and unlicensed use always shows it; only
+ * a paid (commercial) licence can turn it off with highlights_watermark "0".
+ */
+export async function highlightsWatermark(): Promise<boolean> {
+  const { settingsService } = await import('../settingsService');
+  if ((await settingsService.getSetting('highlights_watermark'))?.trim() !== '0') return true;
+  const { licenseService } = await import('../license/licenseService');
+  return (await licenseService.getPublicBadge()).use !== 'commercial';
+}

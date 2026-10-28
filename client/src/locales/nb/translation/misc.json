@@ -1082,7 +1082,8 @@
     },
     "watermark": {
       "label": "Auto Tournament-logo på høydepunkt-videoene",
-      "description": "Vises nede til høyre som «Played on Auto Tournament», slik introen til sammendragene slutter. Det hjelper oss mye om du lar den stå på."
+      "description": "Vises nede til høyre som «Played on Auto Tournament», slik introen til sammendragene slutter. Det hjelper oss mye om du lar den stå på.",
+      "paidOnly": "Vises nede til høyre som «Played on Auto Tournament». Alltid på ved gratis bruk. Med en betalt lisens kan du slå den av."
     },
     "perPlayer": {
       "label": "Klipp per spiller per kart",

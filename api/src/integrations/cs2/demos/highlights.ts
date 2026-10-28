@@ -742,8 +742,7 @@ export async function jobFor(
        LEFT JOIN tournament tr ON tr.id = m.tournament_id`,
     [best.match_slug, best.map_number, best.player_id, best.player_id, best.match_slug]
   );
-  const { settingsService } = await import('../../../services/settingsService');
-  const watermark = (await settingsService.getSetting('highlights_watermark'))?.trim() !== '0';
+  const watermark = await (await import('../../../services/highlights/settings')).highlightsWatermark();
   const done = await db.queryAsync<{ id: number; start_tick: number; markers: string | null }>(
     `SELECT id, start_tick, markers FROM cs2_highlights
       WHERE match_slug = ? AND map_number = ? AND player_id = ? AND status = 'done' AND kind <> 'funny'
@@ -1627,7 +1626,6 @@ export async function claimMatchReel(recorder: string): Promise<MatchReelJob | n
       WHERE m.slug = ?`,
     [Number(row.map_number), Number(row.map_number), Number(row.map_number), row.match_slug]
   );
-  const { settingsService } = await import('../../../services/settingsService');
   return {
     kind: 'match_reel',
     intro: {
@@ -1640,7 +1638,7 @@ export async function claimMatchReel(recorder: string): Promise<MatchReelJob | n
     matchSlug: row.match_slug,
     mapNumber: Number(row.map_number),
     match: matchLine(extra?.team1 ?? null, extra?.team2 ?? null, extra?.tournament ?? null),
-    watermark: (await settingsService.getSetting('highlights_watermark'))?.trim() !== '0',
+    watermark: await (await import('../../../services/highlights/settings')).highlightsWatermark(),
     quality: await readHighlightQuality(),
     clips,
     upload: `/api/game/cs2/recorder/match-reels/${encodeURIComponent(row.match_slug)}/${Number(row.map_number)}`,

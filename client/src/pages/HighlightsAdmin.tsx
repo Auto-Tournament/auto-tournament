@@ -17,6 +17,7 @@ import {
   type MatchmakingHighlightValues,
 } from './MatchmakingHighlightsSetting';
 import { useSnackbar } from '../contexts/SnackbarContext';
+import { useLicenseStatus } from '../hooks/useLicenseStatus';
 import { useInstalledIntegrations } from '../integrations/registry';
 import { api } from '../utils/api';
 import { pageTitle } from '../utils/pageTitle';
@@ -97,6 +98,8 @@ function HighlightSettings() {
   const { t } = useTranslation();
   const { showSuccess, showError } = useSnackbar();
   const [vals, setVals] = useState<HighlightValues | null>(null);
+  // Only a paid licence can take the logo off (api highlightsWatermark).
+  const canHideLogo = useLicenseStatus().status?.standing?.paid === true;
 
   useEffect(() => {
     api
@@ -181,11 +184,12 @@ function HighlightSettings() {
       <Box>
         <SwitchRow
           label={t('highlightsPage.watermark.label')}
-          checked={vals.highlightsWatermark}
+          checked={vals.highlightsWatermark || !canHideLogo}
+          disabled={!canHideLogo}
           onChange={(e) => void save({ highlightsWatermark: e.target.checked })}
           size="small"
           inputProps={{ 'data-testid': 'highlights-watermark' } as Record<string, string>}
-          help={t('highlightsPage.watermark.description')}
+          help={t(canHideLogo ? 'highlightsPage.watermark.description' : 'highlightsPage.watermark.paidOnly')}
         />
       </Box>
       <MatchmakingHighlightsSetting vals={vals} save={(patch) => void save(patch)} />

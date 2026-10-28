@@ -1082,7 +1082,8 @@
     },
     "watermark": {
       "label": "Auto Tournament logo on highlight videos",
-      "description": "Shown in the lower right as “Played on Auto Tournament”, the way the reels’ intros end. Leaving it on helps us a lot."
+      "description": "Shown in the lower right as “Played on Auto Tournament”, the way the reels’ intros end. Leaving it on helps us a lot.",
+      "paidOnly": "Shown in the lower right as “Played on Auto Tournament”. Always on for free use; a paid license lets you turn it off."
     },
     "perPlayer": {
       "label": "Clips per player per map",

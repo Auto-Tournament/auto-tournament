@@ -212,14 +212,13 @@ async function reelAgain(file: string, now: number): Promise<PlayerReelJob | nul
   );
   const name = extra?.name ?? reel.player_id;
   const teams = [extra?.team1, extra?.team2].filter(Boolean).join(' vs ');
-  const { settingsService } = await import('../../../services/settingsService');
   const route = `/api/game/cs2/recorder/reels/${encodeURIComponent(reel.match_slug)}/${Number(reel.map_number)}/${encodeURIComponent(reel.player_id)}`;
   return {
     kind: 'player_reel',
     matchSlug: reel.match_slug,
     mapNumber: Number(reel.map_number),
     match: [teams, extra?.tournament].filter(Boolean).join(' · '),
-    watermark: (await settingsService.getSetting('highlights_watermark'))?.trim() !== '0',
+    watermark: await (await import('../../../services/highlights/settings')).highlightsWatermark(),
     intro: {
       kicker: 'Player reel',
       title: name,

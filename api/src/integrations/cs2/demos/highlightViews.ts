@@ -854,7 +854,6 @@ export async function claimTournamentReel(recorder: string): Promise<TournamentR
   const ids = pickTournamentReel(clips, limits.tournamentReelMax, limits.tournamentReelPerPlayer);
   const byId = new Map(clips.map((c) => [c.id, c]));
   const name = clips[0]?.match.tournament ?? null;
-  const { settingsService } = await import('../../../services/settingsService');
   const span = await db.queryOneAsync<{
     teams: number | string;
     matches: number | string;
@@ -887,7 +886,7 @@ export async function claimTournamentReel(recorder: string): Promise<TournamentR
     },
     tournamentId,
     match: name ?? '',
-    watermark: (await settingsService.getSetting('highlights_watermark'))?.trim() !== '0',
+    watermark: await (await import('../../../services/highlights/settings')).highlightsWatermark(),
     quality: await readHighlightQuality(),
     clips: ids.map((id) => {
       const c = byId.get(id)!;
