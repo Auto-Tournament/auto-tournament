@@ -16,6 +16,7 @@ import {
   reelReady,
   pickMapClips,
   type Moment,
+  stageLabel,
 } from '../../api/src/integrations/cs2/demos/highlights';
 import { pickTournamentReel } from '../../api/src/integrations/cs2/demos/highlightViews';
 import { withinBudget } from '../../api/src/integrations/cs2/demos/highlightPolicy';
@@ -448,4 +449,11 @@ test('an unset matchmaking clip count is the default, not "all"', { tag: ['@api'
   expect(oneOf('0', MM_CLIPS, 3)).toBe(0);
   expect(oneOf('5', MM_CLIPS, 3)).toBe(5);
   expect(oneOf('7', MM_CLIPS, 3)).toBe(3);
+});
+
+test('an imported or manual match (round 0) has no stage on its clips', { tag: ['@api'] }, () => {
+  expect(stageLabel('single_elimination', null, 0, 3)).toBeNull();
+  expect(stageLabel(null, null, 0, null)).toBeNull();
+  expect(stageLabel('single_elimination', null, 3, 3)).toBe('Final');
+  expect(stageLabel('swiss', null, 2, 5)).toBe('Round 2');
 });
