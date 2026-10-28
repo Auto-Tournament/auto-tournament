@@ -118,6 +118,18 @@ func loadOverlay(path string) (overlayRecipe, error) {
 	return o, nil
 }
 
+// atMost is o drawn no taller than height (the card, the kill feed and the
+// wipes scale with its size): a recipe made for a 4K clean twin is dressed at
+// the 1080p it goes out at, not drawn and blurred at 4K and scaled down after
+// (a 10 s clip took 2 min).
+func (o overlayRecipe) atMost(height int) overlayRecipe {
+	if height <= 0 || o.Height <= height {
+		return o
+	}
+	o.Width, o.Height = (o.Width*height/o.Height)&^1, height&^1
+	return o
+}
+
 // clipOverlay is a clip's recipe from its pieces (in order, each `durations`
 // long, blending into the next over reelCrossfade).
 func clipOverlay(w, h int, durations []float64, parts []overlayPart) overlayRecipe {

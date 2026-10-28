@@ -315,7 +315,9 @@ func videoFilter(o overlay) string {
 	// The game, captured smaller (720p for a 1080p clip: CS2 then has the
 	// headroom to pace its frames evenly), scaled up to the clip's size; the
 	// card and kill feed are drawn at that size, sharp.
-	fmt.Fprintf(&b, "[0:v]scale=%d:%d:flags=lanczos,format=yuv420p", o.width, o.height)
+	// At the output's frame rate first: a 240 fps clean twin going out at 60
+	// was blurred and overlaid four times as often as it is shown.
+	fmt.Fprintf(&b, "[0:v]fps=%g,scale=%d:%d:flags=lanczos,format=yuv420p", outputFPS, o.width, o.height)
 	if o.clean {
 		b.WriteString(",split[base][clean]")
 	} else {

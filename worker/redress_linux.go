@@ -43,6 +43,7 @@ func (r *recorder) dress(clean, recipe, out string, alone bool) (float64, error)
 		start = standaloneStart(o)
 		o = withoutCards(o)
 	}
+	o = o.atMost(outputHeight)
 	if err := r.overlayTools(); err != nil {
 		return 0, err
 	}
