@@ -39,7 +39,6 @@ test.describe('Highlight recorder routes', () => {
       const { job } = await res.json();
       expect(['player', 'match_reel']).toContain(job.kind);
       expect(typeof job.matchSlug).toBe('string');
-      expect(typeof job.watermark).toBe('boolean');
       // Hand it back so a real recorder is not left waiting on this one.
       if (job.kind === 'player') {
         expect(Array.isArray(job.moments)).toBe(true);

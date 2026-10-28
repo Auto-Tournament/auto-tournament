@@ -44,7 +44,6 @@ export interface TeamReelJob {
   matchSlug: string;
   teamId: string;
   match: string;
-  watermark: boolean;
   quality: HighlightQuality;
   clips: MatchReelClip[];
   upload: string;
@@ -196,7 +195,6 @@ export async function claimTeamReel(recorder: string): Promise<TeamReelJob | nul
       WHERE m.slug = ?`,
     [row.match_slug]
   );
-  const { settingsService } = await import('../../../services/settingsService');
   const enc = encodeURIComponent;
   return {
     kind: 'team_reel',
@@ -211,7 +209,6 @@ export async function claimTeamReel(recorder: string): Promise<TeamReelJob | nul
     matchSlug: row.match_slug,
     teamId: row.team_id,
     match: [team, opponent ? `vs ${opponent}` : null].filter(Boolean).join(' '),
-    watermark: (await settingsService.getSetting('highlights_watermark'))?.trim() !== '0',
     quality: await readHighlightQuality(),
     clips,
     upload: `/api/game/cs2/recorder/team-reels/${enc(row.match_slug)}/${enc(row.team_id)}`,

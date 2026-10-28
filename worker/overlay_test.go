@@ -8,7 +8,7 @@ import (
 )
 
 func TestClipOverlayPartsBlend(t *testing.T) {
-	o := clipOverlay(1920, 1080, true, []float64{10, 6}, []overlayPart{{Card: &cardSpec{Name: "a"}}, {Settled: true}})
+	o := clipOverlay(1920, 1080, []float64{10, 6}, []overlayPart{{Card: &cardSpec{Name: "a"}}, {Settled: true}})
 	if len(o.Parts) != 2 || o.Parts[1].Start != 10-reelCrossfade || o.Parts[0].FadeOut != reelCrossfade || o.Parts[1].FadeIn != reelCrossfade {
 		t.Fatalf("parts %+v", o.Parts)
 	}
@@ -21,8 +21,8 @@ func TestClipOverlayPartsBlend(t *testing.T) {
 }
 
 func TestReelOverlayWipesAndOutro(t *testing.T) {
-	a := clipOverlay(1920, 1080, false, []float64{8}, []overlayPart{{}})
-	b := clipOverlay(1920, 1080, true, []float64{5, 5}, []overlayPart{{}, {}})
+	a := clipOverlay(1920, 1080, []float64{8}, []overlayPart{{}})
+	b := clipOverlay(1920, 1080, []float64{5, 5}, []overlayPart{{}, {}})
 	o := reelOverlay([]overlayRecipe{a, b}, []float64{4.45, 12.5}, 30, true)
 	if len(o.Parts) != 3 || o.Parts[1].Start != 12.5 || o.Parts[2].Start != 12.5+5-reelCrossfade {
 		t.Fatalf("parts %+v", o.Parts)
@@ -43,7 +43,7 @@ func TestReelOverlayWipesAndOutro(t *testing.T) {
 	if last := o.Parts[2]; last.FadeOut != outroFade || math.Abs(last.Duration-(5+outroHold)) > 1e-9 {
 		t.Fatalf("outro %+v", last)
 	}
-	if !o.Logo || o.Width != 1920 || o.Duration != 30 {
+	if o.Width != 1920 || o.Duration != 30 {
 		t.Fatalf("recipe %+v", o)
 	}
 }
@@ -61,7 +61,7 @@ func TestOverlayRecipeRoundTrip(t *testing.T) {
 	avatar := image.NewRGBA(image.Rect(0, 0, 8, 8))
 	avatar.Pix[3] = 255
 	c := captionCard{name: "d1ledez", team: "Norsk Tipping", opponent: "BETBOOM", mapName: "Inferno", round: 7, kind: "4K", avatar: avatar}
-	o := clipOverlay(1280, 720, true, []float64{12}, []overlayPart{{Card: specOf(c), Feed: []feedKill{{At: 3, Killer: "d1ledez", Victim: "x", Weapon: "AK-47", Own: true}}}})
+	o := clipOverlay(1280, 720, []float64{12}, []overlayPart{{Card: specOf(c), Feed: []feedKill{{At: 3, Killer: "d1ledez", Victim: "x", Weapon: "AK-47", Own: true}}}})
 	path := filepath.Join(t.TempDir(), "clip.overlay.json")
 	if err := o.save(path); err != nil {
 		t.Fatal(err)

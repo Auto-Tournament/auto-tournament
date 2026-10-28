@@ -28,7 +28,6 @@ type overlayRecipe struct {
 	Width    int           `json:"width"`  // the size the overlay is drawn for (the video's)
 	Height   int           `json:"height"` // (the card and the feed scale with it)
 	Duration float64       `json:"duration"`
-	Logo     bool          `json:"logo"` // the Auto Tournament logo in the corner
 	Parts    []overlayPart `json:"parts"`
 }
 
@@ -121,8 +120,8 @@ func loadOverlay(path string) (overlayRecipe, error) {
 
 // clipOverlay is a clip's recipe from its pieces (in order, each `durations`
 // long, blending into the next over reelCrossfade).
-func clipOverlay(w, h int, logo bool, durations []float64, parts []overlayPart) overlayRecipe {
-	o := overlayRecipe{Version: overlayVersion, Width: w, Height: h, Logo: logo}
+func clipOverlay(w, h int, durations []float64, parts []overlayPart) overlayRecipe {
+	o := overlayRecipe{Version: overlayVersion, Width: w, Height: h}
 	at := 0.0
 	for i := range parts {
 		p := parts[i]
@@ -152,7 +151,6 @@ func reelOverlay(clips []overlayRecipe, starts []float64, length float64, outro 
 		if i == 0 {
 			o.Width, o.Height = c.Width, c.Height
 		}
-		o.Logo = o.Logo || c.Logo
 		for j, p := range c.Parts {
 			p.Start += starts[i]
 			// Every clip but a reel's first (unless the intro wipes to it) comes in behind the wipe.

@@ -82,7 +82,6 @@ export interface PlayerReelJob {
   matchSlug: string;
   mapNumber: number;
   match: string;
-  watermark: boolean;
   intro: { kicker: string; title: string; meta: string; map: string; date: string };
   clips: Array<{
     highlightId: number;
@@ -212,14 +211,12 @@ async function reelAgain(file: string, now: number): Promise<PlayerReelJob | nul
   );
   const name = extra?.name ?? reel.player_id;
   const teams = [extra?.team1, extra?.team2].filter(Boolean).join(' vs ');
-  const { settingsService } = await import('../../../services/settingsService');
   const route = `/api/game/cs2/recorder/reels/${encodeURIComponent(reel.match_slug)}/${Number(reel.map_number)}/${encodeURIComponent(reel.player_id)}`;
   return {
     kind: 'player_reel',
     matchSlug: reel.match_slug,
     mapNumber: Number(reel.map_number),
     match: [teams, extra?.tournament].filter(Boolean).join(' · '),
-    watermark: (await settingsService.getSetting('highlights_watermark'))?.trim() !== '0',
     intro: {
       kicker: 'Player reel',
       title: name,

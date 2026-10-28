@@ -28,7 +28,7 @@ package main
 //	AT_AUDIO_TARGET  the PipeWire sink CS2 plays into (default: the default sink)
 //	AT_KEEP_SCRATCH  set to keep each moment's raw frames, sound and logs
 //
-// record-file only: AT_WATERMARK=0 leaves the logo out; AT_TEAMS ("A vs B"),
+// record-file only: AT_TEAMS ("A vs B"),
 // AT_MAP and AT_TAG (the corner tag) go on the caption card; AT_AVATAR is an
 // image file for the player's avatar.
 
@@ -75,10 +75,7 @@ type recordJob struct {
 	Tournament string `json:"tournament"`
 	Stage      string `json:"stage"`
 	// AvatarURL is the player's avatar: absolute, or a path on the platform.
-	AvatarURL string `json:"avatarUrl"`
-	// Watermark: the Auto Tournament logo on each video (the platform's
-	// setting; on when it says nothing).
-	Watermark *bool    `json:"watermark"`
+	AvatarURL string   `json:"avatarUrl"`
 	Moments   []moment `json:"moments"`
 	// Recorded clips of this player on this map from earlier jobs (a retry
 	// records only what failed): the reel joins them in too.
@@ -427,14 +424,13 @@ func (mj *mapJob) moments() int {
 // clipLook is what goes on every clip of a job: the caption card's player,
 // match and avatar, and whether the logo shows.
 type clipLook struct {
-	name      string
-	teams     string
-	team      string // the player's own; "" when unknown (the card shows teams then)
-	opponent  string // who they played; "" when unknown
-	mapName   string
-	tag       string      // the corner tag: "NTLAN AUTUMN CUP · SEMI-FINAL"
-	avatar    image.Image // round, or nil
-	watermark bool
+	name     string
+	teams    string
+	team     string // the player's own; "" when unknown (the card shows teams then)
+	opponent string // who they played; "" when unknown
+	mapName  string
+	tag      string      // the corner tag: "NTLAN AUTUMN CUP · SEMI-FINAL"
+	avatar   image.Image // round, or nil
 	// For the kill feed: the player's Steam ID and the map's replay (its kills).
 	playerID string
 	replay   *Replay
@@ -781,7 +777,7 @@ func (r *recorder) recordMoment(g *game, look clipLook, name string, m moment, o
 			}
 			durations[i] = d
 		}
-		if err := clipOverlay(width, height, look.watermark, durations, parts).save(overlayPathOf(out)); err != nil {
+		if err := clipOverlay(width, height, durations, parts).save(overlayPathOf(out)); err != nil {
 			return err
 		}
 		cleans := make([]string, len(pieces))
@@ -913,7 +909,7 @@ func (r *recorder) recordWindow(g *game, look clipLook, card *cardRender, name s
 	width, height := g.width, g.height
 	return &windowCut{segs: segs, kept: kept, rows: rows}, func() error {
 		encode := func(blur string) error {
-			return r.encodeMoment(raws, frames, width, height, wav, audioAt, length, segs, look.watermark, card, feed, out, cleanPathOf(out), blur)
+			return r.encodeMoment(raws, frames, width, height, wav, audioAt, length, segs, card, feed, out, cleanPathOf(out), blur)
 		}
 		err := encode(gpuBlur(r.encoder))
 		if err != nil && strings.Contains(err.Error(), "VK_ERROR_OUT_OF_DEVICE_MEMORY") {
@@ -937,7 +933,7 @@ type windowCut struct {
 // encodeMoment streams the timeline's frames into ffmpeg at outputFPS with the
 // sound, the slow motion on both, and the caption.
 func (r *recorder) encodeMoment(raws []string, frames []frameRef, w, h int, wav string, audioAt, length float64,
-	segs []segment, watermark bool, card *cardRender, feed *feedRender, out, clean, blur string) error {
+	segs []segment, card *cardRender, feed *feedRender, out, clean, blur string) error {
 	files := make([]*os.File, len(raws))
 	for i, p := range raws {
 		f, err := os.Open(p)
@@ -983,10 +979,9 @@ func (r *recorder) encodeMoment(raws []string, frames []frameRef, w, h int, wav 
 			"-framerate", fmt.Sprint(cardFPS), "-i", feedPipe)
 		o.feed, o.feedAt, next = next, feed.region, next+1
 	}
-	if watermark {
-		args = append(args, "-loop", "1", "-framerate", fmt.Sprint(outputFPS), "-i", r.logo)
-		o.logo = next
-	}
+	// The logo is on every video, always.
+	args = append(args, "-loop", "1", "-framerate", fmt.Sprint(outputFPS), "-i", r.logo)
+	o.logo = next
 	focusAt := -1.0
 	if len(o.focus) > 0 {
 		focusAt = o.focus[0]
@@ -1240,8 +1235,7 @@ func (r *recorder) upload(ctx context.Context, path, route string, headers map[s
 // lookFor is what one player's clips show: the caption card and the corner.
 func (r *recorder) lookFor(ctx context.Context, j *recordJob) clipLook {
 	look := clipLook{name: j.PlayerName, teams: j.Teams, team: j.Team, opponent: j.Opponent,
-		mapName: mapDisplayName(j.MapName), tag: cornerTag(j.Tournament, j.Stage),
-		watermark: j.Watermark == nil || *j.Watermark}
+		mapName: mapDisplayName(j.MapName), tag: cornerTag(j.Tournament, j.Stage)}
 	if look.teams == "" {
 		// An older platform: its match line is "teams · tournament".
 		look.teams = strings.SplitN(j.Match, " · ", 2)[0]
@@ -1945,7 +1939,7 @@ func recordDemo(args []string) error {
 		}
 		look := clipLook{name: name, teams: env("AT_TEAMS", ""), team: p.Team, opponent: p.Opponent,
 			mapName: mapDisplayName(env("AT_MAP", "")), tag: env("AT_TAG", ""),
-			watermark: env("AT_WATERMARK", "1") != "0", replay: replay, playerID: player}
+			replay: replay, playerID: player}
 		for _, m := range p.Moments {
 			shots = append(shots, shot{m: m, name: name, look: look})
 		}
@@ -1997,7 +1991,7 @@ func recordFile(args []string) error {
 		return err
 	}
 	look := clipLook{name: name, teams: env("AT_TEAMS", ""), team: env("AT_TEAM", ""), opponent: env("AT_OPPONENT", ""),
-		mapName: mapDisplayName(env("AT_MAP", "")), tag: env("AT_TAG", ""), watermark: env("AT_WATERMARK", "1") != "0"}
+		mapName: mapDisplayName(env("AT_MAP", "")), tag: env("AT_TAG", "")}
 	if file := env("AT_AVATAR", ""); file != "" {
 		src, err := os.ReadFile(file)
 		if err != nil {

@@ -1044,7 +1044,6 @@ const ADDED_SETTINGS: Array<{ key: string; field: string | null }> = [
   // The connect panel recommends LAN to everyone (CS2 fleet/connectChoice.ts).
   { key: 'connect_prefer_lan', field: 'connectPreferLan' },
   // The highlight settings, core's (services/highlights/settings.ts).
-  { key: 'highlights_watermark', field: 'highlightsWatermark' },
   // Clips per player per map (demos/highlights.ts).
   { key: 'highlights_per_player', field: 'highlightsPerPlayer' },
   { key: 'highlights_resolution', field: 'highlightsResolution' },

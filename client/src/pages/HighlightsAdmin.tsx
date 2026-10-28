@@ -9,7 +9,7 @@ import { useEffect, useState } from 'react';
 import { Box, CircularProgress, Tab, Tabs, TextField, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
-import { PageHead, SwitchRow } from '../components/common/ui';
+import { PageHead } from '../components/common/ui';
 import { HighlightMusicSetting } from '../components/highlights/HighlightMusicSetting';
 import { HighlightQualitySetting } from './HighlightQualitySetting';
 import {
@@ -82,7 +82,6 @@ export default function HighlightsAdmin() {
 }
 
 interface HighlightValues extends MatchmakingHighlightValues {
-  highlightsWatermark: boolean;
   highlightsPerPlayer: number | null;
   highlightsResolution: number;
   highlightsMinResolution: number;
@@ -105,7 +104,6 @@ function HighlightSettings() {
         const s = res.settings ?? {};
         const highest = typeof s.highlightsResolution === 'number' ? s.highlightsResolution : 720;
         setVals({
-          highlightsWatermark: s.highlightsWatermark !== false,
           highlightsPerPlayer:
             typeof s.highlightsPerPlayer === 'number' ? s.highlightsPerPlayer : 6,
           highlightsResolution: highest,
@@ -178,16 +176,6 @@ function HighlightSettings() {
         size="small"
         sx={{ maxWidth: 320 }}
       />
-      <Box>
-        <SwitchRow
-          label={t('highlightsPage.watermark.label')}
-          checked={vals.highlightsWatermark}
-          onChange={(e) => void save({ highlightsWatermark: e.target.checked })}
-          size="small"
-          inputProps={{ 'data-testid': 'highlights-watermark' } as Record<string, string>}
-          help={t('highlightsPage.watermark.description')}
-        />
-      </Box>
       <MatchmakingHighlightsSetting vals={vals} save={(patch) => void save(patch)} />
       <Box data-testid="highlights-reel-sizes">
         <Typography variant="subtitle2">{t('highlightsPage.reels.title')}</Typography>

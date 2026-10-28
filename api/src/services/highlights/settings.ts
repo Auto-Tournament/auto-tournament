@@ -8,7 +8,6 @@
  * - highlights_min_resolution: the lowest size; the qualities between are cut
  *   from the highest (the highest alone unless set);
  * - highlights_per_player: clips per player per map (6 unless set);
- * - highlights_watermark: the Auto Tournament logo (on unless "0");
  * - highlights_music: '' (every track), 'off', or the picked track ids;
  * - highlights_keep_clean: keep each clip's clean twin and overlay recipe
  *   (on unless "0");
@@ -44,7 +43,6 @@ export const MM_CLIPS = [0, 1, 2, 3, 5, 10] as const;
 export const MM_MIN_KILLS = [2, 3, 4, 5] as const;
 
 export type HighlightSettingKey =
-  | 'highlights_watermark'
   | 'highlights_per_player'
   | 'highlights_resolution'
   | 'highlights_min_resolution'
@@ -124,13 +122,6 @@ function choice(
 }
 
 export const HIGHLIGHT_SETTINGS: ReadonlyArray<SettingDefinition & { key: HighlightSettingKey }> = [
-  {
-    key: 'highlights_watermark',
-    field: 'highlightsWatermark',
-    order: 370,
-    normalize: normalizeFlag('Auto Tournament logo on highlight videos'),
-    applyRequest: booleanRequest('highlightsWatermark'),
-  },
   {
     key: 'highlights_per_player',
     field: 'highlightsPerPlayer',
@@ -239,7 +230,6 @@ export async function readHighlightSettings(
   const fps = highlightFps(Number(await get('highlights_fps')));
   const mbps = Number(await get('highlights_bitrate'));
   return {
-    highlightsWatermark: (await get('highlights_watermark'))?.trim() !== '0',
     highlightsPerPlayer: Number(await get('highlights_per_player')) || 6,
     highlightsResolution: height,
     highlightsMinResolution:

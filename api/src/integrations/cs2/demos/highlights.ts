@@ -413,8 +413,6 @@ export interface RecordJob {
   stage: string | null;
   /** The player's avatar (absolute, or a path on this platform), for the caption. */
   avatarUrl: string | null;
-  /** The Auto Tournament logo on each video (an admin can turn it off). */
-  watermark: boolean;
   moments: RecordMoment[];
   /** This player's clips of the map that earlier jobs recorded (the reel joins them in on a retry). */
   doneClips: Array<{ id: number; startTick: number; url: string; markers: ClipMarkers | null }>;
@@ -742,8 +740,6 @@ export async function jobFor(
        LEFT JOIN tournament tr ON tr.id = m.tournament_id`,
     [best.match_slug, best.map_number, best.player_id, best.player_id, best.match_slug]
   );
-  const { settingsService } = await import('../../../services/settingsService');
-  const watermark = (await settingsService.getSetting('highlights_watermark'))?.trim() !== '0';
   const done = await db.queryAsync<{ id: number; start_tick: number; markers: string | null }>(
     `SELECT id, start_tick, markers FROM cs2_highlights
       WHERE match_slug = ? AND map_number = ? AND player_id = ? AND status = 'done' AND kind <> 'funny'
@@ -769,7 +765,6 @@ export async function jobFor(
           extra.last_round === null ? null : Number(extra.last_round)
         )
       : null,
-    watermark,
     moments: rows
       .map((r) => ({
         id: Number(r.id),
@@ -1466,7 +1461,6 @@ export interface MatchReelJob {
   matchSlug: string;
   mapNumber: number;
   match: string;
-  watermark: boolean;
   quality: HighlightQuality;
   clips: MatchReelClip[];
   /** Where the recorder sends the reel, and where it says it could not. */
@@ -1627,7 +1621,6 @@ export async function claimMatchReel(recorder: string): Promise<MatchReelJob | n
       WHERE m.slug = ?`,
     [Number(row.map_number), Number(row.map_number), Number(row.map_number), row.match_slug]
   );
-  const { settingsService } = await import('../../../services/settingsService');
   return {
     kind: 'match_reel',
     intro: {
@@ -1640,7 +1633,6 @@ export async function claimMatchReel(recorder: string): Promise<MatchReelJob | n
     matchSlug: row.match_slug,
     mapNumber: Number(row.map_number),
     match: matchLine(extra?.team1 ?? null, extra?.team2 ?? null, extra?.tournament ?? null),
-    watermark: (await settingsService.getSetting('highlights_watermark'))?.trim() !== '0',
     quality: await readHighlightQuality(),
     clips,
     upload: `/api/game/cs2/recorder/match-reels/${encodeURIComponent(row.match_slug)}/${Number(row.map_number)}`,
