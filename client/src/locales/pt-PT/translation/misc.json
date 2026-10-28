@@ -1258,6 +1258,7 @@
     "text": "You're on {{current}}, but this site is set up for {{host}}: Steam sign-in, emails and the game servers use that address."
   },
   "siteFooter": {
+    "support": "Apoiar o projeto",
     "trademarks": "Counter-Strike, CS2 and Steam are trademarks of Valve Corporation. Other game names are trademarks of their owners. Auto Tournament is not affiliated with or endorsed by Valve or any game publisher."
   },
   "discordNotice": {
