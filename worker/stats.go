@@ -52,7 +52,15 @@ type Kill struct {
 	NoScope       bool        `json:"noScope,omitempty"`
 	AttackerBlind bool        `json:"attackerBlind,omitempty"`
 	InAir         bool        `json:"inAir,omitempty"`
-	OneTap        bool        `json:"oneTap,omitempty"` // the only bullet he fired then, a headshot (oneTap)
+	OneTap        bool        `json:"oneTap,omitempty"`      // the only bullet he fired then, a headshot (oneTap)
+	Flick         bool        `json:"flick,omitempty"`       // his aim swung flickDegree or more just before (swing)
+	Snap          bool        `json:"snap,omitempty"`        // the victim was in his view under snapSec
+	FlashAssist   bool        `json:"flashAssist,omitempty"` // the victim was flashed by the killer's team
+	VictimInAir   bool        `json:"victimInAir,omitempty"`
+	Collateral    bool        `json:"collateral,omitempty"` // one bullet, two or more kills (same killer, same tick)
+	Moving        bool        `json:"moving,omitempty"`     // the killer was running (over movingSpeed)
+	Distance      int         `json:"distance,omitempty"`   // killer to victim, in game units
+	VictimWeapon  string      `json:"victimWeapon,omitempty"`
 	AttackerSide  *string     `json:"attackerSide"`
 	VictimSide    *string     `json:"victimSide"`
 	AttackerPos   *[2]float64 `json:"attackerPos"`
@@ -144,6 +152,66 @@ func isTapGun(weapon string) bool {
 		return false
 	}
 	return !strings.HasPrefix(weapon, "Knife") && !strings.Contains(weapon, "Grenade") && weapon != "Molotov"
+}
+
+// A flick: the killer's aim swung at least flickDegree in the flickSec before
+// the kill. A snap: the victim was in his view for less than snapSec.
+const (
+	flickDegree = 60.0
+	flickSec    = 0.3
+	snapSec     = 0.3
+	movingSpeed = 150.0 // units a second: walking is 130 or less
+)
+
+// tickYaw is where a player looked (yaw, degrees) and stood on one tick.
+type tickYaw struct {
+	tick int
+	yaw  float64
+	x, y float64
+}
+
+// speed is how fast the player moved over the last `within` ticks before `tick`, in units a second.
+func speed(aim []tickYaw, tick, within int, rate float64) float64 {
+	end := -1
+	for i := len(aim) - 1; i >= 0; i-- {
+		if aim[i].tick <= tick {
+			end = i
+			break
+		}
+	}
+	start := end
+	for start > 0 && aim[end].tick-aim[start-1].tick <= within {
+		start--
+	}
+	if end < 0 || start == end {
+		return 0
+	}
+	dt := float64(aim[end].tick-aim[start].tick) / rate
+	return math.Hypot(aim[end].x-aim[start].x, aim[end].y-aim[start].y) / dt
+}
+
+// swing is how far the aim moved, in degrees, from any moment in the `within`
+// ticks before `tick` to where it was at `tick` (aim: one player's, in tick order).
+func swing(aim []tickYaw, tick, within int) float64 {
+	end := -1
+	for i := len(aim) - 1; i >= 0; i-- {
+		if aim[i].tick <= tick {
+			end = i
+			break
+		}
+	}
+	if end < 0 {
+		return 0
+	}
+	most := 0.0
+	for i := end - 1; i >= 0 && aim[end].tick-aim[i].tick <= within; i-- {
+		d := math.Mod(math.Abs(aim[end].yaw-aim[i].yaw), 360)
+		if d > 180 {
+			d = 360 - d
+		}
+		most = math.Max(most, d)
+	}
+	return most
 }
 
 // AimError is the angle in degrees between where (pitch, yaw) looks from eye
