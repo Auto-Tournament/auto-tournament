@@ -311,6 +311,12 @@ func Analyze(r io.Reader, mapName string, standIns map[string]string) (*Analysis
 		lastFrame = -FrameStep
 		clans     = map[int]map[string]string{} // round -> side -> the team's in-game name
 	)
+	// The round clock: from which tick, how many seconds; the bomb's after a plant.
+	var (
+		clockFrom   int
+		clockLen    = 115.0
+		bombPlanted bool
+	)
 	stats := func(sid string) *PlayerStats {
 		s, ok := players[sid]
 		if !ok {
@@ -354,6 +360,10 @@ func Analyze(r io.Reader, mapName string, standIns map[string]string) (*Analysis
 		}
 		if live && !gs.IsWarmupPeriod() {
 			inRound = true
+			clockFrom, clockLen, bombPlanted = gs.IngameTick(), 115, false
+			if t, err := gs.Rules().RoundTime(); err == nil && t > 0 {
+				clockLen = t.Seconds()
+			}
 			// What each side bought this round (bots too: it is the team's economy).
 			equipCT, equipT = 0, 0
 			for _, pl := range gs.Participants().Playing() {
@@ -434,6 +444,9 @@ func Analyze(r io.Reader, mapName string, standIns map[string]string) (*Analysis
 			VictimSide:   sideName(e.Victim.Team),
 			VictimPos:    [2]float64{e.Victim.Position().X, e.Victim.Position().Y},
 			Weapon:       "world",
+			VictimPlace:  e.Victim.LastPlaceName(),
+			TimeLeft:     max(0, int(clockLen-float64(gs.IngameTick()-clockFrom)/p.TickRate())),
+			BombPlanted:  bombPlanted,
 		}
 		if e.Weapon != nil {
 			k.Weapon = e.Weapon.String()
@@ -444,6 +457,7 @@ func Analyze(r io.Reader, mapName string, standIns map[string]string) (*Analysis
 			k.AttackerSide = sideName(e.Killer.Team)
 			pos := [2]float64{e.Killer.Position().X, e.Killer.Position().Y}
 			k.AttackerPos = &pos
+			k.AttackerPlace, k.AttackerHealth = e.Killer.LastPlaceName(), e.Killer.Health()
 			named(e.Killer)
 		}
 		if human(e.Assister) {
@@ -628,7 +642,13 @@ func Analyze(r io.Reader, mapName string, standIns map[string]string) (*Analysis
 		}
 		bomb = append(bomb, ReplayBomb{Tick: gs.IngameTick(), Kind: kind, Site: site, X: math.Round(pos.X), Y: math.Round(pos.Y), Player: player})
 	}
-	p.RegisterEventHandler(func(e events.BombPlanted) { bombEvent("planted", e.BombEvent) })
+	p.RegisterEventHandler(func(e events.BombPlanted) {
+		bombEvent("planted", e.BombEvent)
+		clockFrom, clockLen, bombPlanted = gs.IngameTick(), 40, true
+		if t, err := gs.Rules().BombTime(); err == nil && t > 0 {
+			clockLen = t.Seconds()
+		}
+	})
 	p.RegisterEventHandler(func(e events.BombDefused) { bombEvent("defused", e.BombEvent) })
 	p.RegisterEventHandler(func(e events.BombExplode) { bombEvent("exploded", e.BombEvent) })
 
