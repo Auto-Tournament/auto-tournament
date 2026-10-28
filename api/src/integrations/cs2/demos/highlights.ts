@@ -445,7 +445,8 @@ export function stageLabel(
   round: number | null,
   lastRound: number | null
 ): string | null {
-  if (round === null) return null;
+  // Imported and manual matches are round 0: no stage, not "Round 0".
+  if (round === null || round <= 0) return null;
   if (bracket === 'GF' || bracket === 'GF_RESET') return 'Grand final';
   if (type === 'double_elimination') {
     const side = bracket === 'LB' ? 'Lower' : 'Upper';

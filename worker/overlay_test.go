@@ -110,3 +110,18 @@ func TestOverlayDrawnAtOutputSize(t *testing.T) {
 		t.Fatalf("720p recipe at 1080p: %dx%d", got.Width, got.Height)
 	}
 }
+
+func TestOldRound0TagDropped(t *testing.T) {
+	o := clipOverlay(1920, 1080, []float64{5}, []overlayPart{{Card: &cardSpec{Name: "a", Tag: "ESPORTS WORLD CUP 2026 · ROUND 0"}}})
+	path := filepath.Join(t.TempDir(), "r.json")
+	if err := o.save(path); err != nil {
+		t.Fatal(err)
+	}
+	got, err := loadOverlay(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if tag := got.Parts[0].Card.Tag; tag != "ESPORTS WORLD CUP 2026" {
+		t.Fatalf("tag %q", tag)
+	}
+}

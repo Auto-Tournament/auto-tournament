@@ -115,6 +115,13 @@ func loadOverlay(path string) (overlayRecipe, error) {
 	if o.Version != overlayVersion {
 		return o, fmt.Errorf("%s: overlay version %d, this worker draws %d", path, o.Version, overlayVersion)
 	}
+	for i := range o.Parts {
+		if c := o.Parts[i].Card; c != nil {
+			// Imported and manual matches (round 0) were tagged "… · ROUND 0" before
+			// the platform left their stage out: dressed again, they lose it.
+			c.Tag = strings.TrimSuffix(c.Tag, " · ROUND 0")
+		}
+	}
 	return o, nil
 }
 
