@@ -886,7 +886,7 @@ export async function claimTournamentReel(recorder: string): Promise<TournamentR
     },
     tournamentId,
     match: name ?? '',
-    watermark: await (await import('../../../services/highlights/settings')).highlightsWatermark(),
+    watermark: await (await import('./watermark')).highlightsWatermark(),
     quality: await readHighlightQuality(),
     clips: ids.map((id) => {
       const c = byId.get(id)!;

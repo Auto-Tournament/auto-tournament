@@ -218,7 +218,7 @@ async function reelAgain(file: string, now: number): Promise<PlayerReelJob | nul
     matchSlug: reel.match_slug,
     mapNumber: Number(reel.map_number),
     match: [teams, extra?.tournament].filter(Boolean).join(' · '),
-    watermark: await (await import('../../../services/highlights/settings')).highlightsWatermark(),
+    watermark: await (await import('./watermark')).highlightsWatermark(),
     intro: {
       kicker: 'Player reel',
       title: name,

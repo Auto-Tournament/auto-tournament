@@ -189,7 +189,11 @@ function HighlightSettings() {
           onChange={(e) => void save({ highlightsWatermark: e.target.checked })}
           size="small"
           inputProps={{ 'data-testid': 'highlights-watermark' } as Record<string, string>}
-          help={t(canHideLogo ? 'highlightsPage.watermark.description' : 'highlightsPage.watermark.paidOnly')}
+          help={t(
+            canHideLogo
+              ? 'highlightsPage.watermark.description'
+              : 'highlightsPage.watermark.paidOnly'
+          )}
         />
       </Box>
       <MatchmakingHighlightsSetting vals={vals} save={(patch) => void save(patch)} />
