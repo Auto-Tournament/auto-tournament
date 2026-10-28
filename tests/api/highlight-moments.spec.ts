@@ -77,6 +77,18 @@ test.describe('Highlight moments', () => {
     expect(tapped[0]!.score - plain[0]!.score).toBe(10);
   });
 
+  test('a flick, a snap shot and a collateral score as flair', { tag: ['@api'] }, () => {
+    const plain = pickMoments({ kills: [kill(1000, A, B1), kill(1100, A, B2)], rounds } as never);
+    const flair = pickMoments({
+      kills: [
+        kill(1000, A, B1, { flick: true, snap: true }),
+        kill(1100, A, B2, { collateral: true }),
+      ],
+      rounds,
+    } as never);
+    expect(flair[0]!.score - plain[0]!.score).toBe(10 + 5 + 15);
+  });
+
   test('a triple kill is a moment; a lone kill is not', { tag: ['@api'] }, () => {
     const kills = [
       kill(500, A2, B4),

@@ -63,6 +63,10 @@ export interface MomentKill {
   inAir?: boolean;
   /** A headshot with the only bullet he fired at that moment (worker oneTap). */
   oneTap?: boolean;
+  /** From the analyzer (worker/stats.go Kill): a fast swing of his aim, a victim seen for a split second, one bullet two kills. */
+  flick?: boolean;
+  snap?: boolean;
+  collateral?: boolean;
   opening?: boolean;
   attackerSide?: string | null;
   victimSide?: string | null;

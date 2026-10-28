@@ -104,7 +104,8 @@ func cheerTicks(rp *Replay, player string, m moment) []cheer {
 		for j := i - 1; j >= 0 && t-kills[j] <= cheerRunTicks; j-- {
 			run++
 		}
-		score := impress(k, known, known && k.Headshot && flicked(rp, index, t), run, i == len(kills)-1, m)
+		// the analyzer's flick; older replays without it fall back to the replay's frames
+		score := impress(k, known, known && k.Headshot && (k.Flick || flicked(rp, index, t)), run, i == len(kills)-1, m)
 		if score < reactHey {
 			continue
 		}

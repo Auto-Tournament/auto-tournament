@@ -59,6 +59,7 @@ type ReplayKill struct {
 	NoScope       bool    `json:"noScope,omitempty"`
 	AttackerBlind bool    `json:"attackerBlind,omitempty"`
 	InAir         bool    `json:"inAir,omitempty"`
+	Flick         bool    `json:"flick,omitempty"` // as on the kill (swing)
 	// The exact knife for a knife kill ("knife_karambit"), for the kill feed's icon;
 	// Weapon stays "Knife" (stats and highlights group knives together).
 	Item string `json:"item,omitempty"`
@@ -299,6 +300,7 @@ func Analyze(r io.Reader, mapName string, standIns map[string]string) (*Analysis
 		spotted   = map[[2]int]bool{}
 		spotTick  = map[[2]int]int{}
 		seenFrom  = map[[2]int]int{} // since when each player has had each enemy in view
+		aim       = map[uint64][]tickYaw{}
 		rawShots  []rawShot
 		rawHits   []rawHit
 		grenades  []rawGrenade
@@ -349,6 +351,7 @@ func Analyze(r io.Reader, mapName string, standIns map[string]string) (*Analysis
 		spotted = map[[2]int]bool{}
 		spotTick = map[[2]int]int{}
 		seenFrom = map[[2]int]int{}
+		aim = map[uint64][]tickYaw{}
 		rawShots, rawHits = nil, nil
 		grenades, effects, blinds, bomb, damage, killFlags = nil, nil, nil, nil, nil, nil
 		openFx = map[int]int{}
@@ -456,6 +459,10 @@ func Analyze(r io.Reader, mapName string, standIns map[string]string) (*Analysis
 		if e.Weapon != nil {
 			k.Weapon = e.Weapon.String()
 		}
+		if w := e.Victim.ActiveWeapon(); w != nil {
+			k.VictimWeapon = w.String()
+		}
+		k.FlashAssist, k.VictimInAir = e.AssistedFlash, e.Victim.IsAirborne()
 		if human(e.Killer) && e.Killer.SteamID64 != e.Victim.SteamID64 {
 			a := id(e.Killer)
 			k.Attacker = &a
@@ -465,6 +472,13 @@ func Analyze(r io.Reader, mapName string, standIns map[string]string) (*Analysis
 			k.AttackerPlace, k.AttackerHealth = e.Killer.LastPlaceName(), e.Killer.Health()
 			if key, ok := replayKey(e.Killer); ok {
 				k.OneTap = oneTap(shots[key], gs.IngameTick(), p.TickRate(), k.Weapon, k.Headshot)
+			}
+			k.Flick = swing(aim[e.Killer.SteamID64], gs.IngameTick(), int(flickSec*p.TickRate())) >= flickDegree
+			k.Moving = speed(aim[e.Killer.SteamID64], gs.IngameTick(), int(0.15*p.TickRate()), p.TickRate()) > movingSpeed
+			k.Distance = int(math.Round(e.Killer.Position().Distance(e.Victim.Position())))
+			// one bullet, two kills: the killer's kill before this one was on the same tick
+			if n := len(kills); n > 0 && kills[n-1].Tick == k.Tick && kills[n-1].Attacker != nil && *kills[n-1].Attacker == a {
+				k.Collateral, kills[n-1].Collateral = true, true
 			}
 			named(e.Killer)
 		}
@@ -487,6 +501,7 @@ func Analyze(r io.Reader, mapName string, standIns map[string]string) (*Analysis
 		killFlags = append(killFlags, flags)
 		last := &kills[len(kills)-1]
 		last.NoScope, last.AttackerBlind, last.InAir = flags.NoScope, flags.AttackerBlind, flags.InAir
+		last.Snap = flags.SeenFor >= 0 && flags.SeenFor < snapSec && !last.Penetrated && !last.ThroughSmoke
 	})
 
 	p.RegisterEventHandler(func(e events.WeaponFire) {
@@ -666,6 +681,17 @@ func Analyze(r io.Reader, mapName string, standIns map[string]string) (*Analysis
 		}
 		tick := gs.IngameTick()
 		playing := gs.Participants().Playing()
+		// Each human's aim, tick by tick, for the last moments (flicks).
+		for _, pl := range playing {
+			if human(pl) && pl.IsAlive() {
+				pos := pl.Position()
+				h := append(aim[pl.SteamID64], tickYaw{tick, float64(pl.ViewDirectionX()), pos.X, pos.Y})
+				if len(h) > 48 {
+					h = h[len(h)-48:]
+				}
+				aim[pl.SteamID64] = h
+			}
+		}
 		if inRound {
 			// Crosshair placement: when an enemy first comes into view, how
 			// far the crosshair was from their head.
@@ -836,7 +862,7 @@ func Analyze(r io.Reader, mapName string, standIns map[string]string) (*Analysis
 	}
 	for i, k := range kills {
 		rk := ReplayKill{Tick: k.Tick, Attacker: k.Attacker, Victim: k.Victim, Weapon: k.Weapon, Headshot: k.Headshot, Pos: k.VictimPos,
-			Assister: k.Assister, Penetrated: k.Penetrated, ThroughSmoke: k.ThroughSmoke}
+			Assister: k.Assister, Penetrated: k.Penetrated, ThroughSmoke: k.ThroughSmoke, Flick: k.Flick}
 		if i < len(killFlags) {
 			f := killFlags[i]
 			rk.AssistedFlash, rk.NoScope, rk.AttackerBlind, rk.InAir = f.AssistedFlash, f.NoScope, f.AttackerBlind, f.InAir
