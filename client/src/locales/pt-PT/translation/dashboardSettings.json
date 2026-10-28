@@ -670,6 +670,7 @@
     },
     "checkin": {
       "last": "Última comunicação da licença: {{time}}",
+      "offlineUntil": "Offline lease: new servers work without internet until {{date}}.",
       "never": "Ainda não houve nenhuma comunicação da licença. A primeira acontece pouco depois de guardar uma chave.",
       "whatIsSent": "O que é enviado",
       "intro": "Uma vez por dia, e só enquanto houver uma chave guardada, este servidor envia:",

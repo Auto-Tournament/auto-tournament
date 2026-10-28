@@ -670,6 +670,7 @@
     },
     "checkin": {
       "last": "Ultimo check-in della licenza: {{time}}",
+      "offlineUntil": "Offline lease: new servers work without internet until {{date}}.",
       "never": "Ancora nessun check-in della licenza. Il primo avviene poco dopo aver salvato una chiave.",
       "whatIsSent": "Cosa viene inviato",
       "intro": "Una volta al giorno, e solo finché è salvata una chiave, questo server invia:",

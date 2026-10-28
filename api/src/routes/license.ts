@@ -13,7 +13,12 @@ import { Router } from 'express';
 import { requireAuth, requestActorId, type AuthedRequest } from '../middleware/auth';
 import { isSameSiteRequest } from '../utils/accountConnections';
 import { log } from '../utils/logger';
-import { keyInputProblem, licenseService } from '../services/license/licenseService';
+import {
+  isLeaseInput,
+  keyInputProblem,
+  LeaseInputError,
+  licenseService,
+} from '../services/license/licenseService';
 import {
   CONSENT_PHRASE,
   CONSENT_READ_ITEMS,
@@ -124,6 +129,11 @@ router.use(requireAuth);
  *       the key: a genuine paid key records commercial use, a free or
  *       invalid one non-commercial (when the terms were accepted). Same-site
  *       JSON only.
+ *
+ *       An offline lease from the console (an `ATL1.` lease) goes in the same
+ *       field: it is stored next to the saved key, which it must belong to
+ *       (400 otherwise), and until its `offline_until` a paid install creates
+ *       servers without reaching autotournament.gg.
  *     requestBody:
  *       required: true
  *       content:
@@ -174,6 +184,17 @@ async function useFollowsKey(
 router.put('/', async (req: Request, res: Response) => {
   if (refuseWrite(req, res)) return;
   const key = (req.body as { key?: Untrusted } | undefined)?.key;
+  // The console's offline lease goes in the same field, next to the key.
+  if (isLeaseInput(key)) {
+    try {
+      return res.json({ success: true, license: await licenseService.setLease(key) });
+    } catch (error) {
+      if (error instanceof LeaseInputError) {
+        return res.status(400).json({ success: false, error: error.message });
+      }
+      return failed(res, 'Failed to save the offline lease', error);
+    }
+  }
   const problem = keyInputProblem(key);
   if (problem) return res.status(400).json({ success: false, error: problem });
   try {

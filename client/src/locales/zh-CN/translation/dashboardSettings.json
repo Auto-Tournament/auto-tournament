@@ -670,6 +670,7 @@
     },
     "checkin": {
       "last": "上次许可证联络：{{time}}",
+      "offlineUntil": "Offline lease: new servers work without internet until {{date}}.",
       "never": "尚未进行许可证联络。保存密钥后不久会进行第一次。",
       "whatIsSent": "发送的内容",
       "intro": "每天一次，且仅在保存了密钥时，此服务器会发送：",

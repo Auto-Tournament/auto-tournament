@@ -298,6 +298,15 @@ function CheckinDetails({ status }: { status: LicenseStatus }) {
           ? t('license.checkin.last', { time: when(checkin.lastAt) })
           : t('license.checkin.never')}
       </Typography>
+      {status.offlineUntil && (
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          data-testid="settings-license-offline-until"
+        >
+          {t('license.checkin.offlineUntil', { date: status.offlineUntil })}
+        </Typography>
+      )}
       {checkin.notice && (
         <Alert severity="info" data-testid="settings-license-checkin-notice">
           <Typography variant="body2" fontWeight={600}>

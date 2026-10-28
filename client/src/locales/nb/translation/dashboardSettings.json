@@ -570,7 +570,7 @@
     "warningsNote": "Ingenting blokkeres eller begrenses. Dette er bare en merknad.",
     "label": "Lisensnøkkel",
     "replaceLabel": "Bytt lisensnøkkel",
-    "helper": "Starter med ATL1. Kopier den fra <consoleLink>lisensene dine i Auto Tournament-konsollen</consoleLink>. Etter lagring vises bare lisens-ID-en.",
+    "helper": "Starter med ATL1. Kopier den fra <consoleLink>lisensene dine i Auto Tournament-konsollen</consoleLink>. Etter lagring vises bare lisens-ID-en. Ikke internett der dere spiller? Lim også inn offline-lisensen fra konsollen her.",
     "checkInNote": "Uten lisensnøkkel sendes ingenting til Auto Tournament. Med nøkkel melder denne serveren seg én gang i døgnet med nøkkelens ID og antall servere.",
     "save": "Lagre nøkkel",
     "saved": "Lisensnøkkel lagret",
@@ -676,6 +676,7 @@
     },
     "checkin": {
       "last": "Siste lisensinnsjekk: {{time}}",
+      "offlineUntil": "Offline-lisens: nye servere fungerer uten internett til og med {{date}}.",
       "never": "Ingen lisensinnsjekk ennå. Den første kjører kort tid etter at en nøkkel er lagret.",
       "whatIsSent": "Hva som sendes",
       "intro": "Én gang i døgnet, og bare mens en nøkkel er lagret, sender denne serveren:",

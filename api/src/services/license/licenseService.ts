@@ -25,10 +25,12 @@ import {
   checkCreate,
   expiredMessage,
   LicenseLimitError,
+  offlineLeaseCovers,
   standingFor,
   type LicenseStanding,
 } from './gate';
 import {
+  leaseOf,
   parseStoredResult,
   SETTING,
   type CheckinStatus,
@@ -84,6 +86,8 @@ export interface LicenseStatus {
   checkin: CheckinStatus | null;
   /** Where the license stands: free, active, past_due (admins see a warning) or expired (the platform stops). See ./gate.ts. */
   standing: LicenseStanding;
+  /** Until when (YYYY-MM-DD) a pasted offline lease lets new servers skip the check-in; null without one. */
+  offlineUntil?: string | null;
   /**
    * An event license only: whether to ask the admin, quietly, what the
    * activity outside the license's dates is (testing, a new event, moved
@@ -180,6 +184,20 @@ export function keyInputProblem(input: Untrusted): string | null {
   return null;
 }
 
+/** Whether the pasted text is a lease (the console's offline lease), not a key. */
+export function isLeaseInput(input: Untrusted): input is string {
+  if (typeof input !== 'string') return false;
+  try {
+    const payload = decodeLicense(input.trim()).payload as { lease?: Untrusted } | null;
+    return typeof payload === 'object' && payload !== null && payload.lease === true;
+  } catch {
+    return false;
+  }
+}
+
+/** A pasted lease that cannot be stored: the message says why. */
+export class LeaseInputError extends Error {}
+
 class LicenseService {
   async getKey(): Promise<string | null> {
     return (await settingsService.getSetting('license_key'))?.trim() || null;
@@ -244,7 +262,11 @@ class LicenseService {
             : 'unpaid';
       throw new LicenseLimitError('license_expired', expiredMessage({ reason }));
     }
-    if (answer.result === 'unreachable' && !(await licenseCheckin.checkedInRecently())) {
+    if (
+      answer.result === 'unreachable' &&
+      !(await licenseCheckin.checkedInRecently()) &&
+      !(await this.offlineLeaseCovers())
+    ) {
       throw new LicenseLimitError(
         'checkin_stale',
         "This install hasn't reached autotournament.gg for 3 days, so new servers can't be created with a paid license. Servers already set up keep working. Check the internet connection and try again."
@@ -269,7 +291,11 @@ class LicenseService {
         ? null
         : licenseCheckin.eventPrompt(status.license, readEventActivity),
     ]);
-    return { ...status, checkin, eventPrompt, standing };
+    const lease = (await settingsService.getSetting(SETTING.lease)) ?? null;
+    const offlineUntil = offlineLeaseCovers(key, lease, new Date().toISOString().slice(0, 10))
+      ? (verifyLicense(lease as string).license?.offline_until ?? null)
+      : null;
+    return { ...status, checkin, eventPrompt, standing, offlineUntil };
   }
 
   /**
@@ -284,6 +310,32 @@ class LicenseService {
     const { licenseCheckin } = await import('./checkinService');
     await licenseCheckin.answerEventPrompt(action, licenseId, actor);
     if (action !== 'dismissed' && action !== 'dont_ask') void licenseCheckin.run();
+  }
+
+  /** Whether the stored lease is an offline lease for this key that covers today (./gate.ts). */
+  private async offlineLeaseCovers(): Promise<boolean> {
+    const [key, lease] = await Promise.all([
+      this.getKey(),
+      settingsService.getSetting(SETTING.lease),
+    ]);
+    return offlineLeaseCovers(key, lease ?? null, new Date().toISOString().slice(0, 10));
+  }
+
+  /**
+   * Store an offline lease from the console, next to the key it belongs to:
+   * its terms count like a check-in's (./gate.ts), and until its
+   * `offline_until` new servers don't need autotournament.gg.
+   */
+  async setLease(input: string): Promise<LicenseStatus> {
+    const key = await this.getKey();
+    if (!key) throw new LeaseInputError('Paste the license key first, then the offline lease.');
+    const lease = input.trim();
+    if (!leaseOf(key, lease)) {
+      throw new LeaseInputError('This lease is for another license, or older than the key.');
+    }
+    await settingsService.setSetting(SETTING.lease, lease);
+    (await import('../../middleware/licenseExpired')).licenseStandingChanged();
+    return this.getStatus();
   }
 
   private async keyChanged(before: string | null): Promise<void> {

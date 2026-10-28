@@ -32,6 +32,8 @@ export interface LicenseStatus {
     sent: string[];
     privacyUrl: string;
   } | null;
+  /** Until when (YYYY-MM-DD) the pasted offline lease lets new servers skip the check-in. */
+  offlineUntil?: string | null;
   /** Where the paid license stands (api/src/services/license/gate.ts): past_due warns admins, expired stops the platform. */
   standing?: {
     status: 'free' | 'invalid' | 'active' | 'past_due' | 'expired';
