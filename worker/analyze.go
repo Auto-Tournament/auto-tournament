@@ -301,6 +301,8 @@ func Analyze(r io.Reader, mapName string, standIns map[string]string) (*Analysis
 		spotTick  = map[[2]int]int{}
 		seenFrom  = map[[2]int]int{} // since when each player has had each enemy in view
 		aim       = map[uint64][]tickYaw{}
+		fights    = map[[2]int]*fight{}
+		scopedAt  = map[uint64]int{}
 		rawShots  []rawShot
 		rawHits   []rawHit
 		grenades  []rawGrenade
@@ -352,6 +354,7 @@ func Analyze(r io.Reader, mapName string, standIns map[string]string) (*Analysis
 		spotTick = map[[2]int]int{}
 		seenFrom = map[[2]int]int{}
 		aim = map[uint64][]tickYaw{}
+		fights, scopedAt = map[[2]int]*fight{}, map[uint64]int{}
 		rawShots, rawHits = nil, nil
 		grenades, effects, blinds, bomb, damage, killFlags = nil, nil, nil, nil, nil, nil
 		openFx = map[int]int{}
@@ -463,6 +466,8 @@ func Analyze(r io.Reader, mapName string, standIns map[string]string) (*Analysis
 			k.VictimWeapon = w.String()
 		}
 		k.FlashAssist, k.VictimInAir = e.AssistedFlash, e.Victim.IsAirborne()
+		k.Walls = e.PenetratedObjects
+		k.VictimDefusing, k.VictimPlanting, k.VictimReload = e.Victim.IsDefusing, e.Victim.IsPlanting, e.Victim.IsReloading
 		if human(e.Killer) && e.Killer.SteamID64 != e.Victim.SteamID64 {
 			a := id(e.Killer)
 			k.Attacker = &a
@@ -474,6 +479,17 @@ func Analyze(r io.Reader, mapName string, standIns map[string]string) (*Analysis
 				k.OneTap = oneTap(shots[key], gs.IngameTick(), p.TickRate(), k.Weapon, k.Headshot)
 			}
 			k.Flick = swing(aim[e.Killer.SteamID64], gs.IngameTick(), int(flickSec*p.TickRate())) >= flickDegree
+			k.Crouched = e.Killer.IsDucking()
+			if t, on := scopedAt[e.Killer.SteamID64]; on && isSniper(k.Weapon) && e.Killer.IsScoped() {
+				k.QuickScope = float64(gs.IngameTick()-t)/p.TickRate() < quickScopeSec
+			}
+			if f := fights[pair(e.Killer, e.Victim)]; f != nil {
+				k.Hits, k.Damage, k.VictimHealth = f.hits, f.damage, f.health
+				k.FightSec = math.Round(float64(gs.IngameTick()-f.first)/p.TickRate()*100) / 100
+				if key, ok := replayKey(e.Killer); ok {
+					k.Shots = shotsIn(shots[key], f.first-int(fightLead*p.TickRate()), gs.IngameTick(), k.Weapon)
+				}
+			}
 			k.Moving = speed(aim[e.Killer.SteamID64], gs.IngameTick(), int(0.15*p.TickRate()), p.TickRate()) > movingSpeed
 			k.Distance = int(math.Round(e.Killer.Position().Distance(e.Victim.Position())))
 			// one bullet, two kills: the killer's kill before this one was on the same tick
@@ -488,6 +504,12 @@ func Analyze(r io.Reader, mapName string, standIns map[string]string) (*Analysis
 			named(e.Assister)
 		}
 		kills = append(kills, k)
+		// a dead player's fights are over, both ways
+		for key := range fights {
+			if key[0] == e.Victim.UserID || key[1] == e.Victim.UserID {
+				delete(fights, key)
+			}
+		}
 		flags := ReplayKill{AssistedFlash: e.AssistedFlash, NoScope: e.NoScope, AttackerBlind: e.AttackerBlind,
 			InAir: e.Killer != nil && e.Killer.IsAirborne(), VictimInAir: e.Victim.IsAirborne(), SeenFor: -1,
 			Item: knifeItem(e.Weapon)}
@@ -546,6 +568,13 @@ func Analyze(r io.Reader, mapName string, standIns map[string]string) (*Analysis
 			rawHits = append(rawHits, rawHit{tick, id(e.Attacker), vp.X, vp.Y})
 			// Time to damage: the first hit on an enemy since spotting them.
 			key := pair(e.Attacker, e.Player)
+			f := fights[key]
+			if f == nil {
+				f = &fight{first: tick, health: e.Health + e.HealthDamageTaken}
+				fights[key] = f
+			}
+			f.hits++
+			f.damage += e.HealthDamageTaken
 			if t0, ok := spotTick[key]; ok {
 				delete(spotTick, key)
 				if ms := float64(tick-t0) * 1000 / p.TickRate(); ms >= 0 && ms < 1000 {
@@ -690,6 +719,11 @@ func Analyze(r io.Reader, mapName string, standIns map[string]string) (*Analysis
 					h = h[len(h)-48:]
 				}
 				aim[pl.SteamID64] = h
+				if _, on := scopedAt[pl.SteamID64]; pl.IsScoped() && !on {
+					scopedAt[pl.SteamID64] = tick
+				} else if !pl.IsScoped() {
+					delete(scopedAt, pl.SteamID64)
+				}
 			}
 		}
 		if inRound {
