@@ -263,6 +263,11 @@ func eyes(p *common.Player) [3]float64 {
 
 // Analyze reads a whole demo. mapName is the platform's (the demo's header
 // is not always exposed by the parser).
+// pair keys what a player knows about an enemy (spotted, since when) by
+// their UserIDs: bots all have SteamID64 0, so against bots SteamID pairs
+// collided and the stats changed with the order players were walked.
+func pair(a, b *common.Player) [2]int { return [2]int{a.UserID, b.UserID} }
+
 // Analyze reads a demo. standIns (a simulated match: SteamID64 -> roster name)
 // makes each bot named as a roster player that player: Ready Up names the bot
 // it plays them with, and its kills, stats and moments are theirs.
@@ -291,9 +296,9 @@ func Analyze(r io.Reader, mapName string, standIns map[string]string) (*Analysis
 		sides     = map[int]map[string]string{} // round -> player -> side
 		shots     = map[string][]Shot{}
 		hitTicks  = map[string][]int{}
-		spotted   = map[[2]uint64]bool{}
-		spotTick  = map[[2]uint64]int{}
-		seenFrom  = map[[2]uint64]int{} // since when each player has had each enemy in view
+		spotted   = map[[2]int]bool{}
+		spotTick  = map[[2]int]int{}
+		seenFrom  = map[[2]int]int{} // since when each player has had each enemy in view
 		rawShots  []rawShot
 		rawHits   []rawHit
 		grenades  []rawGrenade
@@ -341,9 +346,9 @@ func Analyze(r io.Reader, mapName string, standIns map[string]string) (*Analysis
 		shots, hitTicks = map[string][]Shot{}, map[string][]int{}
 		frames = map[int]map[string][6]float64{}
 		botNames = map[string]string{}
-		spotted = map[[2]uint64]bool{}
-		spotTick = map[[2]uint64]int{}
-		seenFrom = map[[2]uint64]int{}
+		spotted = map[[2]int]bool{}
+		spotTick = map[[2]int]int{}
+		seenFrom = map[[2]int]int{}
 		rawShots, rawHits = nil, nil
 		grenades, effects, blinds, bomb, damage, killFlags = nil, nil, nil, nil, nil, nil
 		openFx = map[int]int{}
@@ -471,7 +476,7 @@ func Analyze(r io.Reader, mapName string, standIns map[string]string) (*Analysis
 			Item: knifeItem(e.Weapon)}
 		// How long the killer had the victim in view: a snap shot is a split second.
 		if e.Killer != nil {
-			key := [2]uint64{e.Killer.SteamID64, e.Victim.SteamID64}
+			key := pair(e.Killer, e.Victim)
 			if t0, ok := seenFrom[key]; ok && spotted[key] {
 				flags.SeenFor = math.Round(float64(gs.IngameTick()-t0)/p.TickRate()*100) / 100
 			}
@@ -522,7 +527,7 @@ func Analyze(r io.Reader, mapName string, standIns map[string]string) (*Analysis
 			vp := e.Player.Position()
 			rawHits = append(rawHits, rawHit{tick, id(e.Attacker), vp.X, vp.Y})
 			// Time to damage: the first hit on an enemy since spotting them.
-			key := [2]uint64{e.Attacker.SteamID64, e.Player.SteamID64}
+			key := pair(e.Attacker, e.Player)
 			if t0, ok := spotTick[key]; ok {
 				delete(spotTick, key)
 				if ms := float64(tick-t0) * 1000 / p.TickRate(); ms >= 0 && ms < 1000 {
@@ -669,7 +674,7 @@ func Analyze(r io.Reader, mapName string, standIns map[string]string) (*Analysis
 					if e == a || e.Team == a.Team || !e.IsAlive() {
 						continue
 					}
-					key := [2]uint64{a.SteamID64, e.SteamID64}
+					key := pair(a, e)
 					now := a.HasSpotted(e)
 					if now && !spotted[key] {
 						s := named(a)
