@@ -1521,6 +1521,11 @@ async function runUpgradedDatabasePath() {
     }
     log(`Upgrade: ${OLD_DB_NAME} renamed to ${DB_NAME} in place.`);
 
+    // The 2.x sign-in cookie has no expiry in its signature, so the new build
+    // refuses it (#1402): everyone signs in again once, and so does this.
+    step = 'sign in again on the new build';
+    await loginAdmin(ctx);
+
     step = 'verify migrations ran';
     const appliedFirstBoot = await assertMigrationsApplied(ctx);
     await assertMigrationsAreNoOpNow(ctx);
@@ -1599,7 +1604,7 @@ async function runUpgradedDatabasePath() {
     // Path 2 reuses APP_NAME (on its own network/database) — remove this
     // path's app container so its name is free, and drop the rest of this
     // path's resources rather than leaving them running until final cleanup.
-    step = 'tear down path 1 resources';
+    // (`step` is left alone: a failure above keeps its own step in the report.)
     shQuiet('docker', ['rm', '-f', APP_NAME]);
     shQuiet('docker', ['rm', '-f', POSTGRES_NAME]);
     shQuiet('docker', ['network', 'rm', NETWORK]);
