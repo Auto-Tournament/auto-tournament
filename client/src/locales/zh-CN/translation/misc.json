@@ -1080,11 +1080,6 @@
     "tabs": {
       "settings": "Settings"
     },
-    "watermark": {
-      "label": "Auto Tournament logo on highlight videos",
-      "description": "Shown faintly in the lower right. Leaving it on helps us a lot.",
-      "paidOnly": "以“Played on Auto Tournament”显示在右下角。免费使用时始终开启；付费许可证可以将其关闭。"
-    },
     "perPlayer": {
       "label": "Clips per player per map",
       "helper": "1 to 6. Each takes the recorder about five minutes, so fewer clips are ready sooner."

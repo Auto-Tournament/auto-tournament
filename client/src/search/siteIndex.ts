@@ -290,7 +290,7 @@ export const SITE_SEARCH_INDEX: SiteSearchEntry[] = [
     key: 'highlightsSettings',
     title: { key: 'highlightsPage.tabs.settings' },
     to: `${paths.highlights}?tab=settings`,
-    keywords: 'resolution fps frame rate quality clips per player watermark logo reels length',
+    keywords: 'resolution fps frame rate quality clips per player reels length',
     audience: 'admin',
     parent: 'highlights',
   },

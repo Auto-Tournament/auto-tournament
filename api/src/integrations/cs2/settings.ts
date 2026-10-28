@@ -61,7 +61,6 @@ export type Cs2SettingKey =
   // How players join (fleet/connectChoice.ts)
   | 'connect_prefer_lan'
   // Highlight videos (demos/highlights.ts)
-  | 'highlights_watermark'
   | 'highlights_per_player'
   | 'highlights_resolution'
   | 'highlights_min_resolution'

@@ -1080,11 +1080,6 @@
     "tabs": {
       "settings": "Innstillinger"
     },
-    "watermark": {
-      "label": "Auto Tournament-logo på høydepunkt-videoene",
-      "description": "Vises nede til høyre som «Played on Auto Tournament», slik introen til sammendragene slutter. Det hjelper oss mye om du lar den stå på.",
-      "paidOnly": "Vises nede til høyre som «Played on Auto Tournament». Alltid på ved gratis bruk. Med en betalt lisens kan du slå den av."
-    },
     "perPlayer": {
       "label": "Klipp per spiller per kart",
       "helper": "1 til 6. Flere klipp gjør at highlightene fra en kamp tar lengre tid å lage."

@@ -815,7 +815,6 @@ export interface TournamentReelJob {
   intro: ReelIntro;
   tournamentId: number;
   match: string;
-  watermark: boolean;
   quality: HighlightQuality;
   clips: MatchReelClip[];
   /** Where the recorder sends the reel, and where it says it could not. */
@@ -886,7 +885,6 @@ export async function claimTournamentReel(recorder: string): Promise<TournamentR
     },
     tournamentId,
     match: name ?? '',
-    watermark: await (await import('./watermark')).highlightsWatermark(),
     quality: await readHighlightQuality(),
     clips: ids.map((id) => {
       const c = byId.get(id)!;

@@ -66,7 +66,6 @@ type matchReelJob struct {
 	TournamentID int             `json:"tournamentId"`
 	TeamID       string          `json:"teamId"`
 	Match        string          `json:"match"`
-	Watermark    bool            `json:"watermark"`
 	Quality      *videoQuality   `json:"quality"`
 	Clips        []matchReelClip `json:"clips"`
 	// Intro is what the reel opens with (older platforms: none).

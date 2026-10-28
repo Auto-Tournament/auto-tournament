@@ -82,7 +82,6 @@ export interface PlayerReelJob {
   matchSlug: string;
   mapNumber: number;
   match: string;
-  watermark: boolean;
   intro: { kicker: string; title: string; meta: string; map: string; date: string };
   clips: Array<{
     highlightId: number;
@@ -218,7 +217,6 @@ async function reelAgain(file: string, now: number): Promise<PlayerReelJob | nul
     matchSlug: reel.match_slug,
     mapNumber: Number(reel.map_number),
     match: [teams, extra?.tournament].filter(Boolean).join(' · '),
-    watermark: await (await import('./watermark')).highlightsWatermark(),
     intro: {
       kicker: 'Player reel',
       title: name,

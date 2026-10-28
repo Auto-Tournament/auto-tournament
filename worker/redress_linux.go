@@ -99,10 +99,9 @@ func (r *recorder) dress(clean, recipe, out string, alone bool) (float64, error)
 	for _, s := range streams {
 		defer os.Remove(s.pipe)
 	}
-	if o.Logo {
-		args = append(args, "-loop", "1", "-framerate", fmt.Sprint(outputFPS), "-i", r.logo)
-		ov.logo = next
-	}
+	// The logo is on every video, always.
+	args = append(args, "-loop", "1", "-framerate", fmt.Sprint(outputFPS), "-i", r.logo)
+	ov.logo = next
 	args = append(args, "-filter_complex", videoFilter(ov), "-map", "[v]", "-map", "0:a?")
 	args = append(args, encodeArgs(r.encoder)...)
 	if start > 0 {

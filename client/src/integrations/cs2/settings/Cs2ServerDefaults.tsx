@@ -50,7 +50,6 @@ import type { Untrusted } from '../../types';
 type Flag = 0 | 1 | null;
 
 export interface Cs2DefaultsValues {
-  highlightsWatermark: boolean;
   highlightsPerPlayer: number | null;
   highlightsResolution: number;
   highlightsFps: number;
@@ -99,7 +98,6 @@ type Key = keyof Cs2DefaultsValues;
 
 /** What the page shows for a field the API has no value for (the plugin's own default). */
 const DEFAULTS: Cs2DefaultsValues = {
-  highlightsWatermark: true,
   highlightsPerPlayer: 6,
   highlightsResolution: 720,
   highlightsFps: 240,
