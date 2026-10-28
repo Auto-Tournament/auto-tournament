@@ -61,6 +61,8 @@ export interface MomentKill {
   noScope?: boolean;
   attackerBlind?: boolean;
   inAir?: boolean;
+  /** A headshot with the only bullet he fired at that moment (worker oneTap). */
+  oneTap?: boolean;
   opening?: boolean;
   attackerSide?: string | null;
   victimSide?: string | null;
