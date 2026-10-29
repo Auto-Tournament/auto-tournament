@@ -67,6 +67,9 @@ export interface MomentKill {
   flick?: boolean;
   snap?: boolean;
   collateral?: boolean;
+  /** A sniper shot right after scoping in; the victim was defusing (a denied defuse). */
+  quickScope?: boolean;
+  victimDefusing?: boolean;
   opening?: boolean;
   attackerSide?: string | null;
   victimSide?: string | null;

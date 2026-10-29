@@ -79,6 +79,20 @@ type Kill struct {
 	AttackerHealth int    `json:"attackerHealth,omitempty"`
 	TimeLeft       int    `json:"timeLeft"`
 	BombPlanted    bool   `json:"bombPlanted,omitempty"`
+	// The fight: the killer's shots with this gun from just before his first hit
+	// on the victim to the kill, his hits and damage on him, the victim's health
+	// before that first hit, and how long it took (seconds).
+	Shots          int     `json:"shots,omitempty"`
+	Hits           int     `json:"hits,omitempty"`
+	Damage         int     `json:"damage,omitempty"`
+	VictimHealth   int     `json:"victimHealth,omitempty"`
+	FightSec       float64 `json:"fightSec,omitempty"`
+	Walls          int     `json:"walls,omitempty"`      // objects the killing bullet went through
+	Crouched       bool    `json:"crouched,omitempty"`   // the killer, at the kill
+	QuickScope     bool    `json:"quickScope,omitempty"` // a sniper shot under quickScopeSec after scoping in
+	VictimDefusing bool    `json:"victimDefusing,omitempty"`
+	VictimPlanting bool    `json:"victimPlanting,omitempty"`
+	VictimReload   bool    `json:"victimReload,omitempty"`
 }
 
 // PlayerStats are one player's numbers on the map.
@@ -162,6 +176,31 @@ const (
 	snapSec     = 0.3
 	movingSpeed = 150.0 // units a second: walking is 130 or less
 )
+
+const (
+	quickScopeSec = 0.35
+	fightLead     = 1.0 // seconds of shots before the first hit that count to the fight
+)
+
+// fight is one attacker's hits on one victim, since the first.
+type fight struct {
+	first, hits, damage, health int
+}
+
+// shotsIn counts the shots with `weapon` from `from` to `to` (ticks; shots in tick order).
+func shotsIn(shots []Shot, from, to int, weapon string) int {
+	n := 0
+	for i := len(shots) - 1; i >= 0 && shots[i].Tick >= from; i-- {
+		if shots[i].Tick <= to && shots[i].Weapon == weapon {
+			n++
+		}
+	}
+	return n
+}
+
+func isSniper(weapon string) bool {
+	return weapon == "AWP" || weapon == "SSG 08" || weapon == "G3SG1" || weapon == "SCAR-20"
+}
 
 // tickYaw is where a player looked (yaw, degrees) and stood on one tick.
 type tickYaw struct {
