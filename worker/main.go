@@ -219,6 +219,12 @@ func analyzeFile(path, mapName string) {
 	enc.SetIndent("", "  ")
 	_ = enc.Encode(analysis)
 	r, _ := json.Marshal(replay)
+	// AT_REPLAY_OUT: also keep the replay (frames, shots, grenades), for tools that study a match
+	if out := os.Getenv("AT_REPLAY_OUT"); out != "" {
+		if err := os.WriteFile(out, r, 0o644); err != nil {
+			log.Fatal(err)
+		}
+	}
 	log.Printf("%d rounds, %d kills, %d frames (%d bytes) in %s", len(analysis.Rounds), len(analysis.Kills), len(replay.Frames), len(r), time.Since(started).Round(time.Millisecond))
 }
 
