@@ -32,6 +32,8 @@ type Round struct {
 	// Each side's equipment value when the freeze time ended (its buy).
 	CTEquipment int `json:"ctEquipment"`
 	TEquipment  int `json:"tEquipment"`
+	// When the freeze time ended and the round clock started. 0 if the demo doesn't show it.
+	FreezeEndTick int `json:"freezeEndTick,omitempty"`
 }
 
 // Kill is one death, with who traded it.

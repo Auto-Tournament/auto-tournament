@@ -323,6 +323,7 @@ func Analyze(r io.Reader, mapName string, standIns map[string]string) (*Analysis
 	// The round clock: from which tick, how many seconds; the bomb's after a plant.
 	var (
 		clockFrom   int
+		freezeEnd   int
 		clockLen    = 115.0
 		bombPlanted bool
 	)
@@ -372,6 +373,7 @@ func Analyze(r io.Reader, mapName string, standIns map[string]string) (*Analysis
 		if live && !gs.IsWarmupPeriod() {
 			inRound = true
 			clockFrom, clockLen, bombPlanted = gs.IngameTick(), 115, false
+			freezeEnd = clockFrom
 			if t, err := gs.Rules().RoundTime(); err == nil && t > 0 {
 				clockLen = t.Seconds()
 			}
@@ -397,7 +399,7 @@ func Analyze(r io.Reader, mapName string, standIns map[string]string) (*Analysis
 			start = rounds[len(rounds)-1].EndTick
 		}
 		reason := reasonName(e.Reason)
-		rd := Round{Number: len(rounds) + 1, StartTick: start, EndTick: gs.IngameTick(), Winner: sideName(e.Winner), Reason: &reason, CTEquipment: equipCT, TEquipment: equipT}
+		rd := Round{Number: len(rounds) + 1, StartTick: start, EndTick: gs.IngameTick(), FreezeEndTick: freezeEnd, Winner: sideName(e.Winner), Reason: &reason, CTEquipment: equipCT, TEquipment: equipT}
 		rounds = append(rounds, rd)
 		roster := map[string]string{}
 		for _, pl := range gs.Participants().Playing() {
