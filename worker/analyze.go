@@ -95,6 +95,12 @@ type Replay struct {
 	Bomb []ReplayBomb `json:"bomb"`
 	// Damage taken: [tick, player index, health lost, 1 for a headshot].
 	Damage [][4]int `json:"damage"`
+	// Who has which enemy in view: [player index, enemy index, from tick, to tick],
+	// on the frames' FrameStep.
+	Sees [][4]int `json:"sees,omitempty"`
+	// What each player holds and carries, one row each time it changes:
+	// [tick, player index, gun, bullets in the magazine, armor, helmet, defuse kit, money, has the bomb, scoped, crouching].
+	Gear [][11]any `json:"gear,omitempty"`
 }
 
 type rawDamage struct {
@@ -135,6 +141,28 @@ type rawGrenade struct {
 	kind    string
 	thrower string
 	path    [][3]float64
+}
+
+type rawGear struct {
+	tick  int
+	key   string
+	state [9]any
+}
+
+type rawSees struct {
+	viewer, enemy string
+	from, to      int
+}
+
+func gearOf(pl *common.Player) [9]any {
+	gun, clip, bomb := "", 0, false
+	if w := pl.ActiveWeapon(); w != nil {
+		gun, clip = w.String(), w.AmmoInMagazine()
+	}
+	for _, w := range pl.Weapons() {
+		bomb = bomb || w.Type == common.EqBomb
+	}
+	return [9]any{gun, clip, pl.Armor(), pl.HasHelmet(), pl.HasDefuseKit(), pl.Money(), bomb, pl.IsScoped(), pl.IsDucking()}
 }
 
 type rawBlind struct {
@@ -316,6 +344,10 @@ func Analyze(r io.Reader, mapName string, standIns map[string]string) (*Analysis
 		equipCT   int
 		equipT    int
 		frames    = map[int]map[string][6]float64{}
+		gear      []rawGear
+		lastGear  = map[string][9]any{}
+		sees      []rawSees
+		seeing    = map[[2]string]int{} // viewer, enemy -> since when
 		botNames  = map[string]string{} // replay ids of bots (bot:<name>) -> name
 		lastFrame = -FrameStep
 		clans     = map[int]map[string]string{} // round -> side -> the team's in-game name
@@ -350,6 +382,7 @@ func Analyze(r io.Reader, mapName string, standIns map[string]string) (*Analysis
 		clans = map[int]map[string]string{}
 		shots, hitTicks = map[string][]Shot{}, map[string][]int{}
 		frames = map[int]map[string][6]float64{}
+		gear, lastGear, sees, seeing = nil, map[string][9]any{}, nil, map[[2]string]int{}
 		botNames = map[string]string{}
 		spotted = map[[2]int]bool{}
 		spotTick = map[[2]int]int{}
@@ -755,6 +788,7 @@ func Analyze(r io.Reader, mapName string, standIns map[string]string) (*Analysis
 		if tick-lastFrame >= FrameStep {
 			lastFrame = tick
 			f := map[string][6]float64{}
+			inFrame := map[string]*common.Player{}
 			for _, pl := range playing {
 				if pl == nil || !pl.IsAlive() {
 					continue
@@ -771,6 +805,28 @@ func Analyze(r io.Reader, mapName string, standIns map[string]string) (*Analysis
 				}
 				pos := pl.Position()
 				f[key] = [6]float64{math.Round(pos.X), math.Round(pos.Y), math.Round(float64(pl.ViewDirectionX())), float64(pl.Health()), float64(pl.Team), math.Round(pos.Z)}
+				inFrame[key] = pl
+				if g := gearOf(pl); g != lastGear[key] {
+					lastGear[key] = g
+					gear = append(gear, rawGear{tick, key, g})
+				}
+			}
+			now := map[[2]string]bool{}
+			for ka, a := range inFrame {
+				for ke, e := range inFrame {
+					if a.Team != e.Team && a.HasSpotted(e) {
+						now[[2]string{ka, ke}] = true
+						if _, on := seeing[[2]string{ka, ke}]; !on {
+							seeing[[2]string{ka, ke}] = tick
+						}
+					}
+				}
+			}
+			for k, from := range seeing {
+				if !now[k] {
+					sees = append(sees, rawSees{k[0], k[1], from, tick})
+					delete(seeing, k)
+				}
 			}
 			frames[tick] = f
 		}
@@ -875,6 +931,28 @@ func Analyze(r io.Reader, mapName string, standIns map[string]string) (*Analysis
 	for _, fx := range effects {
 		if fx.Start >= liveTick && fx.Start <= lastTick {
 			replay.Effects = append(replay.Effects, fx)
+		}
+	}
+	for k, from := range seeing {
+		sees = append(sees, rawSees{k[0], k[1], from, lastTick})
+	}
+	sort.Slice(sees, func(a, b int) bool {
+		if sees[a].from != sees[b].from {
+			return sees[a].from < sees[b].from
+		}
+		return sees[a].viewer+sees[a].enemy < sees[b].viewer+sees[b].enemy
+	})
+	for _, s := range sees {
+		i, ok := index[s.viewer]
+		j, ok2 := index[s.enemy]
+		if ok && ok2 && s.to >= liveTick && s.from <= lastTick {
+			replay.Sees = append(replay.Sees, [4]int{i, j, s.from, s.to})
+		}
+	}
+	for _, g := range gear {
+		if i, ok := index[g.key]; ok && g.tick >= liveTick && g.tick <= lastTick {
+			st := g.state
+			replay.Gear = append(replay.Gear, [11]any{g.tick, i, st[0], st[1], st[2], st[3], st[4], st[5], st[6], st[7], st[8]})
 		}
 	}
 	for _, b := range blinds {
