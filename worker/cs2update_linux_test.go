@@ -53,3 +53,18 @@ func TestSetSteamOfflineTogglesOnlyThatValue(t *testing.T) {
 		t.Fatalf("offline again:\n%s", b)
 	}
 }
+
+func TestSetHighPriorityUpdateChangesOnlyThatValue(t *testing.T) {
+	manifest := filepath.Join(t.TempDir(), "appmanifest_730.acf")
+	acf := "\"AppState\"\n{\n\t\"StateFlags\"\t\t\"6\"\n\t\"AutoUpdateBehavior\"\t\t\"0\"\n}\n"
+	if err := os.WriteFile(manifest, []byte(acf), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := setHighPriorityUpdate(manifest); err != nil {
+		t.Fatal(err)
+	}
+	want := strings.Replace(acf, "\"AutoUpdateBehavior\"\t\t\"0\"", "\"AutoUpdateBehavior\"\t\t\"2\"", 1)
+	if b, _ := os.ReadFile(manifest); string(b) != want {
+		t.Fatalf("got:\n%s", b)
+	}
+}
