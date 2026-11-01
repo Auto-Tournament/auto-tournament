@@ -85,8 +85,14 @@ export function RecorderItem({
             <Chip
               size="small"
               variant="outlined"
-              color={r.online ? 'success' : 'default'}
-              label={t(r.online ? 'highlightsAdmin.fleet.connected' : 'highlightsAdmin.offline')}
+              color={r.online && !r.standby ? 'success' : 'default'}
+              label={t(
+                r.standby
+                  ? 'highlightsAdmin.fleet.standby'
+                  : r.online
+                    ? 'highlightsAdmin.fleet.connected'
+                    : 'highlightsAdmin.offline'
+              )}
             />
             {['queued', 'updating'].includes(r.updateStatus) && (
               <Chip
@@ -134,7 +140,7 @@ export function RecorderItem({
               <Chip size="small" color="warning" label={t('highlightsAdmin.paused')} />
             ) : r.working ? (
               <Chip size="small" color="success" label={t('highlightsAdmin.recording')} />
-            ) : r.online ? (
+            ) : r.online && !r.standby ? (
               <Chip
                 size="small"
                 color="success"
@@ -370,7 +376,7 @@ export function RecorderItem({
             >
               {t('highlightsAdmin.rerunBenchmark')}
             </Button>
-            {!r.online && (
+            {!r.online && !r.standby && (
               <Button
                 size="small"
                 color="error"

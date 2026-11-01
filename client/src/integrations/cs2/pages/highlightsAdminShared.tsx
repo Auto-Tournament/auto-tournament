@@ -34,6 +34,7 @@ export interface BenchmarkTry {
 }
 
 export interface Recorder {
+  standby?: boolean;
   enabled: boolean;
   effectiveEnabled: boolean;
   groupId: number | null;

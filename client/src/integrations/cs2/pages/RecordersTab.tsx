@@ -48,12 +48,14 @@ import type { Recorder, Run } from './highlightsAdminShared';
 import { duration, shortImage, when } from './highlightsAdminShared';
 import { RecorderItem } from './RecorderItem';
 import { AddRecorder } from './AddRecorder';
+import { AutoscaleStatus, type AutoscaleReport } from './AutoscaleStatus';
 
 export function RecordersTab() {
   const { t } = useModuleTranslation('cs2');
   const { showSuccess, showError } = useSnackbar();
   const [recorders, setRecorders] = useState<Recorder[] | null>(null);
   const [groups, setGroups] = useState<RecorderGroup[]>([]);
+  const [autoscale, setAutoscale] = useState<AutoscaleReport[]>([]);
   const [updatingAll, setUpdatingAll] = useState(false);
   const [open, setOpen] = useState<string | null>(null);
   const [renaming, setRenaming] = useState<{ name: string; label: string } | null>(null);
@@ -61,10 +63,13 @@ export function RecordersTab() {
   const load = useCallback(async () => {
     try {
       const [res, fleet] = await Promise.all([
-        api.get<{ recorders: Recorder[] }>('/api/game/cs2/recorders'),
+        api.get<{ recorders: Recorder[]; autoscale?: AutoscaleReport[] }>(
+          '/api/game/cs2/recorders'
+        ),
         api.get<{ groups: RecorderGroup[] }>('/api/game/cs2/recorder-groups'),
       ]);
       setRecorders(res.recorders);
+      setAutoscale(res.autoscale ?? []);
       setGroups(fleet.groups);
     } catch (err) {
       showError(err instanceof Error ? err.message : t('highlightsAdmin.loadError'));
@@ -210,6 +215,7 @@ export function RecordersTab() {
           </Typography>
         );
       })()}
+      <AutoscaleStatus reports={autoscale} />
       <RecorderGroups groups={groups} onChanged={load} showToggles={false} />
       {recorders.length === 0 && (
         <Box
