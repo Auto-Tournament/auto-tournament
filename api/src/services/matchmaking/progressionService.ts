@@ -13,6 +13,7 @@ import {
   COMMEND_WINDOW_SECONDS,
   levelFor,
   parseCommend,
+  positivePercent,
   XP,
   xpForMatch,
   type XpReason,
@@ -183,6 +184,8 @@ export const progressionService = {
     intoLevel: number;
     forNext: number;
     thumbsUp: number;
+    /** Share of votes that were positive, once there are enough to mean anything. */
+    positivePercent: number | null;
     topTags: Array<{ tag: string; count: number }>;
     thumbsDown?: number;
     downTags?: Array<{ tag: string; count: number }>;
@@ -204,10 +207,13 @@ export const progressionService = {
     );
     const ofValue = (value: number) =>
       tags.filter((t) => t.value === value).map((t) => ({ tag: t.tag, count: Number(t.n) }));
+    const up = Number(counts?.up ?? 0);
+    const down = Number(counts?.down ?? 0);
     return {
       ...levelFor(totalXp),
       totalXp,
-      thumbsUp: Number(counts?.up ?? 0),
+      thumbsUp: up,
+      positivePercent: positivePercent(up, down),
       topTags: ofValue(1),
       ...(withNegatives ? { thumbsDown: Number(counts?.down ?? 0), downTags: ofValue(-1) } : {}),
     };

@@ -1,13 +1,14 @@
 /**
  * Commends: after a match, each player can commend up to three others from
- * it, teammates or opponents, as Friendly, Leader, Teacher or Good sport.
- * Positive only; reports stay separate (services/playerReports.ts). Nobody
- * sees who commended whom: a player's profile shows counts only.
+ * it, teammates or opponents, as Friendly, Leader, Teacher or Good sport, or
+ * mark them Toxic, Griefing, Unhelpful or Bad sport. Reports stay separate
+ * (services/playerReports.ts). Nobody sees who gave what: a player's profile
+ * shows counts only, and negative counts only to the player and admins.
  *
  * Open for 24 hours after the match is over. One kind per player per match;
  * picking another kind changes it, picking none takes it back.
  *
- * Kept in `commends` with matchmaking's thumbs (value 1, the kind as its
+ * Kept in `commends` with matchmaking's thumbs (value 1 or -1, the kind as its
  * tag), so a profile counts both.
  */
 
@@ -20,6 +21,9 @@ import { isOneOf, type Untrusted } from '../utils/untrusted';
 
 export const COMMEND_KINDS = ['friendly', 'leader', 'teacher', 'good_sport'] as const;
 export type CommendKind = (typeof COMMEND_KINDS)[number];
+export const NEGATIVE_KINDS = ['toxic', 'griefing', 'unhelpful', 'bad_sport'] as const;
+export type NegativeKind = (typeof NEGATIVE_KINDS)[number];
+const GIVEABLE = [...COMMEND_KINDS, ...NEGATIVE_KINDS] as const;
 
 /** Commends a player can give in one match. */
 export const COMMENDS_PER_MATCH = 3;
@@ -123,7 +127,7 @@ export interface CommendState {
   closesAt: number | null;
   max: number;
   /** Receiver id → the kind the viewer gave them. */
-  given: Record<string, CommendKind>;
+  given: Record<string, CommendKind | NegativeKind>;
   sides: CommendSide[];
 }
 
@@ -136,14 +140,17 @@ export async function commendState(slug: string, viewerId: string | null): Promi
       : null;
   const played = !!viewerId && sides.some((s) => s.players.some((p) => p.id === viewerId));
   const open = played && closesAt !== null && Date.now() / 1000 < closesAt;
-  const given: Record<string, CommendKind> = {};
+  const given: CommendState['given'] = {};
   if (viewerId) {
-    const rows = await db.queryAsync<{ receiver_id: string; kind: CommendKind }>(
+    const rows = await db.queryAsync<{
+      receiver_id: string;
+      kind: CommendState['given'][string];
+    }>(
       `SELECT to_player_id AS receiver_id, tag AS kind FROM commends
-        WHERE match_slug = ? AND from_player_id = ? AND value = 1 AND tag IS NOT NULL`,
+        WHERE match_slug = ? AND from_player_id = ? AND tag IS NOT NULL`,
       [slug, viewerId]
     );
-    for (const r of rows) if (COMMEND_KINDS.includes(r.kind)) given[r.receiver_id] = r.kind;
+    for (const r of rows) if (GIVEABLE.includes(r.kind)) given[r.receiver_id] = r.kind;
   }
   return { open, closesAt, max: COMMENDS_PER_MATCH, given, sides };
 }
@@ -155,7 +162,7 @@ export async function setCommend(
   receiverId: string,
   kind: Untrusted
 ): Promise<CommendState> {
-  if (kind !== null && !isOneOf(COMMEND_KINDS, kind)) {
+  if (kind !== null && !isOneOf(GIVEABLE, kind)) {
     throw new CommendError('Unknown commend', 400, 'bad_kind');
   }
   if (giverId === receiverId) {
@@ -180,10 +187,10 @@ export async function setCommend(
     }
     await db.runAsync(
       `INSERT INTO commends (match_slug, from_player_id, to_player_id, value, tag, created_at)
-       VALUES (?, ?, ?, 1, ?, EXTRACT(EPOCH FROM NOW())::INTEGER)
+       VALUES (?, ?, ?, ?, ?, EXTRACT(EPOCH FROM NOW())::INTEGER)
        ON CONFLICT (match_slug, from_player_id, to_player_id)
-       DO UPDATE SET value = 1, tag = EXCLUDED.tag, created_at = EXCLUDED.created_at`,
-      [slug, giverId, receiverId, kind]
+       DO UPDATE SET value = EXCLUDED.value, tag = EXCLUDED.tag, created_at = EXCLUDED.created_at`,
+      [slug, giverId, receiverId, isOneOf(NEGATIVE_KINDS, kind) ? -1 : 1, kind]
     );
   }
   return commendState(slug, giverId);

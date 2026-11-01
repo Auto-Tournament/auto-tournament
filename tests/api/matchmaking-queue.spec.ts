@@ -27,7 +27,12 @@ import {
   trustScore,
   type QueuedParty,
 } from '../../api/src/services/matchmaking/rules';
-import { levelFor, parseCommend, xpForMatch } from '../../api/src/services/matchmaking/progression';
+import {
+  levelFor,
+  parseCommend,
+  positivePercent,
+  xpForMatch,
+} from '../../api/src/services/matchmaking/progression';
 import { signInAsPlayerViaRequest, signInViaRequest } from '../helpers/auth';
 
 /**
@@ -241,6 +246,10 @@ test.describe('matchmaking rules (pure)', () => {
     expect(
       findGroup([party('p', 0), party('q', 10), party('r', 20, 0.9)], 1)!.map((p) => p.entryId)
     ).toEqual(['p', 'q']);
+  test('commends: the public percentage waits for 20 votes', TAGS, () => {
+    expect(positivePercent(19, 0)).toBeNull();
+    expect(positivePercent(19, 1)).toBe(95);
+    expect(positivePercent(0, 20)).toBe(0);
   });
 
   test('commends: thumbs up with an optional tag, thumbs down needs a reason', TAGS, () => {

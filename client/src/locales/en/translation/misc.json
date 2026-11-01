@@ -894,7 +894,8 @@
       "historyEmpty": "No matchmaking matches yet.",
       "win": "Win",
       "loss": "Loss",
-      "draw": "Draw"
+      "draw": "Draw",
+      "positivePercent": "{{percent}}% positive"
     },
     "leaderboard": {
       "toLadder": "Matchmaking ladder →",

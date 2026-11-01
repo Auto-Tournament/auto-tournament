@@ -870,6 +870,8 @@
     "totalN_one": "{{count}} commend",
     "totalN_other": "{{count}} commends",
     "matchesN_one": "{{count}} match",
-    "matchesN_other": "{{count}} matches"
+    "matchesN_other": "{{count}} matches",
+    "negative": "Something was wrong",
+    "negativeFor": "Something wrong with {{name}}"
   }
 }

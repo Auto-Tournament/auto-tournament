@@ -896,7 +896,8 @@
       "win": "Win",
       "loss": "Loss",
       "draw": "Draw",
-      "negativesPrivate": "Only you and admins can see these."
+      "negativesPrivate": "Only you and admins can see these.",
+      "positivePercent": "{{percent}}% positive"
     },
     "leaderboard": {
       "toLadder": "Matchmaking ladder →",
