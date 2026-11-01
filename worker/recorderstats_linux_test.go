@@ -126,3 +126,19 @@ func TestRecorderStatsUnreachableSiteOnlyLogs(t *testing.T) {
 	t.Setenv("AT_STATS_URL", "http://127.0.0.1:1")
 	r.sendRecorderStats(context.Background(), tries, "bundled", 1)
 }
+
+func TestRecordersOnCard(t *testing.T) {
+	file := filepath.Join(t.TempDir(), "recorders-on-card")
+	t.Setenv("AT_RECORDERS_PER_GPU", "3")
+	if got := recordersOnCard(file); got != 3 {
+		t.Fatalf("no file: %d", got)
+	}
+	for body, want := range map[string]int{"2\n": 2, "junk": 3, "0": 3, "999": 3} {
+		if err := os.WriteFile(file, []byte(body), 0o644); err != nil {
+			t.Fatal(err)
+		}
+		if got := recordersOnCard(file); got != want {
+			t.Errorf("%q: %d", body, got)
+		}
+	}
+}

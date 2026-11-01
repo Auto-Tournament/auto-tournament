@@ -119,6 +119,7 @@ func (a *agent) autoscaleTick(ctx context.Context, st *autoscaleState, allowed [
 		}
 		a.lowerOnOutOfMemory(ctx, st, c.UUID, in.Recorders[c.UUID])
 	}
+	a.writeRecorderCounts(in.Recorders)
 	a.prepareCopy(ctx, cards, allowed, scaled, in.Recorders, queue.Waiting)
 	for _, act := range planScale(in) {
 		if act.Start {
@@ -181,6 +182,25 @@ func (a *agent) lowerOnOutOfMemory(ctx context.Context, st *autoscaleState, card
 			st.limits[card] = limit
 		}
 		return
+	}
+}
+
+// writeRecorderCounts tells each recorder how many share its card, in its clips
+// folder: a container can't see the others, and its benchmark result reports it.
+func (a *agent) writeRecorderCounts(byCard map[string][]scaleRecorder) {
+	for _, recorders := range byCard {
+		for _, r := range recorders {
+			clips := filepath.Join(a.root, "clips")
+			if r.Name != "at-recorder" {
+				clips = filepath.Join(a.root, "instances", strings.TrimPrefix(r.Name, a.name+"-"), "clips")
+			}
+			if !exists(clips) {
+				continue
+			}
+			if err := os.WriteFile(filepath.Join(clips, "recorders-on-card"), []byte(strconv.Itoa(len(recorders))+"\n"), 0o644); err != nil {
+				log.Printf("autoscale: %v", err)
+			}
+		}
 	}
 }
 

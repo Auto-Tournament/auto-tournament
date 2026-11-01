@@ -53,6 +53,18 @@ type recorderStats struct {
 // statsOffByAdmin: the platform's setting, sent with every job.
 var statsOffByAdmin atomic.Bool
 
+// recordersOnCard is how many recorders share this one's GPU: what the autoscaler
+// last wrote to the clips folder (a container can't see the others), else the
+// setting. The file is checked for sense, since it arrives from outside the worker.
+func recordersOnCard(file string) int {
+	if b, err := os.ReadFile(file); err == nil {
+		if n, err := strconv.Atoi(strings.TrimSpace(string(b))); err == nil && n >= 1 && n <= 64 {
+			return n
+		}
+	}
+	return envPositive("AT_RECORDERS_PER_GPU", 1)
+}
+
 func statsEnabled() bool { return env("AT_TELEMETRY", "1") != "0" && !statsOffByAdmin.Load() }
 
 func logStatsNotice() {
@@ -198,7 +210,7 @@ func (r *recorder) sendRecorderStats(ctx context.Context, tries []benchmarkTry, 
 	s := recorderStats{
 		InstallID: id, BenchmarkVersion: benchmarkVersion, GPUModel: card.name, VRAMMb: card.totalMb,
 		CPUModel: cpuModel(), Driver: card.driver, RecorderVersion: strconv.Itoa(recorderVersion),
-		Resolution: fmt.Sprintf("%dx%d", r.width, r.height), RecordersPerGPU: envPositive("AT_RECORDERS_PER_GPU", 1),
+		Resolution: fmt.Sprintf("%dx%d", r.width, r.height), RecordersPerGPU: recordersOnCard("/mnt/clips/recorders-on-card"),
 		Seconds: seconds, FramesPerSecond: fps, PeakVRAMMb: peakMb, FailedTries: failed,
 	}
 	body, err := json.Marshal(s)
