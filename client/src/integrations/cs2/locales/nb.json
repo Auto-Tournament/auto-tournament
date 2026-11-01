@@ -2306,7 +2306,15 @@
       "updateAvailable": "Oppdatering tilgjengelig",
       "upToDate": "Oppdatert",
       "image": "bilde",
-      "updatedAt": "oppdatert {{time}}"
+      "updatedAt": "oppdatert {{time}}",
+      "standby": "I reserve",
+      "autoscale": {
+        "title": "Automatisk skalering",
+        "waiting": "Jobber som venter: {{count}}",
+        "full": "ikke plass til flere på dette kortet",
+        "memory": "andre programmer bruker minnet",
+        "limit": "senket etter at minnet gikk tomt"
+      }
     },
     "runFailed_one": "{{count}} feilet",
     "runFailed_other": "{{count}} feilet"

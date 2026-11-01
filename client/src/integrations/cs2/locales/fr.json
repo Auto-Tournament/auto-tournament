@@ -2309,7 +2309,15 @@
       "updateAvailable": "Update available",
       "upToDate": "Up to date",
       "image": "image",
-      "updatedAt": "updated {{time}}"
+      "updatedAt": "updated {{time}}",
+      "standby": "Standby",
+      "autoscale": {
+        "title": "Autoscale",
+        "waiting": "Jobs waiting: {{count}}",
+        "full": "no room for more on this card",
+        "memory": "other programs are using its memory",
+        "limit": "lowered after running out of memory"
+      }
     },
     "runFailed_one": "{{count}} failed",
     "runFailed_other": "{{count}} failed",
