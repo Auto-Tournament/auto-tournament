@@ -340,7 +340,8 @@ const ctl = {
  * Our own video player for highlights (the drafts' "video player" board):
  * a scrubber with each kill marked and the slow motion shaded, play, ±5 s,
  * mute, the time, speed (1×, 0.5×, 0.25×), share, download and full screen.
- * Space or K plays, J and L (or the arrows) skip, M mutes, F goes full screen.
+ * Space or K plays, J and L (or the arrows) skip, M mutes, F goes full screen
+ * (F from anywhere on the page, the rest with the player focused).
  */
 export const HighlightPlayer = forwardRef<HighlightPlayerHandle, HighlightPlayerProps>(
   function HighlightPlayer(
@@ -497,6 +498,24 @@ export const HighlightPlayer = forwardRef<HighlightPlayerHandle, HighlightPlayer
       else void box.current?.requestFullscreen?.();
     };
 
+    // F works anywhere on the page, not only with the player focused, unless the
+    // viewer is typing. With several players on a page, the one playing takes it.
+    useEffect(() => {
+      const onPageKey = (e: globalThis.KeyboardEvent) => {
+        if (e.key.toLowerCase() !== 'f' || e.ctrlKey || e.metaKey || e.altKey || e.repeat) return;
+        const target = e.target instanceof HTMLElement ? e.target : null;
+        if (target?.closest('input, textarea, select, [contenteditable="true"]')) return;
+        if (target && box.current?.contains(target)) return; // onKey has it
+        const others = document.querySelectorAll('[data-testid="highlight-player"]').length > 1;
+        if (others && video.current?.paused !== false) return;
+        e.preventDefault();
+        if (document.fullscreenElement) void document.exitFullscreen();
+        else void box.current?.requestFullscreen?.();
+      };
+      document.addEventListener('keydown', onPageKey);
+      return () => document.removeEventListener('keydown', onPageKey);
+    }, []);
+
     // The video file itself: pasted in Discord (or anywhere that unfurls
     // links) it plays as a video, no page in between. With the song the viewer
     // chose, mixed in at the default level (volumes are each viewer's own): asked
@@ -537,6 +556,7 @@ export const HighlightPlayer = forwardRef<HighlightPlayerHandle, HighlightPlayer
     };
 
     const onKey = (e: KeyboardEvent) => {
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
       const k = e.key.toLowerCase();
       const v = video.current;
       if (!v) return;
