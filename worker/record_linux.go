@@ -920,8 +920,37 @@ func (r *recorder) recordWindow(g *game, look clipLook, card *cardRender, name s
 			log.Printf("the focus blur ran out of GPU memory; encoding %s with the CPU blur", filepath.Base(out))
 			err = encode("")
 		}
-		return err
+		return retryOutOfGPUMemory(err, filepath.Base(out), encoderMemoryWaits, time.Sleep, func() error { return encode(gpuBlur(r.encoder)) })
 	}, nil
+}
+
+// encoderMemoryWaits: how long to wait before each new try when the GPU had no
+// memory left to start the encoder. Another recorder on the card frees it when
+// it finishes a clip.
+var encoderMemoryWaits = []time.Duration{30 * time.Second, time.Minute, 2 * time.Minute}
+
+// encoderOutOfMemory: the encoder could not start for lack of GPU memory, as
+// NVENC says it (three recorders on a 12 GB card, 2026-11-01).
+func encoderOutOfMemory(err error) bool {
+	if err == nil {
+		return false
+	}
+	msg := err.Error()
+	return strings.Contains(msg, "CUDA_ERROR_OUT_OF_MEMORY") || strings.Contains(msg, "failed: out of memory")
+}
+
+// retryOutOfGPUMemory tries again after each wait while err is the encoder
+// running out of GPU memory; any other result is returned as it is.
+func retryOutOfGPUMemory(err error, name string, waits []time.Duration, sleep func(time.Duration), try func() error) error {
+	for _, wait := range waits {
+		if !encoderOutOfMemory(err) {
+			return err
+		}
+		log.Printf("the encoder ran out of GPU memory for %s; trying again in %s", name, wait)
+		sleep(wait)
+		err = try()
+	}
+	return err
 }
 
 // windowCut is a recorded window's edit: its pieces' speeds, the kill feed's
