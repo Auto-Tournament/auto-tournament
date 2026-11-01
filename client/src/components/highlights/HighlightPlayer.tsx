@@ -279,6 +279,18 @@ function byGenre(tracks: MusicTrack[]): [string, MusicTrack[]][] {
   return [...groups.entries()].sort(([a], [b]) => rank(a) - rank(b));
 }
 
+/** The query that mixes this sound into a video file (api/routes/highlights.ts), '' for none. */
+function soundQuery(crowd: boolean, song: MusicTrack | null, introEnd: number, level: number) {
+  return [
+    crowd ? 'crowd=1' : null,
+    song
+      ? `music=${encodeURIComponent(song.id)}&intro=${introEnd.toFixed(1)}&level=${level.toFixed(2)}`
+      : null,
+  ]
+    .filter(Boolean)
+    .join('&');
+}
+
 /** What a download can carry: the game alone, with its crowd, with the music playing, with both. */
 function downloadChoices({ crowd, song }: { crowd: boolean; song: MusicTrack | null }) {
   const out: { key: string; crowd: boolean; song: MusicTrack | null }[] = [
@@ -498,9 +510,13 @@ export const HighlightPlayer = forwardRef<HighlightPlayerHandle, HighlightPlayer
     };
 
     // The video file itself: pasted in Discord (or anywhere that unfurls
-    // links) it plays as a video, no page in between.
+    // links) it plays as a video, no page in between. With the sound the viewer
+    // chose, mixed in: asked for now, so it is ready when someone opens the link.
     const share = async () => {
-      const url = shareUrl ?? new URL(src, window.location.origin).href;
+      const file = new URL(src, window.location.origin).href;
+      const query = soundQuery(!!crowd && crowdOn, song, introEnd, musicLevel);
+      const url = shareUrl ?? (query ? `${file}?${query}&inline=1` : file);
+      if (!shareUrl && query) void fetch(url, { method: 'HEAD' }).catch(() => undefined);
       try {
         if (navigator.share) {
           await navigator.share({ title: label, url });
@@ -1191,22 +1207,17 @@ export const HighlightPlayer = forwardRef<HighlightPlayerHandle, HighlightPlayer
           data-testid="highlight-download-menu"
         >
           {downloadChoices({ crowd: !!crowd, song }).map((c) => {
-            const params = [
-              c.crowd ? 'crowd=1' : null,
-              c.song
-                ? `music=${encodeURIComponent(c.song.id)}&intro=${introEnd.toFixed(1)}&level=${musicLevel.toFixed(2)}`
-                : null,
-            ].filter(Boolean);
+            const query = soundQuery(c.crowd, c.song, introEnd, musicLevel);
             return (
               <MenuItem
                 key={c.key}
                 component="a"
-                href={params.length ? `${src}?${params.join('&')}` : src}
+                href={query ? `${src}?${query}` : src}
                 download={downloadName ?? ''}
                 data-testid={`highlight-download-${c.key}`}
                 onClick={() => {
                   setDownloadMenu(null);
-                  if (params.length) showSuccess(t('videoHighlights.player.downloadMixing'));
+                  if (query) showSuccess(t('videoHighlights.player.downloadMixing'));
                 }}
                 sx={{ gap: 1.5, alignItems: 'flex-start' }}
               >
