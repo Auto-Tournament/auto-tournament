@@ -77,6 +77,21 @@ func planScale(in scaleInput) []scaleAction {
 	return actions
 }
 
+// scaleBlocked says why a card has no room: "limit" (lowered after running out of
+// memory), "full" (the card's size) or "memory" (others hold it); "" with room.
+func scaleBlocked(card scaleCard, running int, limits map[string]int) string {
+	if scaleRoom(card, running, limits) > 0 {
+		return ""
+	}
+	if limit, ok := limits[card.UUID]; ok && running >= limit {
+		return "limit"
+	}
+	if (card.TotalMB-scaleReserveMB)/scaleRecorderMB-running <= 0 {
+		return "full"
+	}
+	return "memory"
+}
+
 // scaleRoom counts how many more recorders fit. The size of the whole card also
 // caps it: a recorder between jobs holds almost no memory, but needs it all back
 // at its next job, so free memory alone would put a third on a 12 GB card.

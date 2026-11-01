@@ -220,3 +220,22 @@ func TestWriteRecorderCounts(t *testing.T) {
 		}
 	}
 }
+
+func TestScaleBlockedSaysWhy(t *testing.T) {
+	card := scaleCard{UUID: "a", TotalMB: 12288}
+	for _, c := range []struct {
+		used, running int
+		limits        map[string]int
+		want          string
+	}{
+		{0, 1, nil, ""},
+		{0, 2, nil, "full"},
+		{9000, 1, nil, "memory"},
+		{0, 1, map[string]int{"a": 1}, "limit"},
+	} {
+		card.UsedMB = c.used
+		if got := scaleBlocked(card, c.running, c.limits); got != c.want {
+			t.Errorf("used %d, %d running, limits %v: got %q, want %q", c.used, c.running, c.limits, got, c.want)
+		}
+	}
+}

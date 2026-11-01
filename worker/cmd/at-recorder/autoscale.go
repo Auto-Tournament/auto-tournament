@@ -30,6 +30,7 @@ type autoscaleState struct {
 	idleSince map[string]time.Time
 	lastStart map[string]time.Time
 	startErr  map[string]string // per card: said once, this retries every minute
+	reportErr string
 	limits    map[string]int
 }
 
@@ -122,6 +123,7 @@ func (a *agent) autoscaleTick(ctx context.Context, st *autoscaleState, allowed [
 	}
 	a.writeRecorderCounts(in.Recorders)
 	a.prepareCopy(ctx, cards, allowed, scaled, in.Recorders, queue.Waiting)
+	a.reportAutoscale(ctx, st, in, scaled)
 	for _, act := range planScale(in) {
 		if act.Start {
 			if since, ok := st.lastStart[act.CardUUID]; ok && now.Sub(since) < autoscaleSettle {
@@ -158,6 +160,42 @@ func (a *agent) autoscaleTick(ctx context.Context, st *autoscaleState, allowed [
 func (a *agent) isIdle(ctx context.Context, name string) bool {
 	_, err := a.run(ctx, "exec", name, "test", "-f", "/mnt/clips/recorder-idle")
 	return err == nil
+}
+
+// reportAutoscale tells the platform what it sees, for the Recorders page. The
+// platform only shows it: nothing here depends on it arriving.
+func (a *agent) reportAutoscale(ctx context.Context, st *autoscaleState, in scaleInput, scaled []scaledContainer) {
+	type card struct {
+		Bus       string   `json:"bus"`
+		Recorders []string `json:"recorders"`
+		Blocked   string   `json:"blocked"`
+	}
+	report := struct {
+		Host        string   `json:"host"`
+		JobsWaiting int      `json:"jobsWaiting"`
+		Cards       []card   `json:"cards"`
+		Standby     []string `json:"standby"`
+	}{Host: a.name, JobsWaiting: in.JobsWaiting, Cards: []card{}, Standby: []string{}}
+	for _, c := range in.Cards {
+		if !slices.Contains(in.Allowed, c.UUID) {
+			continue
+		}
+		names := []string{}
+		for _, r := range in.Recorders[c.UUID] {
+			names = append(names, r.Name)
+		}
+		report.Cards = append(report.Cards, card{c.Bus, names, scaleBlocked(c, len(names), in.Limits)})
+	}
+	for _, c := range scaled {
+		if !c.running {
+			report.Standby = append(report.Standby, c.name)
+		}
+	}
+	err := a.apiPath(ctx, "autoscale", report, nil)
+	if msg := fmt.Sprint(err); err != nil && msg != st.reportErr {
+		st.reportErr = msg
+		log.Printf("autoscale: could not report to the platform: %v", err)
+	}
 }
 
 func (a *agent) recorderState(ctx context.Context, name string, st *autoscaleState, now time.Time) scaleRecorder {

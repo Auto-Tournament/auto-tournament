@@ -15,6 +15,7 @@ import { recorderAcceptsWork, requestRecorderUpdate } from '../demos/recorderFle
 
 import { Router, type Request, type Response } from 'express';
 import { requireRecorder } from '../demos/recorderKeys';
+import { saveAutoscaleReport } from '../demos/recorderAutoscale';
 import { appendPart, bodyOf, startUpload, UploadError } from '../demos/uploadParts';
 import { log } from '../../../utils/logger';
 import { recorderLink } from '../demos/recorderLink';
@@ -376,6 +377,28 @@ export function registerRecorderJobRoutes(router: Router): void {
       log.error('[HIGHLIGHTS] queue count failed', { error });
       return res.status(500).json({ success: false, error: 'Could not count the jobs' });
     }
+  });
+
+  /**
+   * @openapi
+   * /api/game/cs2/recorder/autoscale:
+   *   post:
+   *     tags: [Highlights]
+   *     summary: An autoscaler's state, for the Recorders page (recorder)
+   *     description: |
+   *       Sent every minute by a host running `at-recorder autoscale`: the cards it
+   *       may use, what runs on them, why a card has no room, and the recorders it
+   *       stopped until jobs wait.
+   *     responses:
+   *       200:
+   *         description: Noted
+   *       400:
+   *         description: Not a report
+   */
+  router.post('/recorder/autoscale', requireRecorder, (req: Request, res: Response) => {
+    if (!saveAutoscaleReport(req.body))
+      return res.status(400).json({ success: false, error: 'Not an autoscale report' });
+    return res.json({ success: true });
   });
 
   // A file sent in parts (../demos/uploadParts.ts): Cloudflare turns down bodies over 100 MB.
