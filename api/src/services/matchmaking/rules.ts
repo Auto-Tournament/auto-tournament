@@ -184,6 +184,40 @@ export interface QueuedParty {
   window?: number;
   /** The party asked for bots in the empty seats (`findBotFillGroup`). */
   botFill?: boolean;
+  /** Its lowest member's `trustScore` (never shown); omitted without enough votes. */
+  trust?: number;
+}
+
+/** Votes before a player's trust counts: a few bad games say little. */
+export const TRUST_MIN_VOTES = 20;
+/** Waiting this much longer outweighs the widest trust gap: a preference, never a block. */
+const TRUST_GAP_WAIT_SECONDS = 120;
+
+/**
+ * How well a player's votes hold up: the lower bound of the Wilson interval at
+ * 95%, so 19 of 20 scores below 950 of 1000. Null below `TRUST_MIN_VOTES`.
+ */
+export function trustScore(up: number, down: number): number | null {
+  const n = up + down;
+  if (n < TRUST_MIN_VOTES) return null;
+  const z = 1.96;
+  const p = up / n;
+  const spread = z * Math.sqrt((p * (1 - p) + (z * z) / (4 * n)) / n);
+  return (p + (z * z) / (2 * n) - spread) / (1 + (z * z) / n);
+}
+
+/**
+ * The order to try `candidates` for a group led by `anchor`: oldest first, with
+ * a party of different trust treated as having joined up to 2 minutes later.
+ * It only changes who is picked first when there is a choice.
+ */
+function byWaitAndTrust(candidates: QueuedParty[], anchor: QueuedParty): QueuedParty[] {
+  const at = (p: QueuedParty) =>
+    p.queuedAt +
+    (p.trust === undefined || anchor.trust === undefined
+      ? 0
+      : Math.abs(p.trust - anchor.trust) * TRUST_GAP_WAIT_SECONDS);
+  return [...candidates].sort((a, b) => at(a) - at(b));
 }
 
 /** Modes a party may fill with bots: 1v1 against a bot is no match. */
@@ -369,9 +403,11 @@ export function findGroup(queue: QueuedParty[], teamSize: number): QueuedParty[]
     .sort((a, b) => a.queuedAt - b.queuedAt || a.entryId.localeCompare(b.entryId));
 
   for (let anchor = 0; anchor < ordered.length; anchor++) {
-    const picked = pickExact(ordered.slice(anchor + 1), need - ordered[anchor].players.length, [
-      ordered[anchor],
-    ]);
+    const picked = pickExact(
+      byWaitAndTrust(ordered.slice(anchor + 1), ordered[anchor]),
+      need - ordered[anchor].players.length,
+      [ordered[anchor]]
+    );
     if (picked) {
       const group = [ordered[anchor], ...picked];
       if (splitTeams(group, teamSize)) return group;
