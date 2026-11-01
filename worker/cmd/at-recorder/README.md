@@ -143,6 +143,8 @@ it needs no systemd; see `autoscaler.compose.example.yml`.
 - One recorder at a time on a card comes up, with 5 minutes to settle
 - A map stays one CS2 session; extra recorders take other maps
 - After an out-of-memory failure it allows one fewer on that card until restarted
+- It prepares stopped copies between jobs, since a copy needs the first recorder
+  idle, and that one isn't when jobs wait
 - Before starting a stopped copy that is behind on CS2, it copies the first
   recorder's game, when that one is idle
 

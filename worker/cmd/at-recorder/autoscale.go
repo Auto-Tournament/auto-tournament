@@ -13,6 +13,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -118,6 +119,7 @@ func (a *agent) autoscaleTick(ctx context.Context, st *autoscaleState, allowed [
 		}
 		a.lowerOnOutOfMemory(ctx, st, c.UUID, in.Recorders[c.UUID])
 	}
+	a.prepareCopy(ctx, cards, allowed, scaled, in.Recorders, queue.Waiting)
 	for _, act := range planScale(in) {
 		if act.Start {
 			if since, ok := st.lastStart[act.CardUUID]; ok && now.Sub(since) < autoscaleSettle {
@@ -177,6 +179,39 @@ func (a *agent) lowerOnOutOfMemory(ctx context.Context, st *autoscaleState, card
 		if old, ok := st.limits[card]; !ok || limit < old {
 			log.Printf("autoscale: %s ran out of GPU memory: at most %d on this card until restart", r.Name, limit)
 			st.limits[card] = limit
+		}
+		return
+	}
+}
+
+// prepareCopy makes one stopped copy, between jobs, for a card that could run
+// another recorder. A copy can only be made while the first recorder is idle,
+// which it isn't when jobs wait, so they are made ahead of the need.
+func (a *agent) prepareCopy(ctx context.Context, cards []scaleCard, allowed []string, scaled []scaledContainer, recorders map[string][]scaleRecorder, waiting int) {
+	if waiting > 0 || !a.primaryIdle(ctx) {
+		return
+	}
+	for _, card := range cards {
+		if !slices.Contains(allowed, card.UUID) {
+			continue
+		}
+		have := len(recorders[card.UUID])
+		for _, c := range scaled {
+			if c.card == card.UUID && !c.running {
+				have++
+			}
+		}
+		// How many the card holds at most, whatever is using it right now.
+		if (card.TotalMB-scaleReserveMB)/scaleRecorderMB <= have {
+			continue
+		}
+		in, compose, err := a.nextInstance(ctx, card, have)
+		if err == nil {
+			log.Printf("autoscale: preparing %s for the card at %s", in.Name, card.Bus)
+			err = a.makeInstance(ctx, in, compose, false, "create")
+		}
+		if err != nil {
+			log.Printf("autoscale: could not prepare a copy: %v", err)
 		}
 		return
 	}

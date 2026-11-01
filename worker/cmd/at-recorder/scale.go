@@ -235,6 +235,11 @@ func (a *agent) primaryIdle(ctx context.Context) bool {
 // createInstance copies the first recorder and starts the copy. A running job
 // writes into the home and the game folder, so it copies between jobs.
 func (a *agent) createInstance(ctx context.Context, in scaleInstance, compose []byte, fullCopy bool) error {
+	return a.makeInstance(ctx, in, compose, fullCopy, "up", "-d")
+}
+
+// makeInstance is createInstance, ending in the given compose command.
+func (a *agent) makeInstance(ctx context.Context, in scaleInstance, compose []byte, fullCopy bool, composeArgs ...string) error {
 	if !a.primaryIdle(ctx) {
 		return errors.New("the recorder is at a job: copy it when it is idle, or disable it in the platform first")
 	}
@@ -246,7 +251,7 @@ func (a *agent) createInstance(ctx context.Context, in scaleInstance, compose []
 	if err := finishInstance(a.root, dir, compose, in); err != nil {
 		return err
 	}
-	_, err := a.run(ctx, "compose", "-f", filepath.Join(dir, "compose.yml"), "--project-directory", dir, "up", "-d")
+	_, err := a.run(ctx, append([]string{"compose", "-f", filepath.Join(dir, "compose.yml"), "--project-directory", dir}, composeArgs...)...)
 	return err
 }
 
