@@ -727,7 +727,17 @@
         "label": "Kvalitet: {{quality}}",
         "auto": "Automatisk",
         "highest": "Høyeste"
-      }
+      },
+      "settings": "Innstillinger",
+      "closeSettings": "Lukk innstillingene",
+      "qualityTitle": "Kvalitet",
+      "autoNow": "Nå {{quality}}",
+      "speedTitle": "Hastighet",
+      "music": "Musikk",
+      "off": "Av",
+      "nowPlaying": "Spilles nå",
+      "crowd": "Publikum",
+      "evenOut": "Jevn ut musikkvolumet"
     }
   },
   "leaderboard": {

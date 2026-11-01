@@ -735,7 +735,17 @@
         "label": "Quality: {{quality}}",
         "auto": "Auto",
         "highest": "Highest"
-      }
+      },
+      "settings": "Settings",
+      "closeSettings": "Close settings",
+      "qualityTitle": "Quality",
+      "autoNow": "Now {{quality}}",
+      "speedTitle": "Speed",
+      "music": "Music",
+      "off": "Off",
+      "nowPlaying": "Now playing",
+      "crowd": "Crowd",
+      "evenOut": "Even out music volume"
     }
   },
   "leaderboard": {
