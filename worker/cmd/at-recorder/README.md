@@ -116,6 +116,21 @@ checkout: embedded scripts must match `client/public/recorder/`. Installer tests
 exercise the command boundary; a fresh physical NVIDIA host still needs hardware
 verification. Existing-host adoption is verified separately on the NTLAN canary.
 
+## More than one recorder on a GPU
+
+```sh
+/srv/at-recorder/at-recorder scale --gpu GPU-UUID --dry-run
+/srv/at-recorder/at-recorder scale --gpu GPU-UUID
+```
+
+Adds one recorder on that card, if it fits: free memory less 512 MB, at 5.8 GB
+per recorder (two on a 12 GB card; three ran out of memory there). The new
+recorder is a copy in `instances/N` with its own Steam home and CS2, a reflink
+where the disk can (btrfs, XFS). Without reflinks `--allow-full-copy` copies CS2
+in full. It copies only while the first recorder is idle, and leaves that one
+untouched. Copies run Steam offline and don't update CS2 by themselves
+(`AT_CS2_UPDATE=0`), so after a CS2 update, remove and re-add them for now.
+
 ## More than one platform
 
 A recorder can record for several AT platforms. The one it was connected to is
