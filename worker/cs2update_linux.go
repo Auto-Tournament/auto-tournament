@@ -36,6 +36,7 @@ var (
 	reStateFlags = regexp.MustCompile(`"StateFlags"\s+"(\d+)"`)
 	reOffline0   = regexp.MustCompile(`("WantsOfflineMode"\s+)"0"`)
 	reOffline1   = regexp.MustCompile(`("WantsOfflineMode"\s+)"1"`)
+	reAutoUpdate = regexp.MustCompile(`("AutoUpdateBehavior"\s+)"\d+"`)
 )
 
 // cs2UpToDate asks Steam whether `version` (steam.inf's PatchVersion) is the
@@ -106,6 +107,10 @@ func (r *recorder) maybeUpdateCS2(ctx context.Context, c *client) {
 // it back in offline mode, whatever happened.
 func (r *recorder) updateCS2(ctx context.Context, connLog, want string) error {
 	users := filepath.Join(filepath.Dir(filepath.Dir(connLog)), "config", "loginusers.vdf")
+	manifest := filepath.Join(filepath.Dir(filepath.Dir(filepath.Dir(r.gameDir))), "appmanifest_730.acf")
+	if err := setHighPriorityUpdate(manifest); err != nil {
+		return err
+	}
 	if err := setSteamOffline(users, false); err != nil {
 		return err
 	}
@@ -131,7 +136,6 @@ func (r *recorder) updateCS2(ctx context.Context, connLog, want string) error {
 	}); err != nil {
 		return errors.New("Steam could not sign in to update CS2: sign Steam in again on the recorder's desktop")
 	}
-	manifest := filepath.Join(filepath.Dir(filepath.Dir(filepath.Dir(r.gameDir))), "appmanifest_730.acf")
 	if err := waitUntil(ctx, cs2UpdateTimeout, func() bool {
 		b, err := os.ReadFile(manifest)
 		m := reStateFlags.FindSubmatch(b)
@@ -155,6 +159,17 @@ func setSteamOffline(users string, offline bool) error {
 		b = reOffline1.ReplaceAll(b, []byte(`$1"0"`))
 	}
 	return os.WriteFile(users, b, 0o644)
+}
+
+// setHighPriorityUpdate sets the manifest's AutoUpdateBehavior to 2, read when
+// Steam starts. On the default, 0, Steam delays CS2's update by up to hours
+// ("Update delayed for 21396 secs"), longer than cs2UpdateTimeout.
+func setHighPriorityUpdate(manifest string) error {
+	b, err := os.ReadFile(manifest)
+	if err != nil {
+		return err
+	}
+	return os.WriteFile(manifest, reAutoUpdate.ReplaceAll(b, []byte(`$1"2"`)), 0o644)
 }
 
 // restartSteam restarts the Steam desktop's Steam (its polkit rules let the
