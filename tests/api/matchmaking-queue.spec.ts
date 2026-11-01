@@ -701,6 +701,18 @@ test.describe.serial('matchmaking queue (phase 1)', () => {
     ).json();
     expect(progress.progress.thumbsUp).toBeGreaterThanOrEqual(1);
     expect(progress.progress.topTags).toContainEqual({ tag: 'team_player', count: 1 });
+    // Negatives: never for someone else; the player sees their own.
+    const asOther = await (
+      await outsider.ctx.get(`/api/matchmaking/players/${loserId}/progress`)
+    ).json();
+    expect(asOther.progress.thumbsDown).toBeUndefined();
+    expect(asOther.progress.downTags).toBeUndefined();
+    const own = await (
+      await ctxOf(winnerId === leader.id ? loserId : winnerId).get(
+        `/api/matchmaking/players/${winnerId === leader.id ? loserId : winnerId}/progress`
+      )
+    ).json();
+    expect(own.progress.downTags).toContainEqual({ tag: 'afk', count: 1 });
 
     // History: the match with the rating before and after.
     const history = (await (await admin.get(`/api/matchmaking/players/${winnerId}/history`)).json())

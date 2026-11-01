@@ -169,15 +169,22 @@ export const progressionService = {
     }
   },
 
-  /** Level, XP and commend totals for a profile. */
-  async progress(playerId: string): Promise<{
+  /**
+   * Level, XP and commend totals for a profile. The negative ones only with
+   * `withNegatives`: the player and admins see them, nobody else.
+   */
+  async progress(
+    playerId: string,
+    withNegatives = false
+  ): Promise<{
     level: number;
     totalXp: number;
     intoLevel: number;
     forNext: number;
     thumbsUp: number;
-    thumbsDown: number;
     topTags: Array<{ tag: string; count: number }>;
+    thumbsDown?: number;
+    downTags?: Array<{ tag: string; count: number }>;
   }> {
     const row = await db.queryOneAsync<{ total_xp: number }>(
       'SELECT total_xp FROM player_progress WHERE player_id = ?',
@@ -189,17 +196,19 @@ export const progressionService = {
          FROM commends WHERE to_player_id = ?`,
       [playerId]
     );
-    const tags = await db.queryAsync<{ tag: string; n: number | string }>(
-      `SELECT tag, COUNT(*) AS n FROM commends WHERE to_player_id = ? AND value = 1 AND tag IS NOT NULL
-        GROUP BY tag ORDER BY n DESC, tag LIMIT 3`,
+    const tags = await db.queryAsync<{ tag: string; value: number; n: number | string }>(
+      `SELECT tag, value, COUNT(*) AS n FROM commends WHERE to_player_id = ? AND tag IS NOT NULL
+        GROUP BY tag, value ORDER BY n DESC, tag`,
       [playerId]
     );
+    const ofValue = (value: number) =>
+      tags.filter((t) => t.value === value).map((t) => ({ tag: t.tag, count: Number(t.n) }));
     return {
       ...levelFor(totalXp),
       totalXp,
       thumbsUp: Number(counts?.up ?? 0),
-      thumbsDown: Number(counts?.down ?? 0),
-      topTags: tags.map((t) => ({ tag: t.tag, count: Number(t.n) })),
+      topTags: ofValue(1),
+      ...(withNegatives ? { thumbsDown: Number(counts?.down ?? 0), downTags: ofValue(-1) } : {}),
     };
   },
 

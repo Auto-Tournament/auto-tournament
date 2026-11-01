@@ -672,7 +672,7 @@ router.put(
  *   get:
  *     tags: [Matchmaking]
  *     summary: A player's level, XP and commends
- *     description: 404 while matchmaking is off. Level, XP into the level, thumbs up and down totals and the most given tags; never who gave them.
+ *     description: 404 while matchmaking is off. Level, XP into the level, thumbs up, negative totals for the player and admins only, and the most given tags; never who gave them.
  *     parameters:
  *       - in: path
  *         name: id
@@ -685,7 +685,12 @@ router.put(
 router.get(
   '/players/:id/progress',
   handle('read the progress', async (req, res) => {
-    return res.json({ success: true, progress: await progressionService.progress(req.params.id) });
+    const { effectiveSteamId, isRealAdmin } = await resolveViewerIdentity(req);
+    const withNegatives = isRealAdmin || effectiveSteamId === req.params.id;
+    return res.json({
+      success: true,
+      progress: await progressionService.progress(req.params.id, withNegatives),
+    });
   })
 );
 
@@ -791,7 +796,10 @@ router.post(
     log.info(
       `[AUDIT] ${req.body?.amount} XP for ${req.params.id} by ${requestActorId(req) ?? 'unknown'}: ${note}`
     );
-    return res.json({ success: true, progress: await progressionService.progress(req.params.id) });
+    return res.json({
+      success: true,
+      progress: await progressionService.progress(req.params.id, true),
+    });
   })
 );
 

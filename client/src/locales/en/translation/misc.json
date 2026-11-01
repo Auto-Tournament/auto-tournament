@@ -881,8 +881,15 @@
         "leader": "Leader",
         "good_comms": "Good comms",
         "teacher": "Teacher",
-        "good_sport": "Good sport"
+        "good_sport": "Good sport",
+        "toxic": "Toxic",
+        "griefing": "Griefing",
+        "unhelpful": "Unhelpful",
+        "bad_sport": "Bad sport",
+        "afk": "AFK or left",
+        "other": "Something else"
       },
+      "negativesPrivate": "Only you and admins can see these.",
       "history": "Matchmaking matches",
       "historyEmpty": "No matchmaking matches yet.",
       "win": "Win",

@@ -5,12 +5,12 @@
  */
 import { useEffect, useState } from 'react';
 import { Box, Chip, LinearProgress, Stack, Typography } from '@mui/material';
-import { ThumbsDownIcon, ThumbsUpIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import { matchPagePath } from '../../paths';
 import { Link as RouterLink } from 'react-router-dom';
 import { Panel, SectionHead } from '../common/ui';
 import { RatingChart } from '../player/profile/RatingChart';
+import { COMMEND_ICONS } from './commendIcons';
 
 interface HistoryRow {
   matchSlug: string;
@@ -29,8 +29,33 @@ interface Progress {
   intoLevel: number;
   forNext: number;
   thumbsUp: number;
-  thumbsDown: number;
   topTags: Array<{ tag: string; count: number }>;
+  /** Only for the player and admins. */
+  thumbsDown?: number;
+  downTags?: Array<{ tag: string; count: number }>;
+}
+
+function CommendChip({
+  tag,
+  count,
+  negative = false,
+}: {
+  tag: string;
+  count: number;
+  negative?: boolean;
+}) {
+  const { t } = useTranslation();
+  const Icon = COMMEND_ICONS[tag];
+  return (
+    <Chip
+      size="small"
+      variant="outlined"
+      color={negative ? 'error' : 'default'}
+      icon={Icon ? <Icon size={16} aria-hidden /> : undefined}
+      label={`${t(`matchmaking.profile.tag.${tag}`, { defaultValue: tag })} · ${count}`}
+      data-testid={`player-progress-tag-${tag}`}
+    />
+  );
 }
 
 export function PlayerProgress({ playerId }: { playerId: string }) {
@@ -61,7 +86,7 @@ export function PlayerProgress({ playerId }: { playerId: string }) {
     };
   }, [playerId]);
 
-  if (!progress || (progress.totalXp === 0 && progress.thumbsUp === 0 && progress.thumbsDown === 0))
+  if (!progress || (progress.totalXp === 0 && !progress.thumbsUp && !progress.thumbsDown))
     return null;
 
   const chart = [...history].reverse().map((h) => ({ eloAfter: h.eloAfter, createdAt: h.at }));
@@ -87,34 +112,24 @@ export function PlayerProgress({ playerId }: { playerId: string }) {
               {t('matchmaking.profile.xp', { xp: progress.totalXp })}
             </Typography>
           </Box>
-          <Stack direction="row" spacing={2} alignItems="center">
-            <Stack
-              direction="row"
-              spacing={0.5}
-              alignItems="center"
-              aria-label={t('matchmaking.profile.thumbsUp', { count: progress.thumbsUp })}
-            >
-              <ThumbsUpIcon size={18} aria-hidden />
-              <Typography>{progress.thumbsUp}</Typography>
+          <Stack spacing={1} sx={{ minWidth: 0 }}>
+            <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+              {progress.topTags.map((tag) => (
+                <CommendChip key={tag.tag} {...tag} />
+              ))}
             </Stack>
-            <Stack
-              direction="row"
-              spacing={0.5}
-              alignItems="center"
-              aria-label={t('matchmaking.profile.thumbsDown', { count: progress.thumbsDown })}
-            >
-              <ThumbsDownIcon size={18} aria-hidden />
-              <Typography>{progress.thumbsDown}</Typography>
-            </Stack>
-          </Stack>
-          <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-            {progress.topTags.map((tag) => (
-              <Chip
-                key={tag.tag}
-                size="small"
-                label={`${t(`matchmaking.profile.tag.${tag.tag}`, { defaultValue: tag.tag })} · ${tag.count}`}
-              />
-            ))}
+            {!!progress.downTags?.length && (
+              <>
+                <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                  {progress.downTags.map((tag) => (
+                    <CommendChip key={tag.tag} {...tag} negative />
+                  ))}
+                </Stack>
+                <Typography variant="caption" color="text.secondary">
+                  {t('matchmaking.profile.negativesPrivate')}
+                </Typography>
+              </>
+            )}
           </Stack>
         </Stack>
       </Panel>
