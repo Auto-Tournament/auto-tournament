@@ -291,7 +291,10 @@ func (a *agent) startOnCard(ctx context.Context, uuid string, cards []scaleCard,
 		if err := a.refreshGame(ctx, c.name); err != nil {
 			return err
 		}
-		_, err := a.run(ctx, "start", c.name)
+		// Not `docker start`: that keeps the image it was made from, so a copy would
+		// stay on an old recorder after every update.
+		dir := filepath.Join(a.root, "instances", strings.TrimPrefix(c.name, a.name+"-"))
+		_, err := a.run(ctx, "compose", "-f", filepath.Join(dir, "compose.yml"), "--project-directory", dir, "up", "-d")
 		return err
 	}
 	for _, card := range cards {
