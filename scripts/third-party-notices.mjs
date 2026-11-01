@@ -133,6 +133,7 @@ function collect(workspace, found) {
   const queue = Object.keys(pkg.dependencies ?? {}).map((name) => [name, dir]);
   while (queue.length) {
     const [name, from] = queue.shift();
+    if (name.startsWith('@auto-tournament/')) continue; // our own, not third party
     const at = resolvePackage(name, from);
     if (!at) continue; // optional or platform-specific, not installed here
     const meta = readJson(path.join(at, 'package.json'));
