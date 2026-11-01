@@ -1082,6 +1082,8 @@
     "fieldLabel": "Search"
   },
   "highlightsPage": {
+    "recorderStats": "Send anonymous benchmark results",
+    "recorderStatsHint": "After a benchmark, recorders send the website the GPU and CPU model, versions and times, for the public table of what renders how fast. Nothing about matches or players. Recording works the same with this off.",
     "title": "Highlights",
     "subtitle": "Highlight clips and reels from every match: what the recorders make, the music under the reels, and each game's recorders.",
     "tabs": {

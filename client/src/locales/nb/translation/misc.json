@@ -1082,6 +1082,8 @@
     "fieldLabel": "Søk"
   },
   "highlightsPage": {
+    "recorderStats": "Send anonyme ytelsesresultater",
+    "recorderStatsHint": "Etter en ytelsestest sender opptakerne GPU- og CPU-modell, versjoner og tider til nettstedet, til den offentlige oversikten over hvilken maskinvare som lager klipp raskest. Ingenting om kamper eller spillere. Opptak virker på samme måte når dette er av.",
     "title": "Høydepunkter",
     "subtitle": "Klipp og høydepunkt-filmer fra hver kamp: hva opptakerne lager, musikken under filmene og opptakerne til hvert spill.",
     "tabs": {

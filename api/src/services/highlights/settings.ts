@@ -17,6 +17,8 @@
  * - highlights_mm / _mm_clips / _mm_min_kills / _mm_clutch: matchmaking's
  *   budget: on unless "0", clips per match (3; 0 every one), the fewest
  *   kills a play needs (3), and whether a clutch always counts (on);
+ * - highlights_recorder_stats: recorders send their anonymous benchmark result
+ *   to the website (on unless "0"; worker/recorderstats_linux.go);
  * - the reels' sizes (REEL_LIMITS): funny clips per player per map, clips per
  *   player in a map reel, a series reel's total and per player, a team reel's
  *   per player and a tournament reel's total and per player.
@@ -50,6 +52,7 @@ export type HighlightSettingKey =
   | 'highlights_bitrate'
   | 'highlights_music'
   | 'highlights_keep_clean'
+  | 'highlights_recorder_stats'
   | 'highlights_keep_masters'
   | 'highlights_mm'
   | 'highlights_mm_clips'
@@ -169,6 +172,13 @@ export const HIGHLIGHT_SETTINGS: ReadonlyArray<SettingDefinition & { key: Highli
     applyRequest: booleanRequest('highlightsKeepClean'),
   },
   {
+    key: 'highlights_recorder_stats',
+    field: 'highlightsRecorderStats',
+    order: 425,
+    normalize: normalizeFlag('Sending recorder benchmark results'),
+    applyRequest: booleanRequest('highlightsRecorderStats'),
+  },
+  {
     key: 'highlights_keep_masters',
     field: 'highlightsKeepMasters',
     order: 425,
@@ -238,6 +248,7 @@ export async function readHighlightSettings(
     highlightsBitrate: (HIGHLIGHT_BITRATES as readonly number[]).includes(mbps) ? mbps : 0,
     highlightsMusic: (await get('highlights_music'))?.trim() ?? '',
     highlightsKeepClean: (await get('highlights_keep_clean'))?.trim() !== '0',
+    highlightsRecorderStats: (await get('highlights_recorder_stats'))?.trim() !== '0',
     highlightsKeepMasters: (await get('highlights_keep_masters'))?.trim() ?? '',
     highlightsMatchmaking: (await get('highlights_mm'))?.trim() !== '0',
     highlightsMatchmakingClips: oneOf(await get('highlights_mm_clips'), MM_CLIPS, 3),
