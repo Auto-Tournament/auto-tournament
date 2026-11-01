@@ -22,6 +22,7 @@ import { PartyInviteToast } from './components/social/PartyInviteToast';
 import { PresenceReporter } from './components/social/PresenceReporter';
 import { SocketIdentity } from './components/SocketIdentity';
 import Layout from './components/layout/Layout';
+import { ScrollToTop } from './components/layout/ScrollToTop';
 import { SiteFooter } from './components/layout/SiteFooter';
 import { AdminTournamentProvider, useAdminTournament } from './contexts/AdminTournamentContext';
 
@@ -742,6 +743,7 @@ export default function App() {
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+        <ScrollToTop />
         <AuthProvider>
           <SnackbarProvider>
             <PageHeaderProvider>

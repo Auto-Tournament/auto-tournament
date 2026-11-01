@@ -200,11 +200,6 @@ function AdminShell() {
     navigate(paths.settings);
   }, [navigate]);
 
-  // A new page starts at the top, as a full page load would.
-  React.useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [location.pathname]);
-
   return (
     <ManageRailProvider>
       <CssBaseline />
