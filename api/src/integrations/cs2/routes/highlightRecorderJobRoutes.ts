@@ -15,7 +15,7 @@ import { recorderAcceptsWork, requestRecorderUpdate } from '../demos/recorderFle
 
 import { Router, type Request, type Response } from 'express';
 import { requireRecorder } from '../demos/recorderKeys';
-import { saveAutoscaleReport } from '../demos/recorderAutoscale';
+import { autoscaleReportRoute } from '../demos/recorderAutoscale';
 import { appendPart, bodyOf, startUpload, UploadError } from '../demos/uploadParts';
 import { log } from '../../../utils/logger';
 import { recorderLink } from '../demos/recorderLink';
@@ -395,11 +395,7 @@ export function registerRecorderJobRoutes(router: Router): void {
    *       400:
    *         description: Not a report
    */
-  router.post('/recorder/autoscale', requireRecorder, (req: Request, res: Response) => {
-    if (!saveAutoscaleReport(req.body))
-      return res.status(400).json({ success: false, error: 'Not an autoscale report' });
-    return res.json({ success: true });
-  });
+  router.post('/recorder/autoscale', requireRecorder, autoscaleReportRoute);
 
   // A file sent in parts (../demos/uploadParts.ts): Cloudflare turns down bodies over 100 MB.
   router.post('/recorder/uploads', requireRecorder, async (_req: Request, res: Response) => {

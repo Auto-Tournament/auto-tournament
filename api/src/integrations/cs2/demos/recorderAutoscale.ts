@@ -2,6 +2,7 @@
  * What each host's autoscaler last reported, for the Recorders page. It reports
  * every minute, so this lives in memory: after a restart the page fills in again.
  */
+import type { Request, Response } from 'express';
 import type { Untrusted } from '../../../utils/untrusted';
 
 const FRESH_MS = 3 * 60 * 1000;
@@ -52,6 +53,12 @@ export function saveAutoscaleReport(body: Untrusted, now = Date.now()): boolean 
     },
   });
   return true;
+}
+
+export function autoscaleReportRoute(req: Request, res: Response) {
+  if (!saveAutoscaleReport(req.body))
+    return res.status(400).json({ success: false, error: 'Not an autoscale report' });
+  return res.json({ success: true });
 }
 
 export function autoscaleReports(now = Date.now()): AutoscaleReport[] {
