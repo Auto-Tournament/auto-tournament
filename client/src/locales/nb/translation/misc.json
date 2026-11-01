@@ -881,8 +881,15 @@
         "leader": "Leder",
         "good_comms": "God kommunikasjon",
         "teacher": "Lærer",
-        "good_sport": "Sportslig"
+        "good_sport": "Sportslig",
+        "toxic": "Giftig",
+        "griefing": "Sabotasje",
+        "unhelpful": "Lite hjelpsom",
+        "bad_sport": "Usportslig",
+        "afk": "AFK eller forlot",
+        "other": "Annet"
       },
+      "negativesPrivate": "Bare du og administratorene kan se disse.",
       "history": "Matchmaking-kamper",
       "historyEmpty": "Ingen matchmaking-kamper ennå.",
       "win": "Seier",

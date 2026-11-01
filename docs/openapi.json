@@ -12436,7 +12436,7 @@
           "Matchmaking"
         ],
         "summary": "A player's level, XP and commends",
-        "description": "404 while matchmaking is off. Level, XP into the level, thumbs up and down totals and the most given tags; never who gave them.",
+        "description": "404 while matchmaking is off. Level, XP into the level, thumbs up, negative totals for the player and admins only, and the most given tags; never who gave them.",
         "parameters": [
           {
             "in": "path",

@@ -78,7 +78,14 @@ export const COMMEND_UP_TAGS = [
   'teacher',
   'good_sport',
 ] as const;
-export const COMMEND_DOWN_TAGS = ['toxic', 'griefing', 'afk', 'other'] as const;
+export const COMMEND_DOWN_TAGS = [
+  'toxic',
+  'griefing',
+  'unhelpful',
+  'bad_sport',
+  'afk',
+  'other',
+] as const;
 export type CommendTag = (typeof COMMEND_UP_TAGS)[number] | (typeof COMMEND_DOWN_TAGS)[number];
 
 /** Commends are open for this long after the match ends. */
