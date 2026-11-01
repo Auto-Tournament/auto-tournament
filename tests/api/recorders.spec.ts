@@ -414,6 +414,56 @@ test(
   }
 );
 
+test(
+  'the queue count: a recorder key reads it, one per claim, a group no one can work is left out',
+  TAGS,
+  async ({ request, playwright, baseURL }) => {
+    const anon = await playwright.request.newContext({ baseURL });
+    expect((await anon.get('/api/game/cs2/recorder/queue')).status()).toBe(401);
+    await anon.dispose();
+
+    expect(await signInViaRequest(request)).toBe(true);
+    const { token } = (await (
+      await request.post('/api/game/cs2/recorder-keys', {
+        data: { name: `spec-queue-${Date.now()}` },
+      })
+    ).json()) as { token: string };
+    const asRecorder = await playwright.request.newContext({
+      baseURL,
+      extraHTTPHeaders: { Authorization: `Bearer ${token}` },
+    });
+    const waiting = async () => {
+      const res = await asRecorder.get('/api/game/cs2/recorder/queue');
+      expect(res.status()).toBe(200);
+      const body = (await res.json()) as { success: boolean; waiting: number };
+      expect(Object.keys(body).sort()).toEqual(['success', 'waiting']);
+      return body.waiting;
+    };
+
+    const before = await waiting();
+    // Five moments of one player are one claim.
+    await matchWithMoments(request);
+    expect(await waiting()).toBe(before + 1);
+
+    const { id } = (await (
+      await request.post('/api/game/cs2/recorder-groups', {
+        data: { name: `spec-queue-${Date.now()}` },
+      })
+    ).json()) as { id: number };
+    await matchWithMoments(request, id);
+    expect(await waiting()).toBe(before + 1);
+
+    const name = `spec-queue-${Date.now()}`;
+    const claim = await request.post('/api/game/cs2/recorder/claim', {
+      data: { recorder: name, version: 6 },
+    });
+    expect(claim.status()).toBe(200);
+    expect(await waiting()).toBe(before);
+    await asRecorder.dispose();
+    await request.delete(`/api/game/cs2/recorders/${encodeURIComponent(name)}`);
+  }
+);
+
 test('a recorder without CS2 yet shows up and is given no work', TAGS, async ({ request }) => {
   expect(await signInViaRequest(request)).toBe(true);
   const name = `spec-notready-${Date.now()}`;

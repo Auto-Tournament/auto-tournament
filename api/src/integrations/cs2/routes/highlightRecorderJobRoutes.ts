@@ -48,6 +48,7 @@ import {
 import { benchmarkJob, wantsBenchmark } from '../demos/recorderBenchmark';
 
 import { dropOrphanJobs } from '../demos/jobs';
+import { waitingRecorderJobs } from '../demos/recorderQueue';
 import { claimLock, idOf, startsOf } from './highlightRouteHelpers';
 
 export function registerRecorderJobRoutes(router: Router): void {
@@ -352,6 +353,30 @@ export function registerRecorderJobRoutes(router: Router): void {
       }
     }
   );
+
+  /**
+   * @openapi
+   * /api/game/cs2/recorder/queue:
+   *   get:
+   *     tags: [Highlights]
+   *     summary: How many recorder jobs are waiting (recorder)
+   *     description: |
+   *       The number of claims a newly started recorder could get now, for a host
+   *       that starts and stops recorders. Only the number; jobs are still handed
+   *       out by `/recorder/claim`. Jobs for a recorder group with no recorder
+   *       able to work are left out.
+   *     responses:
+   *       200:
+   *         description: "`waiting`: how many jobs"
+   */
+  router.get('/recorder/queue', requireRecorder, async (_req: Request, res: Response) => {
+    try {
+      return res.json({ success: true, waiting: await waitingRecorderJobs() });
+    } catch (error) {
+      log.error('[HIGHLIGHTS] queue count failed', { error });
+      return res.status(500).json({ success: false, error: 'Could not count the jobs' });
+    }
+  });
 
   // A file sent in parts (../demos/uploadParts.ts): Cloudflare turns down bodies over 100 MB.
   router.post('/recorder/uploads', requireRecorder, async (_req: Request, res: Response) => {

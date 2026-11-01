@@ -72,6 +72,10 @@ export async function recorderAcceptsWork(name: string): Promise<boolean> {
 export function recordingTargetFilter(match: string, recorder = '?') {
   return `(NOT EXISTS (SELECT 1 FROM cs2_recording_targets target WHERE target.match_slug = ${match}) OR EXISTS (SELECT 1 FROM cs2_recording_targets target JOIN cs2_recorders eligible ON eligible.group_id = target.group_id WHERE target.match_slug = ${match} AND eligible.name = ${recorder}))`;
 }
+/** Like recordingTargetFilter, for no recorder in particular: an untargeted match, or one whose group has a recorder that can work. */
+export function anyRecorderTargetFilter(match: string) {
+  return `(NOT EXISTS (SELECT 1 FROM cs2_recording_targets target WHERE target.match_slug = ${match}) OR EXISTS (SELECT 1 FROM cs2_recording_targets target JOIN cs2_recorders eligible ON eligible.group_id = target.group_id JOIN cs2_recorder_groups eligible_group ON eligible_group.id = eligible.group_id WHERE target.match_slug = ${match} AND eligible.enabled = 1 AND eligible_group.enabled = 1 AND eligible.update_status NOT IN ('queued', 'updating') AND (eligible.paused_until IS NULL OR eligible.paused_until < EXTRACT(EPOCH FROM NOW()))))`;
+}
 export async function matchRecordingGroup(slug: string) {
   if (
     !(await db.queryOneAsync('SELECT slug FROM matches WHERE slug = ? AND game = ?', [slug, 'cs2']))

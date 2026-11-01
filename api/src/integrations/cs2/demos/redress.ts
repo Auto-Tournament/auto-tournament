@@ -1,4 +1,4 @@
-import { recordingTargetFilter } from './recorderFleet';
+import { anyRecorderTargetFilter, recordingTargetFilter } from './recorderFleet';
 /**
  * Redress: the clips dressed again from their clean twins and overlay recipes
  * (worker/overlay.go), without CS2: after a new caption card design, a name
@@ -117,6 +117,19 @@ export async function claimRedress(recorder: string): Promise<RedressJob | Playe
     if (job) return job;
   }
   return null;
+}
+
+/** Claims the queue would give: clips go out in batches, each reel on its own. */
+export async function waitingRedressJobs(): Promise<number> {
+  const row = await db.queryOneAsync<{ clips: number | string; reels: number | string }>(
+    `SELECT COUNT(*) FILTER (WHERE file ~ '^[0-9]+\\.mp4$') AS clips,
+            COUNT(*) FILTER (WHERE file !~ '^[0-9]+\\.mp4$') AS reels
+       FROM cs2_redress_queue
+      WHERE (status = 'queued' OR (status = 'working' AND claimed_at < ?))
+        AND ${anyRecorderTargetFilter(redressMatch)}`,
+    [Math.floor(Date.now() / 1000) - STALE_SECONDS]
+  );
+  return Math.ceil(Number(row?.clips ?? 0) / BATCH) + Number(row?.reels ?? 0);
 }
 
 async function claimClips(now: number, recorder: string): Promise<RedressJob | null> {
