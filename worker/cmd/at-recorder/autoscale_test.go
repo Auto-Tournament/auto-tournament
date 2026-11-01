@@ -238,6 +238,7 @@ func TestScaleBlockedSaysWhy(t *testing.T) {
 			t.Errorf("used %d, %d running, limits %v: got %q, want %q", c.used, c.running, c.limits, got, c.want)
 		}
 	}
+}
 
 func (f *scaleDocker) startedCopy() bool {
 	for _, c := range f.calls {
