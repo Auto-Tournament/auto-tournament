@@ -28,6 +28,9 @@ var pinnedHz = os.Getenv("AT_GAMESCOPE_HZ")
 // applySettings uses the refresh rate the platform keeps for this recorder
 // (its benchmark's pick), unless AT_GAMESCOPE_HZ was set by hand.
 func applySettings(s *recorderSettings) {
+	if s != nil {
+		statsOffByAdmin.Store(s.StatsOff)
+	}
 	if pinnedHz != "" {
 		return
 	}

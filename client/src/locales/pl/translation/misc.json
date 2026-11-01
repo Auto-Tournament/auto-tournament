@@ -1225,7 +1225,9 @@
       "summaryEvery": "every play",
       "summaryBest_one": "its best play",
       "summaryBest_other": "its best {{count}} plays"
-    }
+    },
+    "recorderStats": "Send anonymous benchmark results",
+    "recorderStatsHint": "After a benchmark, recorders send the website the GPU and CPU model, versions and times, for the public table of what renders how fast. Nothing about matches or players. Recording works the same with this off."
   },
   "update": {
     "available": "Auto Tournament {{latest}} is out (you run {{running}}).",

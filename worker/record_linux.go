@@ -368,6 +368,8 @@ type mapJob struct {
 // recorderSettings come with every job: the benchmark's pick.
 type recorderSettings struct {
 	GamescopeHz int `json:"gamescopeHz"`
+	// StatsOff: an admin turned off sending benchmark results (recorderstats_linux.go).
+	StatsOff bool `json:"statsOff,omitempty"`
 }
 
 // videoQuality is the height (16:9) and frame rate the platform asks for.

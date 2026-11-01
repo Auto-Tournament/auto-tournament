@@ -98,7 +98,7 @@ anonymous result, for the public table of what renders how fast: a random
 install id, GPU model and memory, CPU model, driver and recorder versions,
 benchmark version, resolution, recorders per GPU, time, frames per second, peak
 GPU memory and failed tries. Nothing about matches or players. It logs exactly
-what it sends. `AT_TELEMETRY=0` turns it off; recording works the same.
+what it sends. `AT_TELEMETRY=0` or the setting on the Highlights page turn it off; recording works the same.
 `AT_RECORDERS_PER_GPU` (default 1) says how many share the card.
 
 ### Recorder container

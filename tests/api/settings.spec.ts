@@ -1054,6 +1054,7 @@ const ADDED_SETTINGS: Array<{ key: string; field: string | null }> = [
   { key: 'highlights_bitrate', field: 'highlightsBitrate' },
   { key: 'highlights_music', field: 'highlightsMusic' },
   { key: 'highlights_keep_clean', field: 'highlightsKeepClean' },
+  { key: 'highlights_recorder_stats', field: 'highlightsRecorderStats' },
   // How long a video keeps its highest quality when lower ones were cut (demos/masterSweep.ts).
   { key: 'highlights_keep_masters', field: 'highlightsKeepMasters' },
   // Matchmaking's clip budget (cs2 demos/highlightPolicy.ts).

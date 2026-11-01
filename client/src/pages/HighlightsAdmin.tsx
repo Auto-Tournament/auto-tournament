@@ -6,6 +6,7 @@
  * overlays and how to add a recorder). `?tab=` picks the tab.
  */
 import { useEffect, useState } from 'react';
+import { SwitchRow } from '../components/common/ui';
 import { Box, CircularProgress, Tab, Tabs, TextField, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
@@ -89,6 +90,7 @@ interface HighlightValues extends MatchmakingHighlightValues {
   highlightsFps: number;
   highlightsBitrate: number;
   highlightsMusic: string;
+  highlightsRecorderStats: boolean;
   reels: Record<ReelField, number | null>;
 }
 
@@ -115,6 +117,7 @@ function HighlightSettings() {
             typeof s.highlightsKeepMasters === 'string' ? s.highlightsKeepMasters : '',
           highlightsBitrate: typeof s.highlightsBitrate === 'number' ? s.highlightsBitrate : 0,
           highlightsMusic: typeof s.highlightsMusic === 'string' ? s.highlightsMusic : '',
+          highlightsRecorderStats: s.highlightsRecorderStats !== false,
           highlightsMatchmaking: s.highlightsMatchmaking !== false,
           highlightsMatchmakingClips:
             typeof s.highlightsMatchmakingClips === 'number' ? s.highlightsMatchmakingClips : 3,
@@ -220,6 +223,14 @@ function HighlightSettings() {
       <HighlightMusicSetting
         value={vals.highlightsMusic}
         onChange={(value) => void save({ highlightsMusic: value })}
+      />
+      <SwitchRow
+        label={t('highlightsPage.recorderStats')}
+        help={t('highlightsPage.recorderStatsHint')}
+        checked={vals.highlightsRecorderStats}
+        onChange={(e) => void save({ highlightsRecorderStats: e.target.checked })}
+        size="small"
+        data-testid="highlights-recorder-stats"
       />
     </Box>
   );

@@ -3,8 +3,8 @@ package main
 // A finished benchmark's result, sent to the website so it can publish what
 // hardware renders how fast. Only the fields below, nothing about the match,
 // the players or the machine's name (the site refuses anything else, and its
-// privacy policy lists them). On by default, says so at startup, AT_TELEMETRY=0
-// turns it off; recording works the same whether it arrives or not.
+// privacy policy lists them). On by default, says so at startup; AT_TELEMETRY=0
+// or the admin setting turn it off; recording works the same whether it arrives or not.
 
 import (
 	"bufio"
@@ -21,6 +21,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"sync/atomic"
 	"time"
 )
 
@@ -49,7 +50,10 @@ type recorderStats struct {
 	FailedTries      int     `json:"failedTries"`
 }
 
-func statsEnabled() bool { return env("AT_TELEMETRY", "1") != "0" }
+// statsOffByAdmin: the platform's setting, sent with every job.
+var statsOffByAdmin atomic.Bool
+
+func statsEnabled() bool { return env("AT_TELEMETRY", "1") != "0" && !statsOffByAdmin.Load() }
 
 func logStatsNotice() {
 	if statsEnabled() {

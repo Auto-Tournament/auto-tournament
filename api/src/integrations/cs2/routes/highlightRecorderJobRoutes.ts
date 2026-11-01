@@ -297,7 +297,10 @@ export function registerRecorderJobRoutes(router: Router): void {
         // Moments of a deleted match can't be recorded (demos/jobs.ts).
         await dropOrphanJobs();
         idleRecorderCount(recorder);
-        const settings = recorderSettings(me);
+        const { settingsService } = await import('../../../services/settingsService');
+        const statsOff =
+          (await settingsService.getSetting('highlights_recorder_stats'))?.trim() === '0';
+        const settings = { ...recorderSettings(me), ...(statsOff ? { statsOff } : {}) };
         const give = async (job: object) => {
           recorderBusy(recorder);
           return res.json({

@@ -111,6 +111,9 @@ func TestSendRecorderStats(t *testing.T) {
 func TestRecorderStatsNotSent(t *testing.T) {
 	r, tries, got := statsFixture(t)
 	r.sendRecorderStats(context.Background(), tries, "match", 1) // not the shared clip
+	applySettings(&recorderSettings{StatsOff: true})
+	r.sendRecorderStats(context.Background(), tries, "bundled", 1) // the admin's setting
+	applySettings(&recorderSettings{})
 	t.Setenv("AT_TELEMETRY", "0")
 	r.sendRecorderStats(context.Background(), tries, "bundled", 1)
 	if len(*got) != 0 {
