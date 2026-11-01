@@ -30,6 +30,7 @@ import {
   runLog,
   saveRun,
 } from '../demos/recorders';
+import { autoscaleReports } from '../demos/recorderAutoscale';
 import { saveBenchmark } from '../demos/recorderBenchmark';
 
 import type { Untrusted } from '../../../utils/untrusted';
@@ -126,7 +127,11 @@ export function registerRecorderAdminRoutes(router: Router): void {
    */
   router.get('/recorders', requireAuth, async (_req: Request, res: Response) => {
     try {
-      return res.json({ success: true, recorders: await listRecorders() });
+      return res.json({
+        success: true,
+        recorders: await listRecorders(),
+        autoscale: autoscaleReports(),
+      });
     } catch (error) {
       return recorderFail(res, error, 'list the recorders');
     }

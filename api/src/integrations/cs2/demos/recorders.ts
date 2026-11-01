@@ -1,3 +1,4 @@
+import { autoscaleReports } from './recorderAutoscale';
 import {
   refreshRecorderRelease,
   newerRecorderAgent,
@@ -206,6 +207,7 @@ export async function saveRun(name: string, body: Record<string, Untrusted>): Pr
 
 /** The Recorders page: every recorder with its numbers. */
 export async function listRecorders() {
+  const standby = new Set(autoscaleReports().flatMap((r) => r.standby));
   await expireRecorderUpdateRequests();
   await refreshRecorderRelease();
   const rows = await db.queryAsync<
@@ -271,6 +273,8 @@ export async function listRecorders() {
         linked.has(r.name) ||
         (!!r.last_seen && t - Number(r.last_seen) < 15 * 60) ||
         Number(r.working_clips ?? 0) > 0,
+      // Stopped by its host's autoscaler until jobs wait: not missing.
+      standby: standby.has(r.name) && !linked.has(r.name) && Number(r.working_clips ?? 0) === 0,
       // The live link: the platform pushes work to it, and it says what it is doing.
       linked: linked.has(r.name),
       progress: recorderLink.progressOf(r.name),

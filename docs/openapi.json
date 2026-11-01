@@ -7016,6 +7016,31 @@
         ]
       }
     },
+    "/api/game/cs2/recorder/autoscale": {
+      "post": {
+        "tags": [
+          "Highlights"
+        ],
+        "summary": "An autoscaler's state, for the Recorders page (recorder)",
+        "description": "Sent every minute by a host running `at-recorder autoscale`: the cards it\nmay use, what runs on them, why a card has no room, and the recorders it\nstopped until jobs wait.\n",
+        "responses": {
+          "200": {
+            "description": "Noted"
+          },
+          "400": {
+            "description": "Not a report"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
     "/api/game/cs2/recorder/benchmark": {
       "post": {
         "tags": [

@@ -415,6 +415,45 @@ test(
 );
 
 test(
+  'an autoscaler report shows on the Recorders page',
+  TAGS,
+  async ({ request, playwright, baseURL }) => {
+    const anon = await playwright.request.newContext({ baseURL });
+    expect((await anon.post('/api/game/cs2/recorder/autoscale', { data: {} })).status()).toBe(401);
+    await anon.dispose();
+
+    expect(await signInViaRequest(request)).toBe(true);
+    const stamp = Date.now();
+    const { token } = (await (
+      await request.post('/api/game/cs2/recorder-keys', { data: { name: `spec-scale-${stamp}` } })
+    ).json()) as { token: string };
+    const asRecorder = await playwright.request.newContext({
+      baseURL,
+      extraHTTPHeaders: { Authorization: `Bearer ${token}` },
+    });
+    const host = `spec-host-${stamp}`;
+    const report = {
+      host,
+      jobsWaiting: 2,
+      cards: [{ bus: '0000:01:00.0', recorders: [host], blocked: 'full' }],
+      standby: [`${host}-2`],
+    };
+    const post = (data: unknown) => asRecorder.post('/api/game/cs2/recorder/autoscale', { data });
+    expect((await post({ ...report, jobsWaiting: -1 })).status()).toBe(400);
+    expect(
+      (await post({ ...report, cards: [{ ...report.cards[0], blocked: 'x' }] })).status()
+    ).toBe(400);
+    expect((await post(report)).status()).toBe(200);
+    await asRecorder.dispose();
+
+    const { autoscale } = (await (await request.get('/api/game/cs2/recorders')).json()) as {
+      autoscale: unknown[];
+    };
+    expect(autoscale).toContainEqual(report);
+  }
+);
+
+test(
   'the queue count: a recorder key reads it, one per claim, a group no one can work is left out',
   TAGS,
   async ({ request, playwright, baseURL }) => {
