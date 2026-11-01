@@ -204,3 +204,19 @@ func TestAutoscalePreparesACopyOnlyBetweenJobs(t *testing.T) {
 		t.Fatalf("copied while the first recorder is at a job: %v", f.calls)
 	}
 }
+
+func TestWriteRecorderCounts(t *testing.T) {
+	a, _ := autoscaleFixture(t, "0", 100)
+	first, copied := filepath.Join(a.root, "clips"), filepath.Join(a.root, "instances/2/clips")
+	for _, d := range []string{first, copied} {
+		if err := os.MkdirAll(d, 0o755); err != nil {
+			t.Fatal(err)
+		}
+	}
+	a.writeRecorderCounts(map[string][]scaleRecorder{"GPU-a": {{Name: "at-recorder"}, {Name: "box-2"}}})
+	for _, d := range []string{first, copied} {
+		if b, _ := os.ReadFile(filepath.Join(d, "recorders-on-card")); string(b) != "2\n" {
+			t.Errorf("%s: %q", d, b)
+		}
+	}
+}
