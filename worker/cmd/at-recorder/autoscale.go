@@ -29,11 +29,12 @@ const (
 type autoscaleState struct {
 	idleSince map[string]time.Time
 	lastStart map[string]time.Time
+	startErr  map[string]string // per card: said once, this retries every minute
 	limits    map[string]int
 }
 
 func newAutoscaleState() *autoscaleState {
-	return &autoscaleState{idleSince: map[string]time.Time{}, lastStart: map[string]time.Time{}, limits: map[string]int{}}
+	return &autoscaleState{idleSince: map[string]time.Time{}, lastStart: map[string]time.Time{}, startErr: map[string]string{}, limits: map[string]int{}}
 }
 
 func allowedGPUs(raw string) []string {
@@ -126,11 +127,15 @@ func (a *agent) autoscaleTick(ctx context.Context, st *autoscaleState, allowed [
 			if since, ok := st.lastStart[act.CardUUID]; ok && now.Sub(since) < autoscaleSettle {
 				continue
 			}
-			log.Printf("autoscale: starting a recorder: %s", act.Reason)
 			if err := a.startOnCard(ctx, act.CardUUID, cards, scaled, in.Recorders[act.CardUUID]); err != nil {
-				log.Printf("autoscale: could not start one: %v", err)
+				if st.startErr[act.CardUUID] != err.Error() {
+					st.startErr[act.CardUUID] = err.Error()
+					log.Printf("autoscale: could not start a recorder: %s: %v", act.Reason, err)
+				}
 				continue
 			}
+			log.Printf("autoscale: started a recorder: %s", act.Reason)
+			delete(st.startErr, act.CardUUID)
 			st.lastStart[act.CardUUID] = now
 			continue
 		}
