@@ -131,6 +131,24 @@ in full. It copies only while the first recorder is idle, and leaves that one
 untouched. Copies run Steam offline and don't update CS2 by themselves
 (`AT_CS2_UPDATE=0`), so after a CS2 update, remove and re-add them for now.
 
+## Automatic scaling
+
+`at-recorder autoscale` starts recorders when jobs wait and stops them after 20
+idle minutes. It is off unless `AT_AUTOSCALE=1`, and only uses the GPUs listed
+in `AT_AUTOSCALE_GPUS` (comma-separated UUIDs). It runs as its own container, so
+it needs no systemd; see `autoscaler.compose.example.yml`.
+
+- It acts only on containers `scale` made, by their label. It never starts or
+  stops the first recorder, and never stops one at a job
+- One recorder at a time on a card comes up, with 5 minutes to settle
+- A map stays one CS2 session; extra recorders take other maps
+- After an out-of-memory failure it allows one fewer on that card until restarted
+- Before starting a stopped copy that is behind on CS2, it copies the first
+  recorder's game, when that one is idle
+
+The Docker socket is root on the host, whatever the label rule says, so run it
+only where you'd run the recorder's own host agent.
+
 ## More than one platform
 
 A recorder can record for several AT platforms. The one it was connected to is

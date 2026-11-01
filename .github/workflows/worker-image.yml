@@ -74,3 +74,26 @@ jobs:
             ghcr.io/auto-tournament/auto-tournament-recorder:next
           cache-from: type=gha,scope=recorder
           cache-to: type=gha,scope=recorder,mode=max
+
+  autoscaler:
+    name: Build and push the recorder autoscaler
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: worker
+          file: worker/autoscaler.Dockerfile
+          platforms: linux/amd64
+          push: true
+          tags: |
+            sivertio/auto-tournament-recorder-autoscaler:next
+            sivertio/auto-tournament-recorder-autoscaler:sha-${{ github.sha }}
+          cache-from: type=gha,scope=autoscaler
+          cache-to: type=gha,scope=autoscaler,mode=max

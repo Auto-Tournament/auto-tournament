@@ -1,0 +1,18 @@
+# Next to the first recorder. The recorder's folder is mounted at the same path
+# as on the host, because Compose resolves its copies' paths on the host.
+services:
+  at-recorder-autoscaler:
+    image: sivertio/auto-tournament-recorder-autoscaler:next
+    container_name: at-recorder-autoscaler
+    restart: unless-stopped
+    runtime: nvidia
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=utility
+      - AT_AUTOSCALE=1
+      - AT_AUTOSCALE_GPUS=GPU-your-card-uuid
+      - AT_RECORDER_ROOT=/srv/at-recorder
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /srv/at-recorder:/srv/at-recorder
+      - /sys/bus/pci/devices:/sys/bus/pci/devices:ro
