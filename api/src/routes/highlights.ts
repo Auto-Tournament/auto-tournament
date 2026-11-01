@@ -239,7 +239,8 @@ router.get('/videos/:file/music/:track', async (req: Request, res: Response) => 
  *     summary: Download a video with its crowd and/or a music track mixed in
  *     description: |
  *       `music` (a track id), `crowd=1`, `intro` (seconds), `level` (the music's
- *       level, 0 to 1), `clean=1` (without the overlay). Mixed once, then kept.
+ *       level, 0 to 1), `clean=1` (without the overlay), `inline=1` (to play, as a
+ *       shared link does, not to save). Mixed once, then kept.
  *     responses:
  *       200:
  *         description: The video
@@ -270,6 +271,11 @@ router.get('/videos/:file/download', async (req: Request, res: Response) => {
       intro: Number(req.query.intro) || 0,
       level: musicLevel(req.query.level),
     });
+    if (req.query.inline === '1') {
+      return res.sendFile(mixed, {
+        headers: { 'Content-Type': 'video/mp4', 'Cache-Control': 'public, max-age=300' },
+      });
+    }
     return res.download(mixed, downloadName, {
       headers: { 'Cache-Control': 'private, max-age=3600' },
     });

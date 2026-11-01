@@ -9477,7 +9477,7 @@
           "Highlights"
         ],
         "summary": "Download a video with its crowd and/or a music track mixed in",
-        "description": "`music` (a track id), `crowd=1`, `intro` (seconds), `level` (the music's\nlevel, 0 to 1), `clean=1` (without the overlay). Mixed once, then kept.\n",
+        "description": "`music` (a track id), `crowd=1`, `intro` (seconds), `level` (the music's\nlevel, 0 to 1), `clean=1` (without the overlay), `inline=1` (to play, as a\nshared link does, not to save). Mixed once, then kept.\n",
         "responses": {
           "200": {
             "description": "The video"

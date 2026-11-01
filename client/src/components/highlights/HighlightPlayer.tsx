@@ -498,9 +498,16 @@ export const HighlightPlayer = forwardRef<HighlightPlayerHandle, HighlightPlayer
     };
 
     // The video file itself: pasted in Discord (or anywhere that unfurls
-    // links) it plays as a video, no page in between.
+    // links) it plays as a video, no page in between. With the song the viewer
+    // chose, mixed in at the default level (volumes are each viewer's own): asked
+    // for now, so it is ready when someone opens the link.
     const share = async () => {
-      const url = shareUrl ?? new URL(src, window.location.origin).href;
+      const file = new URL(src, window.location.origin).href;
+      const songFile = song
+        ? `${file}?music=${encodeURIComponent(song.id)}&intro=${introEnd.toFixed(1)}&inline=1`
+        : file;
+      const url = shareUrl ?? songFile;
+      if (!shareUrl && song) void fetch(url, { method: 'HEAD' }).catch(() => undefined);
       try {
         if (navigator.share) {
           await navigator.share({ title: label, url });
