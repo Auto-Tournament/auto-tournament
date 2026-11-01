@@ -566,12 +566,22 @@ export function WatchPage() {
           >
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, minWidth: 0 }}>
               {w.player && (
-                <PlayerAvatar
-                  id={w.player.id}
-                  name={w.player.name}
-                  avatarUrl={w.player.avatarUrl}
-                  size={48}
-                />
+                // The name beside it is the same link, for keyboards and screen readers.
+                <Box
+                  component={RouterLink}
+                  to={links.playerProfile(w.player.id)}
+                  tabIndex={-1}
+                  aria-hidden
+                  data-testid="watch-player-avatar"
+                  sx={{ display: 'flex', flex: 'none', borderRadius: '50%' }}
+                >
+                  <PlayerAvatar
+                    id={w.player.id}
+                    name={w.player.name}
+                    avatarUrl={w.player.avatarUrl}
+                    size={48}
+                  />
+                </Box>
               )}
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, minWidth: 0 }}>
                 <Box
@@ -584,7 +594,22 @@ export function WatchPage() {
                     overflowWrap: 'anywhere',
                   }}
                 >
-                  {w.title}
+                  {w.player && w.title.startsWith(w.player.name) ? (
+                    <>
+                      <Link
+                        component={RouterLink}
+                        to={links.playerProfile(w.player.id)}
+                        underline="hover"
+                        color="inherit"
+                        data-testid="watch-player-name"
+                      >
+                        {w.player.name}
+                      </Link>
+                      {w.title.slice(w.player.name.length)}
+                    </>
+                  ) : (
+                    w.title
+                  )}
                 </Box>
                 <Box sx={{ fontSize: textSize.sm, color: tokens.color.muted }}>
                   {w.tournament && (
@@ -646,7 +671,8 @@ export function WatchPage() {
                   {t(w.round ? 'highlights.watch.replayRound' : 'highlights.watch.analysis')}
                 </Box>
               )}
-              {w.playerId && (
+              {/* A clip links its player in the title; a reel has no avatar or name link. */}
+              {w.playerId && !w.player && (
                 <Box component={RouterLink} to={links.playerProfile(w.playerId)} sx={pill}>
                   {t('highlights.watch.profile')}
                 </Box>
