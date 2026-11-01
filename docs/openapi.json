@@ -7348,6 +7348,28 @@
         ]
       }
     },
+    "/api/game/cs2/recorder/queue": {
+      "get": {
+        "tags": [
+          "Highlights"
+        ],
+        "summary": "How many recorder jobs are waiting (recorder)",
+        "description": "The number of claims a newly started recorder could get now, for a host\nthat starts and stops recorders. Only the number; jobs are still handed\nout by `/recorder/claim`. Jobs for a recorder group with no recorder\nable to work are left out.\n",
+        "responses": {
+          "200": {
+            "description": "`waiting`: how many jobs"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
     "/api/game/cs2/recorder/redress/{file}": {
       "put": {
         "tags": [

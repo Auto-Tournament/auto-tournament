@@ -1,6 +1,6 @@
 import { isShown, shownSql } from './shown';
 import { recordingWaiting, recordingFailureSql } from './recorderLeases';
-import { recordingTargetFilter } from './recorderFleet';
+import { anyRecorderTargetFilter, recordingTargetFilter } from './recorderFleet';
 /**
  * Highlights as the site shows them (./highlights.ts records them):
  *
@@ -793,10 +793,7 @@ export function pickTournamentReel(
 }
 
 /** Queue the reel of a tournament that is over, once everything of it is recorded. */
-async function queueTournamentReel(): Promise<void> {
-  await db.runAsync(
-    `INSERT INTO cs2_tournament_reels (tournament_id)
-     SELECT t.id FROM tournament t
+const DUE_TOURNAMENT_REELS = `SELECT t.id FROM tournament t
       WHERE t.status = 'completed'
         AND NOT EXISTS (SELECT 1 FROM cs2_tournament_reels r WHERE r.tournament_id = t.id)
         AND NOT EXISTS (SELECT 1 FROM cs2_demo_jobs j JOIN matches m ON m.slug = j.match_slug
@@ -804,10 +801,32 @@ async function queueTournamentReel(): Promise<void> {
         AND NOT EXISTS (SELECT 1 FROM cs2_highlights h JOIN matches m ON m.slug = h.match_slug
                          WHERE m.tournament_id = t.id AND h.status IN ('pending', 'recording'))
         AND (SELECT COUNT(*) FROM cs2_highlights h JOIN matches m ON m.slug = h.match_slug
-              WHERE m.tournament_id = t.id AND h.status = 'done') >= ?
+              WHERE m.tournament_id = t.id AND h.status = 'done') >= ?`;
+
+async function queueTournamentReel(): Promise<void> {
+  await db.runAsync(
+    `INSERT INTO cs2_tournament_reels (tournament_id)
+     ${DUE_TOURNAMENT_REELS}
      ON CONFLICT (tournament_id) DO NOTHING`,
     [TOURNAMENT_REEL_MIN]
   );
+}
+
+/**
+ * Tournament reels waiting, and the ones a claim would queue: nothing else queues
+ * those, so with no recorder running they would never start.
+ * shortcut: per match, so a tournament across two groups counts though no one recorder can take it; fine until a scaler flaps on one.
+ */
+export async function waitingTournamentReels(): Promise<number> {
+  const row = await db.queryOneAsync<{ n: number | string }>(
+    `SELECT COUNT(*) AS n FROM (
+       SELECT tournament_id AS id FROM cs2_tournament_reels WHERE ${recordingWaiting()}
+       UNION ${DUE_TOURNAMENT_REELS}) waiting
+      WHERE NOT EXISTS (SELECT 1 FROM matches target_match WHERE target_match.tournament_id = waiting.id
+        AND NOT ${anyRecorderTargetFilter('target_match.slug')})`,
+    ['', TOURNAMENT_REEL_MIN]
+  );
+  return Number(row?.n ?? 0);
 }
 
 export interface TournamentReelJob {
