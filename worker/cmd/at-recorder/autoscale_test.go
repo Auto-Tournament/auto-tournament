@@ -172,3 +172,35 @@ func TestCS2Patch(t *testing.T) {
 		t.Fatalf("%q", got)
 	}
 }
+
+func TestAutoscalePreparesACopyOnlyBetweenJobs(t *testing.T) {
+	a, f := autoscaleFixture(t, "0", 100)
+	f.primary = "CUDA_VISIBLE_DEVICES=GPU-a\n"
+	f.idle = map[string]bool{"at-recorder": true}
+	cards, _ := readScaleCards(context.Background())
+	calls := func() int { return len(f.calls) }
+	// A full card: nothing to prepare, however idle.
+	full := map[string][]scaleRecorder{"GPU-a": {{Name: "at-recorder"}, {Name: "box-2"}}}
+	before := calls()
+	a.prepareCopy(context.Background(), cards, []string{"GPU-a"}, nil, full, 0)
+	if f.did("inspect --type") || calls() != before+1 {
+		t.Fatalf("prepared on a full card: %v", f.calls)
+	}
+	// A stopped copy counts as there.
+	one := map[string][]scaleRecorder{"GPU-a": {{Name: "at-recorder"}}}
+	a.prepareCopy(context.Background(), cards, []string{"GPU-a"}, []scaledContainer{{name: "box-2", card: "GPU-a"}}, one, 0)
+	if f.did("inspect --type") {
+		t.Fatalf("second copy of a 2-recorder card: %v", f.calls)
+	}
+	// Jobs waiting, or the first recorder busy: no copying.
+	f.calls = nil
+	a.prepareCopy(context.Background(), cards, []string{"GPU-a"}, nil, one, 3)
+	if len(f.calls) != 0 {
+		t.Fatalf("copied with jobs waiting: %v", f.calls)
+	}
+	f.idle = map[string]bool{}
+	a.prepareCopy(context.Background(), cards, []string{"GPU-a"}, nil, one, 0)
+	if f.did("inspect --type") {
+		t.Fatalf("copied while the first recorder is at a job: %v", f.calls)
+	}
+}
