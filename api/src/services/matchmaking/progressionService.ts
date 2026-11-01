@@ -17,6 +17,7 @@ import {
   xpForMatch,
   type XpReason,
 } from './progression';
+import { trustScore } from './rules';
 import type { Untrusted } from '../../utils/untrusted';
 
 export class ProgressionError extends Error {
@@ -523,6 +524,36 @@ export const progressionService = {
         voters: Number(r.voters),
         reasons: reasons.map((x) => ({ tag: x.tag, count: Number(x.n) })),
       });
+    }
+    return out;
+  },
+
+  /**
+   * Each player's hidden trust (`trustScore`), from 180 days of votes. A party
+   * votes as one, per match. Players without enough votes aren't in the map.
+   */
+  async trustScores(playerIds: string[]): Promise<Map<string, number>> {
+    if (playerIds.length === 0) return new Map();
+    const rows = await db.queryAsync<{
+      to_player_id: string;
+      value: number;
+      voters: number | string;
+    }>(
+      `SELECT c.to_player_id, c.value,
+              COUNT(DISTINCT c.match_slug || ':' || COALESCE(lp.party_id, c.from_player_id)) AS voters
+         FROM commends c
+         LEFT JOIN mm_lobbies l ON l.match_slug = c.match_slug
+         LEFT JOIN mm_lobby_players lp ON lp.lobby_id = l.id AND lp.player_id = c.from_player_id
+        WHERE c.to_player_id = ANY(?::text[]) AND c.created_at > ?
+        GROUP BY c.to_player_id, c.value`,
+      [playerIds, now() - 180 * 86400]
+    );
+    const votes = (id: string, value: number) =>
+      Number(rows.find((r) => r.to_player_id === id && Number(r.value) === value)?.voters ?? 0);
+    const out = new Map<string, number>();
+    for (const id of playerIds) {
+      const score = trustScore(votes(id, 1), votes(id, -1));
+      if (score !== null) out.set(id, score);
     }
     return out;
   },

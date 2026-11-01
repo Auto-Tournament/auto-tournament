@@ -24,6 +24,7 @@ import {
   searchWindow,
   validateSearchWindow,
   splitTeams,
+  trustScore,
   type QueuedParty,
 } from '../../api/src/services/matchmaking/rules';
 import { levelFor, parseCommend, xpForMatch } from '../../api/src/services/matchmaking/progression';
@@ -204,6 +205,42 @@ test.describe('matchmaking rules (pure)', () => {
     expect(levelFor(400)).toEqual({ level: 2, intoLevel: 0, forNext: 450 });
     expect(levelFor(1900).level).toBe(5);
     expect(levelFor(5400).level).toBe(10);
+  });
+
+  test('trust: a score needs 20 votes, and more votes weigh more', TAGS, () => {
+    expect(trustScore(19, 0)).toBeNull();
+    expect(trustScore(19, 1)!).toBeLessThan(0.95);
+    expect(trustScore(190, 10)!).toBeGreaterThan(trustScore(19, 1)!);
+    expect(trustScore(5, 15)!).toBeLessThan(trustScore(15, 5)!);
+  });
+
+  test('trust: prefers the closest of similar waits, and never blocks a match', TAGS, () => {
+    const party = (id: string, queuedAt: number, trust?: number): QueuedParty => ({
+      entryId: id,
+      partyId: id,
+      players: [id],
+      queuedAt,
+      trust,
+    });
+    const anchor = party('a', 0, 0.9);
+    const low = party('low', 10, 0.1);
+    const high = party('high', 20, 0.9);
+    const others = [party('x', 500), party('y', 501)];
+    expect(findGroup([anchor, low, high, ...others], 1)!.map((p) => p.entryId)).toEqual([
+      'a',
+      'high',
+    ]);
+    // A much longer wait beats the trust gap.
+    expect(findGroup([anchor, low, party('new', 300, 0.9)], 1)!.map((p) => p.entryId)).toEqual([
+      'a',
+      'low',
+    ]);
+    // Only one to meet: they meet.
+    expect(findGroup([anchor, low], 1)!.map((p) => p.entryId)).toEqual(['a', 'low']);
+    // No votes: oldest first as before.
+    expect(
+      findGroup([party('p', 0), party('q', 10), party('r', 20, 0.9)], 1)!.map((p) => p.entryId)
+    ).toEqual(['p', 'q']);
   });
 
   test('commends: thumbs up with an optional tag, thumbs down needs a reason', TAGS, () => {

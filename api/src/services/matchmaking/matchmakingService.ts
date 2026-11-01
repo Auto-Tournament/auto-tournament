@@ -841,6 +841,8 @@ export class MatchmakingService {
       const ratings = await this.ratingsFor(players, mode);
       const mus = players.map((p) => ratings.get(p)!.mu);
       const queuedAt = Number(e.queued_at);
+      // Its lowest member: friends with good standing don't hide someone.
+      const scores = [...(await progressionService.trustScores(players)).values()];
       parties.push({
         entryId: e.id,
         partyId: e.party_id,
@@ -850,6 +852,7 @@ export class MatchmakingService {
         rating: partyRating(mus),
         window: searchWindow(now - queuedAt, window),
         botFill: e.bot_fill === true,
+        ...(scores.length ? { trust: Math.min(...scores) } : {}),
       });
     }
     return parties;
