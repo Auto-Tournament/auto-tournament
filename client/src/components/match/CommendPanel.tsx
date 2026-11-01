@@ -1,6 +1,16 @@
 import { useEffect, useState } from 'react';
 import { fmtTime } from '../../utils/time';
-import { Box, ButtonBase, Typography } from '@mui/material';
+import {
+  Box,
+  ButtonBase,
+  IconButton,
+  ListItemIcon,
+  Menu,
+  MenuItem,
+  Tooltip,
+  Typography,
+} from '@mui/material';
+import { ThumbsDownIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import { api, apiErrorMessage } from '../../utils/api';
@@ -9,9 +19,12 @@ import { useSnackbar } from '../../contexts/SnackbarContext';
 import { PlayerAvatar, SectionTitle, eyebrowSx, panel } from '../tournament/ui/draftUi';
 import { ReportPlayerLink } from '../player/profile/ReportPlayerButton';
 import { radii, tokens } from '../../theme/tokens';
+import { COMMEND_ICONS } from '../matchmaking/commendIcons';
 
 export const COMMEND_KINDS = ['friendly', 'leader', 'teacher', 'good_sport'] as const;
 export type CommendKind = (typeof COMMEND_KINDS)[number];
+const NEGATIVE_KINDS = ['toxic', 'griefing', 'unhelpful', 'bad_sport'] as const;
+type GivenKind = CommendKind | (typeof NEGATIVE_KINDS)[number];
 
 /** Each kind's dot colour, on the profile and wherever counts show. */
 export const commendColor: Record<CommendKind, string> = {
@@ -31,7 +44,7 @@ interface CommendState {
   open: boolean;
   closesAt: number | null;
   max: number;
-  given: Record<string, CommendKind>;
+  given: Record<string, GivenKind>;
   sides: CommendSide[];
 }
 
@@ -46,9 +59,9 @@ function closesLabel(at: number, lang: string, t: TFunction): string {
 
 /**
  * "Commend players from this match" (the match room, after the match): each
- * player from it with four buttons, Friendly, Leader, Teacher and Good sport.
- * Up to three players, one kind each, for 24 hours; nobody sees who gave
- * what. "Report a player" under it stays a separate, private report.
+ * player from it with four buttons, Friendly, Leader, Teacher and Good sport,
+ * and a menu for a negative one. Up to three players, one kind each, for 24
+ * hours; nobody sees who gave what. "Report a player" under it stays a separate, private report.
  */
 export function CommendPanel({
   matchSlug,
@@ -62,6 +75,7 @@ export function CommendPanel({
   const { showError } = useSnackbar();
   const [state, setState] = useState<CommendState | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
+  const [negative, setNegative] = useState<{ el: HTMLElement; id: string } | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -86,7 +100,7 @@ export function CommendPanel({
   );
   const everyone = sides.flatMap((s) => s.players);
 
-  const pick = async (playerId: string, kind: CommendKind) => {
+  const pick = async (playerId: string, kind: GivenKind) => {
     const next = state.given[playerId] === kind ? null : kind;
     setBusy(playerId);
     try {
@@ -198,6 +212,27 @@ export function CommendPanel({
                         </ButtonBase>
                       );
                     })}
+                    <Tooltip title={t('commends.negative')}>
+                      <span>
+                        <IconButton
+                          size="small"
+                          aria-label={t('commends.negativeFor', { name: p.name })}
+                          aria-haspopup="menu"
+                          aria-pressed={(NEGATIVE_KINDS as readonly string[]).includes(given ?? '')}
+                          color={
+                            (NEGATIVE_KINDS as readonly string[]).includes(given ?? '')
+                              ? 'error'
+                              : 'default'
+                          }
+                          disabled={(!given && full) || busy === p.id}
+                          onClick={(e) => setNegative({ el: e.currentTarget, id: p.id })}
+                          data-testid={`commend-${p.id}-negative`}
+                          sx={{ width: 36, height: 36 }}
+                        >
+                          <ThumbsDownIcon size={18} />
+                        </IconButton>
+                      </span>
+                    </Tooltip>
                   </Box>
                 </Box>
               );
@@ -205,6 +240,30 @@ export function CommendPanel({
           </Box>
         );
       })}
+      <Menu
+        anchorEl={negative?.el}
+        open={!!negative}
+        onClose={() => setNegative(null)}
+        data-testid="commend-negative-menu"
+      >
+        {NEGATIVE_KINDS.map((kind) => {
+          const Icon = COMMEND_ICONS[kind];
+          return (
+            <MenuItem
+              key={kind}
+              selected={!!negative && state.given[negative.id] === kind}
+              data-testid={`commend-negative-${kind}`}
+              onClick={() => {
+                if (negative) void pick(negative.id, kind);
+                setNegative(null);
+              }}
+            >
+              <ListItemIcon>{Icon && <Icon size={18} aria-hidden />}</ListItemIcon>
+              {t(`matchmaking.profile.tag.${kind}`)}
+            </MenuItem>
+          );
+        })}
+      </Menu>
       <ReportPlayerLink players={everyone} />
     </Box>
   );

@@ -861,6 +861,8 @@
     "totalN_one": "{{count}} ros",
     "totalN_other": "{{count}} ros",
     "matchesN_one": "{{count}} kamp",
-    "matchesN_other": "{{count}} kamper"
+    "matchesN_other": "{{count}} kamper",
+    "negative": "Noe var galt",
+    "negativeFor": "Noe galt med {{name}}"
   }
 }
