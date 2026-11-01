@@ -91,6 +91,15 @@ export type CommendTag = (typeof COMMEND_UP_TAGS)[number] | (typeof COMMEND_DOWN
 /** Commends are open for this long after the match ends. */
 export const COMMEND_WINDOW_SECONDS = 24 * 60 * 60;
 
+/** Fewer votes than this say more about one match than about the player. */
+const PERCENT_MIN_VOTES = 20;
+
+/** The share of votes that were positive, or null with too few to mean anything. */
+export function positivePercent(up: number, down: number): number | null {
+  const votes = up + down;
+  return votes >= PERCENT_MIN_VOTES ? Math.round((up / votes) * 100) : null;
+}
+
 /** Validate a commend body: thumbs up with an optional tag, thumbs down with a reason. */
 export function parseCommend(
   body: Untrusted

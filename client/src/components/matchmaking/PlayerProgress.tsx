@@ -29,6 +29,7 @@ interface Progress {
   intoLevel: number;
   forNext: number;
   thumbsUp: number;
+  positivePercent: number | null;
   topTags: Array<{ tag: string; count: number }>;
   /** Only for the player and admins. */
   thumbsDown?: number;
@@ -113,6 +114,11 @@ export function PlayerProgress({ playerId }: { playerId: string }) {
             </Typography>
           </Box>
           <Stack spacing={1} sx={{ minWidth: 0 }}>
+            {progress.positivePercent !== null && (
+              <Typography sx={{ fontWeight: 600 }} data-testid="player-progress-percent">
+                {t('matchmaking.profile.positivePercent', { percent: progress.positivePercent })}
+              </Typography>
+            )}
             <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
               {progress.topTags.map((tag) => (
                 <CommendChip key={tag.tag} {...tag} />

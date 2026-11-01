@@ -26,7 +26,12 @@ import {
   splitTeams,
   type QueuedParty,
 } from '../../api/src/services/matchmaking/rules';
-import { levelFor, parseCommend, xpForMatch } from '../../api/src/services/matchmaking/progression';
+import {
+  levelFor,
+  parseCommend,
+  positivePercent,
+  xpForMatch,
+} from '../../api/src/services/matchmaking/progression';
 import { signInAsPlayerViaRequest, signInViaRequest } from '../helpers/auth';
 
 /**
@@ -204,6 +209,12 @@ test.describe('matchmaking rules (pure)', () => {
     expect(levelFor(400)).toEqual({ level: 2, intoLevel: 0, forNext: 450 });
     expect(levelFor(1900).level).toBe(5);
     expect(levelFor(5400).level).toBe(10);
+  });
+
+  test('commends: the public percentage waits for 20 votes', TAGS, () => {
+    expect(positivePercent(19, 0)).toBeNull();
+    expect(positivePercent(19, 1)).toBe(95);
+    expect(positivePercent(0, 20)).toBe(0);
   });
 
   test('commends: thumbs up with an optional tag, thumbs down needs a reason', TAGS, () => {
