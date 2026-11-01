@@ -83,7 +83,7 @@ func TestAutoscaleStartsAStoppedRecorderWhenJobsWait(t *testing.T) {
 	if err := a.autoscaleTick(context.Background(), newAutoscaleState(), []string{"GPU-a"}, time.Now()); err != nil {
 		t.Fatal(err)
 	}
-	if !f.did("start box-2") {
+	if !f.startedCopy() {
 		t.Fatalf("calls: %v", f.calls)
 	}
 }
@@ -94,7 +94,7 @@ func TestAutoscaleNotOnACardNotAllowed(t *testing.T) {
 	if err := a.autoscaleTick(context.Background(), newAutoscaleState(), []string{"GPU-a"}, time.Now()); err != nil {
 		t.Fatal(err)
 	}
-	if f.did("start box-2") {
+	if f.startedCopy() {
 		t.Fatalf("started on a card it may not use: %v", f.calls)
 	}
 }
@@ -238,4 +238,12 @@ func TestScaleBlockedSaysWhy(t *testing.T) {
 			t.Errorf("used %d, %d running, limits %v: got %q, want %q", c.used, c.running, c.limits, got, c.want)
 		}
 	}
+
+func (f *scaleDocker) startedCopy() bool {
+	for _, c := range f.calls {
+		if strings.HasPrefix(c, "compose ") && strings.Contains(c, "instances/2") && strings.HasSuffix(c, "up -d") {
+			return true
+		}
+	}
+	return false
 }
