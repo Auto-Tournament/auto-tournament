@@ -213,7 +213,7 @@ func (r *recorder) lookPredict() string {
 // (why), so it shows up in the list: a claim it answers with no job.
 func (c *client) hello(ctx context.Context, why string) {
 	res, err := c.postJSON(ctx, "/api/game/cs2/recorder/claim", map[string]any{
-		"recorder": c.worker, "version": 8, "gpu": recorderGPU(), "platform": platformName(), "notReady": why,
+		"recorder": c.worker, "version": recorderVersion, "gpu": recorderGPU(), "platform": platformName(), "notReady": why,
 	})
 	if err == nil {
 		res.Body.Close()
@@ -235,7 +235,7 @@ func (c *client) claimRecording(ctx context.Context, loaded map[string]any) (*ma
 	// Version 6: redress jobs (overlay.go). Version 7: benchmarks, frame
 	// checks and run reports (quality.go, runlog.go). Version 8: attempt tokens.
 	ask := map[string]any{
-		"recorder": c.worker, "version": 8, "gpu": recorderGPU(), "platform": platformName(),
+		"recorder": c.worker, "version": recorderVersion, "gpu": recorderGPU(), "platform": platformName(),
 		// It carries the benchmark demo (benchdemo_linux.go): its benchmark
 		// then needs nothing from the platform and compares with every other.
 		"benchDemo": hasBenchDemo(),
@@ -1605,6 +1605,7 @@ func runRecorder(ctx context.Context, clients []*client, poll time.Duration) err
 	}
 	// Each job's log goes to the platform with its run report (runlog.go).
 	log.SetOutput(io.MultiWriter(os.Stderr, currentJobLog))
+	logStatsNotice()
 	log.Printf("recorder: %dx%d, %s, sound from %s, %s, %s", r.width, r.height, r.encoder, r.sink, recorderGPU(), platformName())
 	currentJobLog.take()
 	var keep awake
