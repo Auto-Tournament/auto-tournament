@@ -237,6 +237,20 @@ function tapeSpeed(
   el.playbackRate = rate;
 }
 
+/**
+ * The player full screen. iPhones can't do that to anything but a video, and only
+ * through Safari's own player, without our controls: the video alone is better than
+ * a button that does nothing.
+ */
+function toggleFullscreen(box: HTMLElement | null, video: HTMLVideoElement | null) {
+  if (document.fullscreenElement) void document.exitFullscreen();
+  else if (box?.requestFullscreen) void box.requestFullscreen();
+  else
+    (
+      video as (HTMLVideoElement & { webkitEnterFullscreen?: () => void }) | null
+    )?.webkitEnterFullscreen?.();
+}
+
 const LAST_TRACK = 'at.reelMusic.last';
 const CROWD_OFF = 'at.reelCrowd.off';
 /** The viewer's overall level, kept between visits (also the admin's music samples). */
@@ -493,10 +507,7 @@ export const HighlightPlayer = forwardRef<HighlightPlayerHandle, HighlightPlayer
       store(PLAYER_MUTED_KEY, muted ? '1' : null);
     }, [muted]);
 
-    const fullscreen = () => {
-      if (document.fullscreenElement) void document.exitFullscreen();
-      else void box.current?.requestFullscreen?.();
-    };
+    const fullscreen = () => toggleFullscreen(box.current, video.current);
 
     // F works anywhere on the page, not only with the player focused, unless the
     // viewer is typing. With several players on a page, the one playing takes it.
@@ -509,8 +520,7 @@ export const HighlightPlayer = forwardRef<HighlightPlayerHandle, HighlightPlayer
         const others = document.querySelectorAll('[data-testid="highlight-player"]').length > 1;
         if (others && video.current?.paused !== false) return;
         e.preventDefault();
-        if (document.fullscreenElement) void document.exitFullscreen();
-        else void box.current?.requestFullscreen?.();
+        toggleFullscreen(box.current, video.current);
       };
       document.addEventListener('keydown', onPageKey);
       return () => document.removeEventListener('keydown', onPageKey);
