@@ -344,7 +344,12 @@ func (g *game) loadDemo(demo string, look []string) error {
 	}
 	// The map has loaded once the client switches to the game loop.
 	if _, _, err := g.con.expect(reMapLoaded, 3*time.Minute); err != nil {
-		return fmt.Errorf("the demo's map never loaded: %w", err)
+		// The console log is in the job's folder, which goes when the job ends.
+		err = fmt.Errorf("the demo's map never loaded: %w", err)
+		if tail := logTail(strings.TrimSuffix(g.logPath, filepath.Ext(g.logPath))+"-console.log", 40, 3000); tail != "" {
+			err = fmt.Errorf("%w\n--- CS2 console, last lines ---\n%s", err, tail)
+		}
+		return err
 	}
 	time.Sleep(3 * time.Second)
 	for i := 0; i < 10; i++ {
