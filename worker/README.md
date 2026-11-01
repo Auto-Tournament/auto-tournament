@@ -91,6 +91,16 @@ Steam online with the stored login, waits for Steam to update CS2, and puts
 Steam back in offline mode. If Steam can't sign in, the Recorders tab says so:
 sign Steam in again on the recorder's desktop. `AT_CS2_UPDATE=0` turns it off.
 
+### Benchmark results
+
+After a benchmark of the shipped clip, the recorder sends the website its
+anonymous result, for the public table of what renders how fast: a random
+install id, GPU model and memory, CPU model, driver and recorder versions,
+benchmark version, resolution, recorders per GPU, time, frames per second, peak
+GPU memory and failed tries. Nothing about matches or players. It logs exactly
+what it sends. `AT_TELEMETRY=0` turns it off; recording works the same.
+`AT_RECORDERS_PER_GPU` (default 1) says how many share the card.
+
 ### Recorder container
 
 `sivertio/auto-tournament-recorder` (amd64) is the recorder with the userland

@@ -187,6 +187,7 @@ func (r setupRuntime) install(ctx context.Context, adopt, skipDeps bool) error {
 			return err
 		}
 	}
+	fmt.Println("After a benchmark, the recorder sends its anonymous result (GPU, CPU, versions, times) to the website. AT_TELEMETRY=0 turns it off.")
 	fmt.Println("Host service installed. Run at-recorder doctor. Existing Steam, CS2, worker identity and enabled settings are preserved. New hosts stay disabled in AT.")
 	return nil
 }

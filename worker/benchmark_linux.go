@@ -58,7 +58,10 @@ func (r *recorder) runBenchmark(ctx context.Context, mj *mapJob) {
 	started := time.Now()
 	run := jobRun{Kind: "benchmark", MatchSlug: mj.MatchSlug, MapNumber: intPtr(mj.MapNumber)}
 	source := ""
+	watching, stopWatching := context.WithCancel(ctx)
+	peak := watchPeakVRAM(watching)
 	tries, err := r.benchmarkTries(ctx, mj, &source)
+	stopWatching()
 	if err != nil {
 		run.Error = err.Error()
 		log.Printf("benchmark: %v", err)
@@ -87,6 +90,7 @@ func (r *recorder) runBenchmark(ctx context.Context, mj *mapJob) {
 			run.Clips++
 		}
 	}
+	r.sendRecorderStats(ctx, tries, source, <-peak)
 	r.reportRun(run, started)
 }
 
