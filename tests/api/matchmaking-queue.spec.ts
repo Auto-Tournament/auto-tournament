@@ -246,6 +246,8 @@ test.describe('matchmaking rules (pure)', () => {
     expect(
       findGroup([party('p', 0), party('q', 10), party('r', 20, 0.9)], 1)!.map((p) => p.entryId)
     ).toEqual(['p', 'q']);
+  });
+
   test('commends: the public percentage waits for 20 votes', TAGS, () => {
     expect(positivePercent(19, 0)).toBeNull();
     expect(positivePercent(19, 1)).toBe(95);
