@@ -242,12 +242,12 @@ function tapeSpeed(
  * through Safari's own player, without our controls: the video alone is better than
  * a button that does nothing.
  */
-function toggleFullscreen(box: HTMLElement | null, video: HTMLVideoElement | null) {
+function toggleFullscreen(box: HTMLElement | null, video: ComponentRef<'video'> | null) {
   if (document.fullscreenElement) void document.exitFullscreen();
   else if (box?.requestFullscreen) void box.requestFullscreen();
   else
     (
-      video as (HTMLVideoElement & { webkitEnterFullscreen?: () => void }) | null
+      video as (ComponentRef<'video'> & { webkitEnterFullscreen?: () => void }) | null
     )?.webkitEnterFullscreen?.();
 }
 
