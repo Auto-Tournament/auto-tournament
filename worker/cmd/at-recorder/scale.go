@@ -136,12 +136,12 @@ func (a *agent) scaleCommand(ctx context.Context, args []string, out io.Writer) 
 	if err := fs.Parse(args); err != nil || fs.NArg() > 0 || *gpu == "" {
 		return errors.New("usage: at-recorder scale --gpu UUID [--dry-run] [--allow-full-copy]")
 	}
-	smi, err := exec.CommandContext(ctx, "nvidia-smi", "--query-gpu=uuid,pci.bus_id,memory.total,memory.used", "--format=csv,noheader,nounits").Output()
+	cards, err := readScaleCards(ctx)
 	if err != nil {
-		return fmt.Errorf("nvidia-smi: %w", err)
+		return err
 	}
 	var card *scaleCard
-	for _, c := range parseScaleCards(string(smi)) {
+	for _, c := range cards {
 		if c.UUID == *gpu {
 			c := c
 			card = &c
@@ -150,21 +150,62 @@ func (a *agent) scaleCommand(ctx context.Context, args []string, out io.Writer) 
 	if card == nil {
 		return fmt.Errorf("no GPU %s here", *gpu)
 	}
-	ps, err := a.run(ctx, "ps", "-a", "--filter", "label="+scaleLabel+"="+*gpu, "--format", "{{.Names}}")
+	running, err := a.recordersOnCard(ctx, *gpu)
 	if err != nil {
 		return err
 	}
-	running := len(strings.Fields(string(ps)))
-	if env, err := a.run(ctx, "inspect", "at-recorder", "--format", "{{range .Config.Env}}{{println .}}{{end}}"); err == nil && strings.Contains(string(env), "="+*gpu) {
-		running++
-	}
-	room := scaleRoom(*card, running, nil)
-	if room < 1 {
+	if scaleRoom(*card, running, nil) < 1 {
 		return fmt.Errorf("no room on this card: %d of %d MB used, %d recorders: another would run out of GPU memory", card.UsedMB, card.TotalMB, running)
 	}
-	render, err := renderNodeOf("/sys/bus/pci/devices", card.Bus)
+	in, compose, err := a.nextInstance(ctx, *card, running)
 	if err != nil {
 		return err
+	}
+	dir := filepath.Join(a.root, "instances", strconv.Itoa(in.Number))
+	if *dryRun {
+		fmt.Fprintf(out, "Would create %s in %s, on %s (%s), web UI port %d, %d of %d MB used.\n\n%s", in.Name, dir, card.Bus, in.RenderNode, in.Port, card.UsedMB, card.TotalMB, compose)
+		return nil
+	}
+	if err := a.createInstance(ctx, in, compose, *fullCopy); err != nil {
+		return err
+	}
+	fmt.Fprintf(out, "%s is starting on %s. It shows up in the platform when it connects.\n", in.Name, card.Bus)
+	return nil
+}
+
+// readScaleCards asks nvidia-smi for the GPUs (a variable for the tests).
+var readScaleCards = func(ctx context.Context) ([]scaleCard, error) {
+	smi, err := exec.CommandContext(ctx, "nvidia-smi", "--query-gpu=uuid,pci.bus_id,memory.total,memory.used", "--format=csv,noheader,nounits").Output()
+	if err != nil {
+		return nil, fmt.Errorf("nvidia-smi: %w", err)
+	}
+	return parseScaleCards(string(smi)), nil
+}
+
+// recordersOnCard counts this card's recorders: the scaled ones, running or
+// stopped, and the first recorder when it is pinned here.
+func (a *agent) recordersOnCard(ctx context.Context, uuid string) (int, error) {
+	ps, err := a.run(ctx, "ps", "-a", "--filter", "label="+scaleLabel+"="+uuid, "--format", "{{.Names}}")
+	if err != nil {
+		return 0, err
+	}
+	n := len(strings.Fields(string(ps)))
+	if a.primaryOn(ctx, uuid) {
+		n++
+	}
+	return n, nil
+}
+
+func (a *agent) primaryOn(ctx context.Context, uuid string) bool {
+	env, err := a.run(ctx, "inspect", "at-recorder", "--format", "{{range .Config.Env}}{{println .}}{{end}}")
+	return err == nil && strings.Contains(string(env), "="+uuid)
+}
+
+// nextInstance is the next free recorder on this card, and its compose file.
+func (a *agent) nextInstance(ctx context.Context, card scaleCard, running int) (scaleInstance, []byte, error) {
+	render, err := renderNodeOf("/sys/bus/pci/devices", card.Bus)
+	if err != nil {
+		return scaleInstance{}, nil, err
 	}
 	// A free number: no folder, and no container of that name (one made by hand counts too).
 	number := 2
@@ -177,36 +218,36 @@ func (a *agent) scaleCommand(ctx context.Context, args []string, out io.Writer) 
 		}
 		number++
 	}
-	in := scaleInstance{Number: number, Name: fmt.Sprintf("%s-%d", a.name, number), CardUUID: *gpu, Bus: card.Bus, RenderNode: render, Port: 8482 + number, OnCard: running + 1}
+	in := scaleInstance{Number: number, Name: fmt.Sprintf("%s-%d", a.name, number), CardUUID: card.UUID, Bus: card.Bus, RenderNode: render, Port: 8482 + number, OnCard: running + 1}
 	base, err := os.ReadFile(filepath.Join(a.root, "compose.yml"))
 	if err != nil {
-		return err
+		return in, nil, err
 	}
 	compose, err := instanceCompose(base, in)
-	if err != nil {
-		return err
-	}
-	dir := filepath.Join(a.root, "instances", strconv.Itoa(number))
-	if *dryRun {
-		fmt.Fprintf(out, "Would create %s in %s, on %s (%s), web UI port %d, %d of %d MB used.\n\n%s", in.Name, dir, card.Bus, render, in.Port, card.UsedMB, card.TotalMB, compose)
-		return nil
-	}
-	// A running job writes into the home and the game folder: copy between jobs.
-	if _, err := a.run(ctx, "exec", "at-recorder", "test", "-f", "/mnt/clips/recorder-idle"); err != nil {
+	return in, compose, err
+}
+
+func (a *agent) primaryIdle(ctx context.Context) bool {
+	_, err := a.run(ctx, "exec", "at-recorder", "test", "-f", "/mnt/clips/recorder-idle")
+	return err == nil
+}
+
+// createInstance copies the first recorder and starts the copy. A running job
+// writes into the home and the game folder, so it copies between jobs.
+func (a *agent) createInstance(ctx context.Context, in scaleInstance, compose []byte, fullCopy bool) error {
+	if !a.primaryIdle(ctx) {
 		return errors.New("the recorder is at a job: copy it when it is idle, or disable it in the platform first")
 	}
-	if err := copyInstance(ctx, a.root, dir, *fullCopy); err != nil {
+	dir := filepath.Join(a.root, "instances", strconv.Itoa(in.Number))
+	if err := copyInstance(ctx, a.root, dir, fullCopy); err != nil {
 		_ = os.RemoveAll(dir)
 		return err
 	}
 	if err := finishInstance(a.root, dir, compose, in); err != nil {
 		return err
 	}
-	if _, err := a.run(ctx, "compose", "-f", filepath.Join(dir, "compose.yml"), "--project-directory", dir, "up", "-d"); err != nil {
-		return err
-	}
-	fmt.Fprintf(out, "%s is starting on %s. It shows up in the platform when it connects.\n", in.Name, card.Bus)
-	return nil
+	_, err := a.run(ctx, "compose", "-f", filepath.Join(dir, "compose.yml"), "--project-directory", dir, "up", "-d")
+	return err
 }
 
 func exists(path string) bool {
@@ -270,6 +311,14 @@ func finishInstance(root, dir string, compose []byte, in scaleInstance) error {
 				return err
 			}
 		}
+	}
+	return nil
+}
+
+// copyInstanceFile refreshes one reflinked path of a copy.
+func copyInstanceFile(ctx context.Context, from, dir string) error {
+	if b, err := exec.CommandContext(ctx, "cp", "-a", "--reflink=auto", from, dir+"/").CombinedOutput(); err != nil {
+		return fmt.Errorf("copying %s: %s", filepath.Base(from), strings.TrimSpace(string(b)))
 	}
 	return nil
 }
