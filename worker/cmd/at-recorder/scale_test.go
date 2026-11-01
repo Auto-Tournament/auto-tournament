@@ -55,6 +55,18 @@ func TestInstanceComposePinsTheCard(t *testing.T) {
 	}
 }
 
+func TestInstanceComposeFromAnAlreadyPinnedBase(t *testing.T) {
+	base := strings.Replace(scaleBaseCompose, "      - COMPOSITOR", "      - DRI_PRIME=pci-0000_81_00_0\n      - CUDA_VISIBLE_DEVICES=GPU-a\n      - COMPOSITOR", 1)
+	b, err := instanceCompose([]byte(base), scaleInst())
+	if err != nil {
+		t.Fatal(err)
+	}
+	got := string(b)
+	if strings.Count(got, "DRI_PRIME=") != 1 || strings.Count(got, "CUDA_VISIBLE_DEVICES=") != 1 || strings.Contains(got, "GPU-a") {
+		t.Fatalf("old card left:\n%s", got)
+	}
+}
+
 func TestInstanceComposeKeepsAnEncoderCudaIndex(t *testing.T) {
 	base := strings.Replace(scaleBaseCompose, "ENCODER_RENDER_DEVICE=/dev/dri/renderD128", "ENCODER_RENDER_DEVICE=cuda:0", 1)
 	b, err := instanceCompose([]byte(base), scaleInst())

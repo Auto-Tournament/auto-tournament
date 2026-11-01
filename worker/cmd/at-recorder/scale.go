@@ -43,6 +43,7 @@ var (
 	reCompositor    = regexp.MustCompile(`(?m)^([ \t]+- COMPOSITOR_RENDER_DEVICE=)\S*[ \t]*$`)
 	reEncoderDRM    = regexp.MustCompile(`(?m)^([ \t]+- ENCODER_RENDER_DEVICE=)/dev/dri/\S*[ \t]*$`)
 	rePort          = regexp.MustCompile(`(?m)^([ \t]+- "?)\d+(:8483(?:/udp)?"?)[ \t]*$`)
+	rePinned        = regexp.MustCompile(`(?m)^[ \t]+- (DRI_PRIME|CUDA_VISIBLE_DEVICES)=\S*[ \t]*\n`)
 	reOfflineOff    = regexp.MustCompile(`("WantsOfflineMode"\s+)"0"`)
 )
 
@@ -50,7 +51,8 @@ var (
 // changes must be there once, or it refuses: a silently unpinned recorder would
 // run on the wrong card.
 func instanceCompose(base []byte, in scaleInstance) ([]byte, error) {
-	s := string(base)
+	// The base may itself be pinned to a card: only the new card's lines stay.
+	s := rePinned.ReplaceAllString(string(base), "")
 	one := func(re *regexp.Regexp, what, repl string) error {
 		if len(re.FindAllString(s, -1)) != 1 {
 			return fmt.Errorf("compose.yml needs exactly one %s", what)
@@ -164,8 +166,15 @@ func (a *agent) scaleCommand(ctx context.Context, args []string, out io.Writer) 
 	if err != nil {
 		return err
 	}
+	// A free number: no folder, and no container of that name (one made by hand counts too).
 	number := 2
 	for exists(filepath.Join(a.root, "instances", strconv.Itoa(number))) {
+		number++
+	}
+	for {
+		if _, err := a.run(ctx, "inspect", "--type", "container", fmt.Sprintf("%s-%d", a.name, number)); err != nil {
+			break
+		}
 		number++
 	}
 	in := scaleInstance{Number: number, Name: fmt.Sprintf("%s-%d", a.name, number), CardUUID: *gpu, Bus: card.Bus, RenderNode: render, Port: 8482 + number, OnCard: running + 1}
