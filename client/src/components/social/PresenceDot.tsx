@@ -4,6 +4,7 @@
  * (brand orange). The words say which match, and link to it. `AvatarPresence`
  * is the same dot on the corner of a PlayerAvatar.
  */
+import { AvatarDot } from '@auto-tournament/ui';
 import { Box, Tooltip, Typography } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -123,27 +124,14 @@ export function AvatarPresence({
   const p = usePresence([playerId])[playerId];
   if (!p) return null;
   const text = presenceText(p, t);
-  const dot = Math.min(14, Math.max(8, Math.round(size * 0.28)));
-  const ring = size >= 56 ? 3 : 2;
   return (
-    <Tooltip title={text}>
-      <Box
-        component="span"
-        role="img"
-        aria-label={text}
-        data-testid="avatar-presence"
-        data-presence={dotKind(p)}
-        sx={{
-          position: 'absolute',
-          right: size >= 56 ? '4%' : -1,
-          [corner]: size >= 56 ? '4%' : -1,
-          width: dot,
-          height: dot,
-          borderRadius: '50%',
-          bgcolor: dotColor(p),
-          boxShadow: `0 0 0 ${ring}px ${color.paper}`,
-        }}
-      />
-    </Tooltip>
+    <AvatarDot
+      shade={dotColor(p)}
+      label={text}
+      size={size}
+      corner={corner}
+      testId="avatar-presence"
+      state={dotKind(p)}
+    />
   );
 }
