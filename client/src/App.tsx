@@ -1,6 +1,15 @@
 import React from 'react';
 import { ThemeProvider, CssBaseline, Box } from '@mui/material';
-import { BrowserRouter, Routes, Route, Navigate, useLocation, useParams } from 'react-router-dom';
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Navigate,
+  useLocation,
+  useParams,
+  Link as RouterLink,
+} from 'react-router-dom';
+import { AtLinkProvider } from '@auto-tournament/ui';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { PageHeaderProvider } from './contexts/PageHeaderContext';
 import { SnackbarProvider, useSnackbar } from './contexts/SnackbarContext';
@@ -743,55 +752,57 @@ export default function App() {
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-        <ScrollToTop />
-        <AuthProvider>
-          <SnackbarProvider>
-            <PageHeaderProvider>
-              {/* Rendered above every route: impersonation applies app-wide,
+        <AtLinkProvider component={RouterLink} prop="to">
+          <ScrollToTop />
+          <AuthProvider>
+            <SnackbarProvider>
+              <PageHeaderProvider>
+                {/* Rendered above every route: impersonation applies app-wide,
                   including the public/player-facing pages it exists to test. */}
-              <ImpersonationBanner />
-              {/* A paid license that isn't paid: a warning for admins, then the "expired" page for everyone. */}
-              <LicenseGate />
-              {/* Admins on another address than FRONTEND_BASE_URL (e.g. by IP). */}
-              <AddressMismatchBanner />
-              {/* Players: link your Discord, or join the server (the Discord add-on). */}
-              <DiscordNotice />
-              {/* Admins choose a license before anything else, on every page. */}
-              <AdminConsentRedirect />
-              <ModuleGlobalOverlays />
-              {/* "What do you play?": redirects to /welcome/games once per
+                <ImpersonationBanner />
+                {/* A paid license that isn't paid: a warning for admins, then the "expired" page for everyone. */}
+                <LicenseGate />
+                {/* Admins on another address than FRONTEND_BASE_URL (e.g. by IP). */}
+                <AddressMismatchBanner />
+                {/* Players: link your Discord, or join the server (the Discord add-on). */}
+                <DiscordNotice />
+                {/* Admins choose a license before anything else, on every page. */}
+                <AdminConsentRedirect />
+                <ModuleGlobalOverlays />
+                {/* "What do you play?": redirects to /welcome/games once per
                   account, from whatever page the player lands on. The API
                   decides whether it is due. */}
-              <GamesOnboardingRedirect />
-              {/* "What's your name?" while players choose their names and
+                <GamesOnboardingRedirect />
+                {/* "What's your name?" while players choose their names and
                   this one has not confirmed theirs. The API decides. */}
-              <DisplayNamePrompt />
-              {/* Renders at once. Code modules load alongside (main.tsx
+                <DisplayNamePrompt />
+                {/* Renders at once. Code modules load alongside (main.tsx
                   starts them); a module's routes and slots show a pending
                   state until it arrives, and re-render when it does. */}
-              <BlockedNotice />
-              <AppRoutes />
-              <SiteFooter />
-              {/* The one match details dialog a game module opens with the
+                <BlockedNotice />
+                <AppRoutes />
+                <SiteFooter />
+                {/* The one match details dialog a game module opens with the
                   SDK's openMatchDetails(slug). Core's, so it needs no module
                   to have arrived. Core pages keep their own. */}
-              <MatchDetailsHost />
-              {/* Players calling for an admin from a game server: on every
+                <MatchDetailsHost />
+                {/* Players calling for an admin from a game server: on every
                   page a signed-in admin opens, until someone resolves them. */}
-              <AdminCallsHost />
-              {/* Matchmaking's queue bar and "Match found" dialog, on every
+                <AdminCallsHost />
+                {/* Matchmaking's queue bar and "Match found" dialog, on every
                   page; nothing while matchmaking is off for this player. */}
-              <MatchmakingOverlay />
-              {/* Chat: the viewer's match, team and party, on every page. */}
-              <ChatDock />
-              {/* A party invite arriving: a card under the top bar on every page. */}
-              <PartyInviteToast />
-              {/* Online or away: this tab says when it goes idle. */}
-              <PresenceReporter />
-              <SocketIdentity />
-            </PageHeaderProvider>
-          </SnackbarProvider>
-        </AuthProvider>
+                <MatchmakingOverlay />
+                {/* Chat: the viewer's match, team and party, on every page. */}
+                <ChatDock />
+                {/* A party invite arriving: a card under the top bar on every page. */}
+                <PartyInviteToast />
+                {/* Online or away: this tab says when it goes idle. */}
+                <PresenceReporter />
+                <SocketIdentity />
+              </PageHeaderProvider>
+            </SnackbarProvider>
+          </AuthProvider>
+        </AtLinkProvider>
       </BrowserRouter>
     </ThemeProvider>
   );
