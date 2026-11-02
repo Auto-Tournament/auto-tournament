@@ -34,10 +34,10 @@
     call-me-maybe "^1.0.1"
     z-schema "^5.0.1"
 
-"@auto-tournament/ui@0.9.0":
-  version "0.9.0"
-  resolved "https://registry.yarnpkg.com/@auto-tournament/ui/-/ui-0.9.0.tgz#23e3e63e098341c722955808dc99490329ced81d"
-  integrity sha512-IqdUT7JGP0S/7GLYYZd+iRBupiQrA7Jk8lLh5vZt4PG0dkdvw1u1E+fEd4yyjSyTux6QdXkIMLuSygiNPJWKGg==
+"@auto-tournament/ui@0.10.0":
+  version "0.10.0"
+  resolved "https://registry.yarnpkg.com/@auto-tournament/ui/-/ui-0.10.0.tgz#45d2fe1b41f6b69c8a576092ed275ba5e41cb1e5"
+  integrity sha512-kxFioWWCxMDEABOCm8VBuRFOd1BY9+3k8Lc/loXqZsYPe8Xq1lz7tcWEhIJNhHGdZ8RKG7/r0hAU31FkbsdrHg==
 
 "@axe-core/playwright@^4.13.0":
   version "4.13.0"
