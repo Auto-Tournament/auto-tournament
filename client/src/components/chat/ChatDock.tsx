@@ -12,7 +12,7 @@
  * beside them under its own name; the viewer's own lines sit on the right, a
  * solid accent bubble with their picture (draft: Auto Tournament Features, chat).
  */
-import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { fmtTime } from '../../utils/time';
 import { AvatarPresence } from '../social/PresenceDot';
 import {
@@ -21,7 +21,6 @@ import {
   ButtonBase,
   CircularProgress,
   IconButton,
-  InputBase,
   Typography,
   useMediaQuery,
 } from '@mui/material';
@@ -37,7 +36,6 @@ import {
   useMatchmaking,
 } from '../matchmaking/matchmakingStore';
 import { paths, playerProfilePath } from '../../paths';
-import { Link as RouterLink } from 'react-router-dom';
 import { fontDisplay, radii, textSize, tokens, withAlpha } from '../../theme/tokens';
 import {
   callAdmin,
@@ -54,10 +52,10 @@ import {
   type ChatMessage,
 } from './chatStore';
 import ConfirmDialog from '../modals/ConfirmDialog';
-import { EmojiPicker } from './EmojiPicker';
+import { useEmojiLabels } from './EmojiPicker';
+import { ChatComposer, ChatMessageLine } from '@auto-tournament/ui';
 import { DockFriends } from './DockFriends';
 import { useSocial } from '../social/socialStore';
-import { insertAt } from './emojiData';
 import { typingLine, typistsNow } from './typing';
 
 const { color } = tokens;
@@ -166,142 +164,20 @@ function MessageLine({
   teamName: string | null;
 }) {
   const { t } = useTranslation();
-  if (message.senderKind === 'system') {
-    return (
-      <Typography
-        component="div"
-        data-testid="chat-system-line"
-        sx={{
-          alignSelf: 'center',
-          fontSize: textSize.xs,
-          color: color.muted,
-          px: 1.5,
-          py: 0.6,
-          borderRadius: radii.pill,
-          bgcolor: color.paper3,
-          textAlign: 'center',
-        }}
-      >
-        {systemLineText(message.body, t)}
-      </Typography>
-    );
-  }
-  if (mine) {
-    return (
-      <Box
-        data-testid="chat-message"
-        data-mine="true"
-        sx={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 32px', gap: 1.25 }}
-      >
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'flex-end',
-            gap: 0.5,
-            minWidth: 0,
-          }}
-        >
-          <Typography sx={{ fontSize: textSize.sm, color: color.muted }}>
-            {t('chat.you')} · {clockOf(message.createdAt)}
-          </Typography>
-          <Box
-            sx={{
-              maxWidth: '100%',
-              px: 1.5,
-              py: 1.1,
-              borderRadius: '14px 4px 14px 14px',
-              bgcolor: color.accent,
-              color: color.accentInk,
-              fontSize: textSize.md,
-              overflowWrap: 'anywhere',
-              whiteSpace: 'pre-wrap',
-            }}
-          >
-            {message.body}
-          </Box>
-        </Box>
-        <Avatar message={message} />
-      </Box>
-    );
-  }
-  const isAdmin = message.senderKind === 'admin';
-  const nameColor = isAdmin ? admin : isEnemy ? enemy : color.ink;
-  const bubble = isAdmin ? tint(admin, 0.16) : isEnemy ? tint(enemy, 0.14) : color.paper3;
+  const playerId = message.senderKind === 'player' ? message.senderId : null;
   return (
-    <Box
-      data-testid="chat-message"
-      data-kind={isAdmin ? 'admin' : isEnemy ? 'enemy' : 'friend'}
-      sx={{ display: 'grid', gridTemplateColumns: '32px minmax(0, 1fr)', gap: 1.25 }}
-    >
-      <Avatar message={message} />
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, minWidth: 0 }}>
-        <Box
-          sx={{
-            display: 'flex',
-            gap: 1,
-            alignItems: 'baseline',
-            fontSize: textSize.sm,
-            flexWrap: 'wrap',
-          }}
-        >
-          {message.senderId && message.senderKind === 'player' ? (
-            // A player's name opens their profile.
-            <Box
-              component={RouterLink}
-              to={playerProfilePath(message.senderId)}
-              data-testid="chat-sender-link"
-              sx={{
-                fontWeight: 600,
-                color: nameColor,
-                textDecoration: 'none',
-                '&:hover, &:focus-visible': { textDecoration: 'underline' },
-              }}
-            >
-              {message.senderName}
-            </Box>
-          ) : (
-            <Box component="span" sx={{ fontWeight: 600, color: nameColor }}>
-              {message.senderName}
-            </Box>
-          )}
-          {isAdmin && (
-            <Box
-              component="span"
-              sx={{
-                px: 0.9,
-                borderRadius: radii.pill,
-                bgcolor: tint(admin, 0.16),
-                color: admin,
-                fontSize: '0.6875rem',
-                fontWeight: 600,
-              }}
-            >
-              {t('chat.adminBadge')}
-            </Box>
-          )}
-          <Box component="span" sx={{ color: color.muted }}>
-            {teamName ? `${teamName} · ` : ''}
-            {clockOf(message.createdAt)}
-          </Box>
-        </Box>
-        <Box
-          sx={{
-            alignSelf: 'flex-start',
-            maxWidth: '100%',
-            px: 1.5,
-            py: 1.1,
-            borderRadius: '4px 14px 14px 14px',
-            bgcolor: bubble,
-            fontSize: textSize.md,
-            overflowWrap: 'anywhere',
-            whiteSpace: 'pre-wrap',
-          }}
-        >
-          {message.body}
-        </Box>
-      </Box>
-    </Box>
+    <ChatMessageLine
+      message={message}
+      mine={mine}
+      isEnemy={isEnemy}
+      teamName={teamName}
+      formatTime={clockOf}
+      systemText={(body) => systemLineText(body, t)}
+      profilePath={playerProfilePath}
+      avatarOverlay={playerId ? <AvatarPresence playerId={playerId} size={32} /> : null}
+      youLabel={t('chat.you')}
+      adminLabel={t('chat.adminBadge')}
+    />
   );
 }
 
@@ -408,6 +284,7 @@ function Tabs({
 function Panel({ phone, wide, lift = 0 }: { phone: boolean; wide: boolean; lift?: number }) {
   const { t } = useTranslation();
   const { showError, showSuccess } = useSnackbar();
+  const emojiLabels = useEmojiLabels();
   const { playerSteamId, impersonation } = useAuth();
   const { channels, threads, active, typing } = useChat();
   const channel = channels.find((c) => c.channel === active) ?? null;
@@ -485,8 +362,7 @@ function Panel({ phone, wide, lift = 0 }: { phone: boolean; wide: boolean; lift?
           ? t('chat.placeholderDm', { name: channel.title })
           : t('chat.placeholderParty');
 
-  const submit = async (event: React.FormEvent) => {
-    event.preventDefault();
+  const submit = async () => {
     if (!active || !draft.trim() || sending) return;
     setSending(true);
     stick.current = true;
@@ -743,8 +619,6 @@ function Panel({ phone, wide, lift = 0 }: { phone: boolean; wide: boolean; lift?
 
         {channel && (
           <Box
-            component="form"
-            onSubmit={submit}
             sx={{
               px: 1.75,
               pt: 1.5,
@@ -769,83 +643,20 @@ function Panel({ phone, wide, lift = 0 }: { phone: boolean; wide: boolean; lift?
                 {t('chat.readOnlyImpersonating')}
               </Typography>
             ) : (
-              <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                <InputBase
-                  inputRef={inputRef}
-                  value={draft}
-                  onChange={(e) => {
-                    setDraft(e.target.value.slice(0, MAX_BODY));
-                    if (active && e.target.value.trim()) notifyTyping(active);
-                  }}
-                  placeholder={placeholder}
-                  inputProps={{
-                    'aria-label': placeholder,
-                    'data-testid': 'chat-input',
-                    maxLength: MAX_BODY,
-                  }}
-                  sx={{
-                    flex: 1,
-                    minWidth: 0,
-                    px: 1.75,
-                    py: 0.9,
-                    borderRadius: radii.md,
-                    border: `1px solid ${color.rule}`,
-                    bgcolor: color.paper,
-                    color: color.ink,
-                    fontSize: textSize.md,
-                    '&.Mui-focused': { borderColor: color.accent },
-                  }}
-                />
-                <EmojiPicker
-                  disabled={sending}
-                  onPick={(char) => {
-                    const el = inputRef.current;
-                    const next = insertAt(
-                      draft,
-                      char,
-                      el?.selectionStart ?? null,
-                      el?.selectionEnd ?? null
-                    );
-                    if (next.value.length > MAX_BODY) return;
-                    setDraft(next.value);
-                    requestAnimationFrame(() => el?.setSelectionRange(next.caret, next.caret));
-                  }}
-                  onClose={() => requestAnimationFrame(() => inputRef.current?.focus())}
-                />
-                <IconButton
-                  type="submit"
-                  aria-label={t('chat.send')}
-                  data-testid="chat-send"
-                  disabled={sending || !draft.trim()}
-                  sx={{
-                    width: 44,
-                    height: 44,
-                    borderRadius: radii.md,
-                    bgcolor: color.accent,
-                    color: color.accentInk,
-                    '&:hover': { bgcolor: color.accent2 },
-                    '&.Mui-disabled': { bgcolor: color.paper3, color: color.muted },
-                  }}
-                >
-                  {sending ? (
-                    <CircularProgress size={16} sx={{ color: 'inherit' }} />
-                  ) : (
-                    <svg
-                      width="18"
-                      height="18"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2.2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      aria-hidden="true"
-                    >
-                      <path d="M5 12h14M13 6l6 6-6 6" />
-                    </svg>
-                  )}
-                </IconButton>
-              </Box>
+              <ChatComposer
+                draft={draft}
+                onDraft={(value) => {
+                  setDraft(value);
+                  if (active && value.trim()) notifyTyping(active);
+                }}
+                onSubmit={() => void submit()}
+                sending={sending}
+                placeholder={placeholder}
+                maxLength={MAX_BODY}
+                sendLabel={t('chat.send')}
+                emojiLabels={emojiLabels}
+                inputRef={inputRef}
+              />
             )}
             {channel.kind === 'match' && myTeam && !readOnly && (
               <Button
