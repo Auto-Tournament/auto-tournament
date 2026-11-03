@@ -192,6 +192,7 @@ test.describe.serial('Fleet plugin sets', () => {
       'deathmatch',
       'mapvote',
       'community',
+      'addons',
     ]);
 
     expect(
@@ -486,17 +487,8 @@ test.describe.serial('Fleet plugin sets', () => {
       });
       const next = await client.next((msg) => isPluginsSet(msg) && msg.id !== set.id);
       expect((next.payload as { args: unknown }).args).toEqual({
-        enable: ['match', 'essentials', 'whitelist'],
-        disable: [
-          'practice',
-          'skins',
-          'midas',
-          'deathmatch',
-          'mapvote',
-          'community',
-          'movement',
-          'addons',
-        ],
+        enable: ['match', 'essentials', 'whitelist', 'addons'],
+        disable: ['practice', 'skins', 'midas', 'deathmatch', 'mapvote', 'community', 'movement'],
       });
       client.send(answer(next, 3));
       expect((await (await changing).json()).command).toMatchObject({ status: 'ok' });
