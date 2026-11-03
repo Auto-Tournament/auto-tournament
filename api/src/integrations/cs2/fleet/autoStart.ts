@@ -5,6 +5,9 @@
  * Players are warned in chat 60 s and 10 s before. 0 = off (the match waits
  * for everyone to ready up, as before).
  *
+ * While a team is short and the full-team timer (fullTeam.ts) still runs, it
+ * waits: the timer decides, then the match goes ahead as usual.
+ *
  * A held match or a paused tournament (services/matchHolds.ts) is left alone;
  * once it goes ahead (or an admin restarts the countdown) the N minutes run
  * again from then (`countdown_from`).
@@ -17,6 +20,7 @@ import { notHeldSql } from '../../../services/matchHolds';
 import { playerConnectionService } from '../../../services/playerConnectionService';
 import { cancelEmptyShuffleMatch } from '../../../services/shuffleTournamentService';
 import { storedCs2Settings } from '../tournamentSettings';
+import { fullTeamPending, fullTeamState } from '../../../services/walkoverOffers';
 
 /** A match's minutes before auto-start (pure: tested on its own): its tournament's, else the site's; 0: never. */
 export function autoStartMinutesFor(tournamentSettings: string | null, site: number): number {
@@ -45,7 +49,10 @@ const ISSUED_BY: IssuedBy = { userId: 'platform:auto-start', name: 'Auto-start',
 
 let timer: ReturnType<typeof setInterval> | null = null;
 /** Per match load (slug + loaded_at): what was sent already. */
-const sent = new Map<string, { warned60: boolean; warned10: boolean; started: boolean }>();
+const sent = new Map<
+  string,
+  { warned60: boolean; warned10: boolean; started: boolean; waiting: boolean }
+>();
 
 async function tick(): Promise<void> {
   const { cs2Settings } = await import('../settingsReaders');
@@ -55,8 +62,9 @@ async function tick(): Promise<void> {
     server_id: string;
     loaded_at: number | null;
     settings: string | null;
+    type: string | null;
   }>(
-    `SELECT m.slug, m.server_id, GREATEST(m.loaded_at, COALESCE(m.countdown_from, 0)) AS loaded_at, t.settings
+    `SELECT m.slug, m.server_id, GREATEST(m.loaded_at, COALESCE(m.countdown_from, 0)) AS loaded_at, t.settings, t.type
        FROM matches m LEFT JOIN tournament t ON t.id = m.tournament_id
       WHERE m.status = 'loaded' AND m.server_id IS NOT NULL AND m.loaded_at IS NOT NULL AND ${notHeldSql('m')}`
   );
@@ -67,9 +75,25 @@ async function tick(): Promise<void> {
     if (minutes <= 0) continue;
     const key = `${row.slug}@${row.loaded_at}`;
     seen.add(key);
-    const state = sent.get(key) ?? { warned60: false, warned10: false, started: false };
+    const state = sent.get(key) ?? {
+      warned60: false,
+      warned10: false,
+      started: false,
+      waiting: false,
+    };
     sent.set(key, state);
     const left = Number(row.loaded_at) + minutes * 60 - now;
+    if (
+      left <= 60 &&
+      !state.started &&
+      row.type !== 'shuffle' &&
+      fullTeamPending(await fullTeamState(row.slug).catch(() => null), now)
+    ) {
+      if (!state.waiting)
+        log.info(`[AUTOSTART] ${row.slug}: a team is short, the full-team timer decides`);
+      state.waiting = true;
+      continue;
+    }
     const say = (text: string) =>
       runFleetCommand(row.server_id, 'say', { text, as_admin: true }, ISSUED_BY).catch(
         () => undefined
