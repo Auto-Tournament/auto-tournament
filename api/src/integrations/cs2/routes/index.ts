@@ -44,6 +44,7 @@ import { fleetPushRouter } from '../fleet/push/routes';
 import { fleetAutoscaleRouter } from '../fleet/autoscale/routes';
 import skinsRoutes from '../skins/routes';
 import { integrationHighlightsRouter, momentAdminRouter } from './integrationHighlights';
+import matchPresetRoutes from './matchPresets';
 import { integrationPlayerStatsRouter } from './integrationPlayerStats';
 
 export const cs2LegacyRoutes: LegacyRouteMount[] = [
@@ -65,6 +66,13 @@ export const cs2LegacyRoutes: LegacyRouteMount[] = [
     title: 'Integrations: player stats',
     description:
       "Each player's numbers summed over tournaments, matches or an import's event, for an event website's stat trophies; null for a number not measured, never 0. Integrator token (API_TOKENS_INTEGRATOR), read-only or admin token, or admin session.",
+  },
+  {
+    // Admin only (requireAuth).
+    prefix: '/api/game/cs2',
+    router: matchPresetRoutes,
+    title: 'Match setting presets',
+    description: "Presets of a tournament's match settings, saved for every admin's setup.",
   },
   {
     // Admin only (requireAuth).

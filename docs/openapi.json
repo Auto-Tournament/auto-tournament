@@ -692,6 +692,10 @@
       "description": "A finished match's scoreboard over its maps, and its highlight clips."
     },
     {
+      "name": "Match setting presets",
+      "description": "Presets of a tournament's match settings, saved for every admin's setup."
+    },
+    {
       "name": "Matches",
       "description": "Create, load, restart and cancel matches; read match state."
     },
@@ -5769,6 +5773,110 @@
           },
           "401": {
             "description": "Not an admin"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/game/cs2/match-presets": {
+      "get": {
+        "tags": [
+          "Tournaments"
+        ],
+        "summary": "The match setting presets saved on this site",
+        "responses": {
+          "200": {
+            "description": "{ success, presets: [{ id, name, settings, updatedAt }] }"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Tournaments"
+        ],
+        "summary": "Save a match setting preset (the same name replaces it)",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "name",
+                  "settings"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "maxLength": 40
+                  },
+                  "settings": {
+                    "type": "object",
+                    "description": "Match settings only (settings.cs2 fields)"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "{ success, preset }"
+          },
+          "400": {
+            "description": "A bad name or setting"
+          },
+          "409": {
+            "description": "The list is full"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/game/cs2/match-presets/{id}": {
+      "delete": {
+        "tags": [
+          "Tournaments"
+        ],
+        "summary": "Remove a match setting preset",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Removed"
+          },
+          "404": {
+            "description": "No such preset"
           }
         },
         "security": [
