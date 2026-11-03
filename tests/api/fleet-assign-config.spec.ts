@@ -12,7 +12,11 @@ import {
 } from '../../api/src/integrations/cs2/fleet/assignConfig';
 import { validatePayload } from '../../api/src/integrations/cs2/fleet/protocol/v1';
 import type { MatchConfig } from '../../api/src/types/match.types';
-import { defaultAgentsOn } from '../../api/src/integrations/cs2/tournamentSettings';
+import {
+  defaultAgentsOn,
+  tournamentMatchRules,
+} from '../../api/src/integrations/cs2/tournamentSettings';
+import { drawnSide } from '../../api/src/integrations/cs2/matchConfig';
 import { INSECURE_OBSERVER_CVARS, withBroadcast } from '../../api/src/integrations/cs2/gotv';
 
 /**
@@ -178,25 +182,61 @@ test.describe('Fleet match.assign config', () => {
     ).toEqual({ ok: true, errors: [] });
   });
 
-  test('default agents: the default_models override, in either ruleset', () => {
+  test("a tournament's own rules: Ready Up overrides, team ready and .gg over the site's", () => {
     expect(rulesFromMatchConfig(tournamentConfig()).overrides).toBeUndefined();
-    expect(rulesFromMatchConfig(tournamentConfig({ default_agents: true })).overrides).toEqual({
-      default_models: true,
-    });
-    const esports = rulesFromMatchConfig(tournamentConfig({ esports: true, default_agents: true }));
-    expect(esports).toMatchObject({ ruleset: 'valve', overrides: { default_models: true } });
+    const own = rulesFromMatchConfig(
+      tournamentConfig({
+        rule_overrides: { default_models: true, tac_timeouts: 4 },
+        team_ready: false,
+        gg_vote: true,
+      }),
+      { teamReady: true }
+    );
+    expect(own.overrides).toEqual({ default_models: true, tac_timeouts: 4 });
+    expect(own.ready?.team_ready).toBeUndefined();
+    expect(own.forfeit?.gg_vote?.enabled).toBe(true);
     const config = buildAssignConfig(
-      tournamentConfig({ esports: true, default_agents: true }),
+      tournamentConfig({
+        esports: true,
+        rule_overrides: tournamentMatchRules({ esportsMode: true }).overrides,
+      }),
       'pw'
     );
+    expect(config.rules).toMatchObject({ ruleset: 'valve', overrides: { default_models: true } });
     expect(
       validatePayload('match.assign', { match_id: 'r1m1', epoch: 1, config_rev: 1, config })
     ).toEqual({ ok: true, errors: [] });
-    // Esports mode turns it on unless the tournament says otherwise.
-    expect(defaultAgentsOn({ esportsMode: true })).toBe(true);
+  });
+
+  test('esports mode: default agents, no knife, skins already off; the tournament can change each', () => {
+    expect(tournamentMatchRules({})).toEqual({ knifeRound: true, overrides: {} });
+    expect(tournamentMatchRules({ esportsMode: true })).toEqual({
+      knifeRound: false,
+      overrides: { default_models: true },
+    });
+    // Asked for: a knife round under Valve's rules needs allow_knife, skins on need cosmetics plugin.
+    expect(
+      tournamentMatchRules({
+        esportsMode: true,
+        knifeRound: true,
+        platformSkins: true,
+        defaultAgents: false,
+      }).overrides
+    ).toEqual({ allow_knife: true, cosmetics: 'plugin' });
+    expect(
+      tournamentMatchRules({ platformSkins: false, technicalPauses: 1, technicalPauseSeconds: 120 })
+    ).toEqual({
+      knifeRound: true,
+      overrides: { cosmetics: 'inventory', tech_pauses_per_team: 1, tech_pause_seconds: 120 },
+    });
+    expect(tournamentMatchRules({ teamReady: false, giveUpVote: true })).toMatchObject({
+      teamReady: false,
+      giveUpVote: true,
+    });
     expect(defaultAgentsOn({ esportsMode: true, defaultAgents: false })).toBe(false);
-    expect(defaultAgentsOn({ defaultAgents: true })).toBe(true);
-    expect(defaultAgentsOn({})).toBe(false);
+    // A map without a picked side gets the same drawn side on every read.
+    expect(drawnSide('t1-r1m1', 2)).toBe(drawnSide('t1-r1m1', 2));
+    expect(['team1_ct', 'team2_ct']).toContain(drawnSide('t1-r1m1', 0));
   });
 
   test('rules replace maxRounds, overtime and the at_* cvars', () => {

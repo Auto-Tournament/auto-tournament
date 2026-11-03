@@ -189,7 +189,9 @@ export function rulesFromMatchConfig(
   const minReady = num(config.min_players_to_ready);
   if (minReady !== undefined && minReady >= 0) ready.min_per_team = Math.floor(minReady);
   if (defaults.allowForceReady !== undefined) ready.allow_force_ready = defaults.allowForceReady;
-  if (defaults.teamReady) ready.team_ready = true;
+  // The tournament's own choice wins over the site's (driver.ts assignDefaults).
+  const teamReady = config.team_ready ?? defaults.teamReady;
+  if (teamReady) ready.team_ready = true;
   const autoready = flag(cvars.at_autoready_enabled);
   if (autoready !== undefined) ready.autoready = autoready;
   if (Object.keys(ready).length) rules.ready = ready;
@@ -224,7 +226,7 @@ export function rulesFromMatchConfig(
     forfeit.team_absent_seconds =
       ffw && seconds !== undefined && seconds > 0 ? Math.floor(seconds) : 0;
   }
-  const gg = flag(cvars.at_gg_enabled);
+  const gg = config.gg_vote ?? flag(cvars.at_gg_enabled);
   if (gg !== undefined) {
     const ggVote: NonNullable<NonNullable<MatchRules['forfeit']>['gg_vote']> = { enabled: gg };
     const threshold = num(cvars.at_gg_threshold);
@@ -246,9 +248,9 @@ export function rulesFromMatchConfig(
   if (config.wingman === true) rules.wingman = true;
   // Esports mode (the tournament's setting): Valve's rules, skins plugin inert.
   if (config.esports === true) rules.ruleset = 'valve';
-  // Default agents (the tournament's setting): the model reset on spawn, in either ruleset.
-  if (config.default_agents === true)
-    rules.overrides = { ...rules.overrides, default_models: true };
+  // The tournament's own rules (default agents, pauses, skins, knife under esports): Ready Up ruleset keys.
+  if (config.rule_overrides && Object.keys(config.rule_overrides).length)
+    rules.overrides = { ...rules.overrides, ...config.rule_overrides };
   if (config.bot_fill === true) {
     const teamSize = num(config.players_per_team);
     if (teamSize === undefined || !Number.isInteger(teamSize) || teamSize < 1 || teamSize > 32)

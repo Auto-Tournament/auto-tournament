@@ -29,6 +29,10 @@ import type {
 import { validateCustomVetoOrderSetting } from './veto/config';
 import type { Untrusted } from '../../utils/untrusted';
 import type { TournamentSettings } from '../../types/tournament.types';
+import { applyRuleFields, ruleFieldErrors, ruleFieldsOf } from './tournamentRules';
+
+export { defaultAgentsOn, tournamentMatchRules } from './tournamentRules';
+
 /** One place's prize as a tournament stores it: a rarity to pick from, or none. */
 export interface TournamentRewardSetting {
   place: 0 | 1 | 2 | 3 | 4;
@@ -155,6 +159,20 @@ export interface Cs2TournamentSettings {
    * Absent: on in esports mode, off otherwise (defaultAgentsOn).
    */
   defaultAgents?: boolean;
+  /** A knife round picks the sides a veto left open. Absent: on, off in esports mode (Valve's rules). */
+  knifeRound?: boolean;
+  /** One player's .ready readies their team. Absent: the site's (Match rules). */
+  teamReady?: boolean;
+  /** The give-up vote (.gg). Absent: the site's. */
+  giveUpVote?: boolean;
+  /** The platform's skins in the server (Ready Up's skins plugin). Absent: on, off in esports mode. */
+  platformSkins?: boolean;
+  /** Tactical timeouts per team and their length (s). Absent: the ruleset's (3 × 30, esports 3 × 31). */
+  tacticalTimeouts?: number;
+  tacticalTimeoutSeconds?: number;
+  /** Technical pauses per team per map (0: unlimited) and when they unpause (s, 0: never). Absent: the ruleset's. */
+  technicalPauses?: number;
+  technicalPauseSeconds?: number;
   /**
    * Minutes in warmup before a match goes live, ready or not (fleet/autoStart.ts); 0: never.
    * Absent: the site's `at_autostart_after_minutes`.
@@ -172,13 +190,6 @@ export interface Cs2TournamentSettings {
   connectVia?: 'auto' | 'lan' | 'public';
   /** GOTV for this tournament's matches (gotv.ts); a field left out is the site's. */
   broadcast?: Cs2BroadcastSettings;
-}
-
-/** Whether a tournament's matches use the default agents: its own choice, else on in esports mode. */
-export function defaultAgentsOn(
-  cs2: Pick<Cs2TournamentSettings, 'defaultAgents' | 'esportsMode'> | null | undefined
-): boolean {
-  return cs2?.defaultAgents ?? cs2?.esportsMode === true;
 }
 
 /** `settings.cs2.broadcast`: the tournament's own GOTV settings. */
@@ -399,9 +410,6 @@ export function validateCs2TournamentSettings(
   const esports = objectIn(input.body?.settings ?? input.settings, CS2_SETTINGS_KEY).esportsMode;
   if (esports !== undefined && typeof esports !== 'boolean')
     return done({ fieldErrors: ['esportsMode must be a boolean'] });
-  const agents = objectIn(input.body?.settings ?? input.settings, CS2_SETTINGS_KEY).defaultAgents;
-  if (agents !== undefined && typeof agents !== 'boolean')
-    return done({ fieldErrors: ['defaultAgents must be a boolean'] });
   const autoStart = objectIn(
     input.body?.settings ?? input.settings,
     CS2_SETTINGS_KEY
@@ -417,6 +425,10 @@ export function validateCs2TournamentSettings(
     )
   )
     return done({ fieldErrors: ['autoStartMinutes must be a whole number of minutes, 0 to 120'] });
+  const ruleErrors = ruleFieldErrors(
+    objectIn(input.body?.settings ?? input.settings, CS2_SETTINGS_KEY)
+  );
+  if (ruleErrors.length) return done({ fieldErrors: ruleErrors });
   const broadcastErrors = broadcastFieldErrors(
     objectIn(input.body?.settings ?? input.settings, CS2_SETTINGS_KEY).broadcast
   );
@@ -497,9 +509,9 @@ function applyLayer(
     if (mvp) into.mvp = mvp;
   }
   if (typeof layer.esportsMode === 'boolean') into.esportsMode = layer.esportsMode;
-  if (typeof layer.defaultAgents === 'boolean') into.defaultAgents = layer.defaultAgents;
   if (typeof layer.autoStartMinutes === 'number') into.autoStartMinutes = layer.autoStartMinutes;
   else if (layer.autoStartMinutes === null) delete into.autoStartMinutes;
+  applyRuleFields(into, layer);
   if (typeof layer.veto === 'boolean') into.veto = layer.veto;
   if (layer.connectVia === 'lan' || layer.connectVia === 'public')
     into.connectVia = layer.connectVia;
@@ -579,10 +591,10 @@ export const cs2TournamentSettings: ModuleTournamentSettings<Cs2TournamentSettin
       ...(value?.matchDrops !== undefined ? { matchDrops: value.matchDrops } : {}),
       ...(value?.mvp ? { mvp: value.mvp } : {}),
       ...(value?.esportsMode !== undefined ? { esportsMode: value.esportsMode } : {}),
-      ...(value?.defaultAgents !== undefined ? { defaultAgents: value.defaultAgents } : {}),
       ...(value?.autoStartMinutes !== undefined
         ? { autoStartMinutes: value.autoStartMinutes }
         : {}),
+      ...ruleFieldsOf(value),
       ...(value?.veto !== undefined ? { veto: value.veto } : {}),
       ...(value?.mapPoolId !== undefined ? { mapPoolId: value.mapPoolId } : {}),
       ...(value?.mapMode ? { mapMode: value.mapMode } : {}),
