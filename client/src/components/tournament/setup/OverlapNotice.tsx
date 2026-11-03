@@ -7,6 +7,7 @@ import { Box, Link, Typography } from '@mui/material';
 import { WarningIcon } from '@phosphor-icons/react';
 import { Link as RouterLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { timeLocale } from '../../../utils/time';
 import { radii, tokens, withAlpha } from '../../../theme/tokens';
 import { overlapping, type OtherTournament } from '../../../hooks/usePlayWindows';
 
@@ -84,7 +85,7 @@ export function RoundOverlap({
   const to = Number.isFinite(Date.parse(endIso)) ? Date.parse(endIso) : from + 2 * 3600_000;
   const hit = overlapping(others, from, Math.max(to, from + 60_000));
   if (!hit) return null;
-  const lang = i18n.language || 'en';
+  const lang = timeLocale(i18n.language);
   const hhmm = (d: Date) => d.toLocaleTimeString(lang, { hour: '2-digit', minute: '2-digit' });
   return (
     <Box sx={{ gridColumn: '1 / -1' }}>

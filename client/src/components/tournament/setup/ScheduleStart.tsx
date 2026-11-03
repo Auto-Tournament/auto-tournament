@@ -5,6 +5,7 @@
  */
 import { Box, Chip, MenuItem, Stack, TextField, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
+import { timeLocale } from '../../../utils/time';
 import { SwitchRow } from '../../common/ui';
 import { parseDay } from '../../common/DatePicker';
 import { radii, tokens } from '../../../theme/tokens';
@@ -30,7 +31,7 @@ export function RoundDaySelect({
 }) {
   const { i18n } = useTranslation();
   const name = (day: string) =>
-    parseDay(day)?.toLocaleDateString(i18n.language || 'en', {
+    parseDay(day)?.toLocaleDateString(timeLocale(i18n.language), {
       weekday: 'short',
       day: 'numeric',
       month: 'short',

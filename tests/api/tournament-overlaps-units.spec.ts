@@ -17,10 +17,10 @@ test.describe('Tournament play windows', () => {
       },
     });
 
-  test('set times: a round lasts until the next, the last one two hours', () => {
+  test('set times: a round lasts until the next (at most three hours), the last one two', () => {
     expect(playWindowsOf(times({ '1': at(18), '2': at(20), '3': at(19, 15) }))).toEqual([
       { start: at(18), end: at(20), round: 1 },
-      { start: at(20), end: at(19, 15), round: 2 },
+      { start: at(20), end: at(23), round: 2 },
       { start: at(19, 15), end: at(21, 15), round: 3 },
     ]);
   });

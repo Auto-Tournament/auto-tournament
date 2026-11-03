@@ -5,6 +5,7 @@
 import { useState } from 'react';
 import { Box, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
+import { timeLocale } from '../../../utils/time';
 import { SegmentedControl } from './SegmentedControl';
 import { DateRangeField, dayOf, parseDay } from '../../common/DatePicker';
 import { onDays, playDaysOf, usePlayWindows } from '../../../hooks/usePlayWindows';
@@ -27,7 +28,7 @@ export function EventDaysField({
   // Days another tournament on this site plays: a dot, and a heads-up when picked.
   const others = usePlayWindows(tournamentId);
   const clash = onDays(others, daysOf(value));
-  const lang = i18n.language || 'en';
+  const lang = timeLocale(i18n.language);
   const hhmm = (d: Date) => d.toLocaleTimeString(lang, { hour: '2-digit', minute: '2-digit' });
   // Kept apart from the dates: picking the first day can leave last = first for a moment.
   const [several, setSeveralOn] = useState(
