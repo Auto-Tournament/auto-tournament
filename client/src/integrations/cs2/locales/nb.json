@@ -2399,7 +2399,13 @@
       "technical": {
         "label": "Tekniske pauser",
         "help": "Ved krasj eller brutt tilkobling, per lag, per kart."
-      }
+      },
+      "valveRule1": "Kartene er fra Active Duty-utvalget, i versjonene som ligger i spillet nå.",
+      "valveRule2": "Bo3-veto: lagene fjerner og velger kart etter tur. Hvert lag velger ett kart, og det andre laget velger side på det. Kartet som står igjen til slutt, er det avgjørende.",
+      "valveRule3": "Serverinnstillingene følger Valves standard for Premier.",
+      "valveRule4": "På nett snakker ingen andre enn de fem spillerne med laget under et kart. Ingen trener eller støtteapparat på kommunikasjonen.",
+      "valveRule5": "Én innbytter per lag. Spillere byttes mellom kampene, midt i en kamp bare ved et medisinsk nødstilfelle.",
+      "valveRule6": "Ingen endret grafikk eller lyd i spillet, og ingen spillere med VAC-utestengelse."
     },
     "esportsMode": {
       "label": "Esportmodus",

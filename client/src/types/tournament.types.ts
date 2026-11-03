@@ -143,6 +143,8 @@ export interface TournamentTemplate {
   format: 'bo1' | 'bo3' | 'bo5';
   /** A built-in template's card facts, from its game module; saved ones have none. */
   facts?: string[];
+  /** A built-in template's rules for players and rulebook link (Name and day). */
+  eventPage?: { rules: string[]; rulebookUrl: string };
   mapPoolId?: number | null;
   maps: string[];
   teamIds?: string[];

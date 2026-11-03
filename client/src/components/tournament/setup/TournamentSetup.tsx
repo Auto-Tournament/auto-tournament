@@ -71,6 +71,8 @@ export interface SetupFormValues {
   plannedTeams: number;
   /** Event page fields held until the tournament is created. */
   eventPage: EventPageFields;
+  /** The template that filled the rules and rulebook link (orange, with Clear all). */
+  eventPageFrom?: { name: string; rules: string[]; rulebookUrl: string } | null;
   /** How teams get in (sign-up), held until the tournament is created. */
   signup: SignupFields;
   /** Groups, then playoffs: groups, who goes through, the playoffs. */
@@ -457,6 +459,7 @@ export function TournamentSetup(props: TournamentSetupProps) {
         saving={saving}
         onDraftChange={handlers.onEventPageChange}
         hideStart
+        fromTemplate={form.eventPageFrom ?? null}
       />
     </>
   );

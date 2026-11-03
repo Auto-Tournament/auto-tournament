@@ -450,7 +450,10 @@
       "reminderMinutes_other": "{{count}} minutter før",
       "bannerMapLabel": "Ikke noe banner? Bruk bildet av et kart",
       "bannerMapNone": "Velg for meg",
-      "rulesHelp": "Vises under Regler på turneringssiden, under reglene plattformen lager fra innstillingene dine."
+      "rulesHelp": "Vises under Regler på turneringssiden, under reglene plattformen lager fra innstillingene dine.",
+      "fromTemplate": "Fra {{name}}",
+      "clearAll": "Fjern alle",
+      "rulebookFromTemplate": "Fra malen {{name}}. Bruk en https-lenke, eller la feltet stå tomt."
     },
     "setup": {
       "steps": {

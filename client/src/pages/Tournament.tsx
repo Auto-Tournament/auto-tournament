@@ -262,6 +262,13 @@ const Tournament: React.FC = () => {
             ? template.teamIds!.length
             : nearestTeamCount(template.type, DEFAULT_FORM.plannedTeams),
         grandFinalMode: settings?.grandFinalMode ?? DEFAULT_FORM.grandFinalMode,
+        // A built-in template's rules for players and rulebook link (Valve official).
+        ...(template.eventPage
+          ? {
+              eventPage: { ...DEFAULT_FORM.eventPage, ...template.eventPage },
+              eventPageFrom: { name: template.name, ...template.eventPage },
+            }
+          : {}),
       }));
       setGrandFinalModePicked(false);
       window.history.replaceState({}, '', '/manage/tournament');

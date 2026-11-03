@@ -302,6 +302,14 @@ export const cs2TournamentSetup: TournamentSetupModel = {
           t('tournament.matchSettings.valveFactVeto', { ns: 'cs2' }),
           t('tournament.matchSettings.valveFactRules', { ns: 'cs2' }),
         ],
+        // Player-facing lines from Valve's Major Supplemental Rulebook, and the rulebook.
+        eventPage: {
+          rules: [1, 2, 3, 4, 5, 6].map((n) =>
+            t(`tournament.matchSettings.valveRule${n}`, { ns: 'cs2' })
+          ),
+          rulebookUrl:
+            'https://github.com/ValveSoftware/counter-strike_rules_and_regs/blob/main/major-supplemental-rulebook.md',
+        },
         // Valve's rules (matchPresetRules.ts presetRules), a veto that picks sides, the site's pool.
         settings: {
           matchFormat: 'bo3',
