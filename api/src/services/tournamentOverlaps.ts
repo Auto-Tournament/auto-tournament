@@ -5,15 +5,16 @@
  * tournament they are already in. The same day is fine: only times count.
  *
  * A tournament plays in windows: at set times, each round from its time to the
- * next round's (the last one for ROUND_MS); as soon as ready, from the start
+ * next round's, at most MAX_ROUND_MS (the last one for ROUND_MS); as soon as ready, from the start
  * for ASAP_MS. One with no start time plays nowhere yet.
  */
 
 import { db } from '../config/database';
 import type { Untrusted } from '../utils/untrusted';
 
-/** shortcut: a fixed length for the last round and for "as soon as ready", until match lengths are estimated per format. */
+/** shortcut: fixed lengths for the last round, the longest round and "as soon as ready", until match lengths are estimated per format. */
 const ROUND_MS = 2 * 3600_000;
+const MAX_ROUND_MS = 3 * 3600_000;
 const ASAP_MS = 4 * 3600_000;
 
 export interface PlayWindow {
@@ -41,7 +42,9 @@ export function playWindowsOf(settings: string | null): PlayWindow[] {
     if (rounds.length) {
       return rounds.map((r, i) => {
         const next = i + 1 < rounds.length ? rounds[i + 1].at : null;
-        const end = next !== null && next > r.at ? next : r.at + ROUND_MS;
+        // Until the next round, but never overnight: the next one can be another day.
+        const end =
+          next !== null && next > r.at ? Math.min(next, r.at + MAX_ROUND_MS) : r.at + ROUND_MS;
         return { start: r.at, end, round: r.round };
       });
     }
