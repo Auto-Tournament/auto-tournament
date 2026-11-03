@@ -17,6 +17,7 @@ import type {
 import { requiresVeto, validateMapCount } from './mapRules';
 import type { MapGameMode } from '../cs2.types';
 import { isMapMode } from '../maps/mapModes';
+import { changedLabels } from './matchPresetRules';
 import type { Untrusted } from '../../types';
 
 /** The key of CS2's object in `settings`. */
@@ -167,134 +168,19 @@ function applyFields(into: Cs2TournamentSettings, source: Record<string, Untrust
  * rules at the top of its settings (`settings.maxRounds`, ...): those are read
  * too, under anything in `settings.cs2`.
  */
-const RULE_FLAGS = [
+export const RULE_FLAGS = [
   'defaultAgents',
   'knifeRound',
   'teamReady',
   'giveUpVote',
   'platformSkins',
 ] as const;
-const RULE_COUNTS = [
+export const RULE_COUNTS = [
   'tacticalTimeouts',
   'tacticalTimeoutSeconds',
   'technicalPauses',
   'technicalPauseSeconds',
 ] as const;
-
-/** What the site's Match rules page sets for every tournament (GET /api/settings). */
-export interface SiteMatchDefaults {
-  teamReady: boolean;
-  giveUpVote: boolean;
-  autoStartMinutes: number;
-}
-
-/** The settings a preset sets, and what each preset gives them (Ready Up's rulesets). */
-export interface PresetRules {
-  knifeRound: boolean;
-  platformSkins: boolean;
-  defaultAgents: boolean;
-  tactical: string;
-  /** "" = the server's own (Ready Up's default ruleset sets none). */
-  technical: string;
-  teamReady: boolean;
-  giveUpVote: boolean;
-  autoStartMinutes: number;
-}
-export type PresetKey = keyof PresetRules;
-
-/** Tactical timeouts as one choice, "count×seconds" ("0" none). */
-export function tacticalChoice(count: number, seconds: number): string {
-  return count === 0 ? '0' : `${count}x${seconds}`;
-}
-
-/** The preset's own values: Standard is the site's, Esports is Valve's rules (Ready Up `valve`). */
-export function presetRules(esports: boolean, site: SiteMatchDefaults): PresetRules {
-  return esports
-    ? {
-        ...site,
-        knifeRound: false,
-        platformSkins: false,
-        defaultAgents: true,
-        tactical: '3x31',
-        technical: '1x120',
-      }
-    : {
-        ...site,
-        knifeRound: true,
-        platformSkins: true,
-        defaultAgents: false,
-        tactical: '3x30',
-        technical: '',
-      };
-}
-
-/** What a tournament ends up with: its own value, else its preset's (pure: tested on its own). */
-export function effectiveRules(v: Cs2TournamentSettings, site: SiteMatchDefaults): PresetRules {
-  const preset = presetRules(v.esportsMode === true, site);
-  const own = <T>(x: T | null | undefined, fallback: T): T =>
-    x === null || x === undefined ? fallback : x;
-  const tactical =
-    v.tacticalTimeouts === null || v.tacticalTimeouts === undefined
-      ? preset.tactical
-      : tacticalChoice(v.tacticalTimeouts, own(v.tacticalTimeoutSeconds, 30));
-  const technical =
-    v.technicalPauses === null || v.technicalPauses === undefined
-      ? preset.technical
-      : `${v.technicalPauses}x${own(v.technicalPauseSeconds, 0)}`;
-  return {
-    knifeRound: own(v.knifeRound, preset.knifeRound),
-    platformSkins: own(v.platformSkins, preset.platformSkins),
-    defaultAgents: own(v.defaultAgents, preset.defaultAgents),
-    tactical,
-    technical,
-    teamReady: own(v.teamReady, site.teamReady),
-    giveUpVote: own(v.giveUpVote, site.giveUpVote),
-    autoStartMinutes: own(v.autoStartMinutes, site.autoStartMinutes),
-  };
-}
-
-/** The settings that differ from the site's defaults (the Standard preset), in display order. */
-export function changedFromSite(v: Cs2TournamentSettings, site: SiteMatchDefaults): PresetKey[] {
-  const now = effectiveRules(v, site);
-  const standard = presetRules(false, site);
-  return (Object.keys(standard) as PresetKey[]).filter((k) => now[k] !== standard[k]);
-}
-
-/** The patch that sets one preset setting: null where it equals the preset (follows it again). */
-export function presetPatch(
-  v: Cs2TournamentSettings,
-  site: SiteMatchDefaults,
-  key: PresetKey,
-  value: boolean | number | string
-): Partial<Cs2TournamentSettings> {
-  const preset = presetRules(v.esportsMode === true, site);
-  const same = preset[key] === value;
-  if (key === 'tactical') {
-    if (same) return { tacticalTimeouts: null, tacticalTimeoutSeconds: null };
-    const [count, seconds] = String(value).split('x').map(Number);
-    return { tacticalTimeouts: count, tacticalTimeoutSeconds: count === 0 ? null : seconds };
-  }
-  if (key === 'technical') {
-    if (same || value === '') return { technicalPauses: null, technicalPauseSeconds: null };
-    const [count, seconds] = String(value).split('x').map(Number);
-    return { technicalPauses: count, technicalPauseSeconds: seconds };
-  }
-  return { [key]: same ? null : value } as Partial<Cs2TournamentSettings>;
-}
-
-/** Switching the preset: everything it sets follows the new one, the site-wide ones stay. */
-export function withPreset(esports: boolean): Partial<Cs2TournamentSettings> {
-  return {
-    esportsMode: esports,
-    knifeRound: null,
-    platformSkins: null,
-    defaultAgents: null,
-    tacticalTimeouts: null,
-    tacticalTimeoutSeconds: null,
-    technicalPauses: null,
-    technicalPauseSeconds: null,
-  };
-}
 
 /** Whether the matches use the default agents: the tournament's choice, else on in esports mode. */
 export function defaultAgentsOn(
@@ -378,37 +264,6 @@ export function overtimeOptionOf(
   return settings.overtimeSegments === 0 ? 'disabledNoDraws' : 'disabledDraws';
 }
 
-/** The review's list of what differs from the site: the preset's own settings, and any set by hand. */
-export function changedLabels(cs2: Cs2TournamentSettings, t: TFunction): string {
-  const preset: PresetKey[] = [
-    'knifeRound',
-    'tactical',
-    'technical',
-    'platformSkins',
-    'defaultAgents',
-  ];
-  // The site-wide ones only when the tournament sets them: the review has no site values to compare.
-  const fallback = {
-    teamReady: cs2.teamReady ?? true,
-    giveUpVote: cs2.giveUpVote ?? false,
-    autoStartMinutes: -1,
-  };
-  const keys = changedFromSite(cs2, fallback).filter((k) => preset.includes(k));
-  if (cs2.teamReady !== null && cs2.teamReady !== undefined) keys.push('teamReady');
-  if (cs2.giveUpVote !== null && cs2.giveUpVote !== undefined) keys.push('giveUpVote');
-  if (cs2.autoStartMinutes !== null && cs2.autoStartMinutes !== undefined)
-    keys.push('autoStartMinutes');
-  const label = (k: PresetKey) =>
-    k === 'defaultAgents'
-      ? t('tournament.defaultAgents.label', { ns: 'cs2' })
-      : k === 'autoStartMinutes'
-        ? t('tournament.autoStart.label', { ns: 'cs2' })
-        : t(`tournament.matchSettings.${k}.label`, { ns: 'cs2' });
-  return keys.length
-    ? keys.map(label).join(', ')
-    : t('tournament.matchSettings.none', { ns: 'cs2' });
-}
-
 function rulesLine(cs2: Cs2TournamentSettings, ctx: TournamentSetupContext, t: TFunction): string {
   const option = overtimeOptionOf(cs2);
   const overtime =
@@ -435,6 +290,23 @@ const sameSet = (a: string[], b: string[]) =>
   JSON.stringify([...a].sort()) === JSON.stringify([...b].sort());
 
 export const cs2TournamentSetup: TournamentSetupModel = {
+  builtInTemplates(t) {
+    return [
+      {
+        key: 'valve-official',
+        name: t('tournament.matchSettings.valveTemplate', { ns: 'cs2' }),
+        description: t('tournament.matchSettings.valveTemplateHelp', { ns: 'cs2' }),
+        type: 'single_elimination',
+        format: 'bo3',
+        // Valve's rules (matchPresetRules.ts presetRules), a veto that picks sides, the site's pool.
+        settings: {
+          matchFormat: 'bo3',
+          cs2: { esportsMode: true, veto: true, maxRounds: 24, overtimeMode: 'enabled', maps: [] },
+        },
+      },
+    ];
+  },
+
   initialSettings(_ctx, from) {
     return cs2Patch(cs2SettingsOf(from));
   },

@@ -145,7 +145,8 @@ test.describe.serial('CS2 settings in the tournament setup', () => {
     await page.goto('/manage/tournament');
     await page.getByTestId('tournament-setup-step-extras').click();
     await expect(page.getByTestId('tournament-changed')).toHaveCount(0);
-    await page.getByTestId('tournament-preset').getByRole('button', { name: 'Esports' }).click();
+    await page.getByTestId('tournament-preset').getByRole('combobox').click();
+    await page.getByRole('option', { name: 'Valve official' }).click();
     await expect(page.getByTestId('tournament-knife-round')).not.toBeChecked();
     await expect(page.getByTestId('tournament-default-agents')).toBeChecked();
     await expect(page.getByTestId('tournament-changed')).toContainText('settings differ');

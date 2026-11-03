@@ -31,6 +31,7 @@ import {
   setupStepsFor,
 } from '../components/tournament/setup/setupSteps';
 import { DEFAULT_SETUP_GAME } from '../components/tournament/setup/games';
+import { builtInTemplates } from '../components/tournament/setup/builtInTemplates';
 import {
   gameSettingsChanges,
   gameSettingsError,
@@ -244,7 +245,8 @@ const Tournament: React.FC = () => {
       const settings = template.settings;
       setForm({
         ...DEFAULT_FORM,
-        name: template.name,
+        // A built-in template names no tournament.
+        name: template.id < 0 ? '' : template.name,
         type: template.type,
         format: template.format,
         // The game module's settings saved with the template (CS2: its pool,
@@ -274,6 +276,14 @@ const Tournament: React.FC = () => {
   // Load template if specified in URL (?template=<id>)
   const loadTemplate = React.useCallback(
     async (templateId: number) => {
+      // A built-in template (negative id) is the module's, not the API's.
+      const builtIn = builtInTemplates(t).find((tpl) => tpl.id === templateId);
+      if (builtIn) {
+        applyTemplate(builtIn, { withTeams: false });
+        const presetName = new URLSearchParams(window.location.search).get('name');
+        if (presetName) setForm((prev) => ({ ...prev, name: presetName.slice(0, 100) }));
+        return;
+      }
       try {
         const response = await api.get<{ success: boolean; template: TournamentTemplate }>(
           `/api/templates/${templateId}`
