@@ -32,6 +32,7 @@ function Card({
     <ButtonBase
       role="radio"
       aria-checked={picked}
+      aria-label={name}
       onClick={onPick}
       data-testid="tournament-start-from-card"
       sx={{
