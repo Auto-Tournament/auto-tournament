@@ -1616,6 +1616,7 @@
     "spotsLeft_one": "{{count}} av {{max}} plasser igjen. Kapteinene velger startspillere og reserver.",
     "spotsLeft_other": "{{count}} av {{max}} plasser igjen. Kapteinene velger startspillere og reserver.",
     "byOrganizer": "Arrangøren legger til lagene.",
+    "captainsPick": "Kapteinene velger startspillere og innbyttere.",
     "startsIn": "Starter om",
     "allRules": "Alle regler og premier",
     "signedUpEyebrow": "{{team}} · påmeldt",

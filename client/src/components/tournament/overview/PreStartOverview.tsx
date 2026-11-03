@@ -171,7 +171,9 @@ export function SignUpHero({
           ? t('preStart.opensIn', { time: fmtCountdown(opensAt, now) })
           : left !== null && left > 0
             ? t('preStart.spotsLeft', { count: left, max })
-            : t('preStart.byOrganizer')
+            : open && left === null
+              ? t('preStart.captainsPick')
+              : t('preStart.byOrganizer')
       }
       side={
         <>
