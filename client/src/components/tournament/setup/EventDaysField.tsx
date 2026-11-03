@@ -3,6 +3,7 @@
  * first and a last day. The start time is set on Schedule.
  */
 import type { ReactNode } from 'react';
+import { useState } from 'react';
 import { Box, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { SegmentedControl } from './SegmentedControl';
@@ -25,8 +26,12 @@ export function EventDaysField({
   children?: ReactNode;
 }) {
   const { t } = useTranslation();
-  const several = Boolean(value.firstDay) && value.lastDay > value.firstDay;
+  // Kept apart from the dates: picking the first day can leave last = first for a moment.
+  const [several, setSeveralOn] = useState(
+    Boolean(value.firstDay) && value.lastDay > value.firstDay
+  );
   const setSeveral = (on: boolean) => {
+    setSeveralOn(on);
     const first = value.firstDay || dayOf(new Date());
     const next = new Date(`${first}T12:00:00`);
     next.setDate(next.getDate() + 1);
