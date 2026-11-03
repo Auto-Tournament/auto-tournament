@@ -4,7 +4,11 @@ import { SegmentedControl } from './SegmentedControl';
 import { getRoundLabel } from '../../../utils/matchUtils';
 import { radii, tokens } from '../../../theme/tokens';
 import type { Untrusted } from '../../../utils/untrusted';
+import type { ReactNode } from 'react';
 import { TimeField } from '../../common/DatePicker';
+import { isoOf } from '../../../utils/localDay';
+import { usePlayWindows } from '../../../hooks/usePlayWindows';
+import { RoundOverlap } from './OverlapNotice';
 import {
   DEFAULT_START,
   daysOf,
@@ -133,6 +137,7 @@ export function ScheduleStep({
   breakMinutes,
   disabled,
   roundBreaks = false,
+  tournamentId,
 }: {
   value: MatchTimesForm;
   onChange: (next: MatchTimesForm) => void;
@@ -144,8 +149,11 @@ export function ScheduleStep({
   disabled?: boolean;
   /** Edit the breaks between rounds (a shuffle: rounds follow one another). */
   roundBreaks?: boolean;
+  /** The tournament being set up (left out of the overlap check). */
+  tournamentId?: number;
 }) {
   const { t } = useTranslation();
+  const others = usePlayWindows(tournamentId);
   const set = (patch: Partial<MatchTimesForm>) => onChange({ ...value, ...patch });
   const roundName = (n: number) =>
     elimination ? getRoundLabel(n, rounds) : t('schedulePage.roundN', { n });
@@ -159,6 +167,10 @@ export function ScheduleStep({
       ? t('tournament.setup.schedule.sameDay')
       : t('tournament.setup.schedule.newDay');
   };
+  const clashOf = (startIso: string, endIso: string) => (
+    <RoundOverlap others={others} startIso={startIso} endIso={endIso} />
+  );
+  const roundIso = (n: number) => isoOf(roundDayOf(start, n), value.rounds[String(n)] ?? '');
   /** A round (or the start): its name and tag, its day and its time. */
   const roundRow = (
     key: string,
@@ -168,7 +180,8 @@ export function ScheduleStep({
     day: string,
     onDay: (day: string) => void,
     time: string,
-    onTime: (time: string) => void
+    onTime: (time: string) => void,
+    warning: ReactNode = null
   ) => (
     <Box key={key} component="li" sx={row} data-testid={`setup-round-row-${key}`}>
       <Box sx={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
@@ -192,6 +205,7 @@ export function ScheduleStep({
         disabled={disabled}
         testId={`setup-round-${key}-time`}
       />
+      {warning}
     </Box>
   );
   const row = {
@@ -349,7 +363,8 @@ export function ScheduleStep({
             start.firstDay,
             (day) => setStart({ ...start, firstDay: day }),
             start.startTime,
-            (time) => setStart({ ...start, startTime: time })
+            (time) => setStart({ ...start, startTime: time }),
+            clashOf(isoOf(start.firstDay, start.startTime), '')
           )}
         </Box>
       )}
@@ -377,7 +392,8 @@ export function ScheduleStep({
                 (day) =>
                   setStart({ ...start, roundDays: { ...start.roundDays, [String(n)]: day } }),
                 value.rounds[String(n)] ?? '',
-                (time) => set({ rounds: { ...value.rounds, [String(n)]: time } })
+                (time) => set({ rounds: { ...value.rounds, [String(n)]: time } }),
+                clashOf(roundIso(n), roundIso(n + 1))
               )
             )}
           </Box>

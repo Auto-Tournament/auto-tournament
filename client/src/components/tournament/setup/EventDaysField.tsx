@@ -2,30 +2,33 @@
  * Name and day's "Day" (Claude Design, Setup › Name and day): one day, or a
  * first and a last day. The start time is set on Schedule.
  */
-import type { ReactNode } from 'react';
 import { useState } from 'react';
 import { Box, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { SegmentedControl } from './SegmentedControl';
-import { DateRangeField, dayOf } from '../../common/DatePicker';
-import type { StartForm } from './startForm';
+import { DateRangeField, dayOf, parseDay } from '../../common/DatePicker';
+import { onDays, playDaysOf, usePlayWindows } from '../../../hooks/usePlayWindows';
+import { OverlapNotice } from './OverlapNotice';
+import { daysOf, type StartForm } from './startForm';
 
 export function EventDaysField({
   value,
   onChange,
   disabled,
-  marked,
-  children,
+  tournamentId,
 }: {
   value: StartForm;
   onChange: (next: StartForm) => void;
   disabled?: boolean;
-  /** Days another tournament on this site plays (a dot on the calendar). */
-  marked?: string[];
-  /** Shown next to the fields (the heads-up about another tournament). */
-  children?: ReactNode;
+  /** The tournament being set up (left out of the overlap check). */
+  tournamentId?: number;
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  // Days another tournament on this site plays: a dot, and a heads-up when picked.
+  const others = usePlayWindows(tournamentId);
+  const clash = onDays(others, daysOf(value));
+  const lang = i18n.language || 'en';
+  const hhmm = (d: Date) => d.toLocaleTimeString(lang, { hour: '2-digit', minute: '2-digit' });
   // Kept apart from the dates: picking the first day can leave last = first for a moment.
   const [several, setSeveralOn] = useState(
     Boolean(value.firstDay) && value.lastDay > value.firstDay
@@ -66,12 +69,29 @@ export function EventDaysField({
             several ? t('tournament.setup.days.firstDay') : t('tournament.setup.days.day')
           }
           lastLabel={t('tournament.setup.days.lastDay')}
-          marked={marked}
+          marked={playDaysOf(others)}
           markedLegend={t('tournament.setup.days.markedLegend')}
           disabled={disabled}
           testId="setup-days"
         />
-        {children}
+        {clash && (
+          <OverlapNotice
+            title={t('tournament.setup.overlap.headsUp', {
+              name: clash.name,
+              day: parseDay(clash.day)?.toLocaleDateString(lang, {
+                weekday: 'short',
+                day: 'numeric',
+                month: 'short',
+              }),
+            })}
+            body={t('tournament.setup.overlap.headsUpBody', {
+              from: hhmm(clash.start),
+              to: hhmm(clash.end),
+            })}
+            to={`/tournament/${clash.id}`}
+            linkText={t('tournament.setup.overlap.openOther', { name: clash.name })}
+          />
+        )}
       </Box>
     </Box>
   );
