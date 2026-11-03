@@ -1248,7 +1248,7 @@
     "title": "Meld på laget ditt",
     "editTitle": "Endre oppstillingen",
     "stepsLabel": "Steg",
-    "changeUntil": "Du kan endre oppstillingen til innsjekken {{when}}.",
+    "changeUntil": "Du kan endre oppstillingen til innsjekken stenger, {{when}}.",
     "counts": "{{starters}} av {{teamSize}} startspillere · {{subs}} av {{maxSubs}} reserver",
     "lineupRatingValue": "Lagets rating {{rating}}",
     "missingGame": "{{names}} må legge til {{game}} på profilen sin.",
@@ -1273,12 +1273,14 @@
       "replacedBody": "Når innsjekken stenger, tar en innbytter plassen til startspillere som ikke har sjekket inn. Er det ingen innbyttere igjen, spiller dere med én spiller mindre.",
       "fullTeam_one": "{{count}} minutt på å få laget inn på serveren",
       "fullTeam_other": "{{count}} minutter på å få laget inn på serveren",
-      "fullTeamBody_one": "Når serveren er klar, har laget {{count}} minutt på å få {{size}} spillere inn, innbyttere medregnet. Etter det kan det andre laget ta walkover eller velge å spille mot dere med færre spillere.",
-      "fullTeamBody_other": "Når serveren er klar, har laget {{count}} minutter på å få {{size}} spillere inn, innbyttere medregnet. Etter det kan det andre laget ta walkover eller velge å spille mot dere med færre spillere.",
+      "fullTeamBody_one": "Når serveren er klar, har laget {{count}} minutt på å få et fullt lag inn, innbyttere medregnet. Etter det kan det andre laget ta walkover eller velge å spille mot dere med færre spillere.",
+      "fullTeamBody_other": "Når serveren er klar, har laget {{count}} minutter på å få et fullt lag inn, innbyttere medregnet. Etter det kan det andre laget ta walkover eller velge å spille mot dere med færre spillere.",
       "ready": "Vær klar før hver kamp",
       "readyBodyVeto_one": "Vetoen åpner {{count}} minutt før hver kamp. Ha denne siden åpen: den sier fra når neste kamp er klar.",
       "readyBodyVeto_other": "Vetoen åpner {{count}} minutter før hver kamp. Ha denne siden åpen: den sier fra når neste kamp er klar.",
-      "readyBody": "Ha denne siden åpen: den sier fra når neste kamp er klar."
+      "readyBody": "Ha denne siden åpen: den sier fra når neste kamp er klar.",
+      "eachMatch": "Sjekk inn igjen før hver kamp",
+      "eachMatchBody": "Før hver kamp sjekker hver startspiller inn i kamprommet, eller en kaptein gjør det for dem. Den som ikke sjekker inn, byttes ut med en innbytter."
     }
   },
   "bracketCards": {
@@ -1623,7 +1625,7 @@
     "inToFix_one": "Du er med. Én ting å fikse",
     "inToFix_other": "Du er med. {{count}} ting å fikse",
     "fixBefore": "Fiks det før innsjekken {{when}}, ellers kan ikke spilleren bli med på serveren.",
-    "checkInOn": "Sjekk inn {{when}}. Et lag spiller når alle startspillerne er sjekket inn.",
+    "checkInOn": "Sjekk inn {{when}}. En startspiller som ikke har sjekket inn før start, byttes ut med en innbytter.",
     "allSet": "Alle er klare. Tidsplanen viser når det starter.",
     "checkInOpens": "Innsjekken åpner",
     "openLineup": "Åpne oppstillingen din",
@@ -1651,7 +1653,7 @@
   },
   "checkIn": {
     "areYouHere": "Er du her?",
-    "teamCount": "{{team}} sjekker inn: {{in}} av {{total}}. Et lag spiller når alle startspillerne er sjekket inn.",
+    "teamCount": "{{team}} sjekker inn: {{in}} av {{total}}. En startspiller som ikke har sjekket inn før start, byttes ut med en innbytter.",
     "soundOn": "♪ Lyd på",
     "firstVeto_one": "Den første vetoen din åpner {{time}}, {{count}} minutt før kampen: vær ved pc-en da.",
     "firstVeto_other": "Den første vetoen din åpner {{time}}, {{count}} minutter før kampen: vær ved pc-en da.",
