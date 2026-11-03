@@ -3,7 +3,7 @@
     "title": "Admin",
     "restartTournament": {
       "button": "Start turneringskamper på nytt",
-      "restarting": "Starter turneringskamper på nytt…",
+      "restarting": "Starter turneringskamper på nytt …",
       "intro": "🔄 Dette starter alle aktive kamper på nytt og laster dem inn på serverne igjen.",
       "actionsTitle": "Handlinger:",
       "actionEndMatch": "Kjør at_endmatch på alle servere med lastede eller pågående kamper",
@@ -22,7 +22,7 @@
     "setup": {
       "title": "Fullfør oppsettet",
       "openSettings": "Åpne innstillinger",
-      "signIn": "Innloggingsleverandør",
+      "signIn": "Sett opp innlogging",
       "game": "Installer et spill (CS2) under Moduler",
       "discordBot": "Legg inn Discord-boten din (tokenet), så kan nettstedet sende spillerne meldinger om kampene deres"
     },
@@ -97,7 +97,7 @@
       },
       "modules": {
         "label": "Moduler",
-        "hint": "Spillene denne instansen kjører"
+        "hint": "Spillene denne siden kjører"
       }
     },
     "people": {
@@ -112,11 +112,11 @@
   "settingsPage": {
     "email": {
       "title": "E-post",
-      "short": "Sender bekreftelse av adresser, tilbakestilling av passord og turnerings-e-post.",
+      "short": "Sender e-post for å bekrefte adresser, tilbakestille passord og om turneringer.",
       "enabled": "Send e-post",
       "enabledOn": "På. E-post sendes fra {{from}}.",
       "enabledOff": "Av. Ingenting sendes.",
-      "needsServer": "Sett opp serveren under først.",
+      "needsServer": "Sett opp serveren nedenfor først.",
       "turnedOn": "E-post er på",
       "turnedOff": "E-post er av",
       "server": "E-postserver",
@@ -129,7 +129,7 @@
       "securityNone": "Ingen (bare på et nett du stoler på)",
       "username": "Brukernavn",
       "password": "Passord",
-      "passwordKept": "La stå tomt for å beholde det lagrede",
+      "passwordKept": "La feltet stå tomt for å beholde det lagrede passordet",
       "passwordSaved": "Lagret",
       "fromAddress": "Avsenderadresse",
       "fromAddressHelp": "Adressen e-posten kommer fra. E-postleverandøren din må tillate den.",
@@ -137,7 +137,7 @@
       "fromNameHelp": "Valgfritt. Vises som avsender, f.eks. NTLAN.",
       "siteUrl": "Sidens adresse",
       "siteUrlHelp": "Lenker i e-post starter her, f.eks. https://cs.example.com.",
-      "siteUrlHelpDefault": "Lenker i e-post starter her. Tomt: {{url}}.",
+      "siteUrlHelpDefault": "Lenker i e-post starter her. Står feltet tomt, brukes {{url}}.",
       "save": "Lagre",
       "saved": "E-postinnstillingene er lagret",
       "loadError": "Kunne ikke laste e-postinnstillingene",
@@ -145,9 +145,9 @@
       "test": "Test-e-post",
       "testShort": "Send én for å sjekke at innstillingene virker.",
       "testTo": "Send til",
-      "testSend": "Send test",
+      "testSend": "Send test-e-post",
       "testNeedsOn": "Slå på sending (og lagre serveren) før du tester.",
-      "testSent": "Sendt til {{to}}. Sjekk innboksen og søppelpost.",
+      "testSent": "Sendt til {{to}}. Sjekk innboksen og søppelposten.",
       "testFailed": "Test-e-posten kunne ikke sendes"
     },
     "title": "Innstillinger",
@@ -166,11 +166,11 @@
       "title": "Innloggingsleverandører",
       "intro": "Velg hvordan folk logger inn. Hvilken som helst av disse kan være kontoen deres, og de kan koble til flere på tilkoblingssiden. Endringer gjelder med en gang, uten omstart.",
       "keySource": "Lagrede hemmeligheter krypteres med {{name}}.",
-      "keySourceDefault": "Lagrede hemmeligheter krypteres med en innebygd utviklingsnøkkel. Sett SECRETS_KEY eller SESSION_SECRET før dere går live.",
+      "keySourceDefault": "Lagrede hemmeligheter krypteres med en innebygd utviklingsnøkkel. Sett SECRETS_KEY eller SESSION_SECRET før siden tas i bruk.",
       "loadError": "Kunne ikke laste innloggingsleverandørene",
       "saveError": "Kunne ikke lagre",
       "testError": "Kunne ikke kjøre testen",
-      "saved": "Innlogging med {{provider}} lagret",
+      "saved": "Innlogging med {{provider}} er lagret",
       "enabled": "På",
       "clientId": "Klient-ID",
       "issuerUrl": "Utsteder-URL",
@@ -196,7 +196,7 @@
       "copyCallback": "Kopier callback-URL",
       "copied": "Kopiert",
       "copyError": "Kunne ikke kopiere",
-      "guide": "Oppsettsguide",
+      "guide": "Veiledning for oppsett",
       "howTo": "Utviklerkonsoll",
       "test": "Test",
       "comingSoon": "Kommer snart",
@@ -215,19 +215,19 @@
         "unexpected": "Leverandøren svarte noe testen ikke forstår."
       },
       "welcomeTitle": "Sett opp hvordan spillerne logger inn",
-      "welcomeBody": "Du er logget inn som admin. Slå på minst én tjeneste under (Steam, Discord, Google, GitHub eller Twitch) så spillerne kan logge inn.",
+      "welcomeBody": "Du er logget inn som admin. Slå på minst én tjeneste nedenfor (Steam, Discord, Google, GitHub eller Twitch), så spillerne kan logge inn.",
       "adminAccess": {
         "title": "Admintilgang",
         "localLogin": "Tillat lokal admininnlogging",
         "localLoginHelp": "Innlogging med brukernavn og passord på /login/admin. Mister du tilgangen, kjør reset-admin på serveren.",
         "localLoginLocked": "Må være på til en annen admin kan logge inn med en tjeneste som er slått på.",
         "steamIds": "Admin-Steam-ID-er",
-        "steamIdsHelp": "Steam64-ID-er, skilt med komma. Blir admin når du lagrer og ved hver oppstart. Å fjerne en tar ikke bort admin.",
+        "steamIdsHelp": "Steam64-ID-er, skilt med komma. De blir admin når du lagrer, og ved hver oppstart. Fjerner du en ID, mister ikke spilleren admin.",
         "emails": "Admin-e-poster",
         "emailsHelp": "Adresser som blir admin når eieren logger inn med en tjeneste som har bekreftet adressen (Google, Discord, GitHub).",
         "unsaved": "Ikke lagret ennå.",
-        "saved": "Admintilgang lagret",
-        "loadError": "Kunne ikke laste admintilgang",
+        "saved": "Admintilgangen er lagret",
+        "loadError": "Kunne ikke laste admintilgangen",
         "short": "Hvem som kan logge inn som administrator"
       },
       "short": "Hvordan spillere og administratorer logger inn. Endringer gjelder med en gang.",
@@ -259,7 +259,7 @@
         "setPasswordTotp": "Totrinnsbekreftelsen deres slås også av. De setter den opp igjen etter innlogging.",
         "newPassword": "Nytt passord",
         "savePassword": "Lagre passord",
-        "passwordSet": "Nytt passord lagret for {{username}}",
+        "passwordSet": "Nytt passord er lagret for {{username}}",
         "removeTitle": "Fjerne {{username}}?",
         "removeBody": "De kan ikke lenger logge inn med dette brukernavnet og passordet, og de er ikke lenger admin. Spilleren, kampene og statistikken blir værende. Lager du samme brukernavn igjen, får de dem tilbake.",
         "removeConfirm": "Fjern",
@@ -274,29 +274,29 @@
       "steam": {
         "title": "Steam-integrasjon",
         "apiKeyLabel": "Steam Web API-nøkkel",
-        "apiKeyHelper": "Brukes til å slå opp Steam-vanity-URL-er og spillerinfo.",
-        "checkButtonChecking": "Sjekker Steam…",
+        "apiKeyHelper": "Brukes til å slå opp egendefinerte Steam-URL-er og spillerinformasjon.",
+        "checkButtonChecking": "Sjekker Steam …",
         "checkButtonIdle": "Sjekk Steam-tilkobling",
-        "statusOk": "Steam API-nøkkel er satt og tilgjengelig.",
-        "statusNotConfigured": "Steam API-nøkkel er ikke satt.",
-        "statusUnreachable": "Steam API-nøkkel er satt, men Steam kan ikke nås.",
-        "statusError": "Klarte ikke å sjekke Steam API-status."
+        "statusOk": "Steam API-nøkkelen er satt, og Steam svarer.",
+        "statusNotConfigured": "Steam API-nøkkelen er ikke satt.",
+        "statusUnreachable": "Steam API-nøkkelen er satt, men Steam svarer ikke.",
+        "statusError": "Klarte ikke å sjekke Steam API-et."
       }
     },
     "matchRating": {
       "ratings": {
         "title": "Ratingoppdateringer",
-        "description": "Styr om fullførte kamper oppdaterer spillernes Skill Rating.",
-        "toggleLabel": "Oppdater spiller-rating etter kamper",
-        "note": "Statistikk spores fortsatt selv om rating er deaktivert.",
+        "description": "Velg om fullførte kamper skal oppdatere ratingen til spillerne.",
+        "toggleLabel": "Oppdater ratingen til spillerne etter kamper",
+        "note": "Statistikken lagres fortsatt selv om rating er slått av.",
         "short": "Rating endres etter hver kamp."
       }
     },
     "players": {
       "registration": {
         "title": "Spillerregistrering",
-        "description": "Styr om nye Steam-innlogginger automatisk oppretter spillerprofiler. Når dette er av, vises bare spillere som admins har opprettet eller importert, i private turneringer og shuffle-pooler.",
-        "toggleLabel": "Tillat at hvem som helst registrerer seg via Steam-innlogging",
+        "description": "Velg om nye Steam-innlogginger automatisk lager spillerprofiler. Er dette av, vises bare spillere som admins har opprettet eller importert, i private turneringer og shuffle-utvalg.",
+        "toggleLabel": "La hvem som helst registrere seg med Steam",
         "recommendation": "Anbefalt: la dette være av for invitasjons‑ eller private turneringer, slik at tilfeldige Steam-innlogginger ikke fyller opp spillerlisten.",
         "short": "Ny innlogging gjør hvem som helst til spiller. Av: bare spillere du legger til."
       },
@@ -309,17 +309,17 @@
     },
     "developer": {
       "resetApiTitle": "Tilbakestill API og database",
-      "resetApiDescription": "Faresone: sletter og gjenoppretter hele databaseskjemaet, og initialiserer deretter standarddata (kart, kartutvalg osv.). Bare for lokal utvikling. Dette kan ikke angres.",
+      "resetApiDescription": "Faresone: sletter og gjenoppretter hele databaseskjemaet og legger så inn standarddata (kart, kartutvalg osv.). Bare for lokal utvikling. Dette kan ikke angres.",
       "resetApiButton": "Tilbakestill API (slett alt)",
-      "resetApiButtonLoading": "Tilbakestiller API…",
-      "resetApiSuccess": "API og database er tilbakestilt. All data er slettet og standardverdier er gjenopprettet.",
+      "resetApiButtonLoading": "Tilbakestiller API …",
+      "resetApiSuccess": "API-et og databasen er tilbakestilt. All data er slettet, og standardverdiene er lagt inn igjen.",
       "resetApiError": "Klarte ikke å tilbakestille API og database. Sjekk API-loggene for detaljer.",
       "resetApiDialog": {
         "title": "Tilbakestill API og slett all data?",
         "description": "Dette sletter og gjenoppretter hele databaseskjemaet. Alle turneringer, kamper, spillere, lag, ratinger, hendelser, logger og innstillinger slettes for godt. Dette kan ikke angres. Vil du fortsette?",
         "cancel": "Avbryt",
         "confirm": "Ja, tilbakestill API og slett data",
-        "confirmLoading": "Tilbakestiller…"
+        "confirmLoading": "Tilbakestiller …"
       }
     },
     "footer": {
@@ -327,11 +327,11 @@
       "unknownVersion": "Ukjent"
     },
     "errors": {
-      "loadSettings": "Klarte ikke å laste innstillinger",
-      "saveSettings": "Klarte ikke å lagre innstillinger"
+      "loadSettings": "Klarte ikke å laste innstillingene",
+      "saveSettings": "Klarte ikke å lagre innstillingene"
     },
     "success": {
-      "saveSettings": "Innstillinger lagret"
+      "saveSettings": "Innstillingene er lagret"
     },
     "site": {
       "title": "Nettsted",
@@ -358,7 +358,7 @@
       "boardLabel": "Topplisten er synlig for alle",
       "boardDescription": "Av: bare innloggede spillere ser topplisten. På: alle med lenken.",
       "windowTitle": "Søkevindu",
-      "windowDescription": "Hvor langt fra hverandre i rating spillere kan være. Det starter på det første tallet, øker med steget hvert 30. sekund opp til taket, og etter det siste antallet minutter blir hvem som helst matchet (la feltet stå tomt for aldri).",
+      "windowDescription": "Hvor stor forskjell i rating spillerne kan ha. Grensen starter på det første tallet og øker med steget hvert 30. sekund opp til taket. Etter det siste antallet minutter kan hvem som helst møte hvem som helst (la feltet stå tomt for aldri).",
       "window": {
         "start": "Start (Elo)",
         "step": "Steg (Elo)",
@@ -366,12 +366,12 @@
         "uncappedAfterMinutes": "Alle etter (min)"
       },
       "reservedTitle": "Servere holdt ledige for matchmaking",
-      "reservedDescription": "Turneringskamper går først, men lar så mange ledige servere stå til matchmaking mens spillere søker. 0 = ingen.",
+      "reservedDescription": "Turneringskamper går først, men så mange ledige servere holdes av til matchmaking mens spillere søker. 0 betyr ingen.",
       "reservedLabel": "Servere",
       "modesTitle": "Moduser",
       "modesDescription": "Hva spillere kan søke etter. Alle moduser er på som standard. 1v1 er en siktduell.",
       "poolsTitle": "Kart per modus",
-      "poolsDescription": "Kartutvalget hver modus velger fra (Kart-siden, workshopkart fungerer også). Kamprommet viser et lykkehjul over poolen før kartet vises.",
+      "poolsDescription": "Kartutvalget hver modus velger fra (fra Kart-siden, også workshopkart). Kamprommet viser et lykkehjul med kartene før kartet blir valgt.",
       "poolDefault": {
         "5v5": "Standard: Active Duty",
         "2v2": "Standard: alle wingman-kart",
@@ -379,7 +379,7 @@
       },
       "save": "Lagre",
       "title": "Matchmaking",
-      "short": "Alltid på. Spillere finner kamp, står i kø og godtar, og spiller på en ledig server.",
+      "short": "Alltid på. Spillere søker, godtar kampen og spiller på en ledig server.",
       "saved": "Lagret",
       "saveFailed": "Kunne ikke lagre matchmaking-innstillingene",
       "loadFailed": "Kunne ikke hente matchmaking-innstillingene"
@@ -400,7 +400,7 @@
       },
       "signin": {
         "name": "Innlogging",
-        "hint": "Leverandører, admin-kontoer"
+        "hint": "Leverandører, adminkontoer"
       },
       "email": {
         "name": "E-post",
@@ -440,7 +440,7 @@
     }
   },
   "managePage": {
-    "tournamentNotFound": "Ingen turnering med denne id-en. Velg en under Alle turneringer.",
+    "tournamentNotFound": "Ingen turnering med denne ID-en. Velg en under Alle turneringer.",
     "title": "Administrer",
     "needsYouHeading": "Trenger deg",
     "noTournament": "Ingen turnering ennå",
@@ -461,7 +461,7 @@
       "ratings": "Rating",
       "adminTools": "Logger og verktøy",
       "license": "Lisens",
-      "devTools": "Dev-verktøy",
+      "devTools": "Utviklerverktøy",
       "documentation": "Dokumentasjon",
       "opensInNewTab": "(åpnes i en ny fane)",
       "groups": {
@@ -510,22 +510,22 @@
     },
     "needsYou": {
       "empty": "Ingenting trenger deg akkurat nå.",
-      "secondsAgo": "{{count}}s",
-      "minutesAgo": "{{count}}m",
-      "hoursAgo": "{{count}}t",
+      "secondsAgo": "{{count}} s",
+      "minutesAgo": "{{count}} min",
+      "hoursAgo": "{{count}} t",
       "vsLabel": "{{team1}} mot {{team2}}",
       "decide": {
         "title": "{{teams}} trenger en vinner",
         "detail": "Alle kartene er spilt, og serien står fortsatt likt.",
         "action": "Avgjør"
       },
-      "reallocateSuccess": "Kampen ble flyttet til en annen server",
-      "forceCancelSuccess": "Kampen ble avbrutt",
+      "reallocateSuccess": "Kampen er flyttet til en annen server",
+      "forceCancelSuccess": "Kampen er avbrutt",
       "actionFailed": "Det gikk ikke gjennom. Prøv igjen.",
       "reallocateConfirmTitle": "Flytte denne kampen til en annen server?",
       "reallocateConfirmBody": "Kampen blir tildelt neste ledige server.",
       "forceCancelConfirmTitle": "Tvangsavbryte denne kampen?",
-      "forceCancelConfirmBody": "Dette avslutter kampen umiddelbart og markerer den som avbrutt, selv om serveren ikke er tilgjengelig.",
+      "forceCancelConfirmBody": "Dette avslutter kampen med en gang og markerer den som avbrutt, selv om serveren ikke er tilgjengelig.",
       "listLabel": "Ting som trenger en avgjørelse"
     },
     "recent": {
@@ -543,16 +543,16 @@
       "title": "Kunngjør til alle servere",
       "label": "Melding",
       "send": "Send",
-      "success": "Kunngjøring sendt",
+      "success": "Kunngjøringen er sendt",
       "failed": "Kunne ikke sende kunngjøringen"
     }
   },
   "license": {
     "title": "Lisens",
     "getKey": "Har du allerede en lisens? Kopier nøkkelen fra <consoleLink>Auto Tournament-konsollen</consoleLink>. Trenger du en? <pricingLink>Se priser</pricingLink>.",
-    "useFromPaidKey": "Satt av den betalte lisensnøkkelen under.",
-    "useFromFreeKey": "Satt av den gratis nøkkelen under: bare ideell bruk.",
-    "useWithoutKey": "Ingen nøkkel: gratis for ideell bruk. Lim inn en betalt nøkkel under for kommersiell bruk.",
+    "useFromPaidKey": "Satt av den betalte lisensnøkkelen nedenfor.",
+    "useFromFreeKey": "Satt av den gratis nøkkelen nedenfor: bare ideell bruk.",
+    "useWithoutKey": "Ingen nøkkel: gratis for ideell bruk. Lim inn en betalt nøkkel nedenfor for kommersiell bruk.",
     "publicLine": "Spillere ser «{{line}}» nederst på arrangementssider.",
     "pageIntro": "Lisensnøkkelen din og hvordan den står. En betalt nøkkel er for kommersiell bruk. En gratis nøkkel er for ideell bruk.",
     "description": "Lim inn lisensnøkkelen for Auto Tournament: en betalt for kommersiell bruk, eller en gratis for ideell bruk. Den sjekkes på denne serveren, og én gang om dagen mot autotournament.gg.",
@@ -570,20 +570,20 @@
     "warningsNote": "Ingenting blokkeres eller begrenses. Dette er bare en merknad.",
     "label": "Lisensnøkkel",
     "replaceLabel": "Bytt lisensnøkkel",
-    "helper": "Starter med ATL1. Kopier den fra <consoleLink>lisensene dine i Auto Tournament-konsollen</consoleLink>. Etter lagring vises bare lisens-ID-en. Ikke internett der dere spiller? Lim også inn offline-lisensen fra konsollen her.",
+    "helper": "Starter med ATL1. Kopier den fra <consoleLink>lisensene dine i Auto Tournament-konsollen</consoleLink>. Når nøkkelen er lagret, vises bare lisens-ID-en. Har dere ikke internett der dere spiller? Lim også inn offline-lisensen fra konsollen her.",
     "checkInNote": "Uten lisensnøkkel sendes ingenting til Auto Tournament. Med nøkkel melder denne serveren seg én gang i døgnet med nøkkelens ID og antall servere.",
     "save": "Lagre nøkkel",
-    "saved": "Lisensnøkkel lagret",
+    "saved": "Lisensnøkkelen er lagret",
     "saveFailed": "Kunne ikke lagre lisensnøkkelen",
     "remove": "Fjern nøkkel",
-    "removed": "Lisensnøkkel fjernet",
+    "removed": "Lisensnøkkelen er fjernet",
     "removeFailed": "Kunne ikke fjerne lisensnøkkelen",
     "summary": {
       "licensedTo": "Lisensiert til {{licensee}}",
       "licensed": "Lisensiert",
       "product": {
-        "platform": "Platform {{pack}}",
-        "servers": "Servers {{pack}}"
+        "platform": "Plattform {{pack}}",
+        "servers": "Servere {{pack}}"
       },
       "servers_one": "{{count}} server",
       "servers_other": "{{count}} servere",
@@ -601,7 +601,7 @@
       "off": "Offentlig lisenslinje slått av",
       "failed": "Kunne ikke endre den offentlige lisenslinjen",
       "short": "Slås på av seg selv når en nøkkel er lagret. Spillere ser den nederst på arrangementssider.",
-      "needsKey": "Vises bare med en lagret lisensnøkkel, gratis eller betalt. Lagre en over først."
+      "needsKey": "Vises bare med en lagret lisensnøkkel, gratis eller betalt. Lagre en ovenfor først."
     },
     "public": {
       "licensed": "Lisensiert",
@@ -646,7 +646,7 @@
         "commercialHint": "Du trenger en lisens. Lim inn nøkkelen nå eller senere."
       },
       "keyLabel": "Lisensnøkkel (valgfritt)",
-      "keyHelper": "Starter med ATL1. Kopier den fra <consoleLink>lisensene dine i Auto Tournament-konsollen</consoleLink>, eller legg den inn senere under Innstillinger > Lisens.",
+      "keyHelper": "Starter med ATL1. Kopier den fra <consoleLink>lisensene dine i Auto Tournament-konsollen</consoleLink>, eller legg den inn senere under Innstillinger → Lisens.",
       "confirmLabel": "Skriv {{phrase}} for å godta lisensvilkårene",
       "confirmHelper": "Ved å skrive {{phrase}} godtar du lisensvilkårene for denne instansen.",
       "accept": "Godta og fortsett",
@@ -654,7 +654,7 @@
       "failed": "Kunne ikke lagre svaret ditt",
       "accepted": "Lisensvilkårene er godtatt",
       "termsChanged": "Lisensvilkårene er endret siden de sist ble godtatt. Les dem og godta på nytt.",
-      "onlyAdmins": "Bare administratorer ser dette, én gang per instans. Spillere, offentlige sider og kamper som pågår påvirkes ikke.",
+      "onlyAdmins": "Bare administratorer ser dette, én gang per instans. Spillere, offentlige sider og kamper som pågår, påvirkes ikke.",
       "declared": {
         "noncommercial": "Ikke-kommersiell bruk",
         "commercial": "Kommersiell bruk",
@@ -694,7 +694,7 @@
     },
     "eventPrompt": {
       "title": "Planlegger du noe nytt?",
-      "body": "Arrangementslisensen din gjelder {{dates}}. Si fra om du tester, har et nytt arrangement eller om datoene er flyttet – du trenger ikke gjøre noe mens du tester.",
+      "body": "Arrangementslisensen din gjelder {{dates}}. Si fra om du tester, har et nytt arrangement, eller om datoene er flyttet. Du trenger ikke gjøre noe mens du tester.",
       "datesRange": "{{from}} til {{to}}",
       "testing": "Tester eller setter opp",
       "newEvent": "Et nytt arrangement",
@@ -825,20 +825,20 @@
     "mapN": "Kart {{n}}",
     "state": {
       "uploading": "Laster opp",
-      "waiting": "Venter på demo-workeren",
+      "waiting": "Venter på demoleseren",
       "running": "Leser demoen",
       "done": "Ferdig",
       "failed": "Demoen kunne ikke leses"
     },
     "teams": "{{team1}} mot {{team2}}",
-    "doneAll": "Importert. Highlightene tas opp etterpå hvis en opptaker er koblet til.",
+    "doneAll": "Importert. Høydepunktene tas opp etterpå hvis en opptaker er koblet til.",
     "openMatch": "Åpne kampen",
     "another": "Importer en til",
     "dropHint": "eller slipp dem her. Velg flere samtidig med Cmd eller Ctrl.",
     "recordingGroup": "Opptakergruppe",
     "allRecorders": "Alle opptakere",
-    "groupHelp": "Velg gruppen som skal rendre kampen. Deaktiverte grupper venter til de aktiveres.",
-    "groupDisabled": "Deaktivert",
+    "groupHelp": "Velg gruppen som skal lage videoene. Grupper som er slått av, venter til de slås på.",
+    "groupDisabled": "Slått av",
     "notCs2Demo": "{{name}} er ikke en CS2-demo (CS:GO-demoer kan ikke importeres)."
   },
   "apiTokens": {
@@ -862,9 +862,9 @@
     "done": "Ferdig",
     "revoke": "Trekk tilbake {{label}}",
     "revokeTitle": "Trekke tilbake «{{label}}»?",
-    "revokeHelp": "Alt som bruker den slutter å virke med en gang.",
+    "revokeHelp": "Alt som bruker den, slutter å virke med en gang.",
     "revokeConfirm": "Trekk tilbake",
-    "revoked": "Trakk tilbake {{label}}",
+    "revoked": "{{label}} er trukket tilbake",
     "cancel": "Avbryt",
     "loadFailed": "Kunne ikke laste API-nøklene",
     "makeFailed": "Kunne ikke lage nøkkelen",
@@ -873,18 +873,18 @@
   "discordBot": {
     "title": "Discord-bot",
     "token": "Bot-token",
-    "replace": "Ny bot-token",
+    "replace": "Nytt bot-token",
     "save": "Lagre",
     "remove": "Fjern",
     "connected": "Koblet til som {{name}}",
     "setNoAnswer": "Et token er satt, men Discord svarte ikke nå.",
-    "saved": "Discord-bot lagret: {{name}}",
-    "cleared": "Discord-bot fjernet",
-    "saveFailed": "Kunne ikke lagre bot-token.",
+    "saved": "Discord-boten er lagret: {{name}}",
+    "cleared": "Discord-boten er fjernet",
+    "saveFailed": "Kunne ikke lagre bot-tokenet.",
     "howTo": "Lag en applikasjon, legg til en bot, kopier tokenet og inviter den til Discord-serveren din:",
     "portal": "Discord Developer Portal",
     "guild": "Discord-server",
-    "guildHint": "Her lager boten lagkanaler og poster. Bare servere boten er med i, vises her.",
+    "guildHint": "Her lager boten lagkanaler og legger ut meldinger. Bare servere boten er med i, vises her.",
     "noGuilds": "Boten er ikke med i noen Discord-server ennå. Inviter den, og last inn siden på nytt.",
     "noGuild": "Ingen",
     "guildSaved": "Discord-serveren er lagret",
@@ -916,7 +916,7 @@
       "invite": "Spillere som ikke er på serveren din, blir bedt om å bli med via {{url}}.",
       "noInvite": "Boten kan ikke lage en invitasjon til serveren ennå. Klikk på «Inviter til en server» igjen, så får den tillatelsen til å lage invitasjoner."
     },
-    "missing": "Boten mangler {{list}} på serveren din, så deler av den virker ikke. Klikk på «Inviter til en server» over: det oppdaterer tillatelsene uten å fjerne boten."
+    "missing": "Boten mangler {{list}} på serveren din, så deler av den virker ikke. Klikk på «Inviter til en server» ovenfor: det oppdaterer tillatelsene uten å fjerne boten."
   },
   "liveMatchesPage": {
     "title": "Direktekamper",
@@ -934,7 +934,7 @@
       "round": "Runde",
       "players": "Spillere",
       "pause": "Pause",
-      "call": "Adminkall",
+      "call": "Adminanrop",
       "server": "Server",
       "chat": "Chat"
     },
@@ -950,9 +950,9 @@
       "side_pick": "Sidevalg",
       "live": "Direkte",
       "paused": "Pause",
-      "halftime": "Pause ved halvtid",
+      "halftime": "Halvtid",
       "overtime": "Ekstraomganger",
-      "map_end": "Etter kampen",
+      "map_end": "Etter kartet",
       "series_end": "Etter kampen",
       "restoring": "Gjenoppretter",
       "error": "Feil"
