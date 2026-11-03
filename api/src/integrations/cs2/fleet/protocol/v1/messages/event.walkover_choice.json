@@ -4,13 +4,7 @@
   "title": "event.walkover_choice (server → platform, reliable)",
   "description": "Match event (FLEET.md §8.1), source: `.walkover` / `.play` (or the HUD's buttons) from one of rules.full_team.walkover.choosers while the choice is open (walkover.h). The platform decides: a walkover ends the match, play lets it go ahead; either way it sends the match again.",
   "type": "object",
-  "required": [
-    "match_id",
-    "map_number",
-    "rev",
-    "patch",
-    "data"
-  ],
+  "required": ["match_id", "map_number", "rev", "patch", "data"],
   "properties": {
     "match_id": {
       "$ref": "../match.defs.json#/$defs/matchId"
@@ -31,17 +25,11 @@
     },
     "data": {
       "type": "object",
-      "required": [
-        "player",
-        "take"
-      ],
+      "required": ["player", "take"],
       "properties": {
         "player": {
           "type": "object",
-          "required": [
-            "steamid64",
-            "name"
-          ],
+          "required": ["steamid64", "name"],
           "properties": {
             "steamid64": {
               "$ref": "../defs.json#/$defs/u64s"
