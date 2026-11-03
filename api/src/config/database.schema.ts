@@ -167,10 +167,10 @@ export function getSchemaSQL(): string {
     -- team chooses walkover or play (integrations/cs2/fleet/fullTeam.ts).
     CREATE TABLE IF NOT EXISTS match_walkover_offers (
       match_slug TEXT PRIMARY KEY,
-      short_side TEXT NOT NULL, -- 'team1' | 'team2'
+      short_side TEXT NOT NULL, -- 'team1' | 'team2' | 'both'
       expires_at INTEGER NOT NULL,
       loaded_at INTEGER, -- the match load it is for: a restart gets a new timer
-      decided TEXT -- 'walkover' | 'play' | NULL while open
+      decided TEXT -- 'walkover' | 'play' | 'admin' (both short) | NULL while open
     );
 
     -- Check-in before each match (settings.checkInEachMatch, services/matchCheckIns.ts).
