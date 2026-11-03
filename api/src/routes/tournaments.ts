@@ -18,6 +18,7 @@ import {
   TournamentArchiveError,
 } from '../services/currentTournament';
 import { tournamentService } from '../services/tournamentService';
+import { otherPlayWindows } from '../services/tournamentOverlaps';
 import { SignupError, tournamentSignupService } from '../services/tournamentSignupService';
 import type { DbTournamentRow } from '../types/database.types';
 import { log } from '../utils/logger';
@@ -229,6 +230,49 @@ router.get('/', async (req: Request, res: Response) => {
   } catch (error) {
     log.error('Error listing tournaments', { error });
     return res.status(500).json({ success: false, error: 'Failed to list tournaments' });
+  }
+});
+
+/**
+ * @openapi
+ * /api/tournaments/play-windows:
+ *   get:
+ *     tags:
+ *       - Tournament
+ *     summary: When the other tournaments play
+ *     description: |
+ *       Every other tournament that hasn't finished, with the windows it plays
+ *       in (each round at set times, else from the start), so the setup can
+ *       warn about overlaps. `exclude` leaves out the one being set up.
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: exclude
+ *         schema: { type: integer }
+ *     responses:
+ *       200:
+ *         description: "{ tournaments: [{ id, name, windows: [{ start, end, round }] }] }"
+ */
+router.get('/play-windows', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const exclude = Number(req.query.exclude);
+    const rows = await otherPlayWindows(Number.isInteger(exclude) ? exclude : null);
+    return res.json({
+      success: true,
+      tournaments: rows.map((r) => ({
+        id: r.id,
+        name: r.name,
+        windows: r.windows.map((w) => ({
+          start: new Date(w.start).toISOString(),
+          end: new Date(w.end).toISOString(),
+          round: w.round,
+        })),
+      })),
+    });
+  } catch (error) {
+    log.error('Error listing play windows', { error });
+    return res.status(500).json({ success: false, error: 'Failed to list play windows' });
   }
 });
 
