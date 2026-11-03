@@ -46,6 +46,8 @@ export const CORE_SETTINGS_KEYS: ReadonlySet<string> = new Set([
   'registrationOpensAt',
   'checkInMinutes',
   'captainCheckIn',
+  'fullTeamMinutes',
+  'checkInEachMatch',
 ]);
 
 /**

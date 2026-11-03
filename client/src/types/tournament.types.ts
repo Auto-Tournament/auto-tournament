@@ -86,6 +86,10 @@ export interface TournamentSettings {
   checkInMinutes?: number;
   /** The owner or a captain may check in their teammates (default true). */
   captainCheckIn?: boolean;
+  /** Minutes a team has to be complete on the server before a walkover (default 10, 0: none). */
+  fullTeamMinutes?: number;
+  /** Starters check in again before each match. */
+  checkInEachMatch?: boolean;
   /** Sign-up stays closed until then (ISO). */
   registrationOpensAt?: string;
   /** Virtual skin rewards for the top three; on unless turned off here. */

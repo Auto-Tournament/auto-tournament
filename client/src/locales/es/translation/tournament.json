@@ -712,7 +712,16 @@
         "checkInLineNoStart_other": "Opens {{count}} minutes before the start and closes when it starts.",
         "checkInLineOff": "No check-in: every signed-up team plays.",
         "captainsLabel": "Captains can check in their teammates",
-        "captainsHelp": "The owner or a captain can mark a starter as here. They answer for it if that player doesn't show."
+        "captainsHelp": "The owner or a captain can mark a starter as here. They answer for it if that player doesn't show.",
+        "perMatchLabel": "Check in again before each match",
+        "perMatchHelp": "Off: checking in once before the tournament covers every match. On: players check in when each match's veto opens.",
+        "fullTeamTitle": "Getting on the server",
+        "fullTeamHelp": "Once a match's server is ready, each team has this long to have a full team on it, subs included. Then the complete team chooses: take the walkover, or play the short team. Both short: an admin decides.",
+        "fullTeamChip_one": "{{count}} min",
+        "fullTeamChip_other": "{{count}} min",
+        "fullTeamOff": "No walkover",
+        "fullTeamLine": "Players see the timer in the match room and in the server chat. Subs count as ready, so a team can bring one in straight away.",
+        "fullTeamLineOff": "No walkover: a short team plays short once the match auto-starts (Match settings)."
       },
       "groups": {
         "count": "Number of groups",
