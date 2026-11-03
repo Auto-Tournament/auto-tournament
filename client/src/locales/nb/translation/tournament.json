@@ -6,7 +6,7 @@
       "openMatches": "Kampene i første runde åpnes for spill",
       "statusInProgress": "Turneringsstatusen endres til PÅGÅR",
       "confirm": "Ja, start turneringen",
-      "started": "Turneringen er i gang! Kampene i første runde er åpne."
+      "started": "Turneringen er i gang. Kampene i første runde er åpne."
     },
     "nameLabel": "Turneringsnavn",
     "namePlaceholder": "Auto Tournament 2025 vårturnering",
@@ -19,7 +19,7 @@
       "heading": "Opprett turnering",
       "chooseMethod": "Velg hvordan du vil opprette turneringen",
       "createNewTitle": "Opprett ny turnering",
-      "createNewDescription": "Start fra bunnen av og konfigurer alle turneringsinnstillinger manuelt"
+      "createNewDescription": "Start fra bunnen av, og velg alle innstillingene selv"
     },
     "typeSelector": {
       "categories": {
@@ -33,7 +33,7 @@
       "types": {
         "single_elimination": {
           "label": "Enkel eliminasjon",
-          "description": "Ett tap og du er ute. Klassisk bracketformat som brukes i profesjonelle turneringer."
+          "description": "Ett tap og du er ute. Klassisk format fra profesjonelle turneringer."
         },
         "double_elimination": {
           "label": "Dobbel eliminasjon",
@@ -41,15 +41,15 @@
         },
         "round_robin": {
           "label": "Alle-mot-alle",
-          "description": "Alle møter alle. Perfekt for ligaspill."
+          "description": "Alle møter alle. Passer godt til ligaspill."
         },
         "swiss": {
-          "label": "Swiss-system",
+          "label": "Sveitsisk system",
           "description": "Lag med likt resultat møter hverandre. Balanserte oppgjør gjennom hele turneringen."
         },
         "shuffle": {
           "label": "Shuffle-turnering",
-          "description": "Spillere shuffles dynamisk til balanserte lag hver runde. Individuell konkurranse med ELO-basert lagbalansering."
+          "description": "Spillerne fordeles på nye, jevne lag hver runde. Hver spiller konkurrerer for seg, og lagene settes sammen etter ELO."
         },
         "groups": {
           "label": "Grupper, så sluttspill",
@@ -60,7 +60,7 @@
     },
     "review": {
       "summary": {
-        "info": "Gå gjennom turneringsinnstillingene og klikk «{{button}}» når du er klar.",
+        "info": "Gå gjennom turneringsinnstillingene, og trykk på «{{button}}» når du er klar.",
         "nameLabel": "Turneringsnavn",
         "typeLabel": "Turneringstype",
         "formatLabel": "Kampformat",
@@ -77,13 +77,13 @@
         "teams": "Lag",
         "review": "Gjennomgå"
       },
-      "backToWelcome": "Tilbake til velkomst",
+      "backToWelcome": "Tilbake til start",
       "back": "Tilbake",
       "next": "Neste"
     },
     "emptyBracket": {
       "title": "Ingen turneringstre å vise",
-      "description": "Opprett en turnering og generer turneringstre for å komme i gang"
+      "description": "Opprett en turnering, og lag turneringstreet for å komme i gang"
     },
     "common": {
       "createTournament": "Opprett turnering"
@@ -105,7 +105,7 @@
       "mapPool": "Kartutvalg"
     },
     "tooltips": {
-      "deleteTournament": "Slett denne turneringen og alle dataene permanent"
+      "deleteTournament": "Slett denne turneringen og alle dataene for godt"
     },
     "counts": {
       "teams_one": "{{count}} lag",
@@ -128,9 +128,9 @@
     "matchRules": {
       "value": "Maks {{maxRounds}} runder per kart. Først til {{winRounds}} runder vinner.",
       "teamSizeValue": "Lagstørrelse: {{size}}v{{size}}",
-      "overtimeEnabled": "Overtid: På",
-      "overtimeDisabled": "Overtid: Av (ingen overtid)",
-      "overtimeDisabledNoDraws": "Overtid: Av (ingen uavgjort – skade avgjør)",
+      "overtimeEnabled": "Overtid: på",
+      "overtimeDisabled": "Overtid: av",
+      "overtimeDisabledNoDraws": "Overtid: av (ingen uavgjort – skade avgjør)",
       "overtimeSegments_one": "Overtidsperioder: {{count}} periode",
       "overtimeSegments_other": "Overtidsperioder: {{count}} perioder",
       "overtimeSegmentsDefault": "Overtidsperioder: spillserverens standard",
@@ -138,7 +138,7 @@
     },
     "toasts": {
       "loadTemplateFailed": "Kunne ikke laste malen",
-      "nameRequired": "Turneringsnavn er påkrevd",
+      "nameRequired": "Gi turneringen et navn",
       "nameUpdated": "Turneringsnavnet er oppdatert",
       "nameUpdateFailed": "Kunne ikke oppdatere turneringsnavnet",
       "selectAtLeastOneMap": "Velg minst 1 kart",
@@ -146,11 +146,11 @@
       "teamSizeRange": "Lagstørrelsen må være mellom 2 og 10 spillere",
       "invalidTeamCount": "Ugyldig antall lag",
       "selectAtLeastTwoTeams": "Velg minst 2 lag",
-      "shuffleCreated": "Shuffle-turneringen «{{name}}» er opprettet! Neste steg: registrer minst {{minPlayers}} spillere for å starte turneringen ({{teamSize}}v{{teamSize}}-kamper).",
+      "shuffleCreated": "Shuffle-turneringen «{{name}}» er opprettet. Neste steg: registrer minst {{minPlayers}} spillere for å starte turneringen ({{teamSize}}v{{teamSize}}-kamper).",
       "shuffleCreateFailed": "Kunne ikke opprette shuffle-turneringen",
       "shuffleCreateFailedRetry": "Kunne ikke opprette shuffle-turneringen. Sjekk innstillingene og prøv igjen.",
-      "updated": "Turneringen er oppdatert og turneringstreet er generert på nytt!",
-      "created": "Turneringen er opprettet!",
+      "updated": "Turneringen er oppdatert, og turneringstreet er laget på nytt",
+      "created": "Turneringen er opprettet",
       "saveFailed": "Kunne ikke lagre turneringen",
       "deleted": "Turneringen er slettet",
       "deleteFailed": "Kunne ikke slette turneringen",
@@ -158,12 +158,12 @@
       "regenerateFailed": "Kunne ikke generere turneringstreet på nytt",
       "resetDone": "Turneringen er tilbakestilt til oppsettmodus",
       "resetFailed": "Kunne ikke tilbakestille turneringen",
-      "started_one": "Turneringen er startet! {{count}} kamp er tildelt servere.",
-      "started_other": "Turneringen er startet! {{count}} kamper er tildelt servere.",
-      "startRequested": "Turneringsstart er bestilt. Servere tildeles snart.",
+      "started_one": "Turneringen er startet. {{count}} kamp har fått server.",
+      "started_other": "Turneringen er startet. {{count}} kamper har fått server.",
+      "startRequested": "Turneringen starter. Kampene får servere snart.",
       "startFailed": "Kunne ikke starte turneringen",
-      "templateSaved": "Malen er lagret!",
-      "disableServersFailed": "Kunne ikke deaktivere én eller flere servere: {{message}}",
+      "templateSaved": "Malen er lagret",
+      "disableServersFailed": "Kunne ikke slå av én eller flere servere: {{message}}",
       "noChangesToSave": "Ingen endringer å lagre",
       "invalidMapSelection": "Ugyldig kartvalg",
       "archived": "Turneringen er arkivert. Opprett den neste.",
@@ -171,9 +171,9 @@
     },
     "outdatedServers": {
       "title": "Servere trenger oppdatering",
-      "body": "Én eller flere aktive servere er utdaterte (eller kunne ikke verifiseres) ifølge Steam. Oppdater dem, eller deaktiver dem for å fortsette med de øvrige serverne.",
-      "confirm": "Deaktiver berørte servere og prøv igjen",
-      "disabling": "Deaktiverer …",
+      "body": "Én eller flere aktive servere er utdaterte ifølge Steam (eller kunne ikke sjekkes). Oppdater dem, eller slå dem av for å fortsette med resten.",
+      "confirm": "Slå av disse serverne og prøv igjen",
+      "disabling": "Slår av …",
       "goToServers": "Gå til servere"
     },
     "live": {
@@ -200,9 +200,9 @@
       "mapSequenceLabel": "Kartrekkefølge (runder)",
       "noMapsConfigured": "Ingen kart er satt opp ennå.",
       "viewBracket": "Se turneringstre",
-      "viewBracketTooltip": "Se turneringsbracketen og kampdetaljene",
+      "viewBracketTooltip": "Se turneringstreet og kampdetaljene",
       "leaderboardTooltip": "Åpne den offentlige topplisten du kan dele med spillerne",
-      "restartTooltip": "Avslutt alle aktive kamper på serverne og last dem inn på nytt (nyttig for kamper som har låst seg)",
+      "restartTooltip": "Avslutt alle aktive kamper på serverne og last dem inn på nytt (nyttig for kamper som har hengt seg)",
       "resetTooltip": "Avslutt alle kamper og tilbakestill turneringen til oppsettmodus (beholder turneringsinnstillingene, men sletter alle kampdata)",
       "reset": "Tilbakestill til oppsett",
       "dangerZone": "Faresone",
@@ -218,7 +218,7 @@
       "edit": "Rediger",
       "regenerate": "Generer på nytt",
       "regenerateTooltip": "Slett alle nåværende kamper og generer turneringstreet på nytt med de samme innstillingene.",
-      "regenerateDisabledTooltip": "Generer turneringstreet minst én gang (Lagre og generer turneringstre) før du kan generere den på nytt."
+      "regenerateDisabledTooltip": "Lag turneringstreet minst én gang (Lagre og generer turneringstre) før du kan lage det på nytt."
     },
     "dialogs": {
       "items": {
@@ -228,19 +228,19 @@
       },
       "delete": {
         "title": "🗑️ Slett turneringen",
-        "question": "Er du sikker på at du vil SLETTE <b>«{{name}}»</b> permanent?",
+        "question": "Er du sikker på at du vil SLETTE <b>«{{name}}»</b> for godt?",
         "willTitle": "⚠️ Dette vil:",
         "items": {
           "removeTournament": "Fjerne turneringen fullstendig",
           "cannotBeUndone": "Kan ikke angres"
         },
         "note": "💡 Merk: Vil du bare starte på nytt med de samme turneringsinnstillingene, bruk «Tilbakestill til oppsett» i stedet.",
-        "confirm": "Slett permanent"
+        "confirm": "Slett for godt"
       },
       "regenerate": {
         "title": "🔄 Generer turneringstreet på nytt",
         "liveWarning": "⚠️ ADVARSEL: Turneringen er {{status}}!",
-        "liveBody": "Å generere turneringstreet på nytt vil <b>SLETTE ALLE</b> eksisterende kampdata, inkludert resultater, statistikk og hendelseslogg.",
+        "liveBody": "Lager du turneringstreet på nytt, <b>SLETTES ALLE</b> eksisterende kampdata, også resultater, statistikk og hendelsesloggen.",
         "cannotBeUndone": "Denne handlingen kan ikke angres.",
         "areYouSure": "Er du helt sikker på at du vil fortsette?",
         "setupBody": "Dette sletter alle eksisterende kamper og genererer turneringstreet på nytt med de samme innstillingene.",
@@ -250,17 +250,17 @@
       },
       "reset": {
         "title": "🔄 Tilbakestill til oppsett",
-        "question": "Vil du tilbakestille <b>«{{name}}»</b> til OPPSETT-modus?",
+        "question": "Vil du tilbakestille <b>«{{name}}»</b> til oppsett?",
         "willTitle": "Dette vil:",
         "items": {
           "clearStatus": "Nullstille turneringsstatusen (tilbake til oppsett)",
           "keepSettings": "<b>Beholde</b> turneringsinnstillingene (navn, lag, format)",
           "allowEdit": "La deg redigere innstillingene på nytt",
-          "regenerateMatches": "Slette alle kampresultater og generere bracketene på nytt fra bunnen av"
+          "regenerateMatches": "Slette alle kampresultater og lage turneringstreet på nytt fra bunnen av"
         },
         "note": "💡 Merk: Vil du fjerne turneringen helt, bruk «Slett» i stedet.",
         "confirm": "Tilbakestill til oppsett",
-        "regenerated": "Nye turneringstrær lages med en gang, så ventende kamper dukker opp igjen umiddelbart."
+        "regenerated": "Turneringstreet lages på nytt med en gang, så ventende kamper dukker opp igjen."
       },
       "start": {
         "titleNoServers": "⚠️ Ingen ledige servere",
@@ -287,24 +287,24 @@
         "selectType": "Velg en turneringstype",
         "selectFormat": "Velg et kampformat"
       },
-      "shuffleInfo": "Shuffle-turneringer bruker ikke faste lag. Spillerne fordeles automatisk i balanserte lag for hver kamp ut fra Skill Rating.",
+      "shuffleInfo": "Shuffle-turneringer bruker ikke faste lag. Spillerne fordeles automatisk på jevne lag for hver kamp ut fra ratingen.",
       "shuffleRounds": "Denne shuffle-turneringen får omtrent {{rounds}} (én per valgt kart).",
       "volumeAlert": "Med {{teams}} i en {{type}} {{format}}-turnering får dette turneringstreet omtrent {{matches}} fordelt på {{rounds}} (opptil {{maps}} totalt).",
       "maxRoundsLabel": "Maks runder per kart",
       "maxRoundsHelper": "Hvert kart spilles i opptil {{maxRounds}} runder. Først til {{winRounds}} runder vinner.",
       "maxRoundsHelperEmpty": "Maksimalt antall runder per kart (standard: 24, maks: 30).",
       "serversSummary": "{{servers}} er satt opp. Første runde har {{matches}}.",
-      "estimatedVolumeLabel": "Estimert omfang",
+      "estimatedVolumeLabel": "Anslått omfang",
       "mapsHeading": "Kart ({{total}})",
       "noMapsSelected": "Ingen kart er valgt",
       "matchConfiguration": "Kampoppsett",
-      "roundLimitValue_one": "Roundgrense: maks {{count}} runde",
-      "roundLimitValue_other": "Roundgrense: maks {{count}} runder",
+      "roundLimitValue_one": "Rundegrense: maks {{count}} runde",
+      "roundLimitValue_other": "Rundegrense: maks {{count}} runder",
       "teamsHeading": "Lag ({{total}})",
       "noTeamsSelected": "Ingen lag er valgt (valgfritt)",
       "playerRegistration": "Spillerregistrering",
-      "playerRegistrationInfo_one": "Spillerne registreres etter at turneringen er opprettet. Hvert valgte kart tilsvarer én runde med kamper ({{count}} runde totalt).",
-      "playerRegistrationInfo_other": "Spillerne registreres etter at turneringen er opprettet. Hvert valgte kart tilsvarer én runde med kamper ({{count}} runder totalt).",
+      "playerRegistrationInfo_one": "Spillerne registreres etter at turneringen er opprettet. Hvert kart du velger, gir én runde med kamper ({{count}} runde i alt).",
+      "playerRegistrationInfo_other": "Spillerne registreres etter at turneringen er opprettet. Hvert kart du velger, gir én runde med kamper ({{count}} runder i alt).",
       "serversSummaryQueued": "{{servers}} er satt opp. Første runde har {{matches}}. Kamper utover antall servere venter i kø til en server blir ledig."
     },
     "overtime": {
@@ -315,8 +315,8 @@
         "disabledNoDraws": "Av – ingen uavgjort (skade avgjør)"
       },
       "modeHelper": "Vanlig overtid spiller ekstra perioder til ett lag leder. «Uavgjort tillates» lar et kart som står likt, ende uavgjort, mens «ingen uavgjort» avgjør det på samlet lagskade.",
-      "tooltip": "Styr overtid og hvordan uavgjort ved maks antall runder håndteres. Innstillingene sendes til spillserverne som overtimeMode/overtimeSegments og virker likt i shuffle-turneringer og manuelle kamper.",
-      "shuffleTooltip": "Styr hvordan overtid fungerer i shuffle-kamper og hvordan uavgjort ved maks runder avgjøres. Når overtid er av, kan like kamper enten ende uavgjort eller avgjøres på samlet lagskade, avhengig av hvilket valg du tar.",
+      "tooltip": "Velg om det spilles overtid, og hva som skjer ved uavgjort etter maks antall runder. Innstillingene sendes til spillserverne som overtimeMode/overtimeSegments og virker likt i shuffle-turneringer og manuelle kamper.",
+      "shuffleTooltip": "Velg hvordan overtid fungerer i shuffle-kamper, og hvordan uavgjort etter maks runder avgjøres. Når overtid er av, kan like kamper enten ende uavgjort eller avgjøres på samlet lagskade, alt etter hva du velger.",
       "segmentsLabel": "Overtidsperioder (valgfritt)",
       "segmentsHelper": "Valgfritt: begrens antall overtidsperioder. La feltet stå tomt for spillserverens standard.",
       "segmentsHelperValue_one": "Begrens overtiden til {{count}} periode. Er det fortsatt likt etter overtid, avgjør samlet lagskade.",
@@ -326,17 +326,17 @@
       "sectionTitle": "Finalemodus (dobbel eliminasjon)",
       "label": "Finale",
       "options": {
-        "simple": "Enkel – én finale mellom vinnerne av upper og tapersiden",
+        "simple": "Enkel – én finale mellom vinnerne av vinnersiden og tapersiden",
         "none": "Ingen – finalen i vinnersiden avgjør turneringen (ingen egen finale)",
-        "double": "Dobbel – med omkamp i storfinalen (fungerer foreløpig som enkel. Full støtte er planlagt)"
+        "double": "Dobbel – med omkamp i storfinalen (spilles foreløpig som enkel, full støtte kommer)"
       },
-      "helper": "Styrer hvordan vinnerne av upper og tapersiden møtes på slutten av turneringen."
+      "helper": "Velg hvordan vinnerne av vinnersiden og tapersiden møtes på slutten av turneringen."
     },
     "mapPool": {
       "shuffleTitle": "Kartvalg for shuffle-turneringer",
       "shuffleBody": "Alle valgte kart spilles i rekkefølge. Hvert kart tilsvarer én runde med kamper. Antall kart du velger, bestemmer hvor mange runder som spilles.",
       "shuffleSelected": "Du har valgt {{maps}}, så {{rounds}} blir spilt.",
-      "chooseLabel": "Velg en kartutvalg",
+      "chooseLabel": "Velg et kartutvalg",
       "custom": "Egendefinert",
       "selectedMaps": "Valgte kart ({{total}}):",
       "chooseMapsPlaceholder": "Velg kart …",
@@ -356,13 +356,13 @@
       "subtitle": "Kampregler og innstillinger",
       "teamSizeLabel": "Lagstørrelse",
       "teamSizeTooltip": "Antall spillere per lag. Vanlige valg: 4v4, 5v5, 6v6. Minst 2 og høyst 10 spillere per lag.",
-      "teamSizeHelper": "Antall spillere per lag (standard: 5 for 5v5, område: 2–10)",
+      "teamSizeHelper": "Antall spillere per lag (standard: 5 for 5v5, fra 2 til 10)",
       "maxRoundsLabel": "Maks runder",
       "maxRoundsTooltip": "Maksimalt antall runder per kamp. Verdien sendes til CS2-serverne som mp_maxrounds. Eksempel: 6 = MR6, 24 = MR24.",
       "maxRoundsHelper": "Kampen spilles i opptil {{maxRounds}} runder. Først til {{winRounds}} runder vinner",
       "maxRoundsHelperEmpty": "Maksimalt antall runder per kamp (standard: 24, maks: 30)",
       "eloTemplateLabel": "Ratingmal",
-      "eloTemplateTooltip": "Velg hvordan ELO beregnes i denne turneringen. Som standard bruker malen «Pure Win/Loss» kun kampresultatet (seier/tap). Statistikk registreres, men påvirker ikke ELO. Andre maler er valgfrie og legger statistikkbaserte justeringer oppå OpenSkill-endringen hvis du vil ha Excel-lignende oppførsel.",
+      "eloTemplateTooltip": "Velg hvordan ELO beregnes i denne turneringen. Som standard bruker malen «Pure Win/Loss» bare kampresultatet (seier/tap). Statistikk registreres, men påvirker ikke ELO. Andre maler er valgfrie og legger statistikkbaserte justeringer oppå OpenSkill-endringen.",
       "eloDefaultSuffix": "(standard)",
       "eloTemplateHelper": "Pure Win/Loss (standard): bare kampresultatet påvirker ELO. Spillerstatistikk registreres fortsatt til topplister og eksport, men endrer ikke ratingen med mindre du velger en egen mal."
     },
@@ -371,14 +371,14 @@
     },
     "changePreview": {
       "title": "Gå gjennom turneringsendringene",
-      "liveHeading": "Turneringen er I GANG!",
+      "liveHeading": "Turneringen er i gang",
       "liveBody": "Endrer du turneringstype, format eller antall lag, kan turneringstreet måtte genereres på nytt. Vurder «Tilbakestill turnering» for å starte på nytt.",
       "noChangesDetected": "Fant ingen endringer",
-      "intro": "Følgende endringer blir tatt i bruk:",
+      "intro": "Disse endringene tas i bruk:",
       "before": "FØR",
       "after": "ETTER",
       "apply": "Bruk endringene",
-      "applyRisky": "Bruk endringene (risikabelt!)",
+      "applyRisky": "Bruk endringene (risikabelt)",
       "noChangesToApply": "Ingen endringer å bruke",
       "none": "Ingen",
       "itemCount_one": "{{count}} element",
@@ -387,7 +387,7 @@
     "teamSelection": {
       "chooseTeamsPlaceholder": "Velg lag …",
       "addAll": "Legg til alle",
-      "batchAddServers": "Masseopprett",
+      "batchAddServers": "Opprett flere",
       "addServer": "Legg til server",
       "importTeams": "Importer lag",
       "createTeam": "Opprett lag",
@@ -405,33 +405,33 @@
       "subtitle": "Vises for spillere og besøkende på den offentlige oversiktssiden.",
       "descriptionLabel": "Beskrivelse",
       "locationLabel": "Sted",
-      "locationPlaceholder": "f.eks. På stedet, Trondheim",
+      "locationPlaceholder": "for eksempel Trondheim",
       "rulebookUrlLabel": "Lenke til fullt regelverk",
-      "rulebookUrlHelper": "Må være en https-lenke, eller la stå tom.",
+      "rulebookUrlHelper": "Bruk en https-lenke, eller la feltet stå tomt.",
       "rulesLabel": "Regler",
       "ruleFieldLabel": "Regel {{n}}",
       "addRule": "Legg til regel",
-      "prizesLabel": "Priser",
+      "prizesLabel": "Premier",
       "placeLabel": "Plassering",
-      "prizeLabel": "Pris",
-      "addPrize": "Legg til pris",
+      "prizeLabel": "Premie",
+      "addPrize": "Legg til premie",
       "scheduleLabel": "Tidsplan",
       "whenLabel": "Når",
-      "scheduleLabelLabel": "Etikett",
+      "scheduleLabelLabel": "Tekst",
       "addScheduleItem": "Legg til punkt",
       "remove": "Fjern",
       "moveUp": "Flytt opp",
       "moveDown": "Flytt ned",
       "save": "Lagre arrangementsside",
-      "saveSuccess": "Arrangementsside lagret.",
-      "saveError": "Kunne ikke lagre arrangementsside: {{message}}",
+      "saveSuccess": "Arrangementssiden er lagret.",
+      "saveError": "Kunne ikke lagre arrangementssiden: {{message}}",
       "organizerLabel": "Arrangør",
       "organizerPlaceholder": "f.eks. Edition 35 LAN",
       "bannerLabel": "Banner",
       "bannerUpload": "Last opp et banner",
       "bannerReplace": "Bytt",
       "bannerRemove": "Fjern",
-      "bannerHelp": "Et bredt bilde øverst på turneringssiden. PNG, JPEG eller WEBP, opptil 2 MB; 1920 × 600 passer godt.",
+      "bannerHelp": "Et bredt bilde øverst på turneringssiden. PNG, JPEG eller WEBP, opptil 2 MB. 1920 × 600 passer godt.",
       "bannerWrongType": "Banneret må være et PNG-, JPEG- eller WEBP-bilde.",
       "bannerTooLarge": "Banneret kan være høyst 2 MB.",
       "signupHeading": "Påmelding og innsjekk",
@@ -440,12 +440,12 @@
       "maxTeams": "Lagplasser",
       "checkInOpensAt": "Innsjekken åpner",
       "checkInClosesAt": "Innsjekken stenger",
-      "signupHelp": "Lagets eier eller en kaptein melder på med en oppstilling. Spillerne i oppstillingen sjekker inn på dagen.",
+      "signupHelp": "Lagets eier eller en kaptein melder laget på med en oppstilling. Spillerne i oppstillingen sjekker inn på dagen.",
       "startLabel": "Starttid",
       "startsAtLabel": "Starter",
       "startsAtHelp": "Den lokale tiden din. Nettsiden teller ned til den.",
       "autoStartLabel": "Start turneringen automatisk på dette tidspunktet",
-      "remindersLabel": "Minn spillerne på det før start",
+      "remindersLabel": "Minn spillerne på starten",
       "reminderMinutes_one": "{{count}} minutt før",
       "reminderMinutes_other": "{{count}} minutter før",
       "bannerMapLabel": "Ikke noe banner? Bruk bildet av et kart",
@@ -483,7 +483,7 @@
         },
         "format": {
           "title": "Hvordan spilles den?",
-          "lede": "Velg turneringstre og hvor lang hver serie er. Du kan endre dette til turneringen starter."
+          "lede": "Velg format og hvor lang hver serie er. Du kan endre dette til turneringen starter."
         },
         "teams": {
           "title": "Hvem spiller?",
@@ -516,7 +516,7 @@
       "game": {
         "label": "Spill",
         "loading": "Henter spillene denne instansen kan kjøre.",
-        "lockedHelp": "Spillet er låst når turneringen finnes. Slett den og start på nytt for å kjøre et annet.",
+        "lockedHelp": "Spillet kan ikke endres etter at turneringen er opprettet. Slett den og start på nytt for å bruke et annet spill.",
         "integrationTitles": {
           "cs2": "Kjører på serverne dine",
           "manual-report": "Lagene rapporterer resultatet"
@@ -543,7 +543,7 @@
         "types": {
           "single_elimination": "Ett tap og du er ute. Raskest.",
           "double_elimination": "En ny sjanse i tapersiden.",
-          "swiss": "Lagene spiller flere runder mot lag med lik rekord.",
+          "swiss": "Lagene spiller flere runder mot lag med like resultater.",
           "round_robin": "Alle møter alle. Best for små grupper.",
           "shuffle": "Påmelding for enkeltspillere. Nye balanserte lag hver runde.",
           "groups": "Alle-mot-alle i grupper. De beste fra hver gruppe går videre til en finale eller et turneringstre."
@@ -556,12 +556,12 @@
           "none": "Ingen"
         },
         "grandFinalHelp": {
-          "simple": "Vinnerne av winners og tapersiden møtes i én grand final.",
+          "simple": "Vinnerne av vinnersiden og tapersiden møtes i én storfinale.",
           "double": "Omkamp i storfinalen. Foreløpig spilles den som én storfinale. Full støtte kommer.",
-          "none": "Ingen grand final: finalen i vinnersiden avgjør turneringen."
+          "none": "Ingen storfinale: finalen i vinnersiden avgjør turneringen."
         },
         "teams": "Lag",
-        "teamsHelpPowerOfTwo": "Eliminasjonsbrackets trenger {{counts}} lag. Brukes i oppsummeringen til du har valgt lag.",
+        "teamsHelpPowerOfTwo": "Utslagsturneringer trenger {{counts}} lag. Brukes i oppsummeringen til du har valgt lag.",
         "teamsHelpRange": "Mellom {{min}} og {{max}} lag. Brukes i oppsummeringen til du har valgt lag.",
         "fewerTeams": "Færre lag",
         "moreTeams": "Flere lag",
@@ -581,8 +581,8 @@
       },
       "maps": {
         "vetoTitle": "Veto",
-        "vetoStandard": "Hver {{format}}-serie kjører kartveto: lagene banner og velger fra disse 7 kartene.",
-        "vetoCustom": "Denne turneringen har egen veto-rekkefølge for {{format}}.",
+        "vetoStandard": "Hver {{format}}-serie kjører kartveto: lagene fjerner og velger fra disse 7 kartene.",
+        "vetoCustom": "Denne turneringen har egen vetorekkefølge for {{format}}.",
         "vetoNone": "Ingen veto for dette formatet.",
         "vetoShuffle": "Shuffle har ingen veto: kartene spilles i denne rekkefølgen, ett per runde."
       },
@@ -590,7 +590,7 @@
         "draftNote": "Lagres sammen med turneringen når du oppretter den."
       },
       "review": {
-        "unsaved": "Du har endringer som ikke er lagret. Lagre dem (turneringstreet lages på nytt) eller forkast dem før du starter."
+        "unsaved": "Du har endringer som ikke er lagret. Lagre dem (turneringstreet lages på nytt), eller forkast dem før du starter."
       },
       "summary": {
         "label": "Oppsummering",
@@ -601,7 +601,7 @@
         "seriesFinal": {
           "simple": "{{format}} · storfinale",
           "double": "{{format}} · storfinale, omkamp i storfinalen",
-          "none": "{{format}} · ingen grand final"
+          "none": "{{format}} · ingen storfinale"
         },
         "teams": "Lag",
         "teamSize": "{{size}}v{{size}}",
@@ -640,7 +640,7 @@
         "seriesLength": "Serielengde",
         "seriesLengthHelp": "Hvor mange kamper en serie er. Laget som vinner mer enn halvparten, tar kampen.",
         "gameLabel": "Navn på spillet",
-        "gameLabelHelp": "Hva det skal hete i rapportskjemaet. La stå tomt for «{{game}}».",
+        "gameLabelHelp": "Hva det skal hete i rapportskjemaet. Står feltet tomt, brukes «{{game}}».",
         "allowDraw": "Uavgjort",
         "allowDrawHelp": "Tillat at en kamp, og dermed en serie, ender likt. La det stå av i en cup, der noen må gå videre.",
         "allowDrawOptions": {
@@ -650,7 +650,7 @@
         "confirmation": "Før et resultat gjelder",
         "confirmationHelp": {
           "opponent": "Kapteinen på det andre laget må si seg enig før kampen er avgjort. De kan også protestere, og da går den til en administrator.",
-          "none": "Rapporten fra en kaptein avgjør kampen alene. Raskt, men bare verdt det der ingen sannsynligvis er uenige."
+          "none": "Rapporten fra en kaptein avgjør kampen alene. Raskt, men passer bare der ingen ventes å være uenige."
         },
         "confirmationOptions": {
           "opponent": "Motstanderen godtar",
@@ -661,11 +661,11 @@
         "confirmTimeoutNone": "Ingen frist: rapporten venter på svar.",
         "timeoutAction": "Når fristen går ut",
         "timeoutActionHelp": {
-          "auto_confirm": "Rapporten tas som den er, og cupen går videre uten at noen venter.",
+          "auto_confirm": "Rapporten godtas som den er, og cupen går videre uten at noen venter.",
           "escalate": "Kampen sendes til en administrator, som avgjør den på Tvister-siden."
         },
         "timeoutActionOptions": {
-          "auto_confirm": "Ta rapporten",
+          "auto_confirm": "Godta rapporten",
           "escalate": "Spør en administrator"
         }
       },
@@ -677,7 +677,7 @@
         "openHelp": "Lagets eier eller kaptein melder laget på med en oppstilling fra turneringssiden, og oppstillingen sjekker inn på dagen. Du kan fortsatt legge til lag selv nedenfor.",
         "teamSize": "Spillere per lag",
         "teamSizeHelp": "Startspillere et lag velger når det melder seg på (pluss opptil 2 innbyttere).",
-        "maxTeamsHelp": "Tomt: ingen grense.",
+        "maxTeamsHelp": "Står feltet tomt, er det ingen grense.",
         "save": "Lagre påmeldingsinnstillinger",
         "saved": "Påmeldingsinnstillingene er lagret",
         "inTournament": "I turneringen ({{count}})",
@@ -746,9 +746,9 @@
     },
     "startButton": {
       "start": "Start turnering",
-      "starting": "Starter...",
+      "starting": "Starter …",
       "startSimulation": "Start simulering",
-      "startingSimulation": "Starter simulering..."
+      "startingSimulation": "Starter simulering …"
     },
     "archiveDialog": {
       "title": "Starte en ny turnering?",
@@ -761,7 +761,7 @@
       "button": "Avslutt turnering",
       "tooltip": "Stopper turneringen nå uten resultat: kamper på servere avsluttes, resten avlyses. Ingen vinner og ingen premier. Den kan arkiveres etterpå.",
       "title": "Avslutte denne turneringen?",
-      "body": "Alle kamper som pågår avsluttes på serveren sin og resten avlyses. Ingen vinner og ingen premier deles ut. Dette kan ikke angres.",
+      "body": "Alle kamper som pågår, avsluttes på serveren sin, og resten avlyses. Ingen vinner, og ingen premier deles ut. Dette kan ikke angres.",
       "typeName": "Skriv «{{name}}» for å bekrefte",
       "confirm": "Avslutt turnering",
       "done_one": "Turneringen er avsluttet, {{count}} kamp avlyst",
@@ -769,15 +769,15 @@
       "failed": "Kunne ikke avslutte turneringen"
     },
     "countdown": {
-      "days": "Starter om {{d}}d {{h}}t",
-      "hours": "Starter om {{h}}t {{m}}m",
+      "days": "Starter om {{d}} d {{h}} t",
+      "hours": "Starter om {{h}} t {{m}} min",
       "minutes": "Starter om {{m}}:{{s}}"
     }
   },
   "bracket": {
     "empty": {
       "noBracketTitle": "Ingen turneringstre å vise",
-      "noBracketDescription": "Opprett en turnering og generer turneringstre for å komme i gang"
+      "noBracketDescription": "Opprett en turnering, og lag turneringstreet for å komme i gang"
     },
     "view": {
       "visual": "Visuell",
@@ -785,7 +785,7 @@
       "refresh": "Oppdater",
       "enterFullscreen": "Fullskjerm",
       "exitFullscreen": "Avslutt fullskjerm",
-      "shuffleNoVisual": "Shuffle-turneringer har ingen visuelt turneringstre. Bruk listevisningen i stedet."
+      "shuffleNoVisual": "Shuffle-turneringer har ikke noe visuelt turneringstre. Bruk listevisningen i stedet."
     },
     "times": {
       "toggle": "Sett tider",
@@ -795,31 +795,31 @@
     },
     "shuffleEmpty": {
       "title": "Ingen turneringstre for shuffle-turneringer",
-      "description": "Shuffle-turneringer bruker ikke en fast turneringstre. Lagene stokkes om hver runde basert på spillernes ELO.",
+      "description": "Shuffle-turneringer bruker ikke et fast turneringstre. Lagene stokkes om hver runde ut fra ELO-en til spillerne.",
       "hint": "Bruk siden Kamper for å følge pågående og kommende kamper, og siden Resultatliste for spillerrangeringen.",
       "goToMatches": "Gå til kamper",
       "viewLeaderboard": "Vis resultatliste"
     },
     "notGenerated": {
-      "title": "Turneringstreet er ikke generert ennå",
-      "description": "Generer turneringstreet for å opprette kamper for {{name}}",
+      "title": "Turneringstreet er ikke laget ennå",
+      "description": "Lag turneringstreet for å opprette kamper for {{name}}",
       "goToSettings": "Gå til turneringsinnstillinger"
     },
     "shuffleNoVisual": {
       "title": "Ingen visuelt turneringstre for shuffle-turneringer",
-      "description": "Kampene genereres fortløpende hver runde basert på spillernes ELO og lagbalansering. Følg med her:",
+      "description": "Kampene lages fortløpende hver runde ut fra ELO-en til spillerne og lagbalansen. Følg med her:",
       "listView": "Listevisning",
       "matches": "Kamper",
       "standings": "Tabell",
       "docsHint": "Se veiledningen «Shuffle Tournaments» i dokumentasjonen for en fullstendig gjennomgang av hvordan shuffle fungerer."
     },
     "swiss": {
-      "notGenerated": "Ikke generert",
-      "generatedAfter": "Kampene genereres når runde {{round}} er ferdig",
+      "notGenerated": "Ikke laget ennå",
+      "generatedAfter": "Kampene lages når runde {{round}} er ferdig",
       "bye": "BYE",
       "standings": "Tabell",
       "team": "Lag",
-      "record": "Rekord",
+      "record": "S–T",
       "buchholz": "BH",
       "buchholzHint": "Buchholz: summen av motstandernes seiere",
       "roundDiff": "RD",
@@ -827,7 +827,7 @@
     },
     "slotHint": {
       "winnerOf": "Vinner av {{match}}",
-      "loserOf": "Taper av {{match}}",
+      "loserOf": "Taper i {{match}}",
       "matchNumber": "kamp {{number}}"
     },
     "pause": {
@@ -877,9 +877,9 @@
       "mapVetoCustom": "Egendefinert rekkefølge (lagkapteiner)",
       "mapVetoStandard": "Standard rekkefølge (lagkapteiner)",
       "overtime": "Overtid",
-      "overtimeEnabledUnlimited": "Aktivert, ubegrenset",
-      "overtimeEnabledSegments": "Aktivert, {{count}} periode(r)",
-      "overtimeDisabled": "Deaktivert (avgjøres på skade)"
+      "overtimeEnabledUnlimited": "På, ubegrenset",
+      "overtimeEnabledSegments": "På, {{count}} periode(r)",
+      "overtimeDisabled": "Av (avgjøres på skade)"
     },
     "mapPool": "Kartutvalg",
     "rules": "Regler",
@@ -906,8 +906,8 @@
       }
     },
     "prizes": {
-      "title": "Priser",
-      "note": "Satt av arrangøren. Pengepriser, utstyr eller ære."
+      "title": "Premier",
+      "note": "Satt av arrangøren. Pengepremier, utstyr eller bare æren."
     },
     "requirements": {
       "title": "For å delta",
@@ -919,7 +919,7 @@
     "loadError": "Kunne ikke laste denne turneringen.",
     "notFoundTitle": "Fant ikke turneringen",
     "notFoundDescription": "Denne turneringen finnes ikke, eller er ikke opprettet ennå.",
-    "loading": "Laster…",
+    "loading": "Laster …",
     "about": "Om",
     "liveStripLabel": "Live nå",
     "bracketTab": {
@@ -962,9 +962,9 @@
       "teams": "Lag"
     },
     "mapPoolCount": "Kartutvalg · {{count}} kart",
-    "mapPoolNote": "Kapteinene banner og velger fra disse før hver serie.",
+    "mapPoolNote": "Kapteinene fjerner og velger fra disse før hver serie.",
     "addToCalendar": "Legg til i kalender",
-    "scheduleSoon": "Arrangøren har ikke publisert timeplanen ennå.",
+    "scheduleSoon": "Arrangøren har ikke publisert tidsplanen ennå.",
     "checkInWindow": "Innsjekk",
     "mapPoolSoonTitle": "Kartutvalg",
     "mapPoolSoon": "Arrangøren har ikke valgt kartene ennå.",
@@ -1039,8 +1039,8 @@
       "bestAdr": "Høyest ADR",
       "bestHeadshots": "Best andel hodeskudd",
       "mostFlashAssists": "Flest flash-assister",
-      "mostUtility": "Mest utility-skade",
-      "biggestGain": "Størst rating-økning",
+      "mostUtility": "Mest granatskade",
+      "biggestGain": "Størst ratingøkning",
       "bestPlayer": "Beste spiller",
       "mostClutches": "Flest clutcher",
       "mostTeamFlashes": "Flest flasher på eget lag",
@@ -1051,7 +1051,7 @@
       "bestAdr": "{{value}} ADR",
       "bestHeadshots": "{{value}} % hodeskudd",
       "mostFlashAssists": "{{value}} flash-assister",
-      "mostUtility": "{{value}} utility-skade",
+      "mostUtility": "{{value}} granatskade",
       "biggestGain": "+{{value}} rating",
       "bestPlayer": "rating {{value}}",
       "mostTeamFlashes": "{{value}} lagkamerater flashet",
@@ -1071,7 +1071,7 @@
   "signup": {
     "cta": "Meld på laget ditt",
     "keyDates": {
-      "closes": "Påmelding stenger",
+      "closes": "Påmeldingen stenger",
       "checkIn": "Innsjekk",
       "spots": "Lagplasser",
       "left": "{{count}} igjen",
@@ -1171,7 +1171,7 @@
     "remind": "Påminn",
     "reminded": "Påminnelse sendt i lagchatten",
     "done": "Ferdig",
-    "lineupGap": "En starter forlot lagoppstillingen (utestengt eller slettet). Kampene deres venter til {{time}}: velg en reserve før det, ellers flyttes den første reserven inn. Uten reserve spiller dere med en mindre.",
+    "lineupGap": "En starter forlot lagoppstillingen (utestengt eller slettet). Kampene deres venter til {{time}}: velg en reserve før det, ellers flyttes den første reserven inn. Uten reserve spiller dere med en spiller mindre.",
     "pickSub": "Velg reserve",
     "title": "Meld på laget ditt",
     "editTitle": "Endre oppstillingen",
@@ -1193,11 +1193,11 @@
     "veto": "Veto",
     "done": "Ferdig",
     "mapOf": "Kart {{n}} av {{total}}",
-    "banning": "Banner kart",
+    "banning": "Fjerner kart",
     "bestOf_one": "Best av {{count}}",
     "bestOf_other": "Best av {{count}}",
-    "winnerOf": "Vinner {{match}}",
-    "loserOf": "Taper {{match}}",
+    "winnerOf": "Vinner av {{match}}",
+    "loserOf": "Taper i {{match}}",
     "tbd": "Ikke avgjort",
     "liveCount_one": "{{count}} live",
     "liveCount_other": "{{count}} live",
@@ -1225,7 +1225,7 @@
     "opponent": "Neste: {{opponent}}.",
     "feederTitle": "Neste motstander kommer fra",
     "vs": "mot",
-    "tbd": "Ikke klart",
+    "tbd": "Ikke avgjort",
     "feederNotStarted": "Den kampen har ikke startet ennå.",
     "feederMinutes_one": "Omtrent {{count}} minutt igjen.",
     "feederMinutes_other": "Omtrent {{count}} minutter igjen.",
@@ -1242,7 +1242,7 @@
     "watchLive": "Se en kamp live",
     "nextMatch": "{{stage}} mot {{opponent}}",
     "nextMatchReady": "Kampen er klar: åpne kamprommet for å koble til.",
-    "nextMatchSoon": "Neste kamp er satt. Etter en kort pause åpner den, og vi sier fra. Navigasjonslinjen viser nedtellingen uansett hvor du er.",
+    "nextMatchSoon": "Neste kamp er satt. Etter en kort pause åpner den, og vi sier fra. Navigasjonsfeltet viser nedtellingen uansett hvor du er.",
     "openMatchRoom": "Åpne kamprommet",
     "throughTo": "Dere er videre til {{stage}}",
     "waitingTitle": "Venter på neste motstander",
@@ -1281,7 +1281,7 @@
     "title": "Bli med i denne shufflen",
     "body": "Du trenger ikke lag: meld deg på alene. Hver runde trekker plattformen nye, jevne lag.",
     "youreIn": "Du er med",
-    "inBody": "Når turneringen starter, trekkes ditt første lag, og kampen din dukker opp her. Ha siden åpen.",
+    "inBody": "Når turneringen starter, trekkes det første laget ditt, og kampen din dukker opp her. Ha siden åpen.",
     "join": "Bli med",
     "leave": "Meld av",
     "full": "Fullt",
@@ -1325,7 +1325,7 @@
     "joinedByMistake": "Meldte du deg på ved en feil?",
     "breakTitle": "Pause · runde {{round}} starter kl. {{time}}",
     "noShowTitle": "Du er ute av de neste trekningene",
-    "noShowBody": "Du koblet aldri til kampen din, så de neste rundene trekkes uten deg. Tilbake ved PC-en? Si fra, så er du med i neste trekning.",
+    "noShowBody": "Du koblet aldri til kampen din, så de neste rundene trekkes uten deg. Tilbake ved pc-en? Si fra, så er du med i neste trekning.",
     "backIn": "Jeg er tilbake",
     "tagNoShow": "Møtte ikke"
   },
@@ -1345,7 +1345,7 @@
       "joiningBody": "{{us}} mot {{them}}{{map}}. Kampen starter når alle er klare.",
       "vetoTitle": "Kartvetoen din er åpen",
       "vetoBody": "Fjern og velg kart sammen med {{them}} i kamprommet.",
-      "waitingTitle": "Venter på din neste motstander",
+      "waitingTitle": "Venter på neste motstander",
       "waitingBody": "De kommer fra en kamp som fortsatt pågår. Etter en kort pause åpner vetoen, og du får et varsel.",
       "notStartedTitle": "Neste: {{them}}",
       "notStartedBody": "Kampen din åpner når runden starter. Denne siden oppdaterer seg selv.",
@@ -1406,9 +1406,9 @@
     "ties": {
       "round_robin": "Likt: innbyrdes oppgjør, så rundedifferanse, så vunne runder.",
       "swiss": "Likt: hvor sterke motstanderne var (Buchholz: summen av seierne deres), så rundedifferanse.",
-      "elim": "Sortert etter seiere. To tap og et lag er ute.",
-      "singleElim": "Sortert etter seiere. Ett tap og et lag er ute.",
-      "doubleElim": "Sortert etter seiere. To tap og et lag er ute.",
+      "elim": "Sortert etter seiere. To tap, og laget er ute.",
+      "singleElim": "Sortert etter seiere. Ett tap, og laget er ute.",
+      "doubleElim": "Sortert etter seiere. To tap, og laget er ute.",
       "groups": "Likt i en gruppe: innbyrdes oppgjør, så rundedifferanse, så vunne runder."
     },
     "players": {
@@ -1423,7 +1423,7 @@
       "kd": "K / D",
       "adr": "ADR",
       "winRate": "Seiersandel",
-      "none": "Ingen spillere samsvarer."
+      "none": "Ingen spillere passer til søket."
     }
   },
   "matchesCards": {
@@ -1436,7 +1436,7 @@
     "startsAt": "starter {{time}} · vetoen åpner {{veto}}",
     "yourMatch": "Kampen din",
     "placeholderTbd": "Ikke satt",
-    "placeholderVeto": "Map-veto",
+    "placeholderVeto": "Kartveto",
     "placeholderVetoAt": "Veto {{time}}"
   },
   "standingsTab": {
@@ -1447,9 +1447,9 @@
     "form": "Form",
     "intro": {
       "round_robin": "Alle-mot-alle: hvert lag spiller mot alle de andre én gang.",
-      "swiss": "Swiss: hver runde parer lag med samme rekord.",
-      "single": "Enkel eliminasjon: ett tap og et lag er ute.",
-      "double": "Dobbel eliminasjon: to tap og et lag er ute.",
+      "swiss": "Sveitsisk system: hver runde møtes lag med samme resultat.",
+      "single": "Enkel eliminasjon: ett tap, og laget er ute.",
+      "double": "Dobbel eliminasjon: to tap, og laget er ute.",
       "groups": "Grupper, så sluttspill: hvert lag spiller mot de andre i gruppen sin én gang, og de beste går videre til sluttspillet."
     }
   },
@@ -1475,11 +1475,11 @@
     "format": {
       "title": "Slik fungerer formatet",
       "navTitle": "Formatet",
-      "swiss_one": "Alle spiller {{count}} runde, mot et lag med lik rekord. Ingen omkamper. Rangert etter seiere, så tiebreakerne under.",
-      "swiss_other": "Alle spiller {{count}} runder, hver gang mot et lag med lik rekord. Ingen omkamper. Rangert etter seiere, så tiebreakerne under.",
-      "single_elimination": "Taper du én gang, er du ute. Bracketen går fram til en finale.",
-      "double_elimination": "En øvre og en nedre bracket. Taper du to ganger, er du ute.",
-      "round_robin": "Alle møter alle én gang. Rangert etter seiere, så tiebreakerne under.",
+      "swiss_one": "Alle spiller {{count}} runde, mot et lag med likt resultat. Ingen omkamper. Rangert etter seiere, så etter reglene for likt nedenfor.",
+      "swiss_other": "Alle spiller {{count}} runder, hver gang mot et lag med likt resultat. Ingen omkamper. Rangert etter seiere, så etter reglene for likt nedenfor.",
+      "single_elimination": "Taper du én gang, er du ute. Turneringstreet går fram til en finale.",
+      "double_elimination": "En vinnerside og en taperside. Taper du to ganger, er du ute.",
+      "round_robin": "Alle møter alle én gang. Rangert etter seiere, så etter reglene for likt nedenfor.",
       "shuffle": "Lagene trekkes på nytt hver runde blant de påmeldte spillerne. Spillerne rangeres etter seiere.",
       "matches": "Hver kamp er {{series}} på MR{{mr}}-kart. Overtid: {{overtime}}.",
       "damage": "Står et kart fortsatt likt etter siste overtid, vinner laget med mest total skade."
@@ -1496,7 +1496,7 @@
     "callAdmin": "Tilkall en admin",
     "adminCalled": "En admin er på vei",
     "joinTitle": "Bli med på serveren: {{map}}",
-    "warmup": "Warmup · bli med nå",
+    "warmup": "Oppvarming · bli med nå",
     "isLive": "{{map}} er live",
     "players": "Spillere",
     "playersOnMap": "Spillere · {{map}}",
@@ -1552,8 +1552,8 @@
     "areYouHere": "Er du her?",
     "teamCount": "{{team}} sjekker inn: {{in}} av {{total}}. Et lag spiller når alle startspillerne er sjekket inn.",
     "soundOn": "♪ Lyd på",
-    "firstVeto_one": "Den første vetoen din åpner {{time}}, {{count}} minutt før kampen: vær ved PC-en innen da.",
-    "firstVeto_other": "Den første vetoen din åpner {{time}}, {{count}} minutter før kampen: vær ved PC-en innen da.",
+    "firstVeto_one": "Den første vetoen din åpner {{time}}, {{count}} minutt før kampen: vær ved pc-en da.",
+    "firstVeto_other": "Den første vetoen din åpner {{time}}, {{count}} minutter før kampen: vær ved pc-en da.",
     "vetoOpensNote": "vetoen åpner {{time}}"
   },
   "runState": {
@@ -1581,17 +1581,17 @@
     }
   },
   "lineupPanel": {
-    "title": "Laguppstilling",
+    "title": "Lagoppstilling",
     "note_one": "Velg {{count}} spiller til denne kampen. De andre sitter på benken.",
     "note_other": "Velg {{count}} spillere til denne kampen. De andre sitter på benken.",
     "picked": "{{picked}} av {{count}} valgt",
     "plays": "Spiller",
     "bench": "Benk",
-    "save": "Lagre laguppstillingen",
-    "saved": "Laguppstillingen er lagret",
-    "notOnServer": "Laguppstillingen er lagret, men serveren tok den ikke imot: {{error}}",
-    "locked": "Laguppstillingen er låst mens et kart spilles. Den kan endres mellom kartene.",
-    "captainOnly": "Bare lageieren eller en kaptein kan endre laguppstillingen.",
+    "save": "Lagre lagoppstillingen",
+    "saved": "Lagoppstillingen er lagret",
+    "notOnServer": "Lagoppstillingen er lagret, men serveren tok den ikke imot: {{error}}",
+    "locked": "Lagoppstillingen er låst mens et kart spilles. Den kan endres mellom kartene.",
+    "captainOnly": "Bare lageieren eller en kaptein kan endre lagoppstillingen.",
     "source": {
       "previous": "Samme som i lagets forrige kamp.",
       "roster": "De første spillerne på laglisten."
