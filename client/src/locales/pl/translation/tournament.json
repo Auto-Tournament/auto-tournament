@@ -452,7 +452,10 @@
       "reminderMinutes_other": "{{count}} minutes before",
       "bannerMapLabel": "No banner? Use a map's picture",
       "bannerMapNone": "Pick for me",
-      "rulesHelp": "Shown on the tournament page's Rules tab, under the rules the platform writes from your settings."
+      "rulesHelp": "Shown on the tournament page's Rules tab, under the rules the platform writes from your settings.",
+      "fromTemplate": "From {{name}}",
+      "clearAll": "Clear all",
+      "rulebookFromTemplate": "From the template {{name}}. An https link, or leave it empty."
     },
     "setup": {
       "steps": {
