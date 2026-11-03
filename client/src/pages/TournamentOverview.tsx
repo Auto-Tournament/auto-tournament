@@ -9,6 +9,7 @@ import { RegisteredPanel } from '../components/tournament/signup/RegisteredPanel
 import { CheckInPanel } from '../components/tournament/signup/CheckInPanel';
 import { ShuffleJoin } from '../components/tournament/signup/ShuffleJoin';
 import { signupPhase, useTournamentSignup, viewerRegistration } from '../hooks/useTournamentSignup';
+import { signupOpenNow } from '../utils/signupOpen';
 import { api } from '../utils/api';
 import { mono, radii, tokens } from '../theme/tokens';
 import { useTournamentPage } from '../components/tournament/page/tournamentPageContext';
@@ -105,7 +106,8 @@ export default function TournamentOverview() {
   const canSignUp =
     !isShuffle &&
     tournament.status === 'setup' &&
-    phase === 'open' &&
+    // eslint-disable-next-line react-hooks/purity -- only needs to be right when the page renders
+    signupOpenNow(signup.window, Date.now()) &&
     !registration &&
     !signup.overlap &&
     (spotsLeft === null || spotsLeft > 0);

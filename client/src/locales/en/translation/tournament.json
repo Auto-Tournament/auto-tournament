@@ -1615,6 +1615,7 @@
     "spotsLeft_one": "{{count}} of {{max}} spots left. Captains pick the starters and subs.",
     "spotsLeft_other": "{{count}} of {{max}} spots left. Captains pick the starters and subs.",
     "byOrganizer": "The organizer adds the teams.",
+    "captainsPick": "Captains pick the starters and subs.",
     "startsIn": "Starts in",
     "allRules": "All rules and prizes",
     "signedUpEyebrow": "{{team}} · signed up",
