@@ -142,8 +142,17 @@ function answer(to: Envelope, seq: number): Envelope {
   return envelope('cmd.result', { status: 'ok' }, { seq, ack: to.seq, ref: to.id });
 }
 
-const FUN_ENABLE = ['match', 'essentials', 'skins', 'midas', 'deathmatch', 'mapvote', 'community'];
-const FUN_DISABLE = ['practice', 'whitelist', 'movement', 'addons'];
+const FUN_ENABLE = [
+  'match',
+  'essentials',
+  'skins',
+  'midas',
+  'deathmatch',
+  'mapvote',
+  'community',
+  'addons',
+];
+const FUN_DISABLE = ['practice', 'whitelist', 'movement'];
 
 test.describe.serial('Fleet plugin sets', () => {
   test.beforeEach(async ({ request }) => {
