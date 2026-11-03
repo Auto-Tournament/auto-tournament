@@ -2412,7 +2412,15 @@
       "technical": {
         "label": "Technical pauses",
         "help": "For a crash or a lost connection, per team, per map."
-      }
+      },
+      "valveFactVeto": "Veto picks sides",
+      "valveFactRules": "Valve rules",
+      "valveRule1": "Maps come from the Active Duty pool, in their current in-game versions.",
+      "valveRule2": "Bo3 veto: teams take turns banning and picking. Each team picks one map, and the other team picks the side on it. The last map left is the decider.",
+      "valveRule3": "Server settings follow Valve's Premier defaults.",
+      "valveRule4": "Online, nobody but the five players talks to the team during a map. No coach or staff on comms.",
+      "valveRule5": "One substitute per team. Swap players between matches, mid-match only for a medical emergency.",
+      "valveRule6": "No changed game art or sound, and no VAC-banned players."
     },
     "esportsMode": {
       "label": "Esports mode",

@@ -70,7 +70,17 @@
     "cancel": "Annuleren",
     "remove": "Remove",
     "close": "Close",
-    "opensInNewTab": "(opens in a new tab)"
+    "opensInNewTab": "(opens in a new tab)",
+    "datePicker": {
+      "previousMonth": "Previous month",
+      "nextMonth": "Next month",
+      "today": "Today",
+      "done": "Done",
+      "chooseDay": "Choose a day",
+      "chooseDays": "Choose the days",
+      "chooseTime": "Choose a time",
+      "time": "Time"
+    }
   },
   "app": {
     "name": "Auto Tournament"
