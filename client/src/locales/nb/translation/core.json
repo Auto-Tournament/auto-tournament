@@ -78,7 +78,17 @@
     "cancel": "Avbryt",
     "remove": "Fjern",
     "close": "Lukk",
-    "opensInNewTab": "(åpnes i en ny fane)"
+    "opensInNewTab": "(åpnes i en ny fane)",
+    "datePicker": {
+      "previousMonth": "Forrige måned",
+      "nextMonth": "Neste måned",
+      "today": "I dag",
+      "done": "Ferdig",
+      "chooseDay": "Velg en dag",
+      "chooseDays": "Velg dagene",
+      "chooseTime": "Velg et klokkeslett",
+      "time": "Klokkeslett"
+    }
   },
   "theme": {
     "label": "Fargetema"
