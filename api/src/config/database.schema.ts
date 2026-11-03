@@ -169,6 +169,7 @@ export function getSchemaSQL(): string {
       match_slug TEXT PRIMARY KEY,
       short_side TEXT NOT NULL, -- 'team1' | 'team2'
       expires_at INTEGER NOT NULL,
+      loaded_at INTEGER, -- the match load it is for: a restart gets a new timer
       decided TEXT -- 'walkover' | 'play' | NULL while open
     );
 
