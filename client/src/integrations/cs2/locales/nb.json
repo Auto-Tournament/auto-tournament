@@ -2341,6 +2341,8 @@
       "cancel": "Avbryt",
       "valveTemplate": "Valves offisielle esportoppsett",
       "valveTemplateHelp": "Oppsettet Valve bruker i sine Majors: Bo3, veto som velger side, Valves konkurranseregler.",
+      "valveFactVeto": "Veto velger side",
+      "valveFactRules": "Valves regler",
       "preset": "Forhåndsvalg",
       "standard": "Standard (nettstedets standard)",
       "esports": "Valves offisielle regler",

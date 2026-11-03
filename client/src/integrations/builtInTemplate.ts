@@ -9,6 +9,8 @@ export interface BuiltInTemplate {
   type:
     'single_elimination' | 'double_elimination' | 'round_robin' | 'swiss' | 'shuffle' | 'groups';
   format: 'bo1' | 'bo3' | 'bo5';
+  /** Short facts for its card in step 1 (CS2: "Veto picks sides", "Valve rules"). */
+  facts: string[];
   /** Settings as a template stores them: the module's object under its key. */
   settings: Record<string, Untrusted>;
 }

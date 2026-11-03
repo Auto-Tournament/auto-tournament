@@ -742,6 +742,17 @@
         "gotvOn_one": "Tilskuere kan se på i GOTV, {{count}} sekund bak (Kampregler › Tilskuere).",
         "gotvOn_other": "Tilskuere kan se på i GOTV, {{count}} sekunder bak (Kampregler › Tilskuere).",
         "gotvOff": "Tilskuere kan ikke se på i GOTV (Kampregler › Tilskuere)."
+      },
+      "startFrom": {
+        "title": "Start fra",
+        "help": "En mal fyller inn format, kart og kampinnstillinger. Du kan endre alt i stegene etter.",
+        "blank": "Tom",
+        "blankHelp": "Enkel eliminasjon, Bo3, kartutvalget og kampreglene til siden.",
+        "siteDefaults": "Sidens standard",
+        "builtIn": "Innebygd",
+        "saved": "Lagret",
+        "standardRules": "Standardregler",
+        "ownTemplates": "Egne maler kommer fra <link>Maler og rangering</link>. Lagre turneringen som mal når den er satt opp."
       }
     },
     "startButton": {

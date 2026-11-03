@@ -1,8 +1,8 @@
 import { SignInNeedsWarning } from '../../modules/SignInNeedsWarning';
 import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Alert, Box, Button, Menu, MenuItem, TextField, Typography } from '@mui/material';
-import { ArrowLeftIcon, ArrowRightIcon, FileTextIcon } from '@phosphor-icons/react';
+import { Alert, Box, Button, TextField, Typography } from '@mui/material';
+import { ArrowLeftIcon, ArrowRightIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import { estimateMatchCount, type GrandFinalMode } from '../../../utils/tournamentMatchCount';
 import { estimateDurationMinutes } from '../../../utils/tournamentDuration';
@@ -35,6 +35,7 @@ import {
 import { EloTemplateSelect } from './EloTemplateSelect';
 import { ReviewStep, type ReviewTournament } from './ReviewStep';
 import { GamePicker } from './GamePicker';
+import { StartFromTemplates } from './StartFromTemplates';
 import { DEFAULT_SETUP_GAME, gameMark, useSetupGames, type SetupGame } from './games';
 import { MEDIUM } from './layout';
 import { useShellColumn } from '../../../contexts/ShellColumnContext';
@@ -121,7 +122,7 @@ interface TournamentSetupProps {
   onStepChange: (index: number) => void;
   /** A new tournament's form is kept in sessionStorage. */
   draftSaved: boolean;
-  onLoadTemplate: (template: TournamentTemplate) => void;
+  onLoadTemplate: (template: TournamentTemplate | null) => void;
   onDiscardDraft: () => void;
   onSave: () => void;
   onDiscardChanges: () => void;
@@ -220,7 +221,7 @@ export function TournamentSetup(props: TournamentSetupProps) {
   const { signup } = signupState;
 
   // ---- Templates ("Start from a template") ---------------------------------
-  const { templates, templateMenu, setTemplateMenu } = useSetupTemplates(tournament);
+  const { templates } = useSetupTemplates(tournament);
 
   // ---- Validation and navigation ------------------------------------------
   const validationInput = {
@@ -476,35 +477,40 @@ export function TournamentSetup(props: TournamentSetupProps) {
     switch (stepId) {
       case 'game':
         return (
-          <FormField
-            label={t('tournament.setup.game.label')}
-            help={
-              tournament
-                ? t('tournament.setup.game.lockedHelp')
-                : loadingGames
-                  ? t('tournament.setup.game.loading')
-                  : undefined
-            }
-          >
-            <GamePicker
-              games={setupGames}
-              value={game}
-              onChange={handlers.onGameChange}
-              // The game is fixed once the tournament exists: its matches were
-              // built by that module, and nothing moves them to another one.
-              disabled={locked || !!tournament}
+          <>
+            <FormField
               label={t('tournament.setup.game.label')}
-            />
-            <Box sx={{ mt: 2 }}>
-              <SignInNeedsWarning
-                // While the catalogue loads, the default game (CS2) is the one picked.
-                moduleId={
-                  setupGames.find((g) => g.id === game)?.integrationId ??
-                  (game === DEFAULT_SETUP_GAME.id ? DEFAULT_SETUP_GAME.integrationId : null)
-                }
+              help={
+                tournament
+                  ? t('tournament.setup.game.lockedHelp')
+                  : loadingGames
+                    ? t('tournament.setup.game.loading')
+                    : undefined
+              }
+            >
+              <GamePicker
+                games={setupGames}
+                value={game}
+                onChange={handlers.onGameChange}
+                // The game is fixed once the tournament exists: its matches were
+                // built by that module, and nothing moves them to another one.
+                disabled={locked || !!tournament}
+                label={t('tournament.setup.game.label')}
               />
-            </Box>
-          </FormField>
+              <Box sx={{ mt: 2 }}>
+                <SignInNeedsWarning
+                  // While the catalogue loads, the default game (CS2) is the one picked.
+                  moduleId={
+                    setupGames.find((g) => g.id === game)?.integrationId ??
+                    (game === DEFAULT_SETUP_GAME.id ? DEFAULT_SETUP_GAME.integrationId : null)
+                  }
+                />
+              </Box>
+            </FormField>
+            {!tournament && (
+              <StartFromTemplates templates={templates} onPick={props.onLoadTemplate} />
+            )}
+          </>
         );
 
       case 'basics':
@@ -715,39 +721,6 @@ export function TournamentSetup(props: TournamentSetupProps) {
               >
                 {t('tournament.setup.discardDraft')}
               </Button>
-            )}
-            {templates.length > 0 && (
-              <>
-                <Button
-                  size="small"
-                  startIcon={<FileTextIcon />}
-                  onClick={(e) => setTemplateMenu(e.currentTarget)}
-                  aria-haspopup="menu"
-                  aria-expanded={templateMenu ? 'true' : undefined}
-                  data-testid="tournament-start-from-template"
-                >
-                  {t('tournament.setup.startFromTemplate')}
-                </Button>
-                <Menu
-                  anchorEl={templateMenu}
-                  open={!!templateMenu}
-                  onClose={() => setTemplateMenu(null)}
-                >
-                  {templates.map((template) => (
-                    <MenuItem
-                      key={template.id}
-                      onClick={() => {
-                        setTemplateMenu(null);
-                        props.onLoadTemplate(template);
-                      }}
-                      data-testid="tournament-template-option"
-                    >
-                      {template.name}
-                      {template.description && ` - ${template.description}`}
-                    </MenuItem>
-                  ))}
-                </Menu>
-              </>
             )}
           </Box>
         )}

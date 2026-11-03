@@ -2341,6 +2341,8 @@
       "cancel": "Cancel",
       "valveTemplate": "Valve official esports",
       "valveTemplateHelp": "The setup Valve uses at its Majors: Bo3, a veto that picks sides, Valve's competitive rules.",
+      "valveFactVeto": "Veto picks sides",
+      "valveFactRules": "Valve rules",
       "preset": "Preset",
       "standard": "Standard (the site's defaults)",
       "esports": "Valve official",

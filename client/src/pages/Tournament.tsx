@@ -241,12 +241,13 @@ const Tournament: React.FC = () => {
 
   // ---- Templates -----------------------------------------------------------
   const applyTemplate = React.useCallback(
-    (template: TournamentTemplate, options: { withTeams: boolean }) => {
+    (template: TournamentTemplate, options: { withTeams: boolean; review?: boolean }) => {
       const settings = template.settings;
-      setForm({
+      // A built-in template names no tournament; picked in step 1, the name typed so far stays.
+      const templateName = template.id < 0 ? '' : template.name;
+      setForm((prev) => ({
         ...DEFAULT_FORM,
-        // A built-in template names no tournament.
-        name: template.id < 0 ? '' : template.name,
+        name: options.review === false ? prev.name : templateName,
         type: template.type,
         format: template.format,
         // The game module's settings saved with the template (CS2: its pool,
@@ -261,14 +262,16 @@ const Tournament: React.FC = () => {
             ? template.teamIds!.length
             : nearestTeamCount(template.type, DEFAULT_FORM.plannedTeams),
         grandFinalMode: settings?.grandFinalMode ?? DEFAULT_FORM.grandFinalMode,
-      });
+      }));
       setGrandFinalModePicked(false);
-      // A loaded template is complete: go straight to Review to confirm and
+      window.history.replaceState({}, '', '/manage/tournament');
+      // Picked in step 1 ("Start from"): the organizer goes on through the steps.
+      if (options.review === false) return;
+      // Opened by link: the template is complete, so straight to Review to confirm and
       // create. Templates are saved from a CS2 tournament and carry no game.
       const last = reviewStepIndexFor(DEFAULT_SETUP_GAME.id);
       setActiveStep(last);
       setFurthestStep(last);
-      window.history.replaceState({}, '', '/manage/tournament');
     },
     []
   );
@@ -315,8 +318,10 @@ const Tournament: React.FC = () => {
     }
   }, [searchParams, tournament, loadTemplate, setupModulePending]);
 
-  const handleLoadTemplate = (template: TournamentTemplate) => {
-    applyTemplate(template, { withTeams: true });
+  // Step 1's "Start from": a template (its teams too), or null for a blank one.
+  const handleLoadTemplate = (template: TournamentTemplate | null) => {
+    if (template) applyTemplate(template, { withTeams: true, review: false });
+    else setForm((prev) => ({ ...DEFAULT_FORM, name: prev.name }));
   };
 
   const handleSaveTemplate = () => {

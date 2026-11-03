@@ -135,6 +135,8 @@ export interface TournamentTemplate {
   type:
     'single_elimination' | 'double_elimination' | 'round_robin' | 'swiss' | 'shuffle' | 'groups';
   format: 'bo1' | 'bo3' | 'bo5';
+  /** A built-in template's card facts, from its game module; saved ones have none. */
+  facts?: string[];
   mapPoolId?: number | null;
   maps: string[];
   teamIds?: string[];

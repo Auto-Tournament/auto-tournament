@@ -136,7 +136,6 @@ export function useSetupTemplates(tournament: SetupTournament | null) {
   const { t } = useTranslation();
   const [saved, setTemplates] = useState<TournamentTemplate[]>([]);
   const templates = [...builtInTemplates(t), ...saved];
-  const [templateMenu, setTemplateMenu] = useState<HTMLElement | null>(null);
   useEffect(() => {
     if (tournament) return;
     let cancelled = false;
@@ -150,5 +149,5 @@ export function useSetupTemplates(tournament: SetupTournament | null) {
       cancelled = true;
     };
   }, [tournament]);
-  return { templates, templateMenu, setTemplateMenu };
+  return { templates };
 }

@@ -19,6 +19,7 @@ export function builtInTemplates(t: TFunction): TournamentTemplate[] {
       description: tpl.description,
       type: tpl.type,
       format: tpl.format,
+      facts: tpl.facts,
       maps: [],
       settings,
       createdAt: 0,

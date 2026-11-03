@@ -298,6 +298,10 @@ export const cs2TournamentSetup: TournamentSetupModel = {
         description: t('tournament.matchSettings.valveTemplateHelp', { ns: 'cs2' }),
         type: 'single_elimination',
         format: 'bo3',
+        facts: [
+          t('tournament.matchSettings.valveFactVeto', { ns: 'cs2' }),
+          t('tournament.matchSettings.valveFactRules', { ns: 'cs2' }),
+        ],
         // Valve's rules (matchPresetRules.ts presetRules), a veto that picks sides, the site's pool.
         settings: {
           matchFormat: 'bo3',
