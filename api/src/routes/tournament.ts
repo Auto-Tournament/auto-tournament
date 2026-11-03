@@ -923,6 +923,24 @@ function validateEventPageSettings(
       };
     }
   }
+  if (s.eventDays !== undefined && s.eventDays !== null) {
+    const d = s.eventDays as { first?: Untrusted; last?: Untrusted };
+    const day = /^\d{4}-\d{2}-\d{2}$/;
+    if (
+      typeof d !== 'object' ||
+      typeof d.first !== 'string' ||
+      typeof d.last !== 'string' ||
+      !day.test(d.first) ||
+      !day.test(d.last) ||
+      d.last < d.first ||
+      Date.parse(d.last) - Date.parse(d.first) > 13 * 86400000
+    ) {
+      return {
+        valid: false,
+        error: 'settings.eventDays must be { first, last } days (YYYY-MM-DD), up to 14 days',
+      };
+    }
+  }
   if (s.autoStart === true && (typeof s.startsAt !== 'string' || !s.startsAt)) {
     return { valid: false, error: 'settings.autoStart needs settings.startsAt' };
   }

@@ -269,6 +269,7 @@ router.post('/', requireAuth, async (req: Request, res: Response, next) => {
         'checkInOpensAt',
         'checkInClosesAt',
         'schedule',
+        'eventDays',
       ] as const) {
         delete settings[key];
       }

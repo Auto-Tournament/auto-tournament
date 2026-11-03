@@ -4,6 +4,16 @@ import { SegmentedControl } from './SegmentedControl';
 import { getRoundLabel } from '../../../utils/matchUtils';
 import { radii, tokens } from '../../../theme/tokens';
 import type { Untrusted } from '../../../utils/untrusted';
+import { TimeField } from '../../common/DatePicker';
+import {
+  DEFAULT_START,
+  daysOf,
+  roundDayOf,
+  startFormOf,
+  startSettings,
+  type StartForm,
+} from './startForm';
+import { ScheduleStart, RoundDaySelect } from './ScheduleStart';
 
 const { color } = tokens;
 
@@ -20,6 +30,8 @@ export interface MatchTimesForm {
    * break between matches), and longer ones `after` given rounds.
    */
   breaks: { minutes: number | null; after: Array<{ round: number; minutes: number }> };
+  /** The tournament's days, its start, auto-start and reminders (startForm.ts). */
+  start: StartForm;
 }
 
 export const DEFAULT_MATCH_TIMES: MatchTimesForm = {
@@ -28,6 +40,7 @@ export const DEFAULT_MATCH_TIMES: MatchTimesForm = {
   vetoLeadMinutes: 5,
   reminderMinutes: 15,
   breaks: { minutes: null, after: [] },
+  start: DEFAULT_START,
 };
 
 /** `settings.roundBreaks` as the form holds it. */
@@ -77,9 +90,11 @@ export function matchTimesFormOf(settings: Untrusted): MatchTimesForm {
     }
   ).matchTimes;
   const breaks = breaksFormOf(settings);
-  if (!raw) return { ...DEFAULT_MATCH_TIMES, breaks };
+  const start = startFormOf(settings);
+  if (!raw) return { ...DEFAULT_MATCH_TIMES, breaks, start };
   return {
     breaks,
+    start,
     mode: raw.mode === 'times' ? 'times' : 'asap',
     rounds: Object.fromEntries(Object.entries(raw.rounds ?? {}).map(([r, at]) => [r, hhmmOf(at)])),
     vetoLeadMinutes: typeof raw.vetoLeadMinutes === 'number' ? raw.vetoLeadMinutes : 5,
@@ -87,22 +102,20 @@ export function matchTimesFormOf(settings: Untrusted): MatchTimesForm {
   };
 }
 
-/** `settings.matchTimes` for saving: each "12:00" on `day` (the tournament's start, else today). */
-export function matchTimesSetting(form: MatchTimesForm, startsAt: string | null | undefined) {
-  const day = startsAt && Number.isFinite(Date.parse(startsAt)) ? new Date(startsAt) : new Date();
-  const rounds: Record<string, string> = {};
-  for (const [round, hhmm] of Object.entries(form.rounds)) {
-    const m = /^(\d{1,2}):(\d{2})$/.exec(hhmm);
-    if (!m) continue;
-    const at = new Date(day);
-    at.setHours(Number(m[1]), Number(m[2]), 0, 0);
-    rounds[round] = at.toISOString();
-  }
+/**
+ * What the Schedule step saves: `settings.matchTimes` (each round's time on
+ * its own day), and the start, auto-start, reminders and days (startForm.ts).
+ */
+export function scheduleSettings(form: MatchTimesForm) {
+  const { roundsIso, ...start } = startSettings(form.start, form.rounds, form.mode === 'times');
   return {
-    mode: form.mode,
-    rounds,
-    vetoLeadMinutes: form.vetoLeadMinutes,
-    reminderMinutes: form.reminderMinutes,
+    ...start,
+    matchTimes: {
+      mode: form.mode,
+      rounds: roundsIso,
+      vetoLeadMinutes: form.vetoLeadMinutes,
+      reminderMinutes: form.reminderMinutes,
+    },
   };
 }
 
@@ -136,9 +149,54 @@ export function ScheduleStep({
   const set = (patch: Partial<MatchTimesForm>) => onChange({ ...value, ...patch });
   const roundName = (n: number) =>
     elimination ? getRoundLabel(n, rounds) : t('schedulePage.roundN', { n });
+  const start = value.start;
+  const days = daysOf(start);
+  const setStart = (next: StartForm) => set({ start: next });
+  const startTime = value.mode === 'times' ? (value.rounds['1'] ?? '') : start.startTime;
+  const tagOf = (n: number) => {
+    if (n === 1) return t('tournament.setup.schedule.startsTournament');
+    return roundDayOf(start, n) === roundDayOf(start, n - 1)
+      ? t('tournament.setup.schedule.sameDay')
+      : t('tournament.setup.schedule.newDay');
+  };
+  /** A round (or the start): its name and tag, its day and its time. */
+  const roundRow = (
+    key: string,
+    name: string,
+    tag: string,
+    accent: boolean,
+    day: string,
+    onDay: (day: string) => void,
+    time: string,
+    onTime: (time: string) => void
+  ) => (
+    <Box key={key} component="li" sx={row} data-testid={`setup-round-row-${key}`}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+        <Typography sx={{ fontWeight: 600 }}>{name}</Typography>
+        <Typography variant="caption" sx={{ color: accent ? color.accent : color.ink2 }}>
+          {tag}
+        </Typography>
+      </Box>
+      <RoundDaySelect
+        days={days}
+        value={day}
+        onChange={onDay}
+        label={t('tournament.setup.schedule.dayLabel')}
+        disabled={disabled}
+        testId={`setup-round-${key}-day`}
+      />
+      <TimeField
+        label={t('tournament.setup.schedule.startsLabel')}
+        value={time}
+        onChange={onTime}
+        disabled={disabled}
+        testId={`setup-round-${key}-time`}
+      />
+    </Box>
+  );
   const row = {
     display: 'grid',
-    gridTemplateColumns: { xs: 'minmax(0, 1fr) 130px', sm: 'minmax(0, 1fr) 150px 140px' },
+    gridTemplateColumns: { xs: 'minmax(0, 1fr)', sm: 'minmax(0, 1fr) auto auto' },
     gap: 1.5,
     alignItems: 'center',
     px: 2,
@@ -278,49 +336,57 @@ export function ScheduleStep({
       />
       <Typography variant="body2" color="text.secondary">
         {value.mode === 'times'
-          ? t('tournament.setup.schedule.timesNote')
-          : t('schedulePage.modeAsapNote')}
+          ? t('tournament.setup.schedule.modeTimesNote')
+          : t('tournament.setup.schedule.modeAsapNote')}
       </Typography>
+      {value.mode === 'asap' && (
+        <Box component="ol" sx={{ listStyle: 'none', m: 0, p: 0 }}>
+          {roundRow(
+            'start',
+            t('tournament.setup.schedule.tournamentStarts'),
+            t('tournament.setup.schedule.startsTournament'),
+            true,
+            start.firstDay,
+            (day) => setStart({ ...start, firstDay: day }),
+            start.startTime,
+            (time) => setStart({ ...start, startTime: time })
+          )}
+        </Box>
+      )}
+      {value.mode === 'asap' && (
+        <ScheduleStart
+          value={start}
+          onChange={setStart}
+          startTime={startTime}
+          disabled={disabled}
+        />
+      )}
       {value.mode === 'times' && (
         <>
           <Box
             component="ol"
             sx={{ listStyle: 'none', m: 0, p: 0, display: 'flex', flexDirection: 'column', gap: 1 }}
           >
-            {Array.from({ length: rounds }, (_, i) => i + 1).map((n) => (
-              <Box key={n} component="li" sx={row}>
-                <Typography sx={{ fontWeight: 600 }}>{roundName(n)}</Typography>
-                <Typography
-                  component="label"
-                  htmlFor={`setup-round-${n}`}
-                  sx={{
-                    display: { xs: 'none', sm: 'block' },
-                    textAlign: 'right',
-                    fontSize: '0.875rem',
-                    color: color.ink2,
-                  }}
-                >
-                  {t('schedulePage.roundStartsAt')}
-                </Typography>
-                <TextField
-                  id={`setup-round-${n}`}
-                  type="time"
-                  size="small"
-                  value={value.rounds[String(n)] ?? ''}
-                  disabled={disabled}
-                  onChange={(e) =>
-                    set({ rounds: { ...value.rounds, [String(n)]: e.target.value } })
-                  }
-                  slotProps={{
-                    htmlInput: {
-                      'aria-label': t('schedulePage.roundTimeLabel', { round: roundName(n) }),
-                      'data-testid': `setup-round-${n}-time`,
-                    },
-                  }}
-                />
-              </Box>
-            ))}
+            {Array.from({ length: rounds }, (_, i) => i + 1).map((n) =>
+              roundRow(
+                String(n),
+                roundName(n),
+                tagOf(n),
+                n === 1,
+                roundDayOf(start, n),
+                (day) =>
+                  setStart({ ...start, roundDays: { ...start.roundDays, [String(n)]: day } }),
+                value.rounds[String(n)] ?? '',
+                (time) => set({ rounds: { ...value.rounds, [String(n)]: time } })
+              )
+            )}
           </Box>
+          <ScheduleStart
+            value={start}
+            onChange={setStart}
+            startTime={startTime}
+            disabled={disabled}
+          />
           {(
             [
               ['veto', 'vetoLeadMinutes', [5, 10, 0]],
