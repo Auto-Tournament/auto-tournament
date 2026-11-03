@@ -1,9 +1,9 @@
 {
   "compatPage": {
     "title": "Ready Up-kompatibilitet",
-    "subtitle": "Om Ready Up-programtilleggene fungerer med den nyeste Counter-Strike 2-oppdateringen, sjekket automatisk for hver ny CS2-build.",
+    "subtitle": "Viser om Ready Up-programtilleggene fungerer med den nyeste oppdateringen av Counter-Strike 2. Det sjekkes automatisk for hver ny CS2-build.",
     "live": "Direkte",
-    "offline": "Kobler til på nytt…",
+    "offline": "Kobler til på nytt …",
     "loading": "Laster kompatibilitet",
     "loadError": "Kunne ikke laste kompatibiliteten. Prøv igjen om litt.",
     "disabledTitle": "Ikke tilgjengelig her",
@@ -23,7 +23,7 @@
       "pass": "Kompatibel",
       "warn": "Kompatibel, med advarsler",
       "fail": "Ikke kompatibel",
-      "checking": "Sjekker…",
+      "checking": "Sjekker …",
       "no_verdict": "Ingen konklusjon"
     },
     "overallHint": {
@@ -38,7 +38,7 @@
       "warn": "Advarsel",
       "fail": "Feilet",
       "pending": "Venter",
-      "checking": "Sjekker…"
+      "checking": "Sjekker …"
     },
     "stage": {
       "static": "Statisk analyse",
@@ -57,7 +57,7 @@
       "build_change": "Ny CS2-build",
       "surface_change": "Spilldata endret",
       "code_change": "Endring i Ready Up",
-      "nightly": "Nattlig",
+      "nightly": "Hver natt",
       "release": "Ready Up-utgivelse",
       "manual": "Manuell"
     },

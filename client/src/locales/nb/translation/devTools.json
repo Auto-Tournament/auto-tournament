@@ -8,8 +8,8 @@
     },
     "testTeams": {
       "title": "Testlag",
-      "description": "Opprett lag med tilfeldige spillerdata for å teste turneringsbracketer og kamper.",
-      "success": "Opprettet {{count}} testlag!",
+      "description": "Opprett lag med tilfeldige spillerdata for å teste turneringstrær og kamper.",
+      "success": "Opprettet {{count}} testlag",
       "errors": {
         "create": "Kunne ikke opprette testlag",
         "partial": "Opprettet {{created}} lag, men {{failed}} feilet. Sjekk konsollen for detaljer."
@@ -23,7 +23,7 @@
     "testPlayers": {
       "title": "Testspillere",
       "description": "Opprett spillere med ELO-rating for å teste shuffle-turneringer og spilleradministrasjon.",
-      "success": "Opprettet {{created}} testspillere!",
+      "success": "Opprettet {{created}} testspillere",
       "errors": {
         "create": "Kunne ikke opprette testspillere",
         "partial": "Opprettet {{created}} spiller(e), oppdaterte {{updated}}, men {{failed}} feilet. Sjekk konsollen for detaljer."
@@ -33,12 +33,12 @@
         "createFixed": "Opprett {{count}} spillere",
         "createCustom": "Opprett spillere"
       },
-      "successWithUpdated": "Opprettet {{created}} og oppdaterte {{updated}} testspillere!"
+      "successWithUpdated": "Opprettet {{created}} og oppdaterte {{updated}} testspillere"
     },
     "testServers": {
       "title": "Testservere",
       "description": "Opprett testservere du kan prøve kamphåndtering mot.",
-      "success": "Opprettet {{count}} testserver(e)!",
+      "success": "Opprettet {{count}} testserver(e)",
       "errors": {
         "create": "Kunne ikke opprette testservere",
         "partial": "Opprettet {{created}} server(e), men {{failed}} feilet. Sjekk konsollen for detaljer."
@@ -57,15 +57,15 @@
       "title": "Slett testdata",
       "description": "Slett all testdata (lag og servere med prefikset «test-»). Denne handlingen kan ikke angres.",
       "button": "Slett all testdata",
-      "confirmPrompt": "Er du sikker på at du vil slette ALL testdata?",
-      "success": "All testdata ble slettet!",
+      "confirmPrompt": "Er du sikker på at du vil slette all testdata?",
+      "success": "All testdata er slettet",
       "error": "Kunne ikke slette testdata"
     },
     "wipeTable": {
       "title": "Tøm bestemte tabeller",
       "description": "Slett alle data fra en bestemt tabell. Nyttig for å rydde opp uten å nullstille alt. Tabeller er organisert etter kategori.",
-      "confirmPrompt": "Er du sikker på at du vil tømme tabellen {{table}}? Dette vil slette alle data i tabellen.",
-      "success": "Tabellen {{table}} ble tømt!",
+      "confirmPrompt": "Er du sikker på at du vil tømme tabellen {{table}}? Alle dataene i tabellen blir slettet.",
+      "success": "Tabellen {{table}} er tømt",
       "error": "Kunne ikke tømme tabellen {{table}}",
       "core": {
         "title": "Kjernetabeller",
@@ -100,17 +100,17 @@
     },
     "simulation": {
       "title": "Simuleringsstatus",
-      "description": "Slett alle kamper og historisk statistikk, slik at du kan klikke «Start turnering» i simuleringsmodus på en rent turneringstre, samtidig som servere, lag, kart og gjeldende turneringsoppsett beholdes.",
+      "description": "Sletter alle kamper og all statistikk, så du kan trykke på «Start turnering» i simuleringsmodus med et rent turneringstre. Servere, lag, kart og turneringsoppsettet beholdes.",
       "button": "Tilbakestill simuleringsstatus (behold oppsett)",
       "reset": {
-        "success": "Simuleringsstatus tilbakestilt. Kamper og statistikk er slettet, og servere, lag og turneringsoppsett er beholdt.",
+        "success": "Simuleringen er tilbakestilt. Kamper og statistikk er slettet, og servere, lag og turneringsoppsettet er beholdt.",
         "error": "Kunne ikke tilbakestille simuleringsstatus"
       }
     },
     "wipeDatabase": {
       "title": "Slett hele databasen",
-      "warningTitle": "EKSTREMT DESTRUKTIVT!",
-      "warningBody": "Dette sletter ALLE data.",
+      "warningTitle": "Dette kan ikke angres",
+      "warningBody": "Alle data blir slettet.",
       "permanentlyDeletes": "Sletter for godt:",
       "items": {
         "tournaments": "Alle turneringer og turneringstrær",
@@ -119,21 +119,21 @@
         "servers": "Alle serverkonfigurasjoner"
       },
       "button": "Slett hele databasen",
-      "successRedirect": "Databasen ble slettet! Sender deg videre...",
+      "successRedirect": "Databasen er slettet. Sender deg videre …",
       "error": "Kunne ikke slette databasen",
       "dialog": {
         "title": "Bekreft sletting av database",
         "areYouSure": "Er du helt sikker?",
-        "actionWill": "Denne handlingen vil",
-        "permanentlyDelete": "slette permanent",
+        "actionWill": "Dette vil",
+        "permanentlyDelete": "slette for godt",
         "items": {
           "tournaments": "Alle turneringsdata og turneringstrær",
           "matches": "All kamphistorikk og hendelser",
           "teams": "Alle lag og spillerkonfigurasjoner",
           "servers": "Alle serverkonfigurasjoner"
         },
-        "cannotUndo": "Denne handlingen kan ikke angres!",
-        "wiping": "Sletter database...",
+        "cannotUndo": "Dette kan ikke angres.",
+        "wiping": "Sletter databasen …",
         "yesWipe": "Ja, slett alt"
       }
     }
