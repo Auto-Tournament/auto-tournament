@@ -1779,6 +1779,28 @@
     "ready": "Ready",
     "checkedIn": "Checked in",
     "notYet": "Not yet",
-    "rule": "Not checked in at the start: a starter is swapped for a sub, and the match room says who. No sub left, the team plays a player short."
+    "rule": "Not checked in at the start: a starter is swapped for a sub, and the match room says who. No sub left, the team plays a player short.",
+    "server": {
+      "eyebrow": "Server ready · full team by {{time}}",
+      "eyebrowNoTime": "Server ready",
+      "title": "Get your team on the server",
+      "bodyOut": "{{out}} didn't check in, so a sub plays instead.",
+      "body": "{{size}} of you need to be on the server before the timer runs out. Subs count.",
+      "clockLabel": "Full team needed in",
+      "count": "{{on}} of {{size}} on the server",
+      "onServer": "On the server",
+      "joining": "Joining…",
+      "subIn": "SUB IN",
+      "out": "OUT",
+      "swapped": "Swapped for a sub",
+      "rule": "At 0:00, the team that's complete chooses: take the walkover, or play against the short team. Both teams short: an admin decides."
+    },
+    "choice": {
+      "eyebrow": "{{team}} is still short",
+      "title": "{{team}} has {{on}} of {{size}} on the server",
+      "body": "Their time is up. Take the walkover and go through, or play them anyway. Either captain can choose. No choice in 2 minutes: the walkover stands.",
+      "take": "Take the walkover",
+      "play": "Play them anyway"
+    }
   }
 }

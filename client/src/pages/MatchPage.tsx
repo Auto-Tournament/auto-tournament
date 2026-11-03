@@ -34,6 +34,7 @@ import { LineupPanel } from '../components/match/LineupPanel';
 import { MatchChatPanel } from '../components/match/MatchChatPanel';
 import { CommendPanel } from '../components/match/CommendPanel';
 import { MatchCheckInPanel } from '../components/match/MatchCheckInPanel';
+import { MatchFullTeamPanel } from '../components/match/MatchFullTeamPanel';
 import { MapTile, TeamLogo, panel } from '../components/tournament/ui/draftUi';
 
 type MatchResponse = PublicMatch &
@@ -434,6 +435,7 @@ export default function MatchPage() {
                 />
               )}
               {matchIsOn && <MatchCheckInPanel matchSlug={match.slug} teamId={viewerTeamId} />}
+              {matchIsOn && <MatchFullTeamPanel matchSlug={match.slug} teamId={viewerTeamId} />}
               {matchIsOn && <LineupPanel matchSlug={match.slug} teamId={viewerTeamId} />}
               {ReportPanel && <ReportPanel matchSlug={match.slug} matchStatus={match.status} />}
               {ReportPanel && matchIsOn && <CaptainsPanel teamId={viewerTeamId} />}

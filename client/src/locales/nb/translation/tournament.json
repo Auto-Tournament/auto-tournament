@@ -1780,6 +1780,28 @@
     "ready": "Klar",
     "checkedIn": "Sjekket inn",
     "notYet": "Ikke ennå",
-    "rule": "Ikke sjekket inn ved start: startspilleren byttes ut med en innbytter, og kamprommet viser hvem. Er det ingen innbyttere igjen, spiller laget med én spiller mindre."
+    "rule": "Ikke sjekket inn ved start: startspilleren byttes ut med en innbytter, og kamprommet viser hvem. Er det ingen innbyttere igjen, spiller laget med én spiller mindre.",
+    "server": {
+      "eyebrow": "Serveren er klar · fullt lag seinest {{time}}",
+      "eyebrowNoTime": "Serveren er klar",
+      "title": "Få laget ditt inn på serveren",
+      "bodyOut": "{{out}} sjekket ikke inn, så en innbytter spiller i stedet.",
+      "body": "{{size}} av dere må være på serveren før tiden går ut. Innbyttere teller med.",
+      "clockLabel": "Tid igjen til fullt lag",
+      "count": "{{on}} av {{size}} på serveren",
+      "onServer": "På serveren",
+      "joining": "Kobler til",
+      "subIn": "INNBYTTER INN",
+      "out": "UTE",
+      "swapped": "Byttet ut med en innbytter",
+      "rule": "Når tiden er ute, velger laget som er fullt: ta walkover eller spill mot laget som mangler spillere. Mangler begge lagene spillere, bestemmer en admin."
+    },
+    "choice": {
+      "eyebrow": "{{team}} mangler fortsatt spillere",
+      "title": "{{team}} har {{on}} av {{size}} på serveren",
+      "body": "Tiden deres er ute. Ta walkover og gå videre, eller spill mot dem likevel. Hver av kapteinene kan velge. Velger ingen innen to minutter, står walkoveren.",
+      "take": "Ta walkover",
+      "play": "Spill likevel"
+    }
   }
 }
