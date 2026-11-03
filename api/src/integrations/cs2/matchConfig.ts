@@ -1,5 +1,5 @@
 import { gotvCvars } from './gotv';
-import { defaultAgentsOn, storedCs2Settings } from './tournamentSettings';
+import { storedCs2Settings, tournamentMatchRules } from './tournamentSettings';
 import { db } from '../../config/database';
 import type { DbTeamRow, DbMatchRow } from '../../types/database.types';
 import type { TournamentResponse } from '../../types/tournament.types';
@@ -61,6 +61,23 @@ function resolveMaxRounds(tournament: TournamentResponse): number {
     typeof parsed === 'number' && Number.isFinite(parsed) && parsed > 0 ? parsed : 24;
 
   return maxRounds;
+}
+
+/** The tournament's own Ready Up rules as match config fields. */
+function ruleFields(cs2: Parameters<typeof tournamentMatchRules>[0]): Partial<MatchConfig> {
+  const r = tournamentMatchRules(cs2);
+  return {
+    ...(Object.keys(r.overrides).length ? { rule_overrides: r.overrides } : {}),
+    ...(r.teamReady !== undefined ? { team_ready: r.teamReady } : {}),
+    ...(r.giveUpVote !== undefined ? { gg_vote: r.giveUpVote } : {}),
+  };
+}
+
+/** A side for a map nobody picked one for, the same on every read (seeded by the match and map). */
+export function drawnSide(slug: string, mapIndex: number): 'team1_ct' | 'team2_ct' {
+  let h = mapIndex + 1;
+  for (const c of slug) h = (h * 31 + c.charCodeAt(0)) >>> 0;
+  return h % 2 === 0 ? 'team1_ct' : 'team2_ct';
 }
 
 export interface GenerateMatchConfigOptions {
@@ -303,6 +320,10 @@ export const generateMatchConfig = async (
     ) as Array<'team1_ct' | 'team2_ct' | 'knife'>;
   }
 
+  // No knife round (the tournament's setting, off in esports): a side the veto left open is drawn.
+  if (!tournamentMatchRules(storedCs2Settings(tournament.settings)).knifeRound)
+    map_sides = map_sides.map((side, i) => (side === 'knife' ? drawnSide(slug ?? '', i) : side));
+
   const fillBots = storedCs2Settings(tournament.settings)?.fillTeamsWithBots === true;
   const simulation = !fillBots && (await getSimulationFlag());
   const simulationTimescale = simulation ? await getSimulationTimescale() : undefined;
@@ -388,7 +409,7 @@ export const generateMatchConfig = async (
       : { name: 'TBD', tag: 'TBD', players: {}, series_score: 0 },
     ...(fillBots ? { bot_fill: true } : {}),
     ...(storedCs2Settings(tournament.settings)?.esportsMode === true ? { esports: true } : {}),
-    ...(defaultAgentsOn(storedCs2Settings(tournament.settings)) ? { default_agents: true } : {}),
+    ...ruleFields(storedCs2Settings(tournament.settings)),
     simulation,
     simulation_timescale: simulation ? (simulationTimescale ?? 1) : undefined,
   };
@@ -598,7 +619,7 @@ async function generateShuffleMatchConfig(
       : { name: 'TBD', tag: 'TBD', players: {}, series_score: 0 },
     ...(fillBots ? { bot_fill: true } : {}),
     ...(storedCs2Settings(tournament.settings)?.esportsMode === true ? { esports: true } : {}),
-    ...(defaultAgentsOn(storedCs2Settings(tournament.settings)) ? { default_agents: true } : {}),
+    ...ruleFields(storedCs2Settings(tournament.settings)),
     simulation,
     simulation_timescale: simulation ? (simulationTimescale ?? 1) : undefined,
   };

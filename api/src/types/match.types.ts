@@ -101,8 +101,12 @@ export interface MatchConfig {
   bot_fill?: boolean;
   /** Esports mode: Ready Up's `valve` ruleset (no skins, Valve rules). */
   esports?: boolean;
-  /** Everyone plays the default agents (Ready Up's `default_models` rule). */
-  default_agents?: boolean;
+  /** The tournament's own Ready Up rules (tournamentSettings.ts tournamentMatchRules): ruleset keys. */
+  rule_overrides?: Record<string, number | string | boolean>;
+  /** One player's .ready readies their team, when the tournament says (else the site's). */
+  team_ready?: boolean;
+  /** The give-up vote (.gg), when the tournament says (else the site's at_gg_enabled). */
+  gg_vote?: boolean;
   /**
    * Optional list of Steam64 IDs that should always have in‑game admin rights
    * for this match. This is attached automatically for tournament and manual
