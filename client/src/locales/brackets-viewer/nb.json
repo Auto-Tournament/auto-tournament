@@ -1,13 +1,13 @@
 {
   "origin-hint": {
     "seed": "Seed {{position}}",
-    "winner-bracket": "Taper av $t(abbreviations.winner-bracket) {{round}}.{{position}}",
-    "winner-bracket-semi-final": "Taper av $t(abbreviations.winner-bracket) semifinale {{position}}",
-    "winner-bracket-final": "Taper av $t(abbreviations.winner-bracket) finale",
-    "consolation-final": "Taper av semifinale {{position}}",
-    "grand-final": "Vinner av $t(abbreviations.loser-bracket) finale",
-    "double-elimination-consolation-final-opponent-1": "Taper av $t(abbreviations.loser-bracket) semifinale 1",
-    "double-elimination-consolation-final-opponent-2": "Taper av $t(abbreviations.loser-bracket) finale"
+    "winner-bracket": "Taper i $t(abbreviations.winner-bracket) {{round}}.{{position}}",
+    "winner-bracket-semi-final": "Taper i $t(abbreviations.winner-bracket)-semifinale {{position}}",
+    "winner-bracket-final": "Taper i $t(abbreviations.winner-bracket)-finalen",
+    "consolation-final": "Taper i semifinale {{position}}",
+    "grand-final": "Vinner av $t(abbreviations.loser-bracket)-finalen",
+    "double-elimination-consolation-final-opponent-1": "Taper i $t(abbreviations.loser-bracket)-semifinale 1",
+    "double-elimination-consolation-final-opponent-2": "Taper i $t(abbreviations.loser-bracket)-finalen"
   },
   "match-label": {
     "default": "Kamp {{matchNumber}}",
@@ -17,11 +17,11 @@
     "standard-bracket-semi-final": "Semifinale {{matchNumber}}",
     "standard-bracket-final": "Finale",
     "double-elimination": "{{matchPrefix}} {{roundNumber}}.{{matchNumber}}",
-    "double-elimination-semi-final": "{{matchPrefix}} semifinale {{matchNumber}}",
-    "double-elimination-final": "{{matchPrefix}} finale",
+    "double-elimination-semi-final": "{{matchPrefix}}-semifinale {{matchNumber}}",
+    "double-elimination-final": "{{matchPrefix}}-finale",
     "consolation-final": "Bronsefinale",
     "grand-final-single": "Storfinale",
-    "grand-final": "$t(abbreviations.grand-final) runde {{roundNumber}}",
+    "grand-final": "$t(abbreviations.grand-final)-runde {{roundNumber}}",
     "match-game": "Kart {{gameNumber}}"
   },
   "match-status": {
@@ -92,16 +92,16 @@
   "common": {
     "bye": "BYE",
     "best-of-x": "Bo{{x}}",
-    "consolation": "Trøstefinale",
+    "consolation": "Bronsefinale",
     "group-name": "Gruppe {{groupNumber}}",
     "group-name-winner-bracket": "Vinnerbracket",
     "group-name-loser-bracket": "Taperbracket",
     "round-name": "Runde {{roundNumber}}",
     "round-name-final": "Finalerunde",
-    "round-name-winner-bracket": "$t(abbreviations.winner-bracket) runde {{roundNumber}}",
-    "round-name-winner-bracket-final": "$t(abbreviations.winner-bracket) finalerunde",
-    "round-name-loser-bracket": "$t(abbreviations.loser-bracket) runde {{roundNumber}}",
-    "round-name-loser-bracket-final": "$t(abbreviations.loser-bracket) finalerunde"
+    "round-name-winner-bracket": "$t(abbreviations.winner-bracket)-runde {{roundNumber}}",
+    "round-name-winner-bracket-final": "$t(abbreviations.winner-bracket)-finalerunde",
+    "round-name-loser-bracket": "$t(abbreviations.loser-bracket)-runde {{roundNumber}}",
+    "round-name-loser-bracket-final": "$t(abbreviations.loser-bracket)-finalerunde"
   },
   "form-creator": {
     "stage-name-label": "Gi fasen et navn",
@@ -114,7 +114,7 @@
     "group-label": "Hvor mange grupper?",
     "group-placeholder": "Hvor mange grupper vil du ha?",
     "seed-order-label": "Hvordan vil du sortere seedingen?",
-    "double-elimination-seed-order-placeholder": "Seedingrekkefølge for dobbel eliminering, kommaseparert",
+    "double-elimination-seed-order-placeholder": "Seedingrekkefølge for dobbel eliminasjon, kommaseparert",
     "round-robin-mode-label": "Hvilken round robin-modus vil du bruke?",
     "consolation-final-label": "Bronsefinale",
     "skip-first-round-label": "Hopp over første runde",
