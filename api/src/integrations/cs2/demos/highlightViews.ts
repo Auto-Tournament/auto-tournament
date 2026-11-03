@@ -744,11 +744,9 @@ const REEL_PER_PLAYER = 2;
 
 /**
  * The tournament reel's plays, in the order they show (pure: tested on its
- * own). At least one of each kind there is: the aces, then the best 4Ks,
- * clutches, flair (one-taps, wallbangs, through smoke) and two funny ones;
- * filled up with the best of the rest. No player more than twice. It builds
- * up: the smaller plays first, the funny ones a third and two thirds in, the
- * best play last.
+ * own). At least one of each kind there is: the aces, then the best 4Ks and
+ * clutches; filled up with the best of the rest. No player more than twice, and no funny moments: they are
+ * no play. It builds up: the smaller plays first, the best play last.
  */
 export function pickTournamentReel(
   candidates: ReelCandidate[],
@@ -777,19 +775,9 @@ export function pickTournamentReel(
   of((c) => c.kind === 'ace', max);
   of((c) => c.kind === '4k', 4);
   of((c) => c.clutch, 3);
-  of((c) => c.kind === 'flair', 2);
-  of((c) => c.kind === 'funny', 2);
   of((c) => c.kind !== 'funny', max);
 
-  const funny = chosen.filter((c) => c.kind === 'funny');
-  const rest = chosen
-    .filter((c) => c.kind !== 'funny')
-    .sort((a, b) => a.score - b.score || a.id - b.id);
-  funny.forEach((c, i) => {
-    const at = Math.round(((i + 1) * rest.length) / (funny.length + 1));
-    rest.splice(Math.min(at, Math.max(0, rest.length - 1)), 0, c);
-  });
-  return rest.map((c) => c.id);
+  return chosen.sort((a, b) => a.score - b.score || a.id - b.id).map((c) => c.id);
 }
 
 /** Queue the reel of a tournament that is over, once everything of it is recorded. */

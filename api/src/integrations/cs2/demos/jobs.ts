@@ -440,8 +440,9 @@ async function completeDemoJobNow(job: DemoJob, analysis: DemoAnalysisPayload): 
   );
   const rounds = (analysis.rounds ?? []).map((r) => r.number).filter((r) => Number.isFinite(r));
   // Highlights turned off for this match or its tournament: none (the map's pending ones go too).
-  // A matchmaking match: its best few, within the admin's budget for the whole match.
-  const { highlightPlan, withinBudget } = await import('./highlightPolicy');
+  // A matchmaking match: its best few, within the admin's budget for the whole match. Any other:
+  // every play of the smallest play or bigger.
+  const { highlightPlan, withinBudget, bigPlaysOnly } = await import('./highlightPolicy');
   const plan = await highlightPlan(job.matchSlug);
   let moments = plan.record ? pickMoments(analysis, perPlayer, funny) : [];
   if (plan.budget) {
@@ -451,6 +452,8 @@ async function completeDemoJobNow(job: DemoJob, analysis: DemoAnalysisPayload): 
       [job.matchSlug, job.mapNumber]
     );
     moments = withinBudget(moments, plan.budget, others?.n ?? 0);
+  } else if (plan.minimum) {
+    moments = bigPlaysOnly(moments, plan.minimum);
   }
   await saveMoments(
     job.matchSlug,

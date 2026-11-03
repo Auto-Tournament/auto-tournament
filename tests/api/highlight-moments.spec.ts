@@ -19,7 +19,7 @@ import {
   stageLabel,
 } from '../../api/src/integrations/cs2/demos/highlights';
 import { pickTournamentReel } from '../../api/src/integrations/cs2/demos/highlightViews';
-import { withinBudget } from '../../api/src/integrations/cs2/demos/highlightPolicy';
+import { bigPlaysOnly, withinBudget } from '../../api/src/integrations/cs2/demos/highlightPolicy';
 import { MM_CLIPS, oneOf } from '../../api/src/services/highlights/settings';
 
 /**
@@ -259,17 +259,11 @@ test.describe('Highlight moments', () => {
       c(1, 'p1', 'ace', 400),
       c(2, 'p2', '4k', 200),
       c(3, 'p2', '3k', 120, true),
-      c(4, 'p3', 'flair', 45),
       c(5, 'p4', 'funny', 35),
       c(6, 'p5', '2k', 40),
-      c(7, 'p5', 'flair', 31),
     ]);
-    expect(ids).toHaveLength(7);
-    expect(ids[ids.length - 1]).toBe(1);
-    // Funny lands inside, not at an end.
-    const at = ids.indexOf(5);
-    expect(at).toBeGreaterThan(0);
-    expect(at).toBeLessThan(ids.length - 1);
+    // Smallest first, the best play last; funny moments are no play.
+    expect(ids).toEqual([6, 3, 2, 1]);
     // No player more than twice.
     const many = pickTournamentReel(
       Array.from({ length: 10 }, (_, i) => c(100 + i, 'same', '3k', 100 + i))
@@ -278,11 +272,11 @@ test.describe('Highlight moments', () => {
     // At least one of each kind there is, even when the rest score higher.
     const kinds = pickTournamentReel([
       ...Array.from({ length: 20 }, (_, i) => c(200 + i, `p${i}`, '3k', 150 + i)),
-      c(300, 'q1', 'flair', 31),
       c(301, 'q2', 'funny', 35),
       c(302, 'q3', '2k', 60, true),
     ]);
-    expect(kinds).toEqual(expect.arrayContaining([300, 301, 302]));
+    expect(kinds).toContain(302);
+    expect(kinds).not.toContain(301);
   });
 
   test('the tournament reel follows its size settings', { tag: ['@api'] }, () => {
@@ -471,6 +465,35 @@ test('a matchmaking match keeps only its best plays, within its budget', { tag: 
   ]);
   // 0 clips: every play that qualifies.
   expect(withinBudget(picks, { clips: 0, minKills: 2, clutch: false }, 9)).toHaveLength(4);
+});
+
+test('any other match keeps every big play, and its funny moments', { tag: ['@api'] }, () => {
+  const m = (score: number, kills: number, kind = `${kills}k`, clutch = false): Moment => ({
+    playerId: A,
+    kind,
+    score,
+    round: 1,
+    startTick: score,
+    endTick: score + 1,
+    slowmoTick: score,
+    killTicks: Array.from({ length: kills }, (_, i) => i),
+    title: '',
+    clutch,
+  });
+  const picks = [
+    m(90, 4),
+    m(40, 2),
+    m(35, 1, 'flair'),
+    m(60, 1, 'clutch', true),
+    m(30, 1, 'funny'),
+  ];
+  // A 2k and a single wallbang are no highlight at 3 kills; the clutch and the funny one stay.
+  expect(bigPlaysOnly(picks, { minKills: 3, clutch: true }).map((p) => p.score)).toEqual([
+    90, 60, 30,
+  ]);
+  expect(bigPlaysOnly(picks, { minKills: 2, clutch: false }).map((p) => p.score)).toEqual([
+    90, 40, 30,
+  ]);
 });
 
 test('an unset matchmaking clip count is the default, not "all"', { tag: ['@api'] }, () => {
