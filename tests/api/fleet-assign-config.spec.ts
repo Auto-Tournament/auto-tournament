@@ -6,6 +6,7 @@ import {
   diffAssignConfig,
   engineCvars,
   generateMatchPassword,
+  mergePatch,
   rulesFromMatchConfig,
   pausesOnDisconnect,
   rostersFull,
@@ -517,4 +518,54 @@ test('mixed bot fill retains human rosters, team size and real time', () => {
     expect(() =>
       rulesFromMatchConfig(tournamentConfig({ bot_fill: true, players_per_team: size }))
     ).toThrow(AssignConfigError);
+});
+
+test('merge patch: changed keys, null for removed ones, nothing when equal', () => {
+  expect(mergePatch({ a: 1, b: { c: 2 } }, { a: 1, b: { c: 2 } })).toBeUndefined();
+  expect(mergePatch({ a: 1 }, { a: 2 })).toEqual({ a: 2 });
+  expect(mergePatch({ a: 1, b: 2 }, { a: 1 })).toEqual({ b: null });
+  expect(mergePatch({ a: { x: 1, y: 2 } }, { a: { x: 1 } })).toEqual({ a: { y: null } });
+  expect(mergePatch({}, { a: { x: 1 } })).toEqual({ a: { x: 1 } });
+  expect(mergePatch({ a: [1, 2] }, { a: [1] })).toEqual({ a: [1] });
+});
+
+test('the full-team timer and the walkover choice reach a running match as set_rules', () => {
+  const config = buildAssignConfig(tournamentConfig(), 'pw');
+  const timer = {
+    ...config,
+    rules: { ...config.rules, full_team: { deadline_ms: 1_000_000, walkover: null } },
+  };
+  const open = {
+    ...config,
+    rules: {
+      ...config.rules,
+      full_team: {
+        deadline_ms: 1_000_000,
+        walkover: { short: 'team2' as const, expires_ms: 1_120_000, choosers: [STEAM(1)] },
+      },
+    },
+  };
+  const done = {
+    ...config,
+    rules: { ...config.rules, full_team: { deadline_ms: 0, walkover: null } },
+  };
+  const opened = diffAssignConfig(timer, open);
+  expect(opened).toEqual([
+    { op: 'set_rules', rules: { full_team: { walkover: open.rules.full_team.walkover } } },
+  ]);
+  expect(diffAssignConfig(open, done)).toEqual([
+    { op: 'set_rules', rules: { full_team: { deadline_ms: 0, walkover: null } } },
+  ]);
+  expect(diffAssignConfig(open, open)).toEqual([]);
+  // Only the rules a running match follows: demo upload stays as the assign set it.
+  const noUpload = { ...open, rules: { ...open.rules, demo: { record: true, upload: false } } };
+  expect(diffAssignConfig(open, noUpload)).toEqual([]);
+  for (const ops of [opened, diffAssignConfig(open, done)]) {
+    const update = { match_id: 'r1m1', epoch: 1, base_config_rev: 1, config_rev: 2, ops };
+    expect(validatePayload('match.update', update)).toEqual({ ok: true, errors: [] });
+  }
+  expect(validatePayload('match.assign', { match_id: 'r1m1', epoch: 1, config: open })).toEqual({
+    ok: true,
+    errors: [],
+  });
 });

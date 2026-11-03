@@ -3,7 +3,8 @@
  * the match room): once a tournament match is loaded, each team has that long
  * to have a full team on the server, subs included. Then:
  * - one team short: the match holds while the complete team's captain
- *   chooses, in game (`.walkover` / `.play`, chatBridge.ts) or on the match
+ *   chooses, in game (the HUD's buttons or `.walkover` / `.play`: Ready Up
+ *   sends `event.walkover_choice`, driver.ts) or on the match
  *   page (POST /api/match-check-in/:slug/walkover): take the walkover, or
  *   play them short. No choice in two minutes: the walkover stands.
  * - both short: the match holds until an admin decides (Needs you). Once
@@ -150,7 +151,7 @@ async function tick(): Promise<void> {
       }
     };
     void say(
-      `${name(side)} is short. Captain of ${name(side === 'team1' ? 'team2' : 'team1')}: type .walkover to win, or .play to play them short. ${CHOICE_S / 60} minutes, then the walkover stands.`
+      `${name(side)} is short. Captain of ${name(side === 'team1' ? 'team2' : 'team1')}: choose on screen (or type .walkover / .play). ${CHOICE_S / 60} minutes, then the walkover stands.`
     );
   }
   for (const key of [...sent.keys()]) if (!seen.has(key)) sent.delete(key);

@@ -695,11 +695,19 @@ export async function unassignAll(
  */
 async function withHold(matchSlug: string, config: AssignConfig): Promise<AssignConfig> {
   const hold = await holdOf(matchSlug);
-  if (!hold?.heldUntil) return config;
+  const withTimer = await withFullTeam(matchSlug, config);
+  if (!hold?.heldUntil) return withTimer;
   return {
-    ...config,
-    rules: { ...config.rules, forfeit: { ...config.rules?.forfeit, team_absent_seconds: 0 } },
+    ...withTimer,
+    rules: { ...withTimer.rules, forfeit: { ...withTimer.rules?.forfeit, team_absent_seconds: 0 } },
   };
+}
+
+/** The full-team timer and the walkover choice for the server's HUD (`rules.full_team`). */
+async function withFullTeam(matchSlug: string, config: AssignConfig): Promise<AssignConfig> {
+  const { fullTeamRules } = await import('../../../services/walkoverOffers');
+  const fullTeam = await fullTeamRules(matchSlug).catch(() => null);
+  return fullTeam ? { ...config, rules: { ...config.rules, full_team: fullTeam } } : config;
 }
 
 export type FleetUpdateOutcome =
@@ -1120,6 +1128,27 @@ async function onFleetEvent(notice: FleetEventNotice): Promise<void> {
       serverCandidates: [cs2ServerId, match?.server_id],
     });
     await recordAdminCall(input);
+  }
+
+  if (env.type === 'event.walkover_choice' && notice.patch !== 'duplicate') {
+    // The full team's choice from the HUD (Ready Up walkover.h): the same as the match page's.
+    const data = payload.data as FleetEventData['walkover_choice'];
+    const { chooseWalkoverInGame } = await import('../../../services/walkoverOffers');
+    const reply = await chooseWalkoverInGame(slug, data.player.steamid64, data.take).catch(
+      (error: unknown) => {
+        log.warn(`[FLEET] ${slug}: the walkover choice failed`, { error: String(error) });
+        return 'That did not work. Try again, or use the match page.';
+      }
+    );
+    const cs2ServerId = reply ? await cs2ServerIdOf(notice.serverId) : null;
+    if (reply && cs2ServerId) {
+      void runFleetCommand(
+        cs2ServerId,
+        'say',
+        { text: reply, as_admin: true },
+        { userId: 'platform:full-team', name: 'Full team', root: false }
+      ).catch(() => undefined);
+    }
   }
 
   if (notice.patch === 'stale_epoch') {

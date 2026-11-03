@@ -350,6 +350,38 @@
           },
           "description": "Anonymous bots fill each side alongside human roster players; real time and human ready-up."
         },
+        "full_team": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "The platform's full-team timer (docs/FLEET.md §8.1 walkover_choice): each team needs a full team on the server by `deadline_ms`; then, with one team short, `walkover` is the full team's open choice (walkover.h).",
+          "properties": {
+            "deadline_ms": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Unix ms; 0 = no timer"
+            },
+            "walkover": {
+              "type": ["object", "null"],
+              "description": "the open choice; null in a set_rules patch closes it",
+              "additionalProperties": false,
+              "required": ["short", "expires_ms", "choosers"],
+              "properties": {
+                "short": { "enum": ["team1", "team2"], "description": "the team that is short" },
+                "expires_ms": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "description": "Unix ms: no choice by then and the walkover stands"
+                },
+                "choosers": {
+                  "type": "array",
+                  "maxItems": 32,
+                  "items": { "$ref": "defs.json#/$defs/u64s" },
+                  "description": "the full team's owner and captains: only they may choose"
+                }
+              }
+            }
+          }
+        },
         "broadcast": {
           "type": "object",
           "description": "GOTV, for the tv plugin. Absent: the server's own (the tv_* cvars still apply)",
