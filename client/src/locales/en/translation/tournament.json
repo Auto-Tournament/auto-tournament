@@ -408,7 +408,7 @@
       "locationPlaceholder": "e.g. On site, Trondheim",
       "rulebookUrlLabel": "Full rulebook URL",
       "rulebookUrlHelper": "Must be an https link, or leave it empty.",
-      "rulesLabel": "Rules",
+      "rulesLabel": "Rules for players",
       "ruleFieldLabel": "Rule {{n}}",
       "addRule": "Add rule",
       "prizesLabel": "Prizes",
@@ -449,7 +449,8 @@
       "reminderMinutes_one": "{{count}} minute before",
       "reminderMinutes_other": "{{count}} minutes before",
       "bannerMapLabel": "No banner? Use a map's picture",
-      "bannerMapNone": "Pick for me"
+      "bannerMapNone": "Pick for me",
+      "rulesHelp": "Shown on the tournament page's Rules tab, under the rules the platform writes from your settings."
     },
     "setup": {
       "steps": {
@@ -477,8 +478,8 @@
           "lede": "The game decides how matches are run and which settings you get."
         },
         "basics": {
-          "title": "Name and day",
-          "lede": "What it is called, when it starts and where, and what the overview page says about it."
+          "title": "What's it called, and which day?",
+          "lede": "Pick the day. The time each round starts is set on Schedule."
         },
         "format": {
           "title": "How is it played?",
@@ -504,8 +505,8 @@
           "ledeExisting": "Check the details, then start the tournament when everyone is ready."
         },
         "schedule": {
-          "title": "When do matches start?",
-          "lede": "At set times, with the veto opening before each match, or as soon as both teams and a server are ready."
+          "title": "When are the matches?",
+          "lede": "The first round's time is when the tournament starts. Check-in and reminders count back from it."
         },
         "extras": {
           "title": "Match settings",
@@ -720,10 +721,10 @@
       },
       "stepNotes": {
         "game": "What is played",
-        "basics": "Name, start, where",
+        "basics": "Name, day, where",
         "format": "How teams meet",
         "teams": "Added or sign-up",
-        "schedule": "Match times",
+        "schedule": "Days and times",
         "maps": "The map pool",
         "extras": "Preset, rules, extras",
         "review": "Create it"
@@ -734,7 +735,19 @@
         "breakNote_one": "A team that just played gets a {{count}}-minute break before its next veto (Match rules).",
         "breakNote_other": "A team that just played gets a {{count}}-minute break before its next veto (Match rules).",
         "noBreakNote": "There is no break between a team's matches (Match rules).",
-        "ownTimeNote": "Give one match its own time in Manage › Schedule once the bracket is made."
+        "ownTimeNote": "Give one match its own time in Manage › Schedule once the bracket is made.",
+        "startsTournament": "Starts the tournament · check-in closes",
+        "newDay": "New day",
+        "sameDay": "Same day",
+        "dayLabel": "Day",
+        "startsLabel": "Starts",
+        "tournamentStarts": "Tournament starts",
+        "autoStart": "Start automatically at {{time}}",
+        "autoStartNoTime": "Start automatically",
+        "autoStartOff": "Off: an admin starts it from Manage.",
+        "reminders": "Remind players before the start",
+        "modeTimesNote": "Each round gets a day (from step 2) and a time. Matches wait for their time, and the veto opens in time.",
+        "modeAsapNote": "Only the start: after that a match starts as soon as both teams and a server are ready."
       },
       "extras": {
         "gotvLabel": "Spectators",
@@ -752,6 +765,15 @@
         "saved": "Saved",
         "standardRules": "Standard rules",
         "ownTemplates": "Your own templates come from <link>Templates & ratings</link>. Save this tournament as one when it's set up."
+      },
+      "days": {
+        "title": "Day",
+        "one": "One day",
+        "several": "Over several days",
+        "day": "Day",
+        "firstDay": "First day",
+        "lastDay": "Last day",
+        "markedLegend": "Another tournament on this site plays that day"
       }
     },
     "startButton": {

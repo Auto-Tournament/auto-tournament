@@ -57,6 +57,11 @@ interface EventPageSettingsCardProps {
   variant?: 'card' | 'embedded';
   /** The tournament's banner. Shown (with Upload) only once the tournament exists. */
   bannerUrl?: string | null;
+  /**
+   * The setup's Name and day: the start time, auto-start and reminders are on
+   * the Schedule step there, so they are left out here and not saved from here.
+   */
+  hideStart?: boolean;
 }
 
 const REMINDER_CHOICES = [60, 30, 15, 5];
@@ -93,6 +98,7 @@ export function EventPageSettingsCard({
   onDraftChange,
   variant = 'card',
   bannerUrl,
+  hideStart = false,
 }: EventPageSettingsCardProps) {
   const { t } = useTranslation();
   const { showSuccess, showError } = useSnackbar();
@@ -128,9 +134,13 @@ export function EventPageSettingsCard({
       rules,
       prizes,
       schedule,
-      startsAt: startsAt || undefined,
-      autoStart: autoStart && !!startsAt,
-      startReminders: reminders,
+      ...(hideStart
+        ? {}
+        : {
+            startsAt: startsAt || undefined,
+            autoStart: autoStart && !!startsAt,
+            startReminders: reminders,
+          }),
     } as EventPageFields);
   }, [
     description,
@@ -143,6 +153,7 @@ export function EventPageSettingsCard({
     startsAt,
     autoStart,
     reminders,
+    hideStart,
   ]);
 
   const handleSave = async () => {
@@ -157,9 +168,13 @@ export function EventPageSettingsCard({
         rules,
         prizes,
         schedule,
-        startsAt: startsAt || '',
-        autoStart: autoStart && !!startsAt,
-        startReminders: reminders,
+        ...(hideStart
+          ? {}
+          : {
+              startsAt: startsAt || '',
+              autoStart: autoStart && !!startsAt,
+              startReminders: reminders,
+            }),
       });
       showSuccess(t('tournament.eventPage.saveSuccess'));
     } catch (err) {
@@ -183,15 +198,6 @@ export function EventPageSettingsCard({
           }
         />
       )}
-      <TextField
-        label={t('tournament.eventPage.descriptionLabel')}
-        value={description}
-        onChange={(e) => setDescription(e.target.value.slice(0, MAX_DESCRIPTION))}
-        multiline
-        minRows={3}
-        fullWidth
-        helperText={`${description.length}/${MAX_DESCRIPTION}`}
-      />
 
       {/* Short fields that belong together share a row where there is room. */}
       <Box
@@ -221,20 +227,15 @@ export function EventPageSettingsCard({
         />
       </Box>
 
-      <TextField
-        label={t('tournament.eventPage.rulebookUrlLabel')}
-        helperText={t('tournament.eventPage.rulebookUrlHelper')}
-        value={rulebookUrl}
-        onChange={(e) => setRulebookUrl(e.target.value)}
-        fullWidth
-      />
-
       <Divider />
 
       {/* Rules */}
       <Box>
         <Typography variant="subtitle2" fontWeight={600} gutterBottom>
           {t('tournament.eventPage.rulesLabel')}
+        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
+          {t('tournament.eventPage.rulesHelp')}
         </Typography>
         <Stack spacing={1.5}>
           {rules.map((rule, index) => (
@@ -287,6 +288,26 @@ export function EventPageSettingsCard({
           {t('tournament.eventPage.addRule')}
         </Button>
       </Box>
+
+      <TextField
+        label={t('tournament.eventPage.rulebookUrlLabel')}
+        helperText={t('tournament.eventPage.rulebookUrlHelper')}
+        value={rulebookUrl}
+        onChange={(e) => setRulebookUrl(e.target.value)}
+        fullWidth
+      />
+
+      <Divider />
+
+      <TextField
+        label={t('tournament.eventPage.descriptionLabel')}
+        value={description}
+        onChange={(e) => setDescription(e.target.value.slice(0, MAX_DESCRIPTION))}
+        multiline
+        minRows={3}
+        fullWidth
+        helperText={`${description.length}/${MAX_DESCRIPTION}`}
+      />
 
       <Divider />
 
@@ -351,7 +372,7 @@ export function EventPageSettingsCard({
       <Divider />
 
       {/* Start time: a countdown on the site, reminders to the players, optionally the start itself */}
-      <Box>
+      <Box sx={hideStart ? { display: 'none' } : undefined}>
         <Typography variant="subtitle2" fontWeight={600} gutterBottom>
           {t('tournament.eventPage.startLabel')}
         </Typography>

@@ -1,5 +1,5 @@
 import { isStarted } from '../utils/tournamentStatus';
-import { matchTimesSetting, roundBreaksSetting } from '../components/tournament/setup/ScheduleStep';
+import { scheduleSettings, roundBreaksSetting } from '../components/tournament/setup/ScheduleStep';
 import { pageTitle } from '../utils/pageTitle';
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -665,6 +665,15 @@ const Tournament: React.FC = () => {
             showError(t('tournament.eventPage.saveError', { message }));
           }
         }
+        // The days and start from Name and day and Schedule.
+        if (!tournament && form.matchTimes.start.firstDay) {
+          try {
+            await updateSettings(scheduleSettings(form.matchTimes));
+          } catch (err) {
+            const message = err instanceof Error ? err.message : String(err);
+            showError(t('tournament.eventPage.saveError', { message }));
+          }
+        }
         const minPlayers = (shuffleSettings.teamSize || 5) * 2;
         showSuccess(
           t('tournament.toasts.shuffleCreated', {
@@ -711,12 +720,9 @@ const Tournament: React.FC = () => {
         ...(type === 'double_elimination' ? { grandFinalMode } : {}),
         // Groups, then playoffs: groups, who goes through, the playoffs.
         ...(type === 'groups' ? form.groups : {}),
-        // When matches start (Manage › Schedule edits the same).
-        matchTimes: matchTimesSetting(
-          form.matchTimes,
-          (form.eventPage as { startsAt?: string }).startsAt ||
-            (tournament?.settings as { startsAt?: string } | undefined)?.startsAt
-        ),
+        // The days, the start (round 1), auto-start and reminders, and when
+        // matches start (Manage › Schedule edits the round times too).
+        ...scheduleSettings(form.matchTimes),
         // Breaks between rounds (a shuffle): none set = the site's break.
         roundBreaks: roundBreaksSetting(form.matchTimes),
         // The game module's own object (CS2: the map pool and round rules),

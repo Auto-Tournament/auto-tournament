@@ -168,6 +168,8 @@ export function getSchemaSQL(): string {
       team_id TEXT NOT NULL,
       player_id TEXT NOT NULL,
       checked_in_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+      -- A captain checked this player in (captainCheckIn): their uid. NULL: the player did.
+      checked_in_by TEXT,
       PRIMARY KEY (tournament_id, player_id)
     );
 

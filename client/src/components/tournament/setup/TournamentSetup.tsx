@@ -35,6 +35,7 @@ import {
 import { EloTemplateSelect } from './EloTemplateSelect';
 import { ReviewStep, type ReviewTournament } from './ReviewStep';
 import { GamePicker } from './GamePicker';
+import { EventDaysField } from './EventDaysField';
 import { StartFromTemplates } from './StartFromTemplates';
 import { DEFAULT_SETUP_GAME, gameMark, useSetupGames, type SetupGame } from './games';
 import { MEDIUM } from './layout';
@@ -443,6 +444,7 @@ export function TournamentSetup(props: TournamentSetupProps) {
       bannerUrl={tournament.bannerUrl}
       saving={saving}
       onSave={props.onSaveEventPage}
+      hideStart
     />
   ) : (
     <>
@@ -454,6 +456,7 @@ export function TournamentSetup(props: TournamentSetupProps) {
         settings={form.eventPage}
         saving={saving}
         onDraftChange={handlers.onEventPageChange}
+        hideStart
       />
     </>
   );
@@ -529,7 +532,13 @@ export function TournamentSetup(props: TournamentSetupProps) {
               )}
               slotProps={{ htmlInput: { 'data-testid': 'tournament-name-input' } }}
             />
-            {/* Day and start, where, about: the event page (the draft's "Name and day"). */}
+            {/* The day (or days); the start time is on Schedule. */}
+            <EventDaysField
+              value={form.matchTimes.start}
+              onChange={(start) => handlers.onMatchTimesChange({ ...form.matchTimes, start })}
+              disabled={locked}
+            />
+            {/* Where, rules, about: the event page (the draft's "Name and day"). */}
             {eventPageCard}
           </>
         );

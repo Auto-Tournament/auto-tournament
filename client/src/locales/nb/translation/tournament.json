@@ -408,7 +408,7 @@
       "locationPlaceholder": "for eksempel Trondheim",
       "rulebookUrlLabel": "Lenke til fullt regelverk",
       "rulebookUrlHelper": "Bruk en https-lenke, eller la feltet stå tomt.",
-      "rulesLabel": "Regler",
+      "rulesLabel": "Regler for spillerne",
       "ruleFieldLabel": "Regel {{n}}",
       "addRule": "Legg til regel",
       "prizesLabel": "Premier",
@@ -449,7 +449,8 @@
       "reminderMinutes_one": "{{count}} minutt før",
       "reminderMinutes_other": "{{count}} minutter før",
       "bannerMapLabel": "Ikke noe banner? Bruk bildet av et kart",
-      "bannerMapNone": "Velg for meg"
+      "bannerMapNone": "Velg for meg",
+      "rulesHelp": "Vises under Regler på turneringssiden, under reglene plattformen lager fra innstillingene dine."
     },
     "setup": {
       "steps": {
@@ -478,8 +479,8 @@
           "lede": "Spillet avgjør hvordan kampene kjøres og hvilke innstillinger du får."
         },
         "basics": {
-          "title": "Hva heter den?",
-          "lede": "Gi turneringen et navn spillerne kjenner igjen, og velg hvordan rating endres."
+          "title": "Hva heter den, og hvilken dag?",
+          "lede": "Velg dagen. Når hver runde starter, setter du under Tidsplan."
         },
         "format": {
           "title": "Hvordan spilles den?",
@@ -505,8 +506,8 @@
           "ledeExisting": "Sjekk detaljene, og start turneringen når alle er klare."
         },
         "schedule": {
-          "title": "Når starter kampene?",
-          "lede": "Til faste tider, der vetoen åpner før hver kamp, eller så snart begge lagene og en server er klare."
+          "title": "Når spilles kampene?",
+          "lede": "Når første runde starter, starter turneringen. Innsjekk og påminnelser regnes ut fra det."
         },
         "extras": {
           "title": "Kampinnstillinger",
@@ -721,10 +722,10 @@
       },
       "stepNotes": {
         "game": "Hva som spilles",
-        "basics": "Navn, start, sted",
+        "basics": "Navn, dag, sted",
         "format": "Hvordan lagene møtes",
         "teams": "Lagt til eller påmelding",
-        "schedule": "Kamptider",
+        "schedule": "Dager og tider",
         "maps": "Kartutvalget",
         "extras": "Forhåndsvalg, regler, ekstra",
         "review": "Opprett den"
@@ -735,7 +736,19 @@
         "breakNote_one": "Et lag som nettopp har spilt, får {{count}} minutts pause før neste veto (Kampregler).",
         "breakNote_other": "Et lag som nettopp har spilt, får {{count}} minutters pause før neste veto (Kampregler).",
         "noBreakNote": "Det er ingen pause mellom kampene til et lag (Kampregler).",
-        "ownTimeNote": "Gi en kamp sin egen tid under Administrer › Tidsplan når turneringstreet er laget."
+        "ownTimeNote": "Gi en kamp sin egen tid under Administrer › Tidsplan når turneringstreet er laget.",
+        "startsTournament": "Starter turneringen · innsjekken stenger",
+        "newDay": "Ny dag",
+        "sameDay": "Samme dag",
+        "dayLabel": "Dag",
+        "startsLabel": "Starter",
+        "tournamentStarts": "Turneringen starter",
+        "autoStart": "Start automatisk kl. {{time}}",
+        "autoStartNoTime": "Start automatisk",
+        "autoStartOff": "Av: en admin starter den fra Administrer.",
+        "reminders": "Minn spillerne på starten",
+        "modeTimesNote": "Hver runde får en dag (fra steg 2) og et klokkeslett. Kampene venter på tiden sin, og vetoen åpner i tide.",
+        "modeAsapNote": "Bare starten: etter det starter en kamp så snart begge lagene og en server er klare."
       },
       "extras": {
         "gotvLabel": "Tilskuere",
@@ -753,6 +766,15 @@
         "saved": "Lagret",
         "standardRules": "Standardregler",
         "ownTemplates": "Egne maler kommer fra <link>Maler og rangering</link>. Lagre turneringen som mal når den er satt opp."
+      },
+      "days": {
+        "title": "Dag",
+        "one": "Én dag",
+        "several": "Over flere dager",
+        "day": "Dag",
+        "firstDay": "Første dag",
+        "lastDay": "Siste dag",
+        "markedLegend": "En annen turnering på siden spilles den dagen"
       }
     },
     "startButton": {

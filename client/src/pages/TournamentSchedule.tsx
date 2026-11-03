@@ -193,12 +193,21 @@ export default function TournamentSchedule() {
   const roundName = (round: number) =>
     elimination ? getRoundLabel(round, rounds.length) : t('schedulePage.roundN', { n: round });
 
+  // A round stays on its own day (a tournament over several days); a new time
+  // goes on the tournament's start day.
+  const dayOfRound = (round: string | number | null | undefined) => {
+    const saved = round != null ? times.rounds[String(round)] : undefined;
+    const d = saved && Number.isFinite(Date.parse(saved)) ? new Date(saved) : new Date(day);
+    d.setHours(0, 0, 0, 0);
+    return d;
+  };
+
   const save = async () => {
     setSaving(true);
     try {
       const roundsIso = Object.fromEntries(
         Object.entries(roundTimes)
-          .map(([r, v]) => [r, isoOn(day, v)] as const)
+          .map(([r, v]) => [r, isoOn(dayOfRound(r), v)] as const)
           .filter((e): e is readonly [string, string] => Boolean(e[1]))
       );
       await api.put('/api/tournament', {
@@ -209,10 +218,11 @@ export default function TournamentSchedule() {
         const was = hhmmOf(m.ownStartsAt);
         const now = ownTimes[m.slug] ?? '';
         if (was === now) continue;
+        const on = dayOfRound(m.round);
         await api.put(`/api/matches/${encodeURIComponent(m.slug)}/start-time`, {
-          startsAt: now ? isoOn(day, now) : null,
+          startsAt: now ? isoOn(on, now) : null,
         });
-        m.ownStartsAt = now ? Math.floor(Date.parse(isoOn(day, now) as string) / 1000) : null;
+        m.ownStartsAt = now ? Math.floor(Date.parse(isoOn(on, now) as string) / 1000) : null;
       }
       showSuccess(t('schedulePage.saved'));
     } catch (error) {
