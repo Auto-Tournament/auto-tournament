@@ -6,10 +6,14 @@ import { onSocketReconnect } from '../utils/socketResync';
 
 export interface SignupWindow {
   registrationOpen: boolean;
+  /** Sign-up is closed until then. */
+  registrationOpensAt?: string | null;
   registrationClosesAt: string | null;
   maxTeams: number | null;
   checkInOpensAt: string | null;
   checkInClosesAt: string | null;
+  /** The owner or a captain may check in their teammates. */
+  captainCheckIn?: boolean;
 }
 
 export type ReadinessProblem = 'noAccount' | 'noGame';
@@ -80,7 +84,7 @@ export interface TournamentSignupState {
 }
 
 /** When a window opens or closes, as a phase of the day. */
-export type SignupPhase = 'none' | 'open' | 'closed' | 'checkIn' | 'checkInDone';
+export type SignupPhase = 'none' | 'notYet' | 'open' | 'closed' | 'checkIn' | 'checkInDone';
 
 export function signupPhase(window: SignupWindow | null, now: number): SignupPhase {
   if (!window) return 'none';
@@ -91,6 +95,8 @@ export function signupPhase(window: SignupWindow | null, now: number): SignupPha
     return checkInCloses !== null && now >= checkInCloses ? 'checkInDone' : 'checkIn';
   }
   if (!window.registrationOpen) return 'none';
+  const opens = at(window.registrationOpensAt ?? null);
+  if (opens !== null && now < opens) return 'notYet';
   const closes = at(window.registrationClosesAt);
   return closes !== null && now >= closes ? 'closed' : 'open';
 }

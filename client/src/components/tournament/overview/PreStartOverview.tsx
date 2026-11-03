@@ -6,7 +6,7 @@
  * pool and the teams by rating.
  */
 import { useMemo, type ReactNode } from 'react';
-import { fmtDayTime, fmtLongDay, fmtTime, fmtWeekdayTime } from '../../../utils/time';
+import { fmtCountdown, fmtDayTime, fmtLongDay, fmtTime, fmtWeekdayTime } from '../../../utils/time';
 import { Link as RouterLink } from 'react-router-dom';
 import { Box, Button, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
@@ -120,6 +120,12 @@ export function SignUpHero({
   const max = signup?.maxTeams ?? null;
   const left = max !== null ? Math.max(max - tournament.teamIds.length, 0) : null;
   const open = !!signup?.registrationOpen;
+  // eslint-disable-next-line react-hooks/purity -- only needs to be right when the page renders
+  const now = Date.now();
+  const opensAt =
+    open && signup?.registrationOpensAt ? Date.parse(signup.registrationOpensAt) : NaN;
+  // Switched on, but closed until its opening time (Setup › Teams › Sign-up opens).
+  const notYet = Number.isFinite(opensAt) && opensAt > now;
   const req = [
     {
       ok: hasSteam,
@@ -137,25 +143,31 @@ export function SignUpHero({
   return (
     <StatusHero
       eyebrow={
-        open
-          ? signup?.registrationClosesAt
-            ? t('preStart.openCloses', { when: fmtWeekdayTime(signup.registrationClosesAt) })
-            : t('preStart.open')
-          : t('preStart.closed')
+        notYet
+          ? t('preStart.opensTitle', { when: fmtWeekdayTime(opensAt) })
+          : open
+            ? signup?.registrationClosesAt
+              ? t('preStart.openCloses', { when: fmtWeekdayTime(signup.registrationClosesAt) })
+              : t('preStart.open')
+            : t('preStart.closed')
       }
       eyebrowColor={open ? color.accent : color.muted}
       ring={canSignUp ? color.accent : color.rule}
       title={
-        canSignUp
-          ? t('signup.cta')
-          : open && left === 0
-            ? t('preStart.fullTitle')
-            : t('preStart.notOpenTitle')
+        notYet
+          ? t('preStart.opensTitle', { when: fmtWeekdayTime(opensAt) })
+          : canSignUp
+            ? t('signup.cta')
+            : open && left === 0
+              ? t('preStart.fullTitle')
+              : t('preStart.notOpenTitle')
       }
       body={
-        left !== null && left > 0
-          ? t('preStart.spotsLeft', { count: left, max })
-          : t('preStart.byOrganizer')
+        notYet
+          ? t('preStart.opensIn', { time: fmtCountdown(opensAt, now) })
+          : left !== null && left > 0
+            ? t('preStart.spotsLeft', { count: left, max })
+            : t('preStart.byOrganizer')
       }
       side={
         <>
