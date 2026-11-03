@@ -1198,6 +1198,8 @@
       "helper": "Deretter tar den nest høyeste kvaliteten plassen, og den rene kopien slettes. Det sparer mest plass. En video uten høyeste kvalitet kan ikke få overlegget tegnet på nytt eller bli med i et nytt sammendrag i den kvaliteten. Da må den tas opp på nytt."
     },
     "matchmaking": {
+      "minimumTitle": "Hvilke øyeblikk som blir klipp",
+      "minimumDescription": "Gjelder alle kamper. Matchmaking-kamper beholder i tillegg bare de beste klippene, se under.",
       "title": "Høydepunkter fra matchmaking",
       "description": "Matchmaking spiller mange kamper. Behold bare de beste øyeblikkene fra hver kamp, så opptakerne ikke er opptatt hele dagen.",
       "on": "Lag høydepunkter fra matchmaking",

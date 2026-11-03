@@ -1196,6 +1196,8 @@
       "helper": "Then the next quality takes its place and the clean copy goes, which saves most of the space. A video without its highest quality can't have its overlay redrawn or be joined into a new reel at that quality; it has to be recorded again."
     },
     "matchmaking": {
+      "minimumTitle": "Which plays become clips",
+      "minimumDescription": "For every match. Matchmaking also keeps only its best few, set below.",
       "title": "Matchmaking highlights",
       "description": "Matchmaking plays a lot of matches. Keep only the best few from each, so the recorders aren't busy all day.",
       "on": "Record matchmaking highlights",

@@ -1,5 +1,6 @@
 /**
- * Matchmaking's highlight budget (the API's `highlights_mm*`): matchmaking
+ * The smallest play that becomes a clip, for every match (`highlights_mm_min_kills`,
+ * `highlights_mm_clutch`), and matchmaking's clip budget (`highlights_mm*`): matchmaking
  * plays many matches, so each gets only a few of its best plays.
  */
 import { Box, MenuItem, TextField, Typography } from '@mui/material';
@@ -35,6 +36,36 @@ export function MatchmakingHighlightsSetting({
       sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}
     >
       <Box>
+        <Typography variant="subtitle2">{t(`${k}.minimumTitle`)}</Typography>
+        <Typography variant="caption" color="text.secondary" display="block">
+          {t(`${k}.minimumDescription`)}
+        </Typography>
+      </Box>
+      <TextField
+        select
+        label={t(`${k}.minKills`)}
+        helperText={t(`${k}.minKillsHelp`)}
+        value={vals.highlightsMatchmakingMinKills}
+        onChange={(e) => save({ highlightsMatchmakingMinKills: Number(e.target.value) })}
+        size="small"
+        sx={{ maxWidth: 320 }}
+        slotProps={{ htmlInput: { 'data-testid': 'highlights-matchmaking-min-kills' } }}
+      >
+        {MIN_KILLS.map((n) => (
+          <MenuItem key={n} value={n}>
+            {t(`${k}.kills.${n}`)}
+          </MenuItem>
+        ))}
+      </TextField>
+      <SwitchRow
+        label={t(`${k}.clutch`)}
+        help={t(`${k}.clutchHelp`)}
+        checked={vals.highlightsMatchmakingClutch}
+        onChange={(e) => save({ highlightsMatchmakingClutch: e.target.checked })}
+        size="small"
+        data-testid="highlights-matchmaking-clutch"
+      />
+      <Box>
         <Typography variant="subtitle2">{t(`${k}.title`)}</Typography>
         <Typography variant="caption" color="text.secondary" display="block">
           {t(`${k}.description`)}
@@ -69,30 +100,6 @@ export function MatchmakingHighlightsSetting({
               testId="highlights-matchmaking-clips"
             />
           </Box>
-          <TextField
-            select
-            label={t(`${k}.minKills`)}
-            helperText={t(`${k}.minKillsHelp`)}
-            value={vals.highlightsMatchmakingMinKills}
-            onChange={(e) => save({ highlightsMatchmakingMinKills: Number(e.target.value) })}
-            size="small"
-            sx={{ maxWidth: 320 }}
-            slotProps={{ htmlInput: { 'data-testid': 'highlights-matchmaking-min-kills' } }}
-          >
-            {MIN_KILLS.map((n) => (
-              <MenuItem key={n} value={n}>
-                {t(`${k}.kills.${n}`)}
-              </MenuItem>
-            ))}
-          </TextField>
-          <SwitchRow
-            label={t(`${k}.clutch`)}
-            help={t(`${k}.clutchHelp`)}
-            checked={vals.highlightsMatchmakingClutch}
-            onChange={(e) => save({ highlightsMatchmakingClutch: e.target.checked })}
-            size="small"
-            data-testid="highlights-matchmaking-clutch"
-          />
           <Typography
             variant="body2"
             sx={{ px: 2, py: 1.5, borderRadius: 2, bgcolor: 'background.surface3' }}
