@@ -2332,6 +2332,10 @@
       "label": "Bare standardagenter",
       "help": "Alle spiller med standardagentene for CT og T, uansett hvilken agent de eier. På som standard i esport-modus."
     },
+    "autoStart": {
+      "label": "Start automatisk etter (minutter)",
+      "help": "Kampen starter så lenge etter at den er lastet inn, selv om ikke alle er klare. 0: aldri. Tomt: innstillingen for hele siden."
+    },
     "mapVeto": {
       "label": "Kartveto",
       "onHelp": "Lagene banner og velger kart før hver kamp.",

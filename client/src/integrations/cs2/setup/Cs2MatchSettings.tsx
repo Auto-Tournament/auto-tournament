@@ -118,6 +118,20 @@ export function Cs2MatchSettings({
         </Typography>
       </Box>
       <TextField
+        size="small"
+        type="number"
+        label={t('tournament.autoStart.label')}
+        helperText={t('tournament.autoStart.help')}
+        value={value.autoStartMinutes ?? ''}
+        disabled={disabled}
+        onChange={(e) => {
+          const n = parseInt(e.target.value, 10);
+          update({ autoStartMinutes: Number.isNaN(n) ? null : Math.min(120, Math.max(0, n)) });
+        }}
+        slotProps={{ htmlInput: { min: 0, max: 120, 'data-testid': 'tournament-auto-start' } }}
+        sx={{ maxWidth: 360 }}
+      />
+      <TextField
         select
         size="small"
         id="tournament-connect-via"

@@ -156,6 +156,11 @@ export interface Cs2TournamentSettings {
    */
   defaultAgents?: boolean;
   /**
+   * Minutes in warmup before a match goes live, ready or not (fleet/autoStart.ts); 0: never.
+   * Absent: the site's `at_autostart_after_minutes`.
+   */
+  autoStartMinutes?: number;
+  /**
    * The map veto (default on). Off: no veto, each match plays maps drawn
    * from the pool (matchConfig.ts), and the pool needs only one map.
    */
@@ -397,6 +402,21 @@ export function validateCs2TournamentSettings(
   const agents = objectIn(input.body?.settings ?? input.settings, CS2_SETTINGS_KEY).defaultAgents;
   if (agents !== undefined && typeof agents !== 'boolean')
     return done({ fieldErrors: ['defaultAgents must be a boolean'] });
+  const autoStart = objectIn(
+    input.body?.settings ?? input.settings,
+    CS2_SETTINGS_KEY
+  ).autoStartMinutes;
+  if (
+    autoStart !== undefined &&
+    autoStart !== null &&
+    !(
+      typeof autoStart === 'number' &&
+      Number.isInteger(autoStart) &&
+      autoStart >= 0 &&
+      autoStart <= 120
+    )
+  )
+    return done({ fieldErrors: ['autoStartMinutes must be a whole number of minutes, 0 to 120'] });
   const broadcastErrors = broadcastFieldErrors(
     objectIn(input.body?.settings ?? input.settings, CS2_SETTINGS_KEY).broadcast
   );
@@ -478,6 +498,8 @@ function applyLayer(
   }
   if (typeof layer.esportsMode === 'boolean') into.esportsMode = layer.esportsMode;
   if (typeof layer.defaultAgents === 'boolean') into.defaultAgents = layer.defaultAgents;
+  if (typeof layer.autoStartMinutes === 'number') into.autoStartMinutes = layer.autoStartMinutes;
+  else if (layer.autoStartMinutes === null) delete into.autoStartMinutes;
   if (typeof layer.veto === 'boolean') into.veto = layer.veto;
   if (layer.connectVia === 'lan' || layer.connectVia === 'public')
     into.connectVia = layer.connectVia;
@@ -558,6 +580,9 @@ export const cs2TournamentSettings: ModuleTournamentSettings<Cs2TournamentSettin
       ...(value?.mvp ? { mvp: value.mvp } : {}),
       ...(value?.esportsMode !== undefined ? { esportsMode: value.esportsMode } : {}),
       ...(value?.defaultAgents !== undefined ? { defaultAgents: value.defaultAgents } : {}),
+      ...(value?.autoStartMinutes !== undefined
+        ? { autoStartMinutes: value.autoStartMinutes }
+        : {}),
       ...(value?.veto !== undefined ? { veto: value.veto } : {}),
       ...(value?.mapPoolId !== undefined ? { mapPoolId: value.mapPoolId } : {}),
       ...(value?.mapMode ? { mapMode: value.mapMode } : {}),
