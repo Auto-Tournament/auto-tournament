@@ -28,6 +28,7 @@ export function YoureInCard({
   const settings = tournament.settings as
     | {
         fullTeamMinutes?: number;
+        checkInEachMatch?: boolean;
         matchTimes?: { mode?: string; vetoLeadMinutes?: number };
       }
     | undefined;
@@ -49,6 +50,9 @@ export function YoureInCard({
     ]);
     items.push([t('signup.youreIn.subs'), t('signup.youreIn.subsBody')]);
     items.push([t('signup.youreIn.replaced'), t('signup.youreIn.replacedBody')]);
+  }
+  if (settings?.checkInEachMatch === true) {
+    items.push([t('signup.youreIn.eachMatch'), t('signup.youreIn.eachMatchBody')]);
   }
   if (full > 0) {
     items.push([

@@ -223,7 +223,10 @@ export default function TournamentSignupTab() {
     '&:focus-visible': { outline: `2px solid ${color.focus}`, outlineOffset: 2 },
   });
   const problems = [...starters, ...subs].filter((m) => !m.hasAccount || m.hasGame === false);
-  const changeUntil = checkInAt ? fmtWeekdayTime(checkInAt) : null;
+  // The API locks the lineup when check-in closes (tournamentSignupService.changeLineup).
+  const changeUntil = signup.window?.checkInClosesAt
+    ? fmtWeekdayTime(signup.window.checkInClosesAt)
+    : null;
   const checkInEnd = signup.window?.checkInClosesAt
     ? new Date(signup.window.checkInClosesAt)
     : null;

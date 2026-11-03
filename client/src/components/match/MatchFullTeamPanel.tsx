@@ -189,7 +189,7 @@ export function MatchFullTeamPanel({
               {mine?.out.length
                 ? `${t('matchCheckIn.server.bodyOut', { out: mine.out.join(', ') })} `
                 : ''}
-              {t('matchCheckIn.server.body', { size: state.size })}
+              {t('matchCheckIn.server.body', { count: state.size })}
             </Typography>
           </Box>
           {deadline && (
