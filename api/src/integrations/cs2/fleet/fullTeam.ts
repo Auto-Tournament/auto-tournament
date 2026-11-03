@@ -16,6 +16,7 @@ import { holdMatch, notHeldSql } from '../../../services/matchHolds';
 import { playerConnectionService } from '../../../services/playerConnectionService';
 import type { Untrusted } from '../../../utils/untrusted';
 import {
+  botsPlay,
   decideWalkover,
   fullTeamMinutesOf,
   rosterOf,
@@ -62,7 +63,7 @@ async function tick(): Promise<void> {
   const now = Math.floor(Date.now() / 1000);
   const seen = new Set<string>();
   for (const row of rows) {
-    const minutes = fullTeamMinutesOf(row.settings);
+    const minutes = botsPlay(row.config) ? 0 : fullTeamMinutesOf(row.settings);
     if (minutes <= 0) continue;
     const key = `${row.slug}@${row.loaded_at}`;
     seen.add(key);

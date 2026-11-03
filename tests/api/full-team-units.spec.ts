@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { fullTeamMinutesOf, shortSides } from '../../api/src/services/walkoverOffers';
+import { botsPlay, fullTeamMinutesOf, shortSides } from '../../api/src/services/walkoverOffers';
 
 /** "Getting on the server" (services/walkoverOffers.ts). Pure. */
 test.describe('Full team timer', () => {
@@ -16,5 +16,12 @@ test.describe('Full team timer', () => {
     expect(shortSides(5, 5, 5)).toEqual({ team1: false, team2: false });
     expect(shortSides(4, 5, 5)).toEqual({ team1: true, team2: false });
     expect(shortSides(4, 3, 5)).toEqual({ team1: true, team2: true });
+  });
+
+  test('no timer when bots play: simulation or bot fill', () => {
+    expect(botsPlay('{"simulation":true}')).toBe(true);
+    expect(botsPlay('{"bot_fill":true}')).toBe(true);
+    expect(botsPlay('{"simulation":false}')).toBe(false);
+    expect(botsPlay(null)).toBe(false);
   });
 });

@@ -22,6 +22,16 @@ export function fullTeamMinutesOf(settings: string | null): number {
   }
 }
 
+/** Bots play a simulated match and fill a bot-fill one's empty slots: nobody has to join, so no timer (pure). */
+export function botsPlay(config: string | null): boolean {
+  try {
+    const c = JSON.parse(config ?? '{}') as { simulation?: Untrusted; bot_fill?: Untrusted };
+    return c.simulation === true || c.bot_fill === true;
+  } catch {
+    return false;
+  }
+}
+
 /** Which teams are short (pure): fewer than `size` connected. */
 export function shortSides(connected1: number, connected2: number, size: number) {
   return { team1: connected1 < size, team2: connected2 < size };
@@ -118,7 +128,7 @@ export async function fullTeamState(slug: string): Promise<FullTeamState | null>
     'SELECT short_side, expires_at, decided FROM match_walkover_offers WHERE match_slug = ? AND loaded_at = ?',
     [slug, row.load_id]
   );
-  const minutes = fullTeamMinutesOf(row.settings);
+  const minutes = botsPlay(row.config) ? 0 : fullTeamMinutesOf(row.settings);
   const deadline =
     row.status === 'loaded' && row.loaded_at && minutes > 0
       ? Number(row.loaded_at) + minutes * 60
