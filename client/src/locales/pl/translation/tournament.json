@@ -451,7 +451,8 @@
       "reminderMinutes_one": "{{count}} minute before",
       "reminderMinutes_other": "{{count}} minutes before",
       "bannerMapLabel": "No banner? Use a map's picture",
-      "bannerMapNone": "Pick for me"
+      "bannerMapNone": "Pick for me",
+      "rulesHelp": "Shown on the tournament page's Rules tab, under the rules the platform writes from your settings."
     },
     "setup": {
       "steps": {
@@ -737,13 +738,45 @@
         "breakNote_one": "A team that just played gets a {{count}}-minute break before its next veto (Match rules).",
         "breakNote_other": "A team that just played gets a {{count}}-minute break before its next veto (Match rules).",
         "noBreakNote": "There is no break between a team's matches (Match rules).",
-        "ownTimeNote": "Give one match its own time in Manage › Schedule once the bracket is made."
+        "ownTimeNote": "Give one match its own time in Manage › Schedule once the bracket is made.",
+        "startsTournament": "Starts the tournament · check-in closes",
+        "newDay": "New day",
+        "sameDay": "Same day",
+        "dayLabel": "Day",
+        "startsLabel": "Starts",
+        "tournamentStarts": "Tournament starts",
+        "autoStart": "Start automatically at {{time}}",
+        "autoStartNoTime": "Start automatically",
+        "autoStartOff": "Off: an admin starts it from Manage.",
+        "reminders": "Remind players before the start",
+        "modeTimesNote": "Each round gets a day (from step 2) and a time. Matches wait for their time, and the veto opens in time.",
+        "modeAsapNote": "Only the start: after that a match starts as soon as both teams and a server are ready."
       },
       "extras": {
         "gotvLabel": "Spectators",
         "gotvOn_one": "Spectators can watch in GOTV, {{count}} second behind (Match rules › Spectators).",
         "gotvOn_other": "Spectators can watch in GOTV, {{count}} seconds behind (Match rules › Spectators).",
         "gotvOff": "Spectators can't watch in GOTV (Match rules › Spectators)."
+      },
+      "startFrom": {
+        "title": "Start from",
+        "help": "A template fills in the format, maps and match settings. Change anything on the next steps.",
+        "blank": "Blank",
+        "blankHelp": "Single elimination, Bo3, the site's map pool and match rules.",
+        "siteDefaults": "Site defaults",
+        "builtIn": "Built in",
+        "saved": "Saved",
+        "standardRules": "Standard rules",
+        "ownTemplates": "Your own templates come from <link>Templates & ratings</link>. Save this tournament as one when it's set up."
+      },
+      "days": {
+        "title": "Day",
+        "one": "One day",
+        "several": "Over several days",
+        "day": "Day",
+        "firstDay": "First day",
+        "lastDay": "Last day",
+        "markedLegend": "Another tournament on this site plays that day"
       }
     },
     "startButton": {
