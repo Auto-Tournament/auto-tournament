@@ -63,9 +63,10 @@ export const ESSENTIALS_BUNDLE_PLUGINS: readonly CatalogPlugin[] = [
 ];
 
 export const PLUGIN_PRESETS = {
-  tournament: ['match', 'essentials', 'whitelist'],
+  // Sets with matches have addons on: every player needs the HUD addon (Ready Up mounts it with hud.so).
+  tournament: ['match', 'essentials', 'whitelist', 'addons'],
   practice: ['practice', 'essentials'],
-  fun: ['match', 'skins', 'midas', 'deathmatch', 'mapvote', 'community', 'essentials'],
+  fun: ['match', 'skins', 'midas', 'deathmatch', 'mapvote', 'community', 'essentials', 'addons'],
   // Skin tryout: a surf server with skins (movement: timer, records, its surf hub map), no
   // matches; the inventory links to it.
   tryout: ['movement', 'skins', 'mapvote', 'community', 'essentials'],

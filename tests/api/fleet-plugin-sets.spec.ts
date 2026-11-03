@@ -142,8 +142,17 @@ function answer(to: Envelope, seq: number): Envelope {
   return envelope('cmd.result', { status: 'ok' }, { seq, ack: to.seq, ref: to.id });
 }
 
-const FUN_ENABLE = ['match', 'essentials', 'skins', 'midas', 'deathmatch', 'mapvote', 'community'];
-const FUN_DISABLE = ['practice', 'whitelist', 'movement', 'addons'];
+const FUN_ENABLE = [
+  'match',
+  'essentials',
+  'skins',
+  'midas',
+  'deathmatch',
+  'mapvote',
+  'community',
+  'addons',
+];
+const FUN_DISABLE = ['practice', 'whitelist', 'movement'];
 
 test.describe.serial('Fleet plugin sets', () => {
   test.beforeEach(async ({ request }) => {
@@ -192,6 +201,7 @@ test.describe.serial('Fleet plugin sets', () => {
       'deathmatch',
       'mapvote',
       'community',
+      'addons',
     ]);
 
     expect(
@@ -365,6 +375,7 @@ test.describe.serial('Fleet plugin sets', () => {
           'deathmatch',
           'mapvote',
           'community',
+          'addons',
         ],
       });
 
@@ -411,6 +422,7 @@ test.describe.serial('Fleet plugin sets', () => {
           'deathmatch',
           'mapvote',
           'community',
+          'addons',
         ],
       });
       expect(state.pluginsState).toEqual({
@@ -486,17 +498,8 @@ test.describe.serial('Fleet plugin sets', () => {
       });
       const next = await client.next((msg) => isPluginsSet(msg) && msg.id !== set.id);
       expect((next.payload as { args: unknown }).args).toEqual({
-        enable: ['match', 'essentials', 'whitelist'],
-        disable: [
-          'practice',
-          'skins',
-          'midas',
-          'deathmatch',
-          'mapvote',
-          'community',
-          'movement',
-          'addons',
-        ],
+        enable: ['match', 'essentials', 'whitelist', 'addons'],
+        disable: ['practice', 'skins', 'midas', 'deathmatch', 'mapvote', 'community', 'movement'],
       });
       client.send(answer(next, 3));
       expect((await (await changing).json()).command).toMatchObject({ status: 'ok' });
