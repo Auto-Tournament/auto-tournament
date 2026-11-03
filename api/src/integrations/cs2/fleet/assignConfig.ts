@@ -246,6 +246,9 @@ export function rulesFromMatchConfig(
   if (config.wingman === true) rules.wingman = true;
   // Esports mode (the tournament's setting): Valve's rules, skins plugin inert.
   if (config.esports === true) rules.ruleset = 'valve';
+  // Default agents (the tournament's setting): the model reset on spawn, in either ruleset.
+  if (config.default_agents === true)
+    rules.overrides = { ...rules.overrides, default_models: true };
   if (config.bot_fill === true) {
     const teamSize = num(config.players_per_team);
     if (teamSize === undefined || !Number.isInteger(teamSize) || teamSize < 1 || teamSize > 32)

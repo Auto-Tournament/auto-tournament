@@ -1,5 +1,5 @@
 import { gotvCvars } from './gotv';
-import { storedCs2Settings } from './tournamentSettings';
+import { defaultAgentsOn, storedCs2Settings } from './tournamentSettings';
 import { db } from '../../config/database';
 import type { DbTeamRow, DbMatchRow } from '../../types/database.types';
 import type { TournamentResponse } from '../../types/tournament.types';
@@ -388,6 +388,7 @@ export const generateMatchConfig = async (
       : { name: 'TBD', tag: 'TBD', players: {}, series_score: 0 },
     ...(fillBots ? { bot_fill: true } : {}),
     ...(storedCs2Settings(tournament.settings)?.esportsMode === true ? { esports: true } : {}),
+    ...(defaultAgentsOn(storedCs2Settings(tournament.settings)) ? { default_agents: true } : {}),
     simulation,
     simulation_timescale: simulation ? (simulationTimescale ?? 1) : undefined,
   };
@@ -597,6 +598,7 @@ async function generateShuffleMatchConfig(
       : { name: 'TBD', tag: 'TBD', players: {}, series_score: 0 },
     ...(fillBots ? { bot_fill: true } : {}),
     ...(storedCs2Settings(tournament.settings)?.esportsMode === true ? { esports: true } : {}),
+    ...(defaultAgentsOn(storedCs2Settings(tournament.settings)) ? { default_agents: true } : {}),
     simulation,
     simulation_timescale: simulation ? (simulationTimescale ?? 1) : undefined,
   };

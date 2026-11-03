@@ -2328,6 +2328,10 @@
       "label": "Esport-modus",
       "help": "Valves konkurranseregler (Premier-innstillinger, telte tekniske pauser, ingen kniv-sidevalg) og ingen skins på serveren. Av: vanlige regler, og spillerne ser skinsene sine."
     },
+    "defaultAgents": {
+      "label": "Bare standardagenter",
+      "help": "Alle spiller med standardagentene for CT og T, uansett hvilken agent de eier. På som standard i esport-modus."
+    },
     "mapVeto": {
       "label": "Kartveto",
       "onHelp": "Lagene banner og velger kart før hver kamp.",

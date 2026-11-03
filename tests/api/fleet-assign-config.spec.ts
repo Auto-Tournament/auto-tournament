@@ -12,6 +12,7 @@ import {
 } from '../../api/src/integrations/cs2/fleet/assignConfig';
 import { validatePayload } from '../../api/src/integrations/cs2/fleet/protocol/v1';
 import type { MatchConfig } from '../../api/src/types/match.types';
+import { defaultAgentsOn } from '../../api/src/integrations/cs2/tournamentSettings';
 import { INSECURE_OBSERVER_CVARS, withBroadcast } from '../../api/src/integrations/cs2/gotv';
 
 /**
@@ -175,6 +176,27 @@ test.describe('Fleet match.assign config', () => {
     expect(
       validatePayload('match.assign', { match_id: 'r1m1', epoch: 1, config_rev: 1, config })
     ).toEqual({ ok: true, errors: [] });
+  });
+
+  test('default agents: the default_models override, in either ruleset', () => {
+    expect(rulesFromMatchConfig(tournamentConfig()).overrides).toBeUndefined();
+    expect(rulesFromMatchConfig(tournamentConfig({ default_agents: true })).overrides).toEqual({
+      default_models: true,
+    });
+    const esports = rulesFromMatchConfig(tournamentConfig({ esports: true, default_agents: true }));
+    expect(esports).toMatchObject({ ruleset: 'valve', overrides: { default_models: true } });
+    const config = buildAssignConfig(
+      tournamentConfig({ esports: true, default_agents: true }),
+      'pw'
+    );
+    expect(
+      validatePayload('match.assign', { match_id: 'r1m1', epoch: 1, config_rev: 1, config })
+    ).toEqual({ ok: true, errors: [] });
+    // Esports mode turns it on unless the tournament says otherwise.
+    expect(defaultAgentsOn({ esportsMode: true })).toBe(true);
+    expect(defaultAgentsOn({ esportsMode: true, defaultAgents: false })).toBe(false);
+    expect(defaultAgentsOn({ defaultAgents: true })).toBe(true);
+    expect(defaultAgentsOn({})).toBe(false);
   });
 
   test('rules replace maxRounds, overtime and the at_* cvars', () => {

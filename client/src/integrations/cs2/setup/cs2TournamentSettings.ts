@@ -57,6 +57,8 @@ export interface Cs2TournamentSettings {
   fillTeamsWithBots?: boolean;
   /** Esports mode: Valve's rules, no skins in the server. */
   esportsMode?: boolean;
+  /** Everyone plays the default agents; absent: on in esports mode. */
+  defaultAgents?: boolean;
   /** The map veto (default on); off: each match draws its maps from the pool. */
   veto?: boolean;
   /** Which address players get: only LAN, only internet, or both ('auto', absent). */
@@ -123,6 +125,7 @@ function applyFields(into: Cs2TournamentSettings, source: Record<string, Untrust
   if (Array.isArray(source.rewards))
     into.rewards = source.rewards as Cs2TournamentSettings['rewards'];
   if (typeof source.esportsMode === 'boolean') into.esportsMode = source.esportsMode;
+  if (typeof source.defaultAgents === 'boolean') into.defaultAgents = source.defaultAgents;
   if (typeof source.veto === 'boolean') into.veto = source.veto;
   if (source.connectVia === 'lan' || source.connectVia === 'public' || source.connectVia === 'auto')
     into.connectVia = source.connectVia;
@@ -146,6 +149,13 @@ function applyFields(into: Cs2TournamentSettings, source: Record<string, Untrust
  * rules at the top of its settings (`settings.maxRounds`, ...): those are read
  * too, under anything in `settings.cs2`.
  */
+/** Whether the matches use the default agents: the tournament's choice, else on in esports mode. */
+export function defaultAgentsOn(
+  cs2: Pick<Cs2TournamentSettings, 'defaultAgents' | 'esportsMode'>
+): boolean {
+  return cs2.defaultAgents ?? cs2.esportsMode === true;
+}
+
 export function cs2SettingsOf(
   settings: Record<string, Untrusted> | undefined
 ): Cs2TournamentSettings {
@@ -177,6 +187,7 @@ export function cs2Patch(next: Cs2TournamentSettings): Record<string, Untrusted>
   if (next.mapPoolId !== undefined) stored.mapPoolId = next.mapPoolId;
   stored.fillTeamsWithBots = next.fillTeamsWithBots === true;
   stored.esportsMode = next.esportsMode === true;
+  if (next.defaultAgents !== undefined) stored.defaultAgents = next.defaultAgents;
   stored.veto = next.veto !== false;
   if (next.broadcast !== undefined) stored.broadcast = next.broadcast;
   if (next.skinRewards !== undefined) stored.skinRewards = next.skinRewards;
@@ -348,7 +359,8 @@ export const cs2TournamentSetup: TournamentSetupModel = {
       old.overtimeMode !== next.overtimeMode ||
       old.overtimeSegments !== next.overtimeSegments ||
       (old.fillTeamsWithBots === true) !== (next.fillTeamsWithBots === true) ||
-      (old.esportsMode === true) !== (next.esportsMode === true)
+      (old.esportsMode === true) !== (next.esportsMode === true) ||
+      defaultAgentsOn(old) !== defaultAgentsOn(next)
     ) {
       changes.push({
         field: 'matchRules',
