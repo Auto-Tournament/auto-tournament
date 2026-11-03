@@ -123,6 +123,12 @@ export function describeNotice(notice: Notice, t: TFunction, viewerId: string | 
       }
       // A shuffle no-show: out of the next draws until they say they are back
       // (the tournament page).
+      // A team signed up: its owner and captains get "You're in" (the sign-up tab lists what to know).
+      if (d.event === 'signed_up') {
+        out.text = t('social.notice.signedUp', { team: String(d.team ?? '') });
+        out.to = d.tournamentId ? `/tournament/${Number(d.tournamentId)}/signup` : null;
+        break;
+      }
       if (d.event === 'no_show') {
         out.text = t('social.notice.noShow');
         out.to = d.tournamentId ? `/tournament/${Number(d.tournamentId)}` : null;

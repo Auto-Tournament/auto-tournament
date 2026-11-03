@@ -139,6 +139,50 @@ function windowOf(row: TournamentRow): SignupWindow {
   return windowOfSettings(row.settings);
 }
 
+/**
+ * "You're in" for the team's owner and captains (Claude Design, the tournament
+ * page's sign-up): a notice on the site, and on Discord or e-mail when they
+ * asked for tournament news there. The page shows the full list.
+ */
+async function tellOwnerAndCaptains(
+  tournament: TournamentRow,
+  teamId: string,
+  teamName: string,
+  ownerUid: string | null
+): Promise<void> {
+  try {
+    const rows = await db.queryAsync<{ id: string }>(
+      `SELECT p.id FROM players p
+        WHERE p.uid = ? OR p.uid IN (SELECT account_uid FROM team_members WHERE team_id = ? AND role = 'captain')`,
+      [ownerUid, teamId]
+    );
+    const ids = rows.map((r) => r.id);
+    const { notificationService } = await import('./notificationService');
+    const { notifyChannels } = await import('./notifyChannels');
+    for (const id of ids) {
+      await notificationService.notify(
+        id,
+        'tournament',
+        { tournamentId: tournament.id, name: tournament.name, team: teamName, event: 'signed_up' },
+        `tournament:${tournament.id}:signed_up:${teamId}`
+      );
+    }
+    await notifyChannels.deliver(
+      ids,
+      'tournament_starting',
+      `tournament:${tournament.id}:signed_up:${teamId}`,
+      {
+        subject: `${teamName} is in ${tournament.name}`,
+        text: 'Check in before the start: starters check in, subs count as ready. The tournament page lists what to know.',
+        url: `/tournament/${tournament.id}/signup`,
+        action: 'Open the tournament',
+      }
+    );
+  } catch {
+    // The sign-up stands; the page shows the same list.
+  }
+}
+
 /** A player is in another tournament whose rounds play at the same time (tournamentOverlaps). */
 async function rejectOverlap(tournament: TournamentRow, steamIds: string[]): Promise<void> {
   const clash = await playerOverlap(tournament.id, tournament.settings, steamIds);
@@ -756,6 +800,7 @@ export const tournamentSignupService = {
     );
     await writeLineup(tournamentId, input.teamId, input.starters, input.subs);
     await setTeamIds(tournamentId, [...teamIds, input.teamId]);
+    await tellOwnerAndCaptains(tournament, team.id, team.name, team.owner_uid);
   },
 
   async changeLineup(

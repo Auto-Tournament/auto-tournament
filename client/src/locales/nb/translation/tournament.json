@@ -1257,6 +1257,28 @@
       "title": "Du kan ikke melde deg på denne",
       "body": "Du er med i {{name}}, som har en kamp {{when}}, samtidig som denne turneringen. Du kan være med i begge når kamptidene ikke overlapper.",
       "open": "Åpne {{name}}"
+    },
+    "youreIn": {
+      "eyebrow": "{{team}} · påmeldt",
+      "title": "Dere er med!",
+      "body": "Her er det laget må vite før turneringen starter. Den samme listen er sendt til eieren og kapteinene.",
+      "openLineup": "Åpne lagoppstillingen",
+      "listTitle": "Før turneringen starter",
+      "checkIn": "Sjekk inn {{when}}–{{to}}",
+      "checkInBodyCaptains": "Hver startspiller sjekker inn på denne siden, eller en kaptein sjekker dem inn. Innsjekken stenger når turneringen starter.",
+      "checkInBody": "Hver startspiller sjekker inn på denne siden. Innsjekken stenger når turneringen starter.",
+      "subs": "Innbyttere trenger ikke sjekke inn",
+      "subsBody": "De regnes som til stede og klare, så en kamp venter aldri på dem.",
+      "replaced": "En startspiller som ikke har sjekket inn, byttes ut",
+      "replacedBody": "Når innsjekken stenger, tar en innbytter plassen til startspillere som ikke har sjekket inn. Er det ingen innbyttere igjen, spiller dere med én spiller mindre.",
+      "fullTeam_one": "{{count}} minutt på å få laget inn på serveren",
+      "fullTeam_other": "{{count}} minutter på å få laget inn på serveren",
+      "fullTeamBody_one": "Når serveren er klar, har laget {{count}} minutt på å få {{size}} spillere inn, innbyttere medregnet. Etter det kan det andre laget ta walkover eller velge å spille mot dere med færre spillere.",
+      "fullTeamBody_other": "Når serveren er klar, har laget {{count}} minutter på å få {{size}} spillere inn, innbyttere medregnet. Etter det kan det andre laget ta walkover eller velge å spille mot dere med færre spillere.",
+      "ready": "Vær klar før hver kamp",
+      "readyBodyVeto_one": "Vetoen åpner {{count}} minutt før hver kamp. Ha denne siden åpen: den sier fra når neste kamp er klar.",
+      "readyBodyVeto_other": "Vetoen åpner {{count}} minutter før hver kamp. Ha denne siden åpen: den sier fra når neste kamp er klar.",
+      "readyBody": "Ha denne siden åpen: den sier fra når neste kamp er klar."
     }
   },
   "bracketCards": {
