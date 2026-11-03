@@ -11,6 +11,7 @@ import { useState } from 'react';
 import { Box, Button, Stack, TextField, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { SegmentedControl } from './SegmentedControl';
+import { DateTimeField } from '../../common/DatePicker';
 import type { TournamentSettings } from '../../../types';
 
 export interface SignupFields {
@@ -33,7 +34,10 @@ export const DEFAULT_SIGNUP: SignupFields = {
 };
 
 /** A saved tournament's sign-up fields. */
-export function signupOf(settings: TournamentSettings | undefined, teamSize: number | undefined): SignupFields {
+export function signupOf(
+  settings: TournamentSettings | undefined,
+  teamSize: number | undefined
+): SignupFields {
   return {
     registrationOpen: settings?.registrationOpen === true,
     registrationClosesAt: settings?.registrationClosesAt ?? '',
@@ -55,20 +59,6 @@ export function signupSettingsPatch(fields: SignupFields): Partial<TournamentSet
   } as Partial<TournamentSettings>;
 }
 
-/** An ISO time as the value a `datetime-local` input wants, in local time. */
-function toLocalInput(iso: string | undefined | null): string {
-  if (!iso) return '';
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return '';
-  const pad = (n: number) => String(n).padStart(2, '0');
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-}
-
-/** A `datetime-local` value back to ISO, or '' when empty. */
-function fromLocalInput(value: string): string {
-  return value ? new Date(value).toISOString() : '';
-}
-
 interface SignupSettingsProps {
   value: SignupFields;
   onChange: (next: SignupFields) => void;
@@ -79,19 +69,26 @@ interface SignupSettingsProps {
   saving?: boolean;
 }
 
-export function SignupSettings({ value, onChange, disabled, onSave, dirty, saving }: SignupSettingsProps) {
+export function SignupSettings({
+  value,
+  onChange,
+  disabled,
+  onSave,
+  dirty,
+  saving,
+}: SignupSettingsProps) {
   const { t } = useTranslation();
   const set = (patch: Partial<SignupFields>) => onChange({ ...value, ...patch });
-  const dateField = (key: 'registrationClosesAt' | 'checkInOpensAt' | 'checkInClosesAt', label: string) => (
-    <TextField
-      fullWidth
-      type="datetime-local"
+  const dateField = (
+    key: 'registrationClosesAt' | 'checkInOpensAt' | 'checkInClosesAt',
+    label: string
+  ) => (
+    <DateTimeField
       label={label}
-      value={toLocalInput(value[key])}
-      onChange={(e) => set({ [key]: fromLocalInput(e.target.value) })}
-      InputLabelProps={{ shrink: true }}
+      value={value[key]}
+      onChange={(iso) => set({ [key]: iso })}
       disabled={disabled}
-      inputProps={{ 'data-testid': `signup-${key}` }}
+      testId={`signup-${key}`}
     />
   );
 
@@ -104,21 +101,39 @@ export function SignupSettings({ value, onChange, disabled, onSave, dirty, savin
         disabled={disabled}
         testId="setup-signup-mode"
         options={[
-          { value: 'organizer', label: t('tournament.setup.signup.organizer'), testId: 'setup-signup-organizer' },
-          { value: 'signup', label: t('tournament.setup.signup.open'), testId: 'setup-signup-open' },
+          {
+            value: 'organizer',
+            label: t('tournament.setup.signup.organizer'),
+            testId: 'setup-signup-organizer',
+          },
+          {
+            value: 'signup',
+            label: t('tournament.setup.signup.open'),
+            testId: 'setup-signup-open',
+          },
         ]}
       />
       <Typography variant="body2" color="text.secondary">
-        {value.registrationOpen ? t('tournament.setup.signup.openHelp') : t('tournament.setup.signup.organizerHelp')}
+        {value.registrationOpen
+          ? t('tournament.setup.signup.openHelp')
+          : t('tournament.setup.signup.organizerHelp')}
       </Typography>
       {value.registrationOpen && (
-        <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 220px), 1fr))' }}>
+        <Box
+          sx={{
+            display: 'grid',
+            gap: 2,
+            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 220px), 1fr))',
+          }}
+        >
           <TextField
             fullWidth
             type="number"
             label={t('tournament.setup.signup.teamSize')}
             value={value.teamSize}
-            onChange={(e) => set({ teamSize: Math.max(1, Math.min(10, Number(e.target.value) || 1)) })}
+            onChange={(e) =>
+              set({ teamSize: Math.max(1, Math.min(10, Number(e.target.value) || 1)) })
+            }
             inputProps={{ min: 1, max: 10, 'data-testid': 'signup-teamSize' }}
             helperText={t('tournament.setup.signup.teamSizeHelp')}
             disabled={disabled}
@@ -140,7 +155,12 @@ export function SignupSettings({ value, onChange, disabled, onSave, dirty, savin
       )}
       {onSave && (
         <Box>
-          <Button variant="outlined" onClick={onSave} disabled={!dirty || saving || disabled} data-testid="setup-signup-save">
+          <Button
+            variant="outlined"
+            onClick={onSave}
+            disabled={!dirty || saving || disabled}
+            data-testid="setup-signup-save"
+          >
             {t('tournament.setup.signup.save')}
           </Button>
         </Box>
