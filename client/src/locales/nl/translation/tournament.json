@@ -449,7 +449,8 @@
       "reminderMinutes_one": "{{count}} minute before",
       "reminderMinutes_other": "{{count}} minutes before",
       "bannerMapLabel": "No banner? Use a map's picture",
-      "bannerMapNone": "Pick for me"
+      "bannerMapNone": "Pick for me",
+      "rulesHelp": "Shown on the tournament page's Rules tab, under the rules the platform writes from your settings."
     },
     "setup": {
       "steps": {
@@ -690,7 +691,25 @@
         "noneYet": "No teams yet. They show up here as they sign up.",
         "noTeams": "No teams yet.",
         "addYourself": "Add teams yourself",
-        "pickTeams": "Pick the teams"
+        "pickTeams": "Pick the teams",
+        "windowTitle": "Sign-up window",
+        "opensLabel": "Sign-up opens",
+        "opensNow": "Now",
+        "opensLater": "At a set time",
+        "opensNowHelp": "Open as soon as you create the tournament.",
+        "opensLaterHelp": "Closed until then. The page counts down to it.",
+        "closesHelp": "Lineups can change until check-in closes.",
+        "checkInTitle": "Check-in",
+        "checkInHelp": "Opens before the tournament starts and closes when it starts. A team plays when all its starters have checked in.",
+        "checkInChip_one": "{{count}} min before",
+        "checkInChip_other": "{{count}} min before",
+        "checkInOff": "No check-in",
+        "checkInLine": "Opens {{day}} at {{time}}, closes when the tournament starts at {{start}}.",
+        "checkInLineNoStart_one": "Opens {{count}} minute before the start and closes when it starts.",
+        "checkInLineNoStart_other": "Opens {{count}} minutes before the start and closes when it starts.",
+        "checkInLineOff": "No check-in: every signed-up team plays.",
+        "captainsLabel": "Captains can check in their teammates",
+        "captainsHelp": "The owner or a captain can mark a starter as here. They answer for it if that player doesn't show."
       },
       "groups": {
         "count": "Number of groups",
@@ -735,13 +754,52 @@
         "breakNote_one": "A team that just played gets a {{count}}-minute break before its next veto (Match rules).",
         "breakNote_other": "A team that just played gets a {{count}}-minute break before its next veto (Match rules).",
         "noBreakNote": "There is no break between a team's matches (Match rules).",
-        "ownTimeNote": "Give one match its own time in Manage › Schedule once the bracket is made."
+        "ownTimeNote": "Give one match its own time in Manage › Schedule once the bracket is made.",
+        "startsTournament": "Starts the tournament · check-in closes",
+        "newDay": "New day",
+        "sameDay": "Same day",
+        "dayLabel": "Day",
+        "startsLabel": "Starts",
+        "tournamentStarts": "Tournament starts",
+        "autoStart": "Start automatically at {{time}}",
+        "autoStartNoTime": "Start automatically",
+        "autoStartOff": "Off: an admin starts it from Manage.",
+        "reminders": "Remind players before the start",
+        "modeTimesNote": "Each round gets a day (from step 2) and a time. Matches wait for their time, and the veto opens in time.",
+        "modeAsapNote": "Only the start: after that a match starts as soon as both teams and a server are ready."
       },
       "extras": {
         "gotvLabel": "Spectators",
         "gotvOn_one": "Spectators can watch in GOTV, {{count}} second behind (Match rules › Spectators).",
         "gotvOn_other": "Spectators can watch in GOTV, {{count}} seconds behind (Match rules › Spectators).",
         "gotvOff": "Spectators can't watch in GOTV (Match rules › Spectators)."
+      },
+      "startFrom": {
+        "title": "Start from",
+        "help": "A template fills in the format, maps and match settings. Change anything on the next steps.",
+        "blank": "Blank",
+        "blankHelp": "Single elimination, Bo3, the site's map pool and match rules.",
+        "siteDefaults": "Site defaults",
+        "builtIn": "Built in",
+        "saved": "Saved",
+        "standardRules": "Standard rules",
+        "ownTemplates": "Your own templates come from <link>Templates & ratings</link>. Save this tournament as one when it's set up."
+      },
+      "days": {
+        "title": "Day",
+        "one": "One day",
+        "several": "Over several days",
+        "day": "Day",
+        "firstDay": "First day",
+        "lastDay": "Last day",
+        "markedLegend": "Another tournament on this site plays that day"
+      },
+      "overlap": {
+        "headsUp": "Heads up: {{name}} also plays on {{day}}",
+        "headsUpBody": "{{from}}–{{to}} on the same servers. Both can run: matches wait for a free server, and a player can only be in both if their round times don't overlap.",
+        "openOther": "Open {{name}}'s schedule",
+        "round": "Overlaps {{name}} ({{day}}, {{from}}–{{to}}) on the same servers. You can still save it. A player in {{name}} can't sign up here, since this round plays at the same time.",
+        "see": "See {{name}}"
       }
     },
     "startButton": {
@@ -1119,7 +1177,9 @@
       "you": "you",
       "everyone": "Everyone",
       "soundOn": "Geluid aan: je hoort wanneer het tijd is",
-      "soundOff": "Geluid uit"
+      "soundOff": "Geluid uit",
+      "checkInFor": "Check in {{name}}",
+      "checkInShort": "Check in"
     },
     "noTeamTitle": "No team to sign up",
     "noTeamBody": "Only a team’s owner or a captain can sign it up. Make a team, or ask your captain.",
@@ -1180,7 +1240,12 @@
     "counts": "{{starters}} of {{teamSize}} starters · {{subs}} of {{maxSubs}} subs",
     "lineupRatingValue": "Lineup rating {{rating}}",
     "missingGame": "{{names}} need {{game}} on their profile.",
-    "subsLine": "sub: {{names}}"
+    "subsLine": "sub: {{names}}",
+    "overlap": {
+      "title": "You can't sign up for this one",
+      "body": "You're in {{name}}, which has a match {{when}}, the same time as this tournament. You can be in both tournaments when the match times don't overlap.",
+      "open": "Open {{name}}"
+    }
   },
   "bracketCards": {
     "open": "Open {{a}} vs {{b}}",
@@ -1533,7 +1598,9 @@
     "lineupCount": "Lineup · {{starters}} starters, {{subs}} subs",
     "fixBeforeCheckIn": "Fix before check-in",
     "leave": "Leave the tournament",
-    "withdrawHint": "Can’t make it? Withdrawing frees the spot for another team."
+    "withdrawHint": "Can’t make it? Withdrawing frees the spot for another team.",
+    "opensTitle": "Sign-up opens {{when}}",
+    "opensIn": "Opens in {{time}}."
   },
   "shuffleOverview": {
     "yourMatchLive": "your match is live",
