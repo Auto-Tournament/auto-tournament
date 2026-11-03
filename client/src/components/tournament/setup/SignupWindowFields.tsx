@@ -8,6 +8,7 @@ import { useState } from 'react';
 import { Box, Chip, Stack, Typography } from '@mui/material';
 import { ClockIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
+import { timeLocale } from '../../../utils/time';
 import { SegmentedControl } from './SegmentedControl';
 import { DateTimeField } from '../../common/DatePicker';
 import { SwitchRow } from '../../common/ui';
@@ -34,7 +35,7 @@ export function SignupWindowFields({
     ? CHECK_IN_CHOICES
     : [minutes, ...CHECK_IN_CHOICES];
   const start = startsAt ? new Date(startsAt) : null;
-  const lang = i18n.language || 'en';
+  const lang = timeLocale(i18n.language);
   const hhmm = (d: Date) => d.toLocaleTimeString(lang, { hour: '2-digit', minute: '2-digit' });
   const line = (() => {
     if (minutes === 0) return t('tournament.setup.signup.checkInLineOff');

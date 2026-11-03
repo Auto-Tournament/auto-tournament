@@ -12,6 +12,7 @@ import { useState, type ReactNode } from 'react';
 import { Box, ButtonBase, Popover, Typography } from '@mui/material';
 import { CaretLeftIcon, CaretRightIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
+import { timeLocale } from '../../utils/time';
 import { mono, radii, tokens, withAlpha } from '../../theme/tokens';
 import { dayOf, parseDay } from '../../utils/localDay';
 
@@ -27,7 +28,7 @@ const SLOTS = Array.from(
 
 export function useFormat() {
   const { i18n } = useTranslation();
-  const lang = i18n.language || 'en';
+  const lang = timeLocale(i18n.language);
   return {
     day: (day: string) => {
       const d = parseDay(day);

@@ -10,6 +10,7 @@ import { useState } from 'react';
 import { Box } from '@mui/material';
 import { CalendarBlankIcon, ClockIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
+import { timeLocale } from '../../utils/time';
 import { tokens } from '../../theme/tokens';
 import {
   Card,
@@ -139,7 +140,7 @@ export function DateTimeField({
   const d = value ? new Date(value) : null;
   const text =
     d && !Number.isNaN(d.getTime())
-      ? `${d.toLocaleDateString(i18n.language || 'en', { weekday: 'short', day: 'numeric', month: 'short' })}, ${time}`
+      ? `${d.toLocaleDateString(timeLocale(i18n.language), { weekday: 'short', day: 'numeric', month: 'short' })}, ${time}`
       : '';
   const set = (nextDay: string, nextTime: string) => onChange(isoOf(nextDay, nextTime || '18:00'));
   return (
@@ -193,7 +194,7 @@ export function TimeField({
         text={value}
         placeholder={t('common.datePicker.chooseTime')}
         open={Boolean(anchor)}
-        width={130}
+        width={150}
         icon={<ClockIcon size={18} />}
         disabled={disabled}
         testId={testId}
