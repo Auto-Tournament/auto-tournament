@@ -101,6 +101,8 @@ export interface MatchConfig {
   bot_fill?: boolean;
   /** Esports mode: Ready Up's `valve` ruleset (no skins, Valve rules). */
   esports?: boolean;
+  /** Everyone plays the default agents (Ready Up's `default_models` rule). */
+  default_agents?: boolean;
   /**
    * Optional list of Steam64 IDs that should always have in‑game admin rights
    * for this match. This is attached automatically for tournament and manual

@@ -151,6 +151,11 @@ export interface Cs2TournamentSettings {
    */
   esportsMode?: boolean;
   /**
+   * Everyone plays the default agents (Ready Up's `default_models` rule): no custom agent models.
+   * Absent: on in esports mode, off otherwise (defaultAgentsOn).
+   */
+  defaultAgents?: boolean;
+  /**
    * The map veto (default on). Off: no veto, each match plays maps drawn
    * from the pool (matchConfig.ts), and the pool needs only one map.
    */
@@ -162,6 +167,13 @@ export interface Cs2TournamentSettings {
   connectVia?: 'auto' | 'lan' | 'public';
   /** GOTV for this tournament's matches (gotv.ts); a field left out is the site's. */
   broadcast?: Cs2BroadcastSettings;
+}
+
+/** Whether a tournament's matches use the default agents: its own choice, else on in esports mode. */
+export function defaultAgentsOn(
+  cs2: Pick<Cs2TournamentSettings, 'defaultAgents' | 'esportsMode'> | null | undefined
+): boolean {
+  return cs2?.defaultAgents ?? cs2?.esportsMode === true;
 }
 
 /** `settings.cs2.broadcast`: the tournament's own GOTV settings. */
@@ -382,6 +394,9 @@ export function validateCs2TournamentSettings(
   const esports = objectIn(input.body?.settings ?? input.settings, CS2_SETTINGS_KEY).esportsMode;
   if (esports !== undefined && typeof esports !== 'boolean')
     return done({ fieldErrors: ['esportsMode must be a boolean'] });
+  const agents = objectIn(input.body?.settings ?? input.settings, CS2_SETTINGS_KEY).defaultAgents;
+  if (agents !== undefined && typeof agents !== 'boolean')
+    return done({ fieldErrors: ['defaultAgents must be a boolean'] });
   const broadcastErrors = broadcastFieldErrors(
     objectIn(input.body?.settings ?? input.settings, CS2_SETTINGS_KEY).broadcast
   );
@@ -462,6 +477,7 @@ function applyLayer(
     if (mvp) into.mvp = mvp;
   }
   if (typeof layer.esportsMode === 'boolean') into.esportsMode = layer.esportsMode;
+  if (typeof layer.defaultAgents === 'boolean') into.defaultAgents = layer.defaultAgents;
   if (typeof layer.veto === 'boolean') into.veto = layer.veto;
   if (layer.connectVia === 'lan' || layer.connectVia === 'public')
     into.connectVia = layer.connectVia;
@@ -541,6 +557,7 @@ export const cs2TournamentSettings: ModuleTournamentSettings<Cs2TournamentSettin
       ...(value?.matchDrops !== undefined ? { matchDrops: value.matchDrops } : {}),
       ...(value?.mvp ? { mvp: value.mvp } : {}),
       ...(value?.esportsMode !== undefined ? { esportsMode: value.esportsMode } : {}),
+      ...(value?.defaultAgents !== undefined ? { defaultAgents: value.defaultAgents } : {}),
       ...(value?.veto !== undefined ? { veto: value.veto } : {}),
       ...(value?.mapPoolId !== undefined ? { mapPoolId: value.mapPoolId } : {}),
       ...(value?.mapMode ? { mapMode: value.mapMode } : {}),

@@ -5,6 +5,7 @@ import type { TournamentRulesStepProps as Cs2MatchSettingsProps } from '../../ty
 import {
   cs2Patch,
   cs2SettingsOf,
+  defaultAgentsOn,
   overtimeOptionOf,
   type Cs2TournamentSettings,
   type OvertimeOption,
@@ -145,6 +146,22 @@ export function Cs2MatchSettings({
         />
         <Typography variant="body2" color="text.secondary">
           {t('tournament.esportsMode.help')}
+        </Typography>
+      </Box>
+      <Box>
+        <SwitchRow
+          label={t('tournament.defaultAgents.label')}
+          checked={defaultAgentsOn(value)}
+          disabled={disabled}
+          onChange={(_e, checked) => update({ defaultAgents: checked })}
+          slotProps={{
+            input: {
+              'data-testid': 'tournament-default-agents',
+            } as InputHTMLAttributes<HTMLInputElement>,
+          }}
+        />
+        <Typography variant="body2" color="text.secondary">
+          {t('tournament.defaultAgents.help')}
         </Typography>
       </Box>
       <TextField
