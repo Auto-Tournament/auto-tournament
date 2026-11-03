@@ -8,6 +8,7 @@
 
 import { startRecorderRecovery, stopRecorderRecovery } from './demos/recorderRecovery';
 import { startAutoStart } from './fleet/autoStart';
+import { startFullTeam } from './fleet/fullTeam';
 import { startVetoTimer, stopVetoTimer } from './veto/timer';
 import { startWaitingSweep, stopWaitingSweep } from './waitingSweep';
 import { startMasterSweep, stopMasterSweep } from './demos/masterSweep';
@@ -72,6 +73,7 @@ export async function startCs2(): Promise<void> {
   startMovementRecords();
   // Matches left in warmup start after the admin's limit (at_autostart_after_minutes).
   startAutoStart();
+  startFullTeam();
   // A veto step a team does not take in time is taken for them (veto_turn_seconds).
   startVetoTimer();
   // Ready matches still without a server get another try every 15 s.

@@ -144,6 +144,7 @@
       "demos_failing": "Demoanalyser feiler gjentatte ganger",
       "tournament_autostart_failed": "En turnering starter ikke i tide",
       "shuffle_no_show": "En shuffle-spiller kobler aldri til kampen",
+      "teams_short": "Begge lagene mangler spillere når en kamp skal starte",
       "discord_failed": "Discord-boten feilet"
     },
     "kind": {
@@ -169,6 +170,7 @@
       "demos_failing": "{{count}} demoanalyser feilet den siste timen",
       "tournament_autostart_failed": "{{name}} startet ikke på starttidspunktet: {{reason}}",
       "shuffle_no_show": "{{players}} koblet aldri til {{matchSlug}}: ute av de neste trekningene til de sier fra at de er tilbake",
+      "teams_short": "Begge lagene i {{matchSlug}} mangler spillere på serveren. Kampen venter til du bestemmer.",
       "discord_failed": "{{what}} feilet: {{detail}}"
     },
     "close": "Lukk",
@@ -195,6 +197,7 @@
       "demos_failing": "Loggene på denne siden sier hvorfor demoanalysene feilet.",
       "tournament_autostart_failed": "Rett opp det årsaken viser til, og start turneringen selv.",
       "shuffle_no_show": "Ingenting å gjøre: de holdes utenfor de neste trekningene til de sier at de er tilbake.",
+      "teams_short": "Åpne kampen og gi det ene laget walkover, eller la kampen starte.",
       "discord_failed": "Sjekk at boten er med i Discord-serveren og har Manage Channels, Manage Roles og Move Members (Innstillinger → Integrasjoner → Discord-bot)."
     }
   },

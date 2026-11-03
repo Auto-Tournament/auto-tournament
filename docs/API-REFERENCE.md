@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 760 of them, 478 behind auth —
+Every endpoint this API serves — 762 of them, 478 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -749,6 +749,8 @@ Check-in before each match, when the tournament asks for it: starters or their c
 | `GET` | `/api/match-check-in/:slug` | public |
 | `POST` | `/api/match-check-in/:slug` | public |
 | `POST` | `/api/match-check-in/:slug/:teamId/:steamId` | public |
+| `GET` | `/api/match-check-in/:slug/full-team` | public |
+| `POST` | `/api/match-check-in/:slug/walkover` | public |
 
 ### Match lineups
 
