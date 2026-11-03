@@ -17,6 +17,7 @@
  */
 
 import { lineupPicked, openGaps } from './playerModeration';
+import { playerOverlap } from './tournamentOverlaps';
 import { RATING_ELO, ratingGame, ratingJoin } from './gameRatings';
 import { db } from '../config/database';
 import { emitTournamentUpdate } from './socketService';
@@ -136,6 +137,18 @@ export function windowOfSettings(settings: string | null): SignupWindow {
 
 function windowOf(row: TournamentRow): SignupWindow {
   return windowOfSettings(row.settings);
+}
+
+/** A player is in another tournament whose rounds play at the same time (tournamentOverlaps). */
+async function rejectOverlap(tournament: TournamentRow, steamIds: string[]): Promise<void> {
+  const clash = await playerOverlap(tournament.id, tournament.settings, steamIds);
+  if (clash) {
+    throw new SignupError(
+      409,
+      `A player is already in ${clash.name}, which plays at the same time.`,
+      'overlap'
+    );
+  }
 }
 
 /** Sign-up is open now: switched on, past its opening time, before its closing time. */
@@ -307,6 +320,18 @@ export const tournamentSignupService = {
 
   async window(tournamentId: number): Promise<SignupWindow> {
     return windowOf(await loadTournament(tournamentId));
+  },
+
+  /** Another tournament this player is in that plays at the same time, or null. */
+  async overlapFor(
+    tournamentId: number,
+    steamId: string
+  ): Promise<{ tournamentId: number; name: string; at: string } | null> {
+    const tournament = await loadTournament(tournamentId);
+    const clash = await playerOverlap(tournamentId, tournament.settings, [steamId]);
+    return clash
+      ? { tournamentId: clash.tournamentId, name: clash.name, at: new Date(clash.at).toISOString() }
+      : null;
   },
 
   /** Every signed-up team with its lineup, readiness and check-in. */
@@ -640,6 +665,7 @@ export const tournamentSignupService = {
       )
       .catch(() => null);
     if (blocked) throw new SignupError(403, 'This account cannot join tournaments.', 'blocked');
+    await rejectOverlap(tournament, [steamId]);
     if (win.maxTeams !== null && !noShow) {
       const cap = win.maxTeams * (tournament.team_size ?? 5);
       const row = await db.queryOneAsync<{ n: number | string }>(
@@ -718,6 +744,7 @@ export const tournamentSignupService = {
       tournament.team_size ?? 5
     );
     await rejectOtherLineups(tournamentId, input.teamId, [...input.starters, ...input.subs]);
+    await rejectOverlap(tournament, [...input.starters, ...input.subs]);
 
     await db.runAsync(
       `INSERT INTO tournament_registrations (tournament_id, team_id, registered_by_uid, rules_accepted_at)

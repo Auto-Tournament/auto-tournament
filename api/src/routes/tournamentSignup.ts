@@ -166,6 +166,10 @@ router.get(
   signupAction(async (tournamentId, viewer) => ({
     steamId: viewer.steamId,
     teams: await tournamentSignupService.eligibleTeams(viewer.uid as string, tournamentId),
+    // Already in a tournament that plays at the same time: can't sign up here.
+    overlap: viewer.steamId
+      ? await tournamentSignupService.overlapFor(tournamentId, viewer.steamId)
+      : null,
   }))
 );
 

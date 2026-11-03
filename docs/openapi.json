@@ -22792,6 +22792,37 @@
         }
       }
     },
+    "/api/tournaments/play-windows": {
+      "get": {
+        "tags": [
+          "Tournament"
+        ],
+        "summary": "When the other tournaments play",
+        "description": "Every other tournament that hasn't finished, with the windows it plays\nin (each round at set times, else from the start), so the setup can\nwarn about overlaps. `exclude` leaves out the one being set up.\n",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "{ tournaments: [{ id, name, windows: [{ start, end, round }] }] }"
+          }
+        }
+      }
+    },
     "/api/tournaments/{id}/archive": {
       "post": {
         "tags": [
