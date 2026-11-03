@@ -11120,6 +11120,75 @@
         }
       }
     },
+    "/api/match-check-in/{slug}/full-team": {
+      "get": {
+        "tags": [
+          "Match check-in"
+        ],
+        "summary": "Getting on the server (public)",
+        "description": "While the match is loaded, when each team must have a full team on the server (settings.fullTeamMinutes); and the walkover choice once one team was short.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "{ state: { deadline, size, teams, offer } | null }"
+          }
+        }
+      }
+    },
+    "/api/match-check-in/{slug}/walkover": {
+      "post": {
+        "tags": [
+          "Match check-in"
+        ],
+        "summary": "Take the walkover, or play them short",
+        "description": "The complete team's owner or a captain, within two minutes of the time running out. No choice in time is a walkover.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "take": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Chosen"
+          },
+          "403": {
+            "description": "Not a captain of the complete team"
+          },
+          "409": {
+            "description": "Nothing to choose"
+          }
+        }
+      }
+    },
     "/api/match-check-in/{slug}/{teamId}/{steamId}": {
       "post": {
         "tags": [
