@@ -703,7 +703,7 @@
         "opensLaterHelp": "Stengt til da. Siden teller ned til det.",
         "closesHelp": "Lagoppstillingen kan endres til innsjekken stenger.",
         "checkInTitle": "Innsjekk",
-        "checkInHelp": "Åpner før turneringen starter og stenger når den starter. Et lag spiller når alle startspillerne har sjekket inn.",
+        "checkInHelp": "Åpner før turneringen starter og stenger når den starter. En startspiller som ikke har sjekket inn da, byttes ut med en innbytter. Innbyttere sjekker ikke inn.",
         "checkInChip_one": "{{count}} min før",
         "checkInChip_other": "{{count}} min før",
         "checkInOff": "Ingen innsjekk",

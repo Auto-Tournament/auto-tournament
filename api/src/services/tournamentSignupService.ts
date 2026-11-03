@@ -460,7 +460,10 @@ export const tournamentSignupService = {
             role: l.role,
             rating: l.current_elo,
             problems,
-            checkedInAt: l.checked_in_at,
+            // Subs don't check in: they count as here and ready from sign-up.
+            checkedInAt:
+              l.checked_in_at ??
+              (l.role === 'sub' ? Number(row.created_at) || Math.floor(Date.now() / 1000) : null),
           };
         });
       const starters = lineup.filter((p) => p.role === 'starter' && p.rating !== null);
