@@ -11,6 +11,8 @@ export interface BuiltInTemplate {
   format: 'bo1' | 'bo3' | 'bo5';
   /** Short facts for its card in step 1 (CS2: "Veto picks sides", "Valve rules"). */
   facts: string[];
+  /** Rules for players and a rulebook link it fills in on Name and day. */
+  eventPage?: { rules: string[]; rulebookUrl: string };
   /** Settings as a template stores them: the module's object under its key. */
   settings: Record<string, Untrusted>;
 }
