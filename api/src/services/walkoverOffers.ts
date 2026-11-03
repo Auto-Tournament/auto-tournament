@@ -58,6 +58,16 @@ export async function decideWalkover(slug: string, take: boolean, actorId: strin
   log.info(`[FULL TEAM] ${slug}: walkover to ${winner} (${result.ok ? 'set' : result.error})`);
 }
 
+/**
+ * Auto-start waits (pure): the timer is still running, or ran out under 15 s
+ * ago and the full-team check has not held the match yet, and a team is short.
+ * Once the choice is made or an admin lets the hold go, it goes ahead.
+ */
+export function fullTeamPending(state: FullTeamState | null, now: number): boolean {
+  if (!state?.deadline || state.offer || now >= state.deadline + 15) return false;
+  return state.teams.some((t) => t.players.filter((p) => p.onServer).length < state.size);
+}
+
 /** The viewer's captaincy of the complete team, then their choice. */
 export async function chooseWalkover(slug: string, uid: string, take: boolean): Promise<void> {
   const row = await db.queryOneAsync<{

@@ -1,5 +1,10 @@
 import { test, expect } from '@playwright/test';
-import { botsPlay, fullTeamMinutesOf, shortSides } from '../../api/src/services/walkoverOffers';
+import {
+  botsPlay,
+  fullTeamMinutesOf,
+  fullTeamPending,
+  shortSides,
+} from '../../api/src/services/walkoverOffers';
 
 /** "Getting on the server" (services/walkoverOffers.ts). Pure. */
 test.describe('Full team timer', () => {
@@ -23,5 +28,33 @@ test.describe('Full team timer', () => {
     expect(botsPlay('{"bot_fill":true}')).toBe(true);
     expect(botsPlay('{"simulation":false}')).toBe(false);
     expect(botsPlay(null)).toBe(false);
+  });
+
+  test('auto-start waits while a team is short and the timer runs', () => {
+    const team = (on: number) => ({
+      side: 'team1' as const,
+      teamId: 't',
+      name: 't',
+      players: Array.from({ length: 5 }, (_, i) => ({
+        steamId: String(i),
+        name: String(i),
+        sub: false,
+        onServer: i < on,
+      })),
+      out: [],
+    });
+    const state = (on2: number, offer = false) => ({
+      deadline: 1000,
+      size: 5,
+      teams: [team(5), { ...team(on2), side: 'team2' as const }],
+      offer: offer ? { shortSide: 'team2', expiresAt: 1120, decided: null } : null,
+    });
+    expect(fullTeamPending(state(3), 900)).toBe(true);
+    expect(fullTeamPending(state(3), 1010)).toBe(true);
+    expect(fullTeamPending(state(3), 1015)).toBe(false);
+    expect(fullTeamPending(state(5), 900)).toBe(false);
+    expect(fullTeamPending(state(3, true), 900)).toBe(false);
+    expect(fullTeamPending({ ...state(3), deadline: null }, 900)).toBe(false);
+    expect(fullTeamPending(null, 900)).toBe(false);
   });
 });
