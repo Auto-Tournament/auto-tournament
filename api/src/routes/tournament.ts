@@ -944,7 +944,21 @@ function validateEventPageSettings(
   if (s.autoStart === true && (typeof s.startsAt !== 'string' || !s.startsAt)) {
     return { valid: false, error: 'settings.autoStart needs settings.startsAt' };
   }
+  if (
+    s.checkInMinutes !== undefined &&
+    s.checkInMinutes !== null &&
+    (typeof s.checkInMinutes !== 'number' ||
+      !Number.isInteger(s.checkInMinutes) ||
+      s.checkInMinutes < 0 ||
+      s.checkInMinutes > 1440)
+  ) {
+    return { valid: false, error: 'settings.checkInMinutes must be 0 to 1440 minutes' };
+  }
+  if (s.captainCheckIn !== undefined && typeof s.captainCheckIn !== 'boolean') {
+    return { valid: false, error: 'settings.captainCheckIn must be true or false' };
+  }
   for (const key of [
+    'registrationOpensAt',
     'registrationClosesAt',
     'checkInOpensAt',
     'checkInClosesAt',

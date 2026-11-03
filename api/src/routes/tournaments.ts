@@ -265,6 +265,7 @@ router.post('/', requireAuth, async (req: Request, res: Response, next) => {
       const settings: Partial<TournamentSettings> = { ...source.settings };
       for (const key of [
         'registrationOpen',
+        'registrationOpensAt',
         'registrationClosesAt',
         'checkInOpensAt',
         'checkInClosesAt',

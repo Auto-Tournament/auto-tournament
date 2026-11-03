@@ -343,4 +343,41 @@ router.post(
   })
 );
 
+/**
+ * @openapi
+ * /api/tournament-signup/{id}/check-in/{teamId}/{steamId}:
+ *   post:
+ *     tags:
+ *       - Tournament sign-up
+ *     summary: Check in a teammate
+ *     description: The team's owner or a captain checks in a player in its lineup, inside the check-in window, when the tournament lets captains (settings.captainCheckIn). They answer for that player.
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string }
+ *       - in: path
+ *         name: teamId
+ *         required: true
+ *         schema: { type: string }
+ *       - in: path
+ *         name: steamId
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200: { description: Checked in }
+ *       403: { description: Not a captain, not in the lineup, or captains can't check in here }
+ *       409: { description: Check-in is not open }
+ */
+router.post(
+  '/:id/check-in/:teamId/:steamId',
+  signupAction(async (tournamentId, viewer, req) => {
+    await tournamentSignupService.checkIn(tournamentId, req.params.steamId, {
+      uid: viewer.uid as string,
+      teamId: req.params.teamId,
+    });
+    return {};
+  })
+);
+
 export default router;

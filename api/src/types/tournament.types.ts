@@ -84,9 +84,16 @@ export interface TournamentSettings extends ModuleTournamentObjects {
   /** Sign-up and check-in (tournament sign-up). Times are ISO date-times. */
   registrationOpen?: boolean;
   maxTeams?: number | null;
+  /** Sign-up stays closed until then (unset: open as soon as it's switched on). */
+  registrationOpensAt?: string | null;
   registrationClosesAt?: string | null;
+  /** Older fixed check-in times; `checkInMinutes` replaces them. */
   checkInOpensAt?: string | null;
   checkInClosesAt?: string | null;
+  /** Check-in opens this many minutes before `startsAt` and closes at it (0: no check-in). */
+  checkInMinutes?: number | null;
+  /** The owner or a captain may check in their lineup's players (default true). */
+  captainCheckIn?: boolean;
 
   /** Groups, then playoffs (services/groupsTournament.ts): 1–4 each. */
   groupCount?: number;

@@ -10,7 +10,10 @@
  * matches use the lineup instead of the whole roster (`lineupRoster`).
  *
  * The windows come from the tournament settings: `registrationOpen`,
- * `registrationClosesAt`, `maxTeams`, `checkInOpensAt` and `checkInClosesAt`.
+ * `registrationOpensAt`, `registrationClosesAt`, `maxTeams`, and check-in:
+ * `checkInMinutes` before `startsAt` until the start (older tournaments:
+ * `checkInOpensAt` and `checkInClosesAt`). With `captainCheckIn` (on unless
+ * false) the team's owner or a captain can check in a lineup player.
  */
 
 import { lineupPicked, openGaps } from './playerModeration';
@@ -35,10 +38,16 @@ export class SignupError extends Error {
 
 export interface SignupWindow {
   registrationOpen: boolean;
+  /** Sign-up is closed until then (null: open as soon as it is switched on). */
+  registrationOpensAt: string | null;
   registrationClosesAt: string | null;
   maxTeams: number | null;
   checkInOpensAt: string | null;
   checkInClosesAt: string | null;
+  /** Minutes before the start check-in opens (0: no check-in), null for the older fixed times. */
+  checkInMinutes: number | null;
+  /** The owner or a captain may check in their lineup's players. */
+  captainCheckIn: boolean;
 }
 
 /** Something a lineup player still has to fix before the day. */
@@ -93,16 +102,48 @@ function parse<T>(raw: string | null | undefined, fallback: T): T {
   }
 }
 
-function windowOf(row: TournamentRow): SignupWindow {
-  const s = parse<Record<string, Untrusted>>(row.settings, {});
+/** The sign-up and check-in windows in a tournament's settings (JSON). */
+export function windowOfSettings(settings: string | null): SignupWindow {
+  const s = parse<Record<string, Untrusted>>(settings, {});
   const iso = (v: Untrusted) => (typeof v === 'string' && v.trim() ? v : null);
+  const startsAt = iso(s.startsAt);
+  const minutes =
+    typeof s.checkInMinutes === 'number' &&
+    Number.isInteger(s.checkInMinutes) &&
+    s.checkInMinutes >= 0
+      ? s.checkInMinutes
+      : null;
+  // Minutes before the start, until the start; no start yet: not open.
+  const relative =
+    minutes !== null && minutes > 0 && startsAt && Number.isFinite(Date.parse(startsAt))
+      ? {
+          checkInOpensAt: new Date(Date.parse(startsAt) - minutes * 60_000).toISOString(),
+          checkInClosesAt: startsAt,
+        }
+      : { checkInOpensAt: null, checkInClosesAt: null };
   return {
     registrationOpen: s.registrationOpen === true,
+    registrationOpensAt: iso(s.registrationOpensAt),
     registrationClosesAt: iso(s.registrationClosesAt),
     maxTeams: typeof s.maxTeams === 'number' && s.maxTeams > 0 ? s.maxTeams : null,
-    checkInOpensAt: iso(s.checkInOpensAt),
-    checkInClosesAt: iso(s.checkInClosesAt),
+    ...(minutes === null
+      ? { checkInOpensAt: iso(s.checkInOpensAt), checkInClosesAt: iso(s.checkInClosesAt) }
+      : relative),
+    checkInMinutes: minutes,
+    captainCheckIn: s.captainCheckIn !== false,
   };
+}
+
+function windowOf(row: TournamentRow): SignupWindow {
+  return windowOfSettings(row.settings);
+}
+
+/** Sign-up is open now: switched on, past its opening time, before its closing time. */
+function requireSignupOpen(win: SignupWindow): void {
+  if (!win.registrationOpen) throw new SignupError(409, 'Sign-up is not open.', 'closed');
+  if (win.registrationOpensAt && !isPast(win.registrationOpensAt))
+    throw new SignupError(409, 'Sign-up has not opened yet.', 'not_open_yet');
+  if (isPast(win.registrationClosesAt)) throw new SignupError(409, 'Sign-up has closed.', 'closed');
 }
 
 function isPast(iso: string | null, now = Date.now()): boolean {
@@ -591,11 +632,7 @@ export const tournamentSignupService = {
           [tournamentId, steamId]
         )
       )?.left_reason === 'no_show';
-    if (!noShow) {
-      if (!win.registrationOpen) throw new SignupError(409, 'Sign-up is not open.', 'closed');
-      if (isPast(win.registrationClosesAt))
-        throw new SignupError(409, 'Sign-up has closed.', 'closed');
-    }
+    if (!noShow) requireSignupOpen(win);
     const blocked = await db
       .queryOneAsync<{ id: string }>(
         'SELECT id FROM players WHERE id = ? AND (banned_at IS NOT NULL OR deleted_at IS NOT NULL)',
@@ -660,9 +697,7 @@ export const tournamentSignupService = {
     const win = windowOf(tournament);
     if (tournament.status !== 'setup')
       throw new SignupError(409, 'The tournament has started.', 'started');
-    if (!win.registrationOpen) throw new SignupError(409, 'Sign-up is not open.', 'closed');
-    if (isPast(win.registrationClosesAt))
-      throw new SignupError(409, 'Sign-up has closed.', 'closed');
+    requireSignupOpen(win);
     if (!input.acceptRules) {
       throw new SignupError(400, 'Confirm that every player has read the rules.', 'rules');
     }
@@ -796,10 +831,23 @@ export const tournamentSignupService = {
     }
   },
 
-  /** A lineup player says "I'm here" inside the check-in window. */
-  async checkIn(tournamentId: number, steamId: string): Promise<void> {
+  /**
+   * A lineup player says "I'm here" inside the check-in window. With `by`, the
+   * team's owner or a captain checks in their player (`captainCheckIn`): they
+   * answer for it, so who did is kept.
+   */
+  async checkIn(
+    tournamentId: number,
+    steamId: string,
+    by?: { uid: string; teamId: string }
+  ): Promise<void> {
     const tournament = await loadTournament(tournamentId);
     const win = windowOf(tournament);
+    if (by) {
+      if (!win.captainCheckIn)
+        throw new SignupError(403, 'Players check in themselves in this tournament.', 'self_only');
+      await requireCaptain(by.teamId, by.uid);
+    }
     if (!win.checkInOpensAt || !isPast(win.checkInOpensAt)) {
       throw new SignupError(409, 'Check-in is not open yet.', 'not_open');
     }
@@ -823,10 +871,12 @@ export const tournamentSignupService = {
     }
     if (!slot)
       throw new SignupError(403, 'You are not in a lineup in this tournament.', 'not_in_lineup');
+    if (by && slot.team_id !== by.teamId)
+      throw new SignupError(403, 'That player is not in your lineup.', 'not_in_lineup');
     await db.runAsync(
-      `INSERT INTO tournament_checkins (tournament_id, team_id, player_id) VALUES (?, ?, ?)
+      `INSERT INTO tournament_checkins (tournament_id, team_id, player_id, checked_in_by) VALUES (?, ?, ?, ?)
        ON CONFLICT (tournament_id, player_id) DO NOTHING`,
-      [tournamentId, slot.team_id, steamId]
+      [tournamentId, slot.team_id, steamId, by?.uid ?? null]
     );
     emitTournamentUpdate({ id: tournamentId, action: 'tournament_updated' });
   },
