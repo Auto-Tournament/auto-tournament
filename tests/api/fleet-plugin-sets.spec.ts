@@ -375,6 +375,7 @@ test.describe.serial('Fleet plugin sets', () => {
           'deathmatch',
           'mapvote',
           'community',
+          'addons',
         ],
       });
 
@@ -421,6 +422,7 @@ test.describe.serial('Fleet plugin sets', () => {
           'deathmatch',
           'mapvote',
           'community',
+          'addons',
         ],
       });
       expect(state.pluginsState).toEqual({
