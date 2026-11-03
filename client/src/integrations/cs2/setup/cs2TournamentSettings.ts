@@ -59,6 +59,8 @@ export interface Cs2TournamentSettings {
   esportsMode?: boolean;
   /** Everyone plays the default agents; absent: on in esports mode. */
   defaultAgents?: boolean;
+  /** Minutes in warmup before a match goes live, ready or not; 0: never; absent: the site's. */
+  autoStartMinutes?: number | null;
   /** The map veto (default on); off: each match draws its maps from the pool. */
   veto?: boolean;
   /** Which address players get: only LAN, only internet, or both ('auto', absent). */
@@ -126,6 +128,7 @@ function applyFields(into: Cs2TournamentSettings, source: Record<string, Untrust
     into.rewards = source.rewards as Cs2TournamentSettings['rewards'];
   if (typeof source.esportsMode === 'boolean') into.esportsMode = source.esportsMode;
   if (typeof source.defaultAgents === 'boolean') into.defaultAgents = source.defaultAgents;
+  if (typeof source.autoStartMinutes === 'number') into.autoStartMinutes = source.autoStartMinutes;
   if (typeof source.veto === 'boolean') into.veto = source.veto;
   if (source.connectVia === 'lan' || source.connectVia === 'public' || source.connectVia === 'auto')
     into.connectVia = source.connectVia;
@@ -188,6 +191,8 @@ export function cs2Patch(next: Cs2TournamentSettings): Record<string, Untrusted>
   stored.fillTeamsWithBots = next.fillTeamsWithBots === true;
   stored.esportsMode = next.esportsMode === true;
   if (next.defaultAgents !== undefined) stored.defaultAgents = next.defaultAgents;
+  // null goes back to the site's.
+  if (next.autoStartMinutes !== undefined) stored.autoStartMinutes = next.autoStartMinutes;
   stored.veto = next.veto !== false;
   if (next.broadcast !== undefined) stored.broadcast = next.broadcast;
   if (next.skinRewards !== undefined) stored.skinRewards = next.skinRewards;
@@ -360,7 +365,8 @@ export const cs2TournamentSetup: TournamentSetupModel = {
       old.overtimeSegments !== next.overtimeSegments ||
       (old.fillTeamsWithBots === true) !== (next.fillTeamsWithBots === true) ||
       (old.esportsMode === true) !== (next.esportsMode === true) ||
-      defaultAgentsOn(old) !== defaultAgentsOn(next)
+      defaultAgentsOn(old) !== defaultAgentsOn(next) ||
+      (old.autoStartMinutes ?? null) !== (next.autoStartMinutes ?? null)
     ) {
       changes.push({
         field: 'matchRules',

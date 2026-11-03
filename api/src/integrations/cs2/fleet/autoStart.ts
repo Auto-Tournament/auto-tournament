@@ -1,6 +1,6 @@
 /**
- * Auto-start (admin setting `at_autostart_after_minutes`): a match loaded on a
- * Ready Up server that is still in warmup N minutes after it loaded goes live,
+ * Auto-start (the tournament's `autoStartMinutes`, else the admin setting
+ * `at_autostart_after_minutes`): a match loaded on a Ready Up server that is still in warmup N minutes after it loaded goes live,
  * ready or not, through the same `start` command an admin's force start sends.
  * Players are warned in chat 60 s and 10 s before. 0 = off (the match waits
  * for everyone to ready up, as before).
@@ -16,6 +16,12 @@ import { runFleetCommand, type IssuedBy } from './driver';
 import { notHeldSql } from '../../../services/matchHolds';
 import { playerConnectionService } from '../../../services/playerConnectionService';
 import { cancelEmptyShuffleMatch } from '../../../services/shuffleTournamentService';
+import { storedCs2Settings } from '../tournamentSettings';
+
+/** A match's minutes before auto-start (pure: tested on its own): its tournament's, else the site's; 0: never. */
+export function autoStartMinutesFor(tournamentSettings: string | null, site: number): number {
+  return storedCs2Settings(tournamentSettings)?.autoStartMinutes ?? site;
+}
 
 /**
  * Whether anyone on the match's roster has joined the server. Null when the
@@ -43,18 +49,22 @@ const sent = new Map<string, { warned60: boolean; warned10: boolean; started: bo
 
 async function tick(): Promise<void> {
   const { cs2Settings } = await import('../settingsReaders');
-  const minutes = await cs2Settings.getAtAutostartAfterMinutes();
-  if (minutes <= 0) {
-    sent.clear();
-    return;
-  }
-  const rows = await db.queryAsync<{ slug: string; server_id: string; loaded_at: number | null }>(
-    `SELECT slug, server_id, GREATEST(loaded_at, COALESCE(countdown_from, 0)) AS loaded_at FROM matches
-      WHERE status = 'loaded' AND server_id IS NOT NULL AND loaded_at IS NOT NULL AND ${notHeldSql()}`
+  const site = await cs2Settings.getAtAutostartAfterMinutes();
+  const rows = await db.queryAsync<{
+    slug: string;
+    server_id: string;
+    loaded_at: number | null;
+    settings: string | null;
+  }>(
+    `SELECT m.slug, m.server_id, GREATEST(m.loaded_at, COALESCE(m.countdown_from, 0)) AS loaded_at, t.settings
+       FROM matches m LEFT JOIN tournament t ON t.id = m.tournament_id
+      WHERE m.status = 'loaded' AND m.server_id IS NOT NULL AND m.loaded_at IS NOT NULL AND ${notHeldSql('m')}`
   );
   const now = Math.floor(Date.now() / 1000);
   const seen = new Set<string>();
   for (const row of rows) {
+    const minutes = autoStartMinutesFor(row.settings, site);
+    if (minutes <= 0) continue;
     const key = `${row.slug}@${row.loaded_at}`;
     seen.add(key);
     const state = sent.get(key) ?? { warned60: false, warned10: false, started: false };
