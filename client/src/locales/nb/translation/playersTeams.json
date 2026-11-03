@@ -3,27 +3,27 @@
     "title": "Finn spiller",
     "subtitle": "Søk etter registrerte spillere med navn, Steam-ID eller URL til Steam-profil.",
     "searchLabel": "Søk med navn, Steam-ID eller profil-URL",
-    "searchPlaceholder": "Begynn å skrive et navn eller lim inn en Steam-URL…",
+    "searchPlaceholder": "Begynn å skrive et navn eller lim inn en Steam-URL …",
     "searchButton": "Finn spiller",
-    "searching": "Søker...",
-    "noOptionsLoading": "Laster spillere…",
-    "noOptionsEmpty": "Ingen spillere funnet. Prøv å skrive inn en Steam-ID eller URL.",
+    "searching": "Søker …",
+    "noOptionsLoading": "Laster spillere …",
+    "noOptionsEmpty": "Fant ingen spillere. Prøv en Steam-ID eller URL.",
     "inputErrorEmpty": "Skriv inn Steam-ID, Steam-navn eller profil-URL",
     "inputErrorNotFound": "Fant ikke spilleren. Sjekk navnet og prøv igjen.",
-    "inputErrorNotFound_steam": "Fant ikke spilleren. Sjekk Steam-ID eller URL og prøv igjen.",
-    "inputErrorSteamNotConfigured": "Steam-API er ikke konfigurert. Egendefinerte profil-URL-er kan ikke slås opp – skriv inn en Steam ID64 i stedet, eller be en admin om å sette Steam Web API-nøkkelen i Innstillinger.",
-    "searchError": "Klarte ikke å søke etter spiller. Prøv igjen.",
-    "modalTitle": "Flere spillere funnet",
-    "modalSelectPrompt": "{{count}} spillere funnet. Velg én for å se profilen:",
+    "inputErrorNotFound_steam": "Fant ikke spilleren. Sjekk Steam-ID-en eller URL-en, og prøv igjen.",
+    "inputErrorSteamNotConfigured": "Steam-API-et er ikke satt opp, så egendefinerte profil-URL-er kan ikke slås opp. Skriv inn en Steam ID64 i stedet, eller be en admin om å legge inn Steam Web API-nøkkelen under Innstillinger.",
+    "searchError": "Klarte ikke å søke etter spilleren. Prøv igjen.",
+    "modalTitle": "Fant flere spillere",
+    "modalSelectPrompt": "Fant {{count}} spillere. Velg én for å se profilen:",
     "modalElo": "ELO-rating: {{elo}}",
     "directoryLabel": "Spillere",
-    "directoryNoMatch": "Ingen her passer. Trykk Enter for å slå det opp på Steam.",
+    "directoryNoMatch": "Ingen her passer. Trykk på Enter for å slå det opp på Steam.",
     "directoryMore": "{{count}} til. Skriv for å snevre inn listen."
   },
   "playerPage": {
     "deletedName": "Slettet spiller",
     "deletedChip": "Slettet",
-    "deletedBody": "Denne kontoen er slettet. Kampene deres ligger fortsatt i historikken.",
+    "deletedBody": "Denne kontoen er slettet. Kampene ligger fortsatt i historikken.",
     "bannedChip": "Utestengt",
     "bannedBody": "Denne spilleren er utestengt.",
     "playerNotFound": "Denne spilleren finnes ikke.",
@@ -31,7 +31,7 @@
     "backToPlayers": "Tilbake til Spillere",
     "profileTitle": "Spillerprofil",
     "thisIsYou": "Dette er deg",
-    "skillRatingTooltip": "Skill Rating er basert på OpenSkill. Rundt 1500 er en typisk startverdi, og høyere er bedre.",
+    "skillRatingTooltip": "Ferdighetsratingen er basert på OpenSkill. Rundt 1500 er en vanlig startverdi, og høyere er bedre.",
     "skillRatingLabel": "Ferdighetsrating: {{elo}}",
     "admin": "ADMIN",
     "matchesPlayed": "Spilte kamper",
@@ -46,11 +46,11 @@
     "discordId": {
       "title": "Discord-ID-en din",
       "description": "Legg inn bruker-ID-en din fra Discord, så turneringsarrangørene kan nå deg der. Bare arrangørene kan se den, og den vises aldri på den offentlige profilen din.",
-      "howToFind": "Slik finner du den: Slå på utviklermodus i Discord (Innstillinger → Avansert), høyreklikk deretter på navnet ditt og velg «Kopier bruker-ID».",
+      "howToFind": "Slik finner du den: Slå på utviklermodus i Discord (Innstillinger → Avansert). Høyreklikk så på navnet ditt, og velg «Kopier bruker-ID».",
       "save": "Lagre",
-      "saving": "Lagrer...",
-      "saved": "Discord-ID lagret",
-      "removed": "Discord-ID fjernet",
+      "saving": "Lagrer …",
+      "saved": "Discord-ID-en er lagret",
+      "removed": "Discord-ID-en er fjernet",
       "saveFailed": "Kunne ikke lagre Discord-ID-en din"
     },
     "downloadDemo": "Last ned demo",
@@ -104,7 +104,7 @@
     "finalPlacement": "Sluttplassering: #{{position}} av {{total}}",
     "noMatchNow": "Ingen kamp planlagt akkurat nå",
     "noMatchNowHint": "Neste kamp dukker opp her, med det du må gjøre før den starter og hvordan du blir med.",
-    "noMatchesYet": "Ingen kamper tilgjengelig akkurat nå",
+    "noMatchesYet": "Ingen kamper akkurat nå",
     "noMatchesYetHint": "Turneringen har ikke startet ennå. Når den starter, vises kampene dine her.",
     "currentMatch": "Nåværende kamp",
     "versus": "mot",
@@ -123,7 +123,7 @@
     "vs": "mot",
     "team1": "Lag 1",
     "team2": "Lag 2",
-    "fetchError": "Klarte ikke å hente kampdetaljer"
+    "fetchError": "Klarte ikke å hente kampdetaljene"
   },
   "teamProfile": {
     "matches": {
@@ -136,7 +136,7 @@
       "live": "Live"
     },
     "pageTitle": "{{name}} · Lag",
-    "notFound": "Fant ikke laget. Kontroller URL-en.",
+    "notFound": "Fant ikke laget. Sjekk URL-en.",
     "loadError": "Klarte ikke å laste dette laget. Prøv igjen.",
     "editTeam": "Rediger lag",
     "roster": {
@@ -157,7 +157,7 @@
       "upcoming": "Kommende",
       "versus": "mot {{opponent}}",
       "placement": "#{{position}} av {{total}}",
-      "finalPlacement": "Sluttresultat: #{{position}} av {{total}}",
+      "finalPlacement": "Sluttplassering: #{{position}} av {{total}}",
       "recentResults": "Siste resultater",
       "win": "Seier",
       "loss": "Tap",
@@ -185,7 +185,7 @@
     "leaveFailed": "Kunne ikke forlate laget.",
     "stats": {
       "rating": "Lagrating",
-      "ratingNote": "Snitt av laglisten",
+      "ratingNote": "Snittet for spillerne på laget",
       "record": "Resultater",
       "last10": "Siste {{total}} kamper: {{won}} vunnet",
       "rounds": "Rundedifferanse",
@@ -207,8 +207,8 @@
   },
   "leaderboardPage": {
     "emptyTitle": "Ingen turneringstoppliste ennå",
-    "emptyDescription": "Når en turnering er opprettet og kamper spilles, vil plasseringer vises her.",
-    "loadError": "Klarte ikke å laste turneringens toppliste",
+    "emptyDescription": "Når en turnering er opprettet og kampene er i gang, vises plasseringene her.",
+    "loadError": "Klarte ikke å laste topplisten for turneringen",
     "titleSuffix": " – toppliste",
     "completed": "Fullført",
     "inProgress": "Pågår",
@@ -221,9 +221,9 @@
     "adrDataLater": "ADR-data vises når kampene rapporterer statistikk.",
     "roundMap": "Runde {{round}} – {{map}}",
     "matchesCompleted": "{{completed}} / {{total}} kamper fullført",
-    "tournamentCompletedAlert": "Turneringen er ferdig! Se topplisten under for endelige plasseringer.",
-    "searchPlaceholder": "Søk etter navn…",
-    "searchPlaceholder_steam": "Søk med navn eller Steam-ID…",
+    "tournamentCompletedAlert": "Turneringen er ferdig. Se de endelige plasseringene i topplisten nedenfor.",
+    "searchPlaceholder": "Søk etter navn …",
+    "searchPlaceholder_steam": "Søk med navn eller Steam-ID …",
     "export": "Eksporter",
     "exportCsv": "Eksporter CSV",
     "exportJson": "Eksporter JSON",
@@ -242,7 +242,7 @@
     "playersFiltered": "{{filtered}} / {{total}} spillere",
     "teamsCount": "{{count}} lag",
     "noPlayersRegistered": "Ingen spillere registrert ennå",
-    "searchNoMatch": "Fant ingen spillere som passer med «{{query}}»",
+    "searchNoMatch": "Fant ingen spillere som passer til «{{query}}»",
     "team": "Lag",
     "matches": "Kamper",
     "buchholz": "Buchholz",
@@ -280,7 +280,7 @@
       "success_one": "Slettet {{count}} lag",
       "success_other": "Slettet {{count}} lag"
     },
-    "loadError": "Klarte ikke å laste lag",
+    "loadError": "Klarte ikke å laste lagene",
     "importSuccess": "Importerte {{count}} lag",
     "viewPublicPage": "Se offentlig lagside",
     "rowActions": "Handlinger for {{name}}",
@@ -295,8 +295,8 @@
     "delete": "Slett",
     "cancel": "Avbryt",
     "banTitle": "Steng ute {{name}}?",
-    "banBody": "De kan ikke logge inn, og den offentlige siden deres viser bare navnet og «Utestengt». Er de i en lagoppstilling i en pågående turnering, tas de ut av den: laget til en starter får 15 minutter på å velge en reserve før de spiller med en mann mindre. Du kan oppheve utestengelsen senere.",
-    "banReason": "Grunn (valgfritt)",
+    "banBody": "De kan ikke logge inn, og den offentlige siden deres viser bare navnet og «Utestengt». Er de i en lagoppstilling i en pågående turnering, tas de ut av den: laget til en starter får 15 minutter på å velge en reserve før de spiller med en spiller mindre. Du kan oppheve utestengelsen senere.",
+    "banReason": "Årsak (valgfritt)",
     "banReasonHelp": "Bare admins kan se dette.",
     "bannedDone": "{{name}} er utestengt",
     "unbanned": "{{name}} kan logge inn igjen",
@@ -315,20 +315,20 @@
       "import": "Importer JSON/CSV",
       "addPlayer": "Legg til spiller"
     },
-    "searchPlaceholder": "Søk etter spillere med navn…",
-    "searchPlaceholder_steam": "Søk etter spillere med navn eller Steam-ID…",
+    "searchPlaceholder": "Søk etter spillere med navn …",
+    "searchPlaceholder_steam": "Søk etter spillere med navn eller Steam-ID …",
     "empty": {
       "title": "Ingen spillere ennå",
-      "description": "Opprett den første spilleren din eller importer spillere fra CSV/JSON",
+      "description": "Opprett den første spilleren, eller importer spillere fra CSV/JSON",
       "createPlayer": "Opprett spiller",
       "import": "Eller importer spillere fra JSON/CSV"
     },
-    "searchNoResults": "Fant ingen spillere som passer med «{{query}}»",
-    "loadError": "Klarte ikke å laste spillere",
-    "deleteSuccess": "Spiller slettet",
-    "deleteError": "Klarte ikke å slette spiller",
+    "searchNoResults": "Fant ingen spillere som passer til «{{query}}»",
+    "loadError": "Klarte ikke å laste spillerne",
+    "deleteSuccess": "Spilleren er slettet",
+    "deleteError": "Klarte ikke å slette spilleren",
     "importSuccess": "Importerte {{count}} spiller(e)",
-    "importError": "Klarte ikke å importere spillere",
+    "importError": "Klarte ikke å importere spillerne",
     "bulkDelete": {
       "title": "Slett spillere",
       "confirm": "Slett",
@@ -339,7 +339,7 @@
       "success_other": "Slettet {{count}} spillere"
     },
     "openPlayerPageTooltip": "Åpne spillersiden",
-    "skillRatingTooltip": "Skill Rating er basert på OpenSkill. Høyere er bedre.",
+    "skillRatingTooltip": "Ferdighetsratingen er basert på OpenSkill. Høyere er bedre.",
     "skillRatingLabel": "Ferdighetsrating: {{elo}}",
     "matchesCount_one": "{{count}} kamp",
     "matchesCount_other": "{{count}} kamper",
@@ -358,19 +358,19 @@
   },
   "importWarnings": {
     "title": "Advarsler fra importen ({{count}}):",
-    "more": "…og {{count}} til"
+    "more": "… og {{count}} til"
   },
   "matchInfo": {
     "waitingForTournamentTitle": "Venter på at turneringen skal starte",
-    "waitingForTournamentBody": "Kampen din er klar, men turneringen har ikke startet ennå. Den åpner når turneringsadministratoren starter turneringen.",
+    "waitingForTournamentBody": "Kampen din er klar, men turneringen har ikke startet ennå. Den åpner når en admin starter turneringen.",
     "tournamentStatusSetup": "Turneringsstatus: oppsettsfase",
     "waitingForOpponentTitle": "Venter på motstander",
     "waitingForOpponentBody": "Dere har gått videre til neste runde. Neste motstander er ikke avgjort ennå, så kampen åpner når begge lagene er kjent.",
     "mapSelectionTitle": "Kartvalg",
-    "tournamentStartedTitle": "Turneringen har startet!",
+    "tournamentStartedTitle": "Turneringen har startet",
     "tournamentStartedBody": "Fullfør kartvetoen for å starte kampen.",
     "mapN": "Kart {{n}}",
-    "mapFinishedWaiting": "Kartet er ferdig. Venter på neste kart i serien...",
+    "mapFinishedWaiting": "Kartet er ferdig. Venter på neste kart i serien …",
     "allPlayersConnected": "Alle nødvendige spillere er tilkoblet. Kampen kan starte.",
     "waitingForPlayers": "Venter på at spillere kobler til ({{connected}}/{{expected}})",
     "copyBlocked": "Nettleseren blokkerte kopieringen. Kommandoen vises nedenfor, så du kan kopiere den selv.",
@@ -396,7 +396,7 @@
     "performance": {
       "title": "Spillerprestasjon",
       "player": "Spiller",
-      "waitingForStats": "Venter på statistikk...",
+      "waitingForStats": "Venter på statistikk …",
       "yourTeam": "Laget ditt",
       "opponent": "Motstander"
     },
@@ -426,14 +426,14 @@
     "subheading": "Resultater lagene ikke ble enige om, og rapporter ingen svarte på i tide.",
     "empty": {
       "title": "Ingenting å avgjøre",
-      "hint": "Omstridte resultater, og rapporter som gikk ut på tid, dukker opp her."
+      "hint": "Bestridte resultater og rapporter som gikk ut på tid, dukker opp her."
     },
     "notApplicable": {
       "title": "Ingenting å avgjøre her",
       "hint": "Dette spillet sender resultatene sine selv, så det er ingenting en admin må bestemme."
     },
     "reason": {
-      "disputed": "Omstridt",
+      "disputed": "Bestridt",
       "timeout": "Ingen svarte"
     },
     "roundLabel": "Runde {{round}}",
@@ -444,7 +444,7 @@
     "status": {
       "submitted": "venter",
       "confirmed": "bekreftet",
-      "disputed": "omstridt",
+      "disputed": "bestridt",
       "superseded": "erstattet",
       "withdrawn": "trukket"
     },
@@ -461,7 +461,7 @@
       "resolve": "Avgjør",
       "reopen": "Åpne kampen igjen"
     },
-    "reopenHint": "Å åpne kampen igjen setter den tilbake til live, så den kan spilles eller rapporteres på nytt.",
+    "reopenHint": "Åpner du kampen igjen, går den tilbake til live, så den kan spilles eller rapporteres på nytt.",
     "reopenUnavailable": "En kamp kan bare åpnes igjen når den er ferdig eller venter på en avgjørelse.",
     "errors": {
       "load": "Fikk ikke lastet køen. Prøv igjen.",
@@ -497,7 +497,7 @@
     "loading": "Laster spillere",
     "loadError": "Kunne ikke laste spillerne.",
     "emptyTitle": "Ingen spillere funnet",
-    "emptyDescription": "Ingen passer med søket.",
+    "emptyDescription": "Ingen passer til søket.",
     "showMore": "Vis flere ({{count}})"
   },
   "teamsDirectory": {
@@ -509,7 +509,7 @@
     "members_other": "{{count}} spillere",
     "open": "Åpne",
     "noTeamTitle": "Ikke noe lag ennå?",
-    "noTeamBody": "Gi det et navn og en tagg. Ett lag spiller alle spillene her.",
+    "noTeamBody": "Gi laget et navn og en tagg. Samme lag kan spille alle spillene her.",
     "create": "Lag et lag",
     "alsoOn": "Du spiller også på",
     "alsoOnNone": "Ingen andre lag ennå.",
@@ -520,7 +520,7 @@
     "ownOne": "Du kan eie ett lag og spille på så mange du vil.",
     "searchPlaceholder": "Søk etter lag eller tagg",
     "loading": "Laster lag",
-    "loadError": "Lagene kunne ikke lastes.",
+    "loadError": "Kunne ikke laste lagene.",
     "emptyTitle": "Ingen lag ennå",
     "emptyDescription": "Bli den første som lager et.",
     "noMatchTitle": "Fant ingen lag",
@@ -529,8 +529,8 @@
     "tagLabel": "Tagg",
     "tagHelp": "2 til 5 bokstaver eller tall. Vises i hakeparentes og på resultattavlen.",
     "cancel": "Avbryt",
-    "createSubmit": "Lag laget",
-    "createFailed": "Laget kunne ikke lages.",
+    "createSubmit": "Opprett laget",
+    "createFailed": "Kunne ikke opprette laget.",
     "invites": {
       "title": "Laginvitasjoner",
       "line": "{{team}} vil ha deg med",
@@ -560,8 +560,8 @@
     "title": "Administrer laget",
     "pageTitle": "Administrer {{name}}",
     "loading": "Laster laget",
-    "loadError": "Laget kunne ikke lastes.",
-    "actionFailed": "Det gikk ikke.",
+    "loadError": "Kunne ikke laste laget.",
+    "actionFailed": "Det gikk ikke. Prøv igjen.",
     "back": "Siden til {{name}}",
     "identity": "Navn og logo",
     "locked": "Laglisten er låst mens {{tournament}} pågår. Spør en admin om den må endres.",
@@ -637,7 +637,7 @@
     "pageTitle": "Bli med i {{name}}",
     "loading": "Laster invitasjonen",
     "invalid": "Denne invitasjonslenken virker ikke lenger.",
-    "failed": "Forespørselen kunne ikke sendes.",
+    "failed": "Kunne ikke sende forespørselen.",
     "invited": "Du er invitert til",
     "ask": "Be om å bli med",
     "requested": "Forespørselen er sendt. Eieren eller en kaptein svarer på den.",
@@ -649,7 +649,7 @@
     "seeAll": "Se alle {{count}}",
     "favourite": "Favoritt",
     "makeFavourite": "Gjør til favoritt",
-    "unfavourite": "Ikke favoritt lenger",
+    "unfavourite": "Fjern som favoritt",
     "beingRecorded_one": "{{count}} høydepunkt tas opp.",
     "beingRecorded_other": "{{count}} høydepunkter tas opp.",
     "queued_one": "{{count}} til på vei",
@@ -681,8 +681,8 @@
       "downloadWithout": "Uten publikum eller musikk",
       "downloadWithoutHint": "Bare spillet, rent materiale til egen redigering.",
       "downloadWith": "Med {{title}}",
-      "downloadMixing": "Legger til musikken. Nedlastingen starter om noen sekunder",
-      "contentIdHint": "Registrert i YouTube Content ID. En opplasting med denne kan få krav mot seg.",
+      "downloadMixing": "Legger til musikken. Nedlastingen starter om noen sekunder.",
+      "contentIdHint": "Registrert i YouTube Content ID. Laster du opp en video med denne musikken, kan du få et krav om opphavsrett.",
       "musicCredit": "Musikk av {{artist}}",
       "volume": "Volum",
       "musicLevel": "Musikknivå",
@@ -694,7 +694,7 @@
       "energy": {
         "1": "Rolig",
         "2": "Middels",
-        "3": "Hype"
+        "3": "Høy"
       },
       "genres": {
         "drum-n-bass": "Drum & bass",
@@ -779,8 +779,8 @@
       "server": {
         "afterVeto": "En server velges når vetoen er ferdig.",
         "waiting": "Venter på en ledig server.",
-        "loading": "Serveren gjør kampen klar. Tilkobling er for de to lagene.",
-        "playing": "Spilles nå. Tilkobling er for de to lagene.",
+        "loading": "Serveren gjør kampen klar. Bare de to lagene kan koble til.",
+        "playing": "Spilles nå. Bare de to lagene kan koble til.",
         "freed": "Spilt. Serveren er ledig igjen."
       },
       "tbd": "Ikke avgjort",
@@ -796,7 +796,7 @@
     "reasons": {
       "cheating": "Juks",
       "toxic": "Giftig eller krenkende",
-      "griefing": "Sabotasje eller kasting",
+      "griefing": "Sabotasje eller taper med vilje",
       "name": "Støtende navn eller bilde",
       "other": "Noe annet"
     },
@@ -818,7 +818,7 @@
     "all": "Alle",
     "emptyOpen": "Ingen åpne rapporter",
     "empty": "Ingen rapporter ennå",
-    "emptyHelp": "Spillere rapporterer noen fra profilen deres. Alle admins får et varsel.",
+    "emptyHelp": "Spillere kan rapportere andre fra profilsiden deres. Alle admins får et varsel.",
     "openAbout": "{{count}} åpne om dem",
     "by": "Rapportert av {{name}} · {{time}}",
     "removedReporter": "en slettet spiller",
@@ -827,7 +827,7 @@
     "actioned": "Utestengt",
     "dismissedDone": "Rapporten er avvist",
     "loadError": "Kunne ikke laste rapportene",
-    "actionError": "Kunne ikke gjøre det"
+    "actionError": "Det gikk ikke. Prøv igjen."
   },
   "nextMatchCard": {
     "title": "Neste kamp",
@@ -835,7 +835,7 @@
   },
   "commends": {
     "title": "Gi ros til spillere fra denne kampen",
-    "intro": "Vennlig, leder, lærer eller god sport? Velg opptil {{max}} spillere, lagkamerater eller motstandere. Ingen ser hvem som ga ros, bare antallet på profilen deres.",
+    "intro": "Var noen vennlige, gode ledere, flinke til å lære bort eller sportslige? Velg opptil {{max}} spillere, lagkamerater eller motstandere. Ingen ser hvem som ga ros, bare antallet på profilen deres.",
     "givenOf": "{{count}} av {{max}} gitt",
     "closesToday": "åpen til {{time}}",
     "closesTomorrow": "åpen til i morgen {{time}}",
