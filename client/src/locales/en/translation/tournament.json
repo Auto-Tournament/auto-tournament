@@ -459,7 +459,7 @@
         "teams": "Teams",
         "schedule": "Schedule",
         "maps": "Maps and veto",
-        "extras": "Rules and extras",
+        "extras": "Match settings",
         "review": "Review"
       },
       "stepsLabel": "Setup steps",
@@ -508,8 +508,8 @@
           "lede": "At set times, with the veto opening before each match, or as soon as both teams and a server are ready."
         },
         "extras": {
-          "title": "Rules and extras",
-          "lede": "How rounds are played, what the placings win, and how ratings are counted."
+          "title": "Match settings",
+          "lede": "Start from a preset, then change what you need. Orange settings differ from the site's defaults."
         }
       },
       "game": {
@@ -725,7 +725,7 @@
         "teams": "Added or sign-up",
         "schedule": "Match times",
         "maps": "The map pool",
-        "extras": "Rounds, prizes, rating",
+        "extras": "Preset, rules, extras",
         "review": "Create it"
       },
       "stepOf": "Step {{n}} of {{total}}",

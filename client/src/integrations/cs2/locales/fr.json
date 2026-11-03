@@ -2329,6 +2329,67 @@
       "label": "Fill teams with bots",
       "help": "Bots fill empty slots up to the tournament team size and make room for joining players. Ready up and play normally. Requires a Ready Up server with bot-fill support."
     },
+    "matchSettings": {
+      "reviewLabel": "Differs from the site",
+      "none": "None",
+      "preset": "Preset",
+      "standard": "Standard",
+      "esports": "Esports",
+      "standardHelp": "Standard: the site's defaults from Match rules.",
+      "esportsHelp": "Esports: Valve's competitive rules. No knife round (the veto picks sides), Valve's timeouts, one technical pause, no platform skins and default agents for everyone. Change any of them below.",
+      "changed_one": "{{count}} setting differs from the site's defaults",
+      "changed_other": "{{count}} settings differ from the site's defaults",
+      "resetAll": "Reset all to the site's defaults",
+      "rounds": "Rounds",
+      "roundsHelp": "How a map is played.",
+      "ready": "Ready and start",
+      "readyHelp": "When a match goes live.",
+      "pauses": "Pauses and votes",
+      "pausesHelp": "What teams can stop the game for.",
+      "looks": "How players look",
+      "looksHelp": "Skins and agents on your servers.",
+      "connecting": "Connecting",
+      "connectingHelp": "Which address players get.",
+      "spectators": "Spectators",
+      "spectatorsHelp": "Watching in GOTV.",
+      "after": "After the match",
+      "afterHelp": "Clips, prizes and ratings.",
+      "site": "Site: {{value}}",
+      "reset": "Reset",
+      "on": "On",
+      "off": "Off",
+      "never": "Never",
+      "minutes_one": "{{count}} min",
+      "minutes_other": "{{count}} min",
+      "serverDefault": "The server's own",
+      "countTimes": "{{count}} × {{seconds}} s",
+      "tacticalNone": "None",
+      "technicalNone": "As many as needed",
+      "knifeRound": {
+        "label": "Knife round for sides",
+        "help": "The winners pick CT or T on a map the veto left open. Off: the side is drawn."
+      },
+      "teamReady": {
+        "label": "One player's .ready readies the team",
+        "help": "Off: every player types .ready."
+      },
+      "giveUpVote": {
+        "label": "Give-up vote (.gg)",
+        "help": "A team can concede a lost map."
+      },
+      "platformSkins": {
+        "label": "Platform skins",
+        "help": "Players see the skins they picked on the site. Off: only their own Steam items."
+      },
+      "tactical": {
+        "label": "Tactical timeouts",
+        "help": "Per team, per map."
+      },
+      "technical": {
+        "label": "Technical pauses",
+        "help": "For a crash or a lost connection, per team, per map."
+      }
+    },
     "esportsMode": {
       "label": "Esports mode",
       "help": "Valve's competitive rules (Premier settings, counted technical pauses, no knife side pick) and no skins in the server. Off: normal rules, and players see their skins."

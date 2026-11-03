@@ -2324,6 +2324,67 @@
       "label": "Fyll lagene med boter",
       "help": "Boter fyller ledige plasser opp til lagstørrelsen og gir plass til spillere som kobler til. Du gjør klar og spiller som normalt. Krever Ready Up med støtte for botfyll."
     },
+    "matchSettings": {
+      "reviewLabel": "Avviker fra nettstedet",
+      "none": "Ingen",
+      "preset": "Forhåndsvalg",
+      "standard": "Standard",
+      "esports": "Esport",
+      "standardHelp": "Standard: nettstedets standardinnstillinger fra Kampregler.",
+      "esportsHelp": "Esport: Valves konkurranseregler. Ingen kniverunde (vetoen velger side), Valves timeouter, én teknisk pause, ingen skins fra plattformen og standardagenter for alle. Du kan endre hver av dem under.",
+      "changed_one": "{{count}} innstilling avviker fra nettstedets standard",
+      "changed_other": "{{count}} innstillinger avviker fra nettstedets standard",
+      "resetAll": "Tilbakestill alt til nettstedets standard",
+      "rounds": "Runder",
+      "roundsHelp": "Hvordan et kart spilles.",
+      "ready": "Klar og start",
+      "readyHelp": "Når en kamp starter.",
+      "pauses": "Pauser og avstemninger",
+      "pausesHelp": "Hva lagene kan stoppe spillet for.",
+      "looks": "Hvordan spillerne ser ut",
+      "looksHelp": "Skins og agenter på serverne dine.",
+      "connecting": "Tilkobling",
+      "connectingHelp": "Hvilken adresse spillerne får.",
+      "spectators": "Tilskuere",
+      "spectatorsHelp": "Følg kampen i GOTV.",
+      "after": "Etter kampen",
+      "afterHelp": "Klipp, premier og rating.",
+      "site": "Nettstedet: {{value}}",
+      "reset": "Tilbakestill",
+      "on": "På",
+      "off": "Av",
+      "never": "Aldri",
+      "minutes_one": "{{count}} min",
+      "minutes_other": "{{count}} min",
+      "serverDefault": "Serverens egen",
+      "countTimes": "{{count}} × {{seconds}} s",
+      "tacticalNone": "Ingen",
+      "technicalNone": "Så mange som trengs",
+      "knifeRound": {
+        "label": "Kniverunde om sidene",
+        "help": "Vinnerne velger CT eller T på et kart der vetoen ikke valgte side. Av: siden trekkes."
+      },
+      "teamReady": {
+        "label": "Én spillers .ready gjør laget klart",
+        "help": "Av: alle spillerne skriver .ready."
+      },
+      "giveUpVote": {
+        "label": "Avstemning om å gi opp (.gg)",
+        "help": "Et lag kan gi fra seg et tapt kart."
+      },
+      "platformSkins": {
+        "label": "Skins fra plattformen",
+        "help": "Spillerne ser skinsene de valgte på nettstedet. Av: bare egne Steam-gjenstander."
+      },
+      "tactical": {
+        "label": "Taktiske timeouter",
+        "help": "Per lag, per kart."
+      },
+      "technical": {
+        "label": "Tekniske pauser",
+        "help": "Ved krasj eller brutt tilkobling, per lag, per kart."
+      }
+    },
     "esportsMode": {
       "label": "Esport-modus",
       "help": "Valves konkurranseregler (Premier-innstillinger, telte tekniske pauser, ingen kniv-sidevalg) og ingen skins på serveren. Av: vanlige regler, og spillerne ser skinsene sine."
