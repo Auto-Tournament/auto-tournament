@@ -20,6 +20,8 @@ interface TeamSelectionStepProps {
   onImportTeams?: () => void;
   onAddServer?: () => void;
   onBatchAddServers?: () => void;
+  /** Teams sign themselves up, so having none to pick yet is fine. */
+  signupOpen?: boolean;
 }
 
 export function TeamSelectionStep({
@@ -37,6 +39,7 @@ export function TeamSelectionStep({
   onImportTeams,
   onAddServer,
   onBatchAddServers,
+  signupOpen = false,
 }: TeamSelectionStepProps) {
   const { t } = useTranslation();
   // Hide shuffle-generated temporary teams from selection (IDs prefixed with "shuffle-")
@@ -103,7 +106,7 @@ export function TeamSelectionStep({
       )}
 
       {/* Not Enough Teams Alert */}
-      {selectableTeams.length < 2 && (
+      {!signupOpen && selectableTeams.length < 2 && (
         <Alert
           severity="error"
           icon={<WarningIcon />}
