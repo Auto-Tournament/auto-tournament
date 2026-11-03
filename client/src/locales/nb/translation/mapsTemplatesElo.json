@@ -10,15 +10,15 @@
       "title": "Slett mal",
       "message": "Er du sikker på at du vil slette malen «{{name}}»? Dette kan ikke angres.",
       "success": "Malen «{{name}}» ble slettet",
-      "error": "Klarte ikke å slette mal"
+      "error": "Klarte ikke å slette malen"
     },
     "update": {
       "success": "Malen «{{name}}» ble oppdatert",
-      "error": "Klarte ikke å oppdatere mal"
+      "error": "Klarte ikke å oppdatere malen"
     },
     "createFromTemplate": {
       "errors": {
-        "inProgressOrCompleted": "Kan ikke opprette turnering fra mal mens en turnering pågår eller er fullført. Slett eller tilbakestill den nåværende turneringen først.",
+        "inProgressOrCompleted": "Du kan ikke opprette en turnering fra en mal mens en annen turnering pågår eller er fullført. Slett eller tilbakestill den nåværende turneringen først.",
         "alreadyExists": "En turnering finnes allerede. Slett eller tilbakestill den nåværende turneringen før du oppretter en ny fra en mal."
       },
       "button": "Opprett turnering fra mal"
@@ -31,11 +31,11 @@
       "formatLabel": "Kampformat",
       "mapPool": {
         "title": "Kartutvalg",
-        "selectLabel": "Velg en kartutvalg",
+        "selectLabel": "Velg et kartutvalg",
         "customOption": "Egendefinert",
         "selectedLabel": "Valgte kart ({{count}}):",
-        "vetoWarning": "Veto-formater (BO1/BO3/BO5) krever nøyaktig 7 kart. Valgt nå: {{count}}",
-        "chooseMaps": "Velg kart..."
+        "vetoWarning": "Vetoformater (BO1/BO3/BO5) krever nøyaktig 7 kart. Valgt nå: {{count}}",
+        "chooseMaps": "Velg kart …"
       },
       "save": "Lagre"
     },
@@ -50,8 +50,8 @@
     "descriptionPlaceholder": "Ukentlig 8-lags turnering med enkel eliminasjon",
     "saveButton": "Lagre mal",
     "errors": {
-      "nameRequired": "Malnavn er påkrevd",
-      "saveFailed": "Klarte ikke å lagre mal"
+      "nameRequired": "Gi malen et navn",
+      "saveFailed": "Klarte ikke å lagre malen"
     }
   },
   "eloTemplatesPage": {
@@ -71,7 +71,7 @@
       "title": "Slett ratingmal",
       "message": "Er du sikker på at du vil slette «{{name}}»? Dette kan ikke angres.",
       "success": "Malen «{{name}}» ble slettet",
-      "error": "Klarte ikke å slette mal",
+      "error": "Klarte ikke å slette malen",
       "defaultProtected": "Standardmalen «pure-win-loss» kan ikke slettes."
     },
     "import": {
@@ -82,15 +82,15 @@
       "noAdjustmentsPure": "Ingen statistikkjusteringer (bare seier/tap)"
     },
     "card": {
-      "enabled": "Aktivert",
-      "disabled": "Deaktivert",
+      "enabled": "På",
+      "disabled": "Av",
       "default": "Standard",
       "adjustment": {
         "none": "Statistikkjustering per kamp: ingen (0; ELO bare fra resultatet)",
         "uncapped": "Statistikkjustering per kamp: ubegrenset (bruk med forsiktighet)",
         "range": "Statistikkjustering per kamp: {{min}} til {{max}} ELO",
-        "noMin": "ingen min",
-        "noMax": "ingen maks"
+        "noMin": "ingen nedre grense",
+        "noMax": "ingen øvre grense"
       },
       "tooltips": {
         "edit": "Rediger mal",
@@ -104,9 +104,9 @@
     "importModal": {
       "title": "Importer ratingmaler fra JSON",
       "introTitle": "Lim inn JSON med ratingmaler under.",
-      "introBody": "Forventet format: en liste med maler med navn, valgfri beskrivelse, aktivert, vekter, maxAdjustment og minAdjustment. Hvis du utelater id, genereres den fra navnet.",
+      "introBody": "Forventet format: en liste med maler med navn, valgfri beskrivelse, aktivert, vekter, maxAdjustment og minAdjustment. Utelater du id, lages den ut fra navnet.",
       "jsonLabel": "JSON-data",
-      "validJsonTitle": "✓ Gyldig JSON!",
+      "validJsonTitle": "✓ Gyldig JSON",
       "previewTitle": "Forhåndsvisning:",
       "previewButton": "Forhåndsvis",
       "importButton": "Importer maler",
@@ -116,12 +116,12 @@
     "editor": {
       "titleEdit": "Rediger ratingmal",
       "titleCreate": "Opprett ratingmal",
-      "info": "Konfigurer hvordan individuell spillerstatistikk påvirker ELO-justeringer. Vekter brukes etter at OpenSkill har beregnet grunnendringen i ELO (vinn/tap). Positive vekter øker ELO, negative vekter senker den.",
+      "info": "Velg hvordan statistikken til hver spiller påvirker ELO-justeringene. Vektene brukes etter at OpenSkill har regnet ut grunnendringen i ELO (seier/tap). Positive vekter øker ELO, negative senker den.",
       "nameLabel": "Malnavn",
       "nameDefaultLocked": "Navnet på standardmalen kan ikke endres",
       "descriptionLabel": "Beskrivelse",
       "descriptionPlaceholder": "Valgfri beskrivelse av hva denne malen er til for",
-      "enabledLabel": "Aktivert",
+      "enabledLabel": "På",
       "weights": {
         "title": "Statistikkvekter",
         "subtitle": "Juster skyveknappen for hver statistikk. Verdien 0 betyr ingen justering for den statistikken."
@@ -135,18 +135,18 @@
         "minHelper": "Maksimal negativ ELO-justering per kamp"
       },
       "errors": {
-        "nameRequired": "Malnavn er påkrevd"
+        "nameRequired": "Gi malen et navn"
       },
       "create": {
         "success": "Malen «{{name}}» ble opprettet",
-        "error": "Klarte ikke å opprette mal"
+        "error": "Klarte ikke å opprette malen"
       },
       "update": {
         "success": "Malen «{{name}}» ble oppdatert",
-        "error": "Klarte ikke å oppdatere mal"
+        "error": "Klarte ikke å oppdatere malen"
       },
       "buttons": {
-        "saving": "Lagrer...",
+        "saving": "Lagrer …",
         "update": "Oppdater",
         "create": "Opprett"
       }
