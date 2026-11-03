@@ -29,6 +29,10 @@ import type {
 import { validateCustomVetoOrderSetting } from './veto/config';
 import type { Untrusted } from '../../utils/untrusted';
 import type { TournamentSettings } from '../../types/tournament.types';
+import { applyRuleFields, ruleFieldErrors, ruleFieldsOf } from './tournamentRules';
+
+export { defaultAgentsOn, tournamentMatchRules } from './tournamentRules';
+
 /** One place's prize as a tournament stores it: a rarity to pick from, or none. */
 export interface TournamentRewardSetting {
   place: 0 | 1 | 2 | 3 | 4;
@@ -186,53 +190,6 @@ export interface Cs2TournamentSettings {
   connectVia?: 'auto' | 'lan' | 'public';
   /** GOTV for this tournament's matches (gotv.ts); a field left out is the site's. */
   broadcast?: Cs2BroadcastSettings;
-}
-
-/** The whole-number rule settings and their largest value (Ready Up's ruleset.cpp RuleTable). */
-const RULE_NUMBERS = [
-  ['tacticalTimeouts', 10],
-  ['tacticalTimeoutSeconds', 300],
-  ['technicalPauses', 20],
-  ['technicalPauseSeconds', 3600],
-] as const;
-
-/**
- * The tournament's own match rules for Ready Up (pure: tested on its own). `overrides` are
- * Ready Up ruleset keys, sent in either ruleset; `teamReady` / `giveUpVote` replace the site's
- * when set; no knife round in esports unless the tournament asks (Valve's rules refuse it).
- */
-export function tournamentMatchRules(cs2: Cs2TournamentSettings | null | undefined): {
-  knifeRound: boolean;
-  teamReady?: boolean;
-  giveUpVote?: boolean;
-  overrides: Record<string, number | string | boolean>;
-} {
-  const esports = cs2?.esportsMode === true;
-  const overrides: Record<string, number | string | boolean> = {};
-  if (defaultAgentsOn(cs2)) overrides.default_models = true;
-  const skins = cs2?.platformSkins ?? !esports;
-  if (skins === esports) overrides.cosmetics = skins ? 'plugin' : 'inventory';
-  if (cs2?.tacticalTimeouts !== undefined) overrides.tac_timeouts = cs2.tacticalTimeouts;
-  if (cs2?.tacticalTimeoutSeconds !== undefined)
-    overrides.tac_timeout_seconds = Math.max(1, cs2.tacticalTimeoutSeconds);
-  if (cs2?.technicalPauses !== undefined) overrides.tech_pauses_per_team = cs2.technicalPauses;
-  if (cs2?.technicalPauseSeconds !== undefined)
-    overrides.tech_pause_seconds = cs2.technicalPauseSeconds;
-  const knifeRound = cs2?.knifeRound ?? !esports;
-  if (esports && knifeRound) overrides.allow_knife = true;
-  return {
-    knifeRound,
-    ...(cs2?.teamReady !== undefined ? { teamReady: cs2.teamReady } : {}),
-    ...(cs2?.giveUpVote !== undefined ? { giveUpVote: cs2.giveUpVote } : {}),
-    overrides,
-  };
-}
-
-/** Whether a tournament's matches use the default agents: its own choice, else on in esports mode. */
-export function defaultAgentsOn(
-  cs2: Pick<Cs2TournamentSettings, 'defaultAgents' | 'esportsMode'> | null | undefined
-): boolean {
-  return cs2?.defaultAgents ?? cs2?.esportsMode === true;
 }
 
 /** `settings.cs2.broadcast`: the tournament's own GOTV settings. */
@@ -468,27 +425,10 @@ export function validateCs2TournamentSettings(
     )
   )
     return done({ fieldErrors: ['autoStartMinutes must be a whole number of minutes, 0 to 120'] });
-  const cs2In = objectIn(input.body?.settings ?? input.settings, CS2_SETTINGS_KEY);
-  for (const key of [
-    'defaultAgents',
-    'knifeRound',
-    'teamReady',
-    'giveUpVote',
-    'platformSkins',
-  ] as const) {
-    const v = cs2In[key];
-    if (v !== undefined && v !== null && typeof v !== 'boolean')
-      return done({ fieldErrors: [`${key} must be a boolean`] });
-  }
-  for (const [key, max] of RULE_NUMBERS) {
-    const v = cs2In[key];
-    if (
-      v !== undefined &&
-      v !== null &&
-      !(typeof v === 'number' && Number.isInteger(v) && v >= 0 && v <= max)
-    )
-      return done({ fieldErrors: [`${key} must be a whole number, 0 to ${max}`] });
-  }
+  const ruleErrors = ruleFieldErrors(
+    objectIn(input.body?.settings ?? input.settings, CS2_SETTINGS_KEY)
+  );
+  if (ruleErrors.length) return done({ fieldErrors: ruleErrors });
   const broadcastErrors = broadcastFieldErrors(
     objectIn(input.body?.settings ?? input.settings, CS2_SETTINGS_KEY).broadcast
   );
@@ -571,20 +511,7 @@ function applyLayer(
   if (typeof layer.esportsMode === 'boolean') into.esportsMode = layer.esportsMode;
   if (typeof layer.autoStartMinutes === 'number') into.autoStartMinutes = layer.autoStartMinutes;
   else if (layer.autoStartMinutes === null) delete into.autoStartMinutes;
-  for (const key of [
-    'defaultAgents',
-    'knifeRound',
-    'teamReady',
-    'giveUpVote',
-    'platformSkins',
-  ] as const) {
-    if (typeof layer[key] === 'boolean') into[key] = layer[key] as boolean;
-    else if (layer[key] === null) delete into[key];
-  }
-  for (const [key] of RULE_NUMBERS) {
-    if (typeof layer[key] === 'number') into[key] = layer[key] as number;
-    else if (layer[key] === null) delete into[key];
-  }
+  applyRuleFields(into, layer);
   if (typeof layer.veto === 'boolean') into.veto = layer.veto;
   if (layer.connectVia === 'lan' || layer.connectVia === 'public')
     into.connectVia = layer.connectVia;
@@ -664,23 +591,10 @@ export const cs2TournamentSettings: ModuleTournamentSettings<Cs2TournamentSettin
       ...(value?.matchDrops !== undefined ? { matchDrops: value.matchDrops } : {}),
       ...(value?.mvp ? { mvp: value.mvp } : {}),
       ...(value?.esportsMode !== undefined ? { esportsMode: value.esportsMode } : {}),
-      ...(value?.defaultAgents !== undefined ? { defaultAgents: value.defaultAgents } : {}),
       ...(value?.autoStartMinutes !== undefined
         ? { autoStartMinutes: value.autoStartMinutes }
         : {}),
-      ...Object.fromEntries(
-        (
-          [
-            'knifeRound',
-            'teamReady',
-            'giveUpVote',
-            'platformSkins',
-            ...RULE_NUMBERS.map(([key]) => key),
-          ] as const
-        )
-          .filter((key) => value?.[key] !== undefined)
-          .map((key) => [key, value?.[key]])
-      ),
+      ...ruleFieldsOf(value),
       ...(value?.veto !== undefined ? { veto: value.veto } : {}),
       ...(value?.mapPoolId !== undefined ? { mapPoolId: value.mapPoolId } : {}),
       ...(value?.mapMode ? { mapMode: value.mapMode } : {}),
