@@ -5,7 +5,8 @@
  * - one team short: the match holds for two minutes while the complete team's
  *   captain chooses (POST /api/match-check-in/:slug/walkover): take the
  *   walkover, or play them short. No choice: the walkover stands.
- * - both short: the match holds until an admin decides (Needs you).
+ * - both short: the match holds until an admin decides (Needs you). Once
+ *   they let it go, it plays: no second timer for that load.
  * Warnings go to the server chat two minutes and 30 seconds before.
  */
 
@@ -110,6 +111,15 @@ async function tick(): Promise<void> {
     const short = shortSides(on('team1'), on('team2'), size);
     if (!short.team1 && !short.team2) continue;
     if (short.team1 && short.team2) {
+      // Decided by the admin: once they let the hold go, this load gets no second timer.
+      await db.runAsync(
+        `INSERT INTO match_walkover_offers (match_slug, short_side, expires_at, loaded_at, decided)
+         VALUES (?, 'both', ?, ?, 'admin')
+         ON CONFLICT (match_slug) DO UPDATE
+           SET short_side = 'both', expires_at = EXCLUDED.expires_at,
+               loaded_at = EXCLUDED.loaded_at, decided = 'admin'`,
+        [row.slug, now, row.load_id]
+      );
       await holdMatch(row.slug, { minutes: null, reason: 'Both teams are short' }, ACTOR);
       const { adminNoticeService } = await import('../../../services/adminNoticeService');
       await adminNoticeService.raise(
