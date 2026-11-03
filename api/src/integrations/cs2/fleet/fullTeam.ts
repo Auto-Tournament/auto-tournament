@@ -2,9 +2,10 @@
  * "Getting on the server" (settings.fullTeamMinutes, default 10; Claude Design,
  * the match room): once a tournament match is loaded, each team has that long
  * to have a full team on the server, subs included. Then:
- * - one team short: the match holds for two minutes while the complete team's
- *   captain chooses (POST /api/match-check-in/:slug/walkover): take the
- *   walkover, or play them short. No choice: the walkover stands.
+ * - one team short: the match holds while the complete team's captain
+ *   chooses, in game (`.walkover` / `.play`, chatBridge.ts) or on the match
+ *   page (POST /api/match-check-in/:slug/walkover): take the walkover, or
+ *   play them short. No choice in two minutes: the walkover stands.
  * - both short: the match holds until an admin decides (Needs you). Once
  *   they let it go, it plays: no second timer for that load.
  * Warnings go to the server chat two minutes and 30 seconds before.
@@ -138,13 +139,18 @@ async function tick(): Promise<void> {
              loaded_at = EXCLUDED.loaded_at, decided = NULL`,
       [row.slug, side, now + CHOICE_S, row.load_id]
     );
-    await holdMatch(
-      row.slug,
-      { minutes: CHOICE_S / 60, reason: 'Waiting for the walkover choice' },
-      ACTOR
-    );
+    // Held until the choice: a hold that ran out with the offer let auto-start go live as it closed.
+    await holdMatch(row.slug, { minutes: null, reason: 'Waiting for the walkover choice' }, ACTOR);
+    const name = (s: 'team1' | 'team2') => {
+      try {
+        const c = JSON.parse(row.config ?? '{}') as Partial<Record<string, { name?: Untrusted }>>;
+        return String(c[s]?.name ?? s);
+      } catch {
+        return s;
+      }
+    };
     void say(
-      'Time is up and a team is short. The complete team chooses: walkover, or play them short.'
+      `${name(side)} is short. Captain of ${name(side === 'team1' ? 'team2' : 'team1')}: type .walkover to win, or .play to play them short. ${CHOICE_S / 60} minutes, then the walkover stands.`
     );
   }
   for (const key of [...sent.keys()]) if (!seen.has(key)) sent.delete(key);
