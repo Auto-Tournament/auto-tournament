@@ -82,7 +82,9 @@ export const TOURNAMENT_SETUP_FUNCTIONS = [
   'stepError',
   'summary',
   'roundCount',
+  'minutesPerMap',
   'changes',
+  'builtInTemplates',
 ] as const;
 
 const isObject = (value: Untrusted): value is Record<string, Untrusted> =>
