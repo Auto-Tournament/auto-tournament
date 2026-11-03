@@ -224,6 +224,16 @@ export interface MatchRules {
   wingman?: boolean;
   simulation?: { timescale?: number };
   bot_fill?: { players_per_team: number };
+  /**
+   * The full-team timer (services/walkoverOffers.ts): a full team on the server
+   * by `deadline_ms` (Unix ms, 0 = no timer); then, with one team short, the
+   * full team's open walkover choice. `walkover: null` in a set_rules patch
+   * closes it.
+   */
+  full_team?: {
+    deadline_ms?: number;
+    walkover?: { short: TeamKey; expires_ms: number; choosers: U64s[] } | null;
+  };
   ruleset?: 'default' | 'valve';
   overrides?: JsonObject;
 }
@@ -842,6 +852,7 @@ export interface FleetEventData {
     message: string;
     called_at: string;
   };
+  walkover_choice: { player: { steamid64: U64s; name: string }; take: boolean };
   chat: {
     player: {
       steamid64: U64s;
@@ -883,6 +894,7 @@ export const FLEET_EVENT_NAMES: ReadonlyArray<FleetEventName> = [
   'forfeit',
   'gg',
   'admin_called',
+  'walkover_choice',
   'chat',
   'error',
 ];
@@ -970,6 +982,7 @@ export interface FleetMessages {
   'event.forfeit': FleetEventPayload<FleetEventData['forfeit']>;
   'event.gg': FleetEventPayload<FleetEventData['gg']>;
   'event.admin_called': FleetEventPayload<FleetEventData['admin_called']>;
+  'event.walkover_choice': FleetEventPayload<FleetEventData['walkover_choice']>;
   'event.chat': FleetEventPayload<FleetEventData['chat']>;
   'event.error': FleetEventPayload<FleetEventData['error']>;
   'demo.begin': DemoBeginPayload;
@@ -1052,6 +1065,7 @@ export const FLEET_MESSAGES: Record<FleetMessageType, { direction: Direction; re
     'event.forfeit': S2P_RELIABLE,
     'event.gg': S2P_RELIABLE,
     'event.admin_called': S2P_RELIABLE,
+    'event.walkover_choice': S2P_RELIABLE,
     'event.chat': S2P_RELIABLE,
     'event.error': S2P_RELIABLE,
     'demo.begin': { direction: 'server_to_platform', reliable: false },

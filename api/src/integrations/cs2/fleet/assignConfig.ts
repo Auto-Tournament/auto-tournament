@@ -27,6 +27,7 @@
 
 import { randomBytes } from 'crypto';
 import type { MatchConfig, MatchPlayer, MatchTeam } from '../../../types/match.types';
+import type { JsonObject, JsonValue } from '../../../utils/json';
 import type {
   AssignConfig,
   AssignPlayer,
@@ -393,12 +394,41 @@ function roleOf(player: AssignPlayer): PlayerRole {
   return player.role ?? 'player';
 }
 
+/**
+ * A JSON merge patch (RFC 7386, what Ready Up's `set_rules` applies) that
+ * turns `from` into `to` (pure): changed keys, `null` for removed ones.
+ * Undefined: no change.
+ */
+export function mergePatch(
+  from: JsonValue | undefined,
+  to: JsonValue | undefined
+): JsonValue | undefined {
+  const isObject = (v: JsonValue | undefined): v is JsonObject =>
+    typeof v === 'object' && v !== null && !Array.isArray(v);
+  if (!isObject(from) || !isObject(to)) {
+    return JSON.stringify(from) === JSON.stringify(to) ? undefined : (to ?? null);
+  }
+  const patch: JsonObject = {};
+  for (const key of new Set([...Object.keys(from), ...Object.keys(to)])) {
+    const change = mergePatch(from[key], to[key]);
+    if (change !== undefined) patch[key] = change;
+  }
+  return Object.keys(patch).length ? patch : undefined;
+}
+
 /** The ops that turn `from` into `to`: team names, players in and out (a moved player is removed, then added). */
 export function diffAssignConfig(
-  from: Pick<AssignConfig, 'team1' | 'team2' | 'spectators'>,
-  to: Pick<AssignConfig, 'team1' | 'team2' | 'spectators'>
+  from: Pick<AssignConfig, 'team1' | 'team2' | 'spectators' | 'rules'>,
+  to: Pick<AssignConfig, 'team1' | 'team2' | 'spectators' | 'rules'>
 ): MatchUpdateOp[] {
   const ops: MatchUpdateOp[] = [];
+  // The rules a running match follows (a hold's forfeit clock, the full-team
+  // timer), as a merge patch. Only these: the rest was settled at the assign
+  // (rules.demo.upload is the server's capability, not rebuilt here).
+  const live = (r: MatchRules | undefined) =>
+    JSON.parse(JSON.stringify({ forfeit: r?.forfeit, full_team: r?.full_team })) as JsonObject;
+  const rules = mergePatch(live(from.rules), live(to.rules));
+  if (rules) ops.push({ op: 'set_rules', rules: rules as MatchRules });
   for (const team of ['team1', 'team2'] as const) {
     if (from[team].name !== to[team].name)
       ops.push({ op: 'rename_team', team, name: to[team].name });

@@ -3,8 +3,7 @@
  *
  * - in: a player's chat line in game (`event.chat`) goes into the match's chat
  *   on the site (`match:<slug>`), where the admins read it. Ready Up commands
- *   (`.ready`, `!pause`) stay out. `.walkover` / `.play` are the full team's
- *   walkover choice (services/walkoverOffers.ts), answered in game.
+ *   (`.ready`, `!pause`) stay out.
  * - out: an admin's message in that chat is said on the server:
  *   `cmd say {text, from, as_admin}`. Players' messages from the site are not
  *   (Ready Up shows `from` as an admin's name). Lines from the game never go
@@ -32,15 +31,11 @@ import { runFleetCommand, type IssuedBy } from './driver';
 import { fleetServerIdOf } from './link';
 import { sayInGame } from './gameMessages';
 import type { FleetEventData } from './protocol/v1';
-import { chooseWalkoverInGame } from '../../../services/walkoverOffers';
 
 /** What Ready Up's say takes per line. */
 const SAY_MAX_BYTES = 190;
 /** A long message is said in at most this many lines. */
 const SAY_MAX_LINES = 3;
-
-/** The walkover choice in game: `.walkover`, `.play`. */
-const WALKOVER = /^[.!](walkover|play)(\s|$)/i;
 
 /** A Ready Up chat command, not chat: `.ready`, `!gg`. */
 const COMMAND = /^[.!][a-z]/i;
@@ -122,15 +117,6 @@ function onEvent(notice: FleetEventNotice): void {
   };
   const data = payload.data;
   const message = (data?.message ?? '').trim();
-  const choice = WALKOVER.exec(message);
-  if (choice) {
-    void answerWalkover(
-      payload.match_id,
-      data.player.steamid64,
-      choice[1].toLowerCase() === 'walkover'
-    );
-    return;
-  }
   if (!message || COMMAND.test(message)) return;
   void postGameChatMessage(payload.match_id, {
     steamId: data.player.steamid64,
@@ -143,21 +129,6 @@ function onEvent(notice: FleetEventNotice): void {
       error: String(error),
     })
   );
-}
-
-async function answerWalkover(slug: string, steamId: string, take: boolean): Promise<void> {
-  const reply = await chooseWalkoverInGame(slug, steamId, take).catch((error: unknown) => {
-    log.warn(`[CHAT BRIDGE] ${slug}: the walkover choice failed`, { error: String(error) });
-    return 'That did not work. Try again, or use the match page.';
-  });
-  const serverId = reply ? await liveServerOf(slug) : null;
-  if (!reply || !serverId) return;
-  await runFleetCommand(
-    serverId,
-    'say',
-    { text: reply, as_admin: true },
-    { userId: 'platform:full-team', name: 'Full team', root: false }
-  ).catch(() => undefined);
 }
 
 async function onCallChanged(change: AdminCallChange): Promise<void> {

@@ -86,7 +86,69 @@ export async function chooseWalkover(slug: string, uid: string, take: boolean): 
 }
 
 /**
- * `.walkover` / `.play` in game (cs2 chatBridge): the player's account, then
+ * `rules.full_team` for the match's Ready Up server (its HUD): the deadline
+ * while the timer runs, then the open choice and who may make it (the full
+ * team's owner and captains). Null: no timer for this match.
+ */
+export async function fullTeamRules(slug: string): Promise<{
+  deadline_ms: number;
+  walkover: { short: 'team1' | 'team2'; expires_ms: number; choosers: string[] } | null;
+} | null> {
+  const row = await db.queryOneAsync<{
+    load_id: number | null;
+    loaded_at: number | null;
+    config: string | null;
+    settings: string | null;
+    type: string;
+    team1_id: string | null;
+    team2_id: string | null;
+  }>(
+    `SELECT m.loaded_at AS load_id, GREATEST(m.loaded_at, COALESCE(m.countdown_from, 0)) AS loaded_at,
+            m.config, t.settings, t.type, m.team1_id, m.team2_id
+       FROM matches m JOIN tournament t ON t.id = m.tournament_id WHERE m.slug = ?`,
+    [slug]
+  );
+  if (!row || row.type === 'shuffle') return null;
+  const minutes = botsPlay(row.config) ? 0 : fullTeamMinutesOf(row.settings);
+  if (minutes <= 0) return null;
+  const offer = row.load_id
+    ? await db.queryOneAsync<{ short_side: string; expires_at: number; decided: string | null }>(
+        'SELECT short_side, expires_at, decided FROM match_walkover_offers WHERE match_slug = ? AND loaded_at = ?',
+        [slug, row.load_id]
+      )
+    : null;
+  // Decided (or the admin's call): the timer is done for this load.
+  if (offer?.decided) return { deadline_ms: 0, walkover: null };
+  // Not loaded yet (the assign itself): the clock starts about now.
+  const from = Number(row.loaded_at) || Math.floor(Date.now() / 1000);
+  const deadline_ms = (from + minutes * 60) * 1000;
+  if (!offer || (offer.short_side !== 'team1' && offer.short_side !== 'team2')) {
+    return { deadline_ms, walkover: null };
+  }
+  const fullTeamId = offer.short_side === 'team1' ? row.team2_id : row.team1_id;
+  const choosers = fullTeamId
+    ? await db.queryAsync<{ id: string }>(
+        `SELECT p.id FROM players p
+          WHERE p.uid IN (SELECT owner_uid FROM teams WHERE id = ?
+                          UNION SELECT account_uid FROM team_members WHERE team_id = ? AND role = 'captain')`,
+        [fullTeamId, fullTeamId]
+      )
+    : [];
+  return {
+    deadline_ms,
+    walkover: {
+      short: offer.short_side,
+      expires_ms: Number(offer.expires_at) * 1000,
+      choosers: [...new Set(choosers.map((c) => c.id).filter((id) => /^\d{17}$/.test(id)))].slice(
+        0,
+        32
+      ),
+    },
+  };
+}
+
+/**
+ * `.walkover` / `.play` in game (the HUD's buttons; cs2 fleet/walkoverChoice.ts): the player's account, then
  * the same choice as the match page. What to say back in game, or null when
  * there is nothing to choose (any other chat line).
  */
