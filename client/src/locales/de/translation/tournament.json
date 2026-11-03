@@ -742,6 +742,17 @@
         "gotvOn_one": "Spectators can watch in GOTV, {{count}} second behind (Match rules › Spectators).",
         "gotvOn_other": "Spectators can watch in GOTV, {{count}} seconds behind (Match rules › Spectators).",
         "gotvOff": "Spectators can't watch in GOTV (Match rules › Spectators)."
+      },
+      "startFrom": {
+        "title": "Start from",
+        "help": "A template fills in the format, maps and match settings. Change anything on the next steps.",
+        "blank": "Blank",
+        "blankHelp": "Single elimination, Bo3, the site's map pool and match rules.",
+        "siteDefaults": "Site defaults",
+        "builtIn": "Built in",
+        "saved": "Saved",
+        "standardRules": "Standard rules",
+        "ownTemplates": "Your own templates come from <link>Templates & ratings</link>. Save this tournament as one when it's set up."
       }
     },
     "startButton": {
