@@ -163,6 +163,15 @@ export function getSchemaSQL(): string {
     );
 
     -- Lineup players who said "I'm here" in the check-in window.
+    -- Check-in before each match (settings.checkInEachMatch, services/matchCheckIns.ts).
+    CREATE TABLE IF NOT EXISTS match_checkins (
+      match_slug TEXT NOT NULL,
+      player_id TEXT NOT NULL,
+      checked_in_by TEXT,
+      checked_in_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+      PRIMARY KEY (match_slug, player_id)
+    );
+
     CREATE TABLE IF NOT EXISTS tournament_checkins (
       tournament_id INTEGER NOT NULL REFERENCES tournament(id) ON DELETE CASCADE,
       team_id TEXT NOT NULL,

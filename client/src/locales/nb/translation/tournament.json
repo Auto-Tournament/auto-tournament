@@ -1766,5 +1766,20 @@
     "playoffs": "Sluttspill",
     "playoffsSoon": "Sluttspillet starter når alle gruppekampene er spilt.",
     "seedSlot": "Seed {{n}}"
+  },
+  "matchCheckIn": {
+    "eyebrow": "Vetoen er åpen · kampen starter {{time}}",
+    "eyebrowNoTime": "Innsjekken er åpen",
+    "title": "Sjekk inn til denne kampen",
+    "body": "I denne turneringen sjekker dere inn før hver kamp. Startspillerne sier fra at de er her, eller en kaptein gjør det for dem. Innbyttere er allerede klare.",
+    "closesIn": "Innsjekken stenger om",
+    "yourTeam": "{{team}} (laget ditt)",
+    "count": "{{in}} av {{total}} startspillere sjekket inn",
+    "sub": "INNBYTTER",
+    "starter": "STARTER",
+    "ready": "Klar",
+    "checkedIn": "Sjekket inn",
+    "notYet": "Ikke ennå",
+    "rule": "Ikke sjekket inn ved start: startspilleren byttes ut med en innbytter, og kamprommet viser hvem. Er det ingen innbyttere igjen, spiller laget med én spiller mindre."
   }
 }
