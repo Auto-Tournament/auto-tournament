@@ -50,7 +50,12 @@ export async function decideWalkover(slug: string, take: boolean, actorId: strin
 
 /** The viewer's captaincy of the complete team, then their choice. */
 export async function chooseWalkover(slug: string, uid: string, take: boolean): Promise<void> {
-  const row = await db.queryOneAsync<{ short_side: string; decided: string | null; team1_id: string; team2_id: string }>(
+  const row = await db.queryOneAsync<{
+    short_side: string;
+    decided: string | null;
+    team1_id: string;
+    team2_id: string;
+  }>(
     `SELECT o.short_side, o.decided, m.team1_id, m.team2_id
        FROM match_walkover_offers o JOIN matches m ON m.slug = o.match_slug WHERE o.match_slug = ?`,
     [slug]
@@ -63,7 +68,9 @@ export async function chooseWalkover(slug: string, uid: string, take: boolean): 
 /** The match config's players on one side (steam id → name). */
 export function rosterOf(config: string | null, side: 'team1' | 'team2'): Array<[string, string]> {
   try {
-    const c = JSON.parse(config ?? '{}') as Partial<Record<string, { players?: Record<string, Untrusted> }>>;
+    const c = JSON.parse(config ?? '{}') as Partial<
+      Record<string, { players?: Record<string, Untrusted> }>
+    >;
     return Object.entries(c[side]?.players ?? {}).map(([id, name]) => [id, String(name)]);
   } catch {
     return [];
@@ -89,6 +96,7 @@ export interface FullTeamState {
 export async function fullTeamState(slug: string): Promise<FullTeamState | null> {
   const row = await db.queryOneAsync<{
     status: string;
+    load_id: number | null;
     loaded_at: number | null;
     config: string | null;
     team1_id: string | null;
@@ -96,19 +104,25 @@ export async function fullTeamState(slug: string): Promise<FullTeamState | null>
     tournament_id: number;
     settings: string | null;
   }>(
-    `SELECT m.status, GREATEST(m.loaded_at, COALESCE(m.countdown_from, 0)) AS loaded_at, m.config,
+    `SELECT m.status, m.loaded_at AS load_id, GREATEST(m.loaded_at, COALESCE(m.countdown_from, 0)) AS loaded_at, m.config,
             m.team1_id, m.team2_id, m.tournament_id, t.settings
        FROM matches m JOIN tournament t ON t.id = m.tournament_id WHERE m.slug = ?`,
     [slug]
   );
   if (!row) return null;
-  const offer = await db.queryOneAsync<{ short_side: string; expires_at: number; decided: string | null }>(
-    'SELECT short_side, expires_at, decided FROM match_walkover_offers WHERE match_slug = ?',
-    [slug]
+  const offer = await db.queryOneAsync<{
+    short_side: string;
+    expires_at: number;
+    decided: string | null;
+  }>(
+    'SELECT short_side, expires_at, decided FROM match_walkover_offers WHERE match_slug = ? AND loaded_at = ?',
+    [slug, row.load_id]
   );
   const minutes = fullTeamMinutesOf(row.settings);
   const deadline =
-    row.status === 'loaded' && row.loaded_at && minutes > 0 ? Number(row.loaded_at) + minutes * 60 : null;
+    row.status === 'loaded' && row.loaded_at && minutes > 0
+      ? Number(row.loaded_at) + minutes * 60
+      : null;
   if (!deadline && !offer) return null;
   const config = JSON.parse(row.config ?? '{}') as {
     players_per_team?: Untrusted;
