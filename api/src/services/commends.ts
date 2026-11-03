@@ -82,8 +82,9 @@ async function loadMatch(slug: string): Promise<MatchRow> {
 }
 
 /**
- * Who played: the players with stats in the match, else each team's roster
- * (its live roster, else the match's snapshot of it).
+ * Who played: the players with stats in the match. Only a match with no stats at all (reported by
+ * hand) falls back to each team's roster (its live roster, else the match's snapshot of it): a
+ * bot-filled team's placeholder, who never joined, was offered to commend and report (2026-11-03).
  */
 async function sidesOf(match: MatchRow): Promise<CommendSide[]> {
   const stats = await db.queryAsync<{ player_id: string; team: string }>(
@@ -95,7 +96,7 @@ async function sidesOf(match: MatchRow): Promise<CommendSide[]> {
   for (const side of ['team1', 'team2'] as const) {
     const played = stats.filter((s) => s.team === side).map((s) => s.player_id);
     ids[side] =
-      played.length > 0
+      played.length > 0 || stats.length > 0
         ? played
         : teamPlayers(match[`${side}_players`], describedPlayers(description[side])).map(
             (p) => p.steamid
