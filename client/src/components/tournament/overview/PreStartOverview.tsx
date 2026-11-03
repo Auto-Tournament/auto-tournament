@@ -104,16 +104,20 @@ export function SignUpHero({
   tournament,
   signup,
   canSignUp,
+  overlap = null,
   hasSteam,
   onRoster,
 }: {
   tournament: Tournament;
   signup: Signup['window'] | null;
   canSignUp: boolean;
+  /** The viewer is in another tournament playing at the same time. */
+  overlap?: Signup['overlap'];
   hasSteam: boolean;
   onRoster: boolean;
 }) {
   const { t } = useTranslation();
+  if (overlap && signup?.registrationOpen) return <OverlapHero overlap={overlap} />;
   const startsAt = tournament.settings?.startsAt
     ? new Date(tournament.settings.startsAt).getTime()
     : null;
@@ -503,5 +507,34 @@ export function HowMatchesPlayed({
         {t('preStart.allRules')}
       </Box>
     </Box>
+  );
+}
+
+/** A player already in another tournament that plays at the same time (Claude Design, Setup › Teams). */
+function OverlapHero({ overlap }: { overlap: NonNullable<Signup['overlap']> }) {
+  const { t } = useTranslation();
+  return (
+    <StatusHero
+      eyebrow={t('preStart.open')}
+      eyebrowColor={color.muted}
+      ring={color.rule}
+      title={t('signup.overlap.title')}
+      body={t('signup.overlap.body', { name: overlap.name, when: fmtWeekdayTime(overlap.at) })}
+      side={
+        <>
+          <Button
+            variant="contained"
+            disabled
+            data-testid="overview-sign-up-blocked"
+            sx={{ minHeight: 56, borderRadius: radii.pill, fontWeight: 700 }}
+          >
+            {t('signup.cta')}
+          </Button>
+          <Button component={RouterLink} to={`/tournament/${overlap.tournamentId}`} variant="text">
+            {t('signup.overlap.open', { name: overlap.name })}
+          </Button>
+        </>
+      }
+    />
   );
 }

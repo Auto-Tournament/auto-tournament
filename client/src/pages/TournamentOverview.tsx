@@ -107,6 +107,7 @@ export default function TournamentOverview() {
     tournament.status === 'setup' &&
     phase === 'open' &&
     !registration &&
+    !signup.overlap &&
     (spotsLeft === null || spotsLeft > 0);
 
   // Once it is over, the overview is the results.
@@ -211,6 +212,7 @@ export default function TournamentOverview() {
             tournament={tournament}
             signup={signup.window}
             canSignUp={canSignUp}
+            overlap={registration ? null : signup.overlap}
             hasSteam={viewerHasSteamIdentity}
             onRoster={!!viewerTeam || signup.eligibleTeams.length > 0}
           />

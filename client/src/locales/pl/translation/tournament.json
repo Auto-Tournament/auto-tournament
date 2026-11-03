@@ -795,6 +795,13 @@
         "firstDay": "First day",
         "lastDay": "Last day",
         "markedLegend": "Another tournament on this site plays that day"
+      },
+      "overlap": {
+        "headsUp": "Heads up: {{name}} also plays on {{day}}",
+        "headsUpBody": "{{from}}–{{to}} on the same servers. Both can run: matches wait for a free server, and a player can only be in both if their round times don't overlap.",
+        "openOther": "Open {{name}}'s schedule",
+        "round": "Overlaps {{name}} ({{day}}, {{from}}–{{to}}) on the same servers. You can still save it. A player in {{name}} can't sign up here, since this round plays at the same time.",
+        "see": "See {{name}}"
       }
     },
     "startButton": {
@@ -1235,7 +1242,12 @@
     "counts": "{{starters}} of {{teamSize}} starters · {{subs}} of {{maxSubs}} subs",
     "lineupRatingValue": "Lineup rating {{rating}}",
     "missingGame": "{{names}} need {{game}} on their profile.",
-    "subsLine": "sub: {{names}}"
+    "subsLine": "sub: {{names}}",
+    "overlap": {
+      "title": "You can't sign up for this one",
+      "body": "You're in {{name}}, which has a match {{when}}, the same time as this tournament. You can be in both tournaments when the match times don't overlap.",
+      "open": "Open {{name}}"
+    }
   },
   "bracketCards": {
     "open": "Open {{a}} vs {{b}}",

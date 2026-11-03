@@ -537,6 +537,7 @@ export function TournamentSetup(props: TournamentSetupProps) {
               value={form.matchTimes.start}
               onChange={(start) => handlers.onMatchTimesChange({ ...form.matchTimes, start })}
               disabled={locked}
+              tournamentId={tournament?.id}
             />
             {/* Where, rules, about: the event page (the draft's "Name and day"). */}
             {eventPageCard}
@@ -628,6 +629,7 @@ export function TournamentSetup(props: TournamentSetupProps) {
             breakMinutes={siteRules?.matchBreakMinutes ?? null}
             disabled={locked}
             roundBreaks={isShuffle}
+            tournamentId={tournament?.id}
           />
         );
 

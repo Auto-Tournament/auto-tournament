@@ -16,6 +16,13 @@ export interface SignupWindow {
   captainCheckIn?: boolean;
 }
 
+/** Another tournament the viewer is in, playing at the same time (a match at `at`). */
+export interface SignupOverlap {
+  tournamentId: number;
+  name: string;
+  at: string;
+}
+
 export type ReadinessProblem = 'noAccount' | 'noGame';
 
 export interface LineupPlayer {
@@ -79,6 +86,8 @@ export interface TournamentSignupState {
   eligibleTeams: EligibleTeam[];
   /** The signed-in player's Steam ID. */
   steamId: string | null;
+  /** The viewer is in another tournament that plays at the same time: no sign-up here. */
+  overlap: SignupOverlap | null;
   loading: boolean;
   reload: () => Promise<void>;
 }
@@ -114,6 +123,7 @@ export function useTournamentSignup(tournamentId: number): TournamentSignupState
   const [players, setPlayers] = useState<ShufflePlayer[] | null>(null);
   const [eligibleTeams, setEligibleTeams] = useState<EligibleTeam[]>([]);
   const [steamId, setSteamId] = useState<string | null>(null);
+  const [overlap, setOverlap] = useState<SignupOverlap | null>(null);
   const [loading, setLoading] = useState(true);
 
   const reload = useCallback(async () => {
@@ -128,12 +138,13 @@ export function useTournamentSignup(tournamentId: number): TournamentSignupState
       setPlayers(data.players ?? null);
       if (playerSteamId) {
         const me = await api
-          .get<{ steamId: string; teams: EligibleTeam[] }>(
+          .get<{ steamId: string; teams: EligibleTeam[]; overlap?: SignupOverlap | null }>(
             `/api/tournament-signup/${tournamentId}/me`
           )
           .catch(() => null);
         setEligibleTeams(me?.teams ?? []);
         setSteamId(me?.steamId ?? playerSteamId);
+        setOverlap(me?.overlap ?? null);
       } else {
         setEligibleTeams([]);
         setSteamId(null);
@@ -159,7 +170,7 @@ export function useTournamentSignup(tournamentId: number): TournamentSignupState
     };
   }, [socket, reload]);
 
-  return { window, registrations, players, eligibleTeams, steamId, loading, reload };
+  return { window, registrations, players, eligibleTeams, steamId, overlap, loading, reload };
 }
 
 /** The signed-up team the viewer belongs to: in its lineup, or its owner or captain. */

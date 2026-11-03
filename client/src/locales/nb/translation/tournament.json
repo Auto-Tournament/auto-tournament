@@ -793,6 +793,13 @@
         "firstDay": "Første dag",
         "lastDay": "Siste dag",
         "markedLegend": "En annen turnering på siden spilles den dagen"
+      },
+      "overlap": {
+        "headsUp": "Obs: {{name}} spilles også {{day}}",
+        "headsUpBody": "Kl. {{from}}–{{to}} på de samme serverne. Begge kan kjøres: kampene venter på en ledig server, og en spiller kan bare være med i begge hvis rundetidene ikke overlapper.",
+        "openOther": "Åpne tidsplanen til {{name}}",
+        "round": "Overlapper med {{name}} ({{day}}, kl. {{from}}–{{to}}) på de samme serverne. Du kan likevel lagre. En spiller i {{name}} kan ikke melde seg på her, siden denne runden spilles samtidig.",
+        "see": "Se {{name}}"
       }
     },
     "startButton": {
@@ -1233,7 +1240,12 @@
     "counts": "{{starters}} av {{teamSize}} startspillere · {{subs}} av {{maxSubs}} reserver",
     "lineupRatingValue": "Lagets rating {{rating}}",
     "missingGame": "{{names}} må legge til {{game}} på profilen sin.",
-    "subsLine": "reserve: {{names}}"
+    "subsLine": "reserve: {{names}}",
+    "overlap": {
+      "title": "Du kan ikke melde deg på denne",
+      "body": "Du er med i {{name}}, som har en kamp {{when}}, samtidig som denne turneringen. Du kan være med i begge når kamptidene ikke overlapper.",
+      "open": "Åpne {{name}}"
+    }
   },
   "bracketCards": {
     "you": "Deg",
