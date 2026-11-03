@@ -11,6 +11,7 @@ import { TeamSelectionStep } from '../TeamSelectionStep';
 import { ShufflePlayerRegistration } from '../ShufflePlayerRegistration';
 import { ShuffleTournamentStats } from '../ShuffleTournamentStats';
 import { SignupSettings } from './SignupSettings';
+import { scheduleSettings } from './ScheduleStep';
 import { TournamentTeamsList } from './TournamentTeamsList';
 import type { SetupFormHandlers, SetupFormValues, SetupTournament } from './TournamentSetup';
 import type { useSetupSignup } from './useSetupData';
@@ -124,6 +125,7 @@ export function TeamsStep({
         value={signup}
         onChange={tournament ? savedSignup.setValue : handlers.onSignupChange}
         disabled={locked}
+        startsAt={scheduleSettings(form.matchTimes).startsAt}
         {...(tournament
           ? {
               onSave: () => void saveSignup(),

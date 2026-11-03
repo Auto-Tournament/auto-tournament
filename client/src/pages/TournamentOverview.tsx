@@ -180,6 +180,17 @@ export default function TournamentOverview() {
               await api.post(`/api/tournament-signup/${tournament.id}/check-in`, {});
               await signup.reload();
             }}
+            onCheckInPlayer={
+              canManage && signup.window.captainCheckIn !== false
+                ? async (playerSteamId) => {
+                    await api.post(
+                      `/api/tournament-signup/${tournament.id}/check-in/${encodeURIComponent(registration.teamId)}/${encodeURIComponent(playerSteamId)}`,
+                      {}
+                    );
+                    await signup.reload();
+                  }
+                : undefined
+            }
           />
         ) : registration ? (
           <RegisteredPanel

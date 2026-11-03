@@ -691,7 +691,25 @@
         "noneYet": "Ingen lag ennå. De dukker opp her når de melder seg på.",
         "noTeams": "Ingen lag ennå.",
         "addYourself": "Legg til lag selv",
-        "pickTeams": "Velg lagene"
+        "pickTeams": "Velg lagene",
+        "windowTitle": "Påmeldingsperiode",
+        "opensLabel": "Påmeldingen åpner",
+        "opensNow": "Nå",
+        "opensLater": "På et bestemt tidspunkt",
+        "opensNowHelp": "Åpen så snart du oppretter turneringen.",
+        "opensLaterHelp": "Stengt til da. Siden teller ned til det.",
+        "closesHelp": "Lagoppstillingen kan endres til innsjekken stenger.",
+        "checkInTitle": "Innsjekk",
+        "checkInHelp": "Åpner før turneringen starter og stenger når den starter. Et lag spiller når alle startspillerne har sjekket inn.",
+        "checkInChip_one": "{{count}} min før",
+        "checkInChip_other": "{{count}} min før",
+        "checkInOff": "Ingen innsjekk",
+        "checkInLine": "Åpner {{day}} kl. {{time}} og stenger når turneringen starter kl. {{start}}.",
+        "checkInLineNoStart_one": "Åpner {{count}} minutt før starten og stenger når den starter.",
+        "checkInLineNoStart_other": "Åpner {{count}} minutter før starten og stenger når den starter.",
+        "checkInLineOff": "Ingen innsjekk: alle påmeldte lag spiller.",
+        "captainsLabel": "Kapteiner kan sjekke inn lagkameratene sine",
+        "captainsHelp": "Eieren eller en kaptein kan merke en startspiller som til stede. Møter ikke spilleren opp, er det de som har ansvaret."
       },
       "groups": {
         "count": "Antall grupper",
@@ -1152,7 +1170,9 @@
       "you": "deg",
       "everyone": "Alle",
       "soundOn": "Lyd på: du hører når det er tid",
-      "soundOff": "Lyd av"
+      "soundOff": "Lyd av",
+      "checkInFor": "Sjekk inn {{name}}",
+      "checkInShort": "Sjekk inn"
     },
     "noTeamTitle": "Ingen lag å melde på",
     "noTeamBody": "Bare lagets eier eller en kaptein kan melde det på. Opprett et lag, eller spør kapteinen din.",
@@ -1566,7 +1586,9 @@
     "lineupCount": "Oppstilling · {{starters}} startspillere, {{subs}} reserver",
     "fixBeforeCheckIn": "Fiks før innsjekk",
     "leave": "Forlat turneringen",
-    "withdrawHint": "Kan du ikke delta? Trekker du deg, blir plassen ledig for et annet lag."
+    "withdrawHint": "Kan du ikke delta? Trekker du deg, blir plassen ledig for et annet lag.",
+    "opensTitle": "Påmeldingen åpner {{when}}",
+    "opensIn": "Åpner om {{time}}."
   },
   "shuffleOverview": {
     "yourMatchLive": "kampen din er live",

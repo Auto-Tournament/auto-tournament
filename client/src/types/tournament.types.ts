@@ -82,6 +82,12 @@ export interface TournamentSettings {
   maxTeams?: number | null;
   checkInOpensAt?: string;
   checkInClosesAt?: string;
+  /** Check-in opens this many minutes before startsAt and closes at it (0: none). */
+  checkInMinutes?: number;
+  /** The owner or a captain may check in their teammates (default true). */
+  captainCheckIn?: boolean;
+  /** Sign-up stays closed until then (ISO). */
+  registrationOpensAt?: string;
   /** Virtual skin rewards for the top three; on unless turned off here. */
 }
 

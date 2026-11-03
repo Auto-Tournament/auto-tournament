@@ -690,7 +690,25 @@
         "noneYet": "No teams yet. They show up here as they sign up.",
         "noTeams": "No teams yet.",
         "addYourself": "Add teams yourself",
-        "pickTeams": "Pick the teams"
+        "pickTeams": "Pick the teams",
+        "windowTitle": "Sign-up window",
+        "opensLabel": "Sign-up opens",
+        "opensNow": "Now",
+        "opensLater": "At a set time",
+        "opensNowHelp": "Open as soon as you create the tournament.",
+        "opensLaterHelp": "Closed until then. The page counts down to it.",
+        "closesHelp": "Lineups can change until check-in closes.",
+        "checkInTitle": "Check-in",
+        "checkInHelp": "Opens before the tournament starts and closes when it starts. A team plays when all its starters have checked in.",
+        "checkInChip_one": "{{count}} min before",
+        "checkInChip_other": "{{count}} min before",
+        "checkInOff": "No check-in",
+        "checkInLine": "Opens {{day}} at {{time}}, closes when the tournament starts at {{start}}.",
+        "checkInLineNoStart_one": "Opens {{count}} minute before the start and closes when it starts.",
+        "checkInLineNoStart_other": "Opens {{count}} minutes before the start and closes when it starts.",
+        "checkInLineOff": "No check-in: every signed-up team plays.",
+        "captainsLabel": "Captains can check in their teammates",
+        "captainsHelp": "The owner or a captain can mark a starter as here. They answer for it if that player doesn't show."
       },
       "groups": {
         "count": "Number of groups",
@@ -1151,7 +1169,9 @@
       "you": "you",
       "everyone": "Everyone",
       "soundOn": "Sound on: you'll hear when it's time",
-      "soundOff": "Sound off"
+      "soundOff": "Sound off",
+      "checkInFor": "Check in {{name}}",
+      "checkInShort": "Check in"
     },
     "noTeamTitle": "No team to sign up",
     "noTeamBody": "Only a team’s owner or a captain can sign it up. Make a team, or ask your captain.",
@@ -1565,7 +1585,9 @@
     "lineupCount": "Lineup · {{starters}} starters, {{subs}} subs",
     "fixBeforeCheckIn": "Fix before check-in",
     "leave": "Leave the tournament",
-    "withdrawHint": "Can’t make it? Withdrawing frees the spot for another team."
+    "withdrawHint": "Can’t make it? Withdrawing frees the spot for another team.",
+    "opensTitle": "Sign-up opens {{when}}",
+    "opensIn": "Opens in {{time}}."
   },
   "shuffleOverview": {
     "yourMatchLive": "your match is live",

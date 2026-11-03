@@ -11,27 +11,48 @@ import { useState } from 'react';
 import { Box, Button, Stack, TextField, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { SegmentedControl } from './SegmentedControl';
-import { DateTimeField } from '../../common/DatePicker';
+import { SignupWindowFields } from './SignupWindowFields';
 import type { TournamentSettings } from '../../../types';
 
 export interface SignupFields {
   registrationOpen: boolean;
+  /** Sign-up opens then (ISO); '' opens it as soon as the tournament is saved. */
+  registrationOpensAt: string;
   registrationClosesAt: string;
   maxTeams: number | null;
+  /** The older fixed check-in times, cleared once `checkInMinutes` is saved. */
   checkInOpensAt: string;
   checkInClosesAt: string;
+  /** Check-in opens this many minutes before the start and closes at it (0: no check-in). */
+  checkInMinutes: number;
+  /** The owner or a captain may check in their teammates. */
+  captainCheckIn: boolean;
   /** Players per team: how many starters a team picks when it signs up. */
   teamSize: number;
 }
 
 export const DEFAULT_SIGNUP: SignupFields = {
   registrationOpen: false,
+  registrationOpensAt: '',
   registrationClosesAt: '',
   maxTeams: null,
   checkInOpensAt: '',
   checkInClosesAt: '',
+  checkInMinutes: 30,
+  captainCheckIn: true,
   teamSize: 5,
 };
+
+/** An older tournament's fixed check-in opening as minutes before its start (else 30). */
+function minutesOf(settings: TournamentSettings | undefined): number {
+  const saved = settings?.checkInMinutes;
+  if (typeof saved === 'number') return saved;
+  const opens = Date.parse(settings?.checkInOpensAt ?? '');
+  const start = Date.parse(settings?.startsAt ?? '');
+  return Number.isFinite(opens) && Number.isFinite(start) && start > opens
+    ? Math.round((start - opens) / 60_000)
+    : DEFAULT_SIGNUP.checkInMinutes;
+}
 
 /** A saved tournament's sign-up fields. */
 export function signupOf(
@@ -40,10 +61,13 @@ export function signupOf(
 ): SignupFields {
   return {
     registrationOpen: settings?.registrationOpen === true,
+    registrationOpensAt: settings?.registrationOpensAt ?? '',
     registrationClosesAt: settings?.registrationClosesAt ?? '',
     maxTeams: settings?.maxTeams ?? null,
     checkInOpensAt: settings?.checkInOpensAt ?? '',
     checkInClosesAt: settings?.checkInClosesAt ?? '',
+    checkInMinutes: minutesOf(settings),
+    captainCheckIn: settings?.captainCheckIn !== false,
     teamSize: teamSize ?? 5,
   };
 }
@@ -52,10 +76,14 @@ export function signupOf(
 export function signupSettingsPatch(fields: SignupFields): Partial<TournamentSettings> {
   return {
     registrationOpen: fields.registrationOpen,
+    registrationOpensAt: fields.registrationOpensAt,
     registrationClosesAt: fields.registrationClosesAt,
     maxTeams: fields.maxTeams,
-    checkInOpensAt: fields.checkInOpensAt,
-    checkInClosesAt: fields.checkInClosesAt,
+    // Check-in is minutes before the start now: the older fixed times go.
+    checkInOpensAt: '',
+    checkInClosesAt: '',
+    checkInMinutes: fields.checkInMinutes,
+    captainCheckIn: fields.captainCheckIn,
   } as Partial<TournamentSettings>;
 }
 
@@ -63,6 +91,8 @@ interface SignupSettingsProps {
   value: SignupFields;
   onChange: (next: SignupFields) => void;
   disabled?: boolean;
+  /** The tournament's start (ISO), for "check-in opens at …". */
+  startsAt?: string;
   /** A saved tournament: a Save button, enabled while `dirty`. */
   onSave?: () => void;
   dirty?: boolean;
@@ -73,25 +103,13 @@ export function SignupSettings({
   value,
   onChange,
   disabled,
+  startsAt,
   onSave,
   dirty,
   saving,
 }: SignupSettingsProps) {
   const { t } = useTranslation();
   const set = (patch: Partial<SignupFields>) => onChange({ ...value, ...patch });
-  const dateField = (
-    key: 'registrationClosesAt' | 'checkInOpensAt' | 'checkInClosesAt',
-    label: string
-  ) => (
-    <DateTimeField
-      label={label}
-      value={value[key]}
-      onChange={(iso) => set({ [key]: iso })}
-      disabled={disabled}
-      testId={`signup-${key}`}
-    />
-  );
-
   return (
     <Stack spacing={2} data-testid="setup-signup">
       <SegmentedControl
@@ -148,10 +166,10 @@ export function SignupSettings({
             helperText={t('tournament.setup.signup.maxTeamsHelp')}
             disabled={disabled}
           />
-          {dateField('registrationClosesAt', t('tournament.eventPage.signupClosesAt'))}
-          {dateField('checkInOpensAt', t('tournament.eventPage.checkInOpensAt'))}
-          {dateField('checkInClosesAt', t('tournament.eventPage.checkInClosesAt'))}
         </Box>
+      )}
+      {value.registrationOpen && (
+        <SignupWindowFields value={value} onChange={set} startsAt={startsAt} disabled={disabled} />
       )}
       {onSave && (
         <Box>
