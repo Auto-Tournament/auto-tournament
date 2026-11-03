@@ -954,6 +954,19 @@ function validateEventPageSettings(
   ) {
     return { valid: false, error: 'settings.checkInMinutes must be 0 to 1440 minutes' };
   }
+  if (
+    s.fullTeamMinutes !== undefined &&
+    s.fullTeamMinutes !== null &&
+    (typeof s.fullTeamMinutes !== 'number' ||
+      !Number.isInteger(s.fullTeamMinutes) ||
+      s.fullTeamMinutes < 0 ||
+      s.fullTeamMinutes > 60)
+  ) {
+    return { valid: false, error: 'settings.fullTeamMinutes must be 0 to 60 minutes' };
+  }
+  if (s.checkInEachMatch !== undefined && typeof s.checkInEachMatch !== 'boolean') {
+    return { valid: false, error: 'settings.checkInEachMatch must be true or false' };
+  }
   if (s.captainCheckIn !== undefined && typeof s.captainCheckIn !== 'boolean') {
     return { valid: false, error: 'settings.captainCheckIn must be true or false' };
   }

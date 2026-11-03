@@ -94,6 +94,10 @@ export interface TournamentSettings extends ModuleTournamentObjects {
   checkInMinutes?: number | null;
   /** The owner or a captain may check in their lineup's players (default true). */
   captainCheckIn?: boolean;
+  /** Once a match's server is ready, minutes a team has to be complete before the other may take a walkover (default 10, 0: none). */
+  fullTeamMinutes?: number | null;
+  /** Starters check in again before each match, from its veto opening (default false). */
+  checkInEachMatch?: boolean;
 
   /** Groups, then playoffs (services/groupsTournament.ts): 1–4 each. */
   groupCount?: number;

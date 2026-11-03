@@ -712,7 +712,16 @@
         "checkInLineNoStart_other": "Åpner {{count}} minutter før starten og stenger når den starter.",
         "checkInLineOff": "Ingen innsjekk: alle påmeldte lag spiller.",
         "captainsLabel": "Kapteiner kan sjekke inn lagkameratene sine",
-        "captainsHelp": "Eieren eller en kaptein kan merke en startspiller som til stede. Møter ikke spilleren opp, er det de som har ansvaret."
+        "captainsHelp": "Eieren eller en kaptein kan merke en startspiller som til stede. Møter ikke spilleren opp, er det de som har ansvaret.",
+        "perMatchLabel": "Sjekk inn igjen før hver kamp",
+        "perMatchHelp": "Av: én innsjekk før turneringen gjelder alle kampene. På: spillerne sjekker inn når vetoen til hver kamp åpner.",
+        "fullTeamTitle": "Inn på serveren",
+        "fullTeamHelp": "Når serveren til en kamp er klar, har hvert lag så lang tid på å få et fullt lag inn, innbyttere medregnet. Deretter velger laget som er fulltallig: ta walkover, eller spill mot laget som mangler en spiller. Mangler begge lagene spillere, avgjør en admin.",
+        "fullTeamChip_one": "{{count}} min",
+        "fullTeamChip_other": "{{count}} min",
+        "fullTeamOff": "Ingen walkover",
+        "fullTeamLine": "Spillerne ser nedtellingen i kamprommet og i serverchatten. Innbyttere regnes som klare, så et lag kan sette inn en med en gang.",
+        "fullTeamLineOff": "Ingen walkover: et lag som mangler spillere, spiller med færre når kampen starter automatisk (Kampinnstillinger)."
       },
       "groups": {
         "count": "Antall grupper",

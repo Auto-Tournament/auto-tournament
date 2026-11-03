@@ -11,7 +11,7 @@ import { useState } from 'react';
 import { Box, Button, Stack, TextField, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { SegmentedControl } from './SegmentedControl';
-import { SignupWindowFields } from './SignupWindowFields';
+import { FullTeamField, SignupWindowFields } from './SignupWindowFields';
 import type { TournamentSettings } from '../../../types';
 
 export interface SignupFields {
@@ -27,6 +27,10 @@ export interface SignupFields {
   checkInMinutes: number;
   /** The owner or a captain may check in their teammates. */
   captainCheckIn: boolean;
+  /** Starters check in again before each match. */
+  checkInEachMatch: boolean;
+  /** Minutes a team has to be complete on the server before a walkover (0: none). */
+  fullTeamMinutes: number;
   /** Players per team: how many starters a team picks when it signs up. */
   teamSize: number;
 }
@@ -40,6 +44,8 @@ export const DEFAULT_SIGNUP: SignupFields = {
   checkInClosesAt: '',
   checkInMinutes: 30,
   captainCheckIn: true,
+  checkInEachMatch: false,
+  fullTeamMinutes: 10,
   teamSize: 5,
 };
 
@@ -68,6 +74,8 @@ export function signupOf(
     checkInClosesAt: settings?.checkInClosesAt ?? '',
     checkInMinutes: minutesOf(settings),
     captainCheckIn: settings?.captainCheckIn !== false,
+    checkInEachMatch: settings?.checkInEachMatch === true,
+    fullTeamMinutes: settings?.fullTeamMinutes ?? DEFAULT_SIGNUP.fullTeamMinutes,
     teamSize: teamSize ?? 5,
   };
 }
@@ -84,6 +92,8 @@ export function signupSettingsPatch(fields: SignupFields): Partial<TournamentSet
     checkInClosesAt: '',
     checkInMinutes: fields.checkInMinutes,
     captainCheckIn: fields.captainCheckIn,
+    checkInEachMatch: fields.checkInEachMatch,
+    fullTeamMinutes: fields.fullTeamMinutes,
   } as Partial<TournamentSettings>;
 }
 
@@ -171,6 +181,11 @@ export function SignupSettings({
       {value.registrationOpen && (
         <SignupWindowFields value={value} onChange={set} startsAt={startsAt} disabled={disabled} />
       )}
+      <FullTeamField
+        value={value.fullTeamMinutes}
+        onChange={(m) => set({ fullTeamMinutes: m })}
+        disabled={disabled}
+      />
       {onSave && (
         <Box>
           <Button

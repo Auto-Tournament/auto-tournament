@@ -158,6 +158,24 @@ export function SignupWindowFields({
             label={
               <Box>
                 <Typography fontWeight={600}>
+                  {t('tournament.setup.signup.perMatchLabel')}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {t('tournament.setup.signup.perMatchHelp')}
+                </Typography>
+              </Box>
+            }
+            checked={value.checkInEachMatch}
+            disabled={disabled}
+            onChange={(e) => onChange({ checkInEachMatch: e.target.checked })}
+            data-testid="signup-checkin-each-match"
+          />
+        )}
+        {minutes > 0 && (
+          <SwitchRow
+            label={
+              <Box>
+                <Typography fontWeight={600}>
                   {t('tournament.setup.signup.captainsLabel')}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
@@ -172,6 +190,65 @@ export function SignupWindowFields({
           />
         )}
       </Box>
+    </Box>
+  );
+}
+
+const FULL_TEAM_CHOICES = [5, 10, 15, 0];
+
+/** "Getting on the server": minutes a team has to be complete before the other may take a walkover. */
+export function FullTeamField({
+  value,
+  onChange,
+  disabled,
+}: {
+  value: number;
+  onChange: (minutes: number) => void;
+  disabled?: boolean;
+}) {
+  const { t } = useTranslation();
+  const choices = FULL_TEAM_CHOICES.includes(value)
+    ? FULL_TEAM_CHOICES
+    : [value, ...FULL_TEAM_CHOICES];
+  return (
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.25 }} data-testid="setup-full-team">
+      <Typography component="h2" variant="h6" fontWeight={600}>
+        {t('tournament.setup.signup.fullTeamTitle')}
+      </Typography>
+      <Typography variant="body2" color="text.secondary">
+        {t('tournament.setup.signup.fullTeamHelp')}
+      </Typography>
+      <Stack
+        direction="row"
+        spacing={1}
+        flexWrap="wrap"
+        useFlexGap
+        role="radiogroup"
+        aria-label={t('tournament.setup.signup.fullTeamTitle')}
+      >
+        {choices.map((m) => (
+          <Chip
+            key={m}
+            role="radio"
+            aria-checked={m === value}
+            label={
+              m === 0
+                ? t('tournament.setup.signup.fullTeamOff')
+                : t('tournament.setup.signup.fullTeamChip', { count: m })
+            }
+            color={m === value ? 'primary' : 'default'}
+            variant={m === value ? 'filled' : 'outlined'}
+            disabled={disabled}
+            onClick={() => onChange(m)}
+            data-testid={`signup-full-team-${m}`}
+          />
+        ))}
+      </Stack>
+      <Typography variant="body2" color="text.secondary">
+        {value
+          ? t('tournament.setup.signup.fullTeamLine')
+          : t('tournament.setup.signup.fullTeamLineOff')}
+      </Typography>
     </Box>
   );
 }
