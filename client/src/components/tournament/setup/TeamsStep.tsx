@@ -164,6 +164,7 @@ export function TeamsStep({
         onImportTeams={onImportTeams}
         onAddServer={onAddServer}
         onBatchAddServers={onBatchAddServers}
+        signupOpen={signup.registrationOpen}
       />
     </Box>
   );
