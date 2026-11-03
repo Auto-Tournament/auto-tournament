@@ -92,6 +92,8 @@ export interface TournamentSettings extends ModuleTournamentObjects {
   groupCount?: number;
   advancePerGroup?: number;
 
+  /** The tournament's first and last day ("YYYY-MM-DD", local); the same day for one. */
+  eventDays?: { first: string; last: string } | null;
   /** The start (services/tournamentSchedule.ts): ISO date-time, reminders (minutes before) and auto start. */
   startsAt?: string | null;
   startReminders?: number[] | null;
