@@ -85,6 +85,35 @@ export async function chooseWalkover(slug: string, uid: string, take: boolean): 
   await decideWalkover(slug, take, uid);
 }
 
+/**
+ * `.walkover` / `.play` in game (cs2 chatBridge): the player's account, then
+ * the same choice as the match page. What to say back in game, or null when
+ * there is nothing to choose (any other chat line).
+ */
+export async function chooseWalkoverInGame(
+  slug: string,
+  steamId: string,
+  take: boolean
+): Promise<string | null> {
+  const open = await db.queryOneAsync<{ n: number }>(
+    'SELECT COUNT(*)::int AS n FROM match_walkover_offers WHERE match_slug = ? AND decided IS NULL',
+    [slug]
+  );
+  if (!open?.n) return null;
+  const player = await db.queryOneAsync<{ uid: string | null }>(
+    'SELECT uid FROM players WHERE id = ?',
+    [steamId]
+  );
+  if (!player?.uid) return "Only the full team's owner or a captain can choose.";
+  try {
+    await chooseWalkover(slug, player.uid, take);
+    return take ? 'Walkover taken. The match is over.' : 'Playing them short.';
+  } catch (error) {
+    if (error instanceof SignupError) return "Only the full team's owner or a captain can choose.";
+    throw error;
+  }
+}
+
 /** The match config's players on one side (steam id → name). */
 export function rosterOf(config: string | null, side: 'team1' | 'team2'): Array<[string, string]> {
   try {
