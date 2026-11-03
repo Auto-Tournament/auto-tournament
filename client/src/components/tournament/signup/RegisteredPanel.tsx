@@ -16,6 +16,7 @@ import { Face, TeamMark } from './PlayerFace';
 import { InfoTile, PlayerAvatar, StatusHero } from '../ui/draftUi';
 import { tokens, fontDisplay, mono, radii } from '../../../theme/tokens';
 import { panelSx, panelBorderSx, dialogPaperSx } from '../../../components/common/ui';
+import { YoureInCard } from './YoureInCard';
 
 const { color } = tokens;
 
@@ -179,6 +180,12 @@ export function RegisteredPanel({
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }} data-testid="signup-registered">
+      <YoureInCard
+        tournament={tournament}
+        window={window}
+        registration={registration}
+        canManage={canManage}
+      />
       {registration.lineupGapDeadline && (
         <Alert
           severity="warning"

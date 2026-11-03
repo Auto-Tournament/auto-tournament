@@ -1257,6 +1257,28 @@
       "title": "You can't sign up for this one",
       "body": "You're in {{name}}, which has a match {{when}}, the same time as this tournament. You can be in both tournaments when the match times don't overlap.",
       "open": "Open {{name}}"
+    },
+    "youreIn": {
+      "eyebrow": "{{team}} · signed up",
+      "title": "You're in!",
+      "body": "Here's what your team needs to know before the tournament starts. We've sent the same list to the owner and the captains.",
+      "openLineup": "Open your lineup",
+      "listTitle": "Before the tournament starts",
+      "checkIn": "Check in {{when}}–{{to}}",
+      "checkInBodyCaptains": "Every starter checks in on this page, or a captain checks them in. Check-in closes when the tournament starts.",
+      "checkInBody": "Every starter checks in on this page. Check-in closes when the tournament starts.",
+      "subs": "Subs don't need to check in",
+      "subsBody": "They count as here and ready, so a match never waits on them.",
+      "replaced": "A starter who isn't checked in is replaced",
+      "replacedBody": "When check-in closes, a sub takes the place of any starter who hasn't checked in. No sub left: you play a player short.",
+      "fullTeam_one": "{{count}} minute to get your team on the server",
+      "fullTeam_other": "{{count}} minutes to get your team on the server",
+      "fullTeamBody_one": "Once your server is ready, your team has {{count}} minute to have {{size}} players on it, subs included. After that, the other team can take the walkover or choose to play you short.",
+      "fullTeamBody_other": "Once your server is ready, your team has {{count}} minutes to have {{size}} players on it, subs included. After that, the other team can take the walkover or choose to play you short.",
+      "ready": "Be ready before each match",
+      "readyBodyVeto_one": "The veto opens {{count}} minute before every match. Keep this page open: it tells you when your next match is ready.",
+      "readyBodyVeto_other": "The veto opens {{count}} minutes before every match. Keep this page open: it tells you when your next match is ready.",
+      "readyBody": "Keep this page open: it tells you when your next match is ready."
     }
   },
   "bracketCards": {
