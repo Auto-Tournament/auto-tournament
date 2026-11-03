@@ -236,7 +236,7 @@ async function resolve(
   const absent =
     stored?.source === 'set'
       ? new Set<string>()
-      : await absentStarters(tournamentId, team.id, ids.slice(0, size));
+      : await absentStarters(tournamentId, team.id, ids.slice(0, size), slug);
   return {
     pool: players,
     players: absent.size ? swapAbsent(pick, ids, size, absent) : pick,

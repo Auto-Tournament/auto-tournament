@@ -246,7 +246,7 @@ function rosterSteamIds(players: string): RosterEntry[] {
 }
 
 /** Owner or captain of the team, or a 403. */
-async function requireCaptain(teamId: string, uid: string): Promise<void> {
+export async function requireCaptain(teamId: string, uid: string): Promise<void> {
   const team = await teamRow(teamId);
   if (team.owner_uid === uid) return;
   if ((await teamMembers.roleFor(teamId, uid)) === 'captain') return;

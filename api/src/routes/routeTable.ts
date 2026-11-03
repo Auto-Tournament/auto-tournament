@@ -31,6 +31,7 @@ import tournamentSignupRoutes from './tournamentSignup';
 import logsRoutes from './logs';
 import teamMatchRoutes from './teamMatch';
 import matchLineupRoutes from './matchLineups';
+import matchCheckInRoutes from './matchCheckIns';
 import teamStatsRoutes from './teamStats';
 import teamDirectoryRoutes from './teamDirectory';
 import searchRoutes from './search';
@@ -121,6 +122,13 @@ const coreRoutes: MountedRouter[] = [
     router: tournamentSignupRoutes,
     title: 'Tournament sign-up',
     description: 'Teams signing themselves up with a lineup, and check-in on the day.',
+  },
+  {
+    prefix: '/api/match-check-in',
+    router: matchCheckInRoutes,
+    title: 'Match check-in',
+    description:
+      'Check-in before each match, when the tournament asks for it: starters or their captain.',
   },
   {
     prefix: '/api/match-lineups',

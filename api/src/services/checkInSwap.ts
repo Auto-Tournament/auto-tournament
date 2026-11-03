@@ -39,12 +39,18 @@ export function swapAbsent(
 export async function absentStarters(
   tournamentId: number,
   teamId: string,
-  starters: readonly string[]
+  starters: readonly string[],
+  slug?: string
 ): Promise<Set<string>> {
   const row = await db.queryOneAsync<{ settings: string | null }>(
     'SELECT settings FROM tournament WHERE id = ?',
     [tournamentId]
   );
+  // Check-in before each match: who checked in for this one (services/matchCheckIns).
+  if (slug && row?.settings?.includes('"checkInEachMatch":true')) {
+    const { absentForMatch } = await import('./matchCheckIns');
+    return absentForMatch(slug, starters);
+  }
   const win = windowOfSettings(row?.settings ?? null);
   const closes = win.checkInClosesAt ? Date.parse(win.checkInClosesAt) : NaN;
   if (!win.checkInOpensAt || !Number.isFinite(closes) || closes > Date.now()) return new Set();

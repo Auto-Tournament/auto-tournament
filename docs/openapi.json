@@ -676,6 +676,10 @@
       "description": "The map catalogue."
     },
     {
+      "name": "Match check-in",
+      "description": "Check-in before each match, when the tournament asks for it: starters or their captain."
+    },
+    {
       "name": "Match connect",
       "description": "How a player joins a CS2 match: its server, status and current map."
     },
@@ -11062,6 +11066,101 @@
             "apiToken": []
           }
         ]
+      }
+    },
+    "/api/match-check-in/{slug}": {
+      "get": {
+        "tags": [
+          "Match check-in"
+        ],
+        "summary": "Check-in for one match (public)",
+        "description": "When the tournament checks in before each match; null otherwise. Subs always count as checked in.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "{ state: { open, closesAt, teams } | null }"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Match check-in"
+        ],
+        "summary": "Check in for this match",
+        "description": "A starter in one of the match's lineups, between the veto opening and the start.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Checked in"
+          },
+          "401": {
+            "description": "Not signed in"
+          },
+          "409": {
+            "description": "Not open"
+          }
+        }
+      }
+    },
+    "/api/match-check-in/{slug}/{teamId}/{steamId}": {
+      "post": {
+        "tags": [
+          "Match check-in"
+        ],
+        "summary": "Check in a teammate for this match",
+        "description": "The team's owner or a captain, when the tournament lets captains check in (settings.captainCheckIn).",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "teamId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "steamId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Checked in"
+          },
+          "403": {
+            "description": "Not a captain of that team"
+          }
+        }
       }
     },
     "/api/match-lineups/{slug}": {

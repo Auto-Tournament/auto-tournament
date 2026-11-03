@@ -1770,5 +1770,20 @@
     "playoffs": "Playoffs",
     "playoffsSoon": "The playoffs start when every group match is played.",
     "seedSlot": "Seed {{n}}"
+  },
+  "matchCheckIn": {
+    "eyebrow": "Veto open · match starts {{time}}",
+    "eyebrowNoTime": "Check-in open",
+    "title": "Check in for this match",
+    "body": "This tournament checks in before every match. Starters say they're here; a captain can do it for them. Subs are already ready.",
+    "closesIn": "Check-in closes in",
+    "yourTeam": "{{team}} (your team)",
+    "count": "{{in}} of {{total}} starters checked in",
+    "sub": "SUB",
+    "starter": "STARTER",
+    "ready": "Ready",
+    "checkedIn": "Checked in",
+    "notYet": "Not yet",
+    "rule": "Not checked in at the start: a starter is swapped for a sub, and the match room says who. No sub left, the team plays a player short."
   }
 }
