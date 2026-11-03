@@ -127,6 +127,38 @@ test.describe.serial('CS2 settings in the tournament setup', () => {
     expect((await tournamentOf(request))?.settings?.cs2?.maxRounds).toBe(24);
   });
 
+  test('the esports preset switches its settings and marks what differs from the site', async ({
+    page,
+    request,
+  }) => {
+    const teams = await createTestTeams(request, 'preset-ui');
+    expect(teams).toBeTruthy();
+    expect(
+      await createTournament(request, {
+        name: `Preset UI ${Date.now()}`,
+        type: 'single_elimination',
+        format: 'bo1',
+        maps: ACTIVE_DUTY,
+        teamIds: teams!.map((team) => team.id),
+      })
+    ).toBeTruthy();
+    await page.goto('/manage/tournament');
+    await page.getByTestId('tournament-setup-step-extras').click();
+    await expect(page.getByTestId('tournament-changed')).toHaveCount(0);
+    await page.getByTestId('tournament-preset').getByRole('combobox').click();
+    await page.getByRole('option', { name: 'Valve official' }).click();
+    await expect(page.getByTestId('tournament-knife-round')).not.toBeChecked();
+    await expect(page.getByTestId('tournament-default-agents')).toBeChecked();
+    await expect(page.getByTestId('tournament-changed')).toContainText('settings differ');
+    await page.getByTestId('tournament-setup-step-review').click();
+    await page.getByTestId('tournament-save-button').click();
+    await expect
+      .poll(async () => (await tournamentOf(request))?.settings?.cs2?.esportsMode)
+      .toBe(true);
+    // The preset's settings follow it: nothing set by hand.
+    expect((await tournamentOf(request))?.settings?.cs2?.knifeRound ?? null).toBeNull();
+  });
+
   test(
     "the maps step's own check refuses an empty custom pool",
     { tag: ['@ui', '@tournament'] },

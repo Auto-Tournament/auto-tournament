@@ -459,7 +459,7 @@
         "teams": "Teams",
         "schedule": "Schedule",
         "maps": "Maps and veto",
-        "extras": "Rules and extras",
+        "extras": "Match settings",
         "review": "Review"
       },
       "stepsLabel": "Setup steps",
@@ -508,8 +508,8 @@
           "lede": "At set times, with the veto opening before each match, or as soon as both teams and a server are ready."
         },
         "extras": {
-          "title": "Rules and extras",
-          "lede": "How rounds are played, what the placings win, and how ratings are counted."
+          "title": "Match settings",
+          "lede": "Start from a preset, then change what you need. Orange settings differ from the site's defaults."
         }
       },
       "game": {
@@ -725,7 +725,7 @@
         "teams": "Added or sign-up",
         "schedule": "Match times",
         "maps": "The map pool",
-        "extras": "Rounds, prizes, rating",
+        "extras": "Preset, rules, extras",
         "review": "Create it"
       },
       "stepOf": "Step {{n}} of {{total}}",
@@ -741,6 +741,17 @@
         "gotvOn_one": "Spectators can watch in GOTV, {{count}} second behind (Match rules › Spectators).",
         "gotvOn_other": "Spectators can watch in GOTV, {{count}} seconds behind (Match rules › Spectators).",
         "gotvOff": "Spectators can't watch in GOTV (Match rules › Spectators)."
+      },
+      "startFrom": {
+        "title": "Start from",
+        "help": "A template fills in the format, maps and match settings. Change anything on the next steps.",
+        "blank": "Blank",
+        "blankHelp": "Single elimination, Bo3, the site's map pool and match rules.",
+        "siteDefaults": "Site defaults",
+        "builtIn": "Built in",
+        "saved": "Saved",
+        "standardRules": "Standard rules",
+        "ownTemplates": "Your own templates come from <link>Templates & ratings</link>. Save this tournament as one when it's set up."
       }
     },
     "startButton": {

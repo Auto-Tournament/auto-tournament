@@ -10,6 +10,7 @@ import { api } from '../../../utils/api';
 import { useSnackbar } from '../../../contexts/SnackbarContext';
 import type { TournamentTemplate } from '../../../types/tournament.types';
 import { signupOf, signupSettingsPatch, useSavedSignup } from './SignupSettings';
+import { builtInTemplates } from './builtInTemplates';
 import type { SetupFormHandlers, SetupFormValues, SetupTournament } from './TournamentSetup';
 
 /** The site's match rules the Schedule and Extras steps mention (CS2: the break between matches, spectators in GOTV). */
@@ -130,10 +131,11 @@ export function useSetupSignup({
   };
 }
 
-/** "Start from a template": the saved templates, for a tournament not created yet. */
+/** "Start from a template": the module's built-in templates, then the saved ones, for a tournament not created yet. */
 export function useSetupTemplates(tournament: SetupTournament | null) {
-  const [templates, setTemplates] = useState<TournamentTemplate[]>([]);
-  const [templateMenu, setTemplateMenu] = useState<HTMLElement | null>(null);
+  const { t } = useTranslation();
+  const [saved, setTemplates] = useState<TournamentTemplate[]>([]);
+  const templates = [...builtInTemplates(t), ...saved];
   useEffect(() => {
     if (tournament) return;
     let cancelled = false;
@@ -147,5 +149,5 @@ export function useSetupTemplates(tournament: SetupTournament | null) {
       cancelled = true;
     };
   }, [tournament]);
-  return { templates, templateMenu, setTemplateMenu };
+  return { templates };
 }

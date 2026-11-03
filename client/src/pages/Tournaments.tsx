@@ -29,6 +29,7 @@ import { useSnackbar } from '../contexts/SnackbarContext';
 import { tournamentTabPath, manageTournamentPath } from '../paths';
 import { tokens, radii, fontMono } from '../theme/tokens';
 import { api } from '../utils/api';
+import { builtInTemplates } from '../components/tournament/setup/builtInTemplates';
 import { pageTitle } from '../utils/pageTitle';
 import type { Untrusted } from '../utils/untrusted';
 
@@ -438,14 +439,16 @@ function NewTournamentDialog({
       )
       .then((r) => {
         if (cancelled) return;
-        setTemplates(r.templates ?? []);
-        setTemplateId((current) => current || (r.templates?.[0]?.id ?? ''));
+        // The module's built-in templates first (negative ids), then the site's.
+        const all = [...builtInTemplates(t), ...(r.templates ?? [])];
+        setTemplates(all);
+        setTemplateId((current) => current || (all[0]?.id ?? ''));
       })
-      .catch(() => !cancelled && setTemplates([]));
+      .catch(() => !cancelled && setTemplates(builtInTemplates(t)));
     return () => {
       cancelled = true;
     };
-  }, [open]);
+  }, [open, t]);
 
   const create = async () => {
     if (from === 'blank') {

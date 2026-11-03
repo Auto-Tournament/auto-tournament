@@ -461,7 +461,7 @@
         "eventPage": "Arrangementsside",
         "review": "Gjennomgang",
         "schedule": "Tidsplan",
-        "extras": "Regler og ekstra"
+        "extras": "Kampinnstillinger"
       },
       "stepsLabel": "Oppsettssteg",
       "backToManage": "Administrer",
@@ -509,8 +509,8 @@
           "lede": "Til faste tider, der vetoen åpner før hver kamp, eller så snart begge lagene og en server er klare."
         },
         "extras": {
-          "title": "Regler og ekstra",
-          "lede": "Hvordan runder spilles, hva plasseringene gir, og hvordan rating regnes."
+          "title": "Kampinnstillinger",
+          "lede": "Start med et forhåndsvalg og endre det du trenger. Oransje innstillinger avviker fra nettstedets standard."
         }
       },
       "game": {
@@ -726,7 +726,7 @@
         "teams": "Lagt til eller påmelding",
         "schedule": "Kamptider",
         "maps": "Kartutvalget",
-        "extras": "Runder, premier, rating",
+        "extras": "Forhåndsvalg, regler, ekstra",
         "review": "Opprett den"
       },
       "stepOf": "Steg {{n}} av {{total}}",
@@ -742,6 +742,17 @@
         "gotvOn_one": "Tilskuere kan se på i GOTV, {{count}} sekund bak (Kampregler › Tilskuere).",
         "gotvOn_other": "Tilskuere kan se på i GOTV, {{count}} sekunder bak (Kampregler › Tilskuere).",
         "gotvOff": "Tilskuere kan ikke se på i GOTV (Kampregler › Tilskuere)."
+      },
+      "startFrom": {
+        "title": "Start fra",
+        "help": "En mal fyller inn format, kart og kampinnstillinger. Du kan endre alt i stegene etter.",
+        "blank": "Tom",
+        "blankHelp": "Enkel eliminasjon, Bo3, kartutvalget og kampreglene til siden.",
+        "siteDefaults": "Sidens standard",
+        "builtIn": "Innebygd",
+        "saved": "Lagret",
+        "standardRules": "Standardregler",
+        "ownTemplates": "Egne maler kommer fra <link>Maler og rangering</link>. Lagre turneringen som mal når den er satt opp."
       }
     },
     "startButton": {
