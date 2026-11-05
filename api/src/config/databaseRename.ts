@@ -22,8 +22,10 @@
  *   Connections are never terminated.
  * - The role may not rename it (it must own the database and have CREATEDB,
  *   or be a superuser): refused, with the exact statement to run by hand.
- * - `DB_NAME` / `DATABASE_URL` still names `matchzy_tournament`: refused, with
- *   what to change. 3.0 does not use the old name.
+ * - `DB_NAME` / `DATABASE_URL` still names `matchzy_tournament` (a 2.x .env or
+ *   compose file, kept on upgrade): read as `auto_tournament`
+ *   (`platformConnectionString`), so the same rename runs and nothing has to
+ *   be changed by hand.
  *
  * An advisory lock makes two API processes starting together rename it once.
  */
@@ -39,7 +41,13 @@ export const LEGACY_DATABASE_NAME = 'matchzy_tournament';
 const MAINTENANCE_DATABASES = ['postgres', 'template1'] as const;
 
 /** Connection errors that mean Postgres is not reachable at all. */
-const UNREACHABLE = new Set(['ECONNREFUSED', 'ENOTFOUND', 'ETIMEDOUT', 'EAI_AGAIN', 'EHOSTUNREACH']);
+const UNREACHABLE = new Set([
+  'ECONNREFUSED',
+  'ENOTFOUND',
+  'ETIMEDOUT',
+  'EAI_AGAIN',
+  'EHOSTUNREACH',
+]);
 
 /** A fixed key for the advisory lock, so two API processes never rename twice. */
 const RENAME_LOCK_KEY = 731_946_011;
@@ -75,6 +83,16 @@ export function databaseNameOf(connectionString: string): string | null {
   } catch {
     return null;
   }
+}
+
+/**
+ * The connection string the platform uses: one that names the 2.x database is
+ * pointed at its 3.0 name instead (the rename below moves the data there).
+ */
+export function platformConnectionString(connectionString: string): string {
+  return databaseNameOf(connectionString) === LEGACY_DATABASE_NAME
+    ? withDatabase(connectionString, DATABASE_NAME)
+    : connectionString;
 }
 
 /** The same connection string, pointed at another database. */
@@ -142,17 +160,8 @@ export async function renameLegacyDatabase(
   connectionString: string,
   clientOptions: Omit<ClientConfig, 'connectionString'> = {}
 ): Promise<DatabaseRenameOutcome> {
-  const target = databaseNameOf(connectionString);
-
-  if (target === LEGACY_DATABASE_NAME) {
-    throw new DatabaseRenameRefused(
-      `The platform is configured to use the database "${LEGACY_DATABASE_NAME}", its 2.x name. ` +
-        `3.0 calls it "${DATABASE_NAME}". Set DB_NAME=${DATABASE_NAME} in your .env (and change ` +
-        'DATABASE_URL too, if you set it), then start again: the platform renames the existing ' +
-        'database in place, with its data. Nothing was changed.'
-    );
-  }
-  if (target !== DATABASE_NAME) return 'not-applicable';
+  connectionString = platformConnectionString(connectionString);
+  if (databaseNameOf(connectionString) !== DATABASE_NAME) return 'not-applicable';
 
   const connected = await connectMaintenance(connectionString, clientOptions);
   if ('errors' in connected) {
