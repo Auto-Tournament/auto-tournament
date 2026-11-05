@@ -1,81 +1,81 @@
 {
   "manualReport": {
-    "title": "Match result",
-    "unknownTeam": "the other team",
+    "title": "Résultat du match",
+    "unknownTeam": "l’autre équipe",
     "state": {
-      "nothing": "No result reported yet. Whoever played it, report the score.",
-      "waitingOpponent": "Reported. Waiting for {{team}} to confirm.",
-      "needsAnswer": "{{team}} reported this result. Confirm it if it is right.",
-      "disputed": "This result is disputed. An admin will decide it.",
-      "awaitingAdmin": "Waiting for an admin to decide this match.",
-      "confirmed": "Both teams agree on this result."
+      "nothing": "Aucun résultat déclaré pour l’instant. Qui que ce soit qui l’a joué, déclarez le score.",
+      "waitingOpponent": "Déclaré. En attente de la confirmation de {{team}}.",
+      "needsAnswer": "{{team}} a déclaré ce résultat. Confirmez-le s’il est correct.",
+      "disputed": "Ce résultat est contesté. Un admin va trancher.",
+      "awaitingAdmin": "En attente de la décision d’un admin sur ce match.",
+      "confirmed": "Les deux équipes sont d’accord sur ce résultat."
     },
     "deadline": {
-      "autoConfirm": "Confirms on its own in {{minutes}} min if nobody answers.",
-      "autoConfirmSoon": "Confirms on its own any moment now.",
-      "escalate": "Goes to an admin in {{minutes}} min if nobody answers.",
-      "escalateSoon": "Goes to an admin any moment now."
+      "autoConfirm": "Se confirme tout seul dans {{minutes}} min si personne ne répond.",
+      "autoConfirmSoon": "Se confirme tout seul d’un instant à l’autre.",
+      "escalate": "Passe à un admin dans {{minutes}} min si personne ne répond.",
+      "escalateSoon": "Passe à un admin d’un instant à l’autre."
     },
     "score": "{{team1}} {{score1}} – {{score2}} {{team2}}",
-    "game": "Game {{number}}",
+    "game": "Partie {{number}}",
     "note": "Note",
-    "notePlaceholder": "Anything the other team should know (optional)",
-    "noteGiven": "Note: {{note}}",
-    "disputeReason": "What is wrong with it?",
-    "disputeReasonGiven": "Disputed: {{reason}}",
-    "formHint": "Scores for {{team1}} and {{team2}}, game by game.",
+    "notePlaceholder": "Ce que l’autre équipe doit savoir (facultatif)",
+    "noteGiven": "Note : {{note}}",
+    "disputeReason": "Qu’est-ce qui ne va pas ?",
+    "disputeReasonGiven": "Contesté : {{reason}}",
+    "formHint": "Scores de {{team1}} et {{team2}}, partie par partie.",
     "actions": {
-      "report": "Report the score",
-      "reportAgain": "Report a different score",
-      "submit": "Send report",
-      "cancel": "Cancel",
-      "confirm": "Confirm",
-      "dispute": "Dispute",
-      "disputeSubmit": "Send dispute",
-      "withdraw": "Withdraw my report"
+      "report": "Déclarer le score",
+      "reportAgain": "Déclarer un autre score",
+      "submit": "Envoyer la déclaration",
+      "cancel": "Annuler",
+      "confirm": "Confirmer",
+      "dispute": "Contester",
+      "disputeSubmit": "Envoyer la contestation",
+      "withdraw": "Retirer ma déclaration"
     },
     "errors": {
-      "stale": "This report changed while it was on your screen. Read it again before you confirm.",
-      "incomplete": "Fill in both scores for at least one game.",
-      "failed": "That did not go through. Try again."
+      "stale": "Cette déclaration a changé pendant qu’elle était à l’écran. Relisez-la avant de confirmer.",
+      "incomplete": "Remplissez les deux scores d’au moins une partie.",
+      "failed": "Cela n’a pas abouti. Réessayez."
     },
     "captains": {
-      "title": "Captains",
-      "hint": "Only a captain can report or confirm a result for this team.",
-      "make": "Make captain",
-      "remove": "Remove captain",
-      "isCaptain": "Captain",
-      "empty": "Nobody on this team has signed in yet, so there is nobody to appoint.",
-      "unknown": "Unknown player",
-      "failed": "Could not change that. Try again."
+      "title": "Capitaines",
+      "hint": "Seul un capitaine peut déclarer ou confirmer un résultat pour cette équipe.",
+      "make": "Nommer capitaine",
+      "remove": "Retirer le rôle de capitaine",
+      "isCaptain": "Capitaine",
+      "empty": "Personne de cette équipe ne s’est encore connecté, il n’y a donc personne à nommer.",
+      "unknown": "Joueur inconnu",
+      "failed": "Impossible de modifier. Réessayez."
     },
     "stats": {
-      "hint": "The extra numbers this tournament asks for. Leave a field blank if nobody has one.",
-      "required": "required",
-      "recorded": "Reported stats",
+      "hint": "Les chiffres supplémentaires demandés par ce tournoi. Laissez un champ vide si personne n’en a.",
+      "required": "obligatoire",
+      "recorded": "Stats déclarées",
       "value": "{{subject}}: {{value}}{{suffix}}",
       "errors": {
-        "number": "{{field}} for {{subject}} has to be a number.",
-        "integer": "{{field}} for {{subject}} has to be a whole number.",
-        "range": "{{field}} for {{subject}} is too big to be a real number.",
-        "tooLong": "{{field}} for {{subject}} is longer than {{max}} characters.",
-        "missing": "{{field}} is required, and nothing is filled in for {{team}}."
+        "number": "{{field}} pour {{subject}} doit être un nombre.",
+        "integer": "{{field}} pour {{subject}} doit être un nombre entier.",
+        "range": "{{field}} pour {{subject}} est trop grand pour être un vrai nombre.",
+        "tooLong": "{{field}} pour {{subject}} dépasse {{max}} caractères.",
+        "missing": "{{field}} est obligatoire, et rien n’est rempli pour {{team}}."
       },
-      "tournamentTitle": "Reported stats",
-      "tournamentHelp": "Added up from confirmed reports. A result still waiting for the opponent is not counted here.",
-      "byTeam": "By team",
-      "byPlayer": "By player",
-      "team": "Team",
-      "player": "Player",
-      "matches": "Matches"
+      "tournamentTitle": "Stats déclarées",
+      "tournamentHelp": "Additionnées à partir des déclarations confirmées. Un résultat qui attend encore l’adversaire n’est pas compté ici.",
+      "byTeam": "Par équipe",
+      "byPlayer": "Par joueur",
+      "team": "Équipe",
+      "player": "Joueur",
+      "matches": "Matchs"
     },
     "chip": {
-      "none": "No result yet",
-      "yours": "Your report",
-      "reported": "Reported",
-      "confirm": "Confirm it",
-      "disputed": "Disputed",
-      "final": "Final"
+      "none": "Pas encore de résultat",
+      "yours": "Votre déclaration",
+      "reported": "Déclaré",
+      "confirm": "À confirmer",
+      "disputed": "Contesté",
+      "final": "Définitif"
     }
   }
 }
