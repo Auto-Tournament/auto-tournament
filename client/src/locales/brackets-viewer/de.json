@@ -20,9 +20,9 @@
     "double-elimination-semi-final": "{{matchPrefix}} Halbfinale {{matchNumber}}",
     "double-elimination-final": "{{matchPrefix}} Finale",
     "consolation-final": "Spiel um Platz 3",
-    "grand-final-single": "Grand Final",
+    "grand-final-single": "Großes Finale",
     "grand-final": "$t(abbreviations.grand-final) Runde {{roundNumber}}",
-    "match-game": "Game {{gameNumber}}"
+    "match-game": "Spiel {{gameNumber}}"
   },
   "match-status": {
     "locked": "Gesperrt",
@@ -51,15 +51,15 @@
     "draws": { "text": "U", "tooltip": "Unentschieden" },
     "losses": { "text": "$t(abbreviations.loss)", "tooltip": "Niederlagen" },
     "forfeits": { "text": "$t(abbreviations.forfeit)", "tooltip": "Forfaits" },
-    "scoreFor": { "text": "SF", "tooltip": "Punkte für" },
-    "scoreAgainst": { "text": "SA", "tooltip": "Punkte gegen" },
+    "scoreFor": { "text": "PF", "tooltip": "Punkte für" },
+    "scoreAgainst": { "text": "PG", "tooltip": "Punkte gegen" },
     "scoreDifference": { "text": "+/-", "tooltip": "Differenz" },
-    "points": { "text": "Pts", "tooltip": "Punkte" }
+    "points": { "text": "Pkt.", "tooltip": "Punkte" }
   },
   "common": {
-    "bye": "BYE",
+    "bye": "FREILOS",
     "best-of-x": "Bo{{x}}",
-    "consolation": "Consolation",
+    "consolation": "Trostrunde",
     "group-name": "Gruppe {{groupNumber}}",
     "group-name-winner-bracket": "Winner Bracket",
     "group-name-loser-bracket": "Loser Bracket",
