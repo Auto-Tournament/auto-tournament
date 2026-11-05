@@ -21,7 +21,7 @@
       "footer": "A mostrar as {{count}} entradas de log mais recentes",
       "footerAutoRefresh": "A mostrar as {{count}} entradas de log mais recentes (atualização automática)"
     },
-    "description": "Logs and maintenance for this site. Installed game modules add their own tools below."
+    "description": "Recuperação de jogos e o registo da aplicação deste site."
   },
   "servers": {
     "allocation": {
@@ -47,7 +47,7 @@
     },
     "actions": {
       "pause": {
-        "button": "Pausar",
+        "button": "Pausa",
         "tooltip": "Pausa de admin – os jogadores não podem retomar",
         "title": "Pausar jogo",
         "description": "Isto força a pausa do jogo. Os jogadores não podem retomar."
@@ -138,30 +138,31 @@
       "endWarmup": "Warmup terminado",
       "startMatch": "Jogo iniciado",
       "restoreBackup": "Cópia de segurança restaurada para a ronda {{round}}",
-      "addTime_one": "{{count}} segundo adicionado ao temporizador da ronda",
-      "addTime_other": "{{count}} segundos adicionados ao temporizador da ronda",
+      "addTime_one": "Adicionado {{count}} segundo ao temporizador da ronda",
+      "addTime_other": "Adicionados {{count}} segundos ao temporizador da ronda",
       "broadcast": "Mensagem enviada para o servidor",
       "restartMatch": "Jogo reiniciado (terminado e recarregado)",
       "reallocateServer": "Jogo movido para outro servidor",
       "forceCancel": "Jogo cancelado",
-      "default": "Comando executado"
+      "default": "Comando executado",
+      "addTime_many": "Adicionados {{count}} segundos ao temporizador da ronda"
     },
     "hold": {
-      "title": "Hold instead of a walkover",
-      "description": "While held, the match is not loaded or started and nobody gets a walkover. When it goes ahead, the teams get the full time again.",
-      "reason": "Reason (shown to admins)",
-      "delay": "Delay {{minutes}} min",
-      "holdUntilReleased": "Hold until released",
-      "release": "Release now",
-      "restartCountdown": "Restart the countdown",
-      "heldUntil": "On hold until {{time}}",
-      "heldIndefinitely": "On hold until released",
-      "tournamentPaused": "The tournament is paused",
-      "heldDone": "Match on hold",
-      "delayedDone": "Match delayed {{minutes}} min",
-      "releasedDone": "Match released",
-      "restartedDone": "Countdown restarted: the teams have the full time again",
-      "failed": "Could not change the hold"
+      "title": "Suspender em vez de dar vitória por falta de comparência",
+      "description": "Enquanto está suspenso, o jogo não é carregado nem iniciado e ninguém ganha por falta de comparência. Quando avançar, as equipas voltam a ter o tempo todo.",
+      "reason": "Motivo (visível para os admins)",
+      "delay": "Adiar {{minutes}} min",
+      "holdUntilReleased": "Suspender até ser libertado",
+      "release": "Libertar agora",
+      "restartCountdown": "Reiniciar a contagem decrescente",
+      "heldUntil": "Suspenso até às {{time}}",
+      "heldIndefinitely": "Suspenso até ser libertado",
+      "tournamentPaused": "O torneio está em pausa",
+      "heldDone": "Jogo suspenso",
+      "delayedDone": "Jogo adiado {{minutes}} min",
+      "releasedDone": "Jogo libertado",
+      "restartedDone": "Contagem reiniciada: as equipas voltam a ter o tempo todo",
+      "failed": "Não foi possível alterar a suspensão"
     }
   },
   "adminCalls": {
@@ -188,11 +189,11 @@
     "unmute": "Ativar áudio",
     "minimize": "Minimizar",
     "show": "Mostrar",
-    "openChat": "Open chat",
-    "claim": "Claim",
-    "release": "Release",
-    "claimedBy": "Claimed by {{name}}",
-    "claimedByYou": "Claimed by you",
-    "anAdmin": "an admin"
+    "openChat": "Abrir chat",
+    "claim": "Assumir",
+    "release": "Largar",
+    "claimedBy": "Assumido por {{name}}",
+    "claimedByYou": "Assumido por ti",
+    "anAdmin": "um admin"
   }
 }

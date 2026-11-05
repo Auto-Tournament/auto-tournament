@@ -47,7 +47,8 @@
       "buttons": {
         "createCustom": "Criar servidores",
         "createFixed_one": "Criar {{count}} servidor",
-        "createFixed_other": "Criar {{count}} servidores"
+        "createFixed_other": "Criar {{count}} servidores",
+        "createFixed_many": "Criar {{count}} servidores"
       }
     },
     "dangerZone": {
