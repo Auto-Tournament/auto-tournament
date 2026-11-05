@@ -337,7 +337,7 @@ router.get(
  *   put:
  *     tags: [Social]
  *     summary: Change how you get some kinds of notification
- *     description: Same-site JSON, `{ kind: 'off' | 'bell' | 'sound' }`; kinds left out stay. Returns them all.
+ *     description: "Same-site JSON, `{ kind: 'off' | 'bell' | 'sound' }`; kinds left out stay. Returns them all."
  *     requestBody:
  *       content:
  *         application/json:
