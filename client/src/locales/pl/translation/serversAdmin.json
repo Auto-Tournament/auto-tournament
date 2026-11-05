@@ -21,7 +21,7 @@
       "footer": "Wyświetlane najnowsze wpisy logów: {{count}}",
       "footerAutoRefresh": "Wyświetlane najnowsze wpisy logów: {{count}} (automatyczne odświeżanie)"
     },
-    "description": "Logs and maintenance for this site. Installed game modules add their own tools below."
+    "description": "Przywracanie meczów i log aplikacji tej strony."
   },
   "servers": {
     "allocation": {
@@ -149,21 +149,21 @@
       "default": "Komenda wykonana"
     },
     "hold": {
-      "title": "Hold instead of a walkover",
-      "description": "While held, the match is not loaded or started and nobody gets a walkover. When it goes ahead, the teams get the full time again.",
-      "reason": "Reason (shown to admins)",
-      "delay": "Delay {{minutes}} min",
-      "holdUntilReleased": "Hold until released",
-      "release": "Release now",
-      "restartCountdown": "Restart the countdown",
-      "heldUntil": "On hold until {{time}}",
-      "heldIndefinitely": "On hold until released",
-      "tournamentPaused": "The tournament is paused",
-      "heldDone": "Match on hold",
-      "delayedDone": "Match delayed {{minutes}} min",
-      "releasedDone": "Match released",
-      "restartedDone": "Countdown restarted: the teams have the full time again",
-      "failed": "Could not change the hold"
+      "title": "Wstrzymaj zamiast walkowera",
+      "description": "Gdy mecz jest wstrzymany, nie jest wczytywany ani uruchamiany i nikt nie dostaje walkowera. Gdy ruszy, drużyny znów mają cały czas.",
+      "reason": "Powód (widoczny dla adminów)",
+      "delay": "Opóźnij o {{minutes}} min",
+      "holdUntilReleased": "Wstrzymaj do odwołania",
+      "release": "Wznów teraz",
+      "restartCountdown": "Uruchom odliczanie od nowa",
+      "heldUntil": "Wstrzymany do {{time}}",
+      "heldIndefinitely": "Wstrzymany do odwołania",
+      "tournamentPaused": "Turniej jest wstrzymany",
+      "heldDone": "Mecz wstrzymany",
+      "delayedDone": "Mecz opóźniony o {{minutes}} min",
+      "releasedDone": "Mecz wznowiony",
+      "restartedDone": "Odliczanie od nowa: drużyny znów mają cały czas",
+      "failed": "Nie udało się zmienić wstrzymania"
     }
   },
   "adminCalls": {
@@ -190,11 +190,11 @@
     "unmute": "Wyłącz wyciszenie",
     "minimize": "Zminimalizuj",
     "show": "Pokaż",
-    "openChat": "Open chat",
-    "claim": "Claim",
-    "release": "Release",
-    "claimedBy": "Claimed by {{name}}",
-    "claimedByYou": "Claimed by you",
-    "anAdmin": "an admin"
+    "openChat": "Otwórz czat",
+    "claim": "Przejmij",
+    "release": "Zwolnij",
+    "claimedBy": "Przejęte przez {{name}}",
+    "claimedByYou": "Przejęte przez ciebie",
+    "anAdmin": "admin"
   }
 }
