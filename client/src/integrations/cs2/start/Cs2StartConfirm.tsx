@@ -88,7 +88,7 @@ export const Cs2StartConfirm: React.FC<TournamentStartConfirmProps> = ({ open })
           Automatically allocate servers to ready matches
         </Typography>
         <Typography component="li" variant="body2" color="text.secondary">
-          Load matches on servers via RCON
+          Load the matches on their servers
         </Typography>
         <Typography component="li" variant="body2" color="text.secondary">
           Set servers to warmup mode
