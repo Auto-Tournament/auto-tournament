@@ -1,6 +1,6 @@
 {
   "origin-hint": {
-    "seed": "Seed {{position}}",
+    "seed": "Testa di serie {{position}}",
     "winner-bracket": "Sconfitto di $t(abbreviations.winner-bracket) {{round}}.{{position}}",
     "winner-bracket-semi-final": "Sconfitto della semi $t(abbreviations.winner-bracket) {{position}}",
     "winner-bracket-final": "Sconfitto della finale $t(abbreviations.winner-bracket)",
@@ -10,7 +10,7 @@
     "double-elimination-consolation-final-opponent-2": "Sconfitto della finale $t(abbreviations.loser-bracket)"
   },
   "match-label": {
-    "default": "Match {{matchNumber}}",
+    "default": "Partita {{matchNumber}}",
     "winner-bracket": "$t(abbreviations.winner-bracket)",
     "loser-bracket": "$t(abbreviations.loser-bracket)",
     "standard-bracket": "$t(abbreviations.match)",
@@ -21,8 +21,8 @@
     "double-elimination-final": "{{matchPrefix}} Finale",
     "consolation-final": "Finale di consolazione",
     "grand-final-single": "Gran finale",
-    "grand-final": "$t(abbreviations.grand-final) Round {{roundNumber}}",
-    "match-game": "Game {{gameNumber}}"
+    "grand-final": "$t(abbreviations.grand-final) Turno {{roundNumber}}",
+    "match-game": "Gara {{gameNumber}}"
   },
   "match-status": {
     "locked": "Bloccato",
@@ -51,10 +51,10 @@
     "draws": { "text": "N", "tooltip": "Pareggi" },
     "losses": { "text": "$t(abbreviations.loss)", "tooltip": "Sconfitte" },
     "forfeits": { "text": "$t(abbreviations.forfeit)", "tooltip": "Forfeit" },
-    "scoreFor": { "text": "SF", "tooltip": "Punti fatti" },
-    "scoreAgainst": { "text": "SA", "tooltip": "Punti subiti" },
+    "scoreFor": { "text": "PF", "tooltip": "Punti fatti" },
+    "scoreAgainst": { "text": "PS", "tooltip": "Punti subiti" },
     "scoreDifference": { "text": "+/-", "tooltip": "Differenza" },
-    "points": { "text": "Pts", "tooltip": "Punti" }
+    "points": { "text": "Pt", "tooltip": "Punti" }
   },
   "common": {
     "bye": "BYE",
@@ -63,11 +63,11 @@
     "group-name": "Gruppo {{groupNumber}}",
     "group-name-winner-bracket": "Winner Bracket",
     "group-name-loser-bracket": "Loser Bracket",
-    "round-name": "Round {{roundNumber}}",
+    "round-name": "Turno {{roundNumber}}",
     "round-name-final": "Round finale",
-    "round-name-winner-bracket": "$t(abbreviations.winner-bracket) Round {{roundNumber}}",
+    "round-name-winner-bracket": "$t(abbreviations.winner-bracket) Turno {{roundNumber}}",
     "round-name-winner-bracket-final": "$t(abbreviations.winner-bracket) Round finale",
-    "round-name-loser-bracket": "$t(abbreviations.loser-bracket) Round {{roundNumber}}",
+    "round-name-loser-bracket": "$t(abbreviations.loser-bracket) Turno {{roundNumber}}",
     "round-name-loser-bracket-final": "$t(abbreviations.loser-bracket) Round finale"
   },
   "form-creator": {
