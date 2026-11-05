@@ -10,17 +10,17 @@
     "double-elimination-consolation-final-opponent-2": "Verliezer van $t(abbreviations.loser-bracket) Final"
   },
   "match-label": {
-    "default": "Match {{matchNumber}}",
+    "default": "Wedstrijd {{matchNumber}}",
     "winner-bracket": "$t(abbreviations.winner-bracket)",
     "loser-bracket": "$t(abbreviations.loser-bracket)",
     "standard-bracket": "$t(abbreviations.match)",
-    "standard-bracket-semi-final": "Semi {{matchNumber}}",
-    "standard-bracket-final": "Final",
+    "standard-bracket-semi-final": "Halve finale {{matchNumber}}",
+    "standard-bracket-final": "Finale",
     "double-elimination": "{{matchPrefix}} {{roundNumber}}.{{matchNumber}}",
-    "double-elimination-semi-final": "{{matchPrefix}} Semi {{matchNumber}}",
-    "double-elimination-final": "{{matchPrefix}} Final",
+    "double-elimination-semi-final": "{{matchPrefix}} Halve finale {{matchNumber}}",
+    "double-elimination-final": "{{matchPrefix}} Finale",
     "consolation-final": "Troostfinale",
-    "grand-final-single": "Grand Final",
+    "grand-final-single": "Grote finale",
     "grand-final": "$t(abbreviations.grand-final) Ronde {{roundNumber}}",
     "match-game": "Game {{gameNumber}}"
   },
@@ -50,19 +50,19 @@
     "wins": { "text": "$t(abbreviations.win)", "tooltip": "Overwinningen" },
     "draws": { "text": "G", "tooltip": "Gelijk" },
     "losses": { "text": "$t(abbreviations.loss)", "tooltip": "Nederlagen" },
-    "forfeits": { "text": "$t(abbreviations.forfeit)", "tooltip": "Forfeits" },
-    "scoreFor": { "text": "SF", "tooltip": "Voor" },
-    "scoreAgainst": { "text": "SA", "tooltip": "Tegen" },
+    "forfeits": { "text": "$t(abbreviations.forfeit)", "tooltip": "Opgaven" },
+    "scoreFor": { "text": "PV", "tooltip": "Voor" },
+    "scoreAgainst": { "text": "PT", "tooltip": "Tegen" },
     "scoreDifference": { "text": "+/-", "tooltip": "Verschil" },
-    "points": { "text": "Pts", "tooltip": "Punten" }
+    "points": { "text": "Ptn", "tooltip": "Punten" }
   },
   "common": {
     "bye": "BYE",
     "best-of-x": "Bo{{x}}",
     "consolation": "Troost",
     "group-name": "Groep {{groupNumber}}",
-    "group-name-winner-bracket": "Winner Bracket",
-    "group-name-loser-bracket": "Loser Bracket",
+    "group-name-winner-bracket": "Winnaarsbracket",
+    "group-name-loser-bracket": "Verliezersbracket",
     "round-name": "Ronde {{roundNumber}}",
     "round-name-final": "Finale ronde",
     "round-name-winner-bracket": "$t(abbreviations.winner-bracket) Ronde {{roundNumber}}",
@@ -85,7 +85,7 @@
     "round-robin-mode-label": "Welke round robin-modus?",
     "consolation-final-label": "Troostfinale",
     "skip-first-round-label": "Eerste ronde overslaan",
-    "grand-final-type-label": "Grand final type",
+    "grand-final-type-label": "Soort grote finale",
     "submit": "Aanmaken"
   }
 }

@@ -1,81 +1,81 @@
 {
   "manualReport": {
-    "title": "Match result",
-    "unknownTeam": "the other team",
+    "title": "Uitslag van de wedstrijd",
+    "unknownTeam": "het andere team",
     "state": {
-      "nothing": "No result reported yet. Whoever played it, report the score.",
-      "waitingOpponent": "Reported. Waiting for {{team}} to confirm.",
-      "needsAnswer": "{{team}} reported this result. Confirm it if it is right.",
-      "disputed": "This result is disputed. An admin will decide it.",
-      "awaitingAdmin": "Waiting for an admin to decide this match.",
-      "confirmed": "Both teams agree on this result."
+      "nothing": "Nog geen uitslag doorgegeven. Wie de wedstrijd speelde, geef de score door.",
+      "waitingOpponent": "Doorgegeven. Wacht tot {{team}} bevestigt.",
+      "needsAnswer": "{{team}} gaf deze uitslag door. Bevestig hem als hij klopt.",
+      "disputed": "Deze uitslag wordt betwist. Een admin beslist.",
+      "awaitingAdmin": "Wacht tot een admin deze wedstrijd beslist.",
+      "confirmed": "Beide teams zijn het eens over deze uitslag."
     },
     "deadline": {
-      "autoConfirm": "Confirms on its own in {{minutes}} min if nobody answers.",
-      "autoConfirmSoon": "Confirms on its own any moment now.",
-      "escalate": "Goes to an admin in {{minutes}} min if nobody answers.",
-      "escalateSoon": "Goes to an admin any moment now."
+      "autoConfirm": "Wordt over {{minutes}} min vanzelf bevestigd als niemand reageert.",
+      "autoConfirmSoon": "Wordt elk moment vanzelf bevestigd.",
+      "escalate": "Gaat over {{minutes}} min naar een admin als niemand reageert.",
+      "escalateSoon": "Gaat elk moment naar een admin."
     },
     "score": "{{team1}} {{score1}} – {{score2}} {{team2}}",
     "game": "Game {{number}}",
-    "note": "Note",
-    "notePlaceholder": "Anything the other team should know (optional)",
-    "noteGiven": "Note: {{note}}",
-    "disputeReason": "What is wrong with it?",
-    "disputeReasonGiven": "Disputed: {{reason}}",
-    "formHint": "Scores for {{team1}} and {{team2}}, game by game.",
+    "note": "Notitie",
+    "notePlaceholder": "Iets wat het andere team moet weten (optioneel)",
+    "noteGiven": "Notitie: {{note}}",
+    "disputeReason": "Wat klopt er niet?",
+    "disputeReasonGiven": "Betwist: {{reason}}",
+    "formHint": "Scores van {{team1}} en {{team2}}, game voor game.",
     "actions": {
-      "report": "Report the score",
-      "reportAgain": "Report a different score",
-      "submit": "Send report",
-      "cancel": "Cancel",
-      "confirm": "Confirm",
-      "dispute": "Dispute",
-      "disputeSubmit": "Send dispute",
-      "withdraw": "Withdraw my report"
+      "report": "De score doorgeven",
+      "reportAgain": "Een andere score doorgeven",
+      "submit": "Uitslag versturen",
+      "cancel": "Annuleren",
+      "confirm": "Bevestigen",
+      "dispute": "Betwisten",
+      "disputeSubmit": "Bezwaar versturen",
+      "withdraw": "Mijn uitslag intrekken"
     },
     "errors": {
-      "stale": "This report changed while it was on your screen. Read it again before you confirm.",
-      "incomplete": "Fill in both scores for at least one game.",
-      "failed": "That did not go through. Try again."
+      "stale": "Deze uitslag veranderde terwijl hij op je scherm stond. Lees hem opnieuw voordat je bevestigt.",
+      "incomplete": "Vul beide scores in voor minstens één game.",
+      "failed": "Dat is niet gelukt. Probeer het opnieuw."
     },
     "captains": {
       "title": "Captains",
-      "hint": "Only a captain can report or confirm a result for this team.",
-      "make": "Make captain",
-      "remove": "Remove captain",
+      "hint": "Alleen een captain kan voor dit team een uitslag doorgeven of bevestigen.",
+      "make": "Captain maken",
+      "remove": "Captain verwijderen",
       "isCaptain": "Captain",
-      "empty": "Nobody on this team has signed in yet, so there is nobody to appoint.",
-      "unknown": "Unknown player",
-      "failed": "Could not change that. Try again."
+      "empty": "Nog niemand van dit team heeft ingelogd, dus er is niemand om aan te stellen.",
+      "unknown": "Onbekende speler",
+      "failed": "Kan dat niet wijzigen. Probeer het opnieuw."
     },
     "stats": {
-      "hint": "The extra numbers this tournament asks for. Leave a field blank if nobody has one.",
-      "required": "required",
-      "recorded": "Reported stats",
+      "hint": "De extra getallen die dit toernooi vraagt. Laat een veld leeg als niemand er een heeft.",
+      "required": "verplicht",
+      "recorded": "Doorgegeven statistieken",
       "value": "{{subject}}: {{value}}{{suffix}}",
       "errors": {
-        "number": "{{field}} for {{subject}} has to be a number.",
-        "integer": "{{field}} for {{subject}} has to be a whole number.",
-        "range": "{{field}} for {{subject}} is too big to be a real number.",
-        "tooLong": "{{field}} for {{subject}} is longer than {{max}} characters.",
-        "missing": "{{field}} is required, and nothing is filled in for {{team}}."
+        "number": "{{field}} voor {{subject}} moet een getal zijn.",
+        "integer": "{{field}} voor {{subject}} moet een heel getal zijn.",
+        "range": "{{field}} voor {{subject}} is te groot om een echt getal te zijn.",
+        "tooLong": "{{field}} voor {{subject}} is langer dan {{max}} tekens.",
+        "missing": "{{field}} is verplicht en er is niets ingevuld voor {{team}}."
       },
-      "tournamentTitle": "Reported stats",
-      "tournamentHelp": "Added up from confirmed reports. A result still waiting for the opponent is not counted here.",
-      "byTeam": "By team",
-      "byPlayer": "By player",
+      "tournamentTitle": "Doorgegeven statistieken",
+      "tournamentHelp": "Opgeteld uit bevestigde uitslagen. Een uitslag die nog op de tegenstander wacht, telt hier niet mee.",
+      "byTeam": "Per team",
+      "byPlayer": "Per speler",
       "team": "Team",
-      "player": "Player",
-      "matches": "Matches"
+      "player": "Speler",
+      "matches": "Wedstrijden"
     },
     "chip": {
-      "none": "No result yet",
-      "yours": "Your report",
-      "reported": "Reported",
-      "confirm": "Confirm it",
-      "disputed": "Disputed",
-      "final": "Final"
+      "none": "Nog geen uitslag",
+      "yours": "Jouw uitslag",
+      "reported": "Doorgegeven",
+      "confirm": "Bevestig hem",
+      "disputed": "Betwist",
+      "final": "Definitief"
     }
   }
 }
