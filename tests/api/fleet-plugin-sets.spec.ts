@@ -183,7 +183,7 @@ test.describe.serial('Fleet plugin sets', () => {
       'movement',
       'addons',
     ]);
-    expect(body.required).toEqual(['fleet']);
+    expect(body.required).toEqual(['fleet', 'addons']);
     expect(body.presets.movement).toEqual([
       'fleet',
       'essentials',
@@ -191,6 +191,7 @@ test.describe.serial('Fleet plugin sets', () => {
       'mapvote',
       'community',
       'movement',
+      'addons',
     ]);
     expect(body.presets.fun).toEqual([
       'fleet',
@@ -239,7 +240,7 @@ test.describe.serial('Fleet plugin sets', () => {
       const client = await hello(ru, { capabilities: ['match.v1', 'fleet.cmds.v1'] });
       const set = await client.next(isPluginsSet);
       expect((set.payload as { args: unknown }).args).toEqual({
-        enable: ['essentials', 'practice'],
+        enable: ['essentials', 'practice', 'addons'],
         disable: [
           'match',
           'whitelist',
@@ -249,7 +250,6 @@ test.describe.serial('Fleet plugin sets', () => {
           'mapvote',
           'community',
           'movement',
-          'addons',
         ],
       });
       client.send(answer(set, 1));
@@ -470,17 +470,8 @@ test.describe.serial('Fleet plugin sets', () => {
       // This Ready Up has no fleet.cmds.v1: it refuses to disable match, so
       // match stays on (not in either list).
       expect((set.payload as { args: unknown }).args).toEqual({
-        enable: ['essentials', 'practice'],
-        disable: [
-          'whitelist',
-          'skins',
-          'midas',
-          'deathmatch',
-          'mapvote',
-          'community',
-          'movement',
-          'addons',
-        ],
+        enable: ['essentials', 'practice', 'addons'],
+        disable: ['whitelist', 'skins', 'midas', 'deathmatch', 'mapvote', 'community', 'movement'],
       });
       client.send(answer(set, 1));
       // Practice is for a practice server: practice mode goes on right after,
