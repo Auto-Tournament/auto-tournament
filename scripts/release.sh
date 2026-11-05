@@ -1467,24 +1467,12 @@ else
     echo -e "${YELLOW}⚠️  Failed to create GitHub release. It may already exist or there was an error.${NC}"
 fi
 
-# Step 11: Send Discord webhook notification
-#
-# Betas skip this entirely rather than post to the same channel regular
-# users watch for stable releases. discord-webhook.sh also only understands
-# plain X.Y.Z versions, so a beta string would fail its format check anyway.
+# Step 11: Send Discord webhook notification (betas too: discord-webhook.sh marks them as beta)
 echo ""
-if [ "$RELEASE_CHANNEL" = "beta" ]; then
-    echo -e "${YELLOW}Step 11: Skipping Discord notification (beta channel)${NC}"
-else
-    echo -e "${YELLOW}Step 11: Sending Discord release notification...${NC}"
-
-    # Call the standalone Discord webhook script
-    # Use SCRIPT_DIR that was set at the top of the script (before cd to PROJECT_ROOT)
-    "${SCRIPT_DIR}/discord-webhook.sh" "${NEW_VERSION}"
-
-    if [ $? -ne 0 ]; then
-        echo -e "${YELLOW}⚠️  Discord webhook failed, but release completed successfully${NC}"
-    fi
+echo -e "${YELLOW}Step 11: Sending Discord release notification...${NC}"
+# Use SCRIPT_DIR that was set at the top of the script (before cd to PROJECT_ROOT)
+if ! "${SCRIPT_DIR}/discord-webhook.sh" "${NEW_VERSION}"; then
+    echo -e "${YELLOW}⚠️  Discord webhook failed, but release completed successfully${NC}"
 fi
 
 # Summary
