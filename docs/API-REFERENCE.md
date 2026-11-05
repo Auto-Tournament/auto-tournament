@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 758 of them, 480 behind auth —
+Every endpoint this API serves — 765 of them, 481 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -712,6 +712,7 @@ Every tournament: the list, creating another one, which is featured, archiving.
 | Method | Path | Auth |
 | --- | --- | --- |
 | `GET` | `/api/tournaments` | public |
+| `GET` | `/api/tournaments/play-windows` | admin |
 | `POST` | `/api/tournaments` | admin |
 | `PUT` | `/api/tournaments/:id/feature` | admin |
 | `DELETE` | `/api/tournaments/:id/feature` | admin |
@@ -747,6 +748,19 @@ Teams signing themselves up with a lineup, and check-in on the day.
 | `PUT` | `/api/tournament-signup/:id/lineup` | public |
 | `DELETE` | `/api/tournament-signup/:id/registration/:teamId` | public |
 | `POST` | `/api/tournament-signup/:id/check-in` | public |
+| `POST` | `/api/tournament-signup/:id/check-in/:teamId/:steamId` | public |
+
+### Match check-in
+
+Check-in before each match, when the tournament asks for it: starters or their captain.
+
+| Method | Path | Auth |
+| --- | --- | --- |
+| `GET` | `/api/match-check-in/:slug` | public |
+| `POST` | `/api/match-check-in/:slug` | public |
+| `POST` | `/api/match-check-in/:slug/:teamId/:steamId` | public |
+| `GET` | `/api/match-check-in/:slug/full-team` | public |
+| `POST` | `/api/match-check-in/:slug/walkover` | public |
 
 ### Match lineups
 

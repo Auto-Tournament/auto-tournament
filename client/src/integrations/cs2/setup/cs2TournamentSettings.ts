@@ -17,6 +17,7 @@ import type {
 import { requiresVeto, validateMapCount } from './mapRules';
 import type { MapGameMode } from '../cs2.types';
 import { isMapMode } from '../maps/mapModes';
+import { changedLabels } from './matchPresetRules';
 import type { Untrusted } from '../../types';
 
 /** The key of CS2's object in `settings`. */
@@ -58,7 +59,21 @@ export interface Cs2TournamentSettings {
   /** Esports mode: Valve's rules, no skins in the server. */
   esportsMode?: boolean;
   /** Everyone plays the default agents; absent: on in esports mode. */
-  defaultAgents?: boolean;
+  defaultAgents?: boolean | null;
+  /** A knife round picks open sides; absent: on, off in esports mode. */
+  knifeRound?: boolean | null;
+  /** One player's .ready readies the team; absent: the site's. */
+  teamReady?: boolean | null;
+  /** The give-up vote (.gg); absent: the site's. */
+  giveUpVote?: boolean | null;
+  /** The platform's skins in the server; absent: on, off in esports mode. */
+  platformSkins?: boolean | null;
+  /** Tactical timeouts per team and their length (s); absent: the preset's. */
+  tacticalTimeouts?: number | null;
+  tacticalTimeoutSeconds?: number | null;
+  /** Technical pauses per team per map (0: unlimited) and auto-unpause (s, 0: never); absent: the preset's. */
+  technicalPauses?: number | null;
+  technicalPauseSeconds?: number | null;
   /** Minutes in warmup before a match goes live, ready or not; 0: never; absent: the site's. */
   autoStartMinutes?: number | null;
   /** The map veto (default on); off: each match draws its maps from the pool. */
@@ -127,7 +142,8 @@ function applyFields(into: Cs2TournamentSettings, source: Record<string, Untrust
   if (Array.isArray(source.rewards))
     into.rewards = source.rewards as Cs2TournamentSettings['rewards'];
   if (typeof source.esportsMode === 'boolean') into.esportsMode = source.esportsMode;
-  if (typeof source.defaultAgents === 'boolean') into.defaultAgents = source.defaultAgents;
+  for (const key of RULE_FLAGS) if (typeof source[key] === 'boolean') into[key] = source[key];
+  for (const key of RULE_COUNTS) if (typeof source[key] === 'number') into[key] = source[key];
   if (typeof source.autoStartMinutes === 'number') into.autoStartMinutes = source.autoStartMinutes;
   if (typeof source.veto === 'boolean') into.veto = source.veto;
   if (source.connectVia === 'lan' || source.connectVia === 'public' || source.connectVia === 'auto')
@@ -152,6 +168,20 @@ function applyFields(into: Cs2TournamentSettings, source: Record<string, Untrust
  * rules at the top of its settings (`settings.maxRounds`, ...): those are read
  * too, under anything in `settings.cs2`.
  */
+export const RULE_FLAGS = [
+  'defaultAgents',
+  'knifeRound',
+  'teamReady',
+  'giveUpVote',
+  'platformSkins',
+] as const;
+export const RULE_COUNTS = [
+  'tacticalTimeouts',
+  'tacticalTimeoutSeconds',
+  'technicalPauses',
+  'technicalPauseSeconds',
+] as const;
+
 /** Whether the matches use the default agents: the tournament's choice, else on in esports mode. */
 export function defaultAgentsOn(
   cs2: Pick<Cs2TournamentSettings, 'defaultAgents' | 'esportsMode'>
@@ -190,7 +220,9 @@ export function cs2Patch(next: Cs2TournamentSettings): Record<string, Untrusted>
   if (next.mapPoolId !== undefined) stored.mapPoolId = next.mapPoolId;
   stored.fillTeamsWithBots = next.fillTeamsWithBots === true;
   stored.esportsMode = next.esportsMode === true;
-  if (next.defaultAgents !== undefined) stored.defaultAgents = next.defaultAgents;
+  // null goes back to the preset's (or the site's).
+  for (const key of [...RULE_FLAGS, ...RULE_COUNTS])
+    if (next[key] !== undefined) stored[key] = next[key];
   // null goes back to the site's.
   if (next.autoStartMinutes !== undefined) stored.autoStartMinutes = next.autoStartMinutes;
   stored.veto = next.veto !== false;
@@ -258,6 +290,35 @@ const sameSet = (a: string[], b: string[]) =>
   JSON.stringify([...a].sort()) === JSON.stringify([...b].sort());
 
 export const cs2TournamentSetup: TournamentSetupModel = {
+  builtInTemplates(t) {
+    return [
+      {
+        key: 'valve-official',
+        name: t('tournament.matchSettings.valveTemplate', { ns: 'cs2' }),
+        description: t('tournament.matchSettings.valveTemplateHelp', { ns: 'cs2' }),
+        type: 'single_elimination',
+        format: 'bo3',
+        facts: [
+          t('tournament.matchSettings.valveFactVeto', { ns: 'cs2' }),
+          t('tournament.matchSettings.valveFactRules', { ns: 'cs2' }),
+        ],
+        // Player-facing lines from Valve's Major Supplemental Rulebook, and the rulebook.
+        eventPage: {
+          rules: [1, 2, 3, 4, 5, 6].map((n) =>
+            t(`tournament.matchSettings.valveRule${n}`, { ns: 'cs2' })
+          ),
+          rulebookUrl:
+            'https://github.com/ValveSoftware/counter-strike_rules_and_regs/blob/main/major-supplemental-rulebook.md',
+        },
+        // Valve's rules (matchPresetRules.ts presetRules), a veto that picks sides, the site's pool.
+        settings: {
+          matchFormat: 'bo3',
+          cs2: { esportsMode: true, veto: true, maxRounds: 24, overtimeMode: 'enabled', maps: [] },
+        },
+      },
+    ];
+  },
+
   initialSettings(_ctx, from) {
     return cs2Patch(cs2SettingsOf(from));
   },
@@ -325,6 +386,11 @@ export const cs2TournamentSetup: TournamentSetupModel = {
           label: t('tournament.labels.matchRules'),
           value: rulesLine(cs2, ctx, t),
         },
+        {
+          key: 'changedSettings',
+          label: t('tournament.matchSettings.reviewLabel', { ns: 'cs2' }),
+          value: changedLabels(cs2, t),
+        },
       ],
     };
   },
@@ -366,7 +432,8 @@ export const cs2TournamentSetup: TournamentSetupModel = {
       (old.fillTeamsWithBots === true) !== (next.fillTeamsWithBots === true) ||
       (old.esportsMode === true) !== (next.esportsMode === true) ||
       defaultAgentsOn(old) !== defaultAgentsOn(next) ||
-      (old.autoStartMinutes ?? null) !== (next.autoStartMinutes ?? null)
+      (old.autoStartMinutes ?? null) !== (next.autoStartMinutes ?? null) ||
+      [...RULE_FLAGS, ...RULE_COUNTS].some((k) => (old[k] ?? null) !== (next[k] ?? null))
     ) {
       changes.push({
         field: 'matchRules',

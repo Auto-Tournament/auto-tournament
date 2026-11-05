@@ -81,7 +81,11 @@ import { authProviderSettingsService } from './services/authProviderSettingsServ
 import session from 'express-session';
 import connectPgSimple from 'connect-pg-simple';
 import { isIP } from 'net';
-import { DATABASE_NAME, DatabaseRenameRefused } from './config/databaseRename';
+import {
+  DATABASE_NAME,
+  DatabaseRenameRefused,
+  platformConnectionString,
+} from './config/databaseRename';
 import { TRUST_PROXY_HOPS } from './config/trustProxy';
 import { COMPAT_MAX_BYTES } from './utils/compatPayload';
 import { reportCompatConfig } from './services/compatService';
@@ -137,11 +141,13 @@ const PgSession = connectPgSimple(session);
 // session store talks to the exact same PostgreSQL instance with known‑good
 // credentials. This avoids subtle mismatches when DATABASE_URL is unset or
 // when individual DB_* env vars are used instead.
-const sessionDbConnectionString =
+// A 2.x config's database name is read as the 3.0 one, as there (databaseRename.ts).
+const sessionDbConnectionString = platformConnectionString(
   process.env.DATABASE_URL ||
-  `postgresql://${process.env.DB_USER || 'postgres'}:${process.env.DB_PASSWORD || 'postgres'}@${
-    process.env.DB_HOST || '127.0.0.1'
-  }:${process.env.DB_PORT || '5432'}/${process.env.DB_NAME || DATABASE_NAME}`;
+    `postgresql://${process.env.DB_USER || 'postgres'}:${process.env.DB_PASSWORD || 'postgres'}@${
+      process.env.DB_HOST || '127.0.0.1'
+    }:${process.env.DB_PORT || '5432'}/${process.env.DB_NAME || DATABASE_NAME}`
+);
 
 // Determine if we should use secure cookies (HTTPS only)
 // Check FRONTEND_BASE_URL to see if we're using HTTPS

@@ -70,7 +70,17 @@
     "cancel": "Abbrechen",
     "remove": "Remove",
     "close": "Close",
-    "opensInNewTab": "(opens in a new tab)"
+    "opensInNewTab": "(opens in a new tab)",
+    "datePicker": {
+      "previousMonth": "Previous month",
+      "nextMonth": "Next month",
+      "today": "Today",
+      "done": "Done",
+      "chooseDay": "Choose a day",
+      "chooseDays": "Choose the days",
+      "chooseTime": "Choose a time",
+      "time": "Time"
+    }
   },
   "app": {
     "name": "Auto Tournament"
@@ -134,6 +144,7 @@
       "demos_failing": "Demo analyses keep failing",
       "tournament_autostart_failed": "A tournament does not start on time",
       "shuffle_no_show": "A shuffle player never joins their match",
+      "teams_short": "Both teams are short when a match should start",
       "discord_failed": "Discord bot failed"
     },
     "kind": {
@@ -159,6 +170,7 @@
       "demos_failing": "{{count}} demo analyses failed in the last hour",
       "tournament_autostart_failed": "{{name}} did not start at its start time: {{reason}}",
       "shuffle_no_show": "{{players}} never joined {{matchSlug}}: out of the next draws until they say they're back",
+      "teams_short": "Both teams in {{matchSlug}} are short on the server. The match waits until you decide.",
       "discord_failed": "{{what}} failed: {{detail}}"
     },
     "close": "Close",
@@ -185,6 +197,7 @@
       "demos_failing": "The logs on this page say why the demo analyses failed.",
       "tournament_autostart_failed": "Fix what the reason says, then start the tournament by hand.",
       "shuffle_no_show": "Nothing to do: they're left out of the next draws until they say they're back.",
+      "teams_short": "Open the match and give one team the walkover, or let the match start.",
       "discord_failed": "Check that the bot is in the Discord server and has Manage Channels, Manage Roles and Move Members (Settings → Integrations → Discord bot)."
     }
   },

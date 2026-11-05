@@ -103,7 +103,9 @@ export function adaptCodeModule(integration: ClientGameIntegration): ClientGameI
         stepError: guard('stepError', setup.stepError, null),
         summary: guard('summary', setup.summary, { rows: [], checklist: [], review: [] }),
         roundCount: guard('roundCount', setup.roundCount, null),
+        minutesPerMap: guard('minutesPerMap', setup.minutesPerMap, null),
         changes: guard('changes', setup.changes, []),
+        builtInTemplates: guard('builtInTemplates', setup.builtInTemplates, []),
       },
     };
   }

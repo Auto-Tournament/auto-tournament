@@ -57,7 +57,7 @@ else
 fi
 
 # Validate version format (semver)
-if ! [[ "$NEW_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+if ! [[ "$NEW_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-(beta|rc)\.[0-9]+)?$ ]]; then
     echo -e "${RED}Invalid version format. Use semantic versioning (e.g., 1.0.0)${NC}"
     exit 1
 fi
@@ -74,6 +74,20 @@ if [ -z "$DISCORD_WEBHOOK_URL" ]; then
 fi
 
 echo -e "${BLUE}Version: ${GREEN}${NEW_VERSION}${NC}"
+
+# A beta (X.Y.Z-beta.N / -rc.N) gets its own wording and an amber embed, so it reads apart from a
+# stable release in the same channel.
+if [[ "$NEW_VERSION" == *-* ]]; then
+    POST_CONTENT="🧪 **New beta: v${NEW_VERSION}**"
+    POST_TITLE="Auto Tournament v${NEW_VERSION} (beta)"
+    POST_DESCRIPTION="A beta is out for testing (the :next image)."
+    EMBED_COLOR=16096779 # amber, 0xF59E0B
+else
+    POST_CONTENT="🚀 **New Release: v${NEW_VERSION}**"
+    POST_TITLE="Auto Tournament v${NEW_VERSION}"
+    POST_DESCRIPTION="A new version has been released!"
+    EMBED_COLOR=3066993
+fi
 echo -e "${BLUE}Webhook URL: ${YELLOW}${DISCORD_WEBHOOK_URL:0:50}...${NC}"
 echo ""
 
@@ -83,7 +97,12 @@ get_changelog() {
     local current_tag="v${NEW_VERSION}"
     
     # Get the previous tag (second most recent, excluding the current one)
-    prev_tag=$(git tag --sort=-v:refname | grep -v "^${current_tag}$" | sed -n '1p' 2>/dev/null || echo "")
+    # A stable release counts from the previous stable one (its betas may share its commit).
+    if [[ "$NEW_VERSION" == *-* ]]; then
+        prev_tag=$(git tag --sort=-v:refname | grep -v "^${current_tag}$" | sed -n '1p' 2>/dev/null || echo "")
+    else
+        prev_tag=$(git tag --sort=-v:refname | grep -v "^${current_tag}$" | grep -v -- '-' | sed -n '1p' 2>/dev/null || echo "")
+    fi
     
     # Extract PR titles from merge commits
     # Format: "Merge pull request #XX..." followed by blank line, then PR title
@@ -178,9 +197,10 @@ if command -v jq &> /dev/null; then
     echo "$CHANGELOG" > /tmp/changelog.txt
     
     jq -n \
-        --arg content "🚀 **New Release: v${NEW_VERSION}**" \
-        --arg title "Auto Tournament v${NEW_VERSION}" \
-        --arg description "A new version has been released!" \
+        --arg content "$POST_CONTENT" \
+        --arg title "$POST_TITLE" \
+        --arg description "$POST_DESCRIPTION" \
+        --argjson color "$EMBED_COLOR" \
         --arg changelog "$(cat /tmp/changelog.txt)" \
         --arg dockerhub "https://hub.docker.com/r/${DOCKER_USERNAME}/${IMAGE_NAME}" \
         --arg github "https://github.com/${REPO_OWNER}/${REPO_NAME}/releases/tag/v${NEW_VERSION}" \
@@ -190,7 +210,7 @@ if command -v jq &> /dev/null; then
           embeds: [{
             title: $title,
             description: $description,
-            color: 3066993,
+            color: $color,
             fields: [
               {
                 name: "📦 Changelog",
@@ -222,11 +242,11 @@ else
     
     cat > "$TEMP_JSON" <<EOF
 {
-  "content": "🚀 **New Release: v${NEW_VERSION}**",
+  "content": "${POST_CONTENT}",
   "embeds": [{
-    "title": "Auto Tournament v${NEW_VERSION}",
-    "description": "A new version has been released!",
-    "color": 3066993,
+    "title": "${POST_TITLE}",
+    "description": "${POST_DESCRIPTION}",
+    "color": ${EMBED_COLOR},
     "fields": [
       {
         "name": "📦 Changelog",

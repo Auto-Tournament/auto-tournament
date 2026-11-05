@@ -26,6 +26,7 @@ import { matchContextFor } from '../utils/matchIntegration';
 import { emitMatchUpdate } from './socketService';
 import { teamMembers } from './teamMembers';
 import { tournamentSignupService } from './tournamentSignupService';
+import { absentStarters, swapAbsent } from './checkInSwap';
 import type { TournamentSettings } from '../types/tournament.types';
 import type { Untrusted } from '../utils/untrusted';
 
@@ -230,9 +231,15 @@ async function resolve(
   if (players.length <= size) return null;
   const ids = players.map((p) => p.steamId);
   const stored = await storedLineup(slug, team.id, tournamentId);
+  const pick = fillLineup(stored?.players ?? [], ids, size);
+  // A sub plays for a starter who didn't check in, unless the lineup was set for this match.
+  const absent =
+    stored?.source === 'set'
+      ? new Set<string>()
+      : await absentStarters(tournamentId, team.id, ids.slice(0, size), slug);
   return {
     pool: players,
-    players: fillLineup(stored?.players ?? [], ids, size),
+    players: absent.size ? swapAbsent(pick, ids, size, absent) : pick,
     source: stored?.source ?? 'roster',
   };
 }

@@ -34,6 +34,7 @@ export function CheckInPanel({
   registrations,
   steamId,
   onCheckIn,
+  onCheckInPlayer,
 }: {
   tournament: Tournament;
   window: SignupWindow;
@@ -41,6 +42,8 @@ export function CheckInPanel({
   registrations: Registration[];
   steamId: string | null;
   onCheckIn: () => Promise<void>;
+  /** The viewer is the team's owner or a captain, and captains may check in teammates. */
+  onCheckInPlayer?: (playerSteamId: string) => Promise<void>;
 }) {
   const { t } = useTranslation();
   const now = useNow(1000);
@@ -203,6 +206,25 @@ export function CheckInPanel({
               >
                 {p.name}
               </Typography>
+              {onCheckInPlayer && !p.checkedInAt && p.steamId !== steamId && (
+                <Button
+                  size="small"
+                  disabled={busy}
+                  aria-label={t('signup.checkIn.checkInFor', { name: p.name })}
+                  data-testid={`signup-check-in-${p.steamId}`}
+                  onClick={async () => {
+                    setBusy(true);
+                    try {
+                      await onCheckInPlayer(p.steamId);
+                    } finally {
+                      setBusy(false);
+                    }
+                  }}
+                  sx={{ minWidth: 0, px: 1, fontSize: '0.75rem' }}
+                >
+                  {t('signup.checkIn.checkInShort')}
+                </Button>
+              )}
             </Box>
           ))}
         </Box>

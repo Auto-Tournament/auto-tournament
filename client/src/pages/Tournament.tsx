@@ -1,5 +1,5 @@
 import { isStarted } from '../utils/tournamentStatus';
-import { matchTimesSetting, roundBreaksSetting } from '../components/tournament/setup/ScheduleStep';
+import { scheduleSettings, roundBreaksSetting } from '../components/tournament/setup/ScheduleStep';
 import { pageTitle } from '../utils/pageTitle';
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -31,6 +31,7 @@ import {
   setupStepsFor,
 } from '../components/tournament/setup/setupSteps';
 import { DEFAULT_SETUP_GAME } from '../components/tournament/setup/games';
+import { builtInTemplates } from '../components/tournament/setup/builtInTemplates';
 import {
   gameSettingsChanges,
   gameSettingsError,
@@ -240,11 +241,13 @@ const Tournament: React.FC = () => {
 
   // ---- Templates -----------------------------------------------------------
   const applyTemplate = React.useCallback(
-    (template: TournamentTemplate, options: { withTeams: boolean }) => {
+    (template: TournamentTemplate, options: { withTeams: boolean; review?: boolean }) => {
       const settings = template.settings;
-      setForm({
+      // A built-in template names no tournament; picked in step 1, the name typed so far stays.
+      const templateName = template.id < 0 ? '' : template.name;
+      setForm((prev) => ({
         ...DEFAULT_FORM,
-        name: template.name,
+        name: options.review === false ? prev.name : templateName,
         type: template.type,
         format: template.format,
         // The game module's settings saved with the template (CS2: its pool,
@@ -259,14 +262,23 @@ const Tournament: React.FC = () => {
             ? template.teamIds!.length
             : nearestTeamCount(template.type, DEFAULT_FORM.plannedTeams),
         grandFinalMode: settings?.grandFinalMode ?? DEFAULT_FORM.grandFinalMode,
-      });
+        // A built-in template's rules for players and rulebook link (Valve official).
+        ...(template.eventPage
+          ? {
+              eventPage: { ...DEFAULT_FORM.eventPage, ...template.eventPage },
+              eventPageFrom: { name: template.name, ...template.eventPage },
+            }
+          : {}),
+      }));
       setGrandFinalModePicked(false);
-      // A loaded template is complete: go straight to Review to confirm and
+      window.history.replaceState({}, '', '/manage/tournament');
+      // Picked in step 1 ("Start from"): the organizer goes on through the steps.
+      if (options.review === false) return;
+      // Opened by link: the template is complete, so straight to Review to confirm and
       // create. Templates are saved from a CS2 tournament and carry no game.
       const last = reviewStepIndexFor(DEFAULT_SETUP_GAME.id);
       setActiveStep(last);
       setFurthestStep(last);
-      window.history.replaceState({}, '', '/manage/tournament');
     },
     []
   );
@@ -274,6 +286,14 @@ const Tournament: React.FC = () => {
   // Load template if specified in URL (?template=<id>)
   const loadTemplate = React.useCallback(
     async (templateId: number) => {
+      // A built-in template (negative id) is the module's, not the API's.
+      const builtIn = builtInTemplates(t).find((tpl) => tpl.id === templateId);
+      if (builtIn) {
+        applyTemplate(builtIn, { withTeams: false });
+        const presetName = new URLSearchParams(window.location.search).get('name');
+        if (presetName) setForm((prev) => ({ ...prev, name: presetName.slice(0, 100) }));
+        return;
+      }
       try {
         const response = await api.get<{ success: boolean; template: TournamentTemplate }>(
           `/api/templates/${templateId}`
@@ -305,8 +325,10 @@ const Tournament: React.FC = () => {
     }
   }, [searchParams, tournament, loadTemplate, setupModulePending]);
 
-  const handleLoadTemplate = (template: TournamentTemplate) => {
-    applyTemplate(template, { withTeams: true });
+  // Step 1's "Start from": a template (its teams too), or null for a blank one.
+  const handleLoadTemplate = (template: TournamentTemplate | null) => {
+    if (template) applyTemplate(template, { withTeams: true, review: false });
+    else setForm((prev) => ({ ...DEFAULT_FORM, name: prev.name }));
   };
 
   const handleSaveTemplate = () => {
@@ -650,6 +672,15 @@ const Tournament: React.FC = () => {
             showError(t('tournament.eventPage.saveError', { message }));
           }
         }
+        // The days and start from Name and day and Schedule.
+        if (!tournament && form.matchTimes.start.firstDay) {
+          try {
+            await updateSettings(scheduleSettings(form.matchTimes));
+          } catch (err) {
+            const message = err instanceof Error ? err.message : String(err);
+            showError(t('tournament.eventPage.saveError', { message }));
+          }
+        }
         const minPlayers = (shuffleSettings.teamSize || 5) * 2;
         showSuccess(
           t('tournament.toasts.shuffleCreated', {
@@ -696,12 +727,9 @@ const Tournament: React.FC = () => {
         ...(type === 'double_elimination' ? { grandFinalMode } : {}),
         // Groups, then playoffs: groups, who goes through, the playoffs.
         ...(type === 'groups' ? form.groups : {}),
-        // When matches start (Manage › Schedule edits the same).
-        matchTimes: matchTimesSetting(
-          form.matchTimes,
-          (form.eventPage as { startsAt?: string }).startsAt ||
-            (tournament?.settings as { startsAt?: string } | undefined)?.startsAt
-        ),
+        // The days, the start (round 1), auto-start and reminders, and when
+        // matches start (Manage › Schedule edits the round times too).
+        ...scheduleSettings(form.matchTimes),
         // Breaks between rounds (a shuffle): none set = the site's break.
         roundBreaks: roundBreaksSetting(form.matchTimes),
         // The game module's own object (CS2: the map pool and round rules),

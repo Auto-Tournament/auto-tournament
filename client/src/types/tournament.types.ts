@@ -82,6 +82,16 @@ export interface TournamentSettings {
   maxTeams?: number | null;
   checkInOpensAt?: string;
   checkInClosesAt?: string;
+  /** Check-in opens this many minutes before startsAt and closes at it (0: none). */
+  checkInMinutes?: number;
+  /** The owner or a captain may check in their teammates (default true). */
+  captainCheckIn?: boolean;
+  /** Minutes a team has to be complete on the server before a walkover (default 10, 0: none). */
+  fullTeamMinutes?: number;
+  /** Starters check in again before each match. */
+  checkInEachMatch?: boolean;
+  /** Sign-up stays closed until then (ISO). */
+  registrationOpensAt?: string;
   /** Virtual skin rewards for the top three; on unless turned off here. */
 }
 
@@ -135,6 +145,10 @@ export interface TournamentTemplate {
   type:
     'single_elimination' | 'double_elimination' | 'round_robin' | 'swiss' | 'shuffle' | 'groups';
   format: 'bo1' | 'bo3' | 'bo5';
+  /** A built-in template's card facts, from its game module; saved ones have none. */
+  facts?: string[];
+  /** A built-in template's rules for players and rulebook link (Name and day). */
+  eventPage?: { rules: string[]; rulebookUrl: string };
   mapPoolId?: number | null;
   maps: string[];
   teamIds?: string[];

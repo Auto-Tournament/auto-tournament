@@ -11,35 +11,71 @@ import { useState } from 'react';
 import { Box, Button, Stack, TextField, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { SegmentedControl } from './SegmentedControl';
+import { FullTeamField, SignupWindowFields } from './SignupWindowFields';
 import type { TournamentSettings } from '../../../types';
 
 export interface SignupFields {
   registrationOpen: boolean;
+  /** Sign-up opens then (ISO); '' opens it as soon as the tournament is saved. */
+  registrationOpensAt: string;
   registrationClosesAt: string;
   maxTeams: number | null;
+  /** The older fixed check-in times, cleared once `checkInMinutes` is saved. */
   checkInOpensAt: string;
   checkInClosesAt: string;
+  /** Check-in opens this many minutes before the start and closes at it (0: no check-in). */
+  checkInMinutes: number;
+  /** The owner or a captain may check in their teammates. */
+  captainCheckIn: boolean;
+  /** Starters check in again before each match. */
+  checkInEachMatch: boolean;
+  /** Minutes a team has to be complete on the server before a walkover (0: none). */
+  fullTeamMinutes: number;
   /** Players per team: how many starters a team picks when it signs up. */
   teamSize: number;
 }
 
 export const DEFAULT_SIGNUP: SignupFields = {
   registrationOpen: false,
+  registrationOpensAt: '',
   registrationClosesAt: '',
   maxTeams: null,
   checkInOpensAt: '',
   checkInClosesAt: '',
+  checkInMinutes: 30,
+  captainCheckIn: true,
+  checkInEachMatch: false,
+  fullTeamMinutes: 10,
   teamSize: 5,
 };
 
+/** An older tournament's fixed check-in opening as minutes before its start (else 30). */
+function minutesOf(settings: TournamentSettings | undefined): number {
+  const saved = settings?.checkInMinutes;
+  if (typeof saved === 'number') return saved;
+  const opens = Date.parse(settings?.checkInOpensAt ?? '');
+  const start = Date.parse(settings?.startsAt ?? '');
+  return Number.isFinite(opens) && Number.isFinite(start) && start > opens
+    ? Math.round((start - opens) / 60_000)
+    : DEFAULT_SIGNUP.checkInMinutes;
+}
+
 /** A saved tournament's sign-up fields. */
-export function signupOf(settings: TournamentSettings | undefined, teamSize: number | undefined): SignupFields {
+export function signupOf(
+  settings: TournamentSettings | undefined,
+  teamSize: number | undefined
+): SignupFields {
   return {
     registrationOpen: settings?.registrationOpen === true,
+    registrationOpensAt: settings?.registrationOpensAt ?? '',
     registrationClosesAt: settings?.registrationClosesAt ?? '',
     maxTeams: settings?.maxTeams ?? null,
     checkInOpensAt: settings?.checkInOpensAt ?? '',
     checkInClosesAt: settings?.checkInClosesAt ?? '',
+    checkInMinutes: minutesOf(settings),
+    captainCheckIn: settings?.captainCheckIn !== false,
+    checkInEachMatch: settings?.checkInEachMatch === true,
+    fullTeamMinutes: settings?.fullTeamMinutes ?? DEFAULT_SIGNUP.fullTeamMinutes,
     teamSize: teamSize ?? 5,
   };
 }
@@ -48,53 +84,42 @@ export function signupOf(settings: TournamentSettings | undefined, teamSize: num
 export function signupSettingsPatch(fields: SignupFields): Partial<TournamentSettings> {
   return {
     registrationOpen: fields.registrationOpen,
+    registrationOpensAt: fields.registrationOpensAt,
     registrationClosesAt: fields.registrationClosesAt,
     maxTeams: fields.maxTeams,
-    checkInOpensAt: fields.checkInOpensAt,
-    checkInClosesAt: fields.checkInClosesAt,
+    // Check-in is minutes before the start now: the older fixed times go.
+    checkInOpensAt: '',
+    checkInClosesAt: '',
+    checkInMinutes: fields.checkInMinutes,
+    captainCheckIn: fields.captainCheckIn,
+    checkInEachMatch: fields.checkInEachMatch,
+    fullTeamMinutes: fields.fullTeamMinutes,
   } as Partial<TournamentSettings>;
-}
-
-/** An ISO time as the value a `datetime-local` input wants, in local time. */
-function toLocalInput(iso: string | undefined | null): string {
-  if (!iso) return '';
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return '';
-  const pad = (n: number) => String(n).padStart(2, '0');
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-}
-
-/** A `datetime-local` value back to ISO, or '' when empty. */
-function fromLocalInput(value: string): string {
-  return value ? new Date(value).toISOString() : '';
 }
 
 interface SignupSettingsProps {
   value: SignupFields;
   onChange: (next: SignupFields) => void;
   disabled?: boolean;
+  /** The tournament's start (ISO), for "check-in opens at …". */
+  startsAt?: string;
   /** A saved tournament: a Save button, enabled while `dirty`. */
   onSave?: () => void;
   dirty?: boolean;
   saving?: boolean;
 }
 
-export function SignupSettings({ value, onChange, disabled, onSave, dirty, saving }: SignupSettingsProps) {
+export function SignupSettings({
+  value,
+  onChange,
+  disabled,
+  startsAt,
+  onSave,
+  dirty,
+  saving,
+}: SignupSettingsProps) {
   const { t } = useTranslation();
   const set = (patch: Partial<SignupFields>) => onChange({ ...value, ...patch });
-  const dateField = (key: 'registrationClosesAt' | 'checkInOpensAt' | 'checkInClosesAt', label: string) => (
-    <TextField
-      fullWidth
-      type="datetime-local"
-      label={label}
-      value={toLocalInput(value[key])}
-      onChange={(e) => set({ [key]: fromLocalInput(e.target.value) })}
-      InputLabelProps={{ shrink: true }}
-      disabled={disabled}
-      inputProps={{ 'data-testid': `signup-${key}` }}
-    />
-  );
-
   return (
     <Stack spacing={2} data-testid="setup-signup">
       <SegmentedControl
@@ -104,21 +129,39 @@ export function SignupSettings({ value, onChange, disabled, onSave, dirty, savin
         disabled={disabled}
         testId="setup-signup-mode"
         options={[
-          { value: 'organizer', label: t('tournament.setup.signup.organizer'), testId: 'setup-signup-organizer' },
-          { value: 'signup', label: t('tournament.setup.signup.open'), testId: 'setup-signup-open' },
+          {
+            value: 'organizer',
+            label: t('tournament.setup.signup.organizer'),
+            testId: 'setup-signup-organizer',
+          },
+          {
+            value: 'signup',
+            label: t('tournament.setup.signup.open'),
+            testId: 'setup-signup-open',
+          },
         ]}
       />
       <Typography variant="body2" color="text.secondary">
-        {value.registrationOpen ? t('tournament.setup.signup.openHelp') : t('tournament.setup.signup.organizerHelp')}
+        {value.registrationOpen
+          ? t('tournament.setup.signup.openHelp')
+          : t('tournament.setup.signup.organizerHelp')}
       </Typography>
       {value.registrationOpen && (
-        <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 220px), 1fr))' }}>
+        <Box
+          sx={{
+            display: 'grid',
+            gap: 2,
+            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 220px), 1fr))',
+          }}
+        >
           <TextField
             fullWidth
             type="number"
             label={t('tournament.setup.signup.teamSize')}
             value={value.teamSize}
-            onChange={(e) => set({ teamSize: Math.max(1, Math.min(10, Number(e.target.value) || 1)) })}
+            onChange={(e) =>
+              set({ teamSize: Math.max(1, Math.min(10, Number(e.target.value) || 1)) })
+            }
             inputProps={{ min: 1, max: 10, 'data-testid': 'signup-teamSize' }}
             helperText={t('tournament.setup.signup.teamSizeHelp')}
             disabled={disabled}
@@ -133,14 +176,24 @@ export function SignupSettings({ value, onChange, disabled, onSave, dirty, savin
             helperText={t('tournament.setup.signup.maxTeamsHelp')}
             disabled={disabled}
           />
-          {dateField('registrationClosesAt', t('tournament.eventPage.signupClosesAt'))}
-          {dateField('checkInOpensAt', t('tournament.eventPage.checkInOpensAt'))}
-          {dateField('checkInClosesAt', t('tournament.eventPage.checkInClosesAt'))}
         </Box>
       )}
+      {value.registrationOpen && (
+        <SignupWindowFields value={value} onChange={set} startsAt={startsAt} disabled={disabled} />
+      )}
+      <FullTeamField
+        value={value.fullTeamMinutes}
+        onChange={(m) => set({ fullTeamMinutes: m })}
+        disabled={disabled}
+      />
       {onSave && (
         <Box>
-          <Button variant="outlined" onClick={onSave} disabled={!dirty || saving || disabled} data-testid="setup-signup-save">
+          <Button
+            variant="outlined"
+            onClick={onSave}
+            disabled={!dirty || saving || disabled}
+            data-testid="setup-signup-save"
+          >
             {t('tournament.setup.signup.save')}
           </Button>
         </Box>

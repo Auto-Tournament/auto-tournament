@@ -23,6 +23,7 @@ import type { ComponentType, ReactElement, ReactNode } from 'react';
 import type { TFunction } from 'i18next';
 import type { NoticeFilter } from '../components/social/noticeFilters';
 import type { Untrusted } from '../utils/untrusted';
+import type { ShipsBuiltInTemplates } from './builtInTemplate';
 import type { ModuleLocales } from '../module-loader/moduleLocales';
 
 export type { Untrusted };
@@ -316,7 +317,7 @@ export interface TournamentSettingChange {
  * module shares with core pages live in core's namespace; a module's own are
  * `<id>:key`).
  */
-export interface TournamentSetupModel {
+export interface TournamentSetupModel extends ShipsBuiltInTemplates {
   /**
    * The module's object(s) for a new tournament, as a settings patch (CS2:
    * `{ cs2: { maps: [], maxRounds: 24, ... } }`). `from` is a saved settings

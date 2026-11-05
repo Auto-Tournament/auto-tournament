@@ -8,7 +8,7 @@ import { db } from '../config/database';
 import { log } from '../utils/logger';
 import { notificationService } from './notificationService';
 import { notifyChannels } from './notifyChannels';
-import type { Untrusted } from '../utils/untrusted';
+import { windowOfSettings } from './tournamentSignupService';
 
 /** A window that opened longer ago than this is not announced (an old tournament, a first start). */
 const FRESH_SECONDS = 6 * 3600;
@@ -73,18 +73,10 @@ async function sweepCheckIns(): Promise<void> {
   );
   const now = Date.now();
   for (const t of rows) {
-    let opens: number | null = null;
-    let closes: number | null = null;
-    try {
-      const s = JSON.parse(t.settings ?? '{}') as {
-        checkInOpensAt?: Untrusted;
-        checkInClosesAt?: Untrusted;
-      };
-      opens = typeof s.checkInOpensAt === 'string' ? Date.parse(s.checkInOpensAt) : null;
-      closes = typeof s.checkInClosesAt === 'string' ? Date.parse(s.checkInClosesAt) : null;
-    } catch {
-      continue;
-    }
+    // Fixed times, or minutes before the start (tournamentSignupService).
+    const win = windowOfSettings(t.settings);
+    const opens = win.checkInOpensAt ? Date.parse(win.checkInOpensAt) : null;
+    const closes = win.checkInClosesAt ? Date.parse(win.checkInClosesAt) : null;
     if (!opens || !Number.isFinite(opens) || opens > now || now - opens > FRESH_SECONDS * 1000)
       continue;
     if (closes && Number.isFinite(closes) && closes <= now) continue;

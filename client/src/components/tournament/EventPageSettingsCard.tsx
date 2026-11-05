@@ -11,6 +11,7 @@ import {
   Divider,
   Grid,
   Chip,
+  Link,
 } from '@mui/material';
 import { ArrowDownIcon, ArrowUpIcon, PlusIcon, TrashIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
@@ -20,6 +21,7 @@ import { TournamentBannerField } from './TournamentBannerField';
 import { FALLBACK_ART_MAPS } from '../../utils/tournamentArt';
 import { SwitchRow } from '../../components/common/ui';
 import type { Untrusted } from '../../utils/untrusted';
+import { tokens, withAlpha } from '../../theme/tokens';
 
 const MAX_RULES = 20;
 const MAX_PRIZES = 5;
@@ -57,6 +59,13 @@ interface EventPageSettingsCardProps {
   variant?: 'card' | 'embedded';
   /** The tournament's banner. Shown (with Upload) only once the tournament exists. */
   bannerUrl?: string | null;
+  /**
+   * The setup's Name and day: the start time, auto-start and reminders are on
+   * the Schedule step there, so they are left out here and not saved from here.
+   */
+  hideStart?: boolean;
+  /** The template that filled the rules and rulebook link: those show orange, with Clear all. */
+  fromTemplate?: { name: string; rules: string[]; rulebookUrl: string } | null;
 }
 
 const REMINDER_CHOICES = [60, 30, 15, 5];
@@ -80,6 +89,11 @@ function move<T>(items: T[], index: number, delta: number): T[] {
   return next;
 }
 
+/** A field still holding what a template filled in: orange, like settings that differ. */
+const fromTemplateSx = {
+  '& .MuiOutlinedInput-notchedOutline': { borderColor: withAlpha(tokens.color.accent, 0.6) },
+};
+
 /**
  * Admin "Event page" section: the organizer-written content shown on the
  * public Overview tab (description, location, organizer, rules, rulebook link, prizes,
@@ -93,6 +107,8 @@ export function EventPageSettingsCard({
   onDraftChange,
   variant = 'card',
   bannerUrl,
+  hideStart = false,
+  fromTemplate = null,
 }: EventPageSettingsCardProps) {
   const { t } = useTranslation();
   const { showSuccess, showError } = useSnackbar();
@@ -128,9 +144,13 @@ export function EventPageSettingsCard({
       rules,
       prizes,
       schedule,
-      startsAt: startsAt || undefined,
-      autoStart: autoStart && !!startsAt,
-      startReminders: reminders,
+      ...(hideStart
+        ? {}
+        : {
+            startsAt: startsAt || undefined,
+            autoStart: autoStart && !!startsAt,
+            startReminders: reminders,
+          }),
     } as EventPageFields);
   }, [
     description,
@@ -143,6 +163,7 @@ export function EventPageSettingsCard({
     startsAt,
     autoStart,
     reminders,
+    hideStart,
   ]);
 
   const handleSave = async () => {
@@ -157,9 +178,13 @@ export function EventPageSettingsCard({
         rules,
         prizes,
         schedule,
-        startsAt: startsAt || '',
-        autoStart: autoStart && !!startsAt,
-        startReminders: reminders,
+        ...(hideStart
+          ? {}
+          : {
+              startsAt: startsAt || '',
+              autoStart: autoStart && !!startsAt,
+              startReminders: reminders,
+            }),
       });
       showSuccess(t('tournament.eventPage.saveSuccess'));
     } catch (err) {
@@ -171,6 +196,11 @@ export function EventPageSettingsCard({
   };
 
   const isSaving = saving || localSaving;
+  // Still what the template filled in (Valve official): orange, with Clear all.
+  const templated = Boolean(fromTemplate && rules.some((r) => fromTemplate.rules.includes(r)));
+  const rulebookFromTemplate = Boolean(
+    fromTemplate?.rulebookUrl && rulebookUrl === fromTemplate.rulebookUrl
+  );
 
   const fields = (
     <Stack spacing={3}>
@@ -183,15 +213,6 @@ export function EventPageSettingsCard({
           }
         />
       )}
-      <TextField
-        label={t('tournament.eventPage.descriptionLabel')}
-        value={description}
-        onChange={(e) => setDescription(e.target.value.slice(0, MAX_DESCRIPTION))}
-        multiline
-        minRows={3}
-        fullWidth
-        helperText={`${description.length}/${MAX_DESCRIPTION}`}
-      />
 
       {/* Short fields that belong together share a row where there is room. */}
       <Box
@@ -221,20 +242,46 @@ export function EventPageSettingsCard({
         />
       </Box>
 
-      <TextField
-        label={t('tournament.eventPage.rulebookUrlLabel')}
-        helperText={t('tournament.eventPage.rulebookUrlHelper')}
-        value={rulebookUrl}
-        onChange={(e) => setRulebookUrl(e.target.value)}
-        fullWidth
-      />
-
       <Divider />
 
       {/* Rules */}
       <Box>
-        <Typography variant="subtitle2" fontWeight={600} gutterBottom>
-          {t('tournament.eventPage.rulesLabel')}
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'baseline',
+            justifyContent: 'space-between',
+            gap: 1.5,
+            flexWrap: 'wrap',
+          }}
+        >
+          <Typography variant="subtitle2" fontWeight={600} gutterBottom>
+            {t('tournament.eventPage.rulesLabel')}
+          </Typography>
+          {templated && (
+            <Typography
+              variant="body2"
+              sx={{ color: tokens.color.accent }}
+              data-testid="event-rules-from-template"
+            >
+              {t('tournament.eventPage.fromTemplate', { name: fromTemplate?.name })} ·{' '}
+              <Link
+                component="button"
+                type="button"
+                onClick={() => {
+                  setRules([]);
+                  if (rulebookFromTemplate) setRulebookUrl('');
+                }}
+                sx={{ color: tokens.color.accent, verticalAlign: 'baseline' }}
+                data-testid="event-rules-clear"
+              >
+                {t('tournament.eventPage.clearAll')}
+              </Link>
+            </Typography>
+          )}
+        </Box>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
+          {t('tournament.eventPage.rulesHelp')}
         </Typography>
         <Stack spacing={1.5}>
           {rules.map((rule, index) => (
@@ -243,6 +290,7 @@ export function EventPageSettingsCard({
                 size="small"
                 fullWidth
                 label={t('tournament.eventPage.ruleFieldLabel', { n: index + 1 })}
+                sx={fromTemplate?.rules.includes(rule) ? fromTemplateSx : undefined}
                 value={rule}
                 onChange={(e) => {
                   const next = [...rules];
@@ -287,6 +335,31 @@ export function EventPageSettingsCard({
           {t('tournament.eventPage.addRule')}
         </Button>
       </Box>
+
+      <TextField
+        label={t('tournament.eventPage.rulebookUrlLabel')}
+        helperText={
+          rulebookFromTemplate
+            ? t('tournament.eventPage.rulebookFromTemplate', { name: fromTemplate?.name })
+            : t('tournament.eventPage.rulebookUrlHelper')
+        }
+        value={rulebookUrl}
+        onChange={(e) => setRulebookUrl(e.target.value)}
+        fullWidth
+        sx={rulebookFromTemplate ? fromTemplateSx : undefined}
+      />
+
+      <Divider />
+
+      <TextField
+        label={t('tournament.eventPage.descriptionLabel')}
+        value={description}
+        onChange={(e) => setDescription(e.target.value.slice(0, MAX_DESCRIPTION))}
+        multiline
+        minRows={3}
+        fullWidth
+        helperText={`${description.length}/${MAX_DESCRIPTION}`}
+      />
 
       <Divider />
 
@@ -351,7 +424,7 @@ export function EventPageSettingsCard({
       <Divider />
 
       {/* Start time: a countdown on the site, reminders to the players, optionally the start itself */}
-      <Box>
+      <Box sx={hideStart ? { display: 'none' } : undefined}>
         <Typography variant="subtitle2" fontWeight={600} gutterBottom>
           {t('tournament.eventPage.startLabel')}
         </Typography>

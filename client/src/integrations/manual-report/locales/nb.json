@@ -8,7 +8,7 @@
       "needsAnswer": "{{team}} har meldt inn dette resultatet. Godkjenn det hvis det stemmer.",
       "disputed": "Resultatet er bestridt. En administrator avgjør saken.",
       "awaitingAdmin": "Venter på at en administrator avgjør kampen.",
-      "confirmed": "Begge lag er enige om resultatet."
+      "confirmed": "Begge lagene er enige om resultatet."
     },
     "deadline": {
       "autoConfirm": "Godkjennes automatisk om {{minutes}} min hvis ingen svarer.",
@@ -57,9 +57,9 @@
       "errors": {
         "number": "{{field}} for {{subject}} må være et tall.",
         "integer": "{{field}} for {{subject}} må være et helt tall.",
-        "range": "{{field}} for {{subject}} er for stort til å være et ekte tall.",
+        "range": "{{field}} for {{subject}} er for stort.",
         "tooLong": "{{field}} for {{subject}} er lengre enn {{max}} tegn.",
-        "missing": "{{field}} er påkrevd, og ingenting er fylt ut for {{team}}."
+        "missing": "Fyll ut {{field}} for {{team}}."
       },
       "tournamentTitle": "Rapporterte tall",
       "tournamentHelp": "Summert fra bekreftede rapporter. Et resultat som fortsatt venter på motstanderen, telles ikke med her.",

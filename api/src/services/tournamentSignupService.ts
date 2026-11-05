@@ -10,10 +10,14 @@
  * matches use the lineup instead of the whole roster (`lineupRoster`).
  *
  * The windows come from the tournament settings: `registrationOpen`,
- * `registrationClosesAt`, `maxTeams`, `checkInOpensAt` and `checkInClosesAt`.
+ * `registrationOpensAt`, `registrationClosesAt`, `maxTeams`, and check-in:
+ * `checkInMinutes` before `startsAt` until the start (older tournaments:
+ * `checkInOpensAt` and `checkInClosesAt`). With `captainCheckIn` (on unless
+ * false) the team's owner or a captain can check in a lineup player.
  */
 
 import { lineupPicked, openGaps } from './playerModeration';
+import { playerOverlap } from './tournamentOverlaps';
 import { RATING_ELO, ratingGame, ratingJoin } from './gameRatings';
 import { db } from '../config/database';
 import { emitTournamentUpdate } from './socketService';
@@ -35,10 +39,16 @@ export class SignupError extends Error {
 
 export interface SignupWindow {
   registrationOpen: boolean;
+  /** Sign-up is closed until then (null: open as soon as it is switched on). */
+  registrationOpensAt: string | null;
   registrationClosesAt: string | null;
   maxTeams: number | null;
   checkInOpensAt: string | null;
   checkInClosesAt: string | null;
+  /** Minutes before the start check-in opens (0: no check-in), null for the older fixed times. */
+  checkInMinutes: number | null;
+  /** The owner or a captain may check in their lineup's players. */
+  captainCheckIn: boolean;
 }
 
 /** Something a lineup player still has to fix before the day. */
@@ -93,16 +103,104 @@ function parse<T>(raw: string | null | undefined, fallback: T): T {
   }
 }
 
-function windowOf(row: TournamentRow): SignupWindow {
-  const s = parse<Record<string, Untrusted>>(row.settings, {});
+/** The sign-up and check-in windows in a tournament's settings (JSON). */
+export function windowOfSettings(settings: string | null): SignupWindow {
+  const s = parse<Record<string, Untrusted>>(settings, {});
   const iso = (v: Untrusted) => (typeof v === 'string' && v.trim() ? v : null);
+  const startsAt = iso(s.startsAt);
+  const minutes =
+    typeof s.checkInMinutes === 'number' &&
+    Number.isInteger(s.checkInMinutes) &&
+    s.checkInMinutes >= 0
+      ? s.checkInMinutes
+      : null;
+  // Minutes before the start, until the start; no start yet: not open.
+  const relative =
+    minutes !== null && minutes > 0 && startsAt && Number.isFinite(Date.parse(startsAt))
+      ? {
+          checkInOpensAt: new Date(Date.parse(startsAt) - minutes * 60_000).toISOString(),
+          checkInClosesAt: startsAt,
+        }
+      : { checkInOpensAt: null, checkInClosesAt: null };
   return {
     registrationOpen: s.registrationOpen === true,
+    registrationOpensAt: iso(s.registrationOpensAt),
     registrationClosesAt: iso(s.registrationClosesAt),
     maxTeams: typeof s.maxTeams === 'number' && s.maxTeams > 0 ? s.maxTeams : null,
-    checkInOpensAt: iso(s.checkInOpensAt),
-    checkInClosesAt: iso(s.checkInClosesAt),
+    ...(minutes === null
+      ? { checkInOpensAt: iso(s.checkInOpensAt), checkInClosesAt: iso(s.checkInClosesAt) }
+      : relative),
+    checkInMinutes: minutes,
+    captainCheckIn: s.captainCheckIn !== false,
   };
+}
+
+function windowOf(row: TournamentRow): SignupWindow {
+  return windowOfSettings(row.settings);
+}
+
+/**
+ * "You're in" for the team's owner and captains (Claude Design, the tournament
+ * page's sign-up): a notice on the site, and on Discord or e-mail when they
+ * asked for tournament news there. The page shows the full list.
+ */
+async function tellOwnerAndCaptains(
+  tournament: TournamentRow,
+  teamId: string,
+  teamName: string,
+  ownerUid: string | null
+): Promise<void> {
+  try {
+    const rows = await db.queryAsync<{ id: string }>(
+      `SELECT p.id FROM players p
+        WHERE p.uid = ? OR p.uid IN (SELECT account_uid FROM team_members WHERE team_id = ? AND role = 'captain')`,
+      [ownerUid, teamId]
+    );
+    const ids = rows.map((r) => r.id);
+    const { notificationService } = await import('./notificationService');
+    const { notifyChannels } = await import('./notifyChannels');
+    for (const id of ids) {
+      await notificationService.notify(
+        id,
+        'tournament',
+        { tournamentId: tournament.id, name: tournament.name, team: teamName, event: 'signed_up' },
+        `tournament:${tournament.id}:signed_up:${teamId}`
+      );
+    }
+    await notifyChannels.deliver(
+      ids,
+      'tournament_starting',
+      `tournament:${tournament.id}:signed_up:${teamId}`,
+      {
+        subject: `${teamName} is in ${tournament.name}`,
+        text: 'Check in before the start: starters check in, subs count as ready. The tournament page lists what to know.',
+        url: `/tournament/${tournament.id}/signup`,
+        action: 'Open the tournament',
+      }
+    );
+  } catch {
+    // The sign-up stands; the page shows the same list.
+  }
+}
+
+/** A player is in another tournament whose rounds play at the same time (tournamentOverlaps). */
+async function rejectOverlap(tournament: TournamentRow, steamIds: string[]): Promise<void> {
+  const clash = await playerOverlap(tournament.id, tournament.settings, steamIds);
+  if (clash) {
+    throw new SignupError(
+      409,
+      `A player is already in ${clash.name}, which plays at the same time.`,
+      'overlap'
+    );
+  }
+}
+
+/** Sign-up is open now: switched on, past its opening time, before its closing time. */
+function requireSignupOpen(win: SignupWindow): void {
+  if (!win.registrationOpen) throw new SignupError(409, 'Sign-up is not open.', 'closed');
+  if (win.registrationOpensAt && !isPast(win.registrationOpensAt))
+    throw new SignupError(409, 'Sign-up has not opened yet.', 'not_open_yet');
+  if (isPast(win.registrationClosesAt)) throw new SignupError(409, 'Sign-up has closed.', 'closed');
 }
 
 function isPast(iso: string | null, now = Date.now()): boolean {
@@ -148,7 +246,7 @@ function rosterSteamIds(players: string): RosterEntry[] {
 }
 
 /** Owner or captain of the team, or a 403. */
-async function requireCaptain(teamId: string, uid: string): Promise<void> {
+export async function requireCaptain(teamId: string, uid: string): Promise<void> {
   const team = await teamRow(teamId);
   if (team.owner_uid === uid) return;
   if ((await teamMembers.roleFor(teamId, uid)) === 'captain') return;
@@ -266,6 +364,18 @@ export const tournamentSignupService = {
 
   async window(tournamentId: number): Promise<SignupWindow> {
     return windowOf(await loadTournament(tournamentId));
+  },
+
+  /** Another tournament this player is in that plays at the same time, or null. */
+  async overlapFor(
+    tournamentId: number,
+    steamId: string
+  ): Promise<{ tournamentId: number; name: string; at: string } | null> {
+    const tournament = await loadTournament(tournamentId);
+    const clash = await playerOverlap(tournamentId, tournament.settings, [steamId]);
+    return clash
+      ? { tournamentId: clash.tournamentId, name: clash.name, at: new Date(clash.at).toISOString() }
+      : null;
   },
 
   /** Every signed-up team with its lineup, readiness and check-in. */
@@ -394,7 +504,10 @@ export const tournamentSignupService = {
             role: l.role,
             rating: l.current_elo,
             problems,
-            checkedInAt: l.checked_in_at,
+            // Subs don't check in: they count as here and ready from sign-up.
+            checkedInAt:
+              l.checked_in_at ??
+              (l.role === 'sub' ? Number(row.created_at) || Math.floor(Date.now() / 1000) : null),
           };
         });
       const starters = lineup.filter((p) => p.role === 'starter' && p.rating !== null);
@@ -591,11 +704,7 @@ export const tournamentSignupService = {
           [tournamentId, steamId]
         )
       )?.left_reason === 'no_show';
-    if (!noShow) {
-      if (!win.registrationOpen) throw new SignupError(409, 'Sign-up is not open.', 'closed');
-      if (isPast(win.registrationClosesAt))
-        throw new SignupError(409, 'Sign-up has closed.', 'closed');
-    }
+    if (!noShow) requireSignupOpen(win);
     const blocked = await db
       .queryOneAsync<{ id: string }>(
         'SELECT id FROM players WHERE id = ? AND (banned_at IS NOT NULL OR deleted_at IS NOT NULL)',
@@ -603,6 +712,7 @@ export const tournamentSignupService = {
       )
       .catch(() => null);
     if (blocked) throw new SignupError(403, 'This account cannot join tournaments.', 'blocked');
+    await rejectOverlap(tournament, [steamId]);
     if (win.maxTeams !== null && !noShow) {
       const cap = win.maxTeams * (tournament.team_size ?? 5);
       const row = await db.queryOneAsync<{ n: number | string }>(
@@ -660,9 +770,7 @@ export const tournamentSignupService = {
     const win = windowOf(tournament);
     if (tournament.status !== 'setup')
       throw new SignupError(409, 'The tournament has started.', 'started');
-    if (!win.registrationOpen) throw new SignupError(409, 'Sign-up is not open.', 'closed');
-    if (isPast(win.registrationClosesAt))
-      throw new SignupError(409, 'Sign-up has closed.', 'closed');
+    requireSignupOpen(win);
     if (!input.acceptRules) {
       throw new SignupError(400, 'Confirm that every player has read the rules.', 'rules');
     }
@@ -683,6 +791,7 @@ export const tournamentSignupService = {
       tournament.team_size ?? 5
     );
     await rejectOtherLineups(tournamentId, input.teamId, [...input.starters, ...input.subs]);
+    await rejectOverlap(tournament, [...input.starters, ...input.subs]);
 
     await db.runAsync(
       `INSERT INTO tournament_registrations (tournament_id, team_id, registered_by_uid, rules_accepted_at)
@@ -691,6 +800,7 @@ export const tournamentSignupService = {
     );
     await writeLineup(tournamentId, input.teamId, input.starters, input.subs);
     await setTeamIds(tournamentId, [...teamIds, input.teamId]);
+    await tellOwnerAndCaptains(tournament, team.id, team.name, team.owner_uid);
   },
 
   async changeLineup(
@@ -796,10 +906,23 @@ export const tournamentSignupService = {
     }
   },
 
-  /** A lineup player says "I'm here" inside the check-in window. */
-  async checkIn(tournamentId: number, steamId: string): Promise<void> {
+  /**
+   * A lineup player says "I'm here" inside the check-in window. With `by`, the
+   * team's owner or a captain checks in their player (`captainCheckIn`): they
+   * answer for it, so who did is kept.
+   */
+  async checkIn(
+    tournamentId: number,
+    steamId: string,
+    by?: { uid: string; teamId: string }
+  ): Promise<void> {
     const tournament = await loadTournament(tournamentId);
     const win = windowOf(tournament);
+    if (by) {
+      if (!win.captainCheckIn)
+        throw new SignupError(403, 'Players check in themselves in this tournament.', 'self_only');
+      await requireCaptain(by.teamId, by.uid);
+    }
     if (!win.checkInOpensAt || !isPast(win.checkInOpensAt)) {
       throw new SignupError(409, 'Check-in is not open yet.', 'not_open');
     }
@@ -823,10 +946,12 @@ export const tournamentSignupService = {
     }
     if (!slot)
       throw new SignupError(403, 'You are not in a lineup in this tournament.', 'not_in_lineup');
+    if (by && slot.team_id !== by.teamId)
+      throw new SignupError(403, 'That player is not in your lineup.', 'not_in_lineup');
     await db.runAsync(
-      `INSERT INTO tournament_checkins (tournament_id, team_id, player_id) VALUES (?, ?, ?)
+      `INSERT INTO tournament_checkins (tournament_id, team_id, player_id, checked_in_by) VALUES (?, ?, ?, ?)
        ON CONFLICT (tournament_id, player_id) DO NOTHING`,
-      [tournamentId, slot.team_id, steamId]
+      [tournamentId, slot.team_id, steamId, by?.uid ?? null]
     );
     emitTournamentUpdate({ id: tournamentId, action: 'tournament_updated' });
   },

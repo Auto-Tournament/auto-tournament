@@ -1,0 +1,23 @@
+{
+  "v": 1,
+  "type": "event.walkover_choice",
+  "id": "01J8ZQ4T8W6N3X0F2R5K7M9P2B",
+  "ts": 1790340012345,
+  "seq": 1904,
+  "epoch": 1,
+  "payload": {
+    "match_id": "ko-r1-m3",
+    "map_number": 1,
+    "rev": 44,
+    "patch": {
+      "live_rev": 44
+    },
+    "data": {
+      "player": {
+        "steamid64": "76561198000000001",
+        "name": "alice"
+      },
+      "take": true
+    }
+  }
+}

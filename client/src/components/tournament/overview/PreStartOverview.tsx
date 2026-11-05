@@ -6,7 +6,7 @@
  * pool and the teams by rating.
  */
 import { useMemo, type ReactNode } from 'react';
-import { fmtDayTime, fmtLongDay, fmtTime, fmtWeekdayTime } from '../../../utils/time';
+import { fmtCountdown, fmtDayTime, fmtLongDay, fmtTime, fmtWeekdayTime } from '../../../utils/time';
 import { Link as RouterLink } from 'react-router-dom';
 import { Box, Button, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
@@ -104,22 +104,32 @@ export function SignUpHero({
   tournament,
   signup,
   canSignUp,
+  overlap = null,
   hasSteam,
   onRoster,
 }: {
   tournament: Tournament;
   signup: Signup['window'] | null;
   canSignUp: boolean;
+  /** The viewer is in another tournament playing at the same time. */
+  overlap?: Signup['overlap'];
   hasSteam: boolean;
   onRoster: boolean;
 }) {
   const { t } = useTranslation();
+  if (overlap && signup?.registrationOpen) return <OverlapHero overlap={overlap} />;
   const startsAt = tournament.settings?.startsAt
     ? new Date(tournament.settings.startsAt).getTime()
     : null;
   const max = signup?.maxTeams ?? null;
   const left = max !== null ? Math.max(max - tournament.teamIds.length, 0) : null;
   const open = !!signup?.registrationOpen;
+  // eslint-disable-next-line react-hooks/purity -- only needs to be right when the page renders
+  const now = Date.now();
+  const opensAt =
+    open && signup?.registrationOpensAt ? Date.parse(signup.registrationOpensAt) : NaN;
+  // Switched on, but closed until its opening time (Setup › Teams › Sign-up opens).
+  const notYet = Number.isFinite(opensAt) && opensAt > now;
   const req = [
     {
       ok: hasSteam,
@@ -137,25 +147,33 @@ export function SignUpHero({
   return (
     <StatusHero
       eyebrow={
-        open
-          ? signup?.registrationClosesAt
-            ? t('preStart.openCloses', { when: fmtWeekdayTime(signup.registrationClosesAt) })
-            : t('preStart.open')
-          : t('preStart.closed')
+        notYet
+          ? t('preStart.opensTitle', { when: fmtWeekdayTime(opensAt) })
+          : open
+            ? signup?.registrationClosesAt
+              ? t('preStart.openCloses', { when: fmtWeekdayTime(signup.registrationClosesAt) })
+              : t('preStart.open')
+            : t('preStart.closed')
       }
       eyebrowColor={open ? color.accent : color.muted}
       ring={canSignUp ? color.accent : color.rule}
       title={
-        canSignUp
-          ? t('signup.cta')
-          : open && left === 0
-            ? t('preStart.fullTitle')
-            : t('preStart.notOpenTitle')
+        notYet
+          ? t('preStart.opensTitle', { when: fmtWeekdayTime(opensAt) })
+          : canSignUp
+            ? t('signup.cta')
+            : open && left === 0
+              ? t('preStart.fullTitle')
+              : t('preStart.notOpenTitle')
       }
       body={
-        left !== null && left > 0
-          ? t('preStart.spotsLeft', { count: left, max })
-          : t('preStart.byOrganizer')
+        notYet
+          ? t('preStart.opensIn', { time: fmtCountdown(opensAt, now) })
+          : left !== null && left > 0
+            ? t('preStart.spotsLeft', { count: left, max })
+            : open && left === null
+              ? t('preStart.captainsPick')
+              : t('preStart.byOrganizer')
       }
       side={
         <>
@@ -491,5 +509,34 @@ export function HowMatchesPlayed({
         {t('preStart.allRules')}
       </Box>
     </Box>
+  );
+}
+
+/** A player already in another tournament that plays at the same time (Claude Design, Setup › Teams). */
+function OverlapHero({ overlap }: { overlap: NonNullable<Signup['overlap']> }) {
+  const { t } = useTranslation();
+  return (
+    <StatusHero
+      eyebrow={t('preStart.open')}
+      eyebrowColor={color.muted}
+      ring={color.rule}
+      title={t('signup.overlap.title')}
+      body={t('signup.overlap.body', { name: overlap.name, when: fmtWeekdayTime(overlap.at) })}
+      side={
+        <>
+          <Button
+            variant="contained"
+            disabled
+            data-testid="overview-sign-up-blocked"
+            sx={{ minHeight: 56, borderRadius: radii.pill, fontWeight: 700 }}
+          >
+            {t('signup.cta')}
+          </Button>
+          <Button component={RouterLink} to={`/tournament/${overlap.tournamentId}`} variant="text">
+            {t('signup.overlap.open', { name: overlap.name })}
+          </Button>
+        </>
+      }
+    />
   );
 }

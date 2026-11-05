@@ -10,7 +10,7 @@
       "matchReady": "Kampen er klar – koble til",
       "matchReadyNamed": "Kampen er klar: {{match}}.",
       "openMatch": "Åpne kampen",
-      "snackbarOpponentMoved": "Motstanderen gjorde sitt valg",
+      "snackbarOpponentMoved": "Motstanderen har valgt",
       "vetoSoon": "Vetoen starter snart"
     },
     "home": "Hjem",
@@ -78,7 +78,17 @@
     "cancel": "Avbryt",
     "remove": "Fjern",
     "close": "Lukk",
-    "opensInNewTab": "(åpnes i en ny fane)"
+    "opensInNewTab": "(åpnes i en ny fane)",
+    "datePicker": {
+      "previousMonth": "Forrige måned",
+      "nextMonth": "Neste måned",
+      "today": "I dag",
+      "done": "Ferdig",
+      "chooseDay": "Velg en dag",
+      "chooseDays": "Velg dagene",
+      "chooseTime": "Velg et klokkeslett",
+      "time": "Klokkeslett"
+    }
   },
   "theme": {
     "label": "Fargetema"
@@ -99,7 +109,7 @@
     "hideMore": "Skjul",
     "needsYou": "Trenger deg",
     "settingsTitle": "Adminvarsler",
-    "settingsHint": "Hva som når klokka til adminene, og hvilke typer som også spiller av en lyd. Alle admins ser de samme varslene.",
+    "settingsHint": "Velg hvilke varsler som havner i klokka til adminene, og hvilke som også spiller av en lyd. Alle adminene ser de samme varslene.",
     "saveFailed": "Kunne ikke lagre",
     "group": {
       "matches": "Kamper",
@@ -124,7 +134,7 @@
       "plugin_update_available": "En Ready Up-oppdatering er ute",
       "update_failed": "En spill- eller programtilleggsoppdatering feiler",
       "autoscale_license": "Autoscale treffer lisensgrensen",
-      "recorder_offline": "En opptaker går offline",
+      "recorder_offline": "En opptaker er frakoblet",
       "recorder_updated": "En opptaker er oppdatert",
       "recorder_update_failed": "En opptakeroppdatering feiler",
       "benchmark_failed": "En benchmark feiler",
@@ -134,6 +144,7 @@
       "demos_failing": "Demoanalyser feiler gjentatte ganger",
       "tournament_autostart_failed": "En turnering starter ikke i tide",
       "shuffle_no_show": "En shuffle-spiller kobler aldri til kampen",
+      "teams_short": "Begge lagene mangler spillere når en kamp skal starte",
       "discord_failed": "Discord-boten feilet"
     },
     "kind": {
@@ -148,7 +159,7 @@
       "server_crashed": "{{server}} på {{host}}: {{event}}",
       "plugin_update_available": "Ready Up {{version}} er ute, og {{servers}} server(e) kjører en eldre versjon",
       "update_failed": "Oppdateringen av {{what}} på {{host}} feilet: {{error}}",
-      "autoscale_license": "Autoscale kunne ikke legge til en server fordi lisensen ikke har plass",
+      "autoscale_license": "Autoscale kunne ikke legge til en server fordi lisensen er full",
       "recorder_offline": "Opptakeren {{recorder}} har sluttet å melde seg",
       "recorder_updated": "Opptakeren {{recorder}} er oppdatert",
       "recorder_update_failed": "Opptakeren {{recorder}} kunne ikke oppdateres: {{error}}",
@@ -159,6 +170,7 @@
       "demos_failing": "{{count}} demoanalyser feilet den siste timen",
       "tournament_autostart_failed": "{{name}} startet ikke på starttidspunktet: {{reason}}",
       "shuffle_no_show": "{{players}} koblet aldri til {{matchSlug}}: ute av de neste trekningene til de sier fra at de er tilbake",
+      "teams_short": "Begge lagene i {{matchSlug}} mangler spillere på serveren. Kampen venter til du bestemmer.",
       "discord_failed": "{{what}} feilet: {{detail}}"
     },
     "close": "Lukk",
@@ -171,10 +183,10 @@
       "failover": "Ingenting å gjøre: kampen flyttes til en annen server av seg selv. Du kan følge den her.",
       "failoverDecision": "Velg på denne siden: flytt kampen til en annen server, gjenopprett en runde eller avgjør den.",
       "match_silent": "Serveren har sluttet å sende oppdateringer. Sjekk den på Servere-siden, og start den på nytt hvis den har hengt seg.",
-      "server_crashed": "Sjekk serveren på denne siden. Den starter på nytt av seg selv; krasjer den igjen og igjen, se i konsollen.",
+      "server_crashed": "Sjekk serveren på denne siden. Den starter på nytt av seg selv. Krasjer den igjen og igjen, se i konsollen.",
       "plugin_update_available": "Oppdater Ready Up på denne siden. En server i en kamp oppdateres når kampen er ferdig.",
       "update_failed": "Prøv oppdateringen på nytt på denne siden. Feiler den igjen, står årsaken over.",
-      "autoscale_license": "Alle serverne lisensen dekker, kjører. Frigjør en, eller legg til servere i lisensen.",
+      "autoscale_license": "Alle serverne som lisensen dekker, kjører allerede. Frigjør en, eller legg til flere servere i lisensen.",
       "recorder_offline": "Sjekk maskinen til opptakeren: er den på, og kjører containeren?",
       "recorder_updated": "Ingenting å gjøre.",
       "recorder_update_failed": "Oppdater den på nytt fra denne siden, eller kjør start-recorder.sh på maskinen.",
@@ -183,8 +195,9 @@
       "beta_available": "Oppdater når det passer, mellom turneringer.",
       "license_problem": "Lisenssiden sier hva som må gjøres.",
       "demos_failing": "Loggene på denne siden sier hvorfor demoanalysene feilet.",
-      "tournament_autostart_failed": "Rett det årsaken sier, og start turneringen for hånd.",
+      "tournament_autostart_failed": "Rett opp det årsaken viser til, og start turneringen selv.",
       "shuffle_no_show": "Ingenting å gjøre: de holdes utenfor de neste trekningene til de sier at de er tilbake.",
+      "teams_short": "Åpne kampen og gi det ene laget walkover, eller la kampen starte.",
       "discord_failed": "Sjekk at boten er med i Discord-serveren og har Manage Channels, Manage Roles og Move Members (Innstillinger → Integrasjoner → Discord-bot)."
     }
   },

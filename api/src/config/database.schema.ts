@@ -163,11 +163,32 @@ export function getSchemaSQL(): string {
     );
 
     -- Lineup players who said "I'm here" in the check-in window.
+    -- A team short on the server when settings.fullTeamMinutes ran out: the complete
+    -- team chooses walkover or play (integrations/cs2/fleet/fullTeam.ts).
+    CREATE TABLE IF NOT EXISTS match_walkover_offers (
+      match_slug TEXT PRIMARY KEY,
+      short_side TEXT NOT NULL, -- 'team1' | 'team2' | 'both'
+      expires_at INTEGER NOT NULL,
+      loaded_at INTEGER, -- the match load it is for: a restart gets a new timer
+      decided TEXT -- 'walkover' | 'play' | 'admin' (both short) | NULL while open
+    );
+
+    -- Check-in before each match (settings.checkInEachMatch, services/matchCheckIns.ts).
+    CREATE TABLE IF NOT EXISTS match_checkins (
+      match_slug TEXT NOT NULL,
+      player_id TEXT NOT NULL,
+      checked_in_by TEXT,
+      checked_in_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+      PRIMARY KEY (match_slug, player_id)
+    );
+
     CREATE TABLE IF NOT EXISTS tournament_checkins (
       tournament_id INTEGER NOT NULL REFERENCES tournament(id) ON DELETE CASCADE,
       team_id TEXT NOT NULL,
       player_id TEXT NOT NULL,
       checked_in_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+      -- A captain checked this player in (captainCheckIn): their uid. NULL: the player did.
+      checked_in_by TEXT,
       PRIMARY KEY (tournament_id, player_id)
     );
 

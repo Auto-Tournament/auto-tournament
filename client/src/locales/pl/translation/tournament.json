@@ -451,7 +451,11 @@
       "reminderMinutes_one": "{{count}} minute before",
       "reminderMinutes_other": "{{count}} minutes before",
       "bannerMapLabel": "No banner? Use a map's picture",
-      "bannerMapNone": "Pick for me"
+      "bannerMapNone": "Pick for me",
+      "rulesHelp": "Shown on the tournament page's Rules tab, under the rules the platform writes from your settings.",
+      "fromTemplate": "From {{name}}",
+      "clearAll": "Clear all",
+      "rulebookFromTemplate": "From the template {{name}}. An https link, or leave it empty."
     },
     "setup": {
       "steps": {
@@ -692,7 +696,34 @@
         "noneYet": "No teams yet. They show up here as they sign up.",
         "noTeams": "No teams yet.",
         "addYourself": "Add teams yourself",
-        "pickTeams": "Pick the teams"
+        "pickTeams": "Pick the teams",
+        "windowTitle": "Sign-up window",
+        "opensLabel": "Sign-up opens",
+        "opensNow": "Now",
+        "opensLater": "At a set time",
+        "opensNowHelp": "Open as soon as you create the tournament.",
+        "opensLaterHelp": "Closed until then. The page counts down to it.",
+        "closesHelp": "Lineups can change until check-in closes.",
+        "checkInTitle": "Check-in",
+        "checkInHelp": "Opens before the tournament starts and closes when it starts. A team plays when all its starters have checked in.",
+        "checkInChip_one": "{{count}} min before",
+        "checkInChip_other": "{{count}} min before",
+        "checkInOff": "No check-in",
+        "checkInLine": "Opens {{day}} at {{time}}, closes when the tournament starts at {{start}}.",
+        "checkInLineNoStart_one": "Opens {{count}} minute before the start and closes when it starts.",
+        "checkInLineNoStart_other": "Opens {{count}} minutes before the start and closes when it starts.",
+        "checkInLineOff": "No check-in: every signed-up team plays.",
+        "captainsLabel": "Captains can check in their teammates",
+        "captainsHelp": "The owner or a captain can mark a starter as here. They answer for it if that player doesn't show.",
+        "perMatchLabel": "Check in again before each match",
+        "perMatchHelp": "Off: checking in once before the tournament covers every match. On: players check in when each match's veto opens.",
+        "fullTeamTitle": "Getting on the server",
+        "fullTeamHelp": "Once a match's server is ready, each team has this long to have a full team on it, subs included. Then the complete team chooses: take the walkover, or play the short team. Both short: an admin decides.",
+        "fullTeamChip_one": "{{count}} min",
+        "fullTeamChip_other": "{{count}} min",
+        "fullTeamOff": "No walkover",
+        "fullTeamLine": "Players see the timer in the match room and in the server chat. Subs count as ready, so a team can bring one in straight away.",
+        "fullTeamLineOff": "No walkover: a short team plays short once the match auto-starts (Match settings)."
       },
       "groups": {
         "count": "Number of groups",
@@ -737,13 +768,52 @@
         "breakNote_one": "A team that just played gets a {{count}}-minute break before its next veto (Match rules).",
         "breakNote_other": "A team that just played gets a {{count}}-minute break before its next veto (Match rules).",
         "noBreakNote": "There is no break between a team's matches (Match rules).",
-        "ownTimeNote": "Give one match its own time in Manage › Schedule once the bracket is made."
+        "ownTimeNote": "Give one match its own time in Manage › Schedule once the bracket is made.",
+        "startsTournament": "Starts the tournament · check-in closes",
+        "newDay": "New day",
+        "sameDay": "Same day",
+        "dayLabel": "Day",
+        "startsLabel": "Starts",
+        "tournamentStarts": "Tournament starts",
+        "autoStart": "Start automatically at {{time}}",
+        "autoStartNoTime": "Start automatically",
+        "autoStartOff": "Off: an admin starts it from Manage.",
+        "reminders": "Remind players before the start",
+        "modeTimesNote": "Each round gets a day (from step 2) and a time. Matches wait for their time, and the veto opens in time.",
+        "modeAsapNote": "Only the start: after that a match starts as soon as both teams and a server are ready."
       },
       "extras": {
         "gotvLabel": "Spectators",
         "gotvOn_one": "Spectators can watch in GOTV, {{count}} second behind (Match rules › Spectators).",
         "gotvOn_other": "Spectators can watch in GOTV, {{count}} seconds behind (Match rules › Spectators).",
         "gotvOff": "Spectators can't watch in GOTV (Match rules › Spectators)."
+      },
+      "startFrom": {
+        "title": "Start from",
+        "help": "A template fills in the format, maps and match settings. Change anything on the next steps.",
+        "blank": "Blank",
+        "blankHelp": "Single elimination, Bo3, the site's map pool and match rules.",
+        "siteDefaults": "Site defaults",
+        "builtIn": "Built in",
+        "saved": "Saved",
+        "standardRules": "Standard rules",
+        "ownTemplates": "Your own templates come from <link>Templates & ratings</link>. Save this tournament as one when it's set up."
+      },
+      "days": {
+        "title": "Day",
+        "one": "One day",
+        "several": "Over several days",
+        "day": "Day",
+        "firstDay": "First day",
+        "lastDay": "Last day",
+        "markedLegend": "Another tournament on this site plays that day"
+      },
+      "overlap": {
+        "headsUp": "Heads up: {{name}} also plays on {{day}}",
+        "headsUpBody": "{{from}}–{{to}} on the same servers. Both can run: matches wait for a free server, and a player can only be in both if their round times don't overlap.",
+        "openOther": "Open {{name}}'s schedule",
+        "round": "Overlaps {{name}} ({{day}}, {{from}}–{{to}}) on the same servers. You can still save it. A player in {{name}} can't sign up here, since this round plays at the same time.",
+        "see": "See {{name}}"
       }
     },
     "startButton": {
@@ -1121,7 +1191,9 @@
       "you": "you",
       "everyone": "Everyone",
       "soundOn": "Dźwięk włączony: usłyszysz, gdy będzie czas",
-      "soundOff": "Dźwięk wyłączony"
+      "soundOff": "Dźwięk wyłączony",
+      "checkInFor": "Check in {{name}}",
+      "checkInShort": "Check in"
     },
     "noTeamTitle": "No team to sign up",
     "noTeamBody": "Only a team’s owner or a captain can sign it up. Make a team, or ask your captain.",
@@ -1178,11 +1250,40 @@
     "title": "Sign up your team",
     "editTitle": "Change your lineup",
     "stepsLabel": "Steps",
-    "changeUntil": "You can change the lineup until check-in on {{when}}.",
+    "changeUntil": "You can change the lineup until check-in closes, {{when}}.",
     "counts": "{{starters}} of {{teamSize}} starters · {{subs}} of {{maxSubs}} subs",
     "lineupRatingValue": "Lineup rating {{rating}}",
     "missingGame": "{{names}} need {{game}} on their profile.",
-    "subsLine": "sub: {{names}}"
+    "subsLine": "sub: {{names}}",
+    "overlap": {
+      "title": "You can't sign up for this one",
+      "body": "You're in {{name}}, which has a match {{when}}, the same time as this tournament. You can be in both tournaments when the match times don't overlap.",
+      "open": "Open {{name}}"
+    },
+    "youreIn": {
+      "eyebrow": "{{team}} · signed up",
+      "title": "You're in!",
+      "body": "Here's what your team needs to know before the tournament starts. We've sent the same list to the owner and the captains.",
+      "openLineup": "Open your lineup",
+      "listTitle": "Before the tournament starts",
+      "checkIn": "Check in {{when}}–{{to}}",
+      "checkInBodyCaptains": "Every starter checks in on this page, or a captain checks them in. Check-in closes when the tournament starts.",
+      "checkInBody": "Every starter checks in on this page. Check-in closes when the tournament starts.",
+      "subs": "Subs don't need to check in",
+      "subsBody": "They count as here and ready, so a match never waits on them.",
+      "replaced": "A starter who isn't checked in is replaced",
+      "replacedBody": "When check-in closes, a sub takes the place of any starter who hasn't checked in. No sub left: you play a player short.",
+      "fullTeam_one": "{{count}} minute to get your team on the server",
+      "fullTeam_other": "{{count}} minutes to get your team on the server",
+      "fullTeamBody_one": "Once your server is ready, your team has {{count}} minute to have a full team on it, subs included. After that, the other team can take the walkover or choose to play you short.",
+      "fullTeamBody_other": "Once your server is ready, your team has {{count}} minutes to have a full team on it, subs included. After that, the other team can take the walkover or choose to play you short.",
+      "ready": "Be ready before each match",
+      "readyBodyVeto_one": "The veto opens {{count}} minute before every match. Keep this page open: it tells you when your next match is ready.",
+      "readyBodyVeto_other": "The veto opens {{count}} minutes before every match. Keep this page open: it tells you when your next match is ready.",
+      "readyBody": "Keep this page open: it tells you when your next match is ready.",
+      "eachMatch": "Check in again before each match",
+      "eachMatchBody": "Before every match, each starter checks in on its match room, or a captain does it for them. A starter who doesn't is swapped for a sub."
+    }
   },
   "bracketCards": {
     "open": "Open {{a}} vs {{b}}",
@@ -1519,6 +1620,7 @@
     "spotsLeft_one": "{{count}} of {{max}} spots left. Captains pick the starters and subs.",
     "spotsLeft_other": "{{count}} of {{max}} spots left. Captains pick the starters and subs.",
     "byOrganizer": "The organizer adds the teams.",
+    "captainsPick": "Captains pick the starters and subs.",
     "startsIn": "Starts in",
     "allRules": "All rules and prizes",
     "signedUpEyebrow": "{{team}} · signed up",
@@ -1526,7 +1628,7 @@
     "inToFix_one": "You’re in. One thing to fix",
     "inToFix_other": "You’re in. {{count}} things to fix",
     "fixBefore": "Fix it before check-in on {{when}}, or that player cannot join the server.",
-    "checkInOn": "Check in on {{when}}. A team plays when all its starters are checked in.",
+    "checkInOn": "Check in on {{when}}. A starter who hasn't checked in by the start is replaced by a sub.",
     "allSet": "Everyone is ready. The schedule shows when it starts.",
     "checkInOpens": "Check-in opens",
     "openLineup": "Open your lineup",
@@ -1535,7 +1637,9 @@
     "lineupCount": "Lineup · {{starters}} starters, {{subs}} subs",
     "fixBeforeCheckIn": "Fix before check-in",
     "leave": "Leave the tournament",
-    "withdrawHint": "Can’t make it? Withdrawing frees the spot for another team."
+    "withdrawHint": "Can’t make it? Withdrawing frees the spot for another team.",
+    "opensTitle": "Sign-up opens {{when}}",
+    "opensIn": "Opens in {{time}}."
   },
   "shuffleOverview": {
     "yourMatchLive": "your match is live",
@@ -1552,7 +1656,7 @@
   },
   "checkIn": {
     "areYouHere": "Are you here?",
-    "teamCount": "{{team}} is checking in: {{in}} of {{total}}. A team plays when all its starters are checked in.",
+    "teamCount": "{{team}} is checking in: {{in}} of {{total}}. A starter who hasn't checked in by the start is replaced by a sub.",
     "soundOn": "♪ Sound on",
     "firstVeto_one": "Your first veto opens at {{time}}, {{count}} minute before the match: be at your PC by then.",
     "firstVeto_other": "Your first veto opens at {{time}}, {{count}} minutes before the match: be at your PC by then.",
@@ -1669,5 +1773,43 @@
     "playoffs": "Playoffs",
     "playoffsSoon": "The playoffs start when every group match is played.",
     "seedSlot": "Seed {{n}}"
+  },
+  "matchCheckIn": {
+    "eyebrow": "Veto open · match starts {{time}}",
+    "eyebrowNoTime": "Check-in open",
+    "title": "Check in for this match",
+    "body": "This tournament checks in before every match. Starters say they're here; a captain can do it for them. Subs are already ready.",
+    "closesIn": "Check-in closes in",
+    "yourTeam": "{{team}} (your team)",
+    "count": "{{in}} of {{total}} starters checked in",
+    "sub": "SUB",
+    "starter": "STARTER",
+    "ready": "Ready",
+    "checkedIn": "Checked in",
+    "notYet": "Not yet",
+    "rule": "Not checked in at the start: a starter is swapped for a sub, and the match room says who. No sub left, the team plays a player short.",
+    "server": {
+      "eyebrow": "Server ready · full team by {{time}}",
+      "eyebrowNoTime": "Server ready",
+      "title": "Get your team on the server",
+      "bodyOut": "{{out}} didn't check in, so a sub plays instead.",
+      "body_one": "One of you needs to be on the server before the timer runs out. Subs count.",
+      "body_other": "{{count}} of you need to be on the server before the timer runs out. Subs count.",
+      "clockLabel": "Full team needed in",
+      "count": "{{on}} of {{size}} on the server",
+      "onServer": "On the server",
+      "joining": "Joining…",
+      "subIn": "SUB IN",
+      "out": "OUT",
+      "swapped": "Swapped for a sub",
+      "rule": "At 0:00, the team that's complete chooses: take the walkover, or play against the short team. Both teams short: an admin decides."
+    },
+    "choice": {
+      "eyebrow": "{{team}} is still short",
+      "title": "{{team}} has {{on}} of {{size}} on the server",
+      "body": "Their time is up. Take the walkover and go through, or play them anyway. Either captain can choose. No choice in 2 minutes: the walkover stands.",
+      "take": "Take the walkover",
+      "play": "Play them anyway"
+    }
   }
 }

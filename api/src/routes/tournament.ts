@@ -923,10 +923,55 @@ function validateEventPageSettings(
       };
     }
   }
+  if (s.eventDays !== undefined && s.eventDays !== null) {
+    const d = s.eventDays as { first?: Untrusted; last?: Untrusted };
+    const day = /^\d{4}-\d{2}-\d{2}$/;
+    if (
+      typeof d !== 'object' ||
+      typeof d.first !== 'string' ||
+      typeof d.last !== 'string' ||
+      !day.test(d.first) ||
+      !day.test(d.last) ||
+      d.last < d.first ||
+      Date.parse(d.last) - Date.parse(d.first) > 13 * 86400000
+    ) {
+      return {
+        valid: false,
+        error: 'settings.eventDays must be { first, last } days (YYYY-MM-DD), up to 14 days',
+      };
+    }
+  }
   if (s.autoStart === true && (typeof s.startsAt !== 'string' || !s.startsAt)) {
     return { valid: false, error: 'settings.autoStart needs settings.startsAt' };
   }
+  if (
+    s.checkInMinutes !== undefined &&
+    s.checkInMinutes !== null &&
+    (typeof s.checkInMinutes !== 'number' ||
+      !Number.isInteger(s.checkInMinutes) ||
+      s.checkInMinutes < 0 ||
+      s.checkInMinutes > 1440)
+  ) {
+    return { valid: false, error: 'settings.checkInMinutes must be 0 to 1440 minutes' };
+  }
+  if (
+    s.fullTeamMinutes !== undefined &&
+    s.fullTeamMinutes !== null &&
+    (typeof s.fullTeamMinutes !== 'number' ||
+      !Number.isInteger(s.fullTeamMinutes) ||
+      s.fullTeamMinutes < 0 ||
+      s.fullTeamMinutes > 60)
+  ) {
+    return { valid: false, error: 'settings.fullTeamMinutes must be 0 to 60 minutes' };
+  }
+  if (s.checkInEachMatch !== undefined && typeof s.checkInEachMatch !== 'boolean') {
+    return { valid: false, error: 'settings.checkInEachMatch must be true or false' };
+  }
+  if (s.captainCheckIn !== undefined && typeof s.captainCheckIn !== 'boolean') {
+    return { valid: false, error: 'settings.captainCheckIn must be true or false' };
+  }
   for (const key of [
+    'registrationOpensAt',
     'registrationClosesAt',
     'checkInOpensAt',
     'checkInClosesAt',

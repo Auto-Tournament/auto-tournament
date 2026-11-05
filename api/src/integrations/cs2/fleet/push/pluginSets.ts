@@ -18,8 +18,9 @@
  *   server starts in practice mode. Older Ready Up refuses to disable match:
  *   it stays on there (`sendPluginsSet`). A server whose set has match off
  *   is never handed a match (`matchPluginDisabled`, ../driver.ts).
+ * - `addons` is always on too: it mounts the HUD addon every player needs.
  * - csm's default Ready Up bundle (essentials) has fleet, match, essentials,
- *   practice and mapvote (Ready Up 0.1.0-beta.49+). A set with anything else makes the install after a create
+ *   practice and mapvote (Ready Up 0.1.0-beta.49+), and addons (0.1.0-beta.80+). A set with anything else makes the install after a create
  *   use the full bundle.
  */
 
@@ -47,8 +48,11 @@ export const PLUGIN_CATALOG = [
 ] as const;
 export type CatalogPlugin = (typeof PLUGIN_CATALOG)[number];
 
-/** Always on: the fleet link runs in it (Ready Up refuses to disable it over the link). */
-export const REQUIRED_PLUGINS: readonly CatalogPlugin[] = ['fleet'];
+/**
+ * Always on: the fleet link runs in fleet; addons mounts the HUD addon every
+ * player needs. Ready Up refuses to disable either (addons: 0.1.0-beta.80+).
+ */
+export const REQUIRED_PLUGINS: readonly CatalogPlugin[] = ['fleet', 'addons'];
 
 /** Ready Up's fleet.so runs plugins.set / practice.set {always} itself, so match can be off. */
 export const FLEET_CMDS_CAPABILITY = 'fleet.cmds.v1';
@@ -60,6 +64,7 @@ export const ESSENTIALS_BUNDLE_PLUGINS: readonly CatalogPlugin[] = [
   'essentials',
   'practice',
   'mapvote',
+  'addons',
 ];
 
 export const PLUGIN_PRESETS = {
