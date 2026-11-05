@@ -357,7 +357,7 @@
       "discordBot": "Voeg je eigen Discord-bot toe (met het token) zodat de site spelers een DM kan sturen over hun wedstrijden"
     },
     "tournaments": {
-      "title": "Tournaments",
+      "title": "Toernooi",
       "empty": "Deze site organiseert één toernooi tegelijk. Maak het en het verschijnt hier, bij Bladeren en op de eigen evenementpagina.",
       "status": {
         "setup": "Concept",
@@ -411,14 +411,14 @@
       },
       "ratings": {
         "label": "Ratings",
-        "hint": "ELO templates"
+        "hint": "Hoe ratings worden berekend"
       },
       "settings": {
         "label": "Instellingen",
         "hint": "Inloggen, API-sleutels"
       },
       "adminTools": {
-        "label": "Admin tools",
+        "label": "Systeem",
         "hint": "Wedstrijdherstel en logs"
       },
       "disputes": {
