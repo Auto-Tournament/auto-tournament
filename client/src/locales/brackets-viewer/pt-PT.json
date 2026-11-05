@@ -50,9 +50,9 @@
     "wins": { "text": "$t(abbreviations.win)", "tooltip": "Vitórias" },
     "draws": { "text": "E", "tooltip": "Empates" },
     "losses": { "text": "$t(abbreviations.loss)", "tooltip": "Derrotas" },
-    "forfeits": { "text": "$t(abbreviations.forfeit)", "tooltip": "Forfeits" },
-    "scoreFor": { "text": "SF", "tooltip": "A favor" },
-    "scoreAgainst": { "text": "SA", "tooltip": "Contra" },
+    "forfeits": { "text": "$t(abbreviations.forfeit)", "tooltip": "Faltas de comparência" },
+    "scoreFor": { "text": "PF", "tooltip": "A favor" },
+    "scoreAgainst": { "text": "PC", "tooltip": "Contra" },
     "scoreDifference": { "text": "+/-", "tooltip": "Diferença" },
     "points": { "text": "Pts", "tooltip": "Pontos" }
   },
