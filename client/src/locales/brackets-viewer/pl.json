@@ -1,6 +1,6 @@
 {
   "origin-hint": {
-    "seed": "Seed {{position}}",
+    "seed": "Rozstawienie {{position}}",
     "winner-bracket": "Przegrany z $t(abbreviations.winner-bracket) {{round}}.{{position}}",
     "winner-bracket-semi-final": "Przegrany z półfinału $t(abbreviations.winner-bracket) {{position}}",
     "winner-bracket-final": "Przegrany z finału $t(abbreviations.winner-bracket)",
@@ -51,18 +51,18 @@
     "draws": { "text": "R", "tooltip": "Remisy" },
     "losses": { "text": "$t(abbreviations.loss)", "tooltip": "Przegrane" },
     "forfeits": { "text": "$t(abbreviations.forfeit)", "tooltip": "Walkowery" },
-    "scoreFor": { "text": "SF", "tooltip": "Punkty zdobyte" },
-    "scoreAgainst": { "text": "SA", "tooltip": "Punkty stracone" },
+    "scoreFor": { "text": "PZ", "tooltip": "Punkty zdobyte" },
+    "scoreAgainst": { "text": "PS", "tooltip": "Punkty stracone" },
     "scoreDifference": { "text": "+/-", "tooltip": "Różnica" },
-    "points": { "text": "Pts", "tooltip": "Punkty" }
+    "points": { "text": "Pkt", "tooltip": "Punkty" }
   },
   "common": {
     "bye": "BYE",
     "best-of-x": "Bo{{x}}",
-    "consolation": "Consolation",
+    "consolation": "Mecz pocieszenia",
     "group-name": "Grupa {{groupNumber}}",
-    "group-name-winner-bracket": "Winner Bracket",
-    "group-name-loser-bracket": "Loser Bracket",
+    "group-name-winner-bracket": "Drabinka zwycięzców",
+    "group-name-loser-bracket": "Drabinka przegranych",
     "round-name": "Runda {{roundNumber}}",
     "round-name-final": "Runda finałowa",
     "round-name-winner-bracket": "$t(abbreviations.winner-bracket) Runda {{roundNumber}}",
