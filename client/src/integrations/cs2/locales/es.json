@@ -1084,7 +1084,7 @@
     "updateIdleOnly": "Solo los servidores libres ({{count}})",
     "errorCodes": {
       "bad_args": "csm no aceptó la petición",
-      "unknown_server": "No such server on this machine",
+      "unknown_server": "No existe ese servidor en esta máquina. Créalo primero o espera a que se actualice la lista.",
       "busy": "La máquina está ocupada con otra tarea. Vuelve a intentarlo cuando termine.",
       "expired": "Caducó antes de que lo recibiera la máquina. Vuelve a intentarlo cuando la máquina esté en línea.",
       "stale": "Se envió hace demasiado, así que csm no lo ejecutó. Vuelve a intentarlo.",

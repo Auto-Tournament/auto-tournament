@@ -111,7 +111,7 @@
         "savePassword": "Guardar contraseña",
         "passwordSet": "Contraseña nueva guardada para {{username}}",
         "removeTitle": "¿Quitar a {{username}}?",
-        "removeBody": "They can no longer sign in with this username and password. Their player, matches and stats stay.",
+        "removeBody": "Ya no podrá iniciar sesión con este nombre de usuario y contraseña, y dejará de ser admin. Su jugador, sus partidos y sus estadísticas se conservan; crear de nuevo el mismo nombre de usuario se lo devuelve todo.",
         "removeConfirm": "Quitar",
         "removed": "{{username}} quitado",
         "cancel": "Cancelar",
@@ -358,7 +358,7 @@
     },
     "tournaments": {
       "title": "Tournaments",
-      "empty": "No tournaments yet. Create one to get started.",
+      "empty": "Este sitio organiza un torneo cada vez. Créalo y aparecerá aquí, en Explorar y en su página del evento.",
       "status": {
         "setup": "Borrador",
         "ready": "Inscripción",

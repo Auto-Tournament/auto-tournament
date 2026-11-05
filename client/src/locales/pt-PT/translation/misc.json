@@ -591,7 +591,7 @@
     "failed": "{{name}}: {{reason}}",
     "failedFallback": "a operação falhou",
     "feed": {
-      "cache": "Showing the last catalog this instance saw ({{reason}}). Games in this image still install without a network.",
+      "cache": "A mostrar o catálogo de {{time}}: não foi possível aceder ao catálogo online ({{reason}}). Os jogos dentro desta imagem instalam na mesma sem rede.",
       "none": "Não foi possível aceder ao catálogo online ({{reason}}). A mostrar os jogos dentro desta imagem; instalam sem rede.",
       "unknown": "sem motivo indicado",
       "cacheRefreshing": "A mostrar o catálogo de {{time}} enquanto o catálogo online carrega.",
@@ -739,7 +739,7 @@
         "1v1": "Mapas de Wingman"
       },
       "searchAnyone": "Poucos jogadores à procura: vais ser emparelhado com quem estiver disponível ({{count}} à procura, {{total}} necessários)",
-      "searchRating": "Finding a close match for your rating · {{count}} searching",
+      "searchRating": "À procura de um jogo próximo do teu rating (±{{elo}}) · {{count}} à procura",
       "botFill": "Preencher lugares vazios com bots",
       "botFillUnrated": "Bots ocupam os lugares vazios · sem ranking: sem rating, XP ou drops",
       "searchRatingPlain": "À procura de um jogo próximo do teu rating · {{count}} à procura",
