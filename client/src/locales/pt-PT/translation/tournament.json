@@ -424,7 +424,7 @@
       "locationPlaceholder": "ex.: Presencial, Lisboa",
       "rulebookUrlLabel": "URL do regulamento completo",
       "rulebookUrlHelper": "Tem de ser uma ligação https, ou deixa vazio.",
-      "rulesLabel": "Rules",
+      "rulesLabel": "Regras para os jogadores",
       "ruleFieldLabel": "Regra {{n}}",
       "addRule": "Adicionar regra",
       "prizesLabel": "Prémios",
@@ -475,7 +475,7 @@
     "setup": {
       "steps": {
         "game": "Jogo",
-        "basics": "Basics",
+        "basics": "Nome e dia",
         "format": "Formato",
         "teams": "Equipas",
         "maps": "Mapas e veto",
@@ -525,7 +525,7 @@
           "ledeExisting": "Verifica os detalhes e depois começa o torneio quando todos estiverem prontos."
         },
         "schedule": {
-          "title": "When do matches start?",
+          "title": "Quando são os jogos?",
           "lede": "A horas marcadas, com o veto a abrir antes de cada jogo, ou assim que as duas equipas e um servidor estiverem prontos."
         },
         "extras": {
@@ -1021,7 +1021,7 @@
       "loadError": "Não foi possível carregar o bracket.",
       "emptyTitle": "Ainda não há bracket",
       "emptyDescription": "O bracket aparece aqui quando o organizador começar o torneio.",
-      "shuffleTitle": "No bracket in a shuffle tournament",
+      "shuffleTitle": "Sem bracket num shuffle",
       "shuffleDescription": "As equipas são sorteadas de novo em cada ronda, por isso não há bracket. Jogos lista todas as rondas e Classificação ordena os jogadores."
     },
     "matchesTab": {
@@ -1127,7 +1127,7 @@
       "player": "Jogador",
       "team": "Equipa",
       "rating": "Rating ±",
-      "hltv": "Rating"
+      "hltv": "Desempenho"
     },
     "award": {
       "mostKills": "Mais kills",
@@ -1192,7 +1192,7 @@
     "withdraw": "Desistir",
     "withdrawTitle": "Retirar {{team}}?",
     "withdrawBody": "A equipa sai do torneio e a vaga fica livre para outra equipa.",
-    "sub": "sub",
+    "sub": "Suplente",
     "ready": "Pronto",
     "problem": {
       "noAccount": "Ainda não iniciou sessão no Auto Tournament",

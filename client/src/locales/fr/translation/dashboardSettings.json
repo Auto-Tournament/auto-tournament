@@ -357,7 +357,7 @@
       "discordBot": "Ajoutez votre propre bot Discord (son token) pour que le site puisse écrire en MP aux joueurs au sujet de leurs matchs"
     },
     "tournaments": {
-      "title": "Tournaments",
+      "title": "Tournoi",
       "empty": "Ce site organise un tournoi à la fois. Créez-le, et il apparaîtra ici, dans Explorer et sur sa page d’événement.",
       "status": {
         "setup": "Brouillon",
@@ -420,14 +420,14 @@
       },
       "ratings": {
         "label": "Ratings",
-        "hint": "ELO templates"
+        "hint": "Comment les ratings sont calculés"
       },
       "settings": {
         "label": "Paramètres",
         "hint": "Connexion, clés d’API"
       },
       "adminTools": {
-        "label": "Admin tools",
+        "label": "Système",
         "hint": "Récupération des matchs et journaux"
       },
       "disputes": {

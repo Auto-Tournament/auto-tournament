@@ -424,7 +424,7 @@
       "locationPlaceholder": "p. ex. Sur place, Lyon",
       "rulebookUrlLabel": "URL du règlement complet",
       "rulebookUrlHelper": "Doit être un lien https, ou laissez vide.",
-      "rulesLabel": "Rules",
+      "rulesLabel": "Règles pour les joueurs",
       "ruleFieldLabel": "Règle {{n}}",
       "addRule": "Ajouter une règle",
       "prizesLabel": "Prix",
@@ -475,7 +475,7 @@
     "setup": {
       "steps": {
         "game": "Jeu",
-        "basics": "Basics",
+        "basics": "Nom et jour",
         "format": "Format",
         "teams": "Équipes",
         "maps": "Cartes et veto",
@@ -777,7 +777,7 @@
         "basics": "Nom, jour, lieu",
         "format": "Comment les équipes s’affrontent",
         "teams": "Ajoutées ou inscrites",
-        "schedule": "Match times",
+        "schedule": "Jours et heures",
         "maps": "Le pool de cartes",
         "extras": "Preset, règles, extras",
         "review": "Le créer"
@@ -1127,7 +1127,7 @@
       "player": "Joueur",
       "team": "Équipe",
       "rating": "Rating ±",
-      "hltv": "Rating"
+      "hltv": "Performance"
     },
     "award": {
       "mostKills": "Le plus de kills",
@@ -1192,7 +1192,7 @@
     "withdraw": "Se retirer",
     "withdrawTitle": "Retirer {{team}} ?",
     "withdrawBody": "L’équipe quitte le tournoi et sa place se libère pour une autre équipe.",
-    "sub": "sub",
+    "sub": "Remplaçant",
     "ready": "Prêt",
     "problem": {
       "noAccount": "Ne s’est pas encore connecté à Auto Tournament",

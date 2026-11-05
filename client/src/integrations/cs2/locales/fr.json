@@ -36,10 +36,10 @@
     "servers": {
       "title": "Serveurs",
       "open": "Ouvrir",
-      "online": "online",
+      "online": "en marche",
       "inMatch": "En match",
       "free": "Libre",
-      "offline": "Offline",
+      "offline": "Inactif",
       "plugin": "Plugin",
       "pluginSame": "{{version}}, tous les serveurs identiques",
       "pluginMixed": "{{count}} versions du plugin en service",
@@ -1389,7 +1389,7 @@
     "equipOnBoth": "Équiper des deux côtés",
     "takeOff": "Retirer",
     "keep": "OK",
-    "inventory": "Inventory",
+    "inventory": "Équipement",
     "count": "{{count}} skins",
     "equippedTitle": "Équipés",
     "slot": {
@@ -1452,7 +1452,7 @@
       "noticeFixed": "Toujours affiché. Il ne peut pas être modifié.",
       "saved": "Paramètres des skins enregistrés",
       "inv": {
-        "title": "Player inventories",
+        "title": "Skins des joueurs",
         "hint": "Choisissez un joueur pour voir ses skins, lui en donner un ou lui en retirer un.",
         "player": "Joueur",
         "playerHint": "Nom ou Steam ID",
