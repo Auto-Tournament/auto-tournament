@@ -26,7 +26,7 @@
     "cancel": "Anuluj",
     "done": "Gotowe",
     "copy": "Kopiuj",
-    "showOlder": "Show older",
+    "showOlder": "Pokaż starsze",
     "refresh": "Odśwież",
     "rotate": "Zmień sekret",
     "secretTitle": "Sekret podpisu",
@@ -58,17 +58,17 @@
       "resend": "Nie udało się ponownie wysłać doręczenia"
     },
     "format": "Format",
-    "formatSigned": "Signed JSON (integrations)",
-    "formatDiscord": "Discord message",
-    "formatSignedHelp": "The signed event JSON, for your own service. Check the signature with the secret.",
-    "formatDiscordHelp": "Paste a Discord channel webhook URL (Channel settings → Integrations → Webhooks). Each event posts a message; no passwords or connect lines go to Discord, only a link to the match page.",
+    "formatSigned": "Podpisany JSON (integracje)",
+    "formatDiscord": "Wiadomość na Discordzie",
+    "formatSignedHelp": "Podpisany JSON zdarzenia, dla twojej własnej usługi. Sprawdź podpis sekretem.",
+    "formatDiscordHelp": "Wklej URL webhooka kanału na Discordzie (Ustawienia kanału → Integracje → Webhooki). Każde zdarzenie publikuje wiadomość; na Discorda nie trafiają hasła ani dane połączenia, tylko link do strony meczu.",
     "short": "Wysyłaj zdarzenia do Discorda lub własnych usług.",
     "addShort": "Dodaj",
     "working": "Działa",
     "failedCount": "Nieudane: {{count}}",
     "allowPrivateShort": "Dla usług w twojej sieci (LAN, Docker).",
-    "sourceShort": "team IDs from token {{source}}",
-    "showUrl": "Show URL",
-    "hideUrl": "Hide URL"
+    "sourceShort": "ID drużyn z tokenu {{source}}",
+    "showUrl": "Pokaż URL",
+    "hideUrl": "Ukryj URL"
   }
 }

@@ -21,7 +21,7 @@
         "inProgressOrCompleted": "Nie można utworzyć turnieju z szablonu, gdy turniej jest w toku lub zakończony. Najpierw usuń lub zresetuj bieżący turniej.",
         "alreadyExists": "Turniej już istnieje. Usuń lub zresetuj bieżący turniej przed utworzeniem nowego z szablonu."
       },
-      "button": "Create Tournament from Template"
+      "button": "Utwórz turniej z szablonu"
     },
     "edit": {
       "title": "Edytuj szablon",
@@ -35,12 +35,12 @@
         "customOption": "Niestandardowa",
         "selectedLabel": "Wybrane mapy ({{count}}):",
         "vetoWarning": "Formaty veto (BO1/BO3/BO5) wymagają dokładnie 7 map. Obecnie wybrano: {{count}}",
-        "chooseMaps": "Choose maps..."
+        "chooseMaps": "Wybierz mapy…"
       },
       "save": "Zapisz"
     },
-    "emptyTitle": "No templates yet",
-    "emptyDescription": "Save a tournament's setup as a template from the Tournament page, then start new tournaments from it here."
+    "emptyTitle": "Brak szablonów",
+    "emptyDescription": "Zapisz ustawienia turnieju jako szablon na stronie Turniej, a potem zaczynaj tu od niego nowe turnieje."
   },
   "saveTemplateModal": {
     "title": "Zapisz jako szablon",
@@ -101,7 +101,7 @@
       "weightsTitle": "Wagi statystyk:",
       "limitsTitle": "Limity korekty:",
       "minAdjustment": "Min: {{value}}",
-      "maxAdjustment": "Max: {{value}}"
+      "maxAdjustment": "Maks: {{value}}"
     },
     "importModal": {
       "title": "Importuj szablony ELO z JSON",
@@ -157,48 +157,48 @@
     },
     "stats": {
       "kills": {
-        "label": "Kills",
-        "description": "Number of kills per match"
+        "label": "Zabójstwa",
+        "description": "Liczba zabójstw na mecz"
       },
       "deaths": {
-        "label": "Deaths",
-        "description": "Number of deaths per match (typically negative weight)"
+        "label": "Zgony",
+        "description": "Liczba zgonów na mecz (zwykle z ujemną wagą)"
       },
       "assists": {
-        "label": "Assists",
-        "description": "Number of assists per match"
+        "label": "Asysty",
+        "description": "Liczba asyst na mecz"
       },
       "flashAssists": {
-        "label": "Flash Assists",
-        "description": "Number of flash assists per match"
+        "label": "Asysty flashem",
+        "description": "Liczba asyst flashem na mecz"
       },
       "headshotKills": {
-        "label": "Headshot Kills",
-        "description": "Number of headshot kills per match"
+        "label": "Zabójstwa headshotem",
+        "description": "Liczba zabójstw headshotem na mecz"
       },
       "damage": {
-        "label": "Damage",
-        "description": "Total damage dealt per match"
+        "label": "Obrażenia",
+        "description": "Łączne obrażenia zadane w meczu"
       },
       "utilityDamage": {
-        "label": "Utility Damage",
-        "description": "Damage dealt with utility (grenades)"
+        "label": "Obrażenia z granatów",
+        "description": "Obrażenia zadane granatami"
       },
       "kast": {
         "label": "KAST %",
-        "description": "Percentage of rounds with Kill, Assist, Survive, or Trade"
+        "description": "Odsetek rund z zabójstwem, asystą, przeżyciem lub wymianą"
       },
       "mvps": {
-        "label": "MVPs",
-        "description": "Number of MVP awards per match"
+        "label": "MVP",
+        "description": "Liczba nagród MVP na mecz"
       },
       "score": {
-        "label": "Score",
-        "description": "Match score (combines multiple factors)"
+        "label": "Wynik",
+        "description": "Wynik meczowy (łączy kilka czynników)"
       },
       "adr": {
         "label": "ADR",
-        "description": "Average Damage per Round"
+        "description": "Średnie obrażenia na rundę"
       }
     }
   }
