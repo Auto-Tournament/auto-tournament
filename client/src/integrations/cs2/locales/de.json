@@ -36,10 +36,10 @@
     "servers": {
       "title": "Server",
       "open": "Öffnen",
-      "online": "online",
+      "online": "läuft",
       "inMatch": "Im Match",
       "free": "Frei",
-      "offline": "Offline",
+      "offline": "Im Leerlauf",
       "plugin": "Plugin",
       "pluginSame": "{{version}}, alle Server gleich",
       "pluginMixed": "{{count}} Plugin-Versionen im Einsatz",
@@ -1369,7 +1369,7 @@
     "equipOnBoth": "Für beide ausrüsten",
     "takeOff": "Ablegen",
     "keep": "Okay",
-    "inventory": "Inventory",
+    "inventory": "Ausrüstung",
     "count": "{{count}} Skins",
     "equippedTitle": "Ausgerüstet",
     "slot": {

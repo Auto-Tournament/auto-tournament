@@ -424,7 +424,7 @@
       "locationPlaceholder": "p. ej. Presencial, Madrid",
       "rulebookUrlLabel": "URL del reglamento completo",
       "rulebookUrlHelper": "Tiene que ser un enlace https, o déjalo vacío.",
-      "rulesLabel": "Rules",
+      "rulesLabel": "Reglas para jugadores",
       "ruleFieldLabel": "Regla {{n}}",
       "addRule": "Añadir regla",
       "prizesLabel": "Premios",
@@ -475,7 +475,7 @@
     "setup": {
       "steps": {
         "game": "Juego",
-        "basics": "Basics",
+        "basics": "Nombre y día",
         "format": "Formato",
         "teams": "Equipos",
         "maps": "Mapas y veto",
@@ -777,7 +777,7 @@
         "basics": "Nombre, día, lugar",
         "format": "Cómo se enfrentan los equipos",
         "teams": "Añadidos o inscripción",
-        "schedule": "Match times",
+        "schedule": "Días y horas",
         "maps": "El pool de mapas",
         "extras": "Preajuste, reglas, extras",
         "review": "Crearlo"
@@ -1021,7 +1021,7 @@
       "loadError": "No se pudo cargar el bracket.",
       "emptyTitle": "Aún no hay bracket",
       "emptyDescription": "El bracket aparece aquí cuando el organizador empieza el torneo.",
-      "shuffleTitle": "No bracket in a shuffle tournament",
+      "shuffleTitle": "Sin bracket en un shuffle",
       "shuffleDescription": "Los equipos se sortean de nuevo cada ronda, así que no hay bracket. Partidos muestra todas las rondas y Clasificación ordena a los jugadores."
     },
     "matchesTab": {
@@ -1127,7 +1127,7 @@
       "player": "Jugador",
       "team": "Equipo",
       "rating": "Rating ±",
-      "hltv": "Rating"
+      "hltv": "Rendimiento"
     },
     "award": {
       "mostKills": "Más kills",
@@ -1192,7 +1192,7 @@
     "withdraw": "Retirarse",
     "withdrawTitle": "¿Retirar a {{team}}?",
     "withdrawBody": "El equipo deja el torneo y su plaza queda libre para otro equipo.",
-    "sub": "sub",
+    "sub": "Suplente",
     "ready": "Listo",
     "problem": {
       "noAccount": "Aún no ha iniciado sesión en Auto Tournament",

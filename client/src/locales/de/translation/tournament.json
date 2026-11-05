@@ -408,7 +408,7 @@
       "locationPlaceholder": "z. B. vor Ort, Trondheim",
       "rulebookUrlLabel": "URL des vollständigen Regelwerks",
       "rulebookUrlHelper": "Muss ein https-Link sein, oder leer lassen.",
-      "rulesLabel": "Rules",
+      "rulesLabel": "Regeln für Spieler",
       "ruleFieldLabel": "Regel {{n}}",
       "addRule": "Regel hinzufügen",
       "prizesLabel": "Preise",
@@ -458,7 +458,7 @@
     "setup": {
       "steps": {
         "game": "Spiel",
-        "basics": "Basics",
+        "basics": "Name und Tag",
         "format": "Format",
         "teams": "Teams",
         "maps": "Karten und Veto",
@@ -752,10 +752,10 @@
       },
       "stepNotes": {
         "game": "Was gespielt wird",
-        "basics": "Name, start, where",
+        "basics": "Name, Tag, Ort",
         "format": "Wie Teams aufeinandertreffen",
         "teams": "Hinzugefügt oder Anmeldung",
-        "schedule": "Match times",
+        "schedule": "Tage und Uhrzeiten",
         "maps": "Der Kartenpool",
         "extras": "Vorlage, Regeln, Extras",
         "review": "Erstellen"
@@ -1102,7 +1102,7 @@
       "player": "Spieler",
       "team": "Team",
       "rating": "Rating ±",
-      "hltv": "Rating"
+      "hltv": "Leistung"
     },
     "award": {
       "mostKills": "Meiste Kills",
@@ -1167,7 +1167,7 @@
     "withdraw": "Zurückziehen",
     "withdrawTitle": "{{team}} zurückziehen?",
     "withdrawBody": "Das Team verlässt das Turnier, und sein Platz wird für ein anderes Team frei.",
-    "sub": "sub",
+    "sub": "Ersatz",
     "ready": "Bereit",
     "problem": {
       "noAccount": "Hat sich noch nicht bei Auto Tournament angemeldet",
