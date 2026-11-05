@@ -1,7 +1,7 @@
 {
   "webhooksPage": {
     "title": "Webhooks",
-    "description": "Match-Ereignisse (bereit zum Verbinden, live, Map und Spielstand, beendet, abgebrochen, zurückgesetzt) als signierte HTTP-Anfragen an eine andere Website senden, z. B. an eine Event-Website, die Spielern ein „Jetzt verbinden“-Banner zeigt. Jede Zustellung ist mit dem Secret des Endpunkts signiert und wird mit Backoff wiederholt, bis sie ein 2xx erhält.",
+    "description": "Match-Ereignisse (bereit zum Verbinden, live, Karte und Spielstand, beendet, abgebrochen, zurückgesetzt) als signierte HTTP-Anfragen an eine andere Website senden, z. B. an eine Event-Website, die Spielern ein „Jetzt verbinden“-Banner zeigt. Jede Zustellung ist mit dem Secret des Endpunkts signiert und wird mit Backoff wiederholt, bis sie ein 2xx erhält.",
     "allowPrivate": "Webhooks an private und lokale Adressen erlauben",
     "allowPrivateHelp": "Für LAN-Events, deren Website im LAN läuft (10.x, 192.168.x, 127.0.0.1, ...). Link-lokale Adressen (169.254.x.x) sind immer gesperrt.",
     "empty": "Noch keine Webhook-Endpunkte.",
@@ -26,7 +26,7 @@
     "cancel": "Abbrechen",
     "done": "Fertig",
     "copy": "Kopieren",
-    "showOlder": "Show older",
+    "showOlder": "Ältere anzeigen",
     "refresh": "Aktualisieren",
     "rotate": "Secret erneuern",
     "secretTitle": "Signatur-Secret",
@@ -58,17 +58,17 @@
       "resend": "Zustellung konnte nicht erneut gesendet werden"
     },
     "format": "Format",
-    "formatSigned": "Signed JSON (integrations)",
-    "formatDiscord": "Discord message",
-    "formatSignedHelp": "The signed event JSON, for your own service. Check the signature with the secret.",
-    "formatDiscordHelp": "Paste a Discord channel webhook URL (Channel settings → Integrations → Webhooks). Each event posts a message; no passwords or connect lines go to Discord, only a link to the match page.",
+    "formatSigned": "Signiertes JSON (Integrationen)",
+    "formatDiscord": "Discord-Nachricht",
+    "formatSignedHelp": "Das signierte Event-JSON für deinen eigenen Dienst. Prüfe die Signatur mit dem Secret.",
+    "formatDiscordHelp": "Füge die Webhook-URL eines Discord-Kanals ein (Kanaleinstellungen → Integrationen → Webhooks). Jedes Event postet eine Nachricht. Passwörter und Connect-Befehle gehen nicht an Discord, nur ein Link zur Match-Seite.",
     "short": "Ereignisse an Discord oder eigene Dienste senden.",
     "addShort": "Hinzufügen",
     "working": "Funktioniert",
     "failedCount": "{{count}} fehlgeschlagen",
     "allowPrivateShort": "Für Dienste im eigenen Netz (LAN, Docker).",
-    "sourceShort": "team IDs from token {{source}}",
-    "showUrl": "Show URL",
-    "hideUrl": "Hide URL"
+    "sourceShort": "Team-IDs aus Token {{source}}",
+    "showUrl": "URL anzeigen",
+    "hideUrl": "URL ausblenden"
   }
 }

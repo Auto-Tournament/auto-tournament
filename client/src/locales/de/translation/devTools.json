@@ -82,8 +82,8 @@
         "shufflePlayers": "Shuffle-Spieler leeren"
       },
       "maps": {
-        "title": "Maps & Vorlagen",
-        "maps": "Maps leeren",
+        "title": "Karten & Vorlagen",
+        "maps": "Karten leeren",
         "mapPools": "Mappools leeren",
         "tournamentTemplates": "Turnier-Vorlagen leeren",
         "eloTemplates": "ELO-Vorlagen leeren"
@@ -91,7 +91,7 @@
       "matchEvents": {
         "title": "Match-Events & Ergebnisse",
         "events": "Match-Events leeren",
-        "mapResults": "Map-Ergebnisse leeren"
+        "mapResults": "Kartenergebnisse leeren"
       },
       "settings": {
         "title": "Einstellungen",
@@ -100,7 +100,7 @@
     },
     "simulation": {
       "title": "Simulationszustand",
-      "description": "Lösche alle Matches und historischen Statistiken, damit du im Simulationsmodus auf einem leeren Bracket „Turnier starten“ klicken kannst, während Server, Teams, Maps und die aktuelle Turnierkonfiguration erhalten bleiben.",
+      "description": "Löscht alle Matches und bisherigen Statistiken, damit du im Simulationsmodus auf einem leeren Turnierbaum „Turnier starten“ klicken kannst. Server, Teams, Karten und die aktuelle Turnierkonfiguration bleiben erhalten.",
       "button": "Simulationszustand zurücksetzen (Konfiguration behalten)",
       "reset": {
         "success": "Simulationszustand zurückgesetzt. Matches und Statistiken gelöscht; Server, Teams und Turnierkonfiguration beibehalten.",

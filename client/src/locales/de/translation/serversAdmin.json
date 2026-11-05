@@ -21,7 +21,7 @@
       "footer": "Die {{count}} neuesten Log-Einträge werden angezeigt",
       "footerAutoRefresh": "Die {{count}} neuesten Log-Einträge werden angezeigt (automatische Aktualisierung)"
     },
-    "description": "Logs and maintenance for this site. Installed game modules add their own tools below."
+    "description": "Match-Wiederherstellung und das App-Log dieser Website."
   },
   "servers": {
     "allocation": {
@@ -147,21 +147,21 @@
       "default": "Befehl ausgeführt"
     },
     "hold": {
-      "title": "Hold instead of a walkover",
-      "description": "While held, the match is not loaded or started and nobody gets a walkover. When it goes ahead, the teams get the full time again.",
-      "reason": "Reason (shown to admins)",
-      "delay": "Delay {{minutes}} min",
-      "holdUntilReleased": "Hold until released",
-      "release": "Release now",
-      "restartCountdown": "Restart the countdown",
-      "heldUntil": "On hold until {{time}}",
-      "heldIndefinitely": "On hold until released",
-      "tournamentPaused": "The tournament is paused",
-      "heldDone": "Match on hold",
-      "delayedDone": "Match delayed {{minutes}} min",
-      "releasedDone": "Match released",
-      "restartedDone": "Countdown restarted: the teams have the full time again",
-      "failed": "Could not change the hold"
+      "title": "Anhalten statt Walkover",
+      "description": "Solange das Match angehalten ist, wird es weder geladen noch gestartet, und niemand bekommt einen Walkover. Geht es weiter, bekommen die Teams wieder die volle Zeit.",
+      "reason": "Grund (für Admins sichtbar)",
+      "delay": "{{minutes}} Min. verschieben",
+      "holdUntilReleased": "Anhalten bis zur Freigabe",
+      "release": "Jetzt freigeben",
+      "restartCountdown": "Countdown neu starten",
+      "heldUntil": "Angehalten bis {{time}}",
+      "heldIndefinitely": "Angehalten bis zur Freigabe",
+      "tournamentPaused": "Das Turnier ist pausiert",
+      "heldDone": "Match angehalten",
+      "delayedDone": "Match um {{minutes}} Min. verschoben",
+      "releasedDone": "Match freigegeben",
+      "restartedDone": "Countdown neu gestartet: Die Teams haben wieder die volle Zeit",
+      "failed": "Anhalten konnte nicht geändert werden"
     }
   },
   "adminCalls": {
@@ -176,7 +176,7 @@
     "noMessage": "Keine Nachricht",
     "unknownPlayer": "Unbekannter Spieler",
     "unknownServer": "Unbekannter Server",
-    "matchMap": "{{match}}, Map {{map}}",
+    "matchMap": "{{match}}, Karte {{map}}",
     "openMatch": "Match öffnen",
     "openServers": "Server",
     "resolve": "Als erledigt markieren",
@@ -188,11 +188,11 @@
     "unmute": "Ton an",
     "minimize": "Minimieren",
     "show": "Anzeigen",
-    "openChat": "Open chat",
-    "claim": "Claim",
-    "release": "Release",
-    "claimedBy": "Claimed by {{name}}",
-    "claimedByYou": "Claimed by you",
-    "anAdmin": "an admin"
+    "openChat": "Chat öffnen",
+    "claim": "Übernehmen",
+    "release": "Freigeben",
+    "claimedBy": "Übernommen von {{name}}",
+    "claimedByYou": "Von dir übernommen",
+    "anAdmin": "ein Admin"
   }
 }

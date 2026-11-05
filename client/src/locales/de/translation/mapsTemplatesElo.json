@@ -8,7 +8,7 @@
     },
     "delete": {
       "title": "Vorlage löschen",
-      "message": "Sind Sie sicher, dass Sie die Vorlage \"{{name}}\" löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
+      "message": "Willst du die Vorlage „{{name}}“ wirklich löschen? Das lässt sich nicht rückgängig machen.",
       "success": "Vorlage \"{{name}}\" erfolgreich gelöscht",
       "error": "Vorlage konnte nicht gelöscht werden"
     },
@@ -18,10 +18,10 @@
     },
     "createFromTemplate": {
       "errors": {
-        "inProgressOrCompleted": "Turnier kann nicht aus Vorlage erstellt werden, während ein Turnier läuft oder abgeschlossen ist. Bitte löschen oder setzen Sie zuerst das aktuelle Turnier zurück.",
-        "alreadyExists": "Ein Turnier existiert bereits. Bitte löschen oder setzen Sie das aktuelle Turnier zurück, bevor Sie ein neues aus einer Vorlage erstellen."
+        "inProgressOrCompleted": "Solange ein Turnier läuft oder abgeschlossen ist, lässt sich keins aus einer Vorlage erstellen. Lösch das aktuelle Turnier oder setz es zuerst zurück.",
+        "alreadyExists": "Es gibt schon ein Turnier. Lösch es oder setz es zurück, bevor du ein neues aus einer Vorlage erstellst."
       },
-      "button": "Create Tournament from Template"
+      "button": "Turnier aus Vorlage erstellen"
     },
     "edit": {
       "title": "Vorlage bearbeiten",
@@ -31,16 +31,16 @@
       "formatLabel": "Match-Format",
       "mapPool": {
         "title": "Kartenpool",
-        "selectLabel": "Wählen Sie einen Kartenpool",
+        "selectLabel": "Wähl einen Kartenpool",
         "customOption": "Angepasst",
         "selectedLabel": "Ausgewählte Karten ({{count}}):",
         "vetoWarning": "Veto-Formate (BO1/BO3/BO5) benötigen genau 7 Karten. Aktuell ausgewählt: {{count}}",
-        "chooseMaps": "Choose maps..."
+        "chooseMaps": "Karten wählen …"
       },
       "save": "Speichern"
     },
-    "emptyTitle": "No templates yet",
-    "emptyDescription": "Save a tournament's setup as a template from the Tournament page, then start new tournaments from it here."
+    "emptyTitle": "Noch keine Vorlagen",
+    "emptyDescription": "Speichere die Einstellungen eines Turniers auf der Turnierseite als Vorlage und starte hier neue Turniere daraus."
   },
   "saveTemplateModal": {
     "title": "Als Vorlage sichern",
@@ -64,12 +64,12 @@
     },
     "empty": {
       "title": "Keine ELO-Berechnungsvorlagen",
-      "description": "Erstellen Sie Ihre erste Vorlage, um anzupassen, wie Spielerstatistiken ELO-Anpassungen beeinflussen",
+      "description": "Erstell deine erste Vorlage, um festzulegen, wie Spielerstatistiken die ELO verändern",
       "action": "Vorlage erstellen"
     },
     "delete": {
       "title": "ELO-Vorlage löschen",
-      "message": "Sind Sie sicher, dass Sie \"{{name}}\" löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
+      "message": "Willst du „{{name}}“ wirklich löschen? Das lässt sich nicht rückgängig machen.",
       "success": "Vorlage \"{{name}}\" erfolgreich gelöscht",
       "error": "Vorlage konnte nicht gelöscht werden",
       "defaultProtected": "Die Standardvorlage „pure-win-loss“ kann nicht gelöscht werden."
@@ -86,9 +86,9 @@
       "disabled": "Deaktiviert",
       "default": "Standard",
       "adjustment": {
-        "none": "Wertanpassung pro Übereinstimmung: keine (0; Ergebnis nur ELO)",
-        "uncapped": "Anpassung der Statistik pro Übereinstimmung: ungekappt (mit Vorsicht verwenden)",
-        "range": "Anpassungsbereich der Statistik pro Übereinstimmung: {{min}} bis {{max}} ELO",
+        "none": "Statistik-Anpassung pro Match: keine (0; ELO nur nach Ergebnis)",
+        "uncapped": "Statistik-Anpassung pro Match: ohne Grenze (mit Vorsicht nutzen)",
+        "range": "Statistik-Anpassung pro Match: {{min}} bis {{max}} ELO",
         "noMin": "Kein Min.",
         "noMax": "Kein Max."
       },
@@ -98,13 +98,13 @@
       },
       "weightsTitle": "Stat-Gewichte:",
       "limitsTitle": "Anpassungsgrenzen:",
-      "minAdjustment": "Min: {{value}}",
-      "maxAdjustment": "Max: {{value}}"
+      "minAdjustment": "Min.: {{value}}",
+      "maxAdjustment": "Max.: {{value}}"
     },
     "importModal": {
       "title": "ELO-Vorlagen aus json importieren",
-      "introTitle": "Fügen Sie json mit ELO-Vorlagendefinitionen unten ein.",
-      "introBody": "Erwartetes Format: Array von Vorlagen mit Namen, optionaler Beschreibung, aktiviert, Gewichten, maxAdjustment und minAdjustment. Wenn Sie die ID weglassen, wird sie aus dem Namen generiert.",
+      "introTitle": "Füg unten JSON mit Rating-Vorlagen ein.",
+      "introBody": "Erwartetes Format: ein Array von Vorlagen mit name, optionaler description, enabled, weights, maxAdjustment und minAdjustment. Lässt du id weg, wird sie aus dem Namen erzeugt.",
       "jsonLabel": "JSON-Daten",
       "validJsonTitle": "✓ Gültiges json!",
       "previewTitle": "Vorschau:",
@@ -116,7 +116,7 @@
     "editor": {
       "titleEdit": "ELO-Vorlage bearbeiten",
       "titleCreate": "ELO-Vorlage erstellen",
-      "info": "Konfigurieren Sie, wie einzelne Spielerstatistiken ELO-Anpassungen beeinflussen. Die Gewichte werden angewendet, nachdem OpenSkill die Basis-ELO-Änderung (Gewinn/Verlust) berechnet hat. Positive Gewichte erhöhen die ELO, negative Gewichte verringern sie.",
+      "info": "Leg fest, wie einzelne Spielerstatistiken die ELO verändern. Die Gewichte wirken, nachdem OpenSkill die ELO-Änderung aus Sieg oder Niederlage berechnet hat. Positive Gewichte erhöhen die ELO, negative senken sie.",
       "nameLabel": "Vorlagenname",
       "nameDefaultLocked": "Der Standardvorlagenname kann nicht geändert werden",
       "descriptionLabel": "Bezeichnung",
@@ -124,11 +124,11 @@
       "enabledLabel": "Aktiviert",
       "weights": {
         "title": "Wertgewichte",
-        "subtitle": "Passen Sie den Schieberegler für jede Statistik an. Der Wert 0 bedeutet keine Anpassung für diese Statistik."
+        "subtitle": "Stell den Regler für jede Statistik ein. 0 heißt: keine Anpassung für diese Statistik."
       },
       "limits": {
         "title": "Einstellgrenzen (optional)",
-        "subtitle": "Legen Sie maximale und minimale ELO-Anpassungen pro Übereinstimmung fest, um extreme Änderungen zu verhindern.",
+        "subtitle": "Leg die größte und kleinste ELO-Anpassung pro Match fest, um extreme Änderungen zu verhindern.",
         "maxLabel": "Max. Einstellung",
         "maxHelper": "Maximale positive ELO-Anpassung pro Match",
         "minLabel": "Min. Justagewert",
@@ -154,47 +154,47 @@
     "stats": {
       "kills": {
         "label": "Kills",
-        "description": "Number of kills per match"
+        "description": "Anzahl der Kills pro Match"
       },
       "deaths": {
-        "label": "Deaths",
-        "description": "Number of deaths per match (typically negative weight)"
+        "label": "Tode",
+        "description": "Anzahl der Tode pro Match (meist negativ gewichtet)"
       },
       "assists": {
         "label": "Assists",
-        "description": "Number of assists per match"
+        "description": "Anzahl der Assists pro Match"
       },
       "flashAssists": {
-        "label": "Flash Assists",
-        "description": "Number of flash assists per match"
+        "label": "Flash-Assists",
+        "description": "Anzahl der Flash-Assists pro Match"
       },
       "headshotKills": {
-        "label": "Headshot Kills",
-        "description": "Number of headshot kills per match"
+        "label": "Headshot-Kills",
+        "description": "Anzahl der Headshot-Kills pro Match"
       },
       "damage": {
-        "label": "Damage",
-        "description": "Total damage dealt per match"
+        "label": "Schaden",
+        "description": "Gesamtschaden pro Match"
       },
       "utilityDamage": {
-        "label": "Utility Damage",
-        "description": "Damage dealt with utility (grenades)"
+        "label": "Utility-Schaden",
+        "description": "Schaden durch Utility (Granaten)"
       },
       "kast": {
         "label": "KAST %",
-        "description": "Percentage of rounds with Kill, Assist, Survive, or Trade"
+        "description": "Anteil der Runden mit Kill, Assist, Überleben oder Trade"
       },
       "mvps": {
         "label": "MVPs",
-        "description": "Number of MVP awards per match"
+        "description": "Anzahl der MVP-Auszeichnungen pro Match"
       },
       "score": {
-        "label": "Score",
-        "description": "Match score (combines multiple factors)"
+        "label": "Punkte",
+        "description": "Match-Punktzahl (aus mehreren Faktoren)"
       },
       "adr": {
         "label": "ADR",
-        "description": "Average Damage per Round"
+        "description": "Durchschnittlicher Schaden pro Runde"
       }
     }
   }
