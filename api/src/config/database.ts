@@ -17,7 +17,7 @@ import { getSchemaSQL, getSchemaColumns } from './database.schema';
 import { runSchemaMigrations } from './schemaMigrations';
 import { markModuleMigrationsFailed, runModuleMigrations } from './moduleMigrations';
 import { addCs2ForeignKeys, CS2_MODULE_ID, handOverCs2Tables } from './cs2TableHandover';
-import { DATABASE_NAME, renameLegacyDatabase } from './databaseRename';
+import { DATABASE_NAME, platformConnectionString, renameLegacyDatabase } from './databaseRename';
 import { setCurrentTournamentId } from '../utils/tournamentRow';
 
 const MAX_DB_VALUES_SAMPLE = 5;
@@ -67,7 +67,9 @@ class DatabaseManager {
         // accidentally hit ::1 (IPv6) on hosts where Docker only binds 127.0.0.1.
         process.env.DB_HOST || '127.0.0.1'
       }:${process.env.DB_PORT || '5432'}/${process.env.DB_NAME || DATABASE_NAME}`;
-    this.connectionString = connString;
+    // A 2.x .env or compose file still names the 2.x database: 3.0 uses its new
+    // name, and init() renames the old one in place (databaseRename.ts).
+    this.connectionString = platformConnectionString(connString);
 
     // The pool is created lazily (see `postgresPool`) so importing this module
     // never opens a connection or reaches for the network.

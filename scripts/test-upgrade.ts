@@ -27,12 +27,12 @@
  *      the columns are gone; the API still returns the 2.x fields.
  *      The database itself was renamed too: 2.4.15 keeps its data in
  *      `matchzy_tournament`, 3.0 in `auto_tournament`. Before the successful
- *      start, the new build is started three times in states where it must
+ *      start, the new build is started twice in states where it must
  *      refuse to rename and exit, and each is checked to have changed nothing:
- *      configured with the old name, with another session connected to the
- *      old database (which must still be connected afterwards), and as a role
- *      without the right to rename it. Then the real start renames it in
- *      place, and every check above reads the data back from
+ *      with another session connected to the old database (which must still
+ *      be connected afterwards), and as a role without the right to rename it.
+ *      Then the real start, still configured with the old name (a 2.x .env
+ *      kept on upgrade), renames it in place, and every check above reads the data back from
  *      `auto_tournament`. The plugin names 2.4.15 stored (`matchzy_*`
  *      settings keys, the `cvars` of stored match configs, the `matchzy_*`
  *      columns of the servers table) read back under `at_*` with the same
@@ -1438,18 +1438,10 @@ const LIMITED_ROLE = 'upgrade_test_limited';
 const LIMITED_PASSWORD = 'limited';
 
 /**
- * The three states in which the new build must refuse to rename the 2.4.15
+ * The two states in which the new build must refuse to rename the 2.4.15
  * database, each checked to change nothing. Runs with the old app stopped.
  */
 async function assertRenameRefusals(postgresName: string) {
-  // DB_NAME still set to the 2.x name, as in a .env copied from 2.x's example.
-  await assertRefusedToStart(
-    'Configured with the old database name',
-    postgresName,
-    { database: OLD_DB_NAME },
-    'its 2.x name'
-  );
-
   // Something else is connected to the old database. It must still be
   // connected afterwards: the platform never terminates a connection.
   await holdOldDatabase(postgresName);
@@ -1512,8 +1504,10 @@ async function runUpgradedDatabasePath() {
     step = 'verify the new build refuses to rename when it must not';
     await assertRenameRefusals(POSTGRES_NAME);
 
-    step = 'start the new build; it renames the database';
-    runApp(NEW_IMAGE_TAG, NETWORK, POSTGRES_NAME);
+    // Still configured with the 2.x name, as a 2.x .env / compose file kept on
+    // upgrade is: the new build uses the 3.0 name and renames the old one.
+    step = 'start the new build with the 2.x config; it renames the database';
+    runApp(NEW_IMAGE_TAG, NETWORK, POSTGRES_NAME, { database: OLD_DB_NAME });
     await waitForAppHealthy();
     assertDatabases('Upgrade', POSTGRES_NAME, [DB_NAME]);
     if (!containerOutput(APP_NAME).includes(`Renamed the 2.x database "${OLD_DB_NAME}"`)) {

@@ -1,9 +1,9 @@
 import { test, expect } from '@playwright/test';
 import {
   DATABASE_NAME,
-  DatabaseRenameRefused,
   LEGACY_DATABASE_NAME,
   databaseNameOf,
+  platformConnectionString,
   renameLegacyDatabase,
   withDatabase,
 } from '../../api/src/config/databaseRename';
@@ -35,11 +35,18 @@ test.describe('Database rename: what it acts on', () => {
     ).toBe('postgresql://u:p%40ss@db:5432/postgres?sslmode=require');
   });
 
-  test('the platform configured with the 2.x name refuses to start, before connecting', async () => {
-    // Port 1 answers nothing: a connection attempt would fail differently.
+  test('configured with the 2.x name, the platform uses the 3.0 name (and renames it)', async () => {
+    expect(platformConnectionString(`postgresql://u:p@db:5432/${LEGACY_DATABASE_NAME}?ssl=1`)).toBe(
+      `postgresql://u:p@db:5432/${DATABASE_NAME}?ssl=1`
+    );
+    expect(platformConnectionString('postgresql://u:p@db:5432/my_tournaments')).toBe(
+      'postgresql://u:p@db:5432/my_tournaments'
+    );
+    // It goes on to the rename: port 1 answers nothing, so it fails reaching Postgres.
     const url = `postgresql://postgres:postgres@127.0.0.1:1/${LEGACY_DATABASE_NAME}`;
-    await expect(renameLegacyDatabase(url)).rejects.toBeInstanceOf(DatabaseRenameRefused);
-    await expect(renameLegacyDatabase(url)).rejects.toThrow(`DB_NAME=${DATABASE_NAME}`);
+    await expect(
+      renameLegacyDatabase(url, { connectionTimeoutMillis: 2000 })
+    ).rejects.toMatchObject({ code: 'ECONNREFUSED' });
   });
 
   test('a custom database name is left alone, without connecting', async () => {
