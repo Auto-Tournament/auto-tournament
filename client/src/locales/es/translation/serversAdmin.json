@@ -21,7 +21,7 @@
       "footer": "Mostrando las {{count}} entradas de log más recientes",
       "footerAutoRefresh": "Mostrando las {{count}} entradas de log más recientes (actualización automática)"
     },
-    "description": "Logs and maintenance for this site. Installed game modules add their own tools below."
+    "description": "Recuperación de partidos y el log de la app de este sitio."
   },
   "servers": {
     "allocation": {
@@ -144,24 +144,25 @@
       "restartMatch": "Partido reiniciado (terminado y recargado)",
       "reallocateServer": "Partido movido a otro servidor",
       "forceCancel": "Partido cancelado",
-      "default": "Comando ejecutado"
+      "default": "Comando ejecutado",
+      "addTime_many": "Se añadieron {{count}} segundos al temporizador de la ronda"
     },
     "hold": {
-      "title": "Hold instead of a walkover",
-      "description": "While held, the match is not loaded or started and nobody gets a walkover. When it goes ahead, the teams get the full time again.",
-      "reason": "Reason (shown to admins)",
-      "delay": "Delay {{minutes}} min",
-      "holdUntilReleased": "Hold until released",
-      "release": "Release now",
-      "restartCountdown": "Restart the countdown",
-      "heldUntil": "On hold until {{time}}",
-      "heldIndefinitely": "On hold until released",
-      "tournamentPaused": "The tournament is paused",
-      "heldDone": "Match on hold",
-      "delayedDone": "Match delayed {{minutes}} min",
-      "releasedDone": "Match released",
-      "restartedDone": "Countdown restarted: the teams have the full time again",
-      "failed": "Could not change the hold"
+      "title": "Retener en vez de dar la victoria por incomparecencia",
+      "description": "Mientras está retenido, el partido no se carga ni empieza y nadie gana por incomparecencia. Cuando sigue adelante, los equipos vuelven a tener todo el tiempo.",
+      "reason": "Motivo (lo ven los administradores)",
+      "delay": "Retrasar {{minutes}} min",
+      "holdUntilReleased": "Retener hasta liberarlo",
+      "release": "Liberar ahora",
+      "restartCountdown": "Reiniciar la cuenta atrás",
+      "heldUntil": "Retenido hasta las {{time}}",
+      "heldIndefinitely": "Retenido hasta que se libere",
+      "tournamentPaused": "El torneo está en pausa",
+      "heldDone": "Partido retenido",
+      "delayedDone": "Partido retrasado {{minutes}} min",
+      "releasedDone": "Partido liberado",
+      "restartedDone": "Cuenta atrás reiniciada: los equipos vuelven a tener todo el tiempo",
+      "failed": "No se pudo cambiar la retención"
     }
   },
   "adminCalls": {
@@ -188,11 +189,11 @@
     "unmute": "Activar audio",
     "minimize": "Minimizar",
     "show": "Mostrar",
-    "openChat": "Open chat",
-    "claim": "Claim",
-    "release": "Release",
-    "claimedBy": "Claimed by {{name}}",
-    "claimedByYou": "Claimed by you",
-    "anAdmin": "an admin"
+    "openChat": "Abrir chat",
+    "claim": "Atender",
+    "release": "Soltar",
+    "claimedBy": "Lo atiende {{name}}",
+    "claimedByYou": "Lo atiendes tú",
+    "anAdmin": "un administrador"
   }
 }
