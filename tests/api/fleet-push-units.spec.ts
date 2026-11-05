@@ -503,12 +503,12 @@ test.describe('fleet pushes: match.update', () => {
 });
 
 test.describe('fleet pushes: plugin sets', () => {
-  test('presets: fleet always on, in catalog order; Practice has no match', () => {
+  test('presets: fleet and addons always on, in catalog order; Practice has no match', () => {
     expect(presetSet('tournament')).toEqual({
       preset: 'tournament',
       plugins: ['fleet', 'match', 'essentials', 'whitelist', 'addons'],
     });
-    expect(presetSet('practice').plugins).toEqual(['fleet', 'essentials', 'practice']);
+    expect(presetSet('practice').plugins).toEqual(['fleet', 'essentials', 'practice', 'addons']);
     expect(presetSet('fun').plugins).toEqual([
       'fleet',
       'match',
@@ -533,7 +533,7 @@ test.describe('fleet pushes: plugin sets', () => {
     });
     expect(validatePluginSet({ plugins: [] })).toEqual({
       ok: true,
-      value: { preset: 'custom', plugins: ['fleet'] },
+      value: { preset: 'custom', plugins: ['fleet', 'addons'] },
     });
     expect(validatePluginSet({ preset: 'party' }).ok).toBe(false);
     expect(validatePluginSet({ preset: 'custom', plugins: ['hello'] }).ok).toBe(false);
@@ -567,7 +567,7 @@ test.describe('fleet pushes: plugin sets', () => {
     expect(pluginSetFromStored(cmd)).toEqual(presetSet('fun'));
     expect(pluginSetFromStored({ enable: ['skins', 'hello'], disable: [] })).toEqual({
       preset: 'custom',
-      plugins: ['fleet', 'skins'],
+      plugins: ['fleet', 'skins', 'addons'],
     });
     expect(pluginSetFromStored(null)).toBeNull();
   });
@@ -617,7 +617,6 @@ test.describe('fleet pushes: plugin sets', () => {
       'mapvote',
       'community',
       'movement',
-      'addons',
     ];
     expect(pluginsStateDiffers(cmd, { installed: ['match'], disabled: off })).toBe(false);
     // Older Ready Up keeps match on: compared against what it was sent.
