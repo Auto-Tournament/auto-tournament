@@ -26,7 +26,7 @@
     "cancel": "Annuler",
     "done": "Terminé",
     "copy": "Copier",
-    "showOlder": "Show older",
+    "showOlder": "Afficher les plus anciens",
     "refresh": "Actualiser",
     "rotate": "Renouveler le secret",
     "secretTitle": "Secret de signature",
@@ -58,17 +58,17 @@
       "resend": "Impossible de renvoyer l’envoi"
     },
     "format": "Format",
-    "formatSigned": "Signed JSON (integrations)",
-    "formatDiscord": "Discord message",
-    "formatSignedHelp": "The signed event JSON, for your own service. Check the signature with the secret.",
-    "formatDiscordHelp": "Paste a Discord channel webhook URL (Channel settings → Integrations → Webhooks). Each event posts a message; no passwords or connect lines go to Discord, only a link to the match page.",
+    "formatSigned": "JSON signé (intégrations)",
+    "formatDiscord": "Message Discord",
+    "formatSignedHelp": "Le JSON signé de l’événement, pour votre propre service. Vérifiez la signature avec le secret.",
+    "formatDiscordHelp": "Collez l’URL de webhook d’un salon Discord (Paramètres du salon → Intégrations → Webhooks). Chaque événement publie un message ; aucun mot de passe ni ligne de connexion n’est envoyé à Discord, seulement un lien vers la page du match.",
     "short": "Envoyez des événements à Discord ou à vos propres services.",
     "addShort": "Ajouter",
     "working": "Fonctionne",
     "failedCount": "{{count}} en échec",
     "allowPrivateShort": "Pour des services sur votre propre réseau (LAN, Docker).",
-    "sourceShort": "team IDs from token {{source}}",
-    "showUrl": "Show URL",
-    "hideUrl": "Hide URL"
+    "sourceShort": "ID d’équipe du token {{source}}",
+    "showUrl": "Afficher l’URL",
+    "hideUrl": "Masquer l’URL"
   }
 }
