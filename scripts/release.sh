@@ -911,8 +911,8 @@ else
     fi
 fi
 
-# The only files a version bump commit may touch.
-VERSION_FILES_RE='^(package\.json|api/package\.json|client/package\.json)$'
+# The only files a version bump commit may touch (openapi.json carries the version too: sync-version.sh).
+VERSION_FILES_RE='^(package\.json|api/package\.json|client/package\.json|docs/openapi\.json)$'
 
 # Fail unless every file changed between $1 and $2 is a version file.
 assert_only_version_files() {
