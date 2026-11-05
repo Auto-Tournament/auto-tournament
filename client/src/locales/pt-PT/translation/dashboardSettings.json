@@ -354,10 +354,10 @@
       "openSettings": "Abrir definições",
       "signIn": "Fornecedor de início de sessão",
       "game": "Instala um jogo (CS2) em Módulos",
-      "discordBot": "Connect a Discord bot so players get their matches as DMs"
+      "discordBot": "Adiciona o teu próprio bot do Discord (o token dele) para o site poder enviar DM aos jogadores sobre os jogos deles"
     },
     "tournaments": {
-      "title": "Tournaments",
+      "title": "Torneio",
       "empty": "Este site organiza um torneio de cada vez. Cria-o e ele aparece aqui, em Explorar e na sua página do evento.",
       "status": {
         "setup": "Rascunho",
@@ -420,14 +420,14 @@
       },
       "ratings": {
         "label": "Ratings",
-        "hint": "ELO templates"
+        "hint": "Como os ratings são calculados"
       },
       "settings": {
         "label": "Definições",
         "hint": "Início de sessão, chaves de API"
       },
       "adminTools": {
-        "label": "Admin tools",
+        "label": "Sistema",
         "hint": "Recuperação de jogos e registos"
       },
       "disputes": {
