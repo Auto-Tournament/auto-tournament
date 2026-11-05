@@ -20,9 +20,10 @@ import {
   fmtLongDay,
   dialogPaperSx,
   fmtNum,
+  fmtMoney,
 } from '../../../module-sdk';
 import { wearKey, type OwnedSkin } from './useSkins';
-import { rarityColor } from './rarity';
+import { rarityColor, priceBands, pricePosition } from './rarity';
 import { formatOdds } from './odds';
 import { playerInventoryPath } from './paths';
 import { getMapDisplayName } from '../maps/mapData';
@@ -506,6 +507,8 @@ interface InspectData {
   owner: { steamId: string; name: string; avatar: string | null };
   /** Percent of drop options that are this rarity, and this exact skin. */
   odds?: { rarity: number; skin: number; skins: number } | null;
+  /** Its finish's market price in its wear today (USD); null when Skinport has none. */
+  price?: number | null;
 }
 
 /**
@@ -609,6 +612,7 @@ export function InspectSkinDialog({
               <Typography sx={{ fontFamily: fontDisplay, fontSize: '2rem', fontWeight: 700 }}>
                 {skin.name}
               </Typography>
+              <PriceScale price={data.price ?? null} rarity={skin.rarity} />
             </Box>
             <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0,1fr))', gap: 1 }}>
               {[
@@ -781,6 +785,99 @@ export function WearBar({
           </Box>
         )}
       </Typography>
+    </Box>
+  );
+}
+
+/** A skin's price: cents under $10 (most commons cost a few cents), whole dollars above. */
+export function fmtSkinPrice(price: number): string {
+  return price < 10 ? `$${fmtNum(price, 2)}` : fmtMoney(price);
+}
+
+/**
+ * Where a skin's market price sits among all skins, next to the float bar:
+ * the seven rarities as their price ranges (log scale, $0.03 to $10,000), in
+ * their colours, the skin's own range bright, a handle at its price. Under it
+ * the price and the range. `compact`: the bar alone, thin, for cards.
+ * Nothing for a skin with no price.
+ */
+export function PriceScale({
+  price,
+  rarity,
+  compact = false,
+}: {
+  price: number | null;
+  rarity: string;
+  compact?: boolean;
+}) {
+  const { t } = useModuleTranslation('cs2');
+  if (price === null || !(price > 0)) return null;
+  const height = compact ? 4 : 8;
+  const at = pricePosition(price);
+  const bands = priceBands();
+  const own = bands.find((b) => b.rarity === rarity);
+  const range = !own
+    ? ''
+    : own.from === null
+      ? t('skins.priceScale.under', { to: fmtMoney(own.to ?? 0) })
+      : own.to === null
+        ? t('skins.priceScale.from', { from: fmtMoney(own.from) })
+        : t('skins.priceScale.between', { from: fmtMoney(own.from), to: fmtMoney(own.to) });
+  const label = t('skins.priceScale.label', {
+    price: fmtSkinPrice(price),
+    rarity: t(`skins.rarity.${rarity}`, { defaultValue: rarity }),
+    range,
+  });
+  return (
+    <Box data-testid="price-scale" sx={{ mt: compact ? 0.5 : 1.5 }}>
+      <Box
+        role="img"
+        aria-label={label}
+        title={compact ? label : undefined}
+        sx={{ position: 'relative' }}
+      >
+        <Box sx={{ display: 'flex', height, borderRadius: radii.pill, overflow: 'hidden' }}>
+          {bands.map((b) => {
+            const left = b.from === null ? 0 : pricePosition(b.from);
+            const right = b.to === null ? 1 : pricePosition(b.to);
+            const tone = rarityColor[b.rarity];
+            return (
+              <Box
+                key={b.rarity}
+                sx={{
+                  width: `${(right - left) * 100}%`,
+                  bgcolor: b.rarity === rarity ? tone : withAlpha(tone, 0.3),
+                }}
+              />
+            );
+          })}
+        </Box>
+        <Box
+          sx={{
+            position: 'absolute',
+            top: compact ? -2 : -3,
+            left: `clamp(0px, calc(${at * 100}% - 3px), calc(100% - 6px))`,
+            width: 6,
+            height: height + (compact ? 4 : 6),
+            borderRadius: radii.pill,
+            bgcolor: '#e8e8e8',
+            boxShadow: '0 0 0 1px rgba(0,0,0,0.45)',
+          }}
+        />
+      </Box>
+      {!compact && (
+        <Typography
+          component="div"
+          sx={{ ...mono, mt: 0.75, fontSize: '0.8125rem', color: tokens.color.ink }}
+          data-testid="price-scale-price"
+        >
+          {fmtSkinPrice(price)}
+          <Box component="span" sx={{ color: tokens.color.muted }}>
+            {' '}
+            · {t(`skins.rarity.${rarity}`, { defaultValue: rarity })} {range}
+          </Box>
+        </Typography>
+      )}
     </Box>
   );
 }

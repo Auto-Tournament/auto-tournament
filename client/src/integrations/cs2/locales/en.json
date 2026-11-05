@@ -1354,6 +1354,12 @@
       "ww": "Well-Worn",
       "bs": "Battle-Scarred"
     },
+    "priceScale": {
+      "label": "Market price {{price}}: {{rarity}} {{range}}",
+      "under": "(under {{to}})",
+      "from": "(from {{from}})",
+      "between": "({{from}}–{{to}})"
+    },
     "float": "Float",
     "pattern": "Pattern",
     "place": "#{{n}} in a tournament",

@@ -1757,6 +1757,12 @@
       "price": "Market price {{price}}",
       "more_one": "Show more ({{count}} left)",
       "more_other": "Show more ({{count}} left)"
+    },
+    "priceScale": {
+      "label": "Market price {{price}}: {{rarity}} {{range}}",
+      "under": "(under {{to}})",
+      "from": "(from {{from}})",
+      "between": "({{from}}–{{to}})"
     }
   },
   "matchRules": {

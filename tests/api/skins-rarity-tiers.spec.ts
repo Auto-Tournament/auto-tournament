@@ -7,7 +7,16 @@ import {
   withPrices,
   type CatalogSkin,
 } from '../../api/src/integrations/cs2/skins/skinService';
-import { priceKey } from '../../api/src/integrations/cs2/skins/skinPrices';
+import {
+  priceKey,
+  PRICE_BANDS as API_BANDS,
+} from '../../api/src/integrations/cs2/skins/skinPrices';
+import {
+  PRICE_BANDS,
+  RARITY_ORDER,
+  priceBands,
+  pricePosition,
+} from '../../client/src/integrations/cs2/skins/rarity';
 
 /**
  * A skin's rarity is the price band of its finish and wear: a Factory New
@@ -74,5 +83,25 @@ test.describe('skin rarity by price per wear', () => {
     expect(old.tiers).toBe(2);
     const saved = normalizeConfig({ tiers: 2, rarityWeights: { immortal: 0 } as never });
     expect(saved.rarityWeights.immortal).toBe(0);
+  });
+});
+
+test.describe('the price scale (client)', () => {
+  test('prices sit on a log scale, each rarity its own range', () => {
+    expect(pricePosition(0.03)).toBe(0);
+    expect(pricePosition(0.001)).toBe(0);
+    expect(pricePosition(10000)).toBe(1);
+    // Log scale: $1 to $5 is as wide as $100 to $500.
+    expect(pricePosition(5) - pricePosition(1)).toBeCloseTo(
+      pricePosition(500) - pricePosition(100),
+      9
+    );
+    const bands = priceBands();
+    expect(bands.map((b) => b.rarity)).toEqual(RARITY_ORDER);
+    expect(bands[0]).toEqual({ rarity: 'common', from: null, to: 1 });
+    expect(bands[6]).toEqual({ rarity: 'immortal', from: 1500, to: null });
+    // The bands meet with no gap, in the API's order (PRICE_BANDS).
+    expect(bands.slice(1).map((b) => b.from)).toEqual([...PRICE_BANDS]);
+    expect(PRICE_BANDS).toEqual([...API_BANDS]);
   });
 });

@@ -30,6 +30,8 @@ export interface OwnedSkin {
   side: 2 | 3 | null;
   /** A StatTrak skin's kill count; null for a plain one. */
   stattrak: number | null;
+  /** Its finish's market price in its wear today (USD); null when Skinport has none. */
+  price?: number | null;
 }
 
 /** A drop waiting for the player to keep one of its options (api: skinService.openChoices). */
@@ -50,6 +52,8 @@ export interface SkinChoice {
     float: number;
     pattern: number;
     stattrak?: boolean;
+    /** Its wear's market price when rolled (USD); null when Skinport has none. */
+    price?: number | null;
   }>;
 }
 

@@ -412,12 +412,15 @@ export interface OwnedSkin {
   stattrak: number | null;
   /** The one side that uses this weapon, or null when both do. */
   side: 2 | 3 | null;
+  /** Its finish's market price in its wear today (USD; inventory); null when Skinport has none. */
+  price?: number | null;
 }
 
 interface SkinRow {
   id: number;
   player_uid: string;
   weapon: string;
+  paint_kit: number;
   weapon_name: string;
   name: string;
   rarity: Rarity;
@@ -1486,6 +1489,8 @@ export const skinService = {
         image: skinImageUrl(o.image, o.float),
         float: o.float,
         pattern: o.pattern,
+        // Its wear's market price when it was rolled; null for one Skinport doesn't price.
+        price: o.wears?.[wearOf(o.float)] ?? o.price ?? null,
       })),
     }));
   },
@@ -1684,7 +1689,23 @@ export const skinService = {
     for (const e of equipped) {
       sides.set(e.skin_id, [...(sides.get(e.skin_id) ?? []), Number(e.team) as LoadoutTeam]);
     }
-    return rows.map((row) => toRow(row, sides));
+    const priceOf = await this.priceToday();
+    return rows.map((row) => ({ ...toRow(row, sides), price: priceOf(row) }));
+  },
+
+  /**
+   * What an owned skin is worth today: its finish's market price in its wear
+   * (null for one Skinport doesn't price). One catalogue read for many skins.
+   */
+  async priceToday(): Promise<
+    (row: Pick<SkinRow, 'weapon' | 'paint_kit' | 'float_value'>) => number | null
+  > {
+    const wears = new Map(
+      (await this.catalog()).map((s) => [`${s.weapon}|${s.paintKit}`, s.wears])
+    );
+    return (row) =>
+      wears.get(`${row.weapon}|${Number(row.paint_kit)}`)?.[wearOf(Number(row.float_value))] ??
+      null;
   },
 
   /**
@@ -2127,9 +2148,11 @@ export const skinService = {
     const equipped = await db.queryOneAsync('SELECT 1 FROM cs2_player_loadout WHERE skin_id = ?', [
       skinId,
     ]);
+    const price = (await this.priceToday())(row);
     return {
       skin: toRow(row, new Set(equipped ? [skinId] : [])),
       owner: { steamId: row.owner_id, name: row.owner_name, avatar: row.owner_avatar },
+      price,
     };
   },
 };
