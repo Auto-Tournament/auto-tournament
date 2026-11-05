@@ -1,12 +1,12 @@
 {
   "adminToolsPage": {
     "recovery": {
-      "title": "Recupero match",
+      "title": "Ripristino delle partite",
       "description": "Se l’API o i server sono stati riavviati durante un torneo e lo stato delle partite sembra non sincronizzato (ad es. partite bloccate prima dell’inizio o senza punteggi in diretta), puoi avviare manualmente un recupero. Verrà chiesto a tutti i server il loro rapporto di partita attuale, punteggi e fasi verranno risincronizzati e webhook e caricamento delle demo verranno riconfigurati dove possibile.",
-      "button": "Esegui recupero match ora",
-      "success": "Recupero match completato.",
-      "error": "Recupero match fallito.",
-      "failedTrigger": "Impossibile avviare il recupero match. Riprova."
+      "button": "Esegui ora il ripristino delle partite",
+      "success": "Ripristino delle partite completato.",
+      "error": "Ripristino delle partite non riuscito.",
+      "failedTrigger": "Impossibile avviare il ripristino delle partite. Riprova."
     },
     "monitoring": {
       "title": "Monitoraggio e log",
@@ -21,42 +21,42 @@
       "footer": "Visualizzazione delle {{count}} voci di log più recenti",
       "footerAutoRefresh": "Visualizzazione delle {{count}} voci di log più recenti (aggiornamento automatico)"
     },
-    "description": "Logs and maintenance for this site. Installed game modules add their own tools below."
+    "description": "Ripristino delle partite e log dell'app per questo sito."
   },
   "servers": {
     "allocation": {
       "title": "In attesa di un server disponibile",
-      "waiting": "Questo match partirà automaticamente non appena ci saranno server liberi. Server necessari:",
+      "waiting": "Questa partita inizierà automaticamente appena i server si liberano. Server necessari:",
       "nextPass": "Prossimo tentativo di assegnazione tra {{seconds}} s"
     }
   },
   "adminMatchControls": {
     "title": "Controlli admin",
-    "noServer": "Nessun server assegnato a questo match",
-    "unavailable": "Nessun server assegnato a questo match, quindi i controlli admin non sono disponibili.",
+    "noServer": "Nessun server è assegnato a questa partita",
+    "unavailable": "Nessun server è assegnato a questa partita, quindi i controlli admin non sono disponibili.",
     "unknownAction": "Azione sconosciuta",
     "commandFailed": "Impossibile eseguire il comando",
     "confirm": "Conferma",
     "execute": "Esegui",
     "close": "Chiudi",
     "tipLabel": "Consiglio admin:",
-    "tip": "Usa questi controlli con attenzione durante i match live. Alcune azioni, come \"{{endMatch}}\" e \"{{restartMatch}}\", non possono essere annullate.",
+    "tip": "Usa questi controlli con attenzione durante le partite in diretta. Alcune azioni, come \"{{endMatch}}\" e \"{{restartMatch}}\", non si possono annullare.",
     "sections": {
-      "matchControl": "Controllo match",
+      "matchControl": "Controllo della partita",
       "advanced": "Azioni avanzate"
     },
     "actions": {
       "pause": {
         "button": "Pausa",
         "tooltip": "Pausa admin – i giocatori non possono riprendere",
-        "title": "Metti in pausa il match",
-        "description": "Forza la pausa del match. I giocatori non possono riprendere."
+        "title": "Metti in pausa la partita",
+        "description": "Questo forza la pausa della partita. I giocatori non possono riprenderla."
       },
       "unpause": {
         "button": "Riprendi",
-        "tooltip": "Riprendi il match dopo una pausa",
-        "title": "Riprendi il match",
-        "description": "Forza la ripresa del match."
+        "tooltip": "Riprendi la partita da una pausa",
+        "title": "Riprendi la partita",
+        "description": "Questo forza la ripresa della partita."
       },
       "swap": {
         "button": "Scambia squadre",
@@ -74,38 +74,38 @@
         "button": "Salta veto",
         "tooltip": "Salta il veto mappe e carica subito la prima mappa",
         "title": "Salta veto",
-        "description": "Salta la fase di veto e avvia il match."
+        "description": "Questo salta la fase di veto e avvia la partita."
       },
       "endWarmup": {
         "button": "Termina warmup",
-        "tooltip": "Termina il warmup e avvia il match (knife round o live)",
+        "tooltip": "Termina il riscaldamento e avvia la partita (round di coltello o in diretta)",
         "title": "Termina warmup",
-        "description": "Termina il warmup e avvia il match."
+        "description": "Questo termina il riscaldamento e avvia la partita."
       },
       "endMatch": {
-        "button": "Termina match",
-        "tooltip": "Termina subito il match e registra il punteggio finale",
-        "title": "Termina match",
-        "description": "Forza la fine del match. Usare con cautela!"
+        "button": "Termina partita",
+        "tooltip": "Termina subito la partita e registra il punteggio finale",
+        "title": "Termina partita",
+        "description": "Questo forza la fine della partita. Usalo con cautela!"
       },
       "restartMatch": {
-        "button": "Riavvia match",
-        "tooltip": "Termina e ricarica il match da zero – tutti i progressi vanno persi",
-        "title": "Riavvia match",
-        "description": "Termina il match e lo ricarica dall’inizio. Tutti i progressi andranno persi!"
+        "button": "Riavvia partita",
+        "tooltip": "Termina e ricarica la partita da zero: tutti i progressi vanno persi",
+        "title": "Riavvia partita",
+        "description": "Questo termina la partita e la ricarica dall'inizio. Tutti i progressi andranno persi!"
       },
       "reallocateServer": {
         "button": "Riassegna server",
-        "tooltip": "Sposta il match su un altro server (recupero prima del live)",
-        "tooltipUnavailable": "Disponibile solo per match pronti/caricati (non durante il live)",
+        "tooltip": "Sposta la partita su un altro server (ripristino prima di andare in diretta)",
+        "tooltipUnavailable": "Disponibile solo per partite pronte o caricate (non durante il gioco in diretta)",
         "title": "Riassegna server",
-        "description": "Sposta il match su un altro server inattivo e lo ricarica. Usalo se il server attuale non è aggiornato o se i giocatori non riescono a connettersi. Non consentito durante un match live."
+        "description": "Questo sposta la partita su un altro server inattivo e la ricarica. Usalo se il server attuale non è aggiornato o i giocatori non riescono a connettersi. Non consentito durante una partita in diretta."
       },
       "forceCancel": {
         "button": "Forza annullamento",
-        "tooltip": "Annulla il match anche se il server è offline – libera l’assegnazione del server",
-        "title": "Forza annullamento del match",
-        "description": "⚠️ Annulla il match anche se il server è offline. Il match viene segnato come completato e il server viene liberato. Questa azione non può essere annullata."
+        "tooltip": "Annulla la partita anche se il server è offline: libera l'assegnazione del server",
+        "title": "Forza l'annullamento della partita",
+        "description": "⚠️ Questo annulla la partita anche se il server è offline. La partita viene segnata come completata e il server viene liberato. Non si può annullare."
       }
     },
     "inputs": {
@@ -122,7 +122,7 @@
         "label": "Secondi da aggiungere"
       },
       "broadcast": {
-        "button": "Broadcast",
+        "button": "Trasmetti",
         "tooltip": "Invia un messaggio a tutti i giocatori sul server",
         "title": "Messaggio broadcast",
         "label": "Messaggio da inviare"
@@ -144,24 +144,25 @@
       "restartMatch": "Match riavviato (terminato e ricaricato)",
       "reallocateServer": "Match spostato su un altro server",
       "forceCancel": "Match annullato",
-      "default": "Comando eseguito"
+      "default": "Comando eseguito",
+      "addTime_many": "Aggiunti {{count}} secondi al timer del round"
     },
     "hold": {
-      "title": "Hold instead of a walkover",
-      "description": "While held, the match is not loaded or started and nobody gets a walkover. When it goes ahead, the teams get the full time again.",
-      "reason": "Reason (shown to admins)",
-      "delay": "Delay {{minutes}} min",
-      "holdUntilReleased": "Hold until released",
-      "release": "Release now",
-      "restartCountdown": "Restart the countdown",
-      "heldUntil": "On hold until {{time}}",
-      "heldIndefinitely": "On hold until released",
-      "tournamentPaused": "The tournament is paused",
-      "heldDone": "Match on hold",
-      "delayedDone": "Match delayed {{minutes}} min",
-      "releasedDone": "Match released",
-      "restartedDone": "Countdown restarted: the teams have the full time again",
-      "failed": "Could not change the hold"
+      "title": "Sospendi invece di assegnare la vittoria a tavolino",
+      "description": "Mentre è sospesa, la partita non viene caricata né avviata e nessuno vince a tavolino. Quando riparte, le squadre hanno di nuovo tutto il tempo.",
+      "reason": "Motivo (visibile agli admin)",
+      "delay": "Rimanda di {{minutes}} min",
+      "holdUntilReleased": "Sospendi fino a nuovo ordine",
+      "release": "Riprendi ora",
+      "restartCountdown": "Riavvia il conto alla rovescia",
+      "heldUntil": "Sospesa fino alle {{time}}",
+      "heldIndefinitely": "Sospesa fino a nuovo ordine",
+      "tournamentPaused": "Il torneo è in pausa",
+      "heldDone": "Partita sospesa",
+      "delayedDone": "Partita rimandata di {{minutes}} min",
+      "releasedDone": "Partita ripresa",
+      "restartedDone": "Conto alla rovescia riavviato: le squadre hanno di nuovo tutto il tempo",
+      "failed": "Impossibile modificare la sospensione"
     }
   },
   "adminCalls": {
@@ -188,11 +189,11 @@
     "unmute": "Riattiva audio",
     "minimize": "Riduci",
     "show": "Mostra",
-    "openChat": "Open chat",
-    "claim": "Claim",
-    "release": "Release",
-    "claimedBy": "Claimed by {{name}}",
-    "claimedByYou": "Claimed by you",
-    "anAdmin": "an admin"
+    "openChat": "Apri la chat",
+    "claim": "Prendi in carico",
+    "release": "Rilascia",
+    "claimedBy": "Presa in carico da {{name}}",
+    "claimedByYou": "Presa in carico da te",
+    "anAdmin": "un admin"
   }
 }

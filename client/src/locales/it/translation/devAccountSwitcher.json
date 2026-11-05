@@ -1,12 +1,12 @@
 {
   "devAccountSwitcher": {
-    "tooltip": "Switch account (dev)",
+    "tooltip": "Cambia account (dev)",
     "adminTest": "Admin (test)",
-    "playerA": "Player A (dev)",
-    "playerB": "Player B (dev)",
-    "playerC": "Player C (dev)",
-    "newPlayer": "New player (first visit) (dev)",
-    "signOut": "Sign out",
-    "disabled": "Test sign-in is disabled on this server"
+    "playerA": "Giocatore A (dev)",
+    "playerB": "Giocatore B (dev)",
+    "playerC": "Giocatore C (dev)",
+    "newPlayer": "Nuovo giocatore (prima visita) (dev)",
+    "signOut": "Esci",
+    "disabled": "L'accesso di prova è disattivato su questo server"
   }
 }

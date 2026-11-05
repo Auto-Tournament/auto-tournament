@@ -21,26 +21,26 @@
         "inProgressOrCompleted": "Impossibile creare un torneo da un modello mentre un torneo è in corso o completato. Elimina o reimposta prima il torneo corrente.",
         "alreadyExists": "Esiste già un torneo. Elimina o reimposta il torneo corrente prima di crearne uno nuovo da un modello."
       },
-      "button": "Create Tournament from Template"
+      "button": "Crea torneo dal modello"
     },
     "edit": {
       "title": "Modifica modello",
       "nameLabel": "Nome modello",
       "descriptionLabel": "Descrizione (opzionale)",
       "typeLabel": "Tipo di torneo",
-      "formatLabel": "Formato match",
+      "formatLabel": "Formato della partita",
       "mapPool": {
         "title": "Pool mappe",
         "selectLabel": "Scegli un pool mappe",
         "customOption": "Personalizzato",
         "selectedLabel": "Mappe selezionate ({{count}}):",
         "vetoWarning": "I formati con veto (BO1/BO3/BO5) richiedono esattamente 7 mappe. Selezionate: {{count}}",
-        "chooseMaps": "Choose maps..."
+        "chooseMaps": "Scegli le mappe…"
       },
       "save": "Salva"
     },
-    "emptyTitle": "No templates yet",
-    "emptyDescription": "Save a tournament's setup as a template from the Tournament page, then start new tournaments from it here."
+    "emptyTitle": "Ancora nessun modello",
+    "emptyDescription": "Salva la configurazione di un torneo come modello dalla pagina Torneo, poi avvia nuovi tornei da qui."
   },
   "saveTemplateModal": {
     "title": "Salva come modello",
@@ -75,8 +75,9 @@
       "defaultProtected": "Il modello predefinito \"pure-win-loss\" non può essere eliminato."
     },
     "import": {
-      "success_one": "{{count}} modello ELO importato",
-      "success_other": "{{count}} modelli ELO importati"
+      "success_one": "Importato {{count}} modello di rating",
+      "success_other": "Importati {{count}} modelli di rating",
+      "success_many": "Importati {{count}} modelli di rating"
     },
     "weights": {
       "noAdjustmentsPure": "Nessun aggiustamento stat (solo vittoria/sconfitta)"
@@ -86,9 +87,9 @@
       "disabled": "Disabilitato",
       "default": "Predefinito",
       "adjustment": {
-        "none": "Aggiustamento stat per match: nessuno (0; ELO solo sul risultato)",
-        "uncapped": "Aggiustamento stat per match: non limitato (usare con cautela)",
-        "range": "Intervallo aggiustamento stat per match: da {{min}} a {{max}} ELO",
+        "none": "Correzione per statistiche per partita: nessuna (0; ELO solo dal risultato)",
+        "uncapped": "Correzione per statistiche per partita: senza limite (usare con cautela)",
+        "range": "Intervallo di correzione per statistiche per partita: da {{min}} a {{max}} ELO",
         "noMin": "nessun min",
         "noMax": "nessun max"
       },
@@ -111,7 +112,8 @@
       "previewButton": "Anteprima",
       "importButton": "Importa modelli",
       "validJsonBody_one": "Trovato {{count}} modello.",
-      "validJsonBody_other": "Trovati {{count}} modelli."
+      "validJsonBody_other": "Trovati {{count}} modelli.",
+      "validJsonBody_many": "Trovati {{count}} modelli."
     },
     "editor": {
       "titleEdit": "Modifica modello ELO",
@@ -128,11 +130,11 @@
       },
       "limits": {
         "title": "Limiti aggiustamento (opzionale)",
-        "subtitle": "Imposta aggiustamenti ELO massimi e minimi per match per prevenire variazioni estreme.",
+        "subtitle": "Imposta le correzioni ELO massime e minime per partita per evitare cambiamenti estremi.",
         "maxLabel": "Aggiustamento max",
-        "maxHelper": "Massimo aggiustamento ELO positivo per match",
+        "maxHelper": "Correzione ELO positiva massima per partita",
         "minLabel": "Aggiustamento min",
-        "minHelper": "Massimo aggiustamento ELO negativo per match"
+        "minHelper": "Correzione ELO negativa massima per partita"
       },
       "errors": {
         "nameRequired": "Il nome del modello è obbligatorio"
@@ -153,48 +155,48 @@
     },
     "stats": {
       "kills": {
-        "label": "Kills",
-        "description": "Number of kills per match"
+        "label": "Uccisioni",
+        "description": "Numero di uccisioni per partita"
       },
       "deaths": {
-        "label": "Deaths",
-        "description": "Number of deaths per match (typically negative weight)"
+        "label": "Morti",
+        "description": "Numero di morti per partita (di solito con peso negativo)"
       },
       "assists": {
-        "label": "Assists",
-        "description": "Number of assists per match"
+        "label": "Assist",
+        "description": "Numero di assist per partita"
       },
       "flashAssists": {
-        "label": "Flash Assists",
-        "description": "Number of flash assists per match"
+        "label": "Assist con flash",
+        "description": "Numero di assist con flash per partita"
       },
       "headshotKills": {
-        "label": "Headshot Kills",
-        "description": "Number of headshot kills per match"
+        "label": "Uccisioni con colpo alla testa",
+        "description": "Numero di uccisioni con colpo alla testa per partita"
       },
       "damage": {
-        "label": "Damage",
-        "description": "Total damage dealt per match"
+        "label": "Danni",
+        "description": "Danni totali inflitti per partita"
       },
       "utilityDamage": {
-        "label": "Utility Damage",
-        "description": "Damage dealt with utility (grenades)"
+        "label": "Danni da utility",
+        "description": "Danni inflitti con le utility (granate)"
       },
       "kast": {
         "label": "KAST %",
-        "description": "Percentage of rounds with Kill, Assist, Survive, or Trade"
+        "description": "Percentuale di round con uccisione, assist, sopravvivenza o scambio"
       },
       "mvps": {
-        "label": "MVPs",
-        "description": "Number of MVP awards per match"
+        "label": "MVP",
+        "description": "Numero di premi MVP per partita"
       },
       "score": {
-        "label": "Score",
-        "description": "Match score (combines multiple factors)"
+        "label": "Punteggio",
+        "description": "Punteggio della partita (combina più fattori)"
       },
       "adr": {
         "label": "ADR",
-        "description": "Average Damage per Round"
+        "description": "Danni medi per round"
       }
     }
   }
