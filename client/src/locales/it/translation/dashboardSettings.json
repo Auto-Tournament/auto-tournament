@@ -357,7 +357,7 @@
       "discordBot": "Aggiungi il tuo bot Discord (il suo token) così il sito può mandare DM ai giocatori sulle loro partite"
     },
     "tournaments": {
-      "title": "Tournaments",
+      "title": "Torneo",
       "empty": "Questo sito organizza un torneo alla volta. Crealo e comparirà qui, in Esplora e nella sua pagina dell'evento.",
       "status": {
         "setup": "Bozza",
@@ -420,14 +420,14 @@
       },
       "ratings": {
         "label": "Rating",
-        "hint": "ELO templates"
+        "hint": "Come si calcolano i rating"
       },
       "settings": {
         "label": "Impostazioni",
         "hint": "Accesso, chiavi API"
       },
       "adminTools": {
-        "label": "Admin tools",
+        "label": "Sistema",
         "hint": "Ripristino delle partite e log"
       },
       "disputes": {

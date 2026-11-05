@@ -424,7 +424,7 @@
       "locationPlaceholder": "es. In presenza, Trondheim",
       "rulebookUrlLabel": "URL del regolamento completo",
       "rulebookUrlHelper": "Deve essere un link https, oppure lascialo vuoto.",
-      "rulesLabel": "Rules",
+      "rulesLabel": "Regole per i giocatori",
       "ruleFieldLabel": "Regola {{n}}",
       "addRule": "Aggiungi regola",
       "prizesLabel": "Premi",
@@ -475,7 +475,7 @@
     "setup": {
       "steps": {
         "game": "Gioco",
-        "basics": "Basics",
+        "basics": "Nome e giorno",
         "format": "Formato",
         "teams": "Squadre",
         "maps": "Mappe e veto",
@@ -777,7 +777,7 @@
         "basics": "Nome, giorno, luogo",
         "format": "Come si affrontano le squadre",
         "teams": "Aggiunte o iscrizioni",
-        "schedule": "Match times",
+        "schedule": "Giorni e orari",
         "maps": "Il pool di mappe",
         "extras": "Preset, regole, extra",
         "review": "Crealo"
@@ -1127,7 +1127,7 @@
       "player": "Giocatore",
       "team": "Squadra",
       "rating": "Rating ±",
-      "hltv": "Rating"
+      "hltv": "Prestazione"
     },
     "award": {
       "mostKills": "Più uccisioni",
@@ -1192,7 +1192,7 @@
     "withdraw": "Ritira",
     "withdrawTitle": "Ritirare {{team}}?",
     "withdrawBody": "La squadra lascia il torneo e il suo posto si libera per un'altra squadra.",
-    "sub": "sub",
+    "sub": "Riserva",
     "ready": "Pronto",
     "problem": {
       "noAccount": "Non ha ancora effettuato l'accesso ad Auto Tournament",

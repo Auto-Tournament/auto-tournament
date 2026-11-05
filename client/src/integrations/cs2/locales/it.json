@@ -36,10 +36,10 @@
     "servers": {
       "title": "Server",
       "open": "Apri",
-      "online": "online",
+      "online": "in esecuzione",
       "inMatch": "In partita",
       "free": "Liberi",
-      "offline": "Offline",
+      "offline": "Inattivo",
       "plugin": "Plugin",
       "pluginSame": "{{version}}, tutti i server uguali",
       "pluginMixed": "{{count}} versioni del plugin in uso",
@@ -331,7 +331,7 @@
     "opening": "Il veto si sta aprendo…",
     "opensBreak": "Una breve pausa dopo l'ultima partita. Ricevi una notifica quando si apre; le mappe qui sotto sono il pool.",
     "breakEyebrow": "Pausa tra le partite",
-    "opensInTitle": "The map veto opens in",
+    "opensInTitle": "Il veto si apre tra",
     "title": "veto delle mappe",
     "sideInWindow": "Scegli CT o T nella finestra.",
     "pool": "Pool di mappe",
@@ -1388,8 +1388,8 @@
     "equipOnCt": "Equipaggia su CT",
     "equipOnBoth": "Equipaggia su entrambi",
     "takeOff": "Rimuovi",
-    "keep": "Keep in inventory",
-    "inventory": "Inventory",
+    "keep": "Ok",
+    "inventory": "Equipaggiamento",
     "count": "{{count}} skin",
     "equippedTitle": "Equipaggiate",
     "slot": {
@@ -1452,7 +1452,7 @@
       "noticeFixed": "Mostrato sempre. Non si può cambiare.",
       "saved": "Impostazioni delle skin salvate",
       "inv": {
-        "title": "Player inventories",
+        "title": "Skin dei giocatori",
         "hint": "Scegli un giocatore per vedere le sue skin, dargliene una o toglierne una.",
         "player": "Giocatore",
         "playerHint": "Nome o Steam ID",
@@ -1770,7 +1770,7 @@
     "pickLater": "Scegli più tardi",
     "catalog": {
       "title": "Tutte le skin",
-      "intro": "Every skin a drop can give. The chance is per option in a drop: each drop shows three, and you keep one. Knives and gloves get their rarity from their market price.",
+      "intro": "Ogni skin che un drop può dare, in ogni usura in cui esce. La probabilità è per opzione in un drop: ogni drop ne mostra tre e ne tieni una. La rarità segue il prezzo di mercato della skin in quell’usura.",
       "count_one": "{{count}} skin",
       "count_other": "{{count}} skin",
       "search": "Cerca skin",
@@ -2519,7 +2519,7 @@
       "days_many": "Ultimi {{count}} giorni"
     },
     "explain": {
-      "rating": "Auto Tournament's own rating, 1.00 for an average player: kills, deaths, assists, damage and KAST per round.",
+      "rating": "Quanto bene gioca un giocatore, 1,00 per un giocatore nella media: uccisioni, morti, assist, danni e KAST per round.",
       "adr": "Danni medi per round.",
       "kd": "Uccisioni per morte.",
       "hs": "La quota di uccisioni con colpo alla testa (almeno 50 uccisioni).",

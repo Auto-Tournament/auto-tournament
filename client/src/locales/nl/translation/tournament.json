@@ -408,7 +408,7 @@
       "locationPlaceholder": "bijv. Op locatie, Trondheim",
       "rulebookUrlLabel": "URL van het volledige reglement",
       "rulebookUrlHelper": "Moet een https-link zijn, of laat het leeg.",
-      "rulesLabel": "Rules",
+      "rulesLabel": "Regels voor spelers",
       "ruleFieldLabel": "Regel {{n}}",
       "addRule": "Regel toevoegen",
       "prizesLabel": "Prijzen",
@@ -458,7 +458,7 @@
     "setup": {
       "steps": {
         "game": "Game",
-        "basics": "Basics",
+        "basics": "Naam en dag",
         "format": "Format",
         "teams": "Teams",
         "maps": "Maps en veto",
@@ -755,7 +755,7 @@
         "basics": "Naam, dag, plaats",
         "format": "Hoe teams elkaar treffen",
         "teams": "Toegevoegd of inschrijving",
-        "schedule": "Match times",
+        "schedule": "Dagen en tijden",
         "maps": "De mappool",
         "extras": "Preset, regels, extra's",
         "review": "Maak het"
@@ -996,7 +996,7 @@
       "loadError": "Kan het schema niet laden.",
       "emptyTitle": "Nog geen schema",
       "emptyDescription": "Het schema verschijnt hier als de organisator het toernooi start.",
-      "shuffleTitle": "No bracket in a shuffle tournament",
+      "shuffleTitle": "Geen schema bij een shuffle",
       "shuffleDescription": "Teams worden elke ronde opnieuw geloot, dus er is geen schema. Wedstrijden toont elke ronde en Stand rangschikt de spelers."
     },
     "matchesTab": {
@@ -1102,7 +1102,7 @@
       "player": "Speler",
       "team": "Team",
       "rating": "Rating ±",
-      "hltv": "Rating"
+      "hltv": "Prestatie"
     },
     "award": {
       "mostKills": "Meeste kills",
@@ -1167,7 +1167,7 @@
     "withdraw": "Terugtrekken",
     "withdrawTitle": "{{team}} terugtrekken?",
     "withdrawBody": "Het team verlaat het toernooi en zijn plek komt vrij voor een ander team.",
-    "sub": "sub",
+    "sub": "Reserve",
     "ready": "Klaar",
     "problem": {
       "noAccount": "Heeft nog niet ingelogd bij Auto Tournament",
