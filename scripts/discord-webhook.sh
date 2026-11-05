@@ -97,7 +97,12 @@ get_changelog() {
     local current_tag="v${NEW_VERSION}"
     
     # Get the previous tag (second most recent, excluding the current one)
-    prev_tag=$(git tag --sort=-v:refname | grep -v "^${current_tag}$" | sed -n '1p' 2>/dev/null || echo "")
+    # A stable release counts from the previous stable one (its betas may share its commit).
+    if [[ "$NEW_VERSION" == *-* ]]; then
+        prev_tag=$(git tag --sort=-v:refname | grep -v "^${current_tag}$" | sed -n '1p' 2>/dev/null || echo "")
+    else
+        prev_tag=$(git tag --sort=-v:refname | grep -v "^${current_tag}$" | grep -v -- '-' | sed -n '1p' 2>/dev/null || echo "")
+    fi
     
     # Extract PR titles from merge commits
     # Format: "Merge pull request #XX..." followed by blank line, then PR title
