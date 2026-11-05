@@ -93,8 +93,10 @@ test.describe.serial('trade-up end to end', () => {
         const player = await playwright.request.newContext({ baseURL });
         expect(await signInAsPlayerViaRequest(player, STEAM_ID, 'Trade Up Tester')).toBe(true);
 
-        // Five commons from the catalogue (it comes from GitHub; without it nothing to give).
-        const commons: Array<{ weapon: string; paintKit: number }> = [];
+        // Commons from the catalogue (it comes from GitHub; without it nothing to give). Rarity
+        // is priced per wear, so they are given Field-Tested and only the ones that come out
+        // common count.
+        const candidates: Array<{ weapon: string; paintKit: number }> = [];
         for (const q of ['p250', 'nova', 'mp7', 'sawed', 'mag', 'xm1014', 'ump', 'tec']) {
           const res = await request.get(`/api/skins/admin/catalog?q=${q}`, { headers });
           const skins = ((await res.json()).skins ?? []) as Array<{
@@ -102,21 +104,28 @@ test.describe.serial('trade-up end to end', () => {
             paintKit: number;
             rarity: string;
           }>;
-          commons.push(...skins.filter((s) => s.rarity === 'common'));
-          if (commons.length >= 6) break;
+          candidates.push(...skins.filter((s) => s.rarity === 'common'));
+          if (candidates.length >= 12) break;
         }
-        test.skip(commons.length < 6, 'The skin catalogue could not be read');
+        test.skip(candidates.length < 6, 'The skin catalogue could not be read');
 
-        const floats = [0.1, 0.2, 0.3, 0.4, 0.5];
+        const floats = [0.2, 0.25, 0.3, 0.35, 0.36];
         const ids: number[] = [];
-        for (const [i, s] of commons.slice(0, 5).entries()) {
+        for (const s of candidates) {
+          if (ids.length === 5) break;
           const given = await request.post(`/api/skins/admin/players/${STEAM_ID}/skins`, {
             headers,
-            data: { weapon: s.weapon, paintKit: s.paintKit, float: floats[i] },
+            data: { weapon: s.weapon, paintKit: s.paintKit, float: floats[ids.length] },
           });
           expect(given.ok(), await given.text()).toBe(true);
-          ids.push((await given.json()).id);
+          const id = (await given.json()).id as number;
+          const mine = (await (await player.get('/api/skins/me')).json()).inventory as Array<{
+            id: number;
+            rarity: string;
+          }>;
+          if (mine.find((m) => m.id === id)?.rarity === 'common') ids.push(id);
         }
+        test.skip(ids.length < 5, 'Too few skins are common Field-Tested right now');
 
         const status = await (await player.get('/api/skins/status')).json();
         expect(status.tradeUp).toEqual({ count: 5 });
@@ -144,7 +153,7 @@ test.describe.serial('trade-up end to end', () => {
         expect(inventory.some((s) => ids.includes(s.id))).toBe(false);
         const got = inventory.find((s) => s.id === skinId)!;
         expect(got).toMatchObject({ rarity: 'uncommon', source: 'tradeup' });
-        expect(got.float).toBeCloseTo(0.3, 4);
+        expect(got.float).toBeCloseTo(0.292, 4);
 
         // The same skins again: gone.
         expect(

@@ -8,7 +8,7 @@ import {
   panelSx,
   panelBorderSx,
 } from '../../../module-sdk';
-import type { OwnedSkin, Rarity } from './useSkins';
+import { wearKey, type OwnedSkin, type Rarity } from './useSkins';
 import { tradeUpTarget } from './tradeUp';
 import { rarityColor } from './rarity';
 import { skinCardUrl } from './SkinParts';
@@ -20,6 +20,8 @@ interface Outcome {
   weaponName: string;
   name: string;
   rarity: Rarity;
+  /** The wear it comes out in (rarity is priced per wear); null for a skin priced as a whole. */
+  wear: string | null;
   imageUrl: string;
 }
 
@@ -57,7 +59,14 @@ export function TradeUpPanel({
       cancelled = true;
     };
   }, [rarity]);
-  const shown = rarity && outcomes?.rarity === rarity ? outcomes.skins : [];
+  // The result has the picked skins' average wear, so only the next grade's skins in that wear
+  // can come out; the server takes any of them when none is (skinService tradeUp).
+  const all = rarity && outcomes?.rarity === rarity ? outcomes.skins : [];
+  const wear = picked.length
+    ? wearKey(picked.reduce((sum, s) => sum + s.float, 0) / picked.length)
+    : null;
+  const inWear = all.filter((s) => !s.wear || s.wear === wear);
+  const shown = inWear.length ? inWear : all;
 
   const confirm = async () => {
     setBusy(true);
@@ -122,7 +131,7 @@ export function TradeUpPanel({
         >
           {shown.map((s) => (
             <Box
-              key={`${s.weapon}:${s.name}`}
+              key={`${s.weapon}:${s.name}:${s.wear ?? ''}`}
               title={`${s.weaponName} | ${s.name}`}
               sx={{
                 borderRadius: '10px',

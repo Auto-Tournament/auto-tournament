@@ -27,22 +27,34 @@ test(
       });
       expect(await signInAsPlayer(page, STEAM_ID, 'Trade Up Browser')).toBe(true);
 
-      const commons: Array<{ weapon: string; paintKit: number }> = [];
+      // Rarity is priced per wear: give them Field-Tested and keep the ones that come out common.
+      const candidates: Array<{ weapon: string; paintKit: number }> = [];
       for (const q of ['p250', 'nova', 'mp7', 'sawed', 'mag', 'xm1014', 'ump', 'tec']) {
         const skins = ((
           await (await request.get(`/api/skins/admin/catalog?q=${q}`, { headers })).json()
         ).skins ?? []) as Array<{ weapon: string; paintKit: number; rarity: string }>;
-        commons.push(...skins.filter((s) => s.rarity === 'common'));
-        if (commons.length >= 5) break;
+        candidates.push(...skins.filter((s) => s.rarity === 'common'));
+        if (candidates.length >= 12) break;
       }
-      test.skip(commons.length < 5, 'The skin catalogue could not be read');
-      for (const s of commons.slice(0, 5)) {
+      test.skip(candidates.length < 5, 'The skin catalogue could not be read');
+      const unwanted: number[] = [];
+      let commons = 0;
+      for (const s of candidates) {
+        if (commons === 5) break;
         const given = await request.post(`/api/skins/admin/players/${STEAM_ID}/skins`, {
           headers,
-          data: { weapon: s.weapon, paintKit: s.paintKit },
+          data: { weapon: s.weapon, paintKit: s.paintKit, float: 0.25 },
         });
         expect(given.ok()).toBe(true);
+        const id = (await given.json()).id as number;
+        const inventory = (await (await page.request.get('/api/skins/me')).json())
+          .inventory as Array<{ id: number; rarity: string }>;
+        if (inventory.find((m) => m.id === id)?.rarity === 'common') commons++;
+        else unwanted.push(id);
       }
+      test.skip(commons < 5, 'Too few skins are common Field-Tested right now');
+      // Only the five commons stay, so the picker's first five cards are a contract.
+      for (const id of unwanted) await request.delete(`/api/skins/admin/skins/${id}`, { headers });
 
       // Seen already: the "new skin" reveal would cover the page.
       const mine = (await (await page.request.get('/api/skins/me')).json()).inventory as Array<{
