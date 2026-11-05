@@ -357,7 +357,7 @@
       "discordBot": "Füg deinen eigenen Discord-Bot (sein Token) hinzu, damit die Website Spielern zu ihren Matches DMs schicken kann"
     },
     "tournaments": {
-      "title": "Tournaments",
+      "title": "Turnier",
       "empty": "Diese Website richtet ein Turnier nach dem anderen aus. Erstell es, und es erscheint hier, unter Entdecken und auf seiner Eventseite.",
       "status": {
         "setup": "Entwurf",
@@ -411,14 +411,14 @@
       },
       "ratings": {
         "label": "Ratings",
-        "hint": "ELO templates"
+        "hint": "Wie Ratings berechnet werden"
       },
       "settings": {
         "label": "Einstellungen",
         "hint": "Anmeldung, API-Schlüssel"
       },
       "adminTools": {
-        "label": "Admin tools",
+        "label": "System",
         "hint": "Match-Wiederherstellung und Logs"
       },
       "disputes": {
