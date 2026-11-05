@@ -21,7 +21,7 @@
       "footer": "De {{count}} meest recente logregels worden getoond",
       "footerAutoRefresh": "De {{count}} meest recente logregels worden getoond (automatisch vernieuwd)"
     },
-    "description": "Logs and maintenance for this site. Installed game modules add their own tools below."
+    "description": "Wedstrijdherstel en het applog van deze site."
   },
   "servers": {
     "allocation": {
@@ -147,21 +147,21 @@
       "default": "Commando uitgevoerd"
     },
     "hold": {
-      "title": "Hold instead of a walkover",
-      "description": "While held, the match is not loaded or started and nobody gets a walkover. When it goes ahead, the teams get the full time again.",
-      "reason": "Reason (shown to admins)",
-      "delay": "Delay {{minutes}} min",
-      "holdUntilReleased": "Hold until released",
-      "release": "Release now",
-      "restartCountdown": "Restart the countdown",
-      "heldUntil": "On hold until {{time}}",
-      "heldIndefinitely": "On hold until released",
-      "tournamentPaused": "The tournament is paused",
-      "heldDone": "Match on hold",
-      "delayedDone": "Match delayed {{minutes}} min",
-      "releasedDone": "Match released",
-      "restartedDone": "Countdown restarted: the teams have the full time again",
-      "failed": "Could not change the hold"
+      "title": "Aanhouden in plaats van een walkover",
+      "description": "Zolang hij wordt aangehouden, wordt de wedstrijd niet geladen of gestart en krijgt niemand een walkover. Gaat hij door, dan krijgen de teams weer de volle tijd.",
+      "reason": "Reden (zichtbaar voor admins)",
+      "delay": "{{minutes}} min uitstellen",
+      "holdUntilReleased": "Aanhouden tot vrijgegeven",
+      "release": "Nu vrijgeven",
+      "restartCountdown": "Aftellen opnieuw starten",
+      "heldUntil": "Aangehouden tot {{time}}",
+      "heldIndefinitely": "Aangehouden tot vrijgegeven",
+      "tournamentPaused": "Het toernooi is gepauzeerd",
+      "heldDone": "Wedstrijd aangehouden",
+      "delayedDone": "Wedstrijd {{minutes}} min uitgesteld",
+      "releasedDone": "Wedstrijd vrijgegeven",
+      "restartedDone": "Aftellen opnieuw gestart: de teams hebben weer de volle tijd",
+      "failed": "Kan het aanhouden niet wijzigen"
     }
   },
   "adminCalls": {
@@ -188,11 +188,11 @@
     "unmute": "Dempen opheffen",
     "minimize": "Minimaliseren",
     "show": "Tonen",
-    "openChat": "Open chat",
-    "claim": "Claim",
-    "release": "Release",
-    "claimedBy": "Claimed by {{name}}",
-    "claimedByYou": "Claimed by you",
-    "anAdmin": "an admin"
+    "openChat": "Chat openen",
+    "claim": "Oppakken",
+    "release": "Loslaten",
+    "claimedBy": "Opgepakt door {{name}}",
+    "claimedByYou": "Opgepakt door jou",
+    "anAdmin": "een admin"
   }
 }

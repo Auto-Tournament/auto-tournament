@@ -43,7 +43,7 @@
     "stage": {
       "static": "Statische analyse",
       "selftest": "Zelftest",
-      "live": "Live server"
+      "live": "Liveserver"
     },
     "state": {
       "queued": "In de wachtrij",
