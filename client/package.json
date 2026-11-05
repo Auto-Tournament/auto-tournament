@@ -1,6 +1,6 @@
 {
   "name": "@auto-tournament/client",
-  "version": "3.0.1",
+  "version": "3.0.2",
   "description": "Auto Tournament React client",
   "repository": {
     "type": "git",
