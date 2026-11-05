@@ -2,7 +2,7 @@
   "openapi": "3.0.0",
   "info": {
     "title": "Auto Tournament API",
-    "version": "2.4.15",
+    "version": "3.0.0",
     "description": "Run a tournament from a bot or a script: teams, players, brackets, matches and results. The dashboard is a client of this API and nothing more. Which game a tournament runs is a module's business, so the endpoints here are the same whether it is Counter-Strike 2 or a game whose captains report their own scores.",
     "contact": {
       "name": "API Support"
@@ -17251,11 +17251,11 @@
         "tags": [
           "Social"
         ],
-        "summary": "GET /api/social/notifications/settings",
-        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "summary": "How you get each kind of notification",
+        "description": "Per kind (party_invite, team_invite, friend_request, friend_accepted, skin, highlight, tournament, news, report): `off` (not sent), `bell`, or `sound` (the bell with a sound). What needs an answer (party_invite, team_invite, friend_request) is never off.",
         "responses": {
           "200": {
-            "description": "Success"
+            "description": "`settings`"
           }
         }
       },
@@ -17263,11 +17263,28 @@
         "tags": [
           "Social"
         ],
-        "summary": "PUT /api/social/notifications/settings",
-        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "summary": "Change how you get some kinds of notification",
+        "description": "Same-site JSON, `{ kind: 'off' | 'bell' | 'sound' }`; kinds left out stay. Returns them all.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string",
+                  "enum": [
+                    "off",
+                    "bell",
+                    "sound"
+                  ]
+                }
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
-            "description": "Success"
+            "description": "`settings`, saved"
           }
         }
       }
