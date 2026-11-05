@@ -21,7 +21,7 @@
         "inProgressOrCompleted": "No se puede crear un torneo desde una plantilla mientras haya un torneo en curso o finalizado. Elimina o restablece primero el torneo actual.",
         "alreadyExists": "Ya existe un torneo. Elimina o restablece el torneo actual antes de crear uno nuevo desde una plantilla."
       },
-      "button": "Create Tournament from Template"
+      "button": "Crear torneo desde plantilla"
     },
     "edit": {
       "title": "Editar plantilla",
@@ -35,12 +35,12 @@
         "customOption": "Personalizado",
         "selectedLabel": "Mapas seleccionados ({{count}}):",
         "vetoWarning": "Los formatos con veto (BO1/BO3/BO5) requieren exactamente 7 mapas. Seleccionados actualmente: {{count}}",
-        "chooseMaps": "Choose maps..."
+        "chooseMaps": "Elige mapas…"
       },
       "save": "Guardar"
     },
-    "emptyTitle": "No templates yet",
-    "emptyDescription": "Save a tournament's setup as a template from the Tournament page, then start new tournaments from it here."
+    "emptyTitle": "Aún no hay plantillas",
+    "emptyDescription": "Guarda la configuración de un torneo como plantilla desde la página del torneo y crea aquí torneos nuevos a partir de ella."
   },
   "saveTemplateModal": {
     "title": "Guardar como plantilla",
@@ -75,8 +75,9 @@
       "defaultProtected": "La plantilla predeterminada \"pure-win-loss\" no se puede eliminar."
     },
     "import": {
-      "success_one": "{{count}} plantilla ELO importada",
-      "success_other": "{{count}} plantillas ELO importadas"
+      "success_one": "Se importó {{count}} plantilla de rating",
+      "success_other": "Se importaron {{count}} plantillas de rating",
+      "success_many": "Se importaron {{count}} plantillas de rating"
     },
     "weights": {
       "noAdjustmentsPure": "Sin ajustes por estadísticas (victoria/derrota pura)"
@@ -89,8 +90,8 @@
         "none": "Ajuste por estadísticas por partido: ninguno (0; ELO solo por resultado)",
         "uncapped": "Ajuste por estadísticas por partido: sin límite (úsalo con cuidado)",
         "range": "Rango de ajuste por estadísticas por partido: {{min}} a {{max}} ELO",
-        "noMin": "no min",
-        "noMax": "no max"
+        "noMin": "sin mínimo",
+        "noMax": "sin máximo"
       },
       "tooltips": {
         "edit": "Editar plantilla",
@@ -98,8 +99,8 @@
       },
       "weightsTitle": "Pesos de estadísticas:",
       "limitsTitle": "Límites de ajuste:",
-      "minAdjustment": "Min: {{value}}",
-      "maxAdjustment": "Max: {{value}}"
+      "minAdjustment": "Mín.: {{value}}",
+      "maxAdjustment": "Máx.: {{value}}"
     },
     "importModal": {
       "title": "Importar plantillas de ELO desde JSON",
@@ -111,7 +112,8 @@
       "previewButton": "Vista previa",
       "importButton": "Importar plantillas",
       "validJsonBody_one": "Se encontró {{count}} plantilla.",
-      "validJsonBody_other": "Se encontraron {{count}} plantillas."
+      "validJsonBody_other": "Se encontraron {{count}} plantillas.",
+      "validJsonBody_many": "Se encontraron {{count}} plantillas."
     },
     "editor": {
       "titleEdit": "Editar plantilla de ELO",
@@ -154,47 +156,47 @@
     "stats": {
       "kills": {
         "label": "Kills",
-        "description": "Number of kills per match"
+        "description": "Número de kills por partido"
       },
       "deaths": {
-        "label": "Deaths",
-        "description": "Number of deaths per match (typically negative weight)"
+        "label": "Muertes",
+        "description": "Número de muertes por partido (suele tener peso negativo)"
       },
       "assists": {
-        "label": "Assists",
-        "description": "Number of assists per match"
+        "label": "Asistencias",
+        "description": "Número de asistencias por partido"
       },
       "flashAssists": {
-        "label": "Flash Assists",
-        "description": "Number of flash assists per match"
+        "label": "Asistencias con flash",
+        "description": "Número de asistencias con flash por partido"
       },
       "headshotKills": {
-        "label": "Headshot Kills",
-        "description": "Number of headshot kills per match"
+        "label": "Kills con headshot",
+        "description": "Número de kills con headshot por partido"
       },
       "damage": {
-        "label": "Damage",
-        "description": "Total damage dealt per match"
+        "label": "Daño",
+        "description": "Daño total infligido por partido"
       },
       "utilityDamage": {
-        "label": "Utility Damage",
-        "description": "Damage dealt with utility (grenades)"
+        "label": "Daño de utilidad",
+        "description": "Daño infligido con utilidad (granadas)"
       },
       "kast": {
         "label": "KAST %",
-        "description": "Percentage of rounds with Kill, Assist, Survive, or Trade"
+        "description": "Porcentaje de rondas con kill, asistencia, supervivencia o trade"
       },
       "mvps": {
         "label": "MVPs",
-        "description": "Number of MVP awards per match"
+        "description": "Número de premios MVP por partido"
       },
       "score": {
-        "label": "Score",
-        "description": "Match score (combines multiple factors)"
+        "label": "Puntuación",
+        "description": "Puntuación del partido (combina varios factores)"
       },
       "adr": {
         "label": "ADR",
-        "description": "Average Damage per Round"
+        "description": "Daño medio por ronda"
       }
     }
   }
