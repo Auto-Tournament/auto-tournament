@@ -229,7 +229,7 @@
       },
       "save": "Guardar",
       "title": "Matchmaking",
-      "short": "Find match, queue and accept, then play on a free server. CS2 only. Admin only while it is being built.",
+      "short": "Sempre ativado. Os jogadores procuram um jogo, entram na fila e aceitam, e depois jogam num servidor livre.",
       "saved": "Guardado",
       "saveFailed": "Não foi possível guardar as definições de matchmaking",
       "loadFailed": "Não foi possível carregar as definições de matchmaking"
@@ -904,12 +904,12 @@
     "open": "Abrir o bot de Discord",
     "voice": {
       "label": "Canais de voz das equipas",
-      "help": "While a match is on its server, each team gets a private voice channel. Players already in voice are moved there; the rest get a link by DM. The channels go a few minutes after the match.",
+      "help": "Enquanto um jogo está no seu servidor, os jogadores que já estão num canal de voz são movidos para o canal de voz da sua equipa; os restantes recebem uma ligação por DM.",
       "saved": "Definições dos canais de voz guardadas"
     },
     "teamChannels": {
       "label": "Canais das equipas",
-      "help": "While a tournament runs, each team gets a private text channel. Its players find the link on their team page.",
+      "help": "Enquanto um torneio decorre, cada equipa recebe um canal de texto e um canal de voz privados em «A tua equipa». Os seus jogadores encontram o canal de texto na página da equipa.",
       "link": "Canal da equipa no Discord"
     },
     "commands": {

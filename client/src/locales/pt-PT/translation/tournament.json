@@ -499,7 +499,7 @@
         },
         "basics": {
           "title": "Como se chama e em que dia?",
-          "lede": "Give the tournament a name players will recognise, and pick how ratings change."
+          "lede": "Escolhe o dia. A hora a que cada ronda começa define-se em Calendário."
         },
         "format": {
           "title": "Como se joga?",
@@ -722,7 +722,7 @@
         "opensLaterHelp": "Fechado até lá. A página faz a contagem decrescente.",
         "closesHelp": "Os alinhamentos podem mudar até o check-in fechar.",
         "checkInTitle": "Check-in",
-        "checkInHelp": "Opens before the tournament starts and closes when it starts. A team plays when all its starters have checked in.",
+        "checkInHelp": "Abre antes de o torneio começar e fecha quando começa. Um titular que não tenha feito check-in até lá é substituído por um suplente; os suplentes não fazem check-in.",
         "checkInChip_one": "{{count}} min antes",
         "checkInChip_other": "{{count}} min antes",
         "checkInOff": "Sem check-in",
