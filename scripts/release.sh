@@ -897,6 +897,9 @@ else
     if ! git diff --quiet client/package.json 2>/dev/null; then
         FILES_TO_COMMIT+=("client/package.json")
     fi
+    if ! git diff --quiet docs/openapi.json 2>/dev/null; then
+        FILES_TO_COMMIT+=("docs/openapi.json")
+    fi
     
     if [ ${#FILES_TO_COMMIT[@]} -gt 0 ]; then
         git add "${FILES_TO_COMMIT[@]}"
