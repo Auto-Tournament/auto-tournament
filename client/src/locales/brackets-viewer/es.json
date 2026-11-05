@@ -1,6 +1,6 @@
 {
   "origin-hint": {
-    "seed": "Seed {{position}}",
+    "seed": "Cabeza de serie {{position}}",
     "winner-bracket": "Perdedor de $t(abbreviations.winner-bracket) {{round}}.{{position}}",
     "winner-bracket-semi-final": "Perdedor de la semi $t(abbreviations.winner-bracket) {{position}}",
     "winner-bracket-final": "Perdedor de la final $t(abbreviations.winner-bracket)",
@@ -50,9 +50,9 @@
     "wins": { "text": "$t(abbreviations.win)", "tooltip": "Victorias" },
     "draws": { "text": "E", "tooltip": "Empates" },
     "losses": { "text": "$t(abbreviations.loss)", "tooltip": "Derrotas" },
-    "forfeits": { "text": "$t(abbreviations.forfeit)", "tooltip": "Forfeits" },
-    "scoreFor": { "text": "SF", "tooltip": "A favor" },
-    "scoreAgainst": { "text": "SA", "tooltip": "En contra" },
+    "forfeits": { "text": "$t(abbreviations.forfeit)", "tooltip": "Incomparecencias" },
+    "scoreFor": { "text": "PF", "tooltip": "A favor" },
+    "scoreAgainst": { "text": "PC", "tooltip": "En contra" },
     "scoreDifference": { "text": "+/-", "tooltip": "Diferencia" },
     "points": { "text": "Pts", "tooltip": "Puntos" }
   },
