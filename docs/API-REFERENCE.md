@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 762 of them, 478 behind auth —
+Every endpoint this API serves — 765 of them, 481 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -65,6 +65,16 @@ Each player's numbers summed over tournaments, matches or an import's event, for
 | Method | Path | Auth |
 | --- | --- | --- |
 | `GET` | `/api/integrations/player-stats` | integrator token or admin |
+
+### Match setting presets
+
+Presets of a tournament's match settings, saved for every admin's setup.
+
+| Method | Path | Auth |
+| --- | --- | --- |
+| `GET` | `/api/game/cs2/match-presets` | admin |
+| `PUT` | `/api/game/cs2/match-presets` | admin |
+| `DELETE` | `/api/game/cs2/match-presets/:id` | admin |
 
 ### Highlights backfill
 

@@ -1697,4 +1697,17 @@ export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
       ALTER TABLE cs2_tournament_reels ADD COLUMN IF NOT EXISTS master_dropped_at INTEGER;
     `,
   },
+  {
+    // Match setting presets an admin saves for every tournament's setup (matchPresets.ts).
+    id: '064-match-presets',
+    up: `
+      CREATE TABLE IF NOT EXISTS cs2_match_presets (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        settings TEXT NOT NULL,
+        created_at INTEGER NOT NULL,
+        updated_at INTEGER NOT NULL
+      );
+    `,
+  },
 ];
