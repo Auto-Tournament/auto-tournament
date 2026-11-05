@@ -21,7 +21,7 @@
       "footer": "Affichage des {{count}} entrées de log les plus récentes",
       "footerAutoRefresh": "Affichage des {{count}} entrées de log les plus récentes (actualisation automatique)"
     },
-    "description": "Logs and maintenance for this site. Installed game modules add their own tools below."
+    "description": "La récupération des matchs et le journal de l’application de ce site."
   },
   "servers": {
     "allocation": {
@@ -138,30 +138,31 @@
       "endWarmup": "Warmup terminé",
       "startMatch": "Match lancé",
       "restoreBackup": "Sauvegarde restaurée au round {{round}}",
-      "addTime_one": "{{count}} seconde ajoutée au chrono du round",
-      "addTime_other": "{{count}} secondes ajoutées au chrono du round",
+      "addTime_one": "{{count}} seconde ajoutée au chrono de la manche",
+      "addTime_other": "{{count}} secondes ajoutées au chrono de la manche",
       "broadcast": "Message envoyé au serveur",
       "restartMatch": "Match relancé (terminé et rechargé)",
       "reallocateServer": "Match déplacé vers un autre serveur",
       "forceCancel": "Match annulé",
-      "default": "Commande exécutée"
+      "default": "Commande exécutée",
+      "addTime_many": "{{count}} secondes ajoutées au chrono de la manche"
     },
     "hold": {
-      "title": "Hold instead of a walkover",
-      "description": "While held, the match is not loaded or started and nobody gets a walkover. When it goes ahead, the teams get the full time again.",
-      "reason": "Reason (shown to admins)",
-      "delay": "Delay {{minutes}} min",
-      "holdUntilReleased": "Hold until released",
-      "release": "Release now",
-      "restartCountdown": "Restart the countdown",
-      "heldUntil": "On hold until {{time}}",
-      "heldIndefinitely": "On hold until released",
-      "tournamentPaused": "The tournament is paused",
-      "heldDone": "Match on hold",
-      "delayedDone": "Match delayed {{minutes}} min",
-      "releasedDone": "Match released",
-      "restartedDone": "Countdown restarted: the teams have the full time again",
-      "failed": "Could not change the hold"
+      "title": "Suspendre plutôt que donner un forfait",
+      "description": "Tant qu’il est suspendu, le match n’est ni chargé ni lancé et personne ne gagne par forfait. Quand il reprend, les équipes ont de nouveau tout leur temps.",
+      "reason": "Motif (visible par les admins)",
+      "delay": "Retarder de {{minutes}} min",
+      "holdUntilReleased": "Suspendre jusqu’à nouvel ordre",
+      "release": "Relancer maintenant",
+      "restartCountdown": "Relancer le compte à rebours",
+      "heldUntil": "Suspendu jusqu’à {{time}}",
+      "heldIndefinitely": "Suspendu jusqu’à nouvel ordre",
+      "tournamentPaused": "Le tournoi est en pause",
+      "heldDone": "Match suspendu",
+      "delayedDone": "Match retardé de {{minutes}} min",
+      "releasedDone": "Match relancé",
+      "restartedDone": "Compte à rebours relancé : les équipes ont de nouveau tout leur temps",
+      "failed": "Impossible de modifier la suspension"
     }
   },
   "adminCalls": {
@@ -188,11 +189,11 @@
     "unmute": "Rétablir le son",
     "minimize": "Réduire",
     "show": "Afficher",
-    "openChat": "Open chat",
-    "claim": "Claim",
-    "release": "Release",
-    "claimedBy": "Claimed by {{name}}",
-    "claimedByYou": "Claimed by you",
-    "anAdmin": "an admin"
+    "openChat": "Ouvrir le chat",
+    "claim": "Prendre en charge",
+    "release": "Libérer",
+    "claimedBy": "Pris en charge par {{name}}",
+    "claimedByYou": "Pris en charge par vous",
+    "anAdmin": "un admin"
   }
 }
