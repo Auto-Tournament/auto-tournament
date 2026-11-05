@@ -8,16 +8,16 @@
     },
     "testTeams": {
       "title": "Team di test",
-      "description": "Crea team con dati giocatore casuali per testare tabelloni e match del torneo.",
-      "success": "Creati con successo {{count}} team di test!",
+      "description": "Crea squadre con dati casuali dei giocatori per testare tabelloni e partite.",
+      "success": "Create {{count}} squadre di test!",
       "errors": {
-        "create": "Impossibile creare i team di test",
-        "partial": "Creati {{created}} team, ma {{failed}} non sono riusciti. Controlla la console per i dettagli."
+        "create": "Impossibile creare le squadre di test",
+        "partial": "Create {{created}} squadre, ma {{failed}} non sono riuscite. Controlla la console per i dettagli."
       },
-      "customLabel": "Numero di team personalizzato",
+      "customLabel": "Numero di squadre personalizzato",
       "buttons": {
-        "createFixed": "Crea {{count}} team",
-        "createCustom": "Crea team"
+        "createFixed": "Crea {{count}} squadre",
+        "createCustom": "Crea squadre"
       }
     },
     "testPlayers": {
@@ -37,7 +37,7 @@
     },
     "testServers": {
       "title": "Server di test",
-      "description": "Crea configurazioni server per testare gestione match e comandi RCON.",
+      "description": "Crea server di test su cui provare la gestione delle partite.",
       "success": "Creati con successo {{count}} server di test!",
       "errors": {
         "create": "Impossibile creare i server di test",
@@ -47,7 +47,8 @@
       "buttons": {
         "createCustom": "Crea server",
         "createFixed_one": "Crea {{count}} server",
-        "createFixed_other": "Crea {{count}} server"
+        "createFixed_other": "Crea {{count}} server",
+        "createFixed_many": "Crea {{count}} server"
       }
     },
     "dangerZone": {
@@ -55,7 +56,7 @@
     },
     "deleteTestData": {
       "title": "Elimina dati di test",
-      "description": "Elimina tutti i dati di test (team e server con prefisso 'test-'). Questa azione non può essere annullata.",
+      "description": "Elimina tutti i dati di test (squadre e server con prefisso 'test-'). Non si può annullare.",
       "button": "Elimina tutti i dati di test",
       "confirmPrompt": "Sei sicuro di voler eliminare TUTTI i dati di test?",
       "success": "Tutti i dati di test sono stati eliminati!",
@@ -69,16 +70,16 @@
       "error": "Impossibile svuotare la tabella {{table}}",
       "core": {
         "title": "Tabelle principali",
-        "teams": "Svuota team",
+        "teams": "Svuota squadre",
         "servers": "Svuota server",
         "tournament": "Svuota torneo",
-        "matches": "Svuota match"
+        "matches": "Svuota partite"
       },
       "players": {
         "title": "Giocatori e tornei shuffle",
         "players": "Svuota giocatori",
         "ratingHistory": "Svuota cronologia rating",
-        "matchStats": "Svuota statistiche match",
+        "matchStats": "Svuota statistiche delle partite",
         "shufflePlayers": "Svuota giocatori shuffle"
       },
       "maps": {
@@ -89,8 +90,8 @@
         "eloTemplates": "Svuota modelli ELO"
       },
       "matchEvents": {
-        "title": "Eventi match e risultati",
-        "events": "Svuota eventi match",
+        "title": "Eventi e risultati delle partite",
+        "events": "Svuota eventi delle partite",
         "mapResults": "Svuota risultati mappe"
       },
       "settings": {
@@ -100,10 +101,10 @@
     },
     "simulation": {
       "title": "Stato simulazione",
-      "description": "Cancella tutti i match e le statistiche storiche per poter cliccare su \"Avvia torneo\" in modalità simulazione su un tabellone pulito, mantenendo server, team, mappe e l’attuale configurazione del torneo.",
+      "description": "Cancella tutte le partite e le statistiche storiche per poter cliccare \"Avvia torneo\" in modalità simulazione su un tabellone pulito, mantenendo server, squadre, mappe e la configurazione attuale del torneo.",
       "button": "Reimposta stato simulazione (mantieni config)",
       "reset": {
-        "success": "Stato simulazione reimpostato. Match e statistiche cancellati; server, team e configurazione torneo mantenuti.",
+        "success": "Stato della simulazione reimpostato. Partite e statistiche cancellate; server, squadre e configurazione del torneo mantenuti.",
         "error": "Impossibile reimpostare lo stato simulazione"
       }
     },
@@ -114,8 +115,8 @@
       "permanentlyDeletes": "Elimina definitivamente:",
       "items": {
         "tournaments": "Tutti i tornei e tabelloni",
-        "matches": "Tutti i match e eventi",
-        "teams": "Tutti i team e giocatori",
+        "matches": "Tutte le partite e gli eventi",
+        "teams": "Tutte le squadre e i giocatori",
         "servers": "Tutte le configurazioni server"
       },
       "button": "Cancella l’intero database",
@@ -128,8 +129,8 @@
         "permanentlyDelete": "eliminerà definitivamente",
         "items": {
           "tournaments": "Tutti i dati del torneo e tabelloni",
-          "matches": "Tutta la cronologia match e eventi",
-          "teams": "Tutti i team e configurazioni giocatori",
+          "matches": "Tutto lo storico delle partite e gli eventi",
+          "teams": "Tutte le squadre e le configurazioni dei giocatori",
           "servers": "Tutte le configurazioni server"
         },
         "cannotUndo": "Questa azione non può essere annullata!",
