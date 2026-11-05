@@ -46,7 +46,7 @@
       "manual": "Manuell",
       "simulation": "Simulation",
       "winner": "SIEGER",
-      "mapN": "Map {{n}}"
+      "mapN": "Karte {{n}}"
     },
     "statusLabel": {
       "walkover": "KAMPFLOS",
@@ -60,8 +60,8 @@
       "live": "LIVE",
       "completed": "BEENDET",
       "cancelled": "ABGEBROCHEN",
-      "needsDecision": "NEEDS ADMIN DECISION",
-      "waitingForPairing": "WAITING FOR PAIRING"
+      "needsDecision": "ADMIN MUSS ENTSCHEIDEN",
+      "waitingForPairing": "WARTET AUF PAARUNG"
     },
     "statusGuide": {
       "title": "Leitfaden zum Match-Status",
@@ -74,57 +74,57 @@
     },
     "latestEvent": "Zuletzt: {{event}}",
     "matchLabel": {
-      "upper": "UB R{{round}} M{{match}}",
+      "upper": "WB R{{round}} M{{match}}",
       "lower": "LB R{{round}} M{{match}}",
-      "grandFinal": "Grand Final",
-      "grandFinalReset": "Grand Final Reset",
-      "group": "Group {{group}} · Round {{round}}",
-      "playoffs": "Playoffs · Round {{round}}"
+      "grandFinal": "Großes Finale",
+      "grandFinalReset": "Großes Finale (Reset)",
+      "group": "Gruppe {{group}} · Runde {{round}}",
+      "playoffs": "Playoffs · Runde {{round}}"
     },
     "table": {
-      "filterLabel": "Show",
-      "search": "Find a team or player",
-      "tbd": "TBD",
-      "manage": "Manage match",
-      "empty": "No matches here.",
+      "filterLabel": "Anzeigen",
+      "search": "Team oder Spieler suchen",
+      "tbd": "Offen",
+      "manage": "Match verwalten",
+      "empty": "Hier gibt es keine Matches.",
       "filter": {
-        "attention_one": "Needs attention · {{count}}",
-        "attention_other": "Needs attention · {{count}}",
+        "attention_one": "Braucht Aufmerksamkeit · {{count}}",
+        "attention_other": "Braucht Aufmerksamkeit · {{count}}",
         "live_one": "Live · {{count}}",
         "live_other": "Live · {{count}}",
         "veto_one": "Veto · {{count}}",
         "veto_other": "Veto · {{count}}",
-        "waiting_one": "Waiting · {{count}}",
-        "waiting_other": "Waiting · {{count}}",
-        "finished_one": "Finished · {{count}}",
-        "finished_other": "Finished · {{count}}",
-        "all_one": "All · {{count}}",
-        "all_other": "All · {{count}}"
+        "waiting_one": "Wartend · {{count}}",
+        "waiting_other": "Wartend · {{count}}",
+        "finished_one": "Beendet · {{count}}",
+        "finished_other": "Beendet · {{count}}",
+        "all_one": "Alle · {{count}}",
+        "all_other": "Alle · {{count}}"
       },
       "columns": {
         "match": "Match",
         "teams": "Teams",
         "phase": "Phase",
         "server": "Server",
-        "attention": "Needs attention",
-        "open": "Open"
+        "attention": "Braucht Aufmerksamkeit",
+        "open": "Öffnen"
       },
       "attention": {
-        "calls_one": "Admin call",
-        "calls_other": "{{count}} admin calls",
-        "decide": "Decide the result"
+        "calls_one": "Admin-Ruf",
+        "calls_other": "{{count}} Admin-Rufe",
+        "decide": "Ergebnis entscheiden"
       },
       "phase": {
-        "live": "Live · map {{map}}",
-        "finished": "Finished",
-        "finishedScore": "Finished · {{score}}",
-        "veto": "Map veto",
-        "waitingTeams": "Waiting for its teams",
-        "queued": "Waiting for a server · #{{position}} in queue",
-        "waiting": "Waiting"
+        "live": "Live · Karte {{map}}",
+        "finished": "Beendet",
+        "finishedScore": "Beendet · {{score}}",
+        "veto": "Karten-Veto",
+        "waitingTeams": "Wartet auf die Teams",
+        "queued": "Wartet auf einen Server · Platz {{position}} in der Warteschlange",
+        "waiting": "Wartend"
       },
       "server": {
-        "freed": "Freed"
+        "freed": "Freigegeben"
       }
     }
   },
@@ -134,8 +134,8 @@
       "confirmTitle": "Dieses Match löschen?",
       "confirmBody": "Möchtest du das Match \"{{slug}}\" wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
       "button": "Match löschen",
-      "success": "Match deleted successfully",
-      "failed": "Failed to delete match"
+      "success": "Match gelöscht",
+      "failed": "Das Match konnte nicht gelöscht werden"
     },
     "roster": {
       "title": "Spielerkader",
@@ -147,62 +147,62 @@
       "bot": "BOT"
     },
     "decision": {
-      "body": "Every map has been played but the series is level on maps, rounds and damage. Choose the winner to advance the bracket.",
-      "setWinner": "{{team}} wins",
-      "confirmTitle": "Set series winner",
-      "confirmBody": "Finish this series with {{team}} as the winner? The bracket advances and this cannot be undone here.",
-      "confirm": "Set winner",
-      "success": "Winner set",
-      "failed": "Failed to set the winner"
+      "body": "Alle Karten sind gespielt, aber die Serie steht bei Karten, Runden und Schaden gleich. Wähl den Sieger, damit der Turnierbaum weitergeht.",
+      "setWinner": "{{team}} gewinnt",
+      "confirmTitle": "Sieger der Serie festlegen",
+      "confirmBody": "Diese Serie mit {{team}} als Sieger beenden? Der Turnierbaum geht weiter, und das lässt sich hier nicht rückgängig machen.",
+      "confirm": "Sieger festlegen",
+      "success": "Sieger festgelegt",
+      "failed": "Der Sieger konnte nicht festgelegt werden"
     },
-    "tiebreakHint": "Scores are level: {{team}} won the map, decided by tiebreak.",
+    "tiebreakHint": "Gleichstand: {{team}} hat die Karte per Tiebreak gewonnen.",
     "config": {
-      "loadFailed": "Failed to load match config",
-      "view": "View Match Config JSON",
-      "title": "Match Config JSON",
-      "loading": "Loading match config...",
-      "empty": "No config available for this match."
+      "loadFailed": "Die Match-Konfiguration konnte nicht geladen werden",
+      "view": "Match-Konfiguration (JSON) ansehen",
+      "title": "Match-Konfiguration (JSON)",
+      "loading": "Match-Konfiguration wird geladen …",
+      "empty": "Für dieses Match gibt es keine Konfiguration."
     },
     "tiebreak": {
-      "regulationOnly": "Overtime is disabled for this match (regulation only), so tied scores are resolved by total team damage.",
-      "segmentsExhausted": "Overtime is configured with a maximum number of segments. If the score is still tied, the winner is decided by total team damage.",
-      "overtimeDisabled": "Overtime is disabled for this match, so tied scores are resolved by total team damage.",
-      "tiedByDamage": "The final score was tied, so according to the match settings the winner was chosen by total team damage."
+      "regulationOnly": "Für dieses Match ist die Verlängerung aus (nur reguläre Spielzeit), daher entscheidet bei Gleichstand der Gesamtschaden der Teams.",
+      "segmentsExhausted": "Die Verlängerung hat eine Höchstzahl an Abschnitten. Steht es danach noch gleich, entscheidet der Gesamtschaden der Teams.",
+      "overtimeDisabled": "Für dieses Match ist die Verlängerung aus, daher entscheidet bei Gleichstand der Gesamtschaden der Teams.",
+      "tiedByDamage": "Der Endstand war unentschieden, daher wurde der Sieger laut Match-Einstellungen nach Gesamtschaden der Teams bestimmt."
     },
     "team1": "Team 1",
     "team2": "Team 2",
-    "matchTime": "Match Time:",
+    "matchTime": "Match-Zeit:",
     "server": "Server:",
-    "queuePosition": "Queue Position:",
-    "totalDamage": "Total Damage: {{team1}} - {{team2}}",
-    "mapOfTotal": "Map {{index}} of {{total}}: {{map}}",
-    "mapIndex": "Map {{index}}: {{map}}",
-    "round": "Round {{round}}",
+    "queuePosition": "Platz in der Warteschlange:",
+    "totalDamage": "Gesamtschaden: {{team1}} - {{team2}}",
+    "mapOfTotal": "Karte {{index}} von {{total}}: {{map}}",
+    "mapIndex": "Karte {{index}}: {{map}}",
+    "round": "Runde {{round}}",
     "shuffle": {
-      "averageElo": "Team ELO (avg): {{team1}} vs {{team2}}",
-      "balancerHint": "Shuffle teams are generated by an OpenSkill-based balancer that spreads high and low-rated players across both sides to keep these averages close."
+      "averageElo": "Team-ELO (Schnitt): {{team1}} vs. {{team2}}",
+      "balancerHint": "Shuffle-Teams werden von einem OpenSkill-basierten Balancer gebildet, der stärkere und schwächere Spieler auf beide Seiten verteilt, damit diese Schnitte nah beieinander bleiben."
     },
-    "playerLeaderboards": "Player Leaderboards",
-    "noPlayerData": "No player data available",
-    "currentMap": "Current Map",
-    "maps": "Maps",
-    "mapsNotPicked": "The maps are not picked yet.",
-    "mapsViaVeto": "To be determined via veto",
-    "matchInformation": "Match Information",
-    "created": "Created:",
-    "started": "Started:",
-    "completed": "Completed:",
-    "adminControls": "Admin Controls",
-    "slug": "Match slug:",
-    "openChat": "Match chat"
+    "playerLeaderboards": "Spieler-Ranglisten",
+    "noPlayerData": "Keine Spielerdaten verfügbar",
+    "currentMap": "Aktuelle Karte",
+    "maps": "Karten",
+    "mapsNotPicked": "Die Karten sind noch nicht gewählt.",
+    "mapsViaVeto": "Wird per Veto bestimmt",
+    "matchInformation": "Match-Informationen",
+    "created": "Erstellt:",
+    "started": "Gestartet:",
+    "completed": "Beendet:",
+    "adminControls": "Admin-Steuerung",
+    "slug": "Match-Slug:",
+    "openChat": "Match-Chat"
   },
   "bulkShuffleMatchesModal": {
     "title": "Massen-Shuffle-Matches erstellen",
-    "description": "Konfigurieren Sie ein Einzelkarten-Shuffle-Match (Map + Rundenlimit) und definieren Sie dann so viele Kopf-an-Kopf-Matches, wie Sie möchten, indem Sie genaue Spieleraufstellungen für jede Seite auswählen. Spiele werden im Rahmen des aktuellen Shuffle-Turniers erstellt und zu Beginn des Turniers den Servern zugewiesen.",
+    "description": "Richte ein Shuffle-Match auf einer Karte ein (Karte + Rundenlimit) und leg dann so viele Duelle an, wie du willst, mit genauen Aufstellungen für jede Seite. Die Matches gehören zum aktuellen Shuffle-Turnier und bekommen ihre Server, wenn du das Turnier startest.",
     "mapSelect": {
       "label": "Karte",
       "noMaps": "Keine Karten für dieses Turnier konfiguriert",
-      "helper": "Alle Übereinstimmungen in diesem Stapel verwenden diese Karte."
+      "helper": "Alle Matches in diesem Stapel nutzen diese Karte."
     },
     "maxRounds": {
       "label": "Max. Runden pro Karte",
@@ -210,11 +210,11 @@
       "helperDefault": "Maximale Anzahl von Runden pro Karte (Standard: 24, max: 30)."
     },
     "matchesSection": {
-      "title": "Übereinstimmungen ({{count}})",
+      "title": "Matches ({{count}})",
       "addMatch": "Spiel hinzufügen"
     },
     "players": {
-      "empty": "Für dieses Shuffle-Turnier sind noch keine Spieler registriert. Registrieren Sie zuerst Spieler, dann können Sie manuelle Spiele erstellen."
+      "empty": "Für dieses Shuffle-Turnier sind noch keine Spieler angemeldet. Melde zuerst Spieler an, dann kannst du manuelle Matches erstellen."
     },
     "matchRow": {
       "title": "Match Nr. {{index}}",
@@ -227,23 +227,23 @@
       "mapOverrideHelperDefault": "Leer lassen, um die Standardkarte oben zu verwenden.",
       "maxRoundsOverrideLabel": "Max. Runden (optionale Überschreibung)",
       "maxRoundsOverrideHelperOwn": "Überschreibt die max. Standardrunden für dieses Spiel (derzeit {{value}}).",
-      "maxRoundsOverrideHelperDefault": "Lassen Sie das Feld leer, um die oben angegebenen maximalen Standardrunden zu verwenden."
+      "maxRoundsOverrideHelperDefault": "Leer lassen, um die Standard-Rundenzahl von oben zu nutzen."
     },
     "errors": {
       "loadPlayers": "Registrierte Spieler konnten nicht geladen werden",
-      "noMatches": "Fügen Sie mindestens eine Übereinstimmung hinzu, um sie zu erstellen.",
+      "noMatches": "Füg mindestens ein Match hinzu.",
       "bothTeamsRequired": "Match {{index}}: Beide Teams müssen mindestens einen Spieler haben.",
       "conflictingPlayers": "Match {{index}}: Der gleiche Spieler kann nicht in beiden Teams sein. Konflikt-ID (s): {{ids}}",
-      "mapRequired": "Übereinstimmung mit {{index}}: Karte ist erforderlich (legen Sie oben eine Standardkarte fest oder wählen Sie eine Karte für diese Übereinstimmung aus).",
+      "mapRequired": "Match {{index}}: Eine Karte fehlt (leg oben eine Standardkarte fest oder wähl eine Karte für dieses Match).",
       "rowMaxRoundsRange": "Match {{index}}: max. Runden müssen zwischen 1 und 30 liegen, wenn sie pro Match überschrieben werden.",
       "globalMaxRoundsRange": "Max. Runden müssen zwischen 1 und 30 liegen.",
       "createFailed": "Manuelle Zufallsübereinstimmungen konnten nicht erstellt werden"
     },
     "success": {
-      "created": "Manuelle Zufallsübereinstimmungen erstellt. Sie werden zugeteilt, wenn das Turnier beginnt."
+      "created": "Manuelle Shuffle-Matches erstellt. Sie bekommen ihre Server, wenn das Turnier beginnt."
     },
     "createMatchesButton": {
-      "default": "Übereinstimmungen erstellen",
+      "default": "Matches erstellen",
       "creating": "Wird erstellt..."
     }
   },
@@ -259,7 +259,7 @@
     "playersHeader": "Spieler ({{count}})",
     "selectPlayers": "Spieler auswählen",
     "noPlayersInfo": "Noch keine Spieler hinzugefügt. Füge mindestens einen Spieler hinzu.",
-    "addPlayersHelper_steam": "Fügen Sie Spieler hinzu, indem Sie die Steam-URL einfügen oder aus vorhandenen Spielern auswählen",
+    "addPlayersHelper_steam": "Füg Spieler hinzu, indem du eine Steam-URL einfügst oder vorhandene Spieler auswählst",
     "steamInputLabel": "Steam-ID / Vanity-URL",
     "steamInputPlaceholder": "gaben oder steamcommunity.com/id/gaben",
     "resolveSteam": "Steam-ID auflösen",
@@ -270,9 +270,9 @@
     "eloPlaceholder": "1500",
     "eloHelper": "Standard: 1500",
     "errors": {
-      "steamLookupEmpty": "Bitte geben Sie eine Steam-ID, eine Vanity-URL oder eine Profil-URL ein",
+      "steamLookupEmpty": "Gib eine Steam-ID, Vanity-URL oder Profil-URL ein",
       "steamApiNotConfigured": "Dampf-API nicht konfiguriert - Steam ID64 manuell eingeben",
-      "steamResolveFailed": "Steam-ID konnte nicht aufgelöst werden - bitte geben Sie Steam-ID64 manuell ein",
+      "steamResolveFailed": "Die Steam-ID konnte nicht aufgelöst werden. Gib die Steam-ID64 von Hand ein",
       "steamAndNameRequired": "Sowohl Steam-ID als auch Spielername sind erforderlich",
       "steamDuplicate": "Diese Steam-ID ist bereits im Team",
       "teamNameRequired": "Teamname ist erforderlich",
@@ -282,8 +282,8 @@
       "discordIdInvalid": "Die Discord-ID muss aus 17–20 Ziffern bestehen (die numerische Benutzer-ID, kein Benutzername)",
       "discordIdInvalidPlayers": "Ungültige Discord-ID für: {{names}}. Sie muss aus 17–20 Ziffern bestehen oder leer bleiben.",
       "discordIdSaveFailed": "Das Team wurde gespeichert, aber die Discord-ID konnte nicht gespeichert werden für: {{names}}. {{message}}",
-      "nameRequired": "Enter the player's name",
-      "addPlayerFailed": "Could not add the player"
+      "nameRequired": "Gib den Namen des Spielers ein",
+      "addPlayerFailed": "Der Spieler konnte nicht hinzugefügt werden"
     },
     "success": {
       "playerAdded": "Spieler zum Team hinzugefügt",
@@ -301,20 +301,20 @@
     },
     "confirmDelete": {
       "title": "Teammitglied löschen",
-      "message": "Sind Sie sicher, dass Sie \"{{name}}\" löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden."
+      "message": "Willst du „{{name}}“ wirklich löschen? Das lässt sich nicht rückgängig machen."
     },
     "replacePlayerAria": "Spieler {{name}} ersetzen",
     "replacePlayerTooltip": "Diesen Spieler ersetzen",
-    "addPlayersHelper": "Add a new player below, or select from existing players",
-    "accountLabel": "{{account}} account (optional)",
-    "accountHelper": "For {{games}}. When they sign in with {{account}}, they become this player."
+    "addPlayersHelper": "Füge unten einen neuen Spieler hinzu oder wähle aus vorhandenen Spielern",
+    "accountLabel": "{{account}}-Konto (optional)",
+    "accountHelper": "Für {{games}}. Meldet er sich mit {{account}} an, wird er zu diesem Spieler."
   },
   "playerModal": {
     "titleCreate": "Spieler erstellen",
     "titleEdit": "Spieler bearbeiten",
     "steamLabel": "Steam-ID oder Profil-URL",
     "steamHelperEditing": "Dampf-ID kann nicht geändert werden",
-    "steamHelperNew": "Geben Sie die Steam-ID64, die Vanity-URL oder die Profil-URL ein. Klicken Sie auf „Auflösen“, um den Namen und den Avatar automatisch auszufüllen.",
+    "steamHelperNew": "Für {{games}}. Gib eine Steam-ID64, Vanity-URL oder Profil-URL ein; „Auflösen“ füllt Name und Avatar aus.",
     "resolveSteam": "Steam-ID auflösen",
     "resolving": "Wird gelöst",
     "playerNameLabel": "Spielername",
@@ -330,9 +330,9 @@
     "errors": {
       "steamRequired": "Dampf-ID ist erforderlich",
       "nameRequired": "Spielername ist erforderlich",
-      "steamLookupEmpty": "Bitte geben Sie eine Steam-ID, eine Vanity-URL oder eine Profil-URL ein",
+      "steamLookupEmpty": "Gib eine Steam-ID, Vanity-URL oder Profil-URL ein",
       "steamApiNotConfigured": "Dampf-API nicht konfiguriert - Steam ID64 manuell eingeben",
-      "steamResolveFailed": "Steam-ID konnte nicht aufgelöst werden - bitte geben Sie Steam-ID64 manuell ein",
+      "steamResolveFailed": "Die Steam-ID konnte nicht aufgelöst werden. Gib die Steam-ID64 von Hand ein",
       "saveFailed": "Spieler konnte nicht gespeichert werden"
     },
     "success": {
@@ -348,32 +348,32 @@
     },
     "confirmDelete": {
       "title": "Spieler löschen",
-      "message": "Sind Sie sicher, dass Sie den Player \"{{name}}\" löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden."
+      "message": "Willst du den Spieler „{{name}}“ wirklich löschen? Das lässt sich nicht rückgängig machen."
     },
     "confirmEloUpdate": {
       "title": "Spieler aktualisieren",
-      "message": "Sind Sie sicher, dass Sie die ELO dieses Spielers von {{from}} auf {{to}} aktualisieren möchten? Dadurch werden ihre Statistiken und ihr Bewertungsverlauf zurückgesetzt. Diese Aktion kann nicht rückgängig gemacht werden."
+      "message": "Willst du die ELO dieses Spielers wirklich von {{from}} auf {{to}} ändern? Das setzt seine Statistiken und seinen Rating-Verlauf zurück und lässt sich nicht rückgängig machen."
     },
     "discordIdHelper": "Optional. 17–20 Ziffern. Damit Organisatoren diesen Spieler über Discord erreichen können. Wird nie öffentlich angezeigt.",
-    "accountLabel": "{{account}} account (optional)",
-    "accountHelper": "For {{games}}. The account id; when they sign in with {{account}}, they become this player.",
-    "accountVerified": "Linked: they signed in with {{account}}. They change it themselves."
+    "accountLabel": "{{account}}-Konto (optional)",
+    "accountHelper": "Für {{games}}. Die Konto-ID; meldet er sich mit {{account}} an, wird er zu diesem Spieler.",
+    "accountVerified": "Verknüpft: Er hat sich mit {{account}} angemeldet. Ändern kann er es selbst."
   },
   "teamImportModal": {
     "title": "Teams aus json importieren",
     "info": {
-      "title": "Fügen Sie json mit Teamdaten unten ein.",
+      "title": "Füg unten JSON mit Teamdaten ein.",
       "format": "Erwartetes Format: Array von Teams mit name, tag (optional) und players (name + steamId, dazu optional discordId als String in Anführungszeichen).",
-      "link": "Sehen Sie sich die Dokumentation mit Beispielen an"
+      "link": "Dokumentation mit Beispielen ansehen"
     },
     "jsonLabel": "JSON-Daten",
     "errors": {
       "mustBeArray": "Json muss ein Array von Teams sein",
       "emptyArray": "Array darf nicht leer sein",
       "parseWithMessage": "Json Analysefehler: {{message}}",
-      "parseGeneric": "Ungültiges JSON-Format. Bitte überprüfen Sie Ihre Syntax.",
+      "parseGeneric": "Ungültiges JSON. Prüf die Syntax.",
       "importFailed": "Teams konnten nicht importiert werden",
-      "noJson": "Bitte Daten eingeben"
+      "noJson": "Gib JSON-Daten ein"
     },
     "preview": {
       "summary": "✓ Gültiges JSON! {{teams}} mit insgesamt {{players}} gefunden.",
@@ -401,7 +401,7 @@
     "title": "Spieler importieren",
     "info": {
       "description": "Spieler aus dem json oder CSV-Format importieren. Erforderliche Felder: steamId, Name. Optional: initialELO (standardmäßig 1500), avatarUrl.",
-      "link": "Sehen Sie sich die Dokumentation mit Beispielen an"
+      "link": "Dokumentation mit Beispielen ansehen"
     },
     "placeholders": {
       "jsonCsv": "JSON-Format:\n[\n  {\n    \"steamId\": \"76561198012345678\",\n    \"name\": \"Player One\",\n    \"initialELO\": 1500,\n    \"avatarUrl\": \"https://...\"\n  }\n]\n\nCSV-Format:\nsteamId,name,initialELO,avatarUrl\n76561198012345678,Player One,1500,https://..."
@@ -451,7 +451,7 @@
     },
     "addPlayersButton_one": "{{count}} Spieler hinzufügen",
     "addPlayersButton_other": "{{count}} Spieler hinzufügen",
-    "searchPlaceholder": "Search players by name..."
+    "searchPlaceholder": "Spieler nach Name suchen …"
   },
   "soundSettingsModal": {
     "title": "Sound-Einstellungen",
@@ -465,26 +465,26 @@
     "footer": "Sound-Benachrichtigungen werden abgespielt, wenn dein Match bereit ist oder wenn wichtige Ereignisse auftreten."
   },
   "addBackupPlayer": {
-    "title": "Add Player",
-    "loadFailed": "Failed to load player list",
-    "added": "{{name}} added to {{target}}",
-    "addFailed": "Failed to add player",
-    "addToMatchFailed": "Failed to add player to match",
-    "searchLabel": "Search for player",
-    "searchPlaceholder": "Type player name...",
-    "available": "{{count}} available players (not already in match)",
-    "noneAvailable": "No players available",
-    "displayNameLabel": "Display name (optional)",
-    "displayNamePlaceholder": "Defaults to the player's current name",
-    "side": "Side",
-    "spectator": "Spectator",
-    "selected": "Selected:",
-    "fromTeam": "From team: {{team}}",
-    "steamId": "Steam ID: {{id}}",
-    "adding": "Adding Player...",
-    "add": "Add Player to Match",
-    "underlyingCommand": "Underlying command:",
-    "important": "Important:",
+    "title": "Spieler hinzufügen",
+    "loadFailed": "Die Spielerliste konnte nicht geladen werden",
+    "added": "{{name}} zu {{target}} hinzugefügt",
+    "addFailed": "Der Spieler konnte nicht hinzugefügt werden",
+    "addToMatchFailed": "Der Spieler konnte dem Match nicht hinzugefügt werden",
+    "searchLabel": "Spieler suchen",
+    "searchPlaceholder": "Spielername eingeben …",
+    "available": "{{count}} verfügbare Spieler (noch nicht im Match)",
+    "noneAvailable": "Keine Spieler verfügbar",
+    "displayNameLabel": "Anzeigename (optional)",
+    "displayNamePlaceholder": "Standardmäßig der aktuelle Name des Spielers",
+    "side": "Seite",
+    "spectator": "Zuschauer",
+    "selected": "Ausgewählt:",
+    "fromTeam": "Aus Team: {{team}}",
+    "steamId": "Steam-ID: {{id}}",
+    "adding": "Spieler wird hinzugefügt …",
+    "add": "Spieler zum Match hinzufügen",
+    "underlyingCommand": "Zugrunde liegender Befehl:",
+    "important": "Wichtig:",
     "reconnectHint": "Der Spieler muss sich nach dem Hinzufügen erneut mit dem Server verbinden. Ist er bereits verbunden, muss er eventuell neu beitreten."
   }
 }
