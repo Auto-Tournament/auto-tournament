@@ -69,7 +69,7 @@ else
 fi
 
 # Tag the image so docker-compose can use it (if compose file references it)
-docker tag "$IMAGE_NAME" sivertio/matchzy-auto-tournament:latest 2>/dev/null || true
+docker tag "$IMAGE_NAME" sivertio/auto-tournament:latest 2>/dev/null || true
 
 # Start with docker-compose
 echo -e "${YELLOW}Starting container with docker-compose...${NC}"
