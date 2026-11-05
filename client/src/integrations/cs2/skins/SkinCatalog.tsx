@@ -8,11 +8,11 @@ import {
   radii,
   withAlpha,
   SegmentedControl,
-  fmtMoney,
 } from '../../../module-sdk';
 import { rarityColor, RARITY_ORDER } from './rarity';
 import { SKIN_CATEGORIES, skinCategory, type SkinCategory } from './categories';
 import { formatOdds } from './formatOdds';
+import { PriceScale, fmtSkinPrice } from './SkinParts';
 
 const { color } = tokens;
 const PAGE = 48;
@@ -282,9 +282,10 @@ export function SkinCatalog() {
                     {formatOdds(s.chance, locale)}
                   </Typography>
                 </Box>
+                <PriceScale price={s.price} rarity={s.rarity} compact />
                 {s.price !== null && (
                   <Typography sx={{ fontSize: '0.6875rem', color: color.muted }}>
-                    {t('skins.catalog.price', { price: fmtMoney(s.price) })}
+                    {t('skins.catalog.price', { price: fmtSkinPrice(s.price) })}
                   </Typography>
                 )}
               </Box>

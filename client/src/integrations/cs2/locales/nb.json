@@ -1354,6 +1354,12 @@
       "ww": "Well-Worn",
       "bs": "Battle-Scarred"
     },
+    "priceScale": {
+      "label": "Markedspris {{price}}: {{rarity}} {{range}}",
+      "under": "(under {{to}})",
+      "from": "(fra {{from}})",
+      "between": "({{from}}–{{to}})"
+    },
     "float": "Float",
     "pattern": "Mønster",
     "place": "#{{n}} i en turnering",

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Box, Button, Dialog, IconButton, Typography } from '@mui/material';
 import { XIcon } from '@phosphor-icons/react';
-import { sourceLabel, VirtualNotice, WearBar } from './SkinParts';
+import { PriceScale, sourceLabel, VirtualNotice, WearBar } from './SkinParts';
 import {
   useModuleTranslation,
   useSnackbar,
@@ -188,6 +188,7 @@ function ChoiceReveal({
                   {t(`skins.wear.${wearKey(o.float)}`)}
                 </Typography>
                 <WearBar float={o.float} pattern={o.pattern} />
+                <PriceScale price={o.price ?? null} rarity={o.rarity} />
                 <Typography sx={{ fontWeight: 600, color: tone }}>
                   {busy === index ? t('skins.keeping') : t('skins.keepThis')}
                 </Typography>
@@ -380,6 +381,7 @@ function Reveal() {
             {t(`skins.wear.${wearKey(skin.float)}`)}
           </Typography>
           <WearBar float={skin.float} pattern={skin.pattern} />
+          <PriceScale price={skin.price ?? null} rarity={skin.rarity} />
         </Box>
         <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', justifyContent: 'center' }}>
           {/* Closing is the main button: a player who just wants it gone must not equip it
