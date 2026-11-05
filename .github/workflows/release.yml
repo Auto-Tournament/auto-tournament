@@ -73,7 +73,8 @@ concurrency:
 # main has no protection, so that reviewed nothing, and because the PR was
 # opened by github-actions[bot] every release left a red, job-less CI run on it.
 # Pushes made with GITHUB_TOKEN do not trigger other workflows, so CI does not
-# run on the bump commit; it only changes the three package.json versions.
+# run on the bump commit; it only changes the three package.json versions and
+# docs/openapi.json's info.version.
 #
 # arm64 used to be built under QEMU on an amd64 runner. On 2026-09-15 that
 # started dying in `yarn install` with "qemu: uncaught target signal 4
