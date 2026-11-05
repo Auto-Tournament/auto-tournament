@@ -60,8 +60,8 @@
       "live": "LIVE",
       "completed": "VOLTOOID",
       "cancelled": "GEANNULEERD",
-      "needsDecision": "NEEDS ADMIN DECISION",
-      "waitingForPairing": "WAITING FOR PAIRING"
+      "needsDecision": "ADMIN MOET BESLISSEN",
+      "waitingForPairing": "WACHT OP INDELING"
     },
     "statusGuide": {
       "title": "Uitleg wedstrijdstatus",
@@ -74,57 +74,57 @@
     },
     "latestEvent": "Laatste: {{event}}",
     "matchLabel": {
-      "upper": "UB R{{round}} M{{match}}",
-      "lower": "LB R{{round}} M{{match}}",
-      "grandFinal": "Grand Final",
-      "grandFinalReset": "Grand Final Reset",
-      "group": "Group {{group}} · Round {{round}}",
-      "playoffs": "Playoffs · Round {{round}}"
+      "upper": "UB R{{round}} W{{match}}",
+      "lower": "LB R{{round}} W{{match}}",
+      "grandFinal": "Grote finale",
+      "grandFinalReset": "Grote finale (reset)",
+      "group": "Groep {{group}} · Ronde {{round}}",
+      "playoffs": "Play-offs · Ronde {{round}}"
     },
     "table": {
-      "filterLabel": "Show",
-      "search": "Find a team or player",
-      "tbd": "TBD",
-      "manage": "Manage match",
-      "empty": "No matches here.",
+      "filterLabel": "Tonen",
+      "search": "Zoek een team of speler",
+      "tbd": "Nog niet bekend",
+      "manage": "Wedstrijd beheren",
+      "empty": "Hier zijn geen wedstrijden.",
       "filter": {
-        "attention_one": "Needs attention · {{count}}",
-        "attention_other": "Needs attention · {{count}}",
+        "attention_one": "Vraagt aandacht · {{count}}",
+        "attention_other": "Vraagt aandacht · {{count}}",
         "live_one": "Live · {{count}}",
         "live_other": "Live · {{count}}",
         "veto_one": "Veto · {{count}}",
         "veto_other": "Veto · {{count}}",
-        "waiting_one": "Waiting · {{count}}",
-        "waiting_other": "Waiting · {{count}}",
-        "finished_one": "Finished · {{count}}",
-        "finished_other": "Finished · {{count}}",
-        "all_one": "All · {{count}}",
-        "all_other": "All · {{count}}"
+        "waiting_one": "Wachtend · {{count}}",
+        "waiting_other": "Wachtend · {{count}}",
+        "finished_one": "Afgelopen · {{count}}",
+        "finished_other": "Afgelopen · {{count}}",
+        "all_one": "Alle · {{count}}",
+        "all_other": "Alle · {{count}}"
       },
       "columns": {
-        "match": "Match",
+        "match": "Wedstrijd",
         "teams": "Teams",
-        "phase": "Phase",
+        "phase": "Fase",
         "server": "Server",
-        "attention": "Needs attention",
-        "open": "Open"
+        "attention": "Vraagt aandacht",
+        "open": "Openen"
       },
       "attention": {
-        "calls_one": "Admin call",
-        "calls_other": "{{count}} admin calls",
-        "decide": "Decide the result"
+        "calls_one": "Adminoproep",
+        "calls_other": "{{count}} adminoproepen",
+        "decide": "Uitslag bepalen"
       },
       "phase": {
         "live": "Live · map {{map}}",
-        "finished": "Finished",
-        "finishedScore": "Finished · {{score}}",
-        "veto": "Map veto",
-        "waitingTeams": "Waiting for its teams",
-        "queued": "Waiting for a server · #{{position}} in queue",
-        "waiting": "Waiting"
+        "finished": "Afgelopen",
+        "finishedScore": "Afgelopen · {{score}}",
+        "veto": "Mapveto",
+        "waitingTeams": "Wacht op de teams",
+        "queued": "Wacht op een server · #{{position}} in de wachtrij",
+        "waiting": "Wachtend"
       },
       "server": {
-        "freed": "Freed"
+        "freed": "Vrijgegeven"
       }
     }
   },
@@ -134,8 +134,8 @@
       "confirmTitle": "Deze wedstrijd verwijderen?",
       "confirmBody": "Weet je zeker dat je wedstrijd \"{{slug}}\" wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.",
       "button": "Wedstrijd verwijderen",
-      "success": "Match deleted successfully",
-      "failed": "Failed to delete match"
+      "success": "Wedstrijd verwijderd",
+      "failed": "Kan de wedstrijd niet verwijderen"
     },
     "roster": {
       "title": "Spelerslijst",
@@ -147,54 +147,54 @@
       "bot": "BOT"
     },
     "decision": {
-      "body": "Every map has been played but the series is level on maps, rounds and damage. Choose the winner to advance the bracket.",
-      "setWinner": "{{team}} wins",
-      "confirmTitle": "Set series winner",
-      "confirmBody": "Finish this series with {{team}} as the winner? The bracket advances and this cannot be undone here.",
-      "confirm": "Set winner",
-      "success": "Winner set",
-      "failed": "Failed to set the winner"
+      "body": "Elke map is gespeeld, maar de serie staat gelijk in maps, rondes en schade. Kies de winnaar om het schema verder te laten gaan.",
+      "setWinner": "{{team}} wint",
+      "confirmTitle": "Winnaar van de serie instellen",
+      "confirmBody": "Deze serie afsluiten met {{team}} als winnaar? Het schema gaat verder en dit kan hier niet ongedaan worden gemaakt.",
+      "confirm": "Winnaar instellen",
+      "success": "Winnaar ingesteld",
+      "failed": "Kan de winnaar niet instellen"
     },
-    "tiebreakHint": "Scores are level: {{team}} won the map, decided by tiebreak.",
+    "tiebreakHint": "De stand is gelijk: {{team}} won de map, beslist door de tiebreak.",
     "config": {
-      "loadFailed": "Failed to load match config",
-      "view": "View Match Config JSON",
-      "title": "Match Config JSON",
-      "loading": "Loading match config...",
-      "empty": "No config available for this match."
+      "loadFailed": "Kan de wedstrijdconfiguratie niet laden",
+      "view": "Wedstrijdconfiguratie (JSON) bekijken",
+      "title": "Wedstrijdconfiguratie (JSON)",
+      "loading": "Wedstrijdconfiguratie laden…",
+      "empty": "Geen configuratie beschikbaar voor deze wedstrijd."
     },
     "tiebreak": {
-      "regulationOnly": "Overtime is disabled for this match (regulation only), so tied scores are resolved by total team damage.",
-      "segmentsExhausted": "Overtime is configured with a maximum number of segments. If the score is still tied, the winner is decided by total team damage.",
-      "overtimeDisabled": "Overtime is disabled for this match, so tied scores are resolved by total team damage.",
-      "tiedByDamage": "The final score was tied, so according to the match settings the winner was chosen by total team damage."
+      "regulationOnly": "Verlenging staat uit voor deze wedstrijd (alleen reguliere speeltijd), dus een gelijke stand wordt beslist op de totale teamschade.",
+      "segmentsExhausted": "Verlenging heeft een maximaal aantal delen. Staat het daarna nog gelijk, dan wordt de winnaar bepaald door de totale teamschade.",
+      "overtimeDisabled": "Verlenging staat uit voor deze wedstrijd, dus een gelijke stand wordt beslist op de totale teamschade.",
+      "tiedByDamage": "De eindstand was gelijk, dus volgens de wedstrijdinstellingen is de winnaar gekozen op de totale teamschade."
     },
     "team1": "Team 1",
     "team2": "Team 2",
-    "matchTime": "Match Time:",
+    "matchTime": "Wedstrijdtijd:",
     "server": "Server:",
-    "queuePosition": "Queue Position:",
-    "totalDamage": "Total Damage: {{team1}} - {{team2}}",
-    "mapOfTotal": "Map {{index}} of {{total}}: {{map}}",
+    "queuePosition": "Plaats in de wachtrij:",
+    "totalDamage": "Totale schade: {{team1}} - {{team2}}",
+    "mapOfTotal": "Map {{index}} van {{total}}: {{map}}",
     "mapIndex": "Map {{index}}: {{map}}",
-    "round": "Round {{round}}",
+    "round": "Ronde {{round}}",
     "shuffle": {
-      "averageElo": "Team ELO (avg): {{team1}} vs {{team2}}",
-      "balancerHint": "Shuffle teams are generated by an OpenSkill-based balancer that spreads high and low-rated players across both sides to keep these averages close."
+      "averageElo": "Team-ELO (gem.): {{team1}} vs {{team2}}",
+      "balancerHint": "Shuffleteams worden gemaakt door een balancer op basis van OpenSkill die spelers met een hoge en lage rating over beide kanten verdeelt, zodat deze gemiddelden dicht bij elkaar liggen."
     },
-    "playerLeaderboards": "Player Leaderboards",
-    "noPlayerData": "No player data available",
-    "currentMap": "Current Map",
+    "playerLeaderboards": "Ranglijsten van spelers",
+    "noPlayerData": "Geen spelersgegevens beschikbaar",
+    "currentMap": "Huidige map",
     "maps": "Maps",
-    "mapsNotPicked": "The maps are not picked yet.",
-    "mapsViaVeto": "To be determined via veto",
-    "matchInformation": "Match Information",
-    "created": "Created:",
-    "started": "Started:",
-    "completed": "Completed:",
-    "adminControls": "Admin Controls",
-    "slug": "Match slug:",
-    "openChat": "Match chat"
+    "mapsNotPicked": "De maps zijn nog niet gekozen.",
+    "mapsViaVeto": "Wordt bepaald via het veto",
+    "matchInformation": "Wedstrijdinformatie",
+    "created": "Aangemaakt:",
+    "started": "Gestart:",
+    "completed": "Afgerond:",
+    "adminControls": "Adminbediening",
+    "slug": "Wedstrijdslug:",
+    "openChat": "Wedstrijdchat"
   },
   "bulkShuffleMatchesModal": {
     "title": "Shuffle-wedstrijden in bulk maken",
@@ -261,7 +261,7 @@
     "noPlayersInfo": "Nog geen spelers toegevoegd. Voeg minstens één speler toe.",
     "addPlayersHelper_steam": "Voeg spelers toe door een Steam-URL te plakken of uit bestaande spelers te kiezen",
     "steamInputLabel": "Steam-ID / vanity URL",
-    "steamInputPlaceholder": "gaben or steamcommunity.com/id/gaben",
+    "steamInputPlaceholder": "gaben of steamcommunity.com/id/gaben",
     "resolveSteam": "Steam-ID opzoeken",
     "resolving": "Opzoeken...",
     "playerNameLabel": "Spelernaam",
@@ -282,8 +282,8 @@
       "discordIdInvalid": "Discord-ID moet 17–20 cijfers zijn (het numerieke gebruikers-ID, geen gebruikersnaam)",
       "discordIdInvalidPlayers": "Ongeldige Discord-ID voor: {{names}}. Deze moet 17–20 cijfers zijn of leeg blijven.",
       "discordIdSaveFailed": "Het team is opgeslagen, maar de Discord-ID kon niet worden opgeslagen voor: {{names}}. {{message}}",
-      "nameRequired": "Enter the player's name",
-      "addPlayerFailed": "Could not add the player"
+      "nameRequired": "Vul de naam van de speler in",
+      "addPlayerFailed": "Kan de speler niet toevoegen"
     },
     "success": {
       "playerAdded": "Speler aan team toegevoegd",
@@ -305,9 +305,9 @@
     },
     "replacePlayerAria": "Speler {{name}} vervangen",
     "replacePlayerTooltip": "Deze speler vervangen",
-    "addPlayersHelper": "Add a new player below, or select from existing players",
-    "accountLabel": "{{account}} account (optional)",
-    "accountHelper": "For {{games}}. When they sign in with {{account}}, they become this player."
+    "addPlayersHelper": "Voeg hieronder een nieuwe speler toe of kies een bestaande speler",
+    "accountLabel": "{{account}}-account (optioneel)",
+    "accountHelper": "Voor {{games}}. Logt de speler in met {{account}}, dan wordt dat deze speler."
   },
   "playerModal": {
     "titleCreate": "Speler maken",
@@ -355,9 +355,9 @@
       "message": "Weet je zeker dat je de ELO van deze speler wilt wijzigen van {{from}} naar {{to}}? Dit reset statistieken en ratinggeschiedenis. Deze actie kan niet ongedaan worden gemaakt."
     },
     "discordIdHelper": "Optioneel. 17–20 cijfers. Hiermee kunnen organisatoren deze speler via Discord bereiken. Wordt nooit openbaar getoond.",
-    "accountLabel": "{{account}} account (optional)",
-    "accountHelper": "For {{games}}. The account id; when they sign in with {{account}}, they become this player.",
-    "accountVerified": "Linked: they signed in with {{account}}. They change it themselves."
+    "accountLabel": "{{account}}-account (optioneel)",
+    "accountHelper": "Voor {{games}}. Het account-ID; logt de speler in met {{account}}, dan wordt dat deze speler.",
+    "accountVerified": "Gekoppeld: de speler heeft ingelogd met {{account}}. Alleen de speler kan het wijzigen."
   },
   "teamImportModal": {
     "title": "Teams importeren vanuit JSON",
@@ -451,7 +451,7 @@
     },
     "addPlayersButton_one": "{{count}} speler toevoegen",
     "addPlayersButton_other": "{{count}} spelers toevoegen",
-    "searchPlaceholder": "Search players by name..."
+    "searchPlaceholder": "Zoek spelers op naam…"
   },
   "soundSettingsModal": {
     "title": "Geluidsinstellingen",
@@ -465,26 +465,26 @@
     "footer": "Geluidsmeldingen worden afgespeeld wanneer je wedstrijd klaar is of wanneer belangrijke gebeurtenissen plaatsvinden."
   },
   "addBackupPlayer": {
-    "title": "Add Player",
-    "loadFailed": "Failed to load player list",
-    "added": "{{name}} added to {{target}}",
-    "addFailed": "Failed to add player",
-    "addToMatchFailed": "Failed to add player to match",
-    "searchLabel": "Search for player",
-    "searchPlaceholder": "Type player name...",
-    "available": "{{count}} available players (not already in match)",
-    "noneAvailable": "No players available",
-    "displayNameLabel": "Display name (optional)",
-    "displayNamePlaceholder": "Defaults to the player's current name",
-    "side": "Side",
-    "spectator": "Spectator",
-    "selected": "Selected:",
-    "fromTeam": "From team: {{team}}",
+    "title": "Speler toevoegen",
+    "loadFailed": "Kan de spelerslijst niet laden",
+    "added": "{{name}} toegevoegd aan {{target}}",
+    "addFailed": "Kan de speler niet toevoegen",
+    "addToMatchFailed": "Kan de speler niet aan de wedstrijd toevoegen",
+    "searchLabel": "Speler zoeken",
+    "searchPlaceholder": "Typ de naam van de speler…",
+    "available": "{{count}} beschikbare spelers (nog niet in de wedstrijd)",
+    "noneAvailable": "Geen spelers beschikbaar",
+    "displayNameLabel": "Weergavenaam (optioneel)",
+    "displayNamePlaceholder": "Standaard de huidige naam van de speler",
+    "side": "Kant",
+    "spectator": "Toeschouwer",
+    "selected": "Geselecteerd:",
+    "fromTeam": "Uit team: {{team}}",
     "steamId": "Steam ID: {{id}}",
-    "adding": "Adding Player...",
-    "add": "Add Player to Match",
-    "underlyingCommand": "Underlying command:",
-    "important": "Important:",
+    "adding": "Speler toevoegen…",
+    "add": "Speler aan wedstrijd toevoegen",
+    "underlyingCommand": "Onderliggend commando:",
+    "important": "Belangrijk:",
     "reconnectHint": "De speler moet na het toevoegen opnieuw verbinden met de server. Is de speler al verbonden, dan moet hij mogelijk opnieuw joinen."
   }
 }

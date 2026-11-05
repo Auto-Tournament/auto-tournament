@@ -21,7 +21,7 @@
         "inProgressOrCompleted": "Kan geen toernooi aanmaken vanuit een sjabloon wanneer er al een toernooi loopt of is afgerond. Verwijder of reset eerst het huidige toernooi.",
         "alreadyExists": "Er bestaat al een toernooi. Verwijder of reset eerst het huidige toernooi voordat je een nieuw toernooi vanuit een sjabloon aanmaakt."
       },
-      "button": "Create Tournament from Template"
+      "button": "Toernooi maken van sjabloon"
     },
     "edit": {
       "title": "Sjabloon bewerken",
@@ -34,13 +34,13 @@
         "selectLabel": "Kies een kaartpool",
         "customOption": "Aangepast",
         "selectedLabel": "Geselecteerde kaarten ({{count}}):",
-        "vetoWarning": "Veto-formaten (BO1/BO3/BO5) vereisen precies 7 kaarten. Nu geselecteerd: {{count}}",
-        "chooseMaps": "Choose maps..."
+        "vetoWarning": "Veto-formaten (BO1/BO3/BO5) vereisen precies 7 maps. Nu geselecteerd: {{count}}",
+        "chooseMaps": "Kies maps…"
       },
       "save": "Opslaan"
     },
-    "emptyTitle": "No templates yet",
-    "emptyDescription": "Save a tournament's setup as a template from the Tournament page, then start new tournaments from it here."
+    "emptyTitle": "Nog geen sjablonen",
+    "emptyDescription": "Sla de opzet van een toernooi op als sjabloon vanaf de toernooipagina en start hier nieuwe toernooien vanuit dat sjabloon."
   },
   "saveTemplateModal": {
     "title": "Opslaan als sjabloon",
@@ -86,9 +86,9 @@
       "disabled": "Uitgeschakeld",
       "default": "Standaard",
       "adjustment": {
-        "none": "Stat-aanpassing per match: geen (0; ELO alleen op resultaat)",
-        "uncapped": "Stat-aanpassing per match: onbeperkt (voorzichtig gebruiken)",
-        "range": "Bereik stat-aanpassing per match: {{min}} tot {{max}} ELO",
+        "none": "Stat-aanpassing per wedstrijd: geen (0; ELO alleen op resultaat)",
+        "uncapped": "Stat-aanpassing per wedstrijd: onbeperkt (voorzichtig gebruiken)",
+        "range": "Bereik stat-aanpassing per wedstrijd: {{min}} tot {{max}} ELO",
         "noMin": "geen min",
         "noMax": "geen max"
       },
@@ -128,11 +128,11 @@
       },
       "limits": {
         "title": "Aanpassingslimieten (optioneel)",
-        "subtitle": "Stel maximale en minimale ELO-aanpassingen per match in om extreme schommelingen te voorkomen.",
+        "subtitle": "Stel maximale en minimale ELO-aanpassingen per wedstrijd in om extreme schommelingen te voorkomen.",
         "maxLabel": "Max. aanpassing",
-        "maxHelper": "Maximale positieve ELO-aanpassing per match",
+        "maxHelper": "Maximale positieve ELO-aanpassing per wedstrijd",
         "minLabel": "Min. aanpassing",
-        "minHelper": "Maximale negatieve ELO-aanpassing per match"
+        "minHelper": "Maximale negatieve ELO-aanpassing per wedstrijd"
       },
       "errors": {
         "nameRequired": "Sjabloonnaam is verplicht"
@@ -154,47 +154,47 @@
     "stats": {
       "kills": {
         "label": "Kills",
-        "description": "Number of kills per match"
+        "description": "Aantal kills per wedstrijd"
       },
       "deaths": {
         "label": "Deaths",
-        "description": "Number of deaths per match (typically negative weight)"
+        "description": "Aantal deaths per wedstrijd (meestal met negatief gewicht)"
       },
       "assists": {
         "label": "Assists",
-        "description": "Number of assists per match"
+        "description": "Aantal assists per wedstrijd"
       },
       "flashAssists": {
-        "label": "Flash Assists",
-        "description": "Number of flash assists per match"
+        "label": "Flash-assists",
+        "description": "Aantal flash-assists per wedstrijd"
       },
       "headshotKills": {
-        "label": "Headshot Kills",
-        "description": "Number of headshot kills per match"
+        "label": "Headshotkills",
+        "description": "Aantal headshotkills per wedstrijd"
       },
       "damage": {
-        "label": "Damage",
-        "description": "Total damage dealt per match"
+        "label": "Schade",
+        "description": "Totale schade per wedstrijd"
       },
       "utilityDamage": {
-        "label": "Utility Damage",
-        "description": "Damage dealt with utility (grenades)"
+        "label": "Utility-schade",
+        "description": "Schade met utility (granaten)"
       },
       "kast": {
         "label": "KAST %",
-        "description": "Percentage of rounds with Kill, Assist, Survive, or Trade"
+        "description": "Percentage rondes met een kill, assist, overleving of trade"
       },
       "mvps": {
-        "label": "MVPs",
-        "description": "Number of MVP awards per match"
+        "label": "MVP's",
+        "description": "Aantal MVP-onderscheidingen per wedstrijd"
       },
       "score": {
         "label": "Score",
-        "description": "Match score (combines multiple factors)"
+        "description": "Wedstrijdscore (combineert meerdere factoren)"
       },
       "adr": {
         "label": "ADR",
-        "description": "Average Damage per Round"
+        "description": "Gemiddelde schade per ronde"
       }
     }
   }
