@@ -26,7 +26,17 @@ import {
 } from '../../../services/socketService';
 import { WEAPON_DEFINDEX } from './skinDefindex';
 import { prefetchSkinImages } from '../routes/images';
-import { knifeAndGlovePrices, priceFor, priceKey, rarityIndexByPrice } from './skinPrices';
+import {
+  bandOf,
+  finishPrice,
+  priceFor,
+  priceKey,
+  skinPrices,
+  wearOf,
+  WEARS,
+  type Wear,
+  type WearPrices,
+} from './skinPrices';
 import type { Untrusted } from '../../../utils/untrusted';
 
 /** Full-size skin pictures, served by the platform (routes/images.ts). */
@@ -116,8 +126,15 @@ export interface CatalogSkin {
   /** The game's worn looks (csm's export): Field-Tested, and Well-Worn / Battle-Scarred. */
   imageMedium?: string;
   imageHeavy?: string;
-  /** Knives and gloves: the finish's market price in USD (skinPrices.ts), which sets its rarity. */
+  /**
+   * The market price in USD (skinPrices.ts): a finish's median over its wears,
+   * or a drop entry's own wear. It sets the rarity.
+   */
   price?: number;
+  /** The finish's price per wear; each wear's price band is that wear's rarity (rarityAt). */
+  wears?: WearPrices;
+  /** A drop entry (dropEntries): the wear it drops in. */
+  wear?: Wear;
 }
 
 /**
@@ -243,6 +260,8 @@ export interface SkinsConfig {
   levelUpDrops: boolean;
   /** Relative weight per rarity for random drops. */
   rarityWeights: Record<Rarity, number>;
+  /** 2 once saved with rarity by price per wear, immortal included (normalizeConfig). */
+  tiers?: 2;
   tournamentRewards: boolean;
   rewards: TournamentReward[];
   /** Trade-up contracts: `count` skins of one grade for one of the next (tradeUpRule). */
@@ -287,17 +306,17 @@ export const DEFAULT_CONFIG: SkinsConfig = {
   tournamentMatchDrops: true,
   levelUpDrops: true,
   rarityWeights: {
-    common: 40,
+    common: 39,
     uncommon: 25,
     rare: 18,
     mythical: 10,
     legendary: 5,
     ancient: 2,
-    immortal: 0,
+    immortal: 1,
   },
   tournamentRewards: true,
-  // The best place gets the rarest grade that has skins to choose from (Immortal holds about one),
-  // each place after it one grade lower, and everyone else who played something too.
+  // The best place gets an ancient skin, each place after it one grade lower, and everyone else
+  // who played something too.
   rewards: [
     { place: 1, mode: 'random', rarity: 'ancient' },
     { place: 2, mode: 'random', rarity: 'legendary' },
@@ -517,7 +536,7 @@ export function rollRarity(weights: Record<Rarity, number>): Rarity | null {
   return entries[entries.length - 1][0];
 }
 
-let catalogCache: { at: number; skins: CatalogSkin[] } | null = null;
+let catalogCache: { at: number; skins: CatalogSkin[]; entries: CatalogSkin[] } | null = null;
 
 function toRow(row: SkinRow, equipped: Map<number, LoadoutTeam[]> | Set<number>): OwnedSkin {
   const sides =
@@ -550,13 +569,17 @@ function toRow(row: SkinRow, equipped: Map<number, LoadoutTeam[]> | Set<number>)
   };
 }
 
-function normalizeConfig(raw: Partial<SkinsConfig>): SkinsConfig {
+export function normalizeConfig(raw: Partial<SkinsConfig>): SkinsConfig {
   const weights = { ...DEFAULT_CONFIG.rarityWeights };
   for (const r of RARITIES) {
     const value = raw.rarityWeights?.[r];
     if (typeof value === 'number' && Number.isFinite(value))
       weights[r] = Math.max(0, Math.min(1000, value));
   }
+  // Before tiers 2 immortal held only the Howl, and every install stored weight 0 for it. It now
+  // holds the dearest finishes and wears, which that 0 would hide: take the default instead.
+  if (raw.tiers !== 2 && weights.immortal === 0)
+    weights.immortal = DEFAULT_CONFIG.rarityWeights.immortal;
   // A place the stored list doesn't name (4th and everyone else came later) gets the default.
   const stored = parseRewards(raw.rewards) ?? [];
   const rewards = REWARD_PLACES.map(
@@ -565,6 +588,7 @@ function normalizeConfig(raw: Partial<SkinsConfig>): SkinsConfig {
       DEFAULT_CONFIG.rewards.find((r) => r.place === place)!
   );
   return {
+    tiers: 2,
     enabled: raw.enabled === true,
     matchmakingDrops: raw.matchmakingDrops !== false,
     dropChance:
@@ -619,26 +643,86 @@ export function rollStatTrak(weapon: string, chance: number): boolean {
   return statTrakCapable(weapon) && chance > 0 && randomInt(0, 10000) < chance * 100;
 }
 
+/** The rarity a price falls in (PRICE_BANDS). */
+export function rarityOfPrice(price: number): Rarity {
+  return RARITIES[Math.min(bandOf(price), RARITIES.length - 1)];
+}
+
 /**
- * Knives and gloves take their rarity from their price, not their paint kit:
- * cheap finishes are common, the dearest ancient (immortal stays the one-off
- * contraband tier). A finish Skinport has no price for keeps the catalogue's.
+ * What a skin is at this float: the price band of its wear. A wear nobody
+ * sells, and a finish Skinport has no price for, keep the finish's rarity.
  */
-function withPriceRarity(skins: CatalogSkin[], prices: Record<string, number>): CatalogSkin[] {
+export function rarityAt(skin: CatalogSkin, float: number): Rarity {
+  const price = skin.wears?.[wearOf(float)];
+  return price === undefined ? skin.rarity : rarityOfPrice(price);
+}
+
+/**
+ * Every skin takes its rarity from its price: each wear its own band
+ * (rarityAt), and the finish as a whole the band of its median wear, for
+ * lists. A finish Skinport has no price for keeps the catalogue's grade.
+ */
+export function withPrices(
+  skins: CatalogSkin[],
+  prices: Record<string, WearPrices>
+): CatalogSkin[] {
   if (Object.keys(prices).length === 0) return skins;
-  const keyOf = (s: CatalogSkin) => priceKey(s.weaponName, s.name, variantOf(s.paintKitName));
-  const special = skins.filter(
-    (s) => slotOf(s.weapon) === 'knife' || slotOf(s.weapon) === 'gloves'
-  );
-  const bands = RARITIES.indexOf('ancient') + 1;
-  const index = rarityIndexByPrice(prices, special.map(keyOf), bands);
   return skins.map((s) => {
-    const slot = slotOf(s.weapon);
-    if (slot !== 'knife' && slot !== 'gloves') return s;
-    const key = keyOf(s);
-    const band = index.get(key);
-    return band === undefined ? s : { ...s, rarity: RARITIES[band], price: priceFor(prices, key) };
+    const wears = priceFor(prices, priceKey(s.weaponName, s.name, variantOf(s.paintKitName)));
+    const price = finishPrice(wears);
+    return price === undefined ? s : { ...s, wears, price, rarity: rarityOfPrice(price) };
   });
+}
+
+/**
+ * What drops: one entry per finish and wear that trades, with that wear's
+ * price and rarity, so a Factory New glove can be immortal and the same glove
+ * Battle-Scarred legendary. A wear nobody sells does not drop. A finish
+ * without prices is one entry, any wear, with its own rarity.
+ */
+export function dropEntries(skins: CatalogSkin[]): CatalogSkin[] {
+  return skins.flatMap((s) =>
+    s.wears && Object.keys(s.wears).length
+      ? (Object.entries(s.wears) as Array<[Wear, number]>).map(([wear, price]) => ({
+          ...s,
+          wear,
+          price,
+          rarity: rarityOfPrice(price),
+        }))
+      : [s]
+  );
+}
+
+/**
+ * The floats a skin drops in: a drop entry's wear (inside the roll's own
+ * range where the two overlap), else the roll's range.
+ */
+export function floatRange(
+  skin: CatalogSkin,
+  roll: { floatMin?: number; floatMax?: number }
+): [number, number] {
+  const min = roll.floatMin ?? 0;
+  const max = roll.floatMax ?? 1;
+  const wear = skin.wear && WEARS.find((w) => w.key === skin.wear);
+  if (!wear) return [min, max];
+  // A wear's top float is the next wear's first (0.07 is Minimal Wear): stay below it.
+  const top = wear.max === 1 ? 1 : wear.max - 0.000001;
+  const lo = Math.max(min, wear.min);
+  const hi = Math.min(max, top);
+  return lo <= hi ? [lo, hi] : [wear.min, top];
+}
+
+/** The middle float of a wear, for its picture; undefined without one. */
+function wearMiddle(wear: Wear | undefined): number | undefined {
+  const w = wear && WEARS.find((x) => x.key === wear);
+  return w ? (w.min + w.max) / 2 : undefined;
+}
+
+/** Whether a drop entry can be rolled inside a reward's float range. */
+function fitsRange(skin: CatalogSkin, range?: { floatMin?: number; floatMax?: number }): boolean {
+  const wear = skin.wear && WEARS.find((w) => w.key === skin.wear);
+  if (!wear || !range) return true;
+  return (range.floatMin ?? 0) < wear.max && (range.floatMax ?? 1) >= wear.min;
 }
 
 async function uidOf(steamId: string): Promise<string | null> {
@@ -748,7 +832,7 @@ export const skinService = {
       } finally {
         clearTimeout(timer);
       }
-      const skins = withPriceRarity(
+      const skins = withPrices(
         (body.skins ?? []).filter(
           (s) =>
             s &&
@@ -756,9 +840,9 @@ export const skinService = {
             RARITIES.includes(s.rarity) &&
             typeof s.image === 'string'
         ),
-        await knifeAndGlovePrices()
+        await skinPrices()
       );
-      catalogCache = { at: Date.now(), skins };
+      catalogCache = { at: Date.now(), skins, entries: dropEntries(skins) };
       rememberWearLooks(skins);
       if (!prefetchStarted) {
         prefetchStarted = true;
@@ -773,6 +857,12 @@ export const skinService = {
       log.warn('[Skins] Could not read the skin catalogue', { error: (error as Error).message });
       return catalogCache?.skins ?? [];
     }
+  },
+
+  /** What drops: the catalogue per finish and wear (dropEntries). */
+  async dropPool(): Promise<CatalogSkin[]> {
+    await this.catalog();
+    return catalogCache?.entries ?? [];
   },
 
   /**
@@ -801,7 +891,8 @@ export const skinService = {
   ): Promise<number> {
     const stattrak =
       roll.stattrak ?? rollStatTrak(skin.weapon, (await this.config()).statTrakChance);
-    const float = roll.float ?? rollFloat(roll.floatMin ?? 0, roll.floatMax ?? 1);
+    const float = roll.float ?? rollFloat(...floatRange(skin, roll));
+    const rarity = rarityAt(skin, float);
     const row = await db.queryOneAsync<{ id: number }>(
       `INSERT INTO cs2_player_skins
          (player_uid, weapon, weapon_name, paint_kit, name, rarity, image, float_value, pattern, source, source_label, source_ref, place, variant, stattrak)
@@ -812,7 +903,7 @@ export const skinService = {
         skin.weaponName,
         skin.paintKit,
         skin.name,
-        skin.rarity,
+        rarity,
         skin.image,
         float,
         roll.pattern ?? rollPattern(roll.seeds),
@@ -847,7 +938,7 @@ export const skinService = {
             skinId: row.id,
             name: skin.name,
             weapon: skin.weaponName,
-            rarity: skin.rarity,
+            rarity,
             // The full URL: the bell shows it as the notice's picture.
             image: skinImageUrl(skin.image, float),
             source: source.label ?? source.source,
@@ -861,11 +952,18 @@ export const skinService = {
     return row?.id ?? 0;
   },
 
-  /** A random catalogue skin of the rarity, or of a rarity drawn by weight. */
-  async pick(rarity: Rarity | null, weights?: Record<Rarity, number>): Promise<CatalogSkin | null> {
-    const catalog = await this.catalog();
+  /**
+   * A random drop entry (a finish in one wear) of the rarity, or of a rarity
+   * drawn by weight; with `range`, only wears that range reaches.
+   */
+  async pick(
+    rarity: Rarity | null,
+    weights?: Record<Rarity, number>,
+    range?: { floatMin?: number; floatMax?: number }
+  ): Promise<CatalogSkin | null> {
+    const entries = await this.dropPool();
     const wanted = rarity ?? (weights ? rollRarity(weights) : null);
-    const pool = catalog.filter((s) => s.rarity === wanted);
+    const pool = entries.filter((s) => s.rarity === wanted && fitsRange(s, range));
     return pool.length ? pool[randomInt(0, pool.length)] : null;
   },
 
@@ -1182,7 +1280,7 @@ export const skinService = {
    */
   async publicCatalog() {
     const config = await this.config();
-    const catalog = await this.catalog();
+    const catalog = await this.dropPool();
     const counts: Partial<Record<Rarity, number>> = {};
     for (const skin of catalog) counts[skin.rarity] = (counts[skin.rarity] ?? 0) + 1;
     const perSkin = new Map(
@@ -1198,8 +1296,10 @@ export const skinService = {
         paintKit: s.paintKit,
         rarity: s.rarity,
         slot: slotOf(s.weapon),
-        image: `${SKIN_IMAGES_BASE}/${s.image}`,
+        // A drop entry shows its wear's look (the middle of its floats).
+        image: skinImageUrl(s.image, wearMiddle(s.wear)),
         price: s.price ?? null,
+        wear: s.wear ?? null,
         chance: perSkin.get(s.rarity) ?? 0,
       })),
     };
@@ -1208,7 +1308,7 @@ export const skinService = {
   async odds() {
     const config = await this.config();
     const counts: Partial<Record<Rarity, number>> = {};
-    for (const skin of await this.catalog()) counts[skin.rarity] = (counts[skin.rarity] ?? 0) + 1;
+    for (const skin of await this.dropPool()) counts[skin.rarity] = (counts[skin.rarity] ?? 0) + 1;
     return {
       enabled: config.enabled,
       optionsPerDrop: CHOICE_COUNT,
@@ -1324,12 +1424,16 @@ export const skinService = {
     roll: { floatMin?: number; floatMax?: number; seeds?: number[] } = {}
   ): Promise<number> {
     const chance = (await this.config()).statTrakChance;
-    const rolled: ChoiceOption[] = options.map((skin) => ({
-      ...skin,
-      float: rollFloat(roll.floatMin ?? 0, roll.floatMax ?? 1),
-      pattern: rollPattern(roll.seeds),
-      stattrak: rollStatTrak(skin.weapon, chance),
-    }));
+    const rolled: ChoiceOption[] = options.map((skin) => {
+      const float = rollFloat(...floatRange(skin, roll));
+      return {
+        ...skin,
+        rarity: rarityAt(skin, float),
+        float,
+        pattern: rollPattern(roll.seeds),
+        stattrak: rollStatTrak(skin.weapon, chance),
+      };
+    });
     const row = await db.queryOneAsync<{ id: number }>(
       `INSERT INTO cs2_skin_choices (player_uid, source, source_label, source_ref, place, options, created_at)
        VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING id`,
@@ -1494,10 +1598,12 @@ export const skinService = {
             skin = variants.length ? variants[randomInt(0, variants.length)] : null;
           } else if (reward.pick === 'one') {
             // One of that rarity at random, straight into the inventory.
-            skin = await this.pick(reward.rarity ?? 'rare');
+            skin = await this.pick(reward.rarity ?? 'rare', undefined, reward);
           } else {
             // A rarity reward is a choice of three of that rarity: the player keeps one.
-            const options = await this.pickOptions(() => this.pick(reward.rarity ?? 'rare'));
+            const options = await this.pickOptions(() =>
+              this.pick(reward.rarity ?? 'rare', undefined, reward)
+            );
             if (options.length) {
               await this.offerChoice(
                 uid,
@@ -1750,7 +1856,7 @@ export const skinService = {
   async tradeUpOutcomes(rarity: Rarity): Promise<{ to: Rarity | null; skins: CatalogSkin[] }> {
     const to = nextRarity(rarity);
     if (!to) return { to: null, skins: [] };
-    const skins = (await this.catalog()).filter((s) => s.rarity === to && tradeUpWeapon(s.weapon));
+    const skins = (await this.dropPool()).filter((s) => s.rarity === to && tradeUpWeapon(s.weapon));
     return { to, skins };
   },
 
@@ -1781,8 +1887,8 @@ export const skinService = {
     if (!rule.ok) throw new SkinError(400, rule.error);
     const { skins: pool } = await this.tradeUpOutcomes(rule.from);
     if (pool.length === 0) throw new SkinError(409, 'No skin of the next grade to give.');
-    const skin = pool[randomInt(0, pool.length)];
-    // The inputs, all or none: a second trade-up of the same skins finds them gone.
+    // The inputs go first (their floats set the result's wear), all or none: a second trade-up of
+    // the same skins finds them gone.
     const floats = await db.withClient(async (client) => {
       await client.query('BEGIN');
       try {
@@ -1819,6 +1925,14 @@ export const skinService = {
         // A showcase that does not parse is the player's to fix; the trade-up stands.
       }
     }
+    // The result has the inputs' average wear, so it is one of the next grade's skins in that wear;
+    // when none is, any of them, its float moved into its own wear (the grade is the promise).
+    const average = tradeUpFloat(floats);
+    const fits = pool.filter((s) => !s.wear || s.wear === wearOf(average));
+    const from = fits.length ? fits : pool;
+    const skin = from[randomInt(0, from.length)];
+    const [lo, hi] = floatRange(skin, {});
+    const float = fits.length ? average : Math.min(hi, Math.max(lo, average));
     const skinId = await this.grant(
       playerUid,
       skin,
@@ -1826,7 +1940,7 @@ export const skinService = {
         source: 'tradeup',
         label: `${ids.length} × ${rule.from.charAt(0).toUpperCase()}${rule.from.slice(1)}`,
       },
-      { float: tradeUpFloat(floats) }
+      { float }
     );
     log.info(`[SKINS] ${playerUid}: traded up ${ids.length} ${rule.from} skins for ${skin.name}`);
     return { skinId, skin };

@@ -1471,7 +1471,7 @@
         "nobodyYet": "Nobody has a skin yet. Search for a player to give one."
       },
       "playDropChance": "Chance of a skin when you lose or draw",
-      "knivesByPrice": "Knives and gloves get their rarity from market price (Skinport, updated daily): cheap ones are common, expensive ones rare.",
+      "knivesByPrice": "Every skin gets its rarity from its market price in each wear (Skinport, updated daily): a Factory New skin can be rarer than the same skin Battle-Scarred.",
       "pageHint": "Virtual skins players win here. Equipped ones show on Ready Up servers between maps.",
       "on": "On",
       "off": "Off",
@@ -1598,7 +1598,7 @@
       "skins_one": "{{count}} skin",
       "skins_other": "{{count}} skins",
       "perSkin": "{{odds}} for one exact skin",
-      "rarityNote": "Each of the {{count}} skins in a drop rolls its rarity on its own; inside a rarity every skin is as likely. Knives and gloves are ranked by price.",
+      "rarityNote": "Each of the {{count}} skins in a drop rolls its rarity on its own; inside a rarity every skin is as likely. Rarity follows each skin's market price in its wear.",
       "placementTitle": "Tournament placements",
       "pickOfRarity": "a pick of {{rarity}} skins",
       "rarityOdds": "Rarity odds",
@@ -1739,7 +1739,7 @@
     "pickLater": "Pick later",
     "catalog": {
       "title": "All skins",
-      "intro": "Every skin a drop can give. The chance is per option in a drop: each drop shows three, and you keep one. Knives and gloves get their rarity from their market price.",
+      "intro": "Every skin a drop can give, in each wear it drops in. The chance is per option in a drop: each drop shows three, and you keep one. Rarity follows the skin's market price in that wear.",
       "count_one": "{{count}} skin",
       "count_other": "{{count}} skins",
       "search": "Search skins",

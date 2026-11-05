@@ -26,8 +26,10 @@ interface CatalogSkin {
   rarity: string;
   slot: string;
   image: string;
-  /** Knives and gloves: the market price (USD) that set their rarity. */
+  /** The market price (USD) that set its rarity: this wear's, or the finish's median. */
   price: number | null;
+  /** The wear this entry drops in (each wear is priced, so rarity is per wear); null for one unpriced. */
+  wear: 'fn' | 'mw' | 'ft' | 'ww' | 'bs' | null;
   /** Percent chance of this exact skin per drop option. */
   chance: number;
 }
@@ -222,7 +224,7 @@ export function SkinCatalog() {
             return (
               <Box
                 component="li"
-                key={`${s.weapon}-${s.paintKit}`}
+                key={`${s.weapon}-${s.paintKit}-${s.wear ?? ''}`}
                 data-testid="skin-catalog-item"
                 sx={{
                   display: 'flex',
@@ -244,6 +246,7 @@ export function SkinCatalog() {
                 />
                 <Typography sx={{ fontSize: '0.75rem', color: color.muted, lineHeight: 1.3 }}>
                   {s.weaponName}
+                  {s.wear ? ` · ${t(`skins.wear.${s.wear}`)}` : ''}
                 </Typography>
                 <Typography
                   sx={{

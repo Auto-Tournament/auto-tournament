@@ -1,16 +1,18 @@
 import { test, expect } from '@playwright/test';
 import {
+  bandOf,
+  finishPrice,
   parseMarketName,
   priceFor,
   priceKey,
   pricesFromItems,
-  rarityIndexByPrice,
+  wearOf,
 } from '../../api/src/integrations/cs2/skins/skinPrices';
 import { variantOf } from '../../api/src/integrations/cs2/skins/skinService';
 
 /**
- * Knife and glove rarity by market price (Skinport): names, phases, medians
- * and the price bands. No network: the Skinport rows are written out here.
+ * Skin rarity by market price (Skinport), per finish and wear: names, wears,
+ * phases and the price bands. No network: the Skinport rows are written out here.
  *
  * @tag api
  */
@@ -29,45 +31,65 @@ const row = (
 
 test.describe('Skin prices', () => {
   test(
-    'reads knife and glove names, and skips StatTrak and plain weapons',
+    'reads every skin with its wear, and skips StatTrak, Souvenir and items without a wear',
     { tag: ['@api'] },
     () => {
       expect(parseMarketName('★ Karambit | Doppler (Factory New)')).toEqual({
         weaponName: 'Karambit',
         finish: 'Doppler',
+        wear: 'fn',
       });
       expect(parseMarketName("★ Sport Gloves | Pandora's Box (Field-Tested)")).toEqual({
         weaponName: 'Sport Gloves',
         finish: "Pandora's Box",
+        wear: 'ft',
+      });
+      expect(parseMarketName('AK-47 | Redline (Battle-Scarred)')).toEqual({
+        weaponName: 'AK-47',
+        finish: 'Redline',
+        wear: 'bs',
       });
       expect(parseMarketName('★ StatTrak™ Karambit | Doppler (Factory New)')).toBeNull();
-      expect(parseMarketName('AK-47 | Redline (Field-Tested)')).toBeNull();
+      expect(parseMarketName('Souvenir AWP | Dragon Lore (Factory New)')).toBeNull();
+      expect(parseMarketName('Sticker | Titan (Holo) | Katowice 2014')).toBeNull();
       expect(parseMarketName('★ Karambit')).toBeNull();
     }
   );
 
-  test('a finish costs the median of its wears, per phase', { tag: ['@api'] }, () => {
+  test('each wear keeps its own price, per phase', { tag: ['@api'] }, () => {
     const prices = pricesFromItems([
-      row('★ Navaja Knife | Safari Mesh (Field-Tested)', 50),
-      row('★ Navaja Knife | Safari Mesh (Well-Worn)', 40),
-      row('★ Navaja Knife | Safari Mesh (Factory New)', 200),
+      row('★ Sport Gloves | Vice (Factory New)', 5993),
+      row('★ Sport Gloves | Vice (Battle-Scarred)', 262),
       row('★ Karambit | Doppler (Factory New)', 6800, 'Sapphire'),
+      row('★ Karambit | Doppler (Minimal Wear)', 5100, 'Sapphire'),
       row('★ Karambit | Doppler (Factory New)', 1400, 'Phase 2'),
       row('★ Karambit | Doppler (Factory New)', null, 'Phase 3'),
     ]);
-    expect(prices[priceKey('Navaja Knife', 'Safari Mesh', null)]).toBe(50);
-    expect(prices[priceKey('Karambit', 'Doppler', 'Sapphire')]).toBe(6800);
+    expect(prices[priceKey('Sport Gloves', 'Vice', null)]).toEqual({ fn: 5993, bs: 262 });
+    expect(prices[priceKey('Karambit', 'Doppler', 'Sapphire')]).toEqual({ fn: 6800, mw: 5100 });
     expect(prices[priceKey('Karambit', 'Doppler', 'Phase 3')]).toBeUndefined();
-    // A phase nobody sells right now takes the dearest listed phase.
-    expect(priceFor(prices, priceKey('Karambit', 'Doppler', 'Black Pearl'))).toBe(6800);
+    // A phase nobody sells right now takes the dearest listed phase, per wear.
+    expect(priceFor(prices, priceKey('Karambit', 'Doppler', 'Black Pearl'))).toEqual({
+      fn: 6800,
+      mw: 5100,
+    });
     expect(priceFor(prices, priceKey('Karambit', 'Fade', null))).toBeUndefined();
+    expect(finishPrice({ fn: 5993, mw: 1478, ft: 481, ww: 330, bs: 262 })).toBe(481);
   });
 
-  test('cheap finishes land in the low bands, dear ones in the top', { tag: ['@api'] }, () => {
-    const prices = { a: 40, b: 80, c: 150, d: 300, e: 700, f: 5000 };
-    const bands = rarityIndexByPrice(prices, ['f', 'a', 'c', 'b', 'e', 'd', 'missing'], 6);
-    expect([...'abcdef'].map((k) => bands.get(k))).toEqual([0, 1, 2, 3, 4, 5]);
-    expect(bands.has('missing')).toBe(false);
+  test('prices fall in the bands, floats in the wears', { tag: ['@api'] }, () => {
+    expect([0.03, 1, 4.99, 5, 25, 100, 399, 400, 1500, 8713].map(bandOf)).toEqual([
+      0, 1, 1, 2, 3, 4, 4, 5, 6, 6,
+    ]);
+    expect([0, 0.069999, 0.07, 0.15, 0.38, 0.45, 1].map(wearOf)).toEqual([
+      'fn',
+      'fn',
+      'mw',
+      'ft',
+      'ww',
+      'bs',
+      'bs',
+    ]);
   });
 
   test('phases come from Doppler paint kits only', { tag: ['@api'] }, () => {

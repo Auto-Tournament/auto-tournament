@@ -1471,7 +1471,7 @@
         "nobodyYet": "Ingen har et skin ennå. Søk etter en spiller for å gi ett."
       },
       "playDropChance": "Sjanse for et skin når du taper eller spiller uavgjort",
-      "knivesByPrice": "Kniver og hansker får sjeldenhet etter markedspris (Skinport, oppdatert daglig): billige er vanlige, dyre er sjeldne.",
+      "knivesByPrice": "Alle skins får sjeldenhet etter markedsprisen i hver slitasje (Skinport, oppdatert daglig): et Factory New-skin kan være sjeldnere enn det samme skinet i Battle-Scarred.",
       "pageHint": "Virtuelle skins spillerne vinner her. Utstyrte skins vises på Ready Up-servere mellom kartene.",
       "on": "På",
       "off": "Av",
@@ -1598,7 +1598,7 @@
       "skins_one": "{{count}} skin",
       "skins_other": "{{count}} skins",
       "perSkin": "{{odds}} for ett bestemt skin",
-      "rarityNote": "Hver av de {{count}} skinsene i et drop trekker sjeldenhet for seg. Innen en sjeldenhet er alle skins like sannsynlige. Kniver og hansker rangeres etter pris.",
+      "rarityNote": "Hver av de {{count}} skinsene i et drop trekker sjeldenhet for seg. Innen en sjeldenhet er alle skins like sannsynlige. Sjeldenheten følger markedsprisen for hvert skin i slitasjen det har.",
       "placementTitle": "Turneringsplasseringer",
       "pickOfRarity": "et valg blant {{rarity}}-skins",
       "rarityOdds": "Sjanse for sjeldenheten",
@@ -1739,7 +1739,7 @@
     "mvpPlace": "MVP i en turnering",
     "catalog": {
       "title": "Alle skins",
-      "intro": "Alle skins et drop kan gi. Sjansen gjelder per valg i et drop: hvert drop viser tre, og du beholder ett. Kniver og hansker får sjeldenheten sin fra markedsprisen.",
+      "intro": "Alle skins et drop kan gi, i hver slitasje de kan komme i. Sjansen gjelder per valg i et drop: hvert drop viser tre, og du beholder ett. Sjeldenheten følger markedsprisen for skinet i den slitasjen.",
       "count_one": "{{count}} skin",
       "count_other": "{{count}} skins",
       "search": "Søk i skins",

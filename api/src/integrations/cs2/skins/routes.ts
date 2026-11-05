@@ -21,7 +21,6 @@ import { Router, type Request, type Response } from 'express';
 import { requireAuth } from '../../../middleware/auth';
 import { log } from '../../../utils/logger';
 import { resolveViewerAccount } from '../../../utils/viewerIdentity';
-import { knifeAndGlovePrices, priceFor, priceKey } from './skinPrices';
 import {
   RARITIES,
   SKIN_IMAGES_BASE,
@@ -233,6 +232,7 @@ router.get('/me/trade-up', async (req, res) => {
         weaponName: s.weaponName,
         name: s.name,
         rarity: s.rarity,
+        wear: s.wear ?? null,
         imageUrl: `${SKIN_IMAGES_BASE}/${s.image}`,
       })),
     });
@@ -681,7 +681,6 @@ router.get('/admin/catalog', requireAuth, async (req, res) => {
     // `all=1`: every paint kit, so each phase of a Doppler is its own row.
     const all = req.query.all === '1';
     const seen = new Set<string>();
-    const prices = await knifeAndGlovePrices();
     const skins = (await skinService.catalog())
       .map((s) => {
         const variant = variantOf(s.paintKitName);
@@ -704,7 +703,7 @@ router.get('/admin/catalog', requireAuth, async (req, res) => {
       .slice(0, 50)
       .map((s) => ({
         ...s,
-        priceUsd: priceFor(prices, priceKey(s.weaponName, s.name, s.variant)) ?? null,
+        priceUsd: s.price ?? null,
       }));
     return res.json({ success: true, skins });
   } catch (error) {
@@ -919,7 +918,7 @@ router.post('/admin/players/:steamId/skins', requireAuth, async (req, res) => {
  *               rarity:
  *                 type: string
  *                 enum: [common, uncommon, rare, mythical, legendary, ancient, immortal]
- *                 description: All three options of this rarity (the catalogue's tiers; knives and gloves are ranked by price into common–ancient, and immortal is one skin, the M4A4 Howl); without it, the drop odds.
+ *                 description: All three options of this rarity (the catalogue's tiers; every skin is ranked by its price per wear, so a finish can be in several); without it, the drop odds.
  *     responses:
  *       200: { description: 'Who gets one (preview), or how many were given' }
  *       400: { description: Not a target }
