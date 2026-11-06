@@ -61,6 +61,14 @@ const LOADERS: Record<string, () => Promise<Bundle>> = {
     translation: (await import('./locales/uk/translation')).default,
     bracketsViewer: (await import('./locales/brackets-viewer/uk.json')).default,
   }),
+  'es-419': async () => ({
+    translation: (await import('./locales/es-419/translation')).default,
+    bracketsViewer: (await import('./locales/brackets-viewer/es-419.json')).default,
+  }),
+  'zh-TW': async () => ({
+    translation: (await import('./locales/zh-TW/translation')).default,
+    bracketsViewer: (await import('./locales/brackets-viewer/zh-TW.json')).default,
+  }),
 };
 
 const i18n = createInstance();
@@ -71,7 +79,22 @@ const initialized = i18n
   .init({
     resources,
     fallbackLng: 'en',
-    supportedLngs: ['en', 'fr', 'de', 'es', 'it', 'pt-PT', 'pl', 'nl', 'zh-CN', 'nb', 'ru', 'uk'],
+    supportedLngs: [
+      'en',
+      'fr',
+      'de',
+      'es',
+      'it',
+      'pt-PT',
+      'pl',
+      'nl',
+      'zh-CN',
+      'nb',
+      'ru',
+      'uk',
+      'es-419',
+      'zh-TW',
+    ],
     // Each module adds its own namespace, named by its id, when it registers
     // (module-loader/moduleLocales.ts); core's strings are 'translation'.
     ns: ['translation', 'bracketsViewer'],
@@ -82,6 +105,9 @@ const initialized = i18n
     detection: {
       order: ['localStorage', 'navigator'],
       caches: ['localStorage'],
+      // Regional browser languages that have their own translation.
+      convertDetectedLanguage: (lng: string) =>
+        /^es-(?!ES$)/i.test(lng) ? 'es-419' : /^zh-(TW|HK|MO|Hant)/i.test(lng) ? 'zh-TW' : lng,
     },
     // A language that loads later (LOADERS) re-renders the page when its strings arrive.
     react: { bindI18nStore: 'added' },
