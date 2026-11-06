@@ -1,0 +1,201 @@
+{
+  "templatesPage": {
+    "header": {
+      "createFromTournament": "從錦標賽建立範本"
+    },
+    "errors": {
+      "load": "載入範本失敗"
+    },
+    "delete": {
+      "title": "刪除範本",
+      "message": "確定要刪除範本 「{{name}}」 嗎？該操作無法撤銷。",
+      "success": "範本 「{{name}}」 已成功刪除",
+      "error": "刪除範本失敗"
+    },
+    "update": {
+      "success": "範本 「{{name}}」 更新成功",
+      "error": "更新範本失敗"
+    },
+    "createFromTemplate": {
+      "errors": {
+        "inProgressOrCompleted": "當前已有錦標賽正在進行或已完成，無法從範本建立新錦標賽。請先刪除或重置當前錦標賽。",
+        "alreadyExists": "當前已存在一個錦標賽。在從範本建立新錦標賽之前，請先刪除或重置現有錦標賽。"
+      },
+      "button": "從範本建立賽事"
+    },
+    "edit": {
+      "title": "編輯範本",
+      "nameLabel": "範本名稱",
+      "descriptionLabel": "描述（可選）",
+      "typeLabel": "錦標賽類型",
+      "formatLabel": "比賽賽制",
+      "mapPool": {
+        "title": "地圖池",
+        "selectLabel": "選擇地圖池",
+        "customOption": "自訂",
+        "selectedLabel": "已選地圖（{{count}} 張）：",
+        "vetoWarning": "Veto formats (BO1/BO3/BO5) require exactly 7 maps. 當前已選：{{count}}",
+        "chooseMaps": "選擇地圖…"
+      },
+      "save": "儲存"
+    },
+    "emptyTitle": "還沒有範本",
+    "emptyDescription": "在賽事頁面把賽事設定儲存為範本，然後在這裡用它開始新賽事。"
+  },
+  "saveTemplateModal": {
+    "title": "儲存為範本",
+    "nameLabel": "範本名稱",
+    "namePlaceholder": "8 隊單敗 BO3",
+    "descriptionLabel": "描述（可選）",
+    "descriptionPlaceholder": "每週 8 隊單敗淘汰賽",
+    "saveButton": "儲存範本",
+    "errors": {
+      "nameRequired": "範本名稱為必填項",
+      "saveFailed": "儲存範本失敗"
+    }
+  },
+  "eloTemplatesPage": {
+    "errors": {
+      "load": "載入 ELO 範本失敗"
+    },
+    "header": {
+      "createTemplate": "建立範本",
+      "importJson": "從 JSON 匯入"
+    },
+    "empty": {
+      "title": "暫無 ELO 計算範本",
+      "description": "建立你的第一個範本，以自訂選手資料如何影響 ELO 調整",
+      "action": "建立範本"
+    },
+    "delete": {
+      "title": "刪除 ELO 範本",
+      "message": "確定要刪除範本 「{{name}}」 嗎？該操作無法撤銷。",
+      "success": "範本 「{{name}}」 已成功刪除",
+      "error": "刪除範本失敗",
+      "defaultProtected": "預設範本 \"pure-win-loss\" 不可刪除。"
+    },
+    "import": {
+      "success_one": "已匯入 {{count}} 個 ELO 範本",
+      "success_other": "已匯入 {{count}} 個 ELO 範本"
+    },
+    "weights": {
+      "noAdjustmentsPure": "無資料加成（純勝負 ELO）"
+    },
+    "card": {
+      "enabled": "已啟用",
+      "disabled": "已禁用",
+      "default": "預設",
+      "adjustment": {
+        "none": "每場比賽的資料加成：無（0；僅基於結果的 ELO）",
+        "uncapped": "每場比賽的資料加成：不設上限（請謹慎使用）",
+        "range": "每場比賽的資料加成範圍：{{min}} 到 {{max}} ELO",
+        "noMin": "無下限",
+        "noMax": "無上限"
+      },
+      "tooltips": {
+        "edit": "編輯範本",
+        "delete": "刪除範本"
+      },
+      "weightsTitle": "資料權重：",
+      "limitsTitle": "加成上限：",
+      "minAdjustment": "最小：{{value}}",
+      "maxAdjustment": "最大：{{value}}"
+    },
+    "importModal": {
+      "title": "從 JSON 匯入 ELO 範本",
+      "introTitle": "在下方貼上包含 ELO 範本定義的 JSON。",
+      "introBody": "期望格式：由範本物件構成的陣列，每個物件包含 name、可選的 description、enabled、weights、maxAdjustment 和 minAdjustment。如省略 id，將根據名稱自動生成。",
+      "jsonLabel": "JSON 資料",
+      "validJsonTitle": "✓ JSON 校驗透過！",
+      "previewTitle": "預覽：",
+      "previewButton": "預覽",
+      "importButton": "匯入範本",
+      "validJsonBody_one": "找到 {{count}} 個範本。",
+      "validJsonBody_other": "找到 {{count}} 個範本。"
+    },
+    "editor": {
+      "titleEdit": "編輯 ELO 範本",
+      "titleCreate": "建立 ELO 範本",
+      "info": "設定單場比賽中選手各項資料如何影響 ELO 調整。權重會在 OpenSkill 計算出基礎 ELO 變化（勝負）之後應用。正權重會增加 ELO，負權重會減少 ELO。",
+      "nameLabel": "範本名稱",
+      "nameDefaultLocked": "預設範本名稱不可更改",
+      "descriptionLabel": "描述",
+      "descriptionPlaceholder": "可選：簡要說明該範本的用途",
+      "enabledLabel": "啟用",
+      "weights": {
+        "title": "資料權重",
+        "subtitle": "調節每項資料的滑塊。數值為 0 時，該資料不會影響 ELO。"
+      },
+      "limits": {
+        "title": "加成上限（可選）",
+        "subtitle": "為單場比賽設定最大和最小 ELO 調整值，以避免極端變動。",
+        "maxLabel": "最大加成",
+        "maxHelper": "每場比賽正向 ELO 調整的最大值",
+        "minLabel": "最小加成",
+        "minHelper": "每場比賽負向 ELO 調整的最大值"
+      },
+      "errors": {
+        "nameRequired": "範本名稱為必填項"
+      },
+      "create": {
+        "success": "範本 「{{name}}」 建立成功",
+        "error": "建立範本失敗"
+      },
+      "update": {
+        "success": "範本 「{{name}}」 更新成功",
+        "error": "更新範本失敗"
+      },
+      "buttons": {
+        "saving": "正在儲存…",
+        "update": "更新",
+        "create": "建立"
+      }
+    },
+    "stats": {
+      "kills": {
+        "label": "擊殺",
+        "description": "每場比賽的擊殺數"
+      },
+      "deaths": {
+        "label": "死亡",
+        "description": "每場比賽的死亡數（通常為負權重）"
+      },
+      "assists": {
+        "label": "助攻",
+        "description": "每場比賽的助攻數"
+      },
+      "flashAssists": {
+        "label": "閃光助攻",
+        "description": "每場比賽的閃光助攻數"
+      },
+      "headshotKills": {
+        "label": "爆頭擊殺",
+        "description": "每場比賽的爆頭擊殺數"
+      },
+      "damage": {
+        "label": "傷害",
+        "description": "每場比賽造成的總傷害"
+      },
+      "utilityDamage": {
+        "label": "道具傷害",
+        "description": "用道具（手雷）造成的傷害"
+      },
+      "kast": {
+        "label": "KAST %",
+        "description": "有擊殺、助攻、存活或被交換的回合百分比"
+      },
+      "mvps": {
+        "label": "MVP",
+        "description": "每場比賽獲得的 MVP 次數"
+      },
+      "score": {
+        "label": "得分",
+        "description": "比賽得分（綜合多項因素）"
+      },
+      "adr": {
+        "label": "ADR",
+        "description": "每回合平均傷害"
+      }
+    }
+  }
+}

@@ -1,0 +1,141 @@
+{
+  "devToolsPage": {
+    "alert": "這些工具僅在開發模式下可用，可用於快速生成測試資料以驗證應用功能。",
+    "sections": {
+      "testData": {
+        "title": "建立測試資料"
+      }
+    },
+    "testTeams": {
+      "title": "測試戰隊",
+      "description": "建立包含隨機選手資料的戰隊，用於測試錦標賽對陣與比賽流程。",
+      "success": "已成功建立 {{count}} 支測試戰隊！",
+      "errors": {
+        "create": "建立測試戰隊失敗",
+        "partial": "已建立 {{created}} 支戰隊，但 {{failed}} 支建立失敗。詳情請檢視控制台。"
+      },
+      "customLabel": "自訂戰隊數量",
+      "buttons": {
+        "createFixed": "建立 {{count}} 支戰隊",
+        "createCustom": "建立戰隊"
+      }
+    },
+    "testPlayers": {
+      "title": "測試選手",
+      "description": "建立帶有 ELO 評分的選手，用於測試洗牌錦標賽和選手管理。",
+      "success": "已建立 {{created}} 名測試選手！",
+      "errors": {
+        "create": "建立測試選手失敗",
+        "partial": "已建立 {{created}} 名選手，更新 {{updated}} 名，但 {{failed}} 名失敗。詳情請檢視控制台。"
+      },
+      "customLabel": "自訂選手數量",
+      "buttons": {
+        "createFixed": "建立 {{count}} 名選手",
+        "createCustom": "建立選手"
+      },
+      "successWithUpdated": "已建立 {{created}} 名並更新 {{updated}} 名測試選手！"
+    },
+    "testServers": {
+      "title": "測試伺服器",
+      "description": "建立伺服器設定，用於測試比賽管理與 RCON 命令。",
+      "success": "已成功建立 {{count}} 臺測試伺服器！",
+      "errors": {
+        "create": "建立測試伺服器失敗",
+        "partial": "已建立 {{created}} 臺伺服器，但 {{failed}} 臺建立失敗。詳情請檢視控制台。"
+      },
+      "customLabel": "自訂伺服器數量",
+      "buttons": {
+        "createCustom": "建立伺服器",
+        "createFixed_one": "建立 {{count}} 臺伺服器",
+        "createFixed_other": "建立 {{count}} 臺伺服器"
+      }
+    },
+    "dangerZone": {
+      "title": "危險區域"
+    },
+    "deleteTestData": {
+      "title": "刪除測試資料",
+      "description": "刪除所有測試資料（ID 以 「test-」 開頭的戰隊與伺服器）。此操作不可撤銷。",
+      "button": "刪除所有測試資料",
+      "confirmPrompt": "確定要刪除所有測試資料嗎？",
+      "success": "已成功刪除所有測試資料！",
+      "error": "刪除測試資料失敗"
+    },
+    "wipeTable": {
+      "title": "清空指定資料表",
+      "description": "清空某張資料表中的所有資料。適用於在不重置全部資料的情況下進行區域性清理。資料表按類別分組展示。",
+      "confirmPrompt": "確定要清空 {{table}} 表嗎？此操作將刪除該表中的所有資料。",
+      "success": "{{table}} 表已成功清空！",
+      "error": "清空 {{table}} 表失敗",
+      "core": {
+        "title": "核心資料表",
+        "teams": "清空戰隊",
+        "servers": "清空伺服器",
+        "tournament": "清空錦標賽",
+        "matches": "清空比賽"
+      },
+      "players": {
+        "title": "選手與洗牌錦標賽",
+        "players": "清空選手",
+        "ratingHistory": "清空評分歷史",
+        "matchStats": "清空比賽統計",
+        "shufflePlayers": "清空洗牌選手"
+      },
+      "maps": {
+        "title": "地圖與範本",
+        "maps": "清空地圖",
+        "mapPools": "清空地圖池",
+        "tournamentTemplates": "清空錦標賽範本",
+        "eloTemplates": "清空 ELO 範本"
+      },
+      "matchEvents": {
+        "title": "比賽事件與結果",
+        "events": "清空比賽事件",
+        "mapResults": "清空地圖結果"
+      },
+      "settings": {
+        "title": "設定",
+        "appSettings": "清空應用設定"
+      }
+    },
+    "simulation": {
+      "title": "模擬狀態",
+      "description": "清空所有比賽與歷史統計，以便在模擬模式下在乾淨的賽程表上點選「開始錦標賽」，同時保留伺服器、戰隊、地圖與當前錦標賽設定。",
+      "button": "重置模擬狀態（保留設定）",
+      "reset": {
+        "success": "模擬狀態已重置。比賽與統計已清空；伺服器、戰隊與錦標賽設定已保留。",
+        "error": "重置模擬狀態失敗"
+      }
+    },
+    "wipeDatabase": {
+      "title": "清空整個資料庫",
+      "warningTitle": "極度危險操作！",
+      "warningBody": "此操作將刪除所有資料。",
+      "permanentlyDeletes": "將永久刪除：",
+      "items": {
+        "tournaments": "所有錦標賽與賽程表",
+        "matches": "所有比賽與事件",
+        "teams": "所有戰隊與選手",
+        "servers": "所有伺服器設定"
+      },
+      "button": "清空整個資料庫",
+      "successRedirect": "資料庫已清空，正在跳轉…",
+      "error": "清空資料庫失敗",
+      "dialog": {
+        "title": "確認清空資料庫",
+        "areYouSure": "你確定要這麼做嗎？",
+        "actionWill": "此操作將",
+        "permanentlyDelete": "永久刪除",
+        "items": {
+          "tournaments": "所有錦標賽資料與賽程表",
+          "matches": "所有比賽歷史與事件",
+          "teams": "所有戰隊與選手設定",
+          "servers": "所有伺服器設定"
+        },
+        "cannotUndo": "此操作不可撤銷！",
+        "wiping": "正在清空資料庫…",
+        "yesWipe": "是的，清空所有內容"
+      }
+    }
+  }
+}

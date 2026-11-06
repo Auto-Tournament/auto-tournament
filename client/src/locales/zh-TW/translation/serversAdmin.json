@@ -1,0 +1,198 @@
+{
+  "adminToolsPage": {
+    "description": "此網站的比賽恢復和應用記錄。",
+    "recovery": {
+      "title": "比賽恢復",
+      "description": "如果在錦標賽期間 API 或伺服器重啟過，且比賽狀態看起來不同步（例如比賽卡在開賽前或缺少即時比分），你可以手動觸發一次恢復。系統會向所有伺服器請求當前比賽報告，重新同步比分和階段，並在可能時重新設定 Webhook 和錄影上傳。",
+      "button": "立即執行比賽恢復",
+      "success": "比賽恢復已完成。",
+      "error": "比賽恢復失敗。",
+      "failedTrigger": "觸發比賽恢復失敗，請重試。"
+    },
+    "monitoring": {
+      "title": "監控與記錄",
+      "appLogs": "應用記錄"
+    },
+    "logs": {
+      "loadFailed": "載入記錄失敗",
+      "levelAll": "全部",
+      "auto": "自動",
+      "refresh": "重新整理記錄",
+      "empty": "暫無記錄",
+      "footer": "顯示最近 {{count}} 則記錄",
+      "footerAutoRefresh": "顯示最近 {{count}} 則記錄（自動重新整理中）"
+    }
+  },
+  "servers": {
+    "allocation": {
+      "title": "等待可用伺服器",
+      "waiting": "伺服器空閒後，此比賽將自動開始。所需伺服器：",
+      "nextPass": "{{seconds}} 秒後再次嘗試分配"
+    }
+  },
+  "adminMatchControls": {
+    "title": "管理員控制",
+    "noServer": "此比賽未分配伺服器",
+    "unavailable": "此比賽未分配伺服器，因此無法使用管理員控制。",
+    "unknownAction": "未知操作",
+    "commandFailed": "執行命令失敗",
+    "confirm": "確認",
+    "execute": "執行",
+    "close": "關閉",
+    "tipLabel": "管理員提示：",
+    "tip": "比賽進行中請謹慎使用這些控制。部分操作（如「{{endMatch}}」和「{{restartMatch}}」）無法撤銷。",
+    "sections": {
+      "matchControl": "比賽控制",
+      "advanced": "高階操作"
+    },
+    "actions": {
+      "pause": {
+        "button": "暫停",
+        "tooltip": "管理員暫停 – 玩家無法取消暫停",
+        "title": "暫停比賽",
+        "description": "將強制暫停比賽，玩家無法取消暫停。"
+      },
+      "unpause": {
+        "button": "取消暫停",
+        "tooltip": "從暫停中恢復比賽",
+        "title": "取消暫停比賽",
+        "description": "將強制取消比賽暫停。"
+      },
+      "swap": {
+        "button": "交換陣營",
+        "tooltip": "將雙方戰隊切換到對面陣營（CT ↔ T）",
+        "title": "交換陣營",
+        "description": "將交換雙方戰隊的陣營（CT/T）。"
+      },
+      "restartRound": {
+        "button": "重開回合",
+        "tooltip": "從頭重新開始當前回合（重置經濟）",
+        "title": "重開回合",
+        "description": "將重新開始當前回合。"
+      },
+      "skipVeto": {
+        "button": "跳過選圖",
+        "tooltip": "跳過選圖並立即載入第一張地圖",
+        "title": "跳過選圖",
+        "description": "將跳過選圖階段並開始比賽。"
+      },
+      "endWarmup": {
+        "button": "結束熱身",
+        "tooltip": "結束熱身並開始比賽（刀局或正式開始）",
+        "title": "結束熱身",
+        "description": "將結束熱身並開始比賽。"
+      },
+      "endMatch": {
+        "button": "結束比賽",
+        "tooltip": "立即結束比賽並記錄最終比分",
+        "title": "結束比賽",
+        "description": "將強制結束比賽。請謹慎使用！"
+      },
+      "restartMatch": {
+        "button": "重開比賽",
+        "tooltip": "結束並從頭重新載入比賽 – 所有進度都會丟失",
+        "title": "重開比賽",
+        "description": "將結束比賽並從頭重新載入。所有進度都會丟失！"
+      },
+      "reallocateServer": {
+        "button": "重新分配伺服器",
+        "tooltip": "將比賽轉移到其他伺服器（正式開始前的補救措施）",
+        "tooltipUnavailable": "僅適用於已就緒/已載入的比賽（比賽進行中不可用）",
+        "title": "重新分配伺服器",
+        "description": "將比賽轉移到另一臺空閒伺服器並重新載入。適用於當前伺服器版本過舊或玩家無法連線的情況。比賽進行中不可使用。"
+      },
+      "forceCancel": {
+        "button": "強制取消",
+        "tooltip": "即使伺服器離線也取消比賽 – 釋放伺服器分配",
+        "title": "強制取消比賽",
+        "description": "⚠️ 即使伺服器離線也會取消比賽。比賽將被標記為已完成，伺服器將被釋放。該操作無法撤銷。"
+      }
+    },
+    "inputs": {
+      "restoreBackup": {
+        "button": "恢復備份",
+        "tooltip": "載入已儲存的回合備份 – 恢復經濟和站位",
+        "title": "恢復備份",
+        "label": "要恢復的回合編號"
+      },
+      "addTime": {
+        "button": "增加時間",
+        "tooltip": "延長當前回合計時（適用於技術暫停）",
+        "title": "增加回合時間",
+        "label": "增加的秒數"
+      },
+      "broadcast": {
+        "button": "廣播",
+        "tooltip": "向伺服器上的所有玩家傳送訊息",
+        "title": "廣播訊息",
+        "label": "廣播內容"
+      }
+    },
+    "success": {
+      "pause": "比賽已暫停",
+      "unpause": "比賽已取消暫停",
+      "swap": "已交換陣營",
+      "skipVeto": "已跳過選圖階段",
+      "restartRound": "回合已重開",
+      "endMatch": "比賽已結束",
+      "endWarmup": "熱身已結束",
+      "startMatch": "比賽已開始",
+      "restoreBackup": "已恢復到第 {{round}} 回合的備份",
+      "addTime_one": "回合計時已增加 {{count}} 秒",
+      "addTime_other": "回合計時已增加 {{count}} 秒",
+      "broadcast": "訊息已傳送到伺服器",
+      "restartMatch": "比賽已重開（已結束並重新載入）",
+      "reallocateServer": "比賽已轉移到其他伺服器",
+      "forceCancel": "比賽已取消",
+      "default": "命令已執行"
+    },
+    "hold": {
+      "title": "暫緩，而不是判不戰而勝",
+      "description": "暫緩期間，比賽不會載入或開始，也沒人會被判不戰而勝。比賽繼續時，雙方重新獲得完整時間。",
+      "reason": "原因（管理員可見）",
+      "delay": "推遲 {{minutes}} 分鐘",
+      "holdUntilReleased": "暫緩直到解除",
+      "release": "立即解除",
+      "restartCountdown": "重新開始倒計時",
+      "heldUntil": "暫緩至 {{time}}",
+      "heldIndefinitely": "暫緩直到解除",
+      "tournamentPaused": "賽事已暫停",
+      "heldDone": "比賽已暫緩",
+      "delayedDone": "比賽已推遲 {{minutes}} 分鐘",
+      "releasedDone": "比賽已解除暫緩",
+      "restartedDone": "倒計時已重新開始：雙方重新獲得完整時間",
+      "failed": "無法更改暫緩狀態"
+    }
+  },
+  "adminCalls": {
+    "header": "管理員呼叫（{{count}}）",
+    "title": "{{player}} 正在呼叫管理員",
+    "justNow": "剛剛",
+    "minutesAgo": "{{count}} 分鐘前",
+    "hoursAgo": "{{count}} 小時前",
+    "spectator": "觀眾",
+    "team1": "隊伍 1",
+    "team2": "隊伍 2",
+    "noMessage": "無留言",
+    "unknownPlayer": "未知玩家",
+    "unknownServer": "未知伺服器",
+    "matchMap": "{{match}}，第 {{map}} 張地圖",
+    "openMatch": "開啟比賽",
+    "openServers": "伺服器",
+    "resolve": "標記為已處理",
+    "resolveAll": "全部處理",
+    "resolveFailed": "無法將該呼叫標記為已處理，請重試。",
+    "matchUnavailable": "無法開啟該比賽。",
+    "enableSound": "開啟聲音",
+    "mute": "靜音",
+    "unmute": "取消靜音",
+    "minimize": "最小化",
+    "show": "顯示",
+    "openChat": "開啟聊天",
+    "claim": "認領",
+    "release": "放棄認領",
+    "claimedBy": "由 {{name}} 認領",
+    "claimedByYou": "由你認領",
+    "anAdmin": "一位管理員"
+  }
+}

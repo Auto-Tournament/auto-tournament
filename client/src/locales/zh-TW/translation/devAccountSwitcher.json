@@ -1,0 +1,12 @@
+{
+  "devAccountSwitcher": {
+    "tooltip": "切換帳號（開發）",
+    "adminTest": "管理員（測試）",
+    "playerA": "玩家 A（開發）",
+    "playerB": "玩家 B（開發）",
+    "playerC": "玩家 C（開發）",
+    "newPlayer": "新玩家（首次訪問）（開發）",
+    "signOut": "登出",
+    "disabled": "此伺服器已禁用測試登入"
+  }
+}

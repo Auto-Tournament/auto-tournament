@@ -1,0 +1,490 @@
+{
+  "matchesPage": {
+    "errors": {
+      "loadMatches": "載入比賽失敗",
+      "loadTitle": "載入比賽時出錯",
+      "bulkDelete": "無法刪除一場或多場比賽"
+    },
+    "header": {
+      "createMatch": "建立比賽"
+    },
+    "bulkSelect": {
+      "select": "選擇",
+      "done": "完成選擇",
+      "selectAll": "全選",
+      "unselectAll": "取消全選",
+      "deleteSelected": "刪除所選"
+    },
+    "empty": {
+      "title": "暫無可顯示的比賽",
+      "description": "建立錦標賽並生成賽程表後即可在此檢視比賽",
+      "createManual": "或建立手動比賽"
+    },
+    "sections": {
+      "live": "進行中的比賽（{{count}}）",
+      "upcoming": "即將開始的比賽（{{count}}）",
+      "history": "比賽歷史（{{count}}）",
+      "inQueue": "{{count}} 場排隊中"
+    },
+    "manualMatchLabel": "手動比賽",
+    "create": {
+      "success": "已建立手動比賽：{{slug}}"
+    },
+    "bulkDelete": {
+      "title": "刪除手動比賽",
+      "deleted_one": "已刪除 {{count}} 場比賽",
+      "deleted_other": "已刪除 {{count}} 場比賽",
+      "message_one": "確定要刪除 {{count}} 場手動比賽嗎？該操作無法撤銷。",
+      "message_other": "確定要刪除 {{count}} 場手動比賽嗎？該操作無法撤銷。"
+    },
+    "card": {
+      "matchNumber": "比賽 #{{number}}",
+      "server": "伺服器：{{name}}",
+      "queuePosition": "佇列位置：#{{position}}",
+      "shuffle": "隨機組隊",
+      "shuffleManual": "隨機組隊（手動）",
+      "manual": "手動",
+      "simulation": "模擬",
+      "winner": "勝者",
+      "mapN": "地圖 {{n}}"
+    },
+    "statusLabel": {
+      "walkover": "不戰而勝",
+      "waitingForTournament": "等待賽事開始",
+      "waitingForServer": "等待伺服器",
+      "waitingForPairing": "等待配對",
+      "vetoPending": "待禁選",
+      "mapVeto": "地圖禁選",
+      "serverAllocated": "已分配伺服器",
+      "warmup": "熱身",
+      "overtime": "加時 #{{n}}",
+      "live": "直播中",
+      "completed": "已完成",
+      "cancelled": "已取消",
+      "needsDecision": "需要管理員決定"
+    },
+    "statusGuide": {
+      "title": "比賽狀態說明",
+      "pending": "比賽已排期，但尚未分配伺服器。有空閒伺服器時將自動分配。",
+      "loaded": "比賽已在伺服器上載入並處於熱身階段。玩家需連線並準備就緒才能開始。",
+      "live": "比賽正在伺服器上進行。",
+      "completed": "比賽已結束。勝者已確定，賽程表已更新。",
+      "proTipTitle": "提示：",
+      "proTip": "當比賽顯示「等待玩家 (X/Y)」時，伺服器已就緒，玩家應立即連線。所有預期玩家連線並準備後，比賽將自動開始。"
+    },
+    "latestEvent": "最新：{{event}}",
+    "matchLabel": {
+      "upper": "勝者組 第 {{round}} 輪 M{{match}}",
+      "lower": "敗者組 第 {{round}} 輪 M{{match}}",
+      "grandFinal": "總決賽",
+      "grandFinalReset": "總決賽加賽",
+      "group": "{{group}} 組 · 第 {{round}} 輪",
+      "playoffs": "季後賽 · 第 {{round}} 輪"
+    },
+    "table": {
+      "filterLabel": "顯示",
+      "search": "查詢戰隊或玩家",
+      "tbd": "待定",
+      "manage": "管理比賽",
+      "empty": "這裡沒有比賽。",
+      "filter": {
+        "attention_one": "需要關注 · {{count}}",
+        "attention_other": "需要關注 · {{count}}",
+        "live_one": "進行中 · {{count}}",
+        "live_other": "進行中 · {{count}}",
+        "veto_one": "禁選 · {{count}}",
+        "veto_other": "禁選 · {{count}}",
+        "waiting_one": "等待中 · {{count}}",
+        "waiting_other": "等待中 · {{count}}",
+        "finished_one": "已結束 · {{count}}",
+        "finished_other": "已結束 · {{count}}",
+        "all_one": "全部 · {{count}}",
+        "all_other": "全部 · {{count}}"
+      },
+      "columns": {
+        "match": "比賽",
+        "teams": "戰隊",
+        "phase": "階段",
+        "server": "伺服器",
+        "attention": "需要關注",
+        "open": "開啟"
+      },
+      "attention": {
+        "calls_one": "管理員呼叫",
+        "calls_other": "{{count}} 個管理員呼叫",
+        "decide": "判定結果"
+      },
+      "phase": {
+        "live": "進行中 · 第 {{map}} 張地圖",
+        "finished": "已結束",
+        "finishedScore": "已結束 · {{score}}",
+        "veto": "地圖禁選",
+        "waitingTeams": "等待雙方戰隊",
+        "queued": "等待伺服器 · 佇列第 {{position}} 位",
+        "waiting": "等待中"
+      },
+      "server": {
+        "freed": "已釋放"
+      }
+    }
+  },
+  "matchDetailsModal": {
+    "tiebreakHint": "比分持平：{{team}} 透過決勝規則贏下該地圖。",
+    "delete": {
+      "dialogTitle": "刪除比賽",
+      "confirmTitle": "確認刪除此比賽？",
+      "confirmBody": "確定要刪除比賽 \"{{slug}}\" 嗎？此操作無法撤銷。",
+      "button": "刪除比賽",
+      "success": "比賽已刪除",
+      "failed": "刪除比賽失敗"
+    },
+    "roster": {
+      "title": "參賽名單",
+      "yourTeam": "你的隊伍",
+      "openPlayerPage": "開啟玩家頁面",
+      "ready": "已準備",
+      "connected": "已連線",
+      "offline": "未連線",
+      "bot": "BOT"
+    },
+    "decision": {
+      "body": "所有地圖都已打完，但系列賽在地圖、回合和傷害上都持平。選擇獲勝方以推進賽程表。",
+      "setWinner": "{{team}} 獲勝",
+      "confirmTitle": "設定系列賽獲勝方",
+      "confirmBody": "以 {{team}} 獲勝結束此系列賽？賽程表將推進，且無法在此撤銷。",
+      "confirm": "設定獲勝方",
+      "success": "已設定獲勝方",
+      "failed": "設定獲勝方失敗"
+    },
+    "config": {
+      "loadFailed": "載入比賽設定失敗",
+      "view": "檢視比賽設定 JSON",
+      "title": "比賽設定 JSON",
+      "loading": "正在載入比賽設定…",
+      "empty": "此比賽沒有可用設定。"
+    },
+    "tiebreak": {
+      "regulationOnly": "此比賽禁用了延長賽（僅常規時間），因此平局按戰隊總傷害決定。",
+      "segmentsExhausted": "延長賽設定了最大次數。如果比分仍然持平，按戰隊總傷害決定勝者。",
+      "overtimeDisabled": "此比賽禁用了延長賽，因此平局按戰隊總傷害決定。",
+      "tiedByDamage": "最終比分持平，因此按比賽設定以戰隊總傷害決定了勝者。"
+    },
+    "team1": "戰隊 1",
+    "team2": "戰隊 2",
+    "matchTime": "比賽時間：",
+    "server": "伺服器：",
+    "queuePosition": "佇列位置：",
+    "totalDamage": "總傷害：{{team1}} - {{team2}}",
+    "mapOfTotal": "第 {{index}}/{{total}} 張地圖：{{map}}",
+    "mapIndex": "第 {{index}} 張地圖：{{map}}",
+    "round": "第 {{round}} 回合",
+    "shuffle": {
+      "averageElo": "戰隊 ELO（平均）：{{team1}} 對 {{team2}}",
+      "balancerHint": "隨機組隊的戰隊由基於 OpenSkill 的平衡器生成，它把高分和低分玩家分散到兩邊，讓平均值保持接近。"
+    },
+    "playerLeaderboards": "玩家排行榜",
+    "noPlayerData": "沒有玩家資料",
+    "currentMap": "當前地圖",
+    "maps": "地圖",
+    "mapsNotPicked": "地圖尚未選出。",
+    "mapsViaVeto": "將透過禁選決定",
+    "matchInformation": "比賽資訊",
+    "created": "建立時間：",
+    "started": "開始時間：",
+    "completed": "完成時間：",
+    "adminControls": "管理員控制",
+    "slug": "比賽標識：",
+    "openChat": "比賽聊天"
+  },
+  "bulkShuffleMatchesModal": {
+    "title": "批次建立洗牌比賽",
+    "description": "設定單張地圖的洗牌比賽（地圖 + 回合上限），然後為每一場比賽指定雙方陣容，建立任意數量的一對一比賽。這些比賽會作為當前洗牌錦標賽的一部分建立，並在你開始錦標賽時分配到伺服器。",
+    "mapSelect": {
+      "label": "地圖",
+      "noMaps": "此錦標賽尚未設定任何地圖",
+      "helper": "本批次中的所有比賽都會使用該地圖。"
+    },
+    "maxRounds": {
+      "label": "每張地圖的最大回合數",
+      "helperWithValue": "比賽最多打 {{maxRounds}} 回合；先拿到 {{winRounds}} 回合的一方獲勝。",
+      "helperDefault": "每張地圖的最大回合數（預設 24，上限 30）。"
+    },
+    "matchesSection": {
+      "title": "比賽（{{count}}）",
+      "addMatch": "新增比賽"
+    },
+    "players": {
+      "empty": "當前尚無選手報名該洗牌錦標賽。請先註冊選手，然後再建立手動比賽。"
+    },
+    "matchRow": {
+      "title": "比賽 {{index}}",
+      "teamCounts": "{{team1}}/{{teamSize}} • {{team2}}/{{teamSize}}",
+      "team1Label": "隊伍 1 選手（{{team1Count}}/{{teamSize}}）",
+      "team2Label": "隊伍 2 選手（{{team2Count}}/{{teamSize}}）",
+      "searchPlaceholder": "搜尋並選擇選手",
+      "mapOverrideLabel": "地圖（可選覆蓋）",
+      "mapOverrideHelperOwn": "本場比賽使用自訂地圖。",
+      "mapOverrideHelperDefault": "留空則使用上方預設地圖。",
+      "maxRoundsOverrideLabel": "最大回合數（可選覆蓋）",
+      "maxRoundsOverrideHelperOwn": "覆蓋本場比賽的預設最大回合數（當前為 {{value}}）。",
+      "maxRoundsOverrideHelperDefault": "留空則使用上方預設最大回合數。"
+    },
+    "errors": {
+      "loadPlayers": "載入已報名選手失敗",
+      "noMatches": "請至少新增一場比賽。",
+      "bothTeamsRequired": "比賽 {{index}}：雙方都必須至少有一名選手。",
+      "conflictingPlayers": "比賽 {{index}}：同一名選手不能同時出現在兩隊。衝突 ID：{{ids}}",
+      "mapRequired": "比賽 {{index}}：必須選擇地圖（請設定預設地圖或為本場選擇地圖）。",
+      "rowMaxRoundsRange": "比賽 {{index}}：按比賽覆蓋時，最大回合數必須在 1 到 30 之間。",
+      "globalMaxRoundsRange": "最大回合數必須在 1 到 30 之間。",
+      "createFailed": "建立手動洗牌比賽失敗"
+    },
+    "success": {
+      "created": "手動洗牌比賽已建立，在錦標賽開始時會分配到伺服器。"
+    },
+    "createMatchesButton": {
+      "default": "建立比賽",
+      "creating": "正在建立…"
+    }
+  },
+  "teamModal": {
+    "titleCreate": "建立戰隊",
+    "titleEdit": "編輯戰隊",
+    "teamNameLabel": "戰隊名稱",
+    "teamNamePlaceholder": "Astralis",
+    "teamNameHelper": "戰隊名稱可以包含任意語言和特殊字元",
+    "teamTagLabel": "戰隊簡稱",
+    "teamTagPlaceholder": "AST",
+    "teamTagHelper": "根據戰隊名稱自動生成（最多 4 個字元）",
+    "playersHeader": "選手（{{count}}）",
+    "selectPlayers": "選擇選手",
+    "noPlayersInfo": "尚未新增選手，請至少新增一名選手。",
+    "addPlayersHelper": "在下方新增新玩家，或從已有玩家中選擇",
+    "addPlayersHelper_steam": "透過貼上 Steam 連結或從現有選手中選擇來新增選手",
+    "steamInputLabel": "Steam ID / 自訂連結",
+    "steamInputPlaceholder": "gaben 或 steamcommunity.com/id/gaben",
+    "resolveSteam": "解析 Steam ID",
+    "resolving": "正在解析…",
+    "playerNameLabel": "選手名稱",
+    "playerNamePlaceholder": "s1mple",
+    "eloLabel": "ELO（可選）",
+    "eloPlaceholder": "1500",
+    "eloHelper": "預設：1500",
+    "errors": {
+      "steamLookupEmpty": "請輸入 Steam ID、自訂連結或個人資料連結",
+      "steamApiNotConfigured": "未設定 Steam API——請手動輸入 Steam ID64",
+      "steamResolveFailed": "無法解析 Steam ID——請手動輸入 Steam ID64",
+      "steamAndNameRequired": "Steam ID 和選手名稱均為必填項",
+      "steamDuplicate": "該 Steam ID 已在此戰隊中",
+      "teamNameRequired": "戰隊名稱為必填項",
+      "playersRequired": "至少需要一名選手",
+      "saveFailed": "儲存戰隊失敗",
+      "deleteFailed": "刪除戰隊失敗",
+      "discordIdInvalid": "Discord ID 必須為 17–20 位數字（數字使用者 ID，而非使用者名稱）",
+      "discordIdInvalidPlayers": "以下選手的 Discord ID 無效：{{names}}。必須為 17–20 位數字，或留空。",
+      "discordIdSaveFailed": "戰隊已儲存，但以下選手的 Discord ID 儲存失敗：{{names}}。{{message}}",
+      "nameRequired": "請輸入玩家名稱",
+      "addPlayerFailed": "無法新增玩家"
+    },
+    "success": {
+      "playerAdded": "選手已新增到戰隊",
+      "playerReplaced": "選手已被替換",
+      "teamUpdated": "戰隊更新成功",
+      "teamCreated": "戰隊建立成功",
+      "teamDeleted": "戰隊刪除成功"
+    },
+    "buttons": {
+      "deleteTeam": "刪除戰隊",
+      "cancel": "取消",
+      "saving": "正在儲存…",
+      "saveChanges": "儲存更改",
+      "createTeam": "建立戰隊"
+    },
+    "confirmDelete": {
+      "title": "刪除戰隊",
+      "message": "確定要刪除 「{{name}}」 嗎？該操作無法撤銷。"
+    },
+    "replacePlayerAria": "替換選手 {{name}}",
+    "replacePlayerTooltip": "替換此選手",
+    "accountLabel": "{{account}} 帳號（可選）",
+    "accountHelper": "用於 {{games}}。當他們用 {{account}} 登入時，就會成為此玩家。"
+  },
+  "playerModal": {
+    "titleCreate": "建立選手",
+    "titleEdit": "編輯選手",
+    "steamLabel": "Steam ID 或個人資料連結",
+    "steamHelperEditing": "Steam ID 不可更改",
+    "steamHelperNew": "輸入 Steam ID64、自訂連結或個人資料連結。單擊「解析」可自動填充名稱和頭像。",
+    "resolveSteam": "解析 Steam ID",
+    "resolving": "正在解析…",
+    "playerNameLabel": "選手名稱",
+    "playerNamePlaceholder": "選手",
+    "eloLabelNew": "初始 ELO",
+    "eloLabelEdit": "ELO",
+    "eloHelperNew": "留空則使用預設值（1500 Skill Rating）。",
+    "eloHelperEdit": "修改 ELO 將重置該選手的評分與歷史統計。此操作無法撤銷。",
+    "isAdminLabel": "管理員（對所有比賽擁有遊戲內管理許可權）",
+    "currentElo": "當前 ELO：{{value}}",
+    "startingElo": "初始 ELO：{{value}}",
+    "matchesPlayed": "已比賽場次：{{count}}",
+    "errors": {
+      "steamRequired": "Steam ID 為必填項",
+      "nameRequired": "選手名稱為必填項",
+      "steamLookupEmpty": "請輸入 Steam ID、自訂連結或個人資料連結",
+      "steamApiNotConfigured": "未設定 Steam API——請手動輸入 Steam ID64",
+      "steamResolveFailed": "無法解析 Steam ID——請手動輸入 Steam ID64",
+      "saveFailed": "儲存選手失敗"
+    },
+    "success": {
+      "playerUpdated": "選手更新成功",
+      "playerCreated": "選手建立成功"
+    },
+    "buttons": {
+      "delete": "刪除",
+      "cancel": "取消",
+      "saving": "正在儲存…",
+      "save": "儲存",
+      "create": "建立"
+    },
+    "confirmDelete": {
+      "title": "刪除選手",
+      "message": "確定要刪除選手 「{{name}}」 嗎？該操作無法撤銷。"
+    },
+    "confirmEloUpdate": {
+      "title": "更新選手 ELO",
+      "message": "確定要將該選手的 ELO 從 {{from}} 更新為 {{to}} 嗎？這將重置其統計和評分歷史。此操作無法撤銷。"
+    },
+    "discordIdHelper": "可選，17–20 位數字。便於組織者透過 Discord 聯絡該選手，不會公開顯示。",
+    "accountLabel": "{{account}} 帳號（可選）",
+    "accountHelper": "用於 {{games}}。帳號 ID；當他們用 {{account}} 登入時，就會成為此玩家。",
+    "accountVerified": "已連結：對方已用 {{account}} 登入。只能由本人更改。"
+  },
+  "teamImportModal": {
+    "title": "從 JSON 匯入戰隊",
+    "info": {
+      "title": "在下方貼上包含戰隊資料的 JSON。",
+      "format": "預期格式：戰隊陣列，包含 name、tag（可選）和 players（name + steamId，以及可選的 discordId，需用引號括起的字串）。",
+      "link": "檢視帶範例的文件"
+    },
+    "jsonLabel": "JSON 資料",
+    "errors": {
+      "mustBeArray": "JSON 必須是戰隊陣列",
+      "emptyArray": "陣列不能為空",
+      "parseWithMessage": "JSON 解析錯誤：{{message}}",
+      "parseGeneric": "JSON 格式無效，請檢查語法。",
+      "importFailed": "匯入戰隊失敗",
+      "noJson": "請先貼上 JSON 資料"
+    },
+    "preview": {
+      "summary": "✓ JSON 有效！共找到 {{teams}}，包含 {{players}}。",
+      "title": "預覽：",
+      "missingDiscordTotal": "沒有 Discord ID 的選手：{{count}}",
+      "missingDiscordChip": "無 Discord：{{count}}",
+      "playersChip_one": "{{count}} 名選手",
+      "playersChip_other": "{{count}} 名選手",
+      "teamsCount_one": "{{count}} 支戰隊",
+      "teamsCount_other": "{{count}} 支戰隊"
+    },
+    "actions": {
+      "preview": "預覽",
+      "importing": "正在匯入…",
+      "import_one": "匯入 {{count}} 支戰隊",
+      "import_other": "匯入 {{count}} 支戰隊"
+    },
+    "warnings": {
+      "title": "部分 Discord ID 已被忽略，這些選手將在沒有 Discord ID 的情況下匯入：",
+      "discordIdNumber": "戰隊「{{team}}」，選手「{{player}}」：discordId 必須是用引號括起的字串。大數字在 JSON 中會丟失精度，因此已移除該 ID。",
+      "discordIdInvalid": "戰隊「{{team}}」，選手「{{player}}」：「{{value}}」不是 Discord 使用者 ID（應為 17–20 位數字），因此已移除。"
+    }
+  },
+  "playerImportModal": {
+    "title": "匯入選手",
+    "info": {
+      "description": "從 JSON 或 CSV 匯入選手。必填欄位：steamId、name。可選：initialELO（預設 1500）、avatarUrl。",
+      "link": "檢視帶範例的文件"
+    },
+    "placeholders": {
+      "jsonCsv": "JSON 範例：\n[\n  {\n    \"steamId\": \"76561198012345678\",\n    \"name\": \"Player One\",\n    \"initialELO\": 1500,\n    \"avatarUrl\": \"https://...\"\n  }\n]\n\nCSV 範例：\nsteamId,name,initialELO,avatarUrl\n76561198012345678,Player One,1500,https://..."
+    },
+    "actions": {
+      "parseValidate": "解析並校驗",
+      "importing": "正在匯入…",
+      "import_one": "匯入 {{count}} 名選手",
+      "import_other": "匯入 {{count}} 名選手"
+    },
+    "preview": {
+      "title": "待匯入選手（{{count}}）：",
+      "steamId": "Steam ID：{{steamId}}",
+      "name": "姓名：{{name}}",
+      "initialElo": "初始 ELO：{{elo}}",
+      "avatar": "頭像：{{url}}",
+      "readyChip_one": "{{count}} 名選手可匯入",
+      "readyChip_other": "{{count}} 名選手可匯入"
+    },
+    "errors": {
+      "noData": "請先輸入 JSON 或 CSV 資料",
+      "noPlayers": "資料中未找到任何選手",
+      "validationPrefix": "校驗錯誤：",
+      "parseFailed": "解析資料失敗：{{message}}",
+      "importFailed": "匯入選手失敗",
+      "parseFirst": "請先解析並校驗資料"
+    }
+  },
+  "playerSelectionModal": {
+    "title": "選擇選手",
+    "selectedCount": "已選擇 {{count}} 人",
+    "searchPlaceholder": "按名稱搜尋玩家…",
+    "searchPlaceholder_steam": "按姓名或 Steam ID 搜尋選手…",
+    "selectAll": {
+      "select": "全選",
+      "deselect": "取消全選"
+    },
+    "empty": {
+      "noSearchResults": "沒有找到符合搜尋條件的選手",
+      "noPlayers": "當前沒有可用選手"
+    },
+    "playerCard": {
+      "alreadyInTeam": "已在該戰隊中"
+    },
+    "errors": {
+      "loadFailed": "載入選手列表失敗",
+      "noSelectable": "沒有可選擇的選手"
+    },
+    "addPlayersButton_one": "新增 {{count}} 名選手",
+    "addPlayersButton_other": "新增 {{count}} 名選手"
+  },
+  "soundSettingsModal": {
+    "title": "聲音設定",
+    "soundSelect": {
+      "label": "通知聲音"
+    },
+    "volume": {
+      "label": "音量：{{percent}}%"
+    },
+    "testButton": "測試聲音",
+    "footer": "當比賽準備就緒或發生重要事件時，將播放聲音通知。"
+  },
+  "addBackupPlayer": {
+    "title": "新增玩家",
+    "loadFailed": "載入玩家列表失敗",
+    "added": "已將 {{name}} 新增到 {{target}}",
+    "addFailed": "新增玩家失敗",
+    "addToMatchFailed": "將玩家新增到比賽失敗",
+    "searchLabel": "搜尋玩家",
+    "searchPlaceholder": "輸入玩家名稱…",
+    "available": "可用玩家：{{count}}（不在比賽中）",
+    "noneAvailable": "沒有可用玩家",
+    "displayNameLabel": "顯示名稱（可選）",
+    "displayNamePlaceholder": "預設為玩家當前名稱",
+    "side": "陣營",
+    "spectator": "觀眾",
+    "selected": "已選擇：",
+    "fromTeam": "來自戰隊：{{team}}",
+    "steamId": "Steam ID：{{id}}",
+    "adding": "正在新增玩家…",
+    "add": "將玩家新增到比賽",
+    "underlyingCommand": "底層命令：",
+    "important": "重要：",
+    "reconnectHint": "新增後，該玩家需要重新連線伺服器。如果已經在伺服器上，可能需要重新加入。"
+  }
+}

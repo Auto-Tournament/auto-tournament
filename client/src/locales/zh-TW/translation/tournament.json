@@ -1,0 +1,1810 @@
+{
+  "tournament": {
+    "startConfirm": {
+      "intro": "準備好開始賽事了嗎？",
+      "thisWill": "這將：",
+      "openMatches": "開放第一輪的比賽",
+      "statusInProgress": "把賽事狀態改為進行中",
+      "confirm": "是的，開始賽事",
+      "started": "賽事已開始！第一輪的比賽已開放。"
+    },
+    "steps": {
+      "create": "建立錦標賽",
+      "review": "複核與確認",
+      "live": "進行中的錦標賽"
+    },
+    "welcome": {
+      "heading": "建立錦標賽",
+      "chooseMethod": "選擇你希望如何建立錦標賽",
+      "createNewTitle": "建立新錦標賽",
+      "createNewDescription": "從空白開始，手動設定所有錦標賽設定"
+    },
+    "typeSelector": {
+      "categories": {
+        "professional": {
+          "label": "職業系列"
+        },
+        "party": {
+          "label": "派對與趣味模式"
+        }
+      },
+      "types": {
+        "single_elimination": {
+          "label": "單敗淘汰",
+          "description": "一場失利即被淘汰。適用於職業賽事的經典對陣賽制。"
+        },
+        "double_elimination": {
+          "label": "雙敗淘汰",
+          "description": "需要輸掉兩場才會被淘汰。隊伍在敗者組中獲得第二次機會。"
+        },
+        "round_robin": {
+          "label": "迴圈賽",
+          "description": "所有隊伍彼此對戰一次，非常適合聯賽或積分賽制。"
+        },
+        "swiss": {
+          "label": "瑞士輪",
+          "description": "根據戰績自動配對戰隊。整場錦標賽中都保持較為均衡的對局。"
+        },
+        "shuffle": {
+          "label": "洗牌錦標賽",
+          "description": "每輪自動將選手洗牌成平衡的隊伍。基於 ELO 的個人賽制，適合社群與線下活動。"
+        },
+        "groups": {
+          "label": "小組賽後季後賽",
+          "description": "小組內迴圈賽；各組最佳戰隊進入淘汰賽。"
+        }
+      },
+      "selectedChip": "已選擇"
+    },
+    "review": {
+      "summary": {
+        "info": "請檢查你的錦標賽設定，準備好後點選「{{button}}」。",
+        "nameLabel": "錦標賽名稱",
+        "typeLabel": "錦標賽類型",
+        "formatLabel": "比賽賽制",
+        "notSet": "未設定",
+        "estimatedVolumeText": "約 {{matches}}，分佈在 {{rounds}}（{{mapsPerMatch}} 局制，最多共 {{maps}}）。"
+      }
+    },
+    "formSteps": {
+      "steps": {
+        "name": "名稱",
+        "type": "類型",
+        "format": "賽制",
+        "maps": "地圖",
+        "teams": "戰隊",
+        "review": "確認"
+      },
+      "backToWelcome": "返回歡迎頁",
+      "back": "上一步",
+      "next": "下一步"
+    },
+    "emptyBracket": {
+      "title": "暫無可顯示的賽程表",
+      "description": "建立錦標賽並生成賽程表即可在這裡檢視"
+    },
+    "common": {
+      "createTournament": "建立錦標賽"
+    },
+    "nameLabel": "錦標賽名稱",
+    "namePlaceholder": "Auto Tournament 2025 春季賽",
+    "champion": {
+      "title": "冠軍"
+    },
+    "page": {
+      "title": "賽事設定"
+    },
+    "labels": {
+      "teams": "戰隊",
+      "maps": "地圖",
+      "format": "賽制",
+      "players": "玩家",
+      "matchRules": "比賽規則",
+      "servers": "伺服器",
+      "overtimeSettings": "加時設定",
+      "mapPool": "地圖池"
+    },
+    "tooltips": {
+      "deleteTournament": "永久刪除該賽事及其所有資料"
+    },
+    "counts": {
+      "teams_one": "{{count}} 支戰隊",
+      "teams_other": "{{count}} 支戰隊",
+      "matches_one": "{{count}} 場比賽",
+      "matches_other": "{{count}} 場比賽",
+      "rounds_one": "{{count}} 輪",
+      "rounds_other": "{{count}} 輪",
+      "maps_one": "{{count}} 張地圖",
+      "maps_other": "{{count}} 張地圖",
+      "servers_one": "{{count}} 臺伺服器",
+      "servers_other": "{{count}} 臺伺服器",
+      "availableServers_one": "{{count}} 臺可用伺服器",
+      "availableServers_other": "{{count}} 臺可用伺服器",
+      "concurrentMatches_one": "{{count}} 場同時進行的比賽",
+      "concurrentMatches_other": "{{count}} 場同時進行的比賽",
+      "enabledServers_one": "{{count}} 臺已啟用的伺服器",
+      "enabledServers_other": "{{count}} 臺已啟用的伺服器"
+    },
+    "matchRules": {
+      "value": "每張地圖最多 {{maxRounds}} 回合；先贏得 {{winRounds}} 回合者獲勝。",
+      "teamSizeValue": "隊伍人數：{{size}}v{{size}}",
+      "overtimeEnabled": "加時：已啟用",
+      "overtimeDisabled": "加時：已禁用（不打加時）",
+      "overtimeDisabledNoDraws": "加時：已禁用（不允許平局，按總傷害決勝）",
+      "overtimeSegments_one": "加時段數：{{count}} 段",
+      "overtimeSegments_other": "加時段數：{{count}} 段",
+      "overtimeSegmentsDefault": "加時段數：遊戲伺服器預設值",
+      "overtimeSegmentsDefaultUnlimited": "加時段數：遊戲伺服器預設值（通常不限）"
+    },
+    "toasts": {
+      "loadTemplateFailed": "載入範本失敗",
+      "nameRequired": "必須填寫賽事名稱",
+      "nameUpdated": "賽事名稱已更新",
+      "nameUpdateFailed": "更新賽事名稱失敗",
+      "selectAtLeastOneMap": "請至少選擇 1 張地圖",
+      "maxRoundsRange": "最大回合數必須介於 1 到 30 之間",
+      "teamSizeRange": "隊伍人數必須介於 2 到 10 名玩家之間",
+      "invalidTeamCount": "戰隊數量無效",
+      "selectAtLeastTwoTeams": "請至少選擇 2 支戰隊",
+      "shuffleCreated": "隨機分隊賽事「{{name}}」建立成功！下一步：至少註冊 {{minPlayers}} 名玩家即可開始賽事（{{teamSize}}v{{teamSize}} 比賽）。",
+      "shuffleCreateFailed": "建立隨機分隊賽事失敗",
+      "shuffleCreateFailedRetry": "建立隨機分隊賽事失敗。請檢查設定後重試。",
+      "updated": "賽事已更新，對陣表已重新生成！",
+      "created": "賽事已建立！",
+      "saveFailed": "儲存賽事失敗",
+      "deleted": "賽事已刪除",
+      "deleteFailed": "刪除賽事失敗",
+      "regenerated": "對陣表已重新生成",
+      "regenerateFailed": "重新生成對陣表失敗",
+      "resetDone": "賽事已重置為設定狀態",
+      "resetFailed": "重置賽事失敗",
+      "started_one": "賽事已開始！已為 {{count}} 場比賽分配伺服器。",
+      "started_other": "賽事已開始！已為 {{count}} 場比賽分配伺服器。",
+      "startRequested": "已請求開始賽事。伺服器稍後分配。",
+      "startFailed": "開始賽事失敗",
+      "templateSaved": "範本已儲存！",
+      "disableServersFailed": "無法禁用一臺或多臺伺服器：{{message}}",
+      "noChangesToSave": "沒有需要儲存的更改",
+      "invalidMapSelection": "地圖選擇無效",
+      "archived": "賽事已歸檔。建立下一個吧。",
+      "archiveFailed": "無法歸檔賽事"
+    },
+    "outdatedServers": {
+      "title": "伺服器需要更新",
+      "body": "根據 Steam 的資訊，一臺或多臺已啟用的伺服器版本過舊（或無法驗證）。請更新它們，或將其禁用以便使用其餘伺服器繼續。",
+      "confirm": "禁用受影響的伺服器並重試",
+      "disabling": "正在禁用…",
+      "goToServers": "前往伺服器"
+    },
+    "live": {
+      "saveNameAria": "儲存賽事名稱",
+      "cancelRenameAria": "取消重新命名賽事",
+      "editNameAria": "編輯賽事名稱",
+      "renameTooltip": "重新命名賽事",
+      "alert": {
+        "liveTitle": "賽事進行中",
+        "liveBody": "伺服器上正在進行比賽。賽事進行期間無法修改賽事設定（賽事名稱除外）。",
+        "pendingTitle": "賽事進行中",
+        "pendingBody": "伺服器分配完成且 veto 結束後，比賽就會開始。賽事進行期間無法修改賽事設定（賽事名稱除外）。",
+        "completedTitle": "賽事已結束",
+        "completedBody": "本賽事的所有比賽均已結束。可建立新賽事，或重置本賽事重新開始。"
+      },
+      "teamsCompeting_one": "{{count}} 支戰隊參賽",
+      "teamsCompeting_other": "{{count}} 支戰隊參賽",
+      "playersCompeting_one": "{{count}} 名玩家參賽",
+      "playersCompeting_other": "{{count}} 名玩家參賽",
+      "playersCompetingUnknown": "玩家參賽中",
+      "shuffleSettingsLabel": "隨機分隊設定",
+      "maxRoundsPerMapValue": "每張地圖最大回合數：{{rounds}}",
+      "eloTemplateValue": "ELO 範本：{{template}}",
+      "mapSequenceLabel": "地圖順序（輪次）",
+      "noMapsConfigured": "尚未設定地圖。",
+      "viewBracket": "檢視對陣表",
+      "viewBracketTooltip": "檢視賽事對陣表和比賽詳情",
+      "leaderboardTooltip": "開啟可分享給玩家的公開排行榜頁面",
+      "restartTooltip": "結束伺服器上所有進行中的比賽並重新載入（適用於卡住的比賽）",
+      "resetTooltip": "結束所有比賽並將賽事重置為設定狀態（保留賽事設定，但清除所有比賽資料）",
+      "reset": "重置為設定狀態",
+      "dangerZone": "危險操作",
+      "newTournament": "新賽事"
+    },
+    "reviewCard": {
+      "needPlayersWarning": "至少需要 {{minPlayers}} 名玩家才能開始賽事（{{teamSize}}v{{teamSize}} 比賽）。當前已註冊：{{registered}}",
+      "start": "開始賽事",
+      "starting": "正在開始…",
+      "startSimulation": "開始模擬",
+      "startingSimulation": "正在開始模擬…",
+      "bulkCreateMatches": "批次建立比賽",
+      "edit": "編輯",
+      "regenerate": "重新生成",
+      "regenerateTooltip": "刪除當前所有比賽，並使用相同設定重新生成對陣表。",
+      "regenerateDisabledTooltip": "請先生成一次對陣表（儲存並生成對陣表），之後才能重新生成。"
+    },
+    "dialogs": {
+      "items": {
+        "endMatches": "結束伺服器上所有進行中的比賽",
+        "deleteMatches": "刪除所有比賽和對陣表",
+        "deleteData": "刪除所有比賽資料和統計"
+      },
+      "delete": {
+        "title": "🗑️ 刪除賽事",
+        "question": "確定要永久刪除 <b>「{{name}}」</b> 嗎？",
+        "willTitle": "⚠️ 此操作將：",
+        "items": {
+          "removeTournament": "徹底刪除該賽事",
+          "cannotBeUndone": "無法撤銷"
+        },
+        "note": "💡 提示：如果只是想用相同的賽事設定重新開始，請改用「重置為設定狀態」。",
+        "confirm": "永久刪除"
+      },
+      "regenerate": {
+        "title": "🔄 重新生成對陣表",
+        "liveWarning": "⚠️ 警告：賽事當前狀態為 {{status}}！",
+        "liveBody": "重新生成對陣表會 <b>刪除所有</b> 現有比賽資料，包括比分、統計和事件記錄。",
+        "cannotBeUndone": "此操作無法撤銷。",
+        "areYouSure": "確定要繼續嗎？",
+        "setupBody": "此操作會刪除所有現有比賽，並使用相同設定重新生成對陣表。",
+        "continue": "要繼續嗎？",
+        "confirmDestructive": "是的，全部刪除",
+        "confirm": "重新生成"
+      },
+      "reset": {
+        "title": "🔄 重置為設定狀態",
+        "question": "要將 <b>「{{name}}」</b> 重置為設定狀態嗎？",
+        "willTitle": "此操作將：",
+        "items": {
+          "clearStatus": "清除賽事狀態（回到設定狀態）",
+          "keepSettings": "<b>保留</b>賽事設定（名稱、戰隊、賽制）",
+          "allowEdit": "讓你可以再次修改設定",
+          "regenerateMatches": "清除所有比賽結果，並從頭重新生成賽程表"
+        },
+        "regenerated": "新的賽程表會立即生成，待進行的比賽會馬上重新出現。",
+        "note": "💡 提示：若要徹底刪除賽事，請改用「刪除」。",
+        "confirm": "重置為設定狀態"
+      },
+      "start": {
+        "titleNoServers": "⚠️ 沒有可用伺服器",
+        "titleInsufficient": "⚠️ 伺服器數量不足",
+        "titleUncertain": "⚠️ 要在沒有伺服器的情況下開始賽事嗎？",
+        "noServersHeading": "當前沒有可用伺服器",
+        "noServersBody": "賽事會開始，但比賽將推遲到有伺服器可用時。伺服器就緒後，系統會自動分配比賽。",
+        "insufficientHeading": "伺服器不足，無法同時進行首輪的全部比賽",
+        "insufficientBody": "你當前有 <b>{{available}}</b>，而首輪需要 <b>{{required}}</b>。部分比賽將排隊，待伺服器空閒後再開始。",
+        "uncertainHeading": "伺服器可用情況不確定",
+        "uncertainBody": "賽事可能在伺服器很少甚至沒有伺服器的情況下開始。比賽將推遲到有伺服器可用，並在其就緒後自動分配。",
+        "question": "仍要開始賽事嗎？",
+        "confirm": "是，仍然開始",
+        "cancel": "檢查伺服器"
+      }
+    },
+    "formActions": {
+      "saveAndGenerate": "儲存並生成對陣表",
+      "saveAsTemplate": "儲存為範本",
+      "saveTemplateTooltip": "將當前賽事設定儲存為範本"
+    },
+    "wizard": {
+      "validation": {
+        "selectType": "請選擇賽事類型",
+        "selectFormat": "請選擇比賽賽制"
+      },
+      "shuffleInfo": "隨機分隊賽事不使用固定戰隊。系統會在每場比賽根據玩家的 Skill Rating 自動平衡分隊。",
+      "shuffleRounds": "本隨機分隊賽事大約有 {{rounds}}（每張所選地圖一輪）。",
+      "volumeAlert": "在 {{format}} 賽制的 {{type}} 賽事中，{{teams}}參賽時，本對陣表大約有 {{matches}}，分佈在 {{rounds}}（最多共 {{maps}}）。",
+      "maxRoundsLabel": "每張地圖最大回合數",
+      "maxRoundsHelper": "每張地圖最多打 {{maxRounds}} 回合；先贏得 {{winRounds}} 回合者獲勝。",
+      "maxRoundsHelperEmpty": "每張地圖的最大回合數（預設 24，最大 30）。",
+      "serversSummary": "已設定 {{servers}}；第一輪共有 {{matches}}。",
+      "estimatedVolumeLabel": "預計規模",
+      "mapsHeading": "地圖（{{total}}）",
+      "noMapsSelected": "未選擇地圖",
+      "matchConfiguration": "比賽設定",
+      "roundLimitValue_one": "回合上限：最多 {{count}} 回合",
+      "roundLimitValue_other": "回合上限：最多 {{count}} 回合",
+      "teamsHeading": "戰隊（{{total}}）",
+      "noTeamsSelected": "未選擇戰隊（可選）",
+      "playerRegistration": "玩家註冊",
+      "playerRegistrationInfo_one": "玩家將在賽事建立後註冊。每張所選地圖代表一輪比賽（共 {{count}} 輪）。",
+      "playerRegistrationInfo_other": "玩家將在賽事建立後註冊。每張所選地圖代表一輪比賽（共 {{count}} 輪）。",
+      "serversSummaryQueued": "已設定 {{servers}}；第一輪共有 {{matches}}。超出伺服器數量的比賽會排隊等待，直到有空閒伺服器。"
+    },
+    "overtime": {
+      "selectLabel": "加時",
+      "options": {
+        "enabled": "啟用（標準加時）",
+        "disabledDraws": "禁用 – 允許平局",
+        "disabledNoDraws": "禁用 – 不允許平局（按總傷害決勝）"
+      },
+      "modeHelper": "標準加時會持續加打，直到一方領先。「允許平局」會讓打平的地圖以平局結束，而「不允許平局」則按隊伍總傷害決出勝者。",
+      "tooltip": "控制加時規則以及達到最大回合數時平局的處理方式。這些設定會以 overtimeMode/overtimeSegments 的形式傳給遊戲伺服器，在 shuffle 錦標賽和手動比賽中含義相同。",
+      "shuffleTooltip": "控制隨機分隊比賽的加時行為，以及達到最大回合數打平時的判定方式。禁用加時後，打平的比賽可以保持平局，也可以按隊伍總傷害決出勝者，取決於所選選項。",
+      "segmentsLabel": "加時段數（可選）",
+      "segmentsHelper": "可選：限制加時段數。留空則使用遊戲伺服器預設值。",
+      "segmentsHelperValue_one": "將加時限制為 {{count}} 段。加時後仍打平時，按隊伍總傷害決勝。",
+      "segmentsHelperValue_other": "將加時限制為 {{count}} 段。加時後仍打平時，按隊伍總傷害決勝。"
+    },
+    "grandFinal": {
+      "sectionTitle": "總決賽模式（雙敗淘汰）",
+      "label": "總決賽",
+      "options": {
+        "simple": "簡單 – 勝者組與敗者組冠軍進行一場總決賽",
+        "none": "無 – 由勝者組決賽決定冠軍（不設總決賽）",
+        "double": "雙重 – 採用 bracket‑reset 形式（目前表現同「簡單」，完整支援仍在計劃中）"
+      },
+      "helper": "決定勝者組與敗者組冠軍在賽事結束時如何相遇。"
+    },
+    "mapPool": {
+      "shuffleTitle": "隨機分隊賽事的地圖選擇",
+      "shuffleBody": "所選地圖將按順序進行。每張地圖代表一輪比賽。所選地圖數量決定要打多少輪。",
+      "shuffleSelected": "你已選擇 {{maps}}，因此將進行 {{rounds}}。",
+      "chooseLabel": "選擇地圖池",
+      "custom": "自訂",
+      "selectedMaps": "已選地圖（{{total}}）：",
+      "chooseMapsPlaceholder": "選擇地圖…",
+      "saveMapPool": "儲存地圖池",
+      "types": {
+        "defusal": "爆破",
+        "hostage": "人質",
+        "armsRace": "軍備競賽",
+        "unknown": "未知"
+      }
+    },
+    "formatStep": {
+      "shuffleInfo": "隨機分隊賽事採用 BO1 賽制。每場比賽只打一張地圖。"
+    },
+    "shuffleConfig": {
+      "overline": "隨機分隊賽事設定",
+      "subtitle": "比賽規則與設定",
+      "teamSizeLabel": "隊伍人數",
+      "teamSizeTooltip": "每隊人數。常見選項：4v4、5v5、6v6。每隊最少 2 人，最多 10 人。",
+      "teamSizeHelper": "每隊人數（預設 5，即 5v5；範圍 2–10）",
+      "maxRoundsLabel": "最大回合數",
+      "maxRoundsTooltip": "每場比賽的最大回合數。該值會以 mp_maxrounds 傳給 CS2 伺服器。例如：6 = MR6，24 = MR24。",
+      "maxRoundsHelper": "比賽最多打 {{maxRounds}} 回合；先贏得 {{winRounds}} 回合者獲勝",
+      "maxRoundsHelperEmpty": "每場比賽的最大回合數（預設 24，最大 30）",
+      "eloTemplateLabel": "ELO 計算範本",
+      "eloTemplateTooltip": "選擇本賽事的 ELO 計算方式。預設的「Pure Win/Loss」範本只依據比賽結果（勝/負）；資料仍會記錄，但不影響 ELO。其他範本為可選項，會在 OpenSkill 的勝負變化之上疊加基於資料的調整，適合需要 Excel 式演算法的場景。",
+      "eloDefaultSuffix": "（預設）",
+      "eloTemplateHelper": "Pure Win/Loss（預設）：僅比賽結果影響 ELO。玩家資料仍會記錄用於排行榜和匯出，但除非選擇自訂範本，否則不會改變評分。"
+    },
+    "shuffleStats": {
+      "serverShortageWarning": "你有 {{available}}/{{needed}} 臺伺服器。比賽將分批進行，每輪耗時更長。"
+    },
+    "changePreview": {
+      "title": "檢視賽事更改",
+      "liveHeading": "賽事正在進行中！",
+      "liveBody": "更改賽事類型、賽制或戰隊數量可能需要重新生成對陣表。可考慮使用「重置賽事」重新開始。",
+      "noChangesDetected": "未檢測到更改",
+      "intro": "將應用以下更改：",
+      "before": "更改前",
+      "after": "更改後",
+      "apply": "應用更改",
+      "applyRisky": "應用更改（有風險！）",
+      "noChangesToApply": "沒有可應用的更改",
+      "none": "無",
+      "itemCount_one": "{{count}} 項",
+      "itemCount_other": "{{count}} 項"
+    },
+    "teamSelection": {
+      "chooseTeamsPlaceholder": "選擇戰隊…",
+      "addAll": "全部新增",
+      "batchAddServers": "批次新增",
+      "addServer": "新增伺服器",
+      "importTeams": "匯入戰隊",
+      "createTeam": "建立戰隊",
+      "notEnoughServers": "第一輪共有 {{matches}}，但你只有 {{servers}}。超出伺服器數量的比賽會排隊等待，直到有空閒伺服器 — 新增更多伺服器即可同時進行所有比賽。",
+      "notEnoughTeams": "建立錦標賽至少需要 2 支戰隊。你當前有 {{teams}}。"
+    },
+    "teamValidation": {
+      "invalidType": "無效的錦標賽類型",
+      "powerOfTwo": "{{type}} 要求戰隊數量為 2 的冪（{{counts}}）。你選擇了 {{selected}}。",
+      "minTeams": "{{type}} 至少需要 {{min}} 支戰隊。你選擇了 {{selected}}。",
+      "maxTeams": "{{type}} 最多允許 {{max}} 支戰隊。你選擇了 {{selected}}。"
+    },
+    "eventPage": {
+      "title": "賽事頁面",
+      "subtitle": "在公開的概覽頁面向玩家和訪客展示。",
+      "descriptionLabel": "描述",
+      "locationLabel": "地點",
+      "locationPlaceholder": "例如：線下，上海",
+      "rulebookUrlLabel": "完整規則手冊 URL",
+      "rulebookUrlHelper": "必須是 https 連結，或留空。",
+      "rulesLabel": "選手規則",
+      "ruleFieldLabel": "規則 {{n}}",
+      "addRule": "新增規則",
+      "prizesLabel": "獎品",
+      "placeLabel": "名次",
+      "prizeLabel": "獎品",
+      "addPrize": "新增獎品",
+      "scheduleLabel": "日程",
+      "whenLabel": "時間",
+      "scheduleLabelLabel": "標籤",
+      "addScheduleItem": "新增日程項",
+      "remove": "移除",
+      "moveUp": "上移",
+      "moveDown": "下移",
+      "save": "儲存賽事頁面",
+      "saveSuccess": "賽事頁面已儲存。",
+      "saveError": "儲存賽事頁面失敗：{{message}}",
+      "organizerLabel": "主辦方",
+      "organizerPlaceholder": "例如：Edition 35 LAN",
+      "bannerLabel": "橫幅",
+      "bannerUpload": "上傳橫幅",
+      "bannerReplace": "替換",
+      "bannerRemove": "移除",
+      "bannerHelp": "橫貫賽事頁面頂部的寬幅圖片。PNG、JPEG 或 WEBP，最大 2 MB；1920 × 600 效果不錯。",
+      "bannerWrongType": "橫幅必須是 PNG、JPEG 或 WEBP 圖片。",
+      "bannerTooLarge": "橫幅不能超過 2 MB。",
+      "signupHeading": "報名與報到",
+      "signupOpen": "戰隊可以自行報名",
+      "signupClosesAt": "報名截止",
+      "maxTeams": "戰隊名額",
+      "checkInOpensAt": "報到開啟",
+      "checkInClosesAt": "報到截止",
+      "signupHelp": "戰隊的所有者或隊長帶著陣容報名。陣容中的玩家在比賽當天報到。",
+      "startLabel": "開始時間",
+      "startsAtLabel": "開始於",
+      "startsAtHelp": "你的本地時間。網站會倒計時。",
+      "autoStartLabel": "在此時間自動開始賽事",
+      "remindersLabel": "開始前提醒玩家",
+      "reminderMinutes_one": "提前 {{count}} 分鐘",
+      "reminderMinutes_other": "提前 {{count}} 分鐘",
+      "bannerMapLabel": "沒有橫幅？使用地圖圖片",
+      "bannerMapNone": "幫我選",
+      "rulesHelp": "顯示在賽事頁面的「規則」標籤中，位於平台根據你的設定生成的規則下方。",
+      "fromTemplate": "來自 {{name}}",
+      "clearAll": "全部清除",
+      "rulebookFromTemplate": "來自範本 {{name}}。https 連結，或留空。"
+    },
+    "setup": {
+      "steps": {
+        "game": "遊戲",
+        "basics": "名稱和日期",
+        "format": "賽制",
+        "teams": "戰隊",
+        "schedule": "日程",
+        "maps": "地圖與禁選",
+        "extras": "比賽設定",
+        "review": "確認"
+      },
+      "stepsLabel": "設定步驟",
+      "backToManage": "管理",
+      "stepDone": "已完成",
+      "newTournament": "新賽事",
+      "editing": "賽事設定",
+      "draftSaved": "草稿已儲存在此標籤頁",
+      "discardDraft": "重新開始",
+      "startFromTemplate": "從範本開始",
+      "continueTo": "繼續：{{step}}",
+      "questions": {
+        "game": {
+          "title": "哪個遊戲？",
+          "lede": "遊戲決定比賽如何進行，以及你能用哪些設定。"
+        },
+        "basics": {
+          "title": "叫什麼名字，哪一天？",
+          "lede": "選擇日期。每輪的開始時間在「日程」中設定。"
+        },
+        "format": {
+          "title": "怎麼打？",
+          "lede": "選擇賽程表和每個系列賽的長度。賽事開始前都可以更改。"
+        },
+        "teams": {
+          "title": "誰來參賽？",
+          "lede": "選擇賽程表中的戰隊。你也可以在這裡建立或匯入戰隊。",
+          "ledeShuffle": "隨機組隊採用個人報名：玩家報名後，每輪抽出新的戰隊。"
+        },
+        "maps": {
+          "title": "哪些地圖？",
+          "lede": "選擇地圖池。系列賽透過禁選從中選出地圖。",
+          "ledeShuffle": "按比賽順序選擇地圖。每張地圖就是一輪。"
+        },
+        "eventPage": {
+          "title": "賽事頁面上放什麼？",
+          "lede": "可選。在公開的概覽頁面向玩家和訪客展示。"
+        },
+        "review": {
+          "title": "準備好了嗎？",
+          "lede": "檢查細節，然後建立賽事。",
+          "ledeExisting": "檢查細節，等大家都準備好後開始賽事。"
+        },
+        "schedule": {
+          "title": "比賽在什麼時候？",
+          "lede": "第一輪的時間就是賽事開始時間。報到和提醒都從這個時間往前算。"
+        },
+        "extras": {
+          "title": "比賽設定",
+          "lede": "從一個預設開始，然後修改你需要的部分。橙色的設定與網站預設值不同。"
+        }
+      },
+      "game": {
+        "label": "遊戲",
+        "loading": "正在載入此實例可執行的遊戲。",
+        "lockedHelp": "賽事建立後遊戲就固定了。要換遊戲，請刪除後重新開始。",
+        "integrationTitles": {
+          "cs2": "在你的伺服器上執行",
+          "manual-report": "由戰隊上報結果"
+        },
+        "integrationDescriptions": {
+          "cs2": "比賽在你自己的 CS2 伺服器上透過 Ready Up 進行。",
+          "manual-report": "無需伺服器。戰隊自行比賽，由隊長上報結果。"
+        }
+      },
+      "basics": {
+        "ratingLabel": "Rating",
+        "ratingHelp": "此賽事中每場比賽後玩家 Rating 如何變化。"
+      },
+      "format": {
+        "label": "賽制",
+        "names": {
+          "single_elimination": "單敗淘汰",
+          "double_elimination": "雙敗淘汰",
+          "swiss": "瑞士輪",
+          "round_robin": "迴圈賽",
+          "shuffle": "隨機組隊",
+          "groups": "小組賽後季後賽"
+        },
+        "types": {
+          "single_elimination": "輸一場就出局。最快。",
+          "double_elimination": "敗者組還有第二次機會。",
+          "swiss": "戰隊與戰績相近的對手打多輪。",
+          "round_robin": "每支戰隊都與其他所有戰隊交手。最適合小組。",
+          "shuffle": "個人報名。每輪組成新的平衡戰隊。",
+          "groups": "小組內迴圈賽；各組最佳戰隊進入決賽或淘汰賽。"
+        },
+        "seriesLength": "系列賽長度",
+        "grandFinal": "總決賽",
+        "grandFinalOptions": {
+          "simple": "一場比賽",
+          "double": "賽程表重置",
+          "none": "無"
+        },
+        "grandFinalHelp": {
+          "simple": "勝者組冠軍和敗者組冠軍在一場總決賽中相遇。",
+          "double": "賽程表重置。目前按一場總決賽進行；完整的重置支援正在計劃中。",
+          "none": "沒有總決賽：勝者組決賽決定賽事冠軍。"
+        },
+        "teams": "戰隊",
+        "teamsHelpPowerOfTwo": "淘汰賽賽程表需要 {{counts}} 支戰隊。在你選擇戰隊前用於摘要。",
+        "teamsHelpRange": "{{min}} 到 {{max}} 支戰隊。在你選擇戰隊前用於摘要。",
+        "fewerTeams": "減少戰隊",
+        "moreTeams": "增加戰隊",
+        "shuffleTitle": "隨機組隊設定",
+        "cs2Title": "Counter-Strike 2 設定",
+        "cs2Help": "由 Counter-Strike 2 遊戲模組傳給你的 CS2 伺服器。",
+        "overtime": {
+          "enabled": "延長賽",
+          "disabledDraws": "關閉，允許平局",
+          "disabledNoDraws": "關閉，按傷害決勝"
+        }
+      },
+      "teams": {
+        "shuffleBeforeCreate": "建立賽事後玩家才能報名。之後回到此步驟選擇他們。",
+        "shuffleSelfSignup": "玩家自行報名",
+        "shuffleSelfSignupHelp": "開啟時，玩家可在錦標賽頁面點選「加入」報名；你仍可在此新增玩家。"
+      },
+      "maps": {
+        "vetoTitle": "禁選",
+        "vetoStandard": "每個 {{format}} 系列賽都進行地圖禁選：雙方從這 7 張地圖中禁用和選擇。",
+        "vetoCustom": "此賽事為 {{format}} 設定了自訂禁選順序。",
+        "vetoNone": "此賽制沒有禁選。",
+        "vetoShuffle": "隨機組隊沒有禁選：地圖按此順序進行，每輪一張。"
+      },
+      "eventPage": {
+        "draftNote": "建立賽事時會一起儲存。"
+      },
+      "review": {
+        "unsaved": "你有未儲存的更改。開始前請儲存（會重新生成賽程表）或放棄。"
+      },
+      "summary": {
+        "label": "摘要",
+        "untitled": "未命名賽事",
+        "format": "賽制",
+        "series": "系列賽",
+        "seriesShuffle": "每輪 Bo1",
+        "seriesFinal": {
+          "simple": "{{format}} · 總決賽",
+          "double": "{{format}} · 總決賽，賽程表重置",
+          "none": "{{format}} · 無總決賽"
+        },
+        "teams": "戰隊",
+        "teamSize": "{{size}}v{{size}}",
+        "teamsPlanned": "計劃 {{count}} 支",
+        "matches": "比賽",
+        "matchesAfterSignUp": "報名後確定",
+        "duration": "預計用時",
+        "durationValue": "{{hours}} 小時 {{minutes}} 分鐘",
+        "signUp": "報名",
+        "signUpOrganizer": "由主辦方選擇",
+        "signUpAfterCreate": "建立後開放",
+        "players_one": "{{count}} 名玩家",
+        "players_other": "{{count}} 名玩家",
+        "maps": "地圖",
+        "mapsRounds": "{{maps}} · {{rounds}}",
+        "notSet": "未設定",
+        "signUpOpen": "戰隊報名 · 每隊 {{size}} 人"
+      },
+      "checklist": {
+        "title": "開始前需要",
+        "met": "已完成",
+        "notMet": "未完成",
+        "name": "名稱",
+        "format": "賽制和比賽設定",
+        "teams": "有效的戰隊數量",
+        "players_one": "至少 {{count}} 名玩家報名",
+        "players_other": "至少 {{count}} 名玩家報名",
+        "mapsVeto": "7 張地圖用於禁選",
+        "maps": "至少一張地圖",
+        "created": "賽事已建立",
+        "saved": "更改已儲存"
+      },
+      "manualReport": {
+        "title": "手動上報",
+        "help": "Auto Tournament 無法監測這個遊戲，所以由戰隊告訴它發生了什麼。",
+        "seriesLength": "系列賽長度",
+        "seriesLengthHelp": "一個系列賽有幾局。先贏下過半局數的戰隊贏得比賽。",
+        "gameLabel": "每局的叫法",
+        "gameLabelHelp": "在上報表單中的叫法。留空則為「{{game}}」。",
+        "allowDraw": "平局",
+        "allowDrawHelp": "允許一局乃至一個系列賽打平。賽程表賽制請保持關閉，因為總要有人晉級。",
+        "allowDrawOptions": {
+          "no": "不允許",
+          "yes": "允許"
+        },
+        "confirmation": "結果生效前",
+        "confirmationHelp": {
+          "opponent": "對方隊長必須同意，比賽才算確定。對方也可以提出異議，交給管理員處理。",
+          "none": "隊長的上報直接確定比賽。很快，但只適合不太可能有分歧的場合。"
+        },
+        "confirmationOptions": {
+          "opponent": "對手同意",
+          "none": "上報即生效"
+        },
+        "confirmTimeout": "答覆時限（分鐘）",
+        "confirmTimeoutHelp": "對手在截止前有多長時間。1440 即一天。",
+        "confirmTimeoutNone": "無截止：上報會一直等待答覆。",
+        "timeoutAction": "到截止時",
+        "timeoutActionHelp": {
+          "auto_confirm": "按上報結果處理，賽程表繼續推進，無需任何人等待。",
+          "escalate": "比賽交給管理員，在「爭議」頁面決定。"
+        },
+        "timeoutActionOptions": {
+          "auto_confirm": "採納上報",
+          "escalate": "請管理員處理"
+        }
+      },
+      "signup": {
+        "how": "戰隊如何參賽？",
+        "organizer": "只有我新增的戰隊",
+        "open": "戰隊可以報名",
+        "organizerHelp": "每支戰隊都由你選擇。沒人能從賽事頁面報名。",
+        "openHelp": "戰隊的所有者或隊長在賽事頁面帶著陣容報名，陣容在比賽當天報到。你仍可以在下方自己新增戰隊。",
+        "teamSize": "每隊人數",
+        "teamSizeHelp": "戰隊報名時選擇的首發人數（另外最多 2 名替補）。",
+        "maxTeamsHelp": "留空：不限。",
+        "save": "儲存報名設定",
+        "saved": "報名設定已儲存",
+        "inTournament": "參賽中（{{count}}）",
+        "signedUp": "已報名",
+        "addedByYou": "由你新增",
+        "lineup": "首發 {{starters}}/{{size}}",
+        "checkedIn": "已報到 {{count}} 人",
+        "remove": "移除",
+        "removed": "{{team}} 已退出賽事",
+        "noneYet": "還沒有戰隊。報名後會顯示在這裡。",
+        "noTeams": "還沒有戰隊。",
+        "addYourself": "自己新增戰隊",
+        "pickTeams": "選擇戰隊",
+        "windowTitle": "報名時間",
+        "opensLabel": "報名開啟",
+        "opensNow": "現在",
+        "opensLater": "指定時間",
+        "opensNowHelp": "建立賽事後立即開放。",
+        "opensLaterHelp": "在此之前關閉。頁面會倒計時。",
+        "closesHelp": "報到截止前都可以更改陣容。",
+        "checkInTitle": "報到",
+        "checkInHelp": "在賽事開始前開啟，賽事開始時截止。屆時仍未報到的首發會被替補頂替；替補無需報到。",
+        "checkInChip_one": "提前 {{count}} 分鐘",
+        "checkInChip_other": "提前 {{count}} 分鐘",
+        "checkInOff": "無報到",
+        "checkInLine": "{{day}} {{time}} 開啟，賽事於 {{start}} 開始時截止。",
+        "checkInLineNoStart_one": "開始前 {{count}} 分鐘開啟，開始時截止。",
+        "checkInLineNoStart_other": "開始前 {{count}} 分鐘開啟，開始時截止。",
+        "checkInLineOff": "無報到：所有已報名的戰隊都參賽。",
+        "captainsLabel": "隊長可以為隊友報到",
+        "captainsHelp": "所有者或隊長可以把首發標記為已到場。如果該玩家沒來，由他們負責。",
+        "perMatchLabel": "每場比賽前再次報到",
+        "perMatchHelp": "關閉：賽前報到一次即覆蓋所有比賽。開啟：每場比賽禁選開啟時，玩家都要報到。",
+        "fullTeamTitle": "進入伺服器",
+        "fullTeamHelp": "比賽伺服器就緒後，每支戰隊有這麼長時間讓全隊（含替補）進入伺服器。之後由人齊的一方選擇：接受不戰而勝，或與缺人的一方比賽。雙方都缺人：由管理員決定。",
+        "fullTeamChip_one": "{{count}} 分鐘",
+        "fullTeamChip_other": "{{count}} 分鐘",
+        "fullTeamOff": "不判不戰而勝",
+        "fullTeamLine": "玩家會在比賽房間和伺服器聊天中看到計時。替補算作已準備，因此戰隊可以立刻換人上場。",
+        "fullTeamLineOff": "不判不戰而勝：比賽自動開始後，缺人的一方以缺員狀態比賽（比賽設定）。"
+      },
+      "groups": {
+        "count": "小組數量",
+        "through": "每組晉級",
+        "throughWinner": "小組第一",
+        "throughTop2": "前 2 名",
+        "seeding": "戰隊如何分組",
+        "seedingSnake": "按種子分散（蛇形）",
+        "seedingRandom": "隨機",
+        "playoffs": "季後賽",
+        "playoffMatches": "季後賽比賽",
+        "ties": "小組內平局：先看相互戰績，再看回合差，再看贏得回合數（與迴圈賽相同）。如果小組晉級名額填不滿賽程表，其餘最好的戰隊也會晉級。",
+        "whatPlayersGet": "玩家會得到什麼",
+        "stage": "小組賽",
+        "stageLine": "{{groups}} 個小組，每組 {{size}} 支",
+        "stageNote": "{{count}} 場比賽 · 每支戰隊 {{each}} 場",
+        "playoffFinal": "兩個小組第一：{{format}} 決賽",
+        "playoff": {
+          "single_elimination": "{{count}} 支戰隊：單敗淘汰",
+          "double_elimination": "{{count}} 支戰隊：雙敗淘汰"
+        },
+        "throughNote": "{{count}} 支戰隊晉級",
+        "previewTitle": "小組（按種子分散）",
+        "previewNote": "按戰佇列表順序（種子排序）。賽事開始時小組鎖定。",
+        "randomNote": "賽事開始時隨機抽籤分組。",
+        "groupN": "{{letter}} 組",
+        "groupMatches": "小組賽比賽"
+      },
+      "stepNotes": {
+        "game": "玩什麼",
+        "basics": "名稱、日期、地點",
+        "format": "戰隊如何交手",
+        "teams": "新增或報名",
+        "schedule": "日期和時間",
+        "maps": "地圖池",
+        "extras": "預設、規則、附加項",
+        "review": "建立"
+      },
+      "stepOf": "第 {{n}}/{{total}} 步",
+      "schedule": {
+        "timesNote": "比賽會等到預定時間。玩家能在比賽中看到時間、收到提醒，禁選也會準時開啟。",
+        "breakNote_one": "剛比賽完的戰隊在下次禁選前有 {{count}} 分鐘休息（比賽規則）。",
+        "breakNote_other": "剛比賽完的戰隊在下次禁選前有 {{count}} 分鐘休息（比賽規則）。",
+        "noBreakNote": "戰隊的比賽之間沒有休息（比賽規則）。",
+        "ownTimeNote": "賽程表生成後，可在「管理 › 日程」中為單場比賽設定時間。",
+        "startsTournament": "賽事開始 · 報到截止",
+        "newDay": "新的一天",
+        "sameDay": "同一天",
+        "dayLabel": "日期",
+        "startsLabel": "開始",
+        "tournamentStarts": "賽事開始",
+        "autoStart": "在 {{time}} 自動開始",
+        "autoStartNoTime": "自動開始",
+        "autoStartOff": "關閉：由管理員在「管理」中開始。",
+        "reminders": "開始前提醒玩家",
+        "modeTimesNote": "每一輪都有日期（來自第 2 步）和時間。比賽會等到預定時間，禁選也會按時開啟。",
+        "modeAsapNote": "只設開始時間：之後只要雙方和伺服器就緒，比賽就開始。"
+      },
+      "extras": {
+        "gotvLabel": "觀眾",
+        "gotvOn_one": "觀眾可以在 GOTV 中觀看，延遲 {{count}} 秒（比賽規則 › 觀眾）。",
+        "gotvOn_other": "觀眾可以在 GOTV 中觀看，延遲 {{count}} 秒（比賽規則 › 觀眾）。",
+        "gotvOff": "觀眾無法在 GOTV 中觀看（比賽規則 › 觀眾）。"
+      },
+      "startFrom": {
+        "title": "開始方式",
+        "help": "範本會填好賽制、地圖和比賽設定。後續步驟中可以修改任何內容。",
+        "blank": "空白",
+        "blankHelp": "單敗淘汰、Bo3、網站的地圖池和比賽規則。",
+        "siteDefaults": "網站預設",
+        "builtIn": "內建",
+        "saved": "已儲存",
+        "standardRules": "標準規則",
+        "ownTemplates": "你自己的範本來自<link>範本與 Rating</link>。設定好後可以把這個賽事儲存為範本。"
+      },
+      "days": {
+        "title": "日期",
+        "one": "一天",
+        "several": "多天",
+        "day": "日期",
+        "firstDay": "第一天",
+        "lastDay": "最後一天",
+        "markedLegend": "本站另一個賽事在那天進行"
+      },
+      "overlap": {
+        "headsUp": "注意：{{name}} 也在 {{day}} 進行",
+        "headsUpBody": "{{from}}–{{to}}，使用相同的伺服器。兩者可以同時進行：比賽會等待空閒伺服器，玩家只有在輪次時間不重疊時才能同時參加。",
+        "openOther": "開啟 {{name}} 的日程",
+        "round": "與 {{name}}（{{day}}，{{from}}–{{to}}）在相同伺服器上時間重疊。你仍然可以儲存。{{name}} 中的玩家無法在這裡報名，因為這一輪同時進行。",
+        "see": "檢視 {{name}}"
+      }
+    },
+    "startButton": {
+      "start": "開始賽事",
+      "starting": "正在開始…",
+      "startSimulation": "開始模擬",
+      "startingSimulation": "正在開始模擬…"
+    },
+    "archiveDialog": {
+      "title": "開始新賽事？",
+      "message": "{{name}} 將被歸檔。其結果、比賽和資料都會保留，頁面位址不變。然後你可以建立下一個。",
+      "confirm": "歸檔並新建",
+      "delete": "刪除並新建",
+      "deleteHint": "或者刪除它：結果、比賽和資料會一起刪除。"
+    },
+    "end": {
+      "button": "結束賽事",
+      "tooltip": "立即結束賽事，不產生結果：伺服器上的比賽結束，其餘取消。沒有冠軍，也沒有獎勵。之後可以歸檔。",
+      "title": "結束這個賽事？",
+      "body": "所有仍在進行的比賽會在伺服器上結束，其餘取消。沒有人獲勝，也不發放獎勵。此操作無法撤銷。",
+      "typeName": "輸入「{{name}}」以確認",
+      "confirm": "結束賽事",
+      "done_one": "賽事已結束，{{count}} 場比賽已取消",
+      "done_other": "賽事已結束，{{count}} 場比賽已取消",
+      "failed": "無法結束賽事"
+    },
+    "countdown": {
+      "days": "{{d}} 天 {{h}} 小時後開始",
+      "hours": "{{h}} 小時 {{m}} 分鐘後開始",
+      "minutes": "{{m}}:{{s}} 後開始"
+    }
+  },
+  "bracket": {
+    "empty": {
+      "noBracketTitle": "暫無可顯示的賽程表",
+      "noBracketDescription": "建立錦標賽並生成賽程表即可在這裡檢視"
+    },
+    "view": {
+      "visual": "圖形",
+      "list": "列表",
+      "refresh": "重新整理",
+      "enterFullscreen": "全屏",
+      "exitFullscreen": "退出全屏",
+      "shuffleNoVisual": "隨機組隊賽事沒有圖形賽程表，請使用列表檢視。"
+    },
+    "times": {
+      "toggle": "設定時間",
+      "startsAt": "開始時間",
+      "clear": "使用本輪時間",
+      "save": "儲存"
+    },
+    "shuffleEmpty": {
+      "title": "隨機組隊賽事沒有賽程表",
+      "description": "隨機組隊賽事不使用固定賽程表。每輪會根據玩家 ELO 重新分隊。",
+      "hint": "在「比賽」頁面檢視進行中和即將開始的比賽，在「排行榜」頁面檢視玩家排名。",
+      "goToMatches": "前往比賽",
+      "viewLeaderboard": "檢視排行榜"
+    },
+    "notGenerated": {
+      "title": "尚未生成賽程表",
+      "description": "生成賽程表以為 {{name}} 建立比賽",
+      "goToSettings": "前往賽事設定"
+    },
+    "shuffleNoVisual": {
+      "title": "隨機組隊賽事沒有圖形賽程表",
+      "description": "每輪比賽會根據玩家 ELO 和隊伍平衡動態生成。在此跟蹤進度：",
+      "listView": "列表檢視",
+      "matches": "比賽",
+      "standings": "積分榜",
+      "docsHint": "如需完整了解隨機組隊的運作方式，請參閱文件中的 Shuffle Tournaments 指南。"
+    },
+    "swiss": {
+      "notGenerated": "未生成",
+      "generatedAfter": "第 {{round}} 輪結束後將生成比賽",
+      "bye": "輪空",
+      "standings": "積分榜",
+      "team": "戰隊",
+      "record": "戰績",
+      "buchholz": "BH",
+      "buchholzHint": "Buchholz：對手勝場之和",
+      "roundDiff": "RD",
+      "roundDiffHint": "回合差：贏得回合數減去輸掉回合數"
+    },
+    "slotHint": {
+      "winnerOf": "{{match}}勝者",
+      "loserOf": "{{match}}負者",
+      "matchNumber": "第 {{number}} 場比賽"
+    },
+    "pause": {
+      "pause": "暫停賽程表",
+      "reason": "暫停原因",
+      "forMinutes": "暫停 {{minutes}} 分鐘",
+      "untilResumed": "直到恢復",
+      "paused": "賽程表已暫停：進行中的比賽會打完，不會開始新比賽",
+      "pausedUntil": "賽程表暫停至 {{time}}：進行中的比賽會打完，不會開始新比賽",
+      "resume": "恢復",
+      "pausedDone": "賽程表已暫停",
+      "resumedDone": "賽程表已恢復",
+      "failed": "無法更改暫停狀態"
+    }
+  },
+  "overviewPage": {
+    "tabs": {
+      "overview": "概覽",
+      "label": "賽事",
+      "bracket": "賽程表",
+      "matches": "比賽",
+      "teams": "戰隊",
+      "standings": "積分榜",
+      "manage": "管理",
+      "rules": "規則",
+      "match": "你的比賽",
+      "results": "成績",
+      "signup": "報名"
+    },
+    "status": {
+      "setup": "即將開始",
+      "inProgress": "進行中",
+      "completed": "已結束",
+      "finishedOn": "{{date}} 結束"
+    },
+    "liveNow": "{{count}} 場正在進行",
+    "howItsPlayed": "比賽如何進行",
+    "facts": {
+      "teams": "戰隊",
+      "teamsValue": "{{count}} 支戰隊",
+      "teamSize": "戰隊人數",
+      "teamSizeValue": "{{count}} 名玩家",
+      "format": "賽制",
+      "series": "系列賽",
+      "seriesValue": "Bo{{count}}",
+      "mapVeto": "地圖禁選",
+      "mapVetoCustom": "自訂順序（隊長）",
+      "mapVetoStandard": "標準順序（隊長）",
+      "overtime": "延長賽",
+      "overtimeEnabledUnlimited": "開啟，不限次數",
+      "overtimeEnabledSegments": "開啟，{{count}} 次",
+      "overtimeDisabled": "關閉（按傷害決勝）"
+    },
+    "mapPool": "地圖池",
+    "rules": "規則",
+    "fullRulebook": "完整規則手冊",
+    "schedule": "日程",
+    "yourTeam": {
+      "title": "你在參賽",
+      "onRoster": "你在 {{team}} 中。",
+      "viewTeam": "檢視你的戰隊",
+      "versus": "{{team}} 對陣 {{opponent}} · {{stage}}",
+      "tbd": "待定",
+      "goToMatch": "前往你的比賽",
+      "openMatch": "開啟比賽頁面",
+      "state": {
+        "live": "進行中",
+        "loaded": "立即加入",
+        "upNext": "即將進行",
+        "finished": "已結束",
+        "eliminated": "已淘汰",
+        "waiting": "等待下一場比賽",
+        "registered": "已報名",
+        "won": "冠軍",
+        "out": "出局"
+      }
+    },
+    "prizes": {
+      "title": "獎品",
+      "note": "由主辦方設定。獎金、硬體或榮譽。"
+    },
+    "requirements": {
+      "title": "參賽條件",
+      "steamLinkedOk": "已連結 Steam 帳號。",
+      "steamLinkedNeutral": "使用 Steam 登入以參賽。",
+      "onRosterOk": "你在本賽事某支戰隊的陣容中。",
+      "onRosterNeutral": "賽事開始前加入某支戰隊的陣容。"
+    },
+    "loadError": "載入此賽事失敗。",
+    "notFoundTitle": "未找到賽事",
+    "notFoundDescription": "此賽事不存在或尚未建立。",
+    "loading": "載入中…",
+    "about": "關於",
+    "liveStripLabel": "正在進行",
+    "bracketTab": {
+      "loadError": "載入賽程表失敗。",
+      "emptyTitle": "還沒有賽程表",
+      "emptyDescription": "主辦方開始賽事後，賽程表會顯示在這裡。",
+      "shuffleTitle": "隨機組隊沒有賽程表",
+      "shuffleDescription": "每輪都會重新抽籤組隊，因此沒有賽程表。「比賽」列出每一輪，「積分榜」為玩家排名。"
+    },
+    "matchesTab": {
+      "loadError": "載入比賽失敗。",
+      "emptyTitle": "還沒有比賽",
+      "emptyDescription": "賽事開始後，比賽會顯示在這裡。",
+      "live": "正在進行",
+      "upcoming": "即將進行",
+      "results": "結果",
+      "vs": "對陣",
+      "status": {
+        "live": "進行中",
+        "loaded": "即將開始",
+        "final": "終局",
+        "upcoming": "即將開始"
+      },
+      "emptyDescriptionAt": "賽事開始後比賽會顯示在這裡：{{when}}。"
+    },
+    "teamsTab": {
+      "shuffleTitle": "戰隊每輪都會變化",
+      "shuffleDescription": "隨機組隊賽事每輪從報名玩家中抽出新的戰隊。「積分榜」為玩家排名。",
+      "emptyTitle": "還沒有戰隊",
+      "emptyDescription": "主辦方新增戰隊後會顯示在這裡。",
+      "yours": "你的戰隊",
+      "record": "{{wins}}–{{losses}}",
+      "emptySignupOpen": "報名已開放。戰隊報名後會顯示在這裡。",
+      "signUp": "為你的戰隊報名"
+    },
+    "allMatches": "所有比賽",
+    "keyDates": {
+      "starts": "開始",
+      "lastOnSchedule": "日程最後一項",
+      "teams": "戰隊"
+    },
+    "mapPoolCount": "地圖池 · {{count}} 張地圖",
+    "mapPoolNote": "每個系列賽前，隊長從中禁用和選擇。",
+    "addToCalendar": "新增到日曆",
+    "scheduleSoon": "主辦方還沒有公佈賽程。",
+    "checkInWindow": "報到",
+    "mapPoolSoonTitle": "地圖池",
+    "mapPoolSoon": "主辦方還沒有選好地圖。",
+    "adminBanner": "你是此賽事的管理員。運營在「管理」中進行；此頁面是玩家看到的樣子。",
+    "manageTournament": "管理賽事",
+    "fullBracket": "完整賽程表",
+    "allRules": "全部規則",
+    "archivedTitle": "此賽事已歸檔",
+    "archivedBody": "已被更新的賽事取代。其結果、賽程表和積分榜保留在這裡。",
+    "openCurrent": "開啟當前賽事",
+    "allTournaments": "所有賽事",
+    "roundN": "第 {{n}} 輪",
+    "finalRound": "決賽",
+    "roundStarts": "{{round}} · 禁選於 {{time}} 開啟"
+  },
+  "roundStatusCard": {
+    "roundOf": "第 {{current}}/{{total}} 輪",
+    "complete": "已完成",
+    "inProgress": "進行中",
+    "matchProgress": "比賽進度",
+    "completedOf": "已完成 {{completed}}/{{total}}",
+    "completedCount": "已完成 {{count}} 場",
+    "playingCount": "進行中 {{count}} 場",
+    "pendingCount": "待進行 {{count}} 場"
+  },
+  "yourMatch": {
+    "loading": "正在載入你的比賽",
+    "bestOf": "Bo{{count}}",
+    "mapsScore": "地圖 {{us}} – {{them}}",
+    "inServer": "在伺服器中",
+    "notJoined": "未加入",
+    "waitingForPlayers": "等待玩家",
+    "inServerCount": "伺服器中 {{count}}/{{expected}} 人。所有人準備好後比賽開始。",
+    "inServerCountBots": "伺服器中有 {{count}} 人。空位由機器人補上；在場所有人準備好後比賽開始。",
+    "live": "進行中",
+    "round": "第 {{n}} 回合",
+    "vetoTitle": "地圖禁選進行中",
+    "finished": "比賽已結束",
+    "mapOf": "第 {{n}}/{{total}} 張地圖",
+    "sideYou": "{{side}} · 你們",
+    "rejoin": "掉線了？用同一個按鈕重新加入，位置會保留。",
+    "outcome": {
+      "won": "你們以 {{us}}–{{them}} 戰勝 {{opponent}}",
+      "lost": "你們以 {{us}}–{{them}} 負於 {{opponent}}",
+      "draw": "對陣 {{opponent}} {{us}}–{{them}}"
+    },
+    "ready": "已就緒",
+    "waitingForServer": "等待伺服器",
+    "vetoDoneChip": "禁選完成 · {{map}}",
+    "waitingForServerBody": "一有空閒伺服器就會分配。你會收到通知，此頁面會自動更新。",
+    "mapDrawnChip": "已抽取地圖 · {{map}}",
+    "notYet": "還沒有"
+  },
+  "results": {
+    "finalStandings": "最終排名",
+    "awards": "獎項",
+    "players": "玩家",
+    "matchesAndDemos": "比賽與 Demo",
+    "place": "#{{n}}",
+    "championsOf": "{{name}} · 冠軍",
+    "showAll": "全部 {{count}} 名玩家",
+    "showFewer": "收起",
+    "mapResults": "地圖結果",
+    "col": {
+      "player": "玩家",
+      "team": "戰隊",
+      "rating": "Rating ±",
+      "hltv": "表現"
+    },
+    "award": {
+      "mostKills": "擊殺最多",
+      "bestAdr": "ADR 最高",
+      "bestHeadshots": "爆頭率最高",
+      "mostFlashAssists": "閃光助攻最多",
+      "mostUtility": "道具傷害最多",
+      "biggestGain": "Rating 漲幅最大",
+      "bestPlayer": "最佳選手",
+      "mostClutches": "殘局最多",
+      "mostTeamFlashes": "閃到隊友最多",
+      "mostMoney": "花錢最多"
+    },
+    "awardValue": {
+      "mostKills": "{{value}} 次擊殺",
+      "bestAdr": "ADR {{value}}",
+      "bestHeadshots": "爆頭率 {{value}}%",
+      "mostFlashAssists": "{{value}} 次閃光助攻",
+      "mostUtility": "道具傷害 {{value}}",
+      "biggestGain": "Rating +{{value}}",
+      "bestPlayer": "Rating {{value}}",
+      "mostTeamFlashes": "閃到 {{value}} 名隊友",
+      "mostClutches": "贏下 {{value}} 個殘局",
+      "mostMoney": "花費 {{value}}"
+    },
+    "wonFinal": "決賽以 {{a}}–{{b}} 戰勝 {{opponent}}",
+    "champions": "冠軍",
+    "allMatches": "全部 {{count}} 場比賽",
+    "demosAndReel": "Demo 與集錦",
+    "stage": {
+      "final": "決賽",
+      "semi": "半決賽",
+      "round": "第 {{n}} 輪"
+    }
+  },
+  "signup": {
+    "cta": "為你的戰隊報名",
+    "keyDates": {
+      "closes": "報名截止",
+      "checkIn": "報到",
+      "spots": "戰隊名額",
+      "left": "剩餘 {{count}}",
+      "full": "已滿",
+      "of": "共 {{max}}"
+    },
+    "ladder": {
+      "title": "按 Rating 排列的戰隊",
+      "yourPlace": "你排第 {{place}}，共 {{count}} 支"
+    },
+    "todo": {
+      "signedUp": "已報名",
+      "beforeTheDay": "比賽日之前",
+      "toFix": "{{count}} 項待處理",
+      "lineup": "陣容",
+      "allReady": "全員就緒",
+      "notSet": "未設定",
+      "showFixes": "顯示待處理事項",
+      "fixNote": "請在報到前處理好，否則該玩家無法加入。"
+    },
+    "yourLineup": "你的陣容",
+    "change": "更改",
+    "withdraw": "退賽",
+    "withdrawTitle": "讓 {{team}} 退賽？",
+    "withdrawBody": "戰隊將退出賽事，其名額會開放給其他戰隊。",
+    "sub": "替補",
+    "ready": "已就緒",
+    "problem": {
+      "noAccount": "尚未登入 Auto Tournament",
+      "noGame": "資料中缺少該遊戲"
+    },
+    "problemShort": {
+      "noAccount": "未登入",
+      "noGame": "需要該遊戲"
+    },
+    "checkIn": {
+      "open": "報到已開啟",
+      "closesIn": "{{time}} 截止 · 剩餘 {{left}}",
+      "imHere": "我到了",
+      "done": "你已報到",
+      "teamTitle": "{{team}} 正在報到",
+      "keepOpen": "請保持此頁面開啟。比賽就緒時它會通知你。",
+      "firstMatchIn": "距離第一場比賽",
+      "count": "{{in}}/{{total}}",
+      "you": "你",
+      "everyone": "所有人",
+      "soundOn": "聲音已開啟：到時會提醒你",
+      "soundOff": "聲音已關閉",
+      "checkInFor": "為 {{name}} 報到",
+      "checkInShort": "報到"
+    },
+    "noTeamTitle": "沒有可報名的戰隊",
+    "noTeamBody": "只有戰隊的所有者或隊長才能報名。建立一支戰隊，或聯絡你的隊長。",
+    "goToTeams": "戰隊",
+    "steps": {
+      "lineup": "陣容",
+      "review": "確認"
+    },
+    "whichTeam": "你要為哪支戰隊報名？",
+    "role": {
+      "owner": "你是所有者",
+      "captain": "你是隊長"
+    },
+    "playerCount": "{{count}} 名玩家",
+    "whoPlays": "誰上場？",
+    "whoPlaysHint": "{{count}} 名首發 · 最多 {{subs}} 名替補",
+    "rating": "Rating {{rating}}",
+    "slotFor": "{{name}} 的角色",
+    "starter": "首發",
+    "out": "不參加",
+    "starters": "首發",
+    "subs": "替補",
+    "lineupRating": "陣容 Rating",
+    "missingAccounts": "{{names}} 還需要登入。",
+    "fixBeforeCheckIn": "你現在可以報名；請在報到前處理好。",
+    "saveLineup": "儲存陣容",
+    "nextReview": "下一步：確認",
+    "readyToSend": "準備提交了嗎？",
+    "next": {
+      "lastSpot": "佔用最後一個名額",
+      "takesSpot": "佔用一個名額",
+      "spotsLeft": "在此之前剩餘 {{count}} 個",
+      "checkIn": "比賽當天報到",
+      "firstMatch": "第一場比賽",
+      "spotOf": "{{n}}/{{max}}"
+    },
+    "vouch": "我確認此陣容中的每位玩家都已閱讀",
+    "vouchNote": "我代表他們報名。如果有玩家違反規則，整支戰隊可能受罰或被取消資格。",
+    "send": "為 {{team}} 報名",
+    "rulesLink": "規則",
+    "ownerTag": "所有者",
+    "captainTag": "隊長",
+    "check": {
+      "steam": "Steam",
+      "game": "{{game}}",
+      "noGame": "未新增 {{game}}",
+      "steamShort": "Steam"
+    },
+    "remind": "提醒",
+    "reminded": "已在隊伍聊天中傳送提醒",
+    "done": "完成",
+    "lineupGap": "有首發離開了你的陣容（被封禁或刪除）。你的比賽會等到 {{time}}：在此之前選擇替補，否則第一位替補自動頂上。沒有替補就缺員比賽。",
+    "pickSub": "選擇替補",
+    "title": "為你的戰隊報名",
+    "editTitle": "更改你的陣容",
+    "stepsLabel": "步驟",
+    "changeUntil": "報到截止（{{when}}）前都可以更改陣容。",
+    "counts": "首發 {{starters}}/{{teamSize}} · 替補 {{subs}}/{{maxSubs}}",
+    "lineupRatingValue": "陣容 Rating {{rating}}",
+    "missingGame": "{{names}} 需要在資料中新增 {{game}}。",
+    "subsLine": "替補：{{names}}",
+    "overlap": {
+      "title": "你無法報名這個賽事",
+      "body": "你在 {{name}} 中，它在 {{when}} 有比賽，與此賽事時間相同。只要比賽時間不重疊，你可以同時參加兩個賽事。",
+      "open": "開啟 {{name}}"
+    },
+    "youreIn": {
+      "eyebrow": "{{team}} · 已報名",
+      "title": "報名成功！",
+      "body": "以下是你的戰隊在賽事開始前需要知道的事。我們也把這份清單發給了所有者和隊長。",
+      "openLineup": "開啟你的陣容",
+      "listTitle": "賽事開始前",
+      "checkIn": "報到時間 {{when}}–{{to}}",
+      "checkInBodyCaptains": "每位首發都在此頁面報到，或由隊長代為報到。賽事開始時報到截止。",
+      "checkInBody": "每位首發都在此頁面報到。賽事開始時報到截止。",
+      "subs": "替補不需要報到",
+      "subsBody": "他們算作已到場並就緒，所以比賽永遠不會等他們。",
+      "replaced": "未報到的首發會被替換",
+      "replacedBody": "報到截止時，替補會頂替任何未報到的首發。沒有替補了：就少一人比賽。",
+      "fullTeam_one": "有 {{count}} 分鐘讓全隊進入伺服器",
+      "fullTeam_other": "有 {{count}} 分鐘讓全隊進入伺服器",
+      "fullTeamBody_one": "伺服器就緒後，你的戰隊有 {{count}} 分鐘讓全隊（含替補）進入伺服器。之後，對方可以接受不戰而勝，或選擇與缺人的你們比賽。",
+      "fullTeamBody_other": "伺服器就緒後，你的戰隊有 {{count}} 分鐘讓全隊（含替補）進入伺服器。之後，對方可以接受不戰而勝，或選擇與缺人的你們比賽。",
+      "ready": "每場比賽前做好準備",
+      "readyBodyVeto_one": "每場比賽前 {{count}} 分鐘開啟禁選。請保持此頁面開啟：下一場比賽就緒時它會通知你。",
+      "readyBodyVeto_other": "每場比賽前 {{count}} 分鐘開啟禁選。請保持此頁面開啟：下一場比賽就緒時它會通知你。",
+      "readyBody": "請保持此頁面開啟：下一場比賽就緒時它會通知你。",
+      "eachMatch": "每場比賽前再次報到",
+      "eachMatchBody": "每場比賽前，每位首發都在比賽房間報到，或由隊長代為報到。未報到的首發會被替補換下。"
+    }
+  },
+  "bracketCards": {
+    "you": "你",
+    "open": "開啟 {{a}} 對陣 {{b}}",
+    "upper": "勝者組",
+    "lower": "敗者組",
+    "grandFinal": "總決賽",
+    "thirdPlace": "季軍賽",
+    "live": "直播中",
+    "veto": "禁選",
+    "done": "已結束",
+    "mapOf": "第 {{n}}/{{total}} 張圖",
+    "banning": "正在禁圖",
+    "bestOf_one": "BO{{count}}",
+    "bestOf_other": "BO{{count}}",
+    "winnerOf": "{{match}} 勝者",
+    "loserOf": "{{match}} 敗者",
+    "tbd": "待定",
+    "liveCount_one": "{{count}} 場進行中",
+    "liveCount_other": "{{count}} 場進行中",
+    "matchCount_one": "{{count}} 場比賽",
+    "matchCount_other": "{{count}} 場比賽"
+  },
+  "placement": {
+    "outTitle": "你在 {{tournament}} 的征程結束了",
+    "wonTitle": "你贏得了 {{tournament}}！",
+    "yourTeamPlaced": "{{team}} 的名次",
+    "yourTeam": "你的戰隊",
+    "outBody": "你的戰隊已出局，沒有更多比賽了。可以在賽程表中關注剩下的比賽。",
+    "wonBody": "你的戰隊贏得了賽事。打得漂亮！",
+    "close": "關閉",
+    "seeBracket": "檢視賽程表",
+    "outBodyPlay": "你在此賽事中沒有更多比賽了。感謝參賽！",
+    "championsEyebrow": "冠軍",
+    "teamPlaced": "{{team}} 的名次",
+    "wonTitleShort": "你贏得了 {{tournament}}！",
+    "wonFinalBody": "{{team}} 以 {{score}} 贏得決賽。打得漂亮！",
+    "playHint": "還想再來一局？配對會在一兩分鐘內為你找到比賽。"
+  },
+  "advance": {
+    "title": "漂亮，你們晉級了！",
+    "opponent": "下一個對手：{{opponent}}。",
+    "feederTitle": "你們的下一個對手來自",
+    "vs": "對",
+    "tbd": "待定",
+    "feederNotStarted": "那場比賽還沒開始。",
+    "feederMinutes_one": "大約還剩 {{count}} 分鐘。",
+    "feederMinutes_other": "大約還剩 {{count}} 分鐘。",
+    "feederAlmost": "快結束了。",
+    "watch": "觀看直播",
+    "wonEyebrow": "{{stage}} 以 {{score}} 獲勝"
+  },
+  "whatsNext": {
+    "eyebrow": "接下來",
+    "champions": "冠軍",
+    "outTitle": "你的戰隊已出局。你的名次：{{place}}",
+    "outBody": "這是你在 {{tournament}} 的最後一場比賽。GG！還想繼續玩？配對現在就能為你找到和其他玩家的比賽。",
+    "playMatchmaking": "開始配對",
+    "watchLive": "觀看進行中的比賽",
+    "nextMatch": "{{stage}} 對陣 {{opponent}}",
+    "nextMatchReady": "你的比賽已就緒：開啟比賽房間進行連線。",
+    "nextMatchSoon": "你的下一場比賽已確定。短暫休息後開放，我們會提醒你。無論你在哪，導航欄都會顯示倒計時。",
+    "openMatchRoom": "開啟比賽房間",
+    "throughTo": "你已晉級{{stage}}",
+    "waitingTitle": "等待你的下一個對手",
+    "waitingBody": "你的對手來自一場仍在進行的比賽。比賽結束後短暫休息，然後你的下一場比賽開放。我們會提醒你。",
+    "watchOpponent": "觀看你下一個對手的直播",
+    "shuffleTitle": "下一輪：新的戰隊",
+    "shuffleBody": "本輪所有比賽結束後，會抽出新的戰隊，你的下一場比賽會顯示在這裡。",
+    "stayHere": "留在此頁面：它會自動更新。",
+    "openTournament": "開啟賽事",
+    "winsToTitle_one": "距離冠軍還差 1 場勝利",
+    "winsToTitle_other": "距離冠軍還差 {{count}} 場勝利",
+    "shuffleDoneTitle": "這是最後一輪",
+    "shuffleDoneBody": "隨機組隊賽已結束。開啟賽事檢視積分榜。",
+    "youWon": "你以 {{a}}–{{b}} 戰勝了 {{opponent}}。",
+    "youLost": "你以 {{a}}–{{b}} 負於 {{opponent}}。",
+    "resultPlaced": "{{result}} 你的名次：{{place}}。",
+    "nextUp": "下一場：{{match}}。"
+  },
+  "navStatus": {
+    "placed": "名次",
+    "placedPlay": "{{place}} · 開始配對",
+    "waiting": "等待對手",
+    "vetoIn": "禁選倒計時",
+    "vetoOpening": "禁選開啟中",
+    "matchIn": "比賽倒計時",
+    "matchLoading": "比賽載入中",
+    "shuffleRound": "第 {{round}} 輪 · 比賽中",
+    "shuffleSittingOut": "第 {{round}} 輪 · 輪休",
+    "placedPlayLine": "名次 {{place}} · 開始配對",
+    "placedLine": "名次 {{place}}",
+    "waitingOpponent": "等待對手",
+    "aboutMinutes_one": "約 {{count}} 分鐘",
+    "aboutMinutes_other": "約 {{count}} 分鐘"
+  },
+  "shuffleJoin": {
+    "title": "加入本次隨機組隊賽",
+    "body": "無需隊伍：單人報名即可。每一輪平台都會重新抽取實力均衡的隊伍。",
+    "youreIn": "你已報名",
+    "inBody": "錦標賽開始時會抽取你的第一支隊伍，你的比賽會顯示在這裡。請保持此頁面開啟。",
+    "join": "加入",
+    "leave": "退出",
+    "full": "已滿",
+    "signInToJoin": "登入後加入",
+    "count_one": "已報名 {{count}} 人",
+    "count_other": "已報名 {{count}} 人",
+    "countOf_one": "已報名 {{count}} / {{spots}} 人",
+    "countOf_other": "已報名 {{count}} / {{spots}} 人",
+    "playingTitle": "你正在比賽",
+    "playingBody": "和你的戰隊一起加入伺服器。本輪所有比賽結束後抽出下一輪。",
+    "sittingOutTitle": "你本輪輪休",
+    "sittingOutBody": "本輪人數不夠每隊都滿員。你會參加第 {{next}} 輪的抽籤，打得最多的人先輪休。",
+    "goToMatch": "前往比賽",
+    "tagPlaying": "比賽中",
+    "tagSittingOut": "輪休",
+    "roundHeading": "第 {{round}} 輪",
+    "versus": "對陣",
+    "sittingOutList": "輪休：{{names}}",
+    "status": {
+      "live": "進行中",
+      "done": "已結束",
+      "waiting": "即將開始"
+    },
+    "finishedTitle": "隨機組隊賽已結束",
+    "finishedBody_one": "全部 1 輪都已打完。GG！",
+    "finishedBody_other": "全部 {{count}} 輪都已打完。GG！",
+    "roundOf": "第 {{round}}/{{total}} 輪",
+    "roundsCount_one": "{{count}} 輪",
+    "roundsCount_other": "{{count}} 輪",
+    "now": "現在",
+    "tagLeft": "已離開",
+    "markOut": "標記為離開",
+    "markIn": "重新加入",
+    "roundShort": "第 {{round}} 輪",
+    "playedTitle": "你第 {{round}} 輪的比賽已結束",
+    "playedBody": "其他比賽結束後會抽出第 {{next}} 輪。留在此頁面：它會自動更新。",
+    "sittingOutBodyCounts_one": "{{size}}v{{size2}} 共有 {{players}} 名玩家，因此每輪有 {{count}} 人輪休。打得最多的人先輪休：你會參加下一次抽籤。",
+    "sittingOutBodyCounts_other": "{{size}}v{{size2}} 共有 {{players}} 名玩家，因此每輪有 {{count}} 人輪休。打得最多的人先輪休：你會參加下一次抽籤。",
+    "playedBodyLeft_one": "還在等待 {{count}} 場比賽。結束後抽出第 {{next}} 輪；你的下一場比賽會顯示在這裡，你也會收到通知。",
+    "playedBodyLeft_other": "還在等待 {{count}} 場比賽。結束後抽出第 {{next}} 輪；你的下一場比賽會顯示在這裡，你也會收到通知。",
+    "joinedByMistake": "誤加入了？",
+    "breakTitle": "休息 · 第 {{round}} 輪於 {{time}} 開始",
+    "noShowTitle": "你不參與接下來的抽籤",
+    "noShowBody": "你沒有加入你的比賽，因此接下來幾輪的抽籤不包括你。回到電腦前了？告訴我們，你就會參加下一次抽籤。",
+    "backIn": "我回來了",
+    "tagNoShow": "未到場"
+  },
+  "liveOverview": {
+    "roundOf": "第 {{round}}/{{total}} 輪",
+    "liveCount": "{{count}} 場正在進行",
+    "eta": {
+      "nextRoundAbout": "下一輪約 {{time}}",
+      "nextRoundAt": "下一輪於 {{time}}",
+      "finalEnds": "最後一輪：約 {{time}} 結束",
+      "endsAbout": "預計 {{time}} 結束"
+    },
+    "hero": {
+      "playingTitle": "你正在比賽",
+      "playingBody": "{{us}} 對陣 {{them}}{{map}}。從比賽房間加入。",
+      "joiningTitle": "加入伺服器",
+      "joiningBody": "{{us}} 對陣 {{them}}{{map}}。所有人準備好後比賽開始。",
+      "vetoTitle": "你的地圖禁選已開啟",
+      "vetoBody": "在比賽房間與 {{them}} 禁用和選擇地圖。",
+      "waitingTitle": "等待你的下一個對手",
+      "waitingBody": "對手來自一場仍在進行的比賽。短暫休息後禁選開啟，你會收到通知。",
+      "notStartedTitle": "下一場：{{them}}",
+      "notStartedBody": "本輪開始時你的比賽開放。此頁面會自動更新。",
+      "outTitle": "你的戰隊已出局。你的名次：{{place}}",
+      "outBody": "這是你的最後一場比賽。GG！如果還想繼續玩，配對已開放。",
+      "wonTitle": "你贏得了賽事！",
+      "wonBody": "打得漂亮。你的獎品在你的庫存中。",
+      "spectatorTitle": "{{count}} 場比賽進行中",
+      "spectatorTitleOne": "1 場比賽進行中",
+      "spectatorIdleTitle": "輪次之間",
+      "spectatorBody": "開啟一場比賽，檢視比分、地圖和上場選手。",
+      "openMatchRoom": "開啟比賽房間",
+      "openVeto": "開啟禁選",
+      "watchLive": "觀看進行中的比賽",
+      "playMatchmaking": "開始配對",
+      "yourMatch": "你的比賽",
+      "opponentFrom": "你的對手來自",
+      "minutesLeft": "約剩 {{count}} 分鐘",
+      "winsToTitle_one": "距離冠軍還差 1 場勝利",
+      "winsToTitle_other": "距離冠軍還差 {{count}} 場勝利",
+      "waitingServerTitle": "等待伺服器",
+      "waitingServerBody": "{{us}} 對陣 {{them}}{{map}}。一有空閒伺服器就會分配；你會收到通知。",
+      "wonStage": "{{stage}} 以 {{score}} 獲勝",
+      "stageNext": "下一場：{{stage}}",
+      "faceWinnerOf": "{{us}} 將對陣 {{a}} 與 {{b}} 的勝者（{{state}}）。那場比賽結束後禁選開啟；你會收到通知。",
+      "feederLive": "{{score}}，第 {{map}} 張地圖進行中",
+      "feederNotStarted": "尚未開始",
+      "vetoOpens": "禁選開啟",
+      "inAboutMinutes_one": "約 {{count}} 分鐘後",
+      "inAboutMinutes_other": "約 {{count}} 分鐘後",
+      "later": "稍後",
+      "afterBreak": "短暫休息後",
+      "youAre": "你的戰績 {{record}}",
+      "nextRoundDrawn": "接下來抽出第 {{round}} 輪",
+      "lastRoundPlaying": "最後一輪正在進行",
+      "betweenBody": "你本輪的比賽已結束。其他比賽結束後抽出下一輪；你的比賽會顯示在這裡，你也會收到通知。",
+      "vetoSoonTitle": "你的地圖禁選於 {{time}} 開啟",
+      "vetoSoonBody": "上一場比賽後短暫休息。對陣 {{them}} 的禁選開啟時你會收到通知。"
+    },
+    "schedule": "日程",
+    "bracket": "賽程表",
+    "round": "第 {{n}} 輪",
+    "final": "決賽",
+    "state": {
+      "now": "現在",
+      "next": "下一個",
+      "later": "稍後",
+      "done": "✓ 已完成",
+      "live": "進行中",
+      "upcoming": "即將開始"
+    },
+    "thisRound": "第 {{n}} 輪",
+    "earlier": "更早的輪次",
+    "standings": "積分榜",
+    "teams": "戰隊",
+    "wl": "W–L",
+    "rounds": "+/−",
+    "ties": {
+      "round_robin": "平局：先看相互戰績，再看回合差，再看贏得回合數。",
+      "swiss": "平局：先看對手強度（Buchholz：對手勝場之和），再看回合差。",
+      "elim": "按勝場排序。輸兩場就出局。",
+      "singleElim": "按勝場排序。輸一場就出局。",
+      "doubleElim": "按勝場排序。輸兩場就出局。",
+      "groups": "小組內平局：先看相互戰績，再看回合差，再看贏得回合數。"
+    },
+    "players": {
+      "title": "玩家 · 按 Rating",
+      "find": "查詢玩家",
+      "export": "匯出",
+      "all": "全部 {{count}} 名玩家",
+      "player": "玩家",
+      "team": "戰隊",
+      "rating": "Rating",
+      "change": "±",
+      "kd": "K / D",
+      "adr": "ADR",
+      "winRate": "勝率",
+      "none": "沒有配對的玩家。"
+    }
+  },
+  "matchesCards": {
+    "show": "顯示",
+    "filterAll": "全部 {{count}}",
+    "filterLive": "進行中 {{count}}",
+    "filterUpcoming": "即將開始 {{count}}",
+    "done": "已結束",
+    "afterOvertime": "加時後",
+    "startsAt": "{{time}} 開始 · 禁選於 {{veto}} 開啟",
+    "yourMatch": "你的比賽",
+    "placeholderTbd": "待定",
+    "placeholderVeto": "地圖禁選",
+    "placeholderVetoAt": "禁選 {{time}}"
+  },
+  "standingsTab": {
+    "champions": "冠軍",
+    "championBadge": "冠軍",
+    "vs": "對陣",
+    "rounds": "回合",
+    "form": "近期狀態",
+    "intro": {
+      "round_robin": "迴圈賽：每支戰隊與其他所有戰隊各交手一次。",
+      "swiss": "瑞士輪：每輪讓戰績相同的戰隊配對。",
+      "single": "單敗淘汰：輸一場就出局。",
+      "double": "雙敗淘汰：輸兩場就出局。",
+      "groups": "小組賽後季後賽：每支戰隊與同組其他戰隊各交手一次；最佳戰隊進入季後賽。"
+    }
+  },
+  "teamsCards": {
+    "subs": "替補：{{names}}"
+  },
+  "rulesTab": {
+    "atAGlance": "一覽",
+    "onThisPage": "本頁內容",
+    "fromSettings": "來自賽事設定，始終最新",
+    "organizer": "主辦方的規則",
+    "facts": {
+      "map": "地圖",
+      "firstTo": "先到 {{count}}",
+      "noOvertime": "無",
+      "overtimeSegments_one": "1 次，然後比傷害",
+      "overtimeSegments_other": "{{count}} 次，然後比傷害",
+      "overtimeUnlimited": "直到分出勝負",
+      "thenDamage": "每次 6 回合，先到 4",
+      "mapCount_one": "{{count}} 張地圖",
+      "mapCount_other": "{{count}} 張地圖"
+    },
+    "format": {
+      "title": "這個賽制如何進行",
+      "navTitle": "賽制",
+      "swiss_one": "每支戰隊打 {{count}} 輪，每輪對陣戰績相同的戰隊。不會重複交手。按勝場排名，然後看下方的決勝規則。",
+      "swiss_other": "每支戰隊打 {{count}} 輪，每輪對陣戰績相同的戰隊。不會重複交手。按勝場排名，然後看下方的決勝規則。",
+      "single_elimination": "輸一場就出局。賽程表一路打到決賽。",
+      "double_elimination": "分勝者組和敗者組。輸兩場就出局。",
+      "round_robin": "每支戰隊都與其他戰隊交手一次。按勝場排名，然後看下方的決勝規則。",
+      "shuffle": "每輪從報名玩家中重新抽籤組隊。玩家按勝場排名。",
+      "matches": "每場比賽為 {{series}}，地圖為 MR{{mr}}。延長賽：{{overtime}}。",
+      "damage": "如果最後一次加時後地圖仍然持平，總傷害更高的戰隊贏得該地圖。"
+    }
+  },
+  "liveMatch": {
+    "updatesEveryRound": "每回合更新",
+    "chat": "比賽聊天",
+    "system": "Auto Tournament",
+    "noMessages": "還沒有訊息。說聲 gl hf！",
+    "chatSignIn": "以本場比賽的玩家身分登入，才能在這裡閱讀和發言。",
+    "messageLabel": "給雙方戰隊和管理員發訊息",
+    "send": "傳送",
+    "callAdmin": "呼叫管理員",
+    "adminCalled": "管理員正在趕來",
+    "joinTitle": "加入伺服器：{{map}}",
+    "warmup": "熱身 · 立即加入",
+    "isLive": "{{map}} 進行中",
+    "players": "玩家",
+    "playersOnMap": "玩家 · {{map}}",
+    "noEconomy": "按 Rating 排序。不顯示金錢或裝備：不會洩露任何一方的經濟。",
+    "yourTeam": "你的戰隊",
+    "backToTournament": "返回賽事",
+    "manage": "管理這場比賽",
+    "finishedAt": "{{when}} 結束",
+    "delayedNote_one": "顯示 GOTV 的內容，延遲 {{count}} 秒。",
+    "delayedNote_other": "顯示 GOTV 的內容，延遲 {{count}} 秒。"
+  },
+  "preStart": {
+    "open": "報名已開放",
+    "openCloses": "報名已開放 · {{when}} 截止",
+    "closed": "報名已截止",
+    "notOpenTitle": "報名未開放",
+    "fullTitle": "名額已滿",
+    "spotsLeft_one": "剩餘 {{count}}/{{max}} 個名額。隊長選擇首發和替補。",
+    "spotsLeft_other": "剩餘 {{count}}/{{max}} 個名額。隊長選擇首發和替補。",
+    "byOrganizer": "由主辦方新增戰隊。",
+    "captainsPick": "隊長選擇首發和替補。",
+    "startsIn": "距離開始",
+    "allRules": "全部規則與獎品",
+    "signedUpEyebrow": "{{team}} · 已報名",
+    "inTitle": "你已報名",
+    "inToFix_one": "你已報名。還有 1 項待處理",
+    "inToFix_other": "你已報名。還有 {{count}} 項待處理",
+    "fixBefore": "請在 {{when}} 報到前處理好，否則該玩家無法加入伺服器。",
+    "checkInOn": "請在 {{when}} 報到。開賽前未報到的首發會被替補頂替。",
+    "allSet": "全員就緒。日程會顯示開始時間。",
+    "checkInOpens": "報到開啟",
+    "openLineup": "開啟你的陣容",
+    "yourSignup": "你的報名",
+    "spotOf": "名額 {{place}}/{{max}}",
+    "lineupCount": "陣容 · 首發 {{starters}} 名，替補 {{subs}} 名",
+    "fixBeforeCheckIn": "報到前處理",
+    "leave": "退出賽事",
+    "withdrawHint": "來不了？退賽可以把名額讓給其他戰隊。",
+    "opensTitle": "報名於 {{when}} 開放",
+    "opensIn": "{{time}} 後開放。"
+  },
+  "shuffleOverview": {
+    "yourMatchLive": "你的比賽正在進行",
+    "yourMatchReady": "你的比賽已就緒",
+    "yourMatchDone": "你的比賽已結束",
+    "nextDraw": "下次抽籤",
+    "round": "第 {{n}} 輪",
+    "whenRoundEnds": "本輪比賽結束時",
+    "oneMapPerRound": "每輪一張地圖 · 每輪新的戰隊",
+    "sittingOut": "輪休：",
+    "firstNextRound": "下一輪優先",
+    "players": "玩家",
+    "markOutHint": "把離開的玩家標記為離開；在你把他們標記回來之前他們會一直輪休。"
+  },
+  "checkIn": {
+    "areYouHere": "你到了嗎？",
+    "teamCount": "{{team}} 正在報到：{{in}}/{{total}}。開賽前未報到的首發會被替補頂替。",
+    "soundOn": "♪ 聲音已開",
+    "firstVeto_one": "你的第一次禁選於 {{time}} 開啟，即比賽前 {{count}} 分鐘：屆時請待在電腦前。",
+    "firstVeto_other": "你的第一次禁選於 {{time}} 開啟，即比賽前 {{count}} 分鐘：屆時請待在電腦前。",
+    "vetoOpensNote": "禁選於 {{time}} 開啟"
+  },
+  "runState": {
+    "paused": "賽事已暫停",
+    "pausedUntil": "賽事暫停至 {{time}}",
+    "pausedBody": "已在伺服器上的比賽會繼續。恢復之前不會抽出新的輪次，也不會開啟禁選。",
+    "reason": "原因：{{reason}}。",
+    "waitingServers_one": "{{count}} 場比賽正在等待伺服器。",
+    "waitingServers_other": "{{count}} 場比賽正在等待伺服器。",
+    "allBusy_one": "全部 1 臺伺服器都在忙；一有空閒就會開始。",
+    "allBusy_other": "全部 {{count}} 臺伺服器都在忙；一有空閒就會開始。",
+    "noneFree": "沒有空閒伺服器；一有空閒就會開始。",
+    "servers": "伺服器",
+    "pausedShort": "已暫停"
+  },
+  "captainsPanel": {
+    "title": "隊長",
+    "note": "只有隊長可以上報或確認結果。",
+    "make": "設為隊長",
+    "remove": "取消隊長",
+    "role": {
+      "owner": "所有者",
+      "captain": "隊長",
+      "member": "成員"
+    }
+  },
+  "lineupPanel": {
+    "title": "出場陣容",
+    "note_one": "為本場比賽選擇 {{count}} 名選手，其餘選手替補。",
+    "note_other": "為本場比賽選擇 {{count}} 名選手，其餘選手替補。",
+    "picked": "已選 {{picked}}/{{count}}",
+    "plays": "出場",
+    "bench": "替補",
+    "save": "儲存陣容",
+    "saved": "陣容已儲存",
+    "notOnServer": "陣容已儲存，但伺服器未接受：{{error}}",
+    "locked": "地圖進行中時陣容已鎖定，可在兩張地圖之間更改。",
+    "captainOnly": "只有隊伍所有者或隊長可以更改陣容。",
+    "source": {
+      "previous": "與隊伍上一場比賽相同。",
+      "roster": "名單中的前幾名選手。"
+    }
+  },
+  "prizesPage": {
+    "title": "獎品",
+    "intro": "按名次發放的造型，賽事結束時發給戰隊每位玩家，另有 MVP 獎品。僅限網站造型：不是 Steam 物品，沒有金錢價值。",
+    "none": "此賽事的遊戲沒有獎品。",
+    "loadFailed": "無法載入賽事。"
+  },
+  "schedulePage": {
+    "title": "比賽時間",
+    "intro": "為每一輪設定開始時間，或為單場比賽單獨設定。玩家會在比賽中看到時間、收到提醒，禁選也會準時開啟。",
+    "loadFailed": "無法載入賽事。",
+    "rounds": "輪次",
+    "modeLabel": "比賽何時開始",
+    "modeTimes": "按預定時間",
+    "modeAsap": "就緒即開始",
+    "modeTimesNote": "比賽會等到預定時間。開啟某一輪可為單場比賽設定時間。",
+    "modeAsapNote": "不設時間：只要雙方和伺服器就緒，比賽就開始。",
+    "noRounds": "賽程表生成後，輪次會顯示在這裡。",
+    "roundN": "第 {{n}} 輪",
+    "roundNote_one": "{{count}} 場比賽 · 開啟以單獨設定某場的時間",
+    "roundNote_other": "{{count}} 場比賽 · 開啟以單獨設定某場的時間",
+    "roundNoMatches": "上一輪結束後才會生成本輪比賽",
+    "roundStartsAt": "本輪開始於",
+    "roundTimeLabel": "{{round}} 的開始時間",
+    "matchTimeLabel": "{{match}} 的開始時間",
+    "tbd": "待定",
+    "ownTime": "單獨的開始時間",
+    "sameAsRound": "與本輪相同",
+    "useRoundTime": "使用本輪時間",
+    "vetoTitle": "禁選",
+    "vetoNote": "每場比賽前自動開啟，以便比賽開始時已完成。未及時操作的戰隊會被代選一張地圖。",
+    "vetoLabel": "禁選開啟",
+    "vetoZero": "在開始時間",
+    "reminderTitle": "提醒",
+    "reminderNote": "透過網站和 Discord 通知比賽中的每位玩家。",
+    "reminderLabel": "提醒玩家",
+    "reminderZero": "關閉",
+    "minutesBefore_one": "提前 {{count}} 分鐘",
+    "minutesBefore_other": "提前 {{count}} 分鐘",
+    "save": "儲存時間",
+    "saved": "比賽時間已儲存",
+    "saveFailed": "無法儲存時間",
+    "rulesTitle": "遵循的規則",
+    "rules": {
+      "start": "禁選開啟前，比賽的任何環節都不會開始，即使有空閒伺服器。",
+      "late": "晚了的輪次會推遲下一輪：仍在比賽的戰隊或比賽之間的休息會推遲禁選，玩家會看到新時間。",
+      "none": "未設時間：和以前一樣，只要雙方和伺服器就緒，比賽就會進行。",
+      "where": "概覽日程、比賽卡片、比賽房間、規則和報到都會顯示這些時間。"
+    },
+    "breaksTitle": "輪次之間的休息",
+    "breaksNote_one": "休息留空則使用網站的 {{count}} 分鐘休息。可以在任意一輪後加一段更長的休息，例如第 3 輪後休息 30 分鐘。",
+    "breaksNote_other": "休息留空則使用網站的 {{count}} 分鐘休息。可以在任意一輪後加一段更長的休息，例如第 3 輪後休息 30 分鐘。",
+    "breakEvery": "每輪後休息（分鐘）",
+    "breakAfterRound": "第幾輪後",
+    "breakMinutes": "休息（分鐘）",
+    "breakRemove": "移除",
+    "breakAdd": "新增更長的休息",
+    "fillStart": "第一輪開始於",
+    "fillEvery": "輪次間隔（分鐘）",
+    "fillApply": "填充各輪"
+  },
+  "groups": {
+    "groupN": "{{letter}} 組",
+    "done": "已結束",
+    "through_one": "前 1 名晉級",
+    "through_other": "前 {{count}} 名晉級",
+    "playoffs": "季後賽",
+    "playoffsSoon": "所有小組賽打完後季後賽開始。",
+    "seedSlot": "種子 {{n}}"
+  },
+  "matchCheckIn": {
+    "eyebrow": "禁選已開啟 · 比賽於 {{time}} 開始",
+    "eyebrowNoTime": "報到已開啟",
+    "title": "為這場比賽報到",
+    "body": "此賽事每場比賽前都要報到。首發表示自己已到場；隊長可以代為報到。替補已經算就緒。",
+    "closesIn": "報到截止倒計時",
+    "yourTeam": "{{team}}（你的戰隊）",
+    "count": "首發已報到 {{in}}/{{total}}",
+    "sub": "替補",
+    "starter": "首發",
+    "ready": "已就緒",
+    "checkedIn": "已報到",
+    "notYet": "還沒有",
+    "rule": "開賽時未報到：首發會被替補換下，比賽房間會顯示是誰。沒有替補了，就少一人比賽。",
+    "server": {
+      "eyebrow": "伺服器已就緒 · {{time}} 前全員到齊",
+      "eyebrowNoTime": "伺服器已就緒",
+      "title": "讓你的戰隊進入伺服器",
+      "bodyOut": "{{out}} 沒有報到，因此由替補上場。",
+      "body_one": "計時結束前，你們需要有 1 人在伺服器上。替補也算。",
+      "body_other": "計時結束前，你們需要有 {{count}} 人在伺服器上。替補也算。",
+      "clockLabel": "全員到齊倒計時",
+      "count": "伺服器上 {{on}}/{{size}} 人",
+      "onServer": "在伺服器上",
+      "joining": "正在加入…",
+      "subIn": "替補上場",
+      "out": "離場",
+      "swapped": "已被替補換下",
+      "rule": "到 0:00 時，人齊的一方選擇：接受不戰而勝，或與缺人的一方比賽。雙方都缺人：由管理員決定。"
+    },
+    "choice": {
+      "eyebrow": "{{team}} 仍然缺人",
+      "title": "{{team}} 在伺服器上有 {{on}}/{{size}} 人",
+      "body": "他們的時間到了。接受不戰而勝直接晉級，或者照樣和他們打。任一隊長都可以選擇。2 分鐘內不選擇：維持不戰而勝。",
+      "take": "接受不戰而勝",
+      "play": "照樣比賽"
+    }
+  }
+}
