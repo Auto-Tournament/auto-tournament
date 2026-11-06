@@ -1,0 +1,124 @@
+{
+  "origin-hint": {
+    "seed": "Поставен {{position}}",
+    "winner-bracket": "Победен в $t(abbreviations.winner-bracket) {{round}}.{{position}}",
+    "winner-bracket-semi-final": "Победен в полуфинал {{position}} на $t(abbreviations.winner-bracket)",
+    "winner-bracket-final": "Победен във финала на $t(abbreviations.winner-bracket)",
+    "consolation-final": "Победен в полуфинал {{position}}",
+    "grand-final": "Победител във финала на $t(abbreviations.loser-bracket)",
+    "double-elimination-consolation-final-opponent-1": "Победен в полуфинал 1 на $t(abbreviations.loser-bracket)",
+    "double-elimination-consolation-final-opponent-2": "Победен във финала на $t(abbreviations.loser-bracket)"
+  },
+  "match-label": {
+    "default": "Мач {{matchNumber}}",
+    "winner-bracket": "$t(abbreviations.winner-bracket)",
+    "loser-bracket": "$t(abbreviations.loser-bracket)",
+    "standard-bracket": "$t(abbreviations.match)",
+    "standard-bracket-semi-final": "Полуфинал {{matchNumber}}",
+    "standard-bracket-final": "Финал",
+    "double-elimination": "{{matchPrefix}} {{roundNumber}}.{{matchNumber}}",
+    "double-elimination-semi-final": "{{matchPrefix}} полуфинал {{matchNumber}}",
+    "double-elimination-final": "{{matchPrefix}} финал",
+    "consolation-final": "Малък финал",
+    "grand-final-single": "Голям финал",
+    "grand-final": "$t(abbreviations.grand-final) кръг {{roundNumber}}",
+    "match-game": "Игра {{gameNumber}}"
+  },
+  "match-status": {
+    "locked": "Заключен",
+    "waiting": "Изчаква",
+    "ready": "Готов",
+    "running": "В ход",
+    "completed": "Завършен",
+    "archived": "Архивиран"
+  },
+  "abbreviations": {
+    "win": "П",
+    "loss": "З",
+    "forfeit": "О",
+    "position": "Поз.",
+    "seed": "#",
+    "winner-bracket": "ГС",
+    "loser-bracket": "ДС",
+    "match": "М",
+    "grand-final": "ГФ"
+  },
+  "ranking": {
+    "rank": {
+      "text": "#",
+      "tooltip": "Място"
+    },
+    "id": {
+      "text": "Име",
+      "tooltip": "Име"
+    },
+    "played": {
+      "text": "И",
+      "tooltip": "Изиграни"
+    },
+    "wins": {
+      "text": "$t(abbreviations.win)",
+      "tooltip": "Победи"
+    },
+    "draws": {
+      "text": "Р",
+      "tooltip": "Равни"
+    },
+    "losses": {
+      "text": "$t(abbreviations.loss)",
+      "tooltip": "Загуби"
+    },
+    "forfeits": {
+      "text": "$t(abbreviations.forfeit)",
+      "tooltip": "Откази"
+    },
+    "scoreFor": {
+      "text": "ВТ",
+      "tooltip": "Вкарани точки"
+    },
+    "scoreAgainst": {
+      "text": "ДТ",
+      "tooltip": "Допуснати точки"
+    },
+    "scoreDifference": {
+      "text": "+/-",
+      "tooltip": "Разлика в точките"
+    },
+    "points": {
+      "text": "Т",
+      "tooltip": "Точки"
+    }
+  },
+  "common": {
+    "bye": "BYE",
+    "best-of-x": "Bo{{x}}",
+    "consolation": "Утешителен",
+    "group-name": "Група {{groupNumber}}",
+    "group-name-winner-bracket": "Горна схема",
+    "group-name-loser-bracket": "Долна схема",
+    "round-name": "Кръг {{roundNumber}}",
+    "round-name-final": "Последен кръг",
+    "round-name-winner-bracket": "$t(abbreviations.winner-bracket) кръг {{roundNumber}}",
+    "round-name-winner-bracket-final": "$t(abbreviations.winner-bracket) последен кръг",
+    "round-name-loser-bracket": "$t(abbreviations.loser-bracket) кръг {{roundNumber}}",
+    "round-name-loser-bracket-final": "$t(abbreviations.loser-bracket) последен кръг"
+  },
+  "form-creator": {
+    "stage-name-label": "Именувай етапа",
+    "stage-name-placeholder": "Дай име на етапа",
+    "stage-selector-label": "Избери етап",
+    "team-label": "Именувай отборите",
+    "team-label-placeholder": "Списък с имена на отбори, разделени със запетаи (трябва да са 2^n)",
+    "team-count": "Или брой отбори",
+    "team-count-placeholder": "Колко отбора искаш?",
+    "group-label": "Колко групи?",
+    "group-placeholder": "Колко групи искаш?",
+    "seed-order-label": "Как искаш да подредиш поставените?",
+    "double-elimination-seed-order-placeholder": "Ред на поставените за двойна елиминация, разделен със запетаи",
+    "round-robin-mode-label": "Кой режим на всеки срещу всеки предпочиташ?",
+    "consolation-final-label": "Малък финал",
+    "skip-first-round-label": "Пропусни първия кръг",
+    "grand-final-type-label": "Тип на големия финал",
+    "submit": "Създай"
+  }
+}
