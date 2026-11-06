@@ -60,8 +60,8 @@
       "live": "直播中",
       "completed": "已完成",
       "cancelled": "已取消",
-      "needsDecision": "NEEDS ADMIN DECISION",
-      "waitingForPairing": "WAITING FOR PAIRING"
+      "needsDecision": "需要管理员决定",
+      "waitingForPairing": "等待配对"
     },
     "statusGuide": {
       "title": "比赛状态说明",
@@ -74,57 +74,57 @@
     },
     "latestEvent": "最新：{{event}}",
     "matchLabel": {
-      "upper": "UB R{{round}} M{{match}}",
-      "lower": "LB R{{round}} M{{match}}",
-      "grandFinal": "Grand Final",
-      "grandFinalReset": "Grand Final Reset",
-      "group": "Group {{group}} · Round {{round}}",
-      "playoffs": "Playoffs · Round {{round}}"
+      "upper": "胜者组 第 {{round}} 轮 M{{match}}",
+      "lower": "败者组 第 {{round}} 轮 M{{match}}",
+      "grandFinal": "总决赛",
+      "grandFinalReset": "总决赛加赛",
+      "group": "{{group}} 组 · 第 {{round}} 轮",
+      "playoffs": "季后赛 · 第 {{round}} 轮"
     },
     "table": {
-      "filterLabel": "Show",
-      "search": "Find a team or player",
-      "tbd": "TBD",
-      "manage": "Manage match",
-      "empty": "No matches here.",
+      "filterLabel": "显示",
+      "search": "查找战队或玩家",
+      "tbd": "待定",
+      "manage": "管理比赛",
+      "empty": "这里没有比赛。",
       "filter": {
-        "attention_one": "Needs attention · {{count}}",
-        "attention_other": "Needs attention · {{count}}",
-        "live_one": "Live · {{count}}",
-        "live_other": "Live · {{count}}",
-        "veto_one": "Veto · {{count}}",
-        "veto_other": "Veto · {{count}}",
-        "waiting_one": "Waiting · {{count}}",
-        "waiting_other": "Waiting · {{count}}",
-        "finished_one": "Finished · {{count}}",
-        "finished_other": "Finished · {{count}}",
-        "all_one": "All · {{count}}",
-        "all_other": "All · {{count}}"
+        "attention_one": "需要关注 · {{count}}",
+        "attention_other": "需要关注 · {{count}}",
+        "live_one": "进行中 · {{count}}",
+        "live_other": "进行中 · {{count}}",
+        "veto_one": "禁选 · {{count}}",
+        "veto_other": "禁选 · {{count}}",
+        "waiting_one": "等待中 · {{count}}",
+        "waiting_other": "等待中 · {{count}}",
+        "finished_one": "已结束 · {{count}}",
+        "finished_other": "已结束 · {{count}}",
+        "all_one": "全部 · {{count}}",
+        "all_other": "全部 · {{count}}"
       },
       "columns": {
-        "match": "Match",
-        "teams": "Teams",
-        "phase": "Phase",
-        "server": "Server",
-        "attention": "Needs attention",
-        "open": "Open"
+        "match": "比赛",
+        "teams": "战队",
+        "phase": "阶段",
+        "server": "服务器",
+        "attention": "需要关注",
+        "open": "打开"
       },
       "attention": {
-        "calls_one": "Admin call",
-        "calls_other": "{{count}} admin calls",
-        "decide": "Decide the result"
+        "calls_one": "管理员呼叫",
+        "calls_other": "{{count}} 个管理员呼叫",
+        "decide": "判定结果"
       },
       "phase": {
-        "live": "Live · map {{map}}",
-        "finished": "Finished",
-        "finishedScore": "Finished · {{score}}",
-        "veto": "Map veto",
-        "waitingTeams": "Waiting for its teams",
-        "queued": "Waiting for a server · #{{position}} in queue",
-        "waiting": "Waiting"
+        "live": "进行中 · 第 {{map}} 张地图",
+        "finished": "已结束",
+        "finishedScore": "已结束 · {{score}}",
+        "veto": "地图禁选",
+        "waitingTeams": "等待双方战队",
+        "queued": "等待服务器 · 队列第 {{position}} 位",
+        "waiting": "等待中"
       },
       "server": {
-        "freed": "Freed"
+        "freed": "已释放"
       }
     }
   },
@@ -134,8 +134,8 @@
       "confirmTitle": "确认删除此比赛？",
       "confirmBody": "确定要删除比赛 \"{{slug}}\" 吗？此操作无法撤销。",
       "button": "删除比赛",
-      "success": "Match deleted successfully",
-      "failed": "Failed to delete match"
+      "success": "比赛已删除",
+      "failed": "删除比赛失败"
     },
     "roster": {
       "title": "参赛名单",
@@ -147,54 +147,54 @@
       "bot": "BOT"
     },
     "decision": {
-      "body": "Every map has been played but the series is level on maps, rounds and damage. Choose the winner to advance the bracket.",
-      "setWinner": "{{team}} wins",
-      "confirmTitle": "Set series winner",
-      "confirmBody": "Finish this series with {{team}} as the winner? The bracket advances and this cannot be undone here.",
-      "confirm": "Set winner",
-      "success": "Winner set",
-      "failed": "Failed to set the winner"
+      "body": "所有地图都已打完，但系列赛在地图、回合和伤害上都持平。选择获胜方以推进对阵图。",
+      "setWinner": "{{team}} 获胜",
+      "confirmTitle": "设定系列赛获胜方",
+      "confirmBody": "以 {{team}} 获胜结束此系列赛？对阵图将推进，且无法在此撤销。",
+      "confirm": "设定获胜方",
+      "success": "已设定获胜方",
+      "failed": "设定获胜方失败"
     },
-    "tiebreakHint": "Scores are level: {{team}} won the map, decided by tiebreak.",
+    "tiebreakHint": "比分持平：{{team}} 通过决胜规则赢下该地图。",
     "config": {
-      "loadFailed": "Failed to load match config",
-      "view": "View Match Config JSON",
-      "title": "Match Config JSON",
-      "loading": "Loading match config...",
-      "empty": "No config available for this match."
+      "loadFailed": "加载比赛配置失败",
+      "view": "查看比赛配置 JSON",
+      "title": "比赛配置 JSON",
+      "loading": "正在加载比赛配置…",
+      "empty": "此比赛没有可用配置。"
     },
     "tiebreak": {
-      "regulationOnly": "Overtime is disabled for this match (regulation only), so tied scores are resolved by total team damage.",
-      "segmentsExhausted": "Overtime is configured with a maximum number of segments. If the score is still tied, the winner is decided by total team damage.",
-      "overtimeDisabled": "Overtime is disabled for this match, so tied scores are resolved by total team damage.",
-      "tiedByDamage": "The final score was tied, so according to the match settings the winner was chosen by total team damage."
+      "regulationOnly": "此比赛禁用了加时赛（仅常规时间），因此平局按战队总伤害决定。",
+      "segmentsExhausted": "加时赛设置了最大次数。如果比分仍然持平，按战队总伤害决定胜者。",
+      "overtimeDisabled": "此比赛禁用了加时赛，因此平局按战队总伤害决定。",
+      "tiedByDamage": "最终比分持平，因此按比赛设置以战队总伤害决定了胜者。"
     },
-    "team1": "Team 1",
-    "team2": "Team 2",
-    "matchTime": "Match Time:",
-    "server": "Server:",
-    "queuePosition": "Queue Position:",
-    "totalDamage": "Total Damage: {{team1}} - {{team2}}",
-    "mapOfTotal": "Map {{index}} of {{total}}: {{map}}",
-    "mapIndex": "Map {{index}}: {{map}}",
-    "round": "Round {{round}}",
+    "team1": "战队 1",
+    "team2": "战队 2",
+    "matchTime": "比赛时间：",
+    "server": "服务器：",
+    "queuePosition": "队列位置：",
+    "totalDamage": "总伤害：{{team1}} - {{team2}}",
+    "mapOfTotal": "第 {{index}}/{{total}} 张地图：{{map}}",
+    "mapIndex": "第 {{index}} 张地图：{{map}}",
+    "round": "第 {{round}} 回合",
     "shuffle": {
-      "averageElo": "Team ELO (avg): {{team1}} vs {{team2}}",
-      "balancerHint": "Shuffle teams are generated by an OpenSkill-based balancer that spreads high and low-rated players across both sides to keep these averages close."
+      "averageElo": "战队 ELO（平均）：{{team1}} 对 {{team2}}",
+      "balancerHint": "随机组队的战队由基于 OpenSkill 的平衡器生成，它把高分和低分玩家分散到两边，让平均值保持接近。"
     },
-    "playerLeaderboards": "Player Leaderboards",
-    "noPlayerData": "No player data available",
-    "currentMap": "Current Map",
-    "maps": "Maps",
-    "mapsNotPicked": "The maps are not picked yet.",
-    "mapsViaVeto": "To be determined via veto",
-    "matchInformation": "Match Information",
-    "created": "Created:",
-    "started": "Started:",
-    "completed": "Completed:",
-    "adminControls": "Admin Controls",
-    "slug": "Match slug:",
-    "openChat": "Match chat"
+    "playerLeaderboards": "玩家排行榜",
+    "noPlayerData": "没有玩家数据",
+    "currentMap": "当前地图",
+    "maps": "地图",
+    "mapsNotPicked": "地图尚未选出。",
+    "mapsViaVeto": "将通过禁选决定",
+    "matchInformation": "比赛信息",
+    "created": "创建时间：",
+    "started": "开始时间：",
+    "completed": "完成时间：",
+    "adminControls": "管理员控制",
+    "slug": "比赛标识：",
+    "openChat": "比赛聊天"
   },
   "bulkShuffleMatchesModal": {
     "title": "批量创建洗牌比赛",
@@ -282,8 +282,8 @@
       "discordIdInvalid": "Discord ID 必须为 17–20 位数字（数字用户 ID，而非用户名）",
       "discordIdInvalidPlayers": "以下选手的 Discord ID 无效：{{names}}。必须为 17–20 位数字，或留空。",
       "discordIdSaveFailed": "战队已保存，但以下选手的 Discord ID 保存失败：{{names}}。{{message}}",
-      "nameRequired": "Enter the player's name",
-      "addPlayerFailed": "Could not add the player"
+      "nameRequired": "请输入玩家名称",
+      "addPlayerFailed": "无法添加玩家"
     },
     "success": {
       "playerAdded": "选手已添加到战队",
@@ -305,9 +305,9 @@
     },
     "replacePlayerAria": "替换选手 {{name}}",
     "replacePlayerTooltip": "替换此选手",
-    "addPlayersHelper": "Add a new player below, or select from existing players",
-    "accountLabel": "{{account}} account (optional)",
-    "accountHelper": "For {{games}}. When they sign in with {{account}}, they become this player."
+    "addPlayersHelper": "在下方添加新玩家，或从已有玩家中选择",
+    "accountLabel": "{{account}} 账户（可选）",
+    "accountHelper": "用于 {{games}}。当他们用 {{account}} 登录时，就会成为此玩家。"
   },
   "playerModal": {
     "titleCreate": "创建选手",
@@ -355,9 +355,9 @@
       "message": "确定要将该选手的 ELO 从 {{from}} 更新为 {{to}} 吗？这将重置其统计和评分历史。此操作无法撤销。"
     },
     "discordIdHelper": "可选，17–20 位数字。便于组织者通过 Discord 联系该选手，不会公开显示。",
-    "accountLabel": "{{account}} account (optional)",
-    "accountHelper": "For {{games}}. The account id; when they sign in with {{account}}, they become this player.",
-    "accountVerified": "Linked: they signed in with {{account}}. They change it themselves."
+    "accountLabel": "{{account}} 账户（可选）",
+    "accountHelper": "用于 {{games}}。账户 ID；当他们用 {{account}} 登录时，就会成为此玩家。",
+    "accountVerified": "已关联：对方已用 {{account}} 登录。只能由本人更改。"
   },
   "teamImportModal": {
     "title": "从 JSON 导入战队",
@@ -451,7 +451,7 @@
     },
     "addPlayersButton_one": "添加 {{count}} 名选手",
     "addPlayersButton_other": "添加 {{count}} 名选手",
-    "searchPlaceholder": "Search players by name..."
+    "searchPlaceholder": "按名称搜索玩家…"
   },
   "soundSettingsModal": {
     "title": "声音设置",
@@ -465,26 +465,26 @@
     "footer": "当比赛准备就绪或发生重要事件时，将播放声音通知。"
   },
   "addBackupPlayer": {
-    "title": "Add Player",
-    "loadFailed": "Failed to load player list",
-    "added": "{{name}} added to {{target}}",
-    "addFailed": "Failed to add player",
-    "addToMatchFailed": "Failed to add player to match",
-    "searchLabel": "Search for player",
-    "searchPlaceholder": "Type player name...",
-    "available": "{{count}} available players (not already in match)",
-    "noneAvailable": "No players available",
-    "displayNameLabel": "Display name (optional)",
-    "displayNamePlaceholder": "Defaults to the player's current name",
-    "side": "Side",
-    "spectator": "Spectator",
-    "selected": "Selected:",
-    "fromTeam": "From team: {{team}}",
-    "steamId": "Steam ID: {{id}}",
-    "adding": "Adding Player...",
-    "add": "Add Player to Match",
-    "underlyingCommand": "Underlying command:",
-    "important": "Important:",
+    "title": "添加玩家",
+    "loadFailed": "加载玩家列表失败",
+    "added": "已将 {{name}} 添加到 {{target}}",
+    "addFailed": "添加玩家失败",
+    "addToMatchFailed": "将玩家添加到比赛失败",
+    "searchLabel": "搜索玩家",
+    "searchPlaceholder": "输入玩家名称…",
+    "available": "可用玩家：{{count}}（不在比赛中）",
+    "noneAvailable": "没有可用玩家",
+    "displayNameLabel": "显示名称（可选）",
+    "displayNamePlaceholder": "默认为玩家当前名称",
+    "side": "阵营",
+    "spectator": "观众",
+    "selected": "已选择：",
+    "fromTeam": "来自战队：{{team}}",
+    "steamId": "Steam ID：{{id}}",
+    "adding": "正在添加玩家…",
+    "add": "将玩家添加到比赛",
+    "underlyingCommand": "底层命令：",
+    "important": "重要：",
     "reconnectHint": "添加后，该玩家需要重新连接服务器。如果已经在服务器上，可能需要重新加入。"
   }
 }

@@ -21,7 +21,7 @@
         "inProgressOrCompleted": "当前已有锦标赛正在进行或已完成，无法从模板创建新锦标赛。请先删除或重置当前锦标赛。",
         "alreadyExists": "当前已存在一个锦标赛。在从模板创建新锦标赛之前，请先删除或重置现有锦标赛。"
       },
-      "button": "Create Tournament from Template"
+      "button": "从模板创建赛事"
     },
     "edit": {
       "title": "编辑模板",
@@ -35,12 +35,12 @@
         "customOption": "自定义",
         "selectedLabel": "已选地图（{{count}} 张）：",
         "vetoWarning": "Veto formats (BO1/BO3/BO5) require exactly 7 maps. 当前已选：{{count}}",
-        "chooseMaps": "Choose maps..."
+        "chooseMaps": "选择地图…"
       },
       "save": "保存"
     },
-    "emptyTitle": "No templates yet",
-    "emptyDescription": "Save a tournament's setup as a template from the Tournament page, then start new tournaments from it here."
+    "emptyTitle": "还没有模板",
+    "emptyDescription": "在赛事页面把赛事设置保存为模板，然后在这里用它开始新赛事。"
   },
   "saveTemplateModal": {
     "title": "保存为模板",
@@ -98,8 +98,8 @@
       },
       "weightsTitle": "数据权重：",
       "limitsTitle": "加成上限：",
-      "minAdjustment": "Min: {{value}}",
-      "maxAdjustment": "Max: {{value}}"
+      "minAdjustment": "最小：{{value}}",
+      "maxAdjustment": "最大：{{value}}"
     },
     "importModal": {
       "title": "从 JSON 导入 ELO 模板",
@@ -153,48 +153,48 @@
     },
     "stats": {
       "kills": {
-        "label": "Kills",
-        "description": "Number of kills per match"
+        "label": "击杀",
+        "description": "每场比赛的击杀数"
       },
       "deaths": {
-        "label": "Deaths",
-        "description": "Number of deaths per match (typically negative weight)"
+        "label": "死亡",
+        "description": "每场比赛的死亡数（通常为负权重）"
       },
       "assists": {
-        "label": "Assists",
-        "description": "Number of assists per match"
+        "label": "助攻",
+        "description": "每场比赛的助攻数"
       },
       "flashAssists": {
-        "label": "Flash Assists",
-        "description": "Number of flash assists per match"
+        "label": "闪光助攻",
+        "description": "每场比赛的闪光助攻数"
       },
       "headshotKills": {
-        "label": "Headshot Kills",
-        "description": "Number of headshot kills per match"
+        "label": "爆头击杀",
+        "description": "每场比赛的爆头击杀数"
       },
       "damage": {
-        "label": "Damage",
-        "description": "Total damage dealt per match"
+        "label": "伤害",
+        "description": "每场比赛造成的总伤害"
       },
       "utilityDamage": {
-        "label": "Utility Damage",
-        "description": "Damage dealt with utility (grenades)"
+        "label": "道具伤害",
+        "description": "用道具（手雷）造成的伤害"
       },
       "kast": {
         "label": "KAST %",
-        "description": "Percentage of rounds with Kill, Assist, Survive, or Trade"
+        "description": "有击杀、助攻、存活或被交换的回合百分比"
       },
       "mvps": {
-        "label": "MVPs",
-        "description": "Number of MVP awards per match"
+        "label": "MVP",
+        "description": "每场比赛获得的 MVP 次数"
       },
       "score": {
-        "label": "Score",
-        "description": "Match score (combines multiple factors)"
+        "label": "得分",
+        "description": "比赛得分（综合多项因素）"
       },
       "adr": {
         "label": "ADR",
-        "description": "Average Damage per Round"
+        "description": "每回合平均伤害"
       }
     }
   }

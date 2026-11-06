@@ -26,7 +26,7 @@
     "cancel": "取消",
     "done": "完成",
     "copy": "复制",
-    "showOlder": "Show older",
+    "showOlder": "显示更早的",
     "refresh": "刷新",
     "rotate": "轮换密钥",
     "secretTitle": "签名密钥",
@@ -57,18 +57,18 @@
       "test": "无法发送测试事件",
       "resend": "无法重新发送投递"
     },
-    "format": "Format",
-    "formatSigned": "Signed JSON (integrations)",
-    "formatDiscord": "Discord message",
-    "formatSignedHelp": "The signed event JSON, for your own service. Check the signature with the secret.",
-    "formatDiscordHelp": "Paste a Discord channel webhook URL (Channel settings → Integrations → Webhooks). Each event posts a message; no passwords or connect lines go to Discord, only a link to the match page.",
+    "format": "格式",
+    "formatSigned": "签名 JSON（集成）",
+    "formatDiscord": "Discord 消息",
+    "formatSignedHelp": "签名的事件 JSON，供你自己的服务使用。用密钥校验签名。",
+    "formatDiscordHelp": "粘贴 Discord 频道的 Webhook URL（频道设置 → 整合 → Webhook）。每个事件会发布一条消息；不会向 Discord 发送密码或连接命令，只有比赛页面的链接。",
     "short": "将事件发送到 Discord 或你自己的服务。",
     "addShort": "添加",
     "working": "正常",
     "failedCount": "{{count}} 个失败",
     "allowPrivateShort": "用于你自己网络上的服务（局域网、Docker）。",
-    "sourceShort": "team IDs from token {{source}}",
-    "showUrl": "Show URL",
-    "hideUrl": "Hide URL"
+    "sourceShort": "来自令牌 {{source}} 的战队 ID",
+    "showUrl": "显示 URL",
+    "hideUrl": "隐藏 URL"
   }
 }

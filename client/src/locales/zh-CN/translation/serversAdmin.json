@@ -21,7 +21,7 @@
       "footer": "显示最近 {{count}} 条日志",
       "footerAutoRefresh": "显示最近 {{count}} 条日志（自动刷新中）"
     },
-    "description": "Logs and maintenance for this site. Installed game modules add their own tools below."
+    "description": "此站点的比赛恢复和应用日志。"
   },
   "servers": {
     "allocation": {
@@ -147,21 +147,21 @@
       "default": "命令已执行"
     },
     "hold": {
-      "title": "Hold instead of a walkover",
-      "description": "While held, the match is not loaded or started and nobody gets a walkover. When it goes ahead, the teams get the full time again.",
-      "reason": "Reason (shown to admins)",
-      "delay": "Delay {{minutes}} min",
-      "holdUntilReleased": "Hold until released",
-      "release": "Release now",
-      "restartCountdown": "Restart the countdown",
-      "heldUntil": "On hold until {{time}}",
-      "heldIndefinitely": "On hold until released",
-      "tournamentPaused": "The tournament is paused",
-      "heldDone": "Match on hold",
-      "delayedDone": "Match delayed {{minutes}} min",
-      "releasedDone": "Match released",
-      "restartedDone": "Countdown restarted: the teams have the full time again",
-      "failed": "Could not change the hold"
+      "title": "暂缓，而不是判不战而胜",
+      "description": "暂缓期间，比赛不会加载或开始，也没人会被判不战而胜。比赛继续时，双方重新获得完整时间。",
+      "reason": "原因（管理员可见）",
+      "delay": "推迟 {{minutes}} 分钟",
+      "holdUntilReleased": "暂缓直到解除",
+      "release": "立即解除",
+      "restartCountdown": "重新开始倒计时",
+      "heldUntil": "暂缓至 {{time}}",
+      "heldIndefinitely": "暂缓直到解除",
+      "tournamentPaused": "赛事已暂停",
+      "heldDone": "比赛已暂缓",
+      "delayedDone": "比赛已推迟 {{minutes}} 分钟",
+      "releasedDone": "比赛已解除暂缓",
+      "restartedDone": "倒计时已重新开始：双方重新获得完整时间",
+      "failed": "无法更改暂缓状态"
     }
   },
   "adminCalls": {
@@ -188,11 +188,11 @@
     "unmute": "取消静音",
     "minimize": "最小化",
     "show": "显示",
-    "openChat": "Open chat",
-    "claim": "Claim",
-    "release": "Release",
-    "claimedBy": "Claimed by {{name}}",
-    "claimedByYou": "Claimed by you",
-    "anAdmin": "an admin"
+    "openChat": "打开聊天",
+    "claim": "认领",
+    "release": "放弃认领",
+    "claimedBy": "由 {{name}} 认领",
+    "claimedByYou": "由你认领",
+    "anAdmin": "一位管理员"
   }
 }
