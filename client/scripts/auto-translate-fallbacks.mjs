@@ -224,7 +224,6 @@ const localeToTarget = {
   'pt-PT': 'pt-PT',
   nb: 'no',
   'zh-CN': 'zh-CN',
-  ru: 'ru',
 };
 
 const en = loadLocaleMergedJson(localesDir, 'en');
