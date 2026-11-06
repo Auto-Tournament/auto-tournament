@@ -1,0 +1,81 @@
+{
+  "manualReport": {
+    "title": "試合結果",
+    "unknownTeam": "相手チーム",
+    "state": {
+      "nothing": "まだ結果が報告されていません。プレイした人がスコアを報告してください。",
+      "waitingOpponent": "報告済み。{{team}} の確認を待っています。",
+      "needsAnswer": "{{team}} がこの結果を報告しました。正しければ確認してください。",
+      "disputed": "この結果には異議があります。管理者が判定します。",
+      "awaitingAdmin": "管理者がこの試合を判定するのを待っています。",
+      "confirmed": "両チームがこの結果に同意しています。"
+    },
+    "deadline": {
+      "autoConfirm": "誰も応答しなければ {{minutes}} 分後に自動で確定します。",
+      "autoConfirmSoon": "まもなく自動で確定します。",
+      "escalate": "誰も応答しなければ {{minutes}} 分後に管理者に回されます。",
+      "escalateSoon": "まもなく管理者に回されます。"
+    },
+    "score": "{{team1}} {{score1}} – {{score2}} {{team2}}",
+    "game": "ゲーム {{number}}",
+    "note": "メモ",
+    "notePlaceholder": "相手チームに伝えておくこと(任意)",
+    "noteGiven": "メモ:{{note}}",
+    "disputeReason": "どこが間違っていますか?",
+    "disputeReasonGiven": "異議:{{reason}}",
+    "formHint": "{{team1}} と {{team2}} のスコアをゲームごとに。",
+    "actions": {
+      "report": "スコアを報告",
+      "reportAgain": "別のスコアを報告",
+      "submit": "報告を送信",
+      "cancel": "キャンセル",
+      "confirm": "確認",
+      "dispute": "異議を申し立てる",
+      "disputeSubmit": "異議を送信",
+      "withdraw": "自分の報告を取り下げる"
+    },
+    "errors": {
+      "stale": "表示中にこの報告が変更されました。確認する前にもう一度読んでください。",
+      "incomplete": "少なくとも1ゲーム分、両方のスコアを入力してください。",
+      "failed": "うまくいきませんでした。もう一度お試しください。"
+    },
+    "captains": {
+      "title": "キャプテン",
+      "hint": "このチームの結果を報告・確認できるのはキャプテンだけです。",
+      "make": "キャプテンにする",
+      "remove": "キャプテンから外す",
+      "isCaptain": "キャプテン",
+      "empty": "このチームではまだ誰もサインインしていないため、任命できる人がいません。",
+      "unknown": "不明なプレイヤー",
+      "failed": "変更できませんでした。もう一度お試しください。"
+    },
+    "stats": {
+      "hint": "このトーナメントで求められる追加の数値。該当者がいなければ空欄のままにしてください。",
+      "required": "必須",
+      "recorded": "報告された統計",
+      "value": "{{subject}}:{{value}}{{suffix}}",
+      "errors": {
+        "number": "{{subject}} の {{field}} は数値にしてください。",
+        "integer": "{{subject}} の {{field}} は整数にしてください。",
+        "range": "{{subject}} の {{field}} は大きすぎて実在する数値ではありません。",
+        "tooLong": "{{subject}} の {{field}} が {{max}} 文字を超えています。",
+        "missing": "{{field}} は必須ですが、{{team}} の入力がありません。"
+      },
+      "tournamentTitle": "報告された統計",
+      "tournamentHelp": "確定した報告から集計。相手の確認待ちの結果はここには含まれません。",
+      "byTeam": "チーム別",
+      "byPlayer": "プレイヤー別",
+      "team": "チーム",
+      "player": "プレイヤー",
+      "matches": "試合"
+    },
+    "chip": {
+      "none": "まだ結果なし",
+      "yours": "あなたの報告",
+      "reported": "報告済み",
+      "confirm": "確認する",
+      "disputed": "異議あり",
+      "final": "確定"
+    }
+  }
+}
