@@ -1,0 +1,82 @@
+{
+  "compatPage": {
+    "title": "Ready Up uyumluluğu",
+    "subtitle": "Ready Up eklentilerinin en son Counter-Strike 2 güncellemesiyle çalışıp çalışmadığı; her yeni CS2 sürümünde otomatik olarak kontrol edilir.",
+    "live": "Canlı",
+    "offline": "Yeniden bağlanıyor…",
+    "loading": "Uyumluluk yükleniyor",
+    "loadError": "Uyumluluk yüklenemedi. Biraz sonra tekrar dene.",
+    "disabledTitle": "Burada kullanılamıyor",
+    "disabledDescription": "Bu site Ready Up uyumluluğunu yayınlamıyor.",
+    "emptyTitle": "Henüz sonuç yok",
+    "emptyDescription": "Henüz hiçbir uyumluluk kontrolü rapor vermedi. Bir kontrol rapor verir vermez bu sayfa kendiliğinden güncellenir.",
+    "checkedAgo": "Kontrol: {{time}}",
+    "viewRun": "Çalıştırmayı gör",
+    "factsLabel": "Neler kontrol edildi",
+    "facts": {
+      "patch": "CS2 yaması",
+      "buildid": "Build ID",
+      "readyup": "Ready Up",
+      "stage": "Aşama"
+    },
+    "overall": {
+      "pass": "Uyumlu",
+      "warn": "Uyumlu, uyarılarla",
+      "fail": "Uyumlu değil",
+      "checking": "Kontrol ediliyor…",
+      "no_verdict": "Karar yok"
+    },
+    "overallHint": {
+      "pass": "Her bileşen bu sürümdeki kontrollerini geçti.",
+      "warn": "Ready Up bu sürümde çalışıyor ama bazı kontrollere daha yakından bakmak gerekiyor.",
+      "fail": "En az bir bileşen bu sürümde çalışmıyor. Sunucuları güncellemeyi bekle.",
+      "checking": "Bu sürümün kontrolü şu anda çalışıyor.",
+      "no_verdict": "Son kontrol bir karara varamadı."
+    },
+    "status": {
+      "pass": "Geçti",
+      "warn": "Uyarı",
+      "fail": "Başarısız",
+      "pending": "Bekliyor",
+      "checking": "Kontrol ediliyor…"
+    },
+    "stage": {
+      "static": "Statik analiz",
+      "selftest": "Kendi kendine test",
+      "live": "Canlı sunucu"
+    },
+    "state": {
+      "queued": "Sırada",
+      "checking": "Kontrol ediliyor",
+      "pass": "Geçti",
+      "warn": "Uyarılar",
+      "fail": "Başarısız",
+      "no_verdict": "Karar yok"
+    },
+    "trigger": {
+      "build_change": "Yeni CS2 sürümü",
+      "surface_change": "Oyun verileri değişti",
+      "code_change": "Ready Up değişikliği",
+      "nightly": "Gecelik",
+      "release": "Ready Up sürümü",
+      "manual": "Elle"
+    },
+    "kind": {
+      "signature": "İmzalar",
+      "rtti": "RTTI",
+      "vtable": "Sanal tablolar",
+      "hook_site": "Hook noktaları",
+      "layout": "Bellek düzeni",
+      "schema": "Şema",
+      "event": "Oyun olayları",
+      "selftest": "Kendi kendine test",
+      "livetest": "Canlı test"
+    },
+    "componentsTitle": "Bileşenler",
+    "checksSummary": "{{total}} kontrolden {{passed}} tanesi geçti",
+    "noChecks": "Henüz rapor edilen kontrol yok",
+    "failures": "Hatalar",
+    "historyTitle": "Son çalıştırmalar",
+    "historyItem": "CS2 {{patch}} · build {{buildid}}"
+  }
+}

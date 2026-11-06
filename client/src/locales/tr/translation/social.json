@@ -1,0 +1,287 @@
+{
+  "notificationPrompt": {
+    "title": "Bildirimleri aç",
+    "body": "Açmanı öneririz. Böylece bu sekmeyi kapatsan bile bizden haber alırsın:",
+    "matchReady": "maçın katılmaya hazır olduğunda",
+    "vetoTurn": "harita vetosunda sıra sende olduğunda",
+    "starting": "kaydolduğun bir turnuva başlamak üzereyken",
+    "iphone": "iPhone'da önce bu siteyi Ana Ekran'a ekle (Paylaş, sonra Ana Ekrana Ekle) ve oradan aç.",
+    "change": "Bunu bildirim ayarlarından istediğin zaman değiştirebilirsin.",
+    "later": "Şimdi değil",
+    "turnOn": "Aç (önerilir)"
+  },
+  "social": {
+    "bell": {
+      "title": "Bildirimler",
+      "label": "Bildirimler",
+      "labelUnread_one": "Bildirimler, {{count}} yeni",
+      "labelUnread_other": "Bildirimler, {{count}} yeni",
+      "markAllRead": "Tümünü okundu işaretle",
+      "show": "Göster",
+      "filter": {
+        "all": "Tümü",
+        "you": "Sana ihtiyaç var",
+        "tournaments": "Turnuvalar",
+        "matches": "Maçlar",
+        "skins": "Kaplamalar",
+        "clips": "Klipler",
+        "other": "Diğer"
+      },
+      "empty": "Henüz burada bir şey yok",
+      "emptyHint": "Grup davetleri, arkadaşlık istekleri, turnuva haberleri, yeni kaplamalar ve hazır öne çıkanlar burada görünür.",
+      "loading": "Yükleniyor…",
+      "seeAll": "Tüm bildirimleri gör",
+      "loadOlder": "Daha eskileri yükle",
+      "settings": "Bildirim ayarları"
+    },
+    "notice": {
+      "partyInvite": "seni grubuna davet etti",
+      "teamInvite": "seni şu takıma davet etti:",
+      "joinedTeam": "Takıma katıldın",
+      "partyDetail": "{{mode}} · grupta {{size}} kişi",
+      "join": "Katıl",
+      "decline": "Reddet",
+      "accept": "Kabul et",
+      "ignore": "Yok say",
+      "friendRequest": "sana arkadaşlık isteği gönderdi",
+      "friendAccepted": "arkadaşlık isteğini kabul etti",
+      "skin": "Yeni kaplama:",
+      "highlight": "Öne çıkan anın hazır:",
+      "highlightVictim": "{{name}} klibinde seni indirdi:",
+      "highlightAssist": "{{name}} klibinde ona asist yaptın:",
+      "highlightKiller": "{{name}} klibinde onu indirdin:",
+      "tournamentStarted": "başladı. İlk maçın sırada.",
+      "lineupGap": "· bir as oyuncu kadrondan ayrıldı. {{minutes}} dakika içinde bir yedek seç, yoksa eksik oynarsın.",
+      "checkInOpen": ": check-in açık. Kapanmadan check-in yap.",
+      "joined": "Gruba katıldın",
+      "nowFriends": "Artık arkadaşsınız",
+      "declined": "Reddedildi",
+      "expired": "Bu grup sona erdi",
+      "reportNew": "şikâyet edildi: {{reason}}",
+      "reportReviewed": "Teşekkürler: {{name}} hakkındaki şikâyetin incelendi.",
+      "matchReady": "hazır. Bağlanmak için maç odasını aç.",
+      "vetoTurn": ": vetoda sıra takımında.",
+      "startsSoon": "{{minutes}} dakika sonra başlıyor. İlk maçına katılmaya hazırlan.",
+      "startsSoonUpdate": "{{minutes}} dakika sonra başlıyor. Olası güncellemeler ilk maçından önce bitsin diye oyununu şimdi başlat.",
+      "matchSoon": ": vetoun {{minutes}} dakika sonra açılıyor ve sen olmadan da devam eder. Bilgisayarının başında ol.",
+      "noShow": ": maçına hiç katılmadın, bu yüzden sonraki turlarda yoksun. Devam etmek için turnuvayı aç ve döndüğünü bildir.",
+      "discordLink": ": takımının kanallarını almak ve ses kanalına taşınmak için Discord hesabını bağla.",
+      "signedUp": "· {{team}} kayıtlı. Başlamadan önce bilmen gerekenlere bak."
+    },
+    "toast": {
+      "join": "Gruba katıl",
+      "close": "Kapat",
+      "closes_one": "{{count}} sn sonra kapanır · zilde kalır",
+      "closes_other": "{{count}} sn sonra kapanır · zilde kalır"
+    },
+    "friends": {
+      "title": "Arkadaşlar",
+      "tabFriends": "Arkadaşlar",
+      "tabRequests": "İstekler",
+      "tabAdd": "Arkadaş ekle",
+      "online_one": "Çevrimiçi · {{count}}",
+      "online_other": "Çevrimiçi · {{count}}",
+      "offline_one": "Çevrimdışı · {{count}}",
+      "offline_other": "Çevrimdışı · {{count}}",
+      "onlineCount_one": "{{count}} çevrimiçi",
+      "onlineCount_other": "{{count}} çevrimiçi",
+      "invite": "Davet et",
+      "inParty": "Grubunda",
+      "more": "{{name}} için diğer seçenekler",
+      "viewProfile": "Profili görüntüle",
+      "remove": "Arkadaşlıktan çıkar",
+      "removed": "{{name}} artık arkadaşın değil",
+      "none": "Henüz arkadaş yok",
+      "noneHint": "Birlikte oynadığın kişileri ekle, sonra onları buradan ya da Oyna'dan grubuna davet et.",
+      "incoming": "Gelen",
+      "sent": "Gönderilen",
+      "noIncoming": "Seni bekleyen istek yok.",
+      "noSent": "Bekleyen isteğin yok.",
+      "askedAgo": "İstek: {{when}}",
+      "sentAgo": "Gönderildi: {{when}}",
+      "cancelRequest": "İsteği iptal et",
+      "searchPlaceholder": "Bir ad veya Steam profil bağlantısı",
+      "results": "Auto Tournament'ta",
+      "playedWith": "Son zamanlarda birlikte oynadıkların",
+      "noResults": "Bu adda kimse yok.",
+      "typeMore": "En az iki harf yaz.",
+      "noRecent": "Bir maç oyna, birlikte oynadığın kişiler burada görünür.",
+      "matches_one": "{{count}} maç",
+      "matches_other": "{{count}} maç",
+      "alreadyFriends": "Arkadaş",
+      "requestSent": "İstek gönderildi",
+      "addFriend": "Arkadaş ekle",
+      "signIn": "Arkadaşlarını görmek için giriş yap",
+      "signInHint": "Arkadaşlar, istekler ve davetler hesabına bağlıdır.",
+      "cardEmpty": "Arkadaşlarının ne zaman çevrimiçi olduğunu görmek ve onları tek tıkla davet etmek için arkadaş ekle.",
+      "all_one": "Tüm arkadaşlar ({{count}}) →",
+      "all_other": "Tüm arkadaşlar ({{count}}) →",
+      "find": "Arkadaş bul →",
+      "requestCount_one": "{{count}} istek",
+      "requestCount_other": "{{count}} istek"
+    },
+    "status": {
+      "playing": "Maçta · {{match}}",
+      "searching": "Arıyor · {{mode}}",
+      "online": "Çevrimiçi",
+      "offline": "Çevrimdışı",
+      "lastSeen": "Son görülme {{when}}"
+    },
+    "invite": {
+      "searchPlaceholder": "Sitedeki herkes, ada göre",
+      "friendsOnline": "Çevrimiçi arkadaşlar",
+      "recent": "Son zamanlarda birlikte oynadıkların",
+      "onSite": "Auto Tournament'ta",
+      "noFriends": "Henüz arkadaş yok. Yukarıdan herkesi adıyla arayabilirsin.",
+      "nobodyOnline": "Arkadaşlarından hiçbiri çevrimiçi değil.",
+      "inMatch": "Maçta",
+      "together_one": "{{count}} birlikte maç",
+      "together_other": "{{count}} birlikte maç",
+      "invited": "Davet edildi",
+      "sent": "Davet edildi: {{name}}",
+      "chip": "{{name}} · davet edildi",
+      "cancel": "{{name}} davetini geri al",
+      "orLink": "Ya da bir bağlantı",
+      "copy": "Kopyala",
+      "copyFailed": "Kopyalanamadı. Bağlantıyı seçip kendin kopyala.",
+      "makeLink": "Davet bağlantısı oluştur",
+      "cannot": {
+        "nobody": "Davet almıyor",
+        "friends": "Yalnızca arkadaşlar",
+        "no_game": "CS2 oynamıyor"
+      }
+    },
+    "profile": {
+      "friends": "Arkadaşlar",
+      "acceptRequest": "Arkadaşlık isteğini kabul et",
+      "message": "Mesaj",
+      "invite": "Gruba davet et"
+    },
+    "settings": {
+      "title": "Grup davetleri",
+      "description": "Seni bir eşleştirme grubuna kimlerin davet edebileceği. Davetler zilinde görünür ve açık olan herhangi bir sayfada açılır.",
+      "everyone": "Herkes",
+      "everyoneHint": "Bu sitedeki her oyuncu.",
+      "friends": "Yalnızca arkadaşlar",
+      "friendsHint": "Yalnızca arkadaş olduğun oyuncular.",
+      "nobody": "Hiç kimse",
+      "nobodyHint": "Davet yok. Yine de bağlantısıyla bir gruba katılabilirsin.",
+      "saved": "Kaydedildi",
+      "saveFailed": "Ayar kaydedilemedi"
+    },
+    "setup": {
+      "title": "Aramadan önce kurulumu bitir",
+      "youGame": "Profilinden oyunlarına CS2'yi ekle.",
+      "youGameAuto": "Maç aramak bu oyunu oyunlarına ekler.",
+      "youAccount": "Steam hesabını bağla.",
+      "theyGame": "{{name}} oyunlarına CS2'yi eklemedi.",
+      "theyAccount": "{{name}} Steam hesabını bağlamadı.",
+      "fix": "Hesabını aç"
+    },
+    "news": {
+      "title": "Haberler",
+      "hint": "Her oyuncunun ziline bir duyuru gönder: yeni bir sezon, bir turnuva, planlı bir bakım.",
+      "titleLabel": "Başlık",
+      "bodyLabel": "Bir satır daha (isteğe bağlı)",
+      "urlLabel": "Bağlantı (isteğe bağlı)",
+      "urlHint": "Buradaki bir sayfa (/tournament/3) veya bir https:// adresi.",
+      "urlBad": "/ veya https:// ile başla",
+      "send": "Her oyuncuya gönder",
+      "confirm": "Giriş yapmış her oyuncu bunu alır. Gönderilsin mi?",
+      "sendNow": "Şimdi gönder",
+      "cancel": "İptal",
+      "sent_one": "{{count}} oyuncuya gönderildi",
+      "sent_other": "{{count}} oyuncuya gönderildi",
+      "failed": "Haber gönderilemedi"
+    },
+    "noticeSettings": {
+      "title": "Ayarlar",
+      "alerts": "Uyarılar",
+      "browser": "Tarayıcı bildirimleri",
+      "browserHint": "Bu cihazda, site kapalıyken bile (maçın hazır, veto sırası, başlayan bir turnuva). Yalnızca bu tarayıcı için açık.",
+      "browserDenied": "Bu tarayıcının site ayarlarında engellendi. Açmak için oradan bildirimlere izin ver.",
+      "browserUnsupported": "Bu tarayıcıda bildirim yok.",
+      "sound": "Ses",
+      "test": "Test et",
+      "volume": "Ses düzeyi %{{percent}}",
+      "group": {
+        "you": "Sen",
+        "tournaments": "Turnuvalar",
+        "other": "Diğer",
+        "skins": "Kaplamalar",
+        "clips": "Klipler"
+      },
+      "kind": {
+        "party_invite": "Grup davetleri",
+        "team_invite": "Takım davetleri",
+        "friend_request": "Arkadaşlık istekleri",
+        "friend_accepted": "Kabul edilen arkadaşlık istekleri",
+        "tournament": "Check-in'ler ve başlangıçlar",
+        "skin": "Kaplama düşüşleri",
+        "highlight": "Öne çıkanların",
+        "news": "Haberler",
+        "report": "Şikâyetler"
+      },
+      "delivery": {
+        "off": "Kapalı",
+        "bell": "Zil",
+        "sound": "Zil ve ses"
+      }
+    }
+  },
+  "notifyChannels": {
+    "title": "Bildirimler",
+    "description": "Sitede değilken seni ilgilendiren şeyleri nereden bildireceğimiz. Kendi maçların dışında varsayılan olarak kapalı.",
+    "event": "Olay",
+    "channel": {
+      "push": "Tarayıcı / telefon",
+      "discord": "Discord DM",
+      "email": "E-posta"
+    },
+    "events": {
+      "match_ready": {
+        "title": "Maçın hazır",
+        "hint": "Sunucu, bağlantı linki ve kiminle oynadığın"
+      },
+      "veto_turn": {
+        "title": "Vetoda sıra sende",
+        "hint": "Yalnızca kaptanlar"
+      },
+      "checkin_open": {
+        "title": "Check-in açılıyor",
+        "hint": "Kayıtlı olduğun turnuvalar için"
+      },
+      "new_tournament": {
+        "title": "Yeni turnuvalar",
+        "hint": "Bir turnuva kayıt aldığında"
+      },
+      "tournament_starting": {
+        "title": "Turnuva başlıyor",
+        "hint": "Katıldığın bir turnuva başlamadan önce hatırlatmalar"
+      },
+      "direct_message": {
+        "title": "Arkadaşlardan mesajlar",
+        "hint": "Sitede olmadığında"
+      }
+    },
+    "reason": {
+      "no_bot": "Bu sitede ayarlanmadı",
+      "no_discord": "Önce Discord'u bağla",
+      "no_push": "Önce bu tarayıcıda bildirimleri aç",
+      "email_off": "Bu site e-posta gönderemiyor",
+      "no_email": "Önce bir e-posta ekle",
+      "email_unverified": "Önce e-postanı onayla"
+    },
+    "switchLabel": "{{event}}: {{channel}}",
+    "saveFailed": "Kaydedilemedi."
+  },
+  "presence": {
+    "online": "Çevrimiçi",
+    "offline": "Çevrimdışı",
+    "away": "Uzakta",
+    "searching": "{{mode}} maçı arıyor",
+    "playingMatchmaking": "Eşleştirme maçında: {{label}}",
+    "playingTournament": "Turnuva maçında: {{label}}",
+    "playing": "Maçta: {{label}}"
+  }
+}

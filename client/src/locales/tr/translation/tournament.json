@@ -1,0 +1,1810 @@
+{
+  "tournament": {
+    "startConfirm": {
+      "intro": "Turnuvayı başlatmaya hazır mısın?",
+      "thisWill": "Bu işlem:",
+      "openMatches": "İlk turun maçlarını oyuna açar",
+      "statusInProgress": "Turnuva durumunu DEVAM EDİYOR olarak değiştirir",
+      "confirm": "Evet, turnuvayı başlat",
+      "started": "Turnuva başladı! İlk turun maçları açık."
+    },
+    "steps": {
+      "create": "Turnuva oluştur",
+      "review": "İncele ve onayla",
+      "live": "Canlı turnuva"
+    },
+    "welcome": {
+      "heading": "Turnuva oluştur",
+      "chooseMethod": "Turnuvanı nasıl oluşturmak istediğini seç",
+      "createNewTitle": "Yeni turnuva oluştur",
+      "createNewDescription": "Sıfırdan başla ve tüm turnuva ayarlarını elle yapılandır"
+    },
+    "typeSelector": {
+      "categories": {
+        "professional": {
+          "label": "Profesyonel seriler"
+        },
+        "party": {
+          "label": "Parti ve eğlence"
+        }
+      },
+      "types": {
+        "single_elimination": {
+          "label": "Tek eleme",
+          "description": "Bir mağlubiyette elenirsin. Profesyonel turnuvalarda kullanılan klasik turnuva ağacı."
+        },
+        "double_elimination": {
+          "label": "Çift eleme",
+          "description": "Elenmek için iki mağlubiyet gerekir. Takımlar alt ağaçta ikinci bir şans alır."
+        },
+        "round_robin": {
+          "label": "Lig usulü",
+          "description": "Herkes herkesle oynar. Lig tarzı yarışmalar için ideal."
+        },
+        "swiss": {
+          "label": "İsviçre sistemi",
+          "description": "Benzer sicile sahip takımlar karşılaşır. Turnuva boyunca dengeli eşleşmeler."
+        },
+        "shuffle": {
+          "label": "Karışık turnuva",
+          "description": "Oyuncular her turda dengeli takımlara dinamik olarak dağıtılır. ELO tabanlı takım dengelemeyle bireysel oyuncu rekabeti."
+        },
+        "groups": {
+          "label": "Gruplar, ardından playoff",
+          "description": "Gruplarda lig usulü; her grubun en iyileri eleme oynar."
+        }
+      },
+      "selectedChip": "Seçili"
+    },
+    "review": {
+      "summary": {
+        "info": "Turnuva ayarlarını incele ve hazır olduğunda \"{{button}}\" düğmesine tıkla.",
+        "nameLabel": "Turnuva adı",
+        "typeLabel": "Turnuva türü",
+        "formatLabel": "Maç formatı",
+        "notSet": "Ayarlanmadı",
+        "estimatedVolumeText": "Yaklaşık {{matches}}, {{rounds}} boyunca (Bo{{mapsPerMatch}}, toplamda en fazla {{maps}})."
+      }
+    },
+    "formSteps": {
+      "steps": {
+        "name": "Ad",
+        "type": "Tür",
+        "format": "Format",
+        "maps": "Haritalar",
+        "teams": "Takımlar",
+        "review": "İnceleme"
+      },
+      "backToWelcome": "Başlangıca dön",
+      "back": "Geri",
+      "next": "İleri"
+    },
+    "emptyBracket": {
+      "title": "Gösterilecek turnuva ağacı yok",
+      "description": "Başlamak için bir turnuva oluştur ve turnuva ağacını üret"
+    },
+    "common": {
+      "createTournament": "Turnuva oluştur"
+    },
+    "nameLabel": "Turnuva adı",
+    "namePlaceholder": "Auto Tournament 2025 Bahar Turnuvası",
+    "champion": {
+      "title": "Şampiyon"
+    },
+    "page": {
+      "title": "Turnuva kurulumu"
+    },
+    "labels": {
+      "teams": "Takımlar",
+      "maps": "Haritalar",
+      "format": "Format",
+      "players": "Oyuncular",
+      "matchRules": "Maç kuralları",
+      "servers": "Sunucular",
+      "overtimeSettings": "Uzatma ayarları",
+      "mapPool": "Harita havuzu"
+    },
+    "tooltips": {
+      "deleteTournament": "Bu turnuvayı ve tüm verilerini kalıcı olarak sil"
+    },
+    "counts": {
+      "teams_one": "{{count}} takım",
+      "teams_other": "{{count}} takım",
+      "matches_one": "{{count}} maç",
+      "matches_other": "{{count}} maç",
+      "rounds_one": "{{count}} tur",
+      "rounds_other": "{{count}} tur",
+      "maps_one": "{{count}} harita",
+      "maps_other": "{{count}} harita",
+      "servers_one": "{{count}} sunucu",
+      "servers_other": "{{count}} sunucu",
+      "availableServers_one": "{{count}} kullanılabilir sunucu",
+      "availableServers_other": "{{count}} kullanılabilir sunucu",
+      "concurrentMatches_one": "{{count}} eşzamanlı maç",
+      "concurrentMatches_other": "{{count}} eşzamanlı maç",
+      "enabledServers_one": "{{count}} etkin sunucu",
+      "enabledServers_other": "{{count}} etkin sunucu"
+    },
+    "matchRules": {
+      "value": "Harita başına en fazla {{maxRounds}} raunt; {{winRounds}} raunda ilk ulaşan kazanır.",
+      "teamSizeValue": "Takım boyutu: {{size}}v{{size}}",
+      "overtimeEnabled": "Uzatma: Açık",
+      "overtimeDisabled": "Uzatma: Kapalı (uzatma yok)",
+      "overtimeDisabledNoDraws": "Uzatma: Kapalı (beraberlik yok – hasarla eşitlik bozma)",
+      "overtimeSegments_one": "Uzatma bölümleri: {{count}} bölüm",
+      "overtimeSegments_other": "Uzatma bölümleri: {{count}} bölüm",
+      "overtimeSegmentsDefault": "Uzatma bölümleri: oyun sunucusunun varsayılanı",
+      "overtimeSegmentsDefaultUnlimited": "Uzatma bölümleri: oyun sunucusunun varsayılanı (genellikle sınırsız)"
+    },
+    "toasts": {
+      "loadTemplateFailed": "Şablon yüklenemedi",
+      "nameRequired": "Turnuva adı gerekli",
+      "nameUpdated": "Turnuva adı güncellendi",
+      "nameUpdateFailed": "Turnuva adı güncellenemedi",
+      "selectAtLeastOneMap": "Lütfen en az 1 harita seç",
+      "maxRoundsRange": "En fazla raunt 1 ile 30 arasında olmalı",
+      "teamSizeRange": "Takım boyutu 2 ile 10 oyuncu arasında olmalı",
+      "invalidTeamCount": "Geçersiz takım sayısı",
+      "selectAtLeastTwoTeams": "Lütfen en az 2 takım seç",
+      "shuffleCreated": "\"{{name}}\" karışık turnuvası oluşturuldu! Sonraki adım: turnuvayı başlatmak için en az {{minPlayers}} oyuncu kaydet ({{teamSize}}v{{teamSize}} maçlar).",
+      "shuffleCreateFailed": "Karışık turnuva oluşturulamadı",
+      "shuffleCreateFailedRetry": "Karışık turnuva oluşturulamadı. Lütfen ayarlarını kontrol edip tekrar dene.",
+      "updated": "Turnuva güncellendi ve turnuva ağacı yeniden oluşturuldu!",
+      "created": "Turnuva oluşturuldu!",
+      "saveFailed": "Turnuva kaydedilemedi",
+      "deleted": "Turnuva silindi",
+      "deleteFailed": "Turnuva silinemedi",
+      "regenerated": "Turnuva ağacı yeniden oluşturuldu",
+      "regenerateFailed": "Turnuva ağacı yeniden oluşturulamadı",
+      "resetDone": "Turnuva kurulum moduna sıfırlandı",
+      "resetFailed": "Turnuva sıfırlanamadı",
+      "started_one": "Turnuva başladı! {{count}} maç sunuculara atandı.",
+      "started_other": "Turnuva başladı! {{count}} maç sunuculara atandı.",
+      "startRequested": "Turnuva başlatma istendi. Sunucular birazdan atanacak.",
+      "startFailed": "Turnuva başlatılamadı",
+      "templateSaved": "Şablon kaydedildi!",
+      "disableServersFailed": "Bir veya daha fazla sunucu devre dışı bırakılamadı: {{message}}",
+      "noChangesToSave": "Kaydedilecek değişiklik yok",
+      "invalidMapSelection": "Geçersiz harita seçimi",
+      "archived": "Turnuva arşivlendi. Sıradakini oluştur.",
+      "archiveFailed": "Turnuva arşivlenemedi"
+    },
+    "outdatedServers": {
+      "title": "Sunucuların güncellenmesi gerekiyor",
+      "body": "Etkin sunuculardan biri veya birkaçı Steam'e göre güncel değil (ya da doğrulanamadı). Onları güncelle ya da kalan sunucularla devam etmek için devre dışı bırak.",
+      "confirm": "Etkilenen sunucuları devre dışı bırak ve tekrar dene",
+      "disabling": "Devre dışı bırakılıyor...",
+      "goToServers": "Sunuculara git"
+    },
+    "live": {
+      "saveNameAria": "Turnuva adını kaydet",
+      "cancelRenameAria": "Turnuva adı değişikliğini iptal et",
+      "editNameAria": "Turnuva adını düzenle",
+      "renameTooltip": "Turnuvayı yeniden adlandır",
+      "alert": {
+        "liveTitle": "Turnuva canlı",
+        "liveBody": "Maçlar şu anda sunucularda oynanıyor. Canlıyken turnuva ayarlarını düzenleyemezsin (turnuva adı hariç).",
+        "pendingTitle": "Turnuva devam ediyor",
+        "pendingBody": "Sunucular atanıp vetolar bitince maçlar başlayacak. Turnuva devam ederken turnuva ayarlarını düzenleyemezsin (turnuva adı hariç).",
+        "completedTitle": "Turnuva tamamlandı",
+        "completedBody": "Bu turnuvanın tüm maçları bitti. Yeni bir turnuva oluştur ya da baştan başlamak için bunu sıfırla."
+      },
+      "teamsCompeting_one": "{{count}} takım yarışıyor",
+      "teamsCompeting_other": "{{count}} takım yarışıyor",
+      "playersCompeting_one": "{{count}} oyuncu yarışıyor",
+      "playersCompeting_other": "{{count}} oyuncu yarışıyor",
+      "playersCompetingUnknown": "Yarışan oyuncular",
+      "shuffleSettingsLabel": "Karışık turnuva ayarları",
+      "maxRoundsPerMapValue": "Harita başına en fazla raunt: {{rounds}}",
+      "eloTemplateValue": "ELO şablonu: {{template}}",
+      "mapSequenceLabel": "Harita sırası (turlar)",
+      "noMapsConfigured": "Henüz ayarlanmış harita yok.",
+      "viewBracket": "Turnuva ağacını görüntüle",
+      "viewBracketTooltip": "Turnuva ağacını ve maç ayrıntılarını görüntüle",
+      "leaderboardTooltip": "Oyuncularla paylaşmak için herkese açık sıralama sayfasını aç",
+      "restartTooltip": "Sunuculardaki tüm aktif maçları bitir ve yeniden yükle (takılan maçlar için kullanışlı)",
+      "resetTooltip": "Tüm maçları bitir ve turnuvayı kurulum moduna sıfırla (turnuva ayarlarını korur ama tüm maç verilerini temizler)",
+      "reset": "Kuruluma sıfırla",
+      "dangerZone": "Tehlikeli bölge",
+      "newTournament": "Yeni turnuva"
+    },
+    "reviewCard": {
+      "needPlayersWarning": "Turnuvayı başlatmak için en az {{minPlayers}} oyuncu gerekiyor ({{teamSize}}v{{teamSize}} maçlar). Şu an kayıtlı: {{registered}}",
+      "start": "Turnuvayı başlat",
+      "starting": "Başlatılıyor...",
+      "startSimulation": "Simülasyonu başlat",
+      "startingSimulation": "Simülasyon başlatılıyor...",
+      "bulkCreateMatches": "Toplu maç oluştur",
+      "edit": "Düzenle",
+      "regenerate": "Yeniden oluştur",
+      "regenerateTooltip": "Mevcut tüm maçları sil ve turnuva ağacını aynı ayarlarla yeniden oluştur.",
+      "regenerateDisabledTooltip": "Yeniden oluşturabilmek için turnuva ağacını en az bir kez oluştur (Kaydet ve turnuva ağacını oluştur)."
+    },
+    "dialogs": {
+      "items": {
+        "endMatches": "Sunuculardaki tüm aktif maçları bitir",
+        "deleteMatches": "Tüm maçları ve turnuva ağaçlarını sil",
+        "deleteData": "Tüm maç verilerini ve istatistikleri sil"
+      },
+      "delete": {
+        "title": "🗑️ Turnuvayı sil",
+        "question": "<b>\"{{name}}\"</b> turnuvasını kalıcı olarak SİLMEK istediğinden emin misin?",
+        "willTitle": "⚠️ Bu işlem:",
+        "items": {
+          "removeTournament": "Turnuvayı tamamen kaldırır",
+          "cannotBeUndone": "Geri alınamaz"
+        },
+        "note": "💡 Not: Aynı turnuva ayarlarıyla baştan başlamak istiyorsan bunun yerine \"Kuruluma sıfırla\"yı kullan.",
+        "confirm": "Kalıcı olarak sil"
+      },
+      "regenerate": {
+        "title": "🔄 Turnuva ağacını yeniden oluştur",
+        "liveWarning": "⚠️ UYARI: Turnuva durumu: {{status}}!",
+        "liveBody": "Turnuva ağacını yeniden oluşturmak, skorlar, istatistikler ve olay geçmişi dahil <b>MEVCUT TÜM MAÇ VERİLERİNİ SİLER</b>.",
+        "cannotBeUndone": "Bu işlem geri alınamaz.",
+        "areYouSure": "Devam etmek istediğinden kesinlikle emin misin?",
+        "setupBody": "Bu, mevcut tüm maçları siler ve turnuva ağacını aynı ayarlarla yeniden oluşturur.",
+        "continue": "Devam edilsin mi?",
+        "confirmDestructive": "EVET, HER ŞEYİ SİL",
+        "confirm": "Yeniden oluştur"
+      },
+      "reset": {
+        "title": "🔄 Kuruluma sıfırla",
+        "question": "<b>\"{{name}}\"</b> KURULUM moduna sıfırlansın mı?",
+        "willTitle": "Bu işlem:",
+        "items": {
+          "clearStatus": "Turnuva durumunu temizler (kuruluma döner)",
+          "keepSettings": "Turnuva ayarlarını <b>korur</b> (ad, takımlar, format)",
+          "allowEdit": "Ayarları yeniden düzenlemene izin verir",
+          "regenerateMatches": "Tüm maç sonuçlarını temizler ve turnuva ağacını sıfırdan yeniden oluşturur"
+        },
+        "regenerated": "Yeni turnuva ağacı hemen oluşturulur, böylece bekleyen maçlar hemen yeniden görünür.",
+        "note": "💡 Not: Turnuvayı tamamen kaldırmak için bunun yerine \"Sil\"i kullan.",
+        "confirm": "Kuruluma sıfırla"
+      },
+      "start": {
+        "titleNoServers": "⚠️ Kullanılabilir sunucu yok",
+        "titleInsufficient": "⚠️ Yeterli sunucu yok",
+        "titleUncertain": "⚠️ Turnuva sunucusuz başlatılsın mı?",
+        "noServersHeading": "Şu anda kullanılabilir sunucu yok",
+        "noServersBody": "Turnuva başlar ama maçlar bir sunucu kullanılabilir olana kadar ertelenir. Sunucular hazır olduğunda sistem maçları otomatik atar.",
+        "insufficientHeading": "İlk turun tüm maçlarını aynı anda oynatmaya yetecek sunucu yok",
+        "insufficientBody": "Şu an <b>{{available}}</b> var ama ilk tur <b>{{required}}</b> bekliyor. Bazı maçlar sıraya girer ve sunucular boşaldıkça başlar.",
+        "uncertainHeading": "Sunucu durumu belirsiz",
+        "uncertainBody": "Turnuva sınırlı sayıda sunucuyla ya da hiç sunucu olmadan başlayabilir. Maçlar sunucular kullanılabilir olana kadar ertelenir ve hazır olduklarında otomatik atanır.",
+        "question": "Turnuvayı yine de başlatmak istiyor musun?",
+        "confirm": "Evet, yine de başlat",
+        "cancel": "Sunucuları kontrol et"
+      }
+    },
+    "formActions": {
+      "saveAndGenerate": "Kaydet ve turnuva ağacını oluştur",
+      "saveAsTemplate": "Şablon olarak kaydet",
+      "saveTemplateTooltip": "Mevcut turnuva yapılandırmasını şablon olarak kaydet"
+    },
+    "wizard": {
+      "validation": {
+        "selectType": "Lütfen bir turnuva türü seç",
+        "selectFormat": "Lütfen bir maç formatı seç"
+      },
+      "shuffleInfo": "Karışık turnuvalar sabit takım kullanmaz. Oyuncular her maç için Skill Rating'lerine göre otomatik olarak dengeli takımlara dağıtılır.",
+      "shuffleRounds": "Bu karışık turnuva yaklaşık {{rounds}} sürecek (seçilen her harita için bir tur).",
+      "volumeAlert": "{{type}} {{format}} turnuvasında {{teams}} ile bu turnuva ağacında yaklaşık {{matches}}, {{rounds}} boyunca olacak (toplamda en fazla {{maps}}).",
+      "maxRoundsLabel": "Harita başına en fazla raunt",
+      "maxRoundsHelper": "Her harita en fazla {{maxRounds}} raunt sürer; {{winRounds}} raunda ilk ulaşan kazanır.",
+      "maxRoundsHelperEmpty": "Harita başına en fazla raunt sayısı (varsayılan: 24, en fazla: 30).",
+      "serversSummary": "{{servers}} ayarlı; ilk turda {{matches}} var.",
+      "estimatedVolumeLabel": "Tahmini hacim",
+      "mapsHeading": "Haritalar ({{total}})",
+      "noMapsSelected": "Seçili harita yok",
+      "matchConfiguration": "Maç yapılandırması",
+      "roundLimitValue_one": "Raunt sınırı: en fazla {{count}} raunt",
+      "roundLimitValue_other": "Raunt sınırı: en fazla {{count}} raunt",
+      "teamsHeading": "Takımlar ({{total}})",
+      "noTeamsSelected": "Seçili takım yok (isteğe bağlı)",
+      "playerRegistration": "Oyuncu kaydı",
+      "playerRegistrationInfo_one": "Oyuncular turnuva oluşturulduktan sonra kaydedilir. Seçilen her harita bir maç turunu temsil eder (toplam {{count}} tur).",
+      "playerRegistrationInfo_other": "Oyuncular turnuva oluşturulduktan sonra kaydedilir. Seçilen her harita bir maç turunu temsil eder (toplam {{count}} tur).",
+      "serversSummaryQueued": "{{servers}} ayarlı; ilk turda {{matches}} var. Sunucu sayını aşan maçlar bir sunucu boşalana kadar sırada bekler."
+    },
+    "overtime": {
+      "selectLabel": "Uzatma",
+      "options": {
+        "enabled": "Açık (standart uzatma)",
+        "disabledDraws": "Kapalı – beraberliğe izin verilir",
+        "disabledNoDraws": "Kapalı – beraberlik yok (hasarla eşitlik bozma)"
+      },
+      "modeHelper": "Standart uzatma, bir takım öne geçene kadar ek bölümler oynatır. \"Beraberliğe izin verilir\" eşit biten haritayı beraberlik sayar, \"beraberlik yok\" ise toplam takım hasarıyla karar verir.",
+      "tooltip": "Uzatma davranışını ve en fazla raunttaki eşitliklerin nasıl çözüleceğini kontrol et. Bu ayarlar oyun sunucularına overtimeMode/overtimeSegments olarak iletilir ve karışık turnuvalar ile elle oluşturulan maçlarla aynı anlama sahiptir.",
+      "shuffleTooltip": "Karışık maçlar için uzatma davranışını ve en fazla raunttaki eşitliklerin nasıl çözüleceğini kontrol et. Uzatma kapalıyken eşit maçlar, seçtiğin seçeneğe göre ya beraberlik olarak kalır ya da toplam takım hasarıyla belirlenir.",
+      "segmentsLabel": "Uzatma bölümleri (isteğe bağlı)",
+      "segmentsHelper": "İsteğe bağlı: uzatma bölümlerinin sayısını sınırla. Oyun sunucusunun varsayılanı için boş bırak.",
+      "segmentsHelperValue_one": "Uzatmayı {{count}} bölümle sınırla. Uzatmadan sonraki eşitlikler toplam takım hasarıyla çözülür.",
+      "segmentsHelperValue_other": "Uzatmayı {{count}} bölümle sınırla. Uzatmadan sonraki eşitlikler toplam takım hasarıyla çözülür."
+    },
+    "grandFinal": {
+      "sectionTitle": "Büyük final modu (çift eleme)",
+      "label": "Büyük final",
+      "options": {
+        "simple": "Basit – üst ve alt ağaç şampiyonları arasında tek bir büyük final",
+        "none": "Yok – turnuvayı üst ağaç finali belirler (büyük final yok)",
+        "double": "Çift – sıfırlamalı tarz (şu an Basit gibi çalışır; tam sıfırlama desteği planlanıyor)"
+      },
+      "helper": "Üst ve alt ağaç şampiyonlarının turnuva sonunda nasıl karşılaşacağını belirler."
+    },
+    "mapPool": {
+      "shuffleTitle": "Karışık turnuvalar için harita seçimi",
+      "shuffleBody": "Seçilen tüm haritalar sırayla oynanır. Her harita bir maç turunu temsil eder. Seçtiğin harita sayısı oynanacak tur sayısını belirler.",
+      "shuffleSelected": "{{maps}} seçtin, yani {{rounds}} oynanacak.",
+      "chooseLabel": "Bir harita havuzu seç",
+      "custom": "Özel",
+      "selectedMaps": "Seçili haritalar ({{total}}):",
+      "chooseMapsPlaceholder": "Haritaları seç...",
+      "saveMapPool": "Harita havuzunu kaydet",
+      "types": {
+        "defusal": "Bomba imha",
+        "hostage": "Rehine",
+        "armsRace": "Silah Yarışı",
+        "unknown": "Bilinmiyor"
+      }
+    },
+    "formatStep": {
+      "shuffleInfo": "Karışık turnuvalar Bo1 formatını kullanır. Her maç tek haritadır."
+    },
+    "shuffleConfig": {
+      "overline": "Karışık turnuva yapılandırması",
+      "subtitle": "Maç kuralları ve ayarlar",
+      "teamSizeLabel": "Takım boyutu",
+      "teamSizeTooltip": "Takım başına oyuncu sayısı. Yaygın seçenekler: 4v4, 5v5, 6v6. Takım başına en az 2, en fazla 10 oyuncu.",
+      "teamSizeHelper": "Takım başına oyuncu sayısı (varsayılan: 5v5 için 5, aralık: 2-10)",
+      "maxRoundsLabel": "En fazla raunt",
+      "maxRoundsTooltip": "Maç başına en fazla raunt sayısı. Bu değer CS2 sunucularına mp_maxrounds olarak iletilir. Örnek: 6 = MR6, 24 = MR24.",
+      "maxRoundsHelper": "Maç en fazla {{maxRounds}} raunt sürer; {{winRounds}} raunda ilk ulaşan kazanır",
+      "maxRoundsHelperEmpty": "Maç başına en fazla raunt sayısı (varsayılan: 24, en fazla: 30)",
+      "eloTemplateLabel": "Puan şablonu",
+      "eloTemplateTooltip": "Bu turnuva için ELO'nun nasıl hesaplanacağını seç. Varsayılan olarak 'Pure Win/Loss' şablonu yalnızca maç sonucunu (galibiyet/mağlubiyet) kullanır; istatistikler izlenir ama ELO'yu değiştirmez. Diğer şablonlar isteğe bağlıdır ve Excel tarzı bir davranış istersen OpenSkill galibiyet/mağlubiyet değişiminin üzerine istatistik tabanlı ayarlamalar ekler.",
+      "eloDefaultSuffix": "(Varsayılan)",
+      "eloTemplateHelper": "Pure Win/Loss (varsayılan): ELO'yu yalnızca maç sonucu etkiler. Oyuncu istatistikleri sıralamalar ve dışa aktarımlar için yine kaydedilir ama özel bir şablon seçmedikçe puanı değiştirmez."
+    },
+    "shuffleStats": {
+      "serverShortageWarning": "{{needed}} sunucudan {{available}} tanesi var. Maçlar dalgalar hâlinde oynanacak, bu yüzden turlar daha uzun sürer."
+    },
+    "changePreview": {
+      "title": "Turnuva değişikliklerini incele",
+      "liveHeading": "Turnuva CANLI!",
+      "liveBody": "Turnuva türünü, formatını veya takım sayısını değiştirmek turnuva ağacının yeniden oluşturulmasını gerektirebilir. Baştan başlamak için \"Turnuvayı sıfırla\"yı kullanmayı düşün.",
+      "noChangesDetected": "Değişiklik bulunamadı",
+      "intro": "Şu değişiklikler uygulanacak:",
+      "before": "ÖNCE",
+      "after": "SONRA",
+      "apply": "Değişiklikleri uygula",
+      "applyRisky": "Değişiklikleri uygula (riskli!)",
+      "noChangesToApply": "Uygulanacak değişiklik yok",
+      "none": "Yok",
+      "itemCount_one": "{{count}} öğe",
+      "itemCount_other": "{{count}} öğe"
+    },
+    "teamSelection": {
+      "chooseTeamsPlaceholder": "Takımları seç…",
+      "addAll": "Tümünü ekle",
+      "batchAddServers": "Toplu ekle",
+      "addServer": "Sunucu ekle",
+      "importTeams": "Takımları içe aktar",
+      "createTeam": "Takım oluştur",
+      "notEnoughServers": "İlk turda {{matches}} var ama {{servers}} var. Sunucu sayını aşan maçlar bir sunucu boşalana kadar sırada bekler; hepsini aynı anda oynatmak için daha fazla sunucu ekle.",
+      "notEnoughTeams": "Turnuva oluşturmak için en az 2 takım gerekiyor. Şu an {{teams}} var."
+    },
+    "teamValidation": {
+      "invalidType": "Geçersiz turnuva türü",
+      "powerOfTwo": "{{type}} için takım sayısı 2'nin kuvveti olmalı ({{counts}}). Seçtiğin: {{selected}}.",
+      "minTeams": "{{type}} için en az {{min}} takım gerekir. Seçtiğin: {{selected}}.",
+      "maxTeams": "{{type}} en fazla {{max}} takıma izin verir. Seçtiğin: {{selected}}."
+    },
+    "eventPage": {
+      "title": "Etkinlik sayfası",
+      "subtitle": "Herkese açık Genel bakış sayfasında oyunculara ve ziyaretçilere gösterilir.",
+      "descriptionLabel": "Açıklama",
+      "locationLabel": "Konum",
+      "locationPlaceholder": "örn. Yerinde, İstanbul",
+      "rulebookUrlLabel": "Tam kural kitabı URL'si",
+      "rulebookUrlHelper": "https bağlantısı olmalı ya da boş bırak.",
+      "rulesLabel": "Oyuncular için kurallar",
+      "ruleFieldLabel": "Kural {{n}}",
+      "addRule": "Kural ekle",
+      "prizesLabel": "Ödüller",
+      "placeLabel": "Sıra",
+      "prizeLabel": "Ödül",
+      "addPrize": "Ödül ekle",
+      "scheduleLabel": "Program",
+      "whenLabel": "Ne zaman",
+      "scheduleLabelLabel": "Etiket",
+      "addScheduleItem": "Program öğesi ekle",
+      "remove": "Kaldır",
+      "moveUp": "Yukarı taşı",
+      "moveDown": "Aşağı taşı",
+      "save": "Etkinlik sayfasını kaydet",
+      "saveSuccess": "Etkinlik sayfası kaydedildi.",
+      "saveError": "Etkinlik sayfası kaydedilemedi: {{message}}",
+      "organizerLabel": "Organizatör",
+      "organizerPlaceholder": "örn. Edition 35 LAN",
+      "bannerLabel": "Banner",
+      "bannerUpload": "Bir banner yükle",
+      "bannerReplace": "Değiştir",
+      "bannerRemove": "Kaldır",
+      "bannerHelp": "Turnuva sayfasının üst kısmında geniş bir resim. PNG, JPEG veya WEBP, en fazla 2 MB; 1920 × 600 iyi çalışır.",
+      "bannerWrongType": "Banner bir PNG, JPEG veya WEBP resmi olmalı.",
+      "bannerTooLarge": "Banner en fazla 2 MB olmalı.",
+      "signupHeading": "Kayıt ve check-in",
+      "signupOpen": "Takımlar kendileri kaydolabilir",
+      "signupClosesAt": "Kayıt kapanışı",
+      "maxTeams": "Takım kontenjanı",
+      "checkInOpensAt": "Check-in açılışı",
+      "checkInClosesAt": "Check-in kapanışı",
+      "signupHelp": "Bir takımın sahibi veya kaptanı bir kadroyla kaydolur. Kadrodaki oyuncular o gün check-in yapar.",
+      "startLabel": "Başlangıç saati",
+      "startsAtLabel": "Başlangıç",
+      "startsAtHelp": "Yerel saatin. Site ona geri sayar.",
+      "autoStartLabel": "Turnuvayı bu saatte otomatik başlat",
+      "remindersLabel": "Başlamadan önce oyunculara hatırlat",
+      "reminderMinutes_one": "{{count}} dakika önce",
+      "reminderMinutes_other": "{{count}} dakika önce",
+      "bannerMapLabel": "Banner yok mu? Bir haritanın resmini kullan",
+      "bannerMapNone": "Benim için seç",
+      "rulesHelp": "Turnuva sayfasının Kurallar sekmesinde, platformun ayarlarından yazdığı kuralların altında gösterilir.",
+      "fromTemplate": "Kaynak: {{name}}",
+      "clearAll": "Tümünü temizle",
+      "rulebookFromTemplate": "{{name}} şablonundan. Bir https bağlantısı ya da boş bırak."
+    },
+    "setup": {
+      "steps": {
+        "game": "Oyun",
+        "basics": "Ad ve gün",
+        "format": "Format",
+        "teams": "Takımlar",
+        "schedule": "Program",
+        "maps": "Haritalar ve veto",
+        "extras": "Maç ayarları",
+        "review": "İnceleme"
+      },
+      "stepsLabel": "Kurulum adımları",
+      "backToManage": "Yönet",
+      "stepDone": "tamam",
+      "newTournament": "Yeni turnuva",
+      "editing": "Turnuva kurulumu",
+      "draftSaved": "taslak bu sekmede kaydedildi",
+      "discardDraft": "Baştan başla",
+      "startFromTemplate": "Bir şablondan başla",
+      "continueTo": "Devam: {{step}}",
+      "questions": {
+        "game": {
+          "title": "Hangi oyun?",
+          "lede": "Oyun, maçların nasıl oynanacağını ve hangi ayarları alacağını belirler."
+        },
+        "basics": {
+          "title": "Adı ne, hangi gün?",
+          "lede": "Günü seç. Her turun başlangıç saati Program'da ayarlanır."
+        },
+        "format": {
+          "title": "Nasıl oynanacak?",
+          "lede": "Turnuva ağacını ve her serinin uzunluğunu seç. Turnuva başlayana kadar değiştirebilirsin."
+        },
+        "teams": {
+          "title": "Kimler oynuyor?",
+          "lede": "Turnuva ağacındaki takımları seç. Burada takım oluşturup içe de aktarabilirsin.",
+          "ledeShuffle": "Karışık turnuvada kayıt bireyseldir: oyuncular kaydolur ve her turda yeni takımlar kurulur."
+        },
+        "maps": {
+          "title": "Hangi haritalar?",
+          "lede": "Harita havuzunu seç. Seriler haritalarını bu havuzdan veto ile seçer.",
+          "ledeShuffle": "Haritaları oynanacakları sırayla seç. Her harita bir turdur."
+        },
+        "eventPage": {
+          "title": "Etkinlik sayfasında ne olacak?",
+          "lede": "İsteğe bağlı. Herkese açık Genel bakış sayfasında oyunculara ve ziyaretçilere gösterilir."
+        },
+        "review": {
+          "title": "Hazır mısın?",
+          "lede": "Ayrıntıları kontrol et, sonra turnuvayı oluştur.",
+          "ledeExisting": "Ayrıntıları kontrol et, sonra herkes hazır olduğunda turnuvayı başlat."
+        },
+        "schedule": {
+          "title": "Maçlar ne zaman?",
+          "lede": "İlk turun saati turnuvanın başladığı saattir. Check-in ve hatırlatmalar ondan geriye sayar."
+        },
+        "extras": {
+          "title": "Maç ayarları",
+          "lede": "Bir hazır ayardan başla, sonra ihtiyacın olanı değiştir. Turuncu ayarlar sitenin varsayılanlarından farklıdır."
+        }
+      },
+      "game": {
+        "label": "Oyun",
+        "loading": "Bu sistemin çalıştırabileceği oyunlar yükleniyor.",
+        "lockedHelp": "Turnuva oluşturulduktan sonra oyun değiştirilemez. Farklı bir oyun için turnuvayı sil ve yeniden başla.",
+        "integrationTitles": {
+          "cs2": "Senin sunucularında çalışır",
+          "manual-report": "Sonucu takımlar bildirir"
+        },
+        "integrationDescriptions": {
+          "cs2": "Maçlar Ready Up ile kendi CS2 sunucularında oynanır.",
+          "manual-report": "Sunucu yok. Takımlar maçı kendileri oynar ve bir kaptan sonucu bildirir."
+        }
+      },
+      "basics": {
+        "ratingLabel": "Puanlar",
+        "ratingHelp": "Bu turnuvada oyuncu puanlarının her maçtan sonra nasıl değişeceği."
+      },
+      "format": {
+        "label": "Format",
+        "names": {
+          "single_elimination": "Tek eleme",
+          "double_elimination": "Çift eleme",
+          "swiss": "İsviçre",
+          "round_robin": "Lig usulü",
+          "shuffle": "Karışık",
+          "groups": "Gruplar, ardından playoff"
+        },
+        "types": {
+          "single_elimination": "Bir kez kaybeden elenir. En hızlısı.",
+          "double_elimination": "Alt ağaçta ikinci bir şans.",
+          "swiss": "Takımlar benzer sicile sahip rakiplere karşı birkaç tur oynar.",
+          "round_robin": "Herkes herkesle oynar. Küçük gruplar için en iyisi.",
+          "shuffle": "Bireysel kayıt. Her turda yeni dengeli takımlar.",
+          "groups": "Gruplarda lig usulü; her grubun en iyileri finale veya bir turnuva ağacına çıkar."
+        },
+        "seriesLength": "Seri uzunluğu",
+        "grandFinal": "Büyük final",
+        "grandFinalOptions": {
+          "simple": "Tek maç",
+          "double": "Ağaç sıfırlama",
+          "none": "Yok"
+        },
+        "grandFinalHelp": {
+          "simple": "Üst ve alt ağaç şampiyonları tek bir büyük finalde karşılaşır.",
+          "double": "Ağaç sıfırlama. Şimdilik tek bir büyük final gibi oynanır; tam sıfırlama desteği planlanıyor.",
+          "none": "Büyük final yok: turnuvayı üst ağaç finali belirler."
+        },
+        "teams": "Takımlar",
+        "teamsHelpPowerOfTwo": "Eleme ağaçları {{counts}} takım gerektirir. Takımları seçene kadar özet için kullanılır.",
+        "teamsHelpRange": "{{min}} ile {{max}} takım arası. Takımları seçene kadar özet için kullanılır.",
+        "fewerTeams": "Daha az takım",
+        "moreTeams": "Daha fazla takım",
+        "shuffleTitle": "Karışık turnuva ayarları",
+        "cs2Title": "Counter-Strike 2 ayarları",
+        "cs2Help": "Counter-Strike 2 oyun modülü tarafından CS2 sunucularına iletilir.",
+        "overtime": {
+          "enabled": "Uzatma",
+          "disabledDraws": "Kapalı, beraberliğe izin verilir",
+          "disabledNoDraws": "Kapalı, hasarla eşitlik bozma"
+        }
+      },
+      "teams": {
+        "shuffleBeforeCreate": "Oyuncular sen turnuvayı oluşturduktan sonra kaydolur. Onları seçmek için bu adıma geri dön.",
+        "shuffleSelfSignup": "Oyuncular kendileri katılır",
+        "shuffleSelfSignupHelp": "Bu açıkken turnuva sayfasındaki Katıl ile kaydolurlar; sen yine buradan oyuncu ekleyebilirsin."
+      },
+      "maps": {
+        "vetoTitle": "Veto",
+        "vetoStandard": "Her {{format}} serisinde harita vetosu yapılır: takımlar bu 7 haritadan yasaklar ve seçer.",
+        "vetoCustom": "Bu turnuvanın {{format}} için özel bir veto sırası var.",
+        "vetoNone": "Bu formatta veto yok.",
+        "vetoShuffle": "Karışık turnuvada veto yok: haritalar bu sırayla, her turda bir tane oynanır."
+      },
+      "eventPage": {
+        "draftNote": "Turnuvayı oluşturduğunda onunla birlikte kaydedilir."
+      },
+      "review": {
+        "unsaved": "Kaydedilmemiş değişikliklerin var. Başlamadan önce onları kaydet (turnuva ağacı yeniden oluşturulur) ya da vazgeç."
+      },
+      "summary": {
+        "label": "Özet",
+        "untitled": "Adsız turnuva",
+        "format": "Format",
+        "series": "Seri",
+        "seriesShuffle": "Tur başına Bo1",
+        "seriesFinal": {
+          "simple": "{{format}} · büyük final",
+          "double": "{{format}} · büyük final, ağaç sıfırlama",
+          "none": "{{format}} · büyük final yok"
+        },
+        "teams": "Takımlar",
+        "teamSize": "{{size}}v{{size}}",
+        "teamsPlanned": "{{count}} planlandı",
+        "matches": "Maçlar",
+        "matchesAfterSignUp": "Kayıttan sonra",
+        "duration": "Yaklaşık süre",
+        "durationValue": "{{hours}} sa {{minutes}} dk",
+        "signUp": "Kayıt",
+        "signUpOrganizer": "Organizatör seçer",
+        "signUpAfterCreate": "Oluşturduktan sonra açılır",
+        "players_one": "{{count}} oyuncu",
+        "players_other": "{{count}} oyuncu",
+        "maps": "Haritalar",
+        "mapsRounds": "{{maps}} · {{rounds}}",
+        "notSet": "Ayarlanmadı",
+        "signUpOpen": "Takımlar kaydolur · takım başına {{size}}"
+      },
+      "checklist": {
+        "title": "Başlamadan önce",
+        "met": "tamam",
+        "notMet": "yapılmadı",
+        "name": "Bir ad",
+        "format": "Format ve maç ayarları",
+        "teams": "Geçerli bir takım sayısı",
+        "players_one": "En az {{count}} oyuncu kaydoldu",
+        "players_other": "En az {{count}} oyuncu kaydoldu",
+        "mapsVeto": "Veto için 7 harita",
+        "maps": "En az bir harita",
+        "created": "Turnuva oluşturuldu",
+        "saved": "Değişiklikler kaydedildi"
+      },
+      "manualReport": {
+        "title": "Elle sonuç bildirme",
+        "help": "Auto Tournament bu oyunu izleyemez, bu yüzden ne olduğunu takımlar söyler.",
+        "seriesLength": "Seri uzunluğu",
+        "seriesLengthHelp": "Bir serinin kaç oyundan oluştuğu. Yarısından fazlasını ilk kazanan takım maçı alır.",
+        "gameLabel": "Oyunun adı",
+        "gameLabelHelp": "Bildirim formunda nasıl adlandırılacağı. “{{game}}” için boş bırak.",
+        "allowDraw": "Beraberlik",
+        "allowDrawHelp": "Bir oyunun, dolayısıyla bir serinin berabere bitmesine izin ver. Birinin geçmesi gereken bir turnuva ağacında kapalı bırak.",
+        "allowDrawOptions": {
+          "no": "İzin verilmez",
+          "yes": "İzin verilir"
+        },
+        "confirmation": "Bir sonuç sayılmadan önce",
+        "confirmationHelp": {
+          "opponent": "Maç kesinleşmeden önce diğer takımın kaptanı onaylamalı. Bunun yerine itiraz edebilir, bu da maçı bir yöneticiye gönderir.",
+          "none": "Bir kaptanın bildirimi maçı tek başına kesinleştirir. Hızlıdır, yalnızca kimsenin itiraz etmesinin beklenmediği yerlerde değer."
+        },
+        "confirmationOptions": {
+          "opponent": "Rakip onaylar",
+          "none": "Bildirim geçerlidir"
+        },
+        "confirmTimeout": "Yanıt için dakika",
+        "confirmTimeoutHelp": "Son tarihe kadar rakibin ne kadar süresi olduğu. 1440 bir gündür.",
+        "confirmTimeoutNone": "Son tarih yok: bildirim yanıt bekler.",
+        "timeoutAction": "Son tarihte",
+        "timeoutActionHelp": {
+          "auto_confirm": "Bildirim olduğu gibi kabul edilir ve turnuva ağacı kimseyi beklemeden ilerler.",
+          "escalate": "Maç bir yöneticiye devredilir, o da İtirazlar sayfasında karar verir."
+        },
+        "timeoutActionOptions": {
+          "auto_confirm": "Bildirimi kabul et",
+          "escalate": "Bir yöneticiye sor"
+        }
+      },
+      "signup": {
+        "how": "Takımlar nasıl katılır?",
+        "organizer": "Yalnızca benim eklediğim takımlar",
+        "open": "Takımlar kaydolabilir",
+        "organizerHelp": "Her takımı sen seçersin. Turnuva sayfasından kimse kaydolamaz.",
+        "openHelp": "Bir takımın sahibi veya kaptanı turnuva sayfasından bir kadroyla kaydolur ve kadro o gün check-in yapar. Aşağıdan yine kendin takım ekleyebilirsin.",
+        "teamSize": "Takım başına oyuncu",
+        "teamSizeHelp": "Bir takımın kaydolurken seçtiği as oyuncular (üstüne en fazla 2 yedek).",
+        "maxTeamsHelp": "Boş: sınır yok.",
+        "save": "Kayıt ayarlarını kaydet",
+        "saved": "Kayıt ayarları kaydedildi",
+        "inTournament": "Turnuvada ({{count}})",
+        "signedUp": "Kaydoldu",
+        "addedByYou": "Senin eklediğin",
+        "lineup": "{{size}} asın {{starters}} tanesi",
+        "checkedIn": "{{count}} check-in yaptı",
+        "remove": "Kaldır",
+        "removed": "{{team}} turnuvadan çıkarıldı",
+        "noneYet": "Henüz takım yok. Kaydoldukça burada görünürler.",
+        "noTeams": "Henüz takım yok.",
+        "addYourself": "Takımları kendin ekle",
+        "pickTeams": "Takımları seç",
+        "windowTitle": "Kayıt dönemi",
+        "opensLabel": "Kayıt açılışı",
+        "opensNow": "Şimdi",
+        "opensLater": "Belirli bir saatte",
+        "opensNowHelp": "Turnuvayı oluşturur oluşturmaz aç.",
+        "opensLaterHelp": "O zamana kadar kapalı. Sayfa ona geri sayar.",
+        "closesHelp": "Kadrolar check-in kapanana kadar değişebilir.",
+        "checkInTitle": "Check-in",
+        "checkInHelp": "Turnuva başlamadan önce açılır ve başladığında kapanır. O zamana kadar check-in yapmayan bir as oyuncunun yerine yedek geçer; yedekler check-in yapmaz.",
+        "checkInChip_one": "{{count}} dk önce",
+        "checkInChip_other": "{{count}} dk önce",
+        "checkInOff": "Check-in yok",
+        "checkInLine": "{{day}} {{time}} saatinde açılır, turnuva {{start}} saatinde başladığında kapanır.",
+        "checkInLineNoStart_one": "Başlangıçtan {{count}} dakika önce açılır ve başladığında kapanır.",
+        "checkInLineNoStart_other": "Başlangıçtan {{count}} dakika önce açılır ve başladığında kapanır.",
+        "checkInLineOff": "Check-in yok: kaydolan her takım oynar.",
+        "captainsLabel": "Kaptanlar takım arkadaşlarının check-in'ini yapabilir",
+        "captainsHelp": "Sahip veya bir kaptan bir as oyuncuyu burada olarak işaretleyebilir. O oyuncu gelmezse bundan o sorumlu olur.",
+        "perMatchLabel": "Her maçtan önce yeniden check-in yap",
+        "perMatchHelp": "Kapalı: turnuvadan önce bir kez check-in yapmak tüm maçları kapsar. Açık: oyuncular her maçın vetosu açıldığında check-in yapar.",
+        "fullTeamTitle": "Sunucuya girmek",
+        "fullTeamHelp": "Bir maçın sunucusu hazır olduğunda her takımın, yedekler dahil tam kadroyu sunucuya getirmek için bu kadar süresi olur. Sonra tam kadrolu takım seçer: hükmen galibiyeti al ya da eksik takıma karşı oyna. İkisi de eksikse bir yönetici karar verir.",
+        "fullTeamChip_one": "{{count}} dk",
+        "fullTeamChip_other": "{{count}} dk",
+        "fullTeamOff": "Hükmen yok",
+        "fullTeamLine": "Oyuncular sayacı maç odasında ve sunucu sohbetinde görür. Yedekler hazır sayılır, böylece bir takım hemen birini getirebilir.",
+        "fullTeamLineOff": "Hükmen yok: maç otomatik başladığında eksik takım eksik oynar (Maç ayarları)."
+      },
+      "groups": {
+        "count": "Grup sayısı",
+        "through": "Her gruptan çıkan",
+        "throughWinner": "Birinci",
+        "throughTop2": "İlk 2",
+        "seeding": "Takımlar gruplara nasıl yerleştirilir",
+        "seedingSnake": "Seri başına göre dağıt (yılan)",
+        "seedingRandom": "Rastgele",
+        "playoffs": "Playoff",
+        "playoffMatches": "Playoff maçları",
+        "ties": "Gruptaki eşitlikler: önce ikili karşılaşma, sonra raunt farkı, sonra kazanılan raunt (lig usulüyle aynı). Gruplar bir turnuva ağacını doldurmazsa kalanların en iyileri de çıkar.",
+        "whatPlayersGet": "Oyuncuların göreceği",
+        "stage": "Grup aşaması",
+        "stageLine": "{{size}} takımlık {{groups}} grup",
+        "stageNote": "{{count}} maç · her takım için {{each}}",
+        "playoffFinal": "İki grup birincisi: {{format}} final",
+        "playoff": {
+          "single_elimination": "{{count}} takım: tek eleme",
+          "double_elimination": "{{count}} takım: çift eleme"
+        },
+        "throughNote": "{{count}} takım üst tura çıkar",
+        "previewTitle": "Gruplar (seri başına göre dağıtılmış)",
+        "previewNote": "Takım listesinin sırasıyla (seri başı sıralaması). Turnuva başladığında gruplar kilitlenir.",
+        "randomNote": "Gruplar turnuva başladığında rastgele çekilir.",
+        "groupN": "{{letter}} Grubu",
+        "groupMatches": "Grup maçları"
+      },
+      "stepNotes": {
+        "game": "Ne oynanacak",
+        "basics": "Ad, gün, yer",
+        "format": "Takımlar nasıl karşılaşır",
+        "teams": "Eklenen veya kayıt",
+        "schedule": "Günler ve saatler",
+        "maps": "Harita havuzu",
+        "extras": "Hazır ayar, kurallar, ekstralar",
+        "review": "Oluştur"
+      },
+      "stepOf": "Adım {{n}} / {{total}}",
+      "schedule": {
+        "timesNote": "Maçlar saatlerini bekler. Oyuncular saati maçta görür, hatırlatma alır ve veto zamanında açılır.",
+        "breakNote_one": "Az önce oynayan bir takım, sonraki vetosundan önce {{count}} dakikalık mola alır (Maç kuralları).",
+        "breakNote_other": "Az önce oynayan bir takım, sonraki vetosundan önce {{count}} dakikalık mola alır (Maç kuralları).",
+        "noBreakNote": "Bir takımın maçları arasında mola yok (Maç kuralları).",
+        "ownTimeNote": "Turnuva ağacı oluşturulduktan sonra bir maça Yönet › Program'dan kendi saatini ver.",
+        "startsTournament": "Turnuvayı başlatır · check-in kapanır",
+        "newDay": "Yeni gün",
+        "sameDay": "Aynı gün",
+        "dayLabel": "Gün",
+        "startsLabel": "Başlangıç",
+        "tournamentStarts": "Turnuva başlangıcı",
+        "autoStart": "{{time}} saatinde otomatik başlat",
+        "autoStartNoTime": "Otomatik başlat",
+        "autoStartOff": "Kapalı: bir yönetici Yönet'ten başlatır.",
+        "reminders": "Başlangıçtan önce oyunculara hatırlat",
+        "modeTimesNote": "Her tura bir gün (2. adımdan) ve bir saat verilir. Maçlar saatlerini bekler ve veto zamanında açılır.",
+        "modeAsapNote": "Yalnızca başlangıç: sonrasında bir maç, iki takım ve bir sunucu hazır olur olmaz başlar."
+      },
+      "extras": {
+        "gotvLabel": "İzleyiciler",
+        "gotvOn_one": "İzleyiciler GOTV'de {{count}} saniye geriden izleyebilir (Maç kuralları › İzleyiciler).",
+        "gotvOn_other": "İzleyiciler GOTV'de {{count}} saniye geriden izleyebilir (Maç kuralları › İzleyiciler).",
+        "gotvOff": "İzleyiciler GOTV'de izleyemez (Maç kuralları › İzleyiciler)."
+      },
+      "startFrom": {
+        "title": "Başlangıç noktası",
+        "help": "Şablon formatı, haritaları ve maç ayarlarını doldurur. Sonraki adımlarda her şeyi değiştirebilirsin.",
+        "blank": "Boş",
+        "blankHelp": "Tek eleme, Bo3, sitenin harita havuzu ve maç kuralları.",
+        "siteDefaults": "Site varsayılanları",
+        "builtIn": "Yerleşik",
+        "saved": "Kayıtlı",
+        "standardRules": "Standart kurallar",
+        "ownTemplates": "Kendi şablonların <link>Şablonlar ve puanlar</link> bölümünden gelir. Bu turnuvayı kurduktan sonra şablon olarak kaydet."
+      },
+      "days": {
+        "title": "Gün",
+        "one": "Tek gün",
+        "several": "Birkaç gün boyunca",
+        "day": "Gün",
+        "firstDay": "İlk gün",
+        "lastDay": "Son gün",
+        "markedLegend": "Bu sitedeki başka bir turnuva o gün oynanıyor"
+      },
+      "overlap": {
+        "headsUp": "Dikkat: {{name}} da {{day}} günü oynanıyor",
+        "headsUpBody": "Aynı sunucularda {{from}}–{{to}}. İkisi de çalışabilir: maçlar boş bir sunucu bekler ve bir oyuncu ancak tur saatleri çakışmıyorsa ikisinde de olabilir.",
+        "openOther": "{{name}} programını aç",
+        "round": "Aynı sunucularda {{name}} ile çakışıyor ({{day}}, {{from}}–{{to}}). Yine de kaydedebilirsin. Bu tur aynı anda oynandığı için {{name}} turnuvasındaki bir oyuncu buraya kaydolamaz.",
+        "see": "Gör: {{name}}"
+      }
+    },
+    "startButton": {
+      "start": "Turnuvayı başlat",
+      "starting": "Başlatılıyor...",
+      "startSimulation": "Simülasyonu başlat",
+      "startingSimulation": "Simülasyon başlatılıyor..."
+    },
+    "archiveDialog": {
+      "title": "Yeni bir turnuva başlatılsın mı?",
+      "message": "{{name}} arşivlenir. Sonuçları, maçları ve istatistikleri kalır, sayfası adresini korur. Sonra sıradakini oluşturursun.",
+      "confirm": "Arşivle ve yenisini başlat",
+      "delete": "Sil ve yenisini başlat",
+      "deleteHint": "Ya da sil: sonuçları, maçları ve istatistikleri de gider."
+    },
+    "end": {
+      "button": "Turnuvayı bitir",
+      "tooltip": "Turnuvayı sonuçsuz olarak şimdi durdurur: sunuculardaki maçlar biter, geri kalanlar iptal edilir. Kazanan ve ödül yok. Sonrasında arşivlenebilir.",
+      "title": "Bu turnuva bitirilsin mi?",
+      "body": "Hâlâ süren her maç sunucusunda biter, geri kalanlar iptal edilir. Kimse kazanmaz ve ödül verilmez. Bu geri alınamaz.",
+      "typeName": "Onaylamak için \"{{name}}\" yaz",
+      "confirm": "Turnuvayı bitir",
+      "done_one": "Turnuva bitirildi, {{count}} maç iptal edildi",
+      "done_other": "Turnuva bitirildi, {{count}} maç iptal edildi",
+      "failed": "Turnuva bitirilemedi"
+    },
+    "countdown": {
+      "days": "{{d}} g {{h}} sa sonra başlıyor",
+      "hours": "{{h}} sa {{m}} dk sonra başlıyor",
+      "minutes": "{{m}}:{{s}} sonra başlıyor"
+    }
+  },
+  "bracket": {
+    "empty": {
+      "noBracketTitle": "Gösterilecek turnuva ağacı yok",
+      "noBracketDescription": "Başlamak için bir turnuva oluştur ve turnuva ağacını üret"
+    },
+    "view": {
+      "visual": "Görsel",
+      "list": "Liste",
+      "refresh": "Yenile",
+      "enterFullscreen": "Tam ekrana geç",
+      "exitFullscreen": "Tam ekrandan çık",
+      "shuffleNoVisual": "Karışık turnuvaların görsel turnuva ağacı yoktur; bunun yerine liste görünümünü kullan."
+    },
+    "times": {
+      "toggle": "Saatleri ayarla",
+      "startsAt": "Başlangıç",
+      "clear": "Turun saatini kullan",
+      "save": "Kaydet"
+    },
+    "shuffleEmpty": {
+      "title": "Karışık turnuvalarda turnuva ağacı yok",
+      "description": "Karışık turnuvalar sabit bir turnuva ağacı görünümü kullanmaz. Takımlar her turda oyuncu ELO'suna göre yeniden karıştırılır.",
+      "hint": "Canlı ve yaklaşan maçları izlemek için Maçlar sayfasını, oyuncu sıralamalarını takip etmek için Sıralama sayfasını kullan.",
+      "goToMatches": "Maçlara git",
+      "viewLeaderboard": "Sıralamayı görüntüle"
+    },
+    "notGenerated": {
+      "title": "Turnuva ağacı henüz oluşturulmadı",
+      "description": "{{name}} için maç oluşturmak üzere turnuva ağacını üret",
+      "goToSettings": "Turnuva ayarlarına git"
+    },
+    "shuffleNoVisual": {
+      "title": "Karışık turnuvalarda görsel turnuva ağacı yok",
+      "description": "Maçlar her turda oyuncu ELO'suna ve takım dengesine göre dinamik olarak oluşturulur. İlerlemeyi buradan takip et:",
+      "listView": "Liste görünümü",
+      "matches": "Maçlar",
+      "standings": "Puan durumu",
+      "docsHint": "Karışık turnuvanın nasıl çalıştığına dair tam bir anlatım için belgelerdeki Karışık turnuvalar rehberine bak."
+    },
+    "swiss": {
+      "notGenerated": "Oluşturulmadı",
+      "generatedAfter": "Maçlar {{round}}. tur bittikten sonra oluşturulacak",
+      "bye": "BAY",
+      "standings": "Puan durumu",
+      "team": "Takım",
+      "record": "Sicil",
+      "buchholz": "BH",
+      "buchholzHint": "Buchholz: rakiplerin galibiyetlerinin toplamı",
+      "roundDiff": "RF",
+      "roundDiffHint": "Raunt farkı: kazanılan rauntlar eksi kaybedilen rauntlar"
+    },
+    "slotHint": {
+      "winnerOf": "Kazanan: {{match}}",
+      "loserOf": "Kaybeden: {{match}}",
+      "matchNumber": "maç {{number}}"
+    },
+    "pause": {
+      "pause": "Turnuva ağacını duraklat",
+      "reason": "Duraklatma nedeni",
+      "forMinutes": "{{minutes}} dk boyunca",
+      "untilResumed": "Devam ettirilene kadar",
+      "paused": "Turnuva ağacı duraklatıldı: oynanan maçlar biter, yenileri başlamaz",
+      "pausedUntil": "Turnuva ağacı {{time}} saatine kadar duraklatıldı: oynanan maçlar biter, yenileri başlamaz",
+      "resume": "Devam ettir",
+      "pausedDone": "Turnuva ağacı duraklatıldı",
+      "resumedDone": "Turnuva ağacı devam ediyor",
+      "failed": "Duraklatma değiştirilemedi"
+    }
+  },
+  "overviewPage": {
+    "tabs": {
+      "overview": "Genel bakış",
+      "label": "Turnuva",
+      "bracket": "Turnuva ağacı",
+      "matches": "Maçlar",
+      "teams": "Takımlar",
+      "standings": "Puan durumu",
+      "manage": "Yönet",
+      "rules": "Kurallar",
+      "match": "Maçın",
+      "results": "Sonuçlar",
+      "signup": "Kaydol"
+    },
+    "status": {
+      "setup": "Yaklaşan",
+      "inProgress": "Canlı",
+      "completed": "Tamamlandı",
+      "finishedOn": "Bitiş: {{date}}"
+    },
+    "liveNow": "Şu anda {{count}} canlı",
+    "howItsPlayed": "Maçlar nasıl oynanır",
+    "facts": {
+      "teams": "Takımlar",
+      "teamsValue": "{{count}} takım",
+      "teamSize": "Takım boyutu",
+      "teamSizeValue": "{{count}} oyuncu",
+      "format": "Format",
+      "series": "Seri",
+      "seriesValue": "Bo{{count}}",
+      "mapVeto": "Harita vetosu",
+      "mapVetoCustom": "Özel sıra (kaptanlar)",
+      "mapVetoStandard": "Standart sıra (kaptanlar)",
+      "overtime": "Uzatma",
+      "overtimeEnabledUnlimited": "Açık, sınırsız",
+      "overtimeEnabledSegments": "Açık, {{count}} bölüm",
+      "overtimeDisabled": "Kapalı (hasarla eşitlik bozma)"
+    },
+    "mapPool": "Harita havuzu",
+    "rules": "Kurallar",
+    "fullRulebook": "Tam kural kitabı",
+    "schedule": "Program",
+    "yourTeam": {
+      "title": "Oynuyorsun",
+      "onRoster": "Takımın: {{team}}.",
+      "viewTeam": "Takımını görüntüle",
+      "versus": "{{team}} - {{opponent}} · {{stage}}",
+      "tbd": "Belirsiz",
+      "goToMatch": "Maçına git",
+      "openMatch": "Maç sayfasını aç",
+      "state": {
+        "live": "Canlı",
+        "loaded": "Şimdi katıl",
+        "upNext": "Sırada",
+        "finished": "Bitti",
+        "eliminated": "Elendi",
+        "waiting": "Sonraki maç bekleniyor",
+        "registered": "Kayıtlı",
+        "won": "Kazanan",
+        "out": "Elendi"
+      }
+    },
+    "prizes": {
+      "title": "Ödüller",
+      "note": "Organizatör belirler. Para ödülü, donanım ya da övünme hakkı."
+    },
+    "requirements": {
+      "title": "Katılmak için",
+      "steamLinkedOk": "Steam hesabı bağlı.",
+      "steamLinkedNeutral": "Katılmak için Steam ile giriş yap.",
+      "onRosterOk": "Bu turnuvada bir takımın kadrosundasın.",
+      "onRosterNeutral": "Turnuva başlamadan önce bir takımın kadrosunda ol."
+    },
+    "loadError": "Bu turnuva yüklenemedi.",
+    "notFoundTitle": "Turnuva bulunamadı",
+    "notFoundDescription": "Bu turnuva yok ya da henüz oluşturulmadı.",
+    "loading": "Yükleniyor…",
+    "about": "Hakkında",
+    "liveStripLabel": "Şu anda canlı",
+    "bracketTab": {
+      "loadError": "Turnuva ağacı yüklenemedi.",
+      "emptyTitle": "Henüz turnuva ağacı yok",
+      "emptyDescription": "Turnuva ağacı, organizatör turnuvayı başlattığında burada görünür.",
+      "shuffleTitle": "Karışık turnuvada turnuva ağacı yok",
+      "shuffleDescription": "Takımlar her turda yeniden çekilir, bu yüzden turnuva ağacı yoktur. Maçlar her turu listeler, Puan durumu oyuncuları sıralar."
+    },
+    "matchesTab": {
+      "loadError": "Maçlar yüklenemedi.",
+      "emptyTitle": "Henüz maç yok",
+      "emptyDescription": "Maçlar turnuva başladığında burada görünür.",
+      "live": "Şu anda canlı",
+      "upcoming": "Sırada",
+      "results": "Sonuçlar",
+      "vs": "-",
+      "status": {
+        "live": "Canlı",
+        "loaded": "Başlıyor",
+        "final": "Son",
+        "upcoming": "Yaklaşan"
+      },
+      "emptyDescriptionAt": "Maçlar turnuva başladığında burada görünür: {{when}}."
+    },
+    "teamsTab": {
+      "shuffleTitle": "Takımlar her turda değişir",
+      "shuffleDescription": "Karışık turnuva her turda kayıtlı oyunculardan yeni takımlar çeker. Puan durumu oyuncuları sıralar.",
+      "emptyTitle": "Henüz takım yok",
+      "emptyDescription": "Takımlar organizatör ekledikçe burada görünür.",
+      "yours": "Takımın",
+      "record": "{{wins}}–{{losses}}",
+      "emptySignupOpen": "Kayıt açık. Takımlar kaydoldukça burada görünür.",
+      "signUp": "Takımını kaydet"
+    },
+    "allMatches": "Tüm maçlar",
+    "keyDates": {
+      "starts": "Başlangıç",
+      "lastOnSchedule": "Programdaki son maç",
+      "teams": "Takımlar"
+    },
+    "mapPoolCount": "Harita havuzu · {{count}} harita",
+    "mapPoolNote": "Kaptanlar her seriden önce bunlardan yasaklar ve seçer.",
+    "addToCalendar": "Takvime ekle",
+    "scheduleSoon": "Organizatör programı henüz yayınlamadı.",
+    "checkInWindow": "Check-in",
+    "mapPoolSoonTitle": "Harita havuzu",
+    "mapPoolSoon": "Organizatör haritaları henüz seçmedi.",
+    "adminBanner": "Bu turnuvanın yöneticisisin. Yönetim Yönet'te yapılır; bu sayfa oyuncuların gördüğüdür.",
+    "manageTournament": "Turnuvayı yönet",
+    "fullBracket": "Tüm turnuva ağacı",
+    "allRules": "Tüm kurallar",
+    "archivedTitle": "Bu turnuva arşivlendi",
+    "archivedBody": "Yerini daha yeni bir turnuva aldı. Sonuçları, turnuva ağacı ve puan durumu burada kalır.",
+    "openCurrent": "Güncel turnuvayı aç",
+    "allTournaments": "Tüm turnuvalar",
+    "roundN": "Tur {{n}}",
+    "finalRound": "Final",
+    "roundStarts": "{{round}} · veto açılışı {{time}}"
+  },
+  "roundStatusCard": {
+    "roundOf": "Tur {{current}} / {{total}}",
+    "complete": "Tamamlandı",
+    "inProgress": "Devam ediyor",
+    "matchProgress": "Maç ilerlemesi",
+    "completedOf": "{{completed}} / {{total}} tamamlandı",
+    "completedCount": "{{count}} tamamlandı",
+    "playingCount": "{{count}} oynanıyor",
+    "pendingCount": "{{count}} bekliyor"
+  },
+  "yourMatch": {
+    "loading": "Maçın yükleniyor",
+    "bestOf": "Bo{{count}}",
+    "mapsScore": "Haritalar {{us}} – {{them}}",
+    "inServer": "Sunucuda",
+    "notJoined": "Katılmadı",
+    "waitingForPlayers": "Oyuncular bekleniyor",
+    "inServerCount": "Sunucuda {{expected}} kişiden {{count}} kişi var. Herkes hazır olunca maç başlar.",
+    "inServerCountBots": "Sunucuda {{count}} kişi var. Boş yerleri botlar alır; buradaki herkes hazır olunca maç başlar.",
+    "live": "Canlı",
+    "round": "Raunt {{n}}",
+    "vetoTitle": "Harita vetosu devam ediyor",
+    "finished": "Maç bitti",
+    "mapOf": "Harita {{n}} / {{total}}",
+    "sideYou": "{{side}} · sen",
+    "rejoin": "Düştün mü? Aynı düğmeyle yeniden katıl: yerin korunur.",
+    "outcome": {
+      "won": "{{opponent}} karşısında {{us}}–{{them}} kazandın",
+      "lost": "{{opponent}} karşısında {{us}}–{{them}} kaybettin",
+      "draw": "{{opponent}} karşısında {{us}}–{{them}}"
+    },
+    "ready": "Hazır",
+    "waitingForServer": "Sunucu bekleniyor",
+    "vetoDoneChip": "Veto bitti · {{map}}",
+    "waitingForServerBody": "Bir sunucu boşalır boşalmaz atanır. Bildirim alırsın ve bu sayfa kendiliğinden güncellenir.",
+    "mapDrawnChip": "Harita çekildi · {{map}}",
+    "notYet": "Henüz değil"
+  },
+  "results": {
+    "finalStandings": "Son sıralama",
+    "awards": "Ödüller",
+    "players": "Oyuncular",
+    "matchesAndDemos": "Maçlar ve demolar",
+    "place": "#{{n}}",
+    "championsOf": "{{name}} · Şampiyonlar",
+    "showAll": "{{count}} oyuncunun hepsi",
+    "showFewer": "Daha az göster",
+    "mapResults": "Harita sonuçları",
+    "col": {
+      "player": "Oyuncu",
+      "team": "Takım",
+      "rating": "Puan ±",
+      "hltv": "Performans"
+    },
+    "award": {
+      "mostKills": "En çok öldürme",
+      "bestAdr": "En yüksek ADR",
+      "bestHeadshots": "En iyi kafadan vuruş %",
+      "mostFlashAssists": "En çok flaş asisti",
+      "mostUtility": "En çok ekipman hasarı",
+      "biggestGain": "En büyük puan artışı",
+      "bestPlayer": "En iyi oyuncu",
+      "mostClutches": "En çok clutch",
+      "mostTeamFlashes": "En çok takım arkadaşı kör eden",
+      "mostMoney": "En çok para harcayan"
+    },
+    "awardValue": {
+      "mostKills": "{{value}} öldürme",
+      "bestAdr": "{{value}} ADR",
+      "bestHeadshots": "%{{value}} kafadan vuruş",
+      "mostFlashAssists": "{{value}} flaş asisti",
+      "mostUtility": "{{value}} ekipman hasarı",
+      "biggestGain": "+{{value}} puan",
+      "bestPlayer": "puan {{value}}",
+      "mostTeamFlashes": "{{value}} takım arkadaşı kör edildi",
+      "mostClutches": "{{value}} clutch kazanıldı",
+      "mostMoney": "{{value}} harcandı"
+    },
+    "wonFinal": "Finali {{opponent}} karşısında {{a}}–{{b}} kazandı",
+    "champions": "Şampiyonlar",
+    "allMatches": "{{count}} maçın hepsi",
+    "demosAndReel": "Demolar ve derleme",
+    "stage": {
+      "final": "Final",
+      "semi": "Yarı final",
+      "round": "Tur {{n}}"
+    }
+  },
+  "signup": {
+    "cta": "Takımını kaydet",
+    "keyDates": {
+      "closes": "Kayıt kapanışı",
+      "checkIn": "Check-in",
+      "spots": "Takım kontenjanı",
+      "left": "{{count}} kaldı",
+      "full": "Dolu",
+      "of": "/ {{max}}"
+    },
+    "ladder": {
+      "title": "Puana göre takımlar",
+      "yourPlace": "{{count}} takım içinde {{place}}. sıradasın"
+    },
+    "todo": {
+      "signedUp": "Kaydoldu",
+      "beforeTheDay": "Günden önce",
+      "toFix": "{{count}} düzeltilecek",
+      "lineup": "Kadro",
+      "allReady": "Herkes hazır",
+      "notSet": "Ayarlanmadı",
+      "showFixes": "Düzeltilecekleri göster",
+      "fixNote": "Bunları check-in'den önce düzelt, yoksa oyuncu katılamaz."
+    },
+    "yourLineup": "Kadron",
+    "change": "Değiştir",
+    "withdraw": "Çekil",
+    "withdrawTitle": "{{team}} çekilsin mi?",
+    "withdrawBody": "Takım turnuvadan ayrılır ve yeri başka bir takıma açılır.",
+    "sub": "Yedek",
+    "ready": "Hazır",
+    "problem": {
+      "noAccount": "Henüz Auto Tournament'a giriş yapmadı",
+      "noGame": "Oyun profilinde eksik"
+    },
+    "problemShort": {
+      "noAccount": "giriş yapmadı",
+      "noGame": "oyun gerekli"
+    },
+    "checkIn": {
+      "open": "Check-in açık",
+      "closesIn": "{{time}} saatinde kapanıyor · {{left}} kaldı",
+      "imHere": "Buradayım",
+      "done": "Check-in yaptın",
+      "teamTitle": "{{team}} check-in yapıyor",
+      "keepOpen": "Bu sayfayı açık tut. Maçın hazır olduğunda sana haber verir.",
+      "firstMatchIn": "İlk maça",
+      "count": "{{total}} kişiden {{in}}",
+      "you": "sen",
+      "everyone": "Herkes",
+      "soundOn": "Ses açık: zamanı geldiğinde duyacaksın",
+      "soundOff": "Ses kapalı",
+      "checkInFor": "Check-in yap: {{name}}",
+      "checkInShort": "Check-in"
+    },
+    "noTeamTitle": "Kaydedilecek takım yok",
+    "noTeamBody": "Bir takımı yalnızca sahibi veya bir kaptan kaydedebilir. Bir takım kur ya da kaptanına sor.",
+    "goToTeams": "Takımlar",
+    "steps": {
+      "lineup": "Kadro",
+      "review": "İnceleme"
+    },
+    "whichTeam": "Hangi takımı kaydediyorsun?",
+    "role": {
+      "owner": "Sahibi sensin",
+      "captain": "Kaptansın"
+    },
+    "playerCount": "{{count}} oyuncu",
+    "whoPlays": "Kim oynuyor?",
+    "whoPlaysHint": "{{count}} as · en fazla {{subs}} yedek",
+    "rating": "Puan {{rating}}",
+    "slotFor": "Rol: {{name}}",
+    "starter": "As",
+    "out": "Dışarıda",
+    "starters": "Aslar",
+    "subs": "Yedekler",
+    "lineupRating": "Kadro puanı",
+    "missingAccounts": "{{names}} henüz giriş yapmalı.",
+    "fixBeforeCheckIn": "Şimdi kaydolabilirsin; check-in'den önce düzelt.",
+    "saveLineup": "Kadroyu kaydet",
+    "nextReview": "Sonraki: inceleme",
+    "readyToSend": "Göndermeye hazır mısın?",
+    "next": {
+      "lastSpot": "Son yeri alır",
+      "takesSpot": "Bir yer alır",
+      "spotsLeft": "Bundan önce {{count}} yer kaldı",
+      "checkIn": "O gün check-in yap",
+      "firstMatch": "İlk maç",
+      "spotOf": "{{max}} içinde {{n}}"
+    },
+    "vouch": "Bu kadrodaki her oyuncunun şunu okuduğunu onaylıyorum:",
+    "vouchNote": "Onlar adına kaydoluyorum. Bir oyuncu kuralları çiğnerse tüm takım cezalandırılabilir ya da diskalifiye edilebilir.",
+    "send": "Kaydet: {{team}}",
+    "rulesLink": "kurallar",
+    "ownerTag": "sahip",
+    "captainTag": "kaptan",
+    "check": {
+      "steam": "Steam",
+      "game": "{{game}}",
+      "noGame": "{{game}} eklenmedi",
+      "steamShort": "Steam"
+    },
+    "remind": "Hatırlat",
+    "reminded": "Takım sohbetine hatırlatma gönderildi",
+    "done": "Tamam",
+    "lineupGap": "Bir as oyuncu kadrondan ayrıldı (yasaklandı veya silindi). Maçların {{time}} saatine kadar bekler: o zamana kadar bir yedek seç, yoksa ilk yedek yerine geçer. Yedek yoksa eksik oynarsın.",
+    "pickSub": "Bir yedek seç",
+    "title": "Takımını kaydet",
+    "editTitle": "Kadronu değiştir",
+    "stepsLabel": "Adımlar",
+    "changeUntil": "Kadroyu check-in kapanana kadar değiştirebilirsin: {{when}}.",
+    "counts": "{{teamSize}} asın {{starters}} tanesi · {{maxSubs}} yedeğin {{subs}} tanesi",
+    "lineupRatingValue": "Kadro puanı {{rating}}",
+    "missingGame": "{{names}} profilinde {{game}} olmalı.",
+    "subsLine": "yedek: {{names}}",
+    "overlap": {
+      "title": "Buna kaydolamazsın",
+      "body": "{{name}} turnuvasındasın ve orada {{when}} bir maçın var; bu turnuvayla aynı saatte. Maç saatleri çakışmadığında iki turnuvada da olabilirsin.",
+      "open": "{{name}} aç"
+    },
+    "youreIn": {
+      "eyebrow": "{{team}} · kaydoldu",
+      "title": "İçeridesin!",
+      "body": "Turnuva başlamadan önce takımının bilmesi gerekenler burada. Aynı listeyi sahibe ve kaptanlara da gönderdik.",
+      "openLineup": "Kadronu aç",
+      "listTitle": "Turnuva başlamadan önce",
+      "checkIn": "Check-in: {{when}}–{{to}}",
+      "checkInBodyCaptains": "Her as oyuncu bu sayfada check-in yapar ya da bir kaptan onların check-in'ini yapar. Check-in turnuva başladığında kapanır.",
+      "checkInBody": "Her as oyuncu bu sayfada check-in yapar. Check-in turnuva başladığında kapanır.",
+      "subs": "Yedeklerin check-in yapması gerekmez",
+      "subsBody": "Burada ve hazır sayılırlar, böylece hiçbir maç onları beklemez.",
+      "replaced": "Check-in yapmayan as oyuncunun yerine başkası geçer",
+      "replacedBody": "Check-in kapandığında, check-in yapmayan her as oyuncunun yerine bir yedek geçer. Yedek kalmadıysa bir oyuncu eksik oynarsın.",
+      "fullTeam_one": "Takımını sunucuya getirmek için {{count}} dakika",
+      "fullTeam_other": "Takımını sunucuya getirmek için {{count}} dakika",
+      "fullTeamBody_one": "Sunucun hazır olduğunda takımının, yedekler dahil tam kadroyu sunucuya getirmek için {{count}} dakikası olur. Sonrasında diğer takım hükmen galibiyeti alabilir ya da eksik takımına karşı oynamayı seçebilir.",
+      "fullTeamBody_other": "Sunucun hazır olduğunda takımının, yedekler dahil tam kadroyu sunucuya getirmek için {{count}} dakikası olur. Sonrasında diğer takım hükmen galibiyeti alabilir ya da eksik takımına karşı oynamayı seçebilir.",
+      "ready": "Her maçtan önce hazır ol",
+      "readyBodyVeto_one": "Veto her maçtan {{count}} dakika önce açılır. Bu sayfayı açık tut: sıradaki maçın hazır olduğunda sana haber verir.",
+      "readyBodyVeto_other": "Veto her maçtan {{count}} dakika önce açılır. Bu sayfayı açık tut: sıradaki maçın hazır olduğunda sana haber verir.",
+      "readyBody": "Bu sayfayı açık tut: sıradaki maçın hazır olduğunda sana haber verir.",
+      "eachMatch": "Her maçtan önce yeniden check-in yap",
+      "eachMatchBody": "Her maçtan önce her as oyuncu maç odasında check-in yapar ya da bir kaptan onun yerine yapar. Yapmayan as oyuncunun yerine bir yedek geçer."
+    }
+  },
+  "bracketCards": {
+    "you": "Sen",
+    "open": "Aç: {{a}} - {{b}}",
+    "upper": "Üst ağaç",
+    "lower": "Alt ağaç",
+    "grandFinal": "Büyük final",
+    "thirdPlace": "Üçüncülük",
+    "live": "Canlı",
+    "veto": "Veto",
+    "done": "Bitti",
+    "mapOf": "Harita {{n}} / {{total}}",
+    "banning": "Haritalar yasaklanıyor",
+    "bestOf_one": "Bo{{count}}",
+    "bestOf_other": "Bo{{count}}",
+    "winnerOf": "Kazanan: {{match}}",
+    "loserOf": "Kaybeden: {{match}}",
+    "tbd": "Belirlenecek",
+    "liveCount_one": "{{count}} canlı",
+    "liveCount_other": "{{count}} canlı",
+    "matchCount_one": "{{count}} maç",
+    "matchCount_other": "{{count}} maç"
+  },
+  "placement": {
+    "outTitle": "{{tournament}} macerası sona erdi",
+    "wonTitle": "{{tournament}} şampiyonu sizsiniz!",
+    "yourTeamPlaced": "{{team}} sıralaması",
+    "yourTeam": "Takımın",
+    "outBody": "Takımın turnuvadan elendi, bu yüzden senin için başka maç yok. Gerisini turnuva ağacından takip et.",
+    "wonBody": "Takımın turnuvayı kazandı. İyi oynadınız!",
+    "close": "Kapat",
+    "seeBracket": "Turnuva ağacını gör",
+    "outBodyPlay": "Bu turnuvada başka maçın yok. Oynadığın için teşekkürler!",
+    "championsEyebrow": "Şampiyonlar",
+    "teamPlaced": "{{team}} sıralaması",
+    "wonTitleShort": "{{tournament}} şampiyonu sizsiniz!",
+    "wonFinalBody": "{{team}} finali {{score}} kazandı. İyi oynadınız!",
+    "playHint": "Bir oyun daha? Eşleştirme seni bir iki dakika içinde bir maça sokar."
+  },
+  "advance": {
+    "title": "Harika, hâlâ oyundasın!",
+    "opponent": "Sıradaki rakip: {{opponent}}.",
+    "feederTitle": "Sıradaki rakibin şu maçtan gelecek",
+    "vs": "-",
+    "tbd": "Belirsiz",
+    "feederNotStarted": "O maç henüz başlamadı.",
+    "feederMinutes_one": "Yaklaşık {{count}} dakika kaldı.",
+    "feederMinutes_other": "Yaklaşık {{count}} dakika kaldı.",
+    "feederAlmost": "Neredeyse bitti.",
+    "watch": "Canlı izle",
+    "wonEyebrow": "{{stage}} {{score}} kazanıldı"
+  },
+  "whatsNext": {
+    "eyebrow": "Sırada ne var",
+    "champions": "Şampiyonlar",
+    "outTitle": "Takımın elendi. Sıralaman: {{place}}",
+    "outBody": "Bu, {{tournament}} turnuvasındaki son maçındı. İyi oyunlardı! Oynamaya devam etmek ister misin? Eşleştirme sana şimdi diğer oyuncularla bir maç bulur.",
+    "playMatchmaking": "Eşleştirme oyna",
+    "watchLive": "Canlı bir maç izle",
+    "nextMatch": "{{stage}} · rakip: {{opponent}}",
+    "nextMatchReady": "Maçın hazır: bağlanmak için maç odasını aç.",
+    "nextMatchSoon": "Sıradaki maçın belli. Kısa bir moladan sonra açılır ve sana haber veririz. Gezinme çubuğu nerede olursan ol geri sayımı gösterir.",
+    "openMatchRoom": "Maç odasını aç",
+    "throughTo": "Bir üst tura çıktın: {{stage}}",
+    "waitingTitle": "Sıradaki rakibin bekleniyor",
+    "waitingBody": "Rakibin hâlâ oynanan bir maçtan gelecek. O bitince kısa bir mola olur, sonra sıradaki maçın açılır. Sana haber veririz.",
+    "watchOpponent": "Sıradaki rakibini canlı izle",
+    "shuffleTitle": "Sonraki tur: yeni takımlar",
+    "shuffleBody": "Bu turun tüm maçları bitince yeni takımlar çekilir ve sıradaki maçın burada görünür.",
+    "stayHere": "Bu sayfada kal: kendiliğinden güncellenir.",
+    "openTournament": "Turnuvayı aç",
+    "winsToTitle_one": "Şampiyonluğa bir galibiyet kaldı",
+    "winsToTitle_other": "Şampiyonluğa {{count}} galibiyet kaldı",
+    "shuffleDoneTitle": "Bu son turdu",
+    "shuffleDoneBody": "Karışık turnuva bitti. Puan durumu için turnuvayı aç.",
+    "youWon": "{{opponent}} karşısında {{a}}–{{b}} kazandın.",
+    "youLost": "{{opponent}} karşısında {{a}}–{{b}} kaybettin.",
+    "resultPlaced": "{{result}} Sıralaman: {{place}}.",
+    "nextUp": "Sırada: {{match}}."
+  },
+  "navStatus": {
+    "placed": "Sıralama",
+    "placedPlay": "{{place}} · Eşleştirme oyna",
+    "waiting": "Rakip bekleniyor",
+    "vetoIn": "Vetoya",
+    "vetoOpening": "Veto açılıyor",
+    "matchIn": "Maça",
+    "matchLoading": "Maç yükleniyor",
+    "shuffleRound": "Tur {{round}} · Oynuyor",
+    "shuffleSittingOut": "Tur {{round}} · Dışarıda",
+    "placedPlayLine": "Sıralama {{place}} · Eşleştirme oyna",
+    "placedLine": "Sıralama {{place}}",
+    "waitingOpponent": "Rakip bekleniyor",
+    "aboutMinutes_one": "~{{count}} dk",
+    "aboutMinutes_other": "~{{count}} dk"
+  },
+  "shuffleJoin": {
+    "title": "Bu karışık turnuvaya katıl",
+    "body": "Takım gerekmez: tek başına kaydol. Platform her turda yeni, dengeli takımlar çeker.",
+    "youreIn": "İçeridesin",
+    "inBody": "Turnuva başladığında ilk takımın çekilir ve maçın burada görünür. Bu sayfayı açık tut.",
+    "join": "Katıl",
+    "leave": "Ayrıl",
+    "full": "Dolu",
+    "signInToJoin": "Katılmak için giriş yap",
+    "count_one": "{{count}} oyuncu katıldı",
+    "count_other": "{{count}} oyuncu katıldı",
+    "countOf_one": "{{spots}} yerden {{count}} tanesi dolu",
+    "countOf_other": "{{spots}} yerden {{count}} tanesi dolu",
+    "playingTitle": "Şu anda oynuyorsun",
+    "playingBody": "Takımınla sunucuya katıl. Bu turun tüm maçları bitince sonraki tur çekilir.",
+    "sittingOutTitle": "Bu turda dışarıdasın",
+    "sittingOutBody": "Bu turda her takıma yetecek oyuncu yok. {{next}}. turun çekilişindesin; en çok oynayanlar önce dinlenir.",
+    "goToMatch": "Maça git",
+    "tagPlaying": "Oynuyor",
+    "tagSittingOut": "Dışarıda",
+    "roundHeading": "Tur {{round}}",
+    "versus": "-",
+    "sittingOutList": "Dışarıda: {{names}}",
+    "status": {
+      "live": "Canlı",
+      "done": "Bitti",
+      "waiting": "Başlıyor"
+    },
+    "finishedTitle": "Karışık turnuva bitti",
+    "finishedBody_one": "Tur oynandı. İyi oyunlardı!",
+    "finishedBody_other": "{{count}} turun hepsi oynandı. İyi oyunlardı!",
+    "roundOf": "Tur {{round}} / {{total}}",
+    "roundsCount_one": "{{count}} tur",
+    "roundsCount_other": "{{count}} tur",
+    "now": "Şimdi",
+    "tagLeft": "Ayrıldı",
+    "markOut": "Dışarı al",
+    "markIn": "Geri al",
+    "roundShort": "Tur {{round}}",
+    "playedTitle": "{{round}}. tur maçın bitti",
+    "playedBody": "Diğer maçlar bitince {{next}}. tur çekilir. Bu sayfada kal: kendiliğinden güncellenir.",
+    "sittingOutBodyCounts_one": "{{size}}v{{size2}} için {{players}} oyuncu var, bu yüzden her turda {{count}} kişi dinlenir. En çok oynayanlar önce dinlenir: sonraki çekilişte varsın.",
+    "sittingOutBodyCounts_other": "{{size}}v{{size2}} için {{players}} oyuncu var, bu yüzden her turda {{count}} kişi dinlenir. En çok oynayanlar önce dinlenir: sonraki çekilişte varsın.",
+    "playedBodyLeft_one": "{{count}} maç daha bekleniyor. Bitince {{next}}. tur çekilir; sıradaki maçın burada görünür ve bildirim alırsın.",
+    "playedBodyLeft_other": "{{count}} maç daha bekleniyor. Bitince {{next}}. tur çekilir; sıradaki maçın burada görünür ve bildirim alırsın.",
+    "joinedByMistake": "Yanlışlıkla mı katıldın?",
+    "breakTitle": "Mola · {{round}}. tur {{time}} saatinde başlıyor",
+    "noShowTitle": "Sonraki çekilişlerde yoksun",
+    "noShowBody": "Maçına hiç katılmadın, bu yüzden sonraki turlar sensiz çekiliyor. Bilgisayarının başına döndün mü? Söyle, sonraki çekilişe dahil ol.",
+    "backIn": "Döndüm",
+    "tagNoShow": "Gelmedi"
+  },
+  "liveOverview": {
+    "roundOf": "Tur {{round}} / {{total}}",
+    "liveCount": "Şu anda {{count}} canlı",
+    "eta": {
+      "nextRoundAbout": "Sonraki tur yaklaşık {{time}}",
+      "nextRoundAt": "Sonraki tur {{time}} saatinde",
+      "finalEnds": "Son tur: yaklaşık {{time}} biter",
+      "endsAbout": "yaklaşık {{time}} biter"
+    },
+    "hero": {
+      "playingTitle": "Şu anda oynuyorsun",
+      "playingBody": "{{us}} - {{them}}{{map}}. Maç odasından katıl.",
+      "joiningTitle": "Sunucuya katıl",
+      "joiningBody": "{{us}} - {{them}}{{map}}. Herkes hazır olunca maç başlar.",
+      "vetoTitle": "Harita vetonu açık",
+      "vetoBody": "Maç odasında {{them}} ile haritaları yasakla ve seç.",
+      "waitingTitle": "Sıradaki rakibin bekleniyor",
+      "waitingBody": "Hâlâ oynanan bir maçtan gelecekler. Kısa bir moladan sonra veto açılır ve bildirim alırsın.",
+      "notStartedTitle": "Sırada: {{them}}",
+      "notStartedBody": "Maçın tur başladığında açılır. Bu sayfa kendiliğinden güncellenir.",
+      "outTitle": "Takımın elendi. Sıralaman: {{place}}",
+      "outBody": "Bu son maçındı. İyi oyunlardı! Oynamaya devam etmek istersen eşleştirme açık.",
+      "wonTitle": "Turnuvayı kazandın!",
+      "wonBody": "İyi oynadın. Ödülün envanterinde.",
+      "spectatorTitle": "{{count}} maç canlı",
+      "spectatorTitleOne": "1 maç canlı",
+      "spectatorIdleTitle": "Turlar arası",
+      "spectatorBody": "Skoru, haritaları ve kimin oynadığını görmek için bir maç aç.",
+      "openMatchRoom": "Maç odasını aç",
+      "openVeto": "Vetoyu aç",
+      "watchLive": "Canlı bir maç izle",
+      "playMatchmaking": "Eşleştirme oyna",
+      "yourMatch": "Maçın",
+      "opponentFrom": "Rakibinin geleceği maç",
+      "minutesLeft": "yaklaşık {{count}} dk kaldı",
+      "winsToTitle_one": "şampiyonluğa bir galibiyet kaldı",
+      "winsToTitle_other": "şampiyonluğa {{count}} galibiyet kaldı",
+      "waitingServerTitle": "Sunucu bekleniyor",
+      "waitingServerBody": "{{us}} - {{them}}{{map}}. Bir sunucu boşalır boşalmaz atanır; bildirim alırsın.",
+      "wonStage": "{{stage}} {{score}} kazanıldı",
+      "stageNext": "Sırada {{stage}}",
+      "faceWinnerOf": "{{us}}, {{a}} - {{b}} maçının kazananıyla karşılaşacak ({{state}}). O maç bitince veto açılır; bildirim alırsın.",
+      "feederLive": "{{score}}, {{map}}. harita canlı",
+      "feederNotStarted": "henüz başlamadı",
+      "vetoOpens": "Veto açılışı",
+      "inAboutMinutes_one": "~{{count}} dk sonra",
+      "inAboutMinutes_other": "~{{count}} dk sonra",
+      "later": "sonra",
+      "afterBreak": "kısa bir moladan sonra",
+      "youAre": "sicilin {{record}}",
+      "nextRoundDrawn": "Sırada {{round}}. turun çekilişi var",
+      "lastRoundPlaying": "Son tur oynanıyor",
+      "betweenBody": "Bu turdaki maçın bitti. Diğer maçlar bitince sonraki tur çekilir; maçın burada görünür ve bildirim alırsın.",
+      "vetoSoonTitle": "Harita vetoun {{time}} saatinde açılıyor",
+      "vetoSoonBody": "Son maçından sonra kısa bir mola. {{them}} karşısındaki veto açılınca bildirim alırsın."
+    },
+    "schedule": "Program",
+    "bracket": "Turnuva ağacı",
+    "round": "Tur {{n}}",
+    "final": "Final",
+    "state": {
+      "now": "Şimdi",
+      "next": "Sırada",
+      "later": "Sonra",
+      "done": "✓ Bitti",
+      "live": "Canlı",
+      "upcoming": "Yaklaşan"
+    },
+    "thisRound": "Tur {{n}}",
+    "earlier": "Önceki turlar",
+    "standings": "Puan durumu",
+    "teams": "Takımlar",
+    "wl": "W–L",
+    "rounds": "+/−",
+    "ties": {
+      "round_robin": "Eşitlikler: önce ikili karşılaşma, sonra raunt farkı, sonra kazanılan raunt.",
+      "swiss": "Eşitlikler: rakiplerin ne kadar güçlü olduğu (Buchholz: galibiyetlerinin toplamı), sonra raunt farkı.",
+      "elim": "Galibiyete göre sıralı. İki mağlubiyette takım elenir.",
+      "singleElim": "Galibiyete göre sıralı. Bir mağlubiyette takım elenir.",
+      "doubleElim": "Galibiyete göre sıralı. İki mağlubiyette takım elenir.",
+      "groups": "Gruptaki eşitlikler: önce ikili karşılaşma, sonra raunt farkı, sonra kazanılan raunt."
+    },
+    "players": {
+      "title": "Oyuncular · puana göre",
+      "find": "Oyuncu bul",
+      "export": "Dışa aktar",
+      "all": "{{count}} oyuncunun hepsi",
+      "player": "Oyuncu",
+      "team": "Takım",
+      "rating": "Puan",
+      "change": "±",
+      "kd": "K / D",
+      "adr": "ADR",
+      "winRate": "Kazanma oranı",
+      "none": "Eşleşen oyuncu yok."
+    }
+  },
+  "matchesCards": {
+    "show": "Göster",
+    "filterAll": "Tümü {{count}}",
+    "filterLive": "Canlı {{count}}",
+    "filterUpcoming": "Yaklaşan {{count}}",
+    "done": "Bitti",
+    "afterOvertime": "uzatmadan sonra",
+    "startsAt": "başlangıç {{time}} · veto açılışı {{veto}}",
+    "yourMatch": "Maçın",
+    "placeholderTbd": "Belirsiz",
+    "placeholderVeto": "Harita vetosu",
+    "placeholderVetoAt": "Veto {{time}}"
+  },
+  "standingsTab": {
+    "champions": "Şampiyonlar",
+    "championBadge": "ŞAMPİYONLAR",
+    "vs": "-",
+    "rounds": "Rauntlar",
+    "form": "Form",
+    "intro": {
+      "round_robin": "Lig usulü: her takım diğer her takımla bir kez oynar.",
+      "swiss": "İsviçre: her tur aynı sicile sahip takımları eşleştirir.",
+      "single": "Tek eleme: bir mağlubiyette takım elenir.",
+      "double": "Çift eleme: iki mağlubiyette takım elenir.",
+      "groups": "Gruplar, ardından playoff: her takım grubundaki diğerleriyle bir kez oynar; en iyiler playoff'a çıkar."
+    }
+  },
+  "teamsCards": {
+    "subs": "Yedekler: {{names}}"
+  },
+  "rulesTab": {
+    "atAGlance": "Bir bakışta",
+    "onThisPage": "Bu sayfada",
+    "fromSettings": "turnuva ayarlarından, her zaman güncel",
+    "organizer": "Organizatörün kuralları",
+    "facts": {
+      "map": "Harita",
+      "firstTo": "{{count}} raunda ilk ulaşan",
+      "noOvertime": "Yok",
+      "overtimeSegments_one": "1, sonra hasar",
+      "overtimeSegments_other": "{{count}}, sonra hasar",
+      "overtimeUnlimited": "Gerektiği kadar",
+      "thenDamage": "Her biri 6 raunt, 4'e ilk ulaşan",
+      "mapCount_one": "{{count}} harita",
+      "mapCount_other": "{{count}} harita"
+    },
+    "format": {
+      "title": "Bu format nasıl işler",
+      "navTitle": "Format",
+      "swiss_one": "Herkes aynı sicile sahip bir takıma karşı {{count}} tur oynar. Rövanş yok. Galibiyete, sonra aşağıdaki eşitlik bozma kurallarına göre sıralanır.",
+      "swiss_other": "Herkes her biri aynı sicile sahip bir takıma karşı olmak üzere {{count}} tur oynar. Rövanş yok. Galibiyete, sonra aşağıdaki eşitlik bozma kurallarına göre sıralanır.",
+      "single_elimination": "Bir kez kaybeden elenir. Turnuva ağacı finale kadar ilerler.",
+      "double_elimination": "Bir üst ve bir alt ağaç. İki kez kaybeden elenir.",
+      "round_robin": "Herkes herkesle bir kez karşılaşır. Galibiyete, sonra aşağıdaki eşitlik bozma kurallarına göre sıralanır.",
+      "shuffle": "Takımlar her turda kaydolan oyunculardan yeniden çekilir. Oyuncular galibiyete göre sıralanır.",
+      "matches": "Her maç MR{{mr}} haritalarda {{series}}. Uzatma: {{overtime}}.",
+      "damage": "Bir harita son uzatmadan sonra hâlâ eşitse, toplam hasarı daha fazla olan takım kazanır."
+    }
+  },
+  "liveMatch": {
+    "updatesEveryRound": "Her rauntta güncellenir",
+    "chat": "Maç sohbeti",
+    "system": "Auto Tournament",
+    "noMessages": "Henüz mesaj yok. gl hf de!",
+    "chatSignIn": "Burada okumak ve yazmak için bu maçta oyuncu olarak giriş yap.",
+    "messageLabel": "İki takıma ve yöneticilere mesaj",
+    "send": "Gönder",
+    "callAdmin": "Bir yönetici çağır",
+    "adminCalled": "Bir yönetici geliyor",
+    "joinTitle": "Sunucuya katıl: {{map}}",
+    "warmup": "Isınma · şimdi katıl",
+    "isLive": "{{map}} canlı",
+    "players": "Oyuncular",
+    "playersOnMap": "Oyuncular · {{map}}",
+    "noEconomy": "Puana göre sıralı. Para veya ekipman yok: bir takımın ekonomisini ele veren hiçbir şey.",
+    "yourTeam": "Takımın",
+    "backToTournament": "Turnuvaya dön",
+    "manage": "Bu maçı yönet",
+    "finishedAt": "bitti {{when}}",
+    "delayedNote_one": "GOTV'nin gösterdiğini {{count}} saniye geriden gösterir.",
+    "delayedNote_other": "GOTV'nin gösterdiğini {{count}} sn geriden gösterir."
+  },
+  "preStart": {
+    "open": "Kayıt açık",
+    "openCloses": "Kayıt açık · kapanış {{when}}",
+    "closed": "Kayıt kapandı",
+    "notOpenTitle": "Kayıt açık değil",
+    "fullTitle": "Tüm yerler dolu",
+    "spotsLeft_one": "{{max}} yerden {{count}} tanesi boş. Kaptanlar asları ve yedekleri seçer.",
+    "spotsLeft_other": "{{max}} yerden {{count}} tanesi boş. Kaptanlar asları ve yedekleri seçer.",
+    "byOrganizer": "Takımları organizatör ekler.",
+    "captainsPick": "Kaptanlar asları ve yedekleri seçer.",
+    "startsIn": "Başlamasına",
+    "allRules": "Tüm kurallar ve ödüller",
+    "signedUpEyebrow": "{{team}} · kaydoldu",
+    "inTitle": "İçeridesin",
+    "inToFix_one": "İçeridesin. Düzeltilecek bir şey var",
+    "inToFix_other": "İçeridesin. Düzeltilecek {{count}} şey var",
+    "fixBefore": "{{when}} check-in'inden önce düzelt, yoksa o oyuncu sunucuya katılamaz.",
+    "checkInOn": "Check-in: {{when}}. Başlangıca kadar check-in yapmayan as oyuncunun yerine bir yedek geçer.",
+    "allSet": "Herkes hazır. Program ne zaman başladığını gösterir.",
+    "checkInOpens": "Check-in açılışı",
+    "openLineup": "Kadronu aç",
+    "yourSignup": "Kaydın",
+    "spotOf": "{{max}} yerden {{place}}. yer",
+    "lineupCount": "Kadro · {{starters}} as, {{subs}} yedek",
+    "fixBeforeCheckIn": "Check-in'den önce düzelt",
+    "leave": "Turnuvadan ayrıl",
+    "withdrawHint": "Gelemiyor musun? Çekilmek yeri başka bir takıma açar.",
+    "opensTitle": "Kayıt {{when}} açılıyor",
+    "opensIn": "{{time}} sonra açılıyor."
+  },
+  "shuffleOverview": {
+    "yourMatchLive": "maçın canlı",
+    "yourMatchReady": "maçın hazır",
+    "yourMatchDone": "maçın bitti",
+    "nextDraw": "Sonraki çekiliş",
+    "round": "Tur {{n}}",
+    "whenRoundEnds": "bu turun maçları bitince",
+    "oneMapPerRound": "Tur başına bir harita · her turda yeni takımlar",
+    "sittingOut": "Dışarıda:",
+    "firstNextRound": "sonraki turda ilk sırada",
+    "players": "Oyuncular",
+    "markOutHint": "Ayrılan bir oyuncuyu dışarı al; sen geri alana kadar dışarıda kalır."
+  },
+  "checkIn": {
+    "areYouHere": "Burada mısın?",
+    "teamCount": "{{team}} check-in yapıyor: {{total}} kişiden {{in}}. Başlangıca kadar check-in yapmayan as oyuncunun yerine bir yedek geçer.",
+    "soundOn": "♪ Ses açık",
+    "firstVeto_one": "İlk vetoun maçtan {{count}} dakika önce, {{time}} saatinde açılıyor: o zamana kadar bilgisayarının başında ol.",
+    "firstVeto_other": "İlk vetoun maçtan {{count}} dakika önce, {{time}} saatinde açılıyor: o zamana kadar bilgisayarının başında ol.",
+    "vetoOpensNote": "veto açılışı {{time}}"
+  },
+  "runState": {
+    "paused": "Turnuva duraklatıldı",
+    "pausedUntil": "Turnuva {{time}} saatine kadar duraklatıldı",
+    "pausedBody": "Zaten bir sunucuda olan maçlar devam eder. Turnuva devam edene kadar yeni tur çekilmez ve veto açılmaz.",
+    "reason": "Neden: {{reason}}.",
+    "waitingServers_one": "{{count}} maç sunucu bekliyor.",
+    "waitingServers_other": "{{count}} maç sunucu bekliyor.",
+    "allBusy_one": "Sunucu meşgul; boşalır boşalmaz başlar.",
+    "allBusy_other": "{{count}} sunucunun hepsi meşgul; biri boşalır boşalmaz başlarlar.",
+    "noneFree": "Boş sunucu yok; biri boşalır boşalmaz başlarlar.",
+    "servers": "Sunucular",
+    "pausedShort": "Duraklatıldı"
+  },
+  "captainsPanel": {
+    "title": "Kaptanlar",
+    "note": "Yalnızca bir kaptan sonuç bildirebilir veya onaylayabilir.",
+    "make": "Kaptan yap",
+    "remove": "Kaptanlıktan al",
+    "role": {
+      "owner": "Sahip",
+      "captain": "Kaptan",
+      "member": "Üye"
+    }
+  },
+  "lineupPanel": {
+    "title": "Kadro",
+    "note_one": "Bu maç için {{count}} oyuncu seç. Geri kalanlar yedek kulübesinde oturur.",
+    "note_other": "Bu maç için {{count}} oyuncu seç. Geri kalanlar yedek kulübesinde oturur.",
+    "picked": "{{count}} kişiden {{picked}} tanesi seçildi",
+    "plays": "Oynuyor",
+    "bench": "Yedek kulübesi",
+    "save": "Kadroyu kaydet",
+    "saved": "Kadro kaydedildi",
+    "notOnServer": "Kadro kaydedildi ama sunucu kabul etmedi: {{error}}",
+    "locked": "Bir harita canlıyken kadro kilitlidir. Haritalar arasında değişebilir.",
+    "captainOnly": "Kadroyu yalnızca takım sahibi veya bir kaptan değiştirebilir.",
+    "source": {
+      "previous": "Takımın son maçıyla aynı.",
+      "roster": "Kadrodaki ilk oyuncular."
+    }
+  },
+  "prizesPage": {
+    "title": "Ödüller",
+    "intro": "Bir derece için kaplamalar, turnuva bitince takımdaki her oyuncuya verilir; MVP'ye de bir ödül. Yalnızca site kaplamaları: Steam eşyası yok, parasal değeri yok.",
+    "none": "Bu turnuvanın oyununda ödül yok.",
+    "loadFailed": "Turnuva yüklenemedi."
+  },
+  "schedulePage": {
+    "title": "Maç saatleri",
+    "intro": "Her tura bir başlangıç saati ya da tek bir maça kendi saatini ver. Oyuncular saati maçta görür, hatırlatma alır ve veto zamanında açılır.",
+    "loadFailed": "Turnuva yüklenemedi.",
+    "rounds": "Turlar",
+    "modeLabel": "Maçlar ne zaman başlar",
+    "modeTimes": "Belirli saatlerde",
+    "modeAsap": "Hazır olur olmaz",
+    "modeTimesNote": "Maçlar saatlerini bekler. Bir maça kendi saatini vermek için bir turu aç.",
+    "modeAsapNote": "Saat yok: iki takım ve bir sunucu hazır olunca maç başlar.",
+    "noRounds": "Turnuva ağacı oluşturulunca turlar burada görünür.",
+    "roundN": "Tur {{n}}",
+    "roundNote_one": "{{count}} maç · kendi saatini ayarlamak için aç",
+    "roundNote_other": "{{count}} maç · bir maçın saatini ayarlamak için aç",
+    "roundNoMatches": "Maçları önceki tur bitince oluşturulur",
+    "roundStartsAt": "Tur başlangıcı",
+    "roundTimeLabel": "Başlangıç saati: {{round}}",
+    "matchTimeLabel": "Başlangıç saati: {{match}}",
+    "tbd": "Belirsiz",
+    "ownTime": "Kendi başlangıç saati",
+    "sameAsRound": "Turla aynı",
+    "useRoundTime": "Turun saatini kullan",
+    "vetoTitle": "Veto",
+    "vetoNote": "Her maçtan önce kendiliğinden açılır, böylece maç başladığında biter. Zamanında hareket etmeyen takım için bir harita seçilir.",
+    "vetoLabel": "Veto açılışı",
+    "vetoZero": "Başlangıç saatinde",
+    "reminderTitle": "Hatırlatma",
+    "reminderNote": "Maçtaki her oyuncuya sitede ve Discord'da bir bildirim.",
+    "reminderLabel": "Oyunculara hatırlat",
+    "reminderZero": "Kapalı",
+    "minutesBefore_one": "{{count}} dk önce",
+    "minutesBefore_other": "{{count}} dk önce",
+    "save": "Saatleri kaydet",
+    "saved": "Maç saatleri kaydedildi",
+    "saveFailed": "Saatler kaydedilemedi",
+    "rulesTitle": "İzlediği kurallar",
+    "rules": {
+      "start": "Boş bir sunucu olsa bile, bir maçla ilgili hiçbir şey vetosu açılmadan başlamaz.",
+      "late": "Geciken bir tur sonrakini iter: hâlâ oynayan bir takım ya da maçlar arasındaki mola vetoyu bekletir ve oyuncular yeni saati görür.",
+      "none": "Saat ayarlanmamış: eskisi gibi, iki takım ve bir sunucu hazır olur olmaz maç başlar.",
+      "where": "Genel bakıştaki program, maç kartları, maç odası, kurallar ve check-in bu saatleri gösterir."
+    },
+    "breaksTitle": "Turlar arası molalar",
+    "breaksNote_one": "Sitenin {{count}} dakikalık molasını kullanmak için molayı boş bırak. Herhangi bir turdan sonra daha uzun bir mola ekle, örn. 3. turdan sonra 30 dakika.",
+    "breaksNote_other": "Sitenin {{count}} dakikalık molasını kullanmak için molayı boş bırak. Herhangi bir turdan sonra daha uzun bir mola ekle, örn. 3. turdan sonra 30 dakika.",
+    "breakEvery": "Her turdan sonra mola (dk)",
+    "breakAfterRound": "Şu turdan sonra",
+    "breakMinutes": "Mola (dk)",
+    "breakRemove": "Kaldır",
+    "breakAdd": "Daha uzun bir mola ekle",
+    "fillStart": "İlk tur saati",
+    "fillEvery": "Turlar arası dakika",
+    "fillApply": "Turları doldur"
+  },
+  "groups": {
+    "groupN": "{{letter}} Grubu",
+    "done": "Final",
+    "through_one": "birinci üst tura çıkar",
+    "through_other": "ilk {{count}} üst tura çıkar",
+    "playoffs": "Playoff",
+    "playoffsSoon": "Playoff, tüm grup maçları oynanınca başlar.",
+    "seedSlot": "Seri başı {{n}}"
+  },
+  "matchCheckIn": {
+    "eyebrow": "Veto açık · maç {{time}} saatinde başlıyor",
+    "eyebrowNoTime": "Check-in açık",
+    "title": "Bu maç için check-in yap",
+    "body": "Bu turnuvada her maçtan önce check-in yapılır. As oyuncular burada olduklarını söyler; bir kaptan onların yerine yapabilir. Yedekler zaten hazır.",
+    "closesIn": "Check-in kapanışına",
+    "yourTeam": "{{team}} (takımın)",
+    "count": "{{total}} asın {{in}} tanesi check-in yaptı",
+    "sub": "YEDEK",
+    "starter": "AS",
+    "ready": "Hazır",
+    "checkedIn": "Check-in yaptı",
+    "notYet": "Henüz değil",
+    "rule": "Başlangıçta check-in yapmamış: as oyuncunun yerine bir yedek geçer ve maç odası kimin geçtiğini söyler. Yedek kalmadıysa takım bir oyuncu eksik oynar.",
+    "server": {
+      "eyebrow": "Sunucu hazır · tam kadro {{time}} saatine kadar",
+      "eyebrowNoTime": "Sunucu hazır",
+      "title": "Takımını sunucuya getir",
+      "bodyOut": "{{out}} check-in yapmadı, bu yüzden yerine bir yedek oynuyor.",
+      "body_one": "Sayaç bitmeden birinizin sunucuda olması gerekiyor. Yedekler sayılır.",
+      "body_other": "Sayaç bitmeden {{count}} kişinizin sunucuda olması gerekiyor. Yedekler sayılır.",
+      "clockLabel": "Tam kadro için kalan",
+      "count": "Sunucuda {{size}} kişiden {{on}}",
+      "onServer": "Sunucuda",
+      "joining": "Katılıyor…",
+      "subIn": "YEDEK GİRDİ",
+      "out": "ÇIKTI",
+      "swapped": "Yedekle değiştirildi",
+      "rule": "0:00'da tam kadrolu takım seçer: hükmen galibiyeti al ya da eksik takıma karşı oyna. İki takım da eksikse bir yönetici karar verir."
+    },
+    "choice": {
+      "eyebrow": "{{team}} hâlâ eksik",
+      "title": "{{team}}: sunucuda {{size}} kişiden {{on}}",
+      "body": "Süreleri doldu. Hükmen galibiyeti alıp üst tura çık ya da yine de onlarla oyna. İki kaptandan biri seçebilir. 2 dakika içinde seçim yapılmazsa hükmen galibiyet geçerli olur.",
+      "take": "Hükmen galibiyeti al",
+      "play": "Yine de oyna"
+    }
+  }
+}

@@ -1,0 +1,201 @@
+{
+  "templatesPage": {
+    "header": {
+      "createFromTournament": "Turnuvadan şablon oluştur"
+    },
+    "errors": {
+      "load": "Şablonlar yüklenemedi"
+    },
+    "delete": {
+      "title": "Şablonu sil",
+      "message": "\"{{name}}\" şablonunu silmek istediğinden emin misin? Bu işlem geri alınamaz.",
+      "success": "\"{{name}}\" şablonu silindi",
+      "error": "Şablon silinemedi"
+    },
+    "update": {
+      "success": "\"{{name}}\" şablonu güncellendi",
+      "error": "Şablon güncellenemedi"
+    },
+    "createFromTemplate": {
+      "errors": {
+        "inProgressOrCompleted": "Bir turnuva devam ederken veya tamamlanmışken şablondan turnuva oluşturulamaz. Lütfen önce mevcut turnuvayı sil veya sıfırla.",
+        "alreadyExists": "Zaten bir turnuva var. Şablondan yeni bir turnuva oluşturmadan önce lütfen mevcut turnuvayı sil veya sıfırla."
+      },
+      "button": "Şablondan turnuva oluştur"
+    },
+    "edit": {
+      "title": "Şablonu düzenle",
+      "nameLabel": "Şablon adı",
+      "descriptionLabel": "Açıklama (isteğe bağlı)",
+      "typeLabel": "Turnuva türü",
+      "formatLabel": "Maç formatı",
+      "mapPool": {
+        "title": "Harita havuzu",
+        "selectLabel": "Bir harita havuzu seç",
+        "customOption": "Özel",
+        "selectedLabel": "Seçili haritalar ({{count}}):",
+        "vetoWarning": "Veto formatları (BO1/BO3/BO5) tam olarak 7 harita gerektirir. Şu an seçili: {{count}}",
+        "chooseMaps": "Haritaları seç..."
+      },
+      "save": "Kaydet"
+    },
+    "emptyTitle": "Henüz şablon yok",
+    "emptyDescription": "Turnuva sayfasından bir turnuvanın kurulumunu şablon olarak kaydet, sonra burada ondan yeni turnuvalar başlat."
+  },
+  "saveTemplateModal": {
+    "title": "Şablon olarak kaydet",
+    "nameLabel": "Şablon adı",
+    "namePlaceholder": "8 takımlı tek eleme BO3",
+    "descriptionLabel": "Açıklama (isteğe bağlı)",
+    "descriptionPlaceholder": "Haftalık 8 takımlı tek eleme turnuvası",
+    "saveButton": "Şablonu kaydet",
+    "errors": {
+      "nameRequired": "Şablon adı gerekli",
+      "saveFailed": "Şablon kaydedilemedi"
+    }
+  },
+  "eloTemplatesPage": {
+    "errors": {
+      "load": "Puan şablonları yüklenemedi"
+    },
+    "header": {
+      "createTemplate": "Şablon oluştur",
+      "importJson": "JSON'dan içe aktar"
+    },
+    "empty": {
+      "title": "Puan şablonu yok",
+      "description": "Oyuncu istatistiklerinin ELO değişimlerini nasıl etkileyeceğini özelleştirmek için ilk şablonunu oluştur",
+      "action": "Şablon oluştur"
+    },
+    "delete": {
+      "title": "Puan şablonunu sil",
+      "message": "\"{{name}}\" şablonunu silmek istediğinden emin misin? Bu işlem geri alınamaz.",
+      "success": "\"{{name}}\" şablonu silindi",
+      "error": "Şablon silinemedi",
+      "defaultProtected": "Varsayılan \"pure-win-loss\" şablonu silinemez."
+    },
+    "import": {
+      "success_one": "{{count}} puan şablonu içe aktarıldı",
+      "success_other": "{{count}} puan şablonu içe aktarıldı"
+    },
+    "weights": {
+      "noAdjustmentsPure": "İstatistik ayarlaması yok (yalnızca galibiyet/mağlubiyet)"
+    },
+    "card": {
+      "enabled": "Etkin",
+      "disabled": "Devre dışı",
+      "default": "Varsayılan",
+      "adjustment": {
+        "none": "Maç başına istatistik ayarlaması: yok (0; yalnızca sonuca göre ELO)",
+        "uncapped": "Maç başına istatistik ayarlaması: sınırsız (dikkatli kullan)",
+        "range": "Maç başına istatistik ayarlaması aralığı: {{min}} ile {{max}} ELO",
+        "noMin": "alt sınır yok",
+        "noMax": "üst sınır yok"
+      },
+      "tooltips": {
+        "edit": "Şablonu düzenle",
+        "delete": "Şablonu sil"
+      },
+      "weightsTitle": "İstatistik ağırlıkları:",
+      "limitsTitle": "Ayarlama sınırları:",
+      "minAdjustment": "En az: {{value}}",
+      "maxAdjustment": "En çok: {{value}}"
+    },
+    "importModal": {
+      "title": "JSON'dan puan şablonlarını içe aktar",
+      "introTitle": "Puan şablonu tanımlarını içeren JSON'u aşağıya yapıştır.",
+      "introBody": "Beklenen biçim: name, isteğe bağlı description, enabled, weights, maxAdjustment ve minAdjustment alanları olan şablonlardan oluşan bir dizi. id'yi vermezsen addan oluşturulur.",
+      "jsonLabel": "JSON verisi",
+      "validJsonTitle": "✓ Geçerli JSON!",
+      "previewTitle": "Önizleme:",
+      "previewButton": "Önizle",
+      "importButton": "Şablonları içe aktar",
+      "validJsonBody_one": "{{count}} şablon bulundu.",
+      "validJsonBody_other": "{{count}} şablon bulundu."
+    },
+    "editor": {
+      "titleEdit": "Puan şablonunu düzenle",
+      "titleCreate": "Puan şablonu oluştur",
+      "info": "Oyuncu istatistiklerinin ELO değişimlerini nasıl etkileyeceğini ayarla. Ağırlıklar, OpenSkill temel ELO değişimini (galibiyet/mağlubiyet) hesapladıktan sonra uygulanır. Pozitif ağırlıklar ELO'yu artırır, negatif ağırlıklar azaltır.",
+      "nameLabel": "Şablon adı",
+      "nameDefaultLocked": "Varsayılan şablonun adı değiştirilemez",
+      "descriptionLabel": "Açıklama",
+      "descriptionPlaceholder": "Bu şablonun amacına dair isteğe bağlı açıklama",
+      "enabledLabel": "Etkin",
+      "weights": {
+        "title": "İstatistik ağırlıkları",
+        "subtitle": "Her istatistik için kaydırıcıyı ayarla. 0 değeri o istatistik için ayarlama olmadığı anlamına gelir."
+      },
+      "limits": {
+        "title": "Ayarlama sınırları (isteğe bağlı)",
+        "subtitle": "Aşırı değişimleri önlemek için maç başına en yüksek ve en düşük ELO ayarlamasını belirle.",
+        "maxLabel": "En yüksek ayarlama",
+        "maxHelper": "Maç başına en yüksek pozitif ELO ayarlaması",
+        "minLabel": "En düşük ayarlama",
+        "minHelper": "Maç başına en yüksek negatif ELO ayarlaması"
+      },
+      "errors": {
+        "nameRequired": "Şablon adı gerekli"
+      },
+      "create": {
+        "success": "\"{{name}}\" şablonu oluşturuldu",
+        "error": "Şablon oluşturulamadı"
+      },
+      "update": {
+        "success": "\"{{name}}\" şablonu güncellendi",
+        "error": "Şablon güncellenemedi"
+      },
+      "buttons": {
+        "saving": "Kaydediliyor...",
+        "update": "Güncelle",
+        "create": "Oluştur"
+      }
+    },
+    "stats": {
+      "kills": {
+        "label": "Öldürme",
+        "description": "Maç başına öldürme sayısı"
+      },
+      "deaths": {
+        "label": "Ölüm",
+        "description": "Maç başına ölüm sayısı (genellikle negatif ağırlık)"
+      },
+      "assists": {
+        "label": "Asist",
+        "description": "Maç başına asist sayısı"
+      },
+      "flashAssists": {
+        "label": "Flaş asistleri",
+        "description": "Maç başına flaş asisti sayısı"
+      },
+      "headshotKills": {
+        "label": "Kafadan vuruşla öldürme",
+        "description": "Maç başına kafadan vuruşla öldürme sayısı"
+      },
+      "damage": {
+        "label": "Hasar",
+        "description": "Maç başına verilen toplam hasar"
+      },
+      "utilityDamage": {
+        "label": "Ekipman hasarı",
+        "description": "Ekipmanlarla (bombalar) verilen hasar"
+      },
+      "kast": {
+        "label": "KAST %",
+        "description": "Öldürme, asist, hayatta kalma veya takas olan rauntların yüzdesi"
+      },
+      "mvps": {
+        "label": "MVP'ler",
+        "description": "Maç başına MVP ödülü sayısı"
+      },
+      "score": {
+        "label": "Skor",
+        "description": "Maç skoru (birden çok faktörü birleştirir)"
+      },
+      "adr": {
+        "label": "ADR",
+        "description": "Raunt başına ortalama hasar"
+      }
+    }
+  }
+}

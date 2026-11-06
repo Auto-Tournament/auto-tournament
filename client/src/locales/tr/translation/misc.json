@@ -1,0 +1,1278 @@
+{
+  "notFound": {
+    "title": "Sayfa bulunamadı",
+    "description": "Aradığın sayfa yok ya da taşındı.",
+    "backToDashboard": "Panoya dön",
+    "publicPlayerSearch": "Herkese açık oyuncu arama"
+  },
+  "publicLinks": {
+    "intro": "Oyuncular ve izleyicilerle paylaşabileceğin herkese açık sayfalara hızlı bağlantılar.",
+    "common": {
+      "publicUrl": "Herkese açık URL",
+      "urlPattern": "URL kalıbı"
+    },
+    "playerSearch": {
+      "title": "Herkese açık oyuncu arama",
+      "description": "Kayıtlı oyuncuları ada, Steam ID'ye veya profil URL'sine göre ara.",
+      "openButton": "/player aç"
+    },
+    "playerProfile": {
+      "title": "Oyuncu profili (herkese açık)",
+      "description": "Steam ID64 ile bir oyuncu profiline doğrudan bağlantı. Steam ile giriş yapmış oyuncular URL kopyalamak yerine üst çubuktaki \"Profilim\" bağlantısını da kullanabilir.",
+      "requiresSteamId": "Steam ID64 gerektirir"
+    },
+    "teamMatch": {
+      "title": "Takım maç sayfası (herkese açık)",
+      "description": "Bir takımın güncel veya en son maçının salt okunur görünümü.",
+      "openExample": "Örnek takımı aç"
+    },
+    "tournamentLeaderboard": {
+      "title": "Turnuva sıralaması (herkese açık)",
+      "description": "Güncel turnuva için herkese açık puan durumu sayfası (varsayılan: turnuva 1).",
+      "open": "Sıralamayı aç"
+    }
+  },
+  "games": {
+    "prompt": {
+      "title": "Ne oynuyorsun?",
+      "description": "Önce bu oyunların turnuvalarını göstereceğiz. Bunu istediğin zaman değiştirebilirsin.",
+      "skip": "Atla",
+      "save": "Oyunlarımı kaydet"
+    },
+    "picker": {
+      "searchLabel": "Oyun ara",
+      "placeholder": "Bir oyun adı yaz",
+      "minChars": "En az 2 karakter yaz",
+      "noResults": "Oyun bulunamadı",
+      "loading": "Aranıyor…",
+      "searchFailed": "Arama şu anda kullanılamıyor",
+      "yourGames": "Oyunların",
+      "none": "Henüz oyun seçilmedi",
+      "remove": "{{name}} kaldır",
+      "supported": "Turnuva desteği var",
+      "limit": "En fazla {{max}} oyun seçebilirsin",
+      "creditWikidata": "Oyun verileri Wikidata'dan"
+    },
+    "profile": {
+      "title": "Oynadığın oyunlar",
+      "description": "Oynadığın oyunları seç. Bu oyunların turnuvaları önce gösterilir.",
+      "empty": "Henüz oyun seçmedin.",
+      "edit": "Düzenle",
+      "add": "Oyun ekle",
+      "dialogTitle": "Oynadığın oyunlar",
+      "cancel": "İptal",
+      "save": "Kaydet",
+      "saved": "Oyunlar kaydedildi",
+      "saveFailed": "Oyunların kaydedilemedi"
+    },
+    "welcome": {
+      "gridTitle": "Popüler oyunlar",
+      "continue": "Devam",
+      "notNow": "Şimdi değil",
+      "selectedGames": "Seçilen oyunlar",
+      "selectedCount": "{{max}} oyundan {{count}} tanesi seçildi",
+      "pickOne": "En az bir oyun seç",
+      "supportedLegend": "Turnuvalar burada yapılıyor"
+    }
+  },
+  "account": {
+    "email": {
+      "title": "E-posta",
+      "description": "Şifreni unutursan hesabına geri dönmek ve istersen bir turnuva kayıtlarını açtığında e-posta almak için.",
+      "address": "E-posta adresi",
+      "sendLink": "Onay gönder",
+      "cancel": "İptal",
+      "verified": "Onaylandı",
+      "unverified": "Onaylanmadı",
+      "checkInbox": "Onaylamak için gönderdiğimiz e-postadaki bağlantıyı aç.",
+      "resend": "Tekrar gönder",
+      "change": "Değiştir",
+      "remove": "Kaldır",
+      "sent": "Onay {{email}} adresine gönderildi. İçindeki bağlantıyı aç.",
+      "saved": "E-posta kaydedildi",
+      "removed": "E-posta kaldırıldı",
+      "saveFailed": "E-postan kaydedilemedi",
+      "notifyLabel": "Bir turnuva kayıtlarını açtığında bana e-posta gönder",
+      "notifyHint": "Turnuva başına bir e-posta. Her e-postada abonelikten çıkma bağlantısı var.",
+      "notifyNeedsVerified": "Önce adresini onayla.",
+      "notifyOn": "Kayıtlar açıldığında e-posta alacaksın",
+      "notifyOff": "Artık turnuva e-postası yok",
+      "siteCannotSend": "Bu site şu anda e-posta göndermiyor."
+    },
+    "title": "Bağlantılar",
+    "subtitle": "Bu sitedeki her turnuva için tek bir hesap.",
+    "loadFailed": "Hesabın yüklenemedi.",
+    "impersonating": "Bu sayfayı bir oyuncunun yerine geçerek görüntülüyorsun. Sayfa kendi hesabını gösteriyor; değiştirmek için oyuncu görünümünden çık.",
+    "rail": {
+      "label": "Hesap",
+      "profile": "Profil",
+      "connections": "Bağlantılar"
+    },
+    "gameAccounts": {
+      "title": "Oyun hesapları",
+      "description": "Maçların seni tanıyabilmesi için her oyunun kendi hesabı gerekir.",
+      "verified": "Doğrulandı",
+      "id": "Steam ID {{id}}",
+      "more": "Siteye oyun eklendikçe daha fazla oyun hesabı burada görünür.",
+      "notConnected": "Bu oyunları oynamak için {{provider}} hesabını bağla.",
+      "notOffered": "Burada {{provider}} girişi henüz açık değil. Bir yöneticiden Ayarlar → Giriş'te açmasını iste."
+    },
+    "signIn": {
+      "title": "Giriş yöntemleri",
+      "description": "Bunlardan herhangi biri seni aynı hesaba sokar. En az birini tut.",
+      "primary": "Birincil",
+      "primaryDetail": "Hesabının kimliği · aynı zamanda {{games}} için oyun hesabın",
+      "primaryDetailNoGames": "Hesabının kimliği",
+      "connected": "Bağlı",
+      "accountId": "ID",
+      "linkedOn": "Bağlandı: {{date}}",
+      "turnedOff": "bu sitede onunla giriş kapalı",
+      "notConnected": "Bağlı değil",
+      "connect": "Bağla",
+      "remove": "Kaldır",
+      "lastMethod": "Bu, giriş yapmanın tek yolu. Önce başka bir yöntem bağla.",
+      "removeTitle": "{{provider}} kaldırılsın mı?",
+      "removeBody": "Artık {{provider}} ile giriş yapamayacaksın. Sonra yeniden bağlayabilirsin.",
+      "removed": "{{provider}} kaldırıldı",
+      "removeFailed": "Bu giriş yöntemi kaldırılamadı",
+      "linked": "{{provider}} bağlandı",
+      "taken": "Bu {{provider}} hesabı bu sitede zaten başka bir hesaba bağlı.",
+      "linkFailed": "{{provider}} bağlanamadı. Lütfen tekrar dene.",
+      "localLabel": "Yönetici girişi (kullanıcı adı + şifre)",
+      "localDetail": "Kullanıcı adı {{username}}"
+    },
+    "changePassword": {
+      "button": "Şifreyi değiştir",
+      "title": "Şifreni değiştir",
+      "current": "Mevcut şifre",
+      "new": "Yeni şifre",
+      "repeat": "Yeni şifre (tekrar)",
+      "totp": "Doğrulama kodu",
+      "mismatch": "Yeni şifreler aynı değil",
+      "save": "Şifreyi değiştir",
+      "cancel": "İptal",
+      "done": "Şifre değiştirildi",
+      "failed": "Şifre değiştirilemedi",
+      "totpNeeded": "Doğrulama uygulamandaki kodu da gir.",
+      "tooLong": "Yeni şifre çok uzun"
+    },
+    "reauth": {
+      "title": "Yönetici şifreni onayla",
+      "body": "Giriş yöntemini değiştirmeden önce {{username}} şifresini gir.",
+      "password": "Şifre",
+      "totp": "Doğrulama kodu",
+      "confirm": "Onayla",
+      "failed": "Yanlış şifre veya kod",
+      "totpNeeded": "Doğrulama uygulamandaki kodu da gir."
+    },
+    "merge": {
+      "title": "Hesaplar birleştirilsin mi?",
+      "body": "Bu Steam hesabının bu sitede zaten bir oyuncusu var. Yönetici hesabınla birleştirilsin mi?",
+      "explain": "Oyuncu maçlarını ve istatistiklerini korur ve yönetici olur. Yönetici girişin ve bağlı giriş yöntemlerin ona taşınır.",
+      "matches_one": "{{count}} maç oynandı",
+      "matches_other": "{{count}} maç oynandı",
+      "confirm": "Hesapları birleştir",
+      "failed": "Hesaplar birleştirilemedi"
+    },
+    "twoStep": {
+      "turnOn": "İki adımlıyı aç",
+      "turnOff": "İki adımlıyı kapat",
+      "isOn": "İki adımlı doğrulama açık",
+      "isOff": "İki adımlı doğrulama kapalı",
+      "onTitle": "İki adımlı doğrulamayı aç",
+      "offTitle": "İki adımlı doğrulamayı kapat",
+      "offWarning": "O olmadan bu yönetici hesabına yalnızca şifrenle girilir.",
+      "password": "Şifre",
+      "code": "Doğrulama kodu",
+      "codeNeeded": "Doğrulama uygulamandaki kodu gir.",
+      "failed": "Kapatılamadı",
+      "cancel": "İptal",
+      "turnedOn": "İki adımlı doğrulama açık",
+      "turnedOff": "İki adımlı doğrulama kapalı"
+    },
+    "passkeys": {
+      "title": "Geçiş anahtarları",
+      "description": "Yönetici giriş sayfasında şifre ve kod yerine parmak izin, yüzün veya cihaz PIN'inle giriş yap.",
+      "add": "Geçiş anahtarı ekle",
+      "name": "Ad",
+      "nameHelp": "Ayırt etmek için bir ad, örn. \"MacBook\" veya \"Telefon\". Ardından tarayıcın parmak izini, yüzünü veya PIN'ini ister.",
+      "continue": "Devam",
+      "added": "Geçiş anahtarı eklendi",
+      "addFailed": "Geçiş anahtarı eklenemedi",
+      "removed": "{{name}} kaldırıldı",
+      "removeFailed": "Geçiş anahtarı kaldırılamadı",
+      "lastUsed": "Son kullanım {{date}}",
+      "addedOn": "{{date}} tarihinde eklendi, henüz kullanılmadı",
+      "needsHttps": "Geçiş anahtarları için site https üzerinde (veya localhost) olmalı. Siteyi yöneten kişiden onu https arkasına almasını iste."
+    },
+    "name": {
+      "title": "Görünen ad",
+      "description": "Sitede ve oyunda gösterilir. Günde bir kez değiştirebilirsin.",
+      "lockedUntil": "Sitede ve oyunda gösterilir. Yakın zamanda değiştirdin, {{date}} tarihinden itibaren yeniden değiştirebilirsin.",
+      "label": "Ad",
+      "lengthHint": "{{min}}–{{max}} karakter",
+      "badChars": "Tırnak, < veya > ya da kontrol karakteri yok",
+      "promptTitle": "Adın ne?",
+      "promptBody": "Oyunda ve sitede gösterilir.",
+      "notNow": "Şimdi değil",
+      "save": "Kaydet",
+      "saved": "Ad kaydedildi. Oyun sunucuları bir sonraki maçından itibaren kullanır.",
+      "saveFailed": "Adın kaydedilemedi"
+    }
+  },
+  "home": {
+    "title": "Ana sayfa",
+    "greeting": "Selam, {{name}}",
+    "greetingFallback": "Selam",
+    "editGames": "Oyunları düzenle",
+    "vs": "-",
+    "tbd": "Belirsiz",
+    "openMatch": "Maçı aç",
+    "connectToServer": "Sunucuya bağlan",
+    "matchStatus": {
+      "pending": "Bekliyor",
+      "ready": "Hazır",
+      "loaded": "Yüklendi",
+      "live": "Canlı",
+      "completed": "Tamamlandı"
+    },
+    "yourTournaments": {
+      "title": "Turnuvaların",
+      "empty": "Şu anda hiçbir turnuvada değilsin."
+    },
+    "tournaments": {
+      "playingNow": "Şu anda oynuyor",
+      "waiting": "Bekliyor",
+      "eliminated": "Elendi",
+      "finished": "Bitti",
+      "placement": "{{total}} içinde {{position}}"
+    },
+    "openForYourGames": {
+      "title": "Oyunların için açık",
+      "browseAll": "Tüm turnuvalara göz at",
+      "empty": "Şu anda oyunların için açık turnuva yok.",
+      "steamLinked": "Steam bağlı",
+      "titleAll": "Açık turnuvalar",
+      "emptyAll": "Şu anda açık turnuva yok."
+    },
+    "summary": {
+      "match": "Bekleyen bir maçın var.",
+      "open_one": "Oynadığın oyunlar için {{count}} turnuva açık.",
+      "open_other": "Oynadığın oyunlar için {{count}} turnuva açık.",
+      "openAll_one": "Bu sitede {{count}} turnuva açık.",
+      "openAll_other": "Bu sitede {{count}} turnuva açık.",
+      "none": "Şu anda sana ihtiyaç yok."
+    },
+    "yourGames": "Oynadığın oyunlar",
+    "loading": "Ana sayfan yükleniyor",
+    "nextMatch": "Sıradaki maçın",
+    "live": {
+      "title": "Şu anda canlı",
+      "count": "{{count}} çalışıyor",
+      "chip": "Canlı",
+      "matchesOn_one": "Şu anda {{count}} maç oynanıyor",
+      "matchesOn_other": "Şu anda {{count}} maç oynanıyor"
+    },
+    "quiet": {
+      "title": "Yaklaşanlar",
+      "more": "Ayrıca yaklaşanlar",
+      "next": "Sırada"
+    },
+    "play": {
+      "title": "Şimdi bir maç oyna",
+      "quietTitle": "Bir şey yok mu? Bir maç oyna.",
+      "hint": "Eşleştirme, sırada yeterli oyuncu olur olmaz seni bir oyuna sokar.",
+      "cta": "Sıraya gir"
+    },
+    "signup": {
+      "open": "Kayıt açık",
+      "cta": "Kaydol",
+      "short": "Kaydol",
+      "view": "Görüntüle",
+      "title": "Kaydol",
+      "aside": "Yaklaşanlar"
+    },
+    "champions": {
+      "title": "Şampiyonlar",
+      "aside": "Yakın zamanda bitenler",
+      "all": "Tüm sonuçlar",
+      "won": "kazandı: {{name}}",
+      "finished": "Bitti"
+    },
+    "lastTime": {
+      "title": "Geçen sefer",
+      "results": "Tüm sonuçlar",
+      "second": "2.",
+      "third": "3.",
+      "champion": "Şampiyon"
+    },
+    "teams": "Takımlar: {{count}}",
+    "none": "Henüz turnuva yok. Yakında tekrar bak.",
+    "allTournaments": "Tüm turnuvalar",
+    "empty": {
+      "soon": "Yakında",
+      "heroTitle": "Henüz turnuva yok",
+      "heroHint": "Sıradaki turnuva duyurulduğunda tarihi ve kaydıyla birlikte burada görünür.",
+      "create": "Turnuva oluştur",
+      "nextTitle": "Başka bir şey planlanmadı",
+      "nextHint": "Bundan sonraki turnuva burada görünür.",
+      "signupTitle": "Kaydolunacak bir şey yok",
+      "signupHint": "Kayıt alan turnuvalar burada görünür.",
+      "slotTitle": "Bir tane daha sığar",
+      "slotHint": "Buraya başka bir turnuva gelebilir.",
+      "championTitle": "Henüz şampiyon yok",
+      "championHint": "İlk kazanan burada görünür."
+    },
+    "browse": {
+      "title": "Oyuncu ve takım bul",
+      "hint": "Burada kimlerin oynadığını gör ve katılacak bir takım bul.",
+      "cta": "Oyunculara göz at"
+    },
+    "next": {
+      "label": {
+        "vetoTurn": "Vetoda sıra sende",
+        "ready": "Maçın hazır",
+        "warmup": "Isınma",
+        "live": "Canlı",
+        "paused": "Maç duraklatıldı"
+      },
+      "opponent": "Rakip oynuyor",
+      "startsAt": "Başlangıç",
+      "untilVeto": "Vetoya",
+      "untilMatch": "Maça",
+      "veto": "Veto",
+      "yourTurn": "Sıra sende",
+      "ban": "Bir harita yasakla",
+      "pick": "Bir harita seç",
+      "side": "Bir taraf seç",
+      "theirTurn": "Sıra onlarda",
+      "vetoOpen": "Veto açık",
+      "waiting": "Bekleniyor",
+      "forServer": "Sunucu için",
+      "join": "Katıl",
+      "serverReady": "Sunucu hazır",
+      "ready": "Hazır",
+      "mapRound": "{{map}} · R{{round}}",
+      "round": "Raunt {{round}}",
+      "halftime": "Devre arası",
+      "nextMap": "Sonraki harita",
+      "goVeto": "Vetoya git",
+      "paused": "Duraklatıldı",
+      "about": "~{{minutes}} dk",
+      "joinServer": "Sunucuya katıl"
+    }
+  },
+  "browsePage": {
+    "title": "Turnuvalara göz at",
+    "searchPlaceholder": "Ad, organizatör veya yere göre ara",
+    "searchLabel": "Turnuva ara",
+    "loading": "Turnuvalar yükleniyor",
+    "loadError": "Turnuvalar yüklenemedi.",
+    "listLabel": "Turnuvalar",
+    "createTournament": "Turnuva oluştur",
+    "teamsCount_one": "{{count}} takım",
+    "teamsCount_other": "{{count}} takım",
+    "filters": {
+      "allGames": "Tüm oyunlar",
+      "status": {
+        "all": "Tüm durumlar",
+        "live": "Canlı",
+        "registration_open": "Kayıt açık",
+        "finished": "Bitti"
+      },
+      "where": {
+        "all": "Çevrimiçi ve LAN",
+        "online": "Çevrimiçi",
+        "lan": "LAN"
+      },
+      "gameLabel": "Oyun",
+      "statusLabel": "Durum",
+      "whereLabel": "Nerede"
+    },
+    "columns": {
+      "tournament": "Turnuva",
+      "format": "Format",
+      "when": "Ne zaman"
+    },
+    "when": {
+      "starts": "Başlangıç {{date}}",
+      "finished": "Bitti",
+      "finishedOn": "Bitiş {{date}}",
+      "noDate": "Henüz tarih yok"
+    },
+    "actions": {
+      "signUp": "Kaydol",
+      "watch": "Aç",
+      "results": "Sonuçlar",
+      "youreIn": "İçeridesin"
+    },
+    "status": {
+      "live": "Canlı"
+    },
+    "emptyNone": {
+      "title": "Henüz turnuva yok",
+      "description": "Bu site bir turnuva düzenlediğinde burada görünür.",
+      "descriptionAdmin": "Bu sitede henüz turnuva yok. Bir tane oluştur, burada görünür."
+    },
+    "emptyFiltered": {
+      "title": "Filtrelerinle eşleşen turnuva yok",
+      "description": "Başka bir oyun veya durum dene ya da filtreleri temizle.",
+      "clear": "Filtreleri temizle"
+    },
+    "groups": {
+      "live": "Canlı",
+      "soon": "Yaklaşanlar",
+      "finished": "Bitenler"
+    },
+    "showOlder_one": "{{count}} eskisini göster",
+    "showOlder_other": "{{count}} eskisini göster",
+    "mine": {
+      "label": "Hangi turnuvalar",
+      "all": "Tümü",
+      "mine": "Benimkiler"
+    },
+    "roundN": "Tur {{n}}",
+    "entries": {
+      "teams_one": "{{count}} takım",
+      "teams_other": "{{count}} takım",
+      "teamsOf": "{{count}} / {{max}} takım",
+      "players_one": "{{count}} oyuncu",
+      "players_other": "{{count}} oyuncu",
+      "playersOf": "{{count}} / {{max}} oyuncu"
+    }
+  },
+  "modulesPage": {
+    "title": "Modüller",
+    "subheading": "Bu sistemin çalıştırabildikleri ve ona eklediğin oyunlar.",
+    "builtIn": "Yerleşik",
+    "loadFailed": "Kurulu paketler yüklenemedi",
+    "removed": "{{name}} kaldırıldı",
+    "removeFailed": "O paket kaldırılamadı",
+    "installed": {
+      "title": "Oyun modülleri",
+      "hint": "Bir maçın nasıl oynandığını ve sonucunun nasıl geldiğini bilen kod. Bunlar uygulamayla gelir."
+    },
+    "module": {
+      "cs2": {
+        "name": "Counter-Strike 2",
+        "hint": "Oyun sunucularınla konuşur: maçı yükler, her raundu okur, sonucu kaydeder."
+      },
+      "manual-report": {
+        "name": "Elle sonuç bildirme",
+        "hint": "Hiçbir şeyin izleyemediği oyunlar için. Bir kaptan skoru bildirir ve rakip onaylar."
+      }
+    },
+    "packs": {
+      "title": "Oyun paketleri",
+      "hint": "Paket, bir oyunu tanımlayan bir dosyadır: bir ad, bir kutucuk ve sonucun nasıl bildirildiği. Kod içermez ve yukarıdaki bir modül üzerinde çalışır.",
+      "empty": "Henüz paket yok. Bu sistemle gelmeyen bir oyunu eklemek için bir tane içe aktar.",
+      "runBy": "Çalıştıran: {{engine}}",
+      "bundled": "Auto Tournament ile geldi"
+    },
+    "import": {
+      "action": "Paket içe aktar",
+      "added": "{{name}} eklendi",
+      "updated": "{{name}} güncellendi",
+      "failed": "O paket içe aktarılamadı",
+      "notJson": "Bu dosya JSON değil, yani paket değil",
+      "tooLarge": "Bu dosya paket olamayacak kadar büyük",
+      "noJson": "Paketin .json dosyasını seç",
+      "missingIcon": "Bu paket {{file}} kullanıyor: o dosyayı da seç ya da kutucuksuz olarak yalnızca JSON'u içe aktar"
+    },
+    "confirmRemove": {
+      "title": "{{name}} kaldırılsın mı?",
+      "body": "Oyun kurulum sihirbazından kaybolur. Başka hiçbir şey silinmez ve paketi yeniden içe aktarmak onu geri getirir."
+    },
+    "browse": {
+      "action": "Göz at",
+      "title": "Ekleyebileceğin oyunlar",
+      "hint": "Topluluk paket listesinden. Bunu açana kadar hiçbir şey indirilmedi.",
+      "add": "Ekle",
+      "update": "Güncelle",
+      "installed": "Kurulu",
+      "empty": "Listede henüz bu sistemin ekleyebileceği oyun yok.",
+      "offline": "listeye ulaşılamadı",
+      "staleWith": "Bu sistemin gördüğü son liste gösteriliyor: {{reason}}.",
+      "failed": "Liste okunamadı"
+    },
+    "pending": "{{game}} oyun modülü yükleniyor…",
+    "pendingRoute": "Bu sayfanın modülü yükleniyor…",
+    "notInstalled": {
+      "title": "{{game}} oyun modülü kurulu değil",
+      "body": "Bu turnuvanın oyuna özgü kısımları gizli ve modül yeniden kurulana kadar maçları oynanamaz."
+    },
+    "code": {
+      "chip": "Kod modülü",
+      "hint": "Bu sunucunun diskine, sunucuyu yöneten kişi tarafından kuruldu.",
+      "noReason": "neden belirtilmedi",
+      "broken": "Bu modül bozuk: {{reason}}",
+      "status": {
+        "ok": "OK",
+        "incompatible": "Uyumsuz",
+        "broken": "Bozuk",
+        "disabled": "Devre dışı"
+      },
+      "enable": "Etkinleştir",
+      "disable": "Devre dışı bırak",
+      "enabled": "{{name}} etkinleştirildi",
+      "disabled": "{{name}} devre dışı bırakıldı",
+      "toggleFailed": "O modül değiştirilemedi",
+      "listFailed": "Kod modülleri okunamadı: {{reason}}",
+      "safeMode": "Güvenli mod: bu sayfada hiçbir kod modülü yüklenmedi. Yeniden yüklemek için ?modules=off olmadan aç.",
+      "slotFailed": "{{id}} modülü burada başarısız oldu. Nedeni Modüller sayfasında yazıyor.",
+      "reload": {
+        "body": "Modülün kodunu yüklemek veya kaldırmak için sayfayı yenile.",
+        "action": "Yenile"
+      },
+      "confirm": {
+        "title": "{{name}} etkinleştirilsin mi?",
+        "warningTitle": "Bu bir kod modülü.",
+        "warning": "Auto Tournament'ın sunucusunda veritabanına, dosyalarına ve gizli anahtarlarına tam erişimle; ayrıca çizdiği bir sayfayı açan her yöneticinin ve oyuncunun tarayıcısında, onların yetkileriyle çalışır. Auto Tournament kod modüllerini incelemez ve yalıtmaz. Yalnızca yazarına bu platforma güvendiğin kadar güveniyorsan etkinleştir.",
+        "source": "Kaynak",
+        "onDisk": "Bu sunucunun diski",
+        "version": "Sürüm",
+        "clientApi": "İstemci API'si",
+        "serverApi": "Sunucu API'si",
+        "none": "belirtilmedi",
+        "typeId": "Etkinleştirmek için {{id}} yaz."
+      },
+      "failure": {
+        "badEntry": "kodu {{prefix}} üzerinden sunulmuyor",
+        "noClientApi": "istemci API aralığı belirtmiyor; bu platform {{platform}} sunuyor",
+        "badClientApi": "istemci API aralığı “{{range}}” bir semver aralığı değil",
+        "outOfRange": "istemci API {{range}} için yapılmış; bu platform {{platform}} sunuyor",
+        "notFound": "kodu eksik (HTTP 404)",
+        "httpError": "kodu alınamadı (HTTP {{status}})",
+        "notJavaScript": "kodu JavaScript değil, {{contentType}} olarak sunuluyor",
+        "importFailed": "kodu yüklenemedi: {{error}}",
+        "timeout": "kodu {{seconds}} saniye içinde yüklenmedi",
+        "sharedFailed": "platform paketlerini onunla paylaşamadı: {{error}}",
+        "badExport": "kodu bir modül tanımı değil: {{detail}}",
+        "idMismatch": "kodu kendini “{{id}}” olarak adlandırıyor ama “{{expected}}” olarak kurulu",
+        "idTaken": "“{{id}}” zaten yerleşik bir modül",
+        "render": "“{{slot}}” yuvası çizilirken başarısız oldu: {{error}}"
+      }
+    },
+    "signInNeed": {
+      "body": "{{game}} oyuncuları {{provider}} ile giriş yapar ve {{provider}} girişi kapalı. Oyunun gerektirdiği hesabı bağlayamazlar.",
+      "action": "Aç"
+    },
+    "addons": {
+      "title": "Eklentiler",
+      "hint": "Oyunların yanındaki özellikler. Birini açmak veya kapatmak hemen geçerli olur.",
+      "open": "Aç",
+      "toggle": "{{name}} aç veya kapat",
+      "toggleFailed": "Eklenti değiştirilemedi.",
+      "startFailed": "Açık ama başlamadı: {{error}}",
+      "notFound": "Böyle bir eklenti yok.",
+      "off": "Bu eklenti kapalı. Ayarlamak için Modüller'den aç."
+    }
+  },
+  "catalog": {
+    "title": "Oyunlar",
+    "hint": "Bu sistemin çalıştırdığı tüm oyunlar ve ekleyebileceklerin. Oyun paketleri veridir; kod modülleri Auto Tournament tarafından imzalanır. İkisi de tek tıkla kurulur ve “Bu imajda” olarak işaretlenenler ağ gerektirmez.",
+    "search": "Oyun ara",
+    "installedTitle": "Kurulu ({{count}})",
+    "availableTitle": "Mevcut ({{count}})",
+    "empty": "Eşleşen oyun yok.",
+    "allInstalled": "Katalogdaki her şey kurulu.",
+    "noneInstalled": "Henüz kurulu oyun yok. Turnuva düzenlemek istediğin oyunları kur; oyuncular bunlar arasından seçer.",
+    "loadFailed": "Oyun kataloğu okunamadı: {{reason}}",
+    "loadFailedFallback": "sunucu yanıt vermedi",
+    "retry": "Tekrar dene",
+    "failed": "{{name}}: {{reason}}",
+    "failedFallback": "işlem başarısız oldu",
+    "updateAll": {
+      "action": "Tümünü güncelle ({{count}})",
+      "running": "Güncelleniyor…",
+      "done": "{{count}} oyun ve modül güncellendi",
+      "summary": "Güncellenen {{updated}}, atlanan {{skipped}}, başarısız {{failed}}.",
+      "failedItem": "{{name}}: {{reason}}",
+      "failedFallback": "her şey güncellenemedi"
+    },
+    "feed": {
+      "cache": "{{time}} tarihli katalog gösteriliyor: çevrimiçi kataloğa ulaşılamadı ({{reason}}). Bu imajdaki oyunlar ağ olmadan da kurulur.",
+      "none": "Çevrimiçi kataloğa ulaşılamadı ({{reason}}). Bu imajdaki oyunlar gösteriliyor; ağ olmadan kurulurlar.",
+      "unknown": "neden belirtilmedi",
+      "cacheRefreshing": "Çevrimiçi katalog yüklenirken {{time}} tarihli katalog gösteriliyor.",
+      "noneRefreshing": "Çevrimiçi katalog yükleniyor… Bu arada bunlar bu imajdaki oyunlar; ağ olmadan kurulurlar.",
+      "reason": {
+        "timeout": "zamanında yanıt vermedi",
+        "unreachable": "ulaşılamadı",
+        "bad_response": "yanıtı bir katalog değildi",
+        "newer_schema": "daha yeni bir Auto Tournament için yazılmış",
+        "too_large": "çok büyük",
+        "offline": "CATALOG_OFFLINE ayarlı",
+        "http": "HTTP {{status}} ile yanıt verdi"
+      }
+    },
+    "kind": {
+      "module": "Kod modülü"
+    },
+    "source": {
+      "snapshot": "Bu imajda"
+    },
+    "state": {
+      "available": "Mevcut",
+      "installed": "Kurulu",
+      "update-available": "Güncelleme var",
+      "disabled": "Devre dışı",
+      "broken": "Bozuk",
+      "incompatible": "Uyumsuz",
+      "builtin": "Yerleşik",
+      "installing": "Kuruluyor…",
+      "working": "Çalışıyor…",
+      "restart": "Yeniden başlatma gerekli"
+    },
+    "action": {
+      "install": "Kur",
+      "update": "{{version}} sürümüne güncelle",
+      "enable": "Etkinleştir",
+      "disable": "Devre dışı bırak",
+      "remove": "Kaldır",
+      "uninstall": "Kaldır"
+    },
+    "done": {
+      "installed": "{{name}} kuruldu",
+      "updated": "{{name}} güncellendi",
+      "enabled": "{{name}} etkinleştirildi",
+      "disabled": "{{name}} devre dışı bırakıldı",
+      "removed": "{{name}} kaldırıldı"
+    },
+    "reload": {
+      "body": "{{names}} çalışıyor. Burada kullanmak için sayfayı yenile.",
+      "action": "Yenile"
+    },
+    "restart": "Bitirmek için Auto Tournament'ı yeniden başlat: {{names}}.",
+    "restartNow": {
+      "action": "Şimdi yeniden başlat",
+      "restarting": "Yeniden başlatılıyor…",
+      "failed": "Yeniden başlatılamadı",
+      "timeout": "Auto Tournament henüz geri gelmedi. Konteyneri kontrol et, sonra sayfayı yenile."
+    },
+    "confirmInstall": {
+      "title": "{{name}} kurulsun mu?",
+      "body": "Bu, Auto Tournament tarafından imzalanmış bir kod modülü. Bu sunucuda veritabanına ve dosyalarına erişimle, ayrıca çizdiği bir sayfayı açan herkesin tarayıcısında çalışır.",
+      "version": "Sürüm {{version}}",
+      "from": "Kaynak: {{source}}",
+      "fromRemote": "GitHub'daki Auto Tournament",
+      "fromSnapshot": "bu imajın içindeki kopya (ağ gerekmez)"
+    },
+    "confirmUninstall": {
+      "title": "{{name}} kaldırılsın mı?",
+      "body": "Dosyaları kaldırılır. Verileri (turnuvalar, sunucular, ayarlar) korunur ve yeniden kurmak onları geri getirir.",
+      "packBody": "Oyun kurulum sihirbazından kaybolur. Başka hiçbir şey silinmez ve yeniden kurmak onu geri getirir."
+    },
+    "welcome": {
+      "title": "Bu sistemdeki oyunlar",
+      "hint": "Bu sistemi sen yönetiyorsun, sunduğu oyunları da sen seçersin. Oyuncular bunlar arasından seçer."
+    },
+    "signedBy": "İmzalayan: {{label}} (anahtar {{keyId}})"
+  },
+  "matchmaking": {
+    "play": {
+      "title": "Oyna",
+      "subtitle": "Bir 5v5 maç bul. En uzun süredir bekleyen oyuncularla eşleşirsin ve grubun her zaman aynı takımda oynar.",
+      "unavailable": "Eşleştirme bu sitede henüz açık değil.",
+      "findTitle": "Maç bul",
+      "findHelp": "Beklerken sitede gezinebilirsin. Bir maç bulunduğunda kabul etmek için 20 saniyen olur.",
+      "searchingHelp": "Aranıyor. Alttaki çubuk ne kadar beklediğini gösterir.",
+      "find": "Maç bul",
+      "leaderStarts": "Aramayı grup liderin başlatır.",
+      "cooldown": "Bir maçı reddettin veya kaçırdın. {{minutes}} dk sonra yeniden arayabilirsin.",
+      "rating_one": "Puan {{elo}} · {{count}} oyun · {{wins}} galibiyet",
+      "rating_other": "Puan {{elo}} · {{count}} oyun · {{wins}} galibiyet",
+      "mode": "Mod",
+      "modeName": {
+        "5v5": "5v5",
+        "2v2": "2v2 Wingman",
+        "1v1": "1v1"
+      },
+      "inQueue_one": "Sırada {{count}} kişi",
+      "inQueue_other": "Sırada {{count}} kişi",
+      "partyTitle": "Grubun",
+      "invite": "Davet et",
+      "partyOf": "{{max}} kişiden {{count}}",
+      "you": "Sen",
+      "selected": "Seçili",
+      "modeTitle": {
+        "5v5": "Rekabetçi",
+        "2v2": "Wingman",
+        "1v1": "Düello"
+      },
+      "lookingTitle": "Oyuncu aranıyor",
+      "seats": "{{count}} kişi arıyor · bir maç için {{total}} gerekli",
+      "leaveQueue": "Sıradan çık",
+      "level": "Seviyen",
+      "xp": "{{into}} / {{next}} XP",
+      "ratingShort": "Puan",
+      "recent": "Son maçlar",
+      "noRecent": "Henüz maç yok.",
+      "result": {
+        "win": "Galibiyet",
+        "loss": "Mağlubiyet",
+        "draw": "Beraberlik"
+      },
+      "resultShort": {
+        "win": "W",
+        "loss": "L",
+        "draw": "D"
+      },
+      "backToMatch": "Maçına dön",
+      "online_one": "{{count}} çevrimiçi",
+      "online_other": "{{count}} çevrimiçi",
+      "usuallyWait_one": "genellikle yaklaşık {{count}} dakika",
+      "usuallyWait_other": "genellikle yaklaşık {{count}} dakika",
+      "aboutWait_one": "yaklaşık {{count}} dk",
+      "aboutWait_other": "yaklaşık {{count}} dk",
+      "defaultPool": {
+        "5v5": "Active Duty",
+        "2v2": "Wingman haritaları",
+        "1v1": "Wingman haritaları"
+      },
+      "searchAnyone": "Az oyuncu arıyor: müsait olan herkesle eşleşeceksin ({{count}} arıyor, {{total}} gerekli)",
+      "searchRating": "Puanına yakın bir maç aranıyor (±{{elo}}) · {{count}} arıyor",
+      "botFill": "Boş yerleri botlarla doldur",
+      "botFillUnrated": "Boş yerleri botlar doldurur · puansız: puan, XP veya drop yok",
+      "searchRatingPlain": "Puanına yakın bir maç aranıyor · {{count}} arıyor",
+      "searchWidening": "Arama genişletiliyor: ±{{elo}} · {{count}} arıyor",
+      "searchAnyRating": "Artık her puan aranıyor · {{count}} arıyor",
+      "inTournament": "Aktif bir turnuvadasın ({{tournament}}), şu anda eşleştirme sırasına giremezsin.",
+      "partyInTournament": "Aktif bir turnuvada oldukları için grup şu anda sıraya giremiyor: {{names}}.",
+      "inMatch_one": "{{count}} kişi maçta",
+      "inMatch_other": "{{count}} kişi maçta"
+    },
+    "queue": {
+      "searching": "{{mode}} aranıyor",
+      "cancel": "Aramayı durdur"
+    },
+    "found": {
+      "title": "Maç bulundu",
+      "accept": "Kabul et",
+      "decline": "Reddet",
+      "waiting": "Diğerleri bekleniyor",
+      "accepted": "{{accepted}} / {{total}} kabul etti",
+      "secondsLeft_one": "{{count}} saniye kaldı",
+      "secondsLeft_other": "{{count}} saniye kaldı",
+      "subtitle": "{{mode}} · {{seconds}} saniye içinde kabul et"
+    },
+    "party": {
+      "title": "Grup",
+      "help": "Arkadaşlarınla oyna: bir grup kur ve onlara bağlantıyı gönder. En fazla 5 oyuncu, her zaman aynı takımda.",
+      "create": "Grup kur",
+      "members_one": "Grubunda {{count}} oyuncu",
+      "members_other": "Grubunda {{count}} oyuncu",
+      "inviteLink": "Davet bağlantısı",
+      "copy": "Kopyala",
+      "copied": "Davet bağlantısı kopyalandı",
+      "code": "Davet kodu",
+      "join": "Katıl",
+      "joined": "Gruba katıldın",
+      "leave": "Gruptan ayrıl",
+      "disband": "Grubu dağıt"
+    },
+    "room": {
+      "title": "Maç odası",
+      "missing": "Bu maç yok ya da sen bu maçta değilsin.",
+      "back": "Oyna'ya dön",
+      "team": "Takım {{n}}",
+      "status": {
+        "accepting": "kabuller bekleniyor",
+        "ready": "herkes kabul etti",
+        "cancelled": "iptal edildi"
+      },
+      "match": {
+        "pending": "Harita vetosu: tek harita kalana kadar sırayla haritaları yasaklayın. Takımındaki herkes tıklayabilir; ilk tıklama geçerlidir.",
+        "ready": "Boş bir sunucu bekleniyor.",
+        "loaded": "Sunucu hazır. Katıl.",
+        "live": "Maç canlı.",
+        "completed": "Maç bitti.",
+        "other": "Maç: {{status}}"
+      },
+      "pickedBy": "{{mode}} · harita ruleti seçti",
+      "pickedByVeto": "{{mode}} · vetoda seçildi",
+      "vs": "-",
+      "you": "(sen)",
+      "accepted": "kabul etti",
+      "matchChat": "Maç sohbeti",
+      "playAgain": "Yeniden oyna",
+      "fullScoreboard": "Tüm skor tablosu",
+      "newSkin": "Yeni kaplama",
+      "inventory": "Ekipman",
+      "victory": "Galibiyet",
+      "defeat": "Mağlubiyet",
+      "draw": "Beraberlik",
+      "inServer": "Sunucuda {{total}} kişiden {{n}}",
+      "warmupRule": "Isınma, {{total}} kişinin hepsi girene kadar sürer.",
+      "warmupRuleTimed": "Isınma, {{total}} kişinin hepsi girene ya da {{minutes}} dakika geçene kadar sürer; sonra orada olanlarla başlar.",
+      "teamLetter": "Takım {{letter}}",
+      "sideFirst": "Önce {{side}}",
+      "presence": {
+        "in": "Sunucuda",
+        "notYet": "Henüz girmedi"
+      },
+      "equip": "Kuşan",
+      "equipped": "Kuşanıldı",
+      "equipFailed": "Kuşanılamadı",
+      "rematch": {
+        "title": "Rövanş?",
+        "ask": "Aynı takımlar, yeni bir maç. Cevabın tüm grubun için geçerli. Takımının çoğu evet derse diğer takımın kabul etmek için 30 saniyesi olur.",
+        "yes": "Evet, rövanş",
+        "no": "Hayır, teşekkürler",
+        "button": "Rövanş",
+        "offerTitle": "Diğer takım rövanş istiyor",
+        "teamTitle": "Takımın rövanş istiyor",
+        "offerBody": "Aynı takımlar, yeni bir maç. Takımının çoğunun evet demesi gerekiyor. Cevabın tüm grubun için geçerli.",
+        "waitingOther": "Diğer takım bekleniyor… {{s}} sn",
+        "waitingTeam": "Takımın bekleniyor… {{s}} sn",
+        "accepted": "Rövanş kabul edildi. Yeni maç açılıyor…",
+        "refused": "Rövanş reddedildi."
+      }
+    },
+    "result": {
+      "title": "Sonuç",
+      "map": "Harita {{n}}",
+      "rating": "Puan",
+      "xp": "+{{xp}} XP · seviye {{level}}",
+      "levelProgress": "Sonraki seviyeye {{next}} XP'den {{into}}",
+      "xpReason": {
+        "completed": "Oynandı",
+        "win": "Galibiyet",
+        "draw": "Beraberlik",
+        "performance": "Performans",
+        "first_win": "Günün ilk galibiyeti",
+        "admin": "Yönetici"
+      },
+      "player": "Oyuncu",
+      "commend": "Değerlendir",
+      "thumbsUp": "Beğen",
+      "thumbsDown": "Beğenme",
+      "thumbsUpFor": "{{name}} için beğeni",
+      "thumbsDownFor": "{{name}} için beğenmeme",
+      "downReason": "Neden?",
+      "downTag": {
+        "toxic": "Toksik",
+        "griefing": "Sabotaj",
+        "afk": "AFK veya ayrıldı",
+        "other": "Başka bir şey"
+      },
+      "commendFailed": "Kaydedilemedi",
+      "outcome": {
+        "win": "GALİBİYET",
+        "loss": "MAĞLUBİYET",
+        "draw": "BERABERLİK"
+      },
+      "minutes_one": "{{count}} dk",
+      "minutes_other": "{{count}} dk",
+      "yourGame": "Oyunun",
+      "fullBoard": "Tüm skor tablosu",
+      "hideBoard": "Skor tablosunu gizle"
+    },
+    "profile": {
+      "level": "Seviye {{level}}",
+      "xp": "{{xp}} XP",
+      "thumbsUp_one": "{{count}} beğeni",
+      "thumbsUp_other": "{{count}} beğeni",
+      "thumbsDown_one": "{{count}} beğenmeme",
+      "thumbsDown_other": "{{count}} beğenmeme",
+      "tag": {
+        "friendly": "Dost canlısı",
+        "team_player": "Takım oyuncusu",
+        "leader": "Lider",
+        "good_comms": "İyi iletişim",
+        "teacher": "Öğretmen",
+        "good_sport": "Sportmen",
+        "toxic": "Toksik",
+        "griefing": "Sabotaj",
+        "unhelpful": "Yardımsız",
+        "bad_sport": "Sportmenlik dışı",
+        "afk": "AFK veya ayrıldı",
+        "other": "Başka bir şey"
+      },
+      "negativesPrivate": "Bunları yalnızca sen ve yöneticiler görebilir.",
+      "history": "Eşleştirme maçları",
+      "historyEmpty": "Henüz eşleştirme maçı yok.",
+      "win": "Galibiyet",
+      "loss": "Mağlubiyet",
+      "draw": "Beraberlik",
+      "positivePercent": "%{{percent}} olumlu"
+    },
+    "leaderboard": {
+      "toLadder": "Eşleştirme sıralaması →",
+      "title": "Sıralama",
+      "subtitle_one": "Son 30 günde {{count}} veya daha fazla maçı olan oyuncular.",
+      "subtitle_other": "Son 30 günde {{count}} veya daha fazla maçı olan oyuncular.",
+      "empty_one": "Henüz kimse yok. Burada görünmek için 30 günde {{count}} maç oyna.",
+      "empty_other": "Henüz kimse yok. Burada görünmek için 30 günde {{count}} maç oyna.",
+      "level": "Seviye",
+      "games": "Maç",
+      "winRate": "Kazandı"
+    },
+    "admin": {
+      "title": "Sıra (yöneticiler)",
+      "summary": "{{players}} arıyor, {{lobbies}} açık maç",
+      "waited": "{{minutes}} dk",
+      "cooldowns": "Bekleme cezaları",
+      "until": "{{minutes}} dk kaldı",
+      "clear": "Temizle",
+      "cleared": "Bekleme cezası kaldırıldı",
+      "clearFailed": "Bekleme cezası kaldırılamadı",
+      "kind": {
+        "decline": "reddetti",
+        "no_show": "bir maçı kaçırdı",
+        "abandon": "bir maçtan ayrıldı"
+      },
+      "review": "Bakılacak oyuncular (beğenmeme)",
+      "voters_one": "{{count}} oy veren",
+      "voters_other": "{{count}} oy veren"
+    },
+    "roulette": {
+      "rolling": "Harita seçiliyor…",
+      "picked": "Harita: {{map}}"
+    }
+  },
+  "chat": {
+    "title": "Sohbet",
+    "close": "Sohbeti kapat",
+    "tabsLabel": "Sohbetler",
+    "tabMatch": "Maç",
+    "tabTeam": "Takım",
+    "tabParty": "Grup",
+    "tabDm": "Özel mesaj",
+    "dmWho": "Bunu yalnızca ikiniz okursunuz",
+    "placeholderDm": "{{name}} adlı kişiye mesaj",
+    "friends": "Arkadaşlar",
+    "messageFriend": "{{name}} adlı kişiye mesaj gönder",
+    "matchWho": "Takımın, {{title}} ve yöneticiler",
+    "matchWhoAdmin": "İki takım ve yöneticiler",
+    "teamWho": "{{team}} takımındaki herkes",
+    "partyWho": "Grubundaki herkes",
+    "placeholderMatch": "İki takıma ve yöneticilere mesaj",
+    "placeholderTeam": "Takımına mesaj",
+    "placeholderParty": "Grubuna mesaj",
+    "send": "Gönder",
+    "you": "Sen",
+    "adminBadge": "YÖNETİCİ",
+    "callAdmin": "Bir yönetici çağır",
+    "adminCallOpen": "Burada açık bir yönetici çağrısı var",
+    "callAdminConfirmTitle": "Bir yönetici çağrılsın mı?",
+    "callAdminConfirmBody": "Bir yönetici bildirim alır ve bu sohbete katılır. Yalnızca maçla ilgili yardıma ihtiyacın olduğunda çağır.",
+    "adminCalled": "Bir yönetici çağrıldı",
+    "callFailed": "Yönetici çağrılamadı",
+    "sendFailed": "Mesaj gönderilemedi",
+    "logLabel": "Sohbet: {{title}}",
+    "none": "Henüz sohbet yok. Maçın, takımın ve grubun burada görünür.",
+    "empty": "Henüz mesaj yok. Merhaba de.",
+    "loading": "Mesajlar yükleniyor",
+    "readOnlyImpersonating": "Başka bir oyuncu olarak görüntülüyorsun. Yazmak için oyuncu görünümünden çık.",
+    "peekMatch": "Maç · {{title}}",
+    "peekTeam": "Takım",
+    "peekParty": "Grup",
+    "buttonUnread": "Sohbet, {{count}} okunmamış",
+    "system": {
+      "vetoStarted": "Veto başladı · ilk {{team}}",
+      "vetoBan": "{{team}}, {{map}} haritasını yasakladı",
+      "vetoReset": "Bir yönetici vetoyu yeniden başlattı",
+      "vetoPick": "{{team}}, {{map}} haritasını seçti",
+      "vetoSide": "{{team}}, {{map}} haritasında {{side}} olarak başlıyor",
+      "vetoDone": "Veto bitti · {{maps}}",
+      "serverReady": "Sunucu hazır · {{map}} · maç sayfasından katıl",
+      "playerJoined": "{{name}} sunucuya katıldı · {{n}} içeride",
+      "playerLeft": "{{name}} sunucudan ayrıldı · {{n}} içeride",
+      "mapLive": "Harita {{n}} canlı · {{map}}",
+      "mapResult": "Harita {{n}} · {{map}} · {{team1}} {{s1}}–{{s2}} {{team2}}",
+      "seriesWon": "{{team}} seriyi {{a}}–{{b}} kazanıyor",
+      "adminCalled": "{{name}} bir yönetici çağırdı",
+      "adminClaimed": "{{name}} yönetici çağrısını üstlendi",
+      "adminResolved": "{{name}} yönetici çağrısını çözdü",
+      "timedOut": "süre doldu",
+      "remindAccount": "{{name}}: {{tournament}} turnuvasında oynayabilmek için bir kez Steam ile giriş yap.",
+      "remindGame": "{{name}}: {{tournament}} check-in'inden önce oyunu profiline (Oynadığın oyunlar) ekle.",
+      "serverDown": "Maç sunucusu çöktü. Geri getiriliyor…",
+      "serverBack": "Maç geri döndü: harita {{map}}, raunt {{round}}. Yeniden bağlan."
+    },
+    "party": {
+      "inviteCopied": "Davet bağlantısı kopyalandı",
+      "inviteFailed": "Bağlantı kopyalanamadı",
+      "leader": "lider",
+      "invite": "Davet et",
+      "queue": "Birlikte sıraya gir",
+      "leaveQueue": "Sıradan çık",
+      "searching": "Maç aranıyor",
+      "leaderQueues": "Aramayı lider başlatır"
+    },
+    "back": "Geri",
+    "typing": {
+      "one": "{{name}} yazıyor…",
+      "two": "{{first}} ve {{second}} yazıyor…",
+      "many": "{{count}} kişi yazıyor…"
+    },
+    "emoji": {
+      "open": "Emoji",
+      "title": "Bir emoji seç",
+      "search": "Emoji ara",
+      "none": "Emoji bulunamadı",
+      "categories": {
+        "results": "Sonuçlar",
+        "recent": "Son kullanılanlar",
+        "smileys": "Suratlar",
+        "gestures": "Eller",
+        "people": "İnsanlar",
+        "animals": "Doğa",
+        "food": "Yiyecek ve içecek",
+        "activity": "Oyunlar ve spor",
+        "travel": "Yerler",
+        "objects": "Nesneler",
+        "symbols": "Semboller"
+      }
+    }
+  },
+  "search": {
+    "open": "Ara",
+    "placeholder": "Sayfa, oyuncu, takım, öne çıkan ara…",
+    "placeholderAdmin": "Sayfa, ayar, oyuncu, takım, sunucu ara…",
+    "hint": "En az iki harf yaz. Ctrl K (⌘ K) veya / bunu her yerden açar.",
+    "none": "“{{q}}” için bir şey bulunamadı.",
+    "versus": "{{team1}} - {{team2}}",
+    "groups": {
+      "pages": "Sayfalar ve ayarlar",
+      "players": "Oyuncular",
+      "teams": "Takımlar",
+      "tournaments": "Turnuvalar",
+      "matches": "Maçlar",
+      "highlights": "Öne çıkanlar",
+      "maps": "Haritalar",
+      "servers": "Sunucular ve makineler",
+      "recorders": "Kaydediciler"
+    },
+    "status": {
+      "setup": "Kuruluyor",
+      "in_progress": "Devam ediyor",
+      "completed": "Bitti"
+    },
+    "pages": {
+      "manage": "Yönet",
+      "tournaments": "Turnuvalar",
+      "newTournament": "Turnuva kurulumu",
+      "playedMatches": "Tüm maçlar",
+      "importMatch": "Bir maçı içe aktar",
+      "teams": "Takımlar",
+      "players": "Oyuncular",
+      "reports": "Şikâyetler",
+      "templates": "Şablonlar",
+      "ratings": "Puanlar",
+      "modules": "Modüller",
+      "servers": "Sunucular",
+      "maps": "Haritalar ve harita havuzları",
+      "skins": "Kaplamalar",
+      "matchRules": "Maç kuralları",
+      "highlights": "Öne çıkanlar",
+      "adminTools": "Sistem",
+      "settings": "Ayarlar",
+      "settingsSite": "Ayarlar: site ve e-posta",
+      "settingsSignIn": "Ayarlar: giriş sağlayıcıları",
+      "settingsPlayers": "Ayarlar: oyuncular ve erişim",
+      "settingsWebhooks": "Ayarlar: webhook'lar",
+      "settingsLicense": "Lisans",
+      "settingsMatchmaking": "Ayarlar: eşleştirme",
+      "settingsAdvanced": "Ayarlar: gelişmiş",
+      "liveMatches": "Canlı maçlar"
+    },
+    "clips_one": "{{count}} klip",
+    "clips_other": "{{count}} klip",
+    "fieldLabel": "Ara"
+  },
+  "highlightsPage": {
+    "recorderStats": "Anonim benchmark sonuçlarını gönder",
+    "recorderStatsHint": "Bir benchmark'tan sonra kaydediciler, neyin ne kadar hızlı işlediğini gösteren herkese açık tablo için web sitesine GPU ve CPU modelini, sürümleri ve süreleri gönderir. Maçlar veya oyuncular hakkında hiçbir şey yok. Bu kapalıyken kayıt aynı şekilde çalışır.",
+    "title": "Öne çıkanlar",
+    "subtitle": "Her maçtan öne çıkan klipler ve derlemeler: kaydedicilerin ne yaptığı, derlemelerin altındaki müzik ve her oyunun kaydedicileri.",
+    "tabs": {
+      "settings": "Ayarlar"
+    },
+    "perPlayer": {
+      "label": "Harita başına oyuncu başına klip",
+      "helper": "1 ile 6 arası. Daha fazla klip, bir maçın öne çıkanlarının bitmesini uzatır."
+    },
+    "preset": {
+      "label": "Video kalitesi",
+      "smooth": "Akıcı (önerilir): en fazla 1080p, 240 fps",
+      "crisp": "Keskin: en fazla 1440p, 120 fps",
+      "lan": "LAN, en yüksek: en fazla 4K, 240 fps",
+      "custom": "Özel",
+      "light": "Hafif: yalnızca 720p, 60 fps"
+    },
+    "bitrate": {
+      "label": "Bit hızı",
+      "auto": "Otomatik (önerilir)",
+      "option": "{{mbps}} Mbit/s"
+    },
+    "resolution": {
+      "label": "En yüksek çözünürlük"
+    },
+    "fps": {
+      "label": "En yüksek kare hızı",
+      "option": "{{fps}} fps"
+    },
+    "quality": {
+      "helper": "Kaydediciler her klibi ve derlemeyi bir kez, en yüksek kalitede yapar ve düşük kaliteleri ondan keser. Ağır çekim her kare hızında akıcı kalır. Zaten yapılmış klipler yeniden yapılana kadar kalitelerini korur."
+    },
+    "music": {
+      "label": "Derlemelerin altındaki müzik",
+      "all": "Tüm parçalar ({{count}})",
+      "pick": "Yalnızca seçtiklerim",
+      "off": "Müzik yok",
+      "listen": "{{title}} dinle",
+      "stop": "{{title}} durdur",
+      "contentId": "YouTube Content ID",
+      "volume": "Ses düzeyi",
+      "byo": "Kendi müziğini getir: kullanma hakkına sahip olduğun parçaları ekle. Auto Tournament hiçbirini içermez. Oynatıcı her derlemenin yanında farklı bir parça çalar ve indirmeler müzikli veya müziksiz gelir.",
+      "remove": "{{title}} kaldır",
+      "removeConfirm": "Kaldır",
+      "keep": "Tut",
+      "addTitle": "Bir parça ekle",
+      "chooseFile": "Bir dosya seç",
+      "noFile": "Dosya seçilmedi (MP3, M4A, WAV…)",
+      "trackTitle": "Başlık",
+      "artist": "Sanatçı",
+      "genre": "Tür (menüyü gruplar)",
+      "source": "Nereden geldiği (künye için bir bağlantı)",
+      "contentIdLabel": "YouTube Content ID'ye kayıtlı (bununla yüklenen bir video hak talebi alabilir)",
+      "add": "Parçayı ekle",
+      "adding": "Ekleniyor…",
+      "rights": "Yalnızca videolarda kullanma hakkına sahip olduğun müzikleri ekle. Ses yüksekliği diğer parçalarla eşitlenir.",
+      "suggestions_one": "Pixabay'de derlemelere uyan {{count}} parça",
+      "suggestions_other": "Pixabay'de derlemelere uyan {{count}} parça",
+      "suggestionsHelp": "Birini aç, Pixabay'den lisansına göre indir ve buraya ekle. Lisans videolarda kullanmana izin verir; dosyanın başkasına aktarılmasına izin vermez.",
+      "link": "Ya da ses dosyasına bir bağlantı",
+      "addLink": "Bağlantıdan ekle"
+    },
+    "overlay": {
+      "label": "Katmanlar",
+      "helper_one": "{{count}} klibin temiz bir kopyası var. Yeniden çiz, güncel başlık kartını, kill feed'i ve adları yeniden ekler, sonra derlemeleri yeniden yapar. CS2 gerekmez.",
+      "helper_other": "{{count}} klibin temiz bir kopyası var. Yeniden çiz, güncel başlık kartını, kill feed'i ve adları yeniden ekler, sonra derlemeleri yeniden yapar. CS2 gerekmez.",
+      "redraw": "Katmanları yeniden çiz",
+      "pending_one": "{{count}} video kaydedici bekliyor",
+      "pending_other": "{{count}} video kaydedici bekliyor",
+      "failed_one": "{{count}} video yeniden çizilemedi",
+      "failed_other": "{{count}} video yeniden çizilemedi",
+      "keepClean": "Kliplerin temiz kopyalarını sakla",
+      "keepCleanHelper": "Her klip ayrıca kart veya kill feed olmadan, kaydedildiği gibi saklanır. Derlemeler bu temiz kliplerden kendi katmanlarıyla yapılır ve katmanlar yeniden çizilebilir. Kapalı, alanın yaklaşık yarısını kullanır.",
+      "redrawFailed": "Yeniden çizim sıraya alınamadı."
+    },
+    "moved": "Öne çıkanlar ayarları, kaydediciler ve nasıl kaydedici ekleneceği artık kendi sayfalarında:",
+    "saved": "Kaydedildi",
+    "saveFailed": "Kaydedilemedi",
+    "reels": {
+      "title": "Derleme boyutları",
+      "description": "Her derlemeye kaç klip girdiği. Daha fazla klip, yapılması daha uzun süren daha uzun derlemeler demek.",
+      "funnyPerPlayer": "Harita başına oyuncu başına komik klip",
+      "mapReelPerPlayer": "Harita derlemesinde oyuncu başına klip",
+      "seriesReelMax": "Seri derlemesindeki klip sayısı",
+      "seriesReelPerPlayer": "Seri derlemesinde oyuncu başına klip",
+      "teamReelPerPlayer": "Takım derlemesinde oyuncu başına klip",
+      "tournamentReelMax": "Turnuva derlemesindeki klip sayısı",
+      "tournamentReelPerPlayer": "Turnuva derlemesinde oyuncu başına klip",
+      "range": "{{min}} ile {{max}} arası"
+    },
+    "minResolution": {
+      "label": "En düşük çözünürlük"
+    },
+    "ladder": {
+      "title": "İzleyicilerin seçebileceği kaliteler",
+      "recordedAt": "Kayıt kalitesi: {{quality}}",
+      "highest": "En yüksek",
+      "lowest": "Telefonlar, yavaş bağlantılar",
+      "rate": "≈{{mbps}} Mbit/s"
+    },
+    "cost": {
+      "single": "Kayıt, 120 fps'de 1080p'nin yaklaşık {{time}}× süresi kadar sürer. Bir tahmin.",
+      "withCuts": "Kayıt, 120 fps'de 1080p'nin yaklaşık {{time}}× süresi kadar sürer ve her kalite saklanır: yaklaşık {{storage}}× alan. Tahminler."
+    },
+    "keepMasters": {
+      "label": "En yüksek kaliteyi sakla",
+      "always": "Her zaman",
+      "30": "30 gün boyunca",
+      "7": "7 gün boyunca",
+      "reels": "Derlemeler yapılana kadar",
+      "helper": "Sonra yerini bir sonraki kalite alır ve temiz kopya silinir; bu alanın çoğunu kazandırır. En yüksek kalitesi olmayan bir videonun katmanı yeniden çizilemez veya o kalitede yeni bir derlemeye eklenemez; yeniden kaydedilmesi gerekir."
+    },
+    "matchmaking": {
+      "minimumTitle": "Hangi oyunlar klip olur",
+      "minimumDescription": "Her maç için. Eşleştirme ayrıca aşağıda belirlenen en iyi birkaçını tutar.",
+      "title": "Eşleştirme öne çıkanları",
+      "description": "Eşleştirmede çok maç oynanır. Kaydediciler bütün gün meşgul olmasın diye her birinden yalnızca en iyi birkaçını tut.",
+      "on": "Eşleştirme öne çıkanlarını kaydet",
+      "onHelp": "Kapalı: eşleştirme maçları klip veya derleme almaz.",
+      "clips": "Maç başına klip",
+      "clipsHelp": "Önce en iyi oyunlar. Bir oyuncunun derlemesi aynı kliplerden yapılır.",
+      "all": "Tümü",
+      "minKills": "Tutulacak en küçük oyun",
+      "minKillsHelp": "Bunun altındaki oyunlar yer olsa bile asla klip olmaz.",
+      "kills": {
+        "2": "2 öldürme",
+        "3": "3 öldürme",
+        "4": "4 öldürme",
+        "5": "Ace"
+      },
+      "killsInline": {
+        "2": "2 öldürme",
+        "3": "3 öldürme",
+        "4": "4 öldürme",
+        "5": "bir ace"
+      },
+      "clutch": "Clutch'lar her zaman sayılır",
+      "clutchHelp": "Kazanılan bir 1vX, en küçük oyundan daha az öldürmeyle bile sayılır.",
+      "summary": "Her eşleştirme maçı {{kills}} veya daha fazlasından {{clips}} alır.",
+      "summaryClutch": "Her eşleştirme maçı {{kills}} veya daha fazlasından {{clips}} ve her clutch'ı alır.",
+      "summaryEvery": "her oyun",
+      "summaryBest_one": "en iyi oyunu",
+      "summaryBest_other": "en iyi {{count}} oyunu"
+    }
+  },
+  "update": {
+    "available": "Auto Tournament {{latest}} çıktı (sende {{running}} çalışıyor).",
+    "notes": "Yenilikler",
+    "module": "{{name}} {{version}} mevcut (sende {{installed}} çalışıyor).",
+    "moduleProblem": "{{name}}: güncelleme uygulanmadı. {{problem}}",
+    "openModules": "Modüller"
+  },
+  "licenseGate": {
+    "expiredTitle": "Bu platformun lisansının süresi doldu",
+    "expiredAdmin": "Lisans ödemesi gecikti, bu yüzden platform durdu. Ödeme yapmak onu hemen yeniden açar. Verilerin güvende.",
+    "expiredPlayer": "Maçlar ve kayıtlar duraklatıldı. Organizatöre haber verildi. Daha sonra tekrar bak.",
+    "pay": "Konsolda öde ↗",
+    "settings": "Lisans ayarları",
+    "fix": "Düzelt ↗",
+    "pastDue": "Lisans ödemesi başarısız oldu. Ödenmezse platform {{date}} tarihinde durur.",
+    "elsewhereTitle": "Bu lisans anahtarı başka bir kurulumda kullanılıyor",
+    "elsewhereAdmin": "Bir lisans anahtarı bir Auto Tournament kurulumunda çalışır ve başka bir kurulum bunu kullanıyor. Bu kurulumun kendi anahtarını yapıştır ya da konsolda \"Başka bir kuruluma taşı\"yı kullan. Verilerin güvende.",
+    "replacedTitle": "Bu lisans anahtarı değiştirildi",
+    "replacedAdmin": "Bu lisans için konsolda yeni bir anahtar oluşturuldu, bu yüzden eskisi durdu. Yeni anahtarı lisans ayarlarına yapıştır. Verilerin güvende.",
+    "openConsole": "Konsolu aç ↗",
+    "pasteKey": "Yeni anahtarı yapıştır",
+    "replacedSoon": "Bu lisans için konsolda yeni bir anahtar oluşturuldu. Lisans ayarlarına yapıştır: bu anahtar {{date}} tarihinde durur."
+  },
+  "matchAdmin": {
+    "openChat": "Sohbeti aç",
+    "resetVeto": "Vetoyu yeniden başlat",
+    "resetVetoTitle": "Veto yeniden başlatılsın mı?",
+    "resetVetoBody": "Şimdiye kadarki tüm yasaklar, seçimler ve taraflar temizlenir ve takımlar vetoya yeniden başlar. İki takım da bunu maç sohbetinde görür.",
+    "vetoReset": "Veto baştan başlıyor",
+    "vetoResetFailed": "Veto yeniden başlatılamadı"
+  },
+  "addressMismatch": {
+    "open": "{{host}} aç",
+    "text": "{{current}} adresindesin ama bu site {{host}} için ayarlanmış: Steam girişi, e-postalar ve oyun sunucuları o adresi kullanır."
+  },
+  "siteFooter": {
+    "support": "Projeyi destekle",
+    "trademarks": "Counter-Strike, CS2 ve Steam, Valve Corporation'ın ticari markalarıdır. Diğer oyun adları sahiplerinin ticari markalarıdır. Auto Tournament, Valve veya herhangi bir oyun yayıncısıyla bağlantılı değildir ve onlar tarafından onaylanmamıştır."
+  },
+  "discordNotice": {
+    "link": "Botun seni takımının ses kanalına taşıyabilmesi ve takım kanalında bulabilmesi için Discord hesabını bağla.",
+    "linkAction": "Discord'u bağla",
+    "join": "Discord sunucumuza katıl. Takımının kanalları ve maç kartları orada.",
+    "joinAction": "Sunucuya katıl"
+  }
+}

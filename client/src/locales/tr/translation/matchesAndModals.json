@@ -1,0 +1,490 @@
+{
+  "matchesPage": {
+    "errors": {
+      "loadMatches": "Maçlar yüklenemedi",
+      "loadTitle": "Maçlar yüklenirken hata oluştu",
+      "bulkDelete": "Bir veya daha fazla maç silinemedi"
+    },
+    "header": {
+      "createMatch": "Maç oluştur"
+    },
+    "bulkSelect": {
+      "select": "Seç",
+      "done": "Seçimi bitir",
+      "selectAll": "Tümünü seç",
+      "unselectAll": "Seçimi kaldır",
+      "deleteSelected": "Seçilenleri sil"
+    },
+    "empty": {
+      "title": "Gösterilecek maç yok",
+      "description": "Maçları burada görmek için bir turnuva oluştur ve turnuva ağacını üret",
+      "createManual": "Ya da elle maç oluştur"
+    },
+    "sections": {
+      "live": "Canlı maçlar ({{count}})",
+      "upcoming": "Yaklaşan maçlar ({{count}})",
+      "history": "Maç geçmişi ({{count}})",
+      "inQueue": "Sırada {{count}}"
+    },
+    "manualMatchLabel": "Elle oluşturulan maç",
+    "create": {
+      "success": "Elle maç oluşturuldu: {{slug}}"
+    },
+    "bulkDelete": {
+      "title": "Elle oluşturulan maçları sil",
+      "deleted_one": "{{count}} maç silindi",
+      "deleted_other": "{{count}} maç silindi",
+      "message_one": "{{count}} elle oluşturulan maçı silmek istediğinden emin misin? Bu işlem geri alınamaz.",
+      "message_other": "{{count}} elle oluşturulan maçı silmek istediğinden emin misin? Bu işlem geri alınamaz."
+    },
+    "card": {
+      "matchNumber": "Maç #{{number}}",
+      "server": "Sunucu: {{name}}",
+      "queuePosition": "Sıra: #{{position}}",
+      "shuffle": "Karışık",
+      "shuffleManual": "Karışık (elle)",
+      "manual": "Elle",
+      "simulation": "Simülasyon",
+      "winner": "KAZANAN",
+      "mapN": "Harita {{n}}"
+    },
+    "statusLabel": {
+      "walkover": "HÜKMEN",
+      "waitingForTournament": "TURNUVANIN BAŞLAMASI BEKLENİYOR",
+      "waitingForServer": "SUNUCU BEKLENİYOR",
+      "waitingForPairing": "EŞLEŞME BEKLENİYOR",
+      "vetoPending": "VETO BEKLİYOR",
+      "mapVeto": "HARİTA VETOSU",
+      "serverAllocated": "SUNUCU ATANDI",
+      "warmup": "ISINMA",
+      "overtime": "UZATMA #{{n}}",
+      "live": "CANLI",
+      "completed": "TAMAMLANDI",
+      "cancelled": "İPTAL EDİLDİ",
+      "needsDecision": "YÖNETİCİ KARARI GEREKİYOR"
+    },
+    "statusGuide": {
+      "title": "Maç durumu rehberi",
+      "pending": "Maç planlandı ama henüz bir sunucuya atanmadı. Bir sunucu boşalınca atanacak.",
+      "loaded": "Maç sunucuda yüklendi ve ısınma modunda. Oyuncuların bağlanıp hazır olması gerekiyor.",
+      "live": "Maç kendi sunucusunda oynanıyor.",
+      "completed": "Maç bitti. Kazanan belli oldu ve turnuva ağacı güncellendi.",
+      "proTipTitle": "İpucu:",
+      "proTip": "Bir maç \"Oyuncular bekleniyor (X/Y)\" gösterdiğinde sunucu hazırdır ve oyuncular bağlanmalıdır. Beklenen tüm oyuncular bağlanıp hazır olunca maç otomatik başlar."
+    },
+    "latestEvent": "Son: {{event}}",
+    "matchLabel": {
+      "upper": "ÜA T{{round}} M{{match}}",
+      "lower": "AA T{{round}} M{{match}}",
+      "grandFinal": "Büyük final",
+      "grandFinalReset": "Büyük final (tekrar)",
+      "group": "Grup {{group}} · Tur {{round}}",
+      "playoffs": "Playoff · Tur {{round}}"
+    },
+    "table": {
+      "filterLabel": "Göster",
+      "search": "Takım veya oyuncu bul",
+      "tbd": "Belirsiz",
+      "manage": "Maçı yönet",
+      "empty": "Burada maç yok.",
+      "filter": {
+        "attention_one": "İlgi gerekiyor · {{count}}",
+        "attention_other": "İlgi gerekiyor · {{count}}",
+        "live_one": "Canlı · {{count}}",
+        "live_other": "Canlı · {{count}}",
+        "veto_one": "Veto · {{count}}",
+        "veto_other": "Veto · {{count}}",
+        "waiting_one": "Bekliyor · {{count}}",
+        "waiting_other": "Bekliyor · {{count}}",
+        "finished_one": "Bitti · {{count}}",
+        "finished_other": "Bitti · {{count}}",
+        "all_one": "Tümü · {{count}}",
+        "all_other": "Tümü · {{count}}"
+      },
+      "columns": {
+        "match": "Maç",
+        "teams": "Takımlar",
+        "phase": "Aşama",
+        "server": "Sunucu",
+        "attention": "İlgi gerekiyor",
+        "open": "Aç"
+      },
+      "attention": {
+        "calls_one": "Yönetici çağrısı",
+        "calls_other": "{{count}} yönetici çağrısı",
+        "decide": "Sonuca karar ver"
+      },
+      "phase": {
+        "live": "Canlı · harita {{map}}",
+        "finished": "Bitti",
+        "finishedScore": "Bitti · {{score}}",
+        "veto": "Harita vetosu",
+        "waitingTeams": "Takımları bekliyor",
+        "queued": "Sunucu bekliyor · sırada #{{position}}",
+        "waiting": "Bekliyor"
+      },
+      "server": {
+        "freed": "Boşaltıldı"
+      }
+    }
+  },
+  "matchDetailsModal": {
+    "tiebreakHint": "Skorlar eşit: haritayı eşitlik bozmayla {{team}} kazandı.",
+    "delete": {
+      "dialogTitle": "Maçı sil",
+      "confirmTitle": "Bu maç silinsin mi?",
+      "confirmBody": "\"{{slug}}\" maçını silmek istediğinden emin misin? Bu işlem geri alınamaz.",
+      "button": "Maçı sil",
+      "success": "Maç silindi",
+      "failed": "Maç silinemedi"
+    },
+    "roster": {
+      "title": "Oyuncu kadrosu",
+      "yourTeam": "Takımın",
+      "openPlayerPage": "Oyuncu sayfasını aç",
+      "ready": "HAZIR",
+      "connected": "BAĞLI",
+      "offline": "ÇEVRİMDIŞI",
+      "bot": "BOT"
+    },
+    "decision": {
+      "body": "Her harita oynandı ama seri haritalarda, rauntlarda ve hasarda eşit. Turnuva ağacının ilerlemesi için kazananı seç.",
+      "setWinner": "{{team}} kazansın",
+      "confirmTitle": "Seri kazananını belirle",
+      "confirmBody": "Bu seri kazanan olarak şu takımla bitirilsin mi: {{team}}? Turnuva ağacı ilerler ve bu işlem burada geri alınamaz.",
+      "confirm": "Kazananı belirle",
+      "success": "Kazanan belirlendi",
+      "failed": "Kazanan belirlenemedi"
+    },
+    "config": {
+      "loadFailed": "Maç yapılandırması yüklenemedi",
+      "view": "Maç yapılandırması JSON'unu görüntüle",
+      "title": "Maç yapılandırması JSON'u",
+      "loading": "Maç yapılandırması yükleniyor...",
+      "empty": "Bu maç için yapılandırma yok."
+    },
+    "tiebreak": {
+      "regulationOnly": "Bu maçta uzatma kapalı (yalnızca normal süre), bu yüzden eşit skorlar toplam takım hasarıyla çözülür.",
+      "segmentsExhausted": "Uzatma en fazla belirli sayıda bölümle ayarlanmış. Skor hâlâ eşitse kazanan toplam takım hasarıyla belirlenir.",
+      "overtimeDisabled": "Bu maçta uzatma kapalı, bu yüzden eşit skorlar toplam takım hasarıyla çözülür.",
+      "tiedByDamage": "Son skor eşitti, bu yüzden maç ayarlarına göre kazanan toplam takım hasarıyla seçildi."
+    },
+    "team1": "Takım 1",
+    "team2": "Takım 2",
+    "matchTime": "Maç zamanı:",
+    "server": "Sunucu:",
+    "queuePosition": "Sıra:",
+    "totalDamage": "Toplam hasar: {{team1}} - {{team2}}",
+    "mapOfTotal": "Harita {{index}} / {{total}}: {{map}}",
+    "mapIndex": "Harita {{index}}: {{map}}",
+    "round": "Raunt {{round}}",
+    "shuffle": {
+      "averageElo": "Takım ELO'su (ort.): {{team1}} - {{team2}}",
+      "balancerHint": "Karışık takımlar, bu ortalamaları yakın tutmak için yüksek ve düşük puanlı oyuncuları iki tarafa dağıtan OpenSkill tabanlı bir dengeleyiciyle oluşturulur."
+    },
+    "playerLeaderboards": "Oyuncu sıralamaları",
+    "noPlayerData": "Oyuncu verisi yok",
+    "currentMap": "Mevcut harita",
+    "maps": "Haritalar",
+    "mapsNotPicked": "Haritalar henüz seçilmedi.",
+    "mapsViaVeto": "Veto ile belirlenecek",
+    "matchInformation": "Maç bilgileri",
+    "created": "Oluşturuldu:",
+    "started": "Başladı:",
+    "completed": "Tamamlandı:",
+    "adminControls": "Yönetici kontrolleri",
+    "slug": "Maç slug'ı:",
+    "openChat": "Maç sohbeti"
+  },
+  "bulkShuffleMatchesModal": {
+    "title": "Toplu karışık maç oluştur",
+    "description": "Tek haritalık bir karışık maç ayarla (harita + raunt sınırı), sonra her taraf için oyuncu kadrolarını seçerek istediğin kadar karşılaşma tanımla. Maçlar mevcut karışık turnuvanın parçası olarak oluşturulur ve turnuvayı başlattığında sunuculara atanır.",
+    "mapSelect": {
+      "label": "Harita",
+      "noMaps": "Bu turnuva için ayarlanmış harita yok",
+      "helper": "Bu gruptaki tüm maçlar bu haritayı kullanır."
+    },
+    "maxRounds": {
+      "label": "Harita başına en fazla raunt",
+      "helperWithValue": "Maç en fazla {{maxRounds}} raunt sürer; {{winRounds}} raunda ilk ulaşan kazanır.",
+      "helperDefault": "Harita başına en fazla raunt sayısı (varsayılan: 24, en fazla: 30)."
+    },
+    "matchesSection": {
+      "title": "Maçlar ({{count}})",
+      "addMatch": "Maç ekle"
+    },
+    "players": {
+      "empty": "Bu karışık turnuvaya henüz kayıtlı oyuncu yok. Önce oyuncuları kaydet, sonra elle maç oluşturabilirsin."
+    },
+    "matchRow": {
+      "title": "Maç {{index}}",
+      "teamCounts": "{{team1}}/{{teamSize}} • {{team2}}/{{teamSize}}",
+      "team1Label": "Takım 1 oyuncuları ({{team1Count}}/{{teamSize}})",
+      "team2Label": "Takım 2 oyuncuları ({{team2Count}}/{{teamSize}})",
+      "searchPlaceholder": "Oyuncu ara ve seç",
+      "mapOverrideLabel": "Harita (isteğe bağlı, değiştirmek için)",
+      "mapOverrideHelperOwn": "Bu maç kendi haritasını kullanıyor.",
+      "mapOverrideHelperDefault": "Yukarıdaki varsayılan haritayı kullanmak için boş bırak.",
+      "maxRoundsOverrideLabel": "En fazla raunt (isteğe bağlı, değiştirmek için)",
+      "maxRoundsOverrideHelperOwn": "Bu maç için varsayılan en fazla raunt sayısını değiştirir (şu an {{value}}).",
+      "maxRoundsOverrideHelperDefault": "Yukarıdaki varsayılan en fazla raunt sayısını kullanmak için boş bırak."
+    },
+    "errors": {
+      "loadPlayers": "Kayıtlı oyuncular yüklenemedi",
+      "noMatches": "Oluşturmak için en az bir maç ekle.",
+      "bothTeamsRequired": "Maç {{index}}: iki takımda da en az bir oyuncu olmalı.",
+      "conflictingPlayers": "Maç {{index}}: aynı oyuncu iki takımda olamaz. Çakışan kimlik(ler): {{ids}}",
+      "mapRequired": "Maç {{index}}: harita gerekli (yukarıda varsayılan bir harita belirle ya da bu maç için bir harita seç).",
+      "rowMaxRoundsRange": "Maç {{index}}: maç başına değiştirildiğinde en fazla raunt 1 ile 30 arasında olmalı.",
+      "globalMaxRoundsRange": "En fazla raunt 1 ile 30 arasında olmalı.",
+      "createFailed": "Elle karışık maçlar oluşturulamadı"
+    },
+    "success": {
+      "created": "Elle karışık maçlar oluşturuldu. Turnuva başladığında atanacaklar."
+    },
+    "createMatchesButton": {
+      "default": "Maçları oluştur",
+      "creating": "Oluşturuluyor…"
+    }
+  },
+  "teamModal": {
+    "titleCreate": "Yeni takım oluştur",
+    "titleEdit": "Takımı düzenle",
+    "teamNameLabel": "Takım adı",
+    "teamNamePlaceholder": "Astralis",
+    "teamNameHelper": "Takım adı her dilden ve özel karakterlerden oluşabilir",
+    "teamTagLabel": "Takım kısaltması",
+    "teamTagPlaceholder": "AST",
+    "teamTagHelper": "Takım adından otomatik oluşturulur (en fazla 4 karakter)",
+    "playersHeader": "Oyuncular ({{count}})",
+    "selectPlayers": "Oyuncu seç",
+    "noPlayersInfo": "Henüz oyuncu eklenmedi. En az bir oyuncu ekle.",
+    "addPlayersHelper": "Aşağıdan yeni bir oyuncu ekle ya da mevcut oyunculardan seç",
+    "addPlayersHelper_steam": "Steam URL'si yapıştırarak ya da mevcut oyunculardan seçerek oyuncu ekle",
+    "steamInputLabel": "Steam ID / özel URL",
+    "steamInputPlaceholder": "gaben veya steamcommunity.com/id/gaben",
+    "resolveSteam": "Steam ID'yi çözümle",
+    "resolving": "Çözümleniyor...",
+    "playerNameLabel": "Oyuncu adı",
+    "playerNamePlaceholder": "s1mple",
+    "eloLabel": "ELO (isteğe bağlı)",
+    "eloPlaceholder": "1500",
+    "eloHelper": "Varsayılan: 1500",
+    "errors": {
+      "steamLookupEmpty": "Lütfen bir Steam ID, özel URL veya profil URL'si gir",
+      "steamApiNotConfigured": "Steam API ayarlanmamış - Steam ID64'ü elle gir",
+      "steamResolveFailed": "Steam ID çözümlenemedi - lütfen Steam ID64'ü elle gir",
+      "steamAndNameRequired": "Hem Steam ID hem oyuncu adı gerekli",
+      "steamDuplicate": "Bu Steam ID zaten takımda",
+      "teamNameRequired": "Takım adı gerekli",
+      "playersRequired": "En az bir oyuncu gerekli",
+      "saveFailed": "Takım kaydedilemedi",
+      "deleteFailed": "Takım silinemedi",
+      "discordIdInvalid": "Discord ID 17–20 haneli olmalı (kullanıcı adı değil, sayısal kullanıcı kimliği)",
+      "discordIdInvalidPlayers": "Geçersiz Discord ID: {{names}}. 17–20 haneli olmalı ya da boş bırakılmalı.",
+      "discordIdSaveFailed": "Takım kaydedildi ama şu oyuncular için Discord ID kaydedilemedi: {{names}}. {{message}}",
+      "nameRequired": "Oyuncunun adını gir",
+      "addPlayerFailed": "Oyuncu eklenemedi"
+    },
+    "success": {
+      "playerAdded": "Oyuncu takıma eklendi",
+      "playerReplaced": "Oyuncu değiştirildi",
+      "teamUpdated": "Takım güncellendi",
+      "teamCreated": "Takım oluşturuldu",
+      "teamDeleted": "Takım silindi"
+    },
+    "buttons": {
+      "deleteTeam": "Takımı sil",
+      "cancel": "İptal",
+      "saving": "Kaydediliyor...",
+      "saveChanges": "Değişiklikleri kaydet",
+      "createTeam": "Takım oluştur"
+    },
+    "confirmDelete": {
+      "title": "Takımı sil",
+      "message": "\"{{name}}\" takımını silmek istediğinden emin misin? Bu işlem geri alınamaz."
+    },
+    "replacePlayerAria": "{{name}} oyuncusunu değiştir",
+    "replacePlayerTooltip": "Bu oyuncuyu değiştir",
+    "accountLabel": "{{account}} hesabı (isteğe bağlı)",
+    "accountHelper": "{{games}} için. {{account}} ile giriş yaptığında bu oyuncu olur."
+  },
+  "playerModal": {
+    "titleCreate": "Oyuncu oluştur",
+    "titleEdit": "Oyuncuyu düzenle",
+    "steamLabel": "Steam ID veya profil URL'si (isteğe bağlı)",
+    "steamHelperEditing": "Steam ID değiştirilemez",
+    "steamHelperNew": "{{games}} için. Bir Steam ID64, özel URL veya profil URL'si gir; \"Çözümle\" adı ve avatarı doldurur.",
+    "resolveSteam": "Steam ID'yi çözümle",
+    "resolving": "Çözümleniyor...",
+    "playerNameLabel": "Oyuncu adı",
+    "playerNamePlaceholder": "Oyuncu",
+    "eloLabelNew": "Başlangıç ELO'su",
+    "eloLabelEdit": "ELO",
+    "eloHelperNew": "Varsayılanı kullanmak için boş bırak (1500 Skill Rating).",
+    "eloHelperEdit": "ELO'yu değiştirmek oyuncunun puanını ve istatistiklerini sıfırlar. Bu işlem geri alınamaz.",
+    "isAdminLabel": "Yönetici (bu siteyi yönetir; oyun modülleri yöneticilere oyun içi yetkiler de verebilir)",
+    "currentElo": "Mevcut ELO: {{value}}",
+    "startingElo": "Başlangıç ELO'su: {{value}}",
+    "matchesPlayed": "Oynanan maç: {{count}}",
+    "errors": {
+      "steamRequired": "Steam ID gerekli",
+      "nameRequired": "Oyuncu adı gerekli",
+      "steamLookupEmpty": "Lütfen bir Steam ID, özel URL veya profil URL'si gir",
+      "steamApiNotConfigured": "Steam API ayarlanmamış - Steam ID64'ü elle gir",
+      "steamResolveFailed": "Steam ID çözümlenemedi - lütfen Steam ID64'ü elle gir",
+      "saveFailed": "Oyuncu kaydedilemedi"
+    },
+    "success": {
+      "playerUpdated": "Oyuncu güncellendi",
+      "playerCreated": "Oyuncu oluşturuldu"
+    },
+    "buttons": {
+      "delete": "Sil",
+      "cancel": "İptal",
+      "saving": "Kaydediliyor...",
+      "save": "Kaydet",
+      "create": "Oluştur"
+    },
+    "confirmDelete": {
+      "title": "Oyuncuyu sil",
+      "message": "\"{{name}}\" oyuncusunu silmek istediğinden emin misin? Bu işlem geri alınamaz."
+    },
+    "confirmEloUpdate": {
+      "title": "Oyuncu ELO'sunu güncelle",
+      "message": "Bu oyuncunun ELO'sunu {{from}} değerinden {{to}} değerine güncellemek istediğinden emin misin? Bu, istatistiklerini ve puan geçmişini sıfırlar. Bu işlem geri alınamaz."
+    },
+    "discordIdHelper": "İsteğe bağlı. 17–20 hane. Organizatörlerin bu oyuncuya Discord'dan ulaşmasını sağlar. Hiçbir zaman herkese açık gösterilmez.",
+    "accountLabel": "{{account}} hesabı (isteğe bağlı)",
+    "accountHelper": "{{games}} için. Hesap kimliği; {{account}} ile giriş yaptığında bu oyuncu olur.",
+    "accountVerified": "Bağlandı: {{account}} ile giriş yaptı. Kendisi değiştirir."
+  },
+  "teamImportModal": {
+    "title": "JSON'dan takım içe aktar",
+    "info": {
+      "title": "Takım verilerini içeren JSON'u aşağıya yapıştır.",
+      "format": "Beklenen biçim: name, tag (isteğe bağlı) ve players (name + steamId, ayrıca tırnak içinde metin olarak isteğe bağlı discordId) alanları olan takımlardan oluşan bir dizi.",
+      "link": "Örnekli belgeleri görüntüle"
+    },
+    "jsonLabel": "JSON verisi",
+    "errors": {
+      "mustBeArray": "JSON bir takım dizisi olmalı",
+      "emptyArray": "Dizi boş olamaz",
+      "parseWithMessage": "JSON ayrıştırma hatası: {{message}}",
+      "parseGeneric": "Geçersiz JSON biçimi. Lütfen sözdizimini kontrol et.",
+      "importFailed": "Takımlar içe aktarılamadı",
+      "noJson": "Lütfen JSON verisi gir"
+    },
+    "preview": {
+      "summary": "✓ Geçerli JSON! Toplam {{teams}}, {{players}} bulundu.",
+      "title": "Önizleme:",
+      "missingDiscordTotal": "Discord ID'si olmayan oyuncular: {{count}}",
+      "missingDiscordChip": "Discord yok: {{count}}",
+      "playersChip_one": "{{count}} oyuncu",
+      "playersChip_other": "{{count}} oyuncu",
+      "teamsCount_one": "{{count}} takım",
+      "teamsCount_other": "{{count}} takım"
+    },
+    "actions": {
+      "preview": "Önizle",
+      "importing": "İçe aktarılıyor...",
+      "import_one": "{{count}} takımı içe aktar",
+      "import_other": "{{count}} takımı içe aktar"
+    },
+    "warnings": {
+      "title": "Bazı Discord ID'leri yok sayıldı. Bu oyuncular Discord ID'si olmadan içe aktarılacak:",
+      "discordIdNumber": "\"{{team}}\" takımı, \"{{player}}\" oyuncusu: discordId tırnak içinde metin olmalı. Büyük sayılar JSON'da hassasiyet kaybeder, bu yüzden ID atlandı.",
+      "discordIdInvalid": "\"{{team}}\" takımı, \"{{player}}\" oyuncusu: \"{{value}}\" bir Discord kullanıcı kimliği değil (17–20 hane bekleniyordu), bu yüzden atlandı."
+    }
+  },
+  "playerImportModal": {
+    "title": "Oyuncuları içe aktar",
+    "info": {
+      "description": "Oyuncuları JSON veya CSV biçiminden içe aktar. Zorunlu alanlar: steamId, name. İsteğe bağlı: initialELO (varsayılan 1500), avatarUrl.",
+      "link": "Örnekli belgeleri görüntüle"
+    },
+    "placeholders": {
+      "jsonCsv": "JSON biçimi:\n[\n  {\n    \"steamId\": \"76561198012345678\",\n    \"name\": \"Player One\",\n    \"initialELO\": 1500,\n    \"avatarUrl\": \"https://...\"\n  }\n]\n\nCSV biçimi:\nsteamId,name,initialELO,avatarUrl\n76561198012345678,Player One,1500,https://..."
+    },
+    "actions": {
+      "parseValidate": "Ayrıştır ve doğrula",
+      "importing": "İçe aktarılıyor...",
+      "import_one": "{{count}} oyuncuyu içe aktar",
+      "import_other": "{{count}} oyuncuyu içe aktar"
+    },
+    "preview": {
+      "title": "İçe aktarılacak oyuncular ({{count}}):",
+      "steamId": "Steam ID: {{steamId}}",
+      "name": "Ad: {{name}}",
+      "initialElo": "Başlangıç ELO'su: {{elo}}",
+      "avatar": "Avatar: {{url}}",
+      "readyChip_one": "{{count}} oyuncu içe aktarılmaya hazır",
+      "readyChip_other": "{{count}} oyuncu içe aktarılmaya hazır"
+    },
+    "errors": {
+      "noData": "Lütfen JSON veya CSV verisi gir",
+      "noPlayers": "Veride oyuncu bulunamadı",
+      "validationPrefix": "Doğrulama hataları:",
+      "parseFailed": "Veri ayrıştırılamadı: {{message}}",
+      "importFailed": "Oyuncular içe aktarılamadı",
+      "parseFirst": "Lütfen önce veriyi ayrıştırıp doğrula"
+    }
+  },
+  "playerSelectionModal": {
+    "title": "Oyuncu seç",
+    "selectedCount": "{{count}} seçili",
+    "searchPlaceholder": "Oyuncuları ada göre ara...",
+    "searchPlaceholder_steam": "Oyuncuları ada veya Steam ID'ye göre ara...",
+    "selectAll": {
+      "select": "Tümünü seç",
+      "deselect": "Seçimi kaldır"
+    },
+    "empty": {
+      "noSearchResults": "Aramanla eşleşen oyuncu bulunamadı",
+      "noPlayers": "Kullanılabilir oyuncu yok"
+    },
+    "playerCard": {
+      "alreadyInTeam": "Zaten takımda"
+    },
+    "errors": {
+      "loadFailed": "Oyuncular yüklenemedi",
+      "noSelectable": "Seçilebilir oyuncu yok"
+    },
+    "addPlayersButton_one": "{{count}} oyuncu ekle",
+    "addPlayersButton_other": "{{count}} oyuncu ekle"
+  },
+  "soundSettingsModal": {
+    "title": "Ses ayarları",
+    "soundSelect": {
+      "label": "Bildirim sesi"
+    },
+    "volume": {
+      "label": "Ses düzeyi: %{{percent}}"
+    },
+    "testButton": "Sesi test et",
+    "footer": "Maçın hazır olduğunda veya önemli olaylar olduğunda sesli bildirimler çalar."
+  },
+  "addBackupPlayer": {
+    "title": "Oyuncu ekle",
+    "loadFailed": "Oyuncu listesi yüklenemedi",
+    "added": "{{name}} eklendi: {{target}}",
+    "addFailed": "Oyuncu eklenemedi",
+    "addToMatchFailed": "Oyuncu maça eklenemedi",
+    "searchLabel": "Oyuncu ara",
+    "searchPlaceholder": "Oyuncu adını yaz...",
+    "available": "{{count}} kullanılabilir oyuncu (maçta olmayan)",
+    "noneAvailable": "Kullanılabilir oyuncu yok",
+    "displayNameLabel": "Görünen ad (isteğe bağlı)",
+    "displayNamePlaceholder": "Varsayılan olarak oyuncunun mevcut adı",
+    "side": "Taraf",
+    "spectator": "İzleyici",
+    "selected": "Seçili:",
+    "fromTeam": "Takımı: {{team}}",
+    "steamId": "Steam ID: {{id}}",
+    "adding": "Oyuncu ekleniyor...",
+    "add": "Oyuncuyu maça ekle",
+    "underlyingCommand": "Arka plandaki komut:",
+    "important": "Önemli:",
+    "reconnectHint": "Oyuncu eklendikten sonra sunucuya yeniden bağlanmalı. Zaten bağlıysa yeniden katılması gerekebilir."
+  }
+}

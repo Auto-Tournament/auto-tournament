@@ -1,0 +1,12 @@
+{
+  "devAccountSwitcher": {
+    "tooltip": "Hesap değiştir (dev)",
+    "adminTest": "Yönetici (test)",
+    "playerA": "Oyuncu A (dev)",
+    "playerB": "Oyuncu B (dev)",
+    "playerC": "Oyuncu C (dev)",
+    "newPlayer": "Yeni oyuncu (ilk ziyaret) (dev)",
+    "signOut": "Çıkış yap",
+    "disabled": "Bu sunucuda test girişi kapalı"
+  }
+}
