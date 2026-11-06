@@ -1,0 +1,81 @@
+{
+  "manualReport": {
+    "title": "Rezultatul meciului",
+    "unknownTeam": "cealaltă echipă",
+    "state": {
+      "nothing": "Încă niciun rezultat raportat. Oricine l-a jucat poate raporta scorul.",
+      "waitingOpponent": "Raportat. Se așteaptă ca {{team}} să confirme.",
+      "needsAnswer": "{{team}} a raportat acest rezultat. Confirmă-l dacă e corect.",
+      "disputed": "Acest rezultat este contestat. Un admin îl va decide.",
+      "awaitingAdmin": "Se așteaptă ca un admin să decidă acest meci.",
+      "confirmed": "Ambele echipe sunt de acord cu acest rezultat."
+    },
+    "deadline": {
+      "autoConfirm": "Se confirmă singur în {{minutes}} min dacă nu răspunde nimeni.",
+      "autoConfirmSoon": "Se confirmă singur din clipă în clipă.",
+      "escalate": "Ajunge la un admin în {{minutes}} min dacă nu răspunde nimeni.",
+      "escalateSoon": "Ajunge la un admin din clipă în clipă."
+    },
+    "score": "{{team1}} {{score1}} – {{score2}} {{team2}}",
+    "game": "Jocul {{number}}",
+    "note": "Notă",
+    "notePlaceholder": "Orice ar trebui să știe cealaltă echipă (opțional)",
+    "noteGiven": "Notă: {{note}}",
+    "disputeReason": "Ce e greșit?",
+    "disputeReasonGiven": "Contestat: {{reason}}",
+    "formHint": "Scorurile pentru {{team1}} și {{team2}}, joc cu joc.",
+    "actions": {
+      "report": "Raportează scorul",
+      "reportAgain": "Raportează alt scor",
+      "submit": "Trimite raportul",
+      "cancel": "Anulează",
+      "confirm": "Confirmă",
+      "dispute": "Contestă",
+      "disputeSubmit": "Trimite contestația",
+      "withdraw": "Retrage raportul meu"
+    },
+    "errors": {
+      "stale": "Acest raport s-a schimbat cât era pe ecranul tău. Citește-l din nou înainte să confirmi.",
+      "incomplete": "Completează ambele scoruri pentru cel puțin un joc.",
+      "failed": "Nu a mers. Încearcă din nou."
+    },
+    "captains": {
+      "title": "Căpitani",
+      "hint": "Doar un căpitan poate raporta sau confirma un rezultat pentru această echipă.",
+      "make": "Fă-l căpitan",
+      "remove": "Elimină căpitanul",
+      "isCaptain": "Căpitan",
+      "empty": "Nimeni din această echipă nu s-a conectat încă, așa că nu are cine să fie numit.",
+      "unknown": "Jucător necunoscut",
+      "failed": "Nu s-a putut schimba. Încearcă din nou."
+    },
+    "stats": {
+      "hint": "Numerele suplimentare cerute de acest turneu. Lasă un câmp gol dacă nimeni nu are așa ceva.",
+      "required": "obligatoriu",
+      "recorded": "Statistici raportate",
+      "value": "{{subject}}: {{value}}{{suffix}}",
+      "errors": {
+        "number": "{{field}} pentru {{subject}} trebuie să fie un număr.",
+        "integer": "{{field}} pentru {{subject}} trebuie să fie un număr întreg.",
+        "range": "{{field}} pentru {{subject}} este prea mare ca să fie un număr real.",
+        "tooLong": "{{field}} pentru {{subject}} depășește limita de caractere ({{max}}).",
+        "missing": "{{field}} este obligatoriu, iar pentru {{team}} nu este completat nimic."
+      },
+      "tournamentTitle": "Statistici raportate",
+      "tournamentHelp": "Adunate din rapoartele confirmate. Un rezultat care încă așteaptă adversarul nu e numărat aici.",
+      "byTeam": "Pe echipă",
+      "byPlayer": "Pe jucător",
+      "team": "Echipă",
+      "player": "Jucător",
+      "matches": "Meciuri"
+    },
+    "chip": {
+      "none": "Încă niciun rezultat",
+      "yours": "Raportul tău",
+      "reported": "Raportat",
+      "confirm": "Confirmă-l",
+      "disputed": "Contestat",
+      "final": "Final"
+    }
+  }
+}
