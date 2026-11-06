@@ -1,0 +1,989 @@
+{
+  "dashboard": {
+    "title": "管理員",
+    "restartTournament": {
+      "button": "重啟賽事比賽",
+      "restarting": "正在重啟賽事比賽…",
+      "intro": "🔄 這將重啟所有進行中的比賽，並在伺服器上重新載入。",
+      "actionsTitle": "操作：",
+      "actionEndMatch": "在所有載入中或進行中比賽的伺服器上執行 at_endmatch",
+      "actionReset": "把比賽重置為「就緒」狀態",
+      "actionReallocate": "把比賽重新分配到可用伺服器",
+      "actionReload": "在遊戲伺服器上重新載入比賽設定",
+      "hint": "比賽卡住或需要重新開始時使用。",
+      "confirm": "重啟賽事"
+    },
+    "header": {
+      "brand": "Auto Tournament",
+      "version": "你的 Auto Tournament 網站 · 版本 {{version}}",
+      "unknownVersion": "dev",
+      "createTournament": "建立賽事"
+    },
+    "setup": {
+      "title": "完成設定",
+      "openSettings": "開啟設定",
+      "signIn": "登入方式",
+      "game": "從「模組」安裝遊戲（CS2）",
+      "discordBot": "新增你自己的 Discord 機器人（其權杖），以便網站給玩傢俬信比賽資訊"
+    },
+    "tournaments": {
+      "title": "賽事",
+      "empty": "此網站一次執行一個賽事。建立後，它會顯示在這裡、「瀏覽」中以及它的賽事頁面上。",
+      "status": {
+        "setup": "草稿",
+        "ready": "報名中",
+        "inProgress": "進行中",
+        "completed": "已結束"
+      },
+      "state": {
+        "teams_one": "{{count}} 支戰隊",
+        "teams_other": "{{count}} 支戰隊",
+        "entered_one": "{{count}} 支戰隊已報名",
+        "entered_other": "{{count}} 支戰隊已報名",
+        "draftTeams_one": "草稿 · 已選 {{count}} 支戰隊",
+        "draftTeams_other": "草稿 · 已選 {{count}} 支戰隊",
+        "draftEmpty": "草稿 · 還沒有戰隊",
+        "live_one": "{{count}} 場比賽進行中",
+        "live_other": "{{count}} 場比賽進行中",
+        "completed_one": "{{count}} 支戰隊參加",
+        "completed_other": "{{count}} 支戰隊參加",
+        "winner": "冠軍：{{name}}",
+        "teamsPlayers_one": "{{count}} 名玩家",
+        "teamsPlayers_other": "{{count}} 名玩家",
+        "enteredPlayers_one": "{{count}} 名玩家已報名",
+        "enteredPlayers_other": "{{count}} 名玩家已報名",
+        "draftTeamsPlayers_one": "草稿 · {{count}} 名玩家",
+        "draftTeamsPlayers_other": "草稿 · {{count}} 名玩家",
+        "completedPlayers_one": "{{count}} 名玩家參加",
+        "completedPlayers_other": "{{count}} 名玩家參加"
+      },
+      "actions": {
+        "manage": "管理",
+        "continueSetup": "繼續設定",
+        "view": "檢視"
+      },
+      "eventPage": "賽事頁面",
+      "emptyTitle": "還沒有賽事"
+    },
+    "site": {
+      "title": "網站",
+      "players": {
+        "label": "玩家",
+        "hint": "所有登入過的人"
+      },
+      "teams": {
+        "label": "戰隊",
+        "hint": "俱樂部和陣容"
+      },
+      "templates": {
+        "label": "範本",
+        "hint": "可複用的設定"
+      },
+      "ratings": {
+        "label": "Rating",
+        "hint": "Rating 如何計算"
+      },
+      "settings": {
+        "label": "設定",
+        "hint": "登入、API 金鑰"
+      },
+      "adminTools": {
+        "label": "系統",
+        "hint": "比賽恢復和記錄"
+      },
+      "disputes": {
+        "label": "爭議",
+        "hint": "待處理的結果"
+      },
+      "modules": {
+        "label": "模組",
+        "hint": "此實例執行的遊戲"
+      }
+    },
+    "people": {
+      "title": "人員",
+      "open": "開啟",
+      "players": "玩家",
+      "admins": "管理員",
+      "signedInThisWeek": "本週登入"
+    },
+    "loading": "正在載入管理員首頁"
+  },
+  "settingsPage": {
+    "email": {
+      "title": "郵件",
+      "short": "傳送位址確認、密碼重置和賽事郵件。",
+      "enabled": "傳送郵件",
+      "enabledOn": "開啟。郵件從 {{from}} 發出。",
+      "enabledOff": "關閉。不會傳送任何郵件。",
+      "needsServer": "請先在下方設定伺服器。",
+      "turnedOn": "郵件已開啟",
+      "turnedOff": "郵件已關閉",
+      "server": "郵件伺服器",
+      "serverNone": "未設定",
+      "host": "SMTP 伺服器",
+      "port": "埠",
+      "security": "安全",
+      "securityStarttls": "STARTTLS（通常為 587 埠）",
+      "securityTls": "TLS（通常為 465 埠）",
+      "securityNone": "無（僅限可信網路）",
+      "username": "使用者名稱",
+      "password": "密碼",
+      "passwordKept": "留空以保留已儲存的密碼",
+      "passwordSaved": "已儲存",
+      "fromAddress": "發件人位址",
+      "fromAddressHelp": "郵件的發件位址。你的郵件服務商必須允許它。",
+      "fromName": "發件人名稱",
+      "fromNameHelp": "可選。作為郵件的發件人顯示，例如 NTLAN。",
+      "siteUrl": "網站位址",
+      "siteUrlHelp": "郵件中的連結以此開頭，例如 https://cs.example.com。",
+      "siteUrlHelpDefault": "郵件中的連結以此開頭。留空：{{url}}。",
+      "save": "儲存",
+      "saved": "郵件設定已儲存",
+      "loadError": "無法載入郵件設定",
+      "saveError": "無法儲存郵件設定",
+      "test": "測試郵件",
+      "testShort": "傳送一封來檢查設定是否有效。",
+      "testTo": "傳送至",
+      "testSend": "傳送測試",
+      "testNeedsOn": "測試前請先開啟傳送（並儲存伺服器）。",
+      "testSent": "已傳送至 {{to}}。請檢視收件箱和垃圾郵件。",
+      "testFailed": "無法傳送測試郵件"
+    },
+    "title": "設定",
+    "intro": "平台本身的設定。每個遊戲的設定都在選單中各自的位置。",
+    "tabs": {
+      "general": "通用",
+      "signIn": "登入",
+      "players": "選手與訪問控制",
+      "ratings": "比賽與評分",
+      "developer": "開發者 / 模擬",
+      "license": "授權",
+      "webhooks": "Webhook",
+      "experimental": "實驗性"
+    },
+    "signIn": {
+      "title": "登入方式",
+      "intro": "選擇使用者的登入方式。以下任意一種都可以作為使用者的帳號；更多帳號可在「連線」頁面連結。更改立即生效，無需重啟。",
+      "keySource": "已儲存的金鑰使用 {{name}} 加密。",
+      "keySourceDefault": "已儲存的金鑰使用內建的開發金鑰加密。正式上線前請設定 SECRETS_KEY 或 SESSION_SECRET。",
+      "loadError": "無法載入登入方式",
+      "saveError": "無法儲存",
+      "testError": "無法執行測試",
+      "saved": "{{provider}} 登入已儲存",
+      "enabled": "已啟用",
+      "clientId": "客戶端 ID",
+      "issuerUrl": "頒發者 URL",
+      "issuerUrlHelp": "你的 OpenID Connect realm 或租戶的位址。Auto Tournament 會從 /.well-known/openid-configuration 讀取其端點。",
+      "buttonName": "按鈕名稱",
+      "buttonNameHelp": "在登入頁顯示為「使用 … 登入」，例如你的社群或身分伺服器。",
+      "logoUpload": "上傳標誌",
+      "logoReplace": "更換標誌",
+      "logoRemove": "移除標誌",
+      "logoType": "標誌必須是 PNG、JPEG、WebP 或 SVG 圖片。",
+      "logoSize": "標誌最大 150 KB。",
+      "buttonColor": "按鈕顏色",
+      "buttonColorDefault": "預設顏色",
+      "clientSecret": "客戶端金鑰",
+      "steamKey": "Steam Web API 金鑰",
+      "secretSet": "已設定",
+      "secretUnreadable": "已儲存的金鑰無法再解密（加密金鑰已更改）。請重新輸入。",
+      "replace": "替換",
+      "cancel": "取消",
+      "save": "儲存",
+      "callbackHint": "自動設定。把它作為重定向 URL 貼上到 {{provider}} 的開發者設定中：",
+      "copy": "複製",
+      "copyCallback": "複製回撥 URL",
+      "copied": "已複製",
+      "copyError": "無法複製",
+      "guide": "設定指南",
+      "howTo": "開發者控制台",
+      "test": "測試",
+      "comingSoon": "即將推出",
+      "comingSoonNote": "{{provider}} 登入暫不可用。",
+      "status": {
+        "active": "已在登入頁",
+        "missing": "已啟用，缺少憑據",
+        "off": "關閉"
+      },
+      "testResult": {
+        "ok": "服務商接受了這些憑據。",
+        "invalid_credentials": "服務商拒絕了這些憑據。請檢查客戶端 ID 和金鑰（或 API 金鑰）。",
+        "unreachable": "無法連線到服務商。請檢查網路後重試。",
+        "not_configured": "請先輸入憑據。",
+        "not_supported": "此服務商無法測試。",
+        "unexpected": "服務商返回了測試無法理解的結果。"
+      },
+      "welcomeTitle": "設定玩家的登入方式",
+      "welcomeBody": "你已以管理員身分登入。請在下方至少開啟一種登入方式（Steam、Discord、Google、GitHub 或 Twitch），以便玩家登入。",
+      "adminAccess": {
+        "title": "管理員許可權",
+        "localLogin": "允許本地管理員登入",
+        "localLoginHelp": "在 /login/admin 使用使用者名稱和密碼登入。如果無法登入，請在伺服器上執行 reset-admin。",
+        "localLoginLocked": "在另一位管理員能透過已開啟的登入方式登入之前，此項保持開啟。",
+        "steamIds": "管理員 Steam ID",
+        "steamIdsHelp": "Steam64 ID，用逗號分隔。儲存時以及每次啟動時設為管理員。移除某個 ID 不會收回其管理員許可權。",
+        "emails": "管理員電子郵件",
+        "emailsHelp": "當所有者透過已驗證這些位址的登入方式（Google、Discord、GitHub）登入時，授予管理員許可權。",
+        "unsaved": "尚未儲存。",
+        "saved": "管理員許可權已儲存",
+        "loadError": "無法載入管理員許可權設定",
+        "short": "誰可以以管理員身分登入"
+      },
+      "short": "玩家和管理員如何登入。更改立即生效。",
+      "enabledFor": "{{provider}} 登入",
+      "setUp": "設定 {{provider}}",
+      "accounts": {
+        "title": "帳號",
+        "short": "你建立的使用者名稱和密碼帳號",
+        "help": "這些帳號在 /login/admin 登入。把管理員許可權給運營網站的人；其餘以玩家身分登入。",
+        "none": "還沒有帳號。",
+        "admin": "管理員",
+        "twoStep": "已開啟兩步驗證",
+        "lastLogin": "上次登入 {{date}}",
+        "neverSignedIn": "從未登入",
+        "setPassword": "設定密碼",
+        "remove": "移除",
+        "addTitle": "新增帳號",
+        "username": "使用者名稱",
+        "usernameHelp": "3 到 32 個字元：小寫字母、數字、點、連字元和底線。",
+        "name": "顯示名稱",
+        "nameHelp": "可選。顯示在網站上；留空則使用使用者名稱。",
+        "password": "密碼",
+        "makeAdmin": "管理員",
+        "create": "建立帳號",
+        "created": "帳號 {{username}} 已建立",
+        "madeAdmin": "{{username}} 現在是管理員",
+        "adminRemoved": "{{username}} 已不再是管理員",
+        "setPasswordTitle": "{{username}} 的新密碼",
+        "setPasswordTotp": "其兩步驗證也會關閉；登入後需重新設定。",
+        "newPassword": "新密碼",
+        "savePassword": "儲存密碼",
+        "passwordSet": "已為 {{username}} 儲存新密碼",
+        "removeTitle": "移除 {{username}}？",
+        "removeBody": "對方將無法再用此使用者名稱和密碼登入，也不再是管理員。其玩家、比賽和資料保留；重新建立相同的使用者名稱即可恢復。",
+        "removeConfirm": "移除",
+        "removed": "{{username}} 已移除",
+        "cancel": "取消",
+        "loadError": "無法載入帳號",
+        "saveError": "無法儲存帳號"
+      },
+      "oidcScopes": "在你的 OpenID Connect 伺服器上，為此客戶端授予 openid、profile 和 email 作用域（在 Keycloak 中：Clients → 此客戶端 → Client scopes，把 profile 和 email 設為 Default）。沒有 profile 和 email 時使用者仍可登入，但平台拿不到他們的名稱和電子郵件地址。"
+    },
+    "integrations": {
+      "steam": {
+        "title": "Steam 整合",
+        "apiKeyLabel": "Steam Web API 金鑰:",
+        "apiKeyHelper": "用於解析 Steam 自訂連結和玩家資訊。留空則禁用解析功能。",
+        "checkButtonChecking": "正在檢查 Steam…",
+        "checkButtonIdle": "檢查 Steam 連通性",
+        "statusOk": "Steam API Key 已設定且可訪問。",
+        "statusNotConfigured": "尚未設定 Steam API Key。在新增金鑰之前無法解析自訂連結。",
+        "statusUnreachable": "看起來已設定 Steam API Key，但無法訪問 Steam。請檢查網路或金鑰。",
+        "statusError": "檢查 Steam API 狀態失敗，請重試。"
+      }
+    },
+    "matchRating": {
+      "ratings": {
+        "title": "評分更新",
+        "description": "控制已完成的比賽是否會更新玩家 Skill Rating。若外部系統（例如 Excel 表）是評分真值來源，可在此禁用。",
+        "toggleLabel": "根據完成的比賽更新玩家評分",
+        "note": "禁用後，所有比賽仍會記錄資料（ADR、K/D 等），但玩家 Skill Rating 將保持不變。",
+        "short": "每場比賽後評分都會變化。"
+      }
+    },
+    "players": {
+      "registration": {
+        "title": "玩家註冊",
+        "description": "控制新的 Steam 登入是否自動建立玩家記錄。禁用後，只有管理員建立或匯入的玩家才會出現在私有錦標賽和洗牌池中。",
+        "toggleLabel": "允許任何人透過 Steam 登入註冊",
+        "recommendation": "建議：邀請制或私有錦標賽請保持關閉，以免隨機 Steam 登入汙染玩家列表。",
+        "short": "登入會為任何新使用者建立玩家。關閉：只有你新增的玩家。"
+      },
+      "title": "玩家",
+      "short": "誰可以加入，以及評分如何變化。",
+      "chooseName": {
+        "toggleLabel": "玩家自行選擇顯示名稱",
+        "short": "玩家會被詢問名稱，並且每天可以更改一次。關閉：名稱來自匯入和管理員。"
+      }
+    },
+    "developer": {
+      "resetApiTitle": "重置 API 與資料庫",
+      "resetApiDescription": "危險操作：刪除並重建整個資料庫結構，然後重新初始化預設資料（地圖、地圖池等）。僅用於本地開發。此操作不可恢復。",
+      "resetApiButton": "重置 API（清空所有資料）",
+      "resetApiButtonLoading": "正在重置 API…",
+      "resetApiSuccess": "API 與資料庫已成功重置，所有資料已被清空並重新初始化預設值。",
+      "resetApiError": "重置 API 與資料庫失敗。請檢查 API 記錄取得詳細資訊。",
+      "resetApiDialog": {
+        "title": "重置 API 並清空所有資料？",
+        "description": "此操作將刪除並重建整個資料庫結構。所有錦標賽、比賽、選手、戰隊、評分、事件、記錄和設定都將被永久刪除，且無法恢復。是否繼續？",
+        "cancel": "取消",
+        "confirm": "是的，重置 API 並清空資料",
+        "confirmLoading": "正在重置…"
+      }
+    },
+    "footer": {
+      "version": "版本",
+      "unknownVersion": "未知"
+    },
+    "errors": {
+      "loadSettings": "載入設定失敗",
+      "saveSettings": "儲存設定失敗"
+    },
+    "success": {
+      "saveSettings": "設定已儲存"
+    },
+    "site": {
+      "title": "網站",
+      "description": "此網站的名稱。管理員首頁用它作為標題。",
+      "label": "網站名稱",
+      "helper": "留空則使用「Auto Tournament」。",
+      "save": "儲存",
+      "saved": "網站名稱已儲存",
+      "saveFailed": "無法儲存網站名稱"
+    },
+    "experimental": {
+      "title": "實驗性",
+      "description": "仍在開發中的功能。預設關閉，可能會變化或出問題。只有管理員能看到。",
+      "saved": "已儲存",
+      "saveFailed": "無法儲存該功能",
+      "loadFailed": "無法載入實驗性功能",
+      "envOverride": "由環境變數 {{env}} 設定。請在那裡更改。",
+      "features": {},
+      "short": "仍在開發中：預設關閉，僅管理員可見。"
+    },
+    "matchmaking": {
+      "openLabel": "向玩家開放",
+      "openDescription": "開啟：每位登入的玩家都能看到「開始遊戲」並排隊。關閉：只有管理員能尋找比賽。",
+      "boardLabel": "排行榜對所有人可見",
+      "boardDescription": "關閉：只有登入的玩家能看到配對排行榜。開啟：任何拿到連結的人。",
+      "windowTitle": "搜尋範圍",
+      "windowDescription": "玩家之間允許的 Rating 差距。從第一個數值開始，每 30 秒按步長增加直到上限；超過最後設定的分鐘數後可以配對任何人（留空表示永不）。",
+      "window": {
+        "start": "起始（Elo）",
+        "step": "步長（Elo）",
+        "cap": "上限（Elo）",
+        "uncappedAfterMinutes": "多久後不限（分鐘）"
+      },
+      "reservedTitle": "為配對保留的伺服器",
+      "reservedDescription": "賽事比賽優先，但在有玩家搜尋時為配對保留這麼多空閒伺服器。0 = 不保留。",
+      "reservedLabel": "伺服器",
+      "modesTitle": "模式",
+      "modesDescription": "玩家可以搜尋哪些模式。所有模式預設開啟。1v1 是瞄準對決。",
+      "poolsTitle": "各模式的地圖",
+      "poolsDescription": "每種模式從中選擇的地圖池（地圖頁面；創意工坊地圖也可以）。比賽房間會先在地圖池上轉一輪輪盤，再揭曉地圖。",
+      "poolDefault": {
+        "5v5": "預設：Active Duty",
+        "2v2": "預設：所有 Wingman 地圖",
+        "1v1": "預設：Active Duty"
+      },
+      "save": "儲存",
+      "title": "配對",
+      "short": "始終開啟。玩家尋找比賽、排隊並接受，然後在空閒伺服器上比賽。",
+      "saved": "已儲存",
+      "saveFailed": "無法儲存配對設定",
+      "loadFailed": "無法載入配對設定"
+    },
+    "groups": {
+      "platform": "平台"
+    },
+    "navLabel": "設定頁面",
+    "gameLinks": {
+      "title": "遊戲設定",
+      "hint": "每個遊戲的設定都在選單中。"
+    },
+    "sections": {
+      "label": "設定分割槽",
+      "site": {
+        "name": "網站",
+        "hint": "名稱、標誌、語言"
+      },
+      "signin": {
+        "name": "登入",
+        "hint": "登入方式、管理員帳號"
+      },
+      "email": {
+        "name": "郵件",
+        "hint": "SMTP、傳送內容"
+      },
+      "players": {
+        "name": "玩家",
+        "hint": "註冊、Rating"
+      },
+      "matchmaking": {
+        "name": "配對",
+        "hint": "佇列及其規則"
+      },
+      "news": {
+        "name": "新聞",
+        "hint": "首頁上的貼文"
+      },
+      "adminnotices": {
+        "name": "通知",
+        "hint": "告訴管理員什麼"
+      },
+      "webhooks": {
+        "name": "整合",
+        "hint": "Webhook"
+      },
+      "apitokens": {
+        "name": "API 權杖",
+        "hint": "用於指令碼和 MCP"
+      },
+      "advanced": {
+        "name": "高階",
+        "hint": "實驗性、開發者"
+      },
+      "module": {
+        "hint": "此模組的設定"
+      }
+    }
+  },
+  "managePage": {
+    "tournamentNotFound": "沒有此 ID 的賽事。請從「所有賽事」中選擇一個。",
+    "title": "管理",
+    "needsYouHeading": "待你處理",
+    "noTournament": "還沒有賽事",
+    "rail": {
+      "needsYou": "待你處理",
+      "matches": "比賽",
+      "bracket": "賽程表",
+      "teams": "戰隊",
+      "players": "玩家",
+      "reports": "舉報",
+      "tournament": "賽事設定",
+      "settings": "設定",
+      "label": "管理員",
+      "disputes": "爭議",
+      "publicPage": "公開頁面",
+      "modules": "模組",
+      "templates": "範本",
+      "ratings": "ELO 計算",
+      "adminTools": "管理工具",
+      "license": "授權",
+      "devTools": "開發工具",
+      "documentation": "文件",
+      "opensInNewTab": "（在新標籤頁中開啟）",
+      "groups": {
+        "operate": "運營",
+        "tournament": "錦標賽",
+        "people": "人員",
+        "game": "遊戲",
+        "home": "首頁",
+        "history": "歷史",
+        "setup": "設定",
+        "configuration": "設定",
+        "site": "網站",
+        "tournaments": "賽事",
+        "system": "系統",
+        "gamesOf": "遊戲 · {{game}}"
+      },
+      "templatesAndRatings": "範本與 Rating",
+      "allTournaments": "所有賽事",
+      "switcher": "賽事",
+      "newTournament": "新賽事",
+      "playedMatches": "已打比賽",
+      "tournamentBar": "此賽事",
+      "scope": {
+        "label": "管理範圍",
+        "platform": "平台",
+        "platformHint": "賽事、人員、網站",
+        "gameHint": "其頁面和設定"
+      },
+      "highlights": "精華",
+      "state": {
+        "live": "進行中",
+        "setup": "設定中"
+      },
+      "openMenu": "開啟管理選單",
+      "closeMenu": "關閉選單",
+      "setupTab": "設定",
+      "prizes": "獎品",
+      "schedule": "日程",
+      "liveMatches": "進行中的比賽"
+    },
+    "status": {
+      "live": "進行中",
+      "inVeto": "禁選中",
+      "queued": "排隊中",
+      "round": "回合"
+    },
+    "needsYou": {
+      "empty": "目前沒有需要你處理的事。",
+      "secondsAgo": "{{count}} 秒",
+      "minutesAgo": "{{count}} 分鐘",
+      "hoursAgo": "{{count}} 小時",
+      "vsLabel": "{{team1}} 對陣 {{team2}}",
+      "decide": {
+        "title": "{{teams}} 需要決出勝者",
+        "detail": "所有地圖都已打完，系列賽仍然持平。",
+        "action": "決定"
+      },
+      "reallocateSuccess": "比賽已轉移到另一臺伺服器",
+      "forceCancelSuccess": "比賽已取消",
+      "actionFailed": "操作沒有成功。請重試。",
+      "reallocateConfirmTitle": "把這場比賽轉移到另一臺伺服器？",
+      "reallocateConfirmBody": "比賽將重新分配給下一臺可用伺服器。",
+      "forceCancelConfirmTitle": "強制取消這場比賽？",
+      "forceCancelConfirmBody": "這會立即結束比賽並標記為已取消，即使伺服器無法連線。",
+      "listLabel": "需要決定的事項"
+    },
+    "recent": {
+      "heading": "最近",
+      "viewAll": "完整記錄",
+      "empty": "還沒有最近活動。",
+      "closingLine": "其他一切都會自動執行。只有需要你決定時才會顯示在這裡。",
+      "team1Fallback": "戰隊 1",
+      "team2Fallback": "戰隊 2",
+      "mapResult": "{{winner}} 以 {{score}} 贏下對陣 {{loser}} 的第 {{map}} 張地圖",
+      "seriesEnd": "{{winner}} 以 {{score}} 贏下對陣 {{loser}} 的系列賽"
+    },
+    "announce": {
+      "button": "公告",
+      "title": "向所有伺服器釋出公告",
+      "label": "訊息",
+      "send": "傳送",
+      "success": "公告已傳送",
+      "failed": "傳送公告失敗"
+    }
+  },
+  "license": {
+    "title": "授權",
+    "getKey": "已經有授權？從<consoleLink>Auto Tournament 控制台</consoleLink>複製你的金鑰。需要一個？<pricingLink>檢視價格</pricingLink>。",
+    "useFromPaidKey": "由下方的付費授權金鑰設定。",
+    "useFromFreeKey": "由下方的免費金鑰設定：僅限非營利用途。",
+    "useWithoutKey": "沒有金鑰：非營利用途免費。商業用途請在下方貼上付費金鑰。",
+    "publicLine": "玩家會在賽事頁面底部看到「{{line}}」。",
+    "pageIntro": "你的授權金鑰及其狀態。付費金鑰用於商業用途；免費金鑰用於非營利用途。",
+    "description": "貼上你的 Auto Tournament 授權金鑰，用於商業用途。金鑰在此伺服器上離線校驗。授權不會鎖定或限制任何功能：如有異常，這裡只會顯示提示。",
+    "loading": "正在載入授權狀態",
+    "loadFailed": "無法讀取授權狀態。",
+    "none": "沒有商業授權金鑰。非商業用途免費；商業用途需要授權。",
+    "pricing": "價格",
+    "open": "設定",
+    "id": "授權 ID {{id}}",
+    "verify": "檢查此授權",
+    "invalid": "無法驗證此金鑰。",
+    "invalidShort": "無法驗證已儲存的金鑰。",
+    "warningsShort_one": "設定中有 1 則授權提示。",
+    "warningsShort_other": "設定中有 {{count}} 則授權提示。",
+    "warningsNote": "不會阻止或限制任何功能，這只是一個提示。",
+    "label": "授權金鑰",
+    "replaceLabel": "替換授權金鑰",
+    "helper": "以 ATL1 開頭。請從 <consoleLink>Auto Tournament 控制台中的你的授權</consoleLink>複製。儲存後只顯示授權 ID。",
+    "checkInNote": "沒有授權金鑰時，不會向 Auto Tournament 傳送任何內容。有金鑰時，此伺服器每天聯絡一次，傳送金鑰 ID 和伺服器數量。",
+    "save": "儲存金鑰",
+    "saved": "授權金鑰已儲存",
+    "saveFailed": "無法儲存授權金鑰",
+    "remove": "移除金鑰",
+    "removed": "授權金鑰已移除",
+    "removeFailed": "無法移除授權金鑰",
+    "summary": {
+      "licensedTo": "授權給 {{licensee}}",
+      "licensed": "已授權",
+      "product": {
+        "platform": "平台 {{pack}}",
+        "servers": "伺服器 {{pack}}"
+      },
+      "servers_one": "{{count}} 臺伺服器",
+      "servers_other": "{{count}} 臺伺服器",
+      "updatesUntil": "更新至 {{date}}",
+      "updatesForLife": "終身更新",
+      "eventWindow": "賽事 {{from}} 至 {{to}}",
+      "free": "免費金鑰，非商業用途",
+      "freeFor": "{{licensee}} 的免費金鑰，非商業用途",
+      "noLimit": "不限伺服器數量"
+    },
+    "badge": {
+      "label": "在公開賽事頁面顯示「已授權」",
+      "note": "預設關閉。連結到該授權的公開查詢頁面，且僅在已儲存的金鑰有效時顯示。",
+      "on": "公開授權提示已開啟",
+      "off": "公開授權提示已關閉",
+      "failed": "無法更改公開授權提示",
+      "short": "顯示在公開頁面上。",
+      "needsKey": "只有儲存了授權金鑰（免費或付費）才會顯示。請先在上方儲存一個。"
+    },
+    "public": {
+      "licensed": "已授權",
+      "commercial": "已授權 · 商業用途",
+      "nonCommercial": "已授權 · 非營利用途",
+      "unlicensed": "無授權金鑰",
+      "about": {
+        "title": "關於此網站的授權",
+        "none": "此網站在沒有授權金鑰的情況下執行 Auto Tournament。對於沒有人從中賺錢的活動來說沒問題：朋友、俱樂部、學校 LAN、慈善機構。",
+        "nonCommercial": "此網站擁有免費的非營利授權：可以舉辦沒有人從中賺錢的活動。",
+        "commercial": "此網站擁有付費的商業授權：可以舉辦付費活動並收取報名費。",
+        "free": "沒有人從中賺錢時，Auto Tournament 是免費的；慈善機構、學校和公共機構即使收取報名費也免費。其他任何透過它賺錢的人，例如收取報名費、出售名額或為企業運營，都需要付費授權。",
+        "paidTitle": "被要求付費參賽？",
+        "paidBody": "如果你支付了報名費或被要求支付，而主辦方不是慈善機構、學校或公共機構，這個活動可能在違反授權使用 Auto Tournament。你可以告訴我們；我們會閱讀每一份舉報，且絕不透露舉報人。",
+        "paidCommercial": "這裡允許付費參賽。如果仍覺得有什麼不對，可以告訴我們。",
+        "report": "向 Auto Tournament 舉報",
+        "rules": "閱讀授權",
+        "verify": "核實此授權"
+      }
+    },
+    "consent": {
+      "title": "開始之前：授權",
+      "subtitle": "Auto Tournament 可免費用於非商業用途。商業用途需要授權。請閱讀簡要說明，選擇此實例的用途，然後輸入 I AGREE。",
+      "intro": "Auto Tournament 的原始碼以 {{name}} 公開。簡而言之：",
+      "points": {
+        "free": "個人使用、業餘專案、學習，以及沒有人從中賺錢的活動，均可免費使用。",
+        "orgs": "慈善機構、中小學、大學、公共研究機構和政府機構可免費使用，即使收取入場費。",
+        "commercial": "商業用途需要授權，包括付費託管、出售本軟體或基於它的服務、盈利的活動、在企業內部使用，以及收費為他人部署。",
+        "servers": "每臺遊戲伺服器都計入授權。",
+        "nothingLocked": "沒有金鑰也不會鎖定或限制任何功能。你可以現在或以後新增金鑰。",
+        "forks": "你可以修改和分享程式碼。請附上授權，規則相同。"
+      },
+      "readLicense": "閱讀完整授權",
+      "readRules": "許可與商業用途",
+      "summaryNote": "這只是簡要說明，你所用版本中的文字可能已過時。最新的授權和授權規則見 autotournament.gg，如與本摘要不一致，以其為準。",
+      "useQuestion": "此實例的用途是？",
+      "privacyNote": "你的回答僅儲存在此伺服器上。沒有授權金鑰時，不會向 Auto Tournament 傳送任何內容。有金鑰時，此伺服器每天聯絡一次，傳送金鑰 ID 和伺服器數量。",
+      "use": {
+        "noncommercial": "非商業",
+        "noncommercialHint": "免費。沒有人從中賺錢。",
+        "commercial": "商業",
+        "commercialHint": "你需要授權。現在或以後貼上金鑰均可。"
+      },
+      "keyLabel": "授權金鑰（可選）",
+      "keyHelper": "以 ATL1 開頭。請從 <consoleLink>Auto Tournament 控制台中的你的授權</consoleLink>複製，或稍後在 設定 > 授權 中新增。",
+      "confirmLabel": "輸入 {{phrase}} 以接受授權條款",
+      "confirmHelper": "輸入 {{phrase}} 即表示你為此實例接受授權條款。",
+      "accept": "接受並繼續",
+      "cancel": "取消",
+      "failed": "無法儲存你的回答",
+      "accepted": "已接受授權條款",
+      "termsChanged": "授權條款自上次接受後已更改。請閱讀並重新接受。",
+      "onlyAdmins": "只有管理員會看到此頁面，每個實例一次。玩家、公開頁面和進行中的比賽不受影響。",
+      "declared": {
+        "noncommercial": "非商業用途",
+        "commercial": "商業用途",
+        "none": "尚未接受授權條款"
+      },
+      "acceptedLine": "{{who}} 於 {{date}} 接受了條款（條款版本 {{version}}）",
+      "byEnv": "AT_ACCEPT_LICENSE 設定",
+      "change": "更改",
+      "changeTitle": "更改此實例的用途",
+      "changeNote": "重新選擇並輸入 I AGREE。更改會連同日期和你的帳號一起儲存。",
+      "commercialNoKey": "此實例用於商業用途，因此你需要授權。請從 <consoleLink>Auto Tournament 控制台中的你的授權</consoleLink>複製金鑰，並貼上到下方。缺少金鑰時不會鎖定任何功能。",
+      "readHeading": "接受前，請閱讀以下內容並逐項勾選：",
+      "readItem": "我已閱讀",
+      "readLinks": {
+        "license": "完整授權",
+        "rules": "商業用途規則",
+        "pricing": "價格"
+      }
+    },
+    "checkin": {
+      "last": "上次授權聯絡：{{time}}",
+      "offlineUntil": "離線租約：在 {{date}} 前，新伺服器無需聯網即可工作。",
+      "never": "尚未進行授權聯絡。儲存金鑰後不久會進行第一次。",
+      "whatIsSent": "傳送的內容",
+      "intro": "每天一次，且僅在儲存了金鑰時，此伺服器會傳送：",
+      "keyId": "授權金鑰，用於核對其 ID 和簽名",
+      "instanceId": "此安裝的隨機 ID（只生成一次）",
+      "serverCount": "遊戲伺服器數量",
+      "version": "平台版本",
+      "publicUrl": "這是哪個產品（平台），以及它的公開位址，以便控制台顯示金鑰在哪裡執行",
+      "activity": "自上次聯絡以來的計數：已完成的比賽、有活動的賽事，以及最多的隊伍數",
+      "declared": "你對賽事日期問題的回答（如果回答過）",
+      "notSent": "不含任何名稱、位址、玩家或比賽詳情。",
+      "privacy": "隱私政策",
+      "noticeTitle": "來自 Auto Tournament 的提示",
+      "answered": "你對此授權的回答：{{answer}}（{{time}}）"
+    },
+    "eventPrompt": {
+      "title": "在籌劃新的活動嗎？",
+      "body": "你的賽事授權適用於 {{dates}}。請告訴我們你是在測試、有新的賽事，還是日期有變——測試期間無需任何操作。",
+      "datesRange": "{{from}} 至 {{to}}",
+      "testing": "測試或準備中",
+      "newEvent": "新的賽事",
+      "datesMoved": "我們的賽事日期變了",
+      "dontAsk": "不再詢問",
+      "close": "關閉",
+      "thanks": "謝謝，已記錄。",
+      "failed": "無法儲存你的回答"
+    },
+    "warning": {
+      "periodEnded": "此賽事授權的適用日期截至 {{date}}。測試和準備無需任何操作；新的賽事需要單獨的賽事授權。",
+      "periodNotStarted": "此賽事授權從 {{date}} 起適用。在此之前進行準備和測試完全沒問題。"
+    },
+    "short": "此實例的用途及其金鑰。",
+    "keyRow": "授權金鑰",
+    "state": {
+      "active": "有效",
+      "warning": "需檢查",
+      "invalid": "無效",
+      "none": "無金鑰"
+    },
+    "thirdParty": "此應用使用了各自授權下的開源軟體包構建。",
+    "thirdPartyLink": "第三方宣告"
+  },
+  "tournamentsPage": {
+    "title": "賽事",
+    "subtitle": "此網站上的所有賽事。選單頂部的切換器決定其他管理頁面作用於哪個賽事。",
+    "liveShared": "{{count}} 個進行中，共用伺服器。比賽按就緒順序獲得伺服器。",
+    "new": "新賽事",
+    "empty": "還沒有賽事。建立第一個吧。",
+    "col": {
+      "name": "名稱",
+      "status": "狀態",
+      "when": "時間",
+      "entries": "報名",
+      "frontPage": "首頁",
+      "actions": "操作"
+    },
+    "status": {
+      "live": "進行中",
+      "finished": "已結束",
+      "signup": "報名中",
+      "draft": "草稿"
+    },
+    "front": {
+      "featured": "置頂",
+      "shown": "顯示",
+      "hidden": "隱藏",
+      "archived": "已歸檔",
+      "results": "結果"
+    },
+    "won": "{{name}} 獲勝",
+    "selected": "已選中",
+    "more": "{{name}} 的更多選項",
+    "menu": {
+      "open": "開啟",
+      "page": "公開頁面",
+      "feature": "在首頁置頂",
+      "archive": "歸檔（從首頁移除）",
+      "delete": "刪除"
+    },
+    "toast": {
+      "featured": "已在首頁置頂",
+      "archived": "已歸檔",
+      "deleted": "賽事已刪除"
+    },
+    "deleteTitle": "刪除這個賽事？",
+    "deleteMessage": "{{name}} 及其比賽、結果和資料都會被刪除。此操作無法撤銷。",
+    "newName": "名稱",
+    "newNameBlank": "在設定中命名",
+    "startFrom": "開始方式",
+    "blank": "空白",
+    "blankHint": "在設定中選擇遊戲、賽制和地圖",
+    "copy": "複製 {{name}}",
+    "copyHint": "相同的賽制、地圖、規則和頁面。戰隊和日期為空。",
+    "create": "建立並設定",
+    "round": "第 {{n}} 輪",
+    "whenToday": "今天 {{time}} 起",
+    "whenTomorrow": "明天 {{time}}",
+    "notSet": "未設定",
+    "emptyTitle": "還沒有比賽",
+    "template": "範本",
+    "templateHint": "已儲存的設定：賽制、地圖和規則。隊伍和日期由你選擇。",
+    "copyOne": "複製一個比賽",
+    "copyWhich": "哪一個"
+  },
+  "playedMatches": {
+    "title": "所有比賽",
+    "subtitle": "此網站上打過的每場比賽：賽事（包括已刪除的）、獨立比賽和配對，以及它們的 Demo。",
+    "downloadAll_one": "下載 {{count}} 場比賽的 Demo",
+    "downloadAll_other": "下載 {{count}} 場比賽的 Demo",
+    "search": "搜尋戰隊或賽事",
+    "kindLabel": "類型",
+    "kind": {
+      "all": "所有類型",
+      "tournament": "賽事",
+      "standalone": "獨立",
+      "matchmaking": "配對",
+      "imported": "匯入"
+    },
+    "withDemos": "有 Demo",
+    "none": "還沒有打過比賽。",
+    "noneFiltered": "沒有比賽符合這些篩選條件。",
+    "vs": "對陣",
+    "deleted": "賽事已刪除",
+    "noDemo": "無 Demo",
+    "demo": "Demo",
+    "map": "第 {{n}} 張地圖",
+    "import": "匯入比賽"
+  },
+  "importMatch": {
+    "title": "匯入比賽",
+    "subtitle": "透過 Demo 新增在別處打的比賽。戰隊、玩家和比分從 Demo 中讀取，之後這場比賽和其他比賽一樣獲得資料、2D 回放和精華。",
+    "event": "比賽地點",
+    "eventHelp": "可選，例如活動名稱。",
+    "files": "Demo",
+    "filesHelp": "每張地圖一個 CS2 Demo（.dem），按地圖進行順序排列。",
+    "choose": "選擇 Demo",
+    "moveUp": "上移 {{name}}",
+    "moveDown": "下移 {{name}}",
+    "remove": "移除 {{name}}",
+    "start": "匯入",
+    "uploading": "正在上傳第 {{n}} 張地圖（{{percent}}%）",
+    "tooMany": "最多 {{max}} 個 Demo，每張地圖一個。",
+    "notDemo": "{{name}} 不是 .dem 檔案。",
+    "error": "匯入已停止：{{error}}",
+    "progress": "進度",
+    "mapN": "第 {{n}} 張地圖",
+    "state": {
+      "uploading": "上傳中",
+      "waiting": "等待 Demo 處理程式",
+      "running": "正在讀取 Demo",
+      "done": "已完成",
+      "failed": "無法讀取 Demo"
+    },
+    "teams": "{{team1}} 對陣 {{team2}}",
+    "doneAll": "已匯入。如果連線了精華錄製器，接下來會錄製精華。",
+    "openMatch": "開啟比賽",
+    "another": "再匯入一個",
+    "dropHint": "或拖放到這裡。按住 Cmd 或 Ctrl 可一次選多個。",
+    "recordingGroup": "錄製器組",
+    "allRecorders": "所有錄製器",
+    "groupHelp": "選擇由哪個組渲染這場比賽。已禁用的組會等到啟用後再處理。",
+    "groupDisabled": "已禁用",
+    "notCs2Demo": "{{name}} 不是 CS2 Demo（無法匯入 CS:GO Demo）。"
+  },
+  "apiTokens": {
+    "title": "API 權杖",
+    "hint": "用於指令碼、機器人和 Auto Tournament MCP 伺服器。只讀權杖只能讀取；管理員權杖能做管理員能做的事。權杖的金鑰只在建立時向你顯示一次。",
+    "line": "{{scope}} · {{fingerprint}} · 上次使用 {{used}}",
+    "never": "從未",
+    "none": "還沒有 API 權杖。",
+    "name": "名稱",
+    "nameHelp": "1–32 個字母、數字、- 或 _",
+    "scopeLabel": "許可權",
+    "scope": {
+      "readonly": "只讀",
+      "admin": "管理員"
+    },
+    "make": "生成權杖",
+    "madeTitle": "權杖「{{label}}」",
+    "madeHelp": "現在就複製：只會顯示這一次。把它貼上到指令碼或 MCP 伺服器讀取的位置（AT_TOKEN）。",
+    "copy": "複製權杖",
+    "copied": "已複製",
+    "done": "完成",
+    "revoke": "吊銷 {{label}}",
+    "revokeTitle": "吊銷「{{label}}」？",
+    "revokeHelp": "使用它的任何東西都會立即失效。",
+    "revokeConfirm": "吊銷",
+    "revoked": "已吊銷 {{label}}",
+    "cancel": "取消",
+    "loadFailed": "無法載入 API 權杖",
+    "makeFailed": "無法生成權杖",
+    "revokeFailed": "無法吊銷權杖"
+  },
+  "discordBot": {
+    "title": "Discord 機器人",
+    "token": "機器人權杖",
+    "replace": "新的機器人權杖",
+    "save": "儲存",
+    "remove": "移除",
+    "connected": "已連線為 {{name}}",
+    "setNoAnswer": "已設定權杖，但 Discord 剛才沒有回應。",
+    "saved": "Discord 機器人已儲存：{{name}}",
+    "cleared": "Discord 機器人已移除",
+    "saveFailed": "無法儲存機器人權杖。",
+    "howTo": "建立一個應用，新增機器人，複製其權杖，然後把它邀請到你的 Discord 伺服器：",
+    "portal": "Discord Developer Portal",
+    "guild": "Discord 伺服器",
+    "guildHint": "機器人在哪裡建立戰隊頻道和發帖。這裡只顯示機器人所在的伺服器。",
+    "noGuilds": "機器人還不在任何 Discord 伺服器中。邀請它後重新整理此頁面。",
+    "noGuild": "無",
+    "guildSaved": "Discord 伺服器已儲存",
+    "movedHint": "Discord 機器人現在是一個附加元件：在「模組」中開啟並設定。",
+    "open": "開啟 Discord 機器人",
+    "voice": {
+      "label": "戰隊語音訊道",
+      "help": "比賽在伺服器上進行時，已在語音訊道中的玩家會被移入其戰隊的語音訊道；其他人會收到私信連結。",
+      "saved": "語音訊道設定已儲存"
+    },
+    "teamChannels": {
+      "label": "戰隊頻道",
+      "help": "賽事進行期間，每支戰隊會在「Your team」分類下獲得私有的文字和語音訊道。隊員可在戰隊頁面找到文字頻道。",
+      "link": "Discord 上的戰隊頻道"
+    },
+    "commands": {
+      "label": "斜槓命令：/matches、/mymatch 和 /lobby",
+      "help": "機器人連線後即可使用。可選：如果想讓 Discord 把命令傳送到此網站，把這個位址貼上為 Discord Developer Portal 中應用的 Interactions Endpoint URL。"
+    },
+    "invite": "邀請到伺服器",
+    "linking": {
+      "label": "玩家連結 Discord",
+      "help": "使用你的機器人自己的 Discord 應用，無需再建第二個應用。在 Developer Portal 中開啟機器人應用的 OAuth2，新增這個重定向，然後複製客戶端金鑰並貼上到這裡。",
+      "portal": "開啟 OAuth2",
+      "secret": "客戶端金鑰",
+      "save": "開啟連結",
+      "saved": "玩家現在可以連結 Discord 了",
+      "ready": "已開啟：玩家在「帳號 → 連線」中連結 Discord。",
+      "invite": "不在你伺服器中的玩家會被邀請透過 {{url}} 加入。",
+      "noInvite": "機器人還無法為你的伺服器建立邀請。再次點選「邀請到伺服器」，讓它獲得「建立邀請」許可權。"
+    },
+    "missing": "機器人在你的伺服器上缺少 {{list}}，部分功能無法使用。點選上方的「邀請到伺服器」：它會更新機器人的許可權而不會移除它。"
+  },
+  "liveMatchesPage": {
+    "title": "進行中的比賽",
+    "subtitle": "當前在伺服器上的每場比賽。需要你處理的排在最前。",
+    "loading": "載入中…",
+    "loadFailed": "無法讀取進行中的比賽。正在重試…",
+    "empty": "沒有正在進行的比賽",
+    "chat": "聊天",
+    "mapOf": "地圖 {{n}}/{{total}}",
+    "columns": {
+      "match": "比賽",
+      "map": "地圖",
+      "phase": "階段",
+      "score": "比分",
+      "round": "回合",
+      "players": "玩家",
+      "pause": "暫停",
+      "call": "管理員呼叫",
+      "server": "伺服器",
+      "chat": "聊天"
+    },
+    "source": {
+      "matchmaking": "配對",
+      "manual": "獨立"
+    },
+    "phase": {
+      "none": "無伺服器狀態",
+      "loading": "載入中",
+      "warmup": "熱身",
+      "knife": "刀局",
+      "side_pick": "選邊",
+      "live": "進行中",
+      "paused": "已暫停",
+      "halftime": "半場",
+      "overtime": "延長賽",
+      "map_end": "賽後",
+      "series_end": "賽後",
+      "restoring": "恢復中",
+      "error": "錯誤"
+    },
+    "players": {
+      "summary": "已進入 {{connected}}/{{total}} · {{ready}} 人就緒",
+      "connected": "已連線",
+      "disconnected": "未連線",
+      "readyTag": "就緒",
+      "none": "沒有玩家"
+    },
+    "pause": {
+      "by": "由 {{name}}",
+      "unpause": "想要取消暫停",
+      "type": {
+        "tactical": "戰術暫停",
+        "technical": "技術暫停",
+        "admin": "管理員",
+        "offline": "玩家離線",
+        "halftime": "半場",
+        "auto_5v5": "等待 5v5",
+        "unknown": "已暫停"
+      }
+    },
+    "call": {
+      "noMessage": "無訊息"
+    },
+    "server": {
+      "online": "線上",
+      "offline": "離線",
+      "unknown": "狀態未知"
+    }
+  }
+}

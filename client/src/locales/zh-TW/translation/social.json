@@ -1,0 +1,287 @@
+{
+  "notificationPrompt": {
+    "title": "開啟通知",
+    "body": "我們建議你開啟通知。這樣即使關閉此標籤頁，你也能收到提醒：",
+    "matchReady": "你的比賽準備好時",
+    "vetoTurn": "輪到你進行地圖禁選時",
+    "starting": "你報名的錦標賽即將開始時",
+    "iphone": "在 iPhone 上，請先將本站新增到主螢幕（分享 → 新增到主螢幕），然後從主螢幕開啟。",
+    "change": "你可以隨時在通知設定中更改。",
+    "later": "暫不",
+    "turnOn": "開啟（推薦）"
+  },
+  "social": {
+    "bell": {
+      "title": "通知",
+      "label": "通知",
+      "labelUnread_one": "通知，{{count}} 則新通知",
+      "labelUnread_other": "通知，{{count}} 則新通知",
+      "markAllRead": "全部標為已讀",
+      "show": "顯示",
+      "filter": {
+        "all": "全部",
+        "you": "待你處理",
+        "tournaments": "賽事",
+        "matches": "比賽",
+        "skins": "造型",
+        "clips": "片段",
+        "other": "其他"
+      },
+      "empty": "這裡還沒有內容",
+      "emptyHint": "小隊邀請、好友請求、賽事動態、新造型和已就緒的精華都會顯示在這裡。",
+      "loading": "載入中…",
+      "seeAll": "檢視所有通知",
+      "loadOlder": "載入更早的",
+      "settings": "通知設定"
+    },
+    "notice": {
+      "partyInvite": "邀請你加入小隊",
+      "teamInvite": "邀請你加入",
+      "joinedTeam": "你已加入戰隊",
+      "partyDetail": "{{mode}} · 小隊 {{size}} 人",
+      "join": "加入",
+      "decline": "拒絕",
+      "accept": "接受",
+      "ignore": "忽略",
+      "friendRequest": "向你傳送了好友請求",
+      "friendAccepted": "接受了你的好友請求",
+      "skin": "新造型：",
+      "highlight": "你的精華已就緒：",
+      "highlightVictim": "{{name}} 在其精彩片段中淘汰了你：",
+      "highlightAssist": "你在 {{name}} 的精彩片段中助攻：",
+      "highlightKiller": "你在 {{name}} 的精彩片段中淘汰了對方：",
+      "tournamentStarted": "已開始。你的第一場比賽已就緒。",
+      "lineupGap": "· 有首發離開了你的陣容。請在 {{minutes}} 分鐘內選擇替補，否則將缺人比賽。",
+      "checkInOpen": "報到已開啟。請在關閉前報到。",
+      "joined": "你已加入小隊",
+      "nowFriends": "你們現在是好友了",
+      "declined": "已拒絕",
+      "expired": "此小隊已解散",
+      "reportNew": "被舉報：{{reason}}",
+      "reportReviewed": "感謝：你對 {{name}} 的舉報已處理。",
+      "matchReady": "已就緒。開啟比賽房間進行連線。",
+      "vetoTurn": "輪到你的戰隊禁選了。",
+      "startsSoon": "將在 {{minutes}} 分鐘後開始。準備好加入你的第一場比賽。",
+      "startsSoonUpdate": "將在 {{minutes}} 分鐘後開始。現在就啟動遊戲，好讓更新在第一場比賽前完成。",
+      "matchSoon": "你的禁選將在 {{minutes}} 分鐘後開啟，沒有你也會繼續。請待在電腦前。",
+      "noShow": "你沒有加入你的比賽，因此不參與接下來的輪次。開啟賽事並表示你已回來，即可繼續參賽。",
+      "discordLink": "連結你的 Discord 帳號，以獲得戰隊頻道並被移入其語音訊道。",
+      "signedUp": "· {{team}} 已報名。看看開賽前需要知道的事。"
+    },
+    "toast": {
+      "join": "加入小隊",
+      "close": "關閉",
+      "closes_one": "{{count}} 秒後關閉 · 鈴鐺中保留",
+      "closes_other": "{{count}} 秒後關閉 · 鈴鐺中保留"
+    },
+    "friends": {
+      "title": "好友",
+      "tabFriends": "好友",
+      "tabRequests": "請求",
+      "tabAdd": "新增好友",
+      "online_one": "線上 · {{count}}",
+      "online_other": "線上 · {{count}}",
+      "offline_one": "離線 · {{count}}",
+      "offline_other": "離線 · {{count}}",
+      "onlineCount_one": "{{count}} 人線上",
+      "onlineCount_other": "{{count}} 人線上",
+      "invite": "邀請",
+      "inParty": "在你的小隊中",
+      "more": "{{name}} 的更多選項",
+      "viewProfile": "檢視資料",
+      "remove": "刪除好友",
+      "removed": "{{name}} 已不再是你的好友",
+      "none": "還沒有好友",
+      "noneHint": "新增一起玩的人，然後在這裡或「開始遊戲」中邀請他們加入小隊。",
+      "incoming": "收到的",
+      "sent": "已傳送",
+      "noIncoming": "沒有等待你處理的請求。",
+      "noSent": "你沒有待處理的請求。",
+      "askedAgo": "{{when}} 發來",
+      "sentAgo": "{{when}} 傳送",
+      "cancelRequest": "取消請求",
+      "searchPlaceholder": "名稱或 Steam 個人資料連結",
+      "results": "在 Auto Tournament 上",
+      "playedWith": "最近一起玩過",
+      "noResults": "沒有找到這個名字的人。",
+      "typeMore": "請至少輸入兩個字元。",
+      "noRecent": "打一場比賽，一起玩過的人就會顯示在這裡。",
+      "matches_one": "{{count}} 場比賽",
+      "matches_other": "{{count}} 場比賽",
+      "alreadyFriends": "好友",
+      "requestSent": "請求已傳送",
+      "addFriend": "新增好友",
+      "signIn": "登入以檢視你的好友",
+      "signInHint": "好友、請求和邀請都屬於你的帳號。",
+      "cardEmpty": "新增好友，即可看到他們何時線上，並一鍵邀請。",
+      "all_one": "全部好友（{{count}}）→",
+      "all_other": "全部好友（{{count}}）→",
+      "find": "查詢好友 →",
+      "requestCount_one": "{{count}} 個請求",
+      "requestCount_other": "{{count}} 個請求"
+    },
+    "status": {
+      "playing": "比賽中 · {{match}}",
+      "searching": "搜尋中 · {{mode}}",
+      "online": "線上",
+      "offline": "離線",
+      "lastSeen": "最後線上 {{when}}"
+    },
+    "invite": {
+      "searchPlaceholder": "按名稱搜尋網站上的任何人",
+      "friendsOnline": "線上好友",
+      "recent": "最近一起玩過",
+      "onSite": "在 Auto Tournament 上",
+      "noFriends": "還沒有好友。在上方按名稱搜尋任何人。",
+      "nobodyOnline": "你的好友都不線上。",
+      "inMatch": "比賽中",
+      "together_one": "一起打過 {{count}} 場",
+      "together_other": "一起打過 {{count}} 場",
+      "invited": "已邀請",
+      "sent": "已邀請 {{name}}",
+      "chip": "{{name}} · 已邀請",
+      "cancel": "撤回對 {{name}} 的邀請",
+      "orLink": "或使用連結",
+      "copy": "複製",
+      "copyFailed": "無法複製。請自行選中連結並複製。",
+      "makeLink": "生成邀請連結",
+      "cannot": {
+        "nobody": "不接受邀請",
+        "friends": "僅限好友",
+        "no_game": "不玩 CS2"
+      }
+    },
+    "profile": {
+      "friends": "好友",
+      "acceptRequest": "接受好友請求",
+      "message": "發訊息",
+      "invite": "邀請加入小隊"
+    },
+    "settings": {
+      "title": "小隊邀請",
+      "description": "誰可以邀請你加入配對小隊。邀請會顯示在鈴鐺中，並在你開啟的任何頁面上彈出。",
+      "everyone": "所有人",
+      "everyoneHint": "此網站上的任何玩家。",
+      "friends": "僅限好友",
+      "friendsHint": "只有你的好友。",
+      "nobody": "沒有人",
+      "nobodyHint": "不接受邀請。你仍可以透過連結加入小隊。",
+      "saved": "已儲存",
+      "saveFailed": "無法儲存設定"
+    },
+    "setup": {
+      "title": "搜尋前請先完成設定",
+      "youGame": "在你的資料中把 CS2 新增到你的遊戲。",
+      "youGameAuto": "開始配對會把此遊戲新增到你的遊戲。",
+      "youAccount": "連結你的 Steam 帳號。",
+      "theyGame": "{{name}} 尚未把 CS2 新增到其遊戲。",
+      "theyAccount": "{{name}} 尚未連結其 Steam 帳號。",
+      "fix": "開啟你的帳號"
+    },
+    "news": {
+      "title": "新聞",
+      "hint": "向每位玩家的鈴鐺傳送通知：新賽季、新賽事、計劃停機。",
+      "titleLabel": "標題",
+      "bodyLabel": "再補充一行（可選）",
+      "urlLabel": "連結（可選）",
+      "urlHint": "本站頁面（/tournament/3）或 https:// 位址。",
+      "urlBad": "以 / 或 https:// 開頭",
+      "send": "傳送給所有玩家",
+      "confirm": "所有登入過的玩家都會收到。確定傳送？",
+      "sendNow": "立即傳送",
+      "cancel": "取消",
+      "sent_one": "已傳送給 {{count}} 位玩家",
+      "sent_other": "已傳送給 {{count}} 位玩家",
+      "failed": "無法傳送新聞"
+    },
+    "noticeSettings": {
+      "title": "設定",
+      "alerts": "提醒",
+      "browser": "瀏覽器通知",
+      "browserHint": "在此裝置上，即使關閉網站也會通知（你的比賽已就緒、輪到你禁選、賽事即將開始）。僅對此瀏覽器生效。",
+      "browserDenied": "已在此瀏覽器的網站設定中被阻止。在那裡允許通知即可開啟。",
+      "browserUnsupported": "此瀏覽器不支援通知。",
+      "sound": "聲音",
+      "test": "測試",
+      "volume": "音量 {{percent}}%",
+      "group": {
+        "you": "你",
+        "tournaments": "賽事",
+        "other": "其他",
+        "skins": "造型",
+        "clips": "片段"
+      },
+      "kind": {
+        "party_invite": "小隊邀請",
+        "team_invite": "戰隊邀請",
+        "friend_request": "好友請求",
+        "friend_accepted": "已接受的好友請求",
+        "tournament": "報到與開賽",
+        "skin": "造型掉落",
+        "highlight": "你的精華",
+        "news": "新聞",
+        "report": "舉報"
+      },
+      "delivery": {
+        "off": "關閉",
+        "bell": "鈴鐺",
+        "sound": "鈴鐺和提示音"
+      }
+    }
+  },
+  "notifyChannels": {
+    "title": "通知",
+    "description": "當你不在網站上時，我們在哪裡通知你需要你處理的事。預設關閉，你自己的比賽除外。",
+    "event": "事件",
+    "channel": {
+      "push": "瀏覽器 / 手機",
+      "discord": "Discord 私信",
+      "email": "郵件"
+    },
+    "events": {
+      "match_ready": {
+        "title": "你的比賽已就緒",
+        "hint": "伺服器、連線連結和對手"
+      },
+      "veto_turn": {
+        "title": "輪到你禁選",
+        "hint": "僅限隊長"
+      },
+      "checkin_open": {
+        "title": "報到開啟",
+        "hint": "針對你已報名的賽事"
+      },
+      "new_tournament": {
+        "title": "新賽事",
+        "hint": "當有賽事開放報名時"
+      },
+      "tournament_starting": {
+        "title": "賽事即將開始",
+        "hint": "你參加的賽事開始前的提醒"
+      },
+      "direct_message": {
+        "title": "好友訊息",
+        "hint": "你不在網站上時"
+      }
+    },
+    "reason": {
+      "no_bot": "此網站未設定",
+      "no_discord": "請先連結 Discord",
+      "no_push": "請先在此瀏覽器中開啟通知",
+      "email_off": "此網站無法傳送郵件",
+      "no_email": "請先新增電子郵件",
+      "email_unverified": "請先確認你的電子郵件"
+    },
+    "switchLabel": "透過{{channel}}接收{{event}}",
+    "saveFailed": "無法儲存。"
+  },
+  "presence": {
+    "online": "線上",
+    "offline": "離線",
+    "away": "離開",
+    "searching": "正在搜尋 {{mode}} 比賽",
+    "playingMatchmaking": "配對比賽中：{{label}}",
+    "playingTournament": "賽事比賽中：{{label}}",
+    "playing": "比賽中：{{label}}"
+  }
+}

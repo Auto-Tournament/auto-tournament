@@ -1,0 +1,1278 @@
+{
+  "notFound": {
+    "title": "頁面未找到",
+    "description": "你訪問的頁面不存在或已被移動。",
+    "backToDashboard": "返回控制台",
+    "publicPlayerSearch": "公開選手搜尋"
+  },
+  "publicLinks": {
+    "intro": "以下是可以分享給選手和觀眾的公共頁面快捷連結。",
+    "common": {
+      "publicUrl": "公開位址",
+      "urlPattern": "URL 模式"
+    },
+    "playerSearch": {
+      "title": "公開選手搜尋",
+      "description": "按姓名、Steam ID 或個人資料連結搜尋已登記的選手。",
+      "openButton": "開啟 /player"
+    },
+    "playerProfile": {
+      "title": "選手資料頁（公開）",
+      "description": "透過 Steam ID64 直接訪問選手公開資料頁。",
+      "requiresSteamId": "需要提供 Steam ID64"
+    },
+    "teamMatch": {
+      "title": "戰隊比賽頁面（公開）",
+      "description": "只讀檢視：展示戰隊當前或最近一場比賽。",
+      "openExample": "開啟範例戰隊"
+    },
+    "tournamentLeaderboard": {
+      "title": "錦標賽排行榜（公開）",
+      "description": "當前錦標賽的公開積分榜頁面（預設錦標賽 ID 為 1）。",
+      "open": "開啟排行榜"
+    }
+  },
+  "games": {
+    "prompt": {
+      "title": "你玩什麼？",
+      "description": "我們會優先顯示這些遊戲的賽事。你可以隨時更改。",
+      "skip": "跳過",
+      "save": "儲存我的遊戲"
+    },
+    "picker": {
+      "searchLabel": "搜尋遊戲",
+      "placeholder": "輸入遊戲名稱",
+      "minChars": "請至少輸入 2 個字元",
+      "noResults": "未找到遊戲",
+      "loading": "搜尋中…",
+      "searchFailed": "搜尋暫時不可用",
+      "yourGames": "你的遊戲",
+      "none": "還沒有選擇遊戲",
+      "remove": "移除 {{name}}",
+      "supported": "支援賽事",
+      "limit": "最多可以選擇 {{max}} 個遊戲",
+      "creditWikidata": "遊戲資料來自 Wikidata"
+    },
+    "profile": {
+      "title": "你玩的遊戲",
+      "description": "選擇你玩的遊戲。這些遊戲的賽事會優先顯示。",
+      "empty": "你還沒有選擇任何遊戲。",
+      "edit": "編輯",
+      "add": "新增遊戲",
+      "dialogTitle": "你玩的遊戲",
+      "cancel": "取消",
+      "save": "儲存",
+      "saved": "遊戲已儲存",
+      "saveFailed": "無法儲存你的遊戲"
+    },
+    "welcome": {
+      "gridTitle": "熱門遊戲",
+      "continue": "繼續",
+      "notNow": "暫不",
+      "selectedGames": "已選遊戲",
+      "selectedCount": "已選 {{count}}/{{max}}",
+      "pickOne": "請至少選擇一個遊戲",
+      "supportedLegend": "這裡舉辦賽事"
+    }
+  },
+  "account": {
+    "email": {
+      "title": "郵件",
+      "description": "用於忘記密碼時找回帳號；如果你願意，還可以在賽事開放報名時收到郵件。",
+      "address": "電子郵件地址",
+      "sendLink": "傳送確認郵件",
+      "cancel": "取消",
+      "verified": "已確認",
+      "unverified": "未確認",
+      "checkInbox": "開啟我們傳送的郵件中的連結進行確認。",
+      "resend": "重新傳送",
+      "change": "更改",
+      "remove": "移除",
+      "sent": "確認郵件已傳送至 {{email}}。請開啟其中的連結。",
+      "saved": "電子郵件已儲存",
+      "removed": "電子郵件已移除",
+      "saveFailed": "無法儲存你的電子郵件",
+      "notifyLabel": "賽事開放報名時給我發郵件",
+      "notifyHint": "每個賽事一封郵件。每封郵件都有退訂連結。",
+      "notifyNeedsVerified": "請先確認你的位址。",
+      "notifyOn": "開放報名時你會收到郵件",
+      "notifyOff": "不再接收賽事郵件",
+      "siteCannotSend": "此網站目前不傳送郵件。"
+    },
+    "title": "連線",
+    "subtitle": "一個帳號通用於此網站的所有賽事。",
+    "loadFailed": "無法載入你的帳號。",
+    "impersonating": "你正在以其他玩家身分檢視此頁面。這裡顯示的是你自己的帳號；停止扮演後才能更改。",
+    "rail": {
+      "label": "帳號",
+      "profile": "資料",
+      "connections": "連線"
+    },
+    "gameAccounts": {
+      "title": "遊戲帳號",
+      "description": "每個遊戲都需要自己的帳號，比賽才能知道你是誰。",
+      "verified": "已驗證",
+      "id": "Steam ID {{id}}",
+      "more": "網站新增更多遊戲後，更多遊戲帳號會顯示在這裡。",
+      "notConnected": "連結你的 {{provider}} 帳號以玩這些遊戲。",
+      "notOffered": "這裡尚未開啟 {{provider}} 登入。請讓管理員在「設定 → 登入」中開啟。"
+    },
+    "signIn": {
+      "title": "登入方式",
+      "description": "任意一種都能登入同一個帳號。至少保留一種。",
+      "primary": "主要",
+      "primaryDetail": "你帳號的身分 · 也是你在 {{games}} 中的遊戲帳號",
+      "primaryDetailNoGames": "你帳號的身分",
+      "connected": "已連線",
+      "accountId": "ID",
+      "linkedOn": "{{date}} 連線",
+      "turnedOff": "此網站已關閉該登入方式",
+      "notConnected": "未連線",
+      "connect": "連線",
+      "remove": "移除",
+      "lastMethod": "這是你唯一的登入方式。請先連線另一種方式。",
+      "removeTitle": "移除 {{provider}}？",
+      "removeBody": "你將無法再使用 {{provider}} 登入。以後可以重新連線。",
+      "removed": "{{provider}} 已移除",
+      "removeFailed": "無法移除此登入方式",
+      "linked": "{{provider}} 已連線",
+      "taken": "該 {{provider}} 帳號已連線到此網站的另一個帳號。",
+      "linkFailed": "無法連線 {{provider}}。請重試。",
+      "localLabel": "管理員登入（使用者名稱 + 密碼）",
+      "localDetail": "使用者名稱 {{username}}"
+    },
+    "changePassword": {
+      "button": "更改密碼",
+      "title": "更改你的密碼",
+      "current": "當前密碼",
+      "new": "新密碼",
+      "repeat": "再次輸入新密碼",
+      "totp": "身分驗證器驗證碼",
+      "mismatch": "兩次輸入的新密碼不一致",
+      "save": "更改密碼",
+      "cancel": "取消",
+      "done": "密碼已更改",
+      "failed": "無法更改密碼",
+      "totpNeeded": "還需要輸入身分驗證器應用中的驗證碼。",
+      "tooLong": "新密碼太長"
+    },
+    "reauth": {
+      "title": "確認你的管理員密碼",
+      "body": "更改登入方式前，請輸入 {{username}} 的密碼。",
+      "password": "密碼",
+      "totp": "身分驗證器驗證碼",
+      "confirm": "確認",
+      "failed": "密碼或驗證碼錯誤",
+      "totpNeeded": "還需要輸入身分驗證器應用中的驗證碼。"
+    },
+    "merge": {
+      "title": "合併帳號？",
+      "body": "此 Steam 帳號在本站已有一個玩家。要把它合併到你的管理員帳號嗎？",
+      "explain": "該玩家保留其比賽和資料，併成為管理員。你的管理員登入和已連線的登入方式會轉移到它上面。",
+      "matches_one": "打過 {{count}} 場比賽",
+      "matches_other": "打過 {{count}} 場比賽",
+      "confirm": "合併帳號",
+      "failed": "無法合併帳號"
+    },
+    "twoStep": {
+      "turnOn": "開啟兩步驗證",
+      "turnOff": "關閉兩步驗證",
+      "isOn": "兩步驗證已開啟",
+      "isOff": "兩步驗證已關閉",
+      "onTitle": "開啟兩步驗證",
+      "offTitle": "關閉兩步驗證",
+      "offWarning": "關閉後，僅憑密碼就能登入這個管理員帳號。",
+      "password": "密碼",
+      "code": "身分驗證器驗證碼",
+      "codeNeeded": "請輸入身分驗證器應用中的驗證碼。",
+      "failed": "無法關閉",
+      "cancel": "取消",
+      "turnedOn": "兩步驗證已開啟",
+      "turnedOff": "兩步驗證已關閉"
+    },
+    "passkeys": {
+      "title": "通行金鑰",
+      "description": "在管理員登入頁用指紋、臉部或裝置 PIN 登入，代替密碼和驗證碼。",
+      "add": "新增通行金鑰",
+      "name": "名稱",
+      "nameHelp": "用於區分的名稱，例如「MacBook」或「手機」。接下來瀏覽器會要求你的指紋、臉部或 PIN。",
+      "continue": "繼續",
+      "added": "通行金鑰已新增",
+      "addFailed": "無法新增通行金鑰",
+      "removed": "{{name}} 已移除",
+      "removeFailed": "無法移除通行金鑰",
+      "lastUsed": "上次使用 {{date}}",
+      "addedOn": "{{date}} 新增，尚未使用",
+      "needsHttps": "通行金鑰需要網站使用 https（或 localhost）。請讓網站運營者啟用 https。"
+    },
+    "name": {
+      "title": "顯示名稱",
+      "description": "顯示在網站和遊戲中。每天可以更改一次。",
+      "lockedUntil": "顯示在網站和遊戲中。你最近已更改過，可在 {{date}} 之後再次更改。",
+      "label": "名稱",
+      "lengthHint": "{{min}}–{{max}} 個字元",
+      "badChars": "不能包含引號、< 或 > 以及控制字元",
+      "promptTitle": "你叫什麼名字？",
+      "promptBody": "它會顯示在遊戲和網站上。",
+      "notNow": "以後再說",
+      "save": "儲存",
+      "saved": "名稱已儲存。遊戲伺服器將從你的下一場比賽開始使用它。",
+      "saveFailed": "無法儲存名稱"
+    }
+  },
+  "home": {
+    "title": "首頁",
+    "greeting": "你好，{{name}}",
+    "greetingFallback": "你好",
+    "editGames": "編輯遊戲",
+    "vs": "對陣",
+    "tbd": "待定",
+    "openMatch": "開啟比賽",
+    "connectToServer": "連線伺服器",
+    "matchStatus": {
+      "pending": "等待中",
+      "ready": "已就緒",
+      "loaded": "已載入",
+      "live": "進行中",
+      "completed": "已結束"
+    },
+    "yourTournaments": {
+      "title": "你的賽事",
+      "empty": "你目前沒有參加任何賽事。"
+    },
+    "tournaments": {
+      "playingNow": "正在比賽",
+      "waiting": "等待中",
+      "eliminated": "已淘汰",
+      "finished": "已結束",
+      "placement": "第 {{position}} 名 / 共 {{total}}"
+    },
+    "openForYourGames": {
+      "title": "你的遊戲正在報名的賽事",
+      "browseAll": "瀏覽所有賽事",
+      "empty": "你的遊戲目前沒有開放報名的賽事。",
+      "steamLinked": "已連結 Steam",
+      "titleAll": "開放報名的賽事",
+      "emptyAll": "目前沒有開放報名的賽事。"
+    },
+    "summary": {
+      "match": "你有一場比賽在等你。",
+      "open_one": "你玩的遊戲有 {{count}} 個賽事開放報名。",
+      "open_other": "你玩的遊戲有 {{count}} 個賽事開放報名。",
+      "openAll_one": "此網站有 {{count}} 個賽事開放報名。",
+      "openAll_other": "此網站有 {{count}} 個賽事開放報名。",
+      "none": "目前沒有需要你處理的事。"
+    },
+    "yourGames": "你玩的遊戲",
+    "loading": "正在載入你的首頁",
+    "nextMatch": "你的下一場比賽",
+    "live": {
+      "title": "正在進行",
+      "count": "{{count}} 場進行中",
+      "chip": "進行中",
+      "matchesOn_one": "{{count}} 場比賽進行中",
+      "matchesOn_other": "{{count}} 場比賽進行中"
+    },
+    "quiet": {
+      "title": "即將開始",
+      "more": "其他即將開始",
+      "next": "下一場"
+    },
+    "play": {
+      "title": "現在就打一場",
+      "quietTitle": "沒什麼事？打一場吧。",
+      "hint": "只要排隊的玩家夠多，配對就會把你放進一局遊戲。",
+      "cta": "加入佇列"
+    },
+    "signup": {
+      "open": "報名中",
+      "cta": "報名",
+      "short": "報名",
+      "view": "檢視",
+      "title": "報名",
+      "aside": "即將開始"
+    },
+    "champions": {
+      "title": "冠軍",
+      "aside": "最近結束",
+      "all": "所有結果",
+      "won": "贏得 {{name}}",
+      "finished": "已結束"
+    },
+    "lastTime": {
+      "title": "上一次",
+      "results": "完整結果",
+      "second": "亞軍",
+      "third": "季軍",
+      "champion": "冠軍"
+    },
+    "teams": "戰隊：{{count}}",
+    "none": "還沒有賽事。請稍後再來看看。",
+    "allTournaments": "所有賽事",
+    "empty": {
+      "soon": "即將推出",
+      "heroTitle": "還沒有比賽",
+      "heroHint": "下一場比賽公佈後，會在這裡顯示日期和報名。",
+      "create": "建立比賽",
+      "nextTitle": "暫無其他安排",
+      "nextHint": "之後的下一場比賽會顯示在這裡。",
+      "signupTitle": "暫無可報名的比賽",
+      "signupHint": "開放報名的比賽會顯示在這裡。",
+      "slotTitle": "還可以再放一個",
+      "slotHint": "這裡可以再放一場比賽。",
+      "championTitle": "還沒有冠軍",
+      "championHint": "第一位冠軍會顯示在這裡。"
+    },
+    "browse": {
+      "title": "尋找玩家和隊伍",
+      "hint": "看看誰在這裡玩，找一支隊伍加入。",
+      "cta": "瀏覽玩家"
+    },
+    "next": {
+      "label": {
+        "vetoTurn": "輪到你禁選",
+        "ready": "你的比賽已就緒",
+        "warmup": "熱身",
+        "live": "進行中",
+        "paused": "比賽已暫停"
+      },
+      "opponent": "對手正在比賽",
+      "startsAt": "開始於",
+      "untilVeto": "距離禁選",
+      "untilMatch": "距離比賽",
+      "veto": "禁選",
+      "yourTurn": "輪到你",
+      "ban": "禁用一張地圖",
+      "pick": "選擇一張地圖",
+      "side": "選邊",
+      "theirTurn": "輪到對方",
+      "vetoOpen": "禁選已開啟",
+      "waiting": "等待中",
+      "forServer": "等待伺服器",
+      "join": "加入",
+      "serverReady": "伺服器已就緒",
+      "ready": "已就緒",
+      "mapRound": "{{map}} · 第 {{round}} 回合",
+      "round": "第 {{round}} 回合",
+      "halftime": "半場",
+      "nextMap": "下一張地圖",
+      "goVeto": "前往禁選",
+      "paused": "已暫停",
+      "about": "約 {{minutes}} 分鐘",
+      "joinServer": "加入伺服器"
+    }
+  },
+  "browsePage": {
+    "title": "瀏覽賽事",
+    "searchPlaceholder": "按名稱、主辦方或地點搜尋",
+    "searchLabel": "搜尋賽事",
+    "loading": "正在載入賽事",
+    "loadError": "無法載入賽事。",
+    "listLabel": "賽事",
+    "createTournament": "建立賽事",
+    "teamsCount_one": "{{count}} 支戰隊",
+    "teamsCount_other": "{{count}} 支戰隊",
+    "filters": {
+      "allGames": "所有遊戲",
+      "status": {
+        "all": "所有狀態",
+        "live": "進行中",
+        "registration_open": "報名中",
+        "finished": "已結束"
+      },
+      "where": {
+        "all": "線上和線下",
+        "online": "線上",
+        "lan": "線下"
+      },
+      "gameLabel": "遊戲",
+      "statusLabel": "狀態",
+      "whereLabel": "地點"
+    },
+    "columns": {
+      "tournament": "賽事",
+      "format": "賽制",
+      "when": "時間"
+    },
+    "when": {
+      "starts": "{{date}} 開始",
+      "finished": "已結束",
+      "finishedOn": "{{date}} 結束",
+      "noDate": "尚無日期"
+    },
+    "actions": {
+      "signUp": "報名",
+      "watch": "開啟",
+      "results": "結果",
+      "youreIn": "你已報名"
+    },
+    "status": {
+      "live": "進行中"
+    },
+    "emptyNone": {
+      "title": "還沒有賽事",
+      "description": "此網站舉辦賽事時會顯示在這裡。",
+      "descriptionAdmin": "此網站還沒有賽事。建立一個，它就會顯示在這裡。"
+    },
+    "emptyFiltered": {
+      "title": "沒有賽事符合你的篩選條件",
+      "description": "換一個遊戲或狀態，或清除篩選。",
+      "clear": "清除篩選"
+    },
+    "groups": {
+      "live": "進行中",
+      "soon": "即將開始",
+      "finished": "已結束"
+    },
+    "showOlder_one": "顯示更早的 {{count}} 個",
+    "showOlder_other": "顯示更早的 {{count}} 個",
+    "mine": {
+      "label": "哪些比賽",
+      "all": "全部",
+      "mine": "我的"
+    },
+    "roundN": "第 {{n}} 輪",
+    "entries": {
+      "teams_one": "{{count}} 支隊伍",
+      "teams_other": "{{count}} 支隊伍",
+      "teamsOf": "{{count}} / {{max}} 支隊伍",
+      "players_one": "{{count}} 名玩家",
+      "players_other": "{{count}} 名玩家",
+      "playersOf": "{{count}} / {{max}} 名玩家"
+    }
+  },
+  "modulesPage": {
+    "title": "模組",
+    "subheading": "此實例可以執行什麼，以及你新增的遊戲。",
+    "builtIn": "內建",
+    "loadFailed": "無法載入已安裝的遊戲包",
+    "removed": "已移除 {{name}}",
+    "removeFailed": "無法移除該遊戲包",
+    "installed": {
+      "title": "遊戲模組",
+      "hint": "知道比賽如何進行、結果如何獲得的程式碼。隨應用一起提供。"
+    },
+    "module": {
+      "cs2": {
+        "name": "Counter-Strike 2",
+        "hint": "與你的遊戲伺服器通訊：載入比賽，讀取每個回合，記錄結果。"
+      },
+      "manual-report": {
+        "name": "手動上報",
+        "hint": "用於無法監測的遊戲。由隊長上報比分，對手確認。"
+      }
+    },
+    "packs": {
+      "title": "遊戲包",
+      "hint": "遊戲包是描述一個遊戲的檔案：名稱、圖塊以及如何上報結果。它不包含程式碼，在上方的某個模組上執行。",
+      "empty": "還沒有遊戲包。匯入一個來新增此實例原本沒有的遊戲。",
+      "runBy": "由 {{engine}} 執行",
+      "bundled": "隨 Auto Tournament 提供"
+    },
+    "import": {
+      "action": "匯入遊戲包",
+      "added": "已新增 {{name}}",
+      "updated": "已更新 {{name}}",
+      "failed": "無法匯入該遊戲包",
+      "notJson": "該檔案不是 JSON，因此不是遊戲包",
+      "tooLarge": "該檔案太大，不可能是遊戲包",
+      "noJson": "請選擇遊戲包的 .json 檔案",
+      "missingIcon": "此遊戲包使用 {{file}}，請一併選擇該檔案，或只匯入 JSON（沒有圖塊）"
+    },
+    "confirmRemove": {
+      "title": "移除 {{name}}？",
+      "body": "該遊戲會從設定嚮導中消失。不會刪除其他內容，重新匯入遊戲包即可恢復。"
+    },
+    "browse": {
+      "action": "瀏覽",
+      "title": "可新增的遊戲",
+      "hint": "來自社群遊戲包列表。在你開啟這裡之前沒有取得任何內容。",
+      "add": "新增",
+      "update": "更新",
+      "installed": "已安裝",
+      "empty": "列表中還沒有此實例可以新增的遊戲。",
+      "offline": "無法連線到列表",
+      "staleWith": "顯示此實例上次取得的列表：{{reason}}。",
+      "failed": "無法讀取列表"
+    },
+    "pending": "正在載入 {{game}} 的遊戲模組…",
+    "pendingRoute": "正在載入此頁面的模組…",
+    "notInstalled": {
+      "title": "{{game}} 的遊戲模組未安裝",
+      "body": "此賽事中特定於遊戲的部分已隱藏，重新安裝模組之前其比賽無法進行。"
+    },
+    "code": {
+      "chip": "程式碼模組",
+      "hint": "由運營者安裝在此伺服器的磁碟上。",
+      "noReason": "未給出原因",
+      "broken": "此模組已損壞：{{reason}}",
+      "status": {
+        "ok": "正常",
+        "incompatible": "不相容",
+        "broken": "已損壞",
+        "disabled": "已禁用"
+      },
+      "enable": "啟用",
+      "disable": "禁用",
+      "enabled": "已啟用 {{name}}",
+      "disabled": "已禁用 {{name}}",
+      "toggleFailed": "無法更改該模組",
+      "listFailed": "無法讀取程式碼模組：{{reason}}",
+      "safeMode": "安全模式：此頁面沒有載入任何程式碼模組。去掉 ?modules=off 重新開啟即可載入。",
+      "slotFailed": "{{id}} 模組在此處出錯。「模組」頁面會說明原因。",
+      "reload": {
+        "body": "重新整理頁面以載入或解除安裝模組程式碼。",
+        "action": "重新整理"
+      },
+      "confirm": {
+        "title": "啟用 {{name}}？",
+        "warningTitle": "這是一個程式碼模組。",
+        "warning": "它在 Auto Tournament 的伺服器中執行，可以完全訪問你的資料庫、檔案和金鑰；也會在每個開啟其頁面的管理員和玩家的瀏覽器中，以他們的許可權執行。Auto Tournament 不審查也不隔離程式碼模組。只有在你像信任這個平台一樣信任其作者時才啟用。",
+        "source": "來源",
+        "onDisk": "此伺服器的磁碟",
+        "version": "版本",
+        "clientApi": "客戶端 API",
+        "serverApi": "伺服器 API",
+        "none": "未宣告",
+        "typeId": "輸入 {{id}} 以啟用。"
+      },
+      "failure": {
+        "badEntry": "其程式碼不是從 {{prefix}} 提供的",
+        "noClientApi": "它沒有宣告客戶端 API 範圍；此平台提供 {{platform}}",
+        "badClientApi": "其客戶端 API 範圍「{{range}}」不是 semver 範圍",
+        "outOfRange": "為客戶端 API {{range}} 構建；此平台提供 {{platform}}",
+        "notFound": "其程式碼缺失（HTTP 404）",
+        "httpError": "無法取得其程式碼（HTTP {{status}}）",
+        "notJavaScript": "其程式碼以 {{contentType}} 提供，而不是 JavaScript",
+        "importFailed": "其程式碼載入失敗：{{error}}",
+        "timeout": "其程式碼未在 {{seconds}} 秒內載入",
+        "sharedFailed": "平台無法與其共享軟體包：{{error}}",
+        "badExport": "其程式碼不是模組定義：{{detail}}",
+        "idMismatch": "其程式碼自稱「{{id}}」，但安裝為「{{expected}}」",
+        "idTaken": "「{{id}}」已是內建模組",
+        "render": "其「{{slot}}」插槽在渲染時出錯：{{error}}"
+      }
+    },
+    "signInNeed": {
+      "body": "{{game}} 玩家使用 {{provider}} 登入，而 {{provider}} 登入已關閉。他們無法連結遊戲所需的帳號。",
+      "action": "開啟"
+    },
+    "addons": {
+      "title": "附加元件",
+      "hint": "遊戲之外的功能。開啟或關閉立即生效。",
+      "open": "開啟",
+      "toggle": "開啟或關閉 {{name}}",
+      "toggleFailed": "無法更改附加元件。",
+      "startFailed": "已開啟，但未能啟動：{{error}}",
+      "notFound": "沒有這個附加元件。",
+      "off": "此附加元件已關閉。在「模組」中開啟後即可設定。"
+    }
+  },
+  "catalog": {
+    "title": "遊戲",
+    "hint": "此實例執行的所有遊戲，以及你可以新增的遊戲。遊戲包是資料；程式碼模組由 Auto Tournament 簽名。兩者都可一鍵安裝，標有「映象內建」的無需網路。",
+    "search": "搜尋遊戲",
+    "installedTitle": "已安裝（{{count}}）",
+    "availableTitle": "可用（{{count}}）",
+    "empty": "沒有配對的遊戲。",
+    "allInstalled": "目錄中的所有內容都已安裝。",
+    "noneInstalled": "還沒有安裝任何遊戲。安裝你要舉辦賽事的遊戲，玩家會從中選擇。",
+    "loadFailed": "無法讀取遊戲目錄：{{reason}}",
+    "loadFailedFallback": "伺服器沒有回應",
+    "retry": "重試",
+    "failed": "{{name}}：{{reason}}",
+    "failedFallback": "操作失敗",
+    "updateAll": {
+      "action": "全部更新（{{count}}）",
+      "running": "正在更新…",
+      "done": "已更新 {{count}} 個遊戲和模組",
+      "summary": "已更新 {{updated}}，跳過 {{skipped}}，失敗 {{failed}}。",
+      "failedItem": "{{name}}：{{reason}}",
+      "failedFallback": "無法全部更新"
+    },
+    "feed": {
+      "cache": "顯示 {{time}} 的目錄：無法連線到線上目錄（{{reason}}）。此映象內的遊戲仍可在無網路時安裝。",
+      "none": "無法連線到線上目錄（{{reason}}）。顯示此映象內建的遊戲；它們無需網路即可安裝。",
+      "unknown": "未給出原因",
+      "cacheRefreshing": "線上目錄載入期間，顯示 {{time}} 的目錄。",
+      "noneRefreshing": "正在載入線上目錄… 在此期間顯示此映象內建的遊戲；它們無需網路即可安裝。",
+      "reason": {
+        "timeout": "未及時回應",
+        "unreachable": "無法連線",
+        "bad_response": "其回應不是目錄",
+        "newer_schema": "它是為更新版本的 Auto Tournament 編寫的",
+        "too_large": "它太大了",
+        "offline": "已設定 CATALOG_OFFLINE",
+        "http": "它返回了 HTTP {{status}}"
+      }
+    },
+    "kind": {
+      "module": "程式碼模組"
+    },
+    "source": {
+      "snapshot": "映象內建"
+    },
+    "state": {
+      "available": "可用",
+      "installed": "已安裝",
+      "update-available": "有可用更新",
+      "disabled": "已禁用",
+      "broken": "已損壞",
+      "incompatible": "不相容",
+      "builtin": "內建",
+      "installing": "正在安裝…",
+      "working": "處理中…",
+      "restart": "需要重啟"
+    },
+    "action": {
+      "install": "安裝",
+      "update": "更新到 {{version}}",
+      "enable": "啟用",
+      "disable": "禁用",
+      "remove": "移除",
+      "uninstall": "解除安裝"
+    },
+    "done": {
+      "installed": "已安裝 {{name}}",
+      "updated": "已更新 {{name}}",
+      "enabled": "已啟用 {{name}}",
+      "disabled": "已禁用 {{name}}",
+      "removed": "已移除 {{name}}"
+    },
+    "reload": {
+      "body": "{{names}} 正在執行。重新整理頁面即可在此使用。",
+      "action": "重新整理"
+    },
+    "restart": "重啟 Auto Tournament 以完成：{{names}}。",
+    "restartNow": {
+      "action": "立即重啟",
+      "restarting": "正在重啟…",
+      "failed": "無法重啟",
+      "timeout": "Auto Tournament 還沒有恢復。請檢查容器，然後重新整理頁面。"
+    },
+    "confirmInstall": {
+      "title": "安裝 {{name}}？",
+      "body": "這是一個由 Auto Tournament 簽名的程式碼模組。它在此伺服器中執行，可以訪問你的資料庫和檔案，也會在每個開啟其頁面的人的瀏覽器中執行。",
+      "version": "版本 {{version}}",
+      "from": "來自 {{source}}",
+      "fromRemote": "GitHub 上的 Auto Tournament",
+      "fromSnapshot": "此映象內的副本（無需網路）"
+    },
+    "confirmUninstall": {
+      "title": "解除安裝 {{name}}？",
+      "body": "其檔案會被移除。其資料（賽事、伺服器、設定）會保留，重新安裝即可恢復。",
+      "packBody": "該遊戲會從設定嚮導中消失。不會刪除其他內容，重新安裝即可恢復。"
+    },
+    "welcome": {
+      "title": "此實例上的遊戲",
+      "hint": "你運營這個實例，所以由你選擇它提供哪些遊戲。玩家會從中選擇。"
+    },
+    "signedBy": "由 {{label}} 簽名（金鑰 {{keyId}}）"
+  },
+  "matchmaking": {
+    "play": {
+      "title": "開始遊戲",
+      "subtitle": "尋找一場 5v5 比賽。你會和等待最久的玩家配對，你的小隊總是在同一邊。",
+      "unavailable": "此網站尚未開放配對。",
+      "findTitle": "尋找比賽",
+      "findHelp": "等待期間你可以瀏覽網站。找到比賽後，你有 20 秒接受。",
+      "searchingHelp": "搜尋中。底部的條顯示你已等待多久。",
+      "find": "尋找比賽",
+      "leaderStarts": "由你的小隊隊長開始搜尋。",
+      "cooldown": "你拒絕或錯過了一場比賽。{{minutes}} 分鐘後可以再次搜尋。",
+      "rating_one": "Rating {{elo}} · {{count}} 場 · 勝 {{wins}} 場",
+      "rating_other": "Rating {{elo}} · {{count}} 場 · 勝 {{wins}} 場",
+      "mode": "模式",
+      "modeName": {
+        "5v5": "5v5",
+        "2v2": "2v2 搭檔",
+        "1v1": "1v1"
+      },
+      "inQueue_one": "佇列中 {{count}} 人",
+      "inQueue_other": "佇列中 {{count}} 人",
+      "partyTitle": "你的小隊",
+      "invite": "邀請",
+      "partyOf": "{{count}}/{{max}}",
+      "you": "你",
+      "selected": "已選擇",
+      "modeTitle": {
+        "5v5": "競技",
+        "2v2": "搭檔",
+        "1v1": "單挑"
+      },
+      "lookingTitle": "正在尋找玩家",
+      "seats": "{{count}} 人在搜尋 · 需要 {{total}} 人開局",
+      "leaveQueue": "離開佇列",
+      "level": "你的等級",
+      "xp": "{{into}} / {{next}} XP",
+      "ratingShort": "Rating",
+      "recent": "最近",
+      "noRecent": "還沒有比賽。",
+      "result": {
+        "win": "勝",
+        "loss": "負",
+        "draw": "平"
+      },
+      "resultShort": {
+        "win": "W",
+        "loss": "L",
+        "draw": "D"
+      },
+      "backToMatch": "回到你的比賽",
+      "online_one": "{{count}} 人線上",
+      "online_other": "{{count}} 人線上",
+      "usuallyWait_one": "通常約 {{count}} 分鐘",
+      "usuallyWait_other": "通常約 {{count}} 分鐘",
+      "aboutWait_one": "約 {{count}} 分鐘",
+      "aboutWait_other": "約 {{count}} 分鐘",
+      "defaultPool": {
+        "5v5": "現役地圖池",
+        "2v2": "搭檔地圖",
+        "1v1": "搭檔地圖"
+      },
+      "searchAnyone": "搜尋的玩家不多：你會與任何可用的玩家配對（{{count}} 人在搜尋，需要 {{total}} 人）",
+      "searchRating": "正在尋找與你 Rating 接近的比賽（±{{elo}}）· {{count}} 人在搜尋",
+      "botFill": "用機器人補滿空位",
+      "botFillUnrated": "機器人補滿空位 · 不計排名：無評分、經驗或掉落",
+      "searchRatingPlain": "正在尋找與你 Rating 接近的比賽 · {{count}} 人在搜尋",
+      "searchWidening": "正在擴大搜尋範圍：±{{elo}} · {{count}} 人在搜尋",
+      "searchAnyRating": "現在搜尋所有 Rating · {{count}} 人在搜尋",
+      "inTournament": "你正在參加一個進行中的賽事（{{tournament}}），目前無法排隊配對。",
+      "partyInTournament": "以下成員正在參加進行中的賽事，小隊目前無法排隊：{{names}}。",
+      "inMatch_one": "{{count}} 人在比賽中",
+      "inMatch_other": "{{count}} 人在比賽中"
+    },
+    "queue": {
+      "searching": "正在搜尋 {{mode}}",
+      "cancel": "停止搜尋"
+    },
+    "found": {
+      "title": "找到比賽",
+      "accept": "接受",
+      "decline": "拒絕",
+      "waiting": "等待其他人",
+      "accepted": "已接受 {{accepted}} / {{total}}",
+      "secondsLeft_one": "剩餘 {{count}} 秒",
+      "secondsLeft_other": "剩餘 {{count}} 秒",
+      "subtitle": "{{mode}} · 請在 {{seconds}} 秒內接受"
+    },
+    "party": {
+      "title": "小隊",
+      "help": "和朋友一起玩：建立小隊並把連結發給他們。最多 5 人，始終在同一邊。",
+      "create": "建立小隊",
+      "members_one": "你的小隊有 {{count}} 名玩家",
+      "members_other": "你的小隊有 {{count}} 名玩家",
+      "inviteLink": "邀請連結",
+      "copy": "複製",
+      "copied": "邀請連結已複製",
+      "code": "邀請碼",
+      "join": "加入",
+      "joined": "你已加入小隊",
+      "leave": "離開小隊",
+      "disband": "解散小隊"
+    },
+    "room": {
+      "title": "比賽房間",
+      "missing": "此比賽不存在，或你不在其中。",
+      "back": "返回開始遊戲",
+      "team": "隊伍 {{n}}",
+      "status": {
+        "accepting": "等待接受",
+        "ready": "所有人已接受",
+        "cancelled": "已取消"
+      },
+      "match": {
+        "pending": "地圖禁選：輪流禁用地圖，直到剩下一張。你隊伍中任何人都可以點選；以第一次點選為準。",
+        "ready": "等待空閒伺服器。",
+        "loaded": "伺服器已就緒。請加入。",
+        "live": "比賽正在進行。",
+        "completed": "比賽已結束。",
+        "other": "比賽：{{status}}"
+      },
+      "pickedBy": "{{mode}} · 地圖輪盤選出",
+      "pickedByVeto": "{{mode}} · 透過禁選選出",
+      "vs": "對陣",
+      "you": "（你）",
+      "accepted": "已接受",
+      "matchChat": "比賽聊天",
+      "playAgain": "再來一局",
+      "fullScoreboard": "完整計分板",
+      "newSkin": "新造型",
+      "inventory": "裝備",
+      "victory": "勝利",
+      "defeat": "失敗",
+      "draw": "平局",
+      "inServer": "伺服器內 {{n}}/{{total}} 人",
+      "warmupRule": "熱身會等到 {{total}} 人全部進入。",
+      "warmupRuleTimed": "熱身會等到 {{total}} 人全部進入，或 {{minutes}} 分鐘後以在場人員開始。",
+      "teamLetter": "{{letter}} 隊",
+      "sideFirst": "先 {{side}}",
+      "presence": {
+        "in": "已在伺服器",
+        "notYet": "尚未進入"
+      },
+      "equip": "裝備",
+      "equipped": "已裝備",
+      "equipFailed": "無法裝備",
+      "rematch": {
+        "title": "再來一局？",
+        "ask": "相同的隊伍，一場新比賽。你的回答代表你的整個小隊。如果你隊伍的多數人同意，另一隊有 30 秒時間接受。",
+        "yes": "好，再來一局",
+        "no": "不了，謝謝",
+        "button": "再來一局",
+        "offerTitle": "對方隊伍想要再來一局",
+        "teamTitle": "你的隊伍想要再來一局",
+        "offerBody": "相同的隊伍，一場新比賽。你隊伍的多數人需要同意。你的回答代表你的整個小隊。",
+        "waitingOther": "正在等待對方隊伍… {{s}} 秒",
+        "waitingTeam": "正在等待你的隊伍… {{s}} 秒",
+        "accepted": "已同意再來一局。正在開啟新比賽…",
+        "refused": "已拒絕再來一局。"
+      }
+    },
+    "result": {
+      "title": "結果",
+      "map": "第 {{n}} 張地圖",
+      "rating": "Rating",
+      "xp": "+{{xp}} XP · 等級 {{level}}",
+      "levelProgress": "距離下一級 {{into}}/{{next}} XP",
+      "xpReason": {
+        "completed": "完成比賽",
+        "win": "勝利",
+        "draw": "平局",
+        "performance": "表現",
+        "first_win": "今日首勝",
+        "admin": "管理員"
+      },
+      "player": "玩家",
+      "commend": "評價",
+      "thumbsUp": "點贊",
+      "thumbsDown": "點踩",
+      "thumbsUpFor": "給 {{name}} 點贊",
+      "thumbsDownFor": "給 {{name}} 點踩",
+      "downReason": "為什麼？",
+      "downTag": {
+        "toxic": "惡意",
+        "griefing": "搗亂",
+        "afk": "掛機或離開",
+        "other": "其他"
+      },
+      "commendFailed": "無法儲存",
+      "outcome": {
+        "win": "勝利",
+        "loss": "失敗",
+        "draw": "平局"
+      },
+      "minutes_one": "{{count}} 分鐘",
+      "minutes_other": "{{count}} 分鐘",
+      "yourGame": "你的表現",
+      "fullBoard": "完整計分板",
+      "hideBoard": "隱藏計分板"
+    },
+    "profile": {
+      "level": "等級 {{level}}",
+      "xp": "{{xp}} XP",
+      "thumbsUp_one": "{{count}} 個贊",
+      "thumbsUp_other": "{{count}} 個贊",
+      "thumbsDown_one": "{{count}} 個踩",
+      "thumbsDown_other": "{{count}} 個踩",
+      "tag": {
+        "friendly": "友善",
+        "team_player": "團隊精神",
+        "leader": "領袖",
+        "good_comms": "溝通良好",
+        "teacher": "導師",
+        "good_sport": "公平競技",
+        "toxic": "惡意",
+        "griefing": "搗亂",
+        "unhelpful": "不配合",
+        "bad_sport": "缺乏風度",
+        "afk": "掛機或離開",
+        "other": "其他"
+      },
+      "negativesPrivate": "只有你和管理員能看到這些。",
+      "history": "配對比賽",
+      "historyEmpty": "還沒有配對比賽。",
+      "win": "勝",
+      "loss": "負",
+      "draw": "平",
+      "positivePercent": "{{percent}}% 好評"
+    },
+    "leaderboard": {
+      "toLadder": "配對天梯 →",
+      "title": "排行榜",
+      "subtitle_one": "過去 30 天內至少打了 {{count}} 場比賽的玩家。",
+      "subtitle_other": "過去 30 天內至少打了 {{count}} 場比賽的玩家。",
+      "empty_one": "還沒有人。30 天內打 {{count}} 場比賽就能上榜。",
+      "empty_other": "還沒有人。30 天內打 {{count}} 場比賽就能上榜。",
+      "level": "等級",
+      "games": "比賽",
+      "winRate": "勝率"
+    },
+    "admin": {
+      "title": "佇列（管理員）",
+      "summary": "{{players}} 人在搜尋，{{lobbies}} 場開放的比賽",
+      "waited": "{{minutes}} 分鐘",
+      "cooldowns": "冷卻",
+      "until": "剩餘 {{minutes}} 分鐘",
+      "clear": "清除",
+      "cleared": "冷卻已清除",
+      "clearFailed": "無法清除冷卻",
+      "kind": {
+        "decline": "拒絕了",
+        "no_show": "錯過了比賽",
+        "abandon": "中途離開了比賽"
+      },
+      "review": "需要關注的玩家（被點踩）",
+      "voters_one": "{{count}} 人投票",
+      "voters_other": "{{count}} 人投票"
+    },
+    "roulette": {
+      "rolling": "正在選擇地圖…",
+      "picked": "地圖：{{map}}"
+    }
+  },
+  "chat": {
+    "title": "聊天",
+    "close": "關閉聊天",
+    "tabsLabel": "聊天",
+    "tabMatch": "比賽",
+    "tabTeam": "戰隊",
+    "tabParty": "小隊",
+    "tabDm": "私信",
+    "dmWho": "只有你們兩人能看到",
+    "placeholderDm": "發訊息給 {{name}}",
+    "friends": "好友",
+    "messageFriend": "發訊息給 {{name}}",
+    "matchWho": "你的戰隊、{{title}} 和管理員",
+    "matchWhoAdmin": "雙方戰隊和管理員",
+    "teamWho": "{{team}} 的所有人",
+    "partyWho": "你小隊中的所有人",
+    "placeholderMatch": "給雙方戰隊和管理員發訊息",
+    "placeholderTeam": "給你的戰隊發訊息",
+    "placeholderParty": "給你的小隊發訊息",
+    "send": "傳送",
+    "you": "你",
+    "adminBadge": "管理員",
+    "callAdmin": "呼叫管理員",
+    "adminCallOpen": "這裡有一個進行中的管理員呼叫",
+    "callAdminConfirmTitle": "呼叫管理員？",
+    "callAdminConfirmBody": "管理員會收到通知並加入此聊天。只有在比賽需要幫助時才呼叫。",
+    "adminCalled": "已呼叫管理員",
+    "callFailed": "無法呼叫管理員",
+    "sendFailed": "無法傳送訊息",
+    "logLabel": "聊天：{{title}}",
+    "none": "還沒有聊天。你的比賽、戰隊和小隊會顯示在這裡。",
+    "empty": "還沒有訊息。打個招呼吧。",
+    "loading": "正在載入訊息",
+    "readOnlyImpersonating": "你正在以其他玩家身分檢視。停止扮演後才能發言。",
+    "peekMatch": "比賽 · {{title}}",
+    "peekTeam": "戰隊",
+    "peekParty": "小隊",
+    "buttonUnread": "聊天，{{count}} 則未讀",
+    "system": {
+      "vetoStarted": "禁選開始 · {{team}} 先手",
+      "vetoBan": "{{team}} 禁用了 {{map}}",
+      "vetoReset": "管理員重新開始了禁選",
+      "vetoPick": "{{team}} 選擇了 {{map}}",
+      "vetoSide": "{{team}} 在 {{map}} 以 {{side}} 開局",
+      "vetoDone": "禁選完成 · {{maps}}",
+      "serverReady": "伺服器已就緒 · {{map}} · 從比賽頁面加入",
+      "playerJoined": "{{name}} 進入了伺服器 · 已有 {{n}} 人",
+      "playerLeft": "{{name}} 離開了伺服器 · 已有 {{n}} 人",
+      "mapLive": "第 {{n}} 張圖開始 · {{map}}",
+      "mapResult": "第 {{n}} 張圖 · {{map}} · {{team1}} {{s1}}–{{s2}} {{team2}}",
+      "seriesWon": "{{team}} 以 {{a}}–{{b}} 贏下系列賽",
+      "adminCalled": "{{name}} 呼叫了管理員",
+      "adminClaimed": "{{name}} 認領了管理員呼叫",
+      "adminResolved": "{{name}} 處理了管理員呼叫",
+      "timedOut": "超時",
+      "remindAccount": "{{name}}：請用 Steam 登入一次，才能參加 {{tournament}}。",
+      "remindGame": "{{name}}：請在 {{tournament}} 報到前把遊戲新增到個人資料（你玩的遊戲）。",
+      "serverDown": "比賽伺服器崩潰了。正在恢復…",
+      "serverBack": "比賽已恢復：第 {{map}} 張地圖，第 {{round}} 回合。請重新連線。"
+    },
+    "party": {
+      "inviteCopied": "邀請連結已複製",
+      "inviteFailed": "無法複製連結",
+      "leader": "隊長",
+      "invite": "邀請",
+      "queue": "一起排隊",
+      "leaveQueue": "退出排隊",
+      "searching": "正在尋找比賽",
+      "leaderQueues": "由隊長開始排隊"
+    },
+    "back": "返回",
+    "typing": {
+      "one": "{{name}} 正在輸入…",
+      "two": "{{first}} 和 {{second}} 正在輸入…",
+      "many": "{{count}} 人正在輸入…"
+    },
+    "emoji": {
+      "open": "表情",
+      "title": "選擇表情",
+      "search": "搜尋表情",
+      "none": "沒有找到表情",
+      "categories": {
+        "results": "結果",
+        "recent": "最近使用",
+        "smileys": "笑臉",
+        "gestures": "手勢",
+        "people": "人物",
+        "animals": "自然",
+        "food": "食物和飲料",
+        "activity": "遊戲和運動",
+        "travel": "地點",
+        "objects": "物品",
+        "symbols": "符號"
+      }
+    }
+  },
+  "search": {
+    "open": "搜尋",
+    "placeholder": "搜尋頁面、玩家、戰隊、精華…",
+    "placeholderAdmin": "搜尋頁面、設定、玩家、戰隊、伺服器…",
+    "hint": "請至少輸入兩個字元。在任何地方按 Ctrl K（⌘ K）或 / 都能開啟。",
+    "none": "沒有找到與「{{q}}」相關的內容。",
+    "versus": "{{team1}} 對陣 {{team2}}",
+    "groups": {
+      "pages": "頁面與設定",
+      "players": "玩家",
+      "teams": "戰隊",
+      "tournaments": "賽事",
+      "matches": "比賽",
+      "highlights": "精彩集錦",
+      "maps": "地圖",
+      "servers": "伺服器和機器",
+      "recorders": "錄製器"
+    },
+    "status": {
+      "setup": "設定中",
+      "in_progress": "進行中",
+      "completed": "已結束"
+    },
+    "pages": {
+      "manage": "管理",
+      "tournaments": "賽事",
+      "newTournament": "賽事設定",
+      "playedMatches": "所有比賽",
+      "importMatch": "匯入比賽",
+      "teams": "戰隊",
+      "players": "玩家",
+      "reports": "舉報",
+      "templates": "範本",
+      "ratings": "Rating",
+      "modules": "模組",
+      "servers": "伺服器",
+      "maps": "地圖與地圖池",
+      "skins": "造型",
+      "matchRules": "比賽規則",
+      "highlights": "精華",
+      "adminTools": "系統",
+      "settings": "設定",
+      "settingsSite": "設定：網站與郵件",
+      "settingsSignIn": "設定：登入方式",
+      "settingsPlayers": "設定：玩家與許可權",
+      "settingsWebhooks": "設定：Webhook",
+      "settingsLicense": "授權",
+      "settingsMatchmaking": "設定：配對",
+      "settingsAdvanced": "設定：高階",
+      "liveMatches": "進行中的比賽"
+    },
+    "clips_one": "{{count}} 個片段",
+    "clips_other": "{{count}} 個片段",
+    "fieldLabel": "搜尋"
+  },
+  "highlightsPage": {
+    "recorderStats": "傳送匿名基準測試結果",
+    "recorderStatsHint": "基準測試後，錄製器會把 GPU 和 CPU 型號、版本和耗時傳送給官網，用於公開的渲染速度對比表。不涉及任何比賽或玩家資訊。關閉後錄製照常進行。",
+    "title": "精華",
+    "subtitle": "每場比賽的精華片段和集錦：錄製器做什麼、集錦的背景音樂，以及每個遊戲的錄製器。",
+    "tabs": {
+      "settings": "設定"
+    },
+    "perPlayer": {
+      "label": "每名玩家每張地圖的片段數",
+      "helper": "1 到 6。片段越多，比賽精華完成得越慢。"
+    },
+    "preset": {
+      "label": "影片畫質",
+      "smooth": "流暢（推薦）：最高 1080p，240 fps",
+      "crisp": "清晰：最高 1440p，120 fps",
+      "lan": "LAN，最高：最高 4K，240 fps",
+      "custom": "自訂",
+      "light": "輕量：僅 720p，60 fps"
+    },
+    "bitrate": {
+      "label": "位元速率",
+      "auto": "自動（推薦）",
+      "option": "{{mbps}} Mbit/s"
+    },
+    "resolution": {
+      "label": "最高解析度"
+    },
+    "fps": {
+      "label": "最高幀率",
+      "option": "{{fps}} fps"
+    },
+    "quality": {
+      "helper": "錄製器以最高畫質製作每個片段和集錦一次，再從中切出較低畫質。慢動作在任何幀率下都保持流暢。已製作的片段保持原畫質，直到重新制作。"
+    },
+    "music": {
+      "label": "集錦背景音樂",
+      "all": "所有曲目（{{count}}）",
+      "pick": "只用我選的",
+      "off": "無音樂",
+      "listen": "試聽 {{title}}",
+      "stop": "停止 {{title}}",
+      "contentId": "YouTube Content ID",
+      "volume": "音量",
+      "byo": "自帶音樂：新增你有權使用的曲目。Auto Tournament 不提供任何音樂。播放器會為每個集錦配上不同的曲目，下載時可選擇帶或不帶音樂。",
+      "remove": "移除 {{title}}",
+      "removeConfirm": "移除",
+      "keep": "保留",
+      "addTitle": "新增曲目",
+      "chooseFile": "選擇檔案",
+      "noFile": "未選擇檔案（MP3、M4A、WAV…）",
+      "trackTitle": "標題",
+      "artist": "藝術家",
+      "genre": "風格（用於選單分組）",
+      "source": "來源（連結，用於署名）",
+      "contentIdLabel": "已在 YouTube Content ID 註冊（含此音樂的上傳可能會收到版權宣告）",
+      "add": "新增曲目",
+      "adding": "正在新增…",
+      "rights": "只新增你有權在影片中使用的音樂。其響度會與其他曲目統一。",
+      "suggestions_one": "Pixabay 上有 {{count}} 首適合集錦的曲目",
+      "suggestions_other": "Pixabay 上有 {{count}} 首適合集錦的曲目",
+      "suggestionsHelp": "開啟一首，按其許可從 Pixabay 下載，然後新增到這裡。該許可允許你在影片中使用；但不允許任何人轉發檔案。",
+      "link": "或音訊檔案的連結",
+      "addLink": "從連結新增"
+    },
+    "overlay": {
+      "label": "疊加層",
+      "helper_one": "{{count}} 個片段有乾淨副本。重繪會把當前的字幕卡、擊殺資訊和名稱重新疊加上去，然後重新制作集錦。無需 CS2。",
+      "helper_other": "{{count}} 個片段有乾淨副本。重繪會把當前的字幕卡、擊殺資訊和名稱重新疊加上去，然後重新制作集錦。無需 CS2。",
+      "redraw": "重繪疊加層",
+      "pending_one": "{{count}} 個影片在等待錄製器",
+      "pending_other": "{{count}} 個影片在等待錄製器",
+      "failed_one": "{{count}} 個影片無法重繪",
+      "failed_other": "{{count}} 個影片無法重繪",
+      "keepClean": "保留片段的乾淨副本",
+      "keepCleanHelper": "每個片段還會按錄製原樣儲存一份，不含字幕卡和擊殺資訊。集錦會用乾淨片段加上自己的疊加層製作，疊加層也可以重繪。關閉可節省約一半儲存空間。",
+      "redrawFailed": "無法加入重繪佇列。"
+    },
+    "moved": "精華設定、錄製器及新增方法現在在單獨的頁面上：",
+    "saved": "已儲存",
+    "saveFailed": "無法儲存",
+    "reels": {
+      "title": "集錦長度",
+      "description": "每個集錦包含多少片段。片段越多，集錦越長，製作時間也越長。",
+      "funnyPerPlayer": "每名玩家每張地圖的趣味片段",
+      "mapReelPerPlayer": "地圖集錦中每名玩家的片段",
+      "seriesReelMax": "系列賽集錦的片段數",
+      "seriesReelPerPlayer": "系列賽集錦中每名玩家的片段",
+      "teamReelPerPlayer": "戰隊集錦中每名玩家的片段",
+      "tournamentReelMax": "賽事集錦的片段數",
+      "tournamentReelPerPlayer": "賽事集錦中每名玩家的片段",
+      "range": "{{min}} 到 {{max}}"
+    },
+    "minResolution": {
+      "label": "最低解析度"
+    },
+    "ladder": {
+      "title": "觀眾可選的畫質",
+      "recordedAt": "以 {{quality}} 錄製",
+      "highest": "最高",
+      "lowest": "手機、慢速網路",
+      "rate": "≈{{mbps}} Mbit/s"
+    },
+    "cost": {
+      "single": "錄製時間約為 1080p 120 fps 的 {{time}} 倍。估算值。",
+      "withCuts": "錄製時間約為 1080p 120 fps 的 {{time}} 倍，並保留每種畫質：約佔 {{storage}} 倍空間。估算值。"
+    },
+    "keepMasters": {
+      "label": "保留最高畫質",
+      "always": "始終",
+      "30": "30 天",
+      "7": "7 天",
+      "reels": "直到集錦製作完成",
+      "helper": "之後由次一級畫質取代，乾淨副本也會刪除，可節省大部分空間。沒有最高畫質的影片無法重繪疊加層，也無法以該畫質加入新集錦；需要重新錄製。"
+    },
+    "matchmaking": {
+      "minimumTitle": "哪些操作會成為片段",
+      "minimumDescription": "適用於每場比賽。配對還只保留其中最好的幾個，見下方設定。",
+      "title": "配對精華",
+      "description": "配對會打很多比賽。每場只保留最好的幾個，避免錄製器整天忙碌。",
+      "on": "錄製配對精華",
+      "onHelp": "關閉：配對比賽沒有片段或集錦。",
+      "clips": "每場比賽的片段數",
+      "clipsHelp": "最好的操作優先。玩家集錦使用相同的片段製作。",
+      "all": "全部",
+      "minKills": "保留的最低操作",
+      "minKillsHelp": "低於此標準的操作即使有空位也不會成為片段。",
+      "kills": {
+        "2": "2 殺",
+        "3": "3 殺",
+        "4": "4 殺",
+        "5": "ACE"
+      },
+      "killsInline": {
+        "2": "2 殺",
+        "3": "3 殺",
+        "4": "4 殺",
+        "5": "ACE"
+      },
+      "clutch": "殘局總是算數",
+      "clutchHelp": "贏下的 1vX 即使擊殺數低於最低操作也算數。",
+      "summary": "每場配對比賽獲得 {{clips}}，至少 {{kills}}。",
+      "summaryClutch": "每場配對比賽獲得 {{clips}}，至少 {{kills}}，以及所有殘局。",
+      "summaryEvery": "所有操作",
+      "summaryBest_one": "最好的 1 個操作",
+      "summaryBest_other": "最好的 {{count}} 個操作"
+    }
+  },
+  "update": {
+    "available": "Auto Tournament {{latest}} 已釋出（你執行的是 {{running}}）。",
+    "notes": "新功能",
+    "module": "{{name}} {{version}} 可用（你執行的是 {{installed}}）。",
+    "moduleProblem": "{{name}}：更新未生效。{{problem}}",
+    "openModules": "模組"
+  },
+  "licenseGate": {
+    "expiredTitle": "此平台的授權已過期",
+    "expiredAdmin": "授權付款逾期，平台已停止。付款後會立即恢復。你的資料是安全的。",
+    "expiredPlayer": "比賽和報名已暫停。已通知主辦方。請稍後再來。",
+    "pay": "在控制台付款 ↗",
+    "settings": "授權設定",
+    "fix": "去處理 ↗",
+    "pastDue": "授權付款失敗。除非付款，平台將於 {{date}} 停止。",
+    "elsewhereTitle": "此授權金鑰正在另一個安裝中使用",
+    "elsewhereAdmin": "一個授權金鑰只能用於一個 Auto Tournament 安裝，而另一個安裝正在使用這個金鑰。請貼上此安裝自己的金鑰，或在控制台中使用「遷移到另一個安裝」。你的資料是安全的。",
+    "replacedTitle": "此授權金鑰已被替換",
+    "replacedAdmin": "已在控制台為此授權生成新金鑰，因此舊金鑰已停止。請在授權設定中貼上新金鑰。你的資料是安全的。",
+    "openConsole": "開啟控制台 ↗",
+    "pasteKey": "貼上新金鑰",
+    "replacedSoon": "已在控制台為此授權生成新金鑰。請在授權設定中貼上：此金鑰將於 {{date}} 停止。"
+  },
+  "matchAdmin": {
+    "openChat": "開啟聊天",
+    "resetVeto": "重新開始禁選",
+    "resetVetoTitle": "重新開始禁選？",
+    "resetVetoBody": "目前為止的所有禁用、選擇和選邊都會清除，雙方重新開始禁選。雙方都會在比賽聊天中看到。",
+    "vetoReset": "禁選重新開始",
+    "vetoResetFailed": "無法重新開始禁選"
+  },
+  "addressMismatch": {
+    "open": "開啟 {{host}}",
+    "text": "你當前在 {{current}}，但此網站設定為 {{host}}：Steam 登入、郵件和遊戲伺服器都使用該位址。"
+  },
+  "siteFooter": {
+    "support": "支援本專案",
+    "trademarks": "Counter-Strike、CS2 和 Steam 是 Valve Corporation 的商標。其他遊戲名稱是其所有者的商標。Auto Tournament 與 Valve 或任何遊戲發行商均無連結，也未獲其認可。"
+  },
+  "discordNotice": {
+    "link": "連結你的 Discord 帳號，以便機器人把你移入戰隊語音訊道，並在戰隊頻道中找到你。",
+    "linkAction": "連結 Discord",
+    "join": "加入我們的 Discord 伺服器。那裡有你戰隊的頻道和比賽卡片。",
+    "joinAction": "加入伺服器"
+  }
+}

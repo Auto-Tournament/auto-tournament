@@ -1,0 +1,82 @@
+{
+  "compatPage": {
+    "title": "Ready Up 相容性",
+    "subtitle": "Ready Up 插件是否相容最新的 Counter-Strike 2 更新——每個新的 CS2 版本都會自動檢查。",
+    "live": "即時",
+    "offline": "正在重新連線…",
+    "loading": "正在載入相容性",
+    "loadError": "無法載入相容性資訊，請稍後再試。",
+    "disabledTitle": "此處不可用",
+    "disabledDescription": "本網站不釋出 Ready Up 相容性資訊。",
+    "emptyTitle": "暫無結果",
+    "emptyDescription": "還沒有收到任何相容性檢查結果。一旦收到，本頁面會自動更新。",
+    "checkedAgo": "檢查於{{time}}",
+    "viewRun": "檢視執行",
+    "factsLabel": "檢查內容",
+    "facts": {
+      "patch": "CS2 補丁",
+      "buildid": "構建 ID",
+      "readyup": "Ready Up",
+      "stage": "階段"
+    },
+    "overall": {
+      "pass": "相容",
+      "warn": "相容，但有警告",
+      "fail": "不相容",
+      "checking": "檢查中…",
+      "no_verdict": "無結論"
+    },
+    "overallHint": {
+      "pass": "所有元件在此版本上均透過了檢查。",
+      "warn": "Ready Up 可在此版本上執行，但部分檢查需要進一步檢視。",
+      "fail": "至少有一個元件無法在此版本上執行。請暫緩更新伺服器。",
+      "checking": "正在檢查此版本。",
+      "no_verdict": "上一次檢查未能得出結論。"
+    },
+    "status": {
+      "pass": "透過",
+      "warn": "警告",
+      "fail": "失敗",
+      "pending": "等待中",
+      "checking": "檢查中…"
+    },
+    "stage": {
+      "static": "靜態分析",
+      "selftest": "自檢",
+      "live": "即時伺服器"
+    },
+    "state": {
+      "queued": "排隊中",
+      "checking": "檢查中",
+      "pass": "透過",
+      "warn": "有警告",
+      "fail": "失敗",
+      "no_verdict": "無結論"
+    },
+    "trigger": {
+      "build_change": "新的 CS2 版本",
+      "surface_change": "遊戲資料變更",
+      "code_change": "Ready Up 變更",
+      "nightly": "每晚",
+      "release": "Ready Up 釋出",
+      "manual": "手動"
+    },
+    "kind": {
+      "signature": "特徵碼",
+      "rtti": "RTTI",
+      "vtable": "虛擬函式表",
+      "hook_site": "掛鉤點",
+      "layout": "記憶體佈局",
+      "schema": "Schema",
+      "event": "遊戲事件",
+      "selftest": "自檢",
+      "livetest": "即時測試"
+    },
+    "componentsTitle": "元件",
+    "checksSummary": "{{total}} 項檢查中透過 {{passed}} 項",
+    "noChecks": "尚未報告任何檢查",
+    "failures": "失敗項",
+    "historyTitle": "最近執行",
+    "historyItem": "CS2 {{patch}} · 構建 {{buildid}}"
+  }
+}
