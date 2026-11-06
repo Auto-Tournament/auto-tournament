@@ -33,6 +33,7 @@ import ru from './ru.json';
 import sv from './sv.json';
 import tr from './tr.json';
 import uk from './uk.json';
+import vi from './vi.json';
 import zhCN from './zh-CN.json';
 import zhTW from './zh-TW.json';
 
@@ -63,4 +64,5 @@ export const manualReportLocales: ModuleLocales = {
   ro,
   bg,
   el,
+  vi,
 };
