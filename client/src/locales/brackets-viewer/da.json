@@ -1,0 +1,124 @@
+{
+  "origin-hint": {
+    "seed": "Seed {{position}}",
+    "winner-bracket": "Taber af $t(abbreviations.winner-bracket) {{round}}.{{position}}",
+    "winner-bracket-semi-final": "Taber af $t(abbreviations.winner-bracket) semi {{position}}",
+    "winner-bracket-final": "Taber af $t(abbreviations.winner-bracket) finale",
+    "consolation-final": "Taber af semi {{position}}",
+    "grand-final": "Vinder af $t(abbreviations.loser-bracket) finale",
+    "double-elimination-consolation-final-opponent-1": "Taber af $t(abbreviations.loser-bracket) semi 1",
+    "double-elimination-consolation-final-opponent-2": "Taber af $t(abbreviations.loser-bracket) finale"
+  },
+  "match-label": {
+    "default": "Kamp {{matchNumber}}",
+    "winner-bracket": "$t(abbreviations.winner-bracket)",
+    "loser-bracket": "$t(abbreviations.loser-bracket)",
+    "standard-bracket": "$t(abbreviations.match)",
+    "standard-bracket-semi-final": "Semi {{matchNumber}}",
+    "standard-bracket-final": "Finale",
+    "double-elimination": "{{matchPrefix}} {{roundNumber}}.{{matchNumber}}",
+    "double-elimination-semi-final": "{{matchPrefix}} semi {{matchNumber}}",
+    "double-elimination-final": "{{matchPrefix}} finale",
+    "consolation-final": "Bronzekamp",
+    "grand-final-single": "Den store finale",
+    "grand-final": "$t(abbreviations.grand-final) runde {{roundNumber}}",
+    "match-game": "Spil {{gameNumber}}"
+  },
+  "match-status": {
+    "locked": "Låst",
+    "waiting": "Venter",
+    "ready": "Klar",
+    "running": "I gang",
+    "completed": "Færdig",
+    "archived": "Arkiveret"
+  },
+  "abbreviations": {
+    "win": "S",
+    "loss": "N",
+    "forfeit": "WO",
+    "position": "Pl",
+    "seed": "#",
+    "winner-bracket": "ØB",
+    "loser-bracket": "NB",
+    "match": "K",
+    "grand-final": "SF"
+  },
+  "ranking": {
+    "rank": {
+      "text": "#",
+      "tooltip": "Placering"
+    },
+    "id": {
+      "text": "Navn",
+      "tooltip": "Navn"
+    },
+    "played": {
+      "text": "K",
+      "tooltip": "Spillede"
+    },
+    "wins": {
+      "text": "$t(abbreviations.win)",
+      "tooltip": "Sejre"
+    },
+    "draws": {
+      "text": "U",
+      "tooltip": "Uafgjorte"
+    },
+    "losses": {
+      "text": "$t(abbreviations.loss)",
+      "tooltip": "Nederlag"
+    },
+    "forfeits": {
+      "text": "$t(abbreviations.forfeit)",
+      "tooltip": "Walkovers"
+    },
+    "scoreFor": {
+      "text": "P+",
+      "tooltip": "Scorede point"
+    },
+    "scoreAgainst": {
+      "text": "P−",
+      "tooltip": "Point imod"
+    },
+    "scoreDifference": {
+      "text": "+/-",
+      "tooltip": "Pointforskel"
+    },
+    "points": {
+      "text": "P",
+      "tooltip": "Point"
+    }
+  },
+  "common": {
+    "bye": "BYE",
+    "best-of-x": "Bo{{x}}",
+    "consolation": "Trøsterunde",
+    "group-name": "Gruppe {{groupNumber}}",
+    "group-name-winner-bracket": "Øvre bracket",
+    "group-name-loser-bracket": "Nedre bracket",
+    "round-name": "Runde {{roundNumber}}",
+    "round-name-final": "Finalerunde",
+    "round-name-winner-bracket": "$t(abbreviations.winner-bracket) runde {{roundNumber}}",
+    "round-name-winner-bracket-final": "$t(abbreviations.winner-bracket) finalerunde",
+    "round-name-loser-bracket": "$t(abbreviations.loser-bracket) runde {{roundNumber}}",
+    "round-name-loser-bracket-final": "$t(abbreviations.loser-bracket) finalerunde"
+  },
+  "form-creator": {
+    "stage-name-label": "Navngiv din fase",
+    "stage-name-placeholder": "Giv fasen et navn",
+    "stage-selector-label": "Vælg en fase",
+    "team-label": "Navngiv dine hold",
+    "team-label-placeholder": "Kommasepareret liste med holdnavne (skal være 2^n)",
+    "team-count": "Eller et antal hold",
+    "team-count-placeholder": "Hvor mange hold vil du have?",
+    "group-label": "Hvor mange grupper?",
+    "group-placeholder": "Hvor mange grupper vil du have?",
+    "seed-order-label": "Hvordan vil du ordne seedningen?",
+    "double-elimination-seed-order-placeholder": "Seedningsrækkefølge for double elimination, kommasepareret",
+    "round-robin-mode-label": "Hvilken alle mod alle-tilstand vil du have?",
+    "consolation-final-label": "Bronzekamp",
+    "skip-first-round-label": "Spring første runde over",
+    "grand-final-type-label": "Type af stor finale",
+    "submit": "Opret"
+  }
+}

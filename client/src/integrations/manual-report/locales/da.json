@@ -1,0 +1,81 @@
+{
+  "manualReport": {
+    "title": "Kampresultat",
+    "unknownTeam": "det andet hold",
+    "state": {
+      "nothing": "Intet resultat rapporteret endnu. Den, der spillede kampen, rapporterer resultatet.",
+      "waitingOpponent": "Rapporteret. Venter på, at {{team}} bekræfter.",
+      "needsAnswer": "{{team}} rapporterede dette resultat. Bekræft det, hvis det er rigtigt.",
+      "disputed": "Resultatet bestrides. En admin afgør det.",
+      "awaitingAdmin": "Venter på, at en admin afgør kampen.",
+      "confirmed": "Begge hold er enige om resultatet."
+    },
+    "deadline": {
+      "autoConfirm": "Bekræftes af sig selv om {{minutes}} min, hvis ingen svarer.",
+      "autoConfirmSoon": "Bekræftes af sig selv når som helst nu.",
+      "escalate": "Går til en admin om {{minutes}} min, hvis ingen svarer.",
+      "escalateSoon": "Går til en admin når som helst nu."
+    },
+    "score": "{{team1}} {{score1}} – {{score2}} {{team2}}",
+    "game": "Spil {{number}}",
+    "note": "Note",
+    "notePlaceholder": "Noget, det andet hold bør vide (valgfrit)",
+    "noteGiven": "Note: {{note}}",
+    "disputeReason": "Hvad er der galt med det?",
+    "disputeReasonGiven": "Bestridt: {{reason}}",
+    "formHint": "Resultater for {{team1}} og {{team2}}, spil for spil.",
+    "actions": {
+      "report": "Rapportér resultatet",
+      "reportAgain": "Rapportér et andet resultat",
+      "submit": "Send rapport",
+      "cancel": "Annuller",
+      "confirm": "Bekræft",
+      "dispute": "Bestrid",
+      "disputeSubmit": "Send indsigelse",
+      "withdraw": "Træk min rapport tilbage"
+    },
+    "errors": {
+      "stale": "Rapporten ændrede sig, mens den var på skærmen. Læs den igen, før du bekræfter.",
+      "incomplete": "Udfyld begge resultater for mindst ét spil.",
+      "failed": "Det gik ikke igennem. Prøv igen."
+    },
+    "captains": {
+      "title": "Holdkaptajner",
+      "hint": "Kun en holdkaptajn kan rapportere eller bekræfte et resultat for holdet.",
+      "make": "Gør til holdkaptajn",
+      "remove": "Fjern holdkaptajn",
+      "isCaptain": "Holdkaptajn",
+      "empty": "Ingen på holdet har logget ind endnu, så der er ingen at udpege.",
+      "unknown": "Ukendt spiller",
+      "failed": "Det kunne ikke ændres. Prøv igen."
+    },
+    "stats": {
+      "hint": "De ekstra tal, turneringen beder om. Lad et felt være tomt, hvis ingen har et.",
+      "required": "påkrævet",
+      "recorded": "Rapporteret statistik",
+      "value": "{{subject}}: {{value}}{{suffix}}",
+      "errors": {
+        "number": "{{field}} for {{subject}} skal være et tal.",
+        "integer": "{{field}} for {{subject}} skal være et heltal.",
+        "range": "{{field}} for {{subject}} er for stort til at være et rigtigt tal.",
+        "tooLong": "{{field}} for {{subject}} er længere end {{max}} tegn.",
+        "missing": "{{field}} er påkrævet, og intet er udfyldt for {{team}}."
+      },
+      "tournamentTitle": "Rapporteret statistik",
+      "tournamentHelp": "Lagt sammen fra bekræftede rapporter. Et resultat, der stadig venter på modstanderen, tælles ikke med her.",
+      "byTeam": "Pr. hold",
+      "byPlayer": "Pr. spiller",
+      "team": "Hold",
+      "player": "Spiller",
+      "matches": "Kampe"
+    },
+    "chip": {
+      "none": "Intet resultat endnu",
+      "yours": "Din rapport",
+      "reported": "Rapporteret",
+      "confirm": "Bekræft det",
+      "disputed": "Bestridt",
+      "final": "Endeligt"
+    }
+  }
+}
