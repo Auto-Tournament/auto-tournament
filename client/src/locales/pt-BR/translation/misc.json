@@ -1,0 +1,1306 @@
+{
+  "notFound": {
+    "title": "Página não encontrada",
+    "description": "A página que você procura não existe ou foi movida.",
+    "backToDashboard": "Voltar ao painel",
+    "publicPlayerSearch": "Busca pública de jogadores"
+  },
+  "publicLinks": {
+    "intro": "Links rápidos para as páginas públicas que você pode compartilhar com jogadores e espectadores.",
+    "common": {
+      "publicUrl": "URL pública",
+      "urlPattern": "Formato da URL"
+    },
+    "playerSearch": {
+      "title": "Busca pública de jogadores",
+      "description": "Busque jogadores cadastrados por nome, Steam ID ou URL do perfil.",
+      "openButton": "Abrir /player"
+    },
+    "playerProfile": {
+      "title": "Perfil do jogador (público)",
+      "description": "Link direto para o perfil de um jogador pelo Steam ID64. Jogadores logados com a Steam também podem usar o link \"Meu perfil\" na barra superior em vez de copiar URLs.",
+      "requiresSteamId": "Requer o Steam ID64"
+    },
+    "teamMatch": {
+      "title": "Página da partida do time (pública)",
+      "description": "Visualização somente leitura da partida atual ou mais recente de um time.",
+      "openExample": "Abrir time de exemplo"
+    },
+    "tournamentLeaderboard": {
+      "title": "Classificação do torneio (pública)",
+      "description": "Página pública de classificação do torneio atual (padrão: torneio 1).",
+      "open": "Abrir classificação"
+    }
+  },
+  "games": {
+    "prompt": {
+      "title": "O que você joga?",
+      "description": "Vamos mostrar primeiro os torneios destes jogos. Você pode mudar isso quando quiser.",
+      "skip": "Pular",
+      "save": "Salvar meus jogos"
+    },
+    "picker": {
+      "searchLabel": "Buscar jogos",
+      "placeholder": "Digite o nome de um jogo",
+      "minChars": "Digite pelo menos 2 caracteres",
+      "noResults": "Nenhum jogo encontrado",
+      "loading": "Buscando…",
+      "searchFailed": "A busca não está disponível agora",
+      "yourGames": "Seus jogos",
+      "none": "Nenhum jogo escolhido ainda",
+      "remove": "Remover {{name}}",
+      "supported": "Torneios disponíveis",
+      "limit": "Você pode escolher até {{max}} jogos",
+      "creditWikidata": "Dados dos jogos do Wikidata"
+    },
+    "profile": {
+      "title": "Jogos que você joga",
+      "description": "Escolha os jogos que você joga. Os torneios destes jogos aparecem primeiro.",
+      "empty": "Você ainda não escolheu nenhum jogo.",
+      "edit": "Editar",
+      "add": "Adicionar jogos",
+      "dialogTitle": "Jogos que você joga",
+      "cancel": "Cancelar",
+      "save": "Salvar",
+      "saved": "Jogos salvos",
+      "saveFailed": "Não foi possível salvar seus jogos"
+    },
+    "welcome": {
+      "gridTitle": "Jogos populares",
+      "continue": "Continuar",
+      "notNow": "Agora não",
+      "selectedGames": "Jogos escolhidos",
+      "selectedCount": "{{count}} de {{max}} escolhidos",
+      "pickOne": "Escolha pelo menos um jogo",
+      "supportedLegend": "Torneios rodam aqui"
+    }
+  },
+  "account": {
+    "email": {
+      "title": "E-mail",
+      "description": "Para recuperar o acesso à sua conta se você esquecer a senha e, se quiser, receber e-mails quando um torneio abrir as inscrições.",
+      "address": "Endereço de e-mail",
+      "sendLink": "Enviar confirmação",
+      "cancel": "Cancelar",
+      "verified": "Confirmado",
+      "unverified": "Não confirmado",
+      "checkInbox": "Abra o link no e-mail que enviamos para confirmar.",
+      "resend": "Enviar de novo",
+      "change": "Mudar",
+      "remove": "Remover",
+      "sent": "Confirmação enviada para {{email}}. Abra o link nela.",
+      "saved": "E-mail salvo",
+      "removed": "E-mail removido",
+      "saveFailed": "Não foi possível salvar seu e-mail",
+      "notifyLabel": "Me mandar e-mail quando um torneio abrir as inscrições",
+      "notifyHint": "Um e-mail por torneio. Todo e-mail tem um link para cancelar a inscrição.",
+      "notifyNeedsVerified": "Confirme seu endereço primeiro.",
+      "notifyOn": "Você vai receber um e-mail quando as inscrições abrirem",
+      "notifyOff": "Sem mais e-mails de torneios",
+      "siteCannotSend": "Este site não envia e-mails no momento."
+    },
+    "title": "Conexões",
+    "subtitle": "Uma conta para todos os torneios deste site.",
+    "loadFailed": "Não foi possível carregar sua conta.",
+    "impersonating": "Você está vendo esta página enquanto se passa por um jogador. Ela mostra a sua própria conta; pare de se passar pelo jogador para mudá-la.",
+    "rail": {
+      "label": "Conta",
+      "profile": "Perfil",
+      "connections": "Conexões"
+    },
+    "gameAccounts": {
+      "title": "Contas de jogo",
+      "description": "Cada jogo precisa da própria conta para as partidas saberem quem você é.",
+      "verified": "Verificada",
+      "id": "Steam ID {{id}}",
+      "more": "Mais contas de jogo aparecem aqui conforme jogos são adicionados a este site.",
+      "notConnected": "Conecte sua conta {{provider}} para jogar estes jogos.",
+      "notOffered": "O login com {{provider}} ainda não está ativado aqui. Peça a um admin para ativar em Configurações → Login."
+    },
+    "signIn": {
+      "title": "Formas de login",
+      "description": "Qualquer uma destas entra na mesma conta. Mantenha pelo menos uma.",
+      "primary": "Principal",
+      "primaryDetail": "A identidade da sua conta · também sua conta de jogo para {{games}}",
+      "primaryDetailNoGames": "A identidade da sua conta",
+      "connected": "Conectado",
+      "accountId": "ID",
+      "linkedOn": "Conectado em {{date}}",
+      "turnedOff": "o login com ele está desativado neste site",
+      "notConnected": "Não conectado",
+      "connect": "Conectar",
+      "remove": "Remover",
+      "lastMethod": "Esta é sua única forma de entrar. Conecte outra primeiro.",
+      "removeTitle": "Remover {{provider}}?",
+      "removeBody": "Você não vai mais conseguir entrar com {{provider}}. Pode conectar de novo depois.",
+      "removed": "{{provider}} removido",
+      "removeFailed": "Não foi possível remover esta forma de login",
+      "linked": "{{provider}} conectado",
+      "taken": "Essa conta {{provider}} já está conectada a outra conta neste site.",
+      "linkFailed": "Não foi possível conectar {{provider}}. Tente de novo.",
+      "localLabel": "Login de admin (usuário + senha)",
+      "localDetail": "Nome de usuário {{username}}"
+    },
+    "changePassword": {
+      "button": "Mudar senha",
+      "title": "Mude sua senha",
+      "current": "Senha atual",
+      "new": "Nova senha",
+      "repeat": "Nova senha de novo",
+      "totp": "Código do autenticador",
+      "mismatch": "As novas senhas não são iguais",
+      "save": "Mudar senha",
+      "cancel": "Cancelar",
+      "done": "Senha alterada",
+      "failed": "Não foi possível mudar a senha",
+      "totpNeeded": "Digite também o código do seu app autenticador.",
+      "tooLong": "A nova senha é longa demais"
+    },
+    "reauth": {
+      "title": "Confirme sua senha de admin",
+      "body": "Digite a senha de {{username}} antes de mudar a forma de login.",
+      "password": "Senha",
+      "totp": "Código do autenticador",
+      "confirm": "Confirmar",
+      "failed": "Senha ou código errado",
+      "totpNeeded": "Digite também o código do seu app autenticador."
+    },
+    "merge": {
+      "title": "Unir as contas?",
+      "body": "Esta conta Steam já tem um jogador neste site. Unir com a sua conta de admin?",
+      "explain": "O jogador mantém as partidas e estatísticas e vira admin. Seu login de admin e as formas de login conectadas passam para ele.",
+      "matches_one": "{{count}} partida jogada",
+      "matches_other": "{{count}} partidas jogadas",
+      "confirm": "Unir contas",
+      "failed": "Não foi possível unir as contas",
+      "matches_many": "{{count}} partidas jogadas"
+    },
+    "twoStep": {
+      "turnOn": "Ativar duas etapas",
+      "turnOff": "Desativar duas etapas",
+      "isOn": "Verificação em duas etapas ativada",
+      "isOff": "Verificação em duas etapas desativada",
+      "onTitle": "Ativar a verificação em duas etapas",
+      "offTitle": "Desativar a verificação em duas etapas",
+      "offWarning": "Sem ela, só a senha já entra nesta conta de admin.",
+      "password": "Senha",
+      "code": "Código do autenticador",
+      "codeNeeded": "Digite o código do seu app autenticador.",
+      "failed": "Não foi possível desativar",
+      "cancel": "Cancelar",
+      "turnedOn": "A verificação em duas etapas está ativada",
+      "turnedOff": "A verificação em duas etapas está desativada"
+    },
+    "passkeys": {
+      "title": "Chaves de acesso",
+      "description": "Entre na página de login de admin com sua digital, rosto ou PIN do dispositivo em vez da senha e do código.",
+      "add": "Adicionar uma chave de acesso",
+      "name": "Nome",
+      "nameHelp": "Um nome para diferenciá-la, como \"MacBook\" ou \"Celular\". Em seguida o navegador pede sua digital, rosto ou PIN.",
+      "continue": "Continuar",
+      "added": "Chave de acesso adicionada",
+      "addFailed": "Não foi possível adicionar a chave de acesso",
+      "removed": "{{name}} removida",
+      "removeFailed": "Não foi possível remover a chave de acesso",
+      "lastUsed": "Último uso em {{date}}",
+      "addedOn": "Adicionada em {{date}}, ainda não usada",
+      "needsHttps": "Chaves de acesso precisam do site em https (ou localhost). Peça a quem administra o site para colocá-lo atrás de https."
+    },
+    "name": {
+      "title": "Nome de exibição",
+      "description": "Aparece no site e no jogo. Você pode mudar uma vez por dia.",
+      "lockedUntil": "Aparece no site e no jogo. Você mudou há pouco, então pode mudar de novo a partir de {{date}}.",
+      "label": "Nome",
+      "lengthHint": "{{min}}–{{max}} caracteres",
+      "badChars": "Sem aspas, < ou >, nem caracteres de controle",
+      "promptTitle": "Qual é o seu nome?",
+      "promptBody": "Ele aparece no jogo e no site.",
+      "notNow": "Agora não",
+      "save": "Salvar",
+      "saved": "Nome salvo. Os servidores do jogo passam a usá-lo a partir da sua próxima partida.",
+      "saveFailed": "Não foi possível salvar seu nome"
+    }
+  },
+  "home": {
+    "title": "Início",
+    "greeting": "Oi, {{name}}",
+    "greetingFallback": "Oi",
+    "editGames": "Editar jogos",
+    "vs": "x",
+    "tbd": "A definir",
+    "openMatch": "Abrir partida",
+    "connectToServer": "Conectar ao servidor",
+    "matchStatus": {
+      "pending": "Aguardando",
+      "ready": "Pronta",
+      "loaded": "Carregada",
+      "live": "Ao vivo",
+      "completed": "Concluída"
+    },
+    "yourTournaments": {
+      "title": "Seus torneios",
+      "empty": "Você não está em nenhum torneio agora."
+    },
+    "tournaments": {
+      "playingNow": "Jogando agora",
+      "waiting": "Aguardando",
+      "eliminated": "Eliminado",
+      "finished": "Encerrado",
+      "placement": "{{position}} de {{total}}"
+    },
+    "openForYourGames": {
+      "title": "Abertos para os seus jogos",
+      "browseAll": "Ver todos os torneios",
+      "empty": "Nenhum torneio aberto para os seus jogos agora.",
+      "steamLinked": "Steam vinculada",
+      "titleAll": "Torneios abertos",
+      "emptyAll": "Nenhum torneio aberto agora."
+    },
+    "summary": {
+      "match": "Você tem uma partida esperando.",
+      "open_one": "{{count}} torneio está aberto para jogos que você joga.",
+      "open_other": "{{count}} torneios estão abertos para jogos que você joga.",
+      "openAll_one": "{{count}} torneio está aberto neste site.",
+      "openAll_other": "{{count}} torneios estão abertos neste site.",
+      "none": "Nada precisa de você agora.",
+      "open_many": "{{count}} torneios estão abertos para jogos que você joga.",
+      "openAll_many": "{{count}} torneios estão abertos neste site."
+    },
+    "yourGames": "Jogos que você joga",
+    "loading": "Carregando sua página inicial",
+    "nextMatch": "Sua próxima partida",
+    "live": {
+      "title": "Ao vivo agora",
+      "count": "{{count}} rodando",
+      "chip": "Ao vivo",
+      "matchesOn_one": "{{count}} partida rolando agora",
+      "matchesOn_other": "{{count}} partidas rolando agora",
+      "matchesOn_many": "{{count}} partidas rolando agora"
+    },
+    "quiet": {
+      "title": "Em breve",
+      "more": "Também em breve",
+      "next": "A seguir"
+    },
+    "play": {
+      "title": "Jogue uma partida agora",
+      "quietTitle": "Nada rolando? Jogue uma partida.",
+      "hint": "O matchmaking coloca você num jogo assim que houver jogadores suficientes na fila.",
+      "cta": "Entrar na fila"
+    },
+    "signup": {
+      "open": "Inscrições abertas",
+      "cta": "Inscrever-se",
+      "short": "Inscrever-se",
+      "view": "Ver",
+      "title": "Inscrições",
+      "aside": "Em breve"
+    },
+    "champions": {
+      "title": "Campeões",
+      "aside": "Encerrados recentemente",
+      "all": "Todos os resultados",
+      "won": "venceu {{name}}",
+      "finished": "Encerrado"
+    },
+    "lastTime": {
+      "title": "Última edição",
+      "results": "Resultados completos",
+      "second": "2º",
+      "third": "3º",
+      "champion": "Campeão"
+    },
+    "teams": "Times: {{count}}",
+    "none": "Nenhum torneio ainda. Volte em breve.",
+    "allTournaments": "Todos os torneios",
+    "empty": {
+      "soon": "Em breve",
+      "heroTitle": "Nenhum torneio ainda",
+      "heroHint": "Quando o próximo torneio for anunciado, ele aparece aqui com a data e as inscrições.",
+      "create": "Criar um torneio",
+      "nextTitle": "Nada mais planejado",
+      "nextHint": "O próximo torneio depois deste aparece aqui.",
+      "signupTitle": "Nada para se inscrever",
+      "signupHint": "Os torneios com inscrições abertas aparecem aqui.",
+      "slotTitle": "Cabe mais um",
+      "slotHint": "Outro torneio pode entrar aqui.",
+      "championTitle": "Nenhum campeão ainda",
+      "championHint": "O primeiro vencedor aparece aqui."
+    },
+    "browse": {
+      "title": "Encontre jogadores e times",
+      "hint": "Veja quem joga aqui e encontre um time para entrar.",
+      "cta": "Ver jogadores"
+    },
+    "next": {
+      "label": {
+        "vetoTurn": "Sua vez no veto",
+        "ready": "Sua partida está pronta",
+        "warmup": "Aquecimento",
+        "live": "Ao vivo",
+        "paused": "Partida pausada"
+      },
+      "opponent": "Adversário",
+      "startsAt": "Começa às",
+      "untilVeto": "Até o veto",
+      "untilMatch": "Até a partida",
+      "veto": "Veto",
+      "yourTurn": "Sua vez",
+      "ban": "Banir um mapa",
+      "pick": "Escolher um mapa",
+      "side": "Escolher um lado",
+      "theirTurn": "Vez deles",
+      "vetoOpen": "Veto aberto",
+      "waiting": "Aguardando",
+      "forServer": "Por um servidor",
+      "join": "Entrar",
+      "serverReady": "Servidor pronto",
+      "ready": "Pronto",
+      "mapRound": "{{map}} · R{{round}}",
+      "round": "Round {{round}}",
+      "halftime": "Intervalo",
+      "nextMap": "Próximo mapa",
+      "goVeto": "Ir para o veto",
+      "paused": "Pausada",
+      "about": "~{{minutes}} min",
+      "joinServer": "Entrar no servidor"
+    }
+  },
+  "browsePage": {
+    "title": "Explorar torneios",
+    "searchPlaceholder": "Buscar por nome, organizador ou local",
+    "searchLabel": "Buscar torneios",
+    "loading": "Carregando torneios",
+    "loadError": "Não foi possível carregar os torneios.",
+    "listLabel": "Torneios",
+    "createTournament": "Criar torneio",
+    "teamsCount_one": "{{count}} time",
+    "teamsCount_other": "{{count}} times",
+    "filters": {
+      "allGames": "Todos os jogos",
+      "status": {
+        "all": "Todos os status",
+        "live": "Ao vivo",
+        "registration_open": "Inscrições abertas",
+        "finished": "Encerrado"
+      },
+      "where": {
+        "all": "Online e LAN",
+        "online": "Online",
+        "lan": "LAN"
+      },
+      "gameLabel": "Jogo",
+      "statusLabel": "Status",
+      "whereLabel": "Onde"
+    },
+    "columns": {
+      "tournament": "Torneio",
+      "format": "Formato",
+      "when": "Quando"
+    },
+    "when": {
+      "starts": "Começa em {{date}}",
+      "finished": "Encerrado",
+      "finishedOn": "Encerrado em {{date}}",
+      "noDate": "Sem data ainda"
+    },
+    "actions": {
+      "signUp": "Inscrever-se",
+      "watch": "Abrir",
+      "results": "Resultados",
+      "youreIn": "Você está dentro"
+    },
+    "status": {
+      "live": "Ao vivo"
+    },
+    "emptyNone": {
+      "title": "Nenhum torneio ainda",
+      "description": "Quando este site rodar um torneio, ele aparece aqui.",
+      "descriptionAdmin": "Este site ainda não tem torneio. Crie um, e ele aparece aqui."
+    },
+    "emptyFiltered": {
+      "title": "Nenhum torneio corresponde aos seus filtros",
+      "description": "Tente outro jogo ou status, ou limpe os filtros.",
+      "clear": "Limpar filtros"
+    },
+    "groups": {
+      "live": "Ao vivo",
+      "soon": "Em breve",
+      "finished": "Encerrados"
+    },
+    "showOlder_one": "Mostrar {{count}} mais antigo",
+    "showOlder_other": "Mostrar {{count}} mais antigos",
+    "mine": {
+      "label": "Quais torneios",
+      "all": "Todos",
+      "mine": "Meus"
+    },
+    "roundN": "Rodada {{n}}",
+    "entries": {
+      "teams_one": "{{count}} time",
+      "teams_other": "{{count}} times",
+      "teamsOf": "{{count}} / {{max}} times",
+      "players_one": "{{count}} jogador",
+      "players_other": "{{count}} jogadores",
+      "playersOf": "{{count}} / {{max}} jogadores",
+      "teams_many": "{{count}} times",
+      "players_many": "{{count}} jogadores"
+    },
+    "teamsCount_many": "{{count}} times",
+    "showOlder_many": "Mostrar {{count}} mais antigos"
+  },
+  "modulesPage": {
+    "title": "Módulos",
+    "subheading": "O que esta instância pode rodar e os jogos que você adicionou a ela.",
+    "builtIn": "Embutido",
+    "loadFailed": "Não foi possível carregar os pacotes instalados",
+    "removed": "{{name}} removido",
+    "removeFailed": "Não foi possível remover esse pacote",
+    "installed": {
+      "title": "Módulos de jogo",
+      "hint": "Código que sabe como uma partida roda e como o resultado chega. Vêm com o app."
+    },
+    "module": {
+      "cs2": {
+        "name": "Counter-Strike 2",
+        "hint": "Fala com seus servidores do jogo: carrega a partida, lê cada round e registra o resultado."
+      },
+      "manual-report": {
+        "name": "Resultado manual",
+        "hint": "Para jogos que nada consegue acompanhar. Um capitão informa o placar e o adversário confirma."
+      }
+    },
+    "packs": {
+      "title": "Pacotes de jogo",
+      "hint": "Um pacote é um arquivo que descreve um jogo: um nome, um bloco e como o resultado é informado. Não tem código e roda em um módulo acima.",
+      "empty": "Nenhum pacote ainda. Importe um para adicionar um jogo que não veio com esta instância.",
+      "runBy": "Roda em {{engine}}",
+      "bundled": "Veio com o Auto Tournament"
+    },
+    "import": {
+      "action": "Importar um pacote",
+      "added": "{{name}} adicionado",
+      "updated": "{{name}} atualizado",
+      "failed": "Não foi possível importar esse pacote",
+      "notJson": "Esse arquivo não é JSON, então não é um pacote",
+      "tooLarge": "Esse arquivo é grande demais para ser um pacote",
+      "noJson": "Escolha o arquivo .json do pacote",
+      "missingIcon": "Este pacote usa {{file}}: escolha esse arquivo também, ou importe só o JSON para ficar sem bloco"
+    },
+    "confirmRemove": {
+      "title": "Remover {{name}}?",
+      "body": "O jogo some do assistente de configuração. Nada mais é excluído, e importar o pacote de novo o traz de volta."
+    },
+    "browse": {
+      "action": "Explorar",
+      "title": "Jogos que você pode adicionar",
+      "hint": "Da lista de pacotes da comunidade. Nada foi buscado até você abrir isto.",
+      "add": "Adicionar",
+      "update": "Atualizar",
+      "installed": "Instalado",
+      "empty": "A lista ainda não tem jogos que esta instância possa adicionar.",
+      "offline": "não foi possível acessar a lista",
+      "staleWith": "Mostrando a última lista que esta instância viu: {{reason}}.",
+      "failed": "Não foi possível ler a lista"
+    },
+    "pending": "Carregando o módulo de jogo de {{game}}…",
+    "pendingRoute": "Carregando o módulo desta página…",
+    "notInstalled": {
+      "title": "O módulo de jogo de {{game}} não está instalado",
+      "body": "As partes específicas do jogo deste torneio estão ocultas, e as partidas não podem rodar até o módulo ser instalado de novo."
+    },
+    "code": {
+      "chip": "Módulo de código",
+      "hint": "Instalado no disco deste servidor por quem o administra.",
+      "noReason": "nenhum motivo informado",
+      "broken": "Este módulo está quebrado: {{reason}}",
+      "status": {
+        "ok": "OK",
+        "incompatible": "Incompatível",
+        "broken": "Quebrado",
+        "disabled": "Desativado"
+      },
+      "enable": "Ativar",
+      "disable": "Desativar",
+      "enabled": "{{name}} ativado",
+      "disabled": "{{name}} desativado",
+      "toggleFailed": "Não foi possível mudar esse módulo",
+      "listFailed": "Não foi possível ler os módulos de código: {{reason}}",
+      "safeMode": "Modo seguro: nenhum módulo de código foi carregado nesta página. Abra sem ?modules=off para carregá-los de novo.",
+      "slotFailed": "O módulo {{id}} falhou aqui. A página Módulos diz por quê.",
+      "reload": {
+        "body": "Recarregue a página para carregar ou descarregar o código do módulo.",
+        "action": "Recarregar"
+      },
+      "confirm": {
+        "title": "Ativar {{name}}?",
+        "warningTitle": "Este é um módulo de código.",
+        "warning": "Ele roda dentro do servidor do Auto Tournament com acesso total ao seu banco de dados, arquivos e segredos, e no navegador de todo admin e jogador que abrir uma página desenhada por ele, com as permissões dessa pessoa. O Auto Tournament não revisa nem isola módulos de código. Ative só se você confia no autor tanto quanto confia nesta plataforma.",
+        "source": "Origem",
+        "onDisk": "O disco deste servidor",
+        "version": "Versão",
+        "clientApi": "API do cliente",
+        "serverApi": "API do servidor",
+        "none": "não declarada",
+        "typeId": "Digite {{id}} para ativar."
+      },
+      "failure": {
+        "badEntry": "o código não é servido a partir de {{prefix}}",
+        "noClientApi": "não declara uma faixa de API do cliente; esta plataforma oferece {{platform}}",
+        "badClientApi": "a faixa de API do cliente “{{range}}” não é uma faixa semver",
+        "outOfRange": "feito para a API do cliente {{range}}; esta plataforma oferece {{platform}}",
+        "notFound": "o código está faltando (HTTP 404)",
+        "httpError": "não foi possível buscar o código (HTTP {{status}})",
+        "notJavaScript": "o código é servido como {{contentType}}, não JavaScript",
+        "importFailed": "o código não carregou: {{error}}",
+        "timeout": "o código não carregou em {{seconds}} segundos",
+        "sharedFailed": "a plataforma não conseguiu compartilhar seus pacotes com ele: {{error}}",
+        "badExport": "o código não é uma definição de módulo: {{detail}}",
+        "idMismatch": "o código se chama “{{id}}”, mas está instalado como “{{expected}}”",
+        "idTaken": "“{{id}}” já é um módulo embutido",
+        "render": "o slot “{{slot}}” falhou ao renderizar: {{error}}"
+      }
+    },
+    "signInNeed": {
+      "body": "Os jogadores de {{game}} entram com {{provider}}, e o login com {{provider}} está desativado. Eles não conseguem vincular a conta que o jogo exige.",
+      "action": "Ativar"
+    },
+    "addons": {
+      "title": "Complementos",
+      "hint": "Recursos além dos jogos. Ativar ou desativar um vale na hora.",
+      "open": "Abrir",
+      "toggle": "Ativar ou desativar {{name}}",
+      "toggleFailed": "Não foi possível mudar o complemento.",
+      "startFailed": "Ativado, mas não iniciou: {{error}}",
+      "notFound": "Esse complemento não existe.",
+      "off": "Este complemento está desativado. Ative em Módulos para configurá-lo."
+    }
+  },
+  "catalog": {
+    "title": "Jogos",
+    "hint": "Todos os jogos que esta instância roda e os que você pode adicionar. Pacotes de jogo são dados; módulos de código são assinados pelo Auto Tournament. Os dois instalam com um clique, e os marcados “Nesta imagem” não precisam de rede.",
+    "search": "Buscar jogos",
+    "installedTitle": "Instalados ({{count}})",
+    "availableTitle": "Disponíveis ({{count}})",
+    "empty": "Nenhum jogo encontrado.",
+    "allInstalled": "Tudo no catálogo está instalado.",
+    "noneInstalled": "Nenhum jogo instalado ainda. Instale os que você quer usar em torneios; os jogadores escolhem entre eles.",
+    "loadFailed": "Não foi possível ler o catálogo de jogos: {{reason}}",
+    "loadFailedFallback": "o servidor não respondeu",
+    "retry": "Tentar de novo",
+    "failed": "{{name}}: {{reason}}",
+    "failedFallback": "a operação falhou",
+    "updateAll": {
+      "action": "Atualizar tudo ({{count}})",
+      "running": "Atualizando…",
+      "done": "{{count}} jogos e módulos atualizados",
+      "summary": "Atualizados {{updated}}, ignorados {{skipped}}, com falha {{failed}}.",
+      "failedItem": "{{name}}: {{reason}}",
+      "failedFallback": "não foi possível atualizar tudo"
+    },
+    "feed": {
+      "cache": "Mostrando o catálogo de {{time}}: não foi possível acessar o catálogo online ({{reason}}). Os jogos desta imagem continuam instalando sem rede.",
+      "none": "Não foi possível acessar o catálogo online ({{reason}}). Mostrando os jogos desta imagem; eles instalam sem rede.",
+      "unknown": "nenhum motivo informado",
+      "cacheRefreshing": "Mostrando o catálogo de {{time}} enquanto o catálogo online carrega.",
+      "noneRefreshing": "Carregando o catálogo online… Enquanto isso, estes são os jogos desta imagem; eles instalam sem rede.",
+      "reason": {
+        "timeout": "não respondeu a tempo",
+        "unreachable": "não foi possível acessá-lo",
+        "bad_response": "a resposta não era um catálogo",
+        "newer_schema": "foi feito para um Auto Tournament mais novo",
+        "too_large": "é grande demais",
+        "offline": "CATALOG_OFFLINE está definido",
+        "http": "respondeu com HTTP {{status}}"
+      }
+    },
+    "kind": {
+      "module": "Módulo de código"
+    },
+    "source": {
+      "snapshot": "Nesta imagem"
+    },
+    "state": {
+      "available": "Disponível",
+      "installed": "Instalado",
+      "update-available": "Atualização disponível",
+      "disabled": "Desativado",
+      "broken": "Quebrado",
+      "incompatible": "Incompatível",
+      "builtin": "Embutido",
+      "installing": "Instalando…",
+      "working": "Trabalhando…",
+      "restart": "Reinício necessário"
+    },
+    "action": {
+      "install": "Instalar",
+      "update": "Atualizar para {{version}}",
+      "enable": "Ativar",
+      "disable": "Desativar",
+      "remove": "Remover",
+      "uninstall": "Desinstalar"
+    },
+    "done": {
+      "installed": "{{name}} instalado",
+      "updated": "{{name}} atualizado",
+      "enabled": "{{name}} ativado",
+      "disabled": "{{name}} desativado",
+      "removed": "{{name}} removido"
+    },
+    "reload": {
+      "body": "{{names}} está rodando. Recarregue a página para usá-lo aqui.",
+      "action": "Recarregar"
+    },
+    "restart": "Reinicie o Auto Tournament para concluir: {{names}}.",
+    "restartNow": {
+      "action": "Reiniciar agora",
+      "restarting": "Reiniciando…",
+      "failed": "Não foi possível reiniciar",
+      "timeout": "O Auto Tournament ainda não voltou. Confira o contêiner e recarregue a página."
+    },
+    "confirmInstall": {
+      "title": "Instalar {{name}}?",
+      "body": "Este é um módulo de código, assinado pelo Auto Tournament. Ele roda dentro deste servidor com acesso ao seu banco de dados e arquivos, e no navegador de todos que abrirem uma página desenhada por ele.",
+      "version": "Versão {{version}}",
+      "from": "De {{source}}",
+      "fromRemote": "Auto Tournament no GitHub",
+      "fromSnapshot": "a cópia dentro desta imagem (sem precisar de rede)"
+    },
+    "confirmUninstall": {
+      "title": "Desinstalar {{name}}?",
+      "body": "Os arquivos dele são removidos. Os dados (torneios, servidores, configurações) ficam, e instalar de novo os traz de volta.",
+      "packBody": "O jogo some do assistente de configuração. Nada mais é excluído, e instalar de novo o traz de volta."
+    },
+    "welcome": {
+      "title": "Jogos nesta instância",
+      "hint": "Você administra esta instância, então escolhe os jogos que ela oferece. Os jogadores escolhem entre eles."
+    },
+    "signedBy": "Assinado por {{label}} (chave {{keyId}})"
+  },
+  "matchmaking": {
+    "play": {
+      "title": "Jogar",
+      "subtitle": "Encontre uma partida 5v5. Você é pareado com os jogadores que esperam há mais tempo, e seu grupo sempre joga no mesmo time.",
+      "unavailable": "O matchmaking ainda não está aberto neste site.",
+      "findTitle": "Procurar uma partida",
+      "findHelp": "Você pode navegar pelo site enquanto espera. Quando uma partida é encontrada, você tem 20 segundos para aceitar.",
+      "searchingHelp": "Procurando. A barra lá embaixo mostra quanto tempo você já esperou.",
+      "find": "Procurar partida",
+      "leaderStarts": "O líder do seu grupo inicia a busca.",
+      "cooldown": "Você recusou ou perdeu uma partida. Pode procurar de novo em {{minutes}} min.",
+      "rating_one": "Rating {{elo}} · {{count}} jogo · {{wins}} vitórias",
+      "rating_other": "Rating {{elo}} · {{count}} jogos · {{wins}} vitórias",
+      "mode": "Modo",
+      "modeName": {
+        "5v5": "5v5",
+        "2v2": "2v2 Braço Direito",
+        "1v1": "1v1"
+      },
+      "inQueue_one": "{{count}} na fila",
+      "inQueue_other": "{{count}} na fila",
+      "partyTitle": "Seu grupo",
+      "invite": "Convidar",
+      "partyOf": "{{count}} de {{max}}",
+      "you": "Você",
+      "selected": "Selecionado",
+      "modeTitle": {
+        "5v5": "Competitivo",
+        "2v2": "Braço Direito",
+        "1v1": "Duelo"
+      },
+      "lookingTitle": "Procurando jogadores",
+      "seats": "{{count}} procurando · {{total}} necessários para uma partida",
+      "leaveQueue": "Sair da fila",
+      "level": "Seu nível",
+      "xp": "{{into}} / {{next}} XP",
+      "ratingShort": "Rating",
+      "recent": "Recentes",
+      "noRecent": "Nenhuma partida ainda.",
+      "result": {
+        "win": "Vitória",
+        "loss": "Derrota",
+        "draw": "Empate"
+      },
+      "resultShort": {
+        "win": "W",
+        "loss": "L",
+        "draw": "D"
+      },
+      "backToMatch": "Voltar para a sua partida",
+      "online_one": "{{count}} online",
+      "online_other": "{{count}} online",
+      "usuallyWait_one": "geralmente cerca de {{count}} minuto",
+      "usuallyWait_other": "geralmente cerca de {{count}} minutos",
+      "aboutWait_one": "cerca de {{count}} min",
+      "aboutWait_other": "cerca de {{count}} min",
+      "defaultPool": {
+        "5v5": "Active Duty",
+        "2v2": "Mapas de Braço Direito",
+        "1v1": "Mapas de Braço Direito"
+      },
+      "searchAnyone": "Poucos jogadores procurando: você vai ser pareado com quem estiver disponível ({{count}} procurando, {{total}} necessários)",
+      "searchRating": "Procurando uma partida equilibrada para o seu rating (±{{elo}}) · {{count}} procurando",
+      "botFill": "Preencher vagas vazias com bots",
+      "botFillUnrated": "Bots preenchem as vagas vazias · sem ranking: nada de rating, XP ou drops",
+      "searchRatingPlain": "Procurando uma partida equilibrada para o seu rating · {{count}} procurando",
+      "searchWidening": "Ampliando a busca: ±{{elo}} · {{count}} procurando",
+      "searchAnyRating": "Procurando em todos os ratings agora · {{count}} procurando",
+      "inTournament": "Você está num torneio ativo ({{tournament}}), então não pode entrar na fila do matchmaking agora.",
+      "partyInTournament": "Num torneio ativo, então o grupo não pode entrar na fila agora: {{names}}.",
+      "inMatch_one": "{{count}} em partida",
+      "inMatch_other": "{{count}} em partida",
+      "rating_many": "Rating {{elo}} · {{count}} jogos · {{wins}} vitórias",
+      "inQueue_many": "{{count}} na fila",
+      "online_many": "{{count}} online",
+      "usuallyWait_many": "geralmente cerca de {{count}} minutos",
+      "aboutWait_many": "cerca de {{count}} min",
+      "inMatch_many": "{{count}} em partida"
+    },
+    "queue": {
+      "searching": "Procurando {{mode}}",
+      "cancel": "Parar de procurar"
+    },
+    "found": {
+      "title": "Partida encontrada",
+      "accept": "Aceitar",
+      "decline": "Recusar",
+      "waiting": "Esperando os outros",
+      "accepted": "{{accepted}} / {{total}} aceitaram",
+      "secondsLeft_one": "Falta {{count}} segundo",
+      "secondsLeft_other": "Faltam {{count}} segundos",
+      "subtitle": "{{mode}} · aceite em até {{seconds}} segundos",
+      "secondsLeft_many": "Faltam {{count}} segundos"
+    },
+    "party": {
+      "title": "Grupo",
+      "help": "Jogue com amigos: crie um grupo e mande o link para eles. Até 5 jogadores, sempre no mesmo time.",
+      "create": "Criar um grupo",
+      "members_one": "{{count}} jogador no seu grupo",
+      "members_other": "{{count}} jogadores no seu grupo",
+      "inviteLink": "Link de convite",
+      "copy": "Copiar",
+      "copied": "Link de convite copiado",
+      "code": "Código de convite",
+      "join": "Entrar",
+      "joined": "Você entrou no grupo",
+      "leave": "Sair do grupo",
+      "disband": "Desfazer o grupo",
+      "members_many": "{{count}} jogadores no seu grupo"
+    },
+    "room": {
+      "title": "Sala da partida",
+      "missing": "Esta partida não existe, ou você não está nela.",
+      "back": "Voltar para Jogar",
+      "team": "Time {{n}}",
+      "status": {
+        "accepting": "esperando os aceites",
+        "ready": "todos aceitaram",
+        "cancelled": "cancelada"
+      },
+      "match": {
+        "pending": "Veto de mapas: banam mapas alternadamente até sobrar um. Qualquer um do seu time pode clicar; vale o primeiro clique.",
+        "ready": "Esperando um servidor livre.",
+        "loaded": "O servidor está pronto. Entre nele.",
+        "live": "A partida está ao vivo.",
+        "completed": "A partida acabou.",
+        "other": "Partida: {{status}}"
+      },
+      "pickedBy": "{{mode}} · a roleta de mapas escolheu",
+      "pickedByVeto": "{{mode}} · escolhido no veto",
+      "vs": "x",
+      "you": "(você)",
+      "accepted": "aceitou",
+      "matchChat": "Chat da partida",
+      "playAgain": "Jogar de novo",
+      "fullScoreboard": "Placar completo",
+      "newSkin": "Skin nova",
+      "inventory": "Equipamento",
+      "victory": "Vitória",
+      "defeat": "Derrota",
+      "draw": "Empate",
+      "inServer": "{{n}} de {{total}} no servidor",
+      "warmupRule": "O aquecimento continua até os {{total}} entrarem.",
+      "warmupRuleTimed": "O aquecimento continua até os {{total}} entrarem ou passarem {{minutes}} minutos; aí começa com quem estiver lá.",
+      "teamLetter": "Time {{letter}}",
+      "sideFirst": "Começa de {{side}}",
+      "presence": {
+        "in": "No servidor",
+        "notYet": "Ainda não entrou"
+      },
+      "equip": "Equipar",
+      "equipped": "Equipada",
+      "equipFailed": "Não foi possível equipar",
+      "rematch": {
+        "title": "Revanche?",
+        "ask": "Os mesmos times, uma partida nova. Sua resposta vale para todo o seu grupo. Se a maioria do seu time disser sim, o outro time tem 30 segundos para aceitar.",
+        "yes": "Sim, revanche",
+        "no": "Não, obrigado",
+        "button": "Revanche",
+        "offerTitle": "O outro time quer revanche",
+        "teamTitle": "Seu time quer revanche",
+        "offerBody": "Os mesmos times, uma partida nova. A maioria do seu time precisa dizer sim. Sua resposta vale para todo o seu grupo.",
+        "waitingOther": "Esperando o outro time… {{s}} s",
+        "waitingTeam": "Esperando o seu time… {{s}} s",
+        "accepted": "Revanche aceita. Abrindo a nova partida…",
+        "refused": "Revanche recusada."
+      }
+    },
+    "result": {
+      "title": "Resultado",
+      "map": "Mapa {{n}}",
+      "rating": "Rating",
+      "xp": "+{{xp}} XP · nível {{level}}",
+      "levelProgress": "{{into}} de {{next}} XP para o próximo nível",
+      "xpReason": {
+        "completed": "Jogou",
+        "win": "Vitória",
+        "draw": "Empate",
+        "performance": "Desempenho",
+        "first_win": "Primeira vitória do dia",
+        "admin": "Admin"
+      },
+      "player": "Jogador",
+      "commend": "Avaliar",
+      "thumbsUp": "Joinha",
+      "thumbsDown": "Polegar para baixo",
+      "thumbsUpFor": "Joinha para {{name}}",
+      "thumbsDownFor": "Polegar para baixo para {{name}}",
+      "downReason": "Por quê?",
+      "downTag": {
+        "toxic": "Tóxico",
+        "griefing": "Sabotagem",
+        "afk": "AFK ou saiu",
+        "other": "Outra coisa"
+      },
+      "commendFailed": "Não foi possível salvar",
+      "outcome": {
+        "win": "VITÓRIA",
+        "loss": "DERROTA",
+        "draw": "EMPATE"
+      },
+      "minutes_one": "{{count}} min",
+      "minutes_other": "{{count}} min",
+      "yourGame": "Seu jogo",
+      "fullBoard": "Placar completo",
+      "hideBoard": "Ocultar o placar",
+      "minutes_many": "{{count}} min"
+    },
+    "profile": {
+      "level": "Nível {{level}}",
+      "xp": "{{xp}} XP",
+      "thumbsUp_one": "{{count}} joinha",
+      "thumbsUp_other": "{{count}} joinhas",
+      "thumbsDown_one": "{{count}} polegar para baixo",
+      "thumbsDown_other": "{{count}} polegares para baixo",
+      "tag": {
+        "friendly": "Amigável",
+        "team_player": "Joga em equipe",
+        "leader": "Líder",
+        "good_comms": "Boa comunicação",
+        "teacher": "Professor",
+        "good_sport": "Espírito esportivo",
+        "toxic": "Tóxico",
+        "griefing": "Sabotagem",
+        "unhelpful": "Não ajuda",
+        "bad_sport": "Antidesportivo",
+        "afk": "AFK ou saiu",
+        "other": "Outra coisa"
+      },
+      "negativesPrivate": "Só você e os admins veem isto.",
+      "history": "Partidas de matchmaking",
+      "historyEmpty": "Nenhuma partida de matchmaking ainda.",
+      "win": "Vitória",
+      "loss": "Derrota",
+      "draw": "Empate",
+      "positivePercent": "{{percent}}% positivas",
+      "thumbsUp_many": "{{count}} joinhas",
+      "thumbsDown_many": "{{count}} polegares para baixo"
+    },
+    "leaderboard": {
+      "toLadder": "Ranking do matchmaking →",
+      "title": "Ranking",
+      "subtitle_one": "Jogadores com {{count}} partida ou mais nos últimos 30 dias.",
+      "subtitle_other": "Jogadores com {{count}} partidas ou mais nos últimos 30 dias.",
+      "empty_one": "Ninguém ainda. Jogue {{count}} partida em 30 dias para aparecer aqui.",
+      "empty_other": "Ninguém ainda. Jogue {{count}} partidas em 30 dias para aparecer aqui.",
+      "level": "Nível",
+      "games": "Partidas",
+      "winRate": "Vitórias",
+      "subtitle_many": "Jogadores com {{count}} partidas ou mais nos últimos 30 dias.",
+      "empty_many": "Ninguém ainda. Jogue {{count}} partidas em 30 dias para aparecer aqui."
+    },
+    "admin": {
+      "title": "Fila (admins)",
+      "summary": "{{players}} procurando, {{lobbies}} partidas abertas",
+      "waited": "{{minutes}} min",
+      "cooldowns": "Punições de espera",
+      "until": "faltam {{minutes}} min",
+      "clear": "Limpar",
+      "cleared": "Punição de espera removida",
+      "clearFailed": "Não foi possível remover a punição de espera",
+      "kind": {
+        "decline": "recusou",
+        "no_show": "perdeu uma partida",
+        "abandon": "abandonou uma partida"
+      },
+      "review": "Jogadores para olhar (polegar para baixo)",
+      "voters_one": "{{count}} votante",
+      "voters_other": "{{count}} votantes",
+      "voters_many": "{{count}} votantes"
+    },
+    "roulette": {
+      "rolling": "Escolhendo o mapa…",
+      "picked": "Mapa: {{map}}"
+    }
+  },
+  "chat": {
+    "title": "Chat",
+    "close": "Fechar o chat",
+    "tabsLabel": "Chats",
+    "tabMatch": "Partida",
+    "tabTeam": "Time",
+    "tabParty": "Grupo",
+    "tabDm": "Mensagem direta",
+    "dmWho": "Só vocês dois leem isto",
+    "placeholderDm": "Mensagem para {{name}}",
+    "friends": "Amigos",
+    "messageFriend": "Mandar mensagem para {{name}}",
+    "matchWho": "Seu time, {{title}} e os admins",
+    "matchWhoAdmin": "Os dois times e os admins",
+    "teamWho": "Todos do {{team}}",
+    "partyWho": "Todos do seu grupo",
+    "placeholderMatch": "Mensagem para os dois times e os admins",
+    "placeholderTeam": "Mensagem para o seu time",
+    "placeholderParty": "Mensagem para o seu grupo",
+    "send": "Enviar",
+    "you": "Você",
+    "adminBadge": "ADMIN",
+    "callAdmin": "Chamar um admin",
+    "adminCallOpen": "Há um chamado de admin aberto aqui",
+    "callAdminConfirmTitle": "Chamar um admin?",
+    "callAdminConfirmBody": "Um admin recebe uma notificação e entra neste chat. Chame só quando precisar de ajuda com a partida.",
+    "adminCalled": "Um admin foi chamado",
+    "callFailed": "Não foi possível chamar um admin",
+    "sendFailed": "Não foi possível enviar a mensagem",
+    "logLabel": "Chat: {{title}}",
+    "none": "Nenhum chat ainda. Sua partida, seu time e seu grupo aparecem aqui.",
+    "empty": "Nenhuma mensagem ainda. Diga oi.",
+    "loading": "Carregando mensagens",
+    "readOnlyImpersonating": "Você está vendo como outro jogador. Pare de se passar por ele para escrever.",
+    "peekMatch": "Partida · {{title}}",
+    "peekTeam": "Time",
+    "peekParty": "Grupo",
+    "buttonUnread": "Chat, {{count}} não lidas",
+    "system": {
+      "vetoStarted": "Veto começou · {{team}} começa",
+      "vetoBan": "{{team}} baniu {{map}}",
+      "vetoReset": "Um admin reiniciou o veto",
+      "vetoPick": "{{team}} escolheu {{map}}",
+      "vetoSide": "{{team}} começa de {{side}} em {{map}}",
+      "vetoDone": "Veto concluído · {{maps}}",
+      "serverReady": "Servidor pronto · {{map}} · entre pela página da partida",
+      "playerJoined": "{{name}} entrou no servidor · {{n}} dentro",
+      "playerLeft": "{{name}} saiu do servidor · {{n}} dentro",
+      "mapLive": "Mapa {{n}} ao vivo · {{map}}",
+      "mapResult": "Mapa {{n}} · {{map}} · {{team1}} {{s1}}–{{s2}} {{team2}}",
+      "seriesWon": "{{team}} vence a série por {{a}}–{{b}}",
+      "adminCalled": "{{name}} chamou um admin",
+      "adminClaimed": "{{name}} assumiu o chamado de admin",
+      "adminResolved": "{{name}} resolveu o chamado de admin",
+      "timedOut": "tempo esgotado",
+      "remindAccount": "{{name}}: entre uma vez com a Steam para poder jogar em {{tournament}}.",
+      "remindGame": "{{name}}: adicione o jogo ao seu perfil (Jogos que você joga) antes do check-in de {{tournament}}.",
+      "serverDown": "O servidor da partida caiu. Trazendo de volta…",
+      "serverBack": "A partida voltou: mapa {{map}}, round {{round}}. Reconecte."
+    },
+    "party": {
+      "inviteCopied": "Link de convite copiado",
+      "inviteFailed": "Não foi possível copiar o link",
+      "leader": "líder",
+      "invite": "Convidar",
+      "queue": "Entrar na fila juntos",
+      "leaveQueue": "Sair da fila",
+      "searching": "Procurando uma partida",
+      "leaderQueues": "O líder inicia a busca"
+    },
+    "back": "Voltar",
+    "typing": {
+      "one": "{{name}} está digitando…",
+      "two": "{{first}} e {{second}} estão digitando…",
+      "many": "{{count}} pessoas estão digitando…"
+    },
+    "emoji": {
+      "open": "Emoji",
+      "title": "Escolha um emoji",
+      "search": "Buscar emoji",
+      "none": "Nenhum emoji encontrado",
+      "categories": {
+        "results": "Resultados",
+        "recent": "Recentes",
+        "smileys": "Carinhas",
+        "gestures": "Mãos",
+        "people": "Pessoas",
+        "animals": "Natureza",
+        "food": "Comida e bebida",
+        "activity": "Jogos e esportes",
+        "travel": "Lugares",
+        "objects": "Objetos",
+        "symbols": "Símbolos"
+      }
+    }
+  },
+  "search": {
+    "open": "Buscar",
+    "placeholder": "Buscar páginas, jogadores, times, destaques…",
+    "placeholderAdmin": "Buscar páginas, configurações, jogadores, times, servidores…",
+    "hint": "Digite pelo menos duas letras. Ctrl K (⌘ K) ou / abre isto de qualquer lugar.",
+    "none": "Nada encontrado para “{{q}}”.",
+    "versus": "{{team1}} x {{team2}}",
+    "groups": {
+      "pages": "Páginas e configurações",
+      "players": "Jogadores",
+      "teams": "Times",
+      "tournaments": "Torneios",
+      "matches": "Partidas",
+      "highlights": "Destaques",
+      "maps": "Mapas",
+      "servers": "Servidores e máquinas",
+      "recorders": "Gravadores"
+    },
+    "status": {
+      "setup": "Em configuração",
+      "in_progress": "Em andamento",
+      "completed": "Encerrado"
+    },
+    "pages": {
+      "manage": "Gerenciar",
+      "tournaments": "Torneios",
+      "newTournament": "Configuração do torneio",
+      "playedMatches": "Todas as partidas",
+      "importMatch": "Importar uma partida",
+      "teams": "Times",
+      "players": "Jogadores",
+      "reports": "Denúncias",
+      "templates": "Modelos",
+      "ratings": "Ratings",
+      "modules": "Módulos",
+      "servers": "Servidores",
+      "maps": "Mapas e pools de mapas",
+      "skins": "Skins",
+      "matchRules": "Regras da partida",
+      "highlights": "Destaques",
+      "adminTools": "Sistema",
+      "settings": "Configurações",
+      "settingsSite": "Configurações: site e e-mail",
+      "settingsSignIn": "Configurações: provedores de login",
+      "settingsPlayers": "Configurações: jogadores e acesso",
+      "settingsWebhooks": "Configurações: webhooks",
+      "settingsLicense": "Licença",
+      "settingsMatchmaking": "Configurações: matchmaking",
+      "settingsAdvanced": "Configurações: avançado",
+      "liveMatches": "Partidas ao vivo"
+    },
+    "clips_one": "{{count}} clipe",
+    "clips_other": "{{count}} clipes",
+    "fieldLabel": "Buscar",
+    "clips_many": "{{count}} clipes"
+  },
+  "highlightsPage": {
+    "recorderStats": "Enviar resultados anônimos de benchmark",
+    "recorderStatsHint": "Depois de um benchmark, os gravadores enviam ao site o modelo de GPU e CPU, as versões e os tempos, para a tabela pública do que renderiza em qual velocidade. Nada sobre partidas ou jogadores. A gravação funciona igual com isto desativado.",
+    "title": "Destaques",
+    "subtitle": "Clipes de destaque e compilados de todas as partidas: o que os gravadores fazem, a música dos compilados e os gravadores de cada jogo.",
+    "tabs": {
+      "settings": "Configurações"
+    },
+    "perPlayer": {
+      "label": "Clipes por jogador por mapa",
+      "helper": "De 1 a 6. Mais clipes fazem os destaques de uma partida demorarem mais para ficar prontos."
+    },
+    "preset": {
+      "label": "Qualidade do vídeo",
+      "smooth": "Fluida (recomendado): até 1080p, 240 fps",
+      "crisp": "Nítida: até 1440p, 120 fps",
+      "lan": "LAN, máxima: até 4K, 240 fps",
+      "custom": "Personalizada",
+      "light": "Leve: só 720p, 60 fps"
+    },
+    "bitrate": {
+      "label": "Bitrate",
+      "auto": "Automático (recomendado)",
+      "option": "{{mbps}} Mbit/s"
+    },
+    "resolution": {
+      "label": "Resolução máxima"
+    },
+    "fps": {
+      "label": "Taxa de quadros máxima",
+      "option": "{{fps}} fps"
+    },
+    "quality": {
+      "helper": "Os gravadores fazem cada clipe e compilado uma vez, na qualidade mais alta, e cortam as menores a partir dela. A câmera lenta fica fluida em qualquer taxa de quadros. Clipes já feitos mantêm a qualidade até serem feitos de novo."
+    },
+    "music": {
+      "label": "Música nos compilados",
+      "all": "Todas as faixas ({{count}})",
+      "pick": "Só as que eu escolher",
+      "off": "Sem música",
+      "listen": "Ouvir {{title}}",
+      "stop": "Parar {{title}}",
+      "contentId": "YouTube Content ID",
+      "volume": "Volume",
+      "byo": "Traga sua própria música: adicione faixas que você tem direito de usar. O Auto Tournament não inclui nenhuma. O player toca uma diferente em cada compilado, e os downloads vêm com ou sem ela.",
+      "remove": "Remover {{title}}",
+      "removeConfirm": "Remover",
+      "keep": "Manter",
+      "addTitle": "Adicionar uma faixa",
+      "chooseFile": "Escolher um arquivo",
+      "noFile": "Nenhum arquivo escolhido (MP3, M4A, WAV…)",
+      "trackTitle": "Título",
+      "artist": "Artista",
+      "genre": "Gênero (agrupa o menu)",
+      "source": "De onde vem (um link, para os créditos)",
+      "contentIdLabel": "Registrada no YouTube Content ID (um upload com ela pode receber uma reivindicação)",
+      "add": "Adicionar a faixa",
+      "adding": "Adicionando…",
+      "rights": "Só adicione músicas que você tem direito de usar em vídeos. O volume é igualado ao das outras faixas.",
+      "suggestions_one": "{{count}} faixa que combina com compilados, no Pixabay",
+      "suggestions_other": "{{count}} faixas que combinam com compilados, no Pixabay",
+      "suggestionsHelp": "Abra uma, baixe do Pixabay sob a licença dela e adicione aqui. A licença permite usar em vídeos; não permite que ninguém repasse o arquivo.",
+      "link": "Ou um link para o arquivo de áudio",
+      "addLink": "Adicionar pelo link",
+      "suggestions_many": "{{count}} faixas que combinam com compilados, no Pixabay"
+    },
+    "overlay": {
+      "label": "Overlays",
+      "helper_one": "{{count}} clipe tem uma cópia limpa. Redesenhar coloca de novo o card de legenda, o kill feed e os nomes atuais nele e depois refaz os compilados. Não precisa do CS2.",
+      "helper_other": "{{count}} clipes têm uma cópia limpa. Redesenhar coloca de novo o card de legenda, o kill feed e os nomes atuais neles e depois refaz os compilados. Não precisa do CS2.",
+      "redraw": "Redesenhar overlays",
+      "pending_one": "{{count}} vídeo esperando um gravador",
+      "pending_other": "{{count}} vídeos esperando um gravador",
+      "failed_one": "Não foi possível redesenhar {{count}} vídeo",
+      "failed_other": "Não foi possível redesenhar {{count}} vídeos",
+      "keepClean": "Guardar cópias limpas dos clipes",
+      "keepCleanHelper": "Cada clipe também é guardado como foi gravado, sem o card nem o kill feed. Os compilados então são feitos a partir dos clipes limpos com um overlay próprio, e os overlays podem ser redesenhados. Desativado usa cerca de metade do espaço.",
+      "redrawFailed": "Não foi possível colocar o redesenho na fila.",
+      "helper_many": "{{count}} clipes têm uma cópia limpa. Redesenhar coloca de novo o card de legenda, o kill feed e os nomes atuais neles e depois refaz os compilados. Não precisa do CS2.",
+      "pending_many": "{{count}} vídeos esperando um gravador",
+      "failed_many": "Não foi possível redesenhar {{count}} vídeos"
+    },
+    "moved": "As configurações de destaques, os gravadores e como adicionar um agora ficam numa página própria:",
+    "saved": "Salvo",
+    "saveFailed": "Não foi possível salvar",
+    "reels": {
+      "title": "Tamanho dos compilados",
+      "description": "Quantos clipes entram em cada compilado. Mais clipes fazem compilados mais longos, que demoram mais para ficar prontos.",
+      "funnyPerPlayer": "Clipes engraçados por jogador por mapa",
+      "mapReelPerPlayer": "Clipes por jogador num compilado do mapa",
+      "seriesReelMax": "Clipes num compilado da série",
+      "seriesReelPerPlayer": "Clipes por jogador num compilado da série",
+      "teamReelPerPlayer": "Clipes por jogador num compilado do time",
+      "tournamentReelMax": "Clipes num compilado do torneio",
+      "tournamentReelPerPlayer": "Clipes por jogador num compilado do torneio",
+      "range": "{{min}} a {{max}}"
+    },
+    "minResolution": {
+      "label": "Resolução mínima"
+    },
+    "ladder": {
+      "title": "Qualidades que o público pode escolher",
+      "recordedAt": "Gravado em {{quality}}",
+      "highest": "Mais alta",
+      "lowest": "Celulares, conexões lentas",
+      "rate": "≈{{mbps}} Mbit/s"
+    },
+    "cost": {
+      "single": "A gravação leva cerca de {{time}}× o tempo de 1080p a 120 fps. Uma estimativa.",
+      "withCuts": "A gravação leva cerca de {{time}}× o tempo de 1080p a 120 fps, e todas as qualidades são mantidas: cerca de {{storage}}× o espaço. Estimativas."
+    },
+    "keepMasters": {
+      "label": "Manter a qualidade mais alta",
+      "always": "Sempre",
+      "30": "Por 30 dias",
+      "7": "Por 7 dias",
+      "reels": "Até os compilados ficarem prontos",
+      "helper": "Depois disso, a próxima qualidade toma o lugar dela e a cópia limpa é apagada, o que economiza a maior parte do espaço. Um vídeo sem a qualidade mais alta não pode ter o overlay redesenhado nem entrar num compilado novo nessa qualidade; precisa ser gravado de novo."
+    },
+    "matchmaking": {
+      "minimumTitle": "Quais jogadas viram clipes",
+      "minimumDescription": "Para todas as partidas. O matchmaking também guarda só as melhores, definidas abaixo.",
+      "title": "Destaques do matchmaking",
+      "description": "O matchmaking joga muitas partidas. Guarde só as melhores jogadas de cada uma, para os gravadores não ficarem ocupados o dia todo.",
+      "on": "Gravar destaques do matchmaking",
+      "onHelp": "Desativado: partidas de matchmaking não têm clipes nem compilados.",
+      "clips": "Clipes por partida",
+      "clipsHelp": "As melhores jogadas primeiro. O compilado de um jogador é feito com os mesmos clipes.",
+      "all": "Todos",
+      "minKills": "Menor jogada a guardar",
+      "minKillsHelp": "Jogadas abaixo disso nunca viram clipe, mesmo havendo espaço.",
+      "kills": {
+        "2": "2 abates",
+        "3": "3 abates",
+        "4": "4 abates",
+        "5": "Ace"
+      },
+      "killsInline": {
+        "2": "2 abates",
+        "3": "3 abates",
+        "4": "4 abates",
+        "5": "um ace"
+      },
+      "clutch": "Clutches sempre contam",
+      "clutchHelp": "Um 1vX vencido conta mesmo com menos abates que a menor jogada.",
+      "summary": "Cada partida de matchmaking fica com {{clips}} de {{kills}} ou mais.",
+      "summaryClutch": "Cada partida de matchmaking fica com {{clips}} de {{kills}} ou mais, e qualquer clutch.",
+      "summaryEvery": "todas as jogadas",
+      "summaryBest_one": "a melhor jogada",
+      "summaryBest_other": "as {{count}} melhores jogadas",
+      "summaryBest_many": "as {{count}} melhores jogadas"
+    }
+  },
+  "update": {
+    "available": "O Auto Tournament {{latest}} saiu (você usa {{running}}).",
+    "notes": "Novidades",
+    "module": "{{name}} {{version}} está disponível (você usa {{installed}}).",
+    "moduleProblem": "{{name}}: a atualização não foi aplicada. {{problem}}",
+    "openModules": "Módulos"
+  },
+  "licenseGate": {
+    "expiredTitle": "A licença desta plataforma expirou",
+    "expiredAdmin": "O pagamento da licença está atrasado, então a plataforma parou. Pagar reativa a plataforma na hora. Seus dados estão seguros.",
+    "expiredPlayer": "Partidas e inscrições estão pausadas. O organizador foi avisado. Volte mais tarde.",
+    "pay": "Pagar no console ↗",
+    "settings": "Configurações da licença",
+    "fix": "Resolver ↗",
+    "pastDue": "O pagamento da licença falhou. A plataforma para em {{date}} se não for pago.",
+    "elsewhereTitle": "Esta chave de licença está em uso em outra instalação",
+    "elsewhereAdmin": "Uma chave de licença funciona em uma instalação do Auto Tournament, e outra instalação está com esta. Cole a chave desta instalação ou use \"Mover para outra instalação\" no console. Seus dados estão seguros.",
+    "replacedTitle": "Esta chave de licença foi substituída",
+    "replacedAdmin": "Uma chave nova foi criada para esta licença no console, então a antiga parou. Cole a chave nova nas configurações da licença. Seus dados estão seguros.",
+    "openConsole": "Abrir o console ↗",
+    "pasteKey": "Colar a chave nova",
+    "replacedSoon": "Uma chave nova foi criada para esta licença no console. Cole nas configurações da licença: esta chave para em {{date}}."
+  },
+  "matchAdmin": {
+    "openChat": "Abrir o chat",
+    "resetVeto": "Reiniciar o veto",
+    "resetVetoTitle": "Reiniciar o veto?",
+    "resetVetoBody": "Todos os bans, escolhas e lados até agora são apagados e os times começam o veto de novo. Os dois times veem isso no chat da partida.",
+    "vetoReset": "O veto recomeça",
+    "vetoResetFailed": "Não foi possível reiniciar o veto"
+  },
+  "addressMismatch": {
+    "open": "Abrir {{host}}",
+    "text": "Você está em {{current}}, mas este site está configurado para {{host}}: o login com a Steam, os e-mails e os servidores do jogo usam esse endereço."
+  },
+  "siteFooter": {
+    "support": "Apoie o projeto",
+    "trademarks": "Counter-Strike, CS2 e Steam são marcas registradas da Valve Corporation. Os nomes de outros jogos são marcas registradas dos respectivos donos. O Auto Tournament não é afiliado nem endossado pela Valve ou por qualquer publicadora de jogos."
+  },
+  "discordNotice": {
+    "link": "Vincule sua conta do Discord para o bot mover você para o canal de voz do seu time e encontrar você no canal do time.",
+    "linkAction": "Vincular o Discord",
+    "join": "Entre no nosso servidor do Discord. Os canais do seu time e os cards das partidas estão lá.",
+    "joinAction": "Entrar no servidor"
+  }
+}

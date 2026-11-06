@@ -1,0 +1,505 @@
+{
+  "matchesPage": {
+    "errors": {
+      "loadMatches": "Falha ao carregar as partidas",
+      "loadTitle": "Erro ao carregar as partidas",
+      "bulkDelete": "Falha ao excluir uma ou mais partidas"
+    },
+    "header": {
+      "createMatch": "Criar partida"
+    },
+    "bulkSelect": {
+      "select": "Selecionar",
+      "done": "Concluir seleção",
+      "selectAll": "Selecionar tudo",
+      "unselectAll": "Desmarcar tudo",
+      "deleteSelected": "Excluir selecionadas"
+    },
+    "empty": {
+      "title": "Nenhuma partida para mostrar",
+      "description": "Crie um torneio e gere a chave para ver as partidas aqui",
+      "createManual": "Ou crie uma partida manual"
+    },
+    "sections": {
+      "live": "Partidas ao vivo ({{count}})",
+      "upcoming": "Próximas partidas ({{count}})",
+      "history": "Histórico de partidas ({{count}})",
+      "inQueue": "{{count}} na fila"
+    },
+    "manualMatchLabel": "Partida manual",
+    "create": {
+      "success": "Partida manual criada: {{slug}}"
+    },
+    "bulkDelete": {
+      "title": "Excluir partidas manuais",
+      "deleted_one": "{{count}} partida excluída",
+      "deleted_other": "{{count}} partidas excluídas",
+      "message_one": "Tem certeza de que quer excluir {{count}} partida manual? Esta ação não pode ser desfeita.",
+      "message_other": "Tem certeza de que quer excluir {{count}} partidas manuais? Esta ação não pode ser desfeita.",
+      "deleted_many": "{{count}} partidas excluídas",
+      "message_many": "Tem certeza de que quer excluir {{count}} partidas manuais? Esta ação não pode ser desfeita."
+    },
+    "card": {
+      "matchNumber": "Partida nº {{number}}",
+      "server": "Servidor: {{name}}",
+      "queuePosition": "Posição na fila: nº {{position}}",
+      "shuffle": "Shuffle",
+      "shuffleManual": "Shuffle manual",
+      "manual": "Manual",
+      "simulation": "Simulação",
+      "winner": "VENCEDOR",
+      "mapN": "Mapa {{n}}"
+    },
+    "statusLabel": {
+      "walkover": "W.O.",
+      "waitingForTournament": "ESPERANDO O TORNEIO COMEÇAR",
+      "waitingForServer": "ESPERANDO SERVIDOR",
+      "waitingForPairing": "ESPERANDO PAREAMENTO",
+      "vetoPending": "VETO PENDENTE",
+      "mapVeto": "VETO DE MAPAS",
+      "serverAllocated": "SERVIDOR ALOCADO",
+      "warmup": "AQUECIMENTO",
+      "overtime": "PRORROGAÇÃO Nº {{n}}",
+      "live": "AO VIVO",
+      "completed": "CONCLUÍDA",
+      "cancelled": "CANCELADA",
+      "needsDecision": "PRECISA DE DECISÃO DO ADMIN"
+    },
+    "statusGuide": {
+      "title": "Guia de status das partidas",
+      "pending": "A partida está agendada, mas ainda não tem servidor. Ela será alocada quando um servidor ficar disponível.",
+      "loaded": "A partida está carregada no servidor e em aquecimento. Os jogadores devem conectar e dar pronto para começar.",
+      "live": "A partida está sendo jogada no servidor dela.",
+      "completed": "A partida terminou. O vencedor foi definido e a chave foi atualizada.",
+      "proTipTitle": "Dica:",
+      "proTip": "Quando uma partida mostrar \"Esperando jogadores (X/Y)\", o servidor está pronto e os jogadores devem conectar. Assim que todos os jogadores esperados conectarem e derem pronto, a partida começa automaticamente."
+    },
+    "latestEvent": "Último: {{event}}",
+    "matchLabel": {
+      "upper": "CS R{{round}} P{{match}}",
+      "lower": "CI R{{round}} P{{match}}",
+      "grandFinal": "Grande final",
+      "grandFinalReset": "Reset da grande final",
+      "group": "Grupo {{group}} · Rodada {{round}}",
+      "playoffs": "Playoffs · Rodada {{round}}"
+    },
+    "table": {
+      "filterLabel": "Mostrar",
+      "search": "Encontrar um time ou jogador",
+      "tbd": "A definir",
+      "manage": "Gerenciar partida",
+      "empty": "Nenhuma partida aqui.",
+      "filter": {
+        "attention_one": "Precisa de atenção · {{count}}",
+        "attention_other": "Precisa de atenção · {{count}}",
+        "live_one": "Ao vivo · {{count}}",
+        "live_other": "Ao vivo · {{count}}",
+        "veto_one": "Veto · {{count}}",
+        "veto_other": "Veto · {{count}}",
+        "waiting_one": "Esperando · {{count}}",
+        "waiting_other": "Esperando · {{count}}",
+        "finished_one": "Encerradas · {{count}}",
+        "finished_other": "Encerradas · {{count}}",
+        "all_one": "Todas · {{count}}",
+        "all_other": "Todas · {{count}}",
+        "attention_many": "Precisa de atenção · {{count}}",
+        "live_many": "Ao vivo · {{count}}",
+        "veto_many": "Veto · {{count}}",
+        "waiting_many": "Esperando · {{count}}",
+        "finished_many": "Encerradas · {{count}}",
+        "all_many": "Todas · {{count}}"
+      },
+      "columns": {
+        "match": "Partida",
+        "teams": "Times",
+        "phase": "Fase",
+        "server": "Servidor",
+        "attention": "Precisa de atenção",
+        "open": "Abrir"
+      },
+      "attention": {
+        "calls_one": "Chamada de admin",
+        "calls_other": "{{count}} chamadas de admin",
+        "decide": "Decidir o resultado",
+        "calls_many": "{{count}} chamadas de admin"
+      },
+      "phase": {
+        "live": "Ao vivo · mapa {{map}}",
+        "finished": "Encerrada",
+        "finishedScore": "Encerrada · {{score}}",
+        "veto": "Veto de mapas",
+        "waitingTeams": "Esperando os times",
+        "queued": "Esperando servidor · nº {{position}} na fila",
+        "waiting": "Esperando"
+      },
+      "server": {
+        "freed": "Liberado"
+      }
+    }
+  },
+  "matchDetailsModal": {
+    "tiebreakHint": "Placar empatado: {{team}} venceu o mapa no critério de desempate.",
+    "delete": {
+      "dialogTitle": "Excluir partida",
+      "confirmTitle": "Excluir esta partida?",
+      "confirmBody": "Tem certeza de que quer excluir a partida \"{{slug}}\"? Esta ação não pode ser desfeita.",
+      "button": "Excluir partida",
+      "success": "Partida excluída",
+      "failed": "Falha ao excluir a partida"
+    },
+    "roster": {
+      "title": "Escalação",
+      "yourTeam": "Seu time",
+      "openPlayerPage": "Abrir página do jogador",
+      "ready": "PRONTO",
+      "connected": "CONECTADO",
+      "offline": "OFFLINE",
+      "bot": "BOT"
+    },
+    "decision": {
+      "body": "Todos os mapas foram jogados, mas a série está empatada em mapas, rounds e dano. Escolha o vencedor para a chave avançar.",
+      "setWinner": "{{team}} vence",
+      "confirmTitle": "Definir o vencedor da série",
+      "confirmBody": "Encerrar esta série com {{team}} como vencedor? A chave avança e isso não pode ser desfeito aqui.",
+      "confirm": "Definir vencedor",
+      "success": "Vencedor definido",
+      "failed": "Falha ao definir o vencedor"
+    },
+    "config": {
+      "loadFailed": "Falha ao carregar a configuração da partida",
+      "view": "Ver o JSON de configuração da partida",
+      "title": "JSON de configuração da partida",
+      "loading": "Carregando a configuração da partida...",
+      "empty": "Nenhuma configuração disponível para esta partida."
+    },
+    "tiebreak": {
+      "regulationOnly": "A prorrogação está desativada nesta partida (só o tempo normal), então empates são decididos pelo dano total do time.",
+      "segmentsExhausted": "A prorrogação tem um número máximo de blocos. Se o placar continuar empatado, o vencedor é decidido pelo dano total do time.",
+      "overtimeDisabled": "A prorrogação está desativada nesta partida, então empates são decididos pelo dano total do time.",
+      "tiedByDamage": "O placar final terminou empatado, então, pelas configurações da partida, o vencedor foi escolhido pelo dano total do time."
+    },
+    "team1": "Time 1",
+    "team2": "Time 2",
+    "matchTime": "Horário da partida:",
+    "server": "Servidor:",
+    "queuePosition": "Posição na fila:",
+    "totalDamage": "Dano total: {{team1}} - {{team2}}",
+    "mapOfTotal": "Mapa {{index}} de {{total}}: {{map}}",
+    "mapIndex": "Mapa {{index}}: {{map}}",
+    "round": "Round {{round}}",
+    "shuffle": {
+      "averageElo": "ELO do time (média): {{team1}} vs {{team2}}",
+      "balancerHint": "Os times do shuffle são gerados por um balanceador baseado no OpenSkill, que distribui jogadores de rating alto e baixo entre os dois lados para manter essas médias próximas."
+    },
+    "playerLeaderboards": "Rankings dos jogadores",
+    "noPlayerData": "Sem dados de jogadores",
+    "currentMap": "Mapa atual",
+    "maps": "Mapas",
+    "mapsNotPicked": "Os mapas ainda não foram escolhidos.",
+    "mapsViaVeto": "A definir no veto",
+    "matchInformation": "Informações da partida",
+    "created": "Criada:",
+    "started": "Iniciada:",
+    "completed": "Concluída:",
+    "adminControls": "Controles de admin",
+    "slug": "Slug da partida:",
+    "openChat": "Chat da partida"
+  },
+  "bulkShuffleMatchesModal": {
+    "title": "Criar partidas shuffle em lote",
+    "description": "Configure uma partida shuffle de um mapa (mapa + limite de rounds) e depois defina quantos confrontos quiser escolhendo a escalação exata de cada lado. As partidas são criadas no torneio shuffle atual e recebem servidores quando você iniciar o torneio.",
+    "mapSelect": {
+      "label": "Mapa",
+      "noMaps": "Nenhum mapa configurado para este torneio",
+      "helper": "Todas as partidas deste lote usam este mapa."
+    },
+    "maxRounds": {
+      "label": "Máximo de rounds por mapa",
+      "helperWithValue": "A partida vai até {{maxRounds}} rounds; vence quem chegar primeiro a {{winRounds}}.",
+      "helperDefault": "Número máximo de rounds por mapa (padrão: 24, máximo: 30)."
+    },
+    "matchesSection": {
+      "title": "Partidas ({{count}})",
+      "addMatch": "Adicionar partida"
+    },
+    "players": {
+      "empty": "Ainda não há jogadores inscritos neste torneio shuffle. Inscreva jogadores primeiro e depois você pode criar partidas manuais."
+    },
+    "matchRow": {
+      "title": "Partida {{index}}",
+      "teamCounts": "{{team1}}/{{teamSize}} • {{team2}}/{{teamSize}}",
+      "team1Label": "Jogadores do time 1 ({{team1Count}}/{{teamSize}})",
+      "team2Label": "Jogadores do time 2 ({{team2Count}}/{{teamSize}})",
+      "searchPlaceholder": "Buscar e selecionar jogadores",
+      "mapOverrideLabel": "Mapa (substituição opcional)",
+      "mapOverrideHelperOwn": "Esta partida usa o próprio mapa.",
+      "mapOverrideHelperDefault": "Deixe vazio para usar o mapa padrão acima.",
+      "maxRoundsOverrideLabel": "Máximo de rounds (substituição opcional)",
+      "maxRoundsOverrideHelperOwn": "Substitui o máximo de rounds padrão para esta partida (agora {{value}}).",
+      "maxRoundsOverrideHelperDefault": "Deixe vazio para usar o máximo de rounds padrão acima."
+    },
+    "errors": {
+      "loadPlayers": "Falha ao carregar os jogadores inscritos",
+      "noMatches": "Adicione pelo menos uma partida para criar.",
+      "bothTeamsRequired": "Partida {{index}}: os dois times precisam ter pelo menos um jogador.",
+      "conflictingPlayers": "Partida {{index}}: o mesmo jogador não pode estar nos dois times. ID(s) em conflito: {{ids}}",
+      "mapRequired": "Partida {{index}}: o mapa é obrigatório (defina um mapa padrão acima ou escolha um para esta partida).",
+      "rowMaxRoundsRange": "Partida {{index}}: o máximo de rounds precisa estar entre 1 e 30 quando substituído por partida.",
+      "globalMaxRoundsRange": "O máximo de rounds precisa estar entre 1 e 30.",
+      "createFailed": "Falha ao criar as partidas shuffle manuais"
+    },
+    "success": {
+      "created": "Partidas shuffle manuais criadas. Elas serão alocadas quando o torneio começar."
+    },
+    "createMatchesButton": {
+      "default": "Criar partidas",
+      "creating": "Criando…"
+    }
+  },
+  "teamModal": {
+    "titleCreate": "Criar novo time",
+    "titleEdit": "Editar time",
+    "teamNameLabel": "Nome do time",
+    "teamNamePlaceholder": "Astralis",
+    "teamNameHelper": "O nome do time pode ter qualquer idioma ou caracteres especiais",
+    "teamTagLabel": "Tag do time",
+    "teamTagPlaceholder": "AST",
+    "teamTagHelper": "Gerada a partir do nome do time (máx. 4 caracteres)",
+    "playersHeader": "Jogadores ({{count}})",
+    "selectPlayers": "Selecionar jogadores",
+    "noPlayersInfo": "Nenhum jogador adicionado ainda. Adicione pelo menos um.",
+    "addPlayersHelper": "Adicione um novo jogador abaixo ou selecione entre os existentes",
+    "addPlayersHelper_steam": "Adicione jogadores colando a URL da Steam ou selecionando entre os existentes",
+    "steamInputLabel": "Steam ID / URL personalizada",
+    "steamInputPlaceholder": "gaben ou steamcommunity.com/id/gaben",
+    "resolveSteam": "Resolver Steam ID",
+    "resolving": "Resolvendo...",
+    "playerNameLabel": "Nome do jogador",
+    "playerNamePlaceholder": "s1mple",
+    "eloLabel": "ELO (opcional)",
+    "eloPlaceholder": "1500",
+    "eloHelper": "Padrão: 1500",
+    "errors": {
+      "steamLookupEmpty": "Digite um Steam ID, URL personalizada ou URL do perfil",
+      "steamApiNotConfigured": "A Steam API não está configurada - digite o Steam ID64 manualmente",
+      "steamResolveFailed": "Não foi possível resolver o Steam ID - digite o Steam ID64 manualmente",
+      "steamAndNameRequired": "Steam ID e nome do jogador são obrigatórios",
+      "steamDuplicate": "Este Steam ID já está no time",
+      "teamNameRequired": "O nome do time é obrigatório",
+      "playersRequired": "É preciso pelo menos um jogador",
+      "saveFailed": "Falha ao salvar o time",
+      "deleteFailed": "Falha ao excluir o time",
+      "discordIdInvalid": "O Discord ID precisa ter de 17 a 20 dígitos (o ID numérico do usuário, não o nome)",
+      "discordIdInvalidPlayers": "Discord ID inválido para: {{names}}. Precisa ter de 17 a 20 dígitos ou ficar vazio.",
+      "discordIdSaveFailed": "O time foi salvo, mas o Discord ID não pôde ser salvo para: {{names}}. {{message}}",
+      "nameRequired": "Digite o nome do jogador",
+      "addPlayerFailed": "Não foi possível adicionar o jogador"
+    },
+    "success": {
+      "playerAdded": "Jogador adicionado ao time",
+      "playerReplaced": "Jogador substituído",
+      "teamUpdated": "Time atualizado",
+      "teamCreated": "Time criado",
+      "teamDeleted": "Time excluído"
+    },
+    "buttons": {
+      "deleteTeam": "Excluir time",
+      "cancel": "Cancelar",
+      "saving": "Salvando...",
+      "saveChanges": "Salvar alterações",
+      "createTeam": "Criar time"
+    },
+    "confirmDelete": {
+      "title": "Excluir time",
+      "message": "Tem certeza de que quer excluir \"{{name}}\"? Esta ação não pode ser desfeita."
+    },
+    "replacePlayerAria": "Substituir o jogador {{name}}",
+    "replacePlayerTooltip": "Substituir este jogador",
+    "accountLabel": "Conta {{account}} (opcional)",
+    "accountHelper": "Para {{games}}. Quando a pessoa entrar com {{account}}, ela vira este jogador."
+  },
+  "playerModal": {
+    "titleCreate": "Criar jogador",
+    "titleEdit": "Editar jogador",
+    "steamLabel": "Steam ID ou URL do perfil (opcional)",
+    "steamHelperEditing": "O Steam ID não pode ser alterado",
+    "steamHelperNew": "Para {{games}}. Digite um Steam ID64, URL personalizada ou URL do perfil; \"Resolver\" preenche nome e avatar.",
+    "resolveSteam": "Resolver Steam ID",
+    "resolving": "Resolvendo...",
+    "playerNameLabel": "Nome do jogador",
+    "playerNamePlaceholder": "Jogador",
+    "eloLabelNew": "ELO inicial",
+    "eloLabelEdit": "ELO",
+    "eloHelperNew": "Deixe vazio para usar o padrão (1500 de Skill Rating).",
+    "eloHelperEdit": "Mudar o ELO redefine o rating e as estatísticas do jogador. Esta ação não pode ser desfeita.",
+    "isAdminLabel": "É admin (gerencia este site; módulos de jogo também podem dar aos admins direitos dentro do jogo)",
+    "currentElo": "ELO atual: {{value}}",
+    "startingElo": "ELO inicial: {{value}}",
+    "matchesPlayed": "Partidas jogadas: {{count}}",
+    "errors": {
+      "steamRequired": "O Steam ID é obrigatório",
+      "nameRequired": "O nome do jogador é obrigatório",
+      "steamLookupEmpty": "Digite um Steam ID, URL personalizada ou URL do perfil",
+      "steamApiNotConfigured": "A Steam API não está configurada - digite o Steam ID64 manualmente",
+      "steamResolveFailed": "Não foi possível resolver o Steam ID - digite o Steam ID64 manualmente",
+      "saveFailed": "Falha ao salvar o jogador"
+    },
+    "success": {
+      "playerUpdated": "Jogador atualizado",
+      "playerCreated": "Jogador criado"
+    },
+    "buttons": {
+      "delete": "Excluir",
+      "cancel": "Cancelar",
+      "saving": "Salvando...",
+      "save": "Salvar",
+      "create": "Criar"
+    },
+    "confirmDelete": {
+      "title": "Excluir jogador",
+      "message": "Tem certeza de que quer excluir o jogador \"{{name}}\"? Esta ação não pode ser desfeita."
+    },
+    "confirmEloUpdate": {
+      "title": "Atualizar o ELO do jogador",
+      "message": "Tem certeza de que quer mudar o ELO deste jogador de {{from}} para {{to}}? Isso redefine as estatísticas e o histórico de rating dele. Esta ação não pode ser desfeita."
+    },
+    "discordIdHelper": "Opcional. 17 a 20 dígitos. Permite que os organizadores falem com este jogador no Discord. Nunca aparece publicamente.",
+    "accountLabel": "Conta {{account}} (opcional)",
+    "accountHelper": "Para {{games}}. O id da conta; quando a pessoa entrar com {{account}}, ela vira este jogador.",
+    "accountVerified": "Vinculado: a pessoa entrou com {{account}}. Só ela pode mudar isso."
+  },
+  "teamImportModal": {
+    "title": "Importar times de JSON",
+    "info": {
+      "title": "Cole abaixo o JSON com os dados dos times.",
+      "format": "Formato esperado: array de times com name, tag (opcional) e players (name + steamId, mais um discordId opcional como string entre aspas).",
+      "link": "Ver documentação com exemplos"
+    },
+    "jsonLabel": "Dados JSON",
+    "errors": {
+      "mustBeArray": "O JSON precisa ser um array de times",
+      "emptyArray": "O array não pode estar vazio",
+      "parseWithMessage": "Erro ao ler o JSON: {{message}}",
+      "parseGeneric": "Formato de JSON inválido. Confira a sintaxe.",
+      "importFailed": "Falha ao importar os times",
+      "noJson": "Digite os dados JSON"
+    },
+    "preview": {
+      "summary": "✓ JSON válido! {{teams}} encontrados, com {{players}} no total.",
+      "title": "Prévia:",
+      "missingDiscordTotal": "Jogadores sem Discord ID: {{count}}",
+      "missingDiscordChip": "Sem Discord: {{count}}",
+      "playersChip_one": "{{count}} jogador",
+      "playersChip_other": "{{count}} jogadores",
+      "teamsCount_one": "{{count}} time",
+      "teamsCount_other": "{{count}} times",
+      "playersChip_many": "{{count}} jogadores",
+      "teamsCount_many": "{{count}} times"
+    },
+    "actions": {
+      "preview": "Prévia",
+      "importing": "Importando...",
+      "import_one": "Importar {{count}} time",
+      "import_other": "Importar {{count}} times",
+      "import_many": "Importar {{count}} times"
+    },
+    "warnings": {
+      "title": "Alguns Discord IDs foram ignorados. Estes jogadores serão importados sem ele:",
+      "discordIdNumber": "Time \"{{team}}\", jogador \"{{player}}\": o discordId precisa ser uma string entre aspas. Números grandes perdem precisão no JSON, então o ID foi descartado.",
+      "discordIdInvalid": "Time \"{{team}}\", jogador \"{{player}}\": \"{{value}}\" não é um ID de usuário do Discord (esperado: 17 a 20 dígitos), então foi descartado."
+    }
+  },
+  "playerImportModal": {
+    "title": "Importar jogadores",
+    "info": {
+      "description": "Importe jogadores em JSON ou CSV. Campos obrigatórios: steamId, name. Opcionais: initialELO (padrão 1500), avatarUrl.",
+      "link": "Ver documentação com exemplos"
+    },
+    "placeholders": {
+      "jsonCsv": "Formato JSON:\n[\n  {\n    \"steamId\": \"76561198012345678\",\n    \"name\": \"Player One\",\n    \"initialELO\": 1500,\n    \"avatarUrl\": \"https://...\"\n  }\n]\n\nFormato CSV:\nsteamId,name,initialELO,avatarUrl\n76561198012345678,Player One,1500,https://..."
+    },
+    "actions": {
+      "parseValidate": "Ler e validar",
+      "importing": "Importando...",
+      "import_one": "Importar {{count}} jogador",
+      "import_other": "Importar {{count}} jogadores",
+      "import_many": "Importar {{count}} jogadores"
+    },
+    "preview": {
+      "title": "Jogadores a importar ({{count}}):",
+      "steamId": "Steam ID: {{steamId}}",
+      "name": "Nome: {{name}}",
+      "initialElo": "ELO inicial: {{elo}}",
+      "avatar": "Avatar: {{url}}",
+      "readyChip_one": "{{count}} jogador pronto para importar",
+      "readyChip_other": "{{count}} jogadores prontos para importar",
+      "readyChip_many": "{{count}} jogadores prontos para importar"
+    },
+    "errors": {
+      "noData": "Digite dados JSON ou CSV",
+      "noPlayers": "Nenhum jogador encontrado nos dados",
+      "validationPrefix": "Erros de validação:",
+      "parseFailed": "Falha ao ler os dados: {{message}}",
+      "importFailed": "Falha ao importar os jogadores",
+      "parseFirst": "Leia e valide os dados primeiro"
+    }
+  },
+  "playerSelectionModal": {
+    "title": "Selecionar jogadores",
+    "selectedCount": "{{count}} selecionados",
+    "searchPlaceholder": "Buscar jogadores pelo nome...",
+    "searchPlaceholder_steam": "Buscar jogadores pelo nome ou Steam ID...",
+    "selectAll": {
+      "select": "Selecionar tudo",
+      "deselect": "Desmarcar tudo"
+    },
+    "empty": {
+      "noSearchResults": "Nenhum jogador encontrado para a sua busca",
+      "noPlayers": "Nenhum jogador disponível"
+    },
+    "playerCard": {
+      "alreadyInTeam": "Já está no time"
+    },
+    "errors": {
+      "loadFailed": "Falha ao carregar os jogadores",
+      "noSelectable": "Nenhum jogador selecionável disponível"
+    },
+    "addPlayersButton_one": "Adicionar {{count}} jogador",
+    "addPlayersButton_other": "Adicionar {{count}} jogadores",
+    "addPlayersButton_many": "Adicionar {{count}} jogadores"
+  },
+  "soundSettingsModal": {
+    "title": "Configurações de som",
+    "soundSelect": {
+      "label": "Som de notificação"
+    },
+    "volume": {
+      "label": "Volume: {{percent}}%"
+    },
+    "testButton": "Testar som",
+    "footer": "As notificações sonoras tocam quando sua partida está pronta ou quando acontecem eventos importantes."
+  },
+  "addBackupPlayer": {
+    "title": "Adicionar jogador",
+    "loadFailed": "Falha ao carregar a lista de jogadores",
+    "added": "{{name}} adicionado a {{target}}",
+    "addFailed": "Falha ao adicionar o jogador",
+    "addToMatchFailed": "Falha ao adicionar o jogador à partida",
+    "searchLabel": "Buscar jogador",
+    "searchPlaceholder": "Digite o nome do jogador...",
+    "available": "{{count}} jogadores disponíveis (que ainda não estão na partida)",
+    "noneAvailable": "Nenhum jogador disponível",
+    "displayNameLabel": "Nome de exibição (opcional)",
+    "displayNamePlaceholder": "Por padrão, o nome atual do jogador",
+    "side": "Lado",
+    "spectator": "Espectador",
+    "selected": "Selecionado:",
+    "fromTeam": "Do time: {{team}}",
+    "steamId": "Steam ID: {{id}}",
+    "adding": "Adicionando jogador...",
+    "add": "Adicionar jogador à partida",
+    "underlyingCommand": "Comando usado:",
+    "important": "Importante:",
+    "reconnectHint": "O jogador precisa reconectar ao servidor depois de ser adicionado. Se já estiver conectado, talvez precise entrar de novo."
+  }
+}

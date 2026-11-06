@@ -1,0 +1,142 @@
+{
+  "devToolsPage": {
+    "alert": "Estas ferramentas só estão disponíveis no modo de desenvolvimento. Use-as para gerar rapidamente dados de teste para testar o aplicativo.",
+    "sections": {
+      "testData": {
+        "title": "Criar dados de teste"
+      }
+    },
+    "testTeams": {
+      "title": "Times de teste",
+      "description": "Crie times com dados aleatórios de jogadores para testar chaves e partidas de torneio.",
+      "success": "{{count}} time(s) de teste criado(s)!",
+      "errors": {
+        "create": "Falha ao criar times de teste",
+        "partial": "{{created}} time(s) criado(s), mas {{failed}} falharam. Veja o console para detalhes."
+      },
+      "customLabel": "Quantidade de times",
+      "buttons": {
+        "createFixed": "Criar {{count}} times",
+        "createCustom": "Criar times"
+      }
+    },
+    "testPlayers": {
+      "title": "Jogadores de teste",
+      "description": "Crie jogadores com rating ELO para testar torneios shuffle e o gerenciamento de jogadores.",
+      "success": "{{created}} jogadores de teste criados!",
+      "errors": {
+        "create": "Falha ao criar jogadores de teste",
+        "partial": "{{created}} jogador(es) criado(s), {{updated}} atualizado(s), mas {{failed}} falharam. Veja o console para detalhes."
+      },
+      "customLabel": "Quantidade de jogadores",
+      "buttons": {
+        "createFixed": "Criar {{count}} jogadores",
+        "createCustom": "Criar jogadores"
+      },
+      "successWithUpdated": "{{created}} jogadores de teste criados e {{updated}} atualizados!"
+    },
+    "testServers": {
+      "title": "Servidores de teste",
+      "description": "Crie servidores de teste para experimentar o gerenciamento de partidas.",
+      "success": "{{count}} servidor(es) de teste criado(s)!",
+      "errors": {
+        "create": "Falha ao criar servidores de teste",
+        "partial": "{{created}} servidor(es) criado(s), mas {{failed}} falharam. Veja o console para detalhes."
+      },
+      "customLabel": "Quantidade de servidores",
+      "buttons": {
+        "createCustom": "Criar servidores",
+        "createFixed_one": "Criar {{count}} servidor",
+        "createFixed_other": "Criar {{count}} servidores",
+        "createFixed_many": "Criar {{count}} servidores"
+      }
+    },
+    "dangerZone": {
+      "title": "Zona de perigo"
+    },
+    "deleteTestData": {
+      "title": "Excluir dados de teste",
+      "description": "Exclui todos os dados de teste (times e servidores com o prefixo 'test-'). Esta ação não pode ser desfeita.",
+      "button": "Excluir todos os dados de teste",
+      "confirmPrompt": "Tem certeza de que quer excluir TODOS os dados de teste?",
+      "success": "Todos os dados de teste foram excluídos!",
+      "error": "Falha ao excluir os dados de teste"
+    },
+    "wipeTable": {
+      "title": "Limpar tabelas específicas",
+      "description": "Exclui todos os dados de uma tabela específica. Útil para limpar sem redefinir tudo. As tabelas estão organizadas por categoria.",
+      "confirmPrompt": "Tem certeza de que quer limpar a tabela {{table}}? Todos os dados dela serão excluídos.",
+      "success": "Tabela {{table}} limpa!",
+      "error": "Falha ao limpar a tabela {{table}}",
+      "core": {
+        "title": "Tabelas principais",
+        "teams": "Limpar times",
+        "servers": "Limpar servidores",
+        "tournament": "Limpar torneio",
+        "matches": "Limpar partidas"
+      },
+      "players": {
+        "title": "Jogadores e torneios shuffle",
+        "players": "Limpar jogadores",
+        "ratingHistory": "Limpar histórico de rating",
+        "matchStats": "Limpar estatísticas de partidas",
+        "shufflePlayers": "Limpar jogadores do shuffle"
+      },
+      "maps": {
+        "title": "Mapas e modelos",
+        "maps": "Limpar mapas",
+        "mapPools": "Limpar pools de mapas",
+        "tournamentTemplates": "Limpar modelos de torneio",
+        "eloTemplates": "Limpar modelos de rating"
+      },
+      "matchEvents": {
+        "title": "Eventos e resultados de partidas",
+        "events": "Limpar eventos de partidas",
+        "mapResults": "Limpar resultados de mapas"
+      },
+      "settings": {
+        "title": "Configurações",
+        "appSettings": "Limpar configurações do app"
+      }
+    },
+    "simulation": {
+      "title": "Estado da simulação",
+      "description": "Limpa todas as partidas e estatísticas históricas para você poder clicar em \"Iniciar torneio\" no modo simulação com uma chave limpa, mantendo servidores, times, mapas e a configuração atual do torneio.",
+      "button": "Redefinir estado da simulação (manter configuração)",
+      "reset": {
+        "success": "Estado da simulação redefinido. Partidas e estatísticas limpas; servidores, times e configuração do torneio mantidos.",
+        "error": "Falha ao redefinir o estado da simulação"
+      }
+    },
+    "wipeDatabase": {
+      "title": "Limpar o banco de dados inteiro",
+      "warningTitle": "EXTREMAMENTE DESTRUTIVO!",
+      "warningBody": "Isto vai excluir TODOS os dados.",
+      "permanentlyDeletes": "Exclui de forma permanente:",
+      "items": {
+        "tournaments": "Todos os torneios e chaves",
+        "matches": "Todas as partidas e eventos",
+        "teams": "Todos os times e jogadores",
+        "servers": "Todas as configurações de servidor"
+      },
+      "button": "Limpar o banco de dados inteiro",
+      "successRedirect": "Banco de dados limpo! Redirecionando...",
+      "error": "Falha ao limpar o banco de dados",
+      "dialog": {
+        "title": "Confirmar limpeza do banco de dados",
+        "areYouSure": "Tem certeza absoluta?",
+        "actionWill": "Esta ação vai",
+        "permanentlyDelete": "excluir de forma permanente",
+        "items": {
+          "tournaments": "Todos os dados de torneios e chaves",
+          "matches": "Todo o histórico e os eventos de partidas",
+          "teams": "Todos os times e configurações de jogadores",
+          "servers": "Todas as configurações de servidor"
+        },
+        "cannotUndo": "Esta ação não pode ser desfeita!",
+        "wiping": "Limpando o banco de dados...",
+        "yesWipe": "Sim, limpar tudo"
+      }
+    }
+  }
+}
