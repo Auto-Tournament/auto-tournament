@@ -1,0 +1,141 @@
+{
+  "devToolsPage": {
+    "alert": "De här verktygen finns bara i utvecklingsläge. Använd dem för att snabbt skapa testdata när du testar appen.",
+    "sections": {
+      "testData": {
+        "title": "Skapa testdata"
+      }
+    },
+    "testTeams": {
+      "title": "Testlag",
+      "description": "Skapa lag med slumpade spelare för att testa turneringsbrackets och matcher.",
+      "success": "{{count}} testlag skapade!",
+      "errors": {
+        "create": "Testlagen kunde inte skapas",
+        "partial": "{{created}} lag skapade, men {{failed}} misslyckades. Se konsolen för detaljer."
+      },
+      "customLabel": "Eget antal lag",
+      "buttons": {
+        "createFixed": "Skapa {{count}} lag",
+        "createCustom": "Skapa lag"
+      }
+    },
+    "testPlayers": {
+      "title": "Testspelare",
+      "description": "Skapa spelare med ELO-rating för att testa shuffle-turneringar och spelarhantering.",
+      "success": "{{created}} testspelare skapade!",
+      "errors": {
+        "create": "Testspelarna kunde inte skapas",
+        "partial": "{{created}} spelare skapade, {{updated}} uppdaterade, men {{failed}} misslyckades. Se konsolen för detaljer."
+      },
+      "customLabel": "Eget antal spelare",
+      "buttons": {
+        "createFixed": "Skapa {{count}} spelare",
+        "createCustom": "Skapa spelare"
+      },
+      "successWithUpdated": "{{created}} testspelare skapade och {{updated}} uppdaterade!"
+    },
+    "testServers": {
+      "title": "Testservrar",
+      "description": "Skapa testservrar att prova matchhanteringen mot.",
+      "success": "{{count}} testservrar skapade!",
+      "errors": {
+        "create": "Testservrarna kunde inte skapas",
+        "partial": "{{created}} servrar skapade, men {{failed}} misslyckades. Se konsolen för detaljer."
+      },
+      "customLabel": "Eget antal servrar",
+      "buttons": {
+        "createCustom": "Skapa servrar",
+        "createFixed_one": "Skapa {{count}} server",
+        "createFixed_other": "Skapa {{count}} servrar"
+      }
+    },
+    "dangerZone": {
+      "title": "Riskzon"
+    },
+    "deleteTestData": {
+      "title": "Ta bort testdata",
+      "description": "Ta bort all testdata (lag och servrar med prefixet 'test-'). Det går inte att ångra.",
+      "button": "Ta bort all testdata",
+      "confirmPrompt": "Är du säker på att du vill ta bort ALL testdata?",
+      "success": "All testdata har tagits bort!",
+      "error": "Testdatan kunde inte tas bort"
+    },
+    "wipeTable": {
+      "title": "Töm enskilda tabeller",
+      "description": "Ta bort all data från en viss tabell. Bra för att städa utan att återställa allt. Tabellerna är ordnade efter kategori.",
+      "confirmPrompt": "Är du säker på att du vill tömma tabellen {{table}}? All data i tabellen tas bort.",
+      "success": "Tabellen {{table}} har tömts!",
+      "error": "Tabellen {{table}} kunde inte tömmas",
+      "core": {
+        "title": "Kärntabeller",
+        "teams": "Töm lag",
+        "servers": "Töm servrar",
+        "tournament": "Töm turnering",
+        "matches": "Töm matcher"
+      },
+      "players": {
+        "title": "Spelare och shuffle-turneringar",
+        "players": "Töm spelare",
+        "ratingHistory": "Töm ratinghistorik",
+        "matchStats": "Töm matchstatistik",
+        "shufflePlayers": "Töm shuffle-spelare"
+      },
+      "maps": {
+        "title": "Kartor och mallar",
+        "maps": "Töm kartor",
+        "mapPools": "Töm kartpooler",
+        "tournamentTemplates": "Töm turneringsmallar",
+        "eloTemplates": "Töm ratingmallar"
+      },
+      "matchEvents": {
+        "title": "Matchhändelser och resultat",
+        "events": "Töm matchhändelser",
+        "mapResults": "Töm kartresultat"
+      },
+      "settings": {
+        "title": "Inställningar",
+        "appSettings": "Töm appinställningar"
+      }
+    },
+    "simulation": {
+      "title": "Simuleringsläge",
+      "description": "Rensa alla matcher och historisk statistik så att du kan klicka på ”Starta turnering” i simuleringsläge på en ren bracket, medan servrar, lag, kartor och den nuvarande turneringsinställningen behålls.",
+      "button": "Återställ simuleringsläget (behåll konfiguration)",
+      "reset": {
+        "success": "Simuleringsläget återställt. Matcher och statistik rensade; servrar, lag och turneringsinställning behållna.",
+        "error": "Simuleringsläget kunde inte återställas"
+      }
+    },
+    "wipeDatabase": {
+      "title": "Töm hela databasen",
+      "warningTitle": "EXTREMT DESTRUKTIVT!",
+      "warningBody": "All data tas bort.",
+      "permanentlyDeletes": "Tas bort permanent:",
+      "items": {
+        "tournaments": "Alla turneringar och brackets",
+        "matches": "Alla matcher och händelser",
+        "teams": "Alla lag och spelare",
+        "servers": "Alla serverkonfigurationer"
+      },
+      "button": "Töm hela databasen",
+      "successRedirect": "Databasen har tömts! Omdirigerar...",
+      "error": "Databasen kunde inte tömmas",
+      "dialog": {
+        "title": "Bekräfta tömning av databasen",
+        "areYouSure": "Är du helt säker?",
+        "actionWill": "Den här åtgärden kommer att",
+        "permanentlyDelete": "radera permanent",
+        "items": {
+          "tournaments": "All turneringsdata och alla brackets",
+          "matches": "All matchhistorik och alla händelser",
+          "teams": "Alla lag och spelarkonfigurationer",
+          "servers": "Alla serverkonfigurationer"
+        },
+        "cannotUndo": "Det går inte att ångra!",
+        "wiping": "Tömmer databasen...",
+        "yesWipe": "Ja, töm allt"
+      }
+    }
+  }
+}

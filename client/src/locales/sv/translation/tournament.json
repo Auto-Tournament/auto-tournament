@@ -1,0 +1,1810 @@
+{
+  "tournament": {
+    "startConfirm": {
+      "intro": "Redo att starta turneringen?",
+      "thisWill": "Det här händer:",
+      "openMatches": "Första omgångens matcher öppnas för spel",
+      "statusInProgress": "Turneringens status ändras till PÅGÅR",
+      "confirm": "Ja, starta turneringen",
+      "started": "Turneringen har startat! Första omgångens matcher är öppna."
+    },
+    "steps": {
+      "create": "Skapa turnering",
+      "review": "Granska och bekräfta",
+      "live": "Live-turnering"
+    },
+    "welcome": {
+      "heading": "Skapa turnering",
+      "chooseMethod": "Välj hur du vill skapa din turnering",
+      "createNewTitle": "Skapa ny turnering",
+      "createNewDescription": "Börja från början och ställ in alla turneringsinställningar manuellt"
+    },
+    "typeSelector": {
+      "categories": {
+        "professional": {
+          "label": "Proffsserier"
+        },
+        "party": {
+          "label": "Party och skoj"
+        }
+      },
+      "types": {
+        "single_elimination": {
+          "label": "Single elimination",
+          "description": "En förlust och du är ute. Klassiskt bracketformat från proffsturneringar."
+        },
+        "double_elimination": {
+          "label": "Double elimination",
+          "description": "Två förluster för att åka ut. Lagen får en andra chans i nedre bracketen."
+        },
+        "round_robin": {
+          "label": "Alla mot alla",
+          "description": "Alla möter alla. Perfekt för ligaformat."
+        },
+        "swiss": {
+          "label": "Schweizersystem",
+          "description": "Lag med liknande facit möts. Jämna matcher genom hela turneringen."
+        },
+        "shuffle": {
+          "label": "Shuffle-turnering",
+          "description": "Spelarna blandas om till jämna lag varje runda. Individuell tävling med lagbalansering efter ELO."
+        },
+        "groups": {
+          "label": "Grupper, sedan slutspel",
+          "description": "Alla mot alla i grupper; de bästa från varje grupp spelar utslagning."
+        }
+      },
+      "selectedChip": "Vald"
+    },
+    "review": {
+      "summary": {
+        "info": "Granska turneringsinställningarna och klicka på ”{{button}}” när du är redo.",
+        "nameLabel": "Turneringsnamn",
+        "typeLabel": "Turneringstyp",
+        "formatLabel": "Matchformat",
+        "notSet": "Inte angivet",
+        "estimatedVolumeText": "Ungefär {{matches}} över {{rounds}} (bäst av {{mapsPerMatch}}, upp till {{maps}} totalt)."
+      }
+    },
+    "formSteps": {
+      "steps": {
+        "name": "Namn",
+        "type": "Typ",
+        "format": "Format",
+        "maps": "Kartor",
+        "teams": "Lag",
+        "review": "Granska"
+      },
+      "backToWelcome": "Tillbaka till start",
+      "back": "Tillbaka",
+      "next": "Nästa"
+    },
+    "emptyBracket": {
+      "title": "Ingen bracket att visa",
+      "description": "Skapa en turnering och generera bracketen för att komma igång"
+    },
+    "common": {
+      "createTournament": "Skapa turnering"
+    },
+    "nameLabel": "Turneringsnamn",
+    "namePlaceholder": "Auto Tournament 2025 vårturnering",
+    "champion": {
+      "title": "Mästare"
+    },
+    "page": {
+      "title": "Turneringsinställningar"
+    },
+    "labels": {
+      "teams": "Lag",
+      "maps": "Kartor",
+      "format": "Format",
+      "players": "Spelare",
+      "matchRules": "Matchregler",
+      "servers": "Servrar",
+      "overtimeSettings": "Övertidsinställningar",
+      "mapPool": "Kartpool"
+    },
+    "tooltips": {
+      "deleteTournament": "Ta bort turneringen och all dess data permanent"
+    },
+    "counts": {
+      "teams_one": "{{count}} lag",
+      "teams_other": "{{count}} lag",
+      "matches_one": "{{count}} match",
+      "matches_other": "{{count}} matcher",
+      "rounds_one": "{{count}} omgång",
+      "rounds_other": "{{count}} omgångar",
+      "maps_one": "{{count}} karta",
+      "maps_other": "{{count}} kartor",
+      "servers_one": "{{count}} server",
+      "servers_other": "{{count}} servrar",
+      "availableServers_one": "{{count}} tillgänglig server",
+      "availableServers_other": "{{count}} tillgängliga servrar",
+      "concurrentMatches_one": "{{count}} samtidig match",
+      "concurrentMatches_other": "{{count}} samtidiga matcher",
+      "enabledServers_one": "{{count}} aktiverad server",
+      "enabledServers_other": "{{count}} aktiverade servrar"
+    },
+    "matchRules": {
+      "value": "Max {{maxRounds}} rundor per karta; vinnare är den som först når {{winRounds}} rundor.",
+      "teamSizeValue": "Lagstorlek: {{size}}v{{size}}",
+      "overtimeEnabled": "Övertid: på",
+      "overtimeDisabled": "Övertid: av (ingen övertid)",
+      "overtimeDisabledNoDraws": "Övertid: av (inga oavgjorda – skada avgör)",
+      "overtimeSegments_one": "Övertidsperioder: {{count}} period",
+      "overtimeSegments_other": "Övertidsperioder: {{count}} perioder",
+      "overtimeSegmentsDefault": "Övertidsperioder: spelserverns standard",
+      "overtimeSegmentsDefaultUnlimited": "Övertidsperioder: spelserverns standard (oftast obegränsat)"
+    },
+    "toasts": {
+      "loadTemplateFailed": "Mallen kunde inte laddas",
+      "nameRequired": "Turneringsnamn krävs",
+      "nameUpdated": "Turneringsnamnet uppdaterat",
+      "nameUpdateFailed": "Turneringsnamnet kunde inte uppdateras",
+      "selectAtLeastOneMap": "Välj minst 1 karta",
+      "maxRoundsRange": "Max rundor måste vara mellan 1 och 30",
+      "teamSizeRange": "Lagstorleken måste vara mellan 2 och 10 spelare",
+      "invalidTeamCount": "Ogiltigt antal lag",
+      "selectAtLeastTwoTeams": "Välj minst 2 lag",
+      "shuffleCreated": "Shuffle-turneringen ”{{name}}” har skapats! Nästa steg: registrera minst {{minPlayers}} spelare för att starta turneringen ({{teamSize}}v{{teamSize}}-matcher).",
+      "shuffleCreateFailed": "Shuffle-turneringen kunde inte skapas",
+      "shuffleCreateFailedRetry": "Shuffle-turneringen kunde inte skapas. Kontrollera inställningarna och försök igen.",
+      "updated": "Turneringen uppdaterad och bracketen genererad på nytt!",
+      "created": "Turneringen skapad!",
+      "saveFailed": "Turneringen kunde inte sparas",
+      "deleted": "Turneringen har tagits bort",
+      "deleteFailed": "Turneringen kunde inte tas bort",
+      "regenerated": "Bracketen genererad på nytt",
+      "regenerateFailed": "Bracketen kunde inte genereras på nytt",
+      "resetDone": "Turneringen återställd till förberedelse",
+      "resetFailed": "Turneringen kunde inte återställas",
+      "started_one": "Turneringen har startat! {{count}} match tilldelad servrar.",
+      "started_other": "Turneringen har startat! {{count}} matcher tilldelade servrar.",
+      "startRequested": "Start av turneringen begärd. Servrar tilldelas strax.",
+      "startFailed": "Turneringen kunde inte startas",
+      "templateSaved": "Mallen sparad!",
+      "disableServersFailed": "En eller flera servrar kunde inte stängas av: {{message}}",
+      "noChangesToSave": "Inga ändringar att spara",
+      "invalidMapSelection": "Ogiltigt kartval",
+      "archived": "Turneringen arkiverad. Skapa nästa.",
+      "archiveFailed": "Turneringen kunde inte arkiveras"
+    },
+    "outdatedServers": {
+      "title": "Servrar behöver uppdateras",
+      "body": "En eller flera aktiverade servrar är inaktuella (eller kunde inte verifieras) enligt Steam. Uppdatera dem, eller stäng av dem för att fortsätta med resten.",
+      "confirm": "Stäng av berörda servrar och försök igen",
+      "disabling": "Stänger av...",
+      "goToServers": "Gå till Servrar"
+    },
+    "live": {
+      "saveNameAria": "Spara turneringsnamn",
+      "cancelRenameAria": "Avbryt namnbyte",
+      "editNameAria": "Redigera turneringsnamn",
+      "renameTooltip": "Byt namn på turneringen",
+      "alert": {
+        "liveTitle": "Turneringen är live",
+        "liveBody": "Matcher körs på servrarna just nu. Du kan inte ändra turneringsinställningar medan den är live (utom namnet).",
+        "pendingTitle": "Turneringen pågår",
+        "pendingBody": "Matcherna startar så fort servrar tilldelats och veton är klara. Du kan inte ändra turneringsinställningar medan turneringen pågår (utom namnet).",
+        "completedTitle": "Turneringen är klar",
+        "completedBody": "Alla matcher i turneringen är klara. Skapa en ny turnering eller återställ den här för att börja om."
+      },
+      "teamsCompeting_one": "{{count}} lag tävlar",
+      "teamsCompeting_other": "{{count}} lag tävlar",
+      "playersCompeting_one": "{{count}} spelare tävlar",
+      "playersCompeting_other": "{{count}} spelare tävlar",
+      "playersCompetingUnknown": "Spelare som tävlar",
+      "shuffleSettingsLabel": "Shuffle-inställningar",
+      "maxRoundsPerMapValue": "Max rundor per karta: {{rounds}}",
+      "eloTemplateValue": "ELO-mall: {{template}}",
+      "mapSequenceLabel": "Kartordning (omgångar)",
+      "noMapsConfigured": "Inga kartor inställda än.",
+      "viewBracket": "Visa bracket",
+      "viewBracketTooltip": "Visa turneringens bracket och matchdetaljer",
+      "leaderboardTooltip": "Öppna den publika topplistan och dela den med spelarna",
+      "restartTooltip": "Avsluta alla aktiva matcher på servrarna och ladda om dem (bra för matcher som fastnat)",
+      "resetTooltip": "Avsluta alla matcher och återställ turneringen till förberedelse (behåller inställningarna men rensar all matchdata)",
+      "reset": "Återställ till förberedelse",
+      "dangerZone": "Riskzon",
+      "newTournament": "Ny turnering"
+    },
+    "reviewCard": {
+      "needPlayersWarning": "Minst {{minPlayers}} spelare behövs för att starta turneringen ({{teamSize}}v{{teamSize}}-matcher). Registrerade nu: {{registered}}",
+      "start": "Starta turnering",
+      "starting": "Startar...",
+      "startSimulation": "Starta simulering",
+      "startingSimulation": "Startar simulering...",
+      "bulkCreateMatches": "Skapa flera matcher",
+      "edit": "Redigera",
+      "regenerate": "Generera om",
+      "regenerateTooltip": "Ta bort alla nuvarande matcher och generera bracketen på nytt med samma inställningar.",
+      "regenerateDisabledTooltip": "Generera bracketen minst en gång (Spara och generera brackets) innan du kan generera om."
+    },
+    "dialogs": {
+      "items": {
+        "endMatches": "Avsluta alla aktiva matcher på servrarna",
+        "deleteMatches": "Ta bort alla matcher och brackets",
+        "deleteData": "Ta bort all matchdata och statistik"
+      },
+      "delete": {
+        "title": "🗑️ Ta bort turnering",
+        "question": "Är du säker på att du vill ta bort <b>”{{name}}”</b> PERMANENT?",
+        "willTitle": "⚠️ Det här händer:",
+        "items": {
+          "removeTournament": "Turneringen tas bort helt",
+          "cannotBeUndone": "Det går inte att ångra"
+        },
+        "note": "💡 Obs: Om du bara vill börja om med samma turneringsinställningar, använd ”Återställ till förberedelse” i stället.",
+        "confirm": "Ta bort permanent"
+      },
+      "regenerate": {
+        "title": "🔄 Generera om brackets",
+        "liveWarning": "⚠️ VARNING: Turneringen är {{status}}!",
+        "liveBody": "Att generera om bracketen <b>RADERAR ALL</b> befintlig matchdata, inklusive ställningar, statistik och händelsehistorik.",
+        "cannotBeUndone": "Det går inte att ångra.",
+        "areYouSure": "Är du helt säker på att du vill fortsätta?",
+        "setupBody": "Alla befintliga matcher tas bort och bracketen genereras på nytt med samma inställningar.",
+        "continue": "Fortsätta?",
+        "confirmDestructive": "JA, RADERA ALLT",
+        "confirm": "Generera om"
+      },
+      "reset": {
+        "title": "🔄 Återställ till förberedelse",
+        "question": "Återställa <b>”{{name}}”</b> till FÖRBEREDELSE?",
+        "willTitle": "Det här händer:",
+        "items": {
+          "clearStatus": "Turneringens status rensas (tillbaka till förberedelse)",
+          "keepSettings": "Turneringsinställningarna <b>behålls</b> (namn, lag, format)",
+          "allowEdit": "Du kan redigera inställningarna igen",
+          "regenerateMatches": "Alla matchresultat rensas och bracketen genereras från början"
+        },
+        "regenerated": "Nya brackets skapas direkt, så väntande matcher dyker upp igen omedelbart.",
+        "note": "💡 Obs: För att ta bort turneringen helt, använd ”Ta bort” i stället.",
+        "confirm": "Återställ till förberedelse"
+      },
+      "start": {
+        "titleNoServers": "⚠️ Inga servrar tillgängliga",
+        "titleInsufficient": "⚠️ För få servrar",
+        "titleUncertain": "⚠️ Starta turneringen utan servrar?",
+        "noServersHeading": "Inga servrar är tillgängliga just nu",
+        "noServersBody": "Turneringen startar, men matcherna skjuts upp tills en server blir ledig. Systemet tilldelar matcher automatiskt när servrar är redo.",
+        "insufficientHeading": "För få servrar för att köra alla matcher i första omgången samtidigt",
+        "insufficientBody": "Du har just nu <b>{{available}}</b>, men första omgången behöver <b>{{required}}</b>. Vissa matcher köas och startar senare när servrar blir lediga.",
+        "uncertainHeading": "Servertillgången är osäker",
+        "uncertainBody": "Turneringen kan starta med få eller inga servrar. Matcherna skjuts upp tills servrar blir tillgängliga och tilldelas automatiskt när de är redo.",
+        "question": "Vill du starta turneringen ändå?",
+        "confirm": "Ja, starta ändå",
+        "cancel": "Kontrollera servrar"
+      }
+    },
+    "formActions": {
+      "saveAndGenerate": "Spara och generera brackets",
+      "saveAsTemplate": "Spara som mall",
+      "saveTemplateTooltip": "Spara den nuvarande turneringskonfigurationen som mall"
+    },
+    "wizard": {
+      "validation": {
+        "selectType": "Välj en turneringstyp",
+        "selectFormat": "Välj ett matchformat"
+      },
+      "shuffleInfo": "Shuffle-turneringar använder inga fasta lag. Spelarna balanseras automatiskt i lag för varje match efter sin Skill Rating.",
+      "shuffleRounds": "Den här shuffle-turneringen får ungefär {{rounds}} (en per vald karta).",
+      "volumeAlert": "Med {{teams}} i en {{type}}-turnering ({{format}}) får bracketen ungefär {{matches}} över {{rounds}} (upp till {{maps}} totalt).",
+      "maxRoundsLabel": "Max rundor per karta",
+      "maxRoundsHelper": "Varje karta spelas upp till {{maxRounds}} rundor; vinnare är den som först når {{winRounds}} rundor.",
+      "maxRoundsHelperEmpty": "Högsta antal rundor per karta (standard: 24, max: 30).",
+      "serversSummary": "{{servers}} inställda; första omgången har {{matches}}.",
+      "estimatedVolumeLabel": "Uppskattad omfattning",
+      "mapsHeading": "Kartor ({{total}})",
+      "noMapsSelected": "Inga kartor valda",
+      "matchConfiguration": "Matchkonfiguration",
+      "roundLimitValue_one": "Rundgräns: max {{count}} runda",
+      "roundLimitValue_other": "Rundgräns: max {{count}} rundor",
+      "teamsHeading": "Lag ({{total}})",
+      "noTeamsSelected": "Inga lag valda (valfritt)",
+      "playerRegistration": "Spelarregistrering",
+      "playerRegistrationInfo_one": "Spelare registreras efter att turneringen skapats. Varje vald karta motsvarar en omgång matcher ({{count}} omgång totalt).",
+      "playerRegistrationInfo_other": "Spelare registreras efter att turneringen skapats. Varje vald karta motsvarar en omgång matcher ({{count}} omgångar totalt).",
+      "serversSummaryQueued": "{{servers}} inställda; första omgången har {{matches}}. Matcher utöver antalet servrar väntar i kön tills en server är ledig."
+    },
+    "overtime": {
+      "selectLabel": "Övertid",
+      "options": {
+        "enabled": "På (vanlig övertid)",
+        "disabledDraws": "Av – oavgjort tillåtet",
+        "disabledNoDraws": "Av – inga oavgjorda (skada avgör)"
+      },
+      "modeHelper": "Vanlig övertid spelar extra perioder tills ett lag leder. ”Oavgjort tillåtet” avslutar en lika karta som oavgjord, medan ”inga oavgjorda” avgör den på lagets totala skada.",
+      "tooltip": "Styr övertiden och hur lika ställning vid max rundor hanteras. Inställningarna skickas till spelservrarna som overtimeMode/overtimeSegments och fungerar som i shuffle-turneringar och manuella matcher.",
+      "shuffleTooltip": "Styr övertiden för shuffle-matcher och hur lika ställning avgörs vid max rundor. När övertid är av kan lika matcher antingen bli oavgjorda eller avgöras på lagets totala skada, beroende på vilket alternativ du väljer.",
+      "segmentsLabel": "Övertidsperioder (valfritt)",
+      "segmentsHelper": "Valfritt: begränsa antalet övertidsperioder. Lämna tomt för spelserverns standard.",
+      "segmentsHelperValue_one": "Begränsa övertiden till {{count}} period. Lika ställning efter övertid avgörs av lagets totala skada.",
+      "segmentsHelperValue_other": "Begränsa övertiden till {{count}} perioder. Lika ställning efter övertid avgörs av lagets totala skada."
+    },
+    "grandFinal": {
+      "sectionTitle": "Stora finalens läge (double elimination)",
+      "label": "Stora finalen",
+      "options": {
+        "simple": "Enkel – en stor final mellan vinnarna av övre och nedre bracketen",
+        "none": "Ingen – finalen i övre bracketen avgör turneringen (ingen stor final)",
+        "double": "Dubbel – med bracket-reset (fungerar just nu som Enkel; full reset planeras)"
+      },
+      "helper": "Styr hur vinnarna av övre och nedre bracketen möts i slutet av turneringen."
+    },
+    "mapPool": {
+      "shuffleTitle": "Kartval för shuffle-turneringar",
+      "shuffleBody": "Alla valda kartor spelas i ordning. Varje karta motsvarar en omgång matcher. Antalet kartor du väljer avgör hur många omgångar som spelas.",
+      "shuffleSelected": "Du har valt {{maps}}, så {{rounds}} spelas.",
+      "chooseLabel": "Välj en kartpool",
+      "custom": "Egen",
+      "selectedMaps": "Valda kartor ({{total}}):",
+      "chooseMapsPlaceholder": "Välj kartor...",
+      "saveMapPool": "Spara kartpool",
+      "types": {
+        "defusal": "Desarmering",
+        "hostage": "Gisslan",
+        "armsRace": "Arms Race",
+        "unknown": "Okänd"
+      }
+    },
+    "formatStep": {
+      "shuffleInfo": "Shuffle-turneringar använder formatet bäst av 1. Varje match är en karta."
+    },
+    "shuffleConfig": {
+      "overline": "Konfiguration av shuffle-turnering",
+      "subtitle": "Matchregler och inställningar",
+      "teamSizeLabel": "Lagstorlek",
+      "teamSizeTooltip": "Antal spelare per lag. Vanliga val: 4v4, 5v5, 6v6. Minst 2, max 10 spelare per lag.",
+      "teamSizeHelper": "Antal spelare per lag (standard: 5 för 5v5, intervall: 2–10)",
+      "maxRoundsLabel": "Max rundor",
+      "maxRoundsTooltip": "Högsta antal rundor per match. Värdet skickas till CS2-servrarna som mp_maxrounds. Exempel: 6 = MR6, 24 = MR24.",
+      "maxRoundsHelper": "Matchen spelas upp till {{maxRounds}} rundor; vinnare är den som först når {{winRounds}} rundor",
+      "maxRoundsHelperEmpty": "Högsta antal rundor per match (standard: 24, max: 30)",
+      "eloTemplateLabel": "Ratingmall",
+      "eloTemplateTooltip": "Välj hur ELO räknas för den här turneringen. Som standard använder mallen ”Pure Win/Loss” bara matchresultatet (vinst/förlust); statistik registreras men ändrar inte ELO. Andra mallar är valfria och lägger till statistikbaserade justeringar ovanpå OpenSkills vinst/förlust-ändring om du vill ha Excel-liknande beteende.",
+      "eloDefaultSuffix": "(standard)",
+      "eloTemplateHelper": "Pure Win/Loss (standard): bara matchresultatet påverkar ELO. Spelarstatistik registreras ändå för topplistor och exporter, men ändrar inte ratingen om du inte väljer en egen mall."
+    },
+    "shuffleStats": {
+      "serverShortageWarning": "Du har {{available}} av {{needed}} servrar. Matcherna körs i vågor, så omgångarna tar längre tid."
+    },
+    "changePreview": {
+      "title": "Granska ändringar i turneringen",
+      "liveHeading": "Turneringen är LIVE!",
+      "liveBody": "Att ändra turneringstyp, format eller antal lag kan kräva att bracketen genereras om. Överväg ”Återställ turnering” för att börja om från början.",
+      "noChangesDetected": "Inga ändringar hittades",
+      "intro": "Följande ändringar tillämpas:",
+      "before": "FÖRE",
+      "after": "EFTER",
+      "apply": "Tillämpa ändringar",
+      "applyRisky": "Tillämpa ändringar (riskabelt!)",
+      "noChangesToApply": "Inga ändringar att tillämpa",
+      "none": "Inget",
+      "itemCount_one": "{{count}} objekt",
+      "itemCount_other": "{{count}} objekt"
+    },
+    "teamSelection": {
+      "chooseTeamsPlaceholder": "Välj lag…",
+      "addAll": "Lägg till alla",
+      "batchAddServers": "Lägg till flera",
+      "addServer": "Lägg till server",
+      "importTeams": "Importera lag",
+      "createTeam": "Skapa lag",
+      "notEnoughServers": "Första omgången har {{matches}}, men du har {{servers}}. Matcher utöver antalet servrar väntar i kön tills en server är ledig – lägg till fler servrar för att köra alla samtidigt.",
+      "notEnoughTeams": "Du behöver minst 2 lag för att skapa en turnering. Du har just nu {{teams}}."
+    },
+    "teamValidation": {
+      "invalidType": "Ogiltig turneringstyp",
+      "powerOfTwo": "{{type}} kräver ett antal lag som är en tvåpotens ({{counts}}). Du valde {{selected}}.",
+      "minTeams": "{{type}} kräver minst {{min}} lag. Du valde {{selected}}.",
+      "maxTeams": "{{type}} tillåter högst {{max}} lag. Du valde {{selected}}."
+    },
+    "eventPage": {
+      "title": "Evenemangssida",
+      "subtitle": "Visas för spelare och besökare på den publika översiktssidan.",
+      "descriptionLabel": "Beskrivning",
+      "locationLabel": "Plats",
+      "locationPlaceholder": "t.ex. På plats, Göteborg",
+      "rulebookUrlLabel": "URL till fullständigt regelverk",
+      "rulebookUrlHelper": "Måste vara en https-länk, eller lämna tomt.",
+      "rulesLabel": "Regler för spelare",
+      "ruleFieldLabel": "Regel {{n}}",
+      "addRule": "Lägg till regel",
+      "prizesLabel": "Priser",
+      "placeLabel": "Placering",
+      "prizeLabel": "Pris",
+      "addPrize": "Lägg till pris",
+      "scheduleLabel": "Schema",
+      "whenLabel": "När",
+      "scheduleLabelLabel": "Etikett",
+      "addScheduleItem": "Lägg till schemapunkt",
+      "remove": "Ta bort",
+      "moveUp": "Flytta upp",
+      "moveDown": "Flytta ner",
+      "save": "Spara evenemangssidan",
+      "saveSuccess": "Evenemangssidan sparad.",
+      "saveError": "Evenemangssidan kunde inte sparas: {{message}}",
+      "organizerLabel": "Arrangör",
+      "organizerPlaceholder": "t.ex. Edition 35 LAN",
+      "bannerLabel": "Banner",
+      "bannerUpload": "Ladda upp en banner",
+      "bannerReplace": "Ersätt",
+      "bannerRemove": "Ta bort",
+      "bannerHelp": "En bred bild överst på turneringssidan. PNG, JPEG eller WEBP, upp till 2 MB; 1920 × 600 fungerar bra.",
+      "bannerWrongType": "Bannern måste vara en PNG-, JPEG- eller WEBP-bild.",
+      "bannerTooLarge": "Bannern får vara högst 2 MB.",
+      "signupHeading": "Anmälan och incheckning",
+      "signupOpen": "Lag kan anmäla sig själva",
+      "signupClosesAt": "Anmälan stänger",
+      "maxTeams": "Lagplatser",
+      "checkInOpensAt": "Incheckningen öppnar",
+      "checkInClosesAt": "Incheckningen stänger",
+      "signupHelp": "Ett lags ägare eller lagkapten anmäler laget med en laguppställning. Spelarna i uppställningen checkar in på dagen.",
+      "startLabel": "Starttid",
+      "startsAtLabel": "Startar",
+      "startsAtHelp": "Din lokala tid. Webbplatsen räknar ner till den.",
+      "autoStartLabel": "Starta turneringen automatiskt vid den här tiden",
+      "remindersLabel": "Påminn spelarna innan start",
+      "reminderMinutes_one": "{{count}} minut före",
+      "reminderMinutes_other": "{{count}} minuter före",
+      "bannerMapLabel": "Ingen banner? Använd en kartbild",
+      "bannerMapNone": "Välj åt mig",
+      "rulesHelp": "Visas på turneringssidans flik Regler, under reglerna som plattformen skriver utifrån dina inställningar.",
+      "fromTemplate": "Från {{name}}",
+      "clearAll": "Rensa alla",
+      "rulebookFromTemplate": "Från mallen {{name}}. En https-länk, eller lämna tomt."
+    },
+    "setup": {
+      "steps": {
+        "game": "Spel",
+        "basics": "Namn och dag",
+        "format": "Format",
+        "teams": "Lag",
+        "schedule": "Schema",
+        "maps": "Kartor och veto",
+        "extras": "Matchinställningar",
+        "review": "Granska"
+      },
+      "stepsLabel": "Steg i konfigurationen",
+      "backToManage": "Hantera",
+      "stepDone": "klart",
+      "newTournament": "Ny turnering",
+      "editing": "Turneringsinställningar",
+      "draftSaved": "utkast sparat i den här fliken",
+      "discardDraft": "Börja om",
+      "startFromTemplate": "Börja från en mall",
+      "continueTo": "Fortsätt till {{step}}",
+      "questions": {
+        "game": {
+          "title": "Vilket spel?",
+          "lede": "Spelet avgör hur matcherna körs och vilka inställningar du får."
+        },
+        "basics": {
+          "title": "Vad heter den, och vilken dag?",
+          "lede": "Välj dag. Tiden då varje omgång startar ställs in under Schema."
+        },
+        "format": {
+          "title": "Hur spelas den?",
+          "lede": "Välj bracket och hur lång varje serie är. Du kan ändra det tills turneringen startar."
+        },
+        "teams": {
+          "title": "Vilka spelar?",
+          "lede": "Välj lagen i bracketen. Du kan också skapa eller importera lag här.",
+          "ledeShuffle": "Shuffle har individuell anmälan: spelare registrerar sig och nya lag lottas varje omgång."
+        },
+        "maps": {
+          "title": "Vilka kartor?",
+          "lede": "Välj kartpool. Serierna väljer sina kartor från den genom veto.",
+          "ledeShuffle": "Välj kartorna i den ordning de spelas. Varje karta är en omgång."
+        },
+        "eventPage": {
+          "title": "Vad ska stå på evenemangssidan?",
+          "lede": "Valfritt. Visas för spelare och besökare på den publika översiktssidan."
+        },
+        "review": {
+          "title": "Redo att köra?",
+          "lede": "Kontrollera detaljerna och skapa sedan turneringen.",
+          "ledeExisting": "Kontrollera detaljerna och starta sedan turneringen när alla är redo."
+        },
+        "schedule": {
+          "title": "När är matcherna?",
+          "lede": "Första omgångens tid är när turneringen startar. Incheckning och påminnelser räknas bakåt från den."
+        },
+        "extras": {
+          "title": "Matchinställningar",
+          "lede": "Börja från en förinställning och ändra sedan det du behöver. Orange inställningar skiljer sig från webbplatsens standard."
+        }
+      },
+      "game": {
+        "label": "Spel",
+        "loading": "Laddar spelen som den här instansen kan köra.",
+        "lockedHelp": "Spelet är låst när turneringen finns. Ta bort den och börja om för att köra ett annat.",
+        "integrationTitles": {
+          "cs2": "Körs på dina servrar",
+          "manual-report": "Lagen rapporterar resultatet"
+        },
+        "integrationDescriptions": {
+          "cs2": "Matcherna körs på dina egna CS2-servrar med Ready Up.",
+          "manual-report": "Inga servrar. Lagen spelar matchen själva och en lagkapten rapporterar resultatet."
+        }
+      },
+      "basics": {
+        "ratingLabel": "Rating",
+        "ratingHelp": "Hur spelarnas rating ändras efter varje match i turneringen."
+      },
+      "format": {
+        "label": "Format",
+        "names": {
+          "single_elimination": "Single elimination",
+          "double_elimination": "Double elimination",
+          "swiss": "Schweizersystem",
+          "round_robin": "Alla mot alla",
+          "shuffle": "Shuffle",
+          "groups": "Grupper, sedan slutspel"
+        },
+        "types": {
+          "single_elimination": "En förlust och du är ute. Snabbast.",
+          "double_elimination": "En andra chans i nedre bracketen.",
+          "swiss": "Lagen spelar flera omgångar mot lag med liknande facit.",
+          "round_robin": "Alla möter alla. Bäst för små grupper.",
+          "shuffle": "Individuell anmälan. Nya jämna lag varje omgång.",
+          "groups": "Alla mot alla i grupper; de bästa från varje grupp går vidare till en final eller en bracket."
+        },
+        "seriesLength": "Serielängd",
+        "grandFinal": "Stora finalen",
+        "grandFinalOptions": {
+          "simple": "En match",
+          "double": "Bracket-reset",
+          "none": "Ingen"
+        },
+        "grandFinalHelp": {
+          "simple": "Vinnarna av övre och nedre bracketen möts i en stor final.",
+          "double": "Bracket-reset. Tills vidare spelas den som en stor final; full reset planeras.",
+          "none": "Ingen stor final: finalen i övre bracketen avgör turneringen."
+        },
+        "teams": "Lag",
+        "teamsHelpPowerOfTwo": "Utslagsbrackets behöver {{counts}} lag. Används för sammanfattningen tills du väljer lag.",
+        "teamsHelpRange": "Mellan {{min}} och {{max}} lag. Används för sammanfattningen tills du väljer lag.",
+        "fewerTeams": "Färre lag",
+        "moreTeams": "Fler lag",
+        "shuffleTitle": "Shuffle-inställningar",
+        "cs2Title": "Inställningar för Counter-Strike 2",
+        "cs2Help": "Skickas till dina CS2-servrar av spelmodulen för Counter-Strike 2.",
+        "overtime": {
+          "enabled": "Övertid",
+          "disabledDraws": "Av, oavgjort tillåtet",
+          "disabledNoDraws": "Av, skada avgör"
+        }
+      },
+      "teams": {
+        "shuffleBeforeCreate": "Spelare anmäler sig efter att du skapat turneringen. Kom tillbaka till det här steget för att välja dem.",
+        "shuffleSelfSignup": "Spelare går med själva",
+        "shuffleSelfSignupHelp": "De anmäler sig med Gå med på turneringssidan medan det här är på; du kan fortfarande lägga till spelare här."
+      },
+      "maps": {
+        "vetoTitle": "Veto",
+        "vetoStandard": "Varje {{format}}-serie kör kartvetot: lagen bannar och pickar från de här 7 kartorna.",
+        "vetoCustom": "Den här turneringen har en egen vetoordning för {{format}}.",
+        "vetoNone": "Inget veto för det här formatet.",
+        "vetoShuffle": "Shuffle har inget veto: kartorna spelas i den här ordningen, en per omgång."
+      },
+      "eventPage": {
+        "draftNote": "Sparas med turneringen när du skapar den."
+      },
+      "review": {
+        "unsaved": "Du har osparade ändringar. Spara dem (bracketen genereras om) eller kasta dem innan du startar."
+      },
+      "summary": {
+        "label": "Sammanfattning",
+        "untitled": "Namnlös turnering",
+        "format": "Format",
+        "series": "Serie",
+        "seriesShuffle": "Bo1 per omgång",
+        "seriesFinal": {
+          "simple": "{{format}} · stor final",
+          "double": "{{format}} · stor final, bracket-reset",
+          "none": "{{format}} · ingen stor final"
+        },
+        "teams": "Lag",
+        "teamSize": "{{size}}v{{size}}",
+        "teamsPlanned": "{{count}} planerade",
+        "matches": "Matcher",
+        "matchesAfterSignUp": "Efter anmälan",
+        "duration": "Tar ungefär",
+        "durationValue": "{{hours}} h {{minutes}} min",
+        "signUp": "Anmälan",
+        "signUpOrganizer": "Väljs av arrangören",
+        "signUpAfterCreate": "Öppnar när den skapats",
+        "players_one": "{{count}} spelare",
+        "players_other": "{{count}} spelare",
+        "maps": "Kartor",
+        "mapsRounds": "{{maps}} · {{rounds}}",
+        "notSet": "Inte angivet",
+        "signUpOpen": "Lag anmäler sig · {{size}} per lag"
+      },
+      "checklist": {
+        "title": "Innan du kan starta",
+        "met": "klart",
+        "notMet": "inte klart",
+        "name": "Ett namn",
+        "format": "Format och matchinställningar",
+        "teams": "Ett giltigt antal lag",
+        "players_one": "Minst {{count}} spelare anmäld",
+        "players_other": "Minst {{count}} spelare anmälda",
+        "mapsVeto": "7 kartor för vetot",
+        "maps": "Minst en karta",
+        "created": "Turneringen skapad",
+        "saved": "Ändringarna sparade"
+      },
+      "manualReport": {
+        "title": "Manuell rapportering",
+        "help": "Auto Tournament kan inte se det här spelet, så lagen berättar vad som hände.",
+        "seriesLength": "Serielängd",
+        "seriesLengthHelp": "Hur många spel en serie har. Laget som först vinner mer än hälften tar matchen.",
+        "gameLabel": "Kalla spelet",
+        "gameLabelHelp": "Vad det ska kallas i rapportformuläret. Lämna tomt för ”{{game}}”.",
+        "allowDraw": "Oavgjort",
+        "allowDrawHelp": "Tillåt att ett spel, och därmed en serie, slutar lika. Lämna av för en bracket, där någon måste gå vidare.",
+        "allowDrawOptions": {
+          "no": "Inte tillåtet",
+          "yes": "Tillåtet"
+        },
+        "confirmation": "Innan ett resultat gäller",
+        "confirmationHelp": {
+          "opponent": "Det andra lagets kapten måste godkänna innan matchen avgörs. Hen kan ifrågasätta i stället, vilket skickar det till en admin.",
+          "none": "En lagkaptens rapport avgör matchen direkt. Snabbt, och bara värt det där ingen troligen kommer att protestera."
+        },
+        "confirmationOptions": {
+          "opponent": "Motståndaren godkänner",
+          "none": "Rapporten gäller"
+        },
+        "confirmTimeout": "Minuter att svara",
+        "confirmTimeoutHelp": "Hur länge motståndaren har på sig innan tidsgränsen nås. 1440 är ett dygn.",
+        "confirmTimeoutNone": "Ingen tidsgräns: rapporten väntar på svar.",
+        "timeoutAction": "Vid tidsgränsen",
+        "timeoutActionHelp": {
+          "auto_confirm": "Rapporten godtas som den är, och bracketen går vidare utan att någon väntar.",
+          "escalate": "Matchen lämnas till en admin, som avgör den på sidan Tvister."
+        },
+        "timeoutActionOptions": {
+          "auto_confirm": "Godta rapporten",
+          "escalate": "Fråga en admin"
+        }
+      },
+      "signup": {
+        "how": "Hur kommer lagen in?",
+        "organizer": "Bara lag jag lägger till",
+        "open": "Lag kan anmäla sig",
+        "organizerHelp": "Du väljer varje lag. Ingen kan anmäla sig från turneringssidan.",
+        "openHelp": "Ett lags ägare eller lagkapten anmäler laget med en laguppställning från turneringssidan, och uppställningen checkar in på dagen. Du kan fortfarande lägga till lag själv nedan.",
+        "teamSize": "Spelare per lag",
+        "teamSizeHelp": "Startspelare som ett lag väljer vid anmälan (plus upp till 2 avbytare).",
+        "maxTeamsHelp": "Tomt: ingen gräns.",
+        "save": "Spara anmälningsinställningar",
+        "saved": "Anmälningsinställningarna sparade",
+        "inTournament": "I turneringen ({{count}})",
+        "signedUp": "Anmält",
+        "addedByYou": "Tillagt av dig",
+        "lineup": "{{starters}} av {{size}} startspelare",
+        "checkedIn": "{{count}} incheckade",
+        "remove": "Ta bort",
+        "removed": "{{team}} är ute ur turneringen",
+        "noneYet": "Inga lag än. De visas här när de anmäler sig.",
+        "noTeams": "Inga lag än.",
+        "addYourself": "Lägg till lag själv",
+        "pickTeams": "Välj lagen",
+        "windowTitle": "Anmälningsfönster",
+        "opensLabel": "Anmälan öppnar",
+        "opensNow": "Nu",
+        "opensLater": "Vid en viss tid",
+        "opensNowHelp": "Öppnar så fort du skapar turneringen.",
+        "opensLaterHelp": "Stängd tills dess. Sidan räknar ner till den.",
+        "closesHelp": "Laguppställningar kan ändras tills incheckningen stänger.",
+        "checkInTitle": "Incheckning",
+        "checkInHelp": "Öppnar innan turneringen startar och stänger när den startar. En startspelare som inte checkat in då ersätts av en avbytare; avbytare checkar inte in.",
+        "checkInChip_one": "{{count}} min före",
+        "checkInChip_other": "{{count}} min före",
+        "checkInOff": "Ingen incheckning",
+        "checkInLine": "Öppnar {{day}} kl. {{time}}, stänger när turneringen startar kl. {{start}}.",
+        "checkInLineNoStart_one": "Öppnar {{count}} minut före start och stänger när den startar.",
+        "checkInLineNoStart_other": "Öppnar {{count}} minuter före start och stänger när den startar.",
+        "checkInLineOff": "Ingen incheckning: alla anmälda lag spelar.",
+        "captainsLabel": "Lagkaptener kan checka in sina lagkamrater",
+        "captainsHelp": "Ägaren eller en lagkapten kan markera en startspelare som på plats. De står för det om spelaren inte dyker upp.",
+        "perMatchLabel": "Checka in igen före varje match",
+        "perMatchHelp": "Av: en incheckning före turneringen gäller alla matcher. På: spelarna checkar in när varje matchs veto öppnar.",
+        "fullTeamTitle": "Komma in på servern",
+        "fullTeamHelp": "När en matchs server är redo har varje lag så här lång tid på sig att ha ett fullt lag där, avbytare inräknade. Sedan väljer det kompletta laget: ta walkover eller spela mot det ofullständiga laget. Båda ofullständiga: en admin bestämmer.",
+        "fullTeamChip_one": "{{count}} min",
+        "fullTeamChip_other": "{{count}} min",
+        "fullTeamOff": "Ingen walkover",
+        "fullTeamLine": "Spelarna ser timern i matchrummet och i serverchatten. Avbytare räknas som redo, så ett lag kan ta in en direkt.",
+        "fullTeamLineOff": "Ingen walkover: ett ofullständigt lag spelar med färre spelare när matchen startar automatiskt (Matchinställningar)."
+      },
+      "groups": {
+        "count": "Antal grupper",
+        "through": "Går vidare från varje grupp",
+        "throughWinner": "Vinnaren",
+        "throughTop2": "Topp 2",
+        "seeding": "Hur lagen delas in i grupper",
+        "seedingSnake": "Fördelat efter seedning (orm)",
+        "seedingRandom": "Slumpmässigt",
+        "playoffs": "Slutspel",
+        "playoffMatches": "Slutspelsmatcher",
+        "ties": "Lika i en grupp: inbördes möte, sedan rundskillnad, sedan vunna rundor (som i alla mot alla). Om grupperna inte fyller en bracket går de bästa av resten också vidare.",
+        "whatPlayersGet": "Vad spelarna får",
+        "stage": "Gruppspel",
+        "stageLine": "{{groups}} grupper med {{size}}",
+        "stageNote": "{{count}} matcher · {{each}} för varje lag",
+        "playoffFinal": "De två gruppvinnarna: en final i {{format}}",
+        "playoff": {
+          "single_elimination": "{{count}} lag: single elimination",
+          "double_elimination": "{{count}} lag: double elimination"
+        },
+        "throughNote": "{{count}} lag går vidare",
+        "previewTitle": "Grupperna (fördelade efter seedning)",
+        "previewNote": "I lagförteckningens ordning (seedningen). Grupperna låses när turneringen startar.",
+        "randomNote": "Grupperna lottas slumpmässigt när turneringen startar.",
+        "groupN": "Grupp {{letter}}",
+        "groupMatches": "Gruppmatcher"
+      },
+      "stepNotes": {
+        "game": "Vad som spelas",
+        "basics": "Namn, dag, plats",
+        "format": "Hur lagen möts",
+        "teams": "Tillagda eller anmälan",
+        "schedule": "Dagar och tider",
+        "maps": "Kartpoolen",
+        "extras": "Förinställning, regler, extra",
+        "review": "Skapa den"
+      },
+      "stepOf": "Steg {{n}} av {{total}}",
+      "schedule": {
+        "timesNote": "Matcherna väntar på sin tid. Spelarna ser den på matchen, får en påminnelse och vetot öppnar i tid.",
+        "breakNote_one": "Ett lag som just spelat får en paus på {{count}} minut innan nästa veto (Matchregler).",
+        "breakNote_other": "Ett lag som just spelat får en paus på {{count}} minuter innan nästa veto (Matchregler).",
+        "noBreakNote": "Det finns ingen paus mellan ett lags matcher (Matchregler).",
+        "ownTimeNote": "Ge en match en egen tid under Hantera › Schema när bracketen är skapad.",
+        "startsTournament": "Startar turneringen · incheckningen stänger",
+        "newDay": "Ny dag",
+        "sameDay": "Samma dag",
+        "dayLabel": "Dag",
+        "startsLabel": "Startar",
+        "tournamentStarts": "Turneringen startar",
+        "autoStart": "Starta automatiskt kl. {{time}}",
+        "autoStartNoTime": "Starta automatiskt",
+        "autoStartOff": "Av: en admin startar den från Hantera.",
+        "reminders": "Påminn spelarna före start",
+        "modeTimesNote": "Varje omgång får en dag (från steg 2) och en tid. Matcherna väntar på sin tid och vetot öppnar i tid.",
+        "modeAsapNote": "Bara starten: efter det startar en match så fort båda lagen och en server är redo."
+      },
+      "extras": {
+        "gotvLabel": "Åskådare",
+        "gotvOn_one": "Åskådare kan titta i GOTV, {{count}} sekund efter (Matchregler › Åskådare).",
+        "gotvOn_other": "Åskådare kan titta i GOTV, {{count}} sekunder efter (Matchregler › Åskådare).",
+        "gotvOff": "Åskådare kan inte titta i GOTV (Matchregler › Åskådare)."
+      },
+      "startFrom": {
+        "title": "Börja från",
+        "help": "En mall fyller i format, kartor och matchinställningar. Ändra vad som helst i nästa steg.",
+        "blank": "Tom",
+        "blankHelp": "Single elimination, Bo3, webbplatsens kartpool och matchregler.",
+        "siteDefaults": "Webbplatsens standard",
+        "builtIn": "Inbyggd",
+        "saved": "Sparad",
+        "standardRules": "Standardregler",
+        "ownTemplates": "Dina egna mallar kommer från <link>Mallar och rating</link>. Spara den här turneringen som en när den är inställd."
+      },
+      "days": {
+        "title": "Dag",
+        "one": "En dag",
+        "several": "Över flera dagar",
+        "day": "Dag",
+        "firstDay": "Första dagen",
+        "lastDay": "Sista dagen",
+        "markedLegend": "En annan turnering på webbplatsen spelas den dagen"
+      },
+      "overlap": {
+        "headsUp": "Obs: {{name}} spelar också {{day}}",
+        "headsUpBody": "{{from}}–{{to}} på samma servrar. Båda kan köras: matcher väntar på en ledig server, och en spelare kan bara vara med i båda om rundtiderna inte överlappar.",
+        "openOther": "Öppna schemat för {{name}}",
+        "round": "Överlappar {{name}} ({{day}}, {{from}}–{{to}}) på samma servrar. Du kan ändå spara. En spelare i {{name}} kan inte anmäla sig här, eftersom den här omgången spelas samtidigt.",
+        "see": "Se {{name}}"
+      }
+    },
+    "startButton": {
+      "start": "Starta turnering",
+      "starting": "Startar...",
+      "startSimulation": "Starta simulering",
+      "startingSimulation": "Startar simulering..."
+    },
+    "archiveDialog": {
+      "title": "Starta en ny turnering?",
+      "message": "{{name}} arkiveras. Resultat, matcher och statistik finns kvar, och sidan behåller sin adress. Sedan skapar du nästa.",
+      "confirm": "Arkivera och starta ny",
+      "delete": "Ta bort den och starta ny",
+      "deleteHint": "Eller ta bort den: resultat, matcher och statistik försvinner med den."
+    },
+    "end": {
+      "button": "Avsluta turneringen",
+      "tooltip": "Stoppar turneringen nu utan resultat: matcher på servrarna avslutas, resten avbryts. Ingen vinnare och inga belöningar. Den kan arkiveras efteråt.",
+      "title": "Avsluta turneringen?",
+      "body": "Alla matcher som fortfarande pågår avslutas på sina servrar och resten avbryts. Ingen vinner och inga belöningar delas ut. Det går inte att ångra.",
+      "typeName": "Skriv ”{{name}}” för att bekräfta",
+      "confirm": "Avsluta turneringen",
+      "done_one": "Turneringen avslutad, {{count}} match avbruten",
+      "done_other": "Turneringen avslutad, {{count}} matcher avbrutna",
+      "failed": "Turneringen kunde inte avslutas"
+    },
+    "countdown": {
+      "days": "Startar om {{d}} d {{h}} h",
+      "hours": "Startar om {{h}} h {{m}} min",
+      "minutes": "Startar om {{m}}:{{s}}"
+    }
+  },
+  "bracket": {
+    "empty": {
+      "noBracketTitle": "Ingen bracket att visa",
+      "noBracketDescription": "Skapa en turnering och generera bracketen för att komma igång"
+    },
+    "view": {
+      "visual": "Grafisk",
+      "list": "Lista",
+      "refresh": "Uppdatera",
+      "enterFullscreen": "Helskärm",
+      "exitFullscreen": "Lämna helskärm",
+      "shuffleNoVisual": "Shuffle-turneringar har ingen grafisk bracket; använd listvyn i stället."
+    },
+    "times": {
+      "toggle": "Ange tider",
+      "startsAt": "Startar",
+      "clear": "Använd omgångens tid",
+      "save": "Spara"
+    },
+    "shuffleEmpty": {
+      "title": "Ingen bracket för shuffle-turneringar",
+      "description": "Shuffle-turneringar använder ingen fast bracket. Lagen blandas om varje omgång efter spelarnas ELO.",
+      "hint": "Använd sidan Matcher för att följa live- och kommande matcher, och sidan Topplista för spelarnas placeringar.",
+      "goToMatches": "Gå till Matcher",
+      "viewLeaderboard": "Visa topplistan"
+    },
+    "notGenerated": {
+      "title": "Bracketen är inte genererad än",
+      "description": "Generera bracketen för att skapa matcher för {{name}}",
+      "goToSettings": "Gå till turneringsinställningarna"
+    },
+    "shuffleNoVisual": {
+      "title": "Ingen grafisk bracket för shuffle-turneringar",
+      "description": "Matcherna genereras dynamiskt varje omgång efter spelarnas ELO och lagbalansering. Följ förloppet här:",
+      "listView": "Listvy",
+      "matches": "Matcher",
+      "standings": "Tabell",
+      "docsHint": "För en fullständig genomgång av hur shuffle fungerar, se guiden Shuffle-turneringar i dokumentationen."
+    },
+    "swiss": {
+      "notGenerated": "Inte genererad",
+      "generatedAfter": "Matcherna genereras när omgång {{round}} är klar",
+      "bye": "BYE",
+      "standings": "Tabell",
+      "team": "Lag",
+      "record": "Facit",
+      "buchholz": "BH",
+      "buchholzHint": "Buchholz: summan av motståndarnas vinster",
+      "roundDiff": "RD",
+      "roundDiffHint": "Rundskillnad: vunna rundor minus förlorade"
+    },
+    "slotHint": {
+      "winnerOf": "Vinnare av {{match}}",
+      "loserOf": "Förlorare av {{match}}",
+      "matchNumber": "match {{number}}"
+    },
+    "pause": {
+      "pause": "Pausa bracketen",
+      "reason": "Anledning till pausen",
+      "forMinutes": "I {{minutes}} min",
+      "untilResumed": "Tills den återupptas",
+      "paused": "Bracketen pausad: matcher som spelas spelas klart, inga nya startar",
+      "pausedUntil": "Bracketen pausad till {{time}}: matcher som spelas spelas klart, inga nya startar",
+      "resume": "Återuppta",
+      "pausedDone": "Bracketen pausad",
+      "resumedDone": "Bracketen återupptagen",
+      "failed": "Pausen kunde inte ändras"
+    }
+  },
+  "overviewPage": {
+    "tabs": {
+      "overview": "Översikt",
+      "label": "Turnering",
+      "bracket": "Bracket",
+      "matches": "Matcher",
+      "teams": "Lag",
+      "standings": "Tabell",
+      "manage": "Hantera",
+      "rules": "Regler",
+      "match": "Din match",
+      "results": "Resultat",
+      "signup": "Anmälan"
+    },
+    "status": {
+      "setup": "Kommande",
+      "inProgress": "Live",
+      "completed": "Klar",
+      "finishedOn": "Avslutad {{date}}"
+    },
+    "liveNow": "{{count}} live nu",
+    "howItsPlayed": "Hur matcherna spelas",
+    "facts": {
+      "teams": "Lag",
+      "teamsValue": "{{count}} lag",
+      "teamSize": "Lagstorlek",
+      "teamSizeValue": "{{count}} spelare",
+      "format": "Format",
+      "series": "Serie",
+      "seriesValue": "Bäst av {{count}}",
+      "mapVeto": "Kartveto",
+      "mapVetoCustom": "Egen ordning (lagkaptener)",
+      "mapVetoStandard": "Standardordning (lagkaptener)",
+      "overtime": "Övertid",
+      "overtimeEnabledUnlimited": "På, obegränsat",
+      "overtimeEnabledSegments": "På, {{count}} period(er)",
+      "overtimeDisabled": "Av (skada avgör)"
+    },
+    "mapPool": "Kartpool",
+    "rules": "Regler",
+    "fullRulebook": "Fullständigt regelverk",
+    "schedule": "Schema",
+    "yourTeam": {
+      "title": "Du spelar",
+      "onRoster": "Du är med i {{team}}.",
+      "viewTeam": "Visa ditt lag",
+      "versus": "{{team}} mot {{opponent}} · {{stage}}",
+      "tbd": "TBD",
+      "goToMatch": "Gå till din match",
+      "openMatch": "Öppna matchsidan",
+      "state": {
+        "live": "Live",
+        "loaded": "Anslut nu",
+        "upNext": "Härnäst",
+        "finished": "Klar",
+        "eliminated": "Utslagen",
+        "waiting": "Väntar på nästa match",
+        "registered": "Anmäld",
+        "won": "Vinnare",
+        "out": "Ute"
+      }
+    },
+    "prizes": {
+      "title": "Priser",
+      "note": "Bestäms av arrangören. Prispengar, hårdvara eller äran."
+    },
+    "requirements": {
+      "title": "För att delta",
+      "steamLinkedOk": "Steam-kontot är kopplat.",
+      "steamLinkedNeutral": "Logga in med Steam för att delta.",
+      "onRosterOk": "Du finns i en laguppställning i turneringen.",
+      "onRosterNeutral": "Var med i en laguppställning innan turneringen startar."
+    },
+    "loadError": "Turneringen kunde inte laddas.",
+    "notFoundTitle": "Turneringen hittades inte",
+    "notFoundDescription": "Turneringen finns inte eller har inte skapats än.",
+    "loading": "Laddar…",
+    "about": "Om",
+    "liveStripLabel": "Live nu",
+    "bracketTab": {
+      "loadError": "Bracketen kunde inte laddas.",
+      "emptyTitle": "Ingen bracket än",
+      "emptyDescription": "Bracketen visas här när arrangören startar turneringen.",
+      "shuffleTitle": "Ingen bracket i en shuffle",
+      "shuffleDescription": "Lagen lottas om varje omgång, så det finns ingen bracket. Matcher listar varje omgång, och Tabell rankar spelarna."
+    },
+    "matchesTab": {
+      "loadError": "Matcherna kunde inte laddas.",
+      "emptyTitle": "Inga matcher än",
+      "emptyDescription": "Matcherna visas här när turneringen startar.",
+      "live": "Live nu",
+      "upcoming": "Härnäst",
+      "results": "Resultat",
+      "vs": "mot",
+      "status": {
+        "live": "Live",
+        "loaded": "Startar",
+        "final": "Slut",
+        "upcoming": "Kommande"
+      },
+      "emptyDescriptionAt": "Matcherna visas här när turneringen startar: {{when}}."
+    },
+    "teamsTab": {
+      "shuffleTitle": "Lagen byts varje omgång",
+      "shuffleDescription": "En shuffle-turnering lottar nya lag varje omgång bland de registrerade spelarna. Tabell rankar spelarna.",
+      "emptyTitle": "Inga lag än",
+      "emptyDescription": "Lagen visas här när arrangören lägger till dem.",
+      "yours": "Ditt lag",
+      "record": "{{wins}}–{{losses}}",
+      "emptySignupOpen": "Anmälan är öppen. Lagen visas här när de anmäler sig.",
+      "signUp": "Anmäl ditt lag"
+    },
+    "allMatches": "Alla matcher",
+    "keyDates": {
+      "starts": "Startar",
+      "lastOnSchedule": "Sist på schemat",
+      "teams": "Lag"
+    },
+    "mapPoolCount": "Kartpool · {{count}} kartor",
+    "mapPoolNote": "Lagkaptenerna bannar och pickar bland dessa före varje serie.",
+    "addToCalendar": "Lägg till i kalendern",
+    "scheduleSoon": "Arrangören har inte publicerat schemat än.",
+    "checkInWindow": "Incheckning",
+    "mapPoolSoonTitle": "Kartpool",
+    "mapPoolSoon": "Arrangören har inte valt kartorna än.",
+    "adminBanner": "Du är admin för den här turneringen. Den körs under Hantera; den här sidan är vad spelarna ser.",
+    "manageTournament": "Hantera turneringen",
+    "fullBracket": "Hela bracketen",
+    "allRules": "Alla regler",
+    "archivedTitle": "Turneringen är arkiverad",
+    "archivedBody": "En nyare turnering har ersatt den. Resultat, bracket och tabell finns kvar här.",
+    "openCurrent": "Öppna den aktuella turneringen",
+    "allTournaments": "Alla turneringar",
+    "roundN": "Omgång {{n}}",
+    "finalRound": "Final",
+    "roundStarts": "{{round}} · vetot öppnar {{time}}"
+  },
+  "roundStatusCard": {
+    "roundOf": "Omgång {{current}} av {{total}}",
+    "complete": "Klar",
+    "inProgress": "Pågår",
+    "matchProgress": "Matchförlopp",
+    "completedOf": "{{completed}} / {{total}} klara",
+    "completedCount": "{{count}} klara",
+    "playingCount": "{{count}} spelar",
+    "pendingCount": "{{count}} väntar"
+  },
+  "yourMatch": {
+    "loading": "Laddar din match",
+    "bestOf": "Bäst av {{count}}",
+    "mapsScore": "Kartor {{us}} – {{them}}",
+    "inServer": "På servern",
+    "notJoined": "Inte ansluten",
+    "waitingForPlayers": "Väntar på spelare",
+    "inServerCount": "{{count}} av {{expected}} på servern. Matchen startar när alla är redo.",
+    "inServerCountBots": "{{count}} på servern. Bottar tar de tomma platserna; matchen startar när alla här är redo.",
+    "live": "Live",
+    "round": "Runda {{n}}",
+    "vetoTitle": "Kartveto pågår",
+    "finished": "Matchen är slut",
+    "mapOf": "Karta {{n}} av {{total}}",
+    "sideYou": "{{side}} · du",
+    "rejoin": "Tappat anslutningen? Anslut igen med samma knapp: din plats finns kvar.",
+    "outcome": {
+      "won": "Ni vann {{us}}–{{them}} mot {{opponent}}",
+      "lost": "Ni förlorade {{us}}–{{them}} mot {{opponent}}",
+      "draw": "{{us}}–{{them}} mot {{opponent}}"
+    },
+    "ready": "Redo",
+    "waitingForServer": "Väntar på en server",
+    "vetoDoneChip": "Vetot klart · {{map}}",
+    "waitingForServerBody": "En server tilldelas så fort en är ledig. Du får en avisering och sidan uppdateras av sig själv.",
+    "mapDrawnChip": "Karta lottad · {{map}}",
+    "notYet": "Inte än"
+  },
+  "results": {
+    "finalStandings": "Sluttabell",
+    "awards": "Utmärkelser",
+    "players": "Spelare",
+    "matchesAndDemos": "Matcher och demos",
+    "place": "#{{n}}",
+    "championsOf": "{{name}} · Mästare",
+    "showAll": "Alla {{count}} spelare",
+    "showFewer": "Visa färre",
+    "mapResults": "Kartresultat",
+    "col": {
+      "player": "Spelare",
+      "team": "Lag",
+      "rating": "Rating ±",
+      "hltv": "Prestation"
+    },
+    "award": {
+      "mostKills": "Flest kills",
+      "bestAdr": "Högst ADR",
+      "bestHeadshots": "Bäst headshot-%",
+      "mostFlashAssists": "Flest flash-assists",
+      "mostUtility": "Mest utility-skada",
+      "biggestGain": "Störst ratingökning",
+      "bestPlayer": "Bästa spelare",
+      "mostClutches": "Flest clutchar",
+      "mostTeamFlashes": "Flest bländade lagkamrater",
+      "mostMoney": "Spenderade mest pengar"
+    },
+    "awardValue": {
+      "mostKills": "{{value}} kills",
+      "bestAdr": "{{value}} ADR",
+      "bestHeadshots": "{{value}} % headshots",
+      "mostFlashAssists": "{{value}} flash-assists",
+      "mostUtility": "{{value}} utility-skada",
+      "biggestGain": "+{{value}} rating",
+      "bestPlayer": "rating {{value}}",
+      "mostTeamFlashes": "{{value}} bländade lagkamrater",
+      "mostClutches": "{{value}} vunna clutchar",
+      "mostMoney": "{{value}} spenderat"
+    },
+    "wonFinal": "Vann finalen med {{a}}–{{b}} mot {{opponent}}",
+    "champions": "Mästare",
+    "allMatches": "Alla {{count}} matcher",
+    "demosAndReel": "Demos och höjdpunktsfilm",
+    "stage": {
+      "final": "Final",
+      "semi": "Semifinal",
+      "round": "Omgång {{n}}"
+    }
+  },
+  "signup": {
+    "cta": "Anmäl ditt lag",
+    "keyDates": {
+      "closes": "Anmälan stänger",
+      "checkIn": "Incheckning",
+      "spots": "Lagplatser",
+      "left": "{{count}} kvar",
+      "full": "Fullt",
+      "of": "av {{max}}"
+    },
+    "ladder": {
+      "title": "Lag efter rating",
+      "yourPlace": "Ni är {{place}} av {{count}}"
+    },
+    "todo": {
+      "signedUp": "Anmält",
+      "beforeTheDay": "Före dagen",
+      "toFix": "{{count}} att åtgärda",
+      "lineup": "Laguppställning",
+      "allReady": "Alla redo",
+      "notSet": "Inte angivet",
+      "showFixes": "Visa vad som ska åtgärdas",
+      "fixNote": "Åtgärda det före incheckningen, annars kan spelaren inte vara med."
+    },
+    "yourLineup": "Din laguppställning",
+    "change": "Ändra",
+    "withdraw": "Dra tillbaka",
+    "withdrawTitle": "Dra tillbaka {{team}}?",
+    "withdrawBody": "Laget lämnar turneringen och platsen öppnas för ett annat lag.",
+    "sub": "Avbytare",
+    "ready": "Redo",
+    "problem": {
+      "noAccount": "Har inte loggat in på Auto Tournament än",
+      "noGame": "Spelet saknas i profilen"
+    },
+    "problemShort": {
+      "noAccount": "inte inloggad",
+      "noGame": "behöver spelet"
+    },
+    "checkIn": {
+      "open": "Incheckningen är öppen",
+      "closesIn": "Stänger {{time}} · {{left}} kvar",
+      "imHere": "Jag är här",
+      "done": "Du är incheckad",
+      "teamTitle": "{{team}} checkar in",
+      "keepOpen": "Ha sidan öppen. Den säger till när din match är redo.",
+      "firstMatchIn": "Första matchen om",
+      "count": "{{in}} av {{total}}",
+      "you": "du",
+      "everyone": "Alla",
+      "soundOn": "Ljud på: du hör när det är dags",
+      "soundOff": "Ljud av",
+      "checkInFor": "Checka in {{name}}",
+      "checkInShort": "Checka in"
+    },
+    "noTeamTitle": "Inget lag att anmäla",
+    "noTeamBody": "Bara ett lags ägare eller lagkapten kan anmäla det. Skapa ett lag, eller fråga din lagkapten.",
+    "goToTeams": "Lag",
+    "steps": {
+      "lineup": "Laguppställning",
+      "review": "Granska"
+    },
+    "whichTeam": "Vilket lag anmäler du?",
+    "role": {
+      "owner": "Du äger det",
+      "captain": "Du är lagkapten"
+    },
+    "playerCount": "{{count}} spelare",
+    "whoPlays": "Vilka spelar?",
+    "whoPlaysHint": "{{count}} startspelare · upp till {{subs}} avbytare",
+    "rating": "Rating {{rating}}",
+    "slotFor": "Roll för {{name}}",
+    "starter": "Startspelare",
+    "out": "Ute",
+    "starters": "Startspelare",
+    "subs": "Avbytare",
+    "lineupRating": "Uppställningens rating",
+    "missingAccounts": "{{names}} behöver fortfarande logga in.",
+    "fixBeforeCheckIn": "Du kan anmäla nu; åtgärda det före incheckningen.",
+    "saveLineup": "Spara laguppställningen",
+    "nextReview": "Nästa: granska",
+    "readyToSend": "Redo att skicka?",
+    "next": {
+      "lastSpot": "Tar sista platsen",
+      "takesSpot": "Tar en plats",
+      "spotsLeft": "{{count}} kvar före den här",
+      "checkIn": "Checka in på dagen",
+      "firstMatch": "Första matchen",
+      "spotOf": "{{n}} av {{max}}"
+    },
+    "vouch": "Jag bekräftar att varje spelare i uppställningen har läst",
+    "vouchNote": "Jag anmäler dem för deras räkning. Om en spelare bryter mot reglerna kan hela laget straffas eller diskvalificeras.",
+    "send": "Anmäl {{team}}",
+    "rulesLink": "reglerna",
+    "ownerTag": "ägare",
+    "captainTag": "lagkapten",
+    "check": {
+      "steam": "Steam",
+      "game": "{{game}}",
+      "noGame": "{{game}} saknas",
+      "steamShort": "Steam"
+    },
+    "remind": "Påminn",
+    "reminded": "Påminnelse skickad i lagchatten",
+    "done": "Klart",
+    "lineupGap": "En startspelare lämnade din uppställning (avstängd eller borttagen). Dina matcher väntar till {{time}}: välj en avbytare innan dess, annars kliver den första avbytaren in. Utan avbytare spelar ni med en spelare mindre.",
+    "pickSub": "Välj en avbytare",
+    "title": "Anmäl ditt lag",
+    "editTitle": "Ändra din laguppställning",
+    "stepsLabel": "Steg",
+    "changeUntil": "Du kan ändra uppställningen tills incheckningen stänger, {{when}}.",
+    "counts": "{{starters}} av {{teamSize}} startspelare · {{subs}} av {{maxSubs}} avbytare",
+    "lineupRatingValue": "Uppställningens rating {{rating}}",
+    "missingGame": "{{names}} behöver {{game}} i sin profil.",
+    "subsLine": "avbytare: {{names}}",
+    "overlap": {
+      "title": "Du kan inte anmäla dig till den här",
+      "body": "Du är med i {{name}}, som har en match {{when}}, samtidigt som den här turneringen. Du kan vara med i båda turneringarna när matchtiderna inte överlappar.",
+      "open": "Öppna {{name}}"
+    },
+    "youreIn": {
+      "eyebrow": "{{team}} · anmält",
+      "title": "Ni är med!",
+      "body": "Det här behöver ditt lag veta innan turneringen startar. Vi har skickat samma lista till ägaren och lagkaptenerna.",
+      "openLineup": "Öppna din laguppställning",
+      "listTitle": "Innan turneringen startar",
+      "checkIn": "Checka in {{when}}–{{to}}",
+      "checkInBodyCaptains": "Varje startspelare checkar in på den här sidan, eller så checkar en lagkapten in dem. Incheckningen stänger när turneringen startar.",
+      "checkInBody": "Varje startspelare checkar in på den här sidan. Incheckningen stänger när turneringen startar.",
+      "subs": "Avbytare behöver inte checka in",
+      "subsBody": "De räknas som på plats och redo, så en match väntar aldrig på dem.",
+      "replaced": "En startspelare som inte checkat in ersätts",
+      "replacedBody": "När incheckningen stänger tar en avbytare platsen för varje startspelare som inte checkat in. Ingen avbytare kvar: ni spelar med en spelare mindre.",
+      "fullTeam_one": "{{count}} minut att få in laget på servern",
+      "fullTeam_other": "{{count}} minuter att få in laget på servern",
+      "fullTeamBody_one": "När er server är redo har laget {{count}} minut på sig att ha ett fullt lag där, avbytare inräknade. Därefter kan det andra laget ta walkover eller välja att spela mot er med färre spelare.",
+      "fullTeamBody_other": "När er server är redo har laget {{count}} minuter på sig att ha ett fullt lag där, avbytare inräknade. Därefter kan det andra laget ta walkover eller välja att spela mot er med färre spelare.",
+      "ready": "Var redo före varje match",
+      "readyBodyVeto_one": "Vetot öppnar {{count}} minut före varje match. Ha sidan öppen: den säger till när din nästa match är redo.",
+      "readyBodyVeto_other": "Vetot öppnar {{count}} minuter före varje match. Ha sidan öppen: den säger till när din nästa match är redo.",
+      "readyBody": "Ha sidan öppen: den säger till när din nästa match är redo.",
+      "eachMatch": "Checka in igen före varje match",
+      "eachMatchBody": "Före varje match checkar varje startspelare in i matchrummet, eller så gör en lagkapten det åt dem. En startspelare som inte gör det byts mot en avbytare."
+    }
+  },
+  "bracketCards": {
+    "you": "Du",
+    "open": "Öppna {{a}} mot {{b}}",
+    "upper": "Övre bracket",
+    "lower": "Nedre bracket",
+    "grandFinal": "Stora finalen",
+    "thirdPlace": "Tredjeplats",
+    "live": "Live",
+    "veto": "Veto",
+    "done": "Klar",
+    "mapOf": "Karta {{n}} av {{total}}",
+    "banning": "Bannar kartor",
+    "bestOf_one": "Bäst av {{count}}",
+    "bestOf_other": "Bäst av {{count}}",
+    "winnerOf": "Vinnare {{match}}",
+    "loserOf": "Förlorare {{match}}",
+    "tbd": "Inte bestämt än",
+    "liveCount_one": "{{count}} live",
+    "liveCount_other": "{{count}} live",
+    "matchCount_one": "{{count}} match",
+    "matchCount_other": "{{count}} matcher"
+  },
+  "placement": {
+    "outTitle": "Din resa i {{tournament}} är över",
+    "wonTitle": "Ni vann {{tournament}}!",
+    "yourTeamPlaced": "{{team}} placerade sig",
+    "yourTeam": "Ditt lag",
+    "outBody": "Ditt lag är ute ur turneringen, så du har inga fler matcher. Följ resten i bracketen.",
+    "wonBody": "Ditt lag vann turneringen. Bra spelat!",
+    "close": "Stäng",
+    "seeBracket": "Se bracketen",
+    "outBodyPlay": "Du har inga fler matcher i den här turneringen. Tack för att du spelade!",
+    "championsEyebrow": "Mästare",
+    "teamPlaced": "{{team}} placerade sig",
+    "wonTitleShort": "Ni vann {{tournament}}!",
+    "wonFinalBody": "{{team}} vann finalen {{score}}. Bra spelat!",
+    "playHint": "Sugen på en match till? Matchmaking ger dig en match inom en minut eller två."
+  },
+  "advance": {
+    "title": "Snyggt, ni är kvar i spel!",
+    "opponent": "Härnäst: {{opponent}}.",
+    "feederTitle": "Din nästa motståndare kommer från",
+    "vs": "mot",
+    "tbd": "TBD",
+    "feederNotStarted": "Den matchen har inte startat än.",
+    "feederMinutes_one": "Ungefär {{count}} minut kvar.",
+    "feederMinutes_other": "Ungefär {{count}} minuter kvar.",
+    "feederAlmost": "Nästan klart.",
+    "watch": "Titta live",
+    "wonEyebrow": "{{stage}} vunnen {{score}}"
+  },
+  "whatsNext": {
+    "eyebrow": "Vad händer nu",
+    "champions": "Mästare",
+    "outTitle": "Ditt lag är ute. Ni placerade er som {{place}}",
+    "outBody": "Det var din sista match i {{tournament}}. Bra spelat! Vill du fortsätta spela? Matchmaking hittar en match med andra spelare åt dig direkt.",
+    "playMatchmaking": "Spela matchmaking",
+    "watchLive": "Titta på en livematch",
+    "nextMatch": "{{stage}} mot {{opponent}}",
+    "nextMatchReady": "Din match är redo: öppna matchrummet för att ansluta.",
+    "nextMatchSoon": "Din nästa match är bestämd. Efter en kort paus öppnar den, och vi pingar dig. Menyraden visar nedräkningen var du än är.",
+    "openMatchRoom": "Öppna matchrummet",
+    "throughTo": "Ni är vidare till {{stage}}",
+    "waitingTitle": "Väntar på din nästa motståndare",
+    "waitingBody": "Din motståndare kommer från en match som fortfarande spelas. När den är slut blir det en kort paus, sedan öppnar din nästa match. Vi pingar dig.",
+    "watchOpponent": "Titta på din nästa motståndare live",
+    "shuffleTitle": "Nästa omgång: nya lag",
+    "shuffleBody": "När alla matcher i omgången är klara lottas nya lag och din nästa match visas här.",
+    "stayHere": "Stanna på sidan: den uppdateras av sig själv.",
+    "openTournament": "Öppna turneringen",
+    "winsToTitle_one": "En vinst till för titeln",
+    "winsToTitle_other": "{{count}} vinster till för titeln",
+    "shuffleDoneTitle": "Det var sista omgången",
+    "shuffleDoneBody": "Shufflen är över. Öppna turneringen för tabellen.",
+    "youWon": "Ni vann {{a}}–{{b}} mot {{opponent}}.",
+    "youLost": "Ni förlorade {{a}}–{{b}} mot {{opponent}}.",
+    "resultPlaced": "{{result}} Ni placerade er som {{place}}.",
+    "nextUp": "Nästa: {{match}}."
+  },
+  "navStatus": {
+    "placed": "Placerade",
+    "placedPlay": "{{place}} · Spela matchmaking",
+    "waiting": "Väntar på motståndare",
+    "vetoIn": "Veto om",
+    "vetoOpening": "Vetot öppnar",
+    "matchIn": "Match om",
+    "matchLoading": "Matchen laddas",
+    "shuffleRound": "Omgång {{round}} · Spelar",
+    "shuffleSittingOut": "Omgång {{round}} · Står över",
+    "placedPlayLine": "Placerade {{place}} · Spela matchmaking",
+    "placedLine": "Placerade {{place}}",
+    "waitingOpponent": "Väntar på motståndare",
+    "aboutMinutes_one": "~{{count}} min",
+    "aboutMinutes_other": "~{{count}} min"
+  },
+  "shuffleJoin": {
+    "title": "Gå med i shufflen",
+    "body": "Inget lag behövs: anmäl dig själv. Varje omgång lottar plattformen nya, jämna lag.",
+    "youreIn": "Du är med",
+    "inBody": "När turneringen startar lottas ditt första lag och din match visas här. Ha sidan öppen.",
+    "join": "Gå med",
+    "leave": "Lämna",
+    "full": "Fullt",
+    "signInToJoin": "Logga in för att gå med",
+    "count_one": "{{count}} spelare med",
+    "count_other": "{{count}} spelare med",
+    "countOf_one": "{{count}} av {{spots}} spelare med",
+    "countOf_other": "{{count}} av {{spots}} spelare med",
+    "playingTitle": "Du spelar nu",
+    "playingBody": "Anslut till servern med ditt lag. Nästa omgång lottas när alla matcher i den här är klara.",
+    "sittingOutTitle": "Du står över den här omgången",
+    "sittingOutBody": "Det finns inte tillräckligt många spelare för alla lag den här omgången. Du är med i lottningen för omgång {{next}}, och de som spelat mest står över först.",
+    "goToMatch": "Gå till match",
+    "tagPlaying": "Spelar",
+    "tagSittingOut": "Står över",
+    "roundHeading": "Omgång {{round}}",
+    "versus": "mot",
+    "sittingOutList": "Står över: {{names}}",
+    "status": {
+      "live": "Live",
+      "done": "Klar",
+      "waiting": "Startar"
+    },
+    "finishedTitle": "Shufflen är över",
+    "finishedBody_one": "Omgången är spelad. Bra spelat!",
+    "finishedBody_other": "Alla {{count}} omgångar är spelade. Bra spelat!",
+    "roundOf": "Omgång {{round}} av {{total}}",
+    "roundsCount_one": "{{count}} omgång",
+    "roundsCount_other": "{{count}} omgångar",
+    "now": "Nu",
+    "tagLeft": "Lämnat",
+    "markOut": "Markera ute",
+    "markIn": "Tillbaka",
+    "roundShort": "Omgång {{round}}",
+    "playedTitle": "Din match i omgång {{round}} är klar",
+    "playedBody": "Omgång {{next}} lottas när de andra matcherna är klara. Stanna på sidan: den uppdateras av sig själv.",
+    "sittingOutBodyCounts_one": "Det finns {{players}} spelare för {{size}}v{{size2}}, så {{count}} vilar varje omgång. De som spelat mest vilar först: du är med i nästa lottning.",
+    "sittingOutBodyCounts_other": "Det finns {{players}} spelare för {{size}}v{{size2}}, så {{count}} vilar varje omgång. De som spelat mest vilar först: du är med i nästa lottning.",
+    "playedBodyLeft_one": "Väntar på {{count}} match till. Omgång {{next}} lottas när den är klar; din nästa match visas här och du får en avisering.",
+    "playedBodyLeft_other": "Väntar på {{count}} matcher till. Omgång {{next}} lottas när de är klara; din nästa match visas här och du får en avisering.",
+    "joinedByMistake": "Gick med av misstag?",
+    "breakTitle": "Paus · omgång {{round}} startar kl. {{time}}",
+    "noShowTitle": "Du är utanför nästa lottningar",
+    "noShowBody": "Du anslöt aldrig till din match, så nästa omgångar lottas utan dig. Tillbaka vid datorn? Säg till så är du med i nästa lottning.",
+    "backIn": "Jag är tillbaka",
+    "tagNoShow": "Kom inte"
+  },
+  "liveOverview": {
+    "roundOf": "Omgång {{round}} av {{total}}",
+    "liveCount": "{{count}} live nu",
+    "eta": {
+      "nextRoundAbout": "Nästa omgång ungefär {{time}}",
+      "nextRoundAt": "Nästa omgång kl. {{time}}",
+      "finalEnds": "Sista omgången: slutar ungefär {{time}}",
+      "endsAbout": "slutar ungefär {{time}}"
+    },
+    "hero": {
+      "playingTitle": "Du spelar nu",
+      "playingBody": "{{us}} mot {{them}}{{map}}. Anslut från matchrummet.",
+      "joiningTitle": "Anslut till servern",
+      "joiningBody": "{{us}} mot {{them}}{{map}}. Matchen startar när alla är redo.",
+      "vetoTitle": "Ditt kartveto är öppet",
+      "vetoBody": "Banna och picka kartorna mot {{them}} i matchrummet.",
+      "waitingTitle": "Väntar på din nästa motståndare",
+      "waitingBody": "De kommer från en match som fortfarande spelas. Efter en kort paus öppnar vetot och du får en avisering.",
+      "notStartedTitle": "Nästa: {{them}}",
+      "notStartedBody": "Din match öppnar när omgången startar. Sidan uppdateras av sig själv.",
+      "outTitle": "Ditt lag är ute. Ni placerade er som {{place}}",
+      "outBody": "Det var din sista match. Bra spelat! Matchmaking är öppet om du vill fortsätta spela.",
+      "wonTitle": "Ni vann turneringen!",
+      "wonBody": "Bra spelat. Ditt pris finns i inventariet.",
+      "spectatorTitle": "{{count}} matcher live",
+      "spectatorTitleOne": "1 match live",
+      "spectatorIdleTitle": "Mellan omgångar",
+      "spectatorBody": "Öppna en match för att se ställningen, kartorna och vilka som spelar.",
+      "openMatchRoom": "Öppna matchrummet",
+      "openVeto": "Öppna vetot",
+      "watchLive": "Titta på en livematch",
+      "playMatchmaking": "Spela matchmaking",
+      "yourMatch": "Din match",
+      "opponentFrom": "Din motståndare kommer från",
+      "minutesLeft": "ungefär {{count}} min kvar",
+      "winsToTitle_one": "en vinst till för titeln",
+      "winsToTitle_other": "{{count}} vinster till för titeln",
+      "waitingServerTitle": "Väntar på en server",
+      "waitingServerBody": "{{us}} mot {{them}}{{map}}. En server tilldelas så fort en är ledig; du får en avisering.",
+      "wonStage": "{{stage}} vunnen {{score}}",
+      "stageNext": "{{stage}} härnäst",
+      "faceWinnerOf": "{{us}} möter vinnaren av {{a}} mot {{b}} ({{state}}). Vetot öppnar när den matchen är slut; du får en avisering.",
+      "feederLive": "{{score}}, karta {{map}} live",
+      "feederNotStarted": "inte startad än",
+      "vetoOpens": "Vetot öppnar",
+      "inAboutMinutes_one": "om ~{{count}} min",
+      "inAboutMinutes_other": "om ~{{count}} min",
+      "later": "senare",
+      "afterBreak": "efter en kort paus",
+      "youAre": "ni har {{record}}",
+      "nextRoundDrawn": "Omgång {{round}} lottas härnäst",
+      "lastRoundPlaying": "Sista omgången spelas",
+      "betweenBody": "Din match i den här omgången är klar. Nästa omgång lottas när de andra matcherna är klara; din match visas här och du får en avisering.",
+      "vetoSoonTitle": "Ditt kartveto öppnar kl. {{time}}",
+      "vetoSoonBody": "En kort paus efter din senaste match. Du får en avisering när vetot mot {{them}} öppnar."
+    },
+    "schedule": "Schema",
+    "bracket": "Bracket",
+    "round": "Omgång {{n}}",
+    "final": "Final",
+    "state": {
+      "now": "Nu",
+      "next": "Nästa",
+      "later": "Senare",
+      "done": "✓ Klar",
+      "live": "Live",
+      "upcoming": "Kommande"
+    },
+    "thisRound": "Omgång {{n}}",
+    "earlier": "Tidigare omgångar",
+    "standings": "Tabell",
+    "teams": "Lag",
+    "wl": "V–F",
+    "rounds": "+/−",
+    "ties": {
+      "round_robin": "Lika: inbördes möte, sedan rundskillnad, sedan vunna rundor.",
+      "swiss": "Lika: hur starka motståndarna var (Buchholz: deras vinster sammanlagt), sedan rundskillnad.",
+      "elim": "Ordnat efter vinster. Två förluster och laget är ute.",
+      "singleElim": "Ordnat efter vinster. En förlust och laget är ute.",
+      "doubleElim": "Ordnat efter vinster. Två förluster och laget är ute.",
+      "groups": "Lika i en grupp: inbördes möte, sedan rundskillnad, sedan vunna rundor."
+    },
+    "players": {
+      "title": "Spelare · efter rating",
+      "find": "Hitta en spelare",
+      "export": "Exportera",
+      "all": "Alla {{count}} spelare",
+      "player": "Spelare",
+      "team": "Lag",
+      "rating": "Rating",
+      "change": "±",
+      "kd": "K / D",
+      "adr": "ADR",
+      "winRate": "Vinstandel",
+      "none": "Inga spelare matchar."
+    }
+  },
+  "matchesCards": {
+    "show": "Visa",
+    "filterAll": "Alla {{count}}",
+    "filterLive": "Live {{count}}",
+    "filterUpcoming": "Kommande {{count}}",
+    "done": "Klar",
+    "afterOvertime": "efter övertid",
+    "startsAt": "startar {{time}} · vetot öppnar {{veto}}",
+    "yourMatch": "Din match",
+    "placeholderTbd": "TBD",
+    "placeholderVeto": "Kartveto",
+    "placeholderVetoAt": "Veto {{time}}"
+  },
+  "standingsTab": {
+    "champions": "Mästare",
+    "championBadge": "MÄSTARE",
+    "vs": "mot",
+    "rounds": "Rundor",
+    "form": "Form",
+    "intro": {
+      "round_robin": "Alla mot alla: varje lag möter alla andra lag en gång.",
+      "swiss": "Schweizersystem: varje omgång paras lag med samma facit.",
+      "single": "Single elimination: en förlust och laget är ute.",
+      "double": "Double elimination: två förluster och laget är ute.",
+      "groups": "Grupper, sedan slutspel: varje lag möter de andra i sin grupp en gång; de bästa går vidare till slutspelet."
+    }
+  },
+  "teamsCards": {
+    "subs": "Avbytare: {{names}}"
+  },
+  "rulesTab": {
+    "atAGlance": "I korthet",
+    "onThisPage": "På den här sidan",
+    "fromSettings": "från turneringsinställningarna, alltid aktuellt",
+    "organizer": "Arrangörens regler",
+    "facts": {
+      "map": "Karta",
+      "firstTo": "först till {{count}}",
+      "noOvertime": "Ingen",
+      "overtimeSegments_one": "1, sedan skada",
+      "overtimeSegments_other": "{{count}}, sedan skada",
+      "overtimeUnlimited": "Så många som behövs",
+      "thenDamage": "6 rundor vardera, först till 4",
+      "mapCount_one": "{{count}} karta",
+      "mapCount_other": "{{count}} kartor"
+    },
+    "format": {
+      "title": "Så fungerar formatet",
+      "navTitle": "Formatet",
+      "swiss_one": "Alla spelar {{count}} omgång, mot ett lag med samma facit. Inga returmöten. Rankas efter vinster, sedan särskiljning nedan.",
+      "swiss_other": "Alla spelar {{count}} omgångar, var och en mot ett lag med samma facit. Inga returmöten. Rankas efter vinster, sedan särskiljning nedan.",
+      "single_elimination": "En förlust och du är ute. Bracketen går fram till en final.",
+      "double_elimination": "En övre och en nedre bracket. Två förluster och du är ute.",
+      "round_robin": "Alla möter alla en gång. Rankas efter vinster, sedan särskiljning nedan.",
+      "shuffle": "Lagen lottas på nytt varje omgång bland de anmälda spelarna. Spelarna rankas efter vinster.",
+      "matches": "Varje match är {{series}} på MR{{mr}}-kartor. Övertid: {{overtime}}.",
+      "damage": "Om en karta fortfarande är lika efter sista övertiden vinner laget med mest total skada."
+    }
+  },
+  "liveMatch": {
+    "updatesEveryRound": "Uppdateras varje runda",
+    "chat": "Matchchatt",
+    "system": "Auto Tournament",
+    "noMessages": "Inga meddelanden än. Säg gl hf!",
+    "chatSignIn": "Logga in som spelare i matchen för att läsa och skriva här.",
+    "messageLabel": "Meddelande till båda lagen och admins",
+    "send": "Skicka",
+    "callAdmin": "Kalla på en admin",
+    "adminCalled": "En admin är på väg",
+    "joinTitle": "Anslut till servern: {{map}}",
+    "warmup": "Uppvärmning · anslut nu",
+    "isLive": "{{map}} är live",
+    "players": "Spelare",
+    "playersOnMap": "Spelare · {{map}}",
+    "noEconomy": "Sorterat efter rating. Inga pengar eller utrustning: inget som avslöjar ett lags ekonomi.",
+    "yourTeam": "Ditt lag",
+    "backToTournament": "Tillbaka till turneringen",
+    "manage": "Hantera matchen",
+    "finishedAt": "avslutad {{when}}",
+    "delayedNote_one": "Visar vad GOTV visar, {{count}} sekund efter.",
+    "delayedNote_other": "Visar vad GOTV visar, {{count}} s efter."
+  },
+  "preStart": {
+    "open": "Anmälan är öppen",
+    "openCloses": "Anmälan är öppen · stänger {{when}}",
+    "closed": "Anmälan är stängd",
+    "notOpenTitle": "Anmälan är inte öppen",
+    "fullTitle": "Alla platser är tagna",
+    "spotsLeft_one": "{{count}} av {{max}} platser kvar. Lagkaptenerna väljer startspelare och avbytare.",
+    "spotsLeft_other": "{{count}} av {{max}} platser kvar. Lagkaptenerna väljer startspelare och avbytare.",
+    "byOrganizer": "Arrangören lägger till lagen.",
+    "captainsPick": "Lagkaptenerna väljer startspelare och avbytare.",
+    "startsIn": "Startar om",
+    "allRules": "Alla regler och priser",
+    "signedUpEyebrow": "{{team}} · anmält",
+    "inTitle": "Ni är med",
+    "inToFix_one": "Ni är med. En sak att åtgärda",
+    "inToFix_other": "Ni är med. {{count}} saker att åtgärda",
+    "fixBefore": "Åtgärda det före incheckningen {{when}}, annars kan spelaren inte ansluta till servern.",
+    "checkInOn": "Checka in {{when}}. En startspelare som inte checkat in vid start ersätts av en avbytare.",
+    "allSet": "Alla är redo. Schemat visar när det börjar.",
+    "checkInOpens": "Incheckningen öppnar",
+    "openLineup": "Öppna din laguppställning",
+    "yourSignup": "Din anmälan",
+    "spotOf": "plats {{place}} av {{max}}",
+    "lineupCount": "Laguppställning · {{starters}} startspelare, {{subs}} avbytare",
+    "fixBeforeCheckIn": "Åtgärda före incheckningen",
+    "leave": "Lämna turneringen",
+    "withdrawHint": "Kan ni inte? Att dra sig ur frigör platsen för ett annat lag.",
+    "opensTitle": "Anmälan öppnar {{when}}",
+    "opensIn": "Öppnar om {{time}}."
+  },
+  "shuffleOverview": {
+    "yourMatchLive": "din match är live",
+    "yourMatchReady": "din match är redo",
+    "yourMatchDone": "din match är klar",
+    "nextDraw": "Nästa lottning",
+    "round": "Omgång {{n}}",
+    "whenRoundEnds": "när omgångens matcher är klara",
+    "oneMapPerRound": "En karta per omgång · nya lag varje omgång",
+    "sittingOut": "Står över:",
+    "firstNextRound": "först i nästa omgång",
+    "players": "Spelare",
+    "markOutHint": "Markera en spelare som gått som ute; hen står över tills du markerar hen som tillbaka."
+  },
+  "checkIn": {
+    "areYouHere": "Är du här?",
+    "teamCount": "{{team}} checkar in: {{in}} av {{total}}. En startspelare som inte checkat in vid start ersätts av en avbytare.",
+    "soundOn": "♪ Ljud på",
+    "firstVeto_one": "Ditt första veto öppnar kl. {{time}}, {{count}} minut före matchen: var vid datorn då.",
+    "firstVeto_other": "Ditt första veto öppnar kl. {{time}}, {{count}} minuter före matchen: var vid datorn då.",
+    "vetoOpensNote": "vetot öppnar {{time}}"
+  },
+  "runState": {
+    "paused": "Turneringen är pausad",
+    "pausedUntil": "Turneringen är pausad till {{time}}",
+    "pausedBody": "Matcher som redan är på en server spelar vidare. Ingen ny omgång lottas och inget veto öppnar förrän den återupptas.",
+    "reason": "Anledning: {{reason}}.",
+    "waitingServers_one": "{{count}} match väntar på en server.",
+    "waitingServers_other": "{{count}} matcher väntar på en server.",
+    "allBusy_one": "Servern är upptagen; den startar så fort den är ledig.",
+    "allBusy_other": "Alla {{count}} servrar är upptagna; de startar så fort en är ledig.",
+    "noneFree": "Ingen server är ledig; de startar så fort en är det.",
+    "servers": "Servrar",
+    "pausedShort": "Pausad"
+  },
+  "captainsPanel": {
+    "title": "Lagkaptener",
+    "note": "Bara en lagkapten kan rapportera eller bekräfta ett resultat.",
+    "make": "Gör till lagkapten",
+    "remove": "Ta bort lagkapten",
+    "role": {
+      "owner": "Ägare",
+      "captain": "Lagkapten",
+      "member": "Medlem"
+    }
+  },
+  "lineupPanel": {
+    "title": "Laguppställning",
+    "note_one": "Välj {{count}} spelare till den här matchen. Resten sitter på bänken.",
+    "note_other": "Välj {{count}} spelare till den här matchen. Resten sitter på bänken.",
+    "picked": "{{picked}} av {{count}} valda",
+    "plays": "Spelar",
+    "bench": "Bänk",
+    "save": "Spara laguppställningen",
+    "saved": "Laguppställningen sparad",
+    "notOnServer": "Laguppställningen sparad, men servern tog inte emot den: {{error}}",
+    "locked": "Uppställningen är låst medan en karta är live. Den kan ändras mellan kartorna.",
+    "captainOnly": "Bara lagets ägare eller en lagkapten kan ändra uppställningen.",
+    "source": {
+      "previous": "Samma som lagets senaste match.",
+      "roster": "De första spelarna i laguppställningen."
+    }
+  },
+  "prizesPage": {
+    "title": "Priser",
+    "intro": "Skins för en placering, som ges till varje spelare i laget när turneringen är slut, och ett pris till MVP:n. Bara webbplatsens skins: inga Steam-föremål, inget penningvärde.",
+    "none": "Turneringens spel har inga priser.",
+    "loadFailed": "Turneringen kunde inte laddas."
+  },
+  "schedulePage": {
+    "title": "Matchtider",
+    "intro": "Ge varje omgång en starttid, eller en enskild match en egen. Spelarna ser den på matchen, får en påminnelse och vetot öppnar i tid.",
+    "loadFailed": "Turneringen kunde inte laddas.",
+    "rounds": "Omgångar",
+    "modeLabel": "När matcherna startar",
+    "modeTimes": "Vid bestämda tider",
+    "modeAsap": "Så fort allt är redo",
+    "modeTimesNote": "Matcherna väntar på sin tid. Öppna en omgång för att ge en match en egen tid.",
+    "modeAsapNote": "Inga tider: en match startar när båda lagen och en server är redo.",
+    "noRounds": "Omgångarna visas här när bracketen är skapad.",
+    "roundN": "Omgång {{n}}",
+    "roundNote_one": "{{count}} match · öppna för att ge den en egen tid",
+    "roundNote_other": "{{count}} matcher · öppna för att ge en match en egen tid",
+    "roundNoMatches": "Matcherna skapas när omgången innan är klar",
+    "roundStartsAt": "Omgången startar kl.",
+    "roundTimeLabel": "Starttid för {{round}}",
+    "matchTimeLabel": "Starttid för {{match}}",
+    "tbd": "TBD",
+    "ownTime": "Egen starttid",
+    "sameAsRound": "Samma som omgången",
+    "useRoundTime": "Använd omgångens tid",
+    "vetoTitle": "Vetot",
+    "vetoNote": "Öppnar av sig självt före varje match, så att det är klart när matchen startar. Ett lag som inte agerar i tid får en karta vald åt sig.",
+    "vetoLabel": "Vetot öppnar",
+    "vetoZero": "Vid starttiden",
+    "reminderTitle": "Påminnelse",
+    "reminderNote": "En avisering på webbplatsen och i Discord, till varje spelare i matchen.",
+    "reminderLabel": "Påminn spelarna",
+    "reminderZero": "Av",
+    "minutesBefore_one": "{{count}} min före",
+    "minutesBefore_other": "{{count}} min före",
+    "save": "Spara tider",
+    "saved": "Matchtiderna sparade",
+    "saveFailed": "Tiderna kunde inte sparas",
+    "rulesTitle": "Regler den följer",
+    "rules": {
+      "start": "Inget i en match startar innan dess veto öppnar, inte ens med en ledig server.",
+      "late": "En sen omgång skjuter upp nästa: ett lag som fortfarande spelar, eller pausen mellan matcher, håller tillbaka vetot, och spelarna ser den nya tiden.",
+      "none": "Ingen tid satt: som förut startar en match så fort båda lagen och en server är redo.",
+      "where": "Översiktens schema, matchkorten, matchrummet, reglerna och incheckningen visar de här tiderna."
+    },
+    "breaksTitle": "Pauser mellan omgångar",
+    "breaksNote_one": "Lämna pausen tom för att använda webbplatsens paus på {{count}} minut. Lägg till en längre paus efter vilken omgång som helst, t.ex. 30 minuter efter omgång 3.",
+    "breaksNote_other": "Lämna pausen tom för att använda webbplatsens paus på {{count}} minuter. Lägg till en längre paus efter vilken omgång som helst, t.ex. 30 minuter efter omgång 3.",
+    "breakEvery": "Paus efter varje omgång (min)",
+    "breakAfterRound": "Efter omgång",
+    "breakMinutes": "Paus (min)",
+    "breakRemove": "Ta bort",
+    "breakAdd": "Lägg till en längre paus",
+    "fillStart": "Första omgången kl.",
+    "fillEvery": "Minuter mellan omgångar",
+    "fillApply": "Fyll i omgångarna"
+  },
+  "groups": {
+    "groupN": "Grupp {{letter}}",
+    "done": "Slut",
+    "through_one": "vinnaren går vidare",
+    "through_other": "topp {{count}} går vidare",
+    "playoffs": "Slutspel",
+    "playoffsSoon": "Slutspelet startar när alla gruppmatcher är spelade.",
+    "seedSlot": "Seed {{n}}"
+  },
+  "matchCheckIn": {
+    "eyebrow": "Vetot öppet · matchen startar {{time}}",
+    "eyebrowNoTime": "Incheckningen är öppen",
+    "title": "Checka in till den här matchen",
+    "body": "Den här turneringen checkar in före varje match. Startspelare säger att de är här; en lagkapten kan göra det åt dem. Avbytare är redan redo.",
+    "closesIn": "Incheckningen stänger om",
+    "yourTeam": "{{team}} (ditt lag)",
+    "count": "{{in}} av {{total}} startspelare incheckade",
+    "sub": "AVB",
+    "starter": "START",
+    "ready": "Redo",
+    "checkedIn": "Incheckad",
+    "notYet": "Inte än",
+    "rule": "Inte incheckad vid start: en startspelare byts mot en avbytare, och matchrummet visar vem. Ingen avbytare kvar: laget spelar med en spelare mindre.",
+    "server": {
+      "eyebrow": "Servern redo · fullt lag senast {{time}}",
+      "eyebrowNoTime": "Servern redo",
+      "title": "Få in ditt lag på servern",
+      "bodyOut": "{{out}} checkade inte in, så en avbytare spelar i stället.",
+      "body_one": "En av er behöver vara på servern innan timern går ut. Avbytare räknas.",
+      "body_other": "{{count}} av er behöver vara på servern innan timern går ut. Avbytare räknas.",
+      "clockLabel": "Fullt lag behövs om",
+      "count": "{{on}} av {{size}} på servern",
+      "onServer": "På servern",
+      "joining": "Ansluter…",
+      "subIn": "IN",
+      "out": "UT",
+      "swapped": "Bytt mot avbytare",
+      "rule": "Vid 0:00 väljer det kompletta laget: ta walkover eller spela mot det ofullständiga laget. Båda ofullständiga: en admin bestämmer."
+    },
+    "choice": {
+      "eyebrow": "{{team}} är fortfarande ofullständigt",
+      "title": "{{team}} har {{on}} av {{size}} på servern",
+      "body": "Deras tid är ute. Ta walkover och gå vidare, eller spela mot dem ändå. Vilken lagkapten som helst kan välja. Inget val inom 2 minuter: walkovern gäller.",
+      "take": "Ta walkover",
+      "play": "Spela ändå"
+    }
+  }
+}

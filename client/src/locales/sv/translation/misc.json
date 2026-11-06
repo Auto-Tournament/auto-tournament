@@ -1,0 +1,1278 @@
+{
+  "notFound": {
+    "title": "Sidan hittades inte",
+    "description": "Sidan du letar efter finns inte eller har flyttats.",
+    "backToDashboard": "Tillbaka till översikten",
+    "publicPlayerSearch": "Publik spelarsökning"
+  },
+  "publicLinks": {
+    "intro": "Snabblänkar till de publika sidor du kan dela med spelare och tittare.",
+    "common": {
+      "publicUrl": "Publik URL",
+      "urlPattern": "URL-mönster"
+    },
+    "playerSearch": {
+      "title": "Publik spelarsökning",
+      "description": "Sök efter registrerade spelare på namn, Steam-ID eller profil-URL.",
+      "openButton": "Öppna /player"
+    },
+    "playerProfile": {
+      "title": "Spelarprofil (publik)",
+      "description": "Direktlänk till en spelarprofil via Steam ID64. Spelare som är inloggade med Steam kan också använda länken ”Min profil” i toppmenyn i stället för att kopiera URL:er.",
+      "requiresSteamId": "Kräver Steam ID64"
+    },
+    "teamMatch": {
+      "title": "Lagets matchsida (publik)",
+      "description": "Skrivskyddad vy av ett lags aktuella eller senaste match.",
+      "openExample": "Öppna exempellag"
+    },
+    "tournamentLeaderboard": {
+      "title": "Turneringens topplista (publik)",
+      "description": "Publik tabellsida för den aktuella turneringen (standard är turnering 1).",
+      "open": "Öppna topplistan"
+    }
+  },
+  "games": {
+    "prompt": {
+      "title": "Vad spelar du?",
+      "description": "Vi visar turneringar i de här spelen först. Du kan ändra det när som helst.",
+      "skip": "Hoppa över",
+      "save": "Spara mina spel"
+    },
+    "picker": {
+      "searchLabel": "Sök spel",
+      "placeholder": "Skriv ett spelnamn",
+      "minChars": "Skriv minst 2 tecken",
+      "noResults": "Inga spel hittades",
+      "loading": "Söker…",
+      "searchFailed": "Sökningen är inte tillgänglig just nu",
+      "yourGames": "Dina spel",
+      "none": "Inga spel valda än",
+      "remove": "Ta bort {{name}}",
+      "supported": "Turneringar stöds",
+      "limit": "Du kan välja upp till {{max}} spel",
+      "creditWikidata": "Speldata från Wikidata"
+    },
+    "profile": {
+      "title": "Spel du spelar",
+      "description": "Välj spelen du spelar. Turneringar i de här spelen visas först.",
+      "empty": "Du har inte valt några spel än.",
+      "edit": "Redigera",
+      "add": "Lägg till spel",
+      "dialogTitle": "Spel du spelar",
+      "cancel": "Avbryt",
+      "save": "Spara",
+      "saved": "Spelen sparade",
+      "saveFailed": "Dina spel kunde inte sparas"
+    },
+    "welcome": {
+      "gridTitle": "Populära spel",
+      "continue": "Fortsätt",
+      "notNow": "Inte nu",
+      "selectedGames": "Valda spel",
+      "selectedCount": "{{count}} av {{max}} valda",
+      "pickOne": "Välj minst ett spel",
+      "supportedLegend": "Turneringar körs här"
+    }
+  },
+  "account": {
+    "email": {
+      "title": "E-post",
+      "description": "För att komma in på kontot igen om du glömmer lösenordet, och om du vill, mejl när en turnering öppnar sin anmälan.",
+      "address": "E-postadress",
+      "sendLink": "Skicka bekräftelse",
+      "cancel": "Avbryt",
+      "verified": "Bekräftad",
+      "unverified": "Inte bekräftad",
+      "checkInbox": "Öppna länken i mejlet vi skickade för att bekräfta den.",
+      "resend": "Skicka igen",
+      "change": "Ändra",
+      "remove": "Ta bort",
+      "sent": "Bekräftelse skickad till {{email}}. Öppna länken i den.",
+      "saved": "E-postadressen sparad",
+      "removed": "E-postadressen borttagen",
+      "saveFailed": "Din e-postadress kunde inte sparas",
+      "notifyLabel": "Mejla mig när en turnering öppnar sin anmälan",
+      "notifyHint": "Ett mejl per turnering. Varje mejl har en avregistreringslänk.",
+      "notifyNeedsVerified": "Bekräfta din adress först.",
+      "notifyOn": "Du får ett mejl när anmälan öppnar",
+      "notifyOff": "Inga fler turneringsmejl",
+      "siteCannotSend": "Webbplatsen skickar inga mejl just nu."
+    },
+    "title": "Anslutningar",
+    "subtitle": "Ett konto för alla turneringar på webbplatsen.",
+    "loadFailed": "Ditt konto kunde inte laddas.",
+    "impersonating": "Du visar sidan medan du imiterar en spelare. Den visar ditt eget konto; sluta imitera för att ändra det.",
+    "rail": {
+      "label": "Konto",
+      "profile": "Profil",
+      "connections": "Anslutningar"
+    },
+    "gameAccounts": {
+      "title": "Spelkonton",
+      "description": "Varje spel behöver ett eget konto så att matcherna vet vem du är.",
+      "verified": "Verifierat",
+      "id": "Steam-ID {{id}}",
+      "more": "Fler spelkonton visas här när spel läggs till på webbplatsen.",
+      "notConnected": "Koppla ditt {{provider}}-konto för att spela de här spelen.",
+      "notOffered": "Inloggning med {{provider}} är inte påslagen här än. Be en admin slå på den under Inställningar → Inloggning."
+    },
+    "signIn": {
+      "title": "Inloggningsmetoder",
+      "description": "Vilken som helst av dem loggar in dig på samma konto. Behåll minst en.",
+      "primary": "Primär",
+      "primaryDetail": "Kontots identitet · också ditt spelkonto för {{games}}",
+      "primaryDetailNoGames": "Kontots identitet",
+      "connected": "Kopplad",
+      "accountId": "ID",
+      "linkedOn": "Kopplad {{date}}",
+      "turnedOff": "inloggning med den är avstängd på webbplatsen",
+      "notConnected": "Inte kopplad",
+      "connect": "Koppla",
+      "remove": "Ta bort",
+      "lastMethod": "Det här är ditt enda sätt att logga in. Koppla en annan metod först.",
+      "removeTitle": "Ta bort {{provider}}?",
+      "removeBody": "Du kommer inte längre kunna logga in med {{provider}}. Du kan koppla den igen senare.",
+      "removed": "{{provider}} borttagen",
+      "removeFailed": "Inloggningsmetoden kunde inte tas bort",
+      "linked": "{{provider}} kopplad",
+      "taken": "Det {{provider}}-kontot är redan kopplat till ett annat konto på webbplatsen.",
+      "linkFailed": "{{provider}} kunde inte kopplas. Försök igen.",
+      "localLabel": "Admininloggning (användarnamn + lösenord)",
+      "localDetail": "Användarnamn {{username}}"
+    },
+    "changePassword": {
+      "button": "Byt lösenord",
+      "title": "Byt ditt lösenord",
+      "current": "Nuvarande lösenord",
+      "new": "Nytt lösenord",
+      "repeat": "Nytt lösenord igen",
+      "totp": "Kod från autentiseringsappen",
+      "mismatch": "De nya lösenorden stämmer inte överens",
+      "save": "Byt lösenord",
+      "cancel": "Avbryt",
+      "done": "Lösenordet bytt",
+      "failed": "Lösenordet kunde inte bytas",
+      "totpNeeded": "Ange också koden från din autentiseringsapp.",
+      "tooLong": "Det nya lösenordet är för långt"
+    },
+    "reauth": {
+      "title": "Bekräfta ditt adminlösenord",
+      "body": "Ange lösenordet för {{username}} innan du ändrar hur du loggar in.",
+      "password": "Lösenord",
+      "totp": "Kod från autentiseringsappen",
+      "confirm": "Bekräfta",
+      "failed": "Fel lösenord eller kod",
+      "totpNeeded": "Ange också koden från din autentiseringsapp."
+    },
+    "merge": {
+      "title": "Slå ihop kontona?",
+      "body": "Det här Steam-kontot har redan en spelare på webbplatsen. Slå ihop den med ditt adminkonto?",
+      "explain": "Spelaren behåller sina matcher och sin statistik och blir admin. Din admininloggning och dina kopplade inloggningsmetoder flyttas till den.",
+      "matches_one": "{{count}} spelad match",
+      "matches_other": "{{count}} spelade matcher",
+      "confirm": "Slå ihop kontona",
+      "failed": "Kontona kunde inte slås ihop"
+    },
+    "twoStep": {
+      "turnOn": "Slå på tvåsteg",
+      "turnOff": "Stäng av tvåsteg",
+      "isOn": "Tvåstegsverifiering på",
+      "isOff": "Tvåstegsverifiering av",
+      "onTitle": "Slå på tvåstegsverifiering",
+      "offTitle": "Stäng av tvåstegsverifiering",
+      "offWarning": "Utan den räcker lösenordet ensamt för att logga in på adminkontot.",
+      "password": "Lösenord",
+      "code": "Kod från autentiseringsappen",
+      "codeNeeded": "Ange koden från din autentiseringsapp.",
+      "failed": "Den kunde inte stängas av",
+      "cancel": "Avbryt",
+      "turnedOn": "Tvåstegsverifieringen är på",
+      "turnedOff": "Tvåstegsverifieringen är av"
+    },
+    "passkeys": {
+      "title": "Lösenordsnycklar",
+      "description": "Logga in på admininloggningssidan med fingeravtryck, ansikte eller enhetens PIN i stället för lösenord och kod.",
+      "add": "Lägg till en lösenordsnyckel",
+      "name": "Namn",
+      "nameHelp": "Ett namn för att skilja den åt, som ”MacBook” eller ”Telefon”. Webbläsaren ber sedan om ditt fingeravtryck, ansikte eller PIN.",
+      "continue": "Fortsätt",
+      "added": "Lösenordsnyckeln tillagd",
+      "addFailed": "Lösenordsnyckeln kunde inte läggas till",
+      "removed": "{{name}} borttagen",
+      "removeFailed": "Lösenordsnyckeln kunde inte tas bort",
+      "lastUsed": "Senast använd {{date}}",
+      "addedOn": "Tillagd {{date}}, inte använd än",
+      "needsHttps": "Lösenordsnycklar kräver att webbplatsen körs på https (eller localhost). Be den som driver den att lägga den bakom https."
+    },
+    "name": {
+      "title": "Visningsnamn",
+      "description": "Visas på webbplatsen och i spelet. Du kan ändra det en gång per dag.",
+      "lockedUntil": "Visas på webbplatsen och i spelet. Du ändrade det nyligen, så du kan ändra det igen från {{date}}.",
+      "label": "Namn",
+      "lengthHint": "{{min}}–{{max}} tecken",
+      "badChars": "Inga citattecken, < eller >, eller kontrolltecken",
+      "promptTitle": "Vad heter du?",
+      "promptBody": "Det visas i spelet och på webbplatsen.",
+      "notNow": "Inte nu",
+      "save": "Spara",
+      "saved": "Namnet sparat. Spelservrarna använder det från din nästa match.",
+      "saveFailed": "Ditt namn kunde inte sparas"
+    }
+  },
+  "home": {
+    "title": "Hem",
+    "greeting": "Hej, {{name}}",
+    "greetingFallback": "Hej",
+    "editGames": "Redigera spel",
+    "vs": "mot",
+    "tbd": "TBD",
+    "openMatch": "Öppna match",
+    "connectToServer": "Anslut till servern",
+    "matchStatus": {
+      "pending": "Väntar",
+      "ready": "Redo",
+      "loaded": "Laddad",
+      "live": "Live",
+      "completed": "Klar"
+    },
+    "yourTournaments": {
+      "title": "Dina turneringar",
+      "empty": "Du är inte med i någon turnering just nu."
+    },
+    "tournaments": {
+      "playingNow": "Spelar nu",
+      "waiting": "Väntar",
+      "eliminated": "Utslagen",
+      "finished": "Klar",
+      "placement": "{{position}} av {{total}}"
+    },
+    "openForYourGames": {
+      "title": "Öppna för dina spel",
+      "browseAll": "Bläddra bland alla turneringar",
+      "empty": "Inga öppna turneringar för dina spel just nu.",
+      "steamLinked": "Steam kopplat",
+      "titleAll": "Öppna turneringar",
+      "emptyAll": "Inga öppna turneringar just nu."
+    },
+    "summary": {
+      "match": "Du har en match som väntar.",
+      "open_one": "{{count}} turnering är öppen för spel du spelar.",
+      "open_other": "{{count}} turneringar är öppna för spel du spelar.",
+      "openAll_one": "{{count}} turnering är öppen på webbplatsen.",
+      "openAll_other": "{{count}} turneringar är öppna på webbplatsen.",
+      "none": "Inget behöver dig just nu."
+    },
+    "yourGames": "Spel du spelar",
+    "loading": "Laddar din startsida",
+    "nextMatch": "Din nästa match",
+    "live": {
+      "title": "Live nu",
+      "count": "{{count}} pågår",
+      "chip": "Live",
+      "matchesOn_one": "{{count}} match pågår nu",
+      "matchesOn_other": "{{count}} matcher pågår nu"
+    },
+    "quiet": {
+      "title": "Kommande",
+      "more": "Också kommande",
+      "next": "Härnäst"
+    },
+    "play": {
+      "title": "Spela en match nu",
+      "quietTitle": "Inget på gång? Spela en match.",
+      "hint": "Matchmaking sätter dig i en match så fort tillräckligt många spelare köar.",
+      "cta": "Ställ dig i kön"
+    },
+    "signup": {
+      "open": "Anmälan öppen",
+      "cta": "Anmäl",
+      "short": "Anmäl",
+      "view": "Visa",
+      "title": "Anmäl",
+      "aside": "Kommande"
+    },
+    "champions": {
+      "title": "Mästare",
+      "aside": "Nyligen avslutade",
+      "all": "Alla resultat",
+      "won": "vann {{name}}",
+      "finished": "Klar"
+    },
+    "lastTime": {
+      "title": "Förra gången",
+      "results": "Fullständiga resultat",
+      "second": "2:a",
+      "third": "3:e",
+      "champion": "Mästare"
+    },
+    "teams": "Lag: {{count}}",
+    "none": "Inga turneringar än. Titta in snart igen.",
+    "allTournaments": "Alla turneringar",
+    "empty": {
+      "soon": "Kommer snart",
+      "heroTitle": "Ingen turnering än",
+      "heroHint": "När nästa turnering annonseras visas den här med datum och anmälan.",
+      "create": "Skapa en turnering",
+      "nextTitle": "Inget mer planerat",
+      "nextHint": "Nästa turnering efter den här visas här.",
+      "signupTitle": "Inget att anmäla sig till",
+      "signupHint": "Turneringar som tar emot anmälningar visas här.",
+      "slotTitle": "Plats för en till",
+      "slotHint": "Här får en turnering till plats.",
+      "championTitle": "Ingen mästare än",
+      "championHint": "Den första vinnaren visas här."
+    },
+    "browse": {
+      "title": "Hitta spelare och lag",
+      "hint": "Se vilka som spelar här, och hitta ett lag att gå med i.",
+      "cta": "Bläddra bland spelare"
+    },
+    "next": {
+      "label": {
+        "vetoTurn": "Din tur i vetot",
+        "ready": "Din match är redo",
+        "warmup": "Uppvärmning",
+        "live": "Live",
+        "paused": "Matchen pausad"
+      },
+      "opponent": "Motståndaren spelar",
+      "startsAt": "Startar",
+      "untilVeto": "Till vetot",
+      "untilMatch": "Till matchen",
+      "veto": "Veto",
+      "yourTurn": "Din tur",
+      "ban": "Banna en karta",
+      "pick": "Picka en karta",
+      "side": "Välj en sida",
+      "theirTurn": "Deras tur",
+      "vetoOpen": "Vetot öppet",
+      "waiting": "Väntar",
+      "forServer": "På en server",
+      "join": "Anslut",
+      "serverReady": "Servern redo",
+      "ready": "Redo",
+      "mapRound": "{{map}} · R{{round}}",
+      "round": "Runda {{round}}",
+      "halftime": "Halvtid",
+      "nextMap": "Nästa karta",
+      "goVeto": "Gå till vetot",
+      "paused": "Pausad",
+      "about": "~{{minutes}} min",
+      "joinServer": "Anslut till servern"
+    }
+  },
+  "browsePage": {
+    "title": "Bläddra bland turneringar",
+    "searchPlaceholder": "Sök på namn, arrangör eller plats",
+    "searchLabel": "Sök turneringar",
+    "loading": "Laddar turneringar",
+    "loadError": "Turneringarna kunde inte laddas.",
+    "listLabel": "Turneringar",
+    "createTournament": "Skapa turnering",
+    "teamsCount_one": "{{count}} lag",
+    "teamsCount_other": "{{count}} lag",
+    "filters": {
+      "allGames": "Alla spel",
+      "status": {
+        "all": "Alla statusar",
+        "live": "Live",
+        "registration_open": "Anmälan öppen",
+        "finished": "Klar"
+      },
+      "where": {
+        "all": "Online och LAN",
+        "online": "Online",
+        "lan": "LAN"
+      },
+      "gameLabel": "Spel",
+      "statusLabel": "Status",
+      "whereLabel": "Var"
+    },
+    "columns": {
+      "tournament": "Turnering",
+      "format": "Format",
+      "when": "När"
+    },
+    "when": {
+      "starts": "Startar {{date}}",
+      "finished": "Klar",
+      "finishedOn": "Avslutad {{date}}",
+      "noDate": "Inget datum än"
+    },
+    "actions": {
+      "signUp": "Anmäl",
+      "watch": "Öppna",
+      "results": "Resultat",
+      "youreIn": "Du är med"
+    },
+    "status": {
+      "live": "Live"
+    },
+    "emptyNone": {
+      "title": "Inga turneringar än",
+      "description": "När webbplatsen kör en turnering visas den här.",
+      "descriptionAdmin": "Webbplatsen har ingen turnering än. Skapa en, så visas den här."
+    },
+    "emptyFiltered": {
+      "title": "Inga turneringar matchar dina filter",
+      "description": "Prova ett annat spel eller status, eller rensa filtren.",
+      "clear": "Rensa filter"
+    },
+    "groups": {
+      "live": "Live",
+      "soon": "Kommande",
+      "finished": "Klara"
+    },
+    "showOlder_one": "Visa {{count}} äldre",
+    "showOlder_other": "Visa {{count}} äldre",
+    "mine": {
+      "label": "Vilka turneringar",
+      "all": "Alla",
+      "mine": "Mina"
+    },
+    "roundN": "Omgång {{n}}",
+    "entries": {
+      "teams_one": "{{count}} lag",
+      "teams_other": "{{count}} lag",
+      "teamsOf": "{{count}} / {{max}} lag",
+      "players_one": "{{count}} spelare",
+      "players_other": "{{count}} spelare",
+      "playersOf": "{{count}} / {{max}} spelare"
+    }
+  },
+  "modulesPage": {
+    "title": "Moduler",
+    "subheading": "Vad instansen kan köra, och spelen du har lagt till.",
+    "builtIn": "Inbyggd",
+    "loadFailed": "De installerade paketen kunde inte laddas",
+    "removed": "{{name}} borttaget",
+    "removeFailed": "Paketet kunde inte tas bort",
+    "installed": {
+      "title": "Spelmoduler",
+      "hint": "Kod som vet hur en match körs och hur resultatet kommer in. De följer med appen."
+    },
+    "module": {
+      "cs2": {
+        "name": "Counter-Strike 2",
+        "hint": "Pratar med dina spelservrar: laddar matchen, läser varje runda, registrerar resultatet."
+      },
+      "manual-report": {
+        "name": "Manuell rapportering",
+        "hint": "För spel som inget kan bevaka. En lagkapten rapporterar resultatet och motståndaren godkänner."
+      }
+    },
+    "packs": {
+      "title": "Spelpaket",
+      "hint": "Ett paket är en fil som beskriver ett spel – ett namn, en ruta och hur ett resultat rapporteras. Det innehåller ingen kod och körs på en modul ovan.",
+      "empty": "Inga paket än. Importera ett för att lägga till ett spel som inte följde med instansen.",
+      "runBy": "Körs av {{engine}}",
+      "bundled": "Följde med Auto Tournament"
+    },
+    "import": {
+      "action": "Importera ett paket",
+      "added": "{{name}} tillagt",
+      "updated": "{{name}} uppdaterat",
+      "failed": "Paketet kunde inte importeras",
+      "notJson": "Filen är inte JSON, så det är inget paket",
+      "tooLarge": "Filen är för stor för att vara ett paket",
+      "noJson": "Välj paketets .json-fil",
+      "missingIcon": "Paketet använder {{file}} – välj den filen också, eller importera bara JSON-filen utan ruta"
+    },
+    "confirmRemove": {
+      "title": "Ta bort {{name}}?",
+      "body": "Spelet försvinner från konfigurationsguiden. Inget annat tas bort, och om paketet importeras igen kommer det tillbaka."
+    },
+    "browse": {
+      "action": "Bläddra",
+      "title": "Spel du kan lägga till",
+      "hint": "Från communityns paketlista. Inget hämtades förrän du öppnade den här.",
+      "add": "Lägg till",
+      "update": "Uppdatera",
+      "installed": "Installerat",
+      "empty": "Listan har inga spel som instansen kan lägga till än.",
+      "offline": "listan kunde inte nås",
+      "staleWith": "Visar den senaste listan instansen såg – {{reason}}.",
+      "failed": "Listan kunde inte läsas"
+    },
+    "pending": "Laddar spelmodulen för {{game}}…",
+    "pendingRoute": "Laddar sidans modul…",
+    "notInstalled": {
+      "title": "Spelmodulen för {{game}} är inte installerad",
+      "body": "De spelspecifika delarna av turneringen döljs, och matcherna kan inte köras förrän modulen installeras igen."
+    },
+    "code": {
+      "chip": "Kodmodul",
+      "hint": "Installerad på serverns disk av den som driver den.",
+      "noReason": "ingen anledning angiven",
+      "broken": "Modulen är trasig: {{reason}}",
+      "status": {
+        "ok": "OK",
+        "incompatible": "Inte kompatibel",
+        "broken": "Trasig",
+        "disabled": "Av"
+      },
+      "enable": "Slå på",
+      "disable": "Stäng av",
+      "enabled": "{{name}} påslagen",
+      "disabled": "{{name}} avstängd",
+      "toggleFailed": "Modulen kunde inte ändras",
+      "listFailed": "Kodmodulerna kunde inte läsas: {{reason}}",
+      "safeMode": "Felsäkert läge: ingen kodmodul laddades på den här sidan. Öppna den utan ?modules=off för att ladda dem igen.",
+      "slotFailed": "Modulen {{id}} misslyckades här. Sidan Moduler säger varför.",
+      "reload": {
+        "body": "Ladda om sidan för att ladda eller ta bort modulens kod.",
+        "action": "Ladda om"
+      },
+      "confirm": {
+        "title": "Slå på {{name}}?",
+        "warningTitle": "Det här är en kodmodul.",
+        "warning": "Den körs inuti Auto Tournaments server med full åtkomst till din databas, dina filer och hemligheter, och i webbläsaren hos varje admin och spelare som öppnar en sida den ritar, med deras behörigheter. Auto Tournament granskar eller sandlådar inte kodmoduler. Slå bara på den om du litar på upphovspersonen lika mycket som på plattformen.",
+        "source": "Kom från",
+        "onDisk": "Serverns disk",
+        "version": "Version",
+        "clientApi": "Klient-API",
+        "serverApi": "Server-API",
+        "none": "inte angivet",
+        "typeId": "Skriv {{id}} för att slå på den."
+      },
+      "failure": {
+        "badEntry": "dess kod serveras inte från {{prefix}}",
+        "noClientApi": "den anger inget intervall för klient-API; plattformen erbjuder {{platform}}",
+        "badClientApi": "dess klient-API-intervall ”{{range}}” är inget semver-intervall",
+        "outOfRange": "byggd för klient-API {{range}}; plattformen erbjuder {{platform}}",
+        "notFound": "dess kod saknas (HTTP 404)",
+        "httpError": "dess kod kunde inte hämtas (HTTP {{status}})",
+        "notJavaScript": "dess kod serveras som {{contentType}}, inte JavaScript",
+        "importFailed": "dess kod kunde inte laddas: {{error}}",
+        "timeout": "dess kod laddades inte inom {{seconds}} sekunder",
+        "sharedFailed": "plattformen kunde inte dela sina paket med den: {{error}}",
+        "badExport": "dess kod är ingen moduldefinition: {{detail}}",
+        "idMismatch": "dess kod kallar sig ”{{id}}”, men den är installerad som ”{{expected}}”",
+        "idTaken": "”{{id}}” är redan en inbyggd modul",
+        "render": "dess plats ”{{slot}}” misslyckades vid rendering: {{error}}"
+      }
+    },
+    "signInNeed": {
+      "body": "{{game}}-spelare loggar in med {{provider}}, och inloggning med {{provider}} är avstängd. De kan inte koppla kontot som spelet behöver.",
+      "action": "Slå på den"
+    },
+    "addons": {
+      "title": "Tillägg",
+      "hint": "Funktioner bredvid spelen. Att slå på eller av ett gäller direkt.",
+      "open": "Öppna",
+      "toggle": "{{name}} på eller av",
+      "toggleFailed": "Tillägget kunde inte ändras.",
+      "startFailed": "På, men startade inte: {{error}}",
+      "notFound": "Det finns inget sådant tillägg.",
+      "off": "Tillägget är avstängt. Slå på det under Moduler för att ställa in det."
+    }
+  },
+  "catalog": {
+    "title": "Spel",
+    "hint": "Alla spel som instansen kör, och de du kan lägga till. Spelpaket är data; kodmoduler signeras av Auto Tournament. Båda installeras med ett klick, och de som är märkta ”I den här avbildningen” behöver inget nätverk.",
+    "search": "Sök spel",
+    "installedTitle": "Installerade ({{count}})",
+    "availableTitle": "Tillgängliga ({{count}})",
+    "empty": "Inga spel matchar.",
+    "allInstalled": "Allt i katalogen är installerat.",
+    "noneInstalled": "Inga spel är installerade än. Installera de du vill ordna turneringar i – spelarna väljer bland dem.",
+    "loadFailed": "Spelkatalogen kunde inte läsas: {{reason}}",
+    "loadFailedFallback": "servern svarade inte",
+    "retry": "Försök igen",
+    "failed": "{{name}}: {{reason}}",
+    "failedFallback": "åtgärden misslyckades",
+    "updateAll": {
+      "action": "Uppdatera alla ({{count}})",
+      "running": "Uppdaterar…",
+      "done": "{{count}} spel och moduler uppdaterade",
+      "summary": "Uppdaterade {{updated}}, hoppade över {{skipped}}, misslyckades {{failed}}.",
+      "failedItem": "{{name}}: {{reason}}",
+      "failedFallback": "kunde inte uppdatera allt"
+    },
+    "feed": {
+      "cache": "Visar katalogen från {{time}}: onlinekatalogen kunde inte nås ({{reason}}). Spel i den här avbildningen installeras fortfarande utan nätverk.",
+      "none": "Onlinekatalogen kunde inte nås ({{reason}}). Visar spelen i den här avbildningen; de installeras utan nätverk.",
+      "unknown": "ingen anledning angiven",
+      "cacheRefreshing": "Visar katalogen från {{time}} medan onlinekatalogen laddas.",
+      "noneRefreshing": "Laddar onlinekatalogen… Under tiden är det här spelen i den här avbildningen; de installeras utan nätverk.",
+      "reason": {
+        "timeout": "den svarade inte i tid",
+        "unreachable": "den kunde inte nås",
+        "bad_response": "svaret var ingen katalog",
+        "newer_schema": "den är skriven för en nyare Auto Tournament",
+        "too_large": "den är för stor",
+        "offline": "CATALOG_OFFLINE är satt",
+        "http": "den svarade med HTTP {{status}}"
+      }
+    },
+    "kind": {
+      "module": "Kodmodul"
+    },
+    "source": {
+      "snapshot": "I den här avbildningen"
+    },
+    "state": {
+      "available": "Tillgänglig",
+      "installed": "Installerad",
+      "update-available": "Uppdatering finns",
+      "disabled": "Avstängd",
+      "broken": "Trasig",
+      "incompatible": "Inte kompatibel",
+      "builtin": "Inbyggd",
+      "installing": "Installerar…",
+      "working": "Arbetar…",
+      "restart": "Omstart krävs"
+    },
+    "action": {
+      "install": "Installera",
+      "update": "Uppdatera till {{version}}",
+      "enable": "Slå på",
+      "disable": "Stäng av",
+      "remove": "Ta bort",
+      "uninstall": "Avinstallera"
+    },
+    "done": {
+      "installed": "{{name}} installerad",
+      "updated": "{{name}} uppdaterad",
+      "enabled": "{{name}} påslagen",
+      "disabled": "{{name}} avstängd",
+      "removed": "{{name}} borttagen"
+    },
+    "reload": {
+      "body": "{{names}} körs. Ladda om sidan för att använda det här.",
+      "action": "Ladda om"
+    },
+    "restart": "Starta om Auto Tournament för att slutföra: {{names}}.",
+    "restartNow": {
+      "action": "Starta om nu",
+      "restarting": "Startar om…",
+      "failed": "Kunde inte starta om",
+      "timeout": "Auto Tournament har inte kommit tillbaka än. Kontrollera containern och ladda sedan om sidan."
+    },
+    "confirmInstall": {
+      "title": "Installera {{name}}?",
+      "body": "Det här är en kodmodul, signerad av Auto Tournament. Den körs inuti servern med åtkomst till din databas och dina filer, och i webbläsaren hos alla som öppnar en sida den ritar.",
+      "version": "Version {{version}}",
+      "from": "Från {{source}}",
+      "fromRemote": "Auto Tournament på GitHub",
+      "fromSnapshot": "kopian i den här avbildningen (inget nätverk behövs)"
+    },
+    "confirmUninstall": {
+      "title": "Avinstallera {{name}}?",
+      "body": "Dess filer tas bort. Dess data – turneringar, servrar, inställningar – finns kvar, och en ny installation tar tillbaka den.",
+      "packBody": "Spelet försvinner från konfigurationsguiden. Inget annat tas bort, och en ny installation tar tillbaka det."
+    },
+    "welcome": {
+      "title": "Spel på den här instansen",
+      "hint": "Du driver instansen, så du väljer vilka spel den erbjuder. Spelarna väljer bland dem."
+    },
+    "signedBy": "Signerad av {{label}} (nyckel {{keyId}})"
+  },
+  "matchmaking": {
+    "play": {
+      "title": "Spela",
+      "subtitle": "Hitta en 5v5-match. Du matchas med spelare som väntat längst, och ditt party spelar alltid i samma lag.",
+      "unavailable": "Matchmaking är inte öppet på webbplatsen än.",
+      "findTitle": "Hitta en match",
+      "findHelp": "Du kan bläddra på webbplatsen medan du väntar. När en match hittas har du 20 sekunder på dig att acceptera.",
+      "searchingHelp": "Söker. Fältet längst ner visar hur länge du väntat.",
+      "find": "Hitta match",
+      "leaderStarts": "Din partyledare startar sökningen.",
+      "cooldown": "Du avböjde eller missade en match. Du kan söka igen om {{minutes}} min.",
+      "rating_one": "Rating {{elo}} · {{count}} match · {{wins}} vunna",
+      "rating_other": "Rating {{elo}} · {{count}} matcher · {{wins}} vunna",
+      "mode": "Läge",
+      "modeName": {
+        "5v5": "5v5",
+        "2v2": "2v2 Wingman",
+        "1v1": "1v1"
+      },
+      "inQueue_one": "{{count}} i kön",
+      "inQueue_other": "{{count}} i kön",
+      "partyTitle": "Ditt party",
+      "invite": "Bjud in",
+      "partyOf": "{{count}} av {{max}}",
+      "you": "Du",
+      "selected": "Vald",
+      "modeTitle": {
+        "5v5": "Tävlingsinriktat",
+        "2v2": "Wingman",
+        "1v1": "Duell"
+      },
+      "lookingTitle": "Letar efter spelare",
+      "seats": "{{count}} söker · {{total}} behövs för en match",
+      "leaveQueue": "Lämna kön",
+      "level": "Din nivå",
+      "xp": "{{into}} / {{next}} XP",
+      "ratingShort": "Rating",
+      "recent": "Senaste",
+      "noRecent": "Inga matcher än.",
+      "result": {
+        "win": "Vinst",
+        "loss": "Förlust",
+        "draw": "Oavgjort"
+      },
+      "resultShort": {
+        "win": "V",
+        "loss": "F",
+        "draw": "O"
+      },
+      "backToMatch": "Tillbaka till din match",
+      "online_one": "{{count}} online",
+      "online_other": "{{count}} online",
+      "usuallyWait_one": "oftast ungefär {{count}} minut",
+      "usuallyWait_other": "oftast ungefär {{count}} minuter",
+      "aboutWait_one": "ungefär {{count}} min",
+      "aboutWait_other": "ungefär {{count}} min",
+      "defaultPool": {
+        "5v5": "Active Duty",
+        "2v2": "Wingman-kartor",
+        "1v1": "Wingman-kartor"
+      },
+      "searchAnyone": "Få spelare söker: du matchas med vem som helst som är tillgänglig ({{count}} söker, {{total}} behövs)",
+      "searchRating": "Hittar en jämn match för din rating (±{{elo}}) · {{count}} söker",
+      "botFill": "Fyll tomma platser med bottar",
+      "botFillUnrated": "Bottar fyller de tomma platserna · orankat: ingen rating, XP eller drops",
+      "searchRatingPlain": "Hittar en jämn match för din rating · {{count}} söker",
+      "searchWidening": "Breddar sökningen: ±{{elo}} · {{count}} söker",
+      "searchAnyRating": "Söker bland alla ratingar nu · {{count}} söker",
+      "inTournament": "Du är med i en pågående turnering ({{tournament}}), så du kan inte köa till matchmaking just nu.",
+      "partyInTournament": "I en pågående turnering, så partyt kan inte köa just nu: {{names}}.",
+      "inMatch_one": "{{count}} i en match",
+      "inMatch_other": "{{count}} i en match"
+    },
+    "queue": {
+      "searching": "Söker {{mode}}",
+      "cancel": "Sluta söka"
+    },
+    "found": {
+      "title": "Match hittad",
+      "accept": "Acceptera",
+      "decline": "Avböj",
+      "waiting": "Väntar på de andra",
+      "accepted": "{{accepted}} / {{total}} har accepterat",
+      "secondsLeft_one": "{{count}} sekund kvar",
+      "secondsLeft_other": "{{count}} sekunder kvar",
+      "subtitle": "{{mode}} · acceptera inom {{seconds}} sekunder"
+    },
+    "party": {
+      "title": "Party",
+      "help": "Spela med vänner: skapa ett party och skicka länken. Upp till 5 spelare, alltid i samma lag.",
+      "create": "Skapa ett party",
+      "members_one": "{{count}} spelare i ditt party",
+      "members_other": "{{count}} spelare i ditt party",
+      "inviteLink": "Inbjudningslänk",
+      "copy": "Kopiera",
+      "copied": "Inbjudningslänken kopierad",
+      "code": "Inbjudningskod",
+      "join": "Gå med",
+      "joined": "Du gick med i partyt",
+      "leave": "Lämna partyt",
+      "disband": "Upplös partyt"
+    },
+    "room": {
+      "title": "Matchrum",
+      "missing": "Matchen finns inte, eller så är du inte med i den.",
+      "back": "Tillbaka till Spela",
+      "team": "Lag {{n}}",
+      "status": {
+        "accepting": "väntar på accepter",
+        "ready": "alla har accepterat",
+        "cancelled": "avbruten"
+      },
+      "match": {
+        "pending": "Kartveto: banna kartor i tur och ordning tills en är kvar. Vem som helst i laget kan klicka; första klicket gäller.",
+        "ready": "Väntar på en ledig server.",
+        "loaded": "Servern är redo. Anslut.",
+        "live": "Matchen är live.",
+        "completed": "Matchen är slut.",
+        "other": "Match: {{status}}"
+      },
+      "pickedBy": "{{mode}} · kartrouletten valde",
+      "pickedByVeto": "{{mode}} · vald i vetot",
+      "vs": "mot",
+      "you": "(du)",
+      "accepted": "accepterat",
+      "matchChat": "Matchchatt",
+      "playAgain": "Spela igen",
+      "fullScoreboard": "Fullständig resultattavla",
+      "newSkin": "Nytt skin",
+      "inventory": "Utrustning",
+      "victory": "Seger",
+      "defeat": "Förlust",
+      "draw": "Oavgjort",
+      "inServer": "{{n}} av {{total}} på servern",
+      "warmupRule": "Uppvärmningen pågår tills alla {{total}} är inne.",
+      "warmupRuleTimed": "Uppvärmningen pågår tills alla {{total}} är inne, eller {{minutes}} minuter har gått: sedan startar den med dem som är där.",
+      "teamLetter": "Lag {{letter}}",
+      "sideFirst": "{{side}} först",
+      "presence": {
+        "in": "På servern",
+        "notYet": "Inte inne än"
+      },
+      "equip": "Utrusta",
+      "equipped": "Utrustad",
+      "equipFailed": "Kunde inte utrusta den",
+      "rematch": {
+        "title": "Returmatch?",
+        "ask": "Samma lag, en ny match. Ditt svar gäller hela ditt party. Om de flesta i ditt lag säger ja får det andra laget 30 sekunder att acceptera.",
+        "yes": "Ja, returmatch",
+        "no": "Nej tack",
+        "button": "Returmatch",
+        "offerTitle": "Det andra laget vill ha returmatch",
+        "teamTitle": "Ditt lag vill ha returmatch",
+        "offerBody": "Samma lag, en ny match. De flesta i ditt lag måste säga ja. Ditt svar gäller hela ditt party.",
+        "waitingOther": "Väntar på det andra laget… {{s}} s",
+        "waitingTeam": "Väntar på ditt lag… {{s}} s",
+        "accepted": "Returmatchen accepterad. Öppnar den nya matchen…",
+        "refused": "Returmatchen avböjd."
+      }
+    },
+    "result": {
+      "title": "Resultat",
+      "map": "Karta {{n}}",
+      "rating": "Rating",
+      "xp": "+{{xp}} XP · nivå {{level}}",
+      "levelProgress": "{{into}} av {{next}} XP till nästa nivå",
+      "xpReason": {
+        "completed": "Spelat",
+        "win": "Vinst",
+        "draw": "Oavgjort",
+        "performance": "Prestation",
+        "first_win": "Dagens första vinst",
+        "admin": "Admin"
+      },
+      "player": "Spelare",
+      "commend": "Betygsätt",
+      "thumbsUp": "Tumme upp",
+      "thumbsDown": "Tumme ner",
+      "thumbsUpFor": "Tumme upp för {{name}}",
+      "thumbsDownFor": "Tumme ner för {{name}}",
+      "downReason": "Varför?",
+      "downTag": {
+        "toxic": "Toxisk",
+        "griefing": "Griefing",
+        "afk": "AFK eller lämnade",
+        "other": "Något annat"
+      },
+      "commendFailed": "Kunde inte spara det",
+      "outcome": {
+        "win": "SEGER",
+        "loss": "FÖRLUST",
+        "draw": "OAVGJORT"
+      },
+      "minutes_one": "{{count}} min",
+      "minutes_other": "{{count}} min",
+      "yourGame": "Din match",
+      "fullBoard": "Fullständig resultattavla",
+      "hideBoard": "Dölj resultattavlan"
+    },
+    "profile": {
+      "level": "Nivå {{level}}",
+      "xp": "{{xp}} XP",
+      "thumbsUp_one": "{{count}} tumme upp",
+      "thumbsUp_other": "{{count}} tummar upp",
+      "thumbsDown_one": "{{count}} tumme ner",
+      "thumbsDown_other": "{{count}} tummar ner",
+      "tag": {
+        "friendly": "Vänlig",
+        "team_player": "Lagspelare",
+        "leader": "Ledare",
+        "good_comms": "Bra kommunikation",
+        "teacher": "Lärare",
+        "good_sport": "Schysst",
+        "toxic": "Toxisk",
+        "griefing": "Griefing",
+        "unhelpful": "Ohjälpsam",
+        "bad_sport": "Osportslig",
+        "afk": "AFK eller lämnade",
+        "other": "Något annat"
+      },
+      "negativesPrivate": "Bara du och admins kan se dessa.",
+      "history": "Matchmaking-matcher",
+      "historyEmpty": "Inga matchmaking-matcher än.",
+      "win": "Vinst",
+      "loss": "Förlust",
+      "draw": "Oavgjort",
+      "positivePercent": "{{percent}} % positiva"
+    },
+    "leaderboard": {
+      "toLadder": "Matchmaking-stege →",
+      "title": "Topplista",
+      "subtitle_one": "Spelare med {{count}} eller fler matcher de senaste 30 dagarna.",
+      "subtitle_other": "Spelare med {{count}} eller fler matcher de senaste 30 dagarna.",
+      "empty_one": "Ingen än. Spela {{count}} match på 30 dagar för att synas här.",
+      "empty_other": "Ingen än. Spela {{count}} matcher på 30 dagar för att synas här.",
+      "level": "Nivå",
+      "games": "Matcher",
+      "winRate": "Vunna"
+    },
+    "admin": {
+      "title": "Kö (admins)",
+      "summary": "{{players}} söker, {{lobbies}} öppna matcher",
+      "waited": "{{minutes}} min",
+      "cooldowns": "Avstängningar",
+      "until": "{{minutes}} min kvar",
+      "clear": "Rensa",
+      "cleared": "Avstängningen rensad",
+      "clearFailed": "Avstängningen kunde inte rensas",
+      "kind": {
+        "decline": "avböjde",
+        "no_show": "missade en match",
+        "abandon": "lämnade en match"
+      },
+      "review": "Spelare att granska (tummar ner)",
+      "voters_one": "{{count}} röstande",
+      "voters_other": "{{count}} röstande"
+    },
+    "roulette": {
+      "rolling": "Väljer kartan…",
+      "picked": "Karta: {{map}}"
+    }
+  },
+  "chat": {
+    "title": "Chatt",
+    "close": "Stäng chatten",
+    "tabsLabel": "Chattar",
+    "tabMatch": "Match",
+    "tabTeam": "Lag",
+    "tabParty": "Party",
+    "tabDm": "Direktmeddelande",
+    "dmWho": "Bara ni två läser det här",
+    "placeholderDm": "Skriv till {{name}}",
+    "friends": "Vänner",
+    "messageFriend": "Skriv till {{name}}",
+    "matchWho": "Ditt lag, {{title}} och admins",
+    "matchWhoAdmin": "Båda lagen och admins",
+    "teamWho": "Alla i {{team}}",
+    "partyWho": "Alla i ditt party",
+    "placeholderMatch": "Skriv till båda lagen och admins",
+    "placeholderTeam": "Skriv till ditt lag",
+    "placeholderParty": "Skriv till ditt party",
+    "send": "Skicka",
+    "you": "Du",
+    "adminBadge": "ADMIN",
+    "callAdmin": "Kalla på en admin",
+    "adminCallOpen": "Ett adminanrop är öppet här",
+    "callAdminConfirmTitle": "Kalla på en admin?",
+    "callAdminConfirmBody": "En admin får en avisering och går med i chatten. Kalla bara på en när du behöver hjälp med matchen.",
+    "adminCalled": "En admin har kallats",
+    "callFailed": "Kunde inte kalla på en admin",
+    "sendFailed": "Meddelandet kunde inte skickas",
+    "logLabel": "Chatt: {{title}}",
+    "none": "Inga chattar än. Din match, ditt lag och ditt party visas här.",
+    "empty": "Inga meddelanden än. Säg hej.",
+    "loading": "Laddar meddelanden",
+    "readOnlyImpersonating": "Du visar som en annan spelare. Sluta imitera för att skriva.",
+    "peekMatch": "Match · {{title}}",
+    "peekTeam": "Lag",
+    "peekParty": "Party",
+    "buttonUnread": "Chatt, {{count}} olästa",
+    "system": {
+      "vetoStarted": "Vetot har startat · {{team}} börjar",
+      "vetoBan": "{{team}} bannade {{map}}",
+      "vetoReset": "En admin startade om vetot",
+      "vetoPick": "{{team}} pickade {{map}}",
+      "vetoSide": "{{team}} börjar {{side}} på {{map}}",
+      "vetoDone": "Vetot klart · {{maps}}",
+      "serverReady": "Servern redo · {{map}} · anslut från matchsidan",
+      "playerJoined": "{{name}} anslöt till servern · {{n}} inne",
+      "playerLeft": "{{name}} lämnade servern · {{n}} inne",
+      "mapLive": "Karta {{n}} är live · {{map}}",
+      "mapResult": "Karta {{n}} · {{map}} · {{team1}} {{s1}}–{{s2}} {{team2}}",
+      "seriesWon": "{{team}} vinner serien {{a}}–{{b}}",
+      "adminCalled": "{{name}} kallade på en admin",
+      "adminClaimed": "{{name}} tog adminanropet",
+      "adminResolved": "{{name}} löste adminanropet",
+      "timedOut": "tiden tog slut",
+      "remindAccount": "{{name}}: logga in en gång med Steam så att du kan spela i {{tournament}}.",
+      "remindGame": "{{name}}: lägg till spelet i din profil (Spel du spelar) före incheckningen till {{tournament}}.",
+      "serverDown": "Matchservern kraschade. Tar tillbaka den…",
+      "serverBack": "Matchen är tillbaka: karta {{map}}, runda {{round}}. Anslut igen."
+    },
+    "party": {
+      "inviteCopied": "Inbjudningslänken kopierad",
+      "inviteFailed": "Länken kunde inte kopieras",
+      "leader": "ledare",
+      "invite": "Bjud in",
+      "queue": "Köa tillsammans",
+      "leaveQueue": "Lämna kön",
+      "searching": "Söker efter en match",
+      "leaderQueues": "Ledaren startar sökningen"
+    },
+    "back": "Tillbaka",
+    "typing": {
+      "one": "{{name}} skriver…",
+      "two": "{{first}} och {{second}} skriver…",
+      "many": "{{count}} personer skriver…"
+    },
+    "emoji": {
+      "open": "Emoji",
+      "title": "Välj en emoji",
+      "search": "Sök emoji",
+      "none": "Ingen emoji hittades",
+      "categories": {
+        "results": "Resultat",
+        "recent": "Senaste",
+        "smileys": "Smileys",
+        "gestures": "Händer",
+        "people": "Personer",
+        "animals": "Natur",
+        "food": "Mat och dryck",
+        "activity": "Spel och sport",
+        "travel": "Platser",
+        "objects": "Föremål",
+        "symbols": "Symboler"
+      }
+    }
+  },
+  "search": {
+    "open": "Sök",
+    "placeholder": "Sök sidor, spelare, lag, höjdpunkter…",
+    "placeholderAdmin": "Sök sidor, inställningar, spelare, lag, servrar…",
+    "hint": "Skriv minst två bokstäver. Ctrl K (⌘ K) eller / öppnar sökningen var som helst.",
+    "none": "Inget hittades för ”{{q}}”.",
+    "versus": "{{team1}} mot {{team2}}",
+    "groups": {
+      "pages": "Sidor och inställningar",
+      "players": "Spelare",
+      "teams": "Lag",
+      "tournaments": "Turneringar",
+      "matches": "Matcher",
+      "highlights": "Höjdpunkter",
+      "maps": "Kartor",
+      "servers": "Servrar och maskiner",
+      "recorders": "Inspelare"
+    },
+    "status": {
+      "setup": "Förbereds",
+      "in_progress": "Pågår",
+      "completed": "Klar"
+    },
+    "pages": {
+      "manage": "Hantera",
+      "tournaments": "Turneringar",
+      "newTournament": "Turneringsinställningar",
+      "playedMatches": "Alla matcher",
+      "importMatch": "Importera en match",
+      "teams": "Lag",
+      "players": "Spelare",
+      "reports": "Anmälningar",
+      "templates": "Mallar",
+      "ratings": "Rating",
+      "modules": "Moduler",
+      "servers": "Servrar",
+      "maps": "Kartor och kartpooler",
+      "skins": "Skins",
+      "matchRules": "Matchregler",
+      "highlights": "Höjdpunkter",
+      "adminTools": "System",
+      "settings": "Inställningar",
+      "settingsSite": "Inställningar: webbplats och e-post",
+      "settingsSignIn": "Inställningar: inloggningsleverantörer",
+      "settingsPlayers": "Inställningar: spelare och åtkomst",
+      "settingsWebhooks": "Inställningar: webhooks",
+      "settingsLicense": "Licens",
+      "settingsMatchmaking": "Inställningar: matchmaking",
+      "settingsAdvanced": "Inställningar: avancerat",
+      "liveMatches": "Livematcher"
+    },
+    "clips_one": "{{count}} klipp",
+    "clips_other": "{{count}} klipp",
+    "fieldLabel": "Sök"
+  },
+  "highlightsPage": {
+    "recorderStats": "Skicka anonyma benchmarkresultat",
+    "recorderStatsHint": "Efter ett benchmark skickar inspelarna GPU- och CPU-modell, versioner och tider till webbplatsen, för den publika tabellen över vad som renderar hur snabbt. Inget om matcher eller spelare. Inspelningen fungerar likadant med det här avstängt.",
+    "title": "Höjdpunkter",
+    "subtitle": "Höjdpunktsklipp och höjdpunktsfilmer från varje match: vad inspelarna gör, musiken under filmerna och varje spels inspelare.",
+    "tabs": {
+      "settings": "Inställningar"
+    },
+    "perPlayer": {
+      "label": "Klipp per spelare per karta",
+      "helper": "1 till 6. Fler klipp gör att en matchs höjdpunkter tar längre tid att bli klara."
+    },
+    "preset": {
+      "label": "Videokvalitet",
+      "smooth": "Mjuk (rekommenderas): upp till 1080p, 240 fps",
+      "crisp": "Skarp: upp till 1440p, 120 fps",
+      "lan": "LAN, max: upp till 4K, 240 fps",
+      "custom": "Egen",
+      "light": "Lätt: bara 720p, 60 fps"
+    },
+    "bitrate": {
+      "label": "Bithastighet",
+      "auto": "Automatisk (rekommenderas)",
+      "option": "{{mbps}} Mbit/s"
+    },
+    "resolution": {
+      "label": "Högsta upplösning"
+    },
+    "fps": {
+      "label": "Högsta bildfrekvens",
+      "option": "{{fps}} fps"
+    },
+    "quality": {
+      "helper": "Inspelarna gör varje klipp och film en gång, i högsta kvalitet, och skär ut de lägre ur den. Slow motion förblir mjuk vid alla bildfrekvenser. Klipp som redan gjorts behåller sin kvalitet tills de görs om."
+    },
+    "music": {
+      "label": "Musik under filmerna",
+      "all": "Alla låtar ({{count}})",
+      "pick": "Bara de jag väljer",
+      "off": "Ingen musik",
+      "listen": "Lyssna på {{title}}",
+      "stop": "Stoppa {{title}}",
+      "contentId": "YouTube Content ID",
+      "volume": "Volym",
+      "byo": "Ta med egen musik: lägg till låtar du har rätt att använda. Auto Tournament levererar inga. Spelaren spelar en annan låt till varje film, och nedladdningar finns med eller utan den.",
+      "remove": "Ta bort {{title}}",
+      "removeConfirm": "Ta bort",
+      "keep": "Behåll",
+      "addTitle": "Lägg till en låt",
+      "chooseFile": "Välj en fil",
+      "noFile": "Ingen fil vald (MP3, M4A, WAV…)",
+      "trackTitle": "Titel",
+      "artist": "Artist",
+      "genre": "Genre (grupperar menyn)",
+      "source": "Var den kommer från (en länk, för erkännande)",
+      "contentIdLabel": "Registrerad i YouTube Content ID (en uppladdning med den kan få ett anspråk)",
+      "add": "Lägg till låten",
+      "adding": "Lägger till…",
+      "rights": "Lägg bara till musik du har rätt att använda i videor. Ljudnivån jämnas ut med de andra låtarna.",
+      "suggestions_one": "{{count}} låt som passar filmerna, på Pixabay",
+      "suggestions_other": "{{count}} låtar som passar filmerna, på Pixabay",
+      "suggestionsHelp": "Öppna en, ladda ner den från Pixabay under dess licens och lägg till den här. Licensen låter dig använda den i videor; den låter ingen sprida filen vidare.",
+      "link": "Eller en länk till ljudfilen",
+      "addLink": "Lägg till från länken"
+    },
+    "overlay": {
+      "label": "Överlägg",
+      "helper_one": "{{count}} klipp har en ren kopia. Rita om lägger på det aktuella textkortet, killfeeden och namnen igen och gör sedan om filmerna. Ingen CS2 behövs.",
+      "helper_other": "{{count}} klipp har en ren kopia. Rita om lägger på det aktuella textkortet, killfeeden och namnen igen och gör sedan om filmerna. Ingen CS2 behövs.",
+      "redraw": "Rita om överlägg",
+      "pending_one": "{{count}} video väntar på en inspelare",
+      "pending_other": "{{count}} videor väntar på en inspelare",
+      "failed_one": "{{count}} video kunde inte ritas om",
+      "failed_other": "{{count}} videor kunde inte ritas om",
+      "keepClean": "Behåll rena kopior av klipp",
+      "keepCleanHelper": "Varje klipp sparas också som inspelat, utan kortet eller killfeeden. Filmerna görs då av de rena klippen med ett eget överlägg, och överlägg kan ritas om. Av använder ungefär hälften av lagringen.",
+      "redrawFailed": "Omritningen kunde inte köas."
+    },
+    "moved": "Höjdpunktsinställningar, inspelarna och hur man lägger till en finns nu på en egen sida:",
+    "saved": "Sparat",
+    "saveFailed": "Kunde inte spara",
+    "reels": {
+      "title": "Filmstorlekar",
+      "description": "Hur många klipp som går in i varje film. Fler klipp ger längre filmer som tar längre tid att göra.",
+      "funnyPerPlayer": "Roliga klipp per spelare per karta",
+      "mapReelPerPlayer": "Klipp per spelare i en kartfilm",
+      "seriesReelMax": "Klipp i en seriefilm",
+      "seriesReelPerPlayer": "Klipp per spelare i en seriefilm",
+      "teamReelPerPlayer": "Klipp per spelare i en lagfilm",
+      "tournamentReelMax": "Klipp i en turneringsfilm",
+      "tournamentReelPerPlayer": "Klipp per spelare i en turneringsfilm",
+      "range": "{{min}} till {{max}}"
+    },
+    "minResolution": {
+      "label": "Lägsta upplösning"
+    },
+    "ladder": {
+      "title": "Kvaliteter tittarna kan välja",
+      "recordedAt": "Inspelad i {{quality}}",
+      "highest": "Högsta",
+      "lowest": "Telefoner, långsamma anslutningar",
+      "rate": "≈{{mbps}} Mbit/s"
+    },
+    "cost": {
+      "single": "Inspelningen tar ungefär {{time}}× så lång tid som 1080p i 120 fps. En uppskattning.",
+      "withCuts": "Inspelningen tar ungefär {{time}}× så lång tid som 1080p i 120 fps, och alla kvaliteter sparas: ungefär {{storage}}× utrymmet. Uppskattningar."
+    },
+    "keepMasters": {
+      "label": "Behåll högsta kvaliteten",
+      "always": "Alltid",
+      "30": "I 30 dagar",
+      "7": "I 7 dagar",
+      "reels": "Tills filmerna är gjorda",
+      "helper": "Sedan tar nästa kvalitet dess plats och den rena kopian försvinner, vilket sparar det mesta av utrymmet. En video utan sin högsta kvalitet kan inte få sitt överlägg omritat eller sättas in i en ny film i den kvaliteten; den måste spelas in igen."
+    },
+    "matchmaking": {
+      "minimumTitle": "Vilka spel som blir klipp",
+      "minimumDescription": "För varje match. Matchmaking behåller också bara de bästa, inställt nedan.",
+      "title": "Matchmaking-höjdpunkter",
+      "description": "Matchmaking spelar många matcher. Behåll bara de bästa från varje, så att inspelarna inte är upptagna hela dagen.",
+      "on": "Spela in matchmaking-höjdpunkter",
+      "onHelp": "Av: matchmaking-matcher får inga klipp eller filmer.",
+      "clips": "Klipp per match",
+      "clipsHelp": "De bästa spelen först. En spelares film görs av samma klipp.",
+      "all": "Alla",
+      "minKills": "Minsta spel att behålla",
+      "minKillsHelp": "Spel under det här blir aldrig ett klipp, inte ens när det finns plats.",
+      "kills": {
+        "2": "2 kills",
+        "3": "3 kills",
+        "4": "4 kills",
+        "5": "Ace"
+      },
+      "killsInline": {
+        "2": "2 kills",
+        "3": "3 kills",
+        "4": "4 kills",
+        "5": "en ace"
+      },
+      "clutch": "Clutchar räknas alltid",
+      "clutchHelp": "En vunnen 1vX räknas även med färre kills än det minsta spelet.",
+      "summary": "Varje matchmaking-match får {{clips}} med {{kills}} eller mer.",
+      "summaryClutch": "Varje matchmaking-match får {{clips}} med {{kills}} eller mer, och alla clutchar.",
+      "summaryEvery": "varje spel",
+      "summaryBest_one": "sitt bästa spel",
+      "summaryBest_other": "sina bästa {{count}} spel"
+    }
+  },
+  "update": {
+    "available": "Auto Tournament {{latest}} har kommit (du kör {{running}}).",
+    "notes": "Nyheter",
+    "module": "{{name}} {{version}} finns (du kör {{installed}}).",
+    "moduleProblem": "{{name}}: uppdateringen gick inte igenom. {{problem}}",
+    "openModules": "Moduler"
+  },
+  "licenseGate": {
+    "expiredTitle": "Plattformens licens har gått ut",
+    "expiredAdmin": "Licensbetalningen är försenad, så plattformen har stoppats. En betalning slår på den igen direkt. Din data är säker.",
+    "expiredPlayer": "Matcher och anmälningar är pausade. Arrangören har fått veta. Titta in senare.",
+    "pay": "Betala i konsolen ↗",
+    "settings": "Licensinställningar",
+    "fix": "Åtgärda ↗",
+    "pastDue": "Licensbetalningen misslyckades. Plattformen stoppas {{date}} om den inte betalas.",
+    "elsewhereTitle": "Licensnyckeln används på en annan installation",
+    "elsewhereAdmin": "En licensnyckel fungerar på en Auto Tournament-installation, och en annan installation har den här. Klistra in den här installationens egen nyckel, eller använd ”Flytta till en annan installation” i konsolen. Din data är säker.",
+    "replacedTitle": "Licensnyckeln har ersatts",
+    "replacedAdmin": "En ny nyckel skapades för licensen i konsolen, så den gamla har slutat fungera. Klistra in den nya nyckeln i licensinställningarna. Din data är säker.",
+    "openConsole": "Öppna konsolen ↗",
+    "pasteKey": "Klistra in den nya nyckeln",
+    "replacedSoon": "En ny nyckel skapades för licensen i konsolen. Klistra in den i licensinställningarna: den här nyckeln slutar fungera {{date}}."
+  },
+  "matchAdmin": {
+    "openChat": "Öppna chatten",
+    "resetVeto": "Starta om vetot",
+    "resetVetoTitle": "Starta om vetot?",
+    "resetVetoBody": "Alla bans, picks och sidval hittills rensas och lagen börjar om vetot. Båda lagen ser det i matchchatten.",
+    "vetoReset": "Vetot börjar om",
+    "vetoResetFailed": "Vetot kunde inte startas om"
+  },
+  "addressMismatch": {
+    "open": "Öppna {{host}}",
+    "text": "Du är på {{current}}, men webbplatsen är inställd för {{host}}: Steam-inloggning, mejl och spelservrarna använder den adressen."
+  },
+  "siteFooter": {
+    "support": "Stöd projektet",
+    "trademarks": "Counter-Strike, CS2 och Steam är varumärken som tillhör Valve Corporation. Andra spelnamn är varumärken som tillhör sina ägare. Auto Tournament är inte knutet till eller godkänt av Valve eller någon spelutgivare."
+  },
+  "discordNotice": {
+    "link": "Koppla ditt Discord-konto så att boten kan flytta in dig i ditt lags röstkanal och hitta dig i lagets kanal.",
+    "linkAction": "Koppla Discord",
+    "join": "Gå med på vår Discord-server. Ditt lags kanaler och matchkort finns där.",
+    "joinAction": "Gå med på servern"
+  }
+}

@@ -1,0 +1,287 @@
+{
+  "notificationPrompt": {
+    "title": "Slå på aviseringar",
+    "body": "Vi rekommenderar att du slår på dem. Då hör du av oss även om du stänger fliken:",
+    "matchReady": "din match är redo att ansluta till",
+    "vetoTurn": "det är din tur i kartvetot",
+    "starting": "en turnering du anmält dig till börjar snart",
+    "iphone": "På en iPhone, lägg först till webbplatsen på hemskärmen (Dela, sedan Lägg till på hemskärmen) och öppna den därifrån.",
+    "change": "Du kan ändra det när som helst i aviseringsinställningarna.",
+    "later": "Inte nu",
+    "turnOn": "Slå på (rekommenderas)"
+  },
+  "social": {
+    "bell": {
+      "title": "Aviseringar",
+      "label": "Aviseringar",
+      "labelUnread_one": "Aviseringar, {{count}} ny",
+      "labelUnread_other": "Aviseringar, {{count}} nya",
+      "markAllRead": "Markera alla som lästa",
+      "show": "Visa",
+      "filter": {
+        "all": "Alla",
+        "you": "Behöver dig",
+        "tournaments": "Turneringar",
+        "matches": "Matcher",
+        "skins": "Skins",
+        "clips": "Klipp",
+        "other": "Övrigt"
+      },
+      "empty": "Inget här än",
+      "emptyHint": "Partyinbjudningar, vänförfrågningar, turneringsnyheter, nya skins och färdiga höjdpunkter visas här.",
+      "loading": "Laddar…",
+      "seeAll": "Se alla aviseringar",
+      "loadOlder": "Ladda äldre",
+      "settings": "Aviseringsinställningar"
+    },
+    "notice": {
+      "partyInvite": "bjöd in dig till sitt party",
+      "teamInvite": "bjöd in dig till",
+      "joinedTeam": "Du gick med i laget",
+      "partyDetail": "{{mode}} · {{size}} i partyt",
+      "join": "Gå med",
+      "decline": "Avböj",
+      "accept": "Acceptera",
+      "ignore": "Ignorera",
+      "friendRequest": "skickade en vänförfrågan",
+      "friendAccepted": "accepterade din vänförfrågan",
+      "skin": "Nytt skin:",
+      "highlight": "Din höjdpunkt är klar:",
+      "highlightVictim": "{{name}} tog ut dig i sitt klipp:",
+      "highlightAssist": "Du assisterade {{name}} i hens klipp:",
+      "highlightKiller": "Du tog ut {{name}} i hens klipp:",
+      "tournamentStarted": "har börjat. Din första match är på tur.",
+      "lineupGap": "· en startspelare lämnade din laguppställning. Välj en avbytare inom {{minutes}} minuter, annars spelar ni med en spelare mindre.",
+      "checkInOpen": "incheckningen är öppen. Checka in innan den stänger.",
+      "joined": "Du gick med i partyt",
+      "nowFriends": "Ni är nu vänner",
+      "declined": "Avböjd",
+      "expired": "Partyt har avslutats",
+      "reportNew": "anmäldes: {{reason}}",
+      "reportReviewed": "Tack: din anmälan om {{name}} har granskats.",
+      "matchReady": "är redo. Öppna matchrummet för att ansluta.",
+      "vetoTurn": "det är ditt lags tur i vetot.",
+      "startsSoon": "börjar om {{minutes}} minuter. Gör dig redo för din första match.",
+      "startsSoonUpdate": "börjar om {{minutes}} minuter. Starta spelet nu så att en eventuell uppdatering är klar före din första match.",
+      "matchSoon": "ditt veto öppnar om {{minutes}} minuter och fortsätter utan dig. Var vid datorn.",
+      "noShow": "du anslöt aldrig till din match, så du är utanför nästa omgångar. Öppna turneringen och säg att du är tillbaka för att spela vidare.",
+      "discordLink": "koppla ditt Discord-konto för att få ditt lags kanaler och flyttas in i dess röstkanal.",
+      "signedUp": "· {{team}} är med. Se vad du behöver veta före start."
+    },
+    "toast": {
+      "join": "Gå med i partyt",
+      "close": "Stäng",
+      "closes_one": "Stängs om {{count}} s · finns kvar i klockan",
+      "closes_other": "Stängs om {{count}} s · finns kvar i klockan"
+    },
+    "friends": {
+      "title": "Vänner",
+      "tabFriends": "Vänner",
+      "tabRequests": "Förfrågningar",
+      "tabAdd": "Lägg till vän",
+      "online_one": "Online · {{count}}",
+      "online_other": "Online · {{count}}",
+      "offline_one": "Offline · {{count}}",
+      "offline_other": "Offline · {{count}}",
+      "onlineCount_one": "{{count}} online",
+      "onlineCount_other": "{{count}} online",
+      "invite": "Bjud in",
+      "inParty": "I ditt party",
+      "more": "Mer för {{name}}",
+      "viewProfile": "Visa profil",
+      "remove": "Ta bort vän",
+      "removed": "{{name}} är inte längre din vän",
+      "none": "Inga vänner än",
+      "noneHint": "Lägg till de du spelar med och bjud sedan in dem till ditt party härifrån eller från Spela.",
+      "incoming": "Inkommande",
+      "sent": "Skickade",
+      "noIncoming": "Inga förfrågningar väntar på dig.",
+      "noSent": "Du har inga väntande förfrågningar.",
+      "askedAgo": "Frågade {{when}}",
+      "sentAgo": "Skickad {{when}}",
+      "cancelRequest": "Avbryt förfrågan",
+      "searchPlaceholder": "Ett namn eller en länk till en Steam-profil",
+      "results": "På Auto Tournament",
+      "playedWith": "Spelat med nyligen",
+      "noResults": "Ingen med det namnet.",
+      "typeMore": "Skriv minst två bokstäver.",
+      "noRecent": "Spela en match så visas de du spelade med här.",
+      "matches_one": "{{count}} match",
+      "matches_other": "{{count}} matcher",
+      "alreadyFriends": "Vänner",
+      "requestSent": "Förfrågan skickad",
+      "addFriend": "Lägg till vän",
+      "signIn": "Logga in för att se dina vänner",
+      "signInHint": "Vänner, förfrågningar och inbjudningar hör till ditt konto.",
+      "cardEmpty": "Lägg till vänner för att se när de är online och bjuda in dem med ett klick.",
+      "all_one": "Alla vänner ({{count}}) →",
+      "all_other": "Alla vänner ({{count}}) →",
+      "find": "Hitta vänner →",
+      "requestCount_one": "{{count}} förfrågan",
+      "requestCount_other": "{{count}} förfrågningar"
+    },
+    "status": {
+      "playing": "I en match · {{match}}",
+      "searching": "Söker · {{mode}}",
+      "online": "Online",
+      "offline": "Offline",
+      "lastSeen": "Senast sedd {{when}}"
+    },
+    "invite": {
+      "searchPlaceholder": "Vem som helst på webbplatsen, efter namn",
+      "friendsOnline": "Vänner online",
+      "recent": "Spelat med nyligen",
+      "onSite": "På Auto Tournament",
+      "noFriends": "Inga vänner än. Sök efter vem som helst med namn ovan.",
+      "nobodyOnline": "Ingen av dina vänner är online.",
+      "inMatch": "I en match",
+      "together_one": "{{count}} match tillsammans",
+      "together_other": "{{count}} matcher tillsammans",
+      "invited": "Inbjuden",
+      "sent": "Bjöd in {{name}}",
+      "chip": "{{name}} · inbjuden",
+      "cancel": "Dra tillbaka inbjudan till {{name}}",
+      "orLink": "Eller en länk",
+      "copy": "Kopiera",
+      "copyFailed": "Kunde inte kopiera. Markera länken och kopiera den själv.",
+      "makeLink": "Skapa en inbjudningslänk",
+      "cannot": {
+        "nobody": "Tar inte emot inbjudningar",
+        "friends": "Bara vänner",
+        "no_game": "Spelar inte CS2"
+      }
+    },
+    "profile": {
+      "friends": "Vänner",
+      "acceptRequest": "Acceptera vänförfrågan",
+      "message": "Meddelande",
+      "invite": "Bjud in till party"
+    },
+    "settings": {
+      "title": "Partyinbjudningar",
+      "description": "Vem som kan bjuda in dig till ett matchmaking-party. Inbjudningar visas i klockan och dyker upp på alla sidor du har öppna.",
+      "everyone": "Alla",
+      "everyoneHint": "Vilken spelare som helst på webbplatsen.",
+      "friends": "Bara vänner",
+      "friendsHint": "Bara spelare du är vän med.",
+      "nobody": "Ingen",
+      "nobodyHint": "Inga inbjudningar. Du kan fortfarande gå med i ett party via dess länk.",
+      "saved": "Sparat",
+      "saveFailed": "Inställningen kunde inte sparas"
+    },
+    "setup": {
+      "title": "Gör klart inställningarna innan du söker",
+      "youGame": "Lägg till CS2 bland dina spel på profilen.",
+      "youGameAuto": "Att hitta en match lägger till spelet bland dina spel.",
+      "youAccount": "Koppla ditt Steam-konto.",
+      "theyGame": "{{name}} har inte lagt till CS2 bland sina spel.",
+      "theyAccount": "{{name}} har inte kopplat sitt Steam-konto.",
+      "fix": "Öppna ditt konto"
+    },
+    "news": {
+      "title": "Nyheter",
+      "hint": "Skicka en avisering till varje spelares klocka: en ny säsong, en turnering, planerat underhåll.",
+      "titleLabel": "Rubrik",
+      "bodyLabel": "En rad till (valfritt)",
+      "urlLabel": "Länk (valfritt)",
+      "urlHint": "En sida här (/tournament/3) eller en https://-adress.",
+      "urlBad": "Börja med / eller https://",
+      "send": "Skicka till alla spelare",
+      "confirm": "Alla spelare som har loggat in får det här. Skicka?",
+      "sendNow": "Skicka nu",
+      "cancel": "Avbryt",
+      "sent_one": "Skickat till {{count}} spelare",
+      "sent_other": "Skickat till {{count}} spelare",
+      "failed": "Nyheten kunde inte skickas"
+    },
+    "noticeSettings": {
+      "title": "Inställningar",
+      "alerts": "Aviseringar",
+      "browser": "Webbläsaraviseringar",
+      "browserHint": "På den här enheten, även när webbplatsen är stängd (din match är redo, din tur i vetot, en turnering börjar). Gäller bara den här webbläsaren.",
+      "browserDenied": "Blockerat i webbläsarens webbplatsinställningar. Tillåt aviseringar där för att slå på dem.",
+      "browserUnsupported": "Webbläsaren har inga aviseringar.",
+      "sound": "Ljud",
+      "test": "Testa",
+      "volume": "Volym {{percent}} %",
+      "group": {
+        "you": "Du",
+        "tournaments": "Turneringar",
+        "other": "Övrigt",
+        "skins": "Skins",
+        "clips": "Klipp"
+      },
+      "kind": {
+        "party_invite": "Partyinbjudningar",
+        "team_invite": "Laginbjudningar",
+        "friend_request": "Vänförfrågningar",
+        "friend_accepted": "Accepterade vänförfrågningar",
+        "tournament": "Incheckningar och starter",
+        "skin": "Skin-drops",
+        "highlight": "Dina höjdpunkter",
+        "news": "Nyheter",
+        "report": "Anmälningar"
+      },
+      "delivery": {
+        "off": "Av",
+        "bell": "Klocka",
+        "sound": "Klocka och ljud"
+      }
+    }
+  },
+  "notifyChannels": {
+    "title": "Aviseringar",
+    "description": "Var vi berättar om saker som behöver dig när du inte är på webbplatsen. Av som standard, utom dina egna matcher.",
+    "event": "Händelse",
+    "channel": {
+      "push": "Webbläsare/telefon",
+      "discord": "Discord-DM",
+      "email": "E-post"
+    },
+    "events": {
+      "match_ready": {
+        "title": "Din match är redo",
+        "hint": "Server, anslutningslänk och vem du möter"
+      },
+      "veto_turn": {
+        "title": "Din tur i vetot",
+        "hint": "Bara lagkaptener"
+      },
+      "checkin_open": {
+        "title": "Incheckningen öppnar",
+        "hint": "För turneringar du är anmäld till"
+      },
+      "new_tournament": {
+        "title": "Nya turneringar",
+        "hint": "När en turnering tar emot anmälningar"
+      },
+      "tournament_starting": {
+        "title": "Turneringen börjar",
+        "hint": "Påminnelser innan en turnering du är med i börjar"
+      },
+      "direct_message": {
+        "title": "Meddelanden från vänner",
+        "hint": "När du inte är på webbplatsen"
+      }
+    },
+    "reason": {
+      "no_bot": "Inte inställt på den här webbplatsen",
+      "no_discord": "Koppla Discord först",
+      "no_push": "Slå på aviseringar i den här webbläsaren först",
+      "email_off": "Webbplatsen kan inte skicka e-post",
+      "no_email": "Lägg till en e-postadress först",
+      "email_unverified": "Bekräfta din e-postadress först"
+    },
+    "switchLabel": "{{event}} via {{channel}}",
+    "saveFailed": "Kunde inte spara det."
+  },
+  "presence": {
+    "online": "Online",
+    "offline": "Offline",
+    "away": "Borta",
+    "searching": "Söker en {{mode}}-match",
+    "playingMatchmaking": "I en matchmaking-match: {{label}}",
+    "playingTournament": "I en turneringsmatch: {{label}}",
+    "playing": "I en match: {{label}}"
+  }
+}

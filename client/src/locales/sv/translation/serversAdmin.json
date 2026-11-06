@@ -1,0 +1,198 @@
+{
+  "adminToolsPage": {
+    "description": "Matchåterställning och apploggen för den här webbplatsen.",
+    "recovery": {
+      "title": "Matchåterställning",
+      "description": "Om API:et eller servrarna startades om under en turnering och matchläget verkar osynkat (t.ex. matcher som fastnat innan de gick live eller saknade liveresultat) kan du starta en återställning manuellt. Alla servrar tillfrågas om sin aktuella matchrapport, ställningar och faser synkas om, och webhooks och demouppladdningar konfigureras om där det går.",
+      "button": "Kör matchåterställning nu",
+      "success": "Matchåterställningen är klar.",
+      "error": "Matchåterställningen misslyckades.",
+      "failedTrigger": "Matchåterställningen kunde inte startas. Försök igen."
+    },
+    "monitoring": {
+      "title": "Övervakning och loggar",
+      "appLogs": "Applikationsloggar"
+    },
+    "logs": {
+      "loadFailed": "Loggarna kunde inte laddas",
+      "levelAll": "Alla",
+      "auto": "Auto",
+      "refresh": "Uppdatera loggar",
+      "empty": "Inga loggar att visa",
+      "footer": "Visar de {{count}} senaste loggposterna",
+      "footerAutoRefresh": "Visar de {{count}} senaste loggposterna (uppdateras automatiskt)"
+    }
+  },
+  "servers": {
+    "allocation": {
+      "title": "Väntar på en ledig server",
+      "waiting": "Matchen startar automatiskt så fort servrar blir lediga. Servrar som behövs:",
+      "nextPass": "Nästa tilldelningsförsök om {{seconds}} s"
+    }
+  },
+  "adminMatchControls": {
+    "title": "Adminkontroller",
+    "noServer": "Ingen server är tilldelad matchen",
+    "unavailable": "Ingen server är tilldelad matchen, så adminkontrollerna är inte tillgängliga.",
+    "unknownAction": "Okänd åtgärd",
+    "commandFailed": "Kommandot kunde inte köras",
+    "confirm": "Bekräfta",
+    "execute": "Kör",
+    "close": "Stäng",
+    "tipLabel": "Admintips:",
+    "tip": "Använd kontrollerna försiktigt under livematcher. Vissa åtgärder, som ”{{endMatch}}” och ”{{restartMatch}}”, går inte att ångra.",
+    "sections": {
+      "matchControl": "Matchkontroll",
+      "advanced": "Avancerade åtgärder"
+    },
+    "actions": {
+      "pause": {
+        "button": "Paus",
+        "tooltip": "Adminpaus – spelarna kan inte avbryta den",
+        "title": "Pausa matchen",
+        "description": "Tvingar matchen i paus. Spelarna kan inte avbryta den."
+      },
+      "unpause": {
+        "button": "Avsluta paus",
+        "tooltip": "Fortsätt matchen efter en paus",
+        "title": "Avsluta matchpaus",
+        "description": "Tvingar matchen att fortsätta."
+      },
+      "swap": {
+        "button": "Byt sida",
+        "tooltip": "Byt lagen till motsatta sidor (CT ↔ T)",
+        "title": "Byt sida",
+        "description": "Byter lagens sidor (CT/T)."
+      },
+      "restartRound": {
+        "button": "Starta om rundan",
+        "tooltip": "Starta om den aktuella rundan från början (återställer ekonomin)",
+        "title": "Starta om rundan",
+        "description": "Startar om den aktuella rundan."
+      },
+      "skipVeto": {
+        "button": "Hoppa över veto",
+        "tooltip": "Hoppa över kartvetot och ladda första kartan direkt",
+        "title": "Hoppa över veto",
+        "description": "Hoppar över vetofasen och startar matchen."
+      },
+      "endWarmup": {
+        "button": "Avsluta uppvärmning",
+        "tooltip": "Avsluta uppvärmningen och starta matchen (knivrunda eller live)",
+        "title": "Avsluta uppvärmning",
+        "description": "Avslutar uppvärmningen och startar matchen."
+      },
+      "endMatch": {
+        "button": "Avsluta match",
+        "tooltip": "Avsluta matchen direkt och registrera slutställningen",
+        "title": "Avsluta match",
+        "description": "Tvingar matchen att avslutas. Använd med försiktighet!"
+      },
+      "restartMatch": {
+        "button": "Starta om match",
+        "tooltip": "Avsluta och ladda om matchen från början – all framgång går förlorad",
+        "title": "Starta om match",
+        "description": "Avslutar matchen och laddar om den från början. All framgång går förlorad!"
+      },
+      "reallocateServer": {
+        "button": "Tilldela annan server",
+        "tooltip": "Flytta matchen till en annan server (återställning innan live)",
+        "tooltipUnavailable": "Bara för redo/laddade matcher (inte under livespel)",
+        "title": "Tilldela annan server",
+        "description": "Flyttar matchen till en annan ledig server och laddar om den. Använd om den nuvarande servern är inaktuell eller spelarna inte kan ansluta. Inte tillåtet under en livematch."
+      },
+      "forceCancel": {
+        "button": "Tvinga avbrott",
+        "tooltip": "Avbryt matchen även om servern är offline – frigör servertilldelningen",
+        "title": "Tvinga avbrott av matchen",
+        "description": "⚠️ Avbryter matchen även om servern är offline. Matchen markeras som klar och servern frigörs. Det går inte att ångra."
+      }
+    },
+    "inputs": {
+      "restoreBackup": {
+        "button": "Återställ backup",
+        "tooltip": "Ladda en sparad rundbackup – återställer ekonomi och positioner",
+        "title": "Återställ backup",
+        "label": "Rundnummer att återställa"
+      },
+      "addTime": {
+        "button": "Lägg till tid",
+        "tooltip": "Förläng den aktuella rundtimern (bra vid tekniska pauser)",
+        "title": "Lägg till rundtid",
+        "label": "Sekunder att lägga till"
+      },
+      "broadcast": {
+        "button": "Meddelande",
+        "tooltip": "Skicka ett meddelande till alla spelare på servern",
+        "title": "Skicka meddelande",
+        "label": "Meddelande att skicka"
+      }
+    },
+    "success": {
+      "pause": "Matchen pausad",
+      "unpause": "Pausen avslutad",
+      "swap": "Lagen bytte sida",
+      "skipVeto": "Vetofasen överhoppad",
+      "restartRound": "Rundan omstartad",
+      "endMatch": "Matchen avslutad",
+      "endWarmup": "Uppvärmningen avslutad",
+      "startMatch": "Matchen startad",
+      "restoreBackup": "Backup återställd till runda {{round}}",
+      "addTime_one": "La till {{count}} sekund på rundtimern",
+      "addTime_other": "La till {{count}} sekunder på rundtimern",
+      "broadcast": "Meddelandet skickat till servern",
+      "restartMatch": "Matchen omstartad (avslutad och omladdad)",
+      "reallocateServer": "Matchen flyttad till en annan server",
+      "forceCancel": "Matchen avbruten",
+      "default": "Kommandot kördes"
+    },
+    "hold": {
+      "title": "Håll i stället för walkover",
+      "description": "Medan matchen hålls laddas eller startas den inte och ingen får walkover. När den körs igång får lagen hela tiden igen.",
+      "reason": "Anledning (visas för admins)",
+      "delay": "Skjut upp {{minutes}} min",
+      "holdUntilReleased": "Håll tills den släpps",
+      "release": "Släpp nu",
+      "restartCountdown": "Starta om nedräkningen",
+      "heldUntil": "Hålls till {{time}}",
+      "heldIndefinitely": "Hålls tills den släpps",
+      "tournamentPaused": "Turneringen är pausad",
+      "heldDone": "Matchen hålls",
+      "delayedDone": "Matchen uppskjuten {{minutes}} min",
+      "releasedDone": "Matchen släppt",
+      "restartedDone": "Nedräkningen omstartad: lagen har hela tiden igen",
+      "failed": "Hållningen kunde inte ändras"
+    }
+  },
+  "adminCalls": {
+    "header": "Adminanrop ({{count}})",
+    "title": "{{player}} kallar på en admin",
+    "justNow": "nyss",
+    "minutesAgo": "för {{count}} min sedan",
+    "hoursAgo": "för {{count}} h sedan",
+    "spectator": "Åskådare",
+    "team1": "Lag 1",
+    "team2": "Lag 2",
+    "noMessage": "Inget meddelande",
+    "unknownPlayer": "Okänd spelare",
+    "unknownServer": "Okänd server",
+    "matchMap": "{{match}}, karta {{map}}",
+    "openMatch": "Öppna match",
+    "openServers": "Servrar",
+    "resolve": "Markera som löst",
+    "resolveAll": "Lös alla",
+    "resolveFailed": "Anropet kunde inte markeras som löst. Försök igen.",
+    "matchUnavailable": "Matchen kunde inte öppnas.",
+    "enableSound": "Slå på ljud",
+    "mute": "Ljud av",
+    "unmute": "Ljud på",
+    "minimize": "Minimera",
+    "show": "Visa",
+    "openChat": "Öppna chatt",
+    "claim": "Ta",
+    "release": "Släpp",
+    "claimedBy": "Tagen av {{name}}",
+    "claimedByYou": "Tagen av dig",
+    "anAdmin": "en admin"
+  }
+}

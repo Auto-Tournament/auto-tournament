@@ -1,0 +1,989 @@
+{
+  "dashboard": {
+    "title": "Admin",
+    "restartTournament": {
+      "button": "Starta om turneringens matcher",
+      "restarting": "Startar om turneringens matcher…",
+      "intro": "🔄 Alla aktiva matcher startas om och laddas om på servrarna.",
+      "actionsTitle": "Åtgärder:",
+      "actionEndMatch": "Kör at_endmatch på alla servrar med laddade/livematcher",
+      "actionReset": "Återställ matcherna till status 'ready'",
+      "actionReallocate": "Tilldela matcherna till tillgängliga servrar igen",
+      "actionReload": "Ladda om matchkonfigurationerna på spelservrarna",
+      "hint": "Använd det här om matcher har fastnat eller behöver en nystart.",
+      "confirm": "Starta om turneringen"
+    },
+    "header": {
+      "brand": "Auto Tournament",
+      "version": "Din Auto Tournament-webbplats · version {{version}}",
+      "unknownVersion": "dev",
+      "createTournament": "Skapa turnering"
+    },
+    "setup": {
+      "title": "Gör klart konfigurationen",
+      "openSettings": "Öppna inställningar",
+      "signIn": "Inloggningsleverantör",
+      "game": "Installera ett spel (CS2) från Moduler",
+      "discordBot": "Lägg till din egen Discord-bot (dess token) så att webbplatsen kan skicka DM till spelare om deras matcher"
+    },
+    "tournaments": {
+      "title": "Turnering",
+      "empty": "Webbplatsen kör en turnering i taget. Skapa den, så visas den här, under Bläddra och på sin evenemangssida.",
+      "status": {
+        "setup": "Utkast",
+        "ready": "Anmälan",
+        "inProgress": "Live",
+        "completed": "Klar"
+      },
+      "state": {
+        "teams_one": "{{count}} lag",
+        "teams_other": "{{count}} lag",
+        "entered_one": "{{count}} lag anmält",
+        "entered_other": "{{count}} lag anmälda",
+        "draftTeams_one": "Utkast · {{count}} lag valt",
+        "draftTeams_other": "Utkast · {{count}} lag valda",
+        "draftEmpty": "Utkast · inga lag än",
+        "live_one": "{{count}} match live",
+        "live_other": "{{count}} matcher live",
+        "completed_one": "{{count}} lag deltog",
+        "completed_other": "{{count}} lag deltog",
+        "winner": "Vinnare: {{name}}",
+        "teamsPlayers_one": "{{count}} spelare",
+        "teamsPlayers_other": "{{count}} spelare",
+        "enteredPlayers_one": "{{count}} spelare anmäld",
+        "enteredPlayers_other": "{{count}} spelare anmälda",
+        "draftTeamsPlayers_one": "Utkast · {{count}} spelare",
+        "draftTeamsPlayers_other": "Utkast · {{count}} spelare",
+        "completedPlayers_one": "{{count}} spelare deltog",
+        "completedPlayers_other": "{{count}} spelare deltog"
+      },
+      "actions": {
+        "manage": "Hantera",
+        "continueSetup": "Fortsätt konfigurationen",
+        "view": "Visa"
+      },
+      "eventPage": "Evenemangssida",
+      "emptyTitle": "Ingen turnering än"
+    },
+    "site": {
+      "title": "Webbplats",
+      "players": {
+        "label": "Spelare",
+        "hint": "Alla som loggat in"
+      },
+      "teams": {
+        "label": "Lag",
+        "hint": "Klubbar och laguppställningar"
+      },
+      "templates": {
+        "label": "Mallar",
+        "hint": "Återanvändbara inställningar"
+      },
+      "ratings": {
+        "label": "Rating",
+        "hint": "Hur rating räknas"
+      },
+      "settings": {
+        "label": "Inställningar",
+        "hint": "Inloggning, API-nycklar"
+      },
+      "adminTools": {
+        "label": "System",
+        "hint": "Matchåterställning och loggar"
+      },
+      "disputes": {
+        "label": "Tvister",
+        "hint": "Resultat att avgöra"
+      },
+      "modules": {
+        "label": "Moduler",
+        "hint": "Spel som instansen kör"
+      }
+    },
+    "people": {
+      "title": "Personer",
+      "open": "Öppna",
+      "players": "Spelare",
+      "admins": "Admins",
+      "signedInThisWeek": "Inloggade den här veckan"
+    },
+    "loading": "Laddar adminstartsidan"
+  },
+  "settingsPage": {
+    "email": {
+      "title": "E-post",
+      "short": "Skickar adressbekräftelser, lösenordsåterställningar och turneringsmejl.",
+      "enabled": "Skicka e-post",
+      "enabledOn": "På. Mejl skickas från {{from}}.",
+      "enabledOff": "Av. Inget skickas.",
+      "needsServer": "Ställ in servern nedan först.",
+      "turnedOn": "E-post är på",
+      "turnedOff": "E-post är av",
+      "server": "E-postserver",
+      "serverNone": "Inte inställd",
+      "host": "SMTP-server",
+      "port": "Port",
+      "security": "Säkerhet",
+      "securityStarttls": "STARTTLS (oftast port 587)",
+      "securityTls": "TLS (oftast port 465)",
+      "securityNone": "Ingen (bara i ett betrott nätverk)",
+      "username": "Användarnamn",
+      "password": "Lösenord",
+      "passwordKept": "Lämna tomt för att behålla det sparade",
+      "passwordSaved": "Sparat",
+      "fromAddress": "Avsändaradress",
+      "fromAddressHelp": "Adressen mejlen kommer från. Din e-postleverantör måste tillåta den.",
+      "fromName": "Avsändarnamn",
+      "fromNameHelp": "Valfritt. Visas som avsändare av mejlet, t.ex. NTLAN.",
+      "siteUrl": "Webbplatsens adress",
+      "siteUrlHelp": "Länkar i mejl börjar här, t.ex. https://cs.example.com.",
+      "siteUrlHelpDefault": "Länkar i mejl börjar här. Tomt: {{url}}.",
+      "save": "Spara",
+      "saved": "E-postinställningarna sparade",
+      "loadError": "E-postinställningarna kunde inte laddas",
+      "saveError": "E-postinställningarna kunde inte sparas",
+      "test": "Testmejl",
+      "testShort": "Skicka ett för att kontrollera att inställningarna fungerar.",
+      "testTo": "Skicka till",
+      "testSend": "Skicka test",
+      "testNeedsOn": "Slå på utskick (och spara servern) innan du testar.",
+      "testSent": "Skickat till {{to}}. Kolla inkorgen och skräpposten.",
+      "testFailed": "Testmejlet kunde inte skickas"
+    },
+    "title": "Inställningar",
+    "intro": "Plattformens egna inställningar. Varje spel har sina inställningar hos sig i menyn.",
+    "tabs": {
+      "general": "Allmänt",
+      "signIn": "Inloggning",
+      "players": "Spelare och åtkomst",
+      "ratings": "Rating",
+      "developer": "Utvecklare",
+      "license": "Licens",
+      "webhooks": "Webhooks",
+      "experimental": "Experimentellt"
+    },
+    "signIn": {
+      "title": "Inloggningsleverantörer",
+      "intro": "Välj hur folk loggar in. Vilken som helst av dem kan vara någons konto; folk kopplar fler på sin anslutningssida. Ändringar gäller direkt, ingen omstart.",
+      "keySource": "Sparade hemligheter krypteras med {{name}}.",
+      "keySourceDefault": "Sparade hemligheter krypteras med en inbyggd utvecklingsnyckel. Sätt SECRETS_KEY eller SESSION_SECRET innan du går live.",
+      "loadError": "Inloggningsleverantörerna kunde inte laddas",
+      "saveError": "Kunde inte spara",
+      "testError": "Testet kunde inte köras",
+      "saved": "Inloggning med {{provider}} sparad",
+      "enabled": "På",
+      "clientId": "Klient-ID",
+      "issuerUrl": "Issuer-URL",
+      "issuerUrlHelp": "Adressen till din OpenID Connect-realm eller -tenant. Auto Tournament läser sina endpoints från /.well-known/openid-configuration.",
+      "buttonName": "Knappnamn",
+      "buttonNameHelp": "Visas som ”Logga in med …” på inloggningssidan, t.ex. din community eller identitetsserver.",
+      "logoUpload": "Ladda upp logga",
+      "logoReplace": "Ersätt logga",
+      "logoRemove": "Ta bort logga",
+      "logoType": "Loggan måste vara en PNG-, JPEG-, WebP- eller SVG-bild.",
+      "logoSize": "Loggan får vara högst 150 KB.",
+      "buttonColor": "Knappfärg",
+      "buttonColorDefault": "Standardfärg",
+      "clientSecret": "Klienthemlighet",
+      "steamKey": "Steam Web API-nyckel",
+      "secretSet": "angiven",
+      "secretUnreadable": "Den sparade hemligheten kan inte längre dekrypteras (krypteringsnyckeln har ändrats). Ange den igen.",
+      "replace": "Ersätt",
+      "cancel": "Avbryt",
+      "save": "Spara",
+      "callbackHint": "Sätts automatiskt. Klistra in den som omdirigerings-URL i utvecklarinställningarna hos {{provider}}:",
+      "copy": "Kopiera",
+      "copyCallback": "Kopiera callback-URL",
+      "copied": "Kopierat",
+      "copyError": "Kunde inte kopiera",
+      "guide": "Konfigurationsguide",
+      "howTo": "Utvecklarkonsol",
+      "test": "Testa",
+      "comingSoon": "Kommer snart",
+      "comingSoonNote": "Inloggning med {{provider}} är inte tillgänglig än.",
+      "status": {
+        "active": "På inloggningssidan",
+        "missing": "På, saknar inloggningsuppgifter",
+        "off": "Av"
+      },
+      "testResult": {
+        "ok": "Leverantören godtog uppgifterna.",
+        "invalid_credentials": "Leverantören avvisade uppgifterna. Kontrollera klient-ID och hemlighet (eller nyckeln).",
+        "unreachable": "Leverantören kunde inte nås. Kontrollera nätverket och försök igen.",
+        "not_configured": "Ange inloggningsuppgifterna först.",
+        "not_supported": "Den här leverantören kan inte testas.",
+        "unexpected": "Leverantören gav ett svar som testet inte förstår."
+      },
+      "welcomeTitle": "Ställ in hur spelare loggar in",
+      "welcomeBody": "Du är inloggad som admin. Slå på minst en leverantör nedan (Steam, Discord, Google, GitHub eller Twitch) så att spelare kan logga in.",
+      "adminAccess": {
+        "title": "Adminåtkomst",
+        "localLogin": "Tillåt lokal admininloggning",
+        "localLoginHelp": "Inloggning med användarnamn och lösenord på /login/admin. Om du blir utelåst, kör reset-admin på servern.",
+        "localLoginLocked": "Förblir på tills en annan admin kan logga in med en leverantör som är påslagen.",
+        "steamIds": "Adminernas Steam-ID:n",
+        "steamIdsHelp": "Steam64-ID:n, separerade med kommatecken. Blir admin när de sparas och vid varje start. Att ta bort ett tar inte bort adminrättigheten.",
+        "emails": "Adminernas e-postadresser",
+        "emailsHelp": "Adresser som får adminrättighet när ägaren loggar in med en leverantör som verifierat dem (Google, Discord, GitHub).",
+        "unsaved": "Inte sparat än.",
+        "saved": "Adminåtkomst sparad",
+        "loadError": "Inställningarna för adminåtkomst kunde inte laddas",
+        "short": "Vem som kan logga in som admin"
+      },
+      "short": "Hur spelare och admins loggar in. Ändringar gäller direkt.",
+      "enabledFor": "Inloggning med {{provider}}",
+      "setUp": "Ställ in {{provider}}",
+      "accounts": {
+        "title": "Konton",
+        "short": "Konton med användarnamn och lösenord som du skapar",
+        "help": "Folk loggar in med dem på /login/admin. Ge adminrättighet till de som driver webbplatsen; resten loggar in som spelare.",
+        "none": "Inga konton än.",
+        "admin": "Admin",
+        "twoStep": "Tvåsteg på",
+        "lastLogin": "Senast inloggad {{date}}",
+        "neverSignedIn": "Aldrig inloggad",
+        "setPassword": "Ange lösenord",
+        "remove": "Ta bort",
+        "addTitle": "Lägg till ett konto",
+        "username": "Användarnamn",
+        "usernameHelp": "3 till 32 tecken: gemener, siffror, punkter, bindestreck och understreck.",
+        "name": "Visningsnamn",
+        "nameHelp": "Valfritt. Visas på webbplatsen; användarnamnet används om det lämnas tomt.",
+        "password": "Lösenord",
+        "makeAdmin": "Admin",
+        "create": "Skapa konto",
+        "created": "Kontot {{username}} skapat",
+        "madeAdmin": "{{username}} är nu admin",
+        "adminRemoved": "{{username}} är inte längre admin",
+        "setPasswordTitle": "Nytt lösenord för {{username}}",
+        "setPasswordTotp": "Tvåstegsverifieringen stängs också av; den ställs in igen efter inloggning.",
+        "newPassword": "Nytt lösenord",
+        "savePassword": "Spara lösenord",
+        "passwordSet": "Nytt lösenord sparat för {{username}}",
+        "removeTitle": "Ta bort {{username}}?",
+        "removeBody": "Kontot kan inte längre logga in med det här användarnamnet och lösenordet, och är inte längre admin. Spelaren, matcherna och statistiken finns kvar; skapas samma användarnamn igen kommer de tillbaka.",
+        "removeConfirm": "Ta bort",
+        "removed": "{{username}} borttaget",
+        "cancel": "Avbryt",
+        "loadError": "Kontona kunde inte laddas",
+        "saveError": "Kontot kunde inte sparas"
+      },
+      "oidcScopes": "Ge den här klienten scopen openid, profile och email på din OpenID Connect-server (i Keycloak: Clients → den här klienten → Client scopes, med profile och email som Default). Utan profile och email kan folk ändå logga in, men plattformen får inget namn eller någon e-postadress för dem."
+    },
+    "integrations": {
+      "steam": {
+        "title": "Steam-integration",
+        "apiKeyLabel": "Steam Web API-nyckel",
+        "apiKeyHelper": "Slår upp Steams egna URL:er och spelarinfo. Lämna tomt för att stänga av uppslag.",
+        "checkButtonChecking": "Kontrollerar Steam…",
+        "checkButtonIdle": "Kontrollera Steam-anslutningen",
+        "statusOk": "Steam API-nyckeln är angiven och nåbar.",
+        "statusNotConfigured": "Steam API-nyckeln är inte angiven. Egna URL:er kan inte slås upp förrän du lägger till en nyckel.",
+        "statusUnreachable": "Steam API-nyckeln verkar vara angiven, men Steam kunde inte nås. Kontrollera nätverket eller nyckeln.",
+        "statusError": "Steam API-status kunde inte kontrolleras. Försök igen."
+      }
+    },
+    "matchRating": {
+      "ratings": {
+        "title": "Ratinguppdateringar",
+        "description": "Styr om avslutade matcher uppdaterar spelarnas Skill Rating. Stäng av för evenemang där ett externt system (till exempel ditt Excel-ark) bestämmer ratingen.",
+        "toggleLabel": "Uppdatera spelarnas rating från avslutade matcher",
+        "note": "När det är avstängt registrerar alla matcher fortfarande statistik (ADR, K/D osv.), men spelarnas Skill Rating ändras inte.",
+        "short": "Ratingen ändras efter varje match."
+      }
+    },
+    "players": {
+      "registration": {
+        "title": "Spelarregistrering",
+        "description": "Styr om inloggning skapar en spelarpost för någon ny, vilken inloggningsmetod de än använder (Steam, Discord, Google och de andra du slagit på). När det är avstängt visas bara spelare som admins skapat eller importerat i privata turneringar och shuffle-pooler.",
+        "toggleLabel": "Låt vem som helst registrera sig genom att logga in",
+        "recommendation": "Rekommendation: ha det avstängt för turneringar med inbjudan eller privata turneringar, så att slumpmässiga inloggningar inte fyller spelarlistan.",
+        "short": "Inloggning gör vem som helst ny till spelare. Av: bara spelare du lägger till."
+      },
+      "title": "Spelare",
+      "short": "Vem som går med, och hur ratingen rör sig.",
+      "chooseName": {
+        "toggleLabel": "Spelare väljer sitt visningsnamn",
+        "short": "Spelarna tillfrågas om sitt namn och kan ändra det en gång per dag. Av: namnen kommer från importer och admins."
+      }
+    },
+    "developer": {
+      "resetApiTitle": "Återställ API och databas",
+      "resetApiDescription": "Riskzon: tar bort och återskapar hela databasschemat och initierar sedan standarddata igen (kartor, kartpooler osv.). Bara för lokal utveckling. Kan inte ångras.",
+      "resetApiButton": "Återställ API (radera all data)",
+      "resetApiButtonLoading": "Återställer API…",
+      "resetApiSuccess": "API och databas återställda. All data har raderats och standardvärden initierats igen.",
+      "resetApiError": "API och databas kunde inte återställas. Se API-loggarna för detaljer.",
+      "resetApiDialog": {
+        "title": "Återställa API och radera all data?",
+        "description": "Hela databasschemat tas bort och återskapas. Alla turneringar, matcher, spelare, lag, ratingar, händelser, loggar och inställningar raderas permanent. Det går inte att ångra. Fortsätta?",
+        "cancel": "Avbryt",
+        "confirm": "Ja, återställ API och radera data",
+        "confirmLoading": "Återställer…"
+      }
+    },
+    "footer": {
+      "version": "Version",
+      "unknownVersion": "Okänd"
+    },
+    "errors": {
+      "loadSettings": "Inställningarna kunde inte laddas",
+      "saveSettings": "Inställningarna kunde inte sparas"
+    },
+    "success": {
+      "saveSettings": "Inställningarna sparade"
+    },
+    "site": {
+      "title": "Webbplats",
+      "description": "Vad webbplatsen heter. Adminstartsidan använder det som rubrik.",
+      "label": "Webbplatsens namn",
+      "helper": "Lämna tomt för att använda ”Auto Tournament”.",
+      "save": "Spara",
+      "saved": "Webbplatsens namn sparat",
+      "saveFailed": "Webbplatsens namn kunde inte sparas"
+    },
+    "experimental": {
+      "title": "Experimentellt",
+      "description": "Funktioner som fortfarande byggs. De är av som standard och kan ändras eller gå sönder. Bara admins ser dem.",
+      "saved": "Sparat",
+      "saveFailed": "Funktionen kunde inte sparas",
+      "loadFailed": "De experimentella funktionerna kunde inte laddas",
+      "envOverride": "Satt av miljövariabeln {{env}}. Ändra den där.",
+      "features": {},
+      "short": "Under utveckling: av som standard, bara admins ser dem."
+    },
+    "matchmaking": {
+      "openLabel": "Öppet för spelare",
+      "openDescription": "På: alla inloggade spelare ser Spela och kan ställa sig i kö. Av: bara admins kan hitta matcher.",
+      "boardLabel": "Topplistan synlig för alla",
+      "boardDescription": "Av: bara inloggade spelare ser matchmaking-topplistan. På: vem som helst med länken.",
+      "windowTitle": "Sökfönster",
+      "windowDescription": "Hur långt ifrån varandra i rating spelare får vara. Det börjar på första talet, växer med steget var 30:e sekund upp till taket, och efter sista antalet minuter matchas vem som helst (lämna tomt för aldrig).",
+      "window": {
+        "start": "Start (Elo)",
+        "step": "Steg (Elo)",
+        "cap": "Tak (Elo)",
+        "uncappedAfterMinutes": "Vem som helst efter (min)"
+      },
+      "reservedTitle": "Servrar som hålls lediga för matchmaking",
+      "reservedDescription": "Turneringsmatcher går först, men lämna så här många servrar lediga för matchmaking medan spelare söker. 0 = inga.",
+      "reservedLabel": "Servrar",
+      "modesTitle": "Lägen",
+      "modesDescription": "Vad spelare kan söka. Alla lägen är på som standard. 1v1 är en aim-duell.",
+      "poolsTitle": "Kartor per läge",
+      "poolsDescription": "Kartpoolen varje läge väljer från (sidan Kartor; Workshop-kartor fungerar också). Matchrummet visar ett roulettehjul över poolen innan kartan avslöjas.",
+      "poolDefault": {
+        "5v5": "Standard: Active Duty",
+        "2v2": "Standard: alla wingman-kartor",
+        "1v1": "Standard: Active Duty"
+      },
+      "save": "Spara",
+      "title": "Matchmaking",
+      "short": "Alltid på. Spelare hittar en match, köar och accepterar och spelar sedan på en ledig server.",
+      "saved": "Sparat",
+      "saveFailed": "Matchmaking-inställningarna kunde inte sparas",
+      "loadFailed": "Matchmaking-inställningarna kunde inte laddas"
+    },
+    "groups": {
+      "platform": "Plattform"
+    },
+    "navLabel": "Inställningssidor",
+    "gameLinks": {
+      "title": "Spelinställningar",
+      "hint": "Varje spel har sina egna inställningar hos sig i menyn."
+    },
+    "sections": {
+      "label": "Inställningsavsnitt",
+      "site": {
+        "name": "Webbplats",
+        "hint": "Namn, logga, språk"
+      },
+      "signin": {
+        "name": "Inloggning",
+        "hint": "Leverantörer, adminkonton"
+      },
+      "email": {
+        "name": "E-post",
+        "hint": "SMTP, vad som skickas"
+      },
+      "players": {
+        "name": "Spelare",
+        "hint": "Anmälan, rating"
+      },
+      "matchmaking": {
+        "name": "Matchmaking",
+        "hint": "Köer och deras regler"
+      },
+      "news": {
+        "name": "Nyheter",
+        "hint": "Inlägg på startsidan"
+      },
+      "adminnotices": {
+        "name": "Aviseringar",
+        "hint": "Vad admins får veta"
+      },
+      "webhooks": {
+        "name": "Integrationer",
+        "hint": "Webhooks"
+      },
+      "apitokens": {
+        "name": "API-tokens",
+        "hint": "För skript och MCP"
+      },
+      "advanced": {
+        "name": "Avancerat",
+        "hint": "Experimentellt, utvecklare"
+      },
+      "module": {
+        "hint": "Den här modulens inställningar"
+      }
+    }
+  },
+  "managePage": {
+    "tournamentNotFound": "Ingen turnering med det här id:t. Välj en från Alla turneringar.",
+    "title": "Hantera",
+    "needsYouHeading": "Behöver dig",
+    "noTournament": "Ingen turnering än",
+    "rail": {
+      "needsYou": "Behöver dig",
+      "matches": "Matcher",
+      "bracket": "Bracket",
+      "teams": "Lag",
+      "players": "Spelare",
+      "reports": "Anmälningar",
+      "tournament": "Turneringsinställningar",
+      "settings": "Inställningar",
+      "label": "Admin",
+      "disputes": "Tvister",
+      "publicPage": "Publik sida",
+      "modules": "Moduler",
+      "templates": "Mallar",
+      "ratings": "Rating",
+      "adminTools": "Loggar och verktyg",
+      "license": "Licens",
+      "devTools": "Utvecklarverktyg",
+      "documentation": "Dokumentation",
+      "opensInNewTab": "(öppnas i en ny flik)",
+      "groups": {
+        "operate": "Drift",
+        "tournament": "Turnering",
+        "people": "Personer",
+        "game": "Spel",
+        "home": "Hem",
+        "history": "Historik",
+        "setup": "Konfiguration",
+        "configuration": "Inställningar",
+        "site": "Webbplats",
+        "tournaments": "Turneringar",
+        "system": "System",
+        "gamesOf": "Spel · {{game}}"
+      },
+      "templatesAndRatings": "Mallar och rating",
+      "allTournaments": "Alla turneringar",
+      "switcher": "Turnering",
+      "newTournament": "Ny turnering",
+      "playedMatches": "Spelade matcher",
+      "tournamentBar": "Den här turneringen",
+      "scope": {
+        "label": "Hanterar",
+        "platform": "Plattform",
+        "platformHint": "Turneringar, personer, webbplatsen",
+        "gameHint": "Dess sidor och inställningar"
+      },
+      "highlights": "Höjdpunkter",
+      "state": {
+        "live": "live",
+        "setup": "förberedelse"
+      },
+      "openMenu": "Öppna menyn Hantera",
+      "closeMenu": "Stäng menyn",
+      "setupTab": "Konfiguration",
+      "prizes": "Priser",
+      "schedule": "Schema",
+      "liveMatches": "Livematcher"
+    },
+    "status": {
+      "live": "LIVE",
+      "inVeto": "I VETO",
+      "queued": "I KÖ",
+      "round": "RUNDA"
+    },
+    "needsYou": {
+      "empty": "Inget behöver dig just nu.",
+      "secondsAgo": "{{count}} s",
+      "minutesAgo": "{{count}} min",
+      "hoursAgo": "{{count}} h",
+      "vsLabel": "{{team1}} mot {{team2}}",
+      "decide": {
+        "title": "{{teams}} behöver en vinnare",
+        "detail": "Alla kartor är spelade och serien är fortfarande lika.",
+        "action": "Avgör"
+      },
+      "reallocateSuccess": "Matchen flyttad till en annan server",
+      "forceCancelSuccess": "Matchen avbruten",
+      "actionFailed": "Det gick inte igenom. Försök igen.",
+      "reallocateConfirmTitle": "Flytta matchen till en annan server?",
+      "reallocateConfirmBody": "Matchen tilldelas nästa lediga server.",
+      "forceCancelConfirmTitle": "Tvinga avbrott av matchen?",
+      "forceCancelConfirmBody": "Matchen avslutas direkt och markeras som avbruten, även om servern inte kan nås.",
+      "listLabel": "Saker som behöver ett beslut"
+    },
+    "recent": {
+      "heading": "Senaste",
+      "viewAll": "Hela loggen",
+      "empty": "Ingen aktivitet än.",
+      "closingLine": "Allt annat sköter sig självt. Du ser det bara här när något behöver ett beslut.",
+      "team1Fallback": "Lag 1",
+      "team2Fallback": "Lag 2",
+      "mapResult": "{{winner}} vann karta {{map}} mot {{loser}}, {{score}}",
+      "seriesEnd": "{{winner}} vann serien mot {{loser}}, {{score}}"
+    },
+    "announce": {
+      "button": "Meddela",
+      "title": "Meddela alla servrar",
+      "label": "Meddelande",
+      "send": "Skicka",
+      "success": "Meddelandet skickat",
+      "failed": "Meddelandet kunde inte skickas"
+    }
+  },
+  "license": {
+    "title": "Licens",
+    "getKey": "Har du redan en licens? Kopiera nyckeln från <consoleLink>Auto Tournament-konsolen</consoleLink>. Behöver du en? <pricingLink>Se priser</pricingLink>.",
+    "useFromPaidKey": "Satt av den betalda licensnyckeln nedan.",
+    "useFromFreeKey": "Satt av den kostnadsfria nyckeln nedan: bara ideell användning.",
+    "useWithoutKey": "Ingen nyckel: gratis för ideell användning. Klistra in en betald nyckel nedan för kommersiell användning.",
+    "publicLine": "Spelarna ser ”{{line}}” längst ner på evenemangssidorna.",
+    "pageIntro": "Din licensnyckel och dess status. En betald nyckel är för kommersiell användning; en kostnadsfri för ideell.",
+    "description": "Klistra in din Auto Tournament-licensnyckel: en betald för kommersiell användning, eller en kostnadsfri för ideell. Den kontrolleras på den här servern och en gång om dagen mot autotournament.gg.",
+    "loading": "Laddar licensstatus",
+    "loadFailed": "Licensstatusen kunde inte läsas.",
+    "none": "Ingen licensnyckel än. Gratis för ideell användning; kommersiell användning kräver en betald licens.",
+    "pricing": "Priser",
+    "open": "Inställningar",
+    "id": "Licens-ID {{id}}",
+    "verify": "Kontrollera den här licensen",
+    "invalid": "Nyckeln kunde inte verifieras.",
+    "invalidShort": "Den sparade nyckeln kunde inte verifieras.",
+    "warningsShort_one": "1 licensmeddelande i Inställningar.",
+    "warningsShort_other": "{{count}} licensmeddelanden i Inställningar.",
+    "warningsNote": "Inget är blockerat eller begränsat. Det här är bara ett meddelande.",
+    "label": "Licensnyckel",
+    "replaceLabel": "Ersätt licensnyckeln",
+    "helper": "Börjar med ATL1. Kopiera den från <consoleLink>dina licenser i Auto Tournament-konsolen</consoleLink>. Efter sparandet visas bara licens-ID:t. Inget internet där ni spelar? Klistra in offline-leasen från konsolen här också.",
+    "checkInNote": "Utan licensnyckel skickas inget till Auto Tournament. Med en nyckel checkar servern in en gång om dagen med nyckelns id och antal servrar.",
+    "save": "Spara nyckel",
+    "saved": "Licensnyckeln sparad",
+    "saveFailed": "Licensnyckeln kunde inte sparas",
+    "remove": "Ta bort nyckel",
+    "removed": "Licensnyckeln borttagen",
+    "removeFailed": "Licensnyckeln kunde inte tas bort",
+    "summary": {
+      "licensedTo": "Licensierad till {{licensee}}",
+      "licensed": "Licensierad",
+      "product": {
+        "platform": "Plattform {{pack}}",
+        "servers": "Servrar {{pack}}"
+      },
+      "servers_one": "{{count}} server",
+      "servers_other": "{{count}} servrar",
+      "updatesUntil": "uppdateringar till {{date}}",
+      "updatesForLife": "uppdateringar livet ut",
+      "eventWindow": "evenemang {{from}} till {{to}}",
+      "free": "Kostnadsfri nyckel, icke-kommersiell användning",
+      "freeFor": "Kostnadsfri nyckel för {{licensee}}, icke-kommersiell användning",
+      "noLimit": "ingen servergräns"
+    },
+    "badge": {
+      "label": "Visa ”Licensierad” och typen av användning på publika evenemangssidor",
+      "note": "Av som standard. Länkar till licensens publika kontrollsida och visas bara medan den sparade nyckeln är giltig.",
+      "on": "Publik licensrad påslagen",
+      "off": "Publik licensrad avstängd",
+      "failed": "Den publika licensraden kunde inte ändras",
+      "short": "Slås på av sig själv när en nyckel sparas. Spelarna ser den längst ner på evenemangssidorna.",
+      "needsKey": "Visas bara när en licensnyckel är sparad, kostnadsfri eller betald. Spara en ovan först."
+    },
+    "public": {
+      "licensed": "Licensierad",
+      "commercial": "Licensierad · Kommersiell användning",
+      "nonCommercial": "Licensierad · Ideell användning",
+      "unlicensed": "Ingen licensnyckel",
+      "about": {
+        "title": "Om webbplatsens licens",
+        "none": "Webbplatsen kör Auto Tournament utan licensnyckel. Det är okej för evenemang där ingen tjänar pengar på det: vänner, klubbar, skol-LAN, välgörenhet.",
+        "nonCommercial": "Webbplatsen har en kostnadsfri ideell licens: den får köra evenemang där ingen tjänar pengar på det.",
+        "commercial": "Webbplatsen har en betald kommersiell licens: den får köra betalda evenemang och ta ut avgift.",
+        "free": "Auto Tournament är gratis när ingen tjänar pengar på det, och för välgörenhet, skolor och offentliga organ även när de tar ut avgift. Alla andra som tjänar pengar på det, genom anmälningsavgift, att sälja platser eller driva det för ett företag, behöver en betald licens.",
+        "paidTitle": "Ombedd att betala för att vara med?",
+        "paidBody": "Om du betalade en anmälningsavgift, eller ombads göra det, och arrangören inte är en välgörenhetsorganisation, skola eller ett offentligt organ, kan evenemanget använda Auto Tournament i strid med licensen. Du kan säga till oss; vi läser varje anmälan och delar aldrig vem som skickade den.",
+        "paidCommercial": "Betald anmälan är tillåten här. Om något ändå ser fel ut kan du säga till oss.",
+        "report": "Anmäl det till Auto Tournament",
+        "rules": "Läs licensen",
+        "verify": "Kontrollera den här licensen"
+      }
+    },
+    "consent": {
+      "title": "En sista sak: licensen",
+      "subtitle": "Förlåt, ett steg till och sedan är du klar. Auto Tournament är gratis om ingen tjänar pengar på det; om någon gör det behöver du en licens. Skumma den korta versionen, välj hur du använder det och skriv I AGREE.",
+      "intro": "Auto Tournament är source-available under {{name}}. Kort sagt:",
+      "points": {
+        "free": "Gratis för personligt bruk, hobbyprojekt, lärande och evenemang där ingen tjänar pengar på det.",
+        "orgs": "Gratis för välgörenhet, skolor, universitet, offentlig forskning och myndigheter, även när de tar ut avgift.",
+        "commercial": "Kommersiell användning kräver licens. Det omfattar betald hosting, att sälja det eller en tjänst byggd på det, evenemang som går med vinst, användning inom ett företag och att få betalt för att sätta upp det åt någon.",
+        "servers": "Varje spelserver räknas mot licensen.",
+        "nothingLocked": "Inget är låst eller begränsat utan nyckel. Du kan lägga till en nyckel nu eller senare.",
+        "forks": "Du kan ändra koden och dela den. Behåll licensen med den; samma regler gäller."
+      },
+      "readLicense": "Läs hela licensen",
+      "readRules": "Licensiering och kommersiell användning",
+      "summaryNote": "Det här är en kort sammanfattning, och texten i din version kan vara inaktuell. Aktuell licens och licensregler finns på autotournament.gg – om de skiljer sig från sammanfattningen gäller de.",
+      "useQuestion": "Hur används den här instansen?",
+      "privacyNote": "Ditt svar sparas bara på den här servern. Utan licensnyckel skickas inget till Auto Tournament. Med en nyckel checkar servern in en gång om dagen med nyckelns id och antal servrar.",
+      "use": {
+        "noncommercial": "Icke-kommersiell",
+        "noncommercialHint": "Gratis. Ingen tjänar pengar på det.",
+        "commercial": "Kommersiell",
+        "commercialHint": "Du behöver en licens. Klistra in nyckeln nu eller senare."
+      },
+      "keyLabel": "Licensnyckel (valfritt)",
+      "keyHelper": "Börjar med ATL1. Kopiera den från <consoleLink>dina licenser i Auto Tournament-konsolen</consoleLink>, eller lägg till den senare under Inställningar > Licens.",
+      "confirmLabel": "Skriv {{phrase}} för att godkänna licensvillkoren",
+      "confirmHelper": "Genom att skriva {{phrase}} godkänner du licensvillkoren för den här instansen.",
+      "accept": "Godkänn och fortsätt",
+      "cancel": "Avbryt",
+      "failed": "Svaret kunde inte sparas",
+      "accepted": "Licensvillkoren godkända",
+      "termsChanged": "Licensvillkoren har ändrats sedan de senast godkändes. Läs dem och godkänn igen.",
+      "onlyAdmins": "Bara admins ser det här, en gång per instans. Spelare, publika sidor och pågående matcher påverkas inte.",
+      "declared": {
+        "noncommercial": "Icke-kommersiell användning",
+        "commercial": "Kommersiell användning",
+        "none": "Licensvillkoren inte godkända än"
+      },
+      "acceptedLine": "Villkoren godkända {{date}} av {{who}} (villkorsversion {{version}})",
+      "byEnv": "inställningen AT_ACCEPT_LICENSE",
+      "change": "Ändra",
+      "changeTitle": "Ändra hur instansen används",
+      "changeNote": "Välj igen och skriv I AGREE. Ändringen sparas med datum och ditt konto.",
+      "commercialNoKey": "Instansen används kommersiellt, så du behöver en licens. Kopiera nyckeln från <consoleLink>dina licenser i Auto Tournament-konsolen</consoleLink> och klistra in den nedan. Inget är låst medan den saknas.",
+      "readHeading": "Läs de här och bocka för var och en innan du godkänner:",
+      "readItem": "Jag har läst",
+      "readLinks": {
+        "license": "hela licensen",
+        "rules": "reglerna för kommersiell användning",
+        "pricing": "prislistan"
+      }
+    },
+    "checkin": {
+      "last": "Senaste licensincheckning: {{time}}",
+      "offlineUntil": "Offline-lease: nya servrar fungerar utan internet till {{date}}.",
+      "never": "Ingen licensincheckning än. Den första körs strax efter att en nyckel sparats.",
+      "whatIsSent": "Vad som skickas",
+      "intro": "En gång om dagen, och bara medan en nyckel är sparad, skickar servern:",
+      "keyId": "Licensnyckeln, så att dess id och signatur kan kontrolleras",
+      "instanceId": "Ett slumpmässigt id för installationen, skapat en gång",
+      "serverCount": "Antalet spelservrar",
+      "version": "Plattformens version",
+      "publicUrl": "Vilken produkt det är (plattformen) och dess publika adress, så att konsolen kan visa var nyckeln körs",
+      "activity": "Antal sedan senaste incheckningen: avslutade matcher, turneringar med aktivitet och största antalet lag",
+      "declared": "Ditt svar på frågan om evenemangsdatum, om du gav ett",
+      "notSent": "Inga namn, adresser, spelare eller matchdetaljer.",
+      "privacy": "Integritetspolicy",
+      "noticeTitle": "Ett meddelande från Auto Tournament",
+      "answered": "Ditt svar för den här licensen: {{answer}} ({{time}})"
+    },
+    "eventPrompt": {
+      "title": "Planerar ni något nytt?",
+      "body": "Er evenemangslicens gäller {{dates}}. Säg till om ni testar, har ett nytt evenemang eller om datumen flyttats – inget behöver göras medan ni testar.",
+      "datesRange": "{{from}} till {{to}}",
+      "testing": "Testar eller förbereder",
+      "newEvent": "Ett nytt evenemang",
+      "datesMoved": "Våra evenemangsdatum har flyttats",
+      "dontAsk": "Fråga inte igen",
+      "close": "Stäng",
+      "thanks": "Tack, noterat.",
+      "failed": "Svaret kunde inte sparas"
+    },
+    "warning": {
+      "periodEnded": "Evenemangslicensen gällde datum fram till {{date}}. Test och förberedelser kräver inget; ett nytt evenemang får en egen evenemangslicens.",
+      "periodNotStarted": "Evenemangslicensen gäller datum från {{date}}. Förberedelser och test innan dess är okej."
+    },
+    "short": "Hur installationen används, och dess nyckel.",
+    "keyRow": "Licensnyckel",
+    "state": {
+      "active": "Aktiv",
+      "warning": "Kontrollera",
+      "invalid": "Ogiltig",
+      "none": "Ingen nyckel"
+    },
+    "thirdParty": "Appen är byggd med paket med öppen källkod under sina egna licenser.",
+    "thirdPartyLink": "Tredjepartsmeddelanden"
+  },
+  "tournamentsPage": {
+    "title": "Turneringar",
+    "subtitle": "Alla turneringar på webbplatsen. Väljaren överst i menyn bestämmer vilken de andra adminsidorna gäller.",
+    "liveShared": "{{count}} live, som delar på servrarna. Matcherna får en server i den ordning de blev redo.",
+    "new": "Ny turnering",
+    "empty": "Inga turneringar än. Skapa den första.",
+    "col": {
+      "name": "Namn",
+      "status": "Status",
+      "when": "När",
+      "entries": "Anmälningar",
+      "frontPage": "Startsida",
+      "actions": "Åtgärder"
+    },
+    "status": {
+      "live": "Live",
+      "finished": "Klar",
+      "signup": "Anmälan öppen",
+      "draft": "Utkast"
+    },
+    "front": {
+      "featured": "Utvald",
+      "shown": "Visas",
+      "hidden": "Dold",
+      "archived": "Arkiverad",
+      "results": "Resultat"
+    },
+    "won": "{{name}} vann",
+    "selected": "vald",
+    "more": "Mer för {{name}}",
+    "menu": {
+      "open": "Öppna",
+      "page": "Publik sida",
+      "feature": "Lyft fram på startsidan",
+      "archive": "Arkivera (bort från startsidan)",
+      "delete": "Ta bort"
+    },
+    "toast": {
+      "featured": "Utvald på startsidan",
+      "archived": "Arkiverad",
+      "deleted": "Turneringen borttagen"
+    },
+    "deleteTitle": "Ta bort den här turneringen?",
+    "deleteMessage": "{{name}} och dess matcher, resultat och statistik tas bort. Det går inte att ångra.",
+    "newName": "Namn",
+    "newNameBlank": "Du namnger den i konfigurationen",
+    "startFrom": "Börja från",
+    "blank": "Tom",
+    "blankHint": "Välj spel, format och kartor i konfigurationen",
+    "copy": "Kopiera {{name}}",
+    "copyHint": "Samma format, kartor, regler och sida. Lag och datum börjar tomma.",
+    "create": "Skapa och konfigurera",
+    "round": "omgång {{n}}",
+    "whenToday": "I dag, från {{time}}",
+    "whenTomorrow": "I morgon, {{time}}",
+    "notSet": "Inte angivet",
+    "emptyTitle": "Inga turneringar än",
+    "template": "En mall",
+    "templateHint": "En sparad konfiguration: format, kartor och regler. Du väljer lag och datum.",
+    "copyOne": "Kopiera en turnering",
+    "copyWhich": "Vilken"
+  },
+  "playedMatches": {
+    "title": "Alla matcher",
+    "subtitle": "Varje match som spelats på webbplatsen: turneringar (även borttagna), fristående matcher och matchmaking, med sina demos.",
+    "downloadAll_one": "Ladda ner demos för {{count}} match",
+    "downloadAll_other": "Ladda ner demos för {{count}} matcher",
+    "search": "Sök lag eller turneringar",
+    "kindLabel": "Typ",
+    "kind": {
+      "all": "Alla typer",
+      "tournament": "Turnering",
+      "standalone": "Fristående",
+      "matchmaking": "Matchmaking",
+      "imported": "Importerad"
+    },
+    "withDemos": "Med demos",
+    "none": "Inga matcher har spelats än.",
+    "noneFiltered": "Inga matcher matchar filtren.",
+    "vs": "mot",
+    "deleted": "turnering borttagen",
+    "noDemo": "Ingen demo",
+    "demo": "Demo",
+    "map": "Karta {{n}}",
+    "import": "Importera en match"
+  },
+  "importMatch": {
+    "title": "Importera en match",
+    "subtitle": "Lägg till en match som spelats någon annanstans från dess demos. Lag, spelare och ställning läses från demofilerna, och sedan får matchen statistik, 2D-repris och höjdpunkter som alla andra.",
+    "event": "Var den spelades",
+    "eventHelp": "Valfritt, till exempel evenemangets namn.",
+    "files": "Demos",
+    "filesHelp": "En CS2-demo (.dem) per karta, i den ordning kartorna spelades.",
+    "choose": "Välj demos",
+    "moveUp": "Flytta upp {{name}}",
+    "moveDown": "Flytta ner {{name}}",
+    "remove": "Ta bort {{name}}",
+    "start": "Importera",
+    "uploading": "Laddar upp karta {{n}} ({{percent}} %)",
+    "tooMany": "Upp till {{max}} demos, en per karta.",
+    "notDemo": "{{name}} är ingen .dem-fil.",
+    "error": "Importen stoppades: {{error}}",
+    "progress": "Förlopp",
+    "mapN": "Karta {{n}}",
+    "state": {
+      "uploading": "Laddar upp",
+      "waiting": "Väntar på demoworkern",
+      "running": "Läser demon",
+      "done": "Klar",
+      "failed": "Demon kunde inte läsas"
+    },
+    "teams": "{{team1}} mot {{team2}}",
+    "doneAll": "Importerad. Höjdpunkter spelas in härnäst om en höjdpunktsinspelare är ansluten.",
+    "openMatch": "Öppna matchen",
+    "another": "Importera en till",
+    "dropHint": "eller släpp dem här. Välj flera på en gång med Cmd eller Ctrl.",
+    "recordingGroup": "Inspelargrupp",
+    "allRecorders": "Alla inspelare",
+    "groupHelp": "Välj vilken grupp som renderar matchen. Avstängda grupper väntar tills de slås på.",
+    "groupDisabled": "Avstängd",
+    "notCs2Demo": "{{name}} är ingen CS2-demo (CS:GO-demos kan inte importeras)."
+  },
+  "apiTokens": {
+    "title": "API-tokens",
+    "hint": "För skript, bottar och Auto Tournaments MCP-server. En skrivskyddad token kan bara läsa; en admintoken kan göra det en admin kan. Bara du ser en tokens hemlighet, en gång, när den skapas.",
+    "line": "{{scope}} · {{fingerprint}} · senast använd {{used}}",
+    "never": "aldrig",
+    "none": "Inga API-tokens än.",
+    "name": "Namn",
+    "nameHelp": "1–32 bokstäver, siffror, - eller _",
+    "scopeLabel": "Åtkomst",
+    "scope": {
+      "readonly": "Skrivskyddad",
+      "admin": "Admin"
+    },
+    "make": "Skapa token",
+    "madeTitle": "Token ”{{label}}”",
+    "madeHelp": "Kopiera den nu: det här är enda gången den visas. Klistra in den där skriptet eller MCP-servern läser den (AT_TOKEN).",
+    "copy": "Kopiera token",
+    "copied": "Kopierat",
+    "done": "Klar",
+    "revoke": "Återkalla {{label}}",
+    "revokeTitle": "Återkalla ”{{label}}”?",
+    "revokeHelp": "Allt som använder den slutar fungera direkt.",
+    "revokeConfirm": "Återkalla",
+    "revoked": "{{label}} återkallad",
+    "cancel": "Avbryt",
+    "loadFailed": "API-tokens kunde inte laddas",
+    "makeFailed": "Token kunde inte skapas",
+    "revokeFailed": "Token kunde inte återkallas"
+  },
+  "discordBot": {
+    "title": "Discord-bot",
+    "token": "Bottoken",
+    "replace": "Ny bottoken",
+    "save": "Spara",
+    "remove": "Ta bort",
+    "connected": "Ansluten som {{name}}",
+    "setNoAnswer": "En token är angiven, men Discord svarade inte just nu.",
+    "saved": "Discord-boten sparad: {{name}}",
+    "cleared": "Discord-boten borttagen",
+    "saveFailed": "Bottoken kunde inte sparas.",
+    "howTo": "Skapa en applikation, lägg till en bot, kopiera dess token och bjud in den till din Discord-server:",
+    "portal": "Discord Developer Portal",
+    "guild": "Discord-server",
+    "guildHint": "Där boten skapar lagkanaler och inlägg. Bara servrar som boten finns på visas här.",
+    "noGuilds": "Boten finns inte på någon Discord-server än. Bjud in den och ladda sedan om sidan.",
+    "noGuild": "Ingen",
+    "guildSaved": "Discord-servern sparad",
+    "movedHint": "Discord-boten är ett tillägg nu: slå på och ställ in den under Moduler.",
+    "open": "Öppna Discord-boten",
+    "voice": {
+      "label": "Lagens röstkanaler",
+      "help": "Medan en match är på sin server flyttas spelarna som redan är i en röstkanal in i sitt lags röstkanal; resten får en länk via DM.",
+      "saved": "Röstkanalsinställningarna sparade"
+    },
+    "teamChannels": {
+      "label": "Lagkanaler",
+      "help": "Medan en turnering pågår får varje lag en privat text- och röstkanal under ”Ditt lag”. Spelarna hittar textkanalen på sin lagsida.",
+      "link": "Lagkanal på Discord"
+    },
+    "commands": {
+      "label": "Snedstreckskommandon: /matches, /mymatch och /lobby",
+      "help": "De fungerar så fort boten är ansluten. Valfritt: för att låta Discord skicka dem till den här webbplatsen i stället, klistra in det här som appens Interactions Endpoint URL i Discord Developer Portal."
+    },
+    "invite": "Bjud in till en server",
+    "linking": {
+      "label": "Spelare kopplar sitt Discord",
+      "help": "Använder botens egen Discord-app, så du behöver inte skapa en app till. Öppna OAuth2 för botens app i Developer Portal, lägg till den här omdirigeringen, kopiera sedan klienthemligheten och klistra in den här.",
+      "portal": "Öppna OAuth2",
+      "secret": "Klienthemlighet",
+      "save": "Slå på koppling",
+      "saved": "Spelare kan koppla Discord nu",
+      "ready": "På: spelare kopplar Discord under Konto → Anslutningar.",
+      "invite": "Spelare som inte är på din server ombeds gå med via {{url}}.",
+      "noInvite": "Boten kan inte skapa en inbjudan till din server än. Klicka på Bjud in till en server igen så att den får behörigheten Skapa inbjudan."
+    },
+    "missing": "Boten saknar {{list}} på din server, så delar av den fungerar inte. Klicka på Bjud in till en server ovan: det uppdaterar botens behörigheter utan att ta bort den."
+  },
+  "liveMatchesPage": {
+    "title": "Livematcher",
+    "subtitle": "Varje match som är på en server just nu. Rader som behöver dig kommer först.",
+    "loading": "Laddar…",
+    "loadFailed": "Livematcherna kunde inte läsas. Försöker igen…",
+    "empty": "Inga matcher pågår",
+    "chat": "Chatt",
+    "mapOf": "Karta {{n}}/{{total}}",
+    "columns": {
+      "match": "Match",
+      "map": "Karta",
+      "phase": "Fas",
+      "score": "Ställning",
+      "round": "Runda",
+      "players": "Spelare",
+      "pause": "Paus",
+      "call": "Adminanrop",
+      "server": "Server",
+      "chat": "Chatt"
+    },
+    "source": {
+      "matchmaking": "Matchmaking",
+      "manual": "Fristående"
+    },
+    "phase": {
+      "none": "Ingen serverstatus",
+      "loading": "Laddar",
+      "warmup": "Uppvärmning",
+      "knife": "Kniv",
+      "side_pick": "Sidval",
+      "live": "Live",
+      "paused": "Pausad",
+      "halftime": "Halvtid",
+      "overtime": "Övertid",
+      "map_end": "Efter matchen",
+      "series_end": "Efter matchen",
+      "restoring": "Återställer",
+      "error": "Fel"
+    },
+    "players": {
+      "summary": "{{connected}}/{{total}} inne · {{ready}} redo",
+      "connected": "Ansluten",
+      "disconnected": "Inte ansluten",
+      "readyTag": "redo",
+      "none": "Inga spelare"
+    },
+    "pause": {
+      "by": "av {{name}}",
+      "unpause": "Vill avsluta pausen",
+      "type": {
+        "tactical": "Taktisk",
+        "technical": "Teknisk",
+        "admin": "Admin",
+        "offline": "Spelare offline",
+        "halftime": "Halvtid",
+        "auto_5v5": "Väntar på 5v5",
+        "unknown": "Pausad"
+      }
+    },
+    "call": {
+      "noMessage": "Inget meddelande"
+    },
+    "server": {
+      "online": "Online",
+      "offline": "Offline",
+      "unknown": "Status okänd"
+    }
+  }
+}
