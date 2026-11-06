@@ -714,9 +714,9 @@
         "draw": "무"
       },
       "resultShort": {
-        "win": "W",
-        "loss": "L",
-        "draw": "D"
+        "win": "승",
+        "loss": "패",
+        "draw": "무"
       },
       "backToMatch": "내 경기로 돌아가기",
       "online_one": "{{count}}명 온라인",
