@@ -1,12 +1,12 @@
 {
   "devAccountSwitcher": {
-    "tooltip": "Switch account (dev)",
-    "adminTest": "Admin (test)",
-    "playerA": "Player A (dev)",
-    "playerB": "Player B (dev)",
-    "playerC": "Player C (dev)",
-    "newPlayer": "New player (first visit) (dev)",
-    "signOut": "Sign out",
-    "disabled": "Test sign-in is disabled on this server"
+    "tooltip": "切换账户（开发）",
+    "adminTest": "管理员（测试）",
+    "playerA": "玩家 A（开发）",
+    "playerB": "玩家 B（开发）",
+    "playerC": "玩家 C（开发）",
+    "newPlayer": "新玩家（首次访问）（开发）",
+    "signOut": "退出登录",
+    "disabled": "此服务器已禁用测试登录"
   }
 }
