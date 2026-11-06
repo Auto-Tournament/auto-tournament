@@ -29,6 +29,7 @@ import {
   bgBG,
   elGR,
   viVN,
+  thTH,
 } from '@mui/material/locale';
 import App from './App';
 import './index.css';
@@ -78,6 +79,7 @@ const getMuiLocale = (lang: string) => {
   if (lang.startsWith('bg')) return bgBG;
   if (lang.startsWith('el')) return elGR;
   if (lang.startsWith('vi')) return viVN;
+  if (lang.startsWith('th')) return thTH;
   return enUS;
 };
 

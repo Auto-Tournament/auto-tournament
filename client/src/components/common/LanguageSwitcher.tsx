@@ -39,6 +39,7 @@ const LANGUAGES: Language[] = [
   { code: 'bg', flagCode: 'BG', label: 'Български' },
   { code: 'el', flagCode: 'GR', label: 'Ελληνικά' },
   { code: 'vi', flagCode: 'VN', label: 'Tiếng Việt' },
+  { code: 'th', flagCode: 'TH', label: 'ไทย' },
 ];
 
 type FlagComponent = React.ComponentType<Record<string, never>>;
@@ -100,6 +101,7 @@ function normalizeLanguageCode(raw: string): string {
   if (lng.startsWith('bg')) return 'bg';
   if (lng.startsWith('el')) return 'el';
   if (lng.startsWith('vi')) return 'vi';
+  if (lng.startsWith('th')) return 'th';
   if (lng.startsWith('en')) return 'en';
   return 'en';
 }
