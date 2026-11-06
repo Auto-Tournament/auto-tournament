@@ -26,7 +26,7 @@
       "success": "Opprettet {{created}} testspillere",
       "errors": {
         "create": "Kunne ikke opprette testspillere",
-        "partial": "Opprettet {{created}} spiller(e), oppdaterte {{updated}}, men {{failed}} feilet. Sjekk konsollen for detaljer."
+        "partial": "Opprettet spillere: {{created}}, oppdaterte: {{updated}}, feilet: {{failed}}. Sjekk konsollen for detaljer."
       },
       "customLabel": "Egendefinert antall spillere",
       "buttons": {
@@ -38,10 +38,10 @@
     "testServers": {
       "title": "Testservere",
       "description": "Opprett testservere du kan prøve kamphåndtering mot.",
-      "success": "Opprettet {{count}} testserver(e)",
+      "success": "Opprettet testservere: {{count}}",
       "errors": {
         "create": "Kunne ikke opprette testservere",
-        "partial": "Opprettet {{created}} server(e), men {{failed}} feilet. Sjekk konsollen for detaljer."
+        "partial": "Opprettet servere: {{created}}, feilet: {{failed}}. Sjekk konsollen for detaljer."
       },
       "customLabel": "Egendefinert antall servere",
       "buttons": {

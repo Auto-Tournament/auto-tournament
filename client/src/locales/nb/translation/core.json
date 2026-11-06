@@ -125,7 +125,7 @@
     "name": {
       "match_no_server": "En kamp venter lenge på en server",
       "veto_stalled": "En veto står stille",
-      "warmup_long": "Lang warmup",
+      "warmup_long": "Lang oppvarming",
       "match_forfeit": "Et lag gir opp",
       "report_disputed": "Et resultat er bestridt",
       "failover": "En kampserver går ned",
@@ -133,7 +133,7 @@
       "server_crashed": "En server krasjer",
       "plugin_update_available": "En Ready Up-oppdatering er ute",
       "update_failed": "En spill- eller programtilleggsoppdatering feiler",
-      "autoscale_license": "Autoscale treffer lisensgrensen",
+      "autoscale_license": "Autoskaleringen treffer lisensgrensen",
       "recorder_offline": "En opptaker er frakoblet",
       "recorder_updated": "En opptaker er oppdatert",
       "recorder_update_failed": "En opptakeroppdatering feiler",
@@ -150,16 +150,16 @@
     "kind": {
       "match_no_server": "{{matchSlug}} har ventet i {{minutes}} min på en server",
       "veto_stalled": "Vetoen i {{matchSlug}} har stått stille i {{minutes}} min",
-      "warmup_long": "{{matchSlug}} har vært i warmup i {{minutes}} min",
+      "warmup_long": "{{matchSlug}} har vært i oppvarming i {{minutes}} min",
       "match_forfeit": "{{matchSlug}}: {{team}} ga opp ({{reason}})",
       "report_disputed": "Resultatet i {{matchSlug}} er bestridt",
       "failover": "{{matchSlug}}: serveren gikk ned, og kampen blir gjenopprettet (kart {{mapNumber}}, runde {{round}})",
       "match_silent": "{{matchSlug}}: ingenting fra serveren på {{minutes}} min",
       "failoverDecision": "{{matchSlug}}: serveren gikk ned, og automatisk failover er av. Avgjør saken på kampsiden.",
       "server_crashed": "{{server}} på {{host}}: {{event}}",
-      "plugin_update_available": "Ready Up {{version}} er ute, og {{servers}} server(e) kjører en eldre versjon",
+      "plugin_update_available": "Ready Up {{version}} er ute, og noen servere kjører en eldre versjon ({{servers}})",
       "update_failed": "Oppdateringen av {{what}} på {{host}} feilet: {{error}}",
-      "autoscale_license": "Autoscale kunne ikke legge til en server fordi lisensen er full",
+      "autoscale_license": "Autoskaleringen kunne ikke legge til en server fordi lisensen er full",
       "recorder_offline": "Opptakeren {{recorder}} har sluttet å melde seg",
       "recorder_updated": "Opptakeren {{recorder}} er oppdatert",
       "recorder_update_failed": "Opptakeren {{recorder}} kunne ikke oppdateres: {{error}}",
@@ -198,7 +198,7 @@
       "tournament_autostart_failed": "Rett opp det årsaken viser til, og start turneringen selv.",
       "shuffle_no_show": "Ingenting å gjøre: de holdes utenfor de neste trekningene til de sier at de er tilbake.",
       "teams_short": "Åpne kampen og gi det ene laget walkover, eller la kampen starte.",
-      "discord_failed": "Sjekk at boten er med i Discord-serveren og har Manage Channels, Manage Roles og Move Members (Innstillinger → Integrasjoner → Discord-bot)."
+      "discord_failed": "Sjekk at boten er med i Discord-serveren og har tillatelsene Administrer kanaler, Administrer roller og Flytt medlemmer (Innstillinger → Integrasjoner → Discord-bot)."
     }
   },
   "matchNow": {
