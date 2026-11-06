@@ -1,0 +1,490 @@
+{
+  "matchesPage": {
+    "errors": {
+      "loadMatches": "โหลดแมตช์ไม่สำเร็จ",
+      "loadTitle": "เกิดข้อผิดพลาดในการโหลดแมตช์",
+      "bulkDelete": "ลบแมตช์อย่างน้อยหนึ่งรายการไม่สำเร็จ"
+    },
+    "header": {
+      "createMatch": "สร้างแมตช์"
+    },
+    "bulkSelect": {
+      "select": "เลือก",
+      "done": "เลือกเสร็จแล้ว",
+      "selectAll": "เลือกทั้งหมด",
+      "unselectAll": "ยกเลิกการเลือกทั้งหมด",
+      "deleteSelected": "ลบที่เลือก"
+    },
+    "empty": {
+      "title": "ไม่มีแมตช์ให้แสดง",
+      "description": "สร้างทัวร์นาเมนต์และสร้างสายการแข่งขันเพื่อดูแมตช์ที่นี่",
+      "createManual": "หรือสร้างแมตช์ด้วยตนเอง"
+    },
+    "sections": {
+      "live": "แมตช์สด ({{count}})",
+      "upcoming": "แมตช์ที่กำลังจะมาถึง ({{count}})",
+      "history": "ประวัติแมตช์ ({{count}})",
+      "inQueue": "อยู่ในคิว {{count}}"
+    },
+    "manualMatchLabel": "แมตช์ที่สร้างเอง",
+    "create": {
+      "success": "สร้างแมตช์เองแล้ว: {{slug}}"
+    },
+    "bulkDelete": {
+      "title": "ลบแมตช์ที่สร้างเอง",
+      "deleted_one": "ลบแล้ว {{count}} แมตช์",
+      "deleted_other": "ลบแล้ว {{count}} แมตช์",
+      "message_one": "แน่ใจหรือไม่ว่าต้องการลบแมตช์ที่สร้างเอง {{count}} แมตช์? การกระทำนี้ย้อนกลับไม่ได้",
+      "message_other": "แน่ใจหรือไม่ว่าต้องการลบแมตช์ที่สร้างเอง {{count}} แมตช์? การกระทำนี้ย้อนกลับไม่ได้"
+    },
+    "card": {
+      "matchNumber": "แมตช์ #{{number}}",
+      "server": "เซิร์ฟเวอร์: {{name}}",
+      "queuePosition": "ตำแหน่งในคิว: #{{position}}",
+      "shuffle": "สุ่มทีม",
+      "shuffleManual": "สุ่มทีมแบบกำหนดเอง",
+      "manual": "กำหนดเอง",
+      "simulation": "จำลอง",
+      "winner": "ผู้ชนะ",
+      "mapN": "แมพ {{n}}"
+    },
+    "statusLabel": {
+      "walkover": "ชนะบาย",
+      "waitingForTournament": "รอทัวร์นาเมนต์เริ่ม",
+      "waitingForServer": "รอเซิร์ฟเวอร์",
+      "waitingForPairing": "รอการจับคู่",
+      "vetoPending": "รอวีโต้",
+      "mapVeto": "วีโต้แมพ",
+      "serverAllocated": "จัดสรรเซิร์ฟเวอร์แล้ว",
+      "warmup": "วอร์มอัป",
+      "overtime": "ต่อเวลา #{{n}}",
+      "live": "สด",
+      "completed": "จบแล้ว",
+      "cancelled": "ยกเลิกแล้ว",
+      "needsDecision": "ต้องให้ผู้ดูแลตัดสิน"
+    },
+    "statusGuide": {
+      "title": "คู่มือสถานะแมตช์",
+      "pending": "แมตช์ถูกกำหนดเวลาแล้วแต่ยังไม่ได้รับเซิร์ฟเวอร์ จะจัดสรรเมื่อมีเซิร์ฟเวอร์ว่าง",
+      "loaded": "แมตช์ถูกโหลดบนเซิร์ฟเวอร์และอยู่ในโหมดวอร์มอัป ผู้เล่นควรเชื่อมต่อและกดพร้อมเพื่อเริ่ม",
+      "live": "แมตช์กำลังแข่งบนเซิร์ฟเวอร์",
+      "completed": "แมตช์จบแล้ว ได้ผู้ชนะและสายการแข่งขันอัปเดตแล้ว",
+      "proTipTitle": "เคล็ดลับ:",
+      "proTip": "เมื่อแมตช์แสดง “รอผู้เล่น (X/Y)” แปลว่าเซิร์ฟเวอร์พร้อมแล้วและผู้เล่นควรเชื่อมต่อ เมื่อผู้เล่นที่คาดไว้เชื่อมต่อและกดพร้อมครบ แมตช์จะเริ่มอัตโนมัติ"
+    },
+    "latestEvent": "ล่าสุด: {{event}}",
+    "matchLabel": {
+      "upper": "สายบน R{{round}} M{{match}}",
+      "lower": "สายล่าง R{{round}} M{{match}}",
+      "grandFinal": "แกรนด์ไฟนอล",
+      "grandFinalReset": "แกรนด์ไฟนอลรีเซ็ต",
+      "group": "กลุ่ม {{group}} · รอบ {{round}}",
+      "playoffs": "เพลย์ออฟ · รอบ {{round}}"
+    },
+    "table": {
+      "filterLabel": "แสดง",
+      "search": "ค้นหาทีมหรือผู้เล่น",
+      "tbd": "รอประกาศ",
+      "manage": "จัดการแมตช์",
+      "empty": "ไม่มีแมตช์ที่นี่",
+      "filter": {
+        "attention_one": "ต้องดูแล · {{count}}",
+        "attention_other": "ต้องดูแล · {{count}}",
+        "live_one": "สด · {{count}}",
+        "live_other": "สด · {{count}}",
+        "veto_one": "วีโต้ · {{count}}",
+        "veto_other": "วีโต้ · {{count}}",
+        "waiting_one": "รอ · {{count}}",
+        "waiting_other": "รอ · {{count}}",
+        "finished_one": "จบแล้ว · {{count}}",
+        "finished_other": "จบแล้ว · {{count}}",
+        "all_one": "ทั้งหมด · {{count}}",
+        "all_other": "ทั้งหมด · {{count}}"
+      },
+      "columns": {
+        "match": "แมตช์",
+        "teams": "ทีม",
+        "phase": "ช่วง",
+        "server": "เซิร์ฟเวอร์",
+        "attention": "ต้องดูแล",
+        "open": "เปิด"
+      },
+      "attention": {
+        "calls_one": "เรียกผู้ดูแล 1 ครั้ง",
+        "calls_other": "เรียกผู้ดูแล {{count}} ครั้ง",
+        "decide": "ตัดสินผล"
+      },
+      "phase": {
+        "live": "สด · แมพ {{map}}",
+        "finished": "จบแล้ว",
+        "finishedScore": "จบแล้ว · {{score}}",
+        "veto": "วีโต้แมพ",
+        "waitingTeams": "รอทีมของแมตช์",
+        "queued": "รอเซิร์ฟเวอร์ · อันดับ #{{position}} ในคิว",
+        "waiting": "รอ"
+      },
+      "server": {
+        "freed": "คืนแล้ว"
+      }
+    }
+  },
+  "matchDetailsModal": {
+    "tiebreakHint": "คะแนนเท่ากัน: {{team}} ชนะแมพนี้โดยตัดสินด้วยไทเบรก",
+    "delete": {
+      "dialogTitle": "ลบแมตช์",
+      "confirmTitle": "ลบแมตช์นี้?",
+      "confirmBody": "แน่ใจหรือไม่ว่าต้องการลบแมตช์ “{{slug}}”? การกระทำนี้ย้อนกลับไม่ได้",
+      "button": "ลบแมตช์",
+      "success": "ลบแมตช์สำเร็จ",
+      "failed": "ลบแมตช์ไม่สำเร็จ"
+    },
+    "roster": {
+      "title": "รายชื่อผู้เล่น",
+      "yourTeam": "ทีมของคุณ",
+      "openPlayerPage": "เปิดหน้าผู้เล่น",
+      "ready": "พร้อม",
+      "connected": "เชื่อมต่อแล้ว",
+      "offline": "ออฟไลน์",
+      "bot": "บอท"
+    },
+    "decision": {
+      "body": "เล่นครบทุกแมพแล้วแต่ซีรีส์ยังเสมอทั้งแมพ รอบ และความเสียหาย เลือกผู้ชนะเพื่อให้สายการแข่งขันเดินต่อ",
+      "setWinner": "{{team}} ชนะ",
+      "confirmTitle": "กำหนดผู้ชนะซีรีส์",
+      "confirmBody": "จบซีรีส์นี้โดยให้ {{team}} เป็นผู้ชนะ? สายการแข่งขันจะเดินต่อ และย้อนกลับที่นี่ไม่ได้",
+      "confirm": "กำหนดผู้ชนะ",
+      "success": "กำหนดผู้ชนะแล้ว",
+      "failed": "กำหนดผู้ชนะไม่สำเร็จ"
+    },
+    "config": {
+      "loadFailed": "โหลดค่าตั้งแมตช์ไม่สำเร็จ",
+      "view": "ดู JSON ค่าตั้งแมตช์",
+      "title": "JSON ค่าตั้งแมตช์",
+      "loading": "กำลังโหลดค่าตั้งแมตช์...",
+      "empty": "ไม่มีค่าตั้งสำหรับแมตช์นี้"
+    },
+    "tiebreak": {
+      "regulationOnly": "แมตช์นี้ปิดการต่อเวลา (เวลาปกติเท่านั้น) คะแนนที่เสมอจึงตัดสินด้วยความเสียหายรวมของทีม",
+      "segmentsExhausted": "การต่อเวลาตั้งไว้ด้วยจำนวนช่วงสูงสุด หากคะแนนยังเสมอ ผู้ชนะจะตัดสินด้วยความเสียหายรวมของทีม",
+      "overtimeDisabled": "แมตช์นี้ปิดการต่อเวลา คะแนนที่เสมอจึงตัดสินด้วยความเสียหายรวมของทีม",
+      "tiedByDamage": "คะแนนสุดท้ายเสมอกัน จึงเลือกผู้ชนะด้วยความเสียหายรวมของทีมตามการตั้งค่าแมตช์"
+    },
+    "team1": "ทีม 1",
+    "team2": "ทีม 2",
+    "matchTime": "เวลาแมตช์:",
+    "server": "เซิร์ฟเวอร์:",
+    "queuePosition": "ตำแหน่งในคิว:",
+    "totalDamage": "ความเสียหายรวม: {{team1}} - {{team2}}",
+    "mapOfTotal": "แมพ {{index}} จาก {{total}}: {{map}}",
+    "mapIndex": "แมพ {{index}}: {{map}}",
+    "round": "รอบ {{round}}",
+    "shuffle": {
+      "averageElo": "ELO ทีม (เฉลี่ย): {{team1}} vs {{team2}}",
+      "balancerHint": "ทีมแบบสุ่มสร้างโดยตัวปรับสมดุลที่ใช้ OpenSkill ซึ่งกระจายผู้เล่นเรตติ้งสูงและต่ำไปทั้งสองฝั่งเพื่อให้ค่าเฉลี่ยใกล้กัน"
+    },
+    "playerLeaderboards": "อันดับผู้เล่น",
+    "noPlayerData": "ไม่มีข้อมูลผู้เล่น",
+    "currentMap": "แมพปัจจุบัน",
+    "maps": "แมพ",
+    "mapsNotPicked": "ยังไม่ได้เลือกแมพ",
+    "mapsViaVeto": "จะกำหนดผ่านวีโต้",
+    "matchInformation": "ข้อมูลแมตช์",
+    "created": "สร้างเมื่อ:",
+    "started": "เริ่มเมื่อ:",
+    "completed": "จบเมื่อ:",
+    "adminControls": "การควบคุมของผู้ดูแล",
+    "slug": "slug ของแมตช์:",
+    "openChat": "แชตของแมตช์"
+  },
+  "bulkShuffleMatchesModal": {
+    "title": "สร้างแมตช์สุ่มทีมหลายรายการ",
+    "description": "ตั้งค่าแมตช์สุ่มทีมแบบแมพเดียว (แมพ + จำนวนรอบสูงสุด) แล้วกำหนดแมตช์ตัวต่อตัวได้มากเท่าที่ต้องการ โดยเลือกรายชื่อผู้เล่นของแต่ละฝั่ง แมตช์จะถูกสร้างเป็นส่วนหนึ่งของทัวร์นาเมนต์สุ่มทีมปัจจุบัน และจะได้รับเซิร์ฟเวอร์เมื่อคุณเริ่มทัวร์นาเมนต์",
+    "mapSelect": {
+      "label": "แมพ",
+      "noMaps": "ยังไม่ได้ตั้งค่าแมพสำหรับทัวร์นาเมนต์นี้",
+      "helper": "ทุกแมตช์ในชุดนี้จะใช้แมพนี้"
+    },
+    "maxRounds": {
+      "label": "จำนวนรอบสูงสุดต่อแมพ",
+      "helperWithValue": "แมตช์เล่นได้สูงสุด {{maxRounds}} รอบ ผู้ชนะคือทีมแรกที่ได้ {{winRounds}} รอบ",
+      "helperDefault": "จำนวนรอบสูงสุดต่อแมพ (ค่าเริ่มต้น: 24 สูงสุด: 30)"
+    },
+    "matchesSection": {
+      "title": "แมตช์ ({{count}})",
+      "addMatch": "เพิ่มแมตช์"
+    },
+    "players": {
+      "empty": "ยังไม่มีผู้เล่นลงทะเบียนในทัวร์นาเมนต์สุ่มทีมนี้ ลงทะเบียนผู้เล่นก่อน แล้วจึงสร้างแมตช์เองได้"
+    },
+    "matchRow": {
+      "title": "แมตช์ {{index}}",
+      "teamCounts": "{{team1}}/{{teamSize}} • {{team2}}/{{teamSize}}",
+      "team1Label": "ผู้เล่นทีม 1 ({{team1Count}}/{{teamSize}})",
+      "team2Label": "ผู้เล่นทีม 2 ({{team2Count}}/{{teamSize}})",
+      "searchPlaceholder": "ค้นหาและเลือกผู้เล่น",
+      "mapOverrideLabel": "แมพ (กำหนดแทนได้)",
+      "mapOverrideHelperOwn": "แมตช์นี้ใช้แมพของตัวเอง",
+      "mapOverrideHelperDefault": "เว้นว่างไว้เพื่อใช้แมพเริ่มต้นด้านบน",
+      "maxRoundsOverrideLabel": "จำนวนรอบสูงสุด (กำหนดแทนได้)",
+      "maxRoundsOverrideHelperOwn": "ใช้แทนจำนวนรอบสูงสุดเริ่มต้นสำหรับแมตช์นี้ (ตอนนี้ {{value}})",
+      "maxRoundsOverrideHelperDefault": "เว้นว่างไว้เพื่อใช้จำนวนรอบสูงสุดเริ่มต้นด้านบน"
+    },
+    "errors": {
+      "loadPlayers": "โหลดผู้เล่นที่ลงทะเบียนไม่สำเร็จ",
+      "noMatches": "เพิ่มอย่างน้อยหนึ่งแมตช์เพื่อสร้าง",
+      "bothTeamsRequired": "แมตช์ {{index}}: ทั้งสองทีมต้องมีผู้เล่นอย่างน้อยหนึ่งคน",
+      "conflictingPlayers": "แมตช์ {{index}}: ผู้เล่นคนเดียวกันอยู่ทั้งสองทีมไม่ได้ ID ที่ซ้ำ: {{ids}}",
+      "mapRequired": "แมตช์ {{index}}: ต้องระบุแมพ (ตั้งแมพเริ่มต้นด้านบนหรือเลือกแมพสำหรับแมตช์นี้)",
+      "rowMaxRoundsRange": "แมตช์ {{index}}: จำนวนรอบสูงสุดต้องอยู่ระหว่าง 1 ถึง 30 เมื่อกำหนดแทนต่อแมตช์",
+      "globalMaxRoundsRange": "จำนวนรอบสูงสุดต้องอยู่ระหว่าง 1 ถึง 30",
+      "createFailed": "สร้างแมตช์สุ่มทีมแบบกำหนดเองไม่สำเร็จ"
+    },
+    "success": {
+      "created": "สร้างแมตช์สุ่มทีมแบบกำหนดเองแล้ว จะได้รับเซิร์ฟเวอร์เมื่อทัวร์นาเมนต์เริ่ม"
+    },
+    "createMatchesButton": {
+      "default": "สร้างแมตช์",
+      "creating": "กำลังสร้าง…"
+    }
+  },
+  "teamModal": {
+    "titleCreate": "สร้างทีมใหม่",
+    "titleEdit": "แก้ไขทีม",
+    "teamNameLabel": "ชื่อทีม",
+    "teamNamePlaceholder": "Astralis",
+    "teamNameHelper": "ชื่อทีมใช้ภาษาใดหรืออักขระพิเศษก็ได้",
+    "teamTagLabel": "แท็กทีม",
+    "teamTagPlaceholder": "AST",
+    "teamTagHelper": "สร้างอัตโนมัติจากชื่อทีม (สูงสุด 4 ตัวอักษร)",
+    "playersHeader": "ผู้เล่น ({{count}})",
+    "selectPlayers": "เลือกผู้เล่น",
+    "noPlayersInfo": "ยังไม่ได้เพิ่มผู้เล่น เพิ่มผู้เล่นอย่างน้อยหนึ่งคน",
+    "addPlayersHelper": "เพิ่มผู้เล่นใหม่ด้านล่าง หรือเลือกจากผู้เล่นที่มีอยู่",
+    "addPlayersHelper_steam": "เพิ่มผู้เล่นโดยวาง URL ของ Steam หรือเลือกจากผู้เล่นที่มีอยู่",
+    "steamInputLabel": "Steam ID / Vanity URL",
+    "steamInputPlaceholder": "gaben หรือ steamcommunity.com/id/gaben",
+    "resolveSteam": "ค้นหา Steam ID",
+    "resolving": "กำลังค้นหา...",
+    "playerNameLabel": "ชื่อผู้เล่น",
+    "playerNamePlaceholder": "s1mple",
+    "eloLabel": "ELO (ไม่บังคับ)",
+    "eloPlaceholder": "1500",
+    "eloHelper": "ค่าเริ่มต้น: 1500",
+    "errors": {
+      "steamLookupEmpty": "กรอก Steam ID, vanity URL หรือ URL โปรไฟล์",
+      "steamApiNotConfigured": "ยังไม่ได้ตั้งค่า Steam API - กรอก Steam ID64 เอง",
+      "steamResolveFailed": "ค้นหา Steam ID ไม่ได้ - กรอก Steam ID64 เอง",
+      "steamAndNameRequired": "ต้องระบุทั้ง Steam ID และชื่อผู้เล่น",
+      "steamDuplicate": "Steam ID นี้อยู่ในทีมแล้ว",
+      "teamNameRequired": "ต้องระบุชื่อทีม",
+      "playersRequired": "ต้องมีผู้เล่นอย่างน้อยหนึ่งคน",
+      "saveFailed": "บันทึกทีมไม่สำเร็จ",
+      "deleteFailed": "ลบทีมไม่สำเร็จ",
+      "discordIdInvalid": "Discord ID ต้องเป็นตัวเลข 17–20 หลัก (ID ผู้ใช้แบบตัวเลข ไม่ใช่ชื่อผู้ใช้)",
+      "discordIdInvalidPlayers": "Discord ID ไม่ถูกต้องสำหรับ: {{names}} ต้องเป็นตัวเลข 17–20 หลัก หรือเว้นว่างไว้",
+      "discordIdSaveFailed": "บันทึกทีมแล้ว แต่บันทึก Discord ID ไม่ได้สำหรับ: {{names}} {{message}}",
+      "nameRequired": "กรอกชื่อผู้เล่น",
+      "addPlayerFailed": "เพิ่มผู้เล่นไม่ได้"
+    },
+    "success": {
+      "playerAdded": "เพิ่มผู้เล่นในทีมแล้ว",
+      "playerReplaced": "แทนที่ผู้เล่นแล้ว",
+      "teamUpdated": "อัปเดตทีมสำเร็จ",
+      "teamCreated": "สร้างทีมสำเร็จ",
+      "teamDeleted": "ลบทีมสำเร็จ"
+    },
+    "buttons": {
+      "deleteTeam": "ลบทีม",
+      "cancel": "ยกเลิก",
+      "saving": "กำลังบันทึก...",
+      "saveChanges": "บันทึกการเปลี่ยนแปลง",
+      "createTeam": "สร้างทีม"
+    },
+    "confirmDelete": {
+      "title": "ลบทีม",
+      "message": "แน่ใจหรือไม่ว่าต้องการลบ “{{name}}”? การกระทำนี้ย้อนกลับไม่ได้"
+    },
+    "replacePlayerAria": "แทนที่ผู้เล่น {{name}}",
+    "replacePlayerTooltip": "แทนที่ผู้เล่นคนนี้",
+    "accountLabel": "บัญชี {{account}} (ไม่บังคับ)",
+    "accountHelper": "สำหรับ {{games}} เมื่อเขาเข้าสู่ระบบด้วย {{account}} เขาจะกลายเป็นผู้เล่นคนนี้"
+  },
+  "playerModal": {
+    "titleCreate": "สร้างผู้เล่น",
+    "titleEdit": "แก้ไขผู้เล่น",
+    "steamLabel": "Steam ID หรือ URL โปรไฟล์ (ไม่บังคับ)",
+    "steamHelperEditing": "เปลี่ยน Steam ID ไม่ได้",
+    "steamHelperNew": "สำหรับ {{games}} กรอก Steam ID64, vanity URL หรือ URL โปรไฟล์ “ค้นหา Steam ID” จะเติมชื่อและรูปโปรไฟล์ให้",
+    "resolveSteam": "ค้นหา Steam ID",
+    "resolving": "กำลังค้นหา...",
+    "playerNameLabel": "ชื่อผู้เล่น",
+    "playerNamePlaceholder": "ผู้เล่น",
+    "eloLabelNew": "ELO เริ่มต้น",
+    "eloLabelEdit": "ELO",
+    "eloHelperNew": "เว้นว่างไว้เพื่อใช้ค่าเริ่มต้น (เรตติ้ง 1500)",
+    "eloHelperEdit": "การเปลี่ยน ELO จะรีเซ็ตเรตติ้งและสถิติของผู้เล่น การกระทำนี้ย้อนกลับไม่ได้",
+    "isAdminLabel": "เป็นผู้ดูแล (จัดการเว็บไซต์นี้ โมดูลเกมอาจให้สิทธิ์ในเกมแก่ผู้ดูแลด้วย)",
+    "currentElo": "ELO ปัจจุบัน: {{value}}",
+    "startingElo": "ELO เริ่มต้น: {{value}}",
+    "matchesPlayed": "แมตช์ที่เล่น: {{count}}",
+    "errors": {
+      "steamRequired": "ต้องระบุ Steam ID",
+      "nameRequired": "ต้องระบุชื่อผู้เล่น",
+      "steamLookupEmpty": "กรอก Steam ID, vanity URL หรือ URL โปรไฟล์",
+      "steamApiNotConfigured": "ยังไม่ได้ตั้งค่า Steam API - กรอก Steam ID64 เอง",
+      "steamResolveFailed": "ค้นหา Steam ID ไม่ได้ - กรอก Steam ID64 เอง",
+      "saveFailed": "บันทึกผู้เล่นไม่สำเร็จ"
+    },
+    "success": {
+      "playerUpdated": "อัปเดตผู้เล่นสำเร็จ",
+      "playerCreated": "สร้างผู้เล่นสำเร็จ"
+    },
+    "buttons": {
+      "delete": "ลบ",
+      "cancel": "ยกเลิก",
+      "saving": "กำลังบันทึก...",
+      "save": "บันทึก",
+      "create": "สร้าง"
+    },
+    "confirmDelete": {
+      "title": "ลบผู้เล่น",
+      "message": "แน่ใจหรือไม่ว่าต้องการลบผู้เล่น “{{name}}”? การกระทำนี้ย้อนกลับไม่ได้"
+    },
+    "confirmEloUpdate": {
+      "title": "อัปเดต ELO ของผู้เล่น",
+      "message": "แน่ใจหรือไม่ว่าต้องการเปลี่ยน ELO ของผู้เล่นนี้จาก {{from}} เป็น {{to}}? สถิติและประวัติเรตติ้งจะถูกรีเซ็ต การกระทำนี้ย้อนกลับไม่ได้"
+    },
+    "discordIdHelper": "ไม่บังคับ ตัวเลข 17–20 หลัก ให้ผู้จัดติดต่อผู้เล่นนี้ทาง Discord ได้ ไม่แสดงต่อสาธารณะ",
+    "accountLabel": "บัญชี {{account}} (ไม่บังคับ)",
+    "accountHelper": "สำหรับ {{games}} ID ของบัญชี เมื่อเขาเข้าสู่ระบบด้วย {{account}} เขาจะกลายเป็นผู้เล่นคนนี้",
+    "accountVerified": "เชื่อมแล้ว: เขาเข้าสู่ระบบด้วย {{account}} แล้ว เขาเปลี่ยนเองได้"
+  },
+  "teamImportModal": {
+    "title": "นำเข้าทีมจาก JSON",
+    "info": {
+      "title": "วาง JSON ที่มีข้อมูลทีมด้านล่าง",
+      "format": "รูปแบบที่ต้องการ: อาร์เรย์ของทีมที่มี name, tag (ไม่บังคับ) และ players (name + steamId พร้อม discordId แบบสตริงในเครื่องหมายคำพูดหากมี)",
+      "link": "ดูเอกสารพร้อมตัวอย่าง"
+    },
+    "jsonLabel": "ข้อมูล JSON",
+    "errors": {
+      "mustBeArray": "JSON ต้องเป็นอาร์เรย์ของทีม",
+      "emptyArray": "อาร์เรย์ต้องไม่ว่าง",
+      "parseWithMessage": "ข้อผิดพลาดในการแยกวิเคราะห์ JSON: {{message}}",
+      "parseGeneric": "รูปแบบ JSON ไม่ถูกต้อง ตรวจสอบไวยากรณ์",
+      "importFailed": "นำเข้าทีมไม่สำเร็จ",
+      "noJson": "กรอกข้อมูล JSON"
+    },
+    "preview": {
+      "summary": "✓ JSON ถูกต้อง! พบ {{teams}} รวม{{players}}",
+      "title": "ตัวอย่าง:",
+      "missingDiscordTotal": "ผู้เล่นที่ไม่มี Discord ID: {{count}}",
+      "missingDiscordChip": "ไม่มี Discord: {{count}}",
+      "playersChip_one": "ผู้เล่น {{count}} คน",
+      "playersChip_other": "ผู้เล่น {{count}} คน",
+      "teamsCount_one": "{{count}} ทีม",
+      "teamsCount_other": "{{count}} ทีม"
+    },
+    "actions": {
+      "preview": "ตัวอย่าง",
+      "importing": "กำลังนำเข้า...",
+      "import_one": "นำเข้า {{count}} ทีม",
+      "import_other": "นำเข้า {{count}} ทีม"
+    },
+    "warnings": {
+      "title": "Discord ID บางรายการถูกละเว้น ผู้เล่นเหล่านี้จะถูกนำเข้าโดยไม่มี Discord ID:",
+      "discordIdNumber": "ทีม “{{team}}” ผู้เล่น “{{player}}”: discordId ต้องเป็นสตริงในเครื่องหมายคำพูด ตัวเลขขนาดใหญ่เสียความแม่นยำใน JSON จึงตัด ID ทิ้ง",
+      "discordIdInvalid": "ทีม “{{team}}” ผู้เล่น “{{player}}”: “{{value}}” ไม่ใช่ Discord user ID (ต้องเป็นตัวเลข 17–20 หลัก) จึงตัดทิ้ง"
+    }
+  },
+  "playerImportModal": {
+    "title": "นำเข้าผู้เล่น",
+    "info": {
+      "description": "นำเข้าผู้เล่นจากรูปแบบ JSON หรือ CSV ฟิลด์ที่จำเป็น: steamId, name ไม่บังคับ: initialELO (ค่าเริ่มต้น 1500), avatarUrl",
+      "link": "ดูเอกสารพร้อมตัวอย่าง"
+    },
+    "placeholders": {
+      "jsonCsv": "รูปแบบ JSON:\n[\n  {\n    \"steamId\": \"76561198012345678\",\n    \"name\": \"Player One\",\n    \"initialELO\": 1500,\n    \"avatarUrl\": \"https://...\"\n  }\n]\n\nรูปแบบ CSV:\nsteamId,name,initialELO,avatarUrl\n76561198012345678,Player One,1500,https://..."
+    },
+    "actions": {
+      "parseValidate": "แยกวิเคราะห์และตรวจสอบ",
+      "importing": "กำลังนำเข้า...",
+      "import_one": "นำเข้าผู้เล่น {{count}} คน",
+      "import_other": "นำเข้าผู้เล่น {{count}} คน"
+    },
+    "preview": {
+      "title": "ผู้เล่นที่จะนำเข้า ({{count}}):",
+      "steamId": "Steam ID: {{steamId}}",
+      "name": "ชื่อ: {{name}}",
+      "initialElo": "ELO เริ่มต้น: {{elo}}",
+      "avatar": "รูปโปรไฟล์: {{url}}",
+      "readyChip_one": "ผู้เล่น {{count}} คนพร้อมนำเข้า",
+      "readyChip_other": "ผู้เล่น {{count}} คนพร้อมนำเข้า"
+    },
+    "errors": {
+      "noData": "กรอกข้อมูล JSON หรือ CSV",
+      "noPlayers": "ไม่พบผู้เล่นในข้อมูล",
+      "validationPrefix": "ข้อผิดพลาดในการตรวจสอบ:",
+      "parseFailed": "แยกวิเคราะห์ข้อมูลไม่สำเร็จ: {{message}}",
+      "importFailed": "นำเข้าผู้เล่นไม่สำเร็จ",
+      "parseFirst": "แยกวิเคราะห์และตรวจสอบข้อมูลก่อน"
+    }
+  },
+  "playerSelectionModal": {
+    "title": "เลือกผู้เล่น",
+    "selectedCount": "เลือกแล้ว {{count}}",
+    "searchPlaceholder": "ค้นหาผู้เล่นด้วยชื่อ...",
+    "searchPlaceholder_steam": "ค้นหาผู้เล่นด้วยชื่อหรือ Steam ID...",
+    "selectAll": {
+      "select": "เลือกทั้งหมด",
+      "deselect": "ยกเลิกการเลือกทั้งหมด"
+    },
+    "empty": {
+      "noSearchResults": "ไม่พบผู้เล่นที่ตรงกับการค้นหา",
+      "noPlayers": "ไม่มีผู้เล่น"
+    },
+    "playerCard": {
+      "alreadyInTeam": "อยู่ในทีมแล้ว"
+    },
+    "errors": {
+      "loadFailed": "โหลดผู้เล่นไม่สำเร็จ",
+      "noSelectable": "ไม่มีผู้เล่นที่เลือกได้"
+    },
+    "addPlayersButton_one": "เพิ่มผู้เล่น {{count}} คน",
+    "addPlayersButton_other": "เพิ่มผู้เล่น {{count}} คน"
+  },
+  "soundSettingsModal": {
+    "title": "การตั้งค่าเสียง",
+    "soundSelect": {
+      "label": "เสียงแจ้งเตือน"
+    },
+    "volume": {
+      "label": "ระดับเสียง: {{percent}}%"
+    },
+    "testButton": "ทดสอบเสียง",
+    "footer": "เสียงแจ้งเตือนจะดังเมื่อแมตช์ของคุณพร้อมหรือเมื่อมีเหตุการณ์สำคัญ"
+  },
+  "addBackupPlayer": {
+    "title": "เพิ่มผู้เล่น",
+    "loadFailed": "โหลดรายชื่อผู้เล่นไม่สำเร็จ",
+    "added": "เพิ่ม {{name}} ไปที่ {{target}} แล้ว",
+    "addFailed": "เพิ่มผู้เล่นไม่สำเร็จ",
+    "addToMatchFailed": "เพิ่มผู้เล่นในแมตช์ไม่สำเร็จ",
+    "searchLabel": "ค้นหาผู้เล่น",
+    "searchPlaceholder": "พิมพ์ชื่อผู้เล่น...",
+    "available": "ผู้เล่นที่ว่าง {{count}} คน (ยังไม่อยู่ในแมตช์)",
+    "noneAvailable": "ไม่มีผู้เล่น",
+    "displayNameLabel": "ชื่อที่แสดง (ไม่บังคับ)",
+    "displayNamePlaceholder": "ค่าเริ่มต้นคือชื่อปัจจุบันของผู้เล่น",
+    "side": "ฝั่ง",
+    "spectator": "ผู้ชม",
+    "selected": "เลือกแล้ว:",
+    "fromTeam": "จากทีม: {{team}}",
+    "steamId": "Steam ID: {{id}}",
+    "adding": "กำลังเพิ่มผู้เล่น...",
+    "add": "เพิ่มผู้เล่นในแมตช์",
+    "underlyingCommand": "คำสั่งที่ใช้:",
+    "important": "สำคัญ:",
+    "reconnectHint": "ผู้เล่นต้องเชื่อมต่อเซิร์ฟเวอร์ใหม่หลังถูกเพิ่ม หากเชื่อมต่ออยู่แล้วอาจต้องเข้าใหม่"
+  }
+}

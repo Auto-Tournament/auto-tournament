@@ -1,0 +1,201 @@
+{
+  "templatesPage": {
+    "header": {
+      "createFromTournament": "สร้างเทมเพลตจากทัวร์นาเมนต์"
+    },
+    "errors": {
+      "load": "โหลดเทมเพลตไม่สำเร็จ"
+    },
+    "delete": {
+      "title": "ลบเทมเพลต",
+      "message": "แน่ใจหรือไม่ว่าต้องการลบเทมเพลต “{{name}}”? การกระทำนี้ย้อนกลับไม่ได้",
+      "success": "ลบเทมเพลต “{{name}}” สำเร็จ",
+      "error": "ลบเทมเพลตไม่สำเร็จ"
+    },
+    "update": {
+      "success": "อัปเดตเทมเพลต “{{name}}” สำเร็จ",
+      "error": "อัปเดตเทมเพลตไม่สำเร็จ"
+    },
+    "createFromTemplate": {
+      "errors": {
+        "inProgressOrCompleted": "สร้างทัวร์นาเมนต์จากเทมเพลตไม่ได้ขณะที่มีทัวร์นาเมนต์กำลังแข่งหรือจบแล้ว ลบหรือรีเซ็ตทัวร์นาเมนต์ปัจจุบันก่อน",
+        "alreadyExists": "มีทัวร์นาเมนต์อยู่แล้ว ลบหรือรีเซ็ตทัวร์นาเมนต์ปัจจุบันก่อนสร้างทัวร์นาเมนต์ใหม่จากเทมเพลต"
+      },
+      "button": "สร้างทัวร์นาเมนต์จากเทมเพลต"
+    },
+    "edit": {
+      "title": "แก้ไขเทมเพลต",
+      "nameLabel": "ชื่อเทมเพลต",
+      "descriptionLabel": "คำอธิบาย (ไม่บังคับ)",
+      "typeLabel": "ประเภททัวร์นาเมนต์",
+      "formatLabel": "รูปแบบแมตช์",
+      "mapPool": {
+        "title": "พูลแมพ",
+        "selectLabel": "เลือกพูลแมพ",
+        "customOption": "กำหนดเอง",
+        "selectedLabel": "แมพที่เลือก ({{count}}):",
+        "vetoWarning": "รูปแบบที่มีวีโต้ (BO1/BO3/BO5) ต้องใช้แมพ 7 แมพพอดี เลือกไว้ตอนนี้: {{count}}",
+        "chooseMaps": "เลือกแมพ..."
+      },
+      "save": "บันทึก"
+    },
+    "emptyTitle": "ยังไม่มีเทมเพลต",
+    "emptyDescription": "บันทึกการตั้งค่าของทัวร์นาเมนต์เป็นเทมเพลตจากหน้าทัวร์นาเมนต์ แล้วเริ่มทัวร์นาเมนต์ใหม่จากเทมเพลตนั้นที่นี่"
+  },
+  "saveTemplateModal": {
+    "title": "บันทึกเป็นเทมเพลต",
+    "nameLabel": "ชื่อเทมเพลต",
+    "namePlaceholder": "แพ้คัดออก 8 ทีม BO3",
+    "descriptionLabel": "คำอธิบาย (ไม่บังคับ)",
+    "descriptionPlaceholder": "ทัวร์นาเมนต์แพ้คัดออก 8 ทีมประจำสัปดาห์",
+    "saveButton": "บันทึกเทมเพลต",
+    "errors": {
+      "nameRequired": "ต้องระบุชื่อเทมเพลต",
+      "saveFailed": "บันทึกเทมเพลตไม่สำเร็จ"
+    }
+  },
+  "eloTemplatesPage": {
+    "errors": {
+      "load": "โหลดเทมเพลตเรตติ้งไม่สำเร็จ"
+    },
+    "header": {
+      "createTemplate": "สร้างเทมเพลต",
+      "importJson": "นำเข้าจาก JSON"
+    },
+    "empty": {
+      "title": "ไม่มีเทมเพลตเรตติ้ง",
+      "description": "สร้างเทมเพลตแรกของคุณเพื่อกำหนดว่าสถิติของผู้เล่นมีผลต่อการปรับ ELO อย่างไร",
+      "action": "สร้างเทมเพลต"
+    },
+    "delete": {
+      "title": "ลบเทมเพลตเรตติ้ง",
+      "message": "แน่ใจหรือไม่ว่าต้องการลบ “{{name}}”? การกระทำนี้ย้อนกลับไม่ได้",
+      "success": "ลบเทมเพลต “{{name}}” สำเร็จ",
+      "error": "ลบเทมเพลตไม่สำเร็จ",
+      "defaultProtected": "ลบเทมเพลตเริ่มต้น “pure-win-loss” ไม่ได้"
+    },
+    "import": {
+      "success_one": "นำเข้าเทมเพลตเรตติ้ง {{count}} รายการแล้ว",
+      "success_other": "นำเข้าเทมเพลตเรตติ้ง {{count}} รายการแล้ว"
+    },
+    "weights": {
+      "noAdjustmentsPure": "ไม่ปรับตามสถิติ (ชนะ/แพ้ล้วน)"
+    },
+    "card": {
+      "enabled": "เปิดใช้งาน",
+      "disabled": "ปิดใช้งาน",
+      "default": "ค่าเริ่มต้น",
+      "adjustment": {
+        "none": "การปรับตามสถิติต่อแมตช์: ไม่มี (0 ELO จากผลแข่งเท่านั้น)",
+        "uncapped": "การปรับตามสถิติต่อแมตช์: ไม่จำกัด (ใช้อย่างระมัดระวัง)",
+        "range": "ช่วงการปรับตามสถิติต่อแมตช์: {{min}} ถึง {{max}} ELO",
+        "noMin": "ไม่มีขั้นต่ำ",
+        "noMax": "ไม่มีขั้นสูงสุด"
+      },
+      "tooltips": {
+        "edit": "แก้ไขเทมเพลต",
+        "delete": "ลบเทมเพลต"
+      },
+      "weightsTitle": "น้ำหนักของสถิติ:",
+      "limitsTitle": "ขีดจำกัดการปรับ:",
+      "minAdjustment": "ต่ำสุด: {{value}}",
+      "maxAdjustment": "สูงสุด: {{value}}"
+    },
+    "importModal": {
+      "title": "นำเข้าเทมเพลตเรตติ้งจาก JSON",
+      "introTitle": "วาง JSON ที่มีคำจำกัดความของเทมเพลตเรตติ้งด้านล่าง",
+      "introBody": "รูปแบบที่ต้องการ: อาร์เรย์ของเทมเพลตที่มี name, description (ไม่บังคับ), enabled, weights, maxAdjustment และ minAdjustment หากไม่ใส่ id ระบบจะสร้างจากชื่อ",
+      "jsonLabel": "ข้อมูล JSON",
+      "validJsonTitle": "✓ JSON ถูกต้อง!",
+      "previewTitle": "ตัวอย่าง:",
+      "previewButton": "ตัวอย่าง",
+      "importButton": "นำเข้าเทมเพลต",
+      "validJsonBody_one": "พบเทมเพลต {{count}} รายการ",
+      "validJsonBody_other": "พบเทมเพลต {{count}} รายการ"
+    },
+    "editor": {
+      "titleEdit": "แก้ไขเทมเพลตเรตติ้ง",
+      "titleCreate": "สร้างเทมเพลตเรตติ้ง",
+      "info": "กำหนดว่าสถิติของผู้เล่นแต่ละคนมีผลต่อการปรับ ELO อย่างไร น้ำหนักจะใช้หลังจาก OpenSkill คำนวณการเปลี่ยนแปลง ELO พื้นฐาน (ชนะ/แพ้) น้ำหนักบวกเพิ่ม ELO น้ำหนักลบลด ELO",
+      "nameLabel": "ชื่อเทมเพลต",
+      "nameDefaultLocked": "เปลี่ยนชื่อเทมเพลตเริ่มต้นไม่ได้",
+      "descriptionLabel": "คำอธิบาย",
+      "descriptionPlaceholder": "คำอธิบายจุดประสงค์ของเทมเพลตนี้ (ไม่บังคับ)",
+      "enabledLabel": "เปิดใช้งาน",
+      "weights": {
+        "title": "น้ำหนักของสถิติ",
+        "subtitle": "ปรับแถบเลื่อนของแต่ละสถิติ ค่า 0 หมายถึงไม่ปรับสำหรับสถิตินั้น"
+      },
+      "limits": {
+        "title": "ขีดจำกัดการปรับ (ไม่บังคับ)",
+        "subtitle": "กำหนดการปรับ ELO สูงสุดและต่ำสุดต่อแมตช์ เพื่อป้องกันการเปลี่ยนแปลงที่รุนแรงเกินไป",
+        "maxLabel": "การปรับสูงสุด",
+        "maxHelper": "การปรับ ELO ทางบวกสูงสุดต่อแมตช์",
+        "minLabel": "การปรับต่ำสุด",
+        "minHelper": "การปรับ ELO ทางลบสูงสุดต่อแมตช์"
+      },
+      "errors": {
+        "nameRequired": "ต้องระบุชื่อเทมเพลต"
+      },
+      "create": {
+        "success": "สร้างเทมเพลต “{{name}}” สำเร็จ",
+        "error": "สร้างเทมเพลตไม่สำเร็จ"
+      },
+      "update": {
+        "success": "อัปเดตเทมเพลต “{{name}}” สำเร็จ",
+        "error": "อัปเดตเทมเพลตไม่สำเร็จ"
+      },
+      "buttons": {
+        "saving": "กำลังบันทึก...",
+        "update": "อัปเดต",
+        "create": "สร้าง"
+      }
+    },
+    "stats": {
+      "kills": {
+        "label": "Kills",
+        "description": "จำนวน kill ต่อแมตช์"
+      },
+      "deaths": {
+        "label": "Deaths",
+        "description": "จำนวนครั้งที่ตายต่อแมตช์ (มักใช้น้ำหนักลบ)"
+      },
+      "assists": {
+        "label": "Assists",
+        "description": "จำนวน assist ต่อแมตช์"
+      },
+      "flashAssists": {
+        "label": "Flash Assists",
+        "description": "จำนวน flash assist ต่อแมตช์"
+      },
+      "headshotKills": {
+        "label": "Headshot Kills",
+        "description": "จำนวน kill ด้วยเฮดช็อตต่อแมตช์"
+      },
+      "damage": {
+        "label": "ความเสียหาย",
+        "description": "ความเสียหายรวมต่อแมตช์"
+      },
+      "utilityDamage": {
+        "label": "ความเสียหายจากยูทิลิตี้",
+        "description": "ความเสียหายจากยูทิลิตี้ (ระเบิด)"
+      },
+      "kast": {
+        "label": "KAST %",
+        "description": "เปอร์เซ็นต์ของรอบที่มี Kill, Assist, Survive หรือ Trade"
+      },
+      "mvps": {
+        "label": "MVP",
+        "description": "จำนวนรางวัล MVP ต่อแมตช์"
+      },
+      "score": {
+        "label": "คะแนน",
+        "description": "คะแนนแมตช์ (รวมหลายปัจจัย)"
+      },
+      "adr": {
+        "label": "ADR",
+        "description": "ความเสียหายเฉลี่ยต่อรอบ"
+      }
+    }
+  }
+}
