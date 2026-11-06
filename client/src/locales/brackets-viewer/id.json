@@ -1,0 +1,124 @@
+{
+  "origin-hint": {
+    "seed": "Seed {{position}}",
+    "winner-bracket": "Yang kalah di $t(abbreviations.winner-bracket) {{round}}.{{position}}",
+    "winner-bracket-semi-final": "Yang kalah di semifinal $t(abbreviations.winner-bracket) {{position}}",
+    "winner-bracket-final": "Yang kalah di final $t(abbreviations.winner-bracket)",
+    "consolation-final": "Yang kalah di semifinal {{position}}",
+    "grand-final": "Pemenang final $t(abbreviations.loser-bracket)",
+    "double-elimination-consolation-final-opponent-1": "Yang kalah di semifinal $t(abbreviations.loser-bracket) 1",
+    "double-elimination-consolation-final-opponent-2": "Yang kalah di final $t(abbreviations.loser-bracket)"
+  },
+  "match-label": {
+    "default": "Pertandingan {{matchNumber}}",
+    "winner-bracket": "$t(abbreviations.winner-bracket)",
+    "loser-bracket": "$t(abbreviations.loser-bracket)",
+    "standard-bracket": "$t(abbreviations.match)",
+    "standard-bracket-semi-final": "Semifinal {{matchNumber}}",
+    "standard-bracket-final": "Final",
+    "double-elimination": "{{matchPrefix}} {{roundNumber}}.{{matchNumber}}",
+    "double-elimination-semi-final": "{{matchPrefix}} semifinal {{matchNumber}}",
+    "double-elimination-final": "{{matchPrefix}} final",
+    "consolation-final": "Perebutan juara ketiga",
+    "grand-final-single": "Grand final",
+    "grand-final": "$t(abbreviations.grand-final) babak {{roundNumber}}",
+    "match-game": "Game {{gameNumber}}"
+  },
+  "match-status": {
+    "locked": "Terkunci",
+    "waiting": "Menunggu",
+    "ready": "Siap",
+    "running": "Berlangsung",
+    "completed": "Selesai",
+    "archived": "Diarsipkan"
+  },
+  "abbreviations": {
+    "win": "M",
+    "loss": "K",
+    "forfeit": "WO",
+    "position": "Pos",
+    "seed": "#",
+    "winner-bracket": "UB",
+    "loser-bracket": "LB",
+    "match": "P",
+    "grand-final": "GF"
+  },
+  "ranking": {
+    "rank": {
+      "text": "#",
+      "tooltip": "Peringkat"
+    },
+    "id": {
+      "text": "Nama",
+      "tooltip": "Nama"
+    },
+    "played": {
+      "text": "Main",
+      "tooltip": "Dimainkan"
+    },
+    "wins": {
+      "text": "$t(abbreviations.win)",
+      "tooltip": "Menang"
+    },
+    "draws": {
+      "text": "S",
+      "tooltip": "Seri"
+    },
+    "losses": {
+      "text": "$t(abbreviations.loss)",
+      "tooltip": "Kalah"
+    },
+    "forfeits": {
+      "text": "$t(abbreviations.forfeit)",
+      "tooltip": "Kalah WO"
+    },
+    "scoreFor": {
+      "text": "SD",
+      "tooltip": "Skor didapat"
+    },
+    "scoreAgainst": {
+      "text": "SK",
+      "tooltip": "Skor kebobolan"
+    },
+    "scoreDifference": {
+      "text": "+/-",
+      "tooltip": "Selisih skor"
+    },
+    "points": {
+      "text": "Poin",
+      "tooltip": "Poin"
+    }
+  },
+  "common": {
+    "bye": "BYE",
+    "best-of-x": "Bo{{x}}",
+    "consolation": "Perebutan juara ketiga",
+    "group-name": "Grup {{groupNumber}}",
+    "group-name-winner-bracket": "Upper bracket",
+    "group-name-loser-bracket": "Lower bracket",
+    "round-name": "Babak {{roundNumber}}",
+    "round-name-final": "Babak final",
+    "round-name-winner-bracket": "$t(abbreviations.winner-bracket) babak {{roundNumber}}",
+    "round-name-winner-bracket-final": "$t(abbreviations.winner-bracket) babak final",
+    "round-name-loser-bracket": "$t(abbreviations.loser-bracket) babak {{roundNumber}}",
+    "round-name-loser-bracket-final": "$t(abbreviations.loser-bracket) babak final"
+  },
+  "form-creator": {
+    "stage-name-label": "Beri nama tahap",
+    "stage-name-placeholder": "Beri nama untuk tahap Anda",
+    "stage-selector-label": "Pilih tahap",
+    "team-label": "Beri nama tim",
+    "team-label-placeholder": "Daftar nama tim dipisahkan koma (harus 2^n)",
+    "team-count": "Atau jumlah tim",
+    "team-count-placeholder": "Berapa tim yang Anda inginkan?",
+    "group-label": "Berapa grup?",
+    "group-placeholder": "Berapa grup yang Anda inginkan?",
+    "seed-order-label": "Bagaimana Anda ingin mengurutkan seed?",
+    "double-elimination-seed-order-placeholder": "Urutan seed untuk double elimination, dipisahkan koma",
+    "round-robin-mode-label": "Mode round robin mana yang Anda suka?",
+    "consolation-final-label": "Perebutan juara ketiga",
+    "skip-first-round-label": "Lewati babak pertama",
+    "grand-final-type-label": "Jenis grand final",
+    "submit": "Buat"
+  }
+}

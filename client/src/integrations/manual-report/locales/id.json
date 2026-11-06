@@ -1,0 +1,81 @@
+{
+  "manualReport": {
+    "title": "Hasil pertandingan",
+    "unknownTeam": "tim lawan",
+    "state": {
+      "nothing": "Belum ada hasil yang dilaporkan. Siapa pun yang memainkannya, laporkan skornya.",
+      "waitingOpponent": "Dilaporkan. Menunggu {{team}} mengonfirmasi.",
+      "needsAnswer": "{{team}} melaporkan hasil ini. Konfirmasi jika sudah benar.",
+      "disputed": "Hasil ini disengketakan. Admin yang akan memutuskan.",
+      "awaitingAdmin": "Menunggu admin memutuskan pertandingan ini.",
+      "confirmed": "Kedua tim setuju dengan hasil ini."
+    },
+    "deadline": {
+      "autoConfirm": "Terkonfirmasi sendiri dalam {{minutes}} mnt jika tidak ada yang menjawab.",
+      "autoConfirmSoon": "Segera terkonfirmasi sendiri.",
+      "escalate": "Diserahkan ke admin dalam {{minutes}} mnt jika tidak ada yang menjawab.",
+      "escalateSoon": "Segera diserahkan ke admin."
+    },
+    "score": "{{team1}} {{score1}} – {{score2}} {{team2}}",
+    "game": "Game {{number}}",
+    "note": "Catatan",
+    "notePlaceholder": "Hal yang perlu diketahui tim lawan (opsional)",
+    "noteGiven": "Catatan: {{note}}",
+    "disputeReason": "Apa yang salah?",
+    "disputeReasonGiven": "Disengketakan: {{reason}}",
+    "formHint": "Skor untuk {{team1}} dan {{team2}}, game demi game.",
+    "actions": {
+      "report": "Laporkan skor",
+      "reportAgain": "Laporkan skor yang berbeda",
+      "submit": "Kirim laporan",
+      "cancel": "Batal",
+      "confirm": "Konfirmasi",
+      "dispute": "Sengketakan",
+      "disputeSubmit": "Kirim sengketa",
+      "withdraw": "Tarik laporan saya"
+    },
+    "errors": {
+      "stale": "Laporan ini berubah saat sedang tampil di layar Anda. Baca lagi sebelum mengonfirmasi.",
+      "incomplete": "Isi kedua skor untuk minimal satu game.",
+      "failed": "Tidak berhasil. Coba lagi."
+    },
+    "captains": {
+      "title": "Kapten",
+      "hint": "Hanya kapten yang bisa melaporkan atau mengonfirmasi hasil untuk tim ini.",
+      "make": "Jadikan kapten",
+      "remove": "Cabut kapten",
+      "isCaptain": "Kapten",
+      "empty": "Belum ada anggota tim ini yang masuk, jadi belum ada yang bisa ditunjuk.",
+      "unknown": "Pemain tidak dikenal",
+      "failed": "Tidak dapat mengubahnya. Coba lagi."
+    },
+    "stats": {
+      "hint": "Angka tambahan yang diminta turnamen ini. Biarkan kosong jika tidak ada yang punya.",
+      "required": "wajib",
+      "recorded": "Statistik yang dilaporkan",
+      "value": "{{subject}}: {{value}}{{suffix}}",
+      "errors": {
+        "number": "{{field}} untuk {{subject}} harus berupa angka.",
+        "integer": "{{field}} untuk {{subject}} harus berupa bilangan bulat.",
+        "range": "{{field}} untuk {{subject}} terlalu besar untuk menjadi angka yang nyata.",
+        "tooLong": "{{field}} untuk {{subject}} lebih dari {{max}} karakter.",
+        "missing": "{{field}} wajib diisi, dan belum ada yang diisi untuk {{team}}."
+      },
+      "tournamentTitle": "Statistik yang dilaporkan",
+      "tournamentHelp": "Dijumlahkan dari laporan yang sudah dikonfirmasi. Hasil yang masih menunggu lawan tidak dihitung di sini.",
+      "byTeam": "Per tim",
+      "byPlayer": "Per pemain",
+      "team": "Tim",
+      "player": "Pemain",
+      "matches": "Pertandingan"
+    },
+    "chip": {
+      "none": "Belum ada hasil",
+      "yours": "Laporan Anda",
+      "reported": "Dilaporkan",
+      "confirm": "Konfirmasi",
+      "disputed": "Disengketakan",
+      "final": "Final"
+    }
+  }
+}
