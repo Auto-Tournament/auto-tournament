@@ -1,0 +1,199 @@
+{
+  "adminToolsPage": {
+    "description": "Recuperarea meciurilor și jurnalul aplicației pentru acest site.",
+    "recovery": {
+      "title": "Recuperarea meciurilor",
+      "description": "Dacă API-ul sau serverele au fost repornite în timpul unui turneu și starea meciurilor pare desincronizată (de exemplu meciuri blocate înainte de live sau scoruri live lipsă), poți porni manual o recuperare. Aceasta cere tuturor serverelor raportul curent al meciului, resincronizează scorurile și fazele și reconfigurează webhookurile și încărcarea demo-urilor acolo unde e posibil.",
+      "button": "Rulează recuperarea acum",
+      "success": "Recuperarea meciurilor s-a încheiat.",
+      "error": "Recuperarea meciurilor a eșuat.",
+      "failedTrigger": "Recuperarea meciurilor nu a putut fi pornită. Încearcă din nou."
+    },
+    "monitoring": {
+      "title": "Monitorizare și jurnale",
+      "appLogs": "Jurnalele aplicației"
+    },
+    "logs": {
+      "loadFailed": "Jurnalele nu au putut fi încărcate",
+      "levelAll": "Toate",
+      "auto": "Auto",
+      "refresh": "Reîmprospătează jurnalele",
+      "empty": "Nu există jurnale de afișat",
+      "footer": "Intrări recente afișate: {{count}}",
+      "footerAutoRefresh": "Intrări recente afișate: {{count}} (reîmprospătare automată)"
+    }
+  },
+  "servers": {
+    "allocation": {
+      "title": "Se așteaptă un server liber",
+      "waiting": "Acest meci pornește automat când se eliberează servere. Servere necesare:",
+      "nextPass": "Următoarea încercare de alocare în {{seconds}} s"
+    }
+  },
+  "adminMatchControls": {
+    "title": "Controale de admin",
+    "noServer": "Niciun server nu este alocat acestui meci",
+    "unavailable": "Niciun server nu este alocat acestui meci, așa că controalele de admin nu sunt disponibile.",
+    "unknownAction": "Acțiune necunoscută",
+    "commandFailed": "Comanda nu a putut fi executată",
+    "confirm": "Confirmă",
+    "execute": "Execută",
+    "close": "Închide",
+    "tipLabel": "Sfat pentru admini:",
+    "tip": "Folosește aceste controale cu grijă în meciurile live. Unele acțiuni, precum „{{endMatch}}” și „{{restartMatch}}”, nu pot fi anulate.",
+    "sections": {
+      "matchControl": "Controlul meciului",
+      "advanced": "Acțiuni avansate"
+    },
+    "actions": {
+      "pause": {
+        "button": "Pauză",
+        "tooltip": "Pauză de admin – jucătorii nu pot relua",
+        "title": "Pune meciul pe pauză",
+        "description": "Aceasta forțează pauza meciului. Jucătorii nu pot relua."
+      },
+      "unpause": {
+        "button": "Reia",
+        "tooltip": "Reia meciul din pauză",
+        "title": "Reia meciul",
+        "description": "Aceasta forțează reluarea meciului."
+      },
+      "swap": {
+        "button": "Schimbă părțile",
+        "tooltip": "Mută echipele pe părțile opuse (CT ↔ T)",
+        "title": "Schimbă părțile",
+        "description": "Aceasta schimbă părțile echipelor (CT/T)."
+      },
+      "restartRound": {
+        "button": "Repornește runda",
+        "tooltip": "Repornește runda curentă de la început (resetează economia)",
+        "title": "Repornește runda",
+        "description": "Aceasta repornește runda curentă."
+      },
+      "skipVeto": {
+        "button": "Sari peste veto",
+        "tooltip": "Sari peste veto-ul hărților și încarcă imediat prima hartă",
+        "title": "Sari peste veto",
+        "description": "Aceasta sare peste faza de veto și pornește meciul."
+      },
+      "endWarmup": {
+        "button": "Încheie încălzirea",
+        "tooltip": "Încheie încălzirea și pornește meciul (runda de cuțit sau live)",
+        "title": "Încheie încălzirea",
+        "description": "Aceasta încheie încălzirea și pornește meciul."
+      },
+      "endMatch": {
+        "button": "Încheie meciul",
+        "tooltip": "Încheie meciul imediat și înregistrează scorul final",
+        "title": "Încheie meciul",
+        "description": "Aceasta forțează încheierea meciului. Folosește cu grijă!"
+      },
+      "restartMatch": {
+        "button": "Repornește meciul",
+        "tooltip": "Încheie și reîncarcă meciul de la zero – tot progresul se pierde",
+        "title": "Repornește meciul",
+        "description": "Aceasta încheie meciul și îl reîncarcă de la început. Tot progresul se va pierde!"
+      },
+      "reallocateServer": {
+        "button": "Realocă serverul",
+        "tooltip": "Mută meciul pe alt server (recuperare înainte de live)",
+        "tooltipUnavailable": "Disponibil doar pentru meciuri gata/încărcate (nu în timpul jocului live)",
+        "title": "Realocă serverul",
+        "description": "Aceasta mută meciul pe alt server liber și îl reîncarcă. Folosește-o dacă serverul curent nu e actualizat sau jucătorii nu se pot conecta. Nu este permisă în timpul unui meci live."
+      },
+      "forceCancel": {
+        "button": "Anulare forțată",
+        "tooltip": "Anulează meciul chiar dacă serverul este offline – eliberează alocarea serverului",
+        "title": "Anulează forțat meciul",
+        "description": "⚠️ Aceasta anulează meciul chiar dacă serverul este offline. Meciul este marcat ca terminat, iar serverul este eliberat. Această acțiune nu poate fi anulată."
+      }
+    },
+    "inputs": {
+      "restoreBackup": {
+        "button": "Restaurează backup",
+        "tooltip": "Încarcă un backup de rundă salvat – restaurează economia și pozițiile",
+        "title": "Restaurează backup",
+        "label": "Numărul rundei de restaurat"
+      },
+      "addTime": {
+        "button": "Adaugă timp",
+        "tooltip": "Prelungește cronometrul rundei curente (util pentru pauzele tehnice)",
+        "title": "Adaugă timp la rundă",
+        "label": "Secunde de adăugat"
+      },
+      "broadcast": {
+        "button": "Anunț",
+        "tooltip": "Trimite un mesaj tuturor jucătorilor de pe server",
+        "title": "Anunță un mesaj",
+        "label": "Mesajul de anunțat"
+      }
+    },
+    "success": {
+      "pause": "Meci pus pe pauză",
+      "unpause": "Meci reluat",
+      "swap": "Părțile au fost schimbate",
+      "skipVeto": "Faza de veto a fost sărită",
+      "restartRound": "Runda a fost repornită",
+      "endMatch": "Meci încheiat",
+      "endWarmup": "Încălzire încheiată",
+      "startMatch": "Meci pornit",
+      "restoreBackup": "Backup restaurat la runda {{round}}",
+      "addTime_one": "S-a adăugat {{count}} secundă la cronometrul rundei",
+      "addTime_other": "S-au adăugat {{count}} de secunde la cronometrul rundei",
+      "broadcast": "Mesaj trimis pe server",
+      "restartMatch": "Meci repornit (încheiat și reîncărcat)",
+      "reallocateServer": "Meci mutat pe alt server",
+      "forceCancel": "Meci anulat",
+      "default": "Comandă executată",
+      "addTime_few": "S-au adăugat {{count}} secunde la cronometrul rundei"
+    },
+    "hold": {
+      "title": "Amână în loc de walkover",
+      "description": "Cât timp e amânat, meciul nu e încărcat sau pornit și nimeni nu primește walkover. Când continuă, echipele primesc din nou tot timpul.",
+      "reason": "Motiv (vizibil pentru admini)",
+      "delay": "Amână {{minutes}} min",
+      "holdUntilReleased": "Amână până la eliberare",
+      "release": "Eliberează acum",
+      "restartCountdown": "Repornește numărătoarea inversă",
+      "heldUntil": "Amânat până la {{time}}",
+      "heldIndefinitely": "Amânat până la eliberare",
+      "tournamentPaused": "Turneul este pe pauză",
+      "heldDone": "Meci amânat",
+      "delayedDone": "Meci amânat {{minutes}} min",
+      "releasedDone": "Meci eliberat",
+      "restartedDone": "Numărătoarea a fost repornită: echipele au din nou tot timpul",
+      "failed": "Amânarea nu a putut fi modificată"
+    }
+  },
+  "adminCalls": {
+    "header": "Apeluri de admin ({{count}})",
+    "title": "{{player}} cheamă un admin",
+    "justNow": "chiar acum",
+    "minutesAgo": "acum {{count}} min",
+    "hoursAgo": "acum {{count}} h",
+    "spectator": "Spectator",
+    "team1": "Echipa 1",
+    "team2": "Echipa 2",
+    "noMessage": "Fără mesaj",
+    "unknownPlayer": "Jucător necunoscut",
+    "unknownServer": "Server necunoscut",
+    "matchMap": "{{match}}, harta {{map}}",
+    "openMatch": "Deschide meciul",
+    "openServers": "Servere",
+    "resolve": "Marchează rezolvat",
+    "resolveAll": "Rezolvă tot",
+    "resolveFailed": "Apelul nu a putut fi marcat ca rezolvat. Încearcă din nou.",
+    "matchUnavailable": "Acel meci nu a putut fi deschis.",
+    "enableSound": "Activează sunetul",
+    "mute": "Dezactivează sunetul",
+    "unmute": "Reactivează sunetul",
+    "minimize": "Minimizează",
+    "show": "Arată",
+    "openChat": "Deschide chatul",
+    "claim": "Preia",
+    "release": "Eliberează",
+    "claimedBy": "Preluat de {{name}}",
+    "claimedByYou": "Preluat de tine",
+    "anAdmin": "un admin"
+  }
+}

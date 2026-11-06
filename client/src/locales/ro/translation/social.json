@@ -1,0 +1,297 @@
+{
+  "notificationPrompt": {
+    "title": "Activează notificările",
+    "body": "Îți recomandăm să le activezi. Așa afli de la noi chiar dacă închizi această filă:",
+    "matchReady": "meciul tău e gata de intrat",
+    "vetoTurn": "e rândul tău la veto-ul hărților",
+    "starting": "un turneu la care te-ai înscris începe curând",
+    "iphone": "Pe iPhone, adaugă mai întâi acest site pe ecranul principal (Partajează, apoi Adaugă pe ecranul principal) și deschide-l de acolo.",
+    "change": "Poți schimba asta oricând din setările notificărilor.",
+    "later": "Nu acum",
+    "turnOn": "Activează (recomandat)"
+  },
+  "social": {
+    "bell": {
+      "title": "Notificări",
+      "label": "Notificări",
+      "labelUnread_one": "Notificări, noi: {{count}}",
+      "labelUnread_other": "Notificări, noi: {{count}}",
+      "markAllRead": "Marchează tot ca citit",
+      "show": "Arată",
+      "filter": {
+        "all": "Toate",
+        "you": "Te așteaptă",
+        "tournaments": "Turnee",
+        "matches": "Meciuri",
+        "skins": "Skinuri",
+        "clips": "Clipuri",
+        "other": "Altele"
+      },
+      "empty": "Încă nimic aici",
+      "emptyHint": "Invitațiile în party, cererile de prietenie, noutățile despre turnee, skinurile noi și fazele gata apar aici.",
+      "loading": "Se încarcă…",
+      "seeAll": "Vezi toate notificările",
+      "loadOlder": "Încarcă mai vechi",
+      "settings": "Setările notificărilor",
+      "labelUnread_few": "Notificări, noi: {{count}}"
+    },
+    "notice": {
+      "partyInvite": "te-a invitat în party-ul său",
+      "teamInvite": "te-a invitat în",
+      "joinedTeam": "Ai intrat în echipă",
+      "partyDetail": "{{mode}} · în party: {{size}}",
+      "join": "Intră",
+      "decline": "Refuză",
+      "accept": "Acceptă",
+      "ignore": "Ignoră",
+      "friendRequest": "ți-a trimis o cerere de prietenie",
+      "friendAccepted": "ți-a acceptat cererea de prietenie",
+      "skin": "Skin nou:",
+      "highlight": "Faza ta e gata:",
+      "highlightVictim": "{{name}} te-a eliminat în clipul său:",
+      "highlightAssist": "L-ai asistat pe {{name}} în clipul său:",
+      "highlightKiller": "L-ai eliminat pe {{name}} în clipul său:",
+      "tournamentStarted": "a început. Primul tău meci te așteaptă.",
+      "lineupGap": "· un titular a părăsit formația ta. Alege o rezervă în {{minutes}} min, altfel jucați în inferioritate.",
+      "checkInOpen": "check-in-ul este deschis. Fă check-in înainte să se închidă.",
+      "joined": "Ai intrat în party",
+      "nowFriends": "Acum sunteți prieteni",
+      "declined": "Refuzat",
+      "expired": "Acest party s-a încheiat",
+      "reportNew": "a fost raportat: {{reason}}",
+      "reportReviewed": "Mulțumim: raportul tău despre {{name}} a fost analizat.",
+      "matchReady": "e gata. Deschide camera meciului ca să te conectezi.",
+      "vetoTurn": "e rândul echipei tale la veto.",
+      "startsSoon": "începe în {{minutes}} min. Pregătește-te să intri în primul tău meci.",
+      "startsSoonUpdate": "începe în {{minutes}} min. Pornește jocul acum, ca orice actualizare să se termine înainte de primul meci.",
+      "matchSoon": "veto-ul tău se deschide în {{minutes}} min și continuă și fără tine. Fii la PC.",
+      "noShow": "nu ai intrat niciodată în meciul tău, așa că ești scos din rundele următoare. Deschide turneul și spune că te-ai întors ca să joci mai departe.",
+      "discordLink": "leagă-ți contul Discord ca să primești canalele echipei și să fii mutat în canalul ei vocal.",
+      "signedUp": "· {{team}} e înscrisă. Vezi ce trebuie știut înainte de start."
+    },
+    "toast": {
+      "join": "Intră în party",
+      "close": "Închide",
+      "closes_one": "Se închide în {{count}} s · rămâne în clopoțel",
+      "closes_other": "Se închide în {{count}} s · rămâne în clopoțel",
+      "closes_few": "Se închide în {{count}} s · rămâne în clopoțel"
+    },
+    "friends": {
+      "title": "Prieteni",
+      "tabFriends": "Prieteni",
+      "tabRequests": "Cereri",
+      "tabAdd": "Adaugă prieten",
+      "online_one": "Online · {{count}}",
+      "online_other": "Online · {{count}}",
+      "offline_one": "Offline · {{count}}",
+      "offline_other": "Offline · {{count}}",
+      "onlineCount_one": "{{count}} online",
+      "onlineCount_other": "{{count}} online",
+      "invite": "Invită",
+      "inParty": "În party-ul tău",
+      "more": "Mai multe pentru {{name}}",
+      "viewProfile": "Vezi profilul",
+      "remove": "Elimină prietenul",
+      "removed": "{{name}} nu mai este prietenul tău",
+      "none": "Încă nu ai prieteni",
+      "noneHint": "Adaugă oamenii cu care joci, apoi invită-i în party de aici sau din Joacă.",
+      "incoming": "Primite",
+      "sent": "Trimise",
+      "noIncoming": "Nicio cerere nu te așteaptă.",
+      "noSent": "Nu ai cereri în așteptare.",
+      "askedAgo": "Cerută {{when}}",
+      "sentAgo": "Trimisă {{when}}",
+      "cancelRequest": "Anulează cererea",
+      "searchPlaceholder": "Un nume sau un link de profil Steam",
+      "results": "Pe Auto Tournament",
+      "playedWith": "Ai jucat recent cu",
+      "noResults": "Nimeni cu acest nume.",
+      "typeMore": "Scrie cel puțin două litere.",
+      "noRecent": "Joacă un meci, iar cei cu care ai jucat apar aici.",
+      "matches_one": "{{count}} meci",
+      "matches_other": "{{count}} de meciuri",
+      "alreadyFriends": "Prieteni",
+      "requestSent": "Cerere trimisă",
+      "addFriend": "Adaugă prieten",
+      "signIn": "Conectează-te ca să-ți vezi prietenii",
+      "signInHint": "Prietenii, cererile și invitațiile țin de contul tău.",
+      "cardEmpty": "Adaugă prieteni ca să vezi când sunt online și să-i inviți dintr-un clic.",
+      "all_one": "Toți prietenii ({{count}}) →",
+      "all_other": "Toți prietenii ({{count}}) →",
+      "find": "Găsește prieteni →",
+      "requestCount_one": "{{count}} cerere",
+      "requestCount_other": "{{count}} de cereri",
+      "online_few": "Online · {{count}}",
+      "offline_few": "Offline · {{count}}",
+      "onlineCount_few": "{{count}} online",
+      "matches_few": "{{count}} meciuri",
+      "all_few": "Toți prietenii ({{count}}) →",
+      "requestCount_few": "{{count}} cereri"
+    },
+    "status": {
+      "playing": "Într-un meci · {{match}}",
+      "searching": "Caută · {{mode}}",
+      "online": "Online",
+      "offline": "Offline",
+      "lastSeen": "Văzut ultima dată {{when}}"
+    },
+    "invite": {
+      "searchPlaceholder": "Oricine de pe site, după nume",
+      "friendsOnline": "Prieteni online",
+      "recent": "Ai jucat recent cu",
+      "onSite": "Pe Auto Tournament",
+      "noFriends": "Încă nu ai prieteni. Caută pe oricine după nume mai sus.",
+      "nobodyOnline": "Niciunul dintre prietenii tăi nu e online.",
+      "inMatch": "Într-un meci",
+      "together_one": "{{count}} meci împreună",
+      "together_other": "{{count}} de meciuri împreună",
+      "invited": "Invitat",
+      "sent": "L-ai invitat pe {{name}}",
+      "chip": "{{name}} · invitat",
+      "cancel": "Retrage invitația pentru {{name}}",
+      "orLink": "Sau un link",
+      "copy": "Copiază",
+      "copyFailed": "Nu s-a putut copia. Selectează linkul și copiază-l singur.",
+      "makeLink": "Creează un link de invitație",
+      "cannot": {
+        "nobody": "Nu acceptă invitații",
+        "friends": "Doar prieteni",
+        "no_game": "Nu joacă CS2"
+      },
+      "together_few": "{{count}} meciuri împreună"
+    },
+    "profile": {
+      "friends": "Prieteni",
+      "acceptRequest": "Acceptă cererea de prietenie",
+      "message": "Mesaj",
+      "invite": "Invită în party"
+    },
+    "settings": {
+      "title": "Invitații în party",
+      "description": "Cine te poate invita într-un party de matchmaking. Invitațiile apar în clopoțel și pe orice pagină ai deschisă.",
+      "everyone": "Toată lumea",
+      "everyoneHint": "Orice jucător de pe acest site.",
+      "friends": "Doar prieteni",
+      "friendsHint": "Doar jucătorii cu care ești prieten.",
+      "nobody": "Nimeni",
+      "nobodyHint": "Fără invitații. Poți intra totuși într-un party prin linkul lui.",
+      "saved": "Salvat",
+      "saveFailed": "Setarea nu a putut fi salvată"
+    },
+    "setup": {
+      "title": "Termină configurarea înainte de căutare",
+      "youGame": "Adaugă CS2 la jocurile tale din profil.",
+      "youGameAuto": "Căutarea unui meci adaugă acest joc la jocurile tale.",
+      "youAccount": "Conectează-ți contul Steam.",
+      "theyGame": "{{name}} nu a adăugat CS2 la jocurile sale.",
+      "theyAccount": "{{name}} nu și-a conectat contul Steam.",
+      "fix": "Deschide contul tău"
+    },
+    "news": {
+      "title": "Noutăți",
+      "hint": "Trimite o notificare în clopoțelul fiecărui jucător: un sezon nou, un turneu, o întrerupere planificată.",
+      "titleLabel": "Titlu",
+      "bodyLabel": "Încă un rând (opțional)",
+      "urlLabel": "Link (opțional)",
+      "urlHint": "O pagină de aici (/tournament/3) sau o adresă https://.",
+      "urlBad": "Începe cu / sau https://",
+      "send": "Trimite tuturor jucătorilor",
+      "confirm": "O primește fiecare jucător care s-a conectat vreodată. O trimiți?",
+      "sendNow": "Trimite acum",
+      "cancel": "Anulează",
+      "sent_one": "Trimis către {{count}} jucător",
+      "sent_other": "Trimis către {{count}} de jucători",
+      "failed": "Noutatea nu a putut fi trimisă",
+      "sent_few": "Trimis către {{count}} jucători"
+    },
+    "noticeSettings": {
+      "title": "Setări",
+      "alerts": "Alerte",
+      "browser": "Notificări în browser",
+      "browserHint": "Pe acest dispozitiv, chiar și cu site-ul închis (meciul tău e gata, e rândul tău la veto, începe un turneu). Activ doar pentru acest browser.",
+      "browserDenied": "Blocat în setările de site ale acestui browser. Permite notificările acolo ca să le activezi.",
+      "browserUnsupported": "Acest browser nu are notificări.",
+      "sound": "Sunet",
+      "test": "Test",
+      "volume": "Volum {{percent}}%",
+      "group": {
+        "you": "Tu",
+        "tournaments": "Turnee",
+        "other": "Altele",
+        "skins": "Skinuri",
+        "clips": "Clipuri"
+      },
+      "kind": {
+        "party_invite": "Invitații în party",
+        "team_invite": "Invitații în echipă",
+        "friend_request": "Cereri de prietenie",
+        "friend_accepted": "Cereri de prietenie acceptate",
+        "tournament": "Check-in și starturi",
+        "skin": "Drop-uri de skinuri",
+        "highlight": "Fazele tale",
+        "news": "Noutăți",
+        "report": "Raportări"
+      },
+      "delivery": {
+        "off": "Oprit",
+        "bell": "Clopoțel",
+        "sound": "Clopoțel și sunet"
+      }
+    }
+  },
+  "notifyChannels": {
+    "title": "Notificări",
+    "description": "Unde îți spunem lucrurile care te așteaptă când nu ești pe site. Oprite implicit, cu excepția meciurilor tale.",
+    "event": "Eveniment",
+    "channel": {
+      "push": "Browser / telefon",
+      "discord": "DM pe Discord",
+      "email": "E-mail"
+    },
+    "events": {
+      "match_ready": {
+        "title": "Meciul tău e gata",
+        "hint": "Serverul, linkul de conectare și cu cine joci"
+      },
+      "veto_turn": {
+        "title": "E rândul tău la veto",
+        "hint": "Doar căpitanii"
+      },
+      "checkin_open": {
+        "title": "Se deschide check-in-ul",
+        "hint": "Pentru turneele la care ești înscris"
+      },
+      "new_tournament": {
+        "title": "Turnee noi",
+        "hint": "Când un turneu primește înscrieri"
+      },
+      "tournament_starting": {
+        "title": "Începe turneul",
+        "hint": "Mementouri înainte să înceapă un turneu la care participi"
+      },
+      "direct_message": {
+        "title": "Mesaje de la prieteni",
+        "hint": "Când nu ești pe site"
+      }
+    },
+    "reason": {
+      "no_bot": "Neconfigurat pe acest site",
+      "no_discord": "Leagă mai întâi Discord",
+      "no_push": "Activează mai întâi notificările în acest browser",
+      "email_off": "Acest site nu poate trimite e-mailuri",
+      "no_email": "Adaugă mai întâi un e-mail",
+      "email_unverified": "Confirmă mai întâi e-mailul"
+    },
+    "switchLabel": "{{event}} prin {{channel}}",
+    "saveFailed": "Asta nu a putut fi salvată."
+  },
+  "presence": {
+    "online": "Online",
+    "offline": "Offline",
+    "away": "Plecat",
+    "searching": "Caută un meci {{mode}}",
+    "playingMatchmaking": "Într-un meci de matchmaking: {{label}}",
+    "playingTournament": "Într-un meci de turneu: {{label}}",
+    "playing": "Într-un meci: {{label}}"
+  }
+}

@@ -1,0 +1,1306 @@
+{
+  "notFound": {
+    "title": "Pagina nu a fost găsită",
+    "description": "Pagina pe care o cauți nu există sau a fost mutată.",
+    "backToDashboard": "Înapoi la panou",
+    "publicPlayerSearch": "Căutare publică de jucători"
+  },
+  "publicLinks": {
+    "intro": "Linkuri rapide către paginile publice pe care le poți da jucătorilor și spectatorilor.",
+    "common": {
+      "publicUrl": "URL public",
+      "urlPattern": "Model de URL"
+    },
+    "playerSearch": {
+      "title": "Căutare publică de jucători",
+      "description": "Caută jucători înscriși după nume, Steam ID sau URL de profil.",
+      "openButton": "Deschide /player"
+    },
+    "playerProfile": {
+      "title": "Profil de jucător (public)",
+      "description": "Link direct către profilul unui jucător după Steam ID64. Jucătorii conectați cu Steam pot folosi și linkul „Profilul meu” din bara de sus în loc să copieze URL-uri.",
+      "requiresSteamId": "Necesită Steam ID64"
+    },
+    "teamMatch": {
+      "title": "Pagina meciului echipei (publică)",
+      "description": "Vizualizare doar-citire a meciului curent sau a celui mai recent al unei echipe.",
+      "openExample": "Deschide echipa de exemplu"
+    },
+    "tournamentLeaderboard": {
+      "title": "Clasamentul turneului (public)",
+      "description": "Pagina publică cu clasamentul turneului curent (implicit turneul 1).",
+      "open": "Deschide clasamentul"
+    }
+  },
+  "games": {
+    "prompt": {
+      "title": "Ce joci?",
+      "description": "Îți arătăm mai întâi turneele pentru aceste jocuri. Poți schimba asta oricând.",
+      "skip": "Sari peste",
+      "save": "Salvează-mi jocurile"
+    },
+    "picker": {
+      "searchLabel": "Caută jocuri",
+      "placeholder": "Scrie numele unui joc",
+      "minChars": "Scrie cel puțin 2 caractere",
+      "noResults": "Niciun joc găsit",
+      "loading": "Se caută…",
+      "searchFailed": "Căutarea nu este disponibilă acum",
+      "yourGames": "Jocurile tale",
+      "none": "Încă niciun joc ales",
+      "remove": "Elimină {{name}}",
+      "supported": "Turnee acceptate",
+      "limit": "Poți alege maximum {{max}}.",
+      "creditWikidata": "Date despre jocuri de la Wikidata"
+    },
+    "profile": {
+      "title": "Jocurile pe care le joci",
+      "description": "Alege jocurile pe care le joci. Turneele pentru ele apar primele.",
+      "empty": "Încă nu ai ales niciun joc.",
+      "edit": "Editează",
+      "add": "Adaugă jocuri",
+      "dialogTitle": "Jocurile pe care le joci",
+      "cancel": "Anulează",
+      "save": "Salvează",
+      "saved": "Jocuri salvate",
+      "saveFailed": "Jocurile tale nu au putut fi salvate"
+    },
+    "welcome": {
+      "gridTitle": "Jocuri populare",
+      "continue": "Continuă",
+      "notNow": "Nu acum",
+      "selectedGames": "Jocuri selectate",
+      "selectedCount": "Alese: {{count}} din {{max}}",
+      "pickOne": "Alege cel puțin un joc",
+      "supportedLegend": "Turnee organizate aici"
+    }
+  },
+  "account": {
+    "email": {
+      "title": "E-mail",
+      "description": "Ca să-ți recuperezi contul dacă îți uiți parola și, dacă vrei, pentru e-mailuri când un turneu își deschide înscrierea.",
+      "address": "Adresă de e-mail",
+      "sendLink": "Trimite confirmarea",
+      "cancel": "Anulează",
+      "verified": "Confirmat",
+      "unverified": "Neconfirmat",
+      "checkInbox": "Deschide linkul din e-mailul trimis ca să-l confirmi.",
+      "resend": "Trimite din nou",
+      "change": "Schimbă",
+      "remove": "Elimină",
+      "sent": "Confirmarea a fost trimisă la {{email}}. Deschide linkul din ea.",
+      "saved": "E-mail salvat",
+      "removed": "E-mail eliminat",
+      "saveFailed": "E-mailul tău nu a putut fi salvat",
+      "notifyLabel": "Trimite-mi e-mail când un turneu își deschide înscrierea",
+      "notifyHint": "Un e-mail per turneu. Fiecare e-mail are un link de dezabonare.",
+      "notifyNeedsVerified": "Confirmă-ți mai întâi adresa.",
+      "notifyOn": "Vei primi un e-mail când se deschide înscrierea",
+      "notifyOff": "Fără e-mailuri despre turnee",
+      "siteCannotSend": "Acest site nu trimite e-mailuri acum."
+    },
+    "title": "Conexiuni",
+    "subtitle": "Un singur cont pentru toate turneele de pe acest site.",
+    "loadFailed": "Contul tău nu a putut fi încărcat.",
+    "impersonating": "Vezi această pagină în timp ce impersonezi un jucător. Arată propriul tău cont; oprește impersonarea ca să-l schimbi.",
+    "rail": {
+      "label": "Cont",
+      "profile": "Profil",
+      "connections": "Conexiuni"
+    },
+    "gameAccounts": {
+      "title": "Conturi de joc",
+      "description": "Fiecare joc are nevoie de propriul cont, ca meciurile să știe cine ești.",
+      "verified": "Verificat",
+      "id": "Steam ID {{id}}",
+      "more": "Mai multe conturi de joc apar aici pe măsură ce se adaugă jocuri pe acest site.",
+      "notConnected": "Conectează-ți contul {{provider}} ca să joci aceste jocuri.",
+      "notOffered": "Conectarea cu {{provider}} nu este încă activată aici. Roagă un admin s-o activeze din Setări → Conectare."
+    },
+    "signIn": {
+      "title": "Metode de conectare",
+      "description": "Oricare dintre ele te conectează la același cont. Păstrează cel puțin una.",
+      "primary": "Principal",
+      "primaryDetail": "Identitatea contului tău · și contul tău de joc pentru {{games}}",
+      "primaryDetailNoGames": "Identitatea contului tău",
+      "connected": "Conectat",
+      "accountId": "ID",
+      "linkedOn": "Conectat {{date}}",
+      "turnedOff": "conectarea cu el este dezactivată pe acest site",
+      "notConnected": "Neconectat",
+      "connect": "Conectează",
+      "remove": "Elimină",
+      "lastMethod": "Aceasta este singura ta metodă de conectare. Conectează mai întâi alta.",
+      "removeTitle": "Elimini {{provider}}?",
+      "removeBody": "Nu te vei mai putea conecta cu {{provider}}. Îl poți conecta din nou mai târziu.",
+      "removed": "{{provider}} a fost eliminat",
+      "removeFailed": "Această metodă de conectare nu a putut fi eliminată",
+      "linked": "{{provider}} a fost conectat",
+      "taken": "Acel cont {{provider}} este deja conectat la alt cont de pe acest site.",
+      "linkFailed": "{{provider}} nu a putut fi conectat. Încearcă din nou.",
+      "localLabel": "Conectare admin (nume de utilizator + parolă)",
+      "localDetail": "Nume de utilizator {{username}}"
+    },
+    "changePassword": {
+      "button": "Schimbă parola",
+      "title": "Schimbă-ți parola",
+      "current": "Parola curentă",
+      "new": "Parolă nouă",
+      "repeat": "Parola nouă din nou",
+      "totp": "Cod de autentificare",
+      "mismatch": "Parolele noi nu coincid",
+      "save": "Schimbă parola",
+      "cancel": "Anulează",
+      "done": "Parolă schimbată",
+      "failed": "Parola nu a putut fi schimbată",
+      "totpNeeded": "Introdu și codul din aplicația de autentificare.",
+      "tooLong": "Parola nouă este prea lungă"
+    },
+    "reauth": {
+      "title": "Confirmă-ți parola de admin",
+      "body": "Introdu parola pentru {{username}} înainte să schimbi felul în care te conectezi.",
+      "password": "Parolă",
+      "totp": "Cod de autentificare",
+      "confirm": "Confirmă",
+      "failed": "Parolă sau cod greșit",
+      "totpNeeded": "Introdu și codul din aplicația de autentificare."
+    },
+    "merge": {
+      "title": "Unifici conturile?",
+      "body": "Acest cont Steam are deja un jucător pe acest site. Îl unifici cu contul tău de admin?",
+      "explain": "Jucătorul își păstrează meciurile și statisticile și devine admin. Conectarea de admin și metodele de conectare legate trec la el.",
+      "matches_one": "{{count}} meci jucat",
+      "matches_other": "{{count}} de meciuri jucate",
+      "confirm": "Unifică conturile",
+      "failed": "Conturile nu au putut fi unificate",
+      "matches_few": "{{count}} meciuri jucate"
+    },
+    "twoStep": {
+      "turnOn": "Activează autentificarea în doi pași",
+      "turnOff": "Dezactivează autentificarea în doi pași",
+      "isOn": "Autentificarea în doi pași este activă",
+      "isOff": "Autentificarea în doi pași este inactivă",
+      "onTitle": "Activează autentificarea în doi pași",
+      "offTitle": "Dezactivează autentificarea în doi pași",
+      "offWarning": "Fără ea, doar parola te conectează la acest cont de admin.",
+      "password": "Parolă",
+      "code": "Cod de autentificare",
+      "codeNeeded": "Introdu codul din aplicația de autentificare.",
+      "failed": "Nu a putut fi dezactivată",
+      "cancel": "Anulează",
+      "turnedOn": "Autentificarea în doi pași este activă",
+      "turnedOff": "Autentificarea în doi pași este inactivă"
+    },
+    "passkeys": {
+      "title": "Chei de acces",
+      "description": "Conectează-te pe pagina de conectare a adminului cu amprenta, fața sau PIN-ul dispozitivului în loc de parolă și cod.",
+      "add": "Adaugă o cheie de acces",
+      "name": "Nume",
+      "nameHelp": "Un nume după care s-o recunoști, de exemplu „MacBook” sau „Telefon”. Browserul îți cere apoi amprenta, fața sau PIN-ul.",
+      "continue": "Continuă",
+      "added": "Cheie de acces adăugată",
+      "addFailed": "Cheia de acces nu a putut fi adăugată",
+      "removed": "{{name}} a fost eliminată",
+      "removeFailed": "Cheia de acces nu a putut fi eliminată",
+      "lastUsed": "Folosită ultima dată {{date}}",
+      "addedOn": "Adăugată {{date}}, încă nefolosită",
+      "needsHttps": "Cheile de acces necesită ca site-ul să fie pe https (sau localhost). Roagă-l pe cel care îl administrează să-l pună în spatele https."
+    },
+    "name": {
+      "title": "Nume afișat",
+      "description": "Apare pe site și în joc. Îl poți schimba o dată pe zi.",
+      "lockedUntil": "Apare pe site și în joc. L-ai schimbat recent, așa că îl poți schimba din nou de la {{date}}.",
+      "label": "Nume",
+      "lengthHint": "Caractere: {{min}}–{{max}}",
+      "badChars": "Fără ghilimele, < sau > ori caractere de control",
+      "promptTitle": "Cum te numești?",
+      "promptBody": "Apare în joc și pe site.",
+      "notNow": "Nu acum",
+      "save": "Salvează",
+      "saved": "Nume salvat. Serverele de joc îl folosesc de la următorul tău meci.",
+      "saveFailed": "Numele tău nu a putut fi salvat"
+    }
+  },
+  "home": {
+    "title": "Acasă",
+    "greeting": "Salut, {{name}}",
+    "greetingFallback": "Salut",
+    "editGames": "Editează jocurile",
+    "vs": "vs",
+    "tbd": "TBD",
+    "openMatch": "Deschide meciul",
+    "connectToServer": "Conectează-te la server",
+    "matchStatus": {
+      "pending": "În așteptare",
+      "ready": "Gata",
+      "loaded": "Încărcat",
+      "live": "Live",
+      "completed": "Încheiat"
+    },
+    "yourTournaments": {
+      "title": "Turneele tale",
+      "empty": "Nu ești în niciun turneu acum."
+    },
+    "tournaments": {
+      "playingNow": "Joacă acum",
+      "waiting": "În așteptare",
+      "eliminated": "Eliminată",
+      "finished": "Încheiat",
+      "placement": "{{position}} din {{total}}"
+    },
+    "openForYourGames": {
+      "title": "Deschise pentru jocurile tale",
+      "browseAll": "Explorează toate turneele",
+      "empty": "Niciun turneu deschis pentru jocurile tale acum.",
+      "steamLinked": "Steam legat",
+      "titleAll": "Turnee deschise",
+      "emptyAll": "Niciun turneu deschis acum."
+    },
+    "summary": {
+      "match": "Ai un meci care te așteaptă.",
+      "open_one": "{{count}} turneu este deschis pentru jocurile pe care le joci.",
+      "open_other": "{{count}} de turnee sunt deschise pentru jocurile pe care le joci.",
+      "openAll_one": "{{count}} turneu este deschis pe acest site.",
+      "openAll_other": "{{count}} de turnee sunt deschise pe acest site.",
+      "none": "Nimic nu te așteaptă acum.",
+      "open_few": "{{count}} turnee sunt deschise pentru jocurile pe care le joci.",
+      "openAll_few": "{{count}} turnee sunt deschise pe acest site."
+    },
+    "yourGames": "Jocurile pe care le joci",
+    "loading": "Se încarcă pagina principală",
+    "nextMatch": "Următorul tău meci",
+    "live": {
+      "title": "Live acum",
+      "count": "În desfășurare: {{count}}",
+      "chip": "Live",
+      "matchesOn_one": "{{count}} meci în desfășurare acum",
+      "matchesOn_other": "{{count}} de meciuri în desfășurare acum",
+      "matchesOn_few": "{{count}} meciuri în desfășurare acum"
+    },
+    "quiet": {
+      "title": "Urmează",
+      "more": "Mai urmează",
+      "next": "Următorul"
+    },
+    "play": {
+      "title": "Joacă un meci acum",
+      "quietTitle": "Nimic în desfășurare? Joacă un meci.",
+      "hint": "Matchmaking-ul te bagă într-un joc imediat ce sunt destui jucători la coadă.",
+      "cta": "Intră la coadă"
+    },
+    "signup": {
+      "open": "Înscriere deschisă",
+      "cta": "Înscrie-te",
+      "short": "Înscrie-te",
+      "view": "Vezi",
+      "title": "Înscrie-te",
+      "aside": "Urmează"
+    },
+    "champions": {
+      "title": "Campioni",
+      "aside": "Încheiate recent",
+      "all": "Toate rezultatele",
+      "won": "a câștigat {{name}}",
+      "finished": "Încheiat"
+    },
+    "lastTime": {
+      "title": "Data trecută",
+      "results": "Rezultate complete",
+      "second": "Locul 2",
+      "third": "Locul 3",
+      "champion": "Campion"
+    },
+    "teams": "Echipe: {{count}}",
+    "none": "Încă niciun turneu. Revino curând.",
+    "allTournaments": "Toate turneele",
+    "empty": {
+      "soon": "În curând",
+      "heroTitle": "Încă niciun turneu",
+      "heroHint": "Când e anunțat următorul turneu, apare aici cu data și înscrierea.",
+      "create": "Creează un turneu",
+      "nextTitle": "Nimic altceva planificat",
+      "nextHint": "Următorul turneu după acesta apare aici.",
+      "signupTitle": "Nimic la care să te înscrii",
+      "signupHint": "Turneele care primesc înscrieri apar aici.",
+      "slotTitle": "Loc pentru încă unul",
+      "slotHint": "Aici mai încape un turneu.",
+      "championTitle": "Încă niciun campion",
+      "championHint": "Primul câștigător apare aici."
+    },
+    "browse": {
+      "title": "Găsește jucători și echipe",
+      "hint": "Vezi cine joacă aici și găsește o echipă în care să intri.",
+      "cta": "Explorează jucătorii"
+    },
+    "next": {
+      "label": {
+        "vetoTurn": "E rândul tău la veto",
+        "ready": "Meciul tău e gata",
+        "warmup": "Încălzire",
+        "live": "Live",
+        "paused": "Meci pe pauză"
+      },
+      "opponent": "Adversarul joacă",
+      "startsAt": "Începe la",
+      "untilVeto": "Până la veto",
+      "untilMatch": "Până la meci",
+      "veto": "Veto",
+      "yourTurn": "Rândul tău",
+      "ban": "Banează o hartă",
+      "pick": "Alege o hartă",
+      "side": "Alege o parte",
+      "theirTurn": "Rândul lor",
+      "vetoOpen": "Veto deschis",
+      "waiting": "În așteptare",
+      "forServer": "Un server",
+      "join": "Intră",
+      "serverReady": "Server gata",
+      "ready": "Gata",
+      "mapRound": "{{map}} · R{{round}}",
+      "round": "Runda {{round}}",
+      "halftime": "Pauza de la jumătate",
+      "nextMap": "Harta următoare",
+      "goVeto": "Mergi la veto",
+      "paused": "Pe pauză",
+      "about": "~{{minutes}} min",
+      "joinServer": "Intră pe server"
+    }
+  },
+  "browsePage": {
+    "title": "Explorează turneele",
+    "searchPlaceholder": "Caută după nume, organizator sau loc",
+    "searchLabel": "Caută turnee",
+    "loading": "Se încarcă turneele",
+    "loadError": "Turneele nu au putut fi încărcate.",
+    "listLabel": "Turnee",
+    "createTournament": "Creează turneu",
+    "teamsCount_one": "{{count}} echipă",
+    "teamsCount_other": "{{count}} de echipe",
+    "filters": {
+      "allGames": "Toate jocurile",
+      "status": {
+        "all": "Toate stările",
+        "live": "Live",
+        "registration_open": "Înscriere deschisă",
+        "finished": "Încheiat"
+      },
+      "where": {
+        "all": "Online și LAN",
+        "online": "Online",
+        "lan": "LAN"
+      },
+      "gameLabel": "Joc",
+      "statusLabel": "Stare",
+      "whereLabel": "Unde"
+    },
+    "columns": {
+      "tournament": "Turneu",
+      "format": "Format",
+      "when": "Când"
+    },
+    "when": {
+      "starts": "Începe {{date}}",
+      "finished": "Încheiat",
+      "finishedOn": "Încheiat {{date}}",
+      "noDate": "Încă fără dată"
+    },
+    "actions": {
+      "signUp": "Înscrie-te",
+      "watch": "Deschide",
+      "results": "Rezultate",
+      "youreIn": "Ești înscris"
+    },
+    "status": {
+      "live": "Live"
+    },
+    "emptyNone": {
+      "title": "Încă niciun turneu",
+      "description": "Când acest site organizează un turneu, apare aici.",
+      "descriptionAdmin": "Acest site nu are încă niciun turneu. Creează unul și apare aici."
+    },
+    "emptyFiltered": {
+      "title": "Niciun turneu nu corespunde filtrelor",
+      "description": "Încearcă alt joc sau altă stare ori golește filtrele.",
+      "clear": "Golește filtrele"
+    },
+    "groups": {
+      "live": "Live",
+      "soon": "Urmează",
+      "finished": "Încheiate"
+    },
+    "showOlder_one": "Arată mai vechi ({{count}})",
+    "showOlder_other": "Arată mai vechi ({{count}})",
+    "mine": {
+      "label": "Ce turnee",
+      "all": "Toate",
+      "mine": "Ale mele"
+    },
+    "roundN": "Turul {{n}}",
+    "entries": {
+      "teams_one": "{{count}} echipă",
+      "teams_other": "{{count}} de echipe",
+      "teamsOf": "Echipe: {{count}} / {{max}}",
+      "players_one": "{{count}} jucător",
+      "players_other": "{{count}} de jucători",
+      "playersOf": "Jucători: {{count}} / {{max}}",
+      "teams_few": "{{count}} echipe",
+      "players_few": "{{count}} jucători"
+    },
+    "teamsCount_few": "{{count}} echipe",
+    "showOlder_few": "Arată mai vechi ({{count}})"
+  },
+  "modulesPage": {
+    "title": "Module",
+    "subheading": "Ce poate rula această instanță și jocurile pe care i le-ai adăugat.",
+    "builtIn": "Încorporat",
+    "loadFailed": "Pachetele instalate nu au putut fi încărcate",
+    "removed": "{{name}} a fost eliminat",
+    "removeFailed": "Acel pachet nu a putut fi eliminat",
+    "installed": {
+      "title": "Module de joc",
+      "hint": "Cod care știe cum se desfășoară un meci și cum sosește rezultatul lui. Acestea vin cu aplicația."
+    },
+    "module": {
+      "cs2": {
+        "name": "Counter-Strike 2",
+        "hint": "Comunică cu serverele tale de joc: încarcă meciul, citește fiecare rundă, înregistrează rezultatul."
+      },
+      "manual-report": {
+        "name": "Raportare manuală",
+        "hint": "Pentru jocurile pe care nimic nu le poate urmări. Un căpitan raportează scorul, iar adversarul îl confirmă."
+      }
+    },
+    "packs": {
+      "title": "Pachete de joc",
+      "hint": "Un pachet este un fișier care descrie un joc – un nume, o imagine și cum se raportează rezultatul. Nu conține cod și rulează pe unul dintre modulele de mai sus.",
+      "empty": "Încă niciun pachet. Importă unul ca să adaugi un joc cu care această instanță nu a venit.",
+      "runBy": "Rulat de {{engine}}",
+      "bundled": "Vine cu Auto Tournament"
+    },
+    "import": {
+      "action": "Importă un pachet",
+      "added": "{{name}} a fost adăugat",
+      "updated": "{{name}} a fost actualizat",
+      "failed": "Acel pachet nu a putut fi importat",
+      "notJson": "Fișierul nu este JSON, deci nu este un pachet",
+      "tooLarge": "Fișierul este prea mare ca să fie un pachet",
+      "noJson": "Alege fișierul .json al pachetului",
+      "missingIcon": "Acest pachet folosește {{file}} – alege și acel fișier sau importă doar JSON-ul, fără imagine"
+    },
+    "confirmRemove": {
+      "title": "Elimini {{name}}?",
+      "body": "Jocul dispare din asistentul de configurare. Nimic altceva nu este șters, iar importarea pachetului din nou îl aduce înapoi."
+    },
+    "browse": {
+      "action": "Explorează",
+      "title": "Jocuri pe care le poți adăuga",
+      "hint": "Din lista de pachete a comunității. Nimic nu a fost descărcat până nu ai deschis asta.",
+      "add": "Adaugă",
+      "update": "Actualizează",
+      "installed": "Instalat",
+      "empty": "Lista nu are încă jocuri pe care această instanță le poate adăuga.",
+      "offline": "lista nu a putut fi accesată",
+      "staleWith": "Se afișează ultima listă văzută de această instanță – {{reason}}.",
+      "failed": "Lista nu a putut fi citită"
+    },
+    "pending": "Se încarcă modulul de joc pentru {{game}}…",
+    "pendingRoute": "Se încarcă modulul acestei pagini…",
+    "notInstalled": {
+      "title": "Modulul de joc pentru {{game}} nu este instalat",
+      "body": "Părțile specifice jocului din acest turneu sunt ascunse, iar meciurile lui nu pot rula până nu se instalează din nou modulul."
+    },
+    "code": {
+      "chip": "Modul de cod",
+      "hint": "Instalat pe discul acestui server de cel care îl administrează.",
+      "noReason": "niciun motiv dat",
+      "broken": "Acest modul este defect: {{reason}}",
+      "status": {
+        "ok": "OK",
+        "incompatible": "Incompatibil",
+        "broken": "Defect",
+        "disabled": "Dezactivat"
+      },
+      "enable": "Activează",
+      "disable": "Dezactivează",
+      "enabled": "{{name}} a fost activat",
+      "disabled": "{{name}} a fost dezactivat",
+      "toggleFailed": "Acel modul nu a putut fi schimbat",
+      "listFailed": "Modulele de cod nu au putut fi citite: {{reason}}",
+      "safeMode": "Mod sigur: niciun modul de cod nu a fost încărcat pe această pagină. Deschide-o fără ?modules=off ca să le încarci din nou.",
+      "slotFailed": "Modulul {{id}} a eșuat aici. Pagina Module spune de ce.",
+      "reload": {
+        "body": "Reîncarcă pagina ca să încarci sau să descarci codul modulului.",
+        "action": "Reîncarcă"
+      },
+      "confirm": {
+        "title": "Activezi {{name}}?",
+        "warningTitle": "Acesta este un modul de cod.",
+        "warning": "Rulează în serverul Auto Tournament, cu acces complet la baza de date, fișierele și secretele tale, și în browserul fiecărui admin și jucător care deschide o pagină desenată de el, cu permisiunile lor. Auto Tournament nu verifică și nu izolează modulele de cod. Activează-l doar dacă ai la fel de multă încredere în autorul lui ca în această platformă.",
+        "source": "Provine de la",
+        "onDisk": "Discul acestui server",
+        "version": "Versiune",
+        "clientApi": "Client API",
+        "serverApi": "Server API",
+        "none": "nedeclarat",
+        "typeId": "Scrie {{id}} ca să-l activezi."
+      },
+      "failure": {
+        "badEntry": "codul lui nu este servit din {{prefix}}",
+        "noClientApi": "nu declară un interval client API; această platformă oferă {{platform}}",
+        "badClientApi": "intervalul lui client API „{{range}}” nu este un interval semver",
+        "outOfRange": "construit pentru client API {{range}}; această platformă oferă {{platform}}",
+        "notFound": "codul lui lipsește (HTTP 404)",
+        "httpError": "codul lui nu a putut fi descărcat (HTTP {{status}})",
+        "notJavaScript": "codul lui este servit ca {{contentType}}, nu ca JavaScript",
+        "importFailed": "codul lui nu s-a putut încărca: {{error}}",
+        "timeout": "codul lui nu s-a încărcat în {{seconds}} s",
+        "sharedFailed": "platforma nu i-a putut partaja pachetele: {{error}}",
+        "badExport": "codul lui nu este o definiție de modul: {{detail}}",
+        "idMismatch": "codul lui se numește „{{id}}”, dar este instalat ca „{{expected}}”",
+        "idTaken": "„{{id}}” este deja un modul încorporat",
+        "render": "slotul lui „{{slot}}” a eșuat la randare: {{error}}"
+      }
+    },
+    "signInNeed": {
+      "body": "Jucătorii {{game}} se conectează cu {{provider}}, iar conectarea cu {{provider}} este oprită. Nu pot lega contul de care are nevoie jocul.",
+      "action": "Pornește-o"
+    },
+    "addons": {
+      "title": "Add-on-uri",
+      "hint": "Funcții pe lângă jocuri. Pornirea sau oprirea unuia are efect imediat.",
+      "open": "Deschide",
+      "toggle": "{{name}} pornit sau oprit",
+      "toggleFailed": "Add-on-ul nu a putut fi schimbat.",
+      "startFailed": "Pornit, dar nu a pornit: {{error}}",
+      "notFound": "Nu există un astfel de add-on.",
+      "off": "Acest add-on este oprit. Pornește-l din Module ca să-l configurezi."
+    }
+  },
+  "catalog": {
+    "title": "Jocuri",
+    "hint": "Fiecare joc pe care îl rulează această instanță și cele pe care le poți adăuga. Pachetele de joc sunt date; modulele de cod sunt semnate de Auto Tournament. Ambele se instalează dintr-un clic, iar cele marcate „În această imagine” nu au nevoie de rețea.",
+    "search": "Caută jocuri",
+    "installedTitle": "Instalate ({{count}})",
+    "availableTitle": "Disponibile ({{count}})",
+    "empty": "Niciun joc nu corespunde.",
+    "allInstalled": "Tot ce e în catalog este instalat.",
+    "noneInstalled": "Încă niciun joc instalat. Instalează-le pe cele pentru care vrei să organizezi turnee – jucătorii aleg dintre ele.",
+    "loadFailed": "Catalogul de jocuri nu a putut fi citit: {{reason}}",
+    "loadFailedFallback": "serverul nu a răspuns",
+    "retry": "Reîncearcă",
+    "failed": "{{name}}: {{reason}}",
+    "failedFallback": "operațiunea a eșuat",
+    "updateAll": {
+      "action": "Actualizează tot ({{count}})",
+      "running": "Se actualizează…",
+      "done": "Jocuri și module actualizate: {{count}}",
+      "summary": "Actualizate: {{updated}}, sărite: {{skipped}}, eșuate: {{failed}}.",
+      "failedItem": "{{name}}: {{reason}}",
+      "failedFallback": "nu s-a putut actualiza tot"
+    },
+    "feed": {
+      "cache": "Se afișează catalogul din {{time}}: catalogul online nu a putut fi accesat ({{reason}}). Jocurile din această imagine se instalează și fără rețea.",
+      "none": "Catalogul online nu a putut fi accesat ({{reason}}). Se afișează jocurile din această imagine; se instalează fără rețea.",
+      "unknown": "niciun motiv dat",
+      "cacheRefreshing": "Se afișează catalogul din {{time}} cât se încarcă catalogul online.",
+      "noneRefreshing": "Se încarcă catalogul online… Între timp, acestea sunt jocurile din această imagine; se instalează fără rețea.",
+      "reason": {
+        "timeout": "nu a răspuns la timp",
+        "unreachable": "nu a putut fi accesat",
+        "bad_response": "răspunsul lui nu a fost un catalog",
+        "newer_schema": "este scris pentru un Auto Tournament mai nou",
+        "too_large": "este prea mare",
+        "offline": "CATALOG_OFFLINE este setat",
+        "http": "a răspuns cu HTTP {{status}}"
+      }
+    },
+    "kind": {
+      "module": "Modul de cod"
+    },
+    "source": {
+      "snapshot": "În această imagine"
+    },
+    "state": {
+      "available": "Disponibil",
+      "installed": "Instalat",
+      "update-available": "Actualizare disponibilă",
+      "disabled": "Dezactivat",
+      "broken": "Defect",
+      "incompatible": "Incompatibil",
+      "builtin": "Încorporat",
+      "installing": "Se instalează…",
+      "working": "Se lucrează…",
+      "restart": "Necesită repornire"
+    },
+    "action": {
+      "install": "Instalează",
+      "update": "Actualizează la {{version}}",
+      "enable": "Activează",
+      "disable": "Dezactivează",
+      "remove": "Elimină",
+      "uninstall": "Dezinstalează"
+    },
+    "done": {
+      "installed": "{{name}} a fost instalat",
+      "updated": "{{name}} a fost actualizat",
+      "enabled": "{{name}} a fost activat",
+      "disabled": "{{name}} a fost dezactivat",
+      "removed": "{{name}} a fost eliminat"
+    },
+    "reload": {
+      "body": "{{names}} rulează. Reîncarcă pagina ca să-l folosești aici.",
+      "action": "Reîncarcă"
+    },
+    "restart": "Repornește Auto Tournament ca să termini: {{names}}.",
+    "restartNow": {
+      "action": "Repornește acum",
+      "restarting": "Se repornește…",
+      "failed": "Nu s-a putut reporni",
+      "timeout": "Auto Tournament nu a revenit încă. Verifică containerul, apoi reîncarcă pagina."
+    },
+    "confirmInstall": {
+      "title": "Instalezi {{name}}?",
+      "body": "Acesta este un modul de cod, semnat de Auto Tournament. Rulează în acest server, cu acces la baza de date și la fișierele tale, și în browserul oricui deschide o pagină desenată de el.",
+      "version": "Versiunea {{version}}",
+      "from": "Din {{source}}",
+      "fromRemote": "Auto Tournament pe GitHub",
+      "fromSnapshot": "copia din această imagine (nu e nevoie de rețea)"
+    },
+    "confirmUninstall": {
+      "title": "Dezinstalezi {{name}}?",
+      "body": "Fișierele lui sunt eliminate. Datele lui – turnee, servere, setări – sunt păstrate, iar instalarea din nou îl aduce înapoi.",
+      "packBody": "Jocul dispare din asistentul de configurare. Nimic altceva nu este șters, iar instalarea din nou îl aduce înapoi."
+    },
+    "welcome": {
+      "title": "Jocurile de pe această instanță",
+      "hint": "Tu administrezi această instanță, așa că tu alegi jocurile pe care le oferă. Jucătorii aleg dintre ele."
+    },
+    "signedBy": "Semnat de {{label}} (cheia {{keyId}})"
+  },
+  "matchmaking": {
+    "play": {
+      "title": "Joacă",
+      "subtitle": "Găsește un meci 5v5. Ești împerecheat cu jucătorii care așteaptă de cel mai mult timp, iar party-ul tău joacă mereu în aceeași echipă.",
+      "unavailable": "Matchmaking-ul nu este încă deschis pe acest site.",
+      "findTitle": "Găsește un meci",
+      "findHelp": "Poți naviga pe site cât aștepți. Când se găsește un meci, ai 20 de secunde să accepți.",
+      "searchingHelp": "Se caută. Bara de jos arată cât ai așteptat.",
+      "find": "Găsește meci",
+      "leaderStarts": "Liderul party-ului pornește căutarea.",
+      "cooldown": "Ai refuzat sau ai ratat un meci. Poți căuta din nou în {{minutes}} min.",
+      "rating_one": "Rating {{elo}} · {{count}} joc · {{wins}} câștigate",
+      "rating_other": "Rating {{elo}} · {{count}} de jocuri · {{wins}} câștigate",
+      "mode": "Mod",
+      "modeName": {
+        "5v5": "5v5",
+        "2v2": "2v2 Wingman",
+        "1v1": "1v1"
+      },
+      "inQueue_one": "La coadă: {{count}}",
+      "inQueue_other": "La coadă: {{count}}",
+      "partyTitle": "Party-ul tău",
+      "invite": "Invită",
+      "partyOf": "{{count}} din {{max}}",
+      "you": "Tu",
+      "selected": "Selectat",
+      "modeTitle": {
+        "5v5": "Competitiv",
+        "2v2": "Wingman",
+        "1v1": "Duel"
+      },
+      "lookingTitle": "Se caută jucători",
+      "seats": "Caută: {{count}} · necesari pentru un meci: {{total}}",
+      "leaveQueue": "Ieși din coadă",
+      "level": "Nivelul tău",
+      "xp": "{{into}} / {{next}} XP",
+      "ratingShort": "Rating",
+      "recent": "Recente",
+      "noRecent": "Încă niciun meci.",
+      "result": {
+        "win": "Victorie",
+        "loss": "Înfrângere",
+        "draw": "Egal"
+      },
+      "resultShort": {
+        "win": "V",
+        "loss": "Î",
+        "draw": "E"
+      },
+      "backToMatch": "Înapoi la meciul tău",
+      "online_one": "Online: {{count}}",
+      "online_other": "Online: {{count}}",
+      "usuallyWait_one": "de obicei aproximativ {{count}} minut",
+      "usuallyWait_other": "de obicei aproximativ {{count}} de minute",
+      "aboutWait_one": "aproximativ {{count}} min",
+      "aboutWait_other": "aproximativ {{count}} min",
+      "defaultPool": {
+        "5v5": "Active Duty",
+        "2v2": "Hărți wingman",
+        "1v1": "Hărți wingman"
+      },
+      "searchAnyone": "Puțini jucători caută: vei fi împerecheat cu oricine e disponibil (caută: {{count}}, necesari: {{total}})",
+      "searchRating": "Se caută un meci apropiat de ratingul tău (±{{elo}}) · caută: {{count}}",
+      "botFill": "Completează locurile goale cu boți",
+      "botFillUnrated": "Boții ocupă locurile goale · fără rating: fără rating, XP sau drop-uri",
+      "searchRatingPlain": "Se caută un meci apropiat de ratingul tău · caută: {{count}}",
+      "searchWidening": "Se lărgește căutarea: ±{{elo}} · caută: {{count}}",
+      "searchAnyRating": "Se caută acum la orice rating · caută: {{count}}",
+      "inTournament": "Ești într-un turneu activ ({{tournament}}), nu poți intra acum la coadă în matchmaking.",
+      "partyInTournament": "Într-un turneu activ, așa că party-ul nu poate intra acum la coadă: {{names}}.",
+      "inMatch_one": "Într-un meci: {{count}}",
+      "inMatch_other": "Într-un meci: {{count}}",
+      "rating_few": "Rating {{elo}} · {{count}} jocuri · {{wins}} câștigate",
+      "inQueue_few": "La coadă: {{count}}",
+      "online_few": "Online: {{count}}",
+      "usuallyWait_few": "de obicei aproximativ {{count}} minute",
+      "aboutWait_few": "aproximativ {{count}} min",
+      "inMatch_few": "Într-un meci: {{count}}"
+    },
+    "queue": {
+      "searching": "Se caută {{mode}}",
+      "cancel": "Oprește căutarea"
+    },
+    "found": {
+      "title": "Meci găsit",
+      "accept": "Acceptă",
+      "decline": "Refuză",
+      "waiting": "Se așteaptă ceilalți",
+      "accepted": "Au acceptat: {{accepted}} / {{total}}",
+      "secondsLeft_one": "{{count}} secundă rămasă",
+      "secondsLeft_other": "{{count}} de secunde rămase",
+      "subtitle": "{{mode}} · acceptă în {{seconds}} s",
+      "secondsLeft_few": "{{count}} secunde rămase"
+    },
+    "party": {
+      "title": "Party",
+      "help": "Joacă cu prietenii: fă un party și trimite-le linkul. Până la 5 jucători, mereu în aceeași echipă.",
+      "create": "Fă un party",
+      "members_one": "{{count}} jucător în party-ul tău",
+      "members_other": "{{count}} de jucători în party-ul tău",
+      "inviteLink": "Link de invitație",
+      "copy": "Copiază",
+      "copied": "Linkul de invitație a fost copiat",
+      "code": "Cod de invitație",
+      "join": "Intră",
+      "joined": "Ai intrat în party",
+      "leave": "Ieși din party",
+      "disband": "Desființează party-ul",
+      "members_few": "{{count}} jucători în party-ul tău"
+    },
+    "room": {
+      "title": "Camera meciului",
+      "missing": "Acest meci nu există sau nu ești în el.",
+      "back": "Înapoi la Joacă",
+      "team": "Echipa {{n}}",
+      "status": {
+        "accepting": "se așteaptă acceptările",
+        "ready": "toată lumea a acceptat",
+        "cancelled": "anulat"
+      },
+      "match": {
+        "pending": "Veto hărți: dați ban hărților pe rând până rămâne una. Oricine din echipă poate da clic; contează primul clic.",
+        "ready": "Se așteaptă un server liber.",
+        "loaded": "Serverul e gata. Intră pe el.",
+        "live": "Meciul e live.",
+        "completed": "Meciul s-a terminat.",
+        "other": "Meci: {{status}}"
+      },
+      "pickedBy": "{{mode}} · ruleta hărților a ales",
+      "pickedByVeto": "{{mode}} · ales la veto",
+      "vs": "vs",
+      "you": "(tu)",
+      "accepted": "a acceptat",
+      "matchChat": "Chatul meciului",
+      "playAgain": "Joacă din nou",
+      "fullScoreboard": "Tabela de scor completă",
+      "newSkin": "Skin nou",
+      "inventory": "Echipament",
+      "victory": "Victorie",
+      "defeat": "Înfrângere",
+      "draw": "Egal",
+      "inServer": "Pe server: {{n}} din {{total}}",
+      "warmupRule": "Încălzirea durează până intră toți cei {{total}}.",
+      "warmupRuleTimed": "Încălzirea durează până intră toți cei {{total}} sau trec {{minutes}} min: apoi începe cu cine e acolo.",
+      "teamLetter": "Echipa {{letter}}",
+      "sideFirst": "{{side}} mai întâi",
+      "presence": {
+        "in": "Pe server",
+        "notYet": "Încă nu a intrat"
+      },
+      "equip": "Echipează",
+      "equipped": "Echipat",
+      "equipFailed": "Nu a putut fi echipat",
+      "rematch": {
+        "title": "Revanșă?",
+        "ask": "Aceleași echipe, un meci nou. Răspunsul tău contează pentru tot party-ul. Dacă majoritatea echipei tale spune da, cealaltă echipă are 30 de secunde să accepte.",
+        "yes": "Da, revanșă",
+        "no": "Nu, mulțumesc",
+        "button": "Revanșă",
+        "offerTitle": "Cealaltă echipă vrea revanșă",
+        "teamTitle": "Echipa ta vrea revanșă",
+        "offerBody": "Aceleași echipe, un meci nou. Majoritatea echipei tale trebuie să spună da. Răspunsul tău contează pentru tot party-ul.",
+        "waitingOther": "Se așteaptă cealaltă echipă… {{s}} s",
+        "waitingTeam": "Se așteaptă echipa ta… {{s}} s",
+        "accepted": "Revanșă acceptată. Se deschide meciul nou…",
+        "refused": "Revanșă refuzată."
+      }
+    },
+    "result": {
+      "title": "Rezultat",
+      "map": "Harta {{n}}",
+      "rating": "Rating",
+      "xp": "+{{xp}} XP · nivelul {{level}}",
+      "levelProgress": "{{into}} din {{next}} XP până la nivelul următor",
+      "xpReason": {
+        "completed": "Jucat",
+        "win": "Victorie",
+        "draw": "Egal",
+        "performance": "Performanță",
+        "first_win": "Prima victorie de azi",
+        "admin": "Admin"
+      },
+      "player": "Jucător",
+      "commend": "Evaluează",
+      "thumbsUp": "Vot pozitiv",
+      "thumbsDown": "Vot negativ",
+      "thumbsUpFor": "Vot pozitiv pentru {{name}}",
+      "thumbsDownFor": "Vot negativ pentru {{name}}",
+      "downReason": "De ce?",
+      "downTag": {
+        "toxic": "Toxic",
+        "griefing": "Sabotaj",
+        "afk": "AFK sau a ieșit",
+        "other": "Altceva"
+      },
+      "commendFailed": "Nu s-a putut salva",
+      "outcome": {
+        "win": "VICTORIE",
+        "loss": "ÎNFRÂNGERE",
+        "draw": "EGAL"
+      },
+      "minutes_one": "{{count}} min",
+      "minutes_other": "{{count}} min",
+      "yourGame": "Jocul tău",
+      "fullBoard": "Tabela de scor completă",
+      "hideBoard": "Ascunde tabela de scor",
+      "minutes_few": "{{count}} min"
+    },
+    "profile": {
+      "level": "Nivelul {{level}}",
+      "xp": "{{xp}} XP",
+      "thumbsUp_one": "Voturi pozitive: {{count}}",
+      "thumbsUp_other": "Voturi pozitive: {{count}}",
+      "thumbsDown_one": "Voturi negative: {{count}}",
+      "thumbsDown_other": "Voturi negative: {{count}}",
+      "tag": {
+        "friendly": "Prietenos",
+        "team_player": "Jucător de echipă",
+        "leader": "Lider",
+        "good_comms": "Comunicare bună",
+        "teacher": "Profesor",
+        "good_sport": "Fair-play",
+        "toxic": "Toxic",
+        "griefing": "Sabotaj",
+        "unhelpful": "Neajutorat",
+        "bad_sport": "Lipsă de fair-play",
+        "afk": "AFK sau a ieșit",
+        "other": "Altceva"
+      },
+      "negativesPrivate": "Doar tu și adminii le vedeți.",
+      "history": "Meciuri de matchmaking",
+      "historyEmpty": "Încă niciun meci de matchmaking.",
+      "win": "Victorie",
+      "loss": "Înfrângere",
+      "draw": "Egal",
+      "positivePercent": "{{percent}}% pozitive",
+      "thumbsUp_few": "Voturi pozitive: {{count}}",
+      "thumbsDown_few": "Voturi negative: {{count}}"
+    },
+    "leaderboard": {
+      "toLadder": "Clasament matchmaking →",
+      "title": "Clasament",
+      "subtitle_one": "Jucătorii care au jucat în ultimele 30 de zile cel puțin atâtea meciuri: {{count}}.",
+      "subtitle_other": "Jucătorii care au jucat în ultimele 30 de zile cel puțin atâtea meciuri: {{count}}.",
+      "empty_one": "Încă nimeni. Joacă {{count}} meci în 30 de zile ca să apari aici.",
+      "empty_other": "Încă nimeni. Joacă {{count}} de meciuri în 30 de zile ca să apari aici.",
+      "level": "Nivel",
+      "games": "Meciuri",
+      "winRate": "Câștigate",
+      "subtitle_few": "Jucătorii care au jucat în ultimele 30 de zile cel puțin atâtea meciuri: {{count}}.",
+      "empty_few": "Încă nimeni. Joacă {{count}} meciuri în 30 de zile ca să apari aici."
+    },
+    "admin": {
+      "title": "Coadă (admini)",
+      "summary": "Caută: {{players}}, meciuri deschise: {{lobbies}}",
+      "waited": "{{minutes}} min",
+      "cooldowns": "Pauze de penalizare",
+      "until": "mai sunt {{minutes}} min",
+      "clear": "Șterge",
+      "cleared": "Penalizare ștearsă",
+      "clearFailed": "Penalizarea nu a putut fi ștearsă",
+      "kind": {
+        "decline": "a refuzat",
+        "no_show": "a ratat un meci",
+        "abandon": "a ieșit dintr-un meci"
+      },
+      "review": "Jucători de verificat (voturi negative)",
+      "voters_one": "{{count}} votant",
+      "voters_other": "{{count}} de votanți",
+      "voters_few": "{{count}} votanți"
+    },
+    "roulette": {
+      "rolling": "Se alege harta…",
+      "picked": "Hartă: {{map}}"
+    }
+  },
+  "chat": {
+    "title": "Chat",
+    "close": "Închide chatul",
+    "tabsLabel": "Chaturi",
+    "tabMatch": "Meci",
+    "tabTeam": "Echipă",
+    "tabParty": "Party",
+    "tabDm": "Mesaj direct",
+    "dmWho": "Doar voi doi citiți asta",
+    "placeholderDm": "Mesaj pentru {{name}}",
+    "friends": "Prieteni",
+    "messageFriend": "Mesaj pentru {{name}}",
+    "matchWho": "Echipa ta, {{title}} și adminii",
+    "matchWhoAdmin": "Ambele echipe și adminii",
+    "teamWho": "Toți din {{team}}",
+    "partyWho": "Toți din party-ul tău",
+    "placeholderMatch": "Mesaj pentru ambele echipe și admini",
+    "placeholderTeam": "Mesaj pentru echipa ta",
+    "placeholderParty": "Mesaj pentru party-ul tău",
+    "send": "Trimite",
+    "you": "Tu",
+    "adminBadge": "ADMIN",
+    "callAdmin": "Cheamă un admin",
+    "adminCallOpen": "Aici e un apel de admin deschis",
+    "callAdminConfirmTitle": "Chemi un admin?",
+    "callAdminConfirmBody": "Un admin primește o notificare și intră în acest chat. Cheamă unul doar când ai nevoie de ajutor cu meciul.",
+    "adminCalled": "Un admin a fost chemat",
+    "callFailed": "Adminul nu a putut fi chemat",
+    "sendFailed": "Mesajul nu a putut fi trimis",
+    "logLabel": "Chat: {{title}}",
+    "none": "Încă niciun chat. Meciul, echipa și party-ul tău apar aici.",
+    "empty": "Încă niciun mesaj. Spune salut.",
+    "loading": "Se încarcă mesajele",
+    "readOnlyImpersonating": "Vezi ca alt jucător. Oprește impersonarea ca să scrii.",
+    "peekMatch": "Meci · {{title}}",
+    "peekTeam": "Echipă",
+    "peekParty": "Party",
+    "buttonUnread": "Chat, necitite: {{count}}",
+    "system": {
+      "vetoStarted": "Veto început · {{team}} începe",
+      "vetoBan": "{{team}} a dat ban la {{map}}",
+      "vetoReset": "Un admin a repornit veto-ul",
+      "vetoPick": "{{team}} a ales {{map}}",
+      "vetoSide": "{{team}} începe ca {{side}} pe {{map}}",
+      "vetoDone": "Veto gata · {{maps}}",
+      "serverReady": "Server gata · {{map}} · intră din pagina meciului",
+      "playerJoined": "{{name}} a intrat pe server · pe server: {{n}}",
+      "playerLeft": "{{name}} a ieșit de pe server · pe server: {{n}}",
+      "mapLive": "Harta {{n}} e live · {{map}}",
+      "mapResult": "Harta {{n}} · {{map}} · {{team1}} {{s1}}–{{s2}} {{team2}}",
+      "seriesWon": "{{team}} câștigă seria cu {{a}}–{{b}}",
+      "adminCalled": "{{name}} a chemat un admin",
+      "adminClaimed": "{{name}} a preluat apelul de admin",
+      "adminResolved": "{{name}} a rezolvat apelul de admin",
+      "timedOut": "timpul a expirat",
+      "remindAccount": "{{name}}: conectează-te o dată cu Steam ca să poți juca în {{tournament}}.",
+      "remindGame": "{{name}}: adaugă jocul în profil (Jocurile pe care le joci) înainte de check-in-ul pentru {{tournament}}.",
+      "serverDown": "Serverul meciului a căzut. Se readuce…",
+      "serverBack": "Meciul a revenit: harta {{map}}, runda {{round}}. Reconectează-te."
+    },
+    "party": {
+      "inviteCopied": "Linkul de invitație a fost copiat",
+      "inviteFailed": "Linkul nu a putut fi copiat",
+      "leader": "lider",
+      "invite": "Invită",
+      "queue": "Intrați împreună la coadă",
+      "leaveQueue": "Ieși din coadă",
+      "searching": "Se caută un meci",
+      "leaderQueues": "Liderul pornește căutarea"
+    },
+    "back": "Înapoi",
+    "typing": {
+      "one": "{{name}} scrie…",
+      "two": "{{first}} și {{second}} scriu…",
+      "many": "Scriu mai multe persoane ({{count}})…"
+    },
+    "emoji": {
+      "open": "Emoji",
+      "title": "Alege un emoji",
+      "search": "Caută emoji",
+      "none": "Niciun emoji găsit",
+      "categories": {
+        "results": "Rezultate",
+        "recent": "Recente",
+        "smileys": "Fețe zâmbitoare",
+        "gestures": "Mâini",
+        "people": "Oameni",
+        "animals": "Natură",
+        "food": "Mâncare și băutură",
+        "activity": "Jocuri și sport",
+        "travel": "Locuri",
+        "objects": "Obiecte",
+        "symbols": "Simboluri"
+      }
+    }
+  },
+  "search": {
+    "open": "Caută",
+    "placeholder": "Caută pagini, jucători, echipe, faze…",
+    "placeholderAdmin": "Caută pagini, setări, jucători, echipe, servere…",
+    "hint": "Scrie cel puțin două litere. Ctrl K (⌘ K) sau / deschide asta de oriunde.",
+    "none": "Nimic găsit pentru „{{q}}”.",
+    "versus": "{{team1}} vs {{team2}}",
+    "groups": {
+      "pages": "Pagini și setări",
+      "players": "Jucători",
+      "teams": "Echipe",
+      "tournaments": "Turnee",
+      "matches": "Meciuri",
+      "highlights": "Faze",
+      "maps": "Hărți",
+      "servers": "Servere și mașini",
+      "recorders": "Înregistratoare"
+    },
+    "status": {
+      "setup": "În configurare",
+      "in_progress": "În desfășurare",
+      "completed": "Încheiate"
+    },
+    "pages": {
+      "manage": "Administrare",
+      "tournaments": "Turnee",
+      "newTournament": "Configurarea turneului",
+      "playedMatches": "Toate meciurile",
+      "importMatch": "Importă un meci",
+      "teams": "Echipe",
+      "players": "Jucători",
+      "reports": "Raportări",
+      "templates": "Șabloane",
+      "ratings": "Ratinguri",
+      "modules": "Module",
+      "servers": "Servere",
+      "maps": "Hărți și seturi de hărți",
+      "skins": "Skinuri",
+      "matchRules": "Regulile meciurilor",
+      "highlights": "Faze",
+      "adminTools": "Sistem",
+      "settings": "Setări",
+      "settingsSite": "Setări: site și e-mail",
+      "settingsSignIn": "Setări: furnizori de conectare",
+      "settingsPlayers": "Setări: jucători și acces",
+      "settingsWebhooks": "Setări: webhookuri",
+      "settingsLicense": "Licență",
+      "settingsMatchmaking": "Setări: matchmaking",
+      "settingsAdvanced": "Setări: avansat",
+      "liveMatches": "Meciuri live"
+    },
+    "clips_one": "{{count}} clip",
+    "clips_other": "{{count}} de clipuri",
+    "fieldLabel": "Caută",
+    "clips_few": "{{count}} clipuri"
+  },
+  "highlightsPage": {
+    "recorderStats": "Trimite rezultate de benchmark anonime",
+    "recorderStatsHint": "După un benchmark, înregistratoarele trimit site-ului modelul plăcii video și al procesorului, versiunile și timpii, pentru tabelul public cu ce randează și cât de repede. Nimic despre meciuri sau jucători. Înregistrarea funcționează la fel și cu asta oprit.",
+    "title": "Faze",
+    "subtitle": "Clipuri și montaje din fiecare meci: ce fac înregistratoarele, muzica de sub montaje și înregistratoarele fiecărui joc.",
+    "tabs": {
+      "settings": "Setări"
+    },
+    "perPlayer": {
+      "label": "Clipuri pe jucător pe hartă",
+      "helper": "Între 1 și 6. Mai multe clipuri înseamnă că fazele unui meci se termină mai greu."
+    },
+    "preset": {
+      "label": "Calitatea video",
+      "smooth": "Fluid (recomandat): până la 1080p, 240 fps",
+      "crisp": "Clar: până la 1440p, 120 fps",
+      "lan": "LAN, maxim: până la 4K, 240 fps",
+      "custom": "Personalizat",
+      "light": "Ușor: doar 720p, 60 fps"
+    },
+    "bitrate": {
+      "label": "Bitrate",
+      "auto": "Automat (recomandat)",
+      "option": "{{mbps}} Mbit/s"
+    },
+    "resolution": {
+      "label": "Rezoluția cea mai mare"
+    },
+    "fps": {
+      "label": "Cadența cea mai mare",
+      "option": "{{fps}} fps"
+    },
+    "quality": {
+      "helper": "Înregistratoarele fac fiecare clip și montaj o singură dată, la cea mai bună calitate, și taie din ea calitățile mai mici. Încetinitorul rămâne fluid la orice cadență. Clipurile deja făcute își păstrează calitatea până sunt refăcute."
+    },
+    "music": {
+      "label": "Muzică sub montaje",
+      "all": "Toate piesele ({{count}})",
+      "pick": "Doar cele pe care le aleg eu",
+      "off": "Fără muzică",
+      "listen": "Ascultă {{title}}",
+      "stop": "Oprește {{title}}",
+      "contentId": "YouTube Content ID",
+      "volume": "Volum",
+      "byo": "Adu-ți propria muzică: adaugă piese pe care ai dreptul să le folosești. Auto Tournament nu vine cu niciuna. Playerul pune alta lângă fiecare montaj, iar descărcările vin cu sau fără ea.",
+      "remove": "Elimină {{title}}",
+      "removeConfirm": "Elimină",
+      "keep": "Păstrează",
+      "addTitle": "Adaugă o piesă",
+      "chooseFile": "Alege un fișier",
+      "noFile": "Niciun fișier ales (MP3, M4A, WAV…)",
+      "trackTitle": "Titlu",
+      "artist": "Artist",
+      "genre": "Gen (grupează meniul)",
+      "source": "De unde provine (un link, pentru credit)",
+      "contentIdLabel": "Înregistrată în YouTube Content ID (o încărcare cu ea poate primi o revendicare)",
+      "add": "Adaugă piesa",
+      "adding": "Se adaugă…",
+      "rights": "Adaugă doar muzică pe care ai dreptul s-o folosești în videoclipuri. Volumul ei este egalizat cu al celorlalte piese.",
+      "suggestions_one": "{{count}} piesă potrivită pentru montaje, pe Pixabay",
+      "suggestions_other": "{{count}} de piese potrivite pentru montaje, pe Pixabay",
+      "suggestionsHelp": "Deschide una, descarc-o de pe Pixabay sub licența ei și adaug-o aici. Licența îți permite s-o folosești în videoclipuri; nu permite nimănui să dea fișierul mai departe.",
+      "link": "Sau un link către fișierul audio",
+      "addLink": "Adaugă din link",
+      "suggestions_few": "{{count}} piese potrivite pentru montaje, pe Pixabay"
+    },
+    "overlay": {
+      "label": "Suprapuneri",
+      "helper_one": "{{count}} clip are o copie curată. Redesenarea pune din nou pe el cardul de subtitlu, kill feed-ul și numele curente, apoi reface montajele. Nu e nevoie de CS2.",
+      "helper_other": "{{count}} de clipuri au o copie curată. Redesenarea pune din nou pe ele cardul de subtitlu, kill feed-ul și numele curente, apoi reface montajele. Nu e nevoie de CS2.",
+      "redraw": "Redesenează suprapunerile",
+      "pending_one": "{{count}} videoclip așteaptă un înregistrator",
+      "pending_other": "{{count}} de videoclipuri așteaptă un înregistrator",
+      "failed_one": "{{count}} videoclip nu a putut fi redesenat",
+      "failed_other": "{{count}} de videoclipuri nu au putut fi redesenate",
+      "keepClean": "Păstrează copii curate ale clipurilor",
+      "keepCleanHelper": "Fiecare clip este stocat și așa cum a fost înregistrat, fără card sau kill feed. Montajele se fac apoi din clipurile curate, cu propria suprapunere, iar suprapunerile pot fi redesenate. Oprit folosește cam jumătate din spațiu.",
+      "redrawFailed": "Redesenarea nu a putut fi pusă în coadă.",
+      "helper_few": "{{count}} clipuri au o copie curată. Redesenarea pune din nou pe ele cardul de subtitlu, kill feed-ul și numele curente, apoi reface montajele. Nu e nevoie de CS2.",
+      "pending_few": "{{count}} videoclipuri așteaptă un înregistrator",
+      "failed_few": "{{count}} videoclipuri nu au putut fi redesenate"
+    },
+    "moved": "Setările fazelor, înregistratoarele și cum adaugi unul sunt acum pe pagina lor:",
+    "saved": "Salvat",
+    "saveFailed": "Nu s-a putut salva",
+    "reels": {
+      "title": "Dimensiunile montajelor",
+      "description": "Câte clipuri intră în fiecare montaj. Mai multe clipuri fac montaje mai lungi, care durează mai mult.",
+      "funnyPerPlayer": "Clipuri amuzante pe jucător pe hartă",
+      "mapReelPerPlayer": "Clipuri pe jucător într-un montaj de hartă",
+      "seriesReelMax": "Clipuri într-un montaj de serie",
+      "seriesReelPerPlayer": "Clipuri pe jucător într-un montaj de serie",
+      "teamReelPerPlayer": "Clipuri pe jucător într-un montaj de echipă",
+      "tournamentReelMax": "Clipuri într-un montaj de turneu",
+      "tournamentReelPerPlayer": "Clipuri pe jucător într-un montaj de turneu",
+      "range": "{{min}}–{{max}}"
+    },
+    "minResolution": {
+      "label": "Rezoluția cea mai mică"
+    },
+    "ladder": {
+      "title": "Calitățile pe care le pot alege spectatorii",
+      "recordedAt": "Înregistrat la {{quality}}",
+      "highest": "Cea mai înaltă",
+      "lowest": "Telefoane, conexiuni lente",
+      "rate": "≈{{mbps}} Mbit/s"
+    },
+    "cost": {
+      "single": "Înregistrarea durează de aproximativ {{time}}× mai mult decât la 1080p 120 fps. O estimare.",
+      "withCuts": "Înregistrarea durează de aproximativ {{time}}× mai mult decât la 1080p 120 fps și se păstrează fiecare calitate: cam {{storage}}× spațiul. Estimări."
+    },
+    "keepMasters": {
+      "label": "Păstrează calitatea cea mai înaltă",
+      "always": "Mereu",
+      "30": "Timp de 30 de zile",
+      "7": "Timp de 7 zile",
+      "reels": "Până se fac montajele",
+      "helper": "Apoi îi ia locul calitatea următoare, iar copia curată dispare, ceea ce economisește cea mai mare parte din spațiu. Un videoclip fără calitatea cea mai înaltă nu își poate redesena suprapunerea și nu poate fi unit într-un montaj nou la acea calitate; trebuie înregistrat din nou."
+    },
+    "matchmaking": {
+      "minimumTitle": "Ce faze devin clipuri",
+      "minimumDescription": "Pentru fiecare meci. Matchmaking-ul păstrează în plus doar cele mai bune câteva, setate mai jos.",
+      "title": "Faze din matchmaking",
+      "description": "În matchmaking se joacă multe meciuri. Păstrează doar cele mai bune câteva din fiecare, ca înregistratoarele să nu fie ocupate toată ziua.",
+      "on": "Înregistrează faze din matchmaking",
+      "onHelp": "Oprit: meciurile de matchmaking nu primesc clipuri sau montaje.",
+      "clips": "Clipuri pe meci",
+      "clipsHelp": "Cele mai bune faze primele. Montajul unui jucător se face din aceleași clipuri.",
+      "all": "Toate",
+      "minKills": "Cea mai mică fază păstrată",
+      "minKillsHelp": "Fazele sub acest nivel nu devin niciodată clip, chiar dacă e loc.",
+      "kills": {
+        "2": "2 kill-uri",
+        "3": "3 kill-uri",
+        "4": "4 kill-uri",
+        "5": "Ace"
+      },
+      "killsInline": {
+        "2": "2 kill-uri",
+        "3": "3 kill-uri",
+        "4": "4 kill-uri",
+        "5": "un ace"
+      },
+      "clutch": "Clutch-urile contează mereu",
+      "clutchHelp": "Un 1vX câștigat contează chiar și cu mai puține kill-uri decât cea mai mică fază.",
+      "summary": "Fiecare meci de matchmaking primește {{clips}} (minimum {{kills}}).",
+      "summaryClutch": "Fiecare meci de matchmaking primește {{clips}} (minimum {{kills}}) și orice clutch.",
+      "summaryEvery": "toate fazele",
+      "summaryBest_one": "cea mai bună fază",
+      "summaryBest_other": "cele mai bune {{count}} de faze",
+      "summaryBest_few": "cele mai bune {{count}} faze"
+    }
+  },
+  "update": {
+    "available": "A apărut Auto Tournament {{latest}} (tu rulezi {{running}}).",
+    "notes": "Ce e nou",
+    "module": "{{name}} {{version}} este disponibil (tu rulezi {{installed}}).",
+    "moduleProblem": "{{name}}: actualizarea nu a reușit. {{problem}}",
+    "openModules": "Module"
+  },
+  "licenseGate": {
+    "expiredTitle": "Licența acestei platforme a expirat",
+    "expiredAdmin": "Plata licenței este întârziată, așa că platforma s-a oprit. Plata o repornește imediat. Datele tale sunt în siguranță.",
+    "expiredPlayer": "Meciurile și înscrierile sunt pe pauză. Organizatorul a fost anunțat. Revino mai târziu.",
+    "pay": "Plătește în consolă ↗",
+    "settings": "Setările licenței",
+    "fix": "Rezolvă ↗",
+    "pastDue": "Plata licenței a eșuat. Platforma se oprește pe {{date}}, dacă nu se plătește.",
+    "elsewhereTitle": "Această cheie de licență este folosită pe altă instalare",
+    "elsewhereAdmin": "O cheie de licență funcționează pe o singură instalare Auto Tournament, iar altă instalare o are pe aceasta. Lipește cheia proprie a acestei instalări sau folosește „Move to another install” în consolă. Datele tale sunt în siguranță.",
+    "replacedTitle": "Această cheie de licență a fost înlocuită",
+    "replacedAdmin": "În consolă a fost creată o cheie nouă pentru această licență, așa că cea veche s-a oprit. Lipește cheia nouă în setările licenței. Datele tale sunt în siguranță.",
+    "openConsole": "Deschide consola ↗",
+    "pasteKey": "Lipește cheia nouă",
+    "replacedSoon": "În consolă a fost creată o cheie nouă pentru această licență. Lipește-o în setările licenței: această cheie se oprește pe {{date}}."
+  },
+  "matchAdmin": {
+    "openChat": "Deschide chatul",
+    "resetVeto": "Repornește veto-ul",
+    "resetVetoTitle": "Repornești veto-ul?",
+    "resetVetoBody": "Fiecare ban, pick și alegere de parte de până acum este șters, iar echipele încep veto-ul din nou. Ambele echipe văd asta în chatul meciului.",
+    "vetoReset": "Veto-ul o ia de la capăt",
+    "vetoResetFailed": "Veto-ul nu a putut fi repornit"
+  },
+  "addressMismatch": {
+    "open": "Deschide {{host}}",
+    "text": "Ești pe {{current}}, dar acest site este configurat pentru {{host}}: conectarea Steam, e-mailurile și serverele de joc folosesc acea adresă."
+  },
+  "siteFooter": {
+    "support": "Susține proiectul",
+    "trademarks": "Counter-Strike, CS2 și Steam sunt mărci comerciale ale Valve Corporation. Alte nume de jocuri sunt mărci comerciale ale proprietarilor lor. Auto Tournament nu este afiliat cu Valve sau cu vreun editor de jocuri și nu este susținut de aceștia."
+  },
+  "discordNotice": {
+    "link": "Leagă-ți contul Discord ca botul să te poată muta în canalul vocal al echipei și să te găsească în canalul echipei.",
+    "linkAction": "Leagă Discord",
+    "join": "Intră pe serverul nostru de Discord. Acolo sunt canalele echipei tale și cardurile meciurilor.",
+    "joinAction": "Intră pe server"
+  }
+}
