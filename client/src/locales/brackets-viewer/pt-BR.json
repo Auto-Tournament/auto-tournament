@@ -1,0 +1,124 @@
+{
+  "origin-hint": {
+    "seed": "Seed {{position}}",
+    "winner-bracket": "Perdedor: $t(abbreviations.winner-bracket) {{round}}.{{position}}",
+    "winner-bracket-semi-final": "Perdedor: $t(abbreviations.winner-bracket) semi {{position}}",
+    "winner-bracket-final": "Perdedor: final da $t(abbreviations.winner-bracket)",
+    "consolation-final": "Perdedor da semi {{position}}",
+    "grand-final": "Vencedor: final da $t(abbreviations.loser-bracket)",
+    "double-elimination-consolation-final-opponent-1": "Perdedor: $t(abbreviations.loser-bracket) semi 1",
+    "double-elimination-consolation-final-opponent-2": "Perdedor: final da $t(abbreviations.loser-bracket)"
+  },
+  "match-label": {
+    "default": "Partida {{matchNumber}}",
+    "winner-bracket": "$t(abbreviations.winner-bracket)",
+    "loser-bracket": "$t(abbreviations.loser-bracket)",
+    "standard-bracket": "$t(abbreviations.match)",
+    "standard-bracket-semi-final": "Semi {{matchNumber}}",
+    "standard-bracket-final": "Final",
+    "double-elimination": "{{matchPrefix}} {{roundNumber}}.{{matchNumber}}",
+    "double-elimination-semi-final": "{{matchPrefix}} semi {{matchNumber}}",
+    "double-elimination-final": "{{matchPrefix}} final",
+    "consolation-final": "Disputa de 3º lugar",
+    "grand-final-single": "Grande final",
+    "grand-final": "$t(abbreviations.grand-final) rodada {{roundNumber}}",
+    "match-game": "Jogo {{gameNumber}}"
+  },
+  "match-status": {
+    "locked": "Bloqueada",
+    "waiting": "Aguardando",
+    "ready": "Pronta",
+    "running": "Em andamento",
+    "completed": "Concluída",
+    "archived": "Arquivada"
+  },
+  "abbreviations": {
+    "win": "W",
+    "loss": "L",
+    "forfeit": "F",
+    "position": "P",
+    "seed": "#",
+    "winner-bracket": "WB",
+    "loser-bracket": "LB",
+    "match": "M",
+    "grand-final": "GF"
+  },
+  "ranking": {
+    "rank": {
+      "text": "#",
+      "tooltip": "Posição"
+    },
+    "id": {
+      "text": "Nome",
+      "tooltip": "Nome"
+    },
+    "played": {
+      "text": "P",
+      "tooltip": "Jogos"
+    },
+    "wins": {
+      "text": "$t(abbreviations.win)",
+      "tooltip": "Vitórias"
+    },
+    "draws": {
+      "text": "D",
+      "tooltip": "Empates"
+    },
+    "losses": {
+      "text": "$t(abbreviations.loss)",
+      "tooltip": "Derrotas"
+    },
+    "forfeits": {
+      "text": "$t(abbreviations.forfeit)",
+      "tooltip": "W.O."
+    },
+    "scoreFor": {
+      "text": "PP",
+      "tooltip": "Pontos pró"
+    },
+    "scoreAgainst": {
+      "text": "PC",
+      "tooltip": "Pontos contra"
+    },
+    "scoreDifference": {
+      "text": "+/-",
+      "tooltip": "Saldo"
+    },
+    "points": {
+      "text": "Pts",
+      "tooltip": "Pontos"
+    }
+  },
+  "common": {
+    "bye": "FOLGA",
+    "best-of-x": "MD{{x}}",
+    "consolation": "Disputa de 3º lugar",
+    "group-name": "Grupo {{groupNumber}}",
+    "group-name-winner-bracket": "Chave superior",
+    "group-name-loser-bracket": "Chave inferior",
+    "round-name": "Rodada {{roundNumber}}",
+    "round-name-final": "Rodada final",
+    "round-name-winner-bracket": "$t(abbreviations.winner-bracket) rodada {{roundNumber}}",
+    "round-name-winner-bracket-final": "$t(abbreviations.winner-bracket) rodada final",
+    "round-name-loser-bracket": "$t(abbreviations.loser-bracket) rodada {{roundNumber}}",
+    "round-name-loser-bracket-final": "$t(abbreviations.loser-bracket) rodada final"
+  },
+  "form-creator": {
+    "stage-name-label": "Dê um nome à fase",
+    "stage-name-placeholder": "Um nome para a sua fase",
+    "stage-selector-label": "Escolha uma fase",
+    "team-label": "Dê nomes aos times",
+    "team-label-placeholder": "Lista de nomes de times separados por vírgula (precisa ser 2^n)",
+    "team-count": "Ou um número de times",
+    "team-count-placeholder": "Quantos times você quer?",
+    "group-label": "Quantos grupos?",
+    "group-placeholder": "Quantos grupos você quer?",
+    "seed-order-label": "Como você quer ordenar os seeds?",
+    "double-elimination-seed-order-placeholder": "Ordem dos seeds para eliminação dupla, separada por vírgula",
+    "round-robin-mode-label": "Qual modo de todos contra todos você prefere?",
+    "consolation-final-label": "Disputa de 3º lugar",
+    "skip-first-round-label": "Pular a primeira rodada",
+    "grand-final-type-label": "Tipo de grande final",
+    "submit": "Criar"
+  }
+}
