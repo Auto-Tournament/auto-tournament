@@ -1,0 +1,520 @@
+{
+  "matchesPage": {
+    "errors": {
+      "loadMatches": "Не вдалося завантажити матчі",
+      "loadTitle": "Помилка завантаження матчів",
+      "bulkDelete": "Не вдалося видалити один або кілька матчів"
+    },
+    "header": {
+      "createMatch": "Створити матч"
+    },
+    "bulkSelect": {
+      "select": "Вибрати",
+      "done": "Завершити вибір",
+      "selectAll": "Вибрати всі",
+      "unselectAll": "Зняти вибір",
+      "deleteSelected": "Видалити вибрані"
+    },
+    "empty": {
+      "title": "Немає матчів для показу",
+      "description": "Створи турнір і згенеруй сітку, щоб побачити тут матчі",
+      "createManual": "Або створи матч вручну"
+    },
+    "sections": {
+      "live": "Матчі наживо ({{count}})",
+      "upcoming": "Майбутні матчі ({{count}})",
+      "history": "Історія матчів ({{count}})",
+      "inQueue": "У черзі: {{count}}"
+    },
+    "manualMatchLabel": "Ручний матч",
+    "create": {
+      "success": "Ручний матч створено: {{slug}}"
+    },
+    "bulkDelete": {
+      "title": "Видалити ручні матчі",
+      "deleted_one": "Видалено {{count}} матч",
+      "deleted_other": "Видалено {{count}} матчу",
+      "message_one": "Видалити {{count}} ручний матч? Цю дію неможливо скасувати.",
+      "message_other": "Видалити {{count}} ручного матчу? Цю дію неможливо скасувати.",
+      "deleted_few": "Видалено {{count}} матчі",
+      "deleted_many": "Видалено {{count}} матчів",
+      "message_few": "Видалити {{count}} ручні матчі? Цю дію неможливо скасувати.",
+      "message_many": "Видалити {{count}} ручних матчів? Цю дію неможливо скасувати."
+    },
+    "card": {
+      "matchNumber": "Матч №{{number}}",
+      "server": "Сервер: {{name}}",
+      "queuePosition": "Місце в черзі: №{{position}}",
+      "shuffle": "Шафл",
+      "shuffleManual": "Шафл вручну",
+      "manual": "Вручну",
+      "simulation": "Симуляція",
+      "winner": "ПЕРЕМОЖЕЦЬ",
+      "mapN": "Мапа {{n}}"
+    },
+    "statusLabel": {
+      "walkover": "ТЕХНІЧНА ПЕРЕМОГА",
+      "waitingForTournament": "ОЧІКУВАННЯ СТАРТУ ТУРНІРУ",
+      "waitingForServer": "ОЧІКУВАННЯ СЕРВЕРА",
+      "waitingForPairing": "ОЧІКУВАННЯ ПАРИ",
+      "vetoPending": "ОЧІКУВАННЯ ВЕТО",
+      "mapVeto": "ВЕТО МАП",
+      "serverAllocated": "СЕРВЕР ПРИЗНАЧЕНО",
+      "warmup": "РОЗМИНКА",
+      "overtime": "ОВЕРТАЙМ №{{n}}",
+      "live": "НАЖИВО",
+      "completed": "ЗАВЕРШЕНО",
+      "cancelled": "СКАСОВАНО",
+      "needsDecision": "ПОТРІБНЕ РІШЕННЯ АДМІНІСТРАТОРА"
+    },
+    "statusGuide": {
+      "title": "Довідка про стани матчів",
+      "pending": "Матч заплановано, але ще не призначено на сервер. Сервер буде призначено, щойно він звільниться.",
+      "loaded": "Матч завантажено на сервер, триває розминка. Гравцям треба підключитися й позначити готовність, щоб почати.",
+      "live": "Матч грається на своєму сервері.",
+      "completed": "Матч завершено. Переможця визначено, сітку оновлено.",
+      "proTipTitle": "Порада:",
+      "proTip": "Коли в матчі написано «Очікування гравців (X/Y)», сервер готовий і гравцям пора підключатися. Щойно всі очікувані гравці підключаться й будуть готові, матч почнеться автоматично."
+    },
+    "latestEvent": "Остання подія: {{event}}",
+    "matchLabel": {
+      "upper": "ВС Р{{round}} М{{match}}",
+      "lower": "НС Р{{round}} М{{match}}",
+      "grandFinal": "Гранд-фінал",
+      "grandFinalReset": "Скидання гранд-фіналу",
+      "group": "Група {{group}} · раунд {{round}}",
+      "playoffs": "Плей-оф · раунд {{round}}"
+    },
+    "table": {
+      "filterLabel": "Показати",
+      "search": "Знайти команду або гравця",
+      "tbd": "TBD",
+      "manage": "Керувати матчем",
+      "empty": "Тут немає матчів.",
+      "filter": {
+        "attention_one": "Потребує уваги · {{count}}",
+        "attention_other": "Потребує уваги · {{count}}",
+        "live_one": "Наживо · {{count}}",
+        "live_other": "Наживо · {{count}}",
+        "veto_one": "Вето · {{count}}",
+        "veto_other": "Вето · {{count}}",
+        "waiting_one": "Очікування · {{count}}",
+        "waiting_other": "Очікування · {{count}}",
+        "finished_one": "Завершено · {{count}}",
+        "finished_other": "Завершено · {{count}}",
+        "all_one": "Усі · {{count}}",
+        "all_other": "Усі · {{count}}",
+        "attention_few": "Потребує уваги · {{count}}",
+        "attention_many": "Потребує уваги · {{count}}",
+        "live_few": "Наживо · {{count}}",
+        "live_many": "Наживо · {{count}}",
+        "veto_few": "Вето · {{count}}",
+        "veto_many": "Вето · {{count}}",
+        "waiting_few": "Очікування · {{count}}",
+        "waiting_many": "Очікування · {{count}}",
+        "finished_few": "Завершено · {{count}}",
+        "finished_many": "Завершено · {{count}}",
+        "all_few": "Усі · {{count}}",
+        "all_many": "Усі · {{count}}"
+      },
+      "columns": {
+        "match": "Матч",
+        "teams": "Команди",
+        "phase": "Фаза",
+        "server": "Сервер",
+        "attention": "Потребує уваги",
+        "open": "Відкрити"
+      },
+      "attention": {
+        "calls_one": "Виклик адміністратора",
+        "calls_other": "{{count}} виклику адміністратора",
+        "decide": "Визначити результат",
+        "calls_few": "{{count}} виклики адміністратора",
+        "calls_many": "{{count}} викликів адміністратора"
+      },
+      "phase": {
+        "live": "Наживо · мапа {{map}}",
+        "finished": "Завершено",
+        "finishedScore": "Завершено · {{score}}",
+        "veto": "Вето мап",
+        "waitingTeams": "Чекає своїх команд",
+        "queued": "Чекає на сервер · №{{position}} у черзі",
+        "waiting": "Очікування"
+      },
+      "server": {
+        "freed": "Звільнено"
+      }
+    }
+  },
+  "matchDetailsModal": {
+    "tiebreakHint": "Рахунок рівний: мапу виграли {{team}}, вирішено за додатковим показником.",
+    "delete": {
+      "dialogTitle": "Видалити матч",
+      "confirmTitle": "Видалити цей матч?",
+      "confirmBody": "Видалити матч «{{slug}}»? Цю дію неможливо скасувати.",
+      "button": "Видалити матч",
+      "success": "Матч видалено",
+      "failed": "Не вдалося видалити матч"
+    },
+    "roster": {
+      "title": "Склад гравців",
+      "yourTeam": "Твоя команда",
+      "openPlayerPage": "Відкрити сторінку гравця",
+      "ready": "ГОТОВИЙ",
+      "connected": "ПІДКЛЮЧЕНИЙ",
+      "offline": "НЕ В МЕРЕЖІ",
+      "bot": "БОТ"
+    },
+    "decision": {
+      "body": "Усі мапи зіграно, але в серії нічия за мапами, раундами й шкодою. Вибери переможця, щоб сітка пішла далі.",
+      "setWinner": "Перемога {{team}}",
+      "confirmTitle": "Визначити переможця серії",
+      "confirmBody": "Завершити цю серію з перемогою {{team}}? Сітка піде далі, і тут це скасувати не можна.",
+      "confirm": "Визначити переможця",
+      "success": "Переможця визначено",
+      "failed": "Не вдалося визначити переможця"
+    },
+    "config": {
+      "loadFailed": "Не вдалося завантажити конфігурацію матчу",
+      "view": "Переглянути JSON конфігурації матчу",
+      "title": "JSON конфігурації матчу",
+      "loading": "Завантаження конфігурації матчу…",
+      "empty": "Для цього матчу немає конфігурації."
+    },
+    "tiebreak": {
+      "regulationOnly": "Овертайм у цьому матчі вимкнено (лише основний час), тож нічия вирішується за сумарною шкодою команди.",
+      "segmentsExhausted": "Для овертайму задано найбільшу кількість відрізків. Якщо рахунок усе ще рівний, переможця визначає сумарна шкода команди.",
+      "overtimeDisabled": "Овертайм у цьому матчі вимкнено, тож нічия вирішується за сумарною шкодою команди.",
+      "tiedByDamage": "Фінальний рахунок був рівним, тому за налаштуваннями матчу переможця визначено за сумарною шкодою команди."
+    },
+    "team1": "Команда 1",
+    "team2": "Команда 2",
+    "matchTime": "Час матчу:",
+    "server": "Сервер:",
+    "queuePosition": "Місце в черзі:",
+    "totalDamage": "Сумарна шкода: {{team1}} - {{team2}}",
+    "mapOfTotal": "Мапа {{index}} з {{total}}: {{map}}",
+    "mapIndex": "Мапа {{index}}: {{map}}",
+    "round": "Раунд {{round}}",
+    "shuffle": {
+      "averageElo": "ELO команди (сер.): {{team1}} проти {{team2}}",
+      "balancerHint": "Команди шафла формує балансувальник на основі OpenSkill: він розподіляє гравців з високим і низьким рейтингом між обома сторонами, щоб середні значення були близькими."
+    },
+    "playerLeaderboards": "Таблиці гравців",
+    "noPlayerData": "Даних про гравців немає",
+    "currentMap": "Поточна мапа",
+    "maps": "Мапи",
+    "mapsNotPicked": "Мапи ще не вибрано.",
+    "mapsViaVeto": "Буде визначено на вето",
+    "matchInformation": "Інформація про матч",
+    "created": "Створено:",
+    "started": "Почато:",
+    "completed": "Завершено:",
+    "adminControls": "Керування адміністратора",
+    "slug": "Slug матчу:",
+    "openChat": "Чат матчу"
+  },
+  "bulkShuffleMatchesModal": {
+    "title": "Масове створення матчів шафла",
+    "description": "Налаштуй матч шафла на одну мапу (мапа й ліміт раундів), а потім задай скільки завгодно матчів один на одного, вибравши точні склади гравців для кожної сторони. Матчі створюються в межах поточного турніру-шафла й отримають сервери, коли ти запустиш турнір.",
+    "mapSelect": {
+      "label": "Мапа",
+      "noMaps": "Для цього турніру не налаштовано мап",
+      "helper": "Усі матчі цієї партії використовуватимуть цю мапу."
+    },
+    "maxRounds": {
+      "label": "Макс. раундів на мапу",
+      "helperWithValue": "Матч триває до {{maxRounds}} раундів; перемагає той, хто першим виграє {{winRounds}}.",
+      "helperDefault": "Найбільша кількість раундів на мапу (за замовчуванням: 24, макс.: 30)."
+    },
+    "matchesSection": {
+      "title": "Матчі ({{count}})",
+      "addMatch": "Додати матч"
+    },
+    "players": {
+      "empty": "На цей турнір-шафл ще не зареєстровано гравців. Спочатку зареєструй гравців, потім можна створювати ручні матчі."
+    },
+    "matchRow": {
+      "title": "Матч {{index}}",
+      "teamCounts": "{{team1}}/{{teamSize}} • {{team2}}/{{teamSize}}",
+      "team1Label": "Гравці команди 1 ({{team1Count}}/{{teamSize}})",
+      "team2Label": "Гравці команди 2 ({{team2Count}}/{{teamSize}})",
+      "searchPlaceholder": "Шукай і вибирай гравців",
+      "mapOverrideLabel": "Мапа (необов’язкова заміна)",
+      "mapOverrideHelperOwn": "Цей матч використовує власну мапу.",
+      "mapOverrideHelperDefault": "Залиш порожнім, щоб використати стандартну мапу вище.",
+      "maxRoundsOverrideLabel": "Макс. раундів (необов’язкова заміна)",
+      "maxRoundsOverrideHelperOwn": "Замінює стандартний ліміт раундів для цього матчу (зараз {{value}}).",
+      "maxRoundsOverrideHelperDefault": "Залиш порожнім, щоб використати стандартний ліміт раундів вище."
+    },
+    "errors": {
+      "loadPlayers": "Не вдалося завантажити зареєстрованих гравців",
+      "noMatches": "Додай хоча б один матч.",
+      "bothTeamsRequired": "Матч {{index}}: в обох командах має бути хоча б один гравець.",
+      "conflictingPlayers": "Матч {{index}}: один гравець не може бути в обох командах. Конфліктні ID: {{ids}}",
+      "mapRequired": "Матч {{index}}: потрібна мапа (задай стандартну мапу вище або вибери мапу для цього матчу).",
+      "rowMaxRoundsRange": "Матч {{index}}: ліміт раундів для окремого матчу має бути від 1 до 30.",
+      "globalMaxRoundsRange": "Ліміт раундів має бути від 1 до 30.",
+      "createFailed": "Не вдалося створити ручні матчі шафла"
+    },
+    "success": {
+      "created": "Ручні матчі шафла створено. Сервери їм призначать, коли почнеться турнір."
+    },
+    "createMatchesButton": {
+      "default": "Створити матчі",
+      "creating": "Створення…"
+    }
+  },
+  "teamModal": {
+    "titleCreate": "Створити нову команду",
+    "titleEdit": "Змінити команду",
+    "teamNameLabel": "Назва команди",
+    "teamNamePlaceholder": "Astralis",
+    "teamNameHelper": "Назва команди може містити будь-яку мову чи спеціальні символи",
+    "teamTagLabel": "Тег команди",
+    "teamTagPlaceholder": "AST",
+    "teamTagHelper": "Створюється автоматично з назви команди (макс. 4 символи)",
+    "playersHeader": "Гравці ({{count}})",
+    "selectPlayers": "Вибрати гравців",
+    "noPlayersInfo": "Гравців ще не додано. Додай хоча б одного.",
+    "addPlayersHelper": "Додай нового гравця нижче або вибери з наявних",
+    "addPlayersHelper_steam": "Додавай гравців, вставляючи URL Steam, або вибирай із наявних",
+    "steamInputLabel": "Steam ID / власний URL",
+    "steamInputPlaceholder": "gaben або steamcommunity.com/id/gaben",
+    "resolveSteam": "Визначити Steam ID",
+    "resolving": "Визначення…",
+    "playerNameLabel": "Ім’я гравця",
+    "playerNamePlaceholder": "s1mple",
+    "eloLabel": "ELO (необов’язково)",
+    "eloPlaceholder": "1500",
+    "eloHelper": "За замовчуванням: 1500",
+    "errors": {
+      "steamLookupEmpty": "Введи Steam ID, власний URL або URL профілю",
+      "steamApiNotConfigured": "Steam API не налаштовано — введи Steam ID64 вручну",
+      "steamResolveFailed": "Не вдалося визначити Steam ID — введи Steam ID64 вручну",
+      "steamAndNameRequired": "Потрібні і Steam ID, і ім’я гравця",
+      "steamDuplicate": "Цей Steam ID уже є в команді",
+      "teamNameRequired": "Потрібна назва команди",
+      "playersRequired": "Потрібен хоча б один гравець",
+      "saveFailed": "Не вдалося зберегти команду",
+      "deleteFailed": "Не вдалося видалити команду",
+      "discordIdInvalid": "Discord ID має містити 17–20 цифр (числовий ID користувача, а не ім’я)",
+      "discordIdInvalidPlayers": "Неправильний Discord ID для: {{names}}. Він має містити 17–20 цифр або бути порожнім.",
+      "discordIdSaveFailed": "Команду збережено, але не вдалося зберегти Discord ID для: {{names}}. {{message}}",
+      "nameRequired": "Введи ім’я гравця",
+      "addPlayerFailed": "Не вдалося додати гравця"
+    },
+    "success": {
+      "playerAdded": "Гравця додано до команди",
+      "playerReplaced": "Гравця замінено",
+      "teamUpdated": "Команду оновлено",
+      "teamCreated": "Команду створено",
+      "teamDeleted": "Команду видалено"
+    },
+    "buttons": {
+      "deleteTeam": "Видалити команду",
+      "cancel": "Скасувати",
+      "saving": "Збереження…",
+      "saveChanges": "Зберегти зміни",
+      "createTeam": "Створити команду"
+    },
+    "confirmDelete": {
+      "title": "Видалити команду",
+      "message": "Видалити «{{name}}»? Цю дію неможливо скасувати."
+    },
+    "replacePlayerAria": "Замінити гравця {{name}}",
+    "replacePlayerTooltip": "Замінити цього гравця",
+    "accountLabel": "Акаунт {{account}} (необов’язково)",
+    "accountHelper": "Для {{games}}. Коли людина увійде через {{account}}, вона стане цим гравцем."
+  },
+  "playerModal": {
+    "titleCreate": "Створити гравця",
+    "titleEdit": "Змінити гравця",
+    "steamLabel": "Steam ID або URL профілю (необов’язково)",
+    "steamHelperEditing": "Steam ID змінити не можна",
+    "steamHelperNew": "Для {{games}}. Введи Steam ID64, власний URL або URL профілю; «Визначити» заповнить ім’я й аватар.",
+    "resolveSteam": "Визначити Steam ID",
+    "resolving": "Визначення…",
+    "playerNameLabel": "Ім’я гравця",
+    "playerNamePlaceholder": "Гравець",
+    "eloLabelNew": "Початковий ELO",
+    "eloLabelEdit": "ELO",
+    "eloHelperNew": "Залиш порожнім, щоб використати стандартне значення (1500 Skill Rating).",
+    "eloHelperEdit": "Зміна ELO скине рейтинг і статистику гравця. Цю дію неможливо скасувати.",
+    "isAdminLabel": "Адміністратор (керує цим сайтом; ігрові модулі можуть також давати адміністраторам права в грі)",
+    "currentElo": "Поточний ELO: {{value}}",
+    "startingElo": "Початковий ELO: {{value}}",
+    "matchesPlayed": "Зіграно матчів: {{count}}",
+    "errors": {
+      "steamRequired": "Потрібен Steam ID",
+      "nameRequired": "Потрібне ім’я гравця",
+      "steamLookupEmpty": "Введи Steam ID, власний URL або URL профілю",
+      "steamApiNotConfigured": "Steam API не налаштовано — введи Steam ID64 вручну",
+      "steamResolveFailed": "Не вдалося визначити Steam ID — введи Steam ID64 вручну",
+      "saveFailed": "Не вдалося зберегти гравця"
+    },
+    "success": {
+      "playerUpdated": "Гравця оновлено",
+      "playerCreated": "Гравця створено"
+    },
+    "buttons": {
+      "delete": "Видалити",
+      "cancel": "Скасувати",
+      "saving": "Збереження…",
+      "save": "Зберегти",
+      "create": "Створити"
+    },
+    "confirmDelete": {
+      "title": "Видалити гравця",
+      "message": "Видалити гравця «{{name}}»? Цю дію неможливо скасувати."
+    },
+    "confirmEloUpdate": {
+      "title": "Оновити ELO гравця",
+      "message": "Змінити ELO цього гравця з {{from}} на {{to}}? Це скине його статистику й історію рейтингу. Цю дію неможливо скасувати."
+    },
+    "discordIdHelper": "Необов’язково. 17–20 цифр. Дає організаторам змогу зв’язатися з гравцем у Discord. Публічно ніколи не показується.",
+    "accountLabel": "Акаунт {{account}} (необов’язково)",
+    "accountHelper": "Для {{games}}. ID акаунта; коли людина увійде через {{account}}, вона стане цим гравцем.",
+    "accountVerified": "Прив’язано: вхід через {{account}} виконано. Змінити це може лише сам гравець."
+  },
+  "teamImportModal": {
+    "title": "Імпорт команд із JSON",
+    "info": {
+      "title": "Встав нижче JSON з даними команд.",
+      "format": "Очікуваний формат: масив команд з name, tag (необов’язково) і players (name + steamId, а також необов’язковий discordId як рядок у лапках).",
+      "link": "Документація з прикладами"
+    },
+    "jsonLabel": "Дані JSON",
+    "errors": {
+      "mustBeArray": "JSON має бути масивом команд",
+      "emptyArray": "Масив не може бути порожнім",
+      "parseWithMessage": "Помилка розбору JSON: {{message}}",
+      "parseGeneric": "Неправильний формат JSON. Перевір синтаксис.",
+      "importFailed": "Не вдалося імпортувати команди",
+      "noJson": "Введи дані JSON"
+    },
+    "preview": {
+      "summary": "✓ Коректний JSON! Знайдено {{teams}}, усього {{players}}.",
+      "title": "Попередній перегляд:",
+      "missingDiscordTotal": "Гравців без Discord ID: {{count}}",
+      "missingDiscordChip": "Без Discord: {{count}}",
+      "playersChip_one": "{{count}} гравець",
+      "playersChip_other": "{{count}} гравця",
+      "teamsCount_one": "{{count}} команду",
+      "teamsCount_other": "{{count}} команди",
+      "playersChip_few": "{{count}} гравці",
+      "playersChip_many": "{{count}} гравців",
+      "teamsCount_few": "{{count}} команди",
+      "teamsCount_many": "{{count}} команд"
+    },
+    "actions": {
+      "preview": "Переглянути",
+      "importing": "Імпорт…",
+      "import_one": "Імпортувати {{count}} команду",
+      "import_other": "Імпортувати {{count}} команди",
+      "import_few": "Імпортувати {{count}} команди",
+      "import_many": "Імпортувати {{count}} команд"
+    },
+    "warnings": {
+      "title": "Деякі Discord ID проігноровано. Ці гравці будуть імпортовані без нього:",
+      "discordIdNumber": "Команда «{{team}}», гравець «{{player}}»: discordId має бути рядком у лапках. Великі числа в JSON втрачають точність, тому ID пропущено.",
+      "discordIdInvalid": "Команда «{{team}}», гравець «{{player}}»: «{{value}}» не є ID користувача Discord (очікується 17–20 цифр), тому його пропущено."
+    }
+  },
+  "playerImportModal": {
+    "title": "Імпорт гравців",
+    "info": {
+      "description": "Імпорт гравців у форматі JSON або CSV. Обов’язкові поля: steamId, name. Необов’язкові: initialELO (за замовчуванням 1500), avatarUrl.",
+      "link": "Документація з прикладами"
+    },
+    "placeholders": {
+      "jsonCsv": "Формат JSON:\n[\n  {\n    \"steamId\": \"76561198012345678\",\n    \"name\": \"Player One\",\n    \"initialELO\": 1500,\n    \"avatarUrl\": \"https://...\"\n  }\n]\n\nФормат CSV:\nsteamId,name,initialELO,avatarUrl\n76561198012345678,Player One,1500,https://..."
+    },
+    "actions": {
+      "parseValidate": "Розібрати й перевірити",
+      "importing": "Імпорт…",
+      "import_one": "Імпортувати {{count}} гравця",
+      "import_other": "Імпортувати {{count}} гравця",
+      "import_few": "Імпортувати {{count}} гравців",
+      "import_many": "Імпортувати {{count}} гравців"
+    },
+    "preview": {
+      "title": "Гравці для імпорту ({{count}}):",
+      "steamId": "Steam ID: {{steamId}}",
+      "name": "Ім’я: {{name}}",
+      "initialElo": "Початковий ELO: {{elo}}",
+      "avatar": "Аватар: {{url}}",
+      "readyChip_one": "{{count}} гравець готовий до імпорту",
+      "readyChip_other": "{{count}} гравця готові до імпорту",
+      "readyChip_few": "{{count}} гравці готові до імпорту",
+      "readyChip_many": "{{count}} гравців готові до імпорту"
+    },
+    "errors": {
+      "noData": "Введи дані JSON або CSV",
+      "noPlayers": "У даних не знайдено гравців",
+      "validationPrefix": "Помилки перевірки:",
+      "parseFailed": "Не вдалося розібрати дані: {{message}}",
+      "importFailed": "Не вдалося імпортувати гравців",
+      "parseFirst": "Спочатку розбери й перевір дані"
+    }
+  },
+  "playerSelectionModal": {
+    "title": "Вибрати гравців",
+    "selectedCount": "Вибрано: {{count}}",
+    "searchPlaceholder": "Пошук гравців за ім’ям…",
+    "searchPlaceholder_steam": "Пошук гравців за ім’ям або Steam ID…",
+    "selectAll": {
+      "select": "Вибрати всіх",
+      "deselect": "Зняти вибір"
+    },
+    "empty": {
+      "noSearchResults": "Гравців за твоїм запитом не знайдено",
+      "noPlayers": "Немає доступних гравців"
+    },
+    "playerCard": {
+      "alreadyInTeam": "Уже в команді"
+    },
+    "errors": {
+      "loadFailed": "Не вдалося завантажити гравців",
+      "noSelectable": "Немає гравців, яких можна вибрати"
+    },
+    "addPlayersButton_one": "Додати {{count}} гравця",
+    "addPlayersButton_other": "Додати {{count}} гравця",
+    "addPlayersButton_few": "Додати {{count}} гравців",
+    "addPlayersButton_many": "Додати {{count}} гравців"
+  },
+  "soundSettingsModal": {
+    "title": "Налаштування звуку",
+    "soundSelect": {
+      "label": "Звук сповіщення"
+    },
+    "volume": {
+      "label": "Гучність: {{percent}}%"
+    },
+    "testButton": "Перевірити звук",
+    "footer": "Звукові сповіщення лунають, коли твій матч готовий або стаються важливі події."
+  },
+  "addBackupPlayer": {
+    "title": "Додати гравця",
+    "loadFailed": "Не вдалося завантажити список гравців",
+    "added": "{{name}} додано до {{target}}",
+    "addFailed": "Не вдалося додати гравця",
+    "addToMatchFailed": "Не вдалося додати гравця до матчу",
+    "searchLabel": "Пошук гравця",
+    "searchPlaceholder": "Введи ім’я гравця…",
+    "available": "Доступних гравців (ще не в матчі): {{count}}",
+    "noneAvailable": "Немає доступних гравців",
+    "displayNameLabel": "Відображуване ім’я (необов’язково)",
+    "displayNamePlaceholder": "За замовчуванням поточне ім’я гравця",
+    "side": "Сторона",
+    "spectator": "Глядач",
+    "selected": "Вибрано:",
+    "fromTeam": "З команди: {{team}}",
+    "steamId": "Steam ID: {{id}}",
+    "adding": "Додавання гравця…",
+    "add": "Додати гравця до матчу",
+    "underlyingCommand": "Команда, що виконується:",
+    "important": "Важливо:",
+    "reconnectHint": "Після додавання гравець має перепідключитися до сервера. Якщо він уже підключений, може знадобитися зайти знову."
+  }
+}
