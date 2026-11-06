@@ -1,0 +1,12 @@
+{
+  "devAccountSwitcher": {
+    "tooltip": "Fiókváltás (dev)",
+    "adminTest": "Admin (teszt)",
+    "playerA": "A játékos (dev)",
+    "playerB": "B játékos (dev)",
+    "playerC": "C játékos (dev)",
+    "newPlayer": "Új játékos (első látogatás) (dev)",
+    "signOut": "Kijelentkezés",
+    "disabled": "A tesztbejelentkezés ki van kapcsolva ezen a szerveren"
+  }
+}

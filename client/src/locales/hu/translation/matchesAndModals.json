@@ -1,0 +1,490 @@
+{
+  "matchesPage": {
+    "errors": {
+      "loadMatches": "Nem sikerült betölteni a meccseket",
+      "loadTitle": "Hiba a meccsek betöltésekor",
+      "bulkDelete": "Egy vagy több meccset nem sikerült törölni"
+    },
+    "header": {
+      "createMatch": "Meccs létrehozása"
+    },
+    "bulkSelect": {
+      "select": "Kijelölés",
+      "done": "Kijelölés kész",
+      "selectAll": "Összes kijelölése",
+      "unselectAll": "Kijelölés megszüntetése",
+      "deleteSelected": "Kijelöltek törlése"
+    },
+    "empty": {
+      "title": "Nincs megjeleníthető meccs",
+      "description": "Hozz létre egy versenyt, és generáld le az ágrajzot, hogy itt lásd a meccseket",
+      "createManual": "Vagy hozz létre kézi meccset"
+    },
+    "sections": {
+      "live": "Élő meccsek ({{count}})",
+      "upcoming": "Közelgő meccsek ({{count}})",
+      "history": "Meccselőzmények ({{count}})",
+      "inQueue": "{{count}} sorban"
+    },
+    "manualMatchLabel": "Kézi meccs",
+    "create": {
+      "success": "Kézi meccs létrehozva: {{slug}}"
+    },
+    "bulkDelete": {
+      "title": "Kézi meccsek törlése",
+      "deleted_one": "{{count}} meccs törölve",
+      "deleted_other": "{{count}} meccs törölve",
+      "message_one": "Biztosan törölni szeretnél {{count}} kézi meccset? Ez a művelet nem vonható vissza.",
+      "message_other": "Biztosan törölni szeretnél {{count}} kézi meccset? Ez a művelet nem vonható vissza."
+    },
+    "card": {
+      "matchNumber": "#{{number}}. meccs",
+      "server": "Szerver: {{name}}",
+      "queuePosition": "Sorban elfoglalt hely: #{{position}}",
+      "shuffle": "Shuffle",
+      "shuffleManual": "Kézi shuffle",
+      "manual": "Kézi",
+      "simulation": "Szimuláció",
+      "winner": "GYŐZTES",
+      "mapN": "{{n}}. pálya"
+    },
+    "statusLabel": {
+      "walkover": "WALKOVER",
+      "waitingForTournament": "VÁRAKOZÁS A VERSENY KEZDETÉRE",
+      "waitingForServer": "VÁRAKOZÁS SZERVERRE",
+      "waitingForPairing": "VÁRAKOZÁS PÁROSÍTÁSRA",
+      "vetoPending": "VETO FÜGGŐBEN",
+      "mapVeto": "PÁLYAVETO",
+      "serverAllocated": "SZERVER KIOSZTVA",
+      "warmup": "BEMELEGÍTÉS",
+      "overtime": "HOSSZABBÍTÁS #{{n}}",
+      "live": "ÉLŐ",
+      "completed": "BEFEJEZVE",
+      "cancelled": "TÖRÖLVE",
+      "needsDecision": "ADMIN DÖNTÉS SZÜKSÉGES"
+    },
+    "statusGuide": {
+      "title": "Meccsállapotok útmutatója",
+      "pending": "A meccs ütemezve van, de még nincs szerverhez rendelve. Kiosztjuk, amint egy szerver elérhetővé válik.",
+      "loaded": "A meccs betöltődött a szerveren, és bemelegítés módban van. A játékosoknak csatlakozniuk kell, és késznek kell jelölniük magukat az indításhoz.",
+      "live": "A meccset a szerverén játsszák.",
+      "completed": "A meccs véget ért. A győztes megvan, és az ágrajz frissült.",
+      "proTipTitle": "Profi tipp:",
+      "proTip": "Ha egy meccsnél a „Várakozás a játékosokra (X/Y)” felirat látszik, a szerver kész, és a játékosoknak csatlakozniuk kell. Amint minden várt játékos csatlakozott és késznek jelölte magát, a meccs automatikusan elindul."
+    },
+    "latestEvent": "Legutóbbi: {{event}}",
+    "matchLabel": {
+      "upper": "FÁ F{{round}} M{{match}}",
+      "lower": "AÁ F{{round}} M{{match}}",
+      "grandFinal": "Nagydöntő",
+      "grandFinalReset": "Nagydöntő újrajátszása",
+      "group": "{{group}} csoport · {{round}}. forduló",
+      "playoffs": "Rájátszás · {{round}}. forduló"
+    },
+    "table": {
+      "filterLabel": "Mutasd",
+      "search": "Csapat vagy játékos keresése",
+      "tbd": "TBD",
+      "manage": "Meccs kezelése",
+      "empty": "Itt nincsenek meccsek.",
+      "filter": {
+        "attention_one": "Figyelmet igényel · {{count}}",
+        "attention_other": "Figyelmet igényel · {{count}}",
+        "live_one": "Élő · {{count}}",
+        "live_other": "Élő · {{count}}",
+        "veto_one": "Veto · {{count}}",
+        "veto_other": "Veto · {{count}}",
+        "waiting_one": "Várakozik · {{count}}",
+        "waiting_other": "Várakozik · {{count}}",
+        "finished_one": "Befejezett · {{count}}",
+        "finished_other": "Befejezett · {{count}}",
+        "all_one": "Mind · {{count}}",
+        "all_other": "Mind · {{count}}"
+      },
+      "columns": {
+        "match": "Meccs",
+        "teams": "Csapatok",
+        "phase": "Fázis",
+        "server": "Szerver",
+        "attention": "Figyelmet igényel",
+        "open": "Megnyitás"
+      },
+      "attention": {
+        "calls_one": "Adminhívás",
+        "calls_other": "{{count}} adminhívás",
+        "decide": "Eredmény eldöntése"
+      },
+      "phase": {
+        "live": "Élő · {{map}} pálya",
+        "finished": "Befejezve",
+        "finishedScore": "Befejezve · {{score}}",
+        "veto": "Pályaveto",
+        "waitingTeams": "Várakozás a csapataira",
+        "queued": "Várakozás szerverre · #{{position}} a sorban",
+        "waiting": "Várakozik"
+      },
+      "server": {
+        "freed": "Felszabadítva"
+      }
+    }
+  },
+  "matchDetailsModal": {
+    "tiebreakHint": "Döntetlen az állás: {{team}} nyerte a pályát, tiebreakkel eldöntve.",
+    "delete": {
+      "dialogTitle": "Meccs törlése",
+      "confirmTitle": "Törlöd ezt a meccset?",
+      "confirmBody": "Biztosan törölni szeretnéd a(z) „{{slug}}” meccset? Ez a művelet nem vonható vissza.",
+      "button": "Meccs törlése",
+      "success": "Meccs sikeresen törölve",
+      "failed": "Nem sikerült törölni a meccset"
+    },
+    "roster": {
+      "title": "Játékoskeret",
+      "yourTeam": "A csapatod",
+      "openPlayerPage": "Játékosoldal megnyitása",
+      "ready": "KÉSZ",
+      "connected": "CSATLAKOZVA",
+      "offline": "OFFLINE",
+      "bot": "BOT"
+    },
+    "decision": {
+      "body": "Minden pályát lejátszottak, de a sorozat pályákban, körökben és sebzésben is döntetlen. Válaszd ki a győztest az ágrajz továbbviteléhez.",
+      "setWinner": "{{team}} nyer",
+      "confirmTitle": "Sorozatgyőztes beállítása",
+      "confirmBody": "Befejezed ezt a sorozatot {{team}} győzelmével? Az ágrajz továbblép, és ezt itt nem lehet visszavonni.",
+      "confirm": "Győztes beállítása",
+      "success": "Győztes beállítva",
+      "failed": "Nem sikerült beállítani a győztest"
+    },
+    "config": {
+      "loadFailed": "Nem sikerült betölteni a meccskonfigurációt",
+      "view": "Meccskonfiguráció JSON megtekintése",
+      "title": "Meccskonfiguráció JSON",
+      "loading": "Meccskonfiguráció betöltése...",
+      "empty": "Ehhez a meccshez nincs elérhető konfiguráció."
+    },
+    "tiebreak": {
+      "regulationOnly": "Ennél a meccsnél a hosszabbítás ki van kapcsolva (csak rendes játékidő), ezért a döntetlent a csapatok teljes sebzése dönti el.",
+      "segmentsExhausted": "A hosszabbítás legfeljebb adott számú szakaszra van beállítva. Ha az állás ezután is döntetlen, a győztest a csapatok teljes sebzése dönti el.",
+      "overtimeDisabled": "Ennél a meccsnél a hosszabbítás ki van kapcsolva, ezért a döntetlent a csapatok teljes sebzése dönti el.",
+      "tiedByDamage": "A végeredmény döntetlen volt, ezért a meccs beállításai szerint a győztest a csapatok teljes sebzése alapján választottuk ki."
+    },
+    "team1": "1. csapat",
+    "team2": "2. csapat",
+    "matchTime": "Meccs ideje:",
+    "server": "Szerver:",
+    "queuePosition": "Sorban elfoglalt hely:",
+    "totalDamage": "Teljes sebzés: {{team1}} - {{team2}}",
+    "mapOfTotal": "Pálya {{index}}/{{total}}: {{map}}",
+    "mapIndex": "{{index}}. pálya: {{map}}",
+    "round": "{{round}}. kör",
+    "shuffle": {
+      "averageElo": "Csapat-ELO (átlag): {{team1}} vs {{team2}}",
+      "balancerHint": "A shuffle-csapatokat egy OpenSkill-alapú kiegyensúlyozó állítja össze, amely a magas és alacsony értékelésű játékosokat mindkét oldalra elosztja, hogy az átlagok közel maradjanak."
+    },
+    "playerLeaderboards": "Játékos-ranglisták",
+    "noPlayerData": "Nincs elérhető játékosadat",
+    "currentMap": "Aktuális pálya",
+    "maps": "Pályák",
+    "mapsNotPicked": "A pályák még nincsenek kiválasztva.",
+    "mapsViaVeto": "Vetóval dől el",
+    "matchInformation": "Meccsinformációk",
+    "created": "Létrehozva:",
+    "started": "Elkezdve:",
+    "completed": "Befejezve:",
+    "adminControls": "Admin vezérlők",
+    "slug": "Meccs slug:",
+    "openChat": "Meccscsevegés"
+  },
+  "bulkShuffleMatchesModal": {
+    "title": "Shuffle-meccsek tömeges létrehozása",
+    "description": "Állíts be egy egypályás shuffle-meccset (pálya + körkorlát), majd határozz meg annyi egymás elleni meccset, amennyit szeretnél, mindkét oldal pontos felállásának kiválasztásával. A meccsek az aktuális shuffle-verseny részeként jönnek létre, és a verseny indításakor kapnak szervert.",
+    "mapSelect": {
+      "label": "Pálya",
+      "noMaps": "Ehhez a versenyhez nincsenek beállítva pályák",
+      "helper": "Ebben a kötegben minden meccs ezt a pályát használja."
+    },
+    "maxRounds": {
+      "label": "Körök maximális száma pályánként",
+      "helperWithValue": "A meccs legfeljebb {{maxRounds}} körig tart; az nyer, aki elsőként eléri a {{winRounds}} kört.",
+      "helperDefault": "Körök maximális száma pályánként (alapértelmezett: 24, maximum: 30)."
+    },
+    "matchesSection": {
+      "title": "Meccsek ({{count}})",
+      "addMatch": "Meccs hozzáadása"
+    },
+    "players": {
+      "empty": "Ehhez a shuffle-versenyhez még nincsenek regisztrált játékosok. Előbb regisztrálj játékosokat, utána hozhatsz létre kézi meccseket."
+    },
+    "matchRow": {
+      "title": "{{index}}. meccs",
+      "teamCounts": "{{team1}}/{{teamSize}} • {{team2}}/{{teamSize}}",
+      "team1Label": "1. csapat játékosai ({{team1Count}}/{{teamSize}})",
+      "team2Label": "2. csapat játékosai ({{team2Count}}/{{teamSize}})",
+      "searchPlaceholder": "Játékosok keresése és kiválasztása",
+      "mapOverrideLabel": "Pálya (opcionális felülírás)",
+      "mapOverrideHelperOwn": "Ez a meccs saját pályát használ.",
+      "mapOverrideHelperDefault": "Hagyd üresen a fenti alapértelmezett pálya használatához.",
+      "maxRoundsOverrideLabel": "Maximális körszám (opcionális felülírás)",
+      "maxRoundsOverrideHelperOwn": "Felülírja ennek a meccsnek az alapértelmezett maximális körszámát (jelenleg {{value}}).",
+      "maxRoundsOverrideHelperDefault": "Hagyd üresen a fenti alapértelmezett maximális körszám használatához."
+    },
+    "errors": {
+      "loadPlayers": "Nem sikerült betölteni a regisztrált játékosokat",
+      "noMatches": "Adj hozzá legalább egy létrehozandó meccset.",
+      "bothTeamsRequired": "{{index}}. meccs: mindkét csapatban legalább egy játékosnak kell lennie.",
+      "conflictingPlayers": "{{index}}. meccs: ugyanaz a játékos nem lehet mindkét csapatban. Ütköző azonosító(k): {{ids}}",
+      "mapRequired": "{{index}}. meccs: a pálya kötelező (állíts be fent egy alapértelmezett pályát, vagy válassz pályát ehhez a meccshez).",
+      "rowMaxRoundsRange": "{{index}}. meccs: a maximális körszámnak 1 és 30 között kell lennie meccsenkénti felülírásnál.",
+      "globalMaxRoundsRange": "A maximális körszámnak 1 és 30 között kell lennie.",
+      "createFailed": "Nem sikerült létrehozni a kézi shuffle-meccseket"
+    },
+    "success": {
+      "created": "Kézi shuffle-meccsek létrehozva. A verseny indításakor kapnak szervert."
+    },
+    "createMatchesButton": {
+      "default": "Meccsek létrehozása",
+      "creating": "Létrehozás…"
+    }
+  },
+  "teamModal": {
+    "titleCreate": "Új csapat létrehozása",
+    "titleEdit": "Csapat szerkesztése",
+    "teamNameLabel": "Csapatnév",
+    "teamNamePlaceholder": "Astralis",
+    "teamNameHelper": "A csapatnév bármilyen nyelvű lehet, és tartalmazhat speciális karaktereket",
+    "teamTagLabel": "Csapatcímke",
+    "teamTagPlaceholder": "AST",
+    "teamTagHelper": "Automatikusan a csapatnévből (legfeljebb 4 karakter)",
+    "playersHeader": "Játékosok ({{count}})",
+    "selectPlayers": "Játékosok kiválasztása",
+    "noPlayersInfo": "Még nincsenek játékosok. Adj hozzá legalább egyet.",
+    "addPlayersHelper": "Adj hozzá lent egy új játékost, vagy válassz a meglévők közül",
+    "addPlayersHelper_steam": "Adj hozzá játékosokat Steam URL beillesztésével vagy a meglévők közül választva",
+    "steamInputLabel": "Steam ID / vanity URL",
+    "steamInputPlaceholder": "gaben vagy steamcommunity.com/id/gaben",
+    "resolveSteam": "Steam ID feloldása",
+    "resolving": "Feloldás...",
+    "playerNameLabel": "Játékosnév",
+    "playerNamePlaceholder": "s1mple",
+    "eloLabel": "ELO (nem kötelező)",
+    "eloPlaceholder": "1500",
+    "eloHelper": "Alapértelmezett: 1500",
+    "errors": {
+      "steamLookupEmpty": "Adj meg egy Steam ID-t, vanity URL-t vagy profil URL-t",
+      "steamApiNotConfigured": "A Steam API nincs beállítva – add meg kézzel a Steam ID64-et",
+      "steamResolveFailed": "Nem sikerült feloldani a Steam ID-t – add meg kézzel a Steam ID64-et",
+      "steamAndNameRequired": "A Steam ID és a játékosnév is kötelező",
+      "steamDuplicate": "Ez a Steam ID már a csapatban van",
+      "teamNameRequired": "A csapatnév kötelező",
+      "playersRequired": "Legalább egy játékos szükséges",
+      "saveFailed": "Nem sikerült menteni a csapatot",
+      "deleteFailed": "Nem sikerült törölni a csapatot",
+      "discordIdInvalid": "A Discord ID 17–20 számjegyből áll (a numerikus felhasználói azonosító, nem a felhasználónév)",
+      "discordIdInvalidPlayers": "Érvénytelen Discord ID: {{names}}. 17–20 számjegyből kell állnia, vagy maradjon üresen.",
+      "discordIdSaveFailed": "A csapat mentve, de a Discord ID-t nem sikerült menteni: {{names}}. {{message}}",
+      "nameRequired": "Add meg a játékos nevét",
+      "addPlayerFailed": "Nem sikerült hozzáadni a játékost"
+    },
+    "success": {
+      "playerAdded": "Játékos hozzáadva a csapathoz",
+      "playerReplaced": "Játékos lecserélve",
+      "teamUpdated": "Csapat sikeresen frissítve",
+      "teamCreated": "Csapat sikeresen létrehozva",
+      "teamDeleted": "Csapat sikeresen törölve"
+    },
+    "buttons": {
+      "deleteTeam": "Csapat törlése",
+      "cancel": "Mégse",
+      "saving": "Mentés...",
+      "saveChanges": "Változtatások mentése",
+      "createTeam": "Csapat létrehozása"
+    },
+    "confirmDelete": {
+      "title": "Csapat törlése",
+      "message": "Biztosan törölni szeretnéd ezt: „{{name}}”? Ez a művelet nem vonható vissza."
+    },
+    "replacePlayerAria": "{{name}} játékos cseréje",
+    "replacePlayerTooltip": "Játékos cseréje",
+    "accountLabel": "{{account}}-fiók (nem kötelező)",
+    "accountHelper": "A következőkhöz: {{games}}. Amikor {{account}}-fiókkal jelentkezik be, ő lesz ez a játékos."
+  },
+  "playerModal": {
+    "titleCreate": "Játékos létrehozása",
+    "titleEdit": "Játékos szerkesztése",
+    "steamLabel": "Steam ID vagy profil URL (nem kötelező)",
+    "steamHelperEditing": "A Steam ID nem módosítható",
+    "steamHelperNew": "A következőkhöz: {{games}}. Adj meg Steam ID64-et, vanity URL-t vagy profil URL-t; a „Feloldás” kitölti a nevet és az avatart.",
+    "resolveSteam": "Steam ID feloldása",
+    "resolving": "Feloldás...",
+    "playerNameLabel": "Játékosnév",
+    "playerNamePlaceholder": "Játékos",
+    "eloLabelNew": "Kezdő ELO",
+    "eloLabelEdit": "ELO",
+    "eloHelperNew": "Hagyd üresen az alapértelmezetthez (1500-as értékelés).",
+    "eloHelperEdit": "Az ELO módosítása visszaállítja a játékos értékelését és statisztikáit. Ez a művelet nem vonható vissza.",
+    "isAdminLabel": "Admin (kezeli ezt az oldalt; a játékmodulok játékon belüli jogokat is adhatnak az adminoknak)",
+    "currentElo": "Jelenlegi ELO: {{value}}",
+    "startingElo": "Kezdő ELO: {{value}}",
+    "matchesPlayed": "Lejátszott meccsek: {{count}}",
+    "errors": {
+      "steamRequired": "A Steam ID kötelező",
+      "nameRequired": "A játékosnév kötelező",
+      "steamLookupEmpty": "Adj meg egy Steam ID-t, vanity URL-t vagy profil URL-t",
+      "steamApiNotConfigured": "A Steam API nincs beállítva – add meg kézzel a Steam ID64-et",
+      "steamResolveFailed": "Nem sikerült feloldani a Steam ID-t – add meg kézzel a Steam ID64-et",
+      "saveFailed": "Nem sikerült menteni a játékost"
+    },
+    "success": {
+      "playerUpdated": "Játékos sikeresen frissítve",
+      "playerCreated": "Játékos sikeresen létrehozva"
+    },
+    "buttons": {
+      "delete": "Törlés",
+      "cancel": "Mégse",
+      "saving": "Mentés...",
+      "save": "Mentés",
+      "create": "Létrehozás"
+    },
+    "confirmDelete": {
+      "title": "Játékos törlése",
+      "message": "Biztosan törölni szeretnéd a(z) „{{name}}” játékost? Ez a művelet nem vonható vissza."
+    },
+    "confirmEloUpdate": {
+      "title": "Játékos ELO-jának frissítése",
+      "message": "Biztosan frissíteni szeretnéd a játékos ELO-ját {{from}}-ról {{to}}-ra? Ez visszaállítja a statisztikáit és az értékelési előzményeit. Ez a művelet nem vonható vissza."
+    },
+    "discordIdHelper": "Nem kötelező. 17–20 számjegy. Így a szervezők elérhetik ezt a játékost Discordon. Soha nem jelenik meg nyilvánosan.",
+    "accountLabel": "{{account}}-fiók (nem kötelező)",
+    "accountHelper": "A következőkhöz: {{games}}. A fiókazonosító; amikor {{account}}-fiókkal jelentkezik be, ő lesz ez a játékos.",
+    "accountVerified": "Összekapcsolva: {{account}}-fiókkal jelentkezett be. Ő maga módosítja."
+  },
+  "teamImportModal": {
+    "title": "Csapatok importálása JSON-ból",
+    "info": {
+      "title": "Illeszd be alább a csapatadatokat tartalmazó JSON-t.",
+      "format": "Várt formátum: csapatok tömbje névvel, címkével (nem kötelező) és játékosokkal (name + steamId, valamint opcionális discordId idézőjeles szövegként).",
+      "link": "Dokumentáció megtekintése példákkal"
+    },
+    "jsonLabel": "JSON-adatok",
+    "errors": {
+      "mustBeArray": "A JSON-nak csapatok tömbjének kell lennie",
+      "emptyArray": "A tömb nem lehet üres",
+      "parseWithMessage": "JSON-feldolgozási hiba: {{message}}",
+      "parseGeneric": "Érvénytelen JSON-formátum. Ellenőrizd a szintaxist.",
+      "importFailed": "Nem sikerült importálni a csapatokat",
+      "noJson": "Add meg a JSON-adatokat"
+    },
+    "preview": {
+      "summary": "✓ Érvényes JSON! {{teams}}, összesen {{players}}.",
+      "title": "Előnézet:",
+      "missingDiscordTotal": "Discord ID nélküli játékosok: {{count}}",
+      "missingDiscordChip": "Nincs Discord: {{count}}",
+      "playersChip_one": "{{count}} játékos",
+      "playersChip_other": "{{count}} játékos",
+      "teamsCount_one": "{{count}} csapat",
+      "teamsCount_other": "{{count}} csapat"
+    },
+    "actions": {
+      "preview": "Előnézet",
+      "importing": "Importálás...",
+      "import_one": "{{count}} csapat importálása",
+      "import_other": "{{count}} csapat importálása"
+    },
+    "warnings": {
+      "title": "Néhány Discord ID-t figyelmen kívül hagytunk. Ezek a játékosok Discord ID nélkül lesznek importálva:",
+      "discordIdNumber": "„{{team}}” csapat, „{{player}}” játékos: a discordId-nak idézőjeles szövegnek kell lennie. A nagy számok pontossága elvész a JSON-ban, ezért az ID-t elvetettük.",
+      "discordIdInvalid": "„{{team}}” csapat, „{{player}}” játékos: a(z) „{{value}}” nem Discord felhasználói azonosító (17–20 számjegy várt), ezért elvetettük."
+    }
+  },
+  "playerImportModal": {
+    "title": "Játékosok importálása",
+    "info": {
+      "description": "Játékosok importálása JSON vagy CSV formátumból. Kötelező mezők: steamId, name. Nem kötelező: initialELO (alapértelmezés 1500), avatarUrl.",
+      "link": "Dokumentáció megtekintése példákkal"
+    },
+    "placeholders": {
+      "jsonCsv": "JSON-formátum:\n[\n  {\n    \"steamId\": \"76561198012345678\",\n    \"name\": \"Első játékos\",\n    \"initialELO\": 1500,\n    \"avatarUrl\": \"https://...\"\n  }\n]\n\nCSV-formátum:\nsteamId,name,initialELO,avatarUrl\n76561198012345678,Első játékos,1500,https://..."
+    },
+    "actions": {
+      "parseValidate": "Feldolgozás és ellenőrzés",
+      "importing": "Importálás...",
+      "import_one": "{{count}} játékos importálása",
+      "import_other": "{{count}} játékos importálása"
+    },
+    "preview": {
+      "title": "Importálandó játékosok ({{count}}):",
+      "steamId": "Steam ID: {{steamId}}",
+      "name": "Név: {{name}}",
+      "initialElo": "Kezdő ELO: {{elo}}",
+      "avatar": "Avatar: {{url}}",
+      "readyChip_one": "{{count}} játékos importálásra kész",
+      "readyChip_other": "{{count}} játékos importálásra kész"
+    },
+    "errors": {
+      "noData": "Add meg a JSON- vagy CSV-adatokat",
+      "noPlayers": "Az adatokban nem található játékos",
+      "validationPrefix": "Ellenőrzési hibák:",
+      "parseFailed": "Nem sikerült feldolgozni az adatokat: {{message}}",
+      "importFailed": "Nem sikerült importálni a játékosokat",
+      "parseFirst": "Előbb dolgozd fel és ellenőrizd az adatokat"
+    }
+  },
+  "playerSelectionModal": {
+    "title": "Játékosok kiválasztása",
+    "selectedCount": "{{count}} kiválasztva",
+    "searchPlaceholder": "Játékosok keresése név szerint...",
+    "searchPlaceholder_steam": "Játékosok keresése név vagy Steam ID szerint...",
+    "selectAll": {
+      "select": "Összes kijelölése",
+      "deselect": "Kijelölés megszüntetése"
+    },
+    "empty": {
+      "noSearchResults": "Nincs a keresésnek megfelelő játékos",
+      "noPlayers": "Nincsenek elérhető játékosok"
+    },
+    "playerCard": {
+      "alreadyInTeam": "Már a csapatban van"
+    },
+    "errors": {
+      "loadFailed": "Nem sikerült betölteni a játékosokat",
+      "noSelectable": "Nincsenek kiválasztható játékosok"
+    },
+    "addPlayersButton_one": "{{count}} játékos hozzáadása",
+    "addPlayersButton_other": "{{count}} játékos hozzáadása"
+  },
+  "soundSettingsModal": {
+    "title": "Hangbeállítások",
+    "soundSelect": {
+      "label": "Értesítési hang"
+    },
+    "volume": {
+      "label": "Hangerő: {{percent}}%"
+    },
+    "testButton": "Hang tesztelése",
+    "footer": "Hangértesítés szól, amikor a meccsed kész, vagy fontos esemény történik."
+  },
+  "addBackupPlayer": {
+    "title": "Játékos hozzáadása",
+    "loadFailed": "Nem sikerült betölteni a játékoslistát",
+    "added": "{{name}} hozzáadva ide: {{target}}",
+    "addFailed": "Nem sikerült hozzáadni a játékost",
+    "addToMatchFailed": "Nem sikerült hozzáadni a játékost a meccshez",
+    "searchLabel": "Játékos keresése",
+    "searchPlaceholder": "Írd be a játékos nevét...",
+    "available": "{{count}} elérhető játékos (még nincs a meccsben)",
+    "noneAvailable": "Nincsenek elérhető játékosok",
+    "displayNameLabel": "Megjelenített név (nem kötelező)",
+    "displayNamePlaceholder": "Alapértelmezés szerint a játékos jelenlegi neve",
+    "side": "Oldal",
+    "spectator": "Néző",
+    "selected": "Kiválasztva:",
+    "fromTeam": "Csapatból: {{team}}",
+    "steamId": "Steam ID: {{id}}",
+    "adding": "Játékos hozzáadása...",
+    "add": "Játékos hozzáadása a meccshez",
+    "underlyingCommand": "Háttérparancs:",
+    "important": "Fontos:",
+    "reconnectHint": "A hozzáadás után a játékosnak újra kell csatlakoznia a szerverhez. Ha már csatlakozva van, lehet, hogy újra be kell lépnie."
+  }
+}

@@ -1,0 +1,141 @@
+{
+  "devToolsPage": {
+    "alert": "Ezek az eszközök csak fejlesztői módban érhetők el. Gyorsan generálhatsz velük tesztadatokat az alkalmazás teszteléséhez.",
+    "sections": {
+      "testData": {
+        "title": "Tesztadatok létrehozása"
+      }
+    },
+    "testTeams": {
+      "title": "Tesztcsapatok",
+      "description": "Csapatok létrehozása véletlenszerű játékosadatokkal az ágrajzok és meccsek teszteléséhez.",
+      "success": "{{count}} tesztcsapat sikeresen létrehozva!",
+      "errors": {
+        "create": "Nem sikerült létrehozni a tesztcsapatokat",
+        "partial": "{{created}} csapat létrehozva, de {{failed}} sikertelen. A részletekért nézd meg a konzolt."
+      },
+      "customLabel": "Egyéni csapatszám",
+      "buttons": {
+        "createFixed": "{{count}} csapat létrehozása",
+        "createCustom": "Csapatok létrehozása"
+      }
+    },
+    "testPlayers": {
+      "title": "Tesztjátékosok",
+      "description": "Játékosok létrehozása ELO-értékeléssel a shuffle-versenyek és a játékoskezelés teszteléséhez.",
+      "success": "{{created}} tesztjátékos létrehozva!",
+      "errors": {
+        "create": "Nem sikerült létrehozni a tesztjátékosokat",
+        "partial": "{{created}} játékos létrehozva, {{updated}} frissítve, de {{failed}} sikertelen. A részletekért nézd meg a konzolt."
+      },
+      "customLabel": "Egyéni játékosszám",
+      "buttons": {
+        "createFixed": "{{count}} játékos létrehozása",
+        "createCustom": "Játékosok létrehozása"
+      },
+      "successWithUpdated": "{{created}} tesztjátékos létrehozva és {{updated}} frissítve!"
+    },
+    "testServers": {
+      "title": "Tesztszerverek",
+      "description": "Tesztszerverek létrehozása a meccskezelés kipróbálásához.",
+      "success": "{{count}} tesztszerver sikeresen létrehozva!",
+      "errors": {
+        "create": "Nem sikerült létrehozni a tesztszervereket",
+        "partial": "{{created}} szerver létrehozva, de {{failed}} sikertelen. A részletekért nézd meg a konzolt."
+      },
+      "customLabel": "Egyéni szerverszám",
+      "buttons": {
+        "createCustom": "Szerverek létrehozása",
+        "createFixed_one": "{{count}} szerver létrehozása",
+        "createFixed_other": "{{count}} szerver létrehozása"
+      }
+    },
+    "dangerZone": {
+      "title": "Veszélyzóna"
+    },
+    "deleteTestData": {
+      "title": "Tesztadatok törlése",
+      "description": "Minden tesztadat törlése (a „test-” előtagú csapatok és szerverek). Ez a művelet nem vonható vissza.",
+      "button": "Minden tesztadat törlése",
+      "confirmPrompt": "Biztosan törölni szeretnéd az ÖSSZES tesztadatot?",
+      "success": "Minden tesztadat sikeresen törölve!",
+      "error": "Nem sikerült törölni a tesztadatokat"
+    },
+    "wipeTable": {
+      "title": "Adott táblák ürítése",
+      "description": "Minden adat törlése egy adott táblából. Hasznos takarításhoz anélkül, hogy mindent visszaállítanál. A táblák kategóriák szerint vannak rendezve.",
+      "confirmPrompt": "Biztosan üríteni szeretnéd a(z) {{table}} táblát? Ez a tábla összes adatát törli.",
+      "success": "A(z) {{table}} tábla sikeresen kiürítve!",
+      "error": "Nem sikerült üríteni a(z) {{table}} táblát",
+      "core": {
+        "title": "Alaptáblák",
+        "teams": "Csapatok ürítése",
+        "servers": "Szerverek ürítése",
+        "tournament": "Verseny ürítése",
+        "matches": "Meccsek ürítése"
+      },
+      "players": {
+        "title": "Játékosok és shuffle-versenyek",
+        "players": "Játékosok ürítése",
+        "ratingHistory": "Értékelési előzmények ürítése",
+        "matchStats": "Meccsstatisztikák ürítése",
+        "shufflePlayers": "Shuffle-játékosok ürítése"
+      },
+      "maps": {
+        "title": "Pályák és sablonok",
+        "maps": "Pályák ürítése",
+        "mapPools": "Pályakészletek ürítése",
+        "tournamentTemplates": "Versenysablonok ürítése",
+        "eloTemplates": "Értékelési sablonok ürítése"
+      },
+      "matchEvents": {
+        "title": "Meccsesemények és eredmények",
+        "events": "Meccsesemények ürítése",
+        "mapResults": "Pályaeredmények ürítése"
+      },
+      "settings": {
+        "title": "Beállítások",
+        "appSettings": "Alkalmazásbeállítások ürítése"
+      }
+    },
+    "simulation": {
+      "title": "Szimulációs állapot",
+      "description": "Minden meccs és korábbi statisztika törlése, hogy szimulációs módban tiszta ágrajzon kattinthass a „Verseny indítása” gombra, a szerverek, csapatok, pályák és a jelenlegi versenybeállítás megtartásával.",
+      "button": "Szimulációs állapot visszaállítása (beállítások megtartásával)",
+      "reset": {
+        "success": "Szimulációs állapot visszaállítva. A meccsek és statisztikák törölve; a szerverek, csapatok és a versenybeállítás megmaradt.",
+        "error": "Nem sikerült visszaállítani a szimulációs állapotot"
+      }
+    },
+    "wipeDatabase": {
+      "title": "Teljes adatbázis ürítése",
+      "warningTitle": "RENDKÍVÜL ROMBOLÓ!",
+      "warningBody": "Ez az ÖSSZES adatot törli.",
+      "permanentlyDeletes": "Véglegesen törli:",
+      "items": {
+        "tournaments": "Minden versenyt és ágrajzot",
+        "matches": "Minden meccset és eseményt",
+        "teams": "Minden csapatot és játékost",
+        "servers": "Minden szerverkonfigurációt"
+      },
+      "button": "Teljes adatbázis ürítése",
+      "successRedirect": "Az adatbázis sikeresen kiürítve! Átirányítás...",
+      "error": "Nem sikerült üríteni az adatbázist",
+      "dialog": {
+        "title": "Adatbázis ürítésének megerősítése",
+        "areYouSure": "Teljesen biztos vagy benne?",
+        "actionWill": "Ez a művelet",
+        "permanentlyDelete": "véglegesen törli",
+        "items": {
+          "tournaments": "Minden versenyadatot és ágrajzot",
+          "matches": "Minden meccselőzményt és eseményt",
+          "teams": "Minden csapatot és játékoskonfigurációt",
+          "servers": "Minden szerverkonfigurációt"
+        },
+        "cannotUndo": "Ez a művelet nem vonható vissza!",
+        "wiping": "Adatbázis ürítése...",
+        "yesWipe": "Igen, ürítsünk mindent"
+      }
+    }
+  }
+}

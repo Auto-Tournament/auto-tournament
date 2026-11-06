@@ -1,0 +1,82 @@
+{
+  "compatPage": {
+    "title": "Ready Up kompatibilitás",
+    "subtitle": "Működnek-e a Ready Up pluginok a legújabb Counter-Strike 2 frissítéssel – minden új CS2 buildnél automatikusan ellenőrizve.",
+    "live": "Élő",
+    "offline": "Újracsatlakozás…",
+    "loading": "Kompatibilitás betöltése",
+    "loadError": "Nem sikerült betölteni a kompatibilitást. Próbáld újra egy kicsit később.",
+    "disabledTitle": "Itt nem érhető el",
+    "disabledDescription": "Ez az oldal nem teszi közzé a Ready Up kompatibilitását.",
+    "emptyTitle": "Még nincs eredmény",
+    "emptyDescription": "Még egyetlen kompatibilitási ellenőrzés sem jelentkezett. Ez az oldal magától frissül, amint egy megérkezik.",
+    "checkedAgo": "Ellenőrizve: {{time}}",
+    "viewRun": "Futtatás megtekintése",
+    "factsLabel": "Mit ellenőriztünk",
+    "facts": {
+      "patch": "CS2-javítás",
+      "buildid": "Build ID",
+      "readyup": "Ready Up",
+      "stage": "Szakasz"
+    },
+    "overall": {
+      "pass": "Kompatibilis",
+      "warn": "Kompatibilis, figyelmeztetésekkel",
+      "fail": "Nem kompatibilis",
+      "checking": "Ellenőrzés…",
+      "no_verdict": "Nincs eredmény"
+    },
+    "overallHint": {
+      "pass": "Minden összetevő átment az ellenőrzéseken ezen a buildön.",
+      "warn": "A Ready Up működik ezen a buildön, de néhány ellenőrzést közelebbről meg kell nézni.",
+      "fail": "Legalább egy összetevő nem működik ezen a buildön. Egyelőre ne frissítsd a szervereket.",
+      "checking": "Ennek a buildnek az ellenőrzése éppen fut.",
+      "no_verdict": "Az utolsó ellenőrzés nem jutott eredményre."
+    },
+    "status": {
+      "pass": "Megfelelt",
+      "warn": "Figyelmeztetés",
+      "fail": "Hiba",
+      "pending": "Függőben",
+      "checking": "Ellenőrzés…"
+    },
+    "stage": {
+      "static": "Statikus elemzés",
+      "selftest": "Önteszt",
+      "live": "Élő szerver"
+    },
+    "state": {
+      "queued": "Sorban áll",
+      "checking": "Ellenőrzés",
+      "pass": "Megfelelt",
+      "warn": "Figyelmeztetések",
+      "fail": "Sikertelen",
+      "no_verdict": "Nincs eredmény"
+    },
+    "trigger": {
+      "build_change": "Új CS2 build",
+      "surface_change": "Megváltoztak a játékadatok",
+      "code_change": "Ready Up változás",
+      "nightly": "Éjszakai",
+      "release": "Ready Up kiadás",
+      "manual": "Kézi"
+    },
+    "kind": {
+      "signature": "Szignatúrák",
+      "rtti": "RTTI",
+      "vtable": "Virtuális táblák",
+      "hook_site": "Hook-helyek",
+      "layout": "Memóriaelrendezés",
+      "schema": "Séma",
+      "event": "Játékesemények",
+      "selftest": "Önteszt",
+      "livetest": "Élő teszt"
+    },
+    "componentsTitle": "Összetevők",
+    "checksSummary": "{{total}} ellenőrzésből {{passed}} megfelelt",
+    "noChecks": "Még nem jelentkezett ellenőrzés",
+    "failures": "Hibák",
+    "historyTitle": "Legutóbbi futtatások",
+    "historyItem": "CS2 {{patch}} · build {{buildid}}"
+  }
+}

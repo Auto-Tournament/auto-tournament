@@ -1,0 +1,1810 @@
+{
+  "tournament": {
+    "startConfirm": {
+      "intro": "Készen állsz a verseny indítására?",
+      "thisWill": "Ez a következőket teszi:",
+      "openMatches": "Megnyitja az első forduló meccseit",
+      "statusInProgress": "A verseny állapotát FOLYAMATBAN értékre állítja",
+      "confirm": "Igen, indítsuk a versenyt",
+      "started": "A verseny elindult! Az első forduló meccsei nyitva vannak."
+    },
+    "steps": {
+      "create": "Verseny létrehozása",
+      "review": "Áttekintés és megerősítés",
+      "live": "Élő verseny"
+    },
+    "welcome": {
+      "heading": "Verseny létrehozása",
+      "chooseMethod": "Válaszd ki, hogyan szeretnéd létrehozni a versenyt",
+      "createNewTitle": "Új verseny létrehozása",
+      "createNewDescription": "Kezdd elölről, és állíts be minden versenybeállítást kézzel"
+    },
+    "typeSelector": {
+      "categories": {
+        "professional": {
+          "label": "Profi sorozat"
+        },
+        "party": {
+          "label": "Parti és szórakozás"
+        }
+      },
+      "types": {
+        "single_elimination": {
+          "label": "Egyenes kiesés",
+          "description": "Egy vereség, és kiestél. A profi versenyeken használt klasszikus ágrajzformátum."
+        },
+        "double_elimination": {
+          "label": "Dupla kiesés",
+          "description": "Két vereség után esel ki. A csapatok második esélyt kapnak az alsó ágon."
+        },
+        "round_robin": {
+          "label": "Körmérkőzés",
+          "description": "Mindenki játszik mindenkivel. Tökéletes bajnokságszerű versenyekhez."
+        },
+        "swiss": {
+          "label": "Svájci rendszer",
+          "description": "Hasonló mérlegű csapatok játszanak egymással. Kiegyensúlyozott párosítások a verseny egész ideje alatt."
+        },
+        "shuffle": {
+          "label": "Shuffle-verseny",
+          "description": "A játékosokat minden fordulóban dinamikusan kiegyensúlyozott csapatokba keverjük. Egyéni játékosverseny ELO-alapú csapatkiegyenlítéssel."
+        },
+        "groups": {
+          "label": "Csoportkör, majd rájátszás",
+          "description": "Körmérkőzés csoportokban; minden csoport legjobbjai kieséses szakaszban játszanak."
+        }
+      },
+      "selectedChip": "Kiválasztva"
+    },
+    "review": {
+      "summary": {
+        "info": "Nézd át a versenybeállításokat, és kattints a(z) „{{button}}” gombra, ha készen állsz.",
+        "nameLabel": "Verseny neve",
+        "typeLabel": "Verseny típusa",
+        "formatLabel": "Meccsformátum",
+        "notSet": "Nincs beállítva",
+        "estimatedVolumeText": "Nagyjából {{matches}} {{rounds}} alatt (best of {{mapsPerMatch}}, összesen legfeljebb {{maps}})."
+      }
+    },
+    "formSteps": {
+      "steps": {
+        "name": "Név",
+        "type": "Típus",
+        "format": "Formátum",
+        "maps": "Pályák",
+        "teams": "Csapatok",
+        "review": "Áttekintés"
+      },
+      "backToWelcome": "Vissza a kezdéshez",
+      "back": "Vissza",
+      "next": "Tovább"
+    },
+    "emptyBracket": {
+      "title": "Nincs megjeleníthető ágrajz",
+      "description": "Hozz létre egy versenyt, és generáld le az ágrajzot a kezdéshez"
+    },
+    "common": {
+      "createTournament": "Verseny létrehozása"
+    },
+    "nameLabel": "Verseny neve",
+    "namePlaceholder": "Auto Tournament 2025 tavaszi verseny",
+    "champion": {
+      "title": "Bajnok"
+    },
+    "page": {
+      "title": "Verseny beállítása"
+    },
+    "labels": {
+      "teams": "Csapatok",
+      "maps": "Pályák",
+      "format": "Formátum",
+      "players": "Játékosok",
+      "matchRules": "Meccsszabályok",
+      "servers": "Szerverek",
+      "overtimeSettings": "Hosszabbítás beállításai",
+      "mapPool": "Pályakészlet"
+    },
+    "tooltips": {
+      "deleteTournament": "A verseny és minden adatának végleges törlése"
+    },
+    "counts": {
+      "teams_one": "{{count}} csapat",
+      "teams_other": "{{count}} csapat",
+      "matches_one": "{{count}} meccs",
+      "matches_other": "{{count}} meccs",
+      "rounds_one": "{{count}} forduló",
+      "rounds_other": "{{count}} forduló",
+      "maps_one": "{{count}} pálya",
+      "maps_other": "{{count}} pálya",
+      "servers_one": "{{count}} szerver",
+      "servers_other": "{{count}} szerver",
+      "availableServers_one": "{{count}} elérhető szerver",
+      "availableServers_other": "{{count}} elérhető szerver",
+      "concurrentMatches_one": "{{count}} párhuzamos meccs",
+      "concurrentMatches_other": "{{count}} párhuzamos meccs",
+      "enabledServers_one": "{{count}} engedélyezett szerver",
+      "enabledServers_other": "{{count}} engedélyezett szerver"
+    },
+    "matchRules": {
+      "value": "Pályánként legfeljebb {{maxRounds}} kör; az nyer, aki elsőként eléri a {{winRounds}} kört.",
+      "teamSizeValue": "Csapatméret: {{size}}v{{size}}",
+      "overtimeEnabled": "Hosszabbítás: bekapcsolva",
+      "overtimeDisabled": "Hosszabbítás: kikapcsolva (nincs hosszabbítás)",
+      "overtimeDisabledNoDraws": "Hosszabbítás: kikapcsolva (nincs döntetlen – sebzés dönt)",
+      "overtimeSegments_one": "Hosszabbítási szakaszok: {{count}} szakasz",
+      "overtimeSegments_other": "Hosszabbítási szakaszok: {{count}} szakasz",
+      "overtimeSegmentsDefault": "Hosszabbítási szakaszok: a játékszerver alapértelmezése",
+      "overtimeSegmentsDefaultUnlimited": "Hosszabbítási szakaszok: a játékszerver alapértelmezése (általában korlátlan)"
+    },
+    "toasts": {
+      "loadTemplateFailed": "Nem sikerült betölteni a sablont",
+      "nameRequired": "A verseny neve kötelező",
+      "nameUpdated": "Verseny neve frissítve",
+      "nameUpdateFailed": "Nem sikerült frissíteni a verseny nevét",
+      "selectAtLeastOneMap": "Válassz legalább 1 pályát",
+      "maxRoundsRange": "A maximális körszámnak 1 és 30 között kell lennie",
+      "teamSizeRange": "A csapatméretnek 2 és 10 játékos között kell lennie",
+      "invalidTeamCount": "Érvénytelen csapatszám",
+      "selectAtLeastTwoTeams": "Válassz legalább 2 csapatot",
+      "shuffleCreated": "A(z) „{{name}}” shuffle-verseny sikeresen létrejött! Következő lépés: regisztrálj legalább {{minPlayers}} játékost a verseny indításához ({{teamSize}}v{{teamSize}} meccsek).",
+      "shuffleCreateFailed": "Nem sikerült létrehozni a shuffle-versenyt",
+      "shuffleCreateFailedRetry": "Nem sikerült létrehozni a shuffle-versenyt. Ellenőrizd a beállításokat, és próbáld újra.",
+      "updated": "Verseny frissítve, ágrajz újragenerálva!",
+      "created": "Verseny létrehozva!",
+      "saveFailed": "Nem sikerült menteni a versenyt",
+      "deleted": "Verseny sikeresen törölve",
+      "deleteFailed": "Nem sikerült törölni a versenyt",
+      "regenerated": "Ágrajz sikeresen újragenerálva",
+      "regenerateFailed": "Nem sikerült újragenerálni az ágrajzot",
+      "resetDone": "A verseny visszaállítva beállítási módba",
+      "resetFailed": "Nem sikerült visszaállítani a versenyt",
+      "started_one": "A verseny elindult! {{count}} meccs kapott szervert.",
+      "started_other": "A verseny elindult! {{count}} meccs kapott szervert.",
+      "startRequested": "A verseny indítása kérve. A szervereket hamarosan kiosztjuk.",
+      "startFailed": "Nem sikerült elindítani a versenyt",
+      "templateSaved": "Sablon sikeresen mentve!",
+      "disableServersFailed": "Nem sikerült letiltani egy vagy több szervert: {{message}}",
+      "noChangesToSave": "Nincs mentendő változás",
+      "invalidMapSelection": "Érvénytelen pályaválasztás",
+      "archived": "Verseny archiválva. Hozd létre a következőt.",
+      "archiveFailed": "Nem sikerült archiválni a versenyt"
+    },
+    "outdatedServers": {
+      "title": "A szerverek frissítésre szorulnak",
+      "body": "Egy vagy több engedélyezett szerver a Steam szerint elavult (vagy nem volt ellenőrizhető). Frissítsd őket, vagy tiltsd le őket, hogy a maradék flottával folytasd.",
+      "confirm": "Érintett szerverek letiltása és újrapróbálás",
+      "disabling": "Letiltás...",
+      "goToServers": "Ugrás a Szerverekhez"
+    },
+    "live": {
+      "saveNameAria": "Verseny nevének mentése",
+      "cancelRenameAria": "Átnevezés megszakítása",
+      "editNameAria": "Verseny nevének szerkesztése",
+      "renameTooltip": "Verseny átnevezése",
+      "alert": {
+        "liveTitle": "A verseny élőben van",
+        "liveBody": "Jelenleg meccsek futnak a szervereken. Élő verseny alatt nem szerkesztheted a beállításokat (a verseny nevén kívül).",
+        "pendingTitle": "A verseny folyamatban",
+        "pendingBody": "A meccsek akkor indulnak, amikor a szerverek ki vannak osztva és a vetók lezajlottak. A verseny futása alatt nem szerkesztheted a beállításokat (a verseny nevén kívül).",
+        "completedTitle": "A verseny befejeződött",
+        "completedBody": "Ennek a versenynek minden meccse véget ért. Hozz létre új versenyt, vagy állítsd vissza ezt az újrakezdéshez."
+      },
+      "teamsCompeting_one": "{{count}} csapat versenyez",
+      "teamsCompeting_other": "{{count}} csapat versenyez",
+      "playersCompeting_one": "{{count}} játékos versenyez",
+      "playersCompeting_other": "{{count}} játékos versenyez",
+      "playersCompetingUnknown": "Versenyző játékosok",
+      "shuffleSettingsLabel": "Shuffle-beállítások",
+      "maxRoundsPerMapValue": "Körök maximális száma pályánként: {{rounds}}",
+      "eloTemplateValue": "ELO-sablon: {{template}}",
+      "mapSequenceLabel": "Pályasorrend (fordulók)",
+      "noMapsConfigured": "Még nincsenek beállított pályák.",
+      "viewBracket": "Ágrajz megtekintése",
+      "viewBracketTooltip": "A verseny ágrajzának és a meccsek részleteinek megtekintése",
+      "leaderboardTooltip": "A nyilvános ranglista oldalának megnyitása a játékosokkal való megosztáshoz",
+      "restartTooltip": "Az összes aktív meccs befejezése a szervereken és újratöltése (elakadt meccsekhez hasznos)",
+      "resetTooltip": "Az összes meccs befejezése és a verseny visszaállítása beállítási módba (a versenybeállítások megmaradnak, de minden meccsadat törlődik)",
+      "reset": "Visszaállítás beállításra",
+      "dangerZone": "Veszélyzóna",
+      "newTournament": "Új verseny"
+    },
+    "reviewCard": {
+      "needPlayersWarning": "Legalább {{minPlayers}} játékos kell a verseny indításához ({{teamSize}}v{{teamSize}} meccsek). Jelenleg regisztrálva: {{registered}}",
+      "start": "Verseny indítása",
+      "starting": "Indítás...",
+      "startSimulation": "Szimuláció indítása",
+      "startingSimulation": "Szimuláció indítása...",
+      "bulkCreateMatches": "Meccsek tömeges létrehozása",
+      "edit": "Szerkesztés",
+      "regenerate": "Újragenerálás",
+      "regenerateTooltip": "Az összes jelenlegi meccs törlése és az ágrajz újragenerálása ugyanazokkal a beállításokkal.",
+      "regenerateDisabledTooltip": "Az újrageneráláshoz előbb legalább egyszer generáld le az ágrajzot (Mentés és ágrajz generálása)."
+    },
+    "dialogs": {
+      "items": {
+        "endMatches": "Az összes aktív meccs befejezése a szervereken",
+        "deleteMatches": "Az összes meccs és ágrajz törlése",
+        "deleteData": "Az összes meccsadat és statisztika törlése"
+      },
+      "delete": {
+        "title": "🗑️ Verseny törlése",
+        "question": "Biztosan VÉGLEGESEN TÖRÖLNI szeretnéd ezt: <b>„{{name}}”</b>?",
+        "willTitle": "⚠️ Ez a következőket teszi:",
+        "items": {
+          "removeTournament": "Teljesen eltávolítja a versenyt",
+          "cannotBeUndone": "Nem vonható vissza"
+        },
+        "note": "💡 Megjegyzés: ha csak ugyanazokkal a beállításokkal szeretnéd újrakezdeni, használd inkább a „Visszaállítás beállításra” lehetőséget.",
+        "confirm": "Végleges törlés"
+      },
+      "regenerate": {
+        "title": "🔄 Ágrajz újragenerálása",
+        "liveWarning": "⚠️ FIGYELEM: a verseny állapota {{status}}!",
+        "liveBody": "Az ágrajz újragenerálása <b>MINDEN meglévő meccsadatot TÖRÖL</b>, beleértve az eredményeket, a statisztikákat és az eseményelőzményeket.",
+        "cannotBeUndone": "Ez a művelet nem vonható vissza.",
+        "areYouSure": "Teljesen biztos vagy benne, hogy folytatod?",
+        "setupBody": "Ez törli az összes meglévő meccset, és ugyanazokkal a beállításokkal újragenerálja az ágrajzot.",
+        "continue": "Folytatod?",
+        "confirmDestructive": "IGEN, TÖRÖLJÜNK MINDENT",
+        "confirm": "Újragenerálás"
+      },
+      "reset": {
+        "title": "🔄 Visszaállítás beállításra",
+        "question": "Visszaállítod a(z) <b>„{{name}}”</b> versenyt BEÁLLÍTÁSI módba?",
+        "willTitle": "Ez a következőket teszi:",
+        "items": {
+          "clearStatus": "Törli a verseny állapotát (vissza beállításra)",
+          "keepSettings": "<b>Megtartja</b> a versenybeállításokat (név, csapatok, formátum)",
+          "allowEdit": "Lehetővé teszi a beállítások újbóli szerkesztését",
+          "regenerateMatches": "Törli az összes meccseredményt, és az ágrajzot az alapoktól újragenerálja"
+        },
+        "regenerated": "Az új ágrajz azonnal létrejön, így a függő meccsek rögtön újra megjelennek.",
+        "note": "💡 Megjegyzés: a verseny teljes eltávolításához használd inkább a „Törlés” lehetőséget.",
+        "confirm": "Visszaállítás beállításra"
+      },
+      "start": {
+        "titleNoServers": "⚠️ Nincs elérhető szerver",
+        "titleInsufficient": "⚠️ Nincs elég szerver",
+        "titleUncertain": "⚠️ Indítod a versenyt szerverek nélkül?",
+        "noServersHeading": "Jelenleg nincs elérhető szerver",
+        "noServersBody": "A verseny elindul, de a meccsek elhalasztódnak, amíg egy szerver elérhetővé nem válik. A rendszer automatikusan kiosztja a meccseket, amikor a szerverek készen állnak.",
+        "insufficientHeading": "Nincs elég szerver ahhoz, hogy az első forduló összes meccse egyszerre fusson",
+        "insufficientBody": "Jelenleg <b>{{available}}</b> van, de az első forduló <b>{{required}}</b> számít. Néhány meccs sorba áll, és később indul, ahogy a szerverek felszabadulnak.",
+        "uncertainHeading": "A szerverek elérhetősége bizonytalan",
+        "uncertainBody": "Előfordulhat, hogy a verseny kevés vagy nulla elérhető szerverrel indul. A meccsek elhalasztódnak, amíg szerverek nem válnak elérhetővé, és automatikusan kiosztjuk őket, amikor készen állnak.",
+        "question": "Mégis elindítod a versenyt?",
+        "confirm": "Igen, indítsuk mégis",
+        "cancel": "Szerverek ellenőrzése"
+      }
+    },
+    "formActions": {
+      "saveAndGenerate": "Mentés és ágrajz generálása",
+      "saveAsTemplate": "Mentés sablonként",
+      "saveTemplateTooltip": "A jelenlegi versenykonfiguráció mentése sablonként"
+    },
+    "wizard": {
+      "validation": {
+        "selectType": "Válassz verseny típust",
+        "selectFormat": "Válassz meccsformátumot"
+      },
+      "shuffleInfo": "A shuffle-versenyek nem használnak állandó csapatokat. A játékosokat minden meccsre automatikusan, értékelésük alapján osztjuk kiegyensúlyozott csapatokba.",
+      "shuffleRounds": "Ennek a shuffle-versenynek nagyjából {{rounds}} lesz (kiválasztott pályánként egy).",
+      "volumeAlert": "{{teams}} részvételével egy {{type}} {{format}} versenyen ez az ágrajz nagyjából {{matches}}, {{rounds}} alatt (összesen legfeljebb {{maps}}).",
+      "maxRoundsLabel": "Körök maximális száma pályánként",
+      "maxRoundsHelper": "Minden pálya legfeljebb {{maxRounds}} körig tart; az nyer, aki elsőként eléri a {{winRounds}} kört.",
+      "maxRoundsHelperEmpty": "Körök maximális száma pályánként (alapértelmezett: 24, maximum: 30).",
+      "serversSummary": "{{servers}} beállítva; az első fordulóban {{matches}} van.",
+      "estimatedVolumeLabel": "Becsült mennyiség",
+      "mapsHeading": "Pályák ({{total}})",
+      "noMapsSelected": "Nincs kiválasztott pálya",
+      "matchConfiguration": "Meccskonfiguráció",
+      "roundLimitValue_one": "Körkorlát: legfeljebb {{count}} kör",
+      "roundLimitValue_other": "Körkorlát: legfeljebb {{count}} kör",
+      "teamsHeading": "Csapatok ({{total}})",
+      "noTeamsSelected": "Nincs kiválasztott csapat (nem kötelező)",
+      "playerRegistration": "Játékosregisztráció",
+      "playerRegistrationInfo_one": "A játékosokat a verseny létrehozása után regisztráljuk. Minden kiválasztott pálya egy meccsfordulót jelent (összesen {{count}} forduló).",
+      "playerRegistrationInfo_other": "A játékosokat a verseny létrehozása után regisztráljuk. Minden kiválasztott pálya egy meccsfordulót jelent (összesen {{count}} forduló).",
+      "serversSummaryQueued": "{{servers}} beállítva; az első fordulóban {{matches}} van. A szerverek számán felüli meccsek sorban várnak, amíg egy szerver felszabadul."
+    },
+    "overtime": {
+      "selectLabel": "Hosszabbítás",
+      "options": {
+        "enabled": "Bekapcsolva (normál hosszabbítás)",
+        "disabledDraws": "Kikapcsolva – döntetlen megengedett",
+        "disabledNoDraws": "Kikapcsolva – nincs döntetlen (sebzés dönt)"
+      },
+      "modeHelper": "A normál hosszabbítás további szakaszokat játszat, amíg egy csapat előnybe nem kerül. A „döntetlen megengedett” döntetlennel zárja a döntetlen pályát, a „nincs döntetlen” pedig a csapatok teljes sebzése alapján dönt.",
+      "tooltip": "A hosszabbítás viselkedésének és a maximális körszámnál kialakult döntetlenek kezelésének beállítása. Ezek a beállítások overtimeMode/overtimeSegments néven jutnak el a játékszerverekhez, és ugyanazt jelentik, mint a shuffle-versenyeknél és a kézi meccseknél.",
+      "shuffleTooltip": "A shuffle-meccsek hosszabbításának és a maximális körszámnál kialakult döntetlenek eldöntésének beállítása. Ha a hosszabbítás ki van kapcsolva, a döntetlen meccsek a választott beállítástól függően döntetlenek maradhatnak, vagy a csapatok teljes sebzése dönt.",
+      "segmentsLabel": "Hosszabbítási szakaszok (nem kötelező)",
+      "segmentsHelper": "Nem kötelező: a hosszabbítási szakaszok számának korlátozása. Hagyd üresen a játékszerver alapértelmezéséhez.",
+      "segmentsHelperValue_one": "A hosszabbítás korlátozása {{count}} szakaszra. A hosszabbítás utáni döntetlent a csapatok teljes sebzése dönti el.",
+      "segmentsHelperValue_other": "A hosszabbítás korlátozása {{count}} szakaszra. A hosszabbítás utáni döntetlent a csapatok teljes sebzése dönti el."
+    },
+    "grandFinal": {
+      "sectionTitle": "Nagydöntő módja (dupla kiesés)",
+      "label": "Nagydöntő",
+      "options": {
+        "simple": "Egyszerű – egyetlen nagydöntő a felső és az alsó ág győztese között",
+        "none": "Nincs – a felső ág döntője dönti el a versenyt (nincs nagydöntő)",
+        "double": "Dupla – ágrajz-visszaállításos (jelenleg az Egyszerűhöz hasonlóan működik; a teljes visszaállítás támogatása tervben van)"
+      },
+      "helper": "Meghatározza, hogyan találkoznak a felső és az alsó ág bajnokai a verseny végén."
+    },
+    "mapPool": {
+      "shuffleTitle": "Pályaválasztás shuffle-versenyekhez",
+      "shuffleBody": "Minden kiválasztott pályát sorban lejátszanak. Minden pálya egy meccsfordulót jelent. A választott pályák száma határozza meg a lejátszott fordulók számát.",
+      "shuffleSelected": "{{maps}} választottál ki, így {{rounds}} kerül lejátszásra.",
+      "chooseLabel": "Válassz pályakészletet",
+      "custom": "Egyéni",
+      "selectedMaps": "Kiválasztott pályák ({{total}}):",
+      "chooseMapsPlaceholder": "Válassz pályákat...",
+      "saveMapPool": "Pályakészlet mentése",
+      "types": {
+        "defusal": "Defusal",
+        "hostage": "Hostage",
+        "armsRace": "Arms Race",
+        "unknown": "Ismeretlen"
+      }
+    },
+    "formatStep": {
+      "shuffleInfo": "A shuffle-versenyek Best of 1 formátumot használnak. Minden meccs egyetlen pálya."
+    },
+    "shuffleConfig": {
+      "overline": "Shuffle-verseny konfigurációja",
+      "subtitle": "Meccsszabályok és beállítások",
+      "teamSizeLabel": "Csapatméret",
+      "teamSizeTooltip": "Játékosok száma csapatonként. Gyakori lehetőségek: 4v4, 5v5, 6v6. Csapatonként legalább 2, legfeljebb 10 játékos.",
+      "teamSizeHelper": "Játékosok száma csapatonként (alapértelmezett: 5 az 5v5-höz, tartomány: 2–10)",
+      "maxRoundsLabel": "Maximális körszám",
+      "maxRoundsTooltip": "Körök maximális száma meccsenként. Ez az érték mp_maxrounds néven jut el a CS2-szerverekhez. Példa: 6 = MR6, 24 = MR24.",
+      "maxRoundsHelper": "A meccs legfeljebb {{maxRounds}} körig tart; az nyer, aki elsőként eléri a {{winRounds}} kört",
+      "maxRoundsHelperEmpty": "Körök maximális száma meccsenként (alapértelmezett: 24, maximum: 30)",
+      "eloTemplateLabel": "Értékelési sablon",
+      "eloTemplateTooltip": "Válaszd ki, hogyan számolódjon az ELO ebben a versenyben. Alapértelmezés szerint a „Pure Win/Loss” sablon csak a meccs eredményét (győzelem/vereség) használja; a statisztikákat rögzítjük, de nem változtatják az ELO-t. A többi sablon opcionális, és statisztikaalapú módosításokat ad az OpenSkill győzelem/vereség változása fölé, ha Excel-szerű működést szeretnél.",
+      "eloDefaultSuffix": "(Alapértelmezett)",
+      "eloTemplateHelper": "Pure Win/Loss (alapértelmezett): csak a meccs eredménye befolyásolja az ELO-t. A játékosstatisztikákat továbbra is rögzítjük a ranglistákhoz és az exportokhoz, de nem változtatják az értékelést, hacsak nem választasz egyéni sablont."
+    },
+    "shuffleStats": {
+      "serverShortageWarning": "{{needed}} szerverből {{available}} van. A meccsek hullámokban futnak, így a fordulók tovább tartanak."
+    },
+    "changePreview": {
+      "title": "Versenymódosítások áttekintése",
+      "liveHeading": "A verseny ÉLŐBEN van!",
+      "liveBody": "A verseny típusának, formátumának vagy csapatszámának módosítása az ágrajz újragenerálását teheti szükségessé. Fontold meg a „Verseny visszaállítása” használatát a tiszta kezdéshez.",
+      "noChangesDetected": "Nincs észlelt változás",
+      "intro": "A következő változások lépnek érvénybe:",
+      "before": "ELŐTTE",
+      "after": "UTÁNA",
+      "apply": "Változások alkalmazása",
+      "applyRisky": "Változások alkalmazása (kockázatos!)",
+      "noChangesToApply": "Nincs alkalmazandó változás",
+      "none": "Nincs",
+      "itemCount_one": "{{count}} elem",
+      "itemCount_other": "{{count}} elem"
+    },
+    "teamSelection": {
+      "chooseTeamsPlaceholder": "Válassz csapatokat…",
+      "addAll": "Összes hozzáadása",
+      "batchAddServers": "Tömeges hozzáadás",
+      "addServer": "Szerver hozzáadása",
+      "importTeams": "Csapatok importálása",
+      "createTeam": "Csapat létrehozása",
+      "notEnoughServers": "Az első fordulóban {{matches}} van, de neked {{servers}} van. A szerverek számán felüli meccsek sorban várnak, amíg egy szerver felszabadul – adj hozzá több szervert, hogy mind egyszerre fusson.",
+      "notEnoughTeams": "Verseny létrehozásához legalább 2 csapat kell. Jelenleg {{teams}} van."
+    },
+    "teamValidation": {
+      "invalidType": "Érvénytelen verseny típus",
+      "powerOfTwo": "A(z) {{type}} kettő hatványának megfelelő csapatszámot igényel ({{counts}}). Te ennyit választottál: {{selected}}.",
+      "minTeams": "A(z) {{type}} legalább {{min}} csapatot igényel. Te ennyit választottál: {{selected}}.",
+      "maxTeams": "A(z) {{type}} legfeljebb {{max}} csapatot enged. Te ennyit választottál: {{selected}}."
+    },
+    "eventPage": {
+      "title": "Eseményoldal",
+      "subtitle": "A nyilvános Áttekintés oldalon jelenik meg a játékosoknak és a látogatóknak.",
+      "descriptionLabel": "Leírás",
+      "locationLabel": "Helyszín",
+      "locationPlaceholder": "pl. helyszínen, Budapest",
+      "rulebookUrlLabel": "A teljes szabálykönyv URL-je",
+      "rulebookUrlHelper": "https linknek kell lennie, vagy hagyd üresen.",
+      "rulesLabel": "Szabályok a játékosoknak",
+      "ruleFieldLabel": "{{n}}. szabály",
+      "addRule": "Szabály hozzáadása",
+      "prizesLabel": "Díjak",
+      "placeLabel": "Helyezés",
+      "prizeLabel": "Díj",
+      "addPrize": "Díj hozzáadása",
+      "scheduleLabel": "Menetrend",
+      "whenLabel": "Mikor",
+      "scheduleLabelLabel": "Címke",
+      "addScheduleItem": "Menetrendelem hozzáadása",
+      "remove": "Eltávolítás",
+      "moveUp": "Fel",
+      "moveDown": "Le",
+      "save": "Eseményoldal mentése",
+      "saveSuccess": "Eseményoldal mentve.",
+      "saveError": "Nem sikerült menteni az eseményoldalt: {{message}}",
+      "organizerLabel": "Szervező",
+      "organizerPlaceholder": "pl. Edition 35 LAN",
+      "bannerLabel": "Borítókép",
+      "bannerUpload": "Borítókép feltöltése",
+      "bannerReplace": "Csere",
+      "bannerRemove": "Eltávolítás",
+      "bannerHelp": "Széles kép a versenyoldal tetején. PNG, JPEG vagy WEBP, legfeljebb 2 MB; az 1920 × 600 jól működik.",
+      "bannerWrongType": "A borítóképnek PNG, JPEG vagy WEBP képnek kell lennie.",
+      "bannerTooLarge": "A borítókép legfeljebb 2 MB lehet.",
+      "signupHeading": "Nevezés és check-in",
+      "signupOpen": "A csapatok maguk nevezhetnek",
+      "signupClosesAt": "A nevezés lezárul",
+      "maxTeams": "Csapathelyek",
+      "checkInOpensAt": "A check-in megnyílik",
+      "checkInClosesAt": "A check-in lezárul",
+      "signupHelp": "A csapat tulajdonosa vagy kapitánya nevez egy felállással. A felállás játékosai a verseny napján végzik el a check-int.",
+      "startLabel": "Kezdési időpont",
+      "startsAtLabel": "Kezdés",
+      "startsAtHelp": "Helyi idő szerint. Az oldal visszaszámol eddig.",
+      "autoStartLabel": "A verseny automatikus indítása ebben az időpontban",
+      "remindersLabel": "Emlékeztető a játékosoknak a kezdés előtt",
+      "reminderMinutes_one": "{{count}} perccel előtte",
+      "reminderMinutes_other": "{{count}} perccel előtte",
+      "bannerMapLabel": "Nincs borítókép? Használd egy pálya képét",
+      "bannerMapNone": "Válassz helyettem",
+      "rulesHelp": "A versenyoldal Szabályok lapján jelenik meg, a platform által a beállításaidból írt szabályok alatt.",
+      "fromTemplate": "Innen: {{name}}",
+      "clearAll": "Összes törlése",
+      "rulebookFromTemplate": "A(z) {{name}} sablonból. Egy https link, vagy hagyd üresen."
+    },
+    "setup": {
+      "steps": {
+        "game": "Játék",
+        "basics": "Név és nap",
+        "format": "Formátum",
+        "teams": "Csapatok",
+        "schedule": "Menetrend",
+        "maps": "Pályák és veto",
+        "extras": "Meccsbeállítások",
+        "review": "Áttekintés"
+      },
+      "stepsLabel": "Beállítási lépések",
+      "backToManage": "Kezelés",
+      "stepDone": "kész",
+      "newTournament": "Új verseny",
+      "editing": "Verseny beállítása",
+      "draftSaved": "piszkozat mentve ezen a lapon",
+      "discardDraft": "Újrakezdés",
+      "startFromTemplate": "Indítás sablonból",
+      "continueTo": "Tovább: {{step}}",
+      "questions": {
+        "game": {
+          "title": "Melyik játék?",
+          "lede": "A játék határozza meg, hogyan futnak a meccsek, és milyen beállításokat kapsz."
+        },
+        "basics": {
+          "title": "Mi a neve, és melyik napon lesz?",
+          "lede": "Válaszd ki a napot. Az egyes fordulók kezdési idejét a Menetrendnél állíthatod be."
+        },
+        "format": {
+          "title": "Hogyan játsszák?",
+          "lede": "Válaszd ki az ágrajzot és a sorozatok hosszát. Ezt a verseny kezdetéig módosíthatod."
+        },
+        "teams": {
+          "title": "Kik játszanak?",
+          "lede": "Válaszd ki az ágrajz csapatait. Itt csapatokat is létrehozhatsz vagy importálhatsz.",
+          "ledeShuffle": "A shuffle egyéni nevezéssel működik: a játékosok regisztrálnak, és minden fordulóban új csapatokat sorsolunk."
+        },
+        "maps": {
+          "title": "Melyik pályák?",
+          "lede": "Válaszd ki a pályakészletet. A sorozatok vetóval választják ki belőle a pályáikat.",
+          "ledeShuffle": "Válaszd ki a pályákat a lejátszás sorrendjében. Minden pálya egy forduló."
+        },
+        "eventPage": {
+          "title": "Mi kerüljön az eseményoldalra?",
+          "lede": "Nem kötelező. A nyilvános Áttekintés oldalon jelenik meg a játékosoknak és a látogatóknak."
+        },
+        "review": {
+          "title": "Indulhatunk?",
+          "lede": "Ellenőrizd a részleteket, majd hozd létre a versenyt.",
+          "ledeExisting": "Ellenőrizd a részleteket, majd indítsd el a versenyt, amikor mindenki készen áll."
+        },
+        "schedule": {
+          "title": "Mikor lesznek a meccsek?",
+          "lede": "Az első forduló időpontja a verseny kezdete. A check-in és az emlékeztetők ehhez képest számolnak vissza."
+        },
+        "extras": {
+          "title": "Meccsbeállítások",
+          "lede": "Indulj egy előbeállításból, majd módosítsd, amire szükséged van. A narancssárga beállítások eltérnek az oldal alapértelmezéseitől."
+        }
+      },
+      "game": {
+        "label": "Játék",
+        "loading": "Az ezen az instancián futtatható játékok betöltése.",
+        "lockedHelp": "A játék a verseny létrejötte után rögzített. Más játékhoz töröld, és kezdd újra.",
+        "integrationTitles": {
+          "cs2": "A saját szervereiden fut",
+          "manual-report": "A csapatok jelentik az eredményt"
+        },
+        "integrationDescriptions": {
+          "cs2": "A meccsek a saját CS2-szervereiden futnak a Ready Uppal.",
+          "manual-report": "Nincsenek szerverek. A csapatok maguk játsszák le a meccset, és egy kapitány jelenti az eredményt."
+        }
+      },
+      "basics": {
+        "ratingLabel": "Értékelések",
+        "ratingHelp": "Hogyan változnak a játékosok értékelései az egyes meccsek után ebben a versenyben."
+      },
+      "format": {
+        "label": "Formátum",
+        "names": {
+          "single_elimination": "Egyenes kiesés",
+          "double_elimination": "Dupla kiesés",
+          "swiss": "Svájci rendszer",
+          "round_robin": "Körmérkőzés",
+          "shuffle": "Shuffle",
+          "groups": "Csoportkör, majd rájátszás"
+        },
+        "types": {
+          "single_elimination": "Egy vereség, és kiestél. A leggyorsabb.",
+          "double_elimination": "Második esély az alsó ágon.",
+          "swiss": "A csapatok több fordulót játszanak hasonló mérlegű ellenfelekkel.",
+          "round_robin": "Mindenki játszik mindenkivel. Kis csoportokhoz a legjobb.",
+          "shuffle": "Egyéni nevezés. Minden fordulóban új, kiegyensúlyozott csapatok.",
+          "groups": "Körmérkőzés csoportokban; mindegyik legjobbjai döntőbe vagy ágrajzba jutnak."
+        },
+        "seriesLength": "Sorozat hossza",
+        "grandFinal": "Nagydöntő",
+        "grandFinalOptions": {
+          "simple": "Egy meccs",
+          "double": "Ágrajz-visszaállítás",
+          "none": "Nincs"
+        },
+        "grandFinalHelp": {
+          "simple": "A felső és az alsó ág bajnokai egy nagydöntőben találkoznak.",
+          "double": "Ágrajz-visszaállítás. Egyelőre egyetlen nagydöntőként játsszák; a teljes visszaállítás támogatása tervben van.",
+          "none": "Nincs nagydöntő: a felső ág döntője dönti el a versenyt."
+        },
+        "teams": "Csapatok",
+        "teamsHelpPowerOfTwo": "A kieséses ágrajzokhoz {{counts}} csapat kell. Az összesítőhöz használjuk, amíg nem választasz csapatokat.",
+        "teamsHelpRange": "{{min}} és {{max}} csapat között. Az összesítőhöz használjuk, amíg nem választasz csapatokat.",
+        "fewerTeams": "Kevesebb csapat",
+        "moreTeams": "Több csapat",
+        "shuffleTitle": "Shuffle-beállítások",
+        "cs2Title": "Counter-Strike 2 beállítások",
+        "cs2Help": "A Counter-Strike 2 játékmodul adja át a CS2-szervereidnek.",
+        "overtime": {
+          "enabled": "Hosszabbítás",
+          "disabledDraws": "Ki, döntetlen megengedett",
+          "disabledNoDraws": "Ki, sebzés dönt"
+        }
+      },
+      "teams": {
+        "shuffleBeforeCreate": "A játékosok a verseny létrehozása után neveznek. Térj vissza ehhez a lépéshez a kiválasztásukhoz.",
+        "shuffleSelfSignup": "A játékosok maguk csatlakoznak",
+        "shuffleSelfSignupHelp": "Amíg ez be van kapcsolva, a versenyoldalon a Csatlakozás gombbal neveznek; te továbbra is hozzáadhatsz itt játékosokat."
+      },
+      "maps": {
+        "vetoTitle": "Veto",
+        "vetoStandard": "Minden {{format}} sorozatban pályaveto van: a csapatok ebből a 7 pályából bannolnak és pickelnek.",
+        "vetoCustom": "Ennek a versenynek egyéni veto sorrendje van ehhez: {{format}}.",
+        "vetoNone": "Ehhez a formátumhoz nincs veto.",
+        "vetoShuffle": "A shuffle-ben nincs veto: a pályák ebben a sorrendben követik egymást, fordulónként egy."
+      },
+      "eventPage": {
+        "draftNote": "A verseny létrehozásakor mentjük vele együtt."
+      },
+      "review": {
+        "unsaved": "Nem mentett változtatásaid vannak. Mentsd el őket (az ágrajz újragenerálódik), vagy vesd el őket indítás előtt."
+      },
+      "summary": {
+        "label": "Összesítő",
+        "untitled": "Névtelen verseny",
+        "format": "Formátum",
+        "series": "Sorozat",
+        "seriesShuffle": "Bo1 fordulónként",
+        "seriesFinal": {
+          "simple": "{{format}} · nagydöntő",
+          "double": "{{format}} · nagydöntő, ágrajz-visszaállítás",
+          "none": "{{format}} · nincs nagydöntő"
+        },
+        "teams": "Csapatok",
+        "teamSize": "{{size}}v{{size}}",
+        "teamsPlanned": "{{count}} tervezett",
+        "matches": "Meccsek",
+        "matchesAfterSignUp": "Nevezés után",
+        "duration": "Nagyjából ennyi ideig tart",
+        "durationValue": "{{hours}} ó {{minutes}} p",
+        "signUp": "Nevezés",
+        "signUpOrganizer": "A szervező választja ki",
+        "signUpAfterCreate": "Létrehozás után nyílik",
+        "players_one": "{{count}} játékos",
+        "players_other": "{{count}} játékos",
+        "maps": "Pályák",
+        "mapsRounds": "{{maps}} · {{rounds}}",
+        "notSet": "Nincs beállítva",
+        "signUpOpen": "A csapatok neveznek · {{size}} fő csapatonként"
+      },
+      "checklist": {
+        "title": "Mielőtt indíthatnál",
+        "met": "kész",
+        "notMet": "nincs kész",
+        "name": "Egy név",
+        "format": "Formátum és meccsbeállítások",
+        "teams": "Érvényes csapatszám",
+        "players_one": "Legalább {{count}} nevezett játékos",
+        "players_other": "Legalább {{count}} nevezett játékos",
+        "mapsVeto": "7 pálya a vetóhoz",
+        "maps": "Legalább egy pálya",
+        "created": "Verseny létrehozva",
+        "saved": "Változások mentve"
+      },
+      "manualReport": {
+        "title": "Kézi eredményjelentés",
+        "help": "Az Auto Tournament nem tudja követni ezt a játékot, ezért a csapatok mondják el neki, mi történt.",
+        "seriesLength": "Sorozat hossza",
+        "seriesLengthHelp": "Hány játékból áll egy sorozat. Az a csapat nyeri a meccset, amelyik elsőként nyeri meg a játékok több mint felét.",
+        "gameLabel": "A játék neve",
+        "gameLabelHelp": "Hogyan nevezzük a jelentési űrlapon. Hagyd üresen a(z) „{{game}}” névhez.",
+        "allowDraw": "Döntetlenek",
+        "allowDrawHelp": "Engedélyezi, hogy egy játék, és így egy sorozat, döntetlennel érjen véget. Ágrajznál hagyd kikapcsolva, ott valakinek tovább kell jutnia.",
+        "allowDrawOptions": {
+          "no": "Nem engedélyezett",
+          "yes": "Engedélyezett"
+        },
+        "confirmation": "Mielőtt egy eredmény érvényes",
+        "confirmationHelp": {
+          "opponent": "A másik csapat kapitányának jóvá kell hagynia, mielőtt a meccs lezárul. Helyette vitathatja is, ami egy adminhoz küldi.",
+          "none": "Egy kapitány jelentése önmagában lezárja a meccset. Gyors, de csak ott éri meg, ahol valószínűleg senki sem fog vitatkozni."
+        },
+        "confirmationOptions": {
+          "opponent": "Az ellenfél jóváhagyja",
+          "none": "A jelentés érvényes"
+        },
+        "confirmTimeout": "Válaszidő percben",
+        "confirmTimeoutHelp": "Mennyi ideje van az ellenfélnek a határidőig. Az 1440 egy nap.",
+        "confirmTimeoutNone": "Nincs határidő: a jelentés a válaszra vár.",
+        "timeoutAction": "A határidőnél",
+        "timeoutActionHelp": {
+          "auto_confirm": "A jelentés a jelentett formában érvényes, és az ágrajz anélkül halad tovább, hogy bárki várna.",
+          "escalate": "A meccs egy adminhoz kerül, aki a Viták oldalon dönt róla."
+        },
+        "timeoutActionOptions": {
+          "auto_confirm": "A jelentés elfogadása",
+          "escalate": "Admin megkérdezése"
+        }
+      },
+      "signup": {
+        "how": "Hogyan kerülnek be a csapatok?",
+        "organizer": "Csak az általam hozzáadott csapatok",
+        "open": "A csapatok nevezhetnek",
+        "organizerHelp": "Minden csapatot te választasz ki. A versenyoldalról senki sem nevezhet.",
+        "openHelp": "A csapat tulajdonosa vagy kapitánya a versenyoldalon nevez egy felállással, és a felállás a verseny napján elvégzi a check-int. Lent te magad is hozzáadhatsz csapatokat.",
+        "teamSize": "Játékosok csapatonként",
+        "teamSizeHelp": "A kezdők, akiket a csapat nevezéskor kiválaszt (legfeljebb 2 cserével felül).",
+        "maxTeamsHelp": "Üres: nincs korlát.",
+        "save": "Nevezési beállítások mentése",
+        "saved": "Nevezési beállítások mentve",
+        "inTournament": "A versenyben ({{count}})",
+        "signedUp": "Nevezett",
+        "addedByYou": "Általad hozzáadva",
+        "lineup": "{{size}} kezdőből {{starters}}",
+        "checkedIn": "{{count}} elvégezte a check-int",
+        "remove": "Eltávolítás",
+        "removed": "{{team}} kiesett a versenyből",
+        "noneYet": "Még nincsenek csapatok. Nevezés után itt jelennek meg.",
+        "noTeams": "Még nincsenek csapatok.",
+        "addYourself": "Csapatok hozzáadása magad",
+        "pickTeams": "Csapatok kiválasztása",
+        "windowTitle": "Nevezési időszak",
+        "opensLabel": "A nevezés megnyílik",
+        "opensNow": "Most",
+        "opensLater": "Megadott időpontban",
+        "opensNowHelp": "Megnyílik, amint létrehozod a versenyt.",
+        "opensLaterHelp": "Addig zárva. Az oldal visszaszámol eddig.",
+        "closesHelp": "A felállások a check-in lezárásáig módosíthatók.",
+        "checkInTitle": "Check-in",
+        "checkInHelp": "A verseny kezdete előtt nyílik meg, és a kezdéskor zárul le. Az a kezdő, aki addig nem végezte el a check-int, cserére cserélődik; a cseréknek nem kell check-int végezniük.",
+        "checkInChip_one": "{{count}} perccel előtte",
+        "checkInChip_other": "{{count}} perccel előtte",
+        "checkInOff": "Nincs check-in",
+        "checkInLine": "Megnyílik: {{day}} {{time}}, lezárul a verseny kezdetekor ({{start}}).",
+        "checkInLineNoStart_one": "{{count}} perccel a kezdés előtt nyílik meg, és a kezdéskor zárul le.",
+        "checkInLineNoStart_other": "{{count}} perccel a kezdés előtt nyílik meg, és a kezdéskor zárul le.",
+        "checkInLineOff": "Nincs check-in: minden nevezett csapat játszik.",
+        "captainsLabel": "A kapitányok elvégezhetik a check-int a csapattársaik helyett",
+        "captainsHelp": "A tulajdonos vagy egy kapitány jelenlévőnek jelölhet egy kezdőt. Ő felel érte, ha az a játékos nem jelenik meg.",
+        "perMatchLabel": "Check-in minden meccs előtt újra",
+        "perMatchHelp": "Ki: a verseny előtti egyszeri check-in minden meccsre érvényes. Be: a játékosok minden meccs vetójának megnyílásakor elvégzik a check-int.",
+        "fullTeamTitle": "Felkerülés a szerverre",
+        "fullTeamHelp": "Amint egy meccs szervere kész, minden csapatnak ennyi ideje van, hogy teljes létszámmal fent legyen, a cseréket is beleértve. Ezután a teljes csapat dönt: elfogadja a walkovert, vagy játszik a hiányos csapattal. Ha mindkettő hiányos, egy admin dönt.",
+        "fullTeamChip_one": "{{count}} perc",
+        "fullTeamChip_other": "{{count}} perc",
+        "fullTeamOff": "Nincs walkover",
+        "fullTeamLine": "A játékosok a meccsszobában és a szerverchatben látják az időzítőt. A cserék késznek számítanak, így egy csapat azonnal beküldhet egyet.",
+        "fullTeamLineOff": "Nincs walkover: a hiányos csapat hiányosan játszik, amint a meccs automatikusan elindul (Meccsbeállítások)."
+      },
+      "groups": {
+        "count": "Csoportok száma",
+        "through": "Továbbjutók csoportonként",
+        "throughWinner": "A győztes",
+        "throughTop2": "Az első 2",
+        "seeding": "Hogyan kerülnek a csapatok csoportokba",
+        "seedingSnake": "Kiemelés szerint elosztva (kígyó)",
+        "seedingRandom": "Véletlenszerűen",
+        "playoffs": "Rájátszás",
+        "playoffMatches": "Rájátszás meccsei",
+        "ties": "Csoporton belüli holtverseny: egymás elleni eredmény, majd körkülönbség, majd megnyert körök (mint a körmérkőzésnél). Ha a csoportok nem töltenek ki egy ágrajzat, a többiek közül a legjobbak is továbbjutnak.",
+        "whatPlayersGet": "Mit kapnak a játékosok",
+        "stage": "Csoportkör",
+        "stageLine": "{{groups}} csoport, egyenként {{size}} csapattal",
+        "stageNote": "{{count}} meccs · csapatonként {{each}}",
+        "playoffFinal": "A két csoportgyőztes: {{format}} döntő",
+        "playoff": {
+          "single_elimination": "{{count}} csapat: egyenes kiesés",
+          "double_elimination": "{{count}} csapat: dupla kiesés"
+        },
+        "throughNote": "{{count}} csapat jut tovább",
+        "previewTitle": "A csoportok (kiemelés szerint elosztva)",
+        "previewNote": "A csapatlista sorrendjében (a kiemelés). A csoportok a verseny kezdetekor rögzülnek.",
+        "randomNote": "A csoportokat a verseny kezdetekor véletlenszerűen sorsoljuk.",
+        "groupN": "{{letter}} csoport",
+        "groupMatches": "Csoportmeccsek"
+      },
+      "stepNotes": {
+        "game": "Mit játszanak",
+        "basics": "Név, nap, helyszín",
+        "format": "Hogyan találkoznak a csapatok",
+        "teams": "Hozzáadva vagy nevezés",
+        "schedule": "Napok és időpontok",
+        "maps": "A pályakészlet",
+        "extras": "Előbeállítás, szabályok, extrák",
+        "review": "Létrehozás"
+      },
+      "stepOf": "{{n}}/{{total}}. lépés",
+      "schedule": {
+        "timesNote": "A meccsek kivárják az időpontjukat. A játékosok látják a meccsnél, emlékeztetőt kapnak, és a veto időben nyílik meg.",
+        "breakNote_one": "Egy csapat, amely épp játszott, {{count}} perc szünetet kap a következő vetója előtt (Meccsszabályok).",
+        "breakNote_other": "Egy csapat, amely épp játszott, {{count}} perc szünetet kap a következő vetója előtt (Meccsszabályok).",
+        "noBreakNote": "Egy csapat meccsei között nincs szünet (Meccsszabályok).",
+        "ownTimeNote": "Az ágrajz elkészülte után egy meccsnek saját időpontot adhatsz a Kezelés › Menetrend alatt.",
+        "startsTournament": "Elindítja a versenyt · lezárul a check-in",
+        "newDay": "Új nap",
+        "sameDay": "Ugyanaz a nap",
+        "dayLabel": "Nap",
+        "startsLabel": "Kezdés",
+        "tournamentStarts": "A verseny kezdete",
+        "autoStart": "Automatikus indítás ekkor: {{time}}",
+        "autoStartNoTime": "Automatikus indítás",
+        "autoStartOff": "Ki: egy admin indítja el a Kezelés oldalról.",
+        "reminders": "Emlékeztető a játékosoknak a kezdés előtt",
+        "modeTimesNote": "Minden forduló kap egy napot (a 2. lépésből) és egy időpontot. A meccsek kivárják az időpontjukat, és a veto időben nyílik meg.",
+        "modeAsapNote": "Csak a kezdés: utána egy meccs azonnal indul, amint mindkét csapat és egy szerver készen áll."
+      },
+      "extras": {
+        "gotvLabel": "Nézők",
+        "gotvOn_one": "A nézők GOTV-ben nézhetik, {{count}} másodperc késéssel (Meccsszabályok › Nézők).",
+        "gotvOn_other": "A nézők GOTV-ben nézhetik, {{count}} másodperc késéssel (Meccsszabályok › Nézők).",
+        "gotvOff": "A nézők nem nézhetik GOTV-ben (Meccsszabályok › Nézők)."
+      },
+      "startFrom": {
+        "title": "Kiindulás",
+        "help": "Egy sablon kitölti a formátumot, a pályákat és a meccsbeállításokat. A következő lépésekben bármit módosíthatsz.",
+        "blank": "Üres",
+        "blankHelp": "Egyenes kiesés, Bo3, az oldal pályakészlete és meccsszabályai.",
+        "siteDefaults": "Az oldal alapértelmezései",
+        "builtIn": "Beépített",
+        "saved": "Mentett",
+        "standardRules": "Normál szabályok",
+        "ownTemplates": "A saját sablonjaid a <link>Sablonok és értékelések</link> oldalról származnak. Mentsd el ezt a versenyt sablonként, ha beállítottad."
+      },
+      "days": {
+        "title": "Nap",
+        "one": "Egy nap",
+        "several": "Több napon át",
+        "day": "Nap",
+        "firstDay": "Első nap",
+        "lastDay": "Utolsó nap",
+        "markedLegend": "Ezen a napon egy másik verseny is fut ezen az oldalon"
+      },
+      "overlap": {
+        "headsUp": "Figyelem: a(z) {{name}} is játszik ekkor: {{day}}",
+        "headsUpBody": "{{from}}–{{to}} ugyanazokon a szervereken. Mindkettő futhat: a meccsek szabad szerverre várnak, és egy játékos csak akkor lehet mindkettőben, ha a fordulóidőpontjai nem fedik egymást.",
+        "openOther": "A(z) {{name}} menetrendjének megnyitása",
+        "round": "Ütközik ezzel: {{name}} ({{day}}, {{from}}–{{to}}) ugyanazokon a szervereken. Ettől még mentheted. A(z) {{name}} játékosa nem nevezhet ide, mivel ez a forduló ugyanakkor zajlik.",
+        "see": "{{name}} megtekintése"
+      }
+    },
+    "startButton": {
+      "start": "Verseny indítása",
+      "starting": "Indítás...",
+      "startSimulation": "Szimuláció indítása",
+      "startingSimulation": "Szimuláció indítása..."
+    },
+    "archiveDialog": {
+      "title": "Új versenyt indítasz?",
+      "message": "A(z) {{name}} archiválva lesz. Az eredményei, meccsei és statisztikái megmaradnak, és az oldala megtartja a címét. Ezután létrehozod a következőt.",
+      "confirm": "Archiválás és új indítása",
+      "delete": "Törlés és új indítása",
+      "deleteHint": "Vagy töröld: az eredményei, meccsei és statisztikái is törlődnek vele."
+    },
+    "end": {
+      "button": "Verseny befejezése",
+      "tooltip": "Most leállítja a versenyt eredmény nélkül: a szervereken futó meccsek véget érnek, a többit töröljük. Nincs győztes és nincs jutalom. Utána archiválható.",
+      "title": "Befejezed ezt a versenyt?",
+      "body": "Minden még futó meccs véget ér a szerverén, a többit töröljük. Senki sem nyer, és nem osztunk jutalmat. Ez nem vonható vissza.",
+      "typeName": "Írd be: „{{name}}” a megerősítéshez",
+      "confirm": "Verseny befejezése",
+      "done_one": "A verseny véget ért, {{count}} meccs törölve",
+      "done_other": "A verseny véget ért, {{count}} meccs törölve",
+      "failed": "Nem sikerült befejezni a versenyt"
+    },
+    "countdown": {
+      "days": "Kezdés {{d}} n {{h}} ó múlva",
+      "hours": "Kezdés {{h}} ó {{m}} p múlva",
+      "minutes": "Kezdés {{m}}:{{s}} múlva"
+    }
+  },
+  "bracket": {
+    "empty": {
+      "noBracketTitle": "Nincs megjeleníthető ágrajz",
+      "noBracketDescription": "Hozz létre egy versenyt, és generáld le az ágrajzot a kezdéshez"
+    },
+    "view": {
+      "visual": "Vizuális",
+      "list": "Lista",
+      "refresh": "Frissítés",
+      "enterFullscreen": "Teljes képernyő",
+      "exitFullscreen": "Kilépés a teljes képernyőből",
+      "shuffleNoVisual": "A shuffle-versenyeknek nincs vizuális ágrajza; használd inkább a listanézetet."
+    },
+    "times": {
+      "toggle": "Időpontok beállítása",
+      "startsAt": "Kezdés",
+      "clear": "A forduló időpontjának használata",
+      "save": "Mentés"
+    },
+    "shuffleEmpty": {
+      "title": "A shuffle-versenyeknek nincs ágrajza",
+      "description": "A shuffle-versenyek nem használnak rögzített ágrajznézetet. A csapatokat minden fordulóban újrakeverjük a játékosok ELO-ja alapján.",
+      "hint": "Az élő és közelgő meccseket a Meccsek oldalon, a játékosok rangsorát a Ranglista oldalon követheted.",
+      "goToMatches": "Ugrás a meccsekhez",
+      "viewLeaderboard": "Ranglista megtekintése"
+    },
+    "notGenerated": {
+      "title": "Az ágrajz még nincs legenerálva",
+      "description": "Generáld le az ágrajzot, hogy létrejöjjenek a meccsek ehhez: {{name}}",
+      "goToSettings": "Ugrás a versenybeállításokhoz"
+    },
+    "shuffleNoVisual": {
+      "title": "A shuffle-versenyeknek nincs vizuális ágrajza",
+      "description": "A meccsek minden fordulóban dinamikusan jönnek létre a játékosok ELO-ja és a csapatkiegyenlítés alapján. Itt követheted a haladást:",
+      "listView": "Listanézet",
+      "matches": "Meccsek",
+      "standings": "Tabella",
+      "docsHint": "A shuffle működésének teljes bemutatását a dokumentáció Shuffle-versenyek útmutatójában találod."
+    },
+    "swiss": {
+      "notGenerated": "Nincs legenerálva",
+      "generatedAfter": "A meccsek a(z) {{round}}. forduló befejezése után jönnek létre",
+      "bye": "ERŐNYERŐ",
+      "standings": "Tabella",
+      "team": "Csapat",
+      "record": "Mérleg",
+      "buchholz": "BH",
+      "buchholzHint": "Buchholz: az ellenfelek győzelmeinek összege",
+      "roundDiff": "KK",
+      "roundDiffHint": "Körkülönbség: megnyert körök mínusz elvesztett körök"
+    },
+    "slotHint": {
+      "winnerOf": "{{match}} győztese",
+      "loserOf": "{{match}} vesztese",
+      "matchNumber": "{{number}}. meccs"
+    },
+    "pause": {
+      "pause": "Ágrajz szüneteltetése",
+      "reason": "A szüneteltetés oka",
+      "forMinutes": "{{minutes}} percre",
+      "untilResumed": "Folytatásig",
+      "paused": "Ágrajz szüneteltetve: a folyamatban lévő meccsek befejeződnek, új nem indul",
+      "pausedUntil": "Ágrajz szüneteltetve eddig: {{time}}: a folyamatban lévő meccsek befejeződnek, új nem indul",
+      "resume": "Folytatás",
+      "pausedDone": "Ágrajz szüneteltetve",
+      "resumedDone": "Ágrajz folytatva",
+      "failed": "Nem sikerült módosítani a szüneteltetést"
+    }
+  },
+  "overviewPage": {
+    "tabs": {
+      "overview": "Áttekintés",
+      "label": "Verseny",
+      "bracket": "Ágrajz",
+      "matches": "Meccsek",
+      "teams": "Csapatok",
+      "standings": "Tabella",
+      "manage": "Kezelés",
+      "rules": "Szabályok",
+      "match": "A meccsed",
+      "results": "Eredmények",
+      "signup": "Nevezés"
+    },
+    "status": {
+      "setup": "Közelgő",
+      "inProgress": "Élő",
+      "completed": "Befejezett",
+      "finishedOn": "Befejeződött: {{date}}"
+    },
+    "liveNow": "{{count}} élőben most",
+    "howItsPlayed": "Hogyan zajlanak a meccsek",
+    "facts": {
+      "teams": "Csapatok",
+      "teamsValue": "{{count}} csapat",
+      "teamSize": "Csapatméret",
+      "teamSizeValue": "{{count}} játékos",
+      "format": "Formátum",
+      "series": "Sorozat",
+      "seriesValue": "Best of {{count}}",
+      "mapVeto": "Pályaveto",
+      "mapVetoCustom": "Egyéni sorrend (kapitányok)",
+      "mapVetoStandard": "Normál sorrend (kapitányok)",
+      "overtime": "Hosszabbítás",
+      "overtimeEnabledUnlimited": "Bekapcsolva, korlátlan",
+      "overtimeEnabledSegments": "Bekapcsolva, {{count}} szakasz",
+      "overtimeDisabled": "Kikapcsolva (sebzés dönt)"
+    },
+    "mapPool": "Pályakészlet",
+    "rules": "Szabályok",
+    "fullRulebook": "Teljes szabálykönyv",
+    "schedule": "Menetrend",
+    "yourTeam": {
+      "title": "Játszol",
+      "onRoster": "A(z) {{team}} tagja vagy.",
+      "viewTeam": "Csapatod megtekintése",
+      "versus": "{{team}} vs {{opponent}} · {{stage}}",
+      "tbd": "TBD",
+      "goToMatch": "Ugrás a meccsedhez",
+      "openMatch": "A meccs oldalának megnyitása",
+      "state": {
+        "live": "Élő",
+        "loaded": "Csatlakozz most",
+        "upNext": "Következik",
+        "finished": "Befejezve",
+        "eliminated": "Kiesett",
+        "waiting": "Várakozás a következő meccsre",
+        "registered": "Regisztrálva",
+        "won": "Győztes",
+        "out": "Kiesett"
+      }
+    },
+    "prizes": {
+      "title": "Díjak",
+      "note": "A szervező határozza meg. Pénzdíj, hardver vagy dicsőség."
+    },
+    "requirements": {
+      "title": "A részvételhez",
+      "steamLinkedOk": "Steam-fiók összekapcsolva.",
+      "steamLinkedNeutral": "Jelentkezz be Steammel a részvételhez.",
+      "onRosterOk": "Szerepelsz egy csapat keretében ebben a versenyben.",
+      "onRosterNeutral": "A verseny kezdete előtt kerülj be egy csapat keretébe."
+    },
+    "loadError": "Nem sikerült betölteni ezt a versenyt.",
+    "notFoundTitle": "A verseny nem található",
+    "notFoundDescription": "Ez a verseny nem létezik, vagy még nem hozták létre.",
+    "loading": "Betöltés…",
+    "about": "Rólunk",
+    "liveStripLabel": "Élőben most",
+    "bracketTab": {
+      "loadError": "Nem sikerült betölteni az ágrajzot.",
+      "emptyTitle": "Még nincs ágrajz",
+      "emptyDescription": "Az ágrajz akkor jelenik meg itt, amikor a szervező elindítja a versenyt.",
+      "shuffleTitle": "A shuffle-ben nincs ágrajz",
+      "shuffleDescription": "A csapatokat minden fordulóban újra sorsoljuk, így nincs ágrajz. A Meccsek minden fordulót felsorol, a Tabella pedig rangsorolja a játékosokat."
+    },
+    "matchesTab": {
+      "loadError": "Nem sikerült betölteni a meccseket.",
+      "emptyTitle": "Még nincsenek meccsek",
+      "emptyDescription": "A meccsek a verseny kezdetekor jelennek meg itt.",
+      "live": "Élőben most",
+      "upcoming": "Következik",
+      "results": "Eredmények",
+      "vs": "vs",
+      "status": {
+        "live": "Élő",
+        "loaded": "Indul",
+        "final": "Végeredmény",
+        "upcoming": "Közelgő"
+      },
+      "emptyDescriptionAt": "A meccsek a verseny kezdetekor jelennek meg itt: {{when}}."
+    },
+    "teamsTab": {
+      "shuffleTitle": "A csapatok minden fordulóban változnak",
+      "shuffleDescription": "A shuffle-verseny minden fordulóban új csapatokat sorsol a regisztrált játékosokból. A Tabella rangsorolja a játékosokat.",
+      "emptyTitle": "Még nincsenek csapatok",
+      "emptyDescription": "A csapatok akkor jelennek meg itt, amikor a szervező hozzáadja őket.",
+      "yours": "A csapatod",
+      "record": "{{wins}}–{{losses}}",
+      "emptySignupOpen": "A nevezés nyitva. A csapatok nevezéskor jelennek meg itt.",
+      "signUp": "Nevezd a csapatodat"
+    },
+    "allMatches": "Összes meccs",
+    "keyDates": {
+      "starts": "Kezdés",
+      "lastOnSchedule": "Utolsó a menetrendben",
+      "teams": "Csapatok"
+    },
+    "mapPoolCount": "Pályakészlet · {{count}} pálya",
+    "mapPoolNote": "A kapitányok minden sorozat előtt ezekből bannolnak és pickelnek.",
+    "addToCalendar": "Hozzáadás a naptárhoz",
+    "scheduleSoon": "A szervező még nem tette közzé a menetrendet.",
+    "checkInWindow": "Check-in",
+    "mapPoolSoonTitle": "Pályakészlet",
+    "mapPoolSoon": "A szervező még nem választotta ki a pályákat.",
+    "adminBanner": "Ennek a versenynek admin vagy. A futtatása a Kezelés oldalon történik; ezt az oldalt látják a játékosok.",
+    "manageTournament": "Verseny kezelése",
+    "fullBracket": "Teljes ágrajz",
+    "allRules": "Összes szabály",
+    "archivedTitle": "Ez a verseny archiválva van",
+    "archivedBody": "Egy újabb verseny váltotta fel. Az eredményei, az ágrajza és a tabellája itt marad.",
+    "openCurrent": "A jelenlegi verseny megnyitása",
+    "allTournaments": "Összes verseny",
+    "roundN": "{{n}}. forduló",
+    "finalRound": "Döntő",
+    "roundStarts": "{{round}} · veto nyílik: {{time}}"
+  },
+  "roundStatusCard": {
+    "roundOf": "{{current}}/{{total}}. forduló",
+    "complete": "Kész",
+    "inProgress": "Folyamatban",
+    "matchProgress": "Meccsek állása",
+    "completedOf": "{{completed}} / {{total}} befejezve",
+    "completedCount": "{{count}} befejezve",
+    "playingCount": "{{count}} játszik",
+    "pendingCount": "{{count}} függőben"
+  },
+  "yourMatch": {
+    "loading": "A meccsed betöltése",
+    "bestOf": "Best of {{count}}",
+    "mapsScore": "Pályák {{us}} – {{them}}",
+    "inServer": "A szerveren",
+    "notJoined": "Nem csatlakozott",
+    "waitingForPlayers": "Várakozás a játékosokra",
+    "inServerCount": "{{expected}}-ból/-ből {{count}} a szerveren. A meccs akkor indul, amikor mindenki kész.",
+    "inServerCountBots": "{{count}} a szerveren. A botok elfoglalják az üres helyeket; a meccs akkor indul, amikor minden itt lévő kész.",
+    "live": "Élő",
+    "round": "{{n}}. kör",
+    "vetoTitle": "Pályaveto folyamatban",
+    "finished": "A meccs véget ért",
+    "mapOf": "{{n}}/{{total}}. pálya",
+    "sideYou": "{{side}} · te",
+    "rejoin": "Kiestél? Csatlakozz újra ugyanazzal a gombbal: a helyed megmarad.",
+    "outcome": {
+      "won": "Nyertetek {{us}}–{{them}} ellen: {{opponent}}",
+      "lost": "Kikaptatok {{us}}–{{them}} ellen: {{opponent}}",
+      "draw": "{{us}}–{{them}} ellen: {{opponent}}"
+    },
+    "ready": "Kész",
+    "waitingForServer": "Várakozás szerverre",
+    "vetoDoneChip": "Veto kész · {{map}}",
+    "waitingForServerBody": "Amint egy szerver felszabadul, kiosztjuk. Értesítést kapsz, és ez az oldal magától frissül.",
+    "mapDrawnChip": "Kisorsolt pálya · {{map}}",
+    "notYet": "Még nem"
+  },
+  "results": {
+    "finalStandings": "Végeredmény",
+    "awards": "Díjak",
+    "players": "Játékosok",
+    "matchesAndDemos": "Meccsek és demók",
+    "place": "#{{n}}",
+    "championsOf": "{{name}} · Bajnokok",
+    "showAll": "Mind a(z) {{count}} játékos",
+    "showFewer": "Kevesebb",
+    "mapResults": "Pályaeredmények",
+    "col": {
+      "player": "Játékos",
+      "team": "Csapat",
+      "rating": "Értékelés ±",
+      "hltv": "Teljesítmény"
+    },
+    "award": {
+      "mostKills": "A legtöbb kill",
+      "bestAdr": "A legmagasabb ADR",
+      "bestHeadshots": "A legjobb fejlövés-arány",
+      "mostFlashAssists": "A legtöbb flash-assist",
+      "mostUtility": "A legtöbb utility-sebzés",
+      "biggestGain": "A legnagyobb értékelésnövekedés",
+      "bestPlayer": "A legjobb játékos",
+      "mostClutches": "A legtöbb clutch",
+      "mostTeamFlashes": "A legtöbb vakított csapattárs",
+      "mostMoney": "A legtöbb elköltött pénz"
+    },
+    "awardValue": {
+      "mostKills": "{{value}} kill",
+      "bestAdr": "{{value}} ADR",
+      "bestHeadshots": "{{value}}% fejlövés",
+      "mostFlashAssists": "{{value}} flash-assist",
+      "mostUtility": "{{value}} utility-sebzés",
+      "biggestGain": "+{{value}} értékelés",
+      "bestPlayer": "értékelés: {{value}}",
+      "mostTeamFlashes": "{{value}} vakított csapattárs",
+      "mostClutches": "{{value}} megnyert clutch",
+      "mostMoney": "{{value}} elköltve"
+    },
+    "wonFinal": "Megnyerte a döntőt {{a}}–{{b}} arányban ellene: {{opponent}}",
+    "champions": "Bajnokok",
+    "allMatches": "Mind a(z) {{count}} meccs",
+    "demosAndReel": "Demók és összeállítás",
+    "stage": {
+      "final": "Döntő",
+      "semi": "Elődöntő",
+      "round": "{{n}}. forduló"
+    }
+  },
+  "signup": {
+    "cta": "Nevezd a csapatodat",
+    "keyDates": {
+      "closes": "A nevezés lezárul",
+      "checkIn": "Check-in",
+      "spots": "Csapathelyek",
+      "left": "{{count}} maradt",
+      "full": "Betelt",
+      "of": "/ {{max}}"
+    },
+    "ladder": {
+      "title": "Csapatok értékelés szerint",
+      "yourPlace": "{{count}} közül a(z) {{place}}. vagytok"
+    },
+    "todo": {
+      "signedUp": "Nevezett",
+      "beforeTheDay": "A verseny napja előtt",
+      "toFix": "{{count}} javítandó",
+      "lineup": "Felállás",
+      "allReady": "Mindenki kész",
+      "notSet": "Nincs beállítva",
+      "showFixes": "Javítandók mutatása",
+      "fixNote": "Javítsd ki ezeket a check-in előtt, különben a játékos nem tud csatlakozni."
+    },
+    "yourLineup": "A felállásod",
+    "change": "Módosítás",
+    "withdraw": "Visszalépés",
+    "withdrawTitle": "Visszalépteted a(z) {{team}} csapatot?",
+    "withdrawBody": "A csapat kilép a versenyből, és a helye megnyílik egy másik csapat előtt.",
+    "sub": "Csere",
+    "ready": "Kész",
+    "problem": {
+      "noAccount": "Még nem jelentkezett be az Auto Tournamentbe",
+      "noGame": "A játék hiányzik a profiljáról"
+    },
+    "problemShort": {
+      "noAccount": "nincs bejelentkezve",
+      "noGame": "kell neki a játék"
+    },
+    "checkIn": {
+      "open": "A check-in nyitva",
+      "closesIn": "Lezárul: {{time}} · {{left}} van hátra",
+      "imHere": "Itt vagyok",
+      "done": "Elvégezted a check-int",
+      "teamTitle": "{{team}} check-int végez",
+      "keepOpen": "Tartsd nyitva ezt az oldalt. Szól, amikor a meccsed kész.",
+      "firstMatchIn": "Első meccs",
+      "count": "{{total}}-ból/-ből {{in}}",
+      "you": "te",
+      "everyone": "Mindenki",
+      "soundOn": "Hang bekapcsolva: hallani fogod, amikor itt az idő",
+      "soundOff": "Hang kikapcsolva",
+      "checkInFor": "Check-in: {{name}}",
+      "checkInShort": "Check-in"
+    },
+    "noTeamTitle": "Nincs nevezhető csapat",
+    "noTeamBody": "Csak a csapat tulajdonosa vagy egy kapitány nevezheti. Hozz létre egy csapatot, vagy kérdezd meg a kapitányodat.",
+    "goToTeams": "Csapatok",
+    "steps": {
+      "lineup": "Felállás",
+      "review": "Áttekintés"
+    },
+    "whichTeam": "Melyik csapatot nevezed?",
+    "role": {
+      "owner": "A tiéd",
+      "captain": "Kapitány vagy"
+    },
+    "playerCount": "{{count}} játékos",
+    "whoPlays": "Ki játszik?",
+    "whoPlaysHint": "{{count}} kezdő · legfeljebb {{subs}} csere",
+    "rating": "Értékelés {{rating}}",
+    "slotFor": "{{name}} szerepe",
+    "starter": "Kezdő",
+    "out": "Kimarad",
+    "starters": "Kezdők",
+    "subs": "Cserék",
+    "lineupRating": "A felállás értékelése",
+    "missingAccounts": "{{names}} még nem jelentkezett be.",
+    "fixBeforeCheckIn": "Már most nevezhetsz; a check-in előtt javítsd ki.",
+    "saveLineup": "Felállás mentése",
+    "nextReview": "Tovább: áttekintés",
+    "readyToSend": "Mehet?",
+    "next": {
+      "lastSpot": "Elfoglalja az utolsó helyet",
+      "takesSpot": "Elfoglal egy helyet",
+      "spotsLeft": "Előtte {{count}} hely maradt",
+      "checkIn": "Check-in a verseny napján",
+      "firstMatch": "Első meccs",
+      "spotOf": "{{max}}-ból/-ből {{n}}"
+    },
+    "vouch": "Megerősítem, hogy a felállás minden játékosa elolvasta a",
+    "vouchNote": "Az ő nevükben nevezek. Ha egy játékos megszegi a szabályokat, az egész csapat büntetést kaphat vagy kizárhatják.",
+    "send": "{{team}} nevezése",
+    "rulesLink": "szabályokat",
+    "ownerTag": "tulajdonos",
+    "captainTag": "kapitány",
+    "check": {
+      "steam": "Steam",
+      "game": "{{game}}",
+      "noGame": "{{game}} nincs hozzáadva",
+      "steamShort": "Steam"
+    },
+    "remind": "Emlékeztetés",
+    "reminded": "Emlékeztető elküldve a csapatchatbe",
+    "done": "Kész",
+    "lineupGap": "Egy kezdő kikerült a felállásodból (kitiltották vagy törölték). A meccseid eddig várnak: {{time}}: addig válassz cserét, különben az első csere lép be. Csere nélkül hiányos csapattal játszotok.",
+    "pickSub": "Csere választása",
+    "title": "Nevezd a csapatodat",
+    "editTitle": "Felállás módosítása",
+    "stepsLabel": "Lépések",
+    "changeUntil": "A felállást a check-in lezárásáig módosíthatod ({{when}}).",
+    "counts": "{{teamSize}} kezdőből {{starters}} · {{maxSubs}} cseréből {{subs}}",
+    "lineupRatingValue": "A felállás értékelése: {{rating}}",
+    "missingGame": "{{names}} profiljára kell a(z) {{game}}.",
+    "subsLine": "csere: {{names}}",
+    "overlap": {
+      "title": "Erre nem nevezhetsz",
+      "body": "Benne vagy a(z) {{name}} versenyben, ahol meccsed van ekkor: {{when}}, ugyanakkor, mint ebben a versenyben. Mindkét versenyben részt vehetsz, ha a meccsek időpontjai nem fedik egymást.",
+      "open": "{{name}} megnyitása"
+    },
+    "youreIn": {
+      "eyebrow": "{{team}} · nevezett",
+      "title": "Bent vagytok!",
+      "body": "Íme, mit kell tudnia a csapatodnak a verseny kezdete előtt. Ugyanezt a listát elküldtük a tulajdonosnak és a kapitányoknak.",
+      "openLineup": "Felállás megnyitása",
+      "listTitle": "A verseny kezdete előtt",
+      "checkIn": "Check-in: {{when}}–{{to}}",
+      "checkInBodyCaptains": "Minden kezdő ezen az oldalon végzi el a check-int, vagy egy kapitány végzi el helyettük. A check-in a verseny kezdetekor lezárul.",
+      "checkInBody": "Minden kezdő ezen az oldalon végzi el a check-int. A check-in a verseny kezdetekor lezárul.",
+      "subs": "A cseréknek nem kell check-int végezniük",
+      "subsBody": "Jelenlévőnek és késznek számítanak, így egy meccs sosem vár rájuk.",
+      "replaced": "A check-int el nem végző kezdőt lecseréljük",
+      "replacedBody": "A check-in lezárásakor egy csere veszi át minden olyan kezdő helyét, aki nem végezte el a check-int. Ha nincs több csere, egy fővel kevesebben játszotok.",
+      "fullTeam_one": "{{count}} perc, hogy a csapatod felkerüljön a szerverre",
+      "fullTeam_other": "{{count}} perc, hogy a csapatod felkerüljön a szerverre",
+      "fullTeamBody_one": "Amint a szervered kész, a csapatodnak {{count}} perce van, hogy teljes létszámmal fent legyen, a cseréket is beleértve. Ezután a másik csapat elfogadhatja a walkovert, vagy dönthet úgy, hogy hiányos csapatotok ellen játszik.",
+      "fullTeamBody_other": "Amint a szervered kész, a csapatodnak {{count}} perce van, hogy teljes létszámmal fent legyen, a cseréket is beleértve. Ezután a másik csapat elfogadhatja a walkovert, vagy dönthet úgy, hogy hiányos csapatotok ellen játszik.",
+      "ready": "Légy kész minden meccs előtt",
+      "readyBodyVeto_one": "A veto minden meccs előtt {{count}} perccel nyílik meg. Tartsd nyitva ezt az oldalt: szól, amikor a következő meccsed kész.",
+      "readyBodyVeto_other": "A veto minden meccs előtt {{count}} perccel nyílik meg. Tartsd nyitva ezt az oldalt: szól, amikor a következő meccsed kész.",
+      "readyBody": "Tartsd nyitva ezt az oldalt: szól, amikor a következő meccsed kész.",
+      "eachMatch": "Check-in minden meccs előtt újra",
+      "eachMatchBody": "Minden meccs előtt minden kezdő elvégzi a check-int a meccsszobában, vagy egy kapitány végzi el helyette. Akinek elmarad, azt cserére cseréljük."
+    }
+  },
+  "bracketCards": {
+    "you": "Te",
+    "open": "{{a}} vs {{b}} megnyitása",
+    "upper": "Felső ág",
+    "lower": "Alsó ág",
+    "grandFinal": "Nagydöntő",
+    "thirdPlace": "Harmadik hely",
+    "live": "Élő",
+    "veto": "Veto",
+    "done": "Kész",
+    "mapOf": "{{n}}/{{total}}. pálya",
+    "banning": "Pályák bannolása",
+    "bestOf_one": "Best of {{count}}",
+    "bestOf_other": "Best of {{count}}",
+    "winnerOf": "{{match}} győztese",
+    "loserOf": "{{match}} vesztese",
+    "tbd": "Még eldöntendő",
+    "liveCount_one": "{{count}} élőben",
+    "liveCount_other": "{{count}} élőben",
+    "matchCount_one": "{{count}} meccs",
+    "matchCount_other": "{{count}} meccs"
+  },
+  "placement": {
+    "outTitle": "Véget ért a menetelésed: {{tournament}}",
+    "wonTitle": "Megnyertétek: {{tournament}}!",
+    "yourTeamPlaced": "{{team}} helyezése",
+    "yourTeam": "A csapatod",
+    "outBody": "A csapatod kiesett a versenyből, így nincs több meccsed. A többit kövesd az ágrajzon.",
+    "wonBody": "A csapatod megnyerte a versenyt. Szép játék volt!",
+    "close": "Bezárás",
+    "seeBracket": "Ágrajz megtekintése",
+    "outBodyPlay": "Nincs több meccsed ebben a versenyben. Köszönjük, hogy játszottál!",
+    "championsEyebrow": "Bajnokok",
+    "teamPlaced": "{{team}} helyezése",
+    "wonTitleShort": "Megnyertétek: {{tournament}}!",
+    "wonFinalBody": "{{team}} megnyerte a döntőt: {{score}}. Szép játék volt!",
+    "playHint": "Még egy menet? A matchmaking egy-két perc alatt meccset talál neked."
+  },
+  "advance": {
+    "title": "Szép, még mindig versenyben vagytok!",
+    "opponent": "Következik: {{opponent}}.",
+    "feederTitle": "A következő ellenfeled innen érkezik:",
+    "vs": "vs",
+    "tbd": "TBD",
+    "feederNotStarted": "Az a meccs még nem kezdődött el.",
+    "feederMinutes_one": "Nagyjából {{count}} perc van hátra.",
+    "feederMinutes_other": "Nagyjából {{count}} perc van hátra.",
+    "feederAlmost": "Mindjárt kész.",
+    "watch": "Nézd élőben",
+    "wonEyebrow": "{{stage}} megnyerve: {{score}}"
+  },
+  "whatsNext": {
+    "eyebrow": "Mi következik",
+    "champions": "Bajnokok",
+    "outTitle": "A csapatod kiesett. Helyezésetek: {{place}}",
+    "outBody": "Ez volt az utolsó meccsed itt: {{tournament}}. Jó meccsek voltak! Játszanál még? A matchmaking azonnal meccset talál neked más játékosokkal.",
+    "playMatchmaking": "Matchmaking",
+    "watchLive": "Élő meccs nézése",
+    "nextMatch": "{{stage}} vs {{opponent}}",
+    "nextMatchReady": "A meccsed kész: nyisd meg a meccsszobát a csatlakozáshoz.",
+    "nextMatchSoon": "A következő meccsed megvan. Egy rövid szünet után nyílik meg, és szólunk. A navigációs sáv bárhol mutatja a visszaszámlálást.",
+    "openMatchRoom": "Meccsszoba megnyitása",
+    "throughTo": "Továbbjutottatok: {{stage}}",
+    "waitingTitle": "Várakozás a következő ellenfeledre",
+    "waitingBody": "Az ellenfeled egy még zajló meccsből érkezik. Amikor véget ér, rövid szünet jön, majd megnyílik a következő meccsed. Szólunk.",
+    "watchOpponent": "Nézd élőben a következő ellenfeledet",
+    "shuffleTitle": "Következő forduló: új csapatok",
+    "shuffleBody": "Amikor ennek a fordulónak minden meccse véget ér, új csapatokat sorsolunk, és a következő meccsed itt jelenik meg.",
+    "stayHere": "Maradj ezen az oldalon: magától frissül.",
+    "openTournament": "Verseny megnyitása",
+    "winsToTitle_one": "Még egy győzelem a címig",
+    "winsToTitle_other": "Még {{count}} győzelem a címig",
+    "shuffleDoneTitle": "Ez volt az utolsó forduló",
+    "shuffleDoneBody": "A shuffle véget ért. Nyisd meg a versenyt a tabelláért.",
+    "youWon": "Nyertetek {{a}}–{{b}} ellene: {{opponent}}.",
+    "youLost": "Kikaptatok {{a}}–{{b}} ellene: {{opponent}}.",
+    "resultPlaced": "{{result}} Helyezésetek: {{place}}.",
+    "nextUp": "Következik: {{match}}."
+  },
+  "navStatus": {
+    "placed": "Helyezés",
+    "placedPlay": "{{place}} · Matchmaking",
+    "waiting": "Várakozás az ellenfélre",
+    "vetoIn": "Veto",
+    "vetoOpening": "Veto nyílik",
+    "matchIn": "Meccs",
+    "matchLoading": "A meccs betöltődik",
+    "shuffleRound": "{{round}}. forduló · Játszik",
+    "shuffleSittingOut": "{{round}}. forduló · Kimarad",
+    "placedPlayLine": "Helyezés: {{place}} · Matchmaking",
+    "placedLine": "Helyezés: {{place}}",
+    "waitingOpponent": "Várakozás az ellenfélre",
+    "aboutMinutes_one": "~{{count}} perc",
+    "aboutMinutes_other": "~{{count}} perc"
+  },
+  "shuffleJoin": {
+    "title": "Csatlakozz ehhez a shuffle-höz",
+    "body": "Nem kell csapat: nevezz egyedül. A platform minden fordulóban új, kiegyensúlyozott csapatokat sorsol.",
+    "youreIn": "Bent vagy",
+    "inBody": "Amikor a verseny elindul, kisorsoljuk az első csapatodat, és a meccsed itt jelenik meg. Tartsd nyitva ezt az oldalt.",
+    "join": "Csatlakozás",
+    "leave": "Kilépés",
+    "full": "Betelt",
+    "signInToJoin": "Jelentkezz be a csatlakozáshoz",
+    "count_one": "{{count}} játékos bent",
+    "count_other": "{{count}} játékos bent",
+    "countOf_one": "{{spots}} helyből {{count}} játékos bent",
+    "countOf_other": "{{spots}} helyből {{count}} játékos bent",
+    "playingTitle": "Most játszol",
+    "playingBody": "Csatlakozz a szerverhez a csapatoddal. A következő fordulót akkor sorsoljuk, amikor ennek minden meccse véget ért.",
+    "sittingOutTitle": "Ebből a fordulóból kimaradsz",
+    "sittingOutBody": "Ebben a fordulóban nincs elég játékos minden csapathoz. Bent vagy a(z) {{next}}. forduló sorsolásában, és akik a legtöbbet játszottak, azok maradnak ki elsőként.",
+    "goToMatch": "Ugrás a meccshez",
+    "tagPlaying": "Játszik",
+    "tagSittingOut": "Kimarad",
+    "roundHeading": "{{round}}. forduló",
+    "versus": "vs",
+    "sittingOutList": "Kimarad: {{names}}",
+    "status": {
+      "live": "Élő",
+      "done": "Kész",
+      "waiting": "Indul"
+    },
+    "finishedTitle": "A shuffle véget ért",
+    "finishedBody_one": "A forduló lement. Jó meccsek voltak!",
+    "finishedBody_other": "Mind a(z) {{count}} forduló lement. Jó meccsek voltak!",
+    "roundOf": "{{round}}/{{total}}. forduló",
+    "roundsCount_one": "{{count}} forduló",
+    "roundsCount_other": "{{count}} forduló",
+    "now": "Most",
+    "tagLeft": "Kilépett",
+    "markOut": "Kiveszem",
+    "markIn": "Újra bent",
+    "roundShort": "{{round}}. forduló",
+    "playedTitle": "A(z) {{round}}. forduló meccsed véget ért",
+    "playedBody": "A(z) {{next}}. fordulót akkor sorsoljuk, amikor a többi meccs véget ér. Maradj ezen az oldalon: magától frissül.",
+    "sittingOutBodyCounts_one": "{{players}} játékos van a(z) {{size}}v{{size2}} formátumhoz, így fordulónként {{count}} pihen. Akik a legtöbbet játszottak, azok pihennek először: te bent vagy a következő sorsolásban.",
+    "sittingOutBodyCounts_other": "{{players}} játékos van a(z) {{size}}v{{size2}} formátumhoz, így fordulónként {{count}} pihen. Akik a legtöbbet játszottak, azok pihennek először: te bent vagy a következő sorsolásban.",
+    "playedBodyLeft_one": "Még {{count}} meccsre várunk. A(z) {{next}}. fordulót a végén sorsoljuk; a következő meccsed itt jelenik meg, és értesítést kapsz.",
+    "playedBodyLeft_other": "Még {{count}} meccsre várunk. A(z) {{next}}. fordulót a végükön sorsoljuk; a következő meccsed itt jelenik meg, és értesítést kapsz.",
+    "joinedByMistake": "Véletlenül csatlakoztál?",
+    "breakTitle": "Szünet · a(z) {{round}}. forduló kezdete: {{time}}",
+    "noShowTitle": "Kimaradsz a következő sorsolásokból",
+    "noShowBody": "Nem csatlakoztál a meccsedhez, ezért a következő fordulókat nélküled sorsoljuk. Újra a gépnél vagy? Szólj, és bent leszel a következő sorsolásban.",
+    "backIn": "Visszatértem",
+    "tagNoShow": "Nem jelent meg"
+  },
+  "liveOverview": {
+    "roundOf": "{{round}}/{{total}}. forduló",
+    "liveCount": "{{count}} élőben most",
+    "eta": {
+      "nextRoundAbout": "Következő forduló nagyjából: {{time}}",
+      "nextRoundAt": "Következő forduló: {{time}}",
+      "finalEnds": "Utolsó forduló: nagyjából {{time}}-kor ér véget",
+      "endsAbout": "nagyjából {{time}}-kor ér véget"
+    },
+    "hero": {
+      "playingTitle": "Most játszol",
+      "playingBody": "{{us}} vs {{them}}{{map}}. Csatlakozz a meccsszobából.",
+      "joiningTitle": "Csatlakozás a szerverhez",
+      "joiningBody": "{{us}} vs {{them}}{{map}}. A meccs akkor indul, amikor mindenki kész.",
+      "vetoTitle": "A pályavetód nyitva van",
+      "vetoBody": "Bannoljátok és pickeljétek a pályákat a(z) {{them}} csapattal a meccsszobában.",
+      "waitingTitle": "Várakozás a következő ellenfeledre",
+      "waitingBody": "Egy még zajló meccsből érkeznek. Rövid szünet után megnyílik a veto, és értesítést kapsz.",
+      "notStartedTitle": "Következik: {{them}}",
+      "notStartedBody": "A meccsed a forduló kezdetekor nyílik meg. Ez az oldal magától frissül.",
+      "outTitle": "A csapatod kiesett. Helyezésetek: {{place}}",
+      "outBody": "Ez volt az utolsó meccsed. Jó meccsek voltak! A matchmaking nyitva van, ha játszanál még.",
+      "wonTitle": "Megnyertétek a versenyt!",
+      "wonBody": "Szép játék volt. A díjad az inventorydban van.",
+      "spectatorTitle": "{{count}} meccs élőben",
+      "spectatorTitleOne": "1 meccs élőben",
+      "spectatorIdleTitle": "Fordulók között",
+      "spectatorBody": "Nyiss meg egy meccset az eredmény, a pályák és a játékosok megtekintéséhez.",
+      "openMatchRoom": "Meccsszoba megnyitása",
+      "openVeto": "Veto megnyitása",
+      "watchLive": "Élő meccs nézése",
+      "playMatchmaking": "Matchmaking",
+      "yourMatch": "A meccsed",
+      "opponentFrom": "Az ellenfeled innen érkezik",
+      "minutesLeft": "nagyjából {{count}} perc van hátra",
+      "winsToTitle_one": "még egy győzelem a címig",
+      "winsToTitle_other": "még {{count}} győzelem a címig",
+      "waitingServerTitle": "Várakozás szerverre",
+      "waitingServerBody": "{{us}} vs {{them}}{{map}}. Amint egy szerver felszabadul, kiosztjuk; értesítést kapsz.",
+      "wonStage": "{{stage}} megnyerve: {{score}}",
+      "stageNext": "Következik: {{stage}}",
+      "faceWinnerOf": "{{us}} a(z) {{a}} vs {{b}} győztesével játszik ({{state}}). A veto akkor nyílik meg, amikor az a meccs véget ér; értesítést kapsz.",
+      "feederLive": "{{score}}, {{map}}. pálya élőben",
+      "feederNotStarted": "még nem kezdődött el",
+      "vetoOpens": "Veto nyílik",
+      "inAboutMinutes_one": "~{{count}} perc múlva",
+      "inAboutMinutes_other": "~{{count}} perc múlva",
+      "later": "később",
+      "afterBreak": "egy rövid szünet után",
+      "youAre": "mérlegetek: {{record}}",
+      "nextRoundDrawn": "Következőként a(z) {{round}}. fordulót sorsoljuk",
+      "lastRoundPlaying": "Az utolsó forduló zajlik",
+      "betweenBody": "A fordulóbeli meccsed véget ért. A következő fordulót akkor sorsoljuk, amikor a többi meccs véget ér; a meccsed itt jelenik meg, és értesítést kapsz.",
+      "vetoSoonTitle": "A pályavetód ekkor nyílik: {{time}}",
+      "vetoSoonBody": "Rövid szünet az utolsó meccsed után. Értesítést kapsz, amikor megnyílik a veto a(z) {{them}} ellen."
+    },
+    "schedule": "Menetrend",
+    "bracket": "Ágrajz",
+    "round": "{{n}}. forduló",
+    "final": "Döntő",
+    "state": {
+      "now": "Most",
+      "next": "Következő",
+      "later": "Később",
+      "done": "✓ Kész",
+      "live": "Élő",
+      "upcoming": "Közelgő"
+    },
+    "thisRound": "{{n}}. forduló",
+    "earlier": "Korábbi fordulók",
+    "standings": "Tabella",
+    "teams": "Csapatok",
+    "wl": "Gy–V",
+    "rounds": "+/−",
+    "ties": {
+      "round_robin": "Holtverseny esetén: egymás elleni eredmény, majd körkülönbség, majd megnyert körök.",
+      "swiss": "Holtverseny esetén: mennyire voltak erősek az ellenfeleid (Buchholz: a győzelmeik összege), majd körkülönbség.",
+      "elim": "Győzelmek szerint rendezve. Két vereség, és a csapat kiesik.",
+      "singleElim": "Győzelmek szerint rendezve. Egy vereség, és a csapat kiesik.",
+      "doubleElim": "Győzelmek szerint rendezve. Két vereség, és a csapat kiesik.",
+      "groups": "Csoporton belüli holtverseny: egymás elleni eredmény, majd körkülönbség, majd megnyert körök."
+    },
+    "players": {
+      "title": "Játékosok · értékelés szerint",
+      "find": "Játékos keresése",
+      "export": "Exportálás",
+      "all": "Mind a(z) {{count}} játékos",
+      "player": "Játékos",
+      "team": "Csapat",
+      "rating": "Értékelés",
+      "change": "±",
+      "kd": "K / D",
+      "adr": "ADR",
+      "winRate": "Győzelmi arány",
+      "none": "Nincs megfelelő játékos."
+    }
+  },
+  "matchesCards": {
+    "show": "Mutasd",
+    "filterAll": "Mind {{count}}",
+    "filterLive": "Élő {{count}}",
+    "filterUpcoming": "Közelgő {{count}}",
+    "done": "Kész",
+    "afterOvertime": "hosszabbítás után",
+    "startsAt": "kezdés: {{time}} · veto nyílik: {{veto}}",
+    "yourMatch": "A meccsed",
+    "placeholderTbd": "TBD",
+    "placeholderVeto": "Pályaveto",
+    "placeholderVetoAt": "Veto {{time}}"
+  },
+  "standingsTab": {
+    "champions": "Bajnokok",
+    "championBadge": "BAJNOKOK",
+    "vs": "vs",
+    "rounds": "Körök",
+    "form": "Forma",
+    "intro": {
+      "round_robin": "Körmérkőzés: minden csapat egyszer játszik minden másik csapattal.",
+      "swiss": "Svájci rendszer: minden fordulóban azonos mérlegű csapatok kerülnek párba.",
+      "single": "Egyenes kiesés: egy vereség, és a csapat kiesik.",
+      "double": "Dupla kiesés: két vereség, és a csapat kiesik.",
+      "groups": "Csoportkör, majd rájátszás: minden csapat egyszer játszik a csoportja többi tagjával; a legjobbak a rájátszásba jutnak."
+    }
+  },
+  "teamsCards": {
+    "subs": "Cserék: {{names}}"
+  },
+  "rulesTab": {
+    "atAGlance": "Röviden",
+    "onThisPage": "Ezen az oldalon",
+    "fromSettings": "a versenybeállításokból, mindig naprakészen",
+    "organizer": "A szervező szabályai",
+    "facts": {
+      "map": "Pálya",
+      "firstTo": "aki elsőként eléri a(z) {{count}} kört",
+      "noOvertime": "Nincs",
+      "overtimeSegments_one": "1, utána sebzés",
+      "overtimeSegments_other": "{{count}}, utána sebzés",
+      "overtimeUnlimited": "Amennyi kell",
+      "thenDamage": "6 kör mindegyik, aki elsőként eléri a 4-et",
+      "mapCount_one": "{{count}} pálya",
+      "mapCount_other": "{{count}} pálya"
+    },
+    "format": {
+      "title": "Hogyan működik ez a formátum",
+      "navTitle": "A formátum",
+      "swiss_one": "Mindenki {{count}} fordulót játszik egy azonos mérlegű csapat ellen. Nincs visszavágó. Győzelmek szerinti rangsor, utána az alábbi holtversenyszabályok.",
+      "swiss_other": "Mindenki {{count}} fordulót játszik, mindig egy azonos mérlegű csapat ellen. Nincs visszavágó. Győzelmek szerinti rangsor, utána az alábbi holtversenyszabályok.",
+      "single_elimination": "Egy vereség, és kiestél. Az ágrajz a döntőig tart.",
+      "double_elimination": "Egy felső és egy alsó ág. Két vereség, és kiestél.",
+      "round_robin": "Mindenki egyszer találkozik mindenkivel. Győzelmek szerinti rangsor, utána az alábbi holtversenyszabályok.",
+      "shuffle": "A csapatokat minden fordulóban újonnan sorsoljuk a nevezett játékosokból. A játékosokat győzelmek szerint rangsoroljuk.",
+      "matches": "Minden meccs {{series}} MR{{mr}} pályákon. Hosszabbítás: {{overtime}}.",
+      "damage": "Ha egy pálya az utolsó hosszabbítás után is döntetlen, az a csapat nyeri, amelyik összesen több sebzést okozott."
+    }
+  },
+  "liveMatch": {
+    "updatesEveryRound": "Minden kör után frissül",
+    "chat": "Meccschat",
+    "system": "Auto Tournament",
+    "noMessages": "Még nincsenek üzenetek. Mondj egy gl hf-et!",
+    "chatSignIn": "Jelentkezz be a meccs játékosaként, hogy itt olvashass és írhass.",
+    "messageLabel": "Üzenet mindkét csapatnak és az adminoknak",
+    "send": "Küldés",
+    "callAdmin": "Admin hívása",
+    "adminCalled": "Egy admin úton van",
+    "joinTitle": "Csatlakozás a szerverhez: {{map}}",
+    "warmup": "Bemelegítés · csatlakozz most",
+    "isLive": "{{map}} élőben",
+    "players": "Játékosok",
+    "playersOnMap": "Játékosok · {{map}}",
+    "noEconomy": "Értékelés szerint rendezve. Nincs pénz vagy felszerelés: semmi, ami elárulná egy csapat gazdaságát.",
+    "yourTeam": "A csapatod",
+    "backToTournament": "Vissza a versenyhez",
+    "manage": "A meccs kezelése",
+    "finishedAt": "véget ért: {{when}}",
+    "delayedNote_one": "Azt mutatja, amit a GOTV, {{count}} másodperc késéssel.",
+    "delayedNote_other": "Azt mutatja, amit a GOTV, {{count}} mp késéssel."
+  },
+  "preStart": {
+    "open": "A nevezés nyitva",
+    "openCloses": "A nevezés nyitva · lezárul: {{when}}",
+    "closed": "A nevezés lezárult",
+    "notOpenTitle": "A nevezés nincs nyitva",
+    "fullTitle": "Minden hely betelt",
+    "spotsLeft_one": "{{max}} helyből {{count}} maradt. A kapitányok választják ki a kezdőket és a cseréket.",
+    "spotsLeft_other": "{{max}} helyből {{count}} maradt. A kapitányok választják ki a kezdőket és a cseréket.",
+    "byOrganizer": "A szervező adja hozzá a csapatokat.",
+    "captainsPick": "A kapitányok választják ki a kezdőket és a cseréket.",
+    "startsIn": "Kezdésig",
+    "allRules": "Összes szabály és díj",
+    "signedUpEyebrow": "{{team}} · nevezett",
+    "inTitle": "Bent vagytok",
+    "inToFix_one": "Bent vagytok. Egy dolgot javítani kell",
+    "inToFix_other": "Bent vagytok. {{count}} dolgot javítani kell",
+    "fixBefore": "Javítsd ki a check-in előtt ({{when}}), különben az a játékos nem tud csatlakozni a szerverhez.",
+    "checkInOn": "Check-in: {{when}}. Az a kezdő, aki a kezdésig nem végezte el a check-int, cserére cserélődik.",
+    "allSet": "Mindenki kész. A menetrend mutatja, mikor kezdődik.",
+    "checkInOpens": "A check-in megnyílik",
+    "openLineup": "Felállás megnyitása",
+    "yourSignup": "A nevezésed",
+    "spotOf": "{{max}} helyből a(z) {{place}}.",
+    "lineupCount": "Felállás · {{starters}} kezdő, {{subs}} csere",
+    "fixBeforeCheckIn": "Javítsd a check-in előtt",
+    "leave": "Kilépés a versenyből",
+    "withdrawHint": "Nem tudsz jönni? A visszalépéssel a hely felszabadul egy másik csapat számára.",
+    "opensTitle": "A nevezés megnyílik: {{when}}",
+    "opensIn": "Nyílik: {{time}}."
+  },
+  "shuffleOverview": {
+    "yourMatchLive": "a meccsed élőben",
+    "yourMatchReady": "a meccsed kész",
+    "yourMatchDone": "a meccsed véget ért",
+    "nextDraw": "Következő sorsolás",
+    "round": "{{n}}. forduló",
+    "whenRoundEnds": "amikor ennek a fordulónak a meccsei véget érnek",
+    "oneMapPerRound": "Fordulónként egy pálya · minden fordulóban új csapatok",
+    "sittingOut": "Kimarad:",
+    "firstNextRound": "elsőként a következő fordulóban",
+    "players": "Játékosok",
+    "markOutHint": "Jelöld ki a távozott játékost; kimarad, amíg vissza nem jelölöd."
+  },
+  "checkIn": {
+    "areYouHere": "Itt vagy?",
+    "teamCount": "{{team}} check-int végez: {{total}}-ból/-ből {{in}}. Az a kezdő, aki a kezdésig nem végezte el a check-int, cserére cserélődik.",
+    "soundOn": "♪ Hang bekapcsolva",
+    "firstVeto_one": "Az első vetód ekkor nyílik: {{time}}, {{count}} perccel a meccs előtt: addigra légy a gépnél.",
+    "firstVeto_other": "Az első vetód ekkor nyílik: {{time}}, {{count}} perccel a meccs előtt: addigra légy a gépnél.",
+    "vetoOpensNote": "veto nyílik: {{time}}"
+  },
+  "runState": {
+    "paused": "A verseny szünetel",
+    "pausedUntil": "A verseny szünetel eddig: {{time}}",
+    "pausedBody": "A már szerveren lévő meccsek folytatódnak. Új fordulót nem sorsolunk, és veto sem nyílik, amíg a verseny nem folytatódik.",
+    "reason": "Indok: {{reason}}.",
+    "waitingServers_one": "{{count}} meccs vár szerverre.",
+    "waitingServers_other": "{{count}} meccs vár szerverre.",
+    "allBusy_one": "A szerver foglalt; a meccs indul, amint felszabadul.",
+    "allBusy_other": "Mind a(z) {{count}} szerver foglalt; a meccsek indulnak, amint egy felszabadul.",
+    "noneFree": "Nincs szabad szerver; a meccsek indulnak, amint lesz egy.",
+    "servers": "Szerverek",
+    "pausedShort": "Szünetel"
+  },
+  "captainsPanel": {
+    "title": "Kapitányok",
+    "note": "Csak egy kapitány jelenthet vagy erősíthet meg eredményt.",
+    "make": "Kinevezés kapitánnyá",
+    "remove": "Kapitányság elvétele",
+    "role": {
+      "owner": "Tulajdonos",
+      "captain": "Kapitány",
+      "member": "Tag"
+    }
+  },
+  "lineupPanel": {
+    "title": "Felállás",
+    "note_one": "Válassz {{count}} játékost erre a meccsre. A többiek a kispadon ülnek.",
+    "note_other": "Válassz {{count}} játékost erre a meccsre. A többiek a kispadon ülnek.",
+    "picked": "{{count}}-ból/-ből {{picked}} kiválasztva",
+    "plays": "Játszik",
+    "bench": "Kispad",
+    "save": "Felállás mentése",
+    "saved": "Felállás mentve",
+    "notOnServer": "Felállás mentve, de a szerver nem fogadta el: {{error}}",
+    "locked": "A felállás zárolva van, amíg egy pálya élőben megy. A pályák között módosítható.",
+    "captainOnly": "Csak a csapat tulajdonosa vagy egy kapitány módosíthatja a felállást.",
+    "source": {
+      "previous": "Ugyanaz, mint a csapat legutóbbi meccsén.",
+      "roster": "A keret első játékosai."
+    }
+  },
+  "prizesPage": {
+    "title": "Díjak",
+    "intro": "Skinek helyezésért, a verseny végén a csapat minden játékosának, és egy díj az MVP-nek. Csak oldalskinek: nem Steam-tárgyak, és nincs pénzbeli értékük.",
+    "none": "Ennek a versenynek a játékában nincsenek díjak.",
+    "loadFailed": "Nem sikerült betölteni a versenyt."
+  },
+  "schedulePage": {
+    "title": "Meccsidőpontok",
+    "intro": "Adj minden fordulónak kezdési időpontot, vagy egy-egy meccsnek sajátot. A játékosok látják a meccsnél, emlékeztetőt kapnak, és a veto időben nyílik meg.",
+    "loadFailed": "Nem sikerült betölteni a versenyt.",
+    "rounds": "Fordulók",
+    "modeLabel": "Mikor indulnak a meccsek",
+    "modeTimes": "Megadott időpontokban",
+    "modeAsap": "Amint készen állnak",
+    "modeTimesNote": "A meccsek kivárják az időpontjukat. Nyiss meg egy fordulót, ha egy meccsnek saját időpontot adnál.",
+    "modeAsapNote": "Nincsenek időpontok: egy meccs akkor indul, amikor mindkét csapat és egy szerver készen áll.",
+    "noRounds": "A fordulók az ágrajz elkészülte után jelennek meg itt.",
+    "roundN": "{{n}}. forduló",
+    "roundNote_one": "{{count}} meccs · nyisd meg a saját időpont beállításához",
+    "roundNote_other": "{{count}} meccs · nyisd meg egy meccs időpontjának beállításához",
+    "roundNoMatches": "A meccsei az előző forduló végén jönnek létre",
+    "roundStartsAt": "A forduló kezdete",
+    "roundTimeLabel": "Kezdési idő: {{round}}",
+    "matchTimeLabel": "Kezdési idő: {{match}}",
+    "tbd": "TBD",
+    "ownTime": "Saját kezdési idő",
+    "sameAsRound": "Ugyanaz, mint a fordulóé",
+    "useRoundTime": "A forduló idejének használata",
+    "vetoTitle": "A veto",
+    "vetoNote": "Minden meccs előtt magától nyílik meg, így a meccs kezdetére lezárul. Ha egy csapat nem lép időben, választunk neki egy pályát.",
+    "vetoLabel": "Veto nyílik",
+    "vetoZero": "A kezdési időpontban",
+    "reminderTitle": "Emlékeztető",
+    "reminderNote": "Értesítés az oldalon és a Discordon a meccs minden játékosának.",
+    "reminderLabel": "Emlékeztető a játékosoknak",
+    "reminderZero": "Ki",
+    "minutesBefore_one": "{{count}} perccel előtte",
+    "minutesBefore_other": "{{count}} perccel előtte",
+    "save": "Időpontok mentése",
+    "saved": "Meccsidőpontok mentve",
+    "saveFailed": "Nem sikerült menteni az időpontokat",
+    "rulesTitle": "Szabályok, amelyeket követ",
+    "rules": {
+      "start": "Semmi sem indul el egy meccsből, mielőtt a vetója megnyílik, még szabad szerverrel sem.",
+      "late": "Egy késő forduló eltolja a következőt: egy még játszó csapat vagy a meccsek közötti szünet visszatartja a vetót, és a játékosok látják az új időpontot.",
+      "none": "Nincs beállított időpont: ahogy eddig, egy meccs azonnal indul, amint mindkét csapat és egy szerver készen áll.",
+      "where": "Az áttekintés menetrendje, a meccskártyák, a meccsszoba, a szabályok és a check-in ezeket az időpontokat mutatja."
+    },
+    "breaksTitle": "Szünetek a fordulók között",
+    "breaksNote_one": "Hagyd üresen a szünetet az oldal {{count}} perces szünetéhez. Bármelyik forduló után adhatsz hosszabb szünetet, pl. 30 percet a 3. forduló után.",
+    "breaksNote_other": "Hagyd üresen a szünetet az oldal {{count}} perces szünetéhez. Bármelyik forduló után adhatsz hosszabb szünetet, pl. 30 percet a 3. forduló után.",
+    "breakEvery": "Szünet minden forduló után (perc)",
+    "breakAfterRound": "Forduló után",
+    "breakMinutes": "Szünet (perc)",
+    "breakRemove": "Eltávolítás",
+    "breakAdd": "Hosszabb szünet hozzáadása",
+    "fillStart": "Az első forduló kezdete",
+    "fillEvery": "Percek a fordulók között",
+    "fillApply": "Fordulók kitöltése"
+  },
+  "groups": {
+    "groupN": "{{letter}} csoport",
+    "done": "Döntő",
+    "through_one": "a győztes jut tovább",
+    "through_other": "az első {{count}} jut tovább",
+    "playoffs": "Rájátszás",
+    "playoffsSoon": "A rájátszás akkor kezdődik, amikor minden csoportmeccs lement.",
+    "seedSlot": "{{n}}. kiemelt"
+  },
+  "matchCheckIn": {
+    "eyebrow": "Veto nyitva · a meccs kezdete: {{time}}",
+    "eyebrowNoTime": "Check-in nyitva",
+    "title": "Check-in erre a meccsre",
+    "body": "Ebben a versenyben minden meccs előtt check-in van. A kezdők jelzik, hogy itt vannak; egy kapitány megteheti helyettük. A cserék már készen állnak.",
+    "closesIn": "A check-in lezárul",
+    "yourTeam": "{{team}} (a csapatod)",
+    "count": "{{total}} kezdőből {{in}} elvégezte a check-int",
+    "sub": "CSERE",
+    "starter": "KEZDŐ",
+    "ready": "Kész",
+    "checkedIn": "Check-in elvégezve",
+    "notYet": "Még nem",
+    "rule": "Nincs check-in a kezdésig: a kezdőt cserére cseréljük, és a meccsszoba megmutatja, kit. Ha nincs több csere, a csapat egy fővel kevesebben játszik.",
+    "server": {
+      "eyebrow": "Szerver kész · teljes csapat eddig: {{time}}",
+      "eyebrowNoTime": "Szerver kész",
+      "title": "Juttasd fel a csapatodat a szerverre",
+      "bodyOut": "{{out}} nem végezte el a check-int, így egy csere játszik helyette.",
+      "body_one": "Egyikőtöknek fent kell lennie a szerveren, mielőtt lejár az idő. A cserék is számítanak.",
+      "body_other": "{{count}} főnek fent kell lennie közületek a szerveren, mielőtt lejár az idő. A cserék is számítanak.",
+      "clockLabel": "Teljes csapat kell ennyi időn belül",
+      "count": "{{size}}-ból/-ből {{on}} a szerveren",
+      "onServer": "A szerveren",
+      "joining": "Csatlakozik…",
+      "subIn": "CSERE BE",
+      "out": "KI",
+      "swapped": "Cserére cserélve",
+      "rule": "0:00-kor a teljes csapat dönt: elfogadja a walkovert, vagy játszik a hiányos csapat ellen. Ha mindkét csapat hiányos, egy admin dönt."
+    },
+    "choice": {
+      "eyebrow": "{{team}} még mindig hiányos",
+      "title": "{{team}}: {{size}}-ból/-ből {{on}} a szerveren",
+      "body": "Lejárt az idejük. Fogadd el a walkovert és jussatok tovább, vagy játsszatok ellenük mégis. Bármelyik kapitány dönthet. Ha 2 percen belül nincs döntés, a walkover érvényes.",
+      "take": "Walkover elfogadása",
+      "play": "Játsszunk mégis"
+    }
+  }
+}
