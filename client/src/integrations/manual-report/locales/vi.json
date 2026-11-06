@@ -1,0 +1,81 @@
+{
+  "manualReport": {
+    "title": "Kết quả trận",
+    "unknownTeam": "đội kia",
+    "state": {
+      "nothing": "Chưa có kết quả nào được báo. Ai đã chơi trận này, hãy báo tỉ số.",
+      "waitingOpponent": "Đã báo. Đang chờ {{team}} xác nhận.",
+      "needsAnswer": "{{team}} đã báo kết quả này. Hãy xác nhận nếu đúng.",
+      "disputed": "Kết quả này đang bị tranh chấp. Quản trị viên sẽ quyết định.",
+      "awaitingAdmin": "Đang chờ quản trị viên quyết định trận này.",
+      "confirmed": "Cả hai đội đồng ý với kết quả này."
+    },
+    "deadline": {
+      "autoConfirm": "Tự xác nhận sau {{minutes}} phút nếu không ai phản hồi.",
+      "autoConfirmSoon": "Sắp tự xác nhận.",
+      "escalate": "Chuyển cho quản trị viên sau {{minutes}} phút nếu không ai phản hồi.",
+      "escalateSoon": "Sắp chuyển cho quản trị viên."
+    },
+    "score": "{{team1}} {{score1}} – {{score2}} {{team2}}",
+    "game": "Ván {{number}}",
+    "note": "Ghi chú",
+    "notePlaceholder": "Điều đội kia nên biết (không bắt buộc)",
+    "noteGiven": "Ghi chú: {{note}}",
+    "disputeReason": "Kết quả này sai ở đâu?",
+    "disputeReasonGiven": "Bị tranh chấp: {{reason}}",
+    "formHint": "Tỉ số của {{team1}} và {{team2}}, từng ván.",
+    "actions": {
+      "report": "Báo tỉ số",
+      "reportAgain": "Báo tỉ số khác",
+      "submit": "Gửi báo cáo",
+      "cancel": "Hủy",
+      "confirm": "Xác nhận",
+      "dispute": "Tranh chấp",
+      "disputeSubmit": "Gửi tranh chấp",
+      "withdraw": "Rút báo cáo của tôi"
+    },
+    "errors": {
+      "stale": "Báo cáo này đã thay đổi khi đang hiện trên màn hình của bạn. Hãy đọc lại trước khi xác nhận.",
+      "incomplete": "Hãy điền tỉ số của cả hai đội cho ít nhất một ván.",
+      "failed": "Không thành công. Hãy thử lại."
+    },
+    "captains": {
+      "title": "Đội trưởng",
+      "hint": "Chỉ đội trưởng mới được báo hoặc xác nhận kết quả cho đội này.",
+      "make": "Đặt làm đội trưởng",
+      "remove": "Bỏ đội trưởng",
+      "isCaptain": "Đội trưởng",
+      "empty": "Chưa ai trong đội này đăng nhập nên chưa có ai để chỉ định.",
+      "unknown": "Người chơi không xác định",
+      "failed": "Không đổi được. Hãy thử lại."
+    },
+    "stats": {
+      "hint": "Các số liệu bổ sung mà giải đấu này yêu cầu. Để trống nếu không ai có.",
+      "required": "bắt buộc",
+      "recorded": "Số liệu đã báo",
+      "value": "{{subject}}: {{value}}{{suffix}}",
+      "errors": {
+        "number": "{{field}} của {{subject}} phải là số.",
+        "integer": "{{field}} của {{subject}} phải là số nguyên.",
+        "range": "{{field}} của {{subject}} quá lớn để là số thực.",
+        "tooLong": "{{field}} của {{subject}} dài quá {{max}} ký tự.",
+        "missing": "{{field}} là bắt buộc, nhưng {{team}} chưa điền gì."
+      },
+      "tournamentTitle": "Số liệu đã báo",
+      "tournamentHelp": "Cộng dồn từ các báo cáo đã xác nhận. Kết quả còn chờ đối thủ chưa được tính ở đây.",
+      "byTeam": "Theo đội",
+      "byPlayer": "Theo người chơi",
+      "team": "Đội",
+      "player": "Người chơi",
+      "matches": "Trận"
+    },
+    "chip": {
+      "none": "Chưa có kết quả",
+      "yours": "Báo cáo của bạn",
+      "reported": "Đã báo",
+      "confirm": "Hãy xác nhận",
+      "disputed": "Bị tranh chấp",
+      "final": "Chung cuộc"
+    }
+  }
+}
