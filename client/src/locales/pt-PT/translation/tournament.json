@@ -1142,7 +1142,7 @@
       "mostMoney": "Mais dinheiro gasto"
     },
     "awardValue": {
-      "mostKills": "{{value}} kills",
+      "mostKills": "{{value}} abates",
       "bestAdr": "{{value}} ADR",
       "bestHeadshots": "{{value}} % de headshots",
       "mostFlashAssists": "{{value}} assistências com flash",

@@ -1083,7 +1083,7 @@
       "failed": "Mislukt",
       "timeout": "Geen antwoord van csm"
     },
-    "summary": "{{machines}} machine(s), {{online}} online · {{servers}} server(s)",
+    "summary": "Machines: {{machines}}, online: {{online}} · servers: {{servers}}",
     "about": "Machines draaien CS2 Server Manager (csm). Het platform start, stopt en maakt er vanzelf servers op.",
     "deleteServer": "Server verwijderen",
     "deleting": "Verwijderen…",
@@ -2165,7 +2165,7 @@
       "copied": "Gekopieerd",
       "copyFailed": "Kan niet kopiëren: selecteer het commando en kopieer het",
       "pc": "Gaming-pc",
-      "server": "Server (headless)",
+      "server": "Server (zonder scherm)",
       "pcNeeds": "Een Linux-pc met Docker, Steam (ingelogd) en CS2 geïnstalleerd. Plak dit in een terminal in de desktopsessie. De recorder gebruikt de GPU en vindt CS2 in de Steam-bibliotheken. Game niet en draai geen ander GPU-werk terwijl hij opneemt: de clips zouden haperen.",
       "serverNeeds": "Een Ubuntu 24.04-server met een NVIDIA-GPU, geen desktop nodig. De eerste regel (één keer, met sudo) installeert de NVIDIA-driver en Docker en zet de slaapstand uit; herstart als hij dat vraagt. De tweede start Steam en CS2 in een container met de recorder erin.",
       "pcAfter": "Hij start nu en daarna telkens als Docker start.",
@@ -2462,7 +2462,7 @@
     "explain": {
       "rating": "Hoe goed een speler speelt, 1.00 voor een gemiddelde speler: kills, deaths, assists, schade en KAST per ronde.",
       "adr": "Gemiddelde schade per ronde.",
-      "kd": "Kills per death.",
+      "kd": "Kills per dood.",
       "hs": "Het aandeel kills dat een headshot was (minstens 50 kills).",
       "opening": "Het aandeel gewonnen openingsduels: de eerste kill van een ronde, voor of tegen (minstens 10 duels).",
       "clutch": "Het aandeel 1vX-rondes gewonnen als laatste overlevende (minstens 5).",
