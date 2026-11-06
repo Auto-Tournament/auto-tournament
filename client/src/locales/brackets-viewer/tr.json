@@ -1,0 +1,124 @@
+{
+  "origin-hint": {
+    "seed": "Seri başı {{position}}",
+    "winner-bracket": "Kaybeden: $t(abbreviations.winner-bracket) {{round}}.{{position}}",
+    "winner-bracket-semi-final": "Kaybeden: $t(abbreviations.winner-bracket) yarı final {{position}}",
+    "winner-bracket-final": "Kaybeden: $t(abbreviations.winner-bracket) final",
+    "consolation-final": "Kaybeden: yarı final {{position}}",
+    "grand-final": "Kazanan: $t(abbreviations.loser-bracket) final",
+    "double-elimination-consolation-final-opponent-1": "Kaybeden: $t(abbreviations.loser-bracket) yarı final 1",
+    "double-elimination-consolation-final-opponent-2": "Kaybeden: $t(abbreviations.loser-bracket) final"
+  },
+  "match-label": {
+    "default": "Maç {{matchNumber}}",
+    "winner-bracket": "$t(abbreviations.winner-bracket)",
+    "loser-bracket": "$t(abbreviations.loser-bracket)",
+    "standard-bracket": "$t(abbreviations.match)",
+    "standard-bracket-semi-final": "Yarı final {{matchNumber}}",
+    "standard-bracket-final": "Final",
+    "double-elimination": "{{matchPrefix}} {{roundNumber}}.{{matchNumber}}",
+    "double-elimination-semi-final": "{{matchPrefix}} yarı final {{matchNumber}}",
+    "double-elimination-final": "{{matchPrefix}} final",
+    "consolation-final": "Üçüncülük maçı",
+    "grand-final-single": "Büyük final",
+    "grand-final": "$t(abbreviations.grand-final) tur {{roundNumber}}",
+    "match-game": "Oyun {{gameNumber}}"
+  },
+  "match-status": {
+    "locked": "Kilitli",
+    "waiting": "Bekliyor",
+    "ready": "Hazır",
+    "running": "Devam ediyor",
+    "completed": "Tamamlandı",
+    "archived": "Arşivlendi"
+  },
+  "abbreviations": {
+    "win": "W",
+    "loss": "L",
+    "forfeit": "F",
+    "position": "P",
+    "seed": "#",
+    "winner-bracket": "ÜA",
+    "loser-bracket": "AA",
+    "match": "M",
+    "grand-final": "BF"
+  },
+  "ranking": {
+    "rank": {
+      "text": "#",
+      "tooltip": "Sıra"
+    },
+    "id": {
+      "text": "Ad",
+      "tooltip": "Ad"
+    },
+    "played": {
+      "text": "P",
+      "tooltip": "Oynanan"
+    },
+    "wins": {
+      "text": "$t(abbreviations.win)",
+      "tooltip": "Galibiyet"
+    },
+    "draws": {
+      "text": "D",
+      "tooltip": "Beraberlik"
+    },
+    "losses": {
+      "text": "$t(abbreviations.loss)",
+      "tooltip": "Mağlubiyet"
+    },
+    "forfeits": {
+      "text": "$t(abbreviations.forfeit)",
+      "tooltip": "Hükmen"
+    },
+    "scoreFor": {
+      "text": "AS",
+      "tooltip": "Atılan skor"
+    },
+    "scoreAgainst": {
+      "text": "YS",
+      "tooltip": "Yenilen skor"
+    },
+    "scoreDifference": {
+      "text": "+/-",
+      "tooltip": "Averaj"
+    },
+    "points": {
+      "text": "P",
+      "tooltip": "Puan"
+    }
+  },
+  "common": {
+    "bye": "BAY",
+    "best-of-x": "Bo{{x}}",
+    "consolation": "Üçüncülük",
+    "group-name": "Grup {{groupNumber}}",
+    "group-name-winner-bracket": "Üst ağaç",
+    "group-name-loser-bracket": "Alt ağaç",
+    "round-name": "Tur {{roundNumber}}",
+    "round-name-final": "Son tur",
+    "round-name-winner-bracket": "$t(abbreviations.winner-bracket) tur {{roundNumber}}",
+    "round-name-winner-bracket-final": "$t(abbreviations.winner-bracket) son tur",
+    "round-name-loser-bracket": "$t(abbreviations.loser-bracket) tur {{roundNumber}}",
+    "round-name-loser-bracket-final": "$t(abbreviations.loser-bracket) son tur"
+  },
+  "form-creator": {
+    "stage-name-label": "Aşamana bir ad ver",
+    "stage-name-placeholder": "Aşaman için bir ad",
+    "stage-selector-label": "Bir aşama seç",
+    "team-label": "Takımlarına ad ver",
+    "team-label-placeholder": "Virgülle ayrılmış takım adları listesi (2^n olmalı)",
+    "team-count": "Ya da bir takım sayısı",
+    "team-count-placeholder": "Kaç takım istiyorsun?",
+    "group-label": "Kaç grup?",
+    "group-placeholder": "Kaç grup istiyorsun?",
+    "seed-order-label": "Seri başlarını nasıl sıralamak istersin?",
+    "double-elimination-seed-order-placeholder": "Çift eleme için virgülle ayrılmış seri başı sırası",
+    "round-robin-mode-label": "Hangi lig usulü modunu tercih edersin?",
+    "consolation-final-label": "Üçüncülük maçı",
+    "skip-first-round-label": "İlk turu atla",
+    "grand-final-type-label": "Büyük final türü",
+    "submit": "Oluştur"
+  }
+}

@@ -1,0 +1,81 @@
+{
+  "manualReport": {
+    "title": "Maç sonucu",
+    "unknownTeam": "diğer takım",
+    "state": {
+      "nothing": "Henüz sonuç bildirilmedi. Kim oynadıysa skoru bildirsin.",
+      "waitingOpponent": "Bildirildi. {{team}} takımının onaylaması bekleniyor.",
+      "needsAnswer": "{{team}} bu sonucu bildirdi. Doğruysa onayla.",
+      "disputed": "Bu sonuca itiraz edildi. Bir yönetici karar verecek.",
+      "awaitingAdmin": "Bu maça bir yöneticinin karar vermesi bekleniyor.",
+      "confirmed": "İki takım da bu sonuçta hemfikir."
+    },
+    "deadline": {
+      "autoConfirm": "Kimse yanıtlamazsa {{minutes}} dk içinde kendiliğinden onaylanır.",
+      "autoConfirmSoon": "Her an kendiliğinden onaylanabilir.",
+      "escalate": "Kimse yanıtlamazsa {{minutes}} dk içinde bir yöneticiye gider.",
+      "escalateSoon": "Her an bir yöneticiye gidebilir."
+    },
+    "score": "{{team1}} {{score1}} – {{score2}} {{team2}}",
+    "game": "Oyun {{number}}",
+    "note": "Not",
+    "notePlaceholder": "Diğer takımın bilmesi gereken bir şey (isteğe bağlı)",
+    "noteGiven": "Not: {{note}}",
+    "disputeReason": "Ne yanlış?",
+    "disputeReasonGiven": "İtiraz edildi: {{reason}}",
+    "formHint": "{{team1}} ve {{team2}} skorları, oyun oyun.",
+    "actions": {
+      "report": "Skoru bildir",
+      "reportAgain": "Farklı bir skor bildir",
+      "submit": "Bildirimi gönder",
+      "cancel": "İptal",
+      "confirm": "Onayla",
+      "dispute": "İtiraz et",
+      "disputeSubmit": "İtirazı gönder",
+      "withdraw": "Bildirimimi geri çek"
+    },
+    "errors": {
+      "stale": "Bu bildirim ekranındayken değişti. Onaylamadan önce yeniden oku.",
+      "incomplete": "En az bir oyun için iki skoru da doldur.",
+      "failed": "Olmadı. Tekrar dene."
+    },
+    "captains": {
+      "title": "Kaptanlar",
+      "hint": "Bu takım için sonucu yalnızca bir kaptan bildirebilir veya onaylayabilir.",
+      "make": "Kaptan yap",
+      "remove": "Kaptanlıktan al",
+      "isCaptain": "Kaptan",
+      "empty": "Bu takımdan henüz kimse giriş yapmadı, bu yüzden atanacak kimse yok.",
+      "unknown": "Bilinmeyen oyuncu",
+      "failed": "Değiştirilemedi. Tekrar dene."
+    },
+    "stats": {
+      "hint": "Bu turnuvanın istediği ek sayılar. Kimsede yoksa bir alanı boş bırak.",
+      "required": "zorunlu",
+      "recorded": "Bildirilen istatistikler",
+      "value": "{{subject}}: {{value}}{{suffix}}",
+      "errors": {
+        "number": "{{subject}} için {{field}} bir sayı olmalı.",
+        "integer": "{{subject}} için {{field}} bir tam sayı olmalı.",
+        "range": "{{subject}} için {{field}} gerçek bir sayı olamayacak kadar büyük.",
+        "tooLong": "{{subject}} için {{field}}, {{max}} karakterden uzun.",
+        "missing": "{{field}} zorunlu ve {{team}} için hiçbir şey doldurulmadı."
+      },
+      "tournamentTitle": "Bildirilen istatistikler",
+      "tournamentHelp": "Onaylanan bildirimlerden toplandı. Hâlâ rakibi bekleyen bir sonuç burada sayılmaz.",
+      "byTeam": "Takıma göre",
+      "byPlayer": "Oyuncuya göre",
+      "team": "Takım",
+      "player": "Oyuncu",
+      "matches": "Maçlar"
+    },
+    "chip": {
+      "none": "Henüz sonuç yok",
+      "yours": "Senin bildirimin",
+      "reported": "Bildirildi",
+      "confirm": "Onayla",
+      "disputed": "İtiraz edildi",
+      "final": "Kesin"
+    }
+  }
+}
