@@ -1,0 +1,12 @@
+{
+  "devAccountSwitcher": {
+    "tooltip": "Chuyển tài khoản (dev)",
+    "adminTest": "Quản trị viên (thử nghiệm)",
+    "playerA": "Người chơi A (dev)",
+    "playerB": "Người chơi B (dev)",
+    "playerC": "Người chơi C (dev)",
+    "newPlayer": "Người chơi mới (lần đầu) (dev)",
+    "signOut": "Đăng xuất",
+    "disabled": "Đăng nhập thử nghiệm đã bị tắt trên máy chủ này"
+  }
+}

@@ -1,0 +1,989 @@
+{
+  "dashboard": {
+    "title": "Quản trị",
+    "restartTournament": {
+      "button": "Bắt đầu lại các trận của giải",
+      "restarting": "Đang bắt đầu lại các trận của giải…",
+      "intro": "🔄 Thao tác này sẽ bắt đầu lại mọi trận đang chạy và tải lại chúng trên máy chủ.",
+      "actionsTitle": "Thao tác:",
+      "actionEndMatch": "Chạy at_endmatch trên mọi máy chủ có trận đã tải/đang diễn ra",
+      "actionReset": "Đặt lại trận về trạng thái “sẵn sàng”",
+      "actionReallocate": "Phân bổ lại trận cho các máy chủ trống",
+      "actionReload": "Tải lại cấu hình trận trên máy chủ game",
+      "hint": "Dùng khi trận bị kẹt hoặc cần bắt đầu lại.",
+      "confirm": "Bắt đầu lại giải đấu"
+    },
+    "header": {
+      "brand": "Auto Tournament",
+      "version": "Trang Auto Tournament của bạn · phiên bản {{version}}",
+      "unknownVersion": "dev",
+      "createTournament": "Tạo giải đấu"
+    },
+    "setup": {
+      "title": "Hoàn tất thiết lập",
+      "openSettings": "Mở cài đặt",
+      "signIn": "Nhà cung cấp đăng nhập",
+      "game": "Cài đặt một trò chơi (CS2) từ Mô-đun",
+      "discordBot": "Thêm bot Discord của riêng bạn (token của bot) để trang có thể nhắn riêng cho người chơi về trận của họ"
+    },
+    "tournaments": {
+      "title": "Giải đấu",
+      "empty": "Trang này chạy một giải đấu mỗi lần. Hãy tạo giải, giải sẽ hiện ở đây, ở trang Duyệt và trang sự kiện của giải.",
+      "status": {
+        "setup": "Bản nháp",
+        "ready": "Đăng ký",
+        "inProgress": "Trực tiếp",
+        "completed": "Đã kết thúc"
+      },
+      "state": {
+        "teams_one": "{{count}} đội",
+        "teams_other": "{{count}} đội",
+        "entered_one": "{{count}} đội đã tham gia",
+        "entered_other": "{{count}} đội đã tham gia",
+        "draftTeams_one": "Bản nháp · đã chọn {{count}} đội",
+        "draftTeams_other": "Bản nháp · đã chọn {{count}} đội",
+        "draftEmpty": "Bản nháp · chưa có đội",
+        "live_one": "{{count}} trận đang diễn ra",
+        "live_other": "{{count}} trận đang diễn ra",
+        "completed_one": "{{count}} đội đã tham gia",
+        "completed_other": "{{count}} đội đã tham gia",
+        "winner": "Vô địch: {{name}}",
+        "teamsPlayers_one": "{{count}} người chơi",
+        "teamsPlayers_other": "{{count}} người chơi",
+        "enteredPlayers_one": "{{count}} người chơi đã tham gia",
+        "enteredPlayers_other": "{{count}} người chơi đã tham gia",
+        "draftTeamsPlayers_one": "Bản nháp · {{count}} người chơi",
+        "draftTeamsPlayers_other": "Bản nháp · {{count}} người chơi",
+        "completedPlayers_one": "{{count}} người chơi đã tham gia",
+        "completedPlayers_other": "{{count}} người chơi đã tham gia"
+      },
+      "actions": {
+        "manage": "Quản lý",
+        "continueSetup": "Tiếp tục thiết lập",
+        "view": "Xem"
+      },
+      "eventPage": "Trang sự kiện",
+      "emptyTitle": "Chưa có giải đấu"
+    },
+    "site": {
+      "title": "Trang",
+      "players": {
+        "label": "Người chơi",
+        "hint": "Mọi người đã đăng nhập"
+      },
+      "teams": {
+        "label": "Đội",
+        "hint": "Câu lạc bộ và đội hình"
+      },
+      "templates": {
+        "label": "Mẫu",
+        "hint": "Thiết lập dùng lại được"
+      },
+      "ratings": {
+        "label": "Xếp hạng",
+        "hint": "Cách tính điểm"
+      },
+      "settings": {
+        "label": "Cài đặt",
+        "hint": "Đăng nhập, khóa API"
+      },
+      "adminTools": {
+        "label": "Hệ thống",
+        "hint": "Khôi phục trận và nhật ký"
+      },
+      "disputes": {
+        "label": "Tranh chấp",
+        "hint": "Kết quả cần giải quyết"
+      },
+      "modules": {
+        "label": "Mô-đun",
+        "hint": "Các trò chơi hệ thống này chạy"
+      }
+    },
+    "people": {
+      "title": "Mọi người",
+      "open": "Mở",
+      "players": "Người chơi",
+      "admins": "Quản trị viên",
+      "signedInThisWeek": "Đã đăng nhập tuần này"
+    },
+    "loading": "Đang tải trang chủ quản trị"
+  },
+  "settingsPage": {
+    "email": {
+      "title": "Email",
+      "short": "Gửi email xác nhận địa chỉ, đặt lại mật khẩu và email về giải đấu.",
+      "enabled": "Gửi email",
+      "enabledOn": "Bật. Email được gửi từ {{from}}.",
+      "enabledOff": "Tắt. Không gửi gì.",
+      "needsServer": "Hãy thiết lập máy chủ bên dưới trước.",
+      "turnedOn": "Email đang bật",
+      "turnedOff": "Email đang tắt",
+      "server": "Máy chủ thư",
+      "serverNone": "Chưa thiết lập",
+      "host": "Máy chủ SMTP",
+      "port": "Cổng",
+      "security": "Bảo mật",
+      "securityStarttls": "STARTTLS (thường là cổng 587)",
+      "securityTls": "TLS (thường là cổng 465)",
+      "securityNone": "Không có (chỉ trên mạng tin cậy)",
+      "username": "Tên người dùng",
+      "password": "Mật khẩu",
+      "passwordKept": "Để trống để giữ mật khẩu đã lưu",
+      "passwordSaved": "Đã lưu",
+      "fromAddress": "Địa chỉ người gửi",
+      "fromAddressHelp": "Địa chỉ gửi email đi. Nhà cung cấp thư của bạn phải cho phép địa chỉ này.",
+      "fromName": "Tên người gửi",
+      "fromNameHelp": "Tùy chọn. Hiển thị là người gửi email, ví dụ NTLAN.",
+      "siteUrl": "Địa chỉ trang",
+      "siteUrlHelp": "Các liên kết trong email bắt đầu từ đây, ví dụ https://cs.example.com.",
+      "siteUrlHelpDefault": "Các liên kết trong email bắt đầu từ đây. Để trống: {{url}}.",
+      "save": "Lưu",
+      "saved": "Đã lưu cài đặt email",
+      "loadError": "Không tải được cài đặt email",
+      "saveError": "Không lưu được cài đặt email",
+      "test": "Email thử",
+      "testShort": "Gửi một email để kiểm tra cài đặt hoạt động.",
+      "testTo": "Gửi đến",
+      "testSend": "Gửi thử",
+      "testNeedsOn": "Bật gửi email (và lưu máy chủ) trước khi thử.",
+      "testSent": "Đã gửi đến {{to}}. Hãy kiểm tra hộp thư đến và thư mục spam.",
+      "testFailed": "Không gửi được email thử"
+    },
+    "title": "Cài đặt",
+    "intro": "Cài đặt riêng của nền tảng. Mỗi trò chơi giữ cài đặt của mình trong menu.",
+    "tabs": {
+      "general": "Chung",
+      "signIn": "Đăng nhập",
+      "players": "Người chơi và quyền truy cập",
+      "ratings": "Xếp hạng",
+      "developer": "Nhà phát triển",
+      "license": "Giấy phép",
+      "webhooks": "Webhooks",
+      "experimental": "Thử nghiệm"
+    },
+    "signIn": {
+      "title": "Nhà cung cấp đăng nhập",
+      "intro": "Chọn cách mọi người đăng nhập. Bất kỳ nhà cung cấp nào cũng có thể là tài khoản của ai đó; mọi người liên kết thêm ở trang kết nối của họ. Thay đổi có hiệu lực ngay, không cần khởi động lại.",
+      "keySource": "Khóa bí mật đã lưu được mã hóa bằng {{name}}.",
+      "keySourceDefault": "Khóa bí mật đã lưu được mã hóa bằng khóa phát triển có sẵn. Hãy đặt SECRETS_KEY hoặc SESSION_SECRET trước khi chạy thật.",
+      "loadError": "Không tải được nhà cung cấp đăng nhập",
+      "saveError": "Không lưu được",
+      "testError": "Không chạy được kiểm tra",
+      "saved": "Đã lưu đăng nhập {{provider}}",
+      "enabled": "Bật",
+      "clientId": "Client ID",
+      "issuerUrl": "Issuer URL",
+      "issuerUrlHelp": "Địa chỉ realm hoặc tenant OpenID Connect của bạn. Auto Tournament đọc các endpoint từ /.well-known/openid-configuration.",
+      "buttonName": "Tên nút",
+      "buttonNameHelp": "Hiển thị là “Đăng nhập bằng …” trên trang đăng nhập, ví dụ cộng đồng hoặc máy chủ định danh của bạn.",
+      "logoUpload": "Tải logo lên",
+      "logoReplace": "Thay logo",
+      "logoRemove": "Xóa logo",
+      "logoType": "Logo phải là ảnh PNG, JPEG, WebP hoặc SVG.",
+      "logoSize": "Logo tối đa 150 KB.",
+      "buttonColor": "Màu nút",
+      "buttonColorDefault": "Màu mặc định",
+      "clientSecret": "Client secret",
+      "steamKey": "Khóa Steam Web API",
+      "secretSet": "đã đặt",
+      "secretUnreadable": "Không thể giải mã khóa bí mật đã lưu nữa (khóa mã hóa đã thay đổi). Hãy nhập lại.",
+      "replace": "Thay",
+      "cancel": "Hủy",
+      "save": "Lưu",
+      "callbackHint": "Được đặt tự động. Dán làm redirect URL trong cài đặt nhà phát triển của {{provider}}:",
+      "copy": "Sao chép",
+      "copyCallback": "Sao chép callback URL",
+      "copied": "Đã sao chép",
+      "copyError": "Không sao chép được",
+      "guide": "Hướng dẫn thiết lập",
+      "howTo": "Bảng điều khiển nhà phát triển",
+      "test": "Kiểm tra",
+      "comingSoon": "Sắp có",
+      "comingSoonNote": "Đăng nhập {{provider}} chưa khả dụng.",
+      "status": {
+        "active": "Trên trang đăng nhập",
+        "missing": "Đã bật, thiếu thông tin xác thực",
+        "off": "Tắt"
+      },
+      "testResult": {
+        "ok": "Nhà cung cấp đã chấp nhận thông tin xác thực này.",
+        "invalid_credentials": "Nhà cung cấp từ chối thông tin xác thực này. Hãy kiểm tra client ID và secret (hoặc khóa).",
+        "unreachable": "Không liên lạc được với nhà cung cấp. Hãy kiểm tra mạng và thử lại.",
+        "not_configured": "Nhập thông tin xác thực trước.",
+        "not_supported": "Không thể kiểm tra nhà cung cấp này.",
+        "unexpected": "Nhà cung cấp trả về phản hồi mà bài kiểm tra không hiểu."
+      },
+      "welcomeTitle": "Thiết lập cách người chơi đăng nhập",
+      "welcomeBody": "Bạn đang đăng nhập với tư cách quản trị viên. Hãy bật ít nhất một nhà cung cấp bên dưới (Steam, Discord, Google, GitHub hoặc Twitch) để người chơi đăng nhập được.",
+      "adminAccess": {
+        "title": "Quyền quản trị",
+        "localLogin": "Cho phép đăng nhập quản trị cục bộ",
+        "localLoginHelp": "Đăng nhập bằng tên người dùng và mật khẩu tại /login/admin. Nếu mất quyền truy cập, hãy chạy reset-admin trên máy chủ.",
+        "localLoginLocked": "Vẫn bật cho đến khi một quản trị viên khác đăng nhập được bằng nhà cung cấp đang bật.",
+        "steamIds": "Steam ID của quản trị viên",
+        "steamIdsHelp": "Các Steam64 ID, cách nhau bằng dấu phẩy. Trở thành quản trị viên khi lưu và mỗi lần khởi động. Gỡ một ID không lấy lại quyền quản trị.",
+        "emails": "Email quản trị viên",
+        "emailsHelp": "Các địa chỉ được cấp quyền quản trị khi chủ sở hữu đăng nhập bằng nhà cung cấp đã xác minh địa chỉ đó (Google, Discord, GitHub).",
+        "unsaved": "Chưa lưu.",
+        "saved": "Đã lưu quyền quản trị",
+        "loadError": "Không tải được cài đặt quyền quản trị",
+        "short": "Ai có thể đăng nhập với tư cách quản trị viên"
+      },
+      "short": "Cách người chơi và quản trị viên đăng nhập. Thay đổi có hiệu lực ngay.",
+      "enabledFor": "Đăng nhập {{provider}}",
+      "setUp": "Thiết lập {{provider}}",
+      "accounts": {
+        "title": "Tài khoản",
+        "short": "Tài khoản tên người dùng và mật khẩu do bạn tạo",
+        "help": "Mọi người đăng nhập bằng các tài khoản này tại /login/admin. Cấp quyền quản trị cho những người vận hành trang; những người còn lại đăng nhập với tư cách người chơi.",
+        "none": "Chưa có tài khoản.",
+        "admin": "Quản trị",
+        "twoStep": "Đã bật hai bước",
+        "lastLogin": "Đăng nhập lần cuối {{date}}",
+        "neverSignedIn": "Chưa từng đăng nhập",
+        "setPassword": "Đặt mật khẩu",
+        "remove": "Gỡ",
+        "addTitle": "Thêm tài khoản",
+        "username": "Tên người dùng",
+        "usernameHelp": "3 đến 32 ký tự: chữ thường, chữ số, dấu chấm, gạch ngang và gạch dưới.",
+        "name": "Tên hiển thị",
+        "nameHelp": "Tùy chọn. Hiển thị trên trang; nếu để trống sẽ dùng tên người dùng.",
+        "password": "Mật khẩu",
+        "makeAdmin": "Quản trị",
+        "create": "Tạo tài khoản",
+        "created": "Đã tạo tài khoản {{username}}",
+        "madeAdmin": "{{username}} giờ là quản trị viên",
+        "adminRemoved": "{{username}} không còn là quản trị viên",
+        "setPasswordTitle": "Mật khẩu mới cho {{username}}",
+        "setPasswordTotp": "Xác minh hai bước của họ cũng bị tắt; họ thiết lập lại sau khi đăng nhập.",
+        "newPassword": "Mật khẩu mới",
+        "savePassword": "Lưu mật khẩu",
+        "passwordSet": "Đã lưu mật khẩu mới cho {{username}}",
+        "removeTitle": "Gỡ {{username}}?",
+        "removeBody": "Họ sẽ không đăng nhập được bằng tên người dùng và mật khẩu này nữa và không còn là quản trị viên. Người chơi, trận và thống kê của họ vẫn còn; tạo lại cùng tên người dùng sẽ trả lại mọi thứ cho họ.",
+        "removeConfirm": "Gỡ",
+        "removed": "Đã gỡ {{username}}",
+        "cancel": "Hủy",
+        "loadError": "Không tải được tài khoản",
+        "saveError": "Không lưu được tài khoản"
+      },
+      "oidcScopes": "Trên máy chủ OpenID Connect của bạn, hãy cấp cho client này các scope openid, profile và email (trong Keycloak: Clients → client này → Client scopes, đặt profile và email là Default). Không có profile và email, mọi người vẫn đăng nhập được nhưng nền tảng không nhận được tên hay email của họ."
+    },
+    "integrations": {
+      "steam": {
+        "title": "Tích hợp Steam",
+        "apiKeyLabel": "Khóa Steam Web API",
+        "apiKeyHelper": "Dùng để tra cứu vanity URL Steam và thông tin người chơi. Để trống để tắt tra cứu.",
+        "checkButtonChecking": "Đang kiểm tra Steam…",
+        "checkButtonIdle": "Kiểm tra kết nối Steam",
+        "statusOk": "Đã đặt khóa Steam API và kết nối được.",
+        "statusNotConfigured": "Chưa đặt khóa Steam API. Không thể tra cứu vanity URL cho đến khi bạn thêm khóa.",
+        "statusUnreachable": "Có vẻ đã đặt khóa Steam API nhưng không liên lạc được với Steam. Hãy kiểm tra mạng hoặc khóa của bạn.",
+        "statusError": "Không kiểm tra được trạng thái Steam API. Hãy thử lại."
+      }
+    },
+    "matchRating": {
+      "ratings": {
+        "title": "Cập nhật điểm",
+        "description": "Chọn xem trận đã kết thúc có cập nhật Điểm kỹ năng của người chơi hay không. Hãy tắt cho các sự kiện mà một hệ thống bên ngoài (ví dụ bảng Excel của bạn) là nguồn điểm chính thức.",
+        "toggleLabel": "Cập nhật điểm người chơi từ các trận đã kết thúc",
+        "note": "Khi tắt, mọi trận vẫn ghi thống kê (ADR, K/D, v.v.), nhưng Điểm kỹ năng của người chơi không thay đổi.",
+        "short": "Điểm thay đổi sau mỗi trận."
+      }
+    },
+    "players": {
+      "registration": {
+        "title": "Đăng ký người chơi",
+        "description": "Chọn xem việc đăng nhập có tạo hồ sơ người chơi cho người mới hay không, bất kể họ dùng phương thức đăng nhập nào (Steam, Discord, Google và các phương thức khác bạn đã bật). Khi tắt, chỉ những người chơi do quản trị viên tạo hoặc nhập mới xuất hiện trong giải riêng và nhóm xáo trộn.",
+        "toggleLabel": "Cho phép mọi người đăng ký bằng cách đăng nhập",
+        "recommendation": "Khuyến nghị: hãy tắt cho giải chỉ dành cho người được mời hoặc giải riêng, để các lượt đăng nhập ngẫu nhiên không làm đầy danh sách người chơi.",
+        "short": "Đăng nhập sẽ biến mọi người mới thành người chơi. Tắt: chỉ những người chơi bạn thêm."
+      },
+      "title": "Người chơi",
+      "short": "Ai tham gia, và điểm thay đổi thế nào.",
+      "chooseName": {
+        "toggleLabel": "Người chơi tự chọn tên hiển thị",
+        "short": "Người chơi được hỏi tên và có thể đổi mỗi ngày một lần. Tắt: tên đến từ dữ liệu nhập và quản trị viên."
+      }
+    },
+    "developer": {
+      "resetApiTitle": "Đặt lại API và cơ sở dữ liệu",
+      "resetApiDescription": "Vùng nguy hiểm: xóa và tạo lại toàn bộ cấu trúc cơ sở dữ liệu, rồi khởi tạo lại dữ liệu mặc định (bản đồ, nhóm bản đồ, v.v.). Chỉ dùng cho phát triển cục bộ. Không thể hoàn tác.",
+      "resetApiButton": "Đặt lại API (xóa toàn bộ dữ liệu)",
+      "resetApiButtonLoading": "Đang đặt lại API…",
+      "resetApiSuccess": "Đã đặt lại API và cơ sở dữ liệu. Toàn bộ dữ liệu đã bị xóa và mặc định đã được khởi tạo lại.",
+      "resetApiError": "Không đặt lại được API và cơ sở dữ liệu. Hãy xem nhật ký API để biết chi tiết.",
+      "resetApiDialog": {
+        "title": "Đặt lại API và xóa toàn bộ dữ liệu?",
+        "description": "Thao tác này sẽ xóa và tạo lại toàn bộ cấu trúc cơ sở dữ liệu. Mọi giải đấu, trận, người chơi, đội, điểm, sự kiện, nhật ký và cài đặt sẽ bị xóa vĩnh viễn. Không thể hoàn tác. Tiếp tục?",
+        "cancel": "Hủy",
+        "confirm": "Có, đặt lại API và xóa dữ liệu",
+        "confirmLoading": "Đang đặt lại…"
+      }
+    },
+    "footer": {
+      "version": "Phiên bản",
+      "unknownVersion": "Không xác định"
+    },
+    "errors": {
+      "loadSettings": "Không tải được cài đặt",
+      "saveSettings": "Không lưu được cài đặt"
+    },
+    "success": {
+      "saveSettings": "Đã lưu cài đặt"
+    },
+    "site": {
+      "title": "Trang",
+      "description": "Tên của trang này. Trang chủ quản trị dùng làm tiêu đề.",
+      "label": "Tên trang",
+      "helper": "Để trống để dùng “Auto Tournament”.",
+      "save": "Lưu",
+      "saved": "Đã lưu tên trang",
+      "saveFailed": "Không lưu được tên trang"
+    },
+    "experimental": {
+      "title": "Thử nghiệm",
+      "description": "Các tính năng vẫn đang được xây dựng. Mặc định tắt và có thể thay đổi hoặc hỏng. Chỉ quản trị viên thấy.",
+      "saved": "Đã lưu",
+      "saveFailed": "Không lưu được tính năng",
+      "loadFailed": "Không tải được tính năng thử nghiệm",
+      "envOverride": "Được đặt bởi biến môi trường {{env}}. Hãy đổi ở đó.",
+      "features": {},
+      "short": "Vẫn đang được xây dựng: mặc định tắt, chỉ quản trị viên thấy."
+    },
+    "matchmaking": {
+      "openLabel": "Mở cho người chơi",
+      "openDescription": "Bật: mọi người chơi đã đăng nhập thấy nút Chơi và có thể xếp hàng. Tắt: chỉ quản trị viên tìm được trận.",
+      "boardLabel": "Bảng xếp hạng công khai với mọi người",
+      "boardDescription": "Tắt: chỉ người chơi đã đăng nhập thấy bảng xếp hạng đấu xếp trận. Bật: bất kỳ ai có liên kết.",
+      "windowTitle": "Phạm vi tìm kiếm",
+      "windowDescription": "Chênh lệch điểm tối đa giữa các người chơi. Bắt đầu từ số đầu tiên, tăng thêm một bước mỗi 30 giây đến mức trần, và sau số phút cuối cùng thì ghép với bất kỳ ai (để trống nếu không bao giờ).",
+      "window": {
+        "start": "Bắt đầu (Elo)",
+        "step": "Bước (Elo)",
+        "cap": "Trần (Elo)",
+        "uncappedAfterMinutes": "Bất kỳ ai sau (phút)"
+      },
+      "reservedTitle": "Máy chủ giữ trống cho đấu xếp trận",
+      "reservedDescription": "Trận giải đấu được ưu tiên, nhưng hãy giữ trống chừng này máy chủ cho đấu xếp trận khi có người đang tìm trận. 0 = không giữ.",
+      "reservedLabel": "Máy chủ",
+      "modesTitle": "Chế độ",
+      "modesDescription": "Những gì người chơi có thể tìm. Mọi chế độ đều bật mặc định. 1v1 là đấu súng tay đôi.",
+      "poolsTitle": "Bản đồ theo chế độ",
+      "poolsDescription": "Nhóm bản đồ mà mỗi chế độ chọn từ đó (trang Bản đồ; bản đồ Workshop cũng dùng được). Phòng trận hiển thị vòng quay ngẫu nhiên trên nhóm trước khi lộ bản đồ.",
+      "poolDefault": {
+        "5v5": "Mặc định: Active Duty",
+        "2v2": "Mặc định: mọi bản đồ wingman",
+        "1v1": "Mặc định: Active Duty"
+      },
+      "save": "Lưu",
+      "title": "Đấu xếp trận",
+      "short": "Luôn bật. Người chơi tìm trận, xếp hàng và chấp nhận, rồi thi đấu trên máy chủ trống.",
+      "saved": "Đã lưu",
+      "saveFailed": "Không lưu được cài đặt đấu xếp trận",
+      "loadFailed": "Không tải được cài đặt đấu xếp trận"
+    },
+    "groups": {
+      "platform": "Nền tảng"
+    },
+    "navLabel": "Trang cài đặt",
+    "gameLinks": {
+      "title": "Cài đặt trò chơi",
+      "hint": "Mỗi trò chơi giữ cài đặt của riêng mình trong menu."
+    },
+    "sections": {
+      "label": "Mục cài đặt",
+      "site": {
+        "name": "Trang",
+        "hint": "Tên, logo, ngôn ngữ"
+      },
+      "signin": {
+        "name": "Đăng nhập",
+        "hint": "Nhà cung cấp, tài khoản quản trị"
+      },
+      "email": {
+        "name": "Email",
+        "hint": "SMTP, những gì được gửi"
+      },
+      "players": {
+        "name": "Người chơi",
+        "hint": "Đăng ký, điểm"
+      },
+      "matchmaking": {
+        "name": "Đấu xếp trận",
+        "hint": "Hàng chờ và luật"
+      },
+      "news": {
+        "name": "Tin tức",
+        "hint": "Bài đăng trên trang chủ"
+      },
+      "adminnotices": {
+        "name": "Thông báo",
+        "hint": "Những gì quản trị viên được báo"
+      },
+      "webhooks": {
+        "name": "Tích hợp",
+        "hint": "Webhooks"
+      },
+      "apitokens": {
+        "name": "Token API",
+        "hint": "Cho script và MCP"
+      },
+      "advanced": {
+        "name": "Nâng cao",
+        "hint": "Thử nghiệm, nhà phát triển"
+      },
+      "module": {
+        "hint": "Cài đặt của mô-đun này"
+      }
+    }
+  },
+  "managePage": {
+    "tournamentNotFound": "Không có giải đấu với id này. Hãy chọn một giải từ Tất cả giải đấu.",
+    "title": "Quản lý",
+    "needsYouHeading": "Cần bạn xử lý",
+    "noTournament": "Chưa có giải đấu",
+    "rail": {
+      "needsYou": "Cần bạn xử lý",
+      "matches": "Trận đấu",
+      "bracket": "Nhánh đấu",
+      "teams": "Đội",
+      "players": "Người chơi",
+      "reports": "Báo cáo",
+      "tournament": "Thiết lập giải đấu",
+      "settings": "Cài đặt",
+      "label": "Quản trị",
+      "disputes": "Tranh chấp",
+      "publicPage": "Trang công khai",
+      "modules": "Mô-đun",
+      "templates": "Mẫu",
+      "ratings": "Xếp hạng",
+      "adminTools": "Nhật ký và công cụ",
+      "license": "Giấy phép",
+      "devTools": "Công cụ phát triển",
+      "documentation": "Tài liệu",
+      "opensInNewTab": "(mở trong tab mới)",
+      "groups": {
+        "operate": "Vận hành",
+        "tournament": "Giải đấu",
+        "people": "Mọi người",
+        "game": "Trò chơi",
+        "home": "Trang chủ",
+        "history": "Lịch sử",
+        "setup": "Thiết lập",
+        "configuration": "Cấu hình",
+        "site": "Trang",
+        "tournaments": "Giải đấu",
+        "system": "Hệ thống",
+        "gamesOf": "Trò chơi · {{game}}"
+      },
+      "templatesAndRatings": "Mẫu và xếp hạng",
+      "allTournaments": "Tất cả giải đấu",
+      "switcher": "Giải đấu",
+      "newTournament": "Giải đấu mới",
+      "playedMatches": "Trận đã chơi",
+      "tournamentBar": "Giải này",
+      "scope": {
+        "label": "Đang quản lý",
+        "platform": "Nền tảng",
+        "platformHint": "Giải đấu, mọi người, trang",
+        "gameHint": "Các trang và cài đặt của trò chơi"
+      },
+      "highlights": "Highlight",
+      "state": {
+        "live": "trực tiếp",
+        "setup": "thiết lập"
+      },
+      "openMenu": "Mở menu Quản lý",
+      "closeMenu": "Đóng menu",
+      "setupTab": "Thiết lập",
+      "prizes": "Giải thưởng",
+      "schedule": "Lịch thi đấu",
+      "liveMatches": "Trận đang diễn ra"
+    },
+    "status": {
+      "live": "TRỰC TIẾP",
+      "inVeto": "ĐANG VETO",
+      "queued": "ĐANG CHỜ",
+      "round": "HIỆP"
+    },
+    "needsYou": {
+      "empty": "Hiện không có gì cần bạn xử lý.",
+      "secondsAgo": "{{count}} giây",
+      "minutesAgo": "{{count}} phút",
+      "hoursAgo": "{{count}} giờ",
+      "vsLabel": "{{team1}} vs {{team2}}",
+      "decide": {
+        "title": "{{teams}} cần đội thắng",
+        "detail": "Đã chơi hết mọi bản đồ và loạt trận vẫn hòa.",
+        "action": "Quyết định"
+      },
+      "reallocateSuccess": "Đã chuyển trận sang máy chủ khác",
+      "forceCancelSuccess": "Đã hủy trận",
+      "actionFailed": "Không thực hiện được. Hãy thử lại.",
+      "reallocateConfirmTitle": "Chuyển trận này sang máy chủ khác?",
+      "reallocateConfirmBody": "Trận sẽ được gán cho máy chủ trống tiếp theo.",
+      "forceCancelConfirmTitle": "Buộc hủy trận này?",
+      "forceCancelConfirmBody": "Thao tác này kết thúc trận ngay và đánh dấu đã hủy, kể cả khi không liên lạc được máy chủ.",
+      "listLabel": "Những việc cần quyết định"
+    },
+    "recent": {
+      "heading": "Gần đây",
+      "viewAll": "Toàn bộ nhật ký",
+      "empty": "Chưa có hoạt động gần đây.",
+      "closingLine": "Mọi thứ khác tự vận hành. Bạn chỉ thấy ở đây khi có việc cần quyết định.",
+      "team1Fallback": "Đội 1",
+      "team2Fallback": "Đội 2",
+      "mapResult": "{{winner}} thắng bản đồ {{map}} trước {{loser}}, {{score}}",
+      "seriesEnd": "{{winner}} thắng loạt trận trước {{loser}}, {{score}}"
+    },
+    "announce": {
+      "button": "Thông báo",
+      "title": "Thông báo đến mọi máy chủ",
+      "label": "Tin nhắn",
+      "send": "Gửi",
+      "success": "Đã gửi thông báo",
+      "failed": "Không gửi được thông báo"
+    }
+  },
+  "license": {
+    "title": "Giấy phép",
+    "getKey": "Đã có giấy phép? Sao chép khóa từ <consoleLink>bảng điều khiển Auto Tournament</consoleLink>. Cần một giấy phép? <pricingLink>Xem bảng giá</pricingLink>.",
+    "useFromPaidKey": "Được đặt bởi khóa giấy phép trả phí bên dưới.",
+    "useFromFreeKey": "Được đặt bởi khóa miễn phí bên dưới: chỉ dùng phi lợi nhuận.",
+    "useWithoutKey": "Không có khóa: miễn phí cho mục đích phi lợi nhuận. Dán khóa trả phí bên dưới để dùng thương mại.",
+    "publicLine": "Người chơi thấy “{{line}}” ở cuối trang sự kiện.",
+    "pageIntro": "Khóa giấy phép của bạn và tình trạng của nó. Khóa trả phí dành cho dùng thương mại; khóa miễn phí dành cho dùng phi lợi nhuận.",
+    "description": "Dán khóa giấy phép Auto Tournament: khóa trả phí cho dùng thương mại, hoặc khóa miễn phí cho dùng phi lợi nhuận. Khóa được kiểm tra trên máy chủ này, và mỗi ngày một lần với autotournament.gg.",
+    "loading": "Đang tải tình trạng giấy phép",
+    "loadFailed": "Không đọc được tình trạng giấy phép.",
+    "none": "Chưa có khóa giấy phép. Miễn phí cho dùng phi lợi nhuận; dùng thương mại cần giấy phép trả phí.",
+    "pricing": "Bảng giá",
+    "open": "Cài đặt",
+    "id": "License ID {{id}}",
+    "verify": "Kiểm tra giấy phép này",
+    "invalid": "Không xác minh được khóa này.",
+    "invalidShort": "Không xác minh được khóa đã lưu.",
+    "warningsShort_one": "1 thông báo giấy phép trong Cài đặt.",
+    "warningsShort_other": "{{count}} thông báo giấy phép trong Cài đặt.",
+    "warningsNote": "Không có gì bị chặn hay giới hạn. Đây chỉ là thông báo.",
+    "label": "Khóa giấy phép",
+    "replaceLabel": "Thay khóa giấy phép",
+    "helper": "Bắt đầu bằng ATL1. Sao chép từ <consoleLink>giấy phép của bạn trong bảng điều khiển Auto Tournament</consoleLink>. Sau khi lưu, chỉ License ID được hiển thị. Không có internet ở nơi thi đấu? Dán cả offline lease từ bảng điều khiển vào đây.",
+    "checkInNote": "Không có khóa giấy phép, không có gì được gửi đến Auto Tournament. Có khóa, máy chủ này báo về mỗi ngày một lần với id của khóa và số máy chủ.",
+    "save": "Lưu khóa",
+    "saved": "Đã lưu khóa giấy phép",
+    "saveFailed": "Không lưu được khóa giấy phép",
+    "remove": "Gỡ khóa",
+    "removed": "Đã gỡ khóa giấy phép",
+    "removeFailed": "Không gỡ được khóa giấy phép",
+    "summary": {
+      "licensedTo": "Cấp phép cho {{licensee}}",
+      "licensed": "Có giấy phép",
+      "product": {
+        "platform": "Nền tảng {{pack}}",
+        "servers": "Máy chủ {{pack}}"
+      },
+      "servers_one": "{{count}} máy chủ",
+      "servers_other": "{{count}} máy chủ",
+      "updatesUntil": "cập nhật đến {{date}}",
+      "updatesForLife": "cập nhật trọn đời",
+      "eventWindow": "sự kiện từ {{from}} đến {{to}}",
+      "free": "Khóa miễn phí, dùng phi thương mại",
+      "freeFor": "Khóa miễn phí cho {{licensee}}, dùng phi thương mại",
+      "noLimit": "không giới hạn máy chủ"
+    },
+    "badge": {
+      "label": "Hiển thị “Có giấy phép” và loại sử dụng trên trang sự kiện công khai",
+      "note": "Mặc định tắt. Liên kết đến trang kiểm tra công khai của giấy phép, và chỉ hiển thị khi khóa đã lưu còn hiệu lực.",
+      "on": "Đã bật dòng giấy phép công khai",
+      "off": "Đã tắt dòng giấy phép công khai",
+      "failed": "Không thay đổi được dòng giấy phép công khai",
+      "short": "Tự bật khi đã lưu khóa. Người chơi thấy ở cuối trang sự kiện.",
+      "needsKey": "Chỉ hiển thị khi đã lưu khóa giấy phép, miễn phí hoặc trả phí. Hãy lưu khóa ở trên trước."
+    },
+    "public": {
+      "licensed": "Có giấy phép",
+      "commercial": "Có giấy phép · Dùng thương mại",
+      "nonCommercial": "Có giấy phép · Dùng phi lợi nhuận",
+      "unlicensed": "Không có khóa giấy phép",
+      "about": {
+        "title": "Về giấy phép của trang này",
+        "none": "Trang này chạy Auto Tournament không có khóa giấy phép. Điều đó ổn với các sự kiện không ai kiếm tiền: bạn bè, câu lạc bộ, LAN trường học, tổ chức từ thiện.",
+        "nonCommercial": "Trang này có giấy phép phi lợi nhuận miễn phí: được tổ chức sự kiện mà không ai kiếm tiền.",
+        "commercial": "Trang này có giấy phép thương mại trả phí: được tổ chức sự kiện thu phí và thu phí tham gia.",
+        "free": "Auto Tournament miễn phí khi không ai kiếm tiền từ nó, và miễn phí cho tổ chức từ thiện, trường học và cơ quan nhà nước kể cả khi họ thu phí tham gia. Bất kỳ ai khác kiếm tiền với nó, bằng cách thu phí tham gia, bán suất hoặc dùng cho doanh nghiệp, cần giấy phép trả phí.",
+        "paidTitle": "Bị yêu cầu trả tiền để tham gia?",
+        "paidBody": "Nếu bạn đã trả hoặc bị yêu cầu trả phí tham gia, và ban tổ chức không phải tổ chức từ thiện, trường học hay cơ quan nhà nước, sự kiện này có thể đang dùng Auto Tournament trái giấy phép. Bạn có thể báo cho chúng tôi; chúng tôi đọc mọi báo cáo và không bao giờ tiết lộ ai đã gửi.",
+        "paidCommercial": "Ở đây được phép thu phí tham gia. Nếu vẫn có gì đó không ổn, bạn có thể báo cho chúng tôi.",
+        "report": "Báo cho Auto Tournament",
+        "rules": "Đọc giấy phép",
+        "verify": "Kiểm tra giấy phép này"
+      }
+    },
+    "consent": {
+      "title": "Một việc cuối: giấy phép",
+      "subtitle": "Xin lỗi, thêm một bước nữa là xong. Auto Tournament miễn phí nếu không ai kiếm tiền từ nó; nếu có người kiếm tiền, bạn cần giấy phép. Đọc qua bản tóm tắt, chọn cách bạn dùng và nhập I AGREE.",
+      "intro": "Auto Tournament là phần mềm source-available theo {{name}}. Tóm lại:",
+      "points": {
+        "free": "Miễn phí cho dùng cá nhân, dự án sở thích, học tập và các sự kiện không ai kiếm tiền.",
+        "orgs": "Miễn phí cho tổ chức từ thiện, trường học, đại học, nghiên cứu công và cơ quan nhà nước, kể cả khi họ thu phí tham gia.",
+        "commercial": "Dùng thương mại cần giấy phép. Bao gồm dịch vụ lưu trữ trả phí, bán phần mềm hoặc dịch vụ xây dựng trên nó, sự kiện có lãi, dùng trong doanh nghiệp, và được trả tiền để cài đặt cho người khác.",
+        "servers": "Mọi máy chủ game đều được tính vào giấy phép.",
+        "nothingLocked": "Không có gì bị khóa hay giới hạn khi không có khóa. Bạn có thể thêm khóa ngay hoặc sau.",
+        "forks": "Bạn có thể sửa mã và chia sẻ. Hãy giữ giấy phép đi kèm; cùng quy tắc vẫn áp dụng."
+      },
+      "readLicense": "Đọc toàn bộ giấy phép",
+      "readRules": "Giấy phép và dùng thương mại",
+      "summaryNote": "Đây là bản tóm tắt ngắn, và văn bản trong phiên bản của bạn có thể đã cũ. Giấy phép và quy tắc cấp phép hiện hành có tại autotournament.gg — nếu khác với bản tóm tắt này, chúng được ưu tiên.",
+      "useQuestion": "Hệ thống này được dùng thế nào?",
+      "privacyNote": "Câu trả lời của bạn chỉ được lưu trên máy chủ này. Không có khóa giấy phép, không có gì được gửi đến Auto Tournament. Có khóa, máy chủ này báo về mỗi ngày một lần với id của khóa và số máy chủ.",
+      "use": {
+        "noncommercial": "Phi thương mại",
+        "noncommercialHint": "Miễn phí. Không ai kiếm tiền từ nó.",
+        "commercial": "Thương mại",
+        "commercialHint": "Bạn cần giấy phép. Dán khóa ngay hoặc sau."
+      },
+      "keyLabel": "Khóa giấy phép (tùy chọn)",
+      "keyHelper": "Bắt đầu bằng ATL1. Sao chép từ <consoleLink>giấy phép của bạn trong bảng điều khiển Auto Tournament</consoleLink>, hoặc thêm sau trong Cài đặt > Giấy phép.",
+      "confirmLabel": "Nhập {{phrase}} để chấp nhận điều khoản giấy phép",
+      "confirmHelper": "Khi nhập {{phrase}}, bạn chấp nhận điều khoản giấy phép cho hệ thống này.",
+      "accept": "Chấp nhận và tiếp tục",
+      "cancel": "Hủy",
+      "failed": "Không lưu được câu trả lời của bạn",
+      "accepted": "Đã chấp nhận điều khoản giấy phép",
+      "termsChanged": "Điều khoản giấy phép đã thay đổi kể từ lần chấp nhận gần nhất. Hãy đọc và chấp nhận lại.",
+      "onlyAdmins": "Chỉ quản trị viên thấy điều này, mỗi hệ thống một lần. Người chơi, trang công khai và các trận đang chạy không bị ảnh hưởng.",
+      "declared": {
+        "noncommercial": "Dùng phi thương mại",
+        "commercial": "Dùng thương mại",
+        "none": "Chưa chấp nhận điều khoản giấy phép"
+      },
+      "acceptedLine": "Đã chấp nhận điều khoản {{date}} bởi {{who}} (phiên bản điều khoản {{version}})",
+      "byEnv": "cài đặt AT_ACCEPT_LICENSE",
+      "change": "Đổi",
+      "changeTitle": "Đổi cách dùng hệ thống này",
+      "changeNote": "Chọn lại và nhập I AGREE. Thay đổi được lưu cùng ngày giờ và tài khoản của bạn.",
+      "commercialNoKey": "Hệ thống này được dùng cho mục đích thương mại nên bạn cần giấy phép. Sao chép khóa từ <consoleLink>giấy phép của bạn trong bảng điều khiển Auto Tournament</consoleLink> và dán bên dưới. Không có gì bị khóa khi chưa có khóa.",
+      "readHeading": "Trước khi chấp nhận, hãy đọc và đánh dấu từng mục:",
+      "readItem": "Tôi đã đọc",
+      "readLinks": {
+        "license": "toàn bộ giấy phép",
+        "rules": "quy tắc dùng thương mại",
+        "pricing": "bảng giá"
+      }
+    },
+    "checkin": {
+      "last": "Lần báo về giấy phép gần nhất: {{time}}",
+      "offlineUntil": "Offline lease: máy chủ mới hoạt động không cần internet đến {{date}}.",
+      "never": "Chưa có lần báo về giấy phép nào. Lần đầu chạy ngay sau khi lưu khóa.",
+      "whatIsSent": "Những gì được gửi",
+      "intro": "Mỗi ngày một lần, và chỉ khi đã lưu khóa, máy chủ này gửi:",
+      "keyId": "Khóa giấy phép, để kiểm tra id và chữ ký",
+      "instanceId": "Một id ngẫu nhiên cho bản cài đặt này, tạo một lần",
+      "serverCount": "Số máy chủ game",
+      "version": "Phiên bản nền tảng",
+      "publicUrl": "Đây là sản phẩm nào (nền tảng) và địa chỉ công khai của nó, để bảng điều khiển cho biết khóa đang chạy ở đâu",
+      "activity": "Số liệu từ lần báo về trước: trận đã kết thúc, giải có hoạt động và số đội lớn nhất",
+      "declared": "Câu trả lời của bạn cho câu hỏi về ngày sự kiện, nếu bạn đã trả lời",
+      "notSent": "Không có tên, địa chỉ, người chơi hay chi tiết trận.",
+      "privacy": "Chính sách quyền riêng tư",
+      "noticeTitle": "Lời nhắn từ Auto Tournament",
+      "answered": "Câu trả lời của bạn cho giấy phép này: {{answer}} ({{time}})"
+    },
+    "eventPrompt": {
+      "title": "Đang lên kế hoạch mới?",
+      "body": "Giấy phép sự kiện của bạn bao gồm {{dates}}. Hãy cho chúng tôi biết nếu bạn đang thử nghiệm, có sự kiện mới hoặc ngày đã thay đổi — không cần làm gì khi đang thử nghiệm.",
+      "datesRange": "{{from}} đến {{to}}",
+      "testing": "Đang thử nghiệm hoặc thiết lập",
+      "newEvent": "Một sự kiện mới",
+      "datesMoved": "Ngày sự kiện của chúng tôi đã thay đổi",
+      "dontAsk": "Đừng hỏi lại",
+      "close": "Đóng",
+      "thanks": "Cảm ơn, đã ghi nhận.",
+      "failed": "Không lưu được câu trả lời của bạn"
+    },
+    "warning": {
+      "periodEnded": "Giấy phép sự kiện này bao gồm các ngày đến {{date}}. Thử nghiệm và thiết lập không cần làm gì; sự kiện mới sẽ có giấy phép sự kiện riêng.",
+      "periodNotStarted": "Giấy phép sự kiện này bao gồm các ngày từ {{date}}. Thiết lập và thử nghiệm trước đó đều được."
+    },
+    "short": "Bản cài đặt này được dùng thế nào, và khóa của nó.",
+    "keyRow": "Khóa giấy phép",
+    "state": {
+      "active": "Hoạt động",
+      "warning": "Kiểm tra",
+      "invalid": "Không hợp lệ",
+      "none": "Không có khóa"
+    },
+    "thirdParty": "Ứng dụng này được xây dựng bằng các gói mã nguồn mở theo giấy phép riêng của chúng.",
+    "thirdPartyLink": "Thông báo bên thứ ba"
+  },
+  "tournamentsPage": {
+    "title": "Giải đấu",
+    "subtitle": "Mọi giải đấu trên trang này. Bộ chuyển ở đầu menu chọn giải mà các trang quản trị khác thao tác.",
+    "liveShared": "{{count}} giải đang diễn ra, dùng chung máy chủ. Các trận nhận máy chủ theo thứ tự sẵn sàng.",
+    "new": "Giải đấu mới",
+    "empty": "Chưa có giải đấu. Hãy tạo giải đầu tiên.",
+    "col": {
+      "name": "Tên",
+      "status": "Trạng thái",
+      "when": "Khi nào",
+      "entries": "Số đội",
+      "frontPage": "Trang nhất",
+      "actions": "Thao tác"
+    },
+    "status": {
+      "live": "Trực tiếp",
+      "finished": "Đã kết thúc",
+      "signup": "Đang mở đăng ký",
+      "draft": "Bản nháp"
+    },
+    "front": {
+      "featured": "Nổi bật",
+      "shown": "Hiển thị",
+      "hidden": "Ẩn",
+      "archived": "Đã lưu trữ",
+      "results": "Kết quả"
+    },
+    "won": "{{name}} vô địch",
+    "selected": "đã chọn",
+    "more": "Thêm cho {{name}}",
+    "menu": {
+      "open": "Mở",
+      "page": "Trang công khai",
+      "feature": "Đặt nổi bật trên trang nhất",
+      "archive": "Lưu trữ (gỡ khỏi trang nhất)",
+      "delete": "Xóa"
+    },
+    "toast": {
+      "featured": "Đã đặt nổi bật trên trang nhất",
+      "archived": "Đã lưu trữ",
+      "deleted": "Đã xóa giải đấu"
+    },
+    "deleteTitle": "Xóa giải đấu này?",
+    "deleteMessage": "{{name}} cùng các trận, kết quả và thống kê sẽ bị xóa. Không thể hoàn tác.",
+    "newName": "Tên",
+    "newNameBlank": "Bạn đặt tên ở bước thiết lập",
+    "startFrom": "Bắt đầu từ",
+    "blank": "Trống",
+    "blankHint": "Chọn trò chơi, thể thức và bản đồ ở bước thiết lập",
+    "copy": "Sao chép {{name}}",
+    "copyHint": "Cùng thể thức, bản đồ, luật và trang. Đội và ngày bắt đầu trống.",
+    "create": "Tạo và thiết lập",
+    "round": "vòng {{n}}",
+    "whenToday": "Hôm nay, từ {{time}}",
+    "whenTomorrow": "Ngày mai, {{time}}",
+    "notSet": "Chưa đặt",
+    "emptyTitle": "Chưa có giải đấu",
+    "template": "Một mẫu",
+    "templateHint": "Một thiết lập đã lưu: thể thức, bản đồ và luật. Bạn chọn đội và ngày.",
+    "copyOne": "Sao chép một giải đấu",
+    "copyWhich": "Giải nào"
+  },
+  "playedMatches": {
+    "title": "Tất cả trận",
+    "subtitle": "Mọi trận đã chơi trên trang này: giải đấu (kể cả giải đã xóa), trận lẻ và đấu xếp trận, kèm demo.",
+    "downloadAll_one": "Tải demo của {{count}} trận",
+    "downloadAll_other": "Tải demo của {{count}} trận",
+    "search": "Tìm đội hoặc giải đấu",
+    "kindLabel": "Loại",
+    "kind": {
+      "all": "Mọi loại",
+      "tournament": "Giải đấu",
+      "standalone": "Trận lẻ",
+      "matchmaking": "Đấu xếp trận",
+      "imported": "Đã nhập"
+    },
+    "withDemos": "Có demo",
+    "none": "Chưa có trận nào được chơi.",
+    "noneFiltered": "Không có trận nào khớp bộ lọc.",
+    "vs": "vs",
+    "deleted": "giải đã bị xóa",
+    "noDemo": "Không có demo",
+    "demo": "Demo",
+    "map": "Bản đồ {{n}}",
+    "import": "Nhập một trận"
+  },
+  "importMatch": {
+    "title": "Nhập một trận",
+    "subtitle": "Thêm một trận đã chơi ở nơi khác từ demo. Đội, người chơi và tỉ số được đọc từ demo, rồi trận có thống kê, phát lại 2D và highlight như mọi trận khác.",
+    "event": "Thi đấu ở đâu",
+    "eventHelp": "Tùy chọn, ví dụ tên sự kiện.",
+    "files": "Demo",
+    "filesHelp": "Một demo CS2 (.dem) cho mỗi bản đồ, theo thứ tự đã chơi.",
+    "choose": "Chọn demo",
+    "moveUp": "Đưa {{name}} lên",
+    "moveDown": "Đưa {{name}} xuống",
+    "remove": "Gỡ {{name}}",
+    "start": "Nhập",
+    "uploading": "Đang tải lên bản đồ {{n}} ({{percent}}%)",
+    "tooMany": "Tối đa {{max}} demo, mỗi bản đồ một demo.",
+    "notDemo": "{{name}} không phải tệp .dem.",
+    "error": "Đã dừng nhập: {{error}}",
+    "progress": "Tiến độ",
+    "mapN": "Bản đồ {{n}}",
+    "state": {
+      "uploading": "Đang tải lên",
+      "waiting": "Đang chờ trình xử lý demo",
+      "running": "Đang đọc demo",
+      "done": "Xong",
+      "failed": "Không đọc được demo"
+    },
+    "teams": "{{team1}} vs {{team2}}",
+    "doneAll": "Đã nhập. Highlight sẽ được ghi tiếp theo nếu có trình ghi hình highlight được kết nối.",
+    "openMatch": "Mở trận",
+    "another": "Nhập trận khác",
+    "dropHint": "hoặc thả tệp vào đây. Chọn nhiều tệp cùng lúc bằng Cmd hoặc Ctrl.",
+    "recordingGroup": "Nhóm trình ghi hình",
+    "allRecorders": "Mọi trình ghi hình",
+    "groupHelp": "Chọn nhóm sẽ dựng video cho trận này. Nhóm bị tắt sẽ chờ đến khi được bật.",
+    "groupDisabled": "Đã tắt",
+    "notCs2Demo": "{{name}} không phải demo CS2 (không nhập được demo CS:GO)."
+  },
+  "apiTokens": {
+    "title": "Token API",
+    "hint": "Cho script, bot và máy chủ MCP của Auto Tournament. Token chỉ đọc chỉ đọc được; token quản trị làm được mọi việc quản trị viên làm. Chỉ bạn thấy khóa bí mật của token, một lần, khi tạo.",
+    "line": "{{scope}} · {{fingerprint}} · dùng lần cuối {{used}}",
+    "never": "chưa bao giờ",
+    "none": "Chưa có token API.",
+    "name": "Tên",
+    "nameHelp": "1–32 chữ cái, chữ số, - hoặc _",
+    "scopeLabel": "Quyền truy cập",
+    "scope": {
+      "readonly": "Chỉ đọc",
+      "admin": "Quản trị"
+    },
+    "make": "Tạo token",
+    "madeTitle": "Token “{{label}}”",
+    "madeHelp": "Hãy sao chép ngay: đây là lần duy nhất token được hiển thị. Dán vào nơi script hoặc máy chủ MCP đọc nó (AT_TOKEN).",
+    "copy": "Sao chép token",
+    "copied": "Đã sao chép",
+    "done": "Xong",
+    "revoke": "Thu hồi {{label}}",
+    "revokeTitle": "Thu hồi “{{label}}”?",
+    "revokeHelp": "Mọi thứ đang dùng token này sẽ ngừng hoạt động ngay.",
+    "revokeConfirm": "Thu hồi",
+    "revoked": "Đã thu hồi {{label}}",
+    "cancel": "Hủy",
+    "loadFailed": "Không tải được token API",
+    "makeFailed": "Không tạo được token",
+    "revokeFailed": "Không thu hồi được token"
+  },
+  "discordBot": {
+    "title": "Bot Discord",
+    "token": "Token bot",
+    "replace": "Token bot mới",
+    "save": "Lưu",
+    "remove": "Gỡ",
+    "connected": "Đã kết nối với tên {{name}}",
+    "setNoAnswer": "Đã đặt token, nhưng Discord chưa trả lời lúc này.",
+    "saved": "Đã lưu bot Discord: {{name}}",
+    "cleared": "Đã gỡ bot Discord",
+    "saveFailed": "Không lưu được token bot.",
+    "howTo": "Tạo một ứng dụng, thêm bot, sao chép token của bot và mời bot vào máy chủ Discord của bạn:",
+    "portal": "Discord Developer Portal",
+    "guild": "Máy chủ Discord",
+    "guildHint": "Nơi bot tạo kênh đội và đăng bài. Chỉ hiện các máy chủ mà bot đang ở.",
+    "noGuilds": "Bot chưa ở máy chủ Discord nào. Hãy mời bot, rồi tải lại trang này.",
+    "noGuild": "Không có",
+    "guildSaved": "Đã lưu máy chủ Discord",
+    "movedHint": "Bot Discord giờ là tiện ích bổ sung: bật và thiết lập trong Mô-đun.",
+    "open": "Mở bot Discord",
+    "voice": {
+      "label": "Kênh thoại của đội",
+      "help": "Khi một trận ở trên máy chủ, người chơi đã ở kênh thoại sẽ được chuyển vào kênh thoại của đội; những người khác nhận liên kết qua tin nhắn riêng.",
+      "saved": "Đã lưu cài đặt kênh thoại"
+    },
+    "teamChannels": {
+      "label": "Kênh đội",
+      "help": "Khi giải đang diễn ra, mỗi đội có một kênh văn bản và kênh thoại riêng trong “Your team”. Người chơi tìm kênh văn bản ở trang đội của họ.",
+      "link": "Kênh đội trên Discord"
+    },
+    "commands": {
+      "label": "Lệnh slash: /matches, /mymatch và /lobby",
+      "help": "Lệnh hoạt động ngay khi bot kết nối. Tùy chọn: để Discord gửi lệnh đến trang này, hãy dán giá trị này làm Interactions Endpoint URL của ứng dụng trong Discord Developer Portal."
+    },
+    "invite": "Mời vào máy chủ",
+    "linking": {
+      "label": "Người chơi liên kết Discord",
+      "help": "Dùng chính ứng dụng Discord của bot nên không cần tạo ứng dụng thứ hai. Trong Developer Portal, mở OAuth2 ở ứng dụng của bot, thêm redirect này, rồi sao chép client secret và dán vào đây.",
+      "portal": "Mở OAuth2",
+      "secret": "Client secret",
+      "save": "Bật liên kết",
+      "saved": "Người chơi giờ có thể liên kết Discord",
+      "ready": "Bật: người chơi liên kết Discord ở Tài khoản → Kết nối.",
+      "invite": "Người chơi chưa ở máy chủ của bạn được mời tham gia qua {{url}}.",
+      "noInvite": "Bot chưa tạo được lời mời vào máy chủ của bạn. Hãy nhấn lại Mời vào máy chủ để bot có quyền Create Invite."
+    },
+    "missing": "Bot thiếu {{list}} trên máy chủ của bạn nên một số phần sẽ không hoạt động. Hãy nhấn Mời vào máy chủ ở trên: thao tác này cập nhật quyền của bot mà không gỡ bot."
+  },
+  "liveMatchesPage": {
+    "title": "Trận đang diễn ra",
+    "subtitle": "Mọi trận đang ở trên máy chủ. Các dòng cần bạn xử lý hiện trước.",
+    "loading": "Đang tải…",
+    "loadFailed": "Không đọc được trận đang diễn ra. Đang thử lại…",
+    "empty": "Không có trận nào đang chạy",
+    "chat": "Trò chuyện",
+    "mapOf": "Bản đồ {{n}}/{{total}}",
+    "columns": {
+      "match": "Trận",
+      "map": "Bản đồ",
+      "phase": "Giai đoạn",
+      "score": "Tỉ số",
+      "round": "Hiệp",
+      "players": "Người chơi",
+      "pause": "Tạm dừng",
+      "call": "Gọi quản trị viên",
+      "server": "Máy chủ",
+      "chat": "Trò chuyện"
+    },
+    "source": {
+      "matchmaking": "Đấu xếp trận",
+      "manual": "Trận lẻ"
+    },
+    "phase": {
+      "none": "Không có trạng thái máy chủ",
+      "loading": "Đang tải",
+      "warmup": "Khởi động",
+      "knife": "Hiệp dao",
+      "side_pick": "Chọn bên",
+      "live": "Trực tiếp",
+      "paused": "Tạm dừng",
+      "halftime": "Nghỉ giữa trận",
+      "overtime": "Hiệp phụ",
+      "map_end": "Sau trận",
+      "series_end": "Sau trận",
+      "restoring": "Đang khôi phục",
+      "error": "Lỗi"
+    },
+    "players": {
+      "summary": "{{connected}}/{{total}} đã vào · {{ready}} sẵn sàng",
+      "connected": "Đã kết nối",
+      "disconnected": "Chưa kết nối",
+      "readyTag": "sẵn sàng",
+      "none": "Không có người chơi"
+    },
+    "pause": {
+      "by": "bởi {{name}}",
+      "unpause": "Muốn tiếp tục",
+      "type": {
+        "tactical": "Chiến thuật",
+        "technical": "Kỹ thuật",
+        "admin": "Quản trị",
+        "offline": "Người chơi ngoại tuyến",
+        "halftime": "Nghỉ giữa trận",
+        "auto_5v5": "Chờ đủ 5v5",
+        "unknown": "Tạm dừng"
+      }
+    },
+    "call": {
+      "noMessage": "Không có tin nhắn"
+    },
+    "server": {
+      "online": "Trực tuyến",
+      "offline": "Ngoại tuyến",
+      "unknown": "Không rõ trạng thái"
+    }
+  }
+}

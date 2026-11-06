@@ -1,0 +1,490 @@
+{
+  "matchesPage": {
+    "errors": {
+      "loadMatches": "Không tải được trận đấu",
+      "loadTitle": "Lỗi khi tải trận đấu",
+      "bulkDelete": "Không xóa được một hoặc nhiều trận"
+    },
+    "header": {
+      "createMatch": "Tạo trận"
+    },
+    "bulkSelect": {
+      "select": "Chọn",
+      "done": "Chọn xong",
+      "selectAll": "Chọn tất cả",
+      "unselectAll": "Bỏ chọn tất cả",
+      "deleteSelected": "Xóa mục đã chọn"
+    },
+    "empty": {
+      "title": "Không có trận để hiển thị",
+      "description": "Tạo giải đấu và tạo nhánh đấu để xem trận ở đây",
+      "createManual": "Hoặc tạo trận thủ công"
+    },
+    "sections": {
+      "live": "Trận đang diễn ra ({{count}})",
+      "upcoming": "Trận sắp tới ({{count}})",
+      "history": "Lịch sử trận ({{count}})",
+      "inQueue": "{{count}} trong hàng chờ"
+    },
+    "manualMatchLabel": "Trận thủ công",
+    "create": {
+      "success": "Đã tạo trận thủ công: {{slug}}"
+    },
+    "bulkDelete": {
+      "title": "Xóa trận thủ công",
+      "deleted_one": "Đã xóa {{count}} trận",
+      "deleted_other": "Đã xóa {{count}} trận",
+      "message_one": "Bạn có chắc muốn xóa {{count}} trận thủ công? Thao tác này không thể hoàn tác.",
+      "message_other": "Bạn có chắc muốn xóa {{count}} trận thủ công? Thao tác này không thể hoàn tác."
+    },
+    "card": {
+      "matchNumber": "Trận #{{number}}",
+      "server": "Máy chủ: {{name}}",
+      "queuePosition": "Vị trí hàng chờ: #{{position}}",
+      "shuffle": "Xáo trộn",
+      "shuffleManual": "Xáo trộn thủ công",
+      "manual": "Thủ công",
+      "simulation": "Mô phỏng",
+      "winner": "THẮNG",
+      "mapN": "Bản đồ {{n}}"
+    },
+    "statusLabel": {
+      "walkover": "THẮNG XỬ",
+      "waitingForTournament": "CHỜ GIẢI ĐẤU BẮT ĐẦU",
+      "waitingForServer": "CHỜ MÁY CHỦ",
+      "waitingForPairing": "CHỜ GHÉP CẶP",
+      "vetoPending": "CHỜ VETO",
+      "mapVeto": "VETO BẢN ĐỒ",
+      "serverAllocated": "ĐÃ PHÂN BỔ MÁY CHỦ",
+      "warmup": "KHỞI ĐỘNG",
+      "overtime": "HIỆP PHỤ #{{n}}",
+      "live": "TRỰC TIẾP",
+      "completed": "ĐÃ KẾT THÚC",
+      "cancelled": "ĐÃ HỦY",
+      "needsDecision": "CẦN QUẢN TRỊ VIÊN QUYẾT ĐỊNH"
+    },
+    "statusGuide": {
+      "title": "Hướng dẫn trạng thái trận",
+      "pending": "Trận đã lên lịch nhưng chưa được gán máy chủ. Sẽ được phân bổ khi có máy chủ trống.",
+      "loaded": "Trận đã được tải lên máy chủ và đang khởi động. Người chơi nên kết nối và sẵn sàng để bắt đầu.",
+      "live": "Trận đang được thi đấu trên máy chủ.",
+      "completed": "Trận đã kết thúc. Đã xác định đội thắng và nhánh đấu đã được cập nhật.",
+      "proTipTitle": "Mẹo:",
+      "proTip": "Khi trận hiển thị “Đang chờ người chơi (X/Y)”, máy chủ đã sẵn sàng và người chơi nên kết nối. Khi đủ người chơi kết nối và sẵn sàng, trận sẽ tự bắt đầu."
+    },
+    "latestEvent": "Gần nhất: {{event}}",
+    "matchLabel": {
+      "upper": "NT V{{round}} T{{match}}",
+      "lower": "NB V{{round}} T{{match}}",
+      "grandFinal": "Chung kết tổng",
+      "grandFinalReset": "Chung kết tổng (đặt lại)",
+      "group": "Bảng {{group}} · Vòng {{round}}",
+      "playoffs": "Playoff · Vòng {{round}}"
+    },
+    "table": {
+      "filterLabel": "Hiện",
+      "search": "Tìm đội hoặc người chơi",
+      "tbd": "Chưa xác định",
+      "manage": "Quản lý trận",
+      "empty": "Không có trận ở đây.",
+      "filter": {
+        "attention_one": "Cần xử lý · {{count}}",
+        "attention_other": "Cần xử lý · {{count}}",
+        "live_one": "Trực tiếp · {{count}}",
+        "live_other": "Trực tiếp · {{count}}",
+        "veto_one": "Veto · {{count}}",
+        "veto_other": "Veto · {{count}}",
+        "waiting_one": "Đang chờ · {{count}}",
+        "waiting_other": "Đang chờ · {{count}}",
+        "finished_one": "Đã kết thúc · {{count}}",
+        "finished_other": "Đã kết thúc · {{count}}",
+        "all_one": "Tất cả · {{count}}",
+        "all_other": "Tất cả · {{count}}"
+      },
+      "columns": {
+        "match": "Trận",
+        "teams": "Đội",
+        "phase": "Giai đoạn",
+        "server": "Máy chủ",
+        "attention": "Cần xử lý",
+        "open": "Mở"
+      },
+      "attention": {
+        "calls_one": "1 lần gọi quản trị viên",
+        "calls_other": "{{count}} lần gọi quản trị viên",
+        "decide": "Quyết định kết quả"
+      },
+      "phase": {
+        "live": "Trực tiếp · bản đồ {{map}}",
+        "finished": "Đã kết thúc",
+        "finishedScore": "Đã kết thúc · {{score}}",
+        "veto": "Veto bản đồ",
+        "waitingTeams": "Đang chờ các đội",
+        "queued": "Chờ máy chủ · #{{position}} trong hàng chờ",
+        "waiting": "Đang chờ"
+      },
+      "server": {
+        "freed": "Đã giải phóng"
+      }
+    }
+  },
+  "matchDetailsModal": {
+    "tiebreakHint": "Tỉ số hòa: {{team}} thắng bản đồ nhờ tiêu chí phụ.",
+    "delete": {
+      "dialogTitle": "Xóa trận",
+      "confirmTitle": "Xóa trận này?",
+      "confirmBody": "Bạn có chắc muốn xóa trận “{{slug}}”? Thao tác này không thể hoàn tác.",
+      "button": "Xóa trận",
+      "success": "Đã xóa trận",
+      "failed": "Không xóa được trận"
+    },
+    "roster": {
+      "title": "Danh sách người chơi",
+      "yourTeam": "Đội của bạn",
+      "openPlayerPage": "Mở trang người chơi",
+      "ready": "SẴN SÀNG",
+      "connected": "ĐÃ KẾT NỐI",
+      "offline": "NGOẠI TUYẾN",
+      "bot": "BOT"
+    },
+    "decision": {
+      "body": "Đã chơi hết mọi bản đồ nhưng loạt trận vẫn hòa về bản đồ, hiệp và sát thương. Hãy chọn đội thắng để nhánh đấu tiếp tục.",
+      "setWinner": "{{team}} thắng",
+      "confirmTitle": "Đặt đội thắng loạt trận",
+      "confirmBody": "Kết thúc loạt trận này với {{team}} là đội thắng? Nhánh đấu sẽ tiếp tục và không thể hoàn tác tại đây.",
+      "confirm": "Đặt đội thắng",
+      "success": "Đã đặt đội thắng",
+      "failed": "Không đặt được đội thắng"
+    },
+    "config": {
+      "loadFailed": "Không tải được cấu hình trận",
+      "view": "Xem JSON cấu hình trận",
+      "title": "JSON cấu hình trận",
+      "loading": "Đang tải cấu hình trận...",
+      "empty": "Không có cấu hình cho trận này."
+    },
+    "tiebreak": {
+      "regulationOnly": "Trận này tắt hiệp phụ (chỉ thời gian chính thức), nên tỉ số hòa được phân định bằng tổng sát thương của đội.",
+      "segmentsExhausted": "Hiệp phụ được cấu hình với số lượt tối đa. Nếu vẫn hòa, đội thắng được xác định bằng tổng sát thương của đội.",
+      "overtimeDisabled": "Trận này tắt hiệp phụ, nên tỉ số hòa được phân định bằng tổng sát thương của đội.",
+      "tiedByDamage": "Tỉ số cuối cùng hòa, nên theo cài đặt trận, đội thắng được chọn bằng tổng sát thương của đội."
+    },
+    "team1": "Đội 1",
+    "team2": "Đội 2",
+    "matchTime": "Thời gian trận:",
+    "server": "Máy chủ:",
+    "queuePosition": "Vị trí hàng chờ:",
+    "totalDamage": "Tổng sát thương: {{team1}} - {{team2}}",
+    "mapOfTotal": "Bản đồ {{index}} trên {{total}}: {{map}}",
+    "mapIndex": "Bản đồ {{index}}: {{map}}",
+    "round": "Hiệp {{round}}",
+    "shuffle": {
+      "averageElo": "ELO đội (trung bình): {{team1}} vs {{team2}}",
+      "balancerHint": "Đội xáo trộn được tạo bởi bộ cân bằng dựa trên OpenSkill, rải người chơi điểm cao và thấp ra hai bên để giữ các mức trung bình này gần nhau."
+    },
+    "playerLeaderboards": "Bảng xếp hạng người chơi",
+    "noPlayerData": "Không có dữ liệu người chơi",
+    "currentMap": "Bản đồ hiện tại",
+    "maps": "Bản đồ",
+    "mapsNotPicked": "Chưa chọn bản đồ.",
+    "mapsViaVeto": "Sẽ được xác định qua veto",
+    "matchInformation": "Thông tin trận",
+    "created": "Tạo lúc:",
+    "started": "Bắt đầu:",
+    "completed": "Kết thúc:",
+    "adminControls": "Điều khiển quản trị",
+    "slug": "Slug trận:",
+    "openChat": "Trò chuyện trận"
+  },
+  "bulkShuffleMatchesModal": {
+    "title": "Tạo hàng loạt trận xáo trộn",
+    "description": "Thiết lập một trận xáo trộn một bản đồ (bản đồ + giới hạn hiệp), rồi tạo bao nhiêu trận đối đầu tùy ý bằng cách chọn chính xác đội hình mỗi bên. Các trận được tạo trong giải xáo trộn hiện tại và sẽ được phân bổ máy chủ khi bạn bắt đầu giải.",
+    "mapSelect": {
+      "label": "Bản đồ",
+      "noMaps": "Giải này chưa cấu hình bản đồ",
+      "helper": "Mọi trận trong đợt này sẽ dùng bản đồ này."
+    },
+    "maxRounds": {
+      "label": "Số hiệp tối đa mỗi bản đồ",
+      "helperWithValue": "Trận chơi tối đa {{maxRounds}} hiệp; đội thắng là đội đầu tiên đạt {{winRounds}} hiệp.",
+      "helperDefault": "Số hiệp tối đa mỗi bản đồ (mặc định: 24, tối đa: 30)."
+    },
+    "matchesSection": {
+      "title": "Trận ({{count}})",
+      "addMatch": "Thêm trận"
+    },
+    "players": {
+      "empty": "Chưa có người chơi đăng ký giải xáo trộn này. Hãy đăng ký người chơi trước, rồi bạn có thể tạo trận thủ công."
+    },
+    "matchRow": {
+      "title": "Trận {{index}}",
+      "teamCounts": "{{team1}}/{{teamSize}} • {{team2}}/{{teamSize}}",
+      "team1Label": "Người chơi Đội 1 ({{team1Count}}/{{teamSize}})",
+      "team2Label": "Người chơi Đội 2 ({{team2Count}}/{{teamSize}})",
+      "searchPlaceholder": "Tìm và chọn người chơi",
+      "mapOverrideLabel": "Bản đồ (ghi đè, tùy chọn)",
+      "mapOverrideHelperOwn": "Trận này dùng bản đồ riêng.",
+      "mapOverrideHelperDefault": "Để trống để dùng bản đồ mặc định ở trên.",
+      "maxRoundsOverrideLabel": "Số hiệp tối đa (ghi đè, tùy chọn)",
+      "maxRoundsOverrideHelperOwn": "Ghi đè số hiệp tối đa mặc định cho trận này (hiện là {{value}}).",
+      "maxRoundsOverrideHelperDefault": "Để trống để dùng số hiệp tối đa mặc định ở trên."
+    },
+    "errors": {
+      "loadPlayers": "Không tải được người chơi đã đăng ký",
+      "noMatches": "Thêm ít nhất một trận để tạo.",
+      "bothTeamsRequired": "Trận {{index}}: cả hai đội phải có ít nhất một người chơi.",
+      "conflictingPlayers": "Trận {{index}}: một người chơi không thể ở cả hai đội. ID trùng: {{ids}}",
+      "mapRequired": "Trận {{index}}: cần có bản đồ (đặt bản đồ mặc định ở trên hoặc chọn bản đồ cho trận này).",
+      "rowMaxRoundsRange": "Trận {{index}}: số hiệp tối đa phải từ 1 đến 30 khi ghi đè theo trận.",
+      "globalMaxRoundsRange": "Số hiệp tối đa phải từ 1 đến 30.",
+      "createFailed": "Không tạo được trận xáo trộn thủ công"
+    },
+    "success": {
+      "created": "Đã tạo trận xáo trộn thủ công. Các trận sẽ được phân bổ khi giải bắt đầu."
+    },
+    "createMatchesButton": {
+      "default": "Tạo trận",
+      "creating": "Đang tạo…"
+    }
+  },
+  "teamModal": {
+    "titleCreate": "Tạo đội mới",
+    "titleEdit": "Sửa đội",
+    "teamNameLabel": "Tên đội",
+    "teamNamePlaceholder": "Astralis",
+    "teamNameHelper": "Tên đội có thể dùng bất kỳ ngôn ngữ hay ký tự đặc biệt nào",
+    "teamTagLabel": "Tag đội",
+    "teamTagPlaceholder": "AST",
+    "teamTagHelper": "Tự tạo từ tên đội (tối đa 4 ký tự)",
+    "playersHeader": "Người chơi ({{count}})",
+    "selectPlayers": "Chọn người chơi",
+    "noPlayersInfo": "Chưa thêm người chơi. Hãy thêm ít nhất một người chơi.",
+    "addPlayersHelper": "Thêm người chơi mới bên dưới, hoặc chọn từ người chơi hiện có",
+    "addPlayersHelper_steam": "Thêm người chơi bằng cách dán URL Steam hoặc chọn từ người chơi hiện có",
+    "steamInputLabel": "Steam ID / Vanity URL",
+    "steamInputPlaceholder": "gaben hoặc steamcommunity.com/id/gaben",
+    "resolveSteam": "Tra cứu Steam ID",
+    "resolving": "Đang tra cứu...",
+    "playerNameLabel": "Tên người chơi",
+    "playerNamePlaceholder": "s1mple",
+    "eloLabel": "ELO (tùy chọn)",
+    "eloPlaceholder": "1500",
+    "eloHelper": "Mặc định: 1500",
+    "errors": {
+      "steamLookupEmpty": "Hãy nhập Steam ID, vanity URL hoặc URL hồ sơ",
+      "steamApiNotConfigured": "Chưa cấu hình Steam API - hãy nhập Steam ID64 thủ công",
+      "steamResolveFailed": "Không tra cứu được Steam ID - hãy nhập Steam ID64 thủ công",
+      "steamAndNameRequired": "Cần cả Steam ID và tên người chơi",
+      "steamDuplicate": "Steam ID này đã có trong đội",
+      "teamNameRequired": "Cần nhập tên đội",
+      "playersRequired": "Cần ít nhất một người chơi",
+      "saveFailed": "Không lưu được đội",
+      "deleteFailed": "Không xóa được đội",
+      "discordIdInvalid": "Discord ID phải có 17–20 chữ số (ID người dùng dạng số, không phải tên người dùng)",
+      "discordIdInvalidPlayers": "Discord ID không hợp lệ cho: {{names}}. Phải có 17–20 chữ số hoặc để trống.",
+      "discordIdSaveFailed": "Đã lưu đội, nhưng không lưu được Discord ID cho: {{names}}. {{message}}",
+      "nameRequired": "Nhập tên người chơi",
+      "addPlayerFailed": "Không thêm được người chơi"
+    },
+    "success": {
+      "playerAdded": "Đã thêm người chơi vào đội",
+      "playerReplaced": "Đã thay người chơi",
+      "teamUpdated": "Đã cập nhật đội",
+      "teamCreated": "Đã tạo đội",
+      "teamDeleted": "Đã xóa đội"
+    },
+    "buttons": {
+      "deleteTeam": "Xóa đội",
+      "cancel": "Hủy",
+      "saving": "Đang lưu...",
+      "saveChanges": "Lưu thay đổi",
+      "createTeam": "Tạo đội"
+    },
+    "confirmDelete": {
+      "title": "Xóa đội",
+      "message": "Bạn có chắc muốn xóa “{{name}}”? Thao tác này không thể hoàn tác."
+    },
+    "replacePlayerAria": "Thay người chơi {{name}}",
+    "replacePlayerTooltip": "Thay người chơi này",
+    "accountLabel": "Tài khoản {{account}} (tùy chọn)",
+    "accountHelper": "Cho {{games}}. Khi họ đăng nhập bằng {{account}}, họ sẽ trở thành người chơi này."
+  },
+  "playerModal": {
+    "titleCreate": "Tạo người chơi",
+    "titleEdit": "Sửa người chơi",
+    "steamLabel": "Steam ID hoặc URL hồ sơ (tùy chọn)",
+    "steamHelperEditing": "Không thể thay đổi Steam ID",
+    "steamHelperNew": "Cho {{games}}. Nhập Steam ID64, vanity URL hoặc URL hồ sơ; “Tra cứu Steam ID” sẽ điền tên và ảnh đại diện.",
+    "resolveSteam": "Tra cứu Steam ID",
+    "resolving": "Đang tra cứu...",
+    "playerNameLabel": "Tên người chơi",
+    "playerNamePlaceholder": "Người chơi",
+    "eloLabelNew": "ELO ban đầu",
+    "eloLabelEdit": "ELO",
+    "eloHelperNew": "Để trống để dùng mặc định (Điểm kỹ năng 1500).",
+    "eloHelperEdit": "Thay đổi ELO sẽ đặt lại điểm và thống kê của người chơi. Thao tác này không thể hoàn tác.",
+    "isAdminLabel": "Là quản trị viên (quản lý trang này; mô-đun game có thể cấp thêm quyền trong game cho quản trị viên)",
+    "currentElo": "ELO hiện tại: {{value}}",
+    "startingElo": "ELO ban đầu: {{value}}",
+    "matchesPlayed": "Số trận đã chơi: {{count}}",
+    "errors": {
+      "steamRequired": "Cần nhập Steam ID",
+      "nameRequired": "Cần nhập tên người chơi",
+      "steamLookupEmpty": "Hãy nhập Steam ID, vanity URL hoặc URL hồ sơ",
+      "steamApiNotConfigured": "Chưa cấu hình Steam API - hãy nhập Steam ID64 thủ công",
+      "steamResolveFailed": "Không tra cứu được Steam ID - hãy nhập Steam ID64 thủ công",
+      "saveFailed": "Không lưu được người chơi"
+    },
+    "success": {
+      "playerUpdated": "Đã cập nhật người chơi",
+      "playerCreated": "Đã tạo người chơi"
+    },
+    "buttons": {
+      "delete": "Xóa",
+      "cancel": "Hủy",
+      "saving": "Đang lưu...",
+      "save": "Lưu",
+      "create": "Tạo"
+    },
+    "confirmDelete": {
+      "title": "Xóa người chơi",
+      "message": "Bạn có chắc muốn xóa người chơi “{{name}}”? Thao tác này không thể hoàn tác."
+    },
+    "confirmEloUpdate": {
+      "title": "Cập nhật ELO người chơi",
+      "message": "Bạn có chắc muốn đổi ELO của người chơi này từ {{from}} thành {{to}}? Thống kê và lịch sử điểm sẽ bị đặt lại. Thao tác này không thể hoàn tác."
+    },
+    "discordIdHelper": "Tùy chọn. 17–20 chữ số. Giúp ban tổ chức liên hệ người chơi này qua Discord. Không bao giờ hiển thị công khai.",
+    "accountLabel": "Tài khoản {{account}} (tùy chọn)",
+    "accountHelper": "Cho {{games}}. ID tài khoản; khi họ đăng nhập bằng {{account}}, họ sẽ trở thành người chơi này.",
+    "accountVerified": "Đã liên kết: họ đã đăng nhập bằng {{account}}. Họ tự thay đổi được."
+  },
+  "teamImportModal": {
+    "title": "Nhập đội từ JSON",
+    "info": {
+      "title": "Dán JSON chứa dữ liệu đội bên dưới.",
+      "format": "Định dạng mong đợi: mảng các đội có name, tag (tùy chọn) và players (name + steamId, kèm discordId dạng chuỗi trong ngoặc kép nếu có).",
+      "link": "Xem tài liệu có ví dụ"
+    },
+    "jsonLabel": "Dữ liệu JSON",
+    "errors": {
+      "mustBeArray": "JSON phải là một mảng các đội",
+      "emptyArray": "Mảng không được rỗng",
+      "parseWithMessage": "Lỗi phân tích JSON: {{message}}",
+      "parseGeneric": "Định dạng JSON không hợp lệ. Hãy kiểm tra cú pháp.",
+      "importFailed": "Không nhập được đội",
+      "noJson": "Hãy nhập dữ liệu JSON"
+    },
+    "preview": {
+      "summary": "✓ JSON hợp lệ! Tìm thấy {{teams}} với tổng cộng {{players}}.",
+      "title": "Xem trước:",
+      "missingDiscordTotal": "Người chơi không có Discord ID: {{count}}",
+      "missingDiscordChip": "Không có Discord: {{count}}",
+      "playersChip_one": "{{count}} người chơi",
+      "playersChip_other": "{{count}} người chơi",
+      "teamsCount_one": "{{count}} đội",
+      "teamsCount_other": "{{count}} đội"
+    },
+    "actions": {
+      "preview": "Xem trước",
+      "importing": "Đang nhập...",
+      "import_one": "Nhập {{count}} đội",
+      "import_other": "Nhập {{count}} đội"
+    },
+    "warnings": {
+      "title": "Một số Discord ID đã bị bỏ qua. Những người chơi này sẽ được nhập mà không có Discord ID:",
+      "discordIdNumber": "Đội “{{team}}”, người chơi “{{player}}”: discordId phải là chuỗi trong ngoặc kép. Số lớn bị mất độ chính xác trong JSON nên ID đã bị bỏ.",
+      "discordIdInvalid": "Đội “{{team}}”, người chơi “{{player}}”: “{{value}}” không phải Discord user ID (cần 17–20 chữ số) nên đã bị bỏ."
+    }
+  },
+  "playerImportModal": {
+    "title": "Nhập người chơi",
+    "info": {
+      "description": "Nhập người chơi từ định dạng JSON hoặc CSV. Trường bắt buộc: steamId, name. Tùy chọn: initialELO (mặc định 1500), avatarUrl.",
+      "link": "Xem tài liệu có ví dụ"
+    },
+    "placeholders": {
+      "jsonCsv": "Định dạng JSON:\n[\n  {\n    \"steamId\": \"76561198012345678\",\n    \"name\": \"Player One\",\n    \"initialELO\": 1500,\n    \"avatarUrl\": \"https://...\"\n  }\n]\n\nĐịnh dạng CSV:\nsteamId,name,initialELO,avatarUrl\n76561198012345678,Player One,1500,https://..."
+    },
+    "actions": {
+      "parseValidate": "Phân tích và kiểm tra",
+      "importing": "Đang nhập...",
+      "import_one": "Nhập {{count}} người chơi",
+      "import_other": "Nhập {{count}} người chơi"
+    },
+    "preview": {
+      "title": "Người chơi sẽ nhập ({{count}}):",
+      "steamId": "Steam ID: {{steamId}}",
+      "name": "Tên: {{name}}",
+      "initialElo": "ELO ban đầu: {{elo}}",
+      "avatar": "Ảnh đại diện: {{url}}",
+      "readyChip_one": "{{count}} người chơi sẵn sàng để nhập",
+      "readyChip_other": "{{count}} người chơi sẵn sàng để nhập"
+    },
+    "errors": {
+      "noData": "Hãy nhập dữ liệu JSON hoặc CSV",
+      "noPlayers": "Không tìm thấy người chơi trong dữ liệu",
+      "validationPrefix": "Lỗi kiểm tra:",
+      "parseFailed": "Không phân tích được dữ liệu: {{message}}",
+      "importFailed": "Không nhập được người chơi",
+      "parseFirst": "Hãy phân tích và kiểm tra dữ liệu trước"
+    }
+  },
+  "playerSelectionModal": {
+    "title": "Chọn người chơi",
+    "selectedCount": "Đã chọn {{count}}",
+    "searchPlaceholder": "Tìm người chơi theo tên...",
+    "searchPlaceholder_steam": "Tìm người chơi theo tên hoặc Steam ID...",
+    "selectAll": {
+      "select": "Chọn tất cả",
+      "deselect": "Bỏ chọn tất cả"
+    },
+    "empty": {
+      "noSearchResults": "Không tìm thấy người chơi phù hợp",
+      "noPlayers": "Không có người chơi"
+    },
+    "playerCard": {
+      "alreadyInTeam": "Đã có trong đội"
+    },
+    "errors": {
+      "loadFailed": "Không tải được người chơi",
+      "noSelectable": "Không có người chơi nào để chọn"
+    },
+    "addPlayersButton_one": "Thêm {{count}} người chơi",
+    "addPlayersButton_other": "Thêm {{count}} người chơi"
+  },
+  "soundSettingsModal": {
+    "title": "Cài đặt âm thanh",
+    "soundSelect": {
+      "label": "Âm thanh thông báo"
+    },
+    "volume": {
+      "label": "Âm lượng: {{percent}}%"
+    },
+    "testButton": "Thử âm thanh",
+    "footer": "Âm thanh thông báo sẽ phát khi trận của bạn sẵn sàng hoặc có sự kiện quan trọng."
+  },
+  "addBackupPlayer": {
+    "title": "Thêm người chơi",
+    "loadFailed": "Không tải được danh sách người chơi",
+    "added": "Đã thêm {{name}} vào {{target}}",
+    "addFailed": "Không thêm được người chơi",
+    "addToMatchFailed": "Không thêm được người chơi vào trận",
+    "searchLabel": "Tìm người chơi",
+    "searchPlaceholder": "Nhập tên người chơi...",
+    "available": "{{count}} người chơi khả dụng (chưa có trong trận)",
+    "noneAvailable": "Không có người chơi",
+    "displayNameLabel": "Tên hiển thị (tùy chọn)",
+    "displayNamePlaceholder": "Mặc định là tên hiện tại của người chơi",
+    "side": "Bên",
+    "spectator": "Khán giả",
+    "selected": "Đã chọn:",
+    "fromTeam": "Từ đội: {{team}}",
+    "steamId": "Steam ID: {{id}}",
+    "adding": "Đang thêm người chơi...",
+    "add": "Thêm người chơi vào trận",
+    "underlyingCommand": "Lệnh bên dưới:",
+    "important": "Quan trọng:",
+    "reconnectHint": "Người chơi phải kết nối lại máy chủ sau khi được thêm. Nếu đã kết nối, họ có thể cần vào lại."
+  }
+}

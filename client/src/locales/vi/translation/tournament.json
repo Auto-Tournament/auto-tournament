@@ -1,0 +1,1810 @@
+{
+  "tournament": {
+    "startConfirm": {
+      "intro": "Sẵn sàng bắt đầu giải đấu?",
+      "thisWill": "Thao tác này sẽ:",
+      "openMatches": "Mở các trận của vòng đầu tiên",
+      "statusInProgress": "Chuyển trạng thái giải đấu sang ĐANG DIỄN RA",
+      "confirm": "Có, bắt đầu giải đấu",
+      "started": "Giải đấu đã bắt đầu! Các trận của vòng đầu tiên đã mở."
+    },
+    "steps": {
+      "create": "Tạo giải đấu",
+      "review": "Xem lại và xác nhận",
+      "live": "Giải đấu trực tiếp"
+    },
+    "welcome": {
+      "heading": "Tạo giải đấu",
+      "chooseMethod": "Chọn cách bạn muốn tạo giải đấu",
+      "createNewTitle": "Tạo giải đấu mới",
+      "createNewDescription": "Bắt đầu từ đầu và tự thiết lập mọi cài đặt giải đấu"
+    },
+    "typeSelector": {
+      "categories": {
+        "professional": {
+          "label": "Giải chuyên nghiệp"
+        },
+        "party": {
+          "label": "Vui chơi"
+        }
+      },
+      "types": {
+        "single_elimination": {
+          "label": "Loại trực tiếp",
+          "description": "Thua một trận là bị loại. Thể thức nhánh đấu kinh điển dùng trong các giải chuyên nghiệp."
+        },
+        "double_elimination": {
+          "label": "Nhánh thắng – nhánh bại",
+          "description": "Thua hai trận mới bị loại. Các đội có cơ hội thứ hai ở nhánh bại."
+        },
+        "round_robin": {
+          "label": "Vòng tròn",
+          "description": "Mọi đội đấu với nhau. Phù hợp cho thể thức kiểu giải vô địch."
+        },
+        "swiss": {
+          "label": "Hệ Thụy Sĩ",
+          "description": "Các đội có thành tích tương đương gặp nhau. Cặp đấu cân bằng suốt giải."
+        },
+        "shuffle": {
+          "label": "Giải đấu xáo trộn",
+          "description": "Người chơi được xáo trộn vào các đội cân bằng mỗi vòng. Thi đấu cá nhân với cân bằng đội dựa trên ELO."
+        },
+        "groups": {
+          "label": "Vòng bảng rồi playoff",
+          "description": "Đấu vòng tròn trong bảng; các đội giỏi nhất mỗi bảng vào loại trực tiếp."
+        }
+      },
+      "selectedChip": "Đã chọn"
+    },
+    "review": {
+      "summary": {
+        "info": "Xem lại cài đặt giải đấu và nhấn “{{button}}” khi bạn sẵn sàng.",
+        "nameLabel": "Tên giải đấu",
+        "typeLabel": "Loại giải đấu",
+        "formatLabel": "Thể thức trận",
+        "notSet": "Chưa đặt",
+        "estimatedVolumeText": "Khoảng {{matches}} qua {{rounds}} (best of {{mapsPerMatch}}, tổng tối đa {{maps}})."
+      }
+    },
+    "formSteps": {
+      "steps": {
+        "name": "Tên",
+        "type": "Loại",
+        "format": "Thể thức",
+        "maps": "Bản đồ",
+        "teams": "Đội",
+        "review": "Xem lại"
+      },
+      "backToWelcome": "Quay lại trang chào",
+      "back": "Quay lại",
+      "next": "Tiếp"
+    },
+    "emptyBracket": {
+      "title": "Không có nhánh đấu để hiển thị",
+      "description": "Tạo giải đấu và tạo nhánh đấu để bắt đầu"
+    },
+    "common": {
+      "createTournament": "Tạo giải đấu"
+    },
+    "nameLabel": "Tên giải đấu",
+    "namePlaceholder": "Giải mùa xuân Auto Tournament 2025",
+    "champion": {
+      "title": "Vô địch"
+    },
+    "page": {
+      "title": "Thiết lập giải đấu"
+    },
+    "labels": {
+      "teams": "Đội",
+      "maps": "Bản đồ",
+      "format": "Thể thức",
+      "players": "Người chơi",
+      "matchRules": "Luật trận",
+      "servers": "Máy chủ",
+      "overtimeSettings": "Cài đặt hiệp phụ",
+      "mapPool": "Nhóm bản đồ"
+    },
+    "tooltips": {
+      "deleteTournament": "Xóa vĩnh viễn giải đấu này và toàn bộ dữ liệu"
+    },
+    "counts": {
+      "teams_one": "{{count}} đội",
+      "teams_other": "{{count}} đội",
+      "matches_one": "{{count}} trận",
+      "matches_other": "{{count}} trận",
+      "rounds_one": "{{count}} vòng",
+      "rounds_other": "{{count}} vòng",
+      "maps_one": "{{count}} bản đồ",
+      "maps_other": "{{count}} bản đồ",
+      "servers_one": "{{count}} máy chủ",
+      "servers_other": "{{count}} máy chủ",
+      "availableServers_one": "{{count}} máy chủ khả dụng",
+      "availableServers_other": "{{count}} máy chủ khả dụng",
+      "concurrentMatches_one": "{{count}} trận đồng thời",
+      "concurrentMatches_other": "{{count}} trận đồng thời",
+      "enabledServers_one": "{{count}} máy chủ đang bật",
+      "enabledServers_other": "{{count}} máy chủ đang bật"
+    },
+    "matchRules": {
+      "value": "Tối đa {{maxRounds}} hiệp mỗi bản đồ; đội thắng là đội đầu tiên đạt {{winRounds}} hiệp.",
+      "teamSizeValue": "Quy mô đội: {{size}}v{{size}}",
+      "overtimeEnabled": "Hiệp phụ: Bật",
+      "overtimeDisabled": "Hiệp phụ: Tắt (không có hiệp phụ)",
+      "overtimeDisabledNoDraws": "Hiệp phụ: Tắt (không hòa – phân định bằng sát thương)",
+      "overtimeSegments_one": "Số lượt hiệp phụ: {{count}} lượt",
+      "overtimeSegments_other": "Số lượt hiệp phụ: {{count}} lượt",
+      "overtimeSegmentsDefault": "Số lượt hiệp phụ: mặc định của máy chủ game",
+      "overtimeSegmentsDefaultUnlimited": "Số lượt hiệp phụ: mặc định của máy chủ game (thường là không giới hạn)"
+    },
+    "toasts": {
+      "loadTemplateFailed": "Không tải được mẫu",
+      "nameRequired": "Cần nhập tên giải đấu",
+      "nameUpdated": "Đã cập nhật tên giải đấu",
+      "nameUpdateFailed": "Không cập nhật được tên giải đấu",
+      "selectAtLeastOneMap": "Hãy chọn ít nhất 1 bản đồ",
+      "maxRoundsRange": "Số hiệp tối đa phải từ 1 đến 30",
+      "teamSizeRange": "Quy mô đội phải từ 2 đến 10 người",
+      "invalidTeamCount": "Số đội không hợp lệ",
+      "selectAtLeastTwoTeams": "Hãy chọn ít nhất 2 đội",
+      "shuffleCreated": "Đã tạo giải xáo trộn “{{name}}”! Bước tiếp theo: đăng ký ít nhất {{minPlayers}} người chơi để bắt đầu giải (trận {{teamSize}}v{{teamSize}}).",
+      "shuffleCreateFailed": "Không tạo được giải xáo trộn",
+      "shuffleCreateFailedRetry": "Không tạo được giải xáo trộn. Hãy kiểm tra cài đặt và thử lại.",
+      "updated": "Đã cập nhật giải đấu và tạo lại nhánh đấu!",
+      "created": "Đã tạo giải đấu!",
+      "saveFailed": "Không lưu được giải đấu",
+      "deleted": "Đã xóa giải đấu",
+      "deleteFailed": "Không xóa được giải đấu",
+      "regenerated": "Đã tạo lại nhánh đấu",
+      "regenerateFailed": "Không tạo lại được nhánh đấu",
+      "resetDone": "Đã đặt lại giải đấu về chế độ thiết lập",
+      "resetFailed": "Không đặt lại được giải đấu",
+      "started_one": "Giải đấu đã bắt đầu! Đã phân bổ {{count}} trận cho máy chủ.",
+      "started_other": "Giải đấu đã bắt đầu! Đã phân bổ {{count}} trận cho máy chủ.",
+      "startRequested": "Đã gửi yêu cầu bắt đầu giải đấu. Máy chủ sẽ được phân bổ ngay.",
+      "startFailed": "Không bắt đầu được giải đấu",
+      "templateSaved": "Đã lưu mẫu!",
+      "disableServersFailed": "Không tắt được một hoặc nhiều máy chủ: {{message}}",
+      "noChangesToSave": "Không có thay đổi để lưu",
+      "invalidMapSelection": "Lựa chọn bản đồ không hợp lệ",
+      "archived": "Đã lưu trữ giải đấu. Hãy tạo giải tiếp theo.",
+      "archiveFailed": "Không lưu trữ được giải đấu"
+    },
+    "outdatedServers": {
+      "title": "Máy chủ cần cập nhật",
+      "body": "Một hoặc nhiều máy chủ đang bật đã cũ (hoặc không xác minh được) theo Steam. Hãy cập nhật, hoặc tắt chúng để tiếp tục với các máy chủ còn lại.",
+      "confirm": "Tắt máy chủ bị ảnh hưởng và thử lại",
+      "disabling": "Đang tắt...",
+      "goToServers": "Đến Máy chủ"
+    },
+    "live": {
+      "saveNameAria": "Lưu tên giải đấu",
+      "cancelRenameAria": "Hủy đổi tên giải đấu",
+      "editNameAria": "Sửa tên giải đấu",
+      "renameTooltip": "Đổi tên giải đấu",
+      "alert": {
+        "liveTitle": "Giải đấu đang diễn ra",
+        "liveBody": "Các trận đang chạy trên máy chủ. Bạn không thể sửa cài đặt giải khi đang diễn ra (trừ tên giải).",
+        "pendingTitle": "Giải đấu đang diễn ra",
+        "pendingBody": "Các trận sẽ bắt đầu ngay khi máy chủ được phân bổ và veto xong. Bạn không thể sửa cài đặt giải khi giải đang chạy (trừ tên giải).",
+        "completedTitle": "Giải đấu đã kết thúc",
+        "completedBody": "Giải đấu này đã xong mọi trận. Hãy tạo giải mới hoặc đặt lại giải này để bắt đầu lại."
+      },
+      "teamsCompeting_one": "{{count}} đội tham gia",
+      "teamsCompeting_other": "{{count}} đội tham gia",
+      "playersCompeting_one": "{{count}} người chơi tham gia",
+      "playersCompeting_other": "{{count}} người chơi tham gia",
+      "playersCompetingUnknown": "Người chơi tham gia",
+      "shuffleSettingsLabel": "Cài đặt xáo trộn",
+      "maxRoundsPerMapValue": "Số hiệp tối đa mỗi bản đồ: {{rounds}}",
+      "eloTemplateValue": "Mẫu ELO: {{template}}",
+      "mapSequenceLabel": "Thứ tự bản đồ (vòng)",
+      "noMapsConfigured": "Chưa cấu hình bản đồ.",
+      "viewBracket": "Xem nhánh đấu",
+      "viewBracketTooltip": "Xem nhánh đấu và chi tiết trận của giải",
+      "leaderboardTooltip": "Mở trang bảng xếp hạng công khai để chia sẻ với người chơi",
+      "restartTooltip": "Kết thúc mọi trận đang chạy trên máy chủ và tải lại (hữu ích khi trận bị kẹt)",
+      "resetTooltip": "Kết thúc mọi trận và đặt lại giải về chế độ thiết lập (giữ cài đặt giải nhưng xóa mọi dữ liệu trận)",
+      "reset": "Đặt lại về thiết lập",
+      "dangerZone": "Vùng nguy hiểm",
+      "newTournament": "Giải đấu mới"
+    },
+    "reviewCard": {
+      "needPlayersWarning": "Cần ít nhất {{minPlayers}} người chơi để bắt đầu giải (trận {{teamSize}}v{{teamSize}}). Đã đăng ký: {{registered}}",
+      "start": "Bắt đầu giải đấu",
+      "starting": "Đang bắt đầu...",
+      "startSimulation": "Bắt đầu mô phỏng",
+      "startingSimulation": "Đang bắt đầu mô phỏng...",
+      "bulkCreateMatches": "Tạo hàng loạt trận",
+      "edit": "Sửa",
+      "regenerate": "Tạo lại",
+      "regenerateTooltip": "Xóa mọi trận hiện tại và tạo lại nhánh đấu với cùng cài đặt.",
+      "regenerateDisabledTooltip": "Hãy tạo nhánh đấu ít nhất một lần (Lưu và tạo nhánh đấu) trước khi có thể tạo lại."
+    },
+    "dialogs": {
+      "items": {
+        "endMatches": "Kết thúc mọi trận đang chạy trên máy chủ",
+        "deleteMatches": "Xóa mọi trận và nhánh đấu",
+        "deleteData": "Xóa mọi dữ liệu và thống kê trận"
+      },
+      "delete": {
+        "title": "🗑️ Xóa giải đấu",
+        "question": "Bạn có chắc muốn XÓA vĩnh viễn <b>“{{name}}”</b>?",
+        "willTitle": "⚠️ Thao tác này sẽ:",
+        "items": {
+          "removeTournament": "Xóa hoàn toàn giải đấu",
+          "cannotBeUndone": "Không thể hoàn tác"
+        },
+        "note": "💡 Lưu ý: Nếu bạn chỉ muốn bắt đầu lại với cùng cài đặt, hãy dùng “Đặt lại về thiết lập”.",
+        "confirm": "Xóa vĩnh viễn"
+      },
+      "regenerate": {
+        "title": "🔄 Tạo lại nhánh đấu",
+        "liveWarning": "⚠️ CẢNH BÁO: Giải đấu đang ở trạng thái {{status}}!",
+        "liveBody": "Tạo lại nhánh đấu sẽ <b>XÓA TOÀN BỘ</b> dữ liệu trận hiện có, gồm tỉ số, thống kê và lịch sử sự kiện.",
+        "cannotBeUndone": "Thao tác này không thể hoàn tác.",
+        "areYouSure": "Bạn thực sự chắc chắn muốn tiếp tục?",
+        "setupBody": "Thao tác này sẽ xóa mọi trận hiện có và tạo lại nhánh đấu với cùng cài đặt.",
+        "continue": "Tiếp tục?",
+        "confirmDestructive": "CÓ, XÓA TẤT CẢ",
+        "confirm": "Tạo lại"
+      },
+      "reset": {
+        "title": "🔄 Đặt lại về thiết lập",
+        "question": "Đặt lại <b>“{{name}}”</b> về chế độ THIẾT LẬP?",
+        "willTitle": "Thao tác này sẽ:",
+        "items": {
+          "clearStatus": "Xóa trạng thái giải đấu (về thiết lập)",
+          "keepSettings": "<b>Giữ</b> cài đặt giải đấu (tên, đội, thể thức)",
+          "allowEdit": "Cho phép bạn sửa cài đặt lại",
+          "regenerateMatches": "Xóa mọi kết quả trận và tạo lại nhánh đấu từ đầu"
+        },
+        "regenerated": "Nhánh đấu mới được tạo ngay, nên các trận đang chờ hiện lại ngay lập tức.",
+        "note": "💡 Lưu ý: Để xóa hẳn giải đấu, hãy dùng “Xóa”.",
+        "confirm": "Đặt lại về thiết lập"
+      },
+      "start": {
+        "titleNoServers": "⚠️ Không có máy chủ khả dụng",
+        "titleInsufficient": "⚠️ Không đủ máy chủ",
+        "titleUncertain": "⚠️ Bắt đầu giải đấu khi không có máy chủ?",
+        "noServersHeading": "Hiện không có máy chủ khả dụng",
+        "noServersBody": "Giải đấu sẽ bắt đầu, nhưng các trận sẽ bị hoãn đến khi có máy chủ. Hệ thống sẽ tự phân bổ trận khi máy chủ sẵn sàng.",
+        "insufficientHeading": "Không đủ máy chủ để chạy đồng thời mọi trận vòng đầu",
+        "insufficientBody": "Hiện bạn có <b>{{available}}</b>, nhưng vòng đầu cần <b>{{required}}</b>. Một số trận sẽ xếp hàng và bắt đầu sau khi có máy chủ trống.",
+        "uncertainHeading": "Không chắc có đủ máy chủ",
+        "uncertainBody": "Giải đấu có thể bắt đầu với ít hoặc không có máy chủ. Các trận sẽ bị hoãn đến khi có máy chủ và được phân bổ tự động khi sẵn sàng.",
+        "question": "Bạn vẫn muốn bắt đầu giải đấu?",
+        "confirm": "Có, vẫn bắt đầu",
+        "cancel": "Kiểm tra máy chủ"
+      }
+    },
+    "formActions": {
+      "saveAndGenerate": "Lưu và tạo nhánh đấu",
+      "saveAsTemplate": "Lưu thành mẫu",
+      "saveTemplateTooltip": "Lưu cấu hình giải đấu hiện tại thành mẫu"
+    },
+    "wizard": {
+      "validation": {
+        "selectType": "Hãy chọn loại giải đấu",
+        "selectFormat": "Hãy chọn thể thức trận"
+      },
+      "shuffleInfo": "Giải xáo trộn không dùng đội cố định. Người chơi được tự động cân bằng vào các đội cho từng trận dựa trên Điểm kỹ năng.",
+      "shuffleRounds": "Giải xáo trộn này sẽ có khoảng {{rounds}} (mỗi bản đồ đã chọn là một vòng).",
+      "volumeAlert": "Với {{teams}} trong giải {{type}} {{format}}, nhánh đấu sẽ có khoảng {{matches}} qua {{rounds}} (tổng tối đa {{maps}}).",
+      "maxRoundsLabel": "Số hiệp tối đa mỗi bản đồ",
+      "maxRoundsHelper": "Mỗi bản đồ chơi tối đa {{maxRounds}} hiệp; đội thắng là đội đầu tiên đạt {{winRounds}} hiệp.",
+      "maxRoundsHelperEmpty": "Số hiệp tối đa mỗi bản đồ (mặc định: 24, tối đa: 30).",
+      "serversSummary": "Đã cấu hình {{servers}}; vòng đầu có {{matches}}.",
+      "estimatedVolumeLabel": "Khối lượng ước tính",
+      "mapsHeading": "Bản đồ ({{total}})",
+      "noMapsSelected": "Chưa chọn bản đồ",
+      "matchConfiguration": "Cấu hình trận",
+      "roundLimitValue_one": "Giới hạn hiệp: tối đa {{count}} hiệp",
+      "roundLimitValue_other": "Giới hạn hiệp: tối đa {{count}} hiệp",
+      "teamsHeading": "Đội ({{total}})",
+      "noTeamsSelected": "Chưa chọn đội (tùy chọn)",
+      "playerRegistration": "Đăng ký người chơi",
+      "playerRegistrationInfo_one": "Người chơi sẽ được đăng ký sau khi tạo giải. Mỗi bản đồ đã chọn là một vòng đấu (tổng {{count}} vòng).",
+      "playerRegistrationInfo_other": "Người chơi sẽ được đăng ký sau khi tạo giải. Mỗi bản đồ đã chọn là một vòng đấu (tổng {{count}} vòng).",
+      "serversSummaryQueued": "Đã cấu hình {{servers}}; vòng đầu có {{matches}}. Các trận vượt quá số máy chủ sẽ chờ trong hàng đến khi có máy chủ trống."
+    },
+    "overtime": {
+      "selectLabel": "Hiệp phụ",
+      "options": {
+        "enabled": "Bật (hiệp phụ tiêu chuẩn)",
+        "disabledDraws": "Tắt – cho phép hòa",
+        "disabledNoDraws": "Tắt – không hòa (phân định bằng sát thương)"
+      },
+      "modeHelper": "Hiệp phụ tiêu chuẩn chơi thêm lượt cho đến khi một đội dẫn trước. “Cho phép hòa” kết thúc bản đồ hòa là hòa, còn “không hòa” phân định bằng tổng sát thương của đội.",
+      "tooltip": "Điều khiển hiệp phụ và cách xử lý hòa khi đạt số hiệp tối đa. Các cài đặt này được gửi đến máy chủ game dưới dạng overtimeMode/overtimeSegments và có cùng ý nghĩa như giải xáo trộn và trận thủ công.",
+      "shuffleTooltip": "Điều khiển hiệp phụ cho trận xáo trộn và cách phân định hòa khi đạt số hiệp tối đa. Khi tắt hiệp phụ, trận hòa có thể giữ nguyên là hòa hoặc phân định bằng tổng sát thương của đội, tùy lựa chọn của bạn.",
+      "segmentsLabel": "Số lượt hiệp phụ (tùy chọn)",
+      "segmentsHelper": "Tùy chọn: giới hạn số lượt hiệp phụ. Để trống để dùng mặc định của máy chủ game.",
+      "segmentsHelperValue_one": "Giới hạn hiệp phụ ở {{count}} lượt. Hòa sau hiệp phụ được phân định bằng tổng sát thương của đội.",
+      "segmentsHelperValue_other": "Giới hạn hiệp phụ ở {{count}} lượt. Hòa sau hiệp phụ được phân định bằng tổng sát thương của đội."
+    },
+    "grandFinal": {
+      "sectionTitle": "Chế độ chung kết tổng (Nhánh thắng – nhánh bại)",
+      "label": "Chung kết tổng",
+      "options": {
+        "simple": "Đơn giản – một trận chung kết tổng giữa nhà vô địch nhánh thắng và nhánh bại",
+        "none": "Không có – chung kết nhánh thắng quyết định giải (không có chung kết tổng)",
+        "double": "Kép – kiểu đặt lại nhánh (hiện chạy như Đơn giản; hỗ trợ đặt lại đầy đủ đang được lên kế hoạch)"
+      },
+      "helper": "Điều khiển cách nhà vô địch nhánh thắng và nhánh bại gặp nhau ở cuối giải."
+    },
+    "mapPool": {
+      "shuffleTitle": "Chọn bản đồ cho giải xáo trộn",
+      "shuffleBody": "Mọi bản đồ đã chọn sẽ được chơi lần lượt. Mỗi bản đồ là một vòng đấu. Số bản đồ bạn chọn quyết định số vòng sẽ chơi.",
+      "shuffleSelected": "Bạn đã chọn {{maps}}, nên sẽ chơi {{rounds}}.",
+      "chooseLabel": "Chọn nhóm bản đồ",
+      "custom": "Tùy chỉnh",
+      "selectedMaps": "Bản đồ đã chọn ({{total}}):",
+      "chooseMapsPlaceholder": "Chọn bản đồ...",
+      "saveMapPool": "Lưu nhóm bản đồ",
+      "types": {
+        "defusal": "Gỡ bom",
+        "hostage": "Giải cứu con tin",
+        "armsRace": "Arms Race",
+        "unknown": "Không xác định"
+      }
+    },
+    "formatStep": {
+      "shuffleInfo": "Giải xáo trộn dùng thể thức Best of 1. Mỗi trận là một bản đồ."
+    },
+    "shuffleConfig": {
+      "overline": "Cấu hình giải xáo trộn",
+      "subtitle": "Luật và cài đặt trận",
+      "teamSizeLabel": "Quy mô đội",
+      "teamSizeTooltip": "Số người chơi mỗi đội. Lựa chọn phổ biến: 4v4, 5v5, 6v6. Tối thiểu 2, tối đa 10 người mỗi đội.",
+      "teamSizeHelper": "Số người chơi mỗi đội (mặc định: 5 cho 5v5, khoảng: 2-10)",
+      "maxRoundsLabel": "Số hiệp tối đa",
+      "maxRoundsTooltip": "Số hiệp tối đa mỗi trận. Giá trị này được gửi đến máy chủ CS2 dưới dạng mp_maxrounds. Ví dụ: 6 = MR6, 24 = MR24.",
+      "maxRoundsHelper": "Trận chơi tối đa {{maxRounds}} hiệp; đội thắng là đội đầu tiên đạt {{winRounds}} hiệp",
+      "maxRoundsHelperEmpty": "Số hiệp tối đa mỗi trận (mặc định: 24, tối đa: 30)",
+      "eloTemplateLabel": "Mẫu xếp hạng",
+      "eloTemplateTooltip": "Chọn cách tính ELO cho giải này. Mặc định, mẫu “Pure Win/Loss” chỉ dùng kết quả trận (thắng/thua); thống kê được ghi lại nhưng không làm thay đổi ELO. Các mẫu khác là tùy chọn và thêm điều chỉnh theo thống kê lên trên thay đổi thắng/thua của OpenSkill nếu bạn muốn cách tính kiểu Excel.",
+      "eloDefaultSuffix": "(Mặc định)",
+      "eloTemplateHelper": "Pure Win/Loss (mặc định): chỉ kết quả trận ảnh hưởng đến ELO. Thống kê người chơi vẫn được ghi lại cho bảng xếp hạng và xuất dữ liệu, nhưng không thay đổi điểm trừ khi bạn chọn một mẫu tùy chỉnh."
+    },
+    "shuffleStats": {
+      "serverShortageWarning": "Bạn có {{available}} trên {{needed}} máy chủ. Các trận sẽ chạy theo đợt, nên mỗi vòng sẽ lâu hơn."
+    },
+    "changePreview": {
+      "title": "Xem lại thay đổi giải đấu",
+      "liveHeading": "Giải đấu đang DIỄN RA!",
+      "liveBody": "Thay đổi loại giải, thể thức hoặc số đội có thể cần tạo lại nhánh đấu. Hãy cân nhắc dùng “Đặt lại giải đấu” để bắt đầu lại.",
+      "noChangesDetected": "Không phát hiện thay đổi",
+      "intro": "Các thay đổi sau sẽ được áp dụng:",
+      "before": "TRƯỚC",
+      "after": "SAU",
+      "apply": "Áp dụng thay đổi",
+      "applyRisky": "Áp dụng thay đổi (rủi ro!)",
+      "noChangesToApply": "Không có thay đổi để áp dụng",
+      "none": "Không có",
+      "itemCount_one": "{{count}} mục",
+      "itemCount_other": "{{count}} mục"
+    },
+    "teamSelection": {
+      "chooseTeamsPlaceholder": "Chọn đội…",
+      "addAll": "Thêm tất cả",
+      "batchAddServers": "Thêm hàng loạt",
+      "addServer": "Thêm máy chủ",
+      "importTeams": "Nhập đội",
+      "createTeam": "Tạo đội",
+      "notEnoughServers": "Vòng đầu có {{matches}}, nhưng bạn có {{servers}}. Các trận vượt quá số máy chủ sẽ chờ trong hàng đến khi có máy chủ trống — hãy thêm máy chủ để chạy tất cả cùng lúc.",
+      "notEnoughTeams": "Cần ít nhất 2 đội để tạo giải đấu. Hiện bạn có {{teams}}."
+    },
+    "teamValidation": {
+      "invalidType": "Loại giải đấu không hợp lệ",
+      "powerOfTwo": "{{type}} cần số đội là lũy thừa của 2 ({{counts}}). Bạn đã chọn {{selected}}.",
+      "minTeams": "{{type}} cần ít nhất {{min}} đội. Bạn đã chọn {{selected}}.",
+      "maxTeams": "{{type}} cho phép tối đa {{max}} đội. Bạn đã chọn {{selected}}."
+    },
+    "eventPage": {
+      "title": "Trang sự kiện",
+      "subtitle": "Hiển thị cho người chơi và khách trên trang Tổng quan công khai.",
+      "descriptionLabel": "Mô tả",
+      "locationLabel": "Địa điểm",
+      "locationPlaceholder": "ví dụ Tại chỗ, Hà Nội",
+      "rulebookUrlLabel": "URL luật đầy đủ",
+      "rulebookUrlHelper": "Phải là liên kết https, hoặc để trống.",
+      "rulesLabel": "Luật cho người chơi",
+      "ruleFieldLabel": "Luật {{n}}",
+      "addRule": "Thêm luật",
+      "prizesLabel": "Giải thưởng",
+      "placeLabel": "Hạng",
+      "prizeLabel": "Giải thưởng",
+      "addPrize": "Thêm giải thưởng",
+      "scheduleLabel": "Lịch thi đấu",
+      "whenLabel": "Khi nào",
+      "scheduleLabelLabel": "Nhãn",
+      "addScheduleItem": "Thêm mục lịch",
+      "remove": "Gỡ",
+      "moveUp": "Lên",
+      "moveDown": "Xuống",
+      "save": "Lưu trang sự kiện",
+      "saveSuccess": "Đã lưu trang sự kiện.",
+      "saveError": "Không lưu được trang sự kiện: {{message}}",
+      "organizerLabel": "Ban tổ chức",
+      "organizerPlaceholder": "ví dụ Edition 35 LAN",
+      "bannerLabel": "Ảnh bìa",
+      "bannerUpload": "Tải ảnh bìa lên",
+      "bannerReplace": "Thay",
+      "bannerRemove": "Gỡ",
+      "bannerHelp": "Ảnh rộng phía trên trang giải đấu. PNG, JPEG hoặc WEBP, tối đa 2 MB; 1920 × 600 là phù hợp.",
+      "bannerWrongType": "Ảnh bìa phải là ảnh PNG, JPEG hoặc WEBP.",
+      "bannerTooLarge": "Ảnh bìa phải từ 2 MB trở xuống.",
+      "signupHeading": "Đăng ký và điểm danh",
+      "signupOpen": "Các đội tự đăng ký được",
+      "signupClosesAt": "Đóng đăng ký",
+      "maxTeams": "Số suất đội",
+      "checkInOpensAt": "Mở điểm danh",
+      "checkInClosesAt": "Đóng điểm danh",
+      "signupHelp": "Chủ sở hữu hoặc đội trưởng đăng ký kèm đội hình. Người chơi trong đội hình điểm danh vào ngày thi đấu.",
+      "startLabel": "Giờ bắt đầu",
+      "startsAtLabel": "Bắt đầu lúc",
+      "startsAtHelp": "Giờ địa phương của bạn. Trang sẽ đếm ngược đến giờ này.",
+      "autoStartLabel": "Tự động bắt đầu giải vào giờ này",
+      "remindersLabel": "Nhắc người chơi trước khi bắt đầu",
+      "reminderMinutes_one": "{{count}} phút trước",
+      "reminderMinutes_other": "{{count}} phút trước",
+      "bannerMapLabel": "Không có ảnh bìa? Dùng ảnh của một bản đồ",
+      "bannerMapNone": "Chọn giúp tôi",
+      "rulesHelp": "Hiển thị trong tab Luật của trang giải đấu, bên dưới các luật mà nền tảng tạo từ cài đặt của bạn.",
+      "fromTemplate": "Từ {{name}}",
+      "clearAll": "Xóa tất cả",
+      "rulebookFromTemplate": "Từ mẫu {{name}}. Một liên kết https, hoặc để trống."
+    },
+    "setup": {
+      "steps": {
+        "game": "Trò chơi",
+        "basics": "Tên và ngày",
+        "format": "Thể thức",
+        "teams": "Đội",
+        "schedule": "Lịch thi đấu",
+        "maps": "Bản đồ và veto",
+        "extras": "Cài đặt trận",
+        "review": "Xem lại"
+      },
+      "stepsLabel": "Các bước thiết lập",
+      "backToManage": "Quản lý",
+      "stepDone": "xong",
+      "newTournament": "Giải đấu mới",
+      "editing": "Thiết lập giải đấu",
+      "draftSaved": "đã lưu bản nháp trong tab này",
+      "discardDraft": "Làm lại từ đầu",
+      "startFromTemplate": "Bắt đầu từ mẫu",
+      "continueTo": "Tiếp tục đến {{step}}",
+      "questions": {
+        "game": {
+          "title": "Trò chơi nào?",
+          "lede": "Trò chơi quyết định cách điều hành trận và các cài đặt bạn có."
+        },
+        "basics": {
+          "title": "Tên là gì, và ngày nào?",
+          "lede": "Chọn ngày. Giờ bắt đầu của từng vòng đặt ở mục Lịch thi đấu."
+        },
+        "format": {
+          "title": "Thi đấu thế nào?",
+          "lede": "Chọn nhánh đấu và độ dài mỗi loạt trận. Bạn có thể đổi cho đến khi giải bắt đầu."
+        },
+        "teams": {
+          "title": "Ai thi đấu?",
+          "lede": "Chọn các đội trong nhánh đấu. Bạn cũng có thể tạo hoặc nhập đội ở đây.",
+          "ledeShuffle": "Xáo trộn dùng đăng ký cá nhân: người chơi đăng ký và đội mới được bốc mỗi vòng."
+        },
+        "maps": {
+          "title": "Bản đồ nào?",
+          "lede": "Chọn nhóm bản đồ. Các loạt trận dùng veto để chọn bản đồ từ đó.",
+          "ledeShuffle": "Chọn bản đồ theo thứ tự thi đấu. Mỗi bản đồ là một vòng."
+        },
+        "eventPage": {
+          "title": "Trang sự kiện có gì?",
+          "lede": "Tùy chọn. Hiển thị cho người chơi và khách trên trang Tổng quan công khai."
+        },
+        "review": {
+          "title": "Sẵn sàng chưa?",
+          "lede": "Kiểm tra chi tiết, rồi tạo giải đấu.",
+          "ledeExisting": "Kiểm tra chi tiết, rồi bắt đầu giải khi mọi người đã sẵn sàng."
+        },
+        "schedule": {
+          "title": "Các trận diễn ra khi nào?",
+          "lede": "Giờ của vòng đầu là lúc giải bắt đầu. Điểm danh và nhắc nhở được tính ngược từ giờ đó."
+        },
+        "extras": {
+          "title": "Cài đặt trận",
+          "lede": "Bắt đầu từ một mẫu cài sẵn, rồi đổi những gì bạn cần. Cài đặt màu cam khác với mặc định của trang."
+        }
+      },
+      "game": {
+        "label": "Trò chơi",
+        "loading": "Đang tải các trò chơi mà hệ thống này chạy được.",
+        "lockedHelp": "Trò chơi được cố định khi giải đã tồn tại. Hãy xóa và tạo lại để chạy trò chơi khác.",
+        "integrationTitles": {
+          "cs2": "Chạy trên máy chủ của bạn",
+          "manual-report": "Các đội báo kết quả"
+        },
+        "integrationDescriptions": {
+          "cs2": "Các trận chạy trên máy chủ CS2 của riêng bạn với Ready Up.",
+          "manual-report": "Không có máy chủ. Các đội tự thi đấu và đội trưởng báo kết quả."
+        }
+      },
+      "basics": {
+        "ratingLabel": "Xếp hạng",
+        "ratingHelp": "Điểm người chơi thay đổi thế nào sau mỗi trận trong giải này."
+      },
+      "format": {
+        "label": "Thể thức",
+        "names": {
+          "single_elimination": "Loại trực tiếp",
+          "double_elimination": "Nhánh thắng – nhánh bại",
+          "swiss": "Hệ Thụy Sĩ",
+          "round_robin": "Vòng tròn",
+          "shuffle": "Xáo trộn",
+          "groups": "Vòng bảng rồi playoff"
+        },
+        "types": {
+          "single_elimination": "Thua một trận là bị loại. Nhanh nhất.",
+          "double_elimination": "Cơ hội thứ hai ở nhánh bại.",
+          "swiss": "Các đội đấu nhiều vòng với đội có thành tích tương đương.",
+          "round_robin": "Mọi đội đấu với nhau. Tốt nhất cho nhóm nhỏ.",
+          "shuffle": "Đăng ký cá nhân. Đội mới cân bằng mỗi vòng.",
+          "groups": "Vòng tròn trong bảng; các đội giỏi nhất mỗi bảng vào chung kết hoặc nhánh đấu."
+        },
+        "seriesLength": "Độ dài loạt trận",
+        "grandFinal": "Chung kết tổng",
+        "grandFinalOptions": {
+          "simple": "Một trận",
+          "double": "Đặt lại nhánh",
+          "none": "Không có"
+        },
+        "grandFinalHelp": {
+          "simple": "Nhà vô địch nhánh thắng và nhánh bại gặp nhau trong một trận chung kết tổng.",
+          "double": "Đặt lại nhánh. Hiện tại được chơi như một trận chung kết tổng; hỗ trợ đặt lại đầy đủ đang được lên kế hoạch.",
+          "none": "Không có chung kết tổng: chung kết nhánh thắng quyết định giải."
+        },
+        "teams": "Đội",
+        "teamsHelpPowerOfTwo": "Nhánh loại trực tiếp cần {{counts}} đội. Dùng cho phần tóm tắt cho đến khi bạn chọn đội.",
+        "teamsHelpRange": "Từ {{min}} đến {{max}} đội. Dùng cho phần tóm tắt cho đến khi bạn chọn đội.",
+        "fewerTeams": "Ít đội hơn",
+        "moreTeams": "Nhiều đội hơn",
+        "shuffleTitle": "Cài đặt xáo trộn",
+        "cs2Title": "Cài đặt Counter-Strike 2",
+        "cs2Help": "Được mô-đun game Counter-Strike 2 gửi đến máy chủ CS2 của bạn.",
+        "overtime": {
+          "enabled": "Hiệp phụ",
+          "disabledDraws": "Tắt, cho phép hòa",
+          "disabledNoDraws": "Tắt, phân định bằng sát thương"
+        }
+      },
+      "teams": {
+        "shuffleBeforeCreate": "Người chơi đăng ký sau khi bạn tạo giải. Quay lại bước này để chọn họ.",
+        "shuffleSelfSignup": "Người chơi tự tham gia",
+        "shuffleSelfSignupHelp": "Họ đăng ký bằng nút Tham gia trên trang giải khi tùy chọn này bật; bạn vẫn có thể thêm người chơi ở đây."
+      },
+      "maps": {
+        "vetoTitle": "Veto",
+        "vetoStandard": "Mỗi loạt trận {{format}} có veto bản đồ: các đội cấm và chọn từ 7 bản đồ này.",
+        "vetoCustom": "Giải này có thứ tự veto tùy chỉnh cho {{format}}.",
+        "vetoNone": "Không có veto cho thể thức này.",
+        "vetoShuffle": "Xáo trộn không có veto: các bản đồ được chơi theo thứ tự này, mỗi vòng một bản đồ."
+      },
+      "eventPage": {
+        "draftNote": "Được lưu cùng giải đấu khi bạn tạo."
+      },
+      "review": {
+        "unsaved": "Bạn có thay đổi chưa lưu. Hãy lưu (nhánh đấu sẽ được tạo lại) hoặc bỏ trước khi bắt đầu."
+      },
+      "summary": {
+        "label": "Tóm tắt",
+        "untitled": "Giải đấu chưa đặt tên",
+        "format": "Thể thức",
+        "series": "Loạt trận",
+        "seriesShuffle": "Bo1 mỗi vòng",
+        "seriesFinal": {
+          "simple": "{{format}} · chung kết tổng",
+          "double": "{{format}} · chung kết tổng, đặt lại nhánh",
+          "none": "{{format}} · không có chung kết tổng"
+        },
+        "teams": "Đội",
+        "teamSize": "{{size}}v{{size}}",
+        "teamsPlanned": "Dự kiến {{count}}",
+        "matches": "Trận",
+        "matchesAfterSignUp": "Sau khi đăng ký",
+        "duration": "Mất khoảng",
+        "durationValue": "{{hours}} giờ {{minutes}} phút",
+        "signUp": "Đăng ký",
+        "signUpOrganizer": "Ban tổ chức chọn",
+        "signUpAfterCreate": "Mở sau khi tạo",
+        "players_one": "{{count}} người chơi",
+        "players_other": "{{count}} người chơi",
+        "maps": "Bản đồ",
+        "mapsRounds": "{{maps}} · {{rounds}}",
+        "notSet": "Chưa đặt",
+        "signUpOpen": "Các đội tự đăng ký · {{size}} người mỗi đội"
+      },
+      "checklist": {
+        "title": "Trước khi bắt đầu",
+        "met": "xong",
+        "notMet": "chưa xong",
+        "name": "Tên",
+        "format": "Thể thức và cài đặt trận",
+        "teams": "Số đội hợp lệ",
+        "players_one": "Ít nhất {{count}} người chơi đã đăng ký",
+        "players_other": "Ít nhất {{count}} người chơi đã đăng ký",
+        "mapsVeto": "7 bản đồ cho veto",
+        "maps": "Ít nhất một bản đồ",
+        "created": "Đã tạo giải đấu",
+        "saved": "Đã lưu thay đổi"
+      },
+      "manualReport": {
+        "title": "Báo cáo thủ công",
+        "help": "Auto Tournament không theo dõi được trò chơi này, nên các đội tự báo chuyện gì đã xảy ra.",
+        "seriesLength": "Độ dài loạt trận",
+        "seriesLengthHelp": "Một loạt trận có bao nhiêu ván. Đội đầu tiên thắng quá nửa sẽ thắng trận.",
+        "gameLabel": "Gọi ván là",
+        "gameLabelHelp": "Tên dùng trong biểu mẫu báo cáo. Để trống để dùng “{{game}}”.",
+        "allowDraw": "Hòa",
+        "allowDrawHelp": "Cho phép một ván, và cả loạt trận, kết thúc hòa. Để tắt cho nhánh đấu, nơi phải có đội đi tiếp.",
+        "allowDrawOptions": {
+          "no": "Không cho phép",
+          "yes": "Cho phép"
+        },
+        "confirmation": "Trước khi kết quả được tính",
+        "confirmationHelp": {
+          "opponent": "Đội trưởng đội kia phải đồng ý trước khi trận được chốt. Họ có thể tranh chấp thay vào đó, khi đó trận được chuyển cho quản trị viên.",
+          "none": "Báo cáo của đội trưởng tự chốt trận. Nhanh, và chỉ đáng dùng khi khó có ai phản đối."
+        },
+        "confirmationOptions": {
+          "opponent": "Đối thủ đồng ý",
+          "none": "Báo cáo được giữ nguyên"
+        },
+        "confirmTimeout": "Số phút để trả lời",
+        "confirmTimeoutHelp": "Đối thủ có bao lâu trước hạn chót. 1440 là một ngày.",
+        "confirmTimeoutNone": "Không có hạn: báo cáo chờ câu trả lời.",
+        "timeoutAction": "Khi đến hạn",
+        "timeoutActionHelp": {
+          "auto_confirm": "Báo cáo được chấp nhận như đã báo, và nhánh đấu tiếp tục mà không ai phải chờ.",
+          "escalate": "Trận được chuyển cho quản trị viên, người sẽ quyết định ở trang Tranh chấp."
+        },
+        "timeoutActionOptions": {
+          "auto_confirm": "Chấp nhận báo cáo",
+          "escalate": "Hỏi quản trị viên"
+        }
+      },
+      "signup": {
+        "how": "Các đội tham gia thế nào?",
+        "organizer": "Chỉ những đội tôi thêm",
+        "open": "Các đội có thể đăng ký",
+        "organizerHelp": "Bạn chọn mọi đội. Không ai đăng ký được từ trang giải đấu.",
+        "openHelp": "Chủ sở hữu hoặc đội trưởng đăng ký kèm đội hình từ trang giải, và người chơi trong đội hình điểm danh vào ngày thi đấu. Bạn vẫn có thể tự thêm đội bên dưới.",
+        "teamSize": "Người chơi mỗi đội",
+        "teamSizeHelp": "Số người chơi chính đội chọn khi đăng ký (thêm tối đa 2 dự bị).",
+        "maxTeamsHelp": "Trống: không giới hạn.",
+        "save": "Lưu cài đặt đăng ký",
+        "saved": "Đã lưu cài đặt đăng ký",
+        "inTournament": "Trong giải đấu ({{count}})",
+        "signedUp": "Đã đăng ký",
+        "addedByYou": "Do bạn thêm",
+        "lineup": "{{starters}} trên {{size}} chính thức",
+        "checkedIn": "{{count}} đã điểm danh",
+        "remove": "Gỡ",
+        "removed": "{{team}} đã rời giải đấu",
+        "noneYet": "Chưa có đội. Các đội sẽ hiện ở đây khi đăng ký.",
+        "noTeams": "Chưa có đội.",
+        "addYourself": "Tự thêm đội",
+        "pickTeams": "Chọn đội",
+        "windowTitle": "Khung thời gian đăng ký",
+        "opensLabel": "Mở đăng ký",
+        "opensNow": "Ngay",
+        "opensLater": "Vào giờ đã đặt",
+        "opensNowHelp": "Mở ngay khi bạn tạo giải đấu.",
+        "opensLaterHelp": "Đóng cho đến lúc đó. Trang sẽ đếm ngược đến giờ mở.",
+        "closesHelp": "Đội hình có thể thay đổi cho đến khi đóng điểm danh.",
+        "checkInTitle": "Điểm danh",
+        "checkInHelp": "Mở trước khi giải bắt đầu và đóng khi giải bắt đầu. Người chơi chính chưa điểm danh đến lúc đó sẽ được thay bằng dự bị; dự bị không cần điểm danh.",
+        "checkInChip_one": "{{count}} phút trước",
+        "checkInChip_other": "{{count}} phút trước",
+        "checkInOff": "Không điểm danh",
+        "checkInLine": "Mở {{day}} lúc {{time}}, đóng khi giải bắt đầu lúc {{start}}.",
+        "checkInLineNoStart_one": "Mở {{count}} phút trước giờ bắt đầu và đóng khi bắt đầu.",
+        "checkInLineNoStart_other": "Mở {{count}} phút trước giờ bắt đầu và đóng khi bắt đầu.",
+        "checkInLineOff": "Không điểm danh: mọi đội đã đăng ký đều thi đấu.",
+        "captainsLabel": "Đội trưởng có thể điểm danh cho đồng đội",
+        "captainsHelp": "Chủ sở hữu hoặc đội trưởng có thể đánh dấu một người chơi chính là có mặt. Họ chịu trách nhiệm nếu người đó không đến.",
+        "perMatchLabel": "Điểm danh lại trước mỗi trận",
+        "perMatchHelp": "Tắt: điểm danh một lần trước giải là đủ cho mọi trận. Bật: người chơi điểm danh khi veto của từng trận mở.",
+        "fullTeamTitle": "Vào máy chủ",
+        "fullTeamHelp": "Khi máy chủ của trận sẵn sàng, mỗi đội có khoảng thời gian này để có đủ người trên máy chủ, tính cả dự bị. Sau đó đội đủ người sẽ chọn: nhận thắng xử, hoặc đấu với đội thiếu người. Cả hai cùng thiếu: quản trị viên quyết định.",
+        "fullTeamChip_one": "{{count}} phút",
+        "fullTeamChip_other": "{{count}} phút",
+        "fullTeamOff": "Không xử thắng",
+        "fullTeamLine": "Người chơi thấy đồng hồ trong phòng trận và trong chat máy chủ. Dự bị được tính là sẵn sàng, nên đội có thể đưa họ vào ngay.",
+        "fullTeamLineOff": "Không xử thắng: đội thiếu người sẽ đấu thiếu khi trận tự bắt đầu (Cài đặt trận)."
+      },
+      "groups": {
+        "count": "Số bảng",
+        "through": "Đi tiếp từ mỗi bảng",
+        "throughWinner": "Đội nhất",
+        "throughTop2": "Top 2",
+        "seeding": "Cách xếp đội vào bảng",
+        "seedingSnake": "Rải theo hạt giống (kiểu rắn)",
+        "seedingRandom": "Ngẫu nhiên",
+        "playoffs": "Playoff",
+        "playoffMatches": "Trận playoff",
+        "ties": "Bằng điểm trong bảng: đối đầu trực tiếp, rồi hiệu số hiệp, rồi số hiệp thắng (giống vòng tròn). Nếu các bảng không đủ lấp nhánh đấu, các đội tốt nhất còn lại cũng đi tiếp.",
+        "whatPlayersGet": "Người chơi nhận được gì",
+        "stage": "Vòng bảng",
+        "stageLine": "{{groups}} bảng, mỗi bảng {{size}}",
+        "stageNote": "{{count}} trận · mỗi đội {{each}}",
+        "playoffFinal": "Hai đội nhất bảng: chung kết {{format}}",
+        "playoff": {
+          "single_elimination": "{{count}} đội: loại trực tiếp",
+          "double_elimination": "{{count}} đội: nhánh thắng – nhánh bại"
+        },
+        "throughNote": "{{count}} đội đi tiếp",
+        "previewTitle": "Các bảng (rải theo hạt giống)",
+        "previewNote": "Theo thứ tự danh sách đội (thứ tự hạt giống). Các bảng được khóa khi giải bắt đầu.",
+        "randomNote": "Các bảng được bốc ngẫu nhiên khi giải bắt đầu.",
+        "groupN": "Bảng {{letter}}",
+        "groupMatches": "Trận vòng bảng"
+      },
+      "stepNotes": {
+        "game": "Thi đấu gì",
+        "basics": "Tên, ngày, địa điểm",
+        "format": "Các đội gặp nhau thế nào",
+        "teams": "Thêm hoặc đăng ký",
+        "schedule": "Ngày và giờ",
+        "maps": "Nhóm bản đồ",
+        "extras": "Cài sẵn, luật, thêm",
+        "review": "Tạo"
+      },
+      "stepOf": "Bước {{n}} trên {{total}}",
+      "schedule": {
+        "timesNote": "Các trận chờ đến giờ của mình. Người chơi thấy giờ trên trận, được nhắc và veto mở đúng giờ.",
+        "breakNote_one": "Đội vừa thi đấu được nghỉ {{count}} phút trước veto tiếp theo (Luật trận).",
+        "breakNote_other": "Đội vừa thi đấu được nghỉ {{count}} phút trước veto tiếp theo (Luật trận).",
+        "noBreakNote": "Không có giờ nghỉ giữa các trận của một đội (Luật trận).",
+        "ownTimeNote": "Đặt giờ riêng cho một trận trong Quản lý › Lịch thi đấu sau khi nhánh đấu được tạo.",
+        "startsTournament": "Bắt đầu giải · đóng điểm danh",
+        "newDay": "Ngày mới",
+        "sameDay": "Cùng ngày",
+        "dayLabel": "Ngày",
+        "startsLabel": "Bắt đầu",
+        "tournamentStarts": "Giải bắt đầu",
+        "autoStart": "Tự động bắt đầu lúc {{time}}",
+        "autoStartNoTime": "Tự động bắt đầu",
+        "autoStartOff": "Tắt: quản trị viên bắt đầu từ trang Quản lý.",
+        "reminders": "Nhắc người chơi trước khi bắt đầu",
+        "modeTimesNote": "Mỗi vòng có một ngày (từ bước 2) và một giờ. Các trận chờ đến giờ của mình và veto mở kịp giờ.",
+        "modeAsapNote": "Chỉ giờ bắt đầu: sau đó một trận bắt đầu ngay khi cả hai đội và máy chủ sẵn sàng."
+      },
+      "extras": {
+        "gotvLabel": "Khán giả",
+        "gotvOn_one": "Khán giả có thể xem qua GOTV, chậm {{count}} giây (Luật trận › Khán giả).",
+        "gotvOn_other": "Khán giả có thể xem qua GOTV, chậm {{count}} giây (Luật trận › Khán giả).",
+        "gotvOff": "Khán giả không thể xem qua GOTV (Luật trận › Khán giả)."
+      },
+      "startFrom": {
+        "title": "Bắt đầu từ",
+        "help": "Mẫu sẽ điền sẵn thể thức, bản đồ và cài đặt trận. Bạn có thể đổi bất cứ thứ gì ở các bước sau.",
+        "blank": "Trống",
+        "blankHelp": "Loại trực tiếp, Bo3, nhóm bản đồ và luật trận của trang.",
+        "siteDefaults": "Mặc định của trang",
+        "builtIn": "Có sẵn",
+        "saved": "Đã lưu",
+        "standardRules": "Luật tiêu chuẩn",
+        "ownTemplates": "Mẫu của riêng bạn đến từ <link>Mẫu và xếp hạng</link>. Hãy lưu giải này thành mẫu khi đã thiết lập xong."
+      },
+      "days": {
+        "title": "Ngày",
+        "one": "Một ngày",
+        "several": "Nhiều ngày",
+        "day": "Ngày",
+        "firstDay": "Ngày đầu",
+        "lastDay": "Ngày cuối",
+        "markedLegend": "Có giải đấu khác trên trang này diễn ra ngày đó"
+      },
+      "overlap": {
+        "headsUp": "Lưu ý: {{name}} cũng diễn ra vào {{day}}",
+        "headsUpBody": "{{from}}–{{to}} trên cùng máy chủ. Cả hai có thể chạy: các trận chờ máy chủ trống, và một người chơi chỉ có thể ở cả hai nếu giờ các vòng không trùng nhau.",
+        "openOther": "Mở lịch thi đấu của {{name}}",
+        "round": "Trùng với {{name}} ({{day}}, {{from}}–{{to}}) trên cùng máy chủ. Bạn vẫn có thể lưu. Người chơi trong {{name}} không đăng ký được ở đây, vì vòng này diễn ra cùng giờ.",
+        "see": "Xem {{name}}"
+      }
+    },
+    "startButton": {
+      "start": "Bắt đầu giải đấu",
+      "starting": "Đang bắt đầu...",
+      "startSimulation": "Bắt đầu mô phỏng",
+      "startingSimulation": "Đang bắt đầu mô phỏng..."
+    },
+    "archiveDialog": {
+      "title": "Bắt đầu giải đấu mới?",
+      "message": "{{name}} sẽ được lưu trữ. Kết quả, trận và thống kê vẫn còn, và trang của giải giữ nguyên địa chỉ. Sau đó bạn tạo giải tiếp theo.",
+      "confirm": "Lưu trữ và bắt đầu mới",
+      "delete": "Xóa và bắt đầu mới",
+      "deleteHint": "Hoặc xóa: kết quả, trận và thống kê sẽ bị xóa theo."
+    },
+    "end": {
+      "button": "Kết thúc giải đấu",
+      "tooltip": "Dừng giải ngay mà không có kết quả: các trận trên máy chủ kết thúc, phần còn lại bị hủy. Không có đội thắng và không có phần thưởng. Có thể lưu trữ sau đó.",
+      "title": "Kết thúc giải đấu này?",
+      "body": "Mọi trận đang chạy sẽ kết thúc trên máy chủ và phần còn lại bị hủy. Không ai thắng và không có phần thưởng. Thao tác này không thể hoàn tác.",
+      "typeName": "Nhập “{{name}}” để xác nhận",
+      "confirm": "Kết thúc giải đấu",
+      "done_one": "Đã kết thúc giải, hủy {{count}} trận",
+      "done_other": "Đã kết thúc giải, hủy {{count}} trận",
+      "failed": "Không kết thúc được giải đấu"
+    },
+    "countdown": {
+      "days": "Bắt đầu sau {{d}} ngày {{h}} giờ",
+      "hours": "Bắt đầu sau {{h}} giờ {{m}} phút",
+      "minutes": "Bắt đầu sau {{m}}:{{s}}"
+    }
+  },
+  "bracket": {
+    "empty": {
+      "noBracketTitle": "Không có nhánh đấu để hiển thị",
+      "noBracketDescription": "Tạo giải đấu và tạo nhánh đấu để bắt đầu"
+    },
+    "view": {
+      "visual": "Trực quan",
+      "list": "Danh sách",
+      "refresh": "Làm mới",
+      "enterFullscreen": "Toàn màn hình",
+      "exitFullscreen": "Thoát toàn màn hình",
+      "shuffleNoVisual": "Giải xáo trộn không có nhánh đấu trực quan; hãy dùng chế độ danh sách."
+    },
+    "times": {
+      "toggle": "Đặt giờ",
+      "startsAt": "Bắt đầu lúc",
+      "clear": "Dùng giờ của vòng",
+      "save": "Lưu"
+    },
+    "shuffleEmpty": {
+      "title": "Giải xáo trộn không có nhánh đấu",
+      "description": "Giải xáo trộn không dùng nhánh đấu cố định. Các đội được xáo lại mỗi vòng dựa trên ELO của người chơi.",
+      "hint": "Dùng trang Trận đấu để theo dõi trận đang diễn ra và sắp tới, và trang Bảng xếp hạng để theo dõi thứ hạng người chơi.",
+      "goToMatches": "Đến Trận đấu",
+      "viewLeaderboard": "Xem Bảng xếp hạng"
+    },
+    "notGenerated": {
+      "title": "Chưa tạo nhánh đấu",
+      "description": "Tạo nhánh đấu để tạo trận cho {{name}}",
+      "goToSettings": "Đến Cài đặt giải đấu"
+    },
+    "shuffleNoVisual": {
+      "title": "Giải xáo trộn không có nhánh đấu trực quan",
+      "description": "Các trận được tạo mỗi vòng dựa trên ELO người chơi và cân bằng đội. Theo dõi tiến độ tại đây:",
+      "listView": "Chế độ danh sách",
+      "matches": "Trận đấu",
+      "standings": "Bảng xếp hạng",
+      "docsHint": "Để xem hướng dẫn đầy đủ về cách xáo trộn hoạt động, hãy xem hướng dẫn Giải đấu xáo trộn trong tài liệu."
+    },
+    "swiss": {
+      "notGenerated": "Chưa tạo",
+      "generatedAfter": "Các trận sẽ được tạo sau khi vòng {{round}} kết thúc",
+      "bye": "MIỄN ĐẤU",
+      "standings": "Bảng xếp hạng",
+      "team": "Đội",
+      "record": "Thành tích",
+      "buchholz": "BH",
+      "buchholzHint": "Buchholz: tổng số trận thắng của các đối thủ",
+      "roundDiff": "HS",
+      "roundDiffHint": "Hiệu số hiệp: số hiệp thắng trừ số hiệp thua"
+    },
+    "slotHint": {
+      "winnerOf": "Đội thắng {{match}}",
+      "loserOf": "Đội thua {{match}}",
+      "matchNumber": "trận {{number}}"
+    },
+    "pause": {
+      "pause": "Tạm dừng nhánh đấu",
+      "reason": "Lý do tạm dừng",
+      "forMinutes": "Trong {{minutes}} phút",
+      "untilResumed": "Cho đến khi tiếp tục",
+      "paused": "Đã tạm dừng nhánh đấu: các trận đang thi đấu sẽ kết thúc, không trận mới nào bắt đầu",
+      "pausedUntil": "Tạm dừng nhánh đấu đến {{time}}: các trận đang thi đấu sẽ kết thúc, không trận mới nào bắt đầu",
+      "resume": "Tiếp tục",
+      "pausedDone": "Đã tạm dừng nhánh đấu",
+      "resumedDone": "Đã tiếp tục nhánh đấu",
+      "failed": "Không thay đổi được trạng thái tạm dừng"
+    }
+  },
+  "overviewPage": {
+    "tabs": {
+      "overview": "Tổng quan",
+      "label": "Giải đấu",
+      "bracket": "Nhánh đấu",
+      "matches": "Trận đấu",
+      "teams": "Đội",
+      "standings": "Bảng xếp hạng",
+      "manage": "Quản lý",
+      "rules": "Luật",
+      "match": "Trận của bạn",
+      "results": "Kết quả",
+      "signup": "Đăng ký"
+    },
+    "status": {
+      "setup": "Sắp tới",
+      "inProgress": "Trực tiếp",
+      "completed": "Đã kết thúc",
+      "finishedOn": "Kết thúc {{date}}"
+    },
+    "liveNow": "{{count}} đang diễn ra",
+    "howItsPlayed": "Cách thi đấu",
+    "facts": {
+      "teams": "Đội",
+      "teamsValue": "{{count}} đội",
+      "teamSize": "Quy mô đội",
+      "teamSizeValue": "{{count}} người chơi",
+      "format": "Thể thức",
+      "series": "Loạt trận",
+      "seriesValue": "Best of {{count}}",
+      "mapVeto": "Veto bản đồ",
+      "mapVetoCustom": "Thứ tự tùy chỉnh (đội trưởng)",
+      "mapVetoStandard": "Thứ tự tiêu chuẩn (đội trưởng)",
+      "overtime": "Hiệp phụ",
+      "overtimeEnabledUnlimited": "Bật, không giới hạn",
+      "overtimeEnabledSegments": "Bật, {{count}} lượt",
+      "overtimeDisabled": "Tắt (phân định bằng sát thương)"
+    },
+    "mapPool": "Nhóm bản đồ",
+    "rules": "Luật",
+    "fullRulebook": "Luật đầy đủ",
+    "schedule": "Lịch thi đấu",
+    "yourTeam": {
+      "title": "Bạn đang thi đấu",
+      "onRoster": "Bạn ở đội {{team}}.",
+      "viewTeam": "Xem đội của bạn",
+      "versus": "{{team}} vs {{opponent}} · {{stage}}",
+      "tbd": "Chưa xác định",
+      "goToMatch": "Đến trận của bạn",
+      "openMatch": "Mở trang trận",
+      "state": {
+        "live": "Trực tiếp",
+        "loaded": "Vào ngay",
+        "upNext": "Tiếp theo",
+        "finished": "Đã kết thúc",
+        "eliminated": "Bị loại",
+        "waiting": "Đang chờ trận tiếp theo",
+        "registered": "Đã đăng ký",
+        "won": "Vô địch",
+        "out": "Bị loại"
+      }
+    },
+    "prizes": {
+      "title": "Giải thưởng",
+      "note": "Do ban tổ chức đặt. Tiền thưởng, phần cứng hoặc vinh quang."
+    },
+    "requirements": {
+      "title": "Để tham gia",
+      "steamLinkedOk": "Đã liên kết tài khoản Steam.",
+      "steamLinkedNeutral": "Đăng nhập bằng Steam để tham gia.",
+      "onRosterOk": "Bạn có trong đội hình của giải này.",
+      "onRosterNeutral": "Hãy có mặt trong đội hình trước khi giải bắt đầu."
+    },
+    "loadError": "Không tải được giải đấu này.",
+    "notFoundTitle": "Không tìm thấy giải đấu",
+    "notFoundDescription": "Giải đấu này không tồn tại hoặc chưa được tạo.",
+    "loading": "Đang tải…",
+    "about": "Giới thiệu",
+    "liveStripLabel": "Đang diễn ra",
+    "bracketTab": {
+      "loadError": "Không tải được nhánh đấu.",
+      "emptyTitle": "Chưa có nhánh đấu",
+      "emptyDescription": "Nhánh đấu sẽ hiện ở đây khi ban tổ chức bắt đầu giải.",
+      "shuffleTitle": "Xáo trộn không có nhánh đấu",
+      "shuffleDescription": "Các đội được bốc lại mỗi vòng nên không có nhánh đấu. Trận đấu liệt kê mọi vòng, và Bảng xếp hạng xếp hạng người chơi."
+    },
+    "matchesTab": {
+      "loadError": "Không tải được trận đấu.",
+      "emptyTitle": "Chưa có trận",
+      "emptyDescription": "Các trận sẽ hiện ở đây khi giải bắt đầu.",
+      "live": "Đang diễn ra",
+      "upcoming": "Tiếp theo",
+      "results": "Kết quả",
+      "vs": "vs",
+      "status": {
+        "live": "Trực tiếp",
+        "loaded": "Đang bắt đầu",
+        "final": "Chung cuộc",
+        "upcoming": "Sắp tới"
+      },
+      "emptyDescriptionAt": "Các trận sẽ hiện ở đây khi giải bắt đầu: {{when}}."
+    },
+    "teamsTab": {
+      "shuffleTitle": "Đội thay đổi mỗi vòng",
+      "shuffleDescription": "Giải xáo trộn bốc đội mới mỗi vòng từ người chơi đã đăng ký. Bảng xếp hạng xếp hạng người chơi.",
+      "emptyTitle": "Chưa có đội",
+      "emptyDescription": "Các đội sẽ hiện ở đây khi ban tổ chức thêm.",
+      "yours": "Đội của bạn",
+      "record": "{{wins}}–{{losses}}",
+      "emptySignupOpen": "Đang mở đăng ký. Các đội sẽ hiện ở đây khi đăng ký.",
+      "signUp": "Đăng ký đội của bạn"
+    },
+    "allMatches": "Tất cả trận",
+    "keyDates": {
+      "starts": "Bắt đầu",
+      "lastOnSchedule": "Mục cuối trong lịch",
+      "teams": "Đội"
+    },
+    "mapPoolCount": "Nhóm bản đồ · {{count}} bản đồ",
+    "mapPoolNote": "Đội trưởng cấm và chọn từ các bản đồ này trước mỗi loạt trận.",
+    "addToCalendar": "Thêm vào lịch",
+    "scheduleSoon": "Ban tổ chức chưa công bố lịch thi đấu.",
+    "checkInWindow": "Điểm danh",
+    "mapPoolSoonTitle": "Nhóm bản đồ",
+    "mapPoolSoon": "Ban tổ chức chưa chọn bản đồ.",
+    "adminBanner": "Bạn là quản trị viên của giải này. Việc điều hành diễn ra trong Quản lý; trang này là những gì người chơi thấy.",
+    "manageTournament": "Quản lý giải đấu",
+    "fullBracket": "Toàn bộ nhánh đấu",
+    "allRules": "Tất cả luật",
+    "archivedTitle": "Giải đấu này đã được lưu trữ",
+    "archivedBody": "Một giải mới hơn đã thay thế. Kết quả, nhánh đấu và bảng xếp hạng vẫn ở đây.",
+    "openCurrent": "Mở giải đấu hiện tại",
+    "allTournaments": "Tất cả giải đấu",
+    "roundN": "Vòng {{n}}",
+    "finalRound": "Chung kết",
+    "roundStarts": "{{round}} · veto mở {{time}}"
+  },
+  "roundStatusCard": {
+    "roundOf": "Vòng {{current}} trên {{total}}",
+    "complete": "Hoàn tất",
+    "inProgress": "Đang diễn ra",
+    "matchProgress": "Tiến độ trận",
+    "completedOf": "Đã xong {{completed}} / {{total}}",
+    "completedCount": "{{count}} đã xong",
+    "playingCount": "{{count}} đang thi đấu",
+    "pendingCount": "{{count}} đang chờ"
+  },
+  "yourMatch": {
+    "loading": "Đang tải trận của bạn",
+    "bestOf": "Best of {{count}}",
+    "mapsScore": "Bản đồ {{us}} – {{them}}",
+    "inServer": "Trong máy chủ",
+    "notJoined": "Chưa vào",
+    "waitingForPlayers": "Đang chờ người chơi",
+    "inServerCount": "{{count}} trên {{expected}} người trong máy chủ. Trận bắt đầu khi mọi người sẵn sàng.",
+    "inServerCountBots": "{{count}} người trong máy chủ. Bot lấp chỗ trống; trận bắt đầu khi mọi người ở đây sẵn sàng.",
+    "live": "Trực tiếp",
+    "round": "Hiệp {{n}}",
+    "vetoTitle": "Đang veto bản đồ",
+    "finished": "Trận đã kết thúc",
+    "mapOf": "Bản đồ {{n}} trên {{total}}",
+    "sideYou": "{{side}} · bạn",
+    "rejoin": "Bị văng ra? Vào lại bằng cùng nút: chỗ của bạn vẫn được giữ.",
+    "outcome": {
+      "won": "Bạn thắng {{opponent}} {{us}}–{{them}}",
+      "lost": "Bạn thua {{opponent}} {{us}}–{{them}}",
+      "draw": "{{us}}–{{them}} với {{opponent}}"
+    },
+    "ready": "Sẵn sàng",
+    "waitingForServer": "Đang chờ máy chủ",
+    "vetoDoneChip": "Veto xong · {{map}}",
+    "waitingForServerBody": "Máy chủ được gán ngay khi có máy trống. Bạn sẽ nhận thông báo và trang này tự cập nhật.",
+    "mapDrawnChip": "Bản đồ đã bốc · {{map}}",
+    "notYet": "Chưa đến"
+  },
+  "results": {
+    "finalStandings": "Bảng xếp hạng chung cuộc",
+    "awards": "Danh hiệu",
+    "players": "Người chơi",
+    "matchesAndDemos": "Trận và demo",
+    "place": "#{{n}}",
+    "championsOf": "{{name}} · Vô địch",
+    "showAll": "Tất cả {{count}} người chơi",
+    "showFewer": "Hiện ít hơn",
+    "mapResults": "Kết quả bản đồ",
+    "col": {
+      "player": "Người chơi",
+      "team": "Đội",
+      "rating": "Điểm ±",
+      "hltv": "Phong độ"
+    },
+    "award": {
+      "mostKills": "Nhiều kill nhất",
+      "bestAdr": "ADR cao nhất",
+      "bestHeadshots": "Tỉ lệ headshot cao nhất",
+      "mostFlashAssists": "Nhiều flash assist nhất",
+      "mostUtility": "Nhiều sát thương vật phẩm nhất",
+      "biggestGain": "Tăng điểm nhiều nhất",
+      "bestPlayer": "Người chơi xuất sắc nhất",
+      "mostClutches": "Nhiều clutch nhất",
+      "mostTeamFlashes": "Chói mắt đồng đội nhiều nhất",
+      "mostMoney": "Tiêu nhiều tiền nhất"
+    },
+    "awardValue": {
+      "mostKills": "{{value}} kill",
+      "bestAdr": "{{value}} ADR",
+      "bestHeadshots": "{{value}} % headshot",
+      "mostFlashAssists": "{{value}} flash assist",
+      "mostUtility": "{{value}} sát thương vật phẩm",
+      "biggestGain": "+{{value}} điểm",
+      "bestPlayer": "điểm {{value}}",
+      "mostTeamFlashes": "chói mắt {{value}} đồng đội",
+      "mostClutches": "thắng {{value}} clutch",
+      "mostMoney": "đã tiêu {{value}}"
+    },
+    "wonFinal": "Thắng chung kết {{a}}–{{b}} trước {{opponent}}",
+    "champions": "Vô địch",
+    "allMatches": "Tất cả {{count}} trận",
+    "demosAndReel": "Demo và reel",
+    "stage": {
+      "final": "Chung kết",
+      "semi": "Bán kết",
+      "round": "Vòng {{n}}"
+    }
+  },
+  "signup": {
+    "cta": "Đăng ký đội của bạn",
+    "keyDates": {
+      "closes": "Đóng đăng ký",
+      "checkIn": "Điểm danh",
+      "spots": "Số suất đội",
+      "left": "Còn {{count}}",
+      "full": "Đã đầy",
+      "of": "trên {{max}}"
+    },
+    "ladder": {
+      "title": "Đội theo điểm",
+      "yourPlace": "Bạn đứng {{place}} trên {{count}}"
+    },
+    "todo": {
+      "signedUp": "Đã đăng ký",
+      "beforeTheDay": "Trước ngày thi đấu",
+      "toFix": "{{count}} việc cần sửa",
+      "lineup": "Đội hình",
+      "allReady": "Mọi người đã sẵn sàng",
+      "notSet": "Chưa đặt",
+      "showFixes": "Hiện việc cần sửa",
+      "fixNote": "Hãy sửa những mục này trước khi điểm danh, nếu không người chơi đó không vào được."
+    },
+    "yourLineup": "Đội hình của bạn",
+    "change": "Đổi",
+    "withdraw": "Rút lui",
+    "withdrawTitle": "Rút {{team}}?",
+    "withdrawBody": "Đội sẽ rời giải và suất của đội được mở cho đội khác.",
+    "sub": "Dự bị",
+    "ready": "Sẵn sàng",
+    "problem": {
+      "noAccount": "Chưa đăng nhập Auto Tournament",
+      "noGame": "Hồ sơ chưa có trò chơi"
+    },
+    "problemShort": {
+      "noAccount": "chưa đăng nhập",
+      "noGame": "cần trò chơi"
+    },
+    "checkIn": {
+      "open": "Đã mở điểm danh",
+      "closesIn": "Đóng {{time}} · còn {{left}}",
+      "imHere": "Tôi có mặt",
+      "done": "Bạn đã điểm danh",
+      "teamTitle": "{{team}} đang điểm danh",
+      "keepOpen": "Hãy giữ trang này mở. Trang sẽ báo khi trận của bạn sẵn sàng.",
+      "firstMatchIn": "Trận đầu tiên sau",
+      "count": "{{in}} trên {{total}}",
+      "you": "bạn",
+      "everyone": "Mọi người",
+      "soundOn": "Bật âm thanh: bạn sẽ nghe báo khi đến giờ",
+      "soundOff": "Tắt âm thanh",
+      "checkInFor": "Điểm danh cho {{name}}",
+      "checkInShort": "Điểm danh"
+    },
+    "noTeamTitle": "Không có đội để đăng ký",
+    "noTeamBody": "Chỉ chủ sở hữu hoặc đội trưởng mới đăng ký được đội. Hãy tạo đội, hoặc hỏi đội trưởng của bạn.",
+    "goToTeams": "Đội",
+    "steps": {
+      "lineup": "Đội hình",
+      "review": "Xem lại"
+    },
+    "whichTeam": "Bạn đăng ký đội nào?",
+    "role": {
+      "owner": "Bạn là chủ sở hữu",
+      "captain": "Bạn là đội trưởng"
+    },
+    "playerCount": "{{count}} người chơi",
+    "whoPlays": "Ai thi đấu?",
+    "whoPlaysHint": "{{count}} chính thức · tối đa {{subs}} dự bị",
+    "rating": "Điểm {{rating}}",
+    "slotFor": "Vai trò của {{name}}",
+    "starter": "Chính thức",
+    "out": "Không tham gia",
+    "starters": "Chính thức",
+    "subs": "Dự bị",
+    "lineupRating": "Điểm đội hình",
+    "missingAccounts": "{{names}} vẫn cần đăng nhập.",
+    "fixBeforeCheckIn": "Bạn có thể đăng ký ngay; hãy sửa trước khi điểm danh.",
+    "saveLineup": "Lưu đội hình",
+    "nextReview": "Tiếp: xem lại",
+    "readyToSend": "Sẵn sàng gửi?",
+    "next": {
+      "lastSpot": "Lấy suất cuối cùng",
+      "takesSpot": "Lấy một suất",
+      "spotsLeft": "Còn {{count}} suất trước đó",
+      "checkIn": "Điểm danh vào ngày thi đấu",
+      "firstMatch": "Trận đầu tiên",
+      "spotOf": "{{n}} trên {{max}}"
+    },
+    "vouch": "Tôi xác nhận mọi người chơi trong đội hình này đã đọc",
+    "vouchNote": "Tôi đăng ký thay mặt họ. Nếu một người chơi vi phạm luật, cả đội có thể bị phạt hoặc loại.",
+    "send": "Đăng ký {{team}}",
+    "rulesLink": "luật",
+    "ownerTag": "chủ sở hữu",
+    "captainTag": "đội trưởng",
+    "check": {
+      "steam": "Steam",
+      "game": "{{game}}",
+      "noGame": "Chưa thêm {{game}}",
+      "steamShort": "Steam"
+    },
+    "remind": "Nhắc",
+    "reminded": "Đã gửi lời nhắc trong chat đội",
+    "done": "Xong",
+    "lineupGap": "Một người chơi chính đã rời đội hình (bị cấm hoặc bị xóa). Các trận của bạn sẽ chờ đến {{time}}: hãy chọn dự bị trước lúc đó, nếu không dự bị đầu tiên sẽ vào thay. Không có dự bị thì đội thi đấu thiếu người.",
+    "pickSub": "Chọn dự bị",
+    "title": "Đăng ký đội của bạn",
+    "editTitle": "Đổi đội hình",
+    "stepsLabel": "Các bước",
+    "changeUntil": "Bạn có thể đổi đội hình cho đến khi đóng điểm danh, {{when}}.",
+    "counts": "{{starters}} trên {{teamSize}} chính thức · {{subs}} trên {{maxSubs}} dự bị",
+    "lineupRatingValue": "Điểm đội hình {{rating}}",
+    "missingGame": "{{names}} cần có {{game}} trong hồ sơ.",
+    "subsLine": "dự bị: {{names}}",
+    "overlap": {
+      "title": "Bạn không thể đăng ký giải này",
+      "body": "Bạn đang ở {{name}}, giải có trận {{when}}, cùng giờ với giải này. Bạn có thể ở cả hai giải khi giờ thi đấu không trùng nhau.",
+      "open": "Mở {{name}}"
+    },
+    "youreIn": {
+      "eyebrow": "{{team}} · đã đăng ký",
+      "title": "Bạn đã vào giải!",
+      "body": "Đây là những điều đội bạn cần biết trước khi giải bắt đầu. Chúng tôi đã gửi danh sách tương tự cho chủ sở hữu và đội trưởng.",
+      "openLineup": "Mở đội hình của bạn",
+      "listTitle": "Trước khi giải bắt đầu",
+      "checkIn": "Điểm danh {{when}}–{{to}}",
+      "checkInBodyCaptains": "Mỗi người chơi chính điểm danh trên trang này, hoặc đội trưởng điểm danh giúp. Điểm danh đóng khi giải bắt đầu.",
+      "checkInBody": "Mỗi người chơi chính điểm danh trên trang này. Điểm danh đóng khi giải bắt đầu.",
+      "subs": "Dự bị không cần điểm danh",
+      "subsBody": "Họ được tính là có mặt và sẵn sàng, nên trận không bao giờ phải chờ họ.",
+      "replaced": "Người chơi chính chưa điểm danh sẽ bị thay",
+      "replacedBody": "Khi đóng điểm danh, một dự bị sẽ thay chỗ người chơi chính chưa điểm danh. Không còn dự bị: đội thi đấu thiếu một người.",
+      "fullTeam_one": "{{count}} phút để đưa đội vào máy chủ",
+      "fullTeam_other": "{{count}} phút để đưa đội vào máy chủ",
+      "fullTeamBody_one": "Khi máy chủ của bạn sẵn sàng, đội bạn có {{count}} phút để có đủ người trên máy chủ, tính cả dự bị. Sau đó, đội kia có thể nhận thắng xử hoặc chọn đấu với đội bạn đang thiếu người.",
+      "fullTeamBody_other": "Khi máy chủ của bạn sẵn sàng, đội bạn có {{count}} phút để có đủ người trên máy chủ, tính cả dự bị. Sau đó, đội kia có thể nhận thắng xử hoặc chọn đấu với đội bạn đang thiếu người.",
+      "ready": "Sẵn sàng trước mỗi trận",
+      "readyBodyVeto_one": "Veto mở {{count}} phút trước mỗi trận. Giữ trang này mở: trang sẽ báo khi trận tiếp theo của bạn sẵn sàng.",
+      "readyBodyVeto_other": "Veto mở {{count}} phút trước mỗi trận. Giữ trang này mở: trang sẽ báo khi trận tiếp theo của bạn sẵn sàng.",
+      "readyBody": "Giữ trang này mở: trang sẽ báo khi trận tiếp theo của bạn sẵn sàng.",
+      "eachMatch": "Điểm danh lại trước mỗi trận",
+      "eachMatchBody": "Trước mỗi trận, từng người chơi chính điểm danh trong phòng trận, hoặc đội trưởng làm giúp. Người chơi chính không điểm danh sẽ bị đổi bằng dự bị."
+    }
+  },
+  "bracketCards": {
+    "you": "Bạn",
+    "open": "Mở {{a}} vs {{b}}",
+    "upper": "Nhánh thắng",
+    "lower": "Nhánh bại",
+    "grandFinal": "Chung kết tổng",
+    "thirdPlace": "Hạng ba",
+    "live": "Trực tiếp",
+    "veto": "Veto",
+    "done": "Xong",
+    "mapOf": "Bản đồ {{n}} trên {{total}}",
+    "banning": "Đang cấm bản đồ",
+    "bestOf_one": "Best of {{count}}",
+    "bestOf_other": "Best of {{count}}",
+    "winnerOf": "Đội thắng {{match}}",
+    "loserOf": "Đội thua {{match}}",
+    "tbd": "Chưa xác định",
+    "liveCount_one": "{{count}} đang diễn ra",
+    "liveCount_other": "{{count}} đang diễn ra",
+    "matchCount_one": "{{count}} trận",
+    "matchCount_other": "{{count}} trận"
+  },
+  "placement": {
+    "outTitle": "Hành trình của bạn ở {{tournament}} đã kết thúc",
+    "wonTitle": "Bạn đã vô địch {{tournament}}!",
+    "yourTeamPlaced": "{{team}} xếp hạng",
+    "yourTeam": "Đội của bạn",
+    "outBody": "Đội bạn đã bị loại khỏi giải, nên bạn không còn trận nào. Theo dõi phần còn lại trong nhánh đấu.",
+    "wonBody": "Đội bạn đã vô địch giải. Chơi hay lắm!",
+    "close": "Đóng",
+    "seeBracket": "Xem nhánh đấu",
+    "outBodyPlay": "Bạn không còn trận nào trong giải này. Cảm ơn đã tham gia!",
+    "championsEyebrow": "Vô địch",
+    "teamPlaced": "{{team}} xếp hạng",
+    "wonTitleShort": "Bạn đã vô địch {{tournament}}!",
+    "wonFinalBody": "{{team}} thắng chung kết {{score}}. Chơi hay lắm!",
+    "playHint": "Chơi thêm một ván? Đấu xếp trận đưa bạn vào trận chỉ sau một hai phút."
+  },
+  "advance": {
+    "title": "Tuyệt, bạn vẫn còn trong cuộc đua!",
+    "opponent": "Tiếp theo: {{opponent}}.",
+    "feederTitle": "Đối thủ tiếp theo của bạn đến từ",
+    "vs": "vs",
+    "tbd": "Chưa xác định",
+    "feederNotStarted": "Trận đó chưa bắt đầu.",
+    "feederMinutes_one": "Còn khoảng {{count}} phút.",
+    "feederMinutes_other": "Còn khoảng {{count}} phút.",
+    "feederAlmost": "Sắp xong.",
+    "watch": "Xem trực tiếp",
+    "wonEyebrow": "{{stage}} thắng {{score}}"
+  },
+  "whatsNext": {
+    "eyebrow": "Tiếp theo là gì",
+    "champions": "Vô địch",
+    "outTitle": "Đội bạn đã bị loại. Bạn xếp hạng {{place}}",
+    "outBody": "Đó là trận cuối của bạn ở {{tournament}}. Những trận đấu hay! Muốn chơi tiếp? Đấu xếp trận tìm cho bạn một trận với người chơi khác ngay bây giờ.",
+    "playMatchmaking": "Chơi đấu xếp trận",
+    "watchLive": "Xem một trận đang diễn ra",
+    "nextMatch": "{{stage}} vs {{opponent}}",
+    "nextMatchReady": "Trận của bạn đã sẵn sàng: mở phòng trận để kết nối.",
+    "nextMatchSoon": "Trận tiếp theo của bạn đã được xếp. Sau một khoảng nghỉ ngắn trận sẽ mở, và chúng tôi sẽ báo bạn. Thanh điều hướng hiện đếm ngược ở mọi nơi.",
+    "openMatchRoom": "Mở phòng trận",
+    "throughTo": "Bạn đã vào {{stage}}",
+    "waitingTitle": "Đang chờ đối thủ tiếp theo",
+    "waitingBody": "Đối thủ của bạn đến từ một trận vẫn đang diễn ra. Khi trận đó kết thúc sẽ có khoảng nghỉ ngắn, rồi trận tiếp theo của bạn mở. Chúng tôi sẽ báo bạn.",
+    "watchOpponent": "Xem trực tiếp đối thủ tiếp theo",
+    "shuffleTitle": "Vòng tiếp theo: đội mới",
+    "shuffleBody": "Khi mọi trận của vòng này xong, đội mới sẽ được bốc và trận tiếp theo của bạn hiện ở đây.",
+    "stayHere": "Hãy ở lại trang này: trang tự cập nhật.",
+    "openTournament": "Mở giải đấu",
+    "winsToTitle_one": "Còn 1 trận thắng nữa là vô địch",
+    "winsToTitle_other": "Còn {{count}} trận thắng nữa là vô địch",
+    "shuffleDoneTitle": "Đó là vòng cuối cùng",
+    "shuffleDoneBody": "Giải xáo trộn đã kết thúc. Mở giải để xem bảng xếp hạng.",
+    "youWon": "Bạn thắng {{opponent}} {{a}}–{{b}}.",
+    "youLost": "Bạn thua {{opponent}} {{a}}–{{b}}.",
+    "resultPlaced": "{{result}} Bạn xếp hạng {{place}}.",
+    "nextUp": "Tiếp theo: {{match}}."
+  },
+  "navStatus": {
+    "placed": "Xếp hạng",
+    "placedPlay": "{{place}} · Chơi đấu xếp trận",
+    "waiting": "Đang chờ đối thủ",
+    "vetoIn": "Veto sau",
+    "vetoOpening": "Veto đang mở",
+    "matchIn": "Trận sau",
+    "matchLoading": "Đang tải trận",
+    "shuffleRound": "Vòng {{round}} · Đang chơi",
+    "shuffleSittingOut": "Vòng {{round}} · Nghỉ",
+    "placedPlayLine": "Xếp hạng {{place}} · Chơi đấu xếp trận",
+    "placedLine": "Xếp hạng {{place}}",
+    "waitingOpponent": "Đang chờ đối thủ",
+    "aboutMinutes_one": "~{{count}} phút",
+    "aboutMinutes_other": "~{{count}} phút"
+  },
+  "shuffleJoin": {
+    "title": "Tham gia giải xáo trộn này",
+    "body": "Không cần đội: đăng ký một mình. Mỗi vòng nền tảng bốc các đội mới cân bằng.",
+    "youreIn": "Bạn đã tham gia",
+    "inBody": "Khi giải bắt đầu, đội đầu tiên của bạn được bốc và trận của bạn hiện ở đây. Hãy giữ trang này mở.",
+    "join": "Tham gia",
+    "leave": "Rời",
+    "full": "Đã đầy",
+    "signInToJoin": "Đăng nhập để tham gia",
+    "count_one": "{{count}} người chơi đã tham gia",
+    "count_other": "{{count}} người chơi đã tham gia",
+    "countOf_one": "{{count}} trên {{spots}} người chơi đã tham gia",
+    "countOf_other": "{{count}} trên {{spots}} người chơi đã tham gia",
+    "playingTitle": "Bạn đang thi đấu",
+    "playingBody": "Vào máy chủ cùng đội của bạn. Vòng tiếp theo được bốc khi mọi trận của vòng này kết thúc.",
+    "sittingOutTitle": "Bạn nghỉ vòng này",
+    "sittingOutBody": "Không đủ người chơi cho mọi đội ở vòng này. Bạn có trong lượt bốc vòng {{next}}, và những người chơi nhiều nhất sẽ được nghỉ trước.",
+    "goToMatch": "Đến trận",
+    "tagPlaying": "Đang chơi",
+    "tagSittingOut": "Nghỉ",
+    "roundHeading": "Vòng {{round}}",
+    "versus": "vs",
+    "sittingOutList": "Nghỉ: {{names}}",
+    "status": {
+      "live": "Trực tiếp",
+      "done": "Xong",
+      "waiting": "Đang bắt đầu"
+    },
+    "finishedTitle": "Giải xáo trộn đã kết thúc",
+    "finishedBody_one": "Đã chơi xong cả 1 vòng. Những trận đấu hay!",
+    "finishedBody_other": "Đã chơi xong cả {{count}} vòng. Những trận đấu hay!",
+    "roundOf": "Vòng {{round}} trên {{total}}",
+    "roundsCount_one": "{{count}} vòng",
+    "roundsCount_other": "{{count}} vòng",
+    "now": "Hiện tại",
+    "tagLeft": "Đã rời",
+    "markOut": "Đánh dấu vắng",
+    "markIn": "Đã quay lại",
+    "roundShort": "Vòng {{round}}",
+    "playedTitle": "Trận vòng {{round}} của bạn đã xong",
+    "playedBody": "Vòng {{next}} sẽ được bốc khi các trận khác kết thúc. Hãy ở lại trang này: trang tự cập nhật.",
+    "sittingOutBodyCounts_one": "Có {{players}} người chơi cho {{size}}v{{size2}}, nên {{count}} người nghỉ mỗi vòng. Những người chơi nhiều nhất nghỉ trước: bạn có trong lượt bốc tiếp theo.",
+    "sittingOutBodyCounts_other": "Có {{players}} người chơi cho {{size}}v{{size2}}, nên {{count}} người nghỉ mỗi vòng. Những người chơi nhiều nhất nghỉ trước: bạn có trong lượt bốc tiếp theo.",
+    "playedBodyLeft_one": "Đang chờ thêm {{count}} trận. Vòng {{next}} được bốc khi xong; trận tiếp theo của bạn hiện ở đây và bạn sẽ nhận thông báo.",
+    "playedBodyLeft_other": "Đang chờ thêm {{count}} trận. Vòng {{next}} được bốc khi xong; trận tiếp theo của bạn hiện ở đây và bạn sẽ nhận thông báo.",
+    "joinedByMistake": "Tham gia nhầm?",
+    "breakTitle": "Nghỉ · vòng {{round}} bắt đầu lúc {{time}}",
+    "noShowTitle": "Bạn bị loại khỏi các lượt bốc tiếp theo",
+    "noShowBody": "Bạn đã không vào trận nên các vòng tiếp theo được bốc mà không có bạn. Đã về máy? Hãy báo để được vào lượt bốc tiếp theo.",
+    "backIn": "Tôi đã quay lại",
+    "tagNoShow": "Vắng mặt"
+  },
+  "liveOverview": {
+    "roundOf": "Vòng {{round}} trên {{total}}",
+    "liveCount": "{{count}} đang diễn ra",
+    "eta": {
+      "nextRoundAbout": "Vòng tiếp theo khoảng {{time}}",
+      "nextRoundAt": "Vòng tiếp theo lúc {{time}}",
+      "finalEnds": "Vòng cuối: kết thúc khoảng {{time}}",
+      "endsAbout": "kết thúc khoảng {{time}}"
+    },
+    "hero": {
+      "playingTitle": "Bạn đang thi đấu",
+      "playingBody": "{{us}} vs {{them}}{{map}}. Vào từ phòng trận.",
+      "joiningTitle": "Vào máy chủ",
+      "joiningBody": "{{us}} vs {{them}}{{map}}. Trận bắt đầu khi mọi người sẵn sàng.",
+      "vetoTitle": "Veto bản đồ của bạn đã mở",
+      "vetoBody": "Cấm và chọn bản đồ với {{them}} trong phòng trận.",
+      "waitingTitle": "Đang chờ đối thủ tiếp theo",
+      "waitingBody": "Họ đến từ một trận vẫn đang diễn ra. Sau khoảng nghỉ ngắn veto sẽ mở, và bạn sẽ nhận thông báo.",
+      "notStartedTitle": "Tiếp theo: {{them}}",
+      "notStartedBody": "Trận của bạn mở khi vòng bắt đầu. Trang này tự cập nhật.",
+      "outTitle": "Đội bạn đã bị loại. Bạn xếp hạng {{place}}",
+      "outBody": "Đó là trận cuối của bạn. Những trận đấu hay! Đấu xếp trận đang mở nếu bạn muốn chơi tiếp.",
+      "wonTitle": "Bạn đã vô địch giải đấu!",
+      "wonBody": "Chơi hay lắm. Phần thưởng của bạn đã ở trong kho đồ.",
+      "spectatorTitle": "{{count}} trận đang diễn ra",
+      "spectatorTitleOne": "1 trận đang diễn ra",
+      "spectatorIdleTitle": "Giữa các vòng",
+      "spectatorBody": "Mở một trận để xem tỉ số, bản đồ và ai đang chơi.",
+      "openMatchRoom": "Mở phòng trận",
+      "openVeto": "Mở veto",
+      "watchLive": "Xem một trận đang diễn ra",
+      "playMatchmaking": "Chơi đấu xếp trận",
+      "yourMatch": "Trận của bạn",
+      "opponentFrom": "Đối thủ của bạn đến từ",
+      "minutesLeft": "còn khoảng {{count}} phút",
+      "winsToTitle_one": "còn 1 trận thắng nữa là vô địch",
+      "winsToTitle_other": "còn {{count}} trận thắng nữa là vô địch",
+      "waitingServerTitle": "Đang chờ máy chủ",
+      "waitingServerBody": "{{us}} vs {{them}}{{map}}. Máy chủ được gán ngay khi có máy trống; bạn sẽ nhận thông báo.",
+      "wonStage": "{{stage}} thắng {{score}}",
+      "stageNext": "Tiếp theo là {{stage}}",
+      "faceWinnerOf": "{{us}} gặp đội thắng của {{a}} vs {{b}} ({{state}}). Veto mở khi trận đó kết thúc; bạn sẽ nhận thông báo.",
+      "feederLive": "{{score}}, bản đồ {{map}} đang diễn ra",
+      "feederNotStarted": "chưa bắt đầu",
+      "vetoOpens": "Veto mở",
+      "inAboutMinutes_one": "sau ~{{count}} phút",
+      "inAboutMinutes_other": "sau ~{{count}} phút",
+      "later": "sau",
+      "afterBreak": "sau khoảng nghỉ ngắn",
+      "youAre": "thành tích của bạn {{record}}",
+      "nextRoundDrawn": "Vòng {{round}} được bốc tiếp theo",
+      "lastRoundPlaying": "Vòng cuối đang được thi đấu",
+      "betweenBody": "Trận của bạn ở vòng này đã xong. Vòng tiếp theo được bốc khi các trận khác kết thúc; trận của bạn hiện ở đây và bạn sẽ nhận thông báo.",
+      "vetoSoonTitle": "Veto bản đồ của bạn mở lúc {{time}}",
+      "vetoSoonBody": "Nghỉ ngắn sau trận vừa rồi. Bạn sẽ nhận thông báo khi veto với {{them}} mở."
+    },
+    "schedule": "Lịch thi đấu",
+    "bracket": "Nhánh đấu",
+    "round": "Vòng {{n}}",
+    "final": "Chung kết",
+    "state": {
+      "now": "Hiện tại",
+      "next": "Tiếp theo",
+      "later": "Sau",
+      "done": "✓ Xong",
+      "live": "Trực tiếp",
+      "upcoming": "Sắp tới"
+    },
+    "thisRound": "Vòng {{n}}",
+    "earlier": "Các vòng trước",
+    "standings": "Bảng xếp hạng",
+    "teams": "Đội",
+    "wl": "T–B",
+    "rounds": "+/−",
+    "ties": {
+      "round_robin": "Bằng điểm: đối đầu trực tiếp, rồi hiệu số hiệp, rồi số hiệp thắng.",
+      "swiss": "Bằng điểm: độ mạnh của các đối thủ (Buchholz: tổng số trận thắng của họ), rồi hiệu số hiệp.",
+      "elim": "Xếp theo số trận thắng. Thua hai trận là đội bị loại.",
+      "singleElim": "Xếp theo số trận thắng. Thua một trận là đội bị loại.",
+      "doubleElim": "Xếp theo số trận thắng. Thua hai trận là đội bị loại.",
+      "groups": "Bằng điểm trong bảng: đối đầu trực tiếp, rồi hiệu số hiệp, rồi số hiệp thắng."
+    },
+    "players": {
+      "title": "Người chơi · theo điểm",
+      "find": "Tìm người chơi",
+      "export": "Xuất",
+      "all": "Tất cả {{count}} người chơi",
+      "player": "Người chơi",
+      "team": "Đội",
+      "rating": "Điểm",
+      "change": "±",
+      "kd": "K / D",
+      "adr": "ADR",
+      "winRate": "Tỉ lệ thắng",
+      "none": "Không có người chơi phù hợp."
+    }
+  },
+  "matchesCards": {
+    "show": "Hiện",
+    "filterAll": "Tất cả {{count}}",
+    "filterLive": "Trực tiếp {{count}}",
+    "filterUpcoming": "Sắp tới {{count}}",
+    "done": "Xong",
+    "afterOvertime": "sau hiệp phụ",
+    "startsAt": "bắt đầu {{time}} · veto mở {{veto}}",
+    "yourMatch": "Trận của bạn",
+    "placeholderTbd": "Chưa xác định",
+    "placeholderVeto": "Veto bản đồ",
+    "placeholderVetoAt": "Veto {{time}}"
+  },
+  "standingsTab": {
+    "champions": "Vô địch",
+    "championBadge": "VÔ ĐỊCH",
+    "vs": "vs",
+    "rounds": "Vòng",
+    "form": "Phong độ",
+    "intro": {
+      "round_robin": "Vòng tròn: mỗi đội đấu với mọi đội khác một lần.",
+      "swiss": "Hệ Thụy Sĩ: mỗi vòng ghép cặp các đội có cùng thành tích.",
+      "single": "Loại trực tiếp: thua một trận là đội bị loại.",
+      "double": "Nhánh thắng – nhánh bại: thua hai trận là đội bị loại.",
+      "groups": "Vòng bảng rồi playoff: mỗi đội đấu với các đội khác trong bảng một lần; các đội giỏi nhất vào playoff."
+    }
+  },
+  "teamsCards": {
+    "subs": "Dự bị: {{names}}"
+  },
+  "rulesTab": {
+    "atAGlance": "Tóm tắt",
+    "onThisPage": "Trên trang này",
+    "fromSettings": "từ cài đặt giải đấu, luôn cập nhật",
+    "organizer": "Luật của ban tổ chức",
+    "facts": {
+      "map": "Bản đồ",
+      "firstTo": "ai đạt {{count}} trước",
+      "noOvertime": "Không có",
+      "overtimeSegments_one": "1, sau đó phân định bằng sát thương",
+      "overtimeSegments_other": "{{count}}, sau đó phân định bằng sát thương",
+      "overtimeUnlimited": "Đến khi phân thắng bại",
+      "thenDamage": "Mỗi lượt 6 hiệp, ai đạt 4 trước",
+      "mapCount_one": "{{count}} bản đồ",
+      "mapCount_other": "{{count}} bản đồ"
+    },
+    "format": {
+      "title": "Thể thức này hoạt động thế nào",
+      "navTitle": "Thể thức",
+      "swiss_one": "Mọi đội chơi {{count}} vòng, mỗi vòng gặp một đội có cùng thành tích. Không đấu lại. Xếp theo số trận thắng, rồi theo các tiêu chí phụ bên dưới.",
+      "swiss_other": "Mọi đội chơi {{count}} vòng, mỗi vòng gặp một đội có cùng thành tích. Không đấu lại. Xếp theo số trận thắng, rồi theo các tiêu chí phụ bên dưới.",
+      "single_elimination": "Thua một trận là bị loại. Nhánh đấu diễn ra đến trận chung kết.",
+      "double_elimination": "Một nhánh thắng và một nhánh bại. Thua hai trận là bị loại.",
+      "round_robin": "Mọi đội gặp nhau một lần. Xếp theo số trận thắng, rồi theo các tiêu chí phụ bên dưới.",
+      "shuffle": "Các đội được bốc mới mỗi vòng từ người chơi đã đăng ký. Người chơi được xếp theo số trận thắng.",
+      "matches": "Mỗi trận là {{series}} trên bản đồ MR{{mr}}. Hiệp phụ: {{overtime}}.",
+      "damage": "Nếu một bản đồ vẫn hòa sau lượt hiệp phụ cuối, đội có tổng sát thương cao hơn sẽ thắng bản đồ đó."
+    }
+  },
+  "liveMatch": {
+    "updatesEveryRound": "Cập nhật mỗi vòng",
+    "chat": "Trò chuyện trận",
+    "system": "Auto Tournament",
+    "noMessages": "Chưa có tin nhắn. Gửi lời gl hf nào!",
+    "chatSignIn": "Đăng nhập bằng tài khoản người chơi trong trận này để đọc và viết ở đây.",
+    "messageLabel": "Nhắn cho cả hai đội và quản trị viên",
+    "send": "Gửi",
+    "callAdmin": "Gọi quản trị viên",
+    "adminCalled": "Quản trị viên đang đến",
+    "joinTitle": "Vào máy chủ: {{map}}",
+    "warmup": "Khởi động · vào ngay",
+    "isLive": "{{map}} đang diễn ra",
+    "players": "Người chơi",
+    "playersOnMap": "Người chơi · {{map}}",
+    "noEconomy": "Xếp theo điểm. Không có tiền hay trang bị: không có gì làm lộ kinh tế của đội.",
+    "yourTeam": "Đội của bạn",
+    "backToTournament": "Quay lại giải đấu",
+    "manage": "Quản lý trận này",
+    "finishedAt": "đã kết thúc {{when}}",
+    "delayedNote_one": "Hiển thị những gì GOTV hiển thị, chậm {{count}} giây.",
+    "delayedNote_other": "Hiển thị những gì GOTV hiển thị, chậm {{count}} giây."
+  },
+  "preStart": {
+    "open": "Đang mở đăng ký",
+    "openCloses": "Đang mở đăng ký · đóng {{when}}",
+    "closed": "Đã đóng đăng ký",
+    "notOpenTitle": "Chưa mở đăng ký",
+    "fullTitle": "Đã hết suất",
+    "spotsLeft_one": "Còn {{count}} trên {{max}} suất. Đội trưởng chọn người chơi chính và dự bị.",
+    "spotsLeft_other": "Còn {{count}} trên {{max}} suất. Đội trưởng chọn người chơi chính và dự bị.",
+    "byOrganizer": "Ban tổ chức thêm các đội.",
+    "captainsPick": "Đội trưởng chọn người chơi chính và dự bị.",
+    "startsIn": "Bắt đầu sau",
+    "allRules": "Tất cả luật và giải thưởng",
+    "signedUpEyebrow": "{{team}} · đã đăng ký",
+    "inTitle": "Bạn đã vào giải",
+    "inToFix_one": "Bạn đã vào giải. Còn 1 việc cần sửa",
+    "inToFix_other": "Bạn đã vào giải. Còn {{count}} việc cần sửa",
+    "fixBefore": "Hãy sửa trước khi điểm danh vào {{when}}, nếu không người chơi đó không vào được máy chủ.",
+    "checkInOn": "Điểm danh vào {{when}}. Người chơi chính chưa điểm danh khi giải bắt đầu sẽ được thay bằng dự bị.",
+    "allSet": "Mọi người đã sẵn sàng. Lịch thi đấu cho biết khi nào bắt đầu.",
+    "checkInOpens": "Mở điểm danh",
+    "openLineup": "Mở đội hình của bạn",
+    "yourSignup": "Đăng ký của bạn",
+    "spotOf": "suất {{place}} trên {{max}}",
+    "lineupCount": "Đội hình · {{starters}} chính thức, {{subs}} dự bị",
+    "fixBeforeCheckIn": "Sửa trước khi điểm danh",
+    "leave": "Rời giải đấu",
+    "withdrawHint": "Không tham gia được? Rút lui sẽ nhường suất cho đội khác.",
+    "opensTitle": "Mở đăng ký {{when}}",
+    "opensIn": "Mở sau {{time}}."
+  },
+  "shuffleOverview": {
+    "yourMatchLive": "trận của bạn đang diễn ra",
+    "yourMatchReady": "trận của bạn đã sẵn sàng",
+    "yourMatchDone": "trận của bạn đã xong",
+    "nextDraw": "Lượt bốc tiếp theo",
+    "round": "Vòng {{n}}",
+    "whenRoundEnds": "khi các trận của vòng này kết thúc",
+    "oneMapPerRound": "Một bản đồ mỗi vòng · đội mới mỗi vòng",
+    "sittingOut": "Nghỉ:",
+    "firstNextRound": "được chơi trước ở vòng sau",
+    "players": "Người chơi",
+    "markOutHint": "Đánh dấu vắng người chơi đã rời; họ nghỉ cho đến khi bạn đánh dấu họ quay lại."
+  },
+  "checkIn": {
+    "areYouHere": "Bạn có ở đây không?",
+    "teamCount": "{{team}} đang điểm danh: {{in}} trên {{total}}. Người chơi chính chưa điểm danh khi giải bắt đầu sẽ được thay bằng dự bị.",
+    "soundOn": "♪ Bật âm thanh",
+    "firstVeto_one": "Veto đầu tiên của bạn mở lúc {{time}}, {{count}} phút trước trận: hãy ngồi trước máy trước lúc đó.",
+    "firstVeto_other": "Veto đầu tiên của bạn mở lúc {{time}}, {{count}} phút trước trận: hãy ngồi trước máy trước lúc đó.",
+    "vetoOpensNote": "veto mở {{time}}"
+  },
+  "runState": {
+    "paused": "Giải đấu đang tạm dừng",
+    "pausedUntil": "Giải đấu tạm dừng đến {{time}}",
+    "pausedBody": "Các trận đã ở trên máy chủ vẫn tiếp tục. Không vòng mới nào được bốc và không veto nào mở cho đến khi tiếp tục.",
+    "reason": "Lý do: {{reason}}.",
+    "waitingServers_one": "{{count}} trận đang chờ máy chủ.",
+    "waitingServers_other": "{{count}} trận đang chờ máy chủ.",
+    "allBusy_one": "Tất cả 1 máy chủ đều bận; trận sẽ bắt đầu ngay khi có máy trống.",
+    "allBusy_other": "Tất cả {{count}} máy chủ đều bận; trận sẽ bắt đầu ngay khi có máy trống.",
+    "noneFree": "Không có máy chủ trống; trận sẽ bắt đầu ngay khi có.",
+    "servers": "Máy chủ",
+    "pausedShort": "Đã tạm dừng"
+  },
+  "captainsPanel": {
+    "title": "Đội trưởng",
+    "note": "Chỉ đội trưởng mới báo hoặc xác nhận kết quả.",
+    "make": "Đặt làm đội trưởng",
+    "remove": "Gỡ đội trưởng",
+    "role": {
+      "owner": "Chủ sở hữu",
+      "captain": "Đội trưởng",
+      "member": "Thành viên"
+    }
+  },
+  "lineupPanel": {
+    "title": "Đội hình",
+    "note_one": "Chọn {{count}} người chơi cho trận này. Những người còn lại ngồi dự bị.",
+    "note_other": "Chọn {{count}} người chơi cho trận này. Những người còn lại ngồi dự bị.",
+    "picked": "Đã chọn {{picked}} trên {{count}}",
+    "plays": "Thi đấu",
+    "bench": "Dự bị",
+    "save": "Lưu đội hình",
+    "saved": "Đã lưu đội hình",
+    "notOnServer": "Đã lưu đội hình, nhưng máy chủ không nhận: {{error}}",
+    "locked": "Đội hình bị khóa khi một bản đồ đang diễn ra. Có thể đổi giữa các bản đồ.",
+    "captainOnly": "Chỉ chủ sở hữu hoặc đội trưởng mới đổi được đội hình.",
+    "source": {
+      "previous": "Giống trận gần nhất của đội.",
+      "roster": "Những người chơi đầu tiên trong danh sách đội."
+    }
+  },
+  "prizesPage": {
+    "title": "Giải thưởng",
+    "intro": "Skin cho thứ hạng, trao cho mọi người chơi trong đội khi giải kết thúc, và giải thưởng cho MVP. Chỉ là skin của trang: không phải vật phẩm Steam, không có giá trị tiền.",
+    "none": "Trò chơi của giải này không có giải thưởng.",
+    "loadFailed": "Không tải được giải đấu."
+  },
+  "schedulePage": {
+    "title": "Giờ thi đấu",
+    "intro": "Đặt giờ bắt đầu cho mỗi vòng, hoặc giờ riêng cho một trận. Người chơi thấy giờ trên trận, được nhắc và veto mở đúng giờ.",
+    "loadFailed": "Không tải được giải đấu.",
+    "rounds": "Vòng",
+    "modeLabel": "Khi nào trận bắt đầu",
+    "modeTimes": "Vào giờ đã đặt",
+    "modeAsap": "Ngay khi sẵn sàng",
+    "modeTimesNote": "Các trận chờ đến giờ của mình. Mở một vòng để đặt giờ riêng cho một trận.",
+    "modeAsapNote": "Không đặt giờ: trận bắt đầu khi cả hai đội và máy chủ sẵn sàng.",
+    "noRounds": "Các vòng sẽ hiện ở đây khi nhánh đấu được tạo.",
+    "roundN": "Vòng {{n}}",
+    "roundNote_one": "{{count}} trận · mở để đặt giờ riêng cho một trận",
+    "roundNote_other": "{{count}} trận · mở để đặt giờ riêng cho một trận",
+    "roundNoMatches": "Các trận của vòng này được tạo khi vòng trước kết thúc",
+    "roundStartsAt": "Vòng bắt đầu lúc",
+    "roundTimeLabel": "Giờ bắt đầu của {{round}}",
+    "matchTimeLabel": "Giờ bắt đầu của {{match}}",
+    "tbd": "Chưa xác định",
+    "ownTime": "Giờ riêng",
+    "sameAsRound": "Giống vòng",
+    "useRoundTime": "Dùng giờ của vòng",
+    "vetoTitle": "Veto",
+    "vetoNote": "Tự mở trước mỗi trận để xong khi trận bắt đầu. Đội không thao tác kịp sẽ được chọn bản đồ thay.",
+    "vetoLabel": "Veto mở",
+    "vetoZero": "Vào giờ bắt đầu",
+    "reminderTitle": "Nhắc nhở",
+    "reminderNote": "Thông báo trên trang và trên Discord, đến mọi người chơi trong trận.",
+    "reminderLabel": "Nhắc người chơi",
+    "reminderZero": "Tắt",
+    "minutesBefore_one": "{{count}} phút trước",
+    "minutesBefore_other": "{{count}} phút trước",
+    "save": "Lưu giờ",
+    "saved": "Đã lưu giờ thi đấu",
+    "saveFailed": "Không lưu được giờ",
+    "rulesTitle": "Quy tắc áp dụng",
+    "rules": {
+      "start": "Không có gì của trận bắt đầu trước khi veto mở, kể cả khi có máy chủ trống.",
+      "late": "Vòng trễ sẽ đẩy vòng sau: một đội vẫn đang thi đấu, hoặc khoảng nghỉ giữa các trận, sẽ giữ veto lại, và người chơi thấy giờ mới.",
+      "none": "Không đặt giờ: như trước, trận bắt đầu ngay khi cả hai đội và máy chủ sẵn sàng.",
+      "where": "Lịch trong tổng quan, thẻ trận, phòng trận, luật và điểm danh đều hiển thị các giờ này."
+    },
+    "breaksTitle": "Nghỉ giữa các vòng",
+    "breaksNote_one": "Để trống để dùng thời gian nghỉ {{count}} phút của trang. Thêm khoảng nghỉ dài hơn sau bất kỳ vòng nào, ví dụ 30 phút sau vòng 3.",
+    "breaksNote_other": "Để trống để dùng thời gian nghỉ {{count}} phút của trang. Thêm khoảng nghỉ dài hơn sau bất kỳ vòng nào, ví dụ 30 phút sau vòng 3.",
+    "breakEvery": "Nghỉ sau mỗi vòng (phút)",
+    "breakAfterRound": "Sau vòng",
+    "breakMinutes": "Nghỉ (phút)",
+    "breakRemove": "Gỡ",
+    "breakAdd": "Thêm khoảng nghỉ dài hơn",
+    "fillStart": "Vòng đầu lúc",
+    "fillEvery": "Số phút giữa các vòng",
+    "fillApply": "Điền các vòng"
+  },
+  "groups": {
+    "groupN": "Bảng {{letter}}",
+    "done": "Chung kết",
+    "through_one": "top 1 đi tiếp",
+    "through_other": "top {{count}} đi tiếp",
+    "playoffs": "Playoff",
+    "playoffsSoon": "Playoff bắt đầu khi mọi trận vòng bảng đã được chơi.",
+    "seedSlot": "Hạt giống {{n}}"
+  },
+  "matchCheckIn": {
+    "eyebrow": "Veto đang mở · trận bắt đầu {{time}}",
+    "eyebrowNoTime": "Đã mở điểm danh",
+    "title": "Điểm danh cho trận này",
+    "body": "Giải này điểm danh trước mỗi trận. Người chơi chính báo có mặt; đội trưởng có thể làm giúp. Dự bị đã sẵn sàng.",
+    "closesIn": "Đóng điểm danh sau",
+    "yourTeam": "{{team}} (đội của bạn)",
+    "count": "{{in}} trên {{total}} người chơi chính đã điểm danh",
+    "sub": "DỰ BỊ",
+    "starter": "CHÍNH THỨC",
+    "ready": "Sẵn sàng",
+    "checkedIn": "Đã điểm danh",
+    "notYet": "Chưa",
+    "rule": "Chưa điểm danh khi bắt đầu: người chơi chính sẽ được đổi bằng dự bị, và phòng trận ghi rõ là ai. Không còn dự bị, đội thi đấu thiếu một người.",
+    "server": {
+      "eyebrow": "Máy chủ sẵn sàng · đủ người trước {{time}}",
+      "eyebrowNoTime": "Máy chủ sẵn sàng",
+      "title": "Đưa đội vào máy chủ",
+      "bodyOut": "{{out}} chưa điểm danh, nên một dự bị vào thay.",
+      "body_one": "1 người trong đội cần vào máy chủ trước khi hết giờ. Tính cả dự bị.",
+      "body_other": "{{count}} người trong đội cần vào máy chủ trước khi hết giờ. Tính cả dự bị.",
+      "clockLabel": "Cần đủ người trong",
+      "count": "{{on}} trên {{size}} người trên máy chủ",
+      "onServer": "Trên máy chủ",
+      "joining": "Đang vào…",
+      "subIn": "DỰ BỊ VÀO",
+      "out": "RA",
+      "swapped": "Đã đổi bằng dự bị",
+      "rule": "Đến 0:00, đội đủ người sẽ chọn: nhận thắng xử, hoặc đấu với đội thiếu người. Cả hai đội thiếu: quản trị viên quyết định."
+    },
+    "choice": {
+      "eyebrow": "{{team}} vẫn thiếu người",
+      "title": "{{team}} có {{on}} trên {{size}} người trên máy chủ",
+      "body": "Họ đã hết giờ. Nhận thắng xử và đi tiếp, hoặc vẫn đấu với họ. Đội trưởng bên nào cũng có thể chọn. Không chọn trong 2 phút: thắng xử được áp dụng.",
+      "take": "Nhận thắng xử",
+      "play": "Vẫn đấu với họ"
+    }
+  }
+}

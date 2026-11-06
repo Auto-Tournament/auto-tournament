@@ -1,0 +1,1278 @@
+{
+  "notFound": {
+    "title": "Không tìm thấy trang",
+    "description": "Trang bạn tìm không tồn tại hoặc đã được chuyển đi.",
+    "backToDashboard": "Quay lại bảng điều khiển",
+    "publicPlayerSearch": "Tìm người chơi công khai"
+  },
+  "publicLinks": {
+    "intro": "Liên kết nhanh đến các trang công khai bạn có thể chia sẻ với người chơi và khán giả.",
+    "common": {
+      "publicUrl": "URL công khai",
+      "urlPattern": "Mẫu URL"
+    },
+    "playerSearch": {
+      "title": "Tìm người chơi công khai",
+      "description": "Tìm người chơi đã đăng ký theo tên, Steam ID hoặc URL hồ sơ.",
+      "openButton": "Mở /player"
+    },
+    "playerProfile": {
+      "title": "Hồ sơ người chơi (công khai)",
+      "description": "Liên kết trực tiếp đến hồ sơ người chơi bằng Steam ID64. Người chơi đã đăng nhập bằng Steam cũng có thể dùng liên kết “Hồ sơ của tôi” trên thanh trên cùng thay vì sao chép URL.",
+      "requiresSteamId": "Cần Steam ID64"
+    },
+    "teamMatch": {
+      "title": "Trang trận của đội (công khai)",
+      "description": "Chế độ chỉ xem trận hiện tại hoặc gần nhất của một đội.",
+      "openExample": "Mở đội mẫu"
+    },
+    "tournamentLeaderboard": {
+      "title": "Bảng xếp hạng giải đấu (công khai)",
+      "description": "Trang bảng xếp hạng công khai của giải hiện tại (mặc định là giải 1).",
+      "open": "Mở bảng xếp hạng"
+    }
+  },
+  "games": {
+    "prompt": {
+      "title": "Bạn chơi game gì?",
+      "description": "Chúng tôi sẽ hiện giải đấu của các game này trước. Bạn có thể đổi bất cứ lúc nào.",
+      "skip": "Bỏ qua",
+      "save": "Lưu game của tôi"
+    },
+    "picker": {
+      "searchLabel": "Tìm game",
+      "placeholder": "Nhập tên game",
+      "minChars": "Nhập ít nhất 2 ký tự",
+      "noResults": "Không tìm thấy game",
+      "loading": "Đang tìm…",
+      "searchFailed": "Hiện không tìm kiếm được",
+      "yourGames": "Game của bạn",
+      "none": "Chưa chọn game",
+      "remove": "Gỡ {{name}}",
+      "supported": "Có hỗ trợ giải đấu",
+      "limit": "Bạn có thể chọn tối đa {{max}} game",
+      "creditWikidata": "Dữ liệu game từ Wikidata"
+    },
+    "profile": {
+      "title": "Game bạn chơi",
+      "description": "Chọn các game bạn chơi. Giải đấu của các game này được hiện trước.",
+      "empty": "Bạn chưa chọn game nào.",
+      "edit": "Sửa",
+      "add": "Thêm game",
+      "dialogTitle": "Game bạn chơi",
+      "cancel": "Hủy",
+      "save": "Lưu",
+      "saved": "Đã lưu game",
+      "saveFailed": "Không lưu được game của bạn"
+    },
+    "welcome": {
+      "gridTitle": "Game phổ biến",
+      "continue": "Tiếp tục",
+      "notNow": "Để sau",
+      "selectedGames": "Game đã chọn",
+      "selectedCount": "Đã chọn {{count}} trên {{max}}",
+      "pickOne": "Chọn ít nhất một game",
+      "supportedLegend": "Giải đấu tổ chức ở đây"
+    }
+  },
+  "account": {
+    "email": {
+      "title": "Email",
+      "description": "Để lấy lại tài khoản nếu bạn quên mật khẩu và, nếu muốn, nhận email khi một giải mở đăng ký.",
+      "address": "Địa chỉ email",
+      "sendLink": "Gửi xác nhận",
+      "cancel": "Hủy",
+      "verified": "Đã xác nhận",
+      "unverified": "Chưa xác nhận",
+      "checkInbox": "Mở liên kết trong email chúng tôi đã gửi để xác nhận.",
+      "resend": "Gửi lại",
+      "change": "Đổi",
+      "remove": "Gỡ",
+      "sent": "Đã gửi xác nhận đến {{email}}. Hãy mở liên kết trong đó.",
+      "saved": "Đã lưu email",
+      "removed": "Đã gỡ email",
+      "saveFailed": "Không lưu được email của bạn",
+      "notifyLabel": "Gửi email cho tôi khi một giải mở đăng ký",
+      "notifyHint": "Một email cho mỗi giải. Mọi email đều có liên kết hủy đăng ký.",
+      "notifyNeedsVerified": "Hãy xác nhận địa chỉ của bạn trước.",
+      "notifyOn": "Bạn sẽ nhận email khi mở đăng ký",
+      "notifyOff": "Không nhận email giải đấu nữa",
+      "siteCannotSend": "Trang này hiện không gửi email."
+    },
+    "title": "Kết nối",
+    "subtitle": "Một tài khoản cho mọi giải đấu trên trang này.",
+    "loadFailed": "Không tải được tài khoản của bạn.",
+    "impersonating": "Bạn đang xem trang này khi giả danh một người chơi. Trang hiển thị tài khoản của chính bạn; hãy dừng giả danh để thay đổi.",
+    "rail": {
+      "label": "Tài khoản",
+      "profile": "Hồ sơ",
+      "connections": "Kết nối"
+    },
+    "gameAccounts": {
+      "title": "Tài khoản game",
+      "description": "Mỗi game cần tài khoản riêng để trận đấu biết bạn là ai.",
+      "verified": "Đã xác minh",
+      "id": "Steam ID {{id}}",
+      "more": "Tài khoản game khác sẽ hiện ở đây khi trang thêm game.",
+      "notConnected": "Kết nối tài khoản {{provider}} để chơi các game này.",
+      "notOffered": "Đăng nhập {{provider}} chưa được bật ở đây. Hãy nhờ quản trị viên bật trong Cài đặt → Đăng nhập."
+    },
+    "signIn": {
+      "title": "Phương thức đăng nhập",
+      "description": "Bất kỳ phương thức nào cũng đăng nhập vào cùng tài khoản. Hãy giữ ít nhất một.",
+      "primary": "Chính",
+      "primaryDetail": "Định danh tài khoản của bạn · cũng là tài khoản game cho {{games}}",
+      "primaryDetailNoGames": "Định danh tài khoản của bạn",
+      "connected": "Đã kết nối",
+      "accountId": "ID",
+      "linkedOn": "Kết nối {{date}}",
+      "turnedOff": "đăng nhập bằng phương thức này đang bị tắt trên trang",
+      "notConnected": "Chưa kết nối",
+      "connect": "Kết nối",
+      "remove": "Gỡ",
+      "lastMethod": "Đây là cách đăng nhập duy nhất của bạn. Hãy kết nối phương thức khác trước.",
+      "removeTitle": "Gỡ {{provider}}?",
+      "removeBody": "Bạn sẽ không đăng nhập được bằng {{provider}} nữa. Bạn có thể kết nối lại sau.",
+      "removed": "Đã gỡ {{provider}}",
+      "removeFailed": "Không gỡ được phương thức đăng nhập này",
+      "linked": "Đã kết nối {{provider}}",
+      "taken": "Tài khoản {{provider}} đó đã được kết nối với một tài khoản khác trên trang này.",
+      "linkFailed": "Không kết nối được {{provider}}. Hãy thử lại.",
+      "localLabel": "Đăng nhập quản trị (tên người dùng + mật khẩu)",
+      "localDetail": "Tên người dùng {{username}}"
+    },
+    "changePassword": {
+      "button": "Đổi mật khẩu",
+      "title": "Đổi mật khẩu của bạn",
+      "current": "Mật khẩu hiện tại",
+      "new": "Mật khẩu mới",
+      "repeat": "Nhập lại mật khẩu mới",
+      "totp": "Mã xác thực",
+      "mismatch": "Hai mật khẩu mới không khớp",
+      "save": "Đổi mật khẩu",
+      "cancel": "Hủy",
+      "done": "Đã đổi mật khẩu",
+      "failed": "Không đổi được mật khẩu",
+      "totpNeeded": "Hãy nhập thêm mã từ ứng dụng xác thực.",
+      "tooLong": "Mật khẩu mới quá dài"
+    },
+    "reauth": {
+      "title": "Xác nhận mật khẩu quản trị",
+      "body": "Nhập mật khẩu của {{username}} trước khi thay đổi cách đăng nhập.",
+      "password": "Mật khẩu",
+      "totp": "Mã xác thực",
+      "confirm": "Xác nhận",
+      "failed": "Sai mật khẩu hoặc mã",
+      "totpNeeded": "Hãy nhập thêm mã từ ứng dụng xác thực."
+    },
+    "merge": {
+      "title": "Gộp tài khoản?",
+      "body": "Tài khoản Steam này đã có người chơi trên trang. Gộp vào tài khoản quản trị của bạn?",
+      "explain": "Người chơi giữ nguyên trận và thống kê và trở thành quản trị viên. Đăng nhập quản trị và các phương thức đăng nhập đã kết nối sẽ chuyển sang người chơi đó.",
+      "matches_one": "Đã chơi {{count}} trận",
+      "matches_other": "Đã chơi {{count}} trận",
+      "confirm": "Gộp tài khoản",
+      "failed": "Không gộp được tài khoản"
+    },
+    "twoStep": {
+      "turnOn": "Bật hai bước",
+      "turnOff": "Tắt hai bước",
+      "isOn": "Xác minh hai bước đang bật",
+      "isOff": "Xác minh hai bước đang tắt",
+      "onTitle": "Bật xác minh hai bước",
+      "offTitle": "Tắt xác minh hai bước",
+      "offWarning": "Nếu không có, chỉ mật khẩu là đủ để vào tài khoản quản trị này.",
+      "password": "Mật khẩu",
+      "code": "Mã xác thực",
+      "codeNeeded": "Nhập mã từ ứng dụng xác thực của bạn.",
+      "failed": "Không tắt được",
+      "cancel": "Hủy",
+      "turnedOn": "Xác minh hai bước đang bật",
+      "turnedOff": "Xác minh hai bước đang tắt"
+    },
+    "passkeys": {
+      "title": "Khóa truy cập",
+      "description": "Đăng nhập ở trang đăng nhập quản trị bằng vân tay, khuôn mặt hoặc mã PIN thiết bị thay cho mật khẩu và mã.",
+      "add": "Thêm khóa truy cập",
+      "name": "Tên",
+      "nameHelp": "Một cái tên để phân biệt, như “MacBook” hoặc “Điện thoại”. Sau đó trình duyệt sẽ hỏi vân tay, khuôn mặt hoặc mã PIN.",
+      "continue": "Tiếp tục",
+      "added": "Đã thêm khóa truy cập",
+      "addFailed": "Không thêm được khóa truy cập",
+      "removed": "Đã gỡ {{name}}",
+      "removeFailed": "Không gỡ được khóa truy cập",
+      "lastUsed": "Dùng lần cuối {{date}}",
+      "addedOn": "Thêm {{date}}, chưa dùng",
+      "needsHttps": "Khóa truy cập cần trang chạy trên https (hoặc localhost). Hãy nhờ người vận hành đặt trang sau https."
+    },
+    "name": {
+      "title": "Tên hiển thị",
+      "description": "Hiển thị trên trang và trong game. Bạn có thể đổi mỗi ngày một lần.",
+      "lockedUntil": "Hiển thị trên trang và trong game. Bạn vừa đổi gần đây nên có thể đổi lại từ {{date}}.",
+      "label": "Tên",
+      "lengthHint": "{{min}}–{{max}} ký tự",
+      "badChars": "Không có dấu ngoặc kép, < hoặc >, hay ký tự điều khiển",
+      "promptTitle": "Bạn tên là gì?",
+      "promptBody": "Tên hiển thị trong game và trên trang.",
+      "notNow": "Để sau",
+      "save": "Lưu",
+      "saved": "Đã lưu tên. Máy chủ game sẽ dùng từ trận tiếp theo của bạn.",
+      "saveFailed": "Không lưu được tên của bạn"
+    }
+  },
+  "home": {
+    "title": "Trang chủ",
+    "greeting": "Chào {{name}}",
+    "greetingFallback": "Chào bạn",
+    "editGames": "Sửa game",
+    "vs": "vs",
+    "tbd": "Chưa xác định",
+    "openMatch": "Mở trận",
+    "connectToServer": "Kết nối máy chủ",
+    "matchStatus": {
+      "pending": "Đang chờ",
+      "ready": "Sẵn sàng",
+      "loaded": "Đã tải",
+      "live": "Trực tiếp",
+      "completed": "Đã kết thúc"
+    },
+    "yourTournaments": {
+      "title": "Giải đấu của bạn",
+      "empty": "Hiện bạn không tham gia giải nào."
+    },
+    "tournaments": {
+      "playingNow": "Đang thi đấu",
+      "waiting": "Đang chờ",
+      "eliminated": "Bị loại",
+      "finished": "Đã kết thúc",
+      "placement": "{{position}} trên {{total}}"
+    },
+    "openForYourGames": {
+      "title": "Đang mở cho game của bạn",
+      "browseAll": "Duyệt mọi giải đấu",
+      "empty": "Hiện không có giải mở cho game của bạn.",
+      "steamLinked": "Đã liên kết Steam",
+      "titleAll": "Giải đang mở",
+      "emptyAll": "Hiện không có giải nào đang mở."
+    },
+    "summary": {
+      "match": "Bạn có một trận đang chờ.",
+      "open_one": "{{count}} giải đang mở cho game bạn chơi.",
+      "open_other": "{{count}} giải đang mở cho game bạn chơi.",
+      "openAll_one": "{{count}} giải đang mở trên trang này.",
+      "openAll_other": "{{count}} giải đang mở trên trang này.",
+      "none": "Hiện không có gì cần bạn xử lý."
+    },
+    "yourGames": "Game bạn chơi",
+    "loading": "Đang tải trang chủ của bạn",
+    "nextMatch": "Trận tiếp theo của bạn",
+    "live": {
+      "title": "Đang diễn ra",
+      "count": "{{count}} đang chạy",
+      "chip": "Trực tiếp",
+      "matchesOn_one": "{{count}} trận đang diễn ra",
+      "matchesOn_other": "{{count}} trận đang diễn ra"
+    },
+    "quiet": {
+      "title": "Sắp tới",
+      "more": "Cũng sắp tới",
+      "next": "Tiếp theo"
+    },
+    "play": {
+      "title": "Chơi một trận ngay",
+      "quietTitle": "Rảnh rỗi? Chơi một trận.",
+      "hint": "Đấu xếp trận đưa bạn vào game ngay khi đủ người xếp hàng.",
+      "cta": "Vào hàng chờ"
+    },
+    "signup": {
+      "open": "Đang mở đăng ký",
+      "cta": "Đăng ký",
+      "short": "Đăng ký",
+      "view": "Xem",
+      "title": "Đăng ký",
+      "aside": "Sắp tới"
+    },
+    "champions": {
+      "title": "Nhà vô địch",
+      "aside": "Mới kết thúc",
+      "all": "Tất cả kết quả",
+      "won": "vô địch {{name}}",
+      "finished": "Đã kết thúc"
+    },
+    "lastTime": {
+      "title": "Lần trước",
+      "results": "Toàn bộ kết quả",
+      "second": "Hạng 2",
+      "third": "Hạng 3",
+      "champion": "Vô địch"
+    },
+    "teams": "Đội: {{count}}",
+    "none": "Chưa có giải đấu. Hãy quay lại sau.",
+    "allTournaments": "Tất cả giải đấu",
+    "empty": {
+      "soon": "Sắp có",
+      "heroTitle": "Chưa có giải đấu",
+      "heroHint": "Khi giải tiếp theo được công bố, giải sẽ hiện ở đây kèm ngày và đăng ký.",
+      "create": "Tạo giải đấu",
+      "nextTitle": "Không có kế hoạch nào khác",
+      "nextHint": "Giải tiếp theo sau giải này sẽ hiện ở đây.",
+      "signupTitle": "Không có giải để đăng ký",
+      "signupHint": "Các giải đang nhận đăng ký sẽ hiện ở đây.",
+      "slotTitle": "Còn chỗ cho một giải nữa",
+      "slotHint": "Một giải khác có thể đặt ở đây.",
+      "championTitle": "Chưa có nhà vô địch",
+      "championHint": "Nhà vô địch đầu tiên sẽ hiện ở đây."
+    },
+    "browse": {
+      "title": "Tìm người chơi và đội",
+      "hint": "Xem ai chơi ở đây, và tìm một đội để tham gia.",
+      "cta": "Duyệt người chơi"
+    },
+    "next": {
+      "label": {
+        "vetoTurn": "Đến lượt bạn veto",
+        "ready": "Trận của bạn đã sẵn sàng",
+        "warmup": "Khởi động",
+        "live": "Trực tiếp",
+        "paused": "Trận tạm dừng"
+      },
+      "opponent": "Đối thủ đang chọn",
+      "startsAt": "Bắt đầu lúc",
+      "untilVeto": "Đến lượt veto",
+      "untilMatch": "Đến trận",
+      "veto": "Veto",
+      "yourTurn": "Lượt của bạn",
+      "ban": "Cấm một bản đồ",
+      "pick": "Chọn một bản đồ",
+      "side": "Chọn một bên",
+      "theirTurn": "Lượt của họ",
+      "vetoOpen": "Veto đang mở",
+      "waiting": "Đang chờ",
+      "forServer": "Chờ máy chủ",
+      "join": "Vào",
+      "serverReady": "Máy chủ sẵn sàng",
+      "ready": "Sẵn sàng",
+      "mapRound": "{{map}} · H{{round}}",
+      "round": "Hiệp {{round}}",
+      "halftime": "Nghỉ giữa trận",
+      "nextMap": "Bản đồ tiếp theo",
+      "goVeto": "Đến veto",
+      "paused": "Tạm dừng",
+      "about": "~{{minutes}} phút",
+      "joinServer": "Vào máy chủ"
+    }
+  },
+  "browsePage": {
+    "title": "Duyệt giải đấu",
+    "searchPlaceholder": "Tìm theo tên, ban tổ chức hoặc địa điểm",
+    "searchLabel": "Tìm giải đấu",
+    "loading": "Đang tải giải đấu",
+    "loadError": "Không tải được giải đấu.",
+    "listLabel": "Giải đấu",
+    "createTournament": "Tạo giải đấu",
+    "teamsCount_one": "{{count}} đội",
+    "teamsCount_other": "{{count}} đội",
+    "filters": {
+      "allGames": "Mọi game",
+      "status": {
+        "all": "Mọi trạng thái",
+        "live": "Trực tiếp",
+        "registration_open": "Đang mở đăng ký",
+        "finished": "Đã kết thúc"
+      },
+      "where": {
+        "all": "Online và LAN",
+        "online": "Online",
+        "lan": "LAN"
+      },
+      "gameLabel": "Game",
+      "statusLabel": "Trạng thái",
+      "whereLabel": "Ở đâu"
+    },
+    "columns": {
+      "tournament": "Giải đấu",
+      "format": "Thể thức",
+      "when": "Khi nào"
+    },
+    "when": {
+      "starts": "Bắt đầu {{date}}",
+      "finished": "Đã kết thúc",
+      "finishedOn": "Kết thúc {{date}}",
+      "noDate": "Chưa có ngày"
+    },
+    "actions": {
+      "signUp": "Đăng ký",
+      "watch": "Mở",
+      "results": "Kết quả",
+      "youreIn": "Bạn đã tham gia"
+    },
+    "status": {
+      "live": "Trực tiếp"
+    },
+    "emptyNone": {
+      "title": "Chưa có giải đấu",
+      "description": "Khi trang này tổ chức giải, giải sẽ hiện ở đây.",
+      "descriptionAdmin": "Trang này chưa có giải đấu. Hãy tạo một giải, giải sẽ hiện ở đây."
+    },
+    "emptyFiltered": {
+      "title": "Không có giải đấu khớp bộ lọc",
+      "description": "Hãy thử game hoặc trạng thái khác, hoặc xóa bộ lọc.",
+      "clear": "Xóa bộ lọc"
+    },
+    "groups": {
+      "live": "Trực tiếp",
+      "soon": "Sắp tới",
+      "finished": "Đã kết thúc"
+    },
+    "showOlder_one": "Hiện {{count}} giải cũ hơn",
+    "showOlder_other": "Hiện {{count}} giải cũ hơn",
+    "mine": {
+      "label": "Giải đấu nào",
+      "all": "Tất cả",
+      "mine": "Của tôi"
+    },
+    "roundN": "Vòng {{n}}",
+    "entries": {
+      "teams_one": "{{count}} đội",
+      "teams_other": "{{count}} đội",
+      "teamsOf": "{{count}} / {{max}} đội",
+      "players_one": "{{count}} người chơi",
+      "players_other": "{{count}} người chơi",
+      "playersOf": "{{count}} / {{max}} người chơi"
+    }
+  },
+  "modulesPage": {
+    "title": "Mô-đun",
+    "subheading": "Những gì hệ thống này chạy được, và các game bạn đã thêm.",
+    "builtIn": "Có sẵn",
+    "loadFailed": "Không tải được các gói đã cài",
+    "removed": "Đã gỡ {{name}}",
+    "removeFailed": "Không gỡ được gói đó",
+    "installed": {
+      "title": "Mô-đun game",
+      "hint": "Mã biết cách điều hành một trận và cách kết quả được gửi về. Đi kèm ứng dụng."
+    },
+    "module": {
+      "cs2": {
+        "name": "Counter-Strike 2",
+        "hint": "Giao tiếp với máy chủ game của bạn: tải trận, đọc từng hiệp, ghi kết quả."
+      },
+      "manual-report": {
+        "name": "Báo cáo thủ công",
+        "hint": "Dành cho game không thể theo dõi tự động. Đội trưởng báo tỉ số và đối thủ xác nhận."
+      }
+    },
+    "packs": {
+      "title": "Gói game",
+      "hint": "Gói là một tệp mô tả một game — tên, ô hiển thị và cách báo kết quả. Gói không chứa mã và chạy trên một mô-đun ở trên.",
+      "empty": "Chưa có gói. Nhập một gói để thêm game không có sẵn trong hệ thống này.",
+      "runBy": "Chạy bằng {{engine}}",
+      "bundled": "Có sẵn trong Auto Tournament"
+    },
+    "import": {
+      "action": "Nhập gói",
+      "added": "Đã thêm {{name}}",
+      "updated": "Đã cập nhật {{name}}",
+      "failed": "Không nhập được gói đó",
+      "notJson": "Tệp đó không phải JSON nên không phải gói",
+      "tooLarge": "Tệp đó quá lớn để là một gói",
+      "noJson": "Chọn tệp .json của gói",
+      "missingIcon": "Gói này dùng {{file}} — hãy chọn cả tệp đó, hoặc chỉ nhập JSON nếu không cần ô hiển thị"
+    },
+    "confirmRemove": {
+      "title": "Gỡ {{name}}?",
+      "body": "Game sẽ biến mất khỏi trình thiết lập. Không có gì khác bị xóa, và nhập lại gói sẽ đưa game trở lại."
+    },
+    "browse": {
+      "action": "Duyệt",
+      "title": "Game bạn có thể thêm",
+      "hint": "Từ danh sách gói của cộng đồng. Không có gì được tải về cho đến khi bạn mở trang này.",
+      "add": "Thêm",
+      "update": "Cập nhật",
+      "installed": "Đã cài đặt",
+      "empty": "Danh sách chưa có game nào hệ thống này thêm được.",
+      "offline": "không truy cập được danh sách",
+      "staleWith": "Đang hiện danh sách gần nhất hệ thống này thấy — {{reason}}.",
+      "failed": "Không đọc được danh sách"
+    },
+    "pending": "Đang tải mô-đun game cho {{game}}…",
+    "pendingRoute": "Đang tải mô-đun của trang này…",
+    "notInstalled": {
+      "title": "Chưa cài mô-đun game cho {{game}}",
+      "body": "Các phần riêng của game trong giải này bị ẩn, và các trận không chạy được cho đến khi mô-đun được cài lại."
+    },
+    "code": {
+      "chip": "Mô-đun mã",
+      "hint": "Được cài trên ổ đĩa của máy chủ này bởi người vận hành.",
+      "noReason": "không có lý do",
+      "broken": "Mô-đun này bị lỗi: {{reason}}",
+      "status": {
+        "ok": "OK",
+        "incompatible": "Không tương thích",
+        "broken": "Bị lỗi",
+        "disabled": "Đã tắt"
+      },
+      "enable": "Bật",
+      "disable": "Tắt",
+      "enabled": "Đã bật {{name}}",
+      "disabled": "Đã tắt {{name}}",
+      "toggleFailed": "Không thay đổi được mô-đun đó",
+      "listFailed": "Không đọc được các mô-đun mã: {{reason}}",
+      "safeMode": "Chế độ an toàn: không mô-đun mã nào được tải trên trang này. Mở trang không có ?modules=off để tải lại.",
+      "slotFailed": "Mô-đun {{id}} bị lỗi ở đây. Trang Mô-đun cho biết lý do.",
+      "reload": {
+        "body": "Tải lại trang để tải hoặc gỡ mã của mô-đun.",
+        "action": "Tải lại"
+      },
+      "confirm": {
+        "title": "Bật {{name}}?",
+        "warningTitle": "Đây là một mô-đun mã.",
+        "warning": "Mô-đun chạy bên trong máy chủ Auto Tournament với toàn quyền truy cập cơ sở dữ liệu, tệp và khóa bí mật của bạn, và trong trình duyệt của mọi quản trị viên và người chơi mở trang mà nó vẽ, với quyền của họ. Auto Tournament không kiểm duyệt hay cách ly mô-đun mã. Chỉ bật khi bạn tin tác giả ngang với tin nền tảng này.",
+        "source": "Nguồn",
+        "onDisk": "Ổ đĩa của máy chủ này",
+        "version": "Phiên bản",
+        "clientApi": "Client API",
+        "serverApi": "Server API",
+        "none": "chưa khai báo",
+        "typeId": "Nhập {{id}} để bật."
+      },
+      "failure": {
+        "badEntry": "mã không được phục vụ từ {{prefix}}",
+        "noClientApi": "mô-đun không khai báo phạm vi client API; nền tảng này cung cấp {{platform}}",
+        "badClientApi": "phạm vi client API “{{range}}” không phải phạm vi semver",
+        "outOfRange": "được xây dựng cho client API {{range}}; nền tảng này cung cấp {{platform}}",
+        "notFound": "thiếu mã (HTTP 404)",
+        "httpError": "không tải được mã (HTTP {{status}})",
+        "notJavaScript": "mã được phục vụ dưới dạng {{contentType}}, không phải JavaScript",
+        "importFailed": "mã tải thất bại: {{error}}",
+        "timeout": "mã không tải xong trong {{seconds}} giây",
+        "sharedFailed": "nền tảng không chia sẻ được các gói với mô-đun: {{error}}",
+        "badExport": "mã không phải định nghĩa mô-đun: {{detail}}",
+        "idMismatch": "mã tự gọi là “{{id}}”, nhưng được cài với tên “{{expected}}”",
+        "idTaken": "“{{id}}” đã là một mô-đun có sẵn",
+        "render": "vị trí “{{slot}}” bị lỗi khi hiển thị: {{error}}"
+      }
+    },
+    "signInNeed": {
+      "body": "Người chơi {{game}} đăng nhập bằng {{provider}}, nhưng đăng nhập {{provider}} đang tắt. Họ không liên kết được tài khoản mà game cần.",
+      "action": "Bật"
+    },
+    "addons": {
+      "title": "Tiện ích bổ sung",
+      "hint": "Các tính năng bên cạnh game. Bật hoặc tắt có hiệu lực ngay.",
+      "open": "Mở",
+      "toggle": "Bật hoặc tắt {{name}}",
+      "toggleFailed": "Không thay đổi được tiện ích.",
+      "startFailed": "Đã bật, nhưng không khởi động được: {{error}}",
+      "notFound": "Không có tiện ích này.",
+      "off": "Tiện ích này đang tắt. Bật trong Mô-đun để thiết lập."
+    }
+  },
+  "catalog": {
+    "title": "Game",
+    "hint": "Mọi game hệ thống này chạy, và các game bạn có thể thêm. Gói game là dữ liệu; mô-đun mã được Auto Tournament ký. Cả hai cài bằng một cú nhấp, và các mục đánh dấu “Trong image này” không cần mạng.",
+    "search": "Tìm game",
+    "installedTitle": "Đã cài ({{count}})",
+    "availableTitle": "Có sẵn ({{count}})",
+    "empty": "Không có game phù hợp.",
+    "allInstalled": "Mọi thứ trong danh mục đã được cài.",
+    "noneInstalled": "Chưa cài game nào. Hãy cài các game bạn muốn tổ chức giải — người chơi chọn từ đó.",
+    "loadFailed": "Không đọc được danh mục game: {{reason}}",
+    "loadFailedFallback": "máy chủ không trả lời",
+    "retry": "Thử lại",
+    "failed": "{{name}}: {{reason}}",
+    "failedFallback": "thao tác thất bại",
+    "updateAll": {
+      "action": "Cập nhật tất cả ({{count}})",
+      "running": "Đang cập nhật…",
+      "done": "Đã cập nhật {{count}} game và mô-đun",
+      "summary": "Đã cập nhật {{updated}}, bỏ qua {{skipped}}, lỗi {{failed}}.",
+      "failedItem": "{{name}}: {{reason}}",
+      "failedFallback": "không cập nhật được tất cả"
+    },
+    "feed": {
+      "cache": "Đang hiện danh mục từ {{time}}: không truy cập được danh mục trực tuyến ({{reason}}). Game trong image này vẫn cài được không cần mạng.",
+      "none": "Không truy cập được danh mục trực tuyến ({{reason}}). Đang hiện các game trong image này; chúng cài được không cần mạng.",
+      "unknown": "không có lý do",
+      "cacheRefreshing": "Đang hiện danh mục từ {{time}} trong khi danh mục trực tuyến đang tải.",
+      "noneRefreshing": "Đang tải danh mục trực tuyến… Trong lúc chờ, đây là các game trong image này; chúng cài được không cần mạng.",
+      "reason": {
+        "timeout": "không trả lời kịp",
+        "unreachable": "không truy cập được",
+        "bad_response": "câu trả lời không phải danh mục",
+        "newer_schema": "được viết cho Auto Tournament mới hơn",
+        "too_large": "quá lớn",
+        "offline": "đã đặt CATALOG_OFFLINE",
+        "http": "trả lời bằng HTTP {{status}}"
+      }
+    },
+    "kind": {
+      "module": "Mô-đun mã"
+    },
+    "source": {
+      "snapshot": "Trong image này"
+    },
+    "state": {
+      "available": "Có sẵn",
+      "installed": "Đã cài",
+      "update-available": "Có bản cập nhật",
+      "disabled": "Đã tắt",
+      "broken": "Bị lỗi",
+      "incompatible": "Không tương thích",
+      "builtin": "Có sẵn",
+      "installing": "Đang cài…",
+      "working": "Đang xử lý…",
+      "restart": "Cần khởi động lại"
+    },
+    "action": {
+      "install": "Cài đặt",
+      "update": "Cập nhật lên {{version}}",
+      "enable": "Bật",
+      "disable": "Tắt",
+      "remove": "Gỡ",
+      "uninstall": "Gỡ cài đặt"
+    },
+    "done": {
+      "installed": "Đã cài {{name}}",
+      "updated": "Đã cập nhật {{name}}",
+      "enabled": "Đã bật {{name}}",
+      "disabled": "Đã tắt {{name}}",
+      "removed": "Đã gỡ {{name}}"
+    },
+    "reload": {
+      "body": "{{names}} đang chạy. Tải lại trang để dùng ở đây.",
+      "action": "Tải lại"
+    },
+    "restart": "Khởi động lại Auto Tournament để hoàn tất: {{names}}.",
+    "restartNow": {
+      "action": "Khởi động lại ngay",
+      "restarting": "Đang khởi động lại…",
+      "failed": "Không khởi động lại được",
+      "timeout": "Auto Tournament chưa chạy lại. Hãy kiểm tra container, rồi tải lại trang."
+    },
+    "confirmInstall": {
+      "title": "Cài {{name}}?",
+      "body": "Đây là mô-đun mã do Auto Tournament ký. Mô-đun chạy bên trong máy chủ này với quyền truy cập cơ sở dữ liệu và tệp của bạn, và trong trình duyệt của mọi người mở trang mà nó vẽ.",
+      "version": "Phiên bản {{version}}",
+      "from": "Từ {{source}}",
+      "fromRemote": "Auto Tournament trên GitHub",
+      "fromSnapshot": "bản sao trong image này (không cần mạng)"
+    },
+    "confirmUninstall": {
+      "title": "Gỡ cài đặt {{name}}?",
+      "body": "Các tệp của nó bị xóa. Dữ liệu — giải đấu, máy chủ, cài đặt — được giữ lại, và cài lại sẽ đưa nó trở lại.",
+      "packBody": "Game sẽ biến mất khỏi trình thiết lập. Không có gì khác bị xóa, và cài lại sẽ đưa game trở lại."
+    },
+    "welcome": {
+      "title": "Game trên hệ thống này",
+      "hint": "Bạn vận hành hệ thống này nên bạn chọn các game nó cung cấp. Người chơi chọn từ các game này."
+    },
+    "signedBy": "Ký bởi {{label}} (khóa {{keyId}})"
+  },
+  "matchmaking": {
+    "play": {
+      "title": "Chơi",
+      "subtitle": "Tìm một trận 5v5. Bạn được ghép với những người chờ lâu nhất, và nhóm của bạn luôn chơi cùng một đội.",
+      "unavailable": "Đấu xếp trận chưa mở trên trang này.",
+      "findTitle": "Tìm trận",
+      "findHelp": "Bạn có thể duyệt trang trong lúc chờ. Khi tìm thấy trận, bạn có 20 giây để chấp nhận.",
+      "searchingHelp": "Đang tìm. Thanh ở dưới cùng cho biết bạn đã chờ bao lâu.",
+      "find": "Tìm trận",
+      "leaderStarts": "Trưởng nhóm của bạn bắt đầu tìm trận.",
+      "cooldown": "Bạn đã từ chối hoặc bỏ lỡ một trận. Bạn có thể tìm lại sau {{minutes}} phút.",
+      "rating_one": "Điểm {{elo}} · {{count}} trận · thắng {{wins}}",
+      "rating_other": "Điểm {{elo}} · {{count}} trận · thắng {{wins}}",
+      "mode": "Chế độ",
+      "modeName": {
+        "5v5": "5v5",
+        "2v2": "2v2 Wingman",
+        "1v1": "1v1"
+      },
+      "inQueue_one": "{{count}} trong hàng chờ",
+      "inQueue_other": "{{count}} trong hàng chờ",
+      "partyTitle": "Nhóm của bạn",
+      "invite": "Mời",
+      "partyOf": "{{count}} trên {{max}}",
+      "you": "Bạn",
+      "selected": "Đã chọn",
+      "modeTitle": {
+        "5v5": "Cạnh tranh",
+        "2v2": "Wingman",
+        "1v1": "Đấu tay đôi"
+      },
+      "lookingTitle": "Đang tìm người chơi",
+      "seats": "{{count}} đang tìm · cần {{total}} cho một trận",
+      "leaveQueue": "Rời hàng chờ",
+      "level": "Cấp của bạn",
+      "xp": "{{into}} / {{next}} XP",
+      "ratingShort": "Điểm",
+      "recent": "Gần đây",
+      "noRecent": "Chưa có trận.",
+      "result": {
+        "win": "Thắng",
+        "loss": "Thua",
+        "draw": "Hòa"
+      },
+      "resultShort": {
+        "win": "T",
+        "loss": "B",
+        "draw": "H"
+      },
+      "backToMatch": "Quay lại trận của bạn",
+      "online_one": "{{count}} trực tuyến",
+      "online_other": "{{count}} trực tuyến",
+      "usuallyWait_one": "thường khoảng {{count}} phút",
+      "usuallyWait_other": "thường khoảng {{count}} phút",
+      "aboutWait_one": "khoảng {{count}} phút",
+      "aboutWait_other": "khoảng {{count}} phút",
+      "defaultPool": {
+        "5v5": "Active Duty",
+        "2v2": "Bản đồ Wingman",
+        "1v1": "Bản đồ Wingman"
+      },
+      "searchAnyone": "Ít người đang tìm: bạn sẽ được ghép với bất kỳ ai sẵn có ({{count}} đang tìm, cần {{total}})",
+      "searchRating": "Đang tìm trận sát điểm của bạn (±{{elo}}) · {{count}} đang tìm",
+      "botFill": "Lấp chỗ trống bằng bot",
+      "botFillUnrated": "Bot lấp chỗ trống · không tính điểm: không có điểm, XP hay vật phẩm rơi",
+      "searchRatingPlain": "Đang tìm trận sát điểm của bạn · {{count}} đang tìm",
+      "searchWidening": "Mở rộng tìm kiếm: ±{{elo}} · {{count}} đang tìm",
+      "searchAnyRating": "Đang tìm ở mọi mức điểm · {{count}} đang tìm",
+      "inTournament": "Bạn đang ở một giải đấu đang diễn ra ({{tournament}}), nên hiện không thể xếp hàng đấu xếp trận.",
+      "partyInTournament": "Đang ở một giải đấu đang diễn ra nên nhóm hiện không thể xếp hàng: {{names}}.",
+      "inMatch_one": "{{count}} đang trong trận",
+      "inMatch_other": "{{count}} đang trong trận"
+    },
+    "queue": {
+      "searching": "Đang tìm {{mode}}",
+      "cancel": "Dừng tìm"
+    },
+    "found": {
+      "title": "Đã tìm thấy trận",
+      "accept": "Chấp nhận",
+      "decline": "Từ chối",
+      "waiting": "Đang chờ những người khác",
+      "accepted": "{{accepted}} / {{total}} đã chấp nhận",
+      "secondsLeft_one": "Còn {{count}} giây",
+      "secondsLeft_other": "Còn {{count}} giây",
+      "subtitle": "{{mode}} · chấp nhận trong {{seconds}} giây"
+    },
+    "party": {
+      "title": "Nhóm",
+      "help": "Chơi với bạn bè: tạo nhóm và gửi liên kết cho họ. Tối đa 5 người, luôn cùng một đội.",
+      "create": "Tạo nhóm",
+      "members_one": "{{count}} người chơi trong nhóm của bạn",
+      "members_other": "{{count}} người chơi trong nhóm của bạn",
+      "inviteLink": "Liên kết mời",
+      "copy": "Sao chép",
+      "copied": "Đã sao chép liên kết mời",
+      "code": "Mã mời",
+      "join": "Vào",
+      "joined": "Bạn đã vào nhóm",
+      "leave": "Rời nhóm",
+      "disband": "Giải tán nhóm"
+    },
+    "room": {
+      "title": "Phòng trận",
+      "missing": "Trận này không tồn tại, hoặc bạn không có trong trận.",
+      "back": "Quay lại Chơi",
+      "team": "Đội {{n}}",
+      "status": {
+        "accepting": "đang chờ chấp nhận",
+        "ready": "mọi người đã chấp nhận",
+        "cancelled": "đã hủy"
+      },
+      "match": {
+        "pending": "Veto bản đồ: lần lượt cấm bản đồ cho đến khi còn một. Ai trong đội cũng nhấp được; lượt nhấp đầu tiên được tính.",
+        "ready": "Đang chờ máy chủ trống.",
+        "loaded": "Máy chủ đã sẵn sàng. Vào ngay.",
+        "live": "Trận đang diễn ra.",
+        "completed": "Trận đã kết thúc.",
+        "other": "Trận: {{status}}"
+      },
+      "pickedBy": "{{mode}} · vòng quay bản đồ đã chọn",
+      "pickedByVeto": "{{mode}} · được chọn qua veto",
+      "vs": "vs",
+      "you": "(bạn)",
+      "accepted": "đã chấp nhận",
+      "matchChat": "Trò chuyện trận",
+      "playAgain": "Chơi lại",
+      "fullScoreboard": "Bảng điểm đầy đủ",
+      "newSkin": "Skin mới",
+      "inventory": "Trang bị",
+      "victory": "Chiến thắng",
+      "defeat": "Thất bại",
+      "draw": "Hòa",
+      "inServer": "{{n}} trên {{total}} trong máy chủ",
+      "warmupRule": "Khởi động chờ đến khi đủ cả {{total}} người.",
+      "warmupRuleTimed": "Khởi động chờ đến khi đủ cả {{total}} người, hoặc hết {{minutes}} phút: khi đó bắt đầu với những người đang có mặt.",
+      "teamLetter": "Đội {{letter}}",
+      "sideFirst": "{{side}} trước",
+      "presence": {
+        "in": "Trong máy chủ",
+        "notYet": "Chưa vào"
+      },
+      "equip": "Trang bị",
+      "equipped": "Đã trang bị",
+      "equipFailed": "Không trang bị được",
+      "rematch": {
+        "title": "Tái đấu?",
+        "ask": "Cùng đội, trận mới. Câu trả lời của bạn tính cho cả nhóm. Nếu đa số đội bạn đồng ý, đội kia có 30 giây để chấp nhận.",
+        "yes": "Có, tái đấu",
+        "no": "Không, cảm ơn",
+        "button": "Tái đấu",
+        "offerTitle": "Đội kia muốn tái đấu",
+        "teamTitle": "Đội bạn muốn tái đấu",
+        "offerBody": "Cùng đội, trận mới. Đa số đội bạn phải đồng ý. Câu trả lời của bạn tính cho cả nhóm.",
+        "waitingOther": "Đang chờ đội kia… {{s}} giây",
+        "waitingTeam": "Đang chờ đội bạn… {{s}} giây",
+        "accepted": "Đã chấp nhận tái đấu. Đang mở trận mới…",
+        "refused": "Đã từ chối tái đấu."
+      }
+    },
+    "result": {
+      "title": "Kết quả",
+      "map": "Bản đồ {{n}}",
+      "rating": "Điểm",
+      "xp": "+{{xp}} XP · cấp {{level}}",
+      "levelProgress": "{{into}} trên {{next}} XP để lên cấp tiếp theo",
+      "xpReason": {
+        "completed": "Đã chơi",
+        "win": "Thắng",
+        "draw": "Hòa",
+        "performance": "Phong độ",
+        "first_win": "Trận thắng đầu tiên hôm nay",
+        "admin": "Quản trị"
+      },
+      "player": "Người chơi",
+      "commend": "Đánh giá",
+      "thumbsUp": "Thích",
+      "thumbsDown": "Không thích",
+      "thumbsUpFor": "Thích {{name}}",
+      "thumbsDownFor": "Không thích {{name}}",
+      "downReason": "Vì sao?",
+      "downTag": {
+        "toxic": "Độc hại",
+        "griefing": "Phá game",
+        "afk": "AFK hoặc rời trận",
+        "other": "Lý do khác"
+      },
+      "commendFailed": "Không lưu được",
+      "outcome": {
+        "win": "CHIẾN THẮNG",
+        "loss": "THẤT BẠI",
+        "draw": "HÒA"
+      },
+      "minutes_one": "{{count}} phút",
+      "minutes_other": "{{count}} phút",
+      "yourGame": "Trận của bạn",
+      "fullBoard": "Bảng điểm đầy đủ",
+      "hideBoard": "Ẩn bảng điểm"
+    },
+    "profile": {
+      "level": "Cấp {{level}}",
+      "xp": "{{xp}} XP",
+      "thumbsUp_one": "{{count}} lượt thích",
+      "thumbsUp_other": "{{count}} lượt thích",
+      "thumbsDown_one": "{{count}} lượt không thích",
+      "thumbsDown_other": "{{count}} lượt không thích",
+      "tag": {
+        "friendly": "Thân thiện",
+        "team_player": "Tinh thần đồng đội",
+        "leader": "Thủ lĩnh",
+        "good_comms": "Giao tiếp tốt",
+        "teacher": "Người thầy",
+        "good_sport": "Tinh thần thể thao",
+        "toxic": "Độc hại",
+        "griefing": "Phá game",
+        "unhelpful": "Không hỗ trợ",
+        "bad_sport": "Thiếu tinh thần thể thao",
+        "afk": "AFK hoặc rời trận",
+        "other": "Lý do khác"
+      },
+      "negativesPrivate": "Chỉ bạn và quản trị viên thấy những điều này.",
+      "history": "Trận đấu xếp trận",
+      "historyEmpty": "Chưa có trận đấu xếp trận.",
+      "win": "Thắng",
+      "loss": "Thua",
+      "draw": "Hòa",
+      "positivePercent": "{{percent}}% tích cực"
+    },
+    "leaderboard": {
+      "toLadder": "Bảng xếp hạng đấu xếp trận →",
+      "title": "Bảng xếp hạng",
+      "subtitle_one": "Người chơi có từ {{count}} trận trở lên trong 30 ngày qua.",
+      "subtitle_other": "Người chơi có từ {{count}} trận trở lên trong 30 ngày qua.",
+      "empty_one": "Chưa có ai. Chơi {{count}} trận trong 30 ngày để xuất hiện ở đây.",
+      "empty_other": "Chưa có ai. Chơi {{count}} trận trong 30 ngày để xuất hiện ở đây.",
+      "level": "Cấp",
+      "games": "Trận",
+      "winRate": "Thắng"
+    },
+    "admin": {
+      "title": "Hàng chờ (quản trị)",
+      "summary": "{{players}} đang tìm, {{lobbies}} trận đang mở",
+      "waited": "{{minutes}} phút",
+      "cooldowns": "Thời gian chờ phạt",
+      "until": "còn {{minutes}} phút",
+      "clear": "Xóa",
+      "cleared": "Đã xóa thời gian chờ phạt",
+      "clearFailed": "Không xóa được thời gian chờ phạt",
+      "kind": {
+        "decline": "đã từ chối",
+        "no_show": "đã bỏ lỡ một trận",
+        "abandon": "đã rời một trận"
+      },
+      "review": "Người chơi cần xem xét (không thích)",
+      "voters_one": "{{count}} người bình chọn",
+      "voters_other": "{{count}} người bình chọn"
+    },
+    "roulette": {
+      "rolling": "Đang chọn bản đồ…",
+      "picked": "Bản đồ: {{map}}"
+    }
+  },
+  "chat": {
+    "title": "Trò chuyện",
+    "close": "Đóng trò chuyện",
+    "tabsLabel": "Trò chuyện",
+    "tabMatch": "Trận",
+    "tabTeam": "Đội",
+    "tabParty": "Nhóm",
+    "tabDm": "Tin nhắn riêng",
+    "dmWho": "Chỉ hai bạn đọc được",
+    "placeholderDm": "Nhắn cho {{name}}",
+    "friends": "Bạn bè",
+    "messageFriend": "Nhắn cho {{name}}",
+    "matchWho": "Đội của bạn, {{title}} và quản trị viên",
+    "matchWhoAdmin": "Cả hai đội và quản trị viên",
+    "teamWho": "Mọi người trong {{team}}",
+    "partyWho": "Mọi người trong nhóm của bạn",
+    "placeholderMatch": "Nhắn cho cả hai đội và quản trị viên",
+    "placeholderTeam": "Nhắn cho đội của bạn",
+    "placeholderParty": "Nhắn cho nhóm của bạn",
+    "send": "Gửi",
+    "you": "Bạn",
+    "adminBadge": "QUẢN TRỊ",
+    "callAdmin": "Gọi quản trị viên",
+    "adminCallOpen": "Có một cuộc gọi quản trị viên đang mở ở đây",
+    "callAdminConfirmTitle": "Gọi quản trị viên?",
+    "callAdminConfirmBody": "Quản trị viên sẽ nhận thông báo và vào cuộc trò chuyện này. Chỉ gọi khi bạn cần giúp đỡ về trận.",
+    "adminCalled": "Đã gọi quản trị viên",
+    "callFailed": "Không gọi được quản trị viên",
+    "sendFailed": "Không gửi được tin nhắn",
+    "logLabel": "Trò chuyện: {{title}}",
+    "none": "Chưa có cuộc trò chuyện. Trận, đội và nhóm của bạn sẽ hiện ở đây.",
+    "empty": "Chưa có tin nhắn. Hãy chào một tiếng.",
+    "loading": "Đang tải tin nhắn",
+    "readOnlyImpersonating": "Bạn đang xem với tư cách người chơi khác. Hãy dừng giả danh để viết.",
+    "peekMatch": "Trận · {{title}}",
+    "peekTeam": "Đội",
+    "peekParty": "Nhóm",
+    "buttonUnread": "Trò chuyện, {{count}} chưa đọc",
+    "system": {
+      "vetoStarted": "Veto bắt đầu · {{team}} đi trước",
+      "vetoBan": "{{team}} cấm {{map}}",
+      "vetoReset": "Quản trị viên đã bắt đầu lại veto",
+      "vetoPick": "{{team}} chọn {{map}}",
+      "vetoSide": "{{team}} bắt đầu bên {{side}} trên {{map}}",
+      "vetoDone": "Veto xong · {{maps}}",
+      "serverReady": "Máy chủ sẵn sàng · {{map}} · vào từ trang trận",
+      "playerJoined": "{{name}} đã vào máy chủ · {{n}} người",
+      "playerLeft": "{{name}} đã rời máy chủ · {{n}} người",
+      "mapLive": "Bản đồ {{n}} đang diễn ra · {{map}}",
+      "mapResult": "Bản đồ {{n}} · {{map}} · {{team1}} {{s1}}–{{s2}} {{team2}}",
+      "seriesWon": "{{team}} thắng loạt trận {{a}}–{{b}}",
+      "adminCalled": "{{name}} đã gọi quản trị viên",
+      "adminClaimed": "{{name}} đã nhận cuộc gọi quản trị viên",
+      "adminResolved": "{{name}} đã xử lý cuộc gọi quản trị viên",
+      "timedOut": "hết giờ",
+      "remindAccount": "{{name}}: hãy đăng nhập bằng Steam một lần để thi đấu ở {{tournament}}.",
+      "remindGame": "{{name}}: hãy thêm game vào hồ sơ (Game bạn chơi) trước khi điểm danh cho {{tournament}}.",
+      "serverDown": "Máy chủ trận bị crash. Đang khôi phục…",
+      "serverBack": "Trận đã trở lại: bản đồ {{map}}, hiệp {{round}}. Hãy kết nối lại."
+    },
+    "party": {
+      "inviteCopied": "Đã sao chép liên kết mời",
+      "inviteFailed": "Không sao chép được liên kết",
+      "leader": "trưởng nhóm",
+      "invite": "Mời",
+      "queue": "Xếp hàng cùng nhau",
+      "leaveQueue": "Rời hàng chờ",
+      "searching": "Đang tìm trận",
+      "leaderQueues": "Trưởng nhóm bắt đầu tìm trận"
+    },
+    "back": "Quay lại",
+    "typing": {
+      "one": "{{name}} đang nhập…",
+      "two": "{{first}} và {{second}} đang nhập…",
+      "many": "{{count}} người đang nhập…"
+    },
+    "emoji": {
+      "open": "Emoji",
+      "title": "Chọn emoji",
+      "search": "Tìm emoji",
+      "none": "Không tìm thấy emoji",
+      "categories": {
+        "results": "Kết quả",
+        "recent": "Gần đây",
+        "smileys": "Mặt cười",
+        "gestures": "Bàn tay",
+        "people": "Con người",
+        "animals": "Thiên nhiên",
+        "food": "Đồ ăn và thức uống",
+        "activity": "Game và thể thao",
+        "travel": "Địa điểm",
+        "objects": "Đồ vật",
+        "symbols": "Biểu tượng"
+      }
+    }
+  },
+  "search": {
+    "open": "Tìm kiếm",
+    "placeholder": "Tìm trang, người chơi, đội, highlight…",
+    "placeholderAdmin": "Tìm trang, cài đặt, người chơi, đội, máy chủ…",
+    "hint": "Nhập ít nhất hai chữ cái. Ctrl K (⌘ K) hoặc / mở ô này từ bất cứ đâu.",
+    "none": "Không tìm thấy gì cho “{{q}}”.",
+    "versus": "{{team1}} vs {{team2}}",
+    "groups": {
+      "pages": "Trang và cài đặt",
+      "players": "Người chơi",
+      "teams": "Đội",
+      "tournaments": "Giải đấu",
+      "matches": "Trận đấu",
+      "highlights": "Highlight",
+      "maps": "Bản đồ",
+      "servers": "Máy chủ và máy",
+      "recorders": "Trình ghi hình"
+    },
+    "status": {
+      "setup": "Đang thiết lập",
+      "in_progress": "Đang diễn ra",
+      "completed": "Đã kết thúc"
+    },
+    "pages": {
+      "manage": "Quản lý",
+      "tournaments": "Giải đấu",
+      "newTournament": "Thiết lập giải đấu",
+      "playedMatches": "Tất cả trận",
+      "importMatch": "Nhập một trận",
+      "teams": "Đội",
+      "players": "Người chơi",
+      "reports": "Báo cáo",
+      "templates": "Mẫu",
+      "ratings": "Xếp hạng",
+      "modules": "Mô-đun",
+      "servers": "Máy chủ",
+      "maps": "Bản đồ và nhóm bản đồ",
+      "skins": "Skin",
+      "matchRules": "Luật trận",
+      "highlights": "Highlight",
+      "adminTools": "Hệ thống",
+      "settings": "Cài đặt",
+      "settingsSite": "Cài đặt: trang và email",
+      "settingsSignIn": "Cài đặt: nhà cung cấp đăng nhập",
+      "settingsPlayers": "Cài đặt: người chơi và quyền truy cập",
+      "settingsWebhooks": "Cài đặt: webhooks",
+      "settingsLicense": "Giấy phép",
+      "settingsMatchmaking": "Cài đặt: đấu xếp trận",
+      "settingsAdvanced": "Cài đặt: nâng cao",
+      "liveMatches": "Trận đang diễn ra"
+    },
+    "clips_one": "{{count}} clip",
+    "clips_other": "{{count}} clip",
+    "fieldLabel": "Tìm kiếm"
+  },
+  "highlightsPage": {
+    "recorderStats": "Gửi kết quả benchmark ẩn danh",
+    "recorderStatsHint": "Sau mỗi benchmark, trình ghi hình gửi cho trang web mẫu GPU và CPU, phiên bản và thời gian, cho bảng công khai về máy nào dựng nhanh đến đâu. Không có gì về trận hay người chơi. Việc ghi hình vẫn hoạt động như cũ khi tắt.",
+    "title": "Highlight",
+    "subtitle": "Clip highlight và reel từ mọi trận: những gì trình ghi hình tạo ra, nhạc nền của reel và các trình ghi hình của từng game.",
+    "tabs": {
+      "settings": "Cài đặt"
+    },
+    "perPlayer": {
+      "label": "Số clip mỗi người chơi mỗi bản đồ",
+      "helper": "1 đến 6. Càng nhiều clip thì highlight của một trận càng lâu xong."
+    },
+    "preset": {
+      "label": "Chất lượng video",
+      "smooth": "Mượt (khuyến nghị): tối đa 1080p, 240 fps",
+      "crisp": "Sắc nét: tối đa 1440p, 120 fps",
+      "lan": "LAN, tối đa: tối đa 4K, 240 fps",
+      "custom": "Tùy chỉnh",
+      "light": "Nhẹ: chỉ 720p, 60 fps"
+    },
+    "bitrate": {
+      "label": "Bitrate",
+      "auto": "Tự động (khuyến nghị)",
+      "option": "{{mbps}} Mbit/s"
+    },
+    "resolution": {
+      "label": "Độ phân giải cao nhất"
+    },
+    "fps": {
+      "label": "Tốc độ khung hình cao nhất",
+      "option": "{{fps}} fps"
+    },
+    "quality": {
+      "helper": "Trình ghi hình tạo mỗi clip và reel một lần, ở chất lượng cao nhất, rồi cắt ra các mức thấp hơn. Quay chậm vẫn mượt ở mọi tốc độ khung hình. Clip đã tạo giữ nguyên chất lượng cho đến khi được tạo lại."
+    },
+    "music": {
+      "label": "Nhạc nền reel",
+      "all": "Mọi bản nhạc ({{count}})",
+      "pick": "Chỉ những bản tôi chọn",
+      "off": "Không có nhạc",
+      "listen": "Nghe {{title}}",
+      "stop": "Dừng {{title}}",
+      "contentId": "YouTube Content ID",
+      "volume": "Âm lượng",
+      "byo": "Tự mang nhạc của bạn: thêm các bản nhạc bạn có quyền sử dụng. Auto Tournament không kèm bản nào. Trình phát phát một bản khác nhau bên cạnh mỗi reel, và bản tải xuống có thể kèm hoặc không kèm nhạc.",
+      "remove": "Gỡ {{title}}",
+      "removeConfirm": "Gỡ",
+      "keep": "Giữ",
+      "addTitle": "Thêm bản nhạc",
+      "chooseFile": "Chọn tệp",
+      "noFile": "Chưa chọn tệp (MP3, M4A, WAV…)",
+      "trackTitle": "Tên bài",
+      "artist": "Nghệ sĩ",
+      "genre": "Thể loại (nhóm trong menu)",
+      "source": "Nguồn (liên kết, để ghi công)",
+      "contentIdLabel": "Đã đăng ký YouTube Content ID (video tải lên kèm bản nhạc này có thể bị khiếu nại)",
+      "add": "Thêm bản nhạc",
+      "adding": "Đang thêm…",
+      "rights": "Chỉ thêm nhạc bạn có quyền dùng trong video. Âm lượng được cân bằng với các bản khác.",
+      "suggestions_one": "{{count}} bản nhạc hợp với reel trên Pixabay",
+      "suggestions_other": "{{count}} bản nhạc hợp với reel trên Pixabay",
+      "suggestionsHelp": "Mở một bản, tải về từ Pixabay theo giấy phép của bản đó, rồi thêm vào đây. Giấy phép cho phép bạn dùng trong video; không cho phép ai chia sẻ lại tệp.",
+      "link": "Hoặc liên kết đến tệp âm thanh",
+      "addLink": "Thêm từ liên kết"
+    },
+    "overlay": {
+      "label": "Lớp phủ",
+      "helper_one": "{{count}} clip có bản sạch. Vẽ lại sẽ đặt lại thẻ chú thích, kill feed và tên hiện tại lên trên, rồi tạo lại reel. Không cần CS2.",
+      "helper_other": "{{count}} clip có bản sạch. Vẽ lại sẽ đặt lại thẻ chú thích, kill feed và tên hiện tại lên trên, rồi tạo lại reel. Không cần CS2.",
+      "redraw": "Vẽ lại lớp phủ",
+      "pending_one": "{{count}} video đang chờ trình ghi hình",
+      "pending_other": "{{count}} video đang chờ trình ghi hình",
+      "failed_one": "{{count}} video không vẽ lại được",
+      "failed_other": "{{count}} video không vẽ lại được",
+      "keepClean": "Giữ bản sạch của clip",
+      "keepCleanHelper": "Mỗi clip cũng được lưu như khi ghi, không có thẻ hay kill feed. Reel sau đó được tạo từ clip sạch với lớp phủ riêng, và lớp phủ có thể vẽ lại. Tắt sẽ dùng khoảng một nửa dung lượng.",
+      "redrawFailed": "Không xếp hàng được việc vẽ lại."
+    },
+    "moved": "Cài đặt highlight, các trình ghi hình và cách thêm trình ghi hình giờ nằm ở trang riêng:",
+    "saved": "Đã lưu",
+    "saveFailed": "Không lưu được",
+    "reels": {
+      "title": "Kích thước reel",
+      "description": "Số clip trong mỗi reel. Càng nhiều clip thì reel càng dài và càng lâu tạo.",
+      "funnyPerPlayer": "Clip vui mỗi người chơi mỗi bản đồ",
+      "mapReelPerPlayer": "Clip mỗi người chơi trong reel bản đồ",
+      "seriesReelMax": "Clip trong reel loạt trận",
+      "seriesReelPerPlayer": "Clip mỗi người chơi trong reel loạt trận",
+      "teamReelPerPlayer": "Clip mỗi người chơi trong reel đội",
+      "tournamentReelMax": "Clip trong reel giải đấu",
+      "tournamentReelPerPlayer": "Clip mỗi người chơi trong reel giải đấu",
+      "range": "{{min}} đến {{max}}"
+    },
+    "minResolution": {
+      "label": "Độ phân giải thấp nhất"
+    },
+    "ladder": {
+      "title": "Chất lượng người xem có thể chọn",
+      "recordedAt": "Ghi ở {{quality}}",
+      "highest": "Cao nhất",
+      "lowest": "Điện thoại, kết nối chậm",
+      "rate": "≈{{mbps}} Mbit/s"
+    },
+    "cost": {
+      "single": "Ghi hình mất khoảng {{time}}× so với 1080p ở 120 fps. Ước tính.",
+      "withCuts": "Ghi hình mất khoảng {{time}}× so với 1080p ở 120 fps, và mọi mức chất lượng đều được giữ: khoảng {{storage}}× dung lượng. Ước tính."
+    },
+    "keepMasters": {
+      "label": "Giữ chất lượng cao nhất",
+      "always": "Luôn luôn",
+      "30": "Trong 30 ngày",
+      "7": "Trong 7 ngày",
+      "reels": "Cho đến khi tạo xong reel",
+      "helper": "Sau đó mức chất lượng tiếp theo thay thế và bản sạch bị xóa, giúp tiết kiệm nhiều dung lượng nhất. Video không còn chất lượng cao nhất sẽ không vẽ lại được lớp phủ hay ghép vào reel mới ở chất lượng đó; phải ghi lại."
+    },
+    "matchmaking": {
+      "minimumTitle": "Pha nào được làm thành clip",
+      "minimumDescription": "Cho mọi trận. Đấu xếp trận cũng chỉ giữ vài pha hay nhất, đặt bên dưới.",
+      "title": "Highlight đấu xếp trận",
+      "description": "Đấu xếp trận có rất nhiều trận. Chỉ giữ vài pha hay nhất của mỗi trận để trình ghi hình không bận cả ngày.",
+      "on": "Ghi highlight đấu xếp trận",
+      "onHelp": "Tắt: trận đấu xếp trận không có clip hay reel.",
+      "clips": "Clip mỗi trận",
+      "clipsHelp": "Pha hay nhất trước. Reel của người chơi được tạo từ cùng các clip.",
+      "all": "Tất cả",
+      "minKills": "Pha nhỏ nhất được giữ",
+      "minKillsHelp": "Các pha dưới mức này không bao giờ thành clip, kể cả khi còn chỗ.",
+      "kills": {
+        "2": "2 kill",
+        "3": "3 kill",
+        "4": "4 kill",
+        "5": "Ace"
+      },
+      "killsInline": {
+        "2": "2 kill",
+        "3": "3 kill",
+        "4": "4 kill",
+        "5": "một ace"
+      },
+      "clutch": "Clutch luôn được tính",
+      "clutchHelp": "Thắng 1vX được tính kể cả khi ít kill hơn pha nhỏ nhất.",
+      "summary": "Mỗi trận đấu xếp trận có {{clips}} từ {{kills}} trở lên.",
+      "summaryClutch": "Mỗi trận đấu xếp trận có {{clips}} từ {{kills}} trở lên, và mọi pha clutch.",
+      "summaryEvery": "mọi pha",
+      "summaryBest_one": "1 pha hay nhất của trận",
+      "summaryBest_other": "{{count}} pha hay nhất của trận"
+    }
+  },
+  "update": {
+    "available": "Auto Tournament {{latest}} đã ra mắt (bạn đang chạy {{running}}).",
+    "notes": "Có gì mới",
+    "module": "{{name}} {{version}} đã có (bạn đang chạy {{installed}}).",
+    "moduleProblem": "{{name}}: cập nhật không thành công. {{problem}}",
+    "openModules": "Mô-đun"
+  },
+  "licenseGate": {
+    "expiredTitle": "Giấy phép của nền tảng này đã hết hạn",
+    "expiredAdmin": "Thanh toán giấy phép đã quá hạn nên nền tảng đã dừng. Thanh toán sẽ bật lại ngay. Dữ liệu của bạn an toàn.",
+    "expiredPlayer": "Trận và đăng ký đang tạm dừng. Ban tổ chức đã được thông báo. Hãy quay lại sau.",
+    "pay": "Thanh toán trong bảng điều khiển ↗",
+    "settings": "Cài đặt giấy phép",
+    "fix": "Khắc phục ↗",
+    "pastDue": "Thanh toán giấy phép thất bại. Nền tảng sẽ dừng vào {{date}} nếu chưa thanh toán.",
+    "elsewhereTitle": "Khóa giấy phép này đang dùng ở bản cài đặt khác",
+    "elsewhereAdmin": "Một khóa giấy phép chỉ dùng cho một bản cài đặt Auto Tournament, và một bản cài đặt khác đang dùng khóa này. Hãy dán khóa riêng của bản cài đặt này, hoặc dùng “Move to another install” trong bảng điều khiển. Dữ liệu của bạn an toàn.",
+    "replacedTitle": "Khóa giấy phép này đã bị thay thế",
+    "replacedAdmin": "Một khóa mới đã được tạo cho giấy phép này trong bảng điều khiển nên khóa cũ đã ngừng hoạt động. Hãy dán khóa mới vào cài đặt giấy phép. Dữ liệu của bạn an toàn.",
+    "openConsole": "Mở bảng điều khiển ↗",
+    "pasteKey": "Dán khóa mới",
+    "replacedSoon": "Một khóa mới đã được tạo cho giấy phép này trong bảng điều khiển. Hãy dán vào cài đặt giấy phép: khóa này sẽ ngừng vào {{date}}."
+  },
+  "matchAdmin": {
+    "openChat": "Mở trò chuyện",
+    "resetVeto": "Bắt đầu lại veto",
+    "resetVetoTitle": "Bắt đầu lại veto?",
+    "resetVetoBody": "Mọi lượt cấm, chọn và chọn bên từ trước đến giờ sẽ bị xóa và các đội bắt đầu veto lại. Cả hai đội thấy điều này trong trò chuyện trận.",
+    "vetoReset": "Veto bắt đầu lại",
+    "vetoResetFailed": "Không bắt đầu lại được veto"
+  },
+  "addressMismatch": {
+    "open": "Mở {{host}}",
+    "text": "Bạn đang ở {{current}}, nhưng trang này được thiết lập cho {{host}}: đăng nhập Steam, email và máy chủ game dùng địa chỉ đó."
+  },
+  "siteFooter": {
+    "support": "Ủng hộ dự án",
+    "trademarks": "Counter-Strike, CS2 và Steam là nhãn hiệu của Valve Corporation. Tên các game khác là nhãn hiệu của chủ sở hữu tương ứng. Auto Tournament không liên kết với hay được Valve hoặc bất kỳ nhà phát hành game nào bảo trợ."
+  },
+  "discordNotice": {
+    "link": "Liên kết tài khoản Discord để bot chuyển bạn vào kênh thoại của đội và tìm thấy bạn trong kênh của đội.",
+    "linkAction": "Liên kết Discord",
+    "join": "Tham gia máy chủ Discord của chúng tôi. Kênh của đội và thẻ trận ở đó.",
+    "joinAction": "Tham gia máy chủ"
+  }
+}

@@ -1,0 +1,198 @@
+{
+  "adminToolsPage": {
+    "description": "Khôi phục trận đấu và nhật ký ứng dụng của trang này.",
+    "recovery": {
+      "title": "Khôi phục trận đấu",
+      "description": "Nếu API hoặc máy chủ bị khởi động lại trong giải và trạng thái trận có vẻ không khớp (ví dụ trận kẹt trước khi bắt đầu hoặc thiếu tỉ số trực tiếp), bạn có thể chạy khôi phục thủ công. Hệ thống sẽ hỏi mọi máy chủ về báo cáo trận hiện tại, đồng bộ lại tỉ số/giai đoạn và cấu hình lại webhook và tải lên demo nếu có thể.",
+      "button": "Chạy khôi phục trận đấu ngay",
+      "success": "Đã khôi phục trận đấu xong.",
+      "error": "Khôi phục trận đấu thất bại.",
+      "failedTrigger": "Không chạy được khôi phục trận đấu. Hãy thử lại."
+    },
+    "monitoring": {
+      "title": "Giám sát và nhật ký",
+      "appLogs": "Nhật ký ứng dụng"
+    },
+    "logs": {
+      "loadFailed": "Không tải được nhật ký",
+      "levelAll": "Tất cả",
+      "auto": "Tự động",
+      "refresh": "Làm mới nhật ký",
+      "empty": "Không có nhật ký để hiển thị",
+      "footer": "Hiển thị {{count}} mục nhật ký gần nhất",
+      "footerAutoRefresh": "Hiển thị {{count}} mục nhật ký gần nhất (tự làm mới)"
+    }
+  },
+  "servers": {
+    "allocation": {
+      "title": "Đang chờ máy chủ trống",
+      "waiting": "Trận này sẽ tự bắt đầu khi có máy chủ trống. Số máy chủ cần:",
+      "nextPass": "Lần phân bổ tiếp theo sau {{seconds}} giây"
+    }
+  },
+  "adminMatchControls": {
+    "title": "Điều khiển quản trị",
+    "noServer": "Trận này chưa được gán máy chủ",
+    "unavailable": "Trận này chưa được gán máy chủ nên không dùng được điều khiển quản trị.",
+    "unknownAction": "Thao tác không xác định",
+    "commandFailed": "Không chạy được lệnh",
+    "confirm": "Xác nhận",
+    "execute": "Thực hiện",
+    "close": "Đóng",
+    "tipLabel": "Mẹo cho quản trị viên:",
+    "tip": "Hãy dùng các điều khiển này cẩn thận khi trận đang diễn ra. Một số thao tác như “{{endMatch}}” và “{{restartMatch}}” không thể hoàn tác.",
+    "sections": {
+      "matchControl": "Điều khiển trận",
+      "advanced": "Thao tác nâng cao"
+    },
+    "actions": {
+      "pause": {
+        "button": "Tạm dừng",
+        "tooltip": "Quản trị viên tạm dừng – người chơi không thể bỏ tạm dừng",
+        "title": "Tạm dừng trận",
+        "description": "Lệnh này buộc tạm dừng trận. Người chơi không thể bỏ tạm dừng."
+      },
+      "unpause": {
+        "button": "Tiếp tục",
+        "tooltip": "Tiếp tục trận sau khi tạm dừng",
+        "title": "Tiếp tục trận",
+        "description": "Lệnh này buộc trận tiếp tục."
+      },
+      "swap": {
+        "button": "Đổi bên",
+        "tooltip": "Đưa hai đội sang bên đối diện (CT ↔ T)",
+        "title": "Đổi bên",
+        "description": "Lệnh này đổi bên của hai đội (CT/T)."
+      },
+      "restartRound": {
+        "button": "Chơi lại hiệp",
+        "tooltip": "Chơi lại hiệp hiện tại từ đầu (đặt lại tiền)",
+        "title": "Chơi lại hiệp",
+        "description": "Lệnh này chơi lại hiệp hiện tại."
+      },
+      "skipVeto": {
+        "button": "Bỏ qua veto",
+        "tooltip": "Bỏ qua veto bản đồ và tải bản đồ đầu tiên ngay",
+        "title": "Bỏ qua veto",
+        "description": "Lệnh này bỏ qua giai đoạn veto và bắt đầu trận."
+      },
+      "endWarmup": {
+        "button": "Kết thúc khởi động",
+        "tooltip": "Kết thúc khởi động và bắt đầu trận (hiệp dao hoặc thi đấu)",
+        "title": "Kết thúc khởi động",
+        "description": "Lệnh này kết thúc khởi động và bắt đầu trận."
+      },
+      "endMatch": {
+        "button": "Kết thúc trận",
+        "tooltip": "Kết thúc trận ngay và ghi tỉ số cuối cùng",
+        "title": "Kết thúc trận",
+        "description": "Lệnh này buộc kết thúc trận. Hãy dùng cẩn thận!"
+      },
+      "restartMatch": {
+        "button": "Bắt đầu lại trận",
+        "tooltip": "Kết thúc và tải lại trận từ đầu – mọi tiến trình sẽ mất",
+        "title": "Bắt đầu lại trận",
+        "description": "Lệnh này kết thúc trận và tải lại từ đầu. Mọi tiến trình sẽ mất!"
+      },
+      "reallocateServer": {
+        "button": "Phân bổ lại máy chủ",
+        "tooltip": "Chuyển trận sang máy chủ khác (khôi phục trước khi bắt đầu)",
+        "tooltipUnavailable": "Chỉ dùng cho trận đã sẵn sàng/đã tải (không dùng khi đang thi đấu)",
+        "title": "Phân bổ lại máy chủ",
+        "description": "Lệnh này chuyển trận sang một máy chủ trống khác và tải lại. Dùng khi máy chủ hiện tại đã cũ hoặc người chơi không kết nối được. Không dùng được khi trận đang diễn ra."
+      },
+      "forceCancel": {
+        "button": "Buộc hủy",
+        "tooltip": "Hủy trận kể cả khi máy chủ ngoại tuyến – giải phóng máy chủ đã phân bổ",
+        "title": "Buộc hủy trận",
+        "description": "⚠️ Lệnh này hủy trận kể cả khi máy chủ ngoại tuyến. Trận được đánh dấu đã hoàn tất và máy chủ được giải phóng. Thao tác này không thể hoàn tác."
+      }
+    },
+    "inputs": {
+      "restoreBackup": {
+        "button": "Khôi phục bản sao lưu",
+        "tooltip": "Tải bản sao lưu hiệp đã lưu – khôi phục tiền và vị trí",
+        "title": "Khôi phục bản sao lưu",
+        "label": "Số hiệp cần khôi phục"
+      },
+      "addTime": {
+        "button": "Thêm thời gian",
+        "tooltip": "Kéo dài thời gian hiệp hiện tại (hữu ích khi tạm dừng kỹ thuật)",
+        "title": "Thêm thời gian hiệp",
+        "label": "Số giây cần thêm"
+      },
+      "broadcast": {
+        "button": "Thông báo",
+        "tooltip": "Gửi tin nhắn đến mọi người chơi trên máy chủ",
+        "title": "Thông báo tin nhắn",
+        "label": "Tin nhắn cần thông báo"
+      }
+    },
+    "success": {
+      "pause": "Đã tạm dừng trận",
+      "unpause": "Đã tiếp tục trận",
+      "swap": "Đã đổi bên",
+      "skipVeto": "Đã bỏ qua giai đoạn veto",
+      "restartRound": "Đã chơi lại hiệp",
+      "endMatch": "Đã kết thúc trận",
+      "endWarmup": "Đã kết thúc khởi động",
+      "startMatch": "Đã bắt đầu trận",
+      "restoreBackup": "Đã khôi phục bản sao lưu về hiệp {{round}}",
+      "addTime_one": "Đã thêm {{count}} giây vào thời gian hiệp",
+      "addTime_other": "Đã thêm {{count}} giây vào thời gian hiệp",
+      "broadcast": "Đã gửi tin nhắn đến máy chủ",
+      "restartMatch": "Đã bắt đầu lại trận (kết thúc và tải lại)",
+      "reallocateServer": "Đã chuyển trận sang máy chủ khác",
+      "forceCancel": "Đã hủy trận",
+      "default": "Đã chạy lệnh"
+    },
+    "hold": {
+      "title": "Tạm giữ thay vì xử thắng",
+      "description": "Trong khi tạm giữ, trận không được tải hoặc bắt đầu và không ai được xử thắng. Khi trận diễn ra, các đội lại có đủ thời gian.",
+      "reason": "Lý do (hiển thị cho quản trị viên)",
+      "delay": "Hoãn {{minutes}} phút",
+      "holdUntilReleased": "Tạm giữ cho đến khi gỡ",
+      "release": "Gỡ ngay",
+      "restartCountdown": "Đếm ngược lại từ đầu",
+      "heldUntil": "Tạm giữ đến {{time}}",
+      "heldIndefinitely": "Tạm giữ cho đến khi gỡ",
+      "tournamentPaused": "Giải đấu đang tạm dừng",
+      "heldDone": "Trận đang tạm giữ",
+      "delayedDone": "Trận bị hoãn {{minutes}} phút",
+      "releasedDone": "Đã gỡ tạm giữ trận",
+      "restartedDone": "Đã đếm ngược lại: các đội lại có đủ thời gian",
+      "failed": "Không thay đổi được tạm giữ"
+    }
+  },
+  "adminCalls": {
+    "header": "Gọi quản trị viên ({{count}})",
+    "title": "{{player}} đang gọi quản trị viên",
+    "justNow": "vừa xong",
+    "minutesAgo": "{{count}} phút trước",
+    "hoursAgo": "{{count}} giờ trước",
+    "spectator": "Khán giả",
+    "team1": "Đội 1",
+    "team2": "Đội 2",
+    "noMessage": "Không có tin nhắn",
+    "unknownPlayer": "Người chơi không xác định",
+    "unknownServer": "Máy chủ không xác định",
+    "matchMap": "{{match}}, bản đồ {{map}}",
+    "openMatch": "Mở trận",
+    "openServers": "Máy chủ",
+    "resolve": "Đánh dấu đã xử lý",
+    "resolveAll": "Xử lý tất cả",
+    "resolveFailed": "Không đánh dấu được cuộc gọi là đã xử lý. Hãy thử lại.",
+    "matchUnavailable": "Không mở được trận đó.",
+    "enableSound": "Bật âm thanh",
+    "mute": "Tắt tiếng",
+    "unmute": "Bật tiếng",
+    "minimize": "Thu nhỏ",
+    "show": "Hiện",
+    "openChat": "Mở trò chuyện",
+    "claim": "Nhận xử lý",
+    "release": "Bỏ nhận",
+    "claimedBy": "{{name}} đã nhận xử lý",
+    "claimedByYou": "Bạn đã nhận xử lý",
+    "anAdmin": "một quản trị viên"
+  }
+}
