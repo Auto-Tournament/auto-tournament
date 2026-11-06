@@ -1,0 +1,82 @@
+{
+  "compatPage": {
+    "title": "Ready Up 互換性",
+    "subtitle": "Ready Up プラグインが最新の Counter-Strike 2 アップデートで動作するかどうか。CS2 の新しいビルドごとに自動でチェックされます。",
+    "live": "ライブ",
+    "offline": "再接続中…",
+    "loading": "互換性を読み込み中",
+    "loadError": "互換性を読み込めませんでした。しばらくしてからもう一度お試しください。",
+    "disabledTitle": "ここでは利用できません",
+    "disabledDescription": "このサイトは Ready Up の互換性を公開していません。",
+    "emptyTitle": "まだ結果がありません",
+    "emptyDescription": "互換性チェックの報告はまだありません。報告が届くとこのページは自動で更新されます。",
+    "checkedAgo": "{{time}} にチェック",
+    "viewRun": "実行を表示",
+    "factsLabel": "チェック内容",
+    "facts": {
+      "patch": "CS2 パッチ",
+      "buildid": "ビルド ID",
+      "readyup": "Ready Up",
+      "stage": "ステージ"
+    },
+    "overall": {
+      "pass": "互換性あり",
+      "warn": "互換性あり(警告あり)",
+      "fail": "互換性なし",
+      "checking": "チェック中…",
+      "no_verdict": "判定なし"
+    },
+    "overallHint": {
+      "pass": "このビルドで、すべてのコンポーネントがチェックに合格しました。",
+      "warn": "このビルドで Ready Up は動作しますが、いくつかのチェックは詳しく確認が必要です。",
+      "fail": "このビルドでは少なくとも1つのコンポーネントが動作しません。サーバーの更新は待ってください。",
+      "checking": "このビルドのチェックを実行中です。",
+      "no_verdict": "前回のチェックでは判定できませんでした。"
+    },
+    "status": {
+      "pass": "合格",
+      "warn": "警告",
+      "fail": "不合格",
+      "pending": "保留中",
+      "checking": "チェック中…"
+    },
+    "stage": {
+      "static": "静的解析",
+      "selftest": "セルフテスト",
+      "live": "ライブサーバー"
+    },
+    "state": {
+      "queued": "待機中",
+      "checking": "チェック中",
+      "pass": "合格",
+      "warn": "警告あり",
+      "fail": "不合格",
+      "no_verdict": "判定なし"
+    },
+    "trigger": {
+      "build_change": "新しい CS2 ビルド",
+      "surface_change": "ゲームデータの変更",
+      "code_change": "Ready Up の変更",
+      "nightly": "夜間",
+      "release": "Ready Up リリース",
+      "manual": "手動"
+    },
+    "kind": {
+      "signature": "シグネチャ",
+      "rtti": "RTTI",
+      "vtable": "仮想テーブル",
+      "hook_site": "フック箇所",
+      "layout": "メモリレイアウト",
+      "schema": "スキーマ",
+      "event": "ゲームイベント",
+      "selftest": "セルフテスト",
+      "livetest": "ライブテスト"
+    },
+    "componentsTitle": "コンポーネント",
+    "checksSummary": "{{total}} 件中 {{passed}} 件のチェックに合格",
+    "noChecks": "まだ報告されたチェックはありません",
+    "failures": "失敗",
+    "historyTitle": "最近の実行",
+    "historyItem": "CS2 {{patch}} · ビルド {{buildid}}"
+  }
+}
