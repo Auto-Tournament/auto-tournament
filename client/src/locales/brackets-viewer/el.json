@@ -1,0 +1,124 @@
+{
+  "origin-hint": {
+    "seed": "Seed {{position}}",
+    "winner-bracket": "Ηττημένος του $t(abbreviations.winner-bracket) {{round}}.{{position}}",
+    "winner-bracket-semi-final": "Ηττημένος του ημιτελικού $t(abbreviations.winner-bracket) {{position}}",
+    "winner-bracket-final": "Ηττημένος του τελικού $t(abbreviations.winner-bracket)",
+    "consolation-final": "Ηττημένος του ημιτελικού {{position}}",
+    "grand-final": "Νικητής του τελικού $t(abbreviations.loser-bracket)",
+    "double-elimination-consolation-final-opponent-1": "Ηττημένος του ημιτελικού $t(abbreviations.loser-bracket) 1",
+    "double-elimination-consolation-final-opponent-2": "Ηττημένος του τελικού $t(abbreviations.loser-bracket)"
+  },
+  "match-label": {
+    "default": "Αγώνας {{matchNumber}}",
+    "winner-bracket": "$t(abbreviations.winner-bracket)",
+    "loser-bracket": "$t(abbreviations.loser-bracket)",
+    "standard-bracket": "$t(abbreviations.match)",
+    "standard-bracket-semi-final": "Ημιτελικός {{matchNumber}}",
+    "standard-bracket-final": "Τελικός",
+    "double-elimination": "{{matchPrefix}} {{roundNumber}}.{{matchNumber}}",
+    "double-elimination-semi-final": "{{matchPrefix}} Ημιτελικός {{matchNumber}}",
+    "double-elimination-final": "{{matchPrefix}} Τελικός",
+    "consolation-final": "Μικρός τελικός",
+    "grand-final-single": "Μεγάλος τελικός",
+    "grand-final": "$t(abbreviations.grand-final) Γύρος {{roundNumber}}",
+    "match-game": "Παιχνίδι {{gameNumber}}"
+  },
+  "match-status": {
+    "locked": "Κλειδωμένος",
+    "waiting": "Αναμονή",
+    "ready": "Έτοιμος",
+    "running": "Σε εξέλιξη",
+    "completed": "Ολοκληρώθηκε",
+    "archived": "Αρχειοθετήθηκε"
+  },
+  "abbreviations": {
+    "win": "Ν",
+    "loss": "Η",
+    "forfeit": "Ε",
+    "position": "Θ",
+    "seed": "#",
+    "winner-bracket": "ΠΤ",
+    "loser-bracket": "ΚΤ",
+    "match": "Αγ",
+    "grand-final": "ΜΤ"
+  },
+  "ranking": {
+    "rank": {
+      "text": "#",
+      "tooltip": "Κατάταξη"
+    },
+    "id": {
+      "text": "Όνομα",
+      "tooltip": "Όνομα"
+    },
+    "played": {
+      "text": "Α",
+      "tooltip": "Αγώνες"
+    },
+    "wins": {
+      "text": "$t(abbreviations.win)",
+      "tooltip": "Νίκες"
+    },
+    "draws": {
+      "text": "Ι",
+      "tooltip": "Ισοπαλίες"
+    },
+    "losses": {
+      "text": "$t(abbreviations.loss)",
+      "tooltip": "Ήττες"
+    },
+    "forfeits": {
+      "text": "$t(abbreviations.forfeit)",
+      "tooltip": "Εγκαταλείψεις"
+    },
+    "scoreFor": {
+      "text": "ΥΠ",
+      "tooltip": "Υπέρ"
+    },
+    "scoreAgainst": {
+      "text": "ΚΑ",
+      "tooltip": "Κατά"
+    },
+    "scoreDifference": {
+      "text": "+/-",
+      "tooltip": "Διαφορά"
+    },
+    "points": {
+      "text": "Βαθ.",
+      "tooltip": "Βαθμοί"
+    }
+  },
+  "common": {
+    "bye": "ΡΕΠΟ",
+    "best-of-x": "Bo{{x}}",
+    "consolation": "Παρηγορητικός",
+    "group-name": "Όμιλος {{groupNumber}}",
+    "group-name-winner-bracket": "Πάνω ταμπλό",
+    "group-name-loser-bracket": "Κάτω ταμπλό",
+    "round-name": "Γύρος {{roundNumber}}",
+    "round-name-final": "Τελικός γύρος",
+    "round-name-winner-bracket": "$t(abbreviations.winner-bracket) Γύρος {{roundNumber}}",
+    "round-name-winner-bracket-final": "$t(abbreviations.winner-bracket) Τελικός γύρος",
+    "round-name-loser-bracket": "$t(abbreviations.loser-bracket) Γύρος {{roundNumber}}",
+    "round-name-loser-bracket-final": "$t(abbreviations.loser-bracket) Τελικός γύρος"
+  },
+  "form-creator": {
+    "stage-name-label": "Όνομα φάσης",
+    "stage-name-placeholder": "Δώσε ένα όνομα στη φάση σου",
+    "stage-selector-label": "Διάλεξε φάση",
+    "team-label": "Ονόματα ομάδων",
+    "team-label-placeholder": "Λίστα ονομάτων ομάδων χωρισμένων με κόμμα (πρέπει να είναι 2^n)",
+    "team-count": "Ή αριθμός ομάδων",
+    "team-count-placeholder": "Πόσες ομάδες θέλεις;",
+    "group-label": "Πόσοι όμιλοι;",
+    "group-placeholder": "Πόσους ομίλους θέλεις;",
+    "seed-order-label": "Πώς θέλεις να ταξινομήσεις τα seeds;",
+    "double-elimination-seed-order-placeholder": "Σειρά seeds για διπλό αποκλεισμό, χωρισμένη με κόμμα",
+    "round-robin-mode-label": "Ποια λειτουργία «όλοι με όλους» προτιμάς;",
+    "consolation-final-label": "Μικρός τελικός",
+    "skip-first-round-label": "Παράλειψη πρώτου γύρου",
+    "grand-final-type-label": "Τύπος μεγάλου τελικού",
+    "submit": "Δημιουργία"
+  }
+}
