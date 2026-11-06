@@ -1,0 +1,12 @@
+{
+  "devAccountSwitcher": {
+    "tooltip": "Trocar de conta (dev)",
+    "adminTest": "Admin (teste)",
+    "playerA": "Jogador A (dev)",
+    "playerB": "Jogador B (dev)",
+    "playerC": "Jogador C (dev)",
+    "newPlayer": "Novo jogador (primeira visita) (dev)",
+    "signOut": "Sair",
+    "disabled": "O login de teste está desativado neste servidor"
+  }
+}

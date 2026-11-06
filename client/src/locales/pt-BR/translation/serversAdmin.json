@@ -1,0 +1,199 @@
+{
+  "adminToolsPage": {
+    "description": "Recuperação de partidas e o log do app deste site.",
+    "recovery": {
+      "title": "Recuperação de partidas",
+      "description": "Se a API ou os servidores foram reiniciados durante um torneio e o estado das partidas parece fora de sincronia (por exemplo, partidas travadas antes de começar ou sem placar ao vivo), você pode iniciar uma recuperação manual. Ela pede a todos os servidores o relatório atual da partida, ressincroniza placares e fases e reconfigura webhooks e uploads de demo quando possível.",
+      "button": "Rodar recuperação de partidas agora",
+      "success": "Recuperação de partidas concluída.",
+      "error": "A recuperação de partidas falhou.",
+      "failedTrigger": "Falha ao iniciar a recuperação de partidas. Tente de novo."
+    },
+    "monitoring": {
+      "title": "Monitoramento e logs",
+      "appLogs": "Logs do aplicativo"
+    },
+    "logs": {
+      "loadFailed": "Falha ao carregar os logs",
+      "levelAll": "Todos",
+      "auto": "Auto",
+      "refresh": "Atualizar logs",
+      "empty": "Nenhum log para mostrar",
+      "footer": "Mostrando as {{count}} entradas de log mais recentes",
+      "footerAutoRefresh": "Mostrando as {{count}} entradas de log mais recentes (atualização automática)"
+    }
+  },
+  "servers": {
+    "allocation": {
+      "title": "Esperando um servidor disponível",
+      "waiting": "Esta partida começa automaticamente quando houver servidores livres. Servidores necessários:",
+      "nextPass": "Próxima tentativa de alocação em {{seconds}} s"
+    }
+  },
+  "adminMatchControls": {
+    "title": "Controles de admin",
+    "noServer": "Nenhum servidor atribuído a esta partida",
+    "unavailable": "Nenhum servidor está atribuído a esta partida, então os controles de admin estão indisponíveis.",
+    "unknownAction": "Ação desconhecida",
+    "commandFailed": "Falha ao executar o comando",
+    "confirm": "Confirmar",
+    "execute": "Executar",
+    "close": "Fechar",
+    "tipLabel": "Dica de admin:",
+    "tip": "Use estes controles com cuidado durante partidas ao vivo. Algumas ações, como \"{{endMatch}}\" e \"{{restartMatch}}\", não podem ser desfeitas.",
+    "sections": {
+      "matchControl": "Controle da partida",
+      "advanced": "Ações avançadas"
+    },
+    "actions": {
+      "pause": {
+        "button": "Pausar",
+        "tooltip": "Pausa de admin – os jogadores não podem despausar",
+        "title": "Pausar partida",
+        "description": "Força a pausa da partida. Os jogadores não podem despausar."
+      },
+      "unpause": {
+        "button": "Despausar",
+        "tooltip": "Retomar a partida após uma pausa",
+        "title": "Despausar partida",
+        "description": "Força a retomada da partida."
+      },
+      "swap": {
+        "button": "Trocar times de lado",
+        "tooltip": "Passar os times para os lados opostos (CT ↔ T)",
+        "title": "Trocar times de lado",
+        "description": "Troca os lados dos times (CT/T)."
+      },
+      "restartRound": {
+        "button": "Reiniciar round",
+        "tooltip": "Reiniciar o round atual do começo (zera a economia)",
+        "title": "Reiniciar round",
+        "description": "Reinicia o round atual."
+      },
+      "skipVeto": {
+        "button": "Pular veto",
+        "tooltip": "Pular o veto de mapas e carregar o primeiro mapa na hora",
+        "title": "Pular veto",
+        "description": "Pula a fase de veto e inicia a partida."
+      },
+      "endWarmup": {
+        "button": "Encerrar aquecimento",
+        "tooltip": "Encerrar o aquecimento e iniciar a partida (round de faca ou ao vivo)",
+        "title": "Encerrar aquecimento",
+        "description": "Encerra o aquecimento e inicia a partida."
+      },
+      "endMatch": {
+        "button": "Encerrar partida",
+        "tooltip": "Encerrar a partida na hora e registrar o placar final",
+        "title": "Encerrar partida",
+        "description": "Força o fim da partida. Use com cuidado!"
+      },
+      "restartMatch": {
+        "button": "Reiniciar partida",
+        "tooltip": "Encerrar e recarregar a partida do zero – todo o progresso é perdido",
+        "title": "Reiniciar partida",
+        "description": "Encerra a partida e a recarrega do início. Todo o progresso será perdido!"
+      },
+      "reallocateServer": {
+        "button": "Realocar servidor",
+        "tooltip": "Mover a partida para outro servidor (recuperação antes de começar)",
+        "tooltipUnavailable": "Disponível só para partidas prontas/carregadas (não durante o jogo)",
+        "title": "Realocar servidor",
+        "description": "Move a partida para outro servidor livre e a recarrega. Use se o servidor atual estiver desatualizado ou os jogadores não conseguirem conectar. Não permitido durante uma partida ao vivo."
+      },
+      "forceCancel": {
+        "button": "Forçar cancelamento",
+        "tooltip": "Cancelar a partida mesmo com o servidor offline – libera o servidor alocado",
+        "title": "Forçar cancelamento da partida",
+        "description": "⚠️ Cancela a partida mesmo com o servidor offline. A partida é marcada como concluída e o servidor é liberado. Esta ação não pode ser desfeita."
+      }
+    },
+    "inputs": {
+      "restoreBackup": {
+        "button": "Restaurar backup",
+        "tooltip": "Carregar um backup de round salvo – restaura economia e posições",
+        "title": "Restaurar backup",
+        "label": "Número do round a restaurar"
+      },
+      "addTime": {
+        "button": "Adicionar tempo",
+        "tooltip": "Estender o tempo do round atual (útil em pausas técnicas)",
+        "title": "Adicionar tempo ao round",
+        "label": "Segundos a adicionar"
+      },
+      "broadcast": {
+        "button": "Aviso",
+        "tooltip": "Enviar uma mensagem para todos os jogadores no servidor",
+        "title": "Mensagem de aviso",
+        "label": "Mensagem a enviar"
+      }
+    },
+    "success": {
+      "pause": "Partida pausada",
+      "unpause": "Partida despausada",
+      "swap": "Times trocaram de lado",
+      "skipVeto": "Fase de veto pulada",
+      "restartRound": "Round reiniciado",
+      "endMatch": "Partida encerrada",
+      "endWarmup": "Aquecimento encerrado",
+      "startMatch": "Partida iniciada",
+      "restoreBackup": "Backup restaurado para o round {{round}}",
+      "addTime_one": "{{count}} segundo adicionado ao tempo do round",
+      "addTime_other": "{{count}} segundos adicionados ao tempo do round",
+      "broadcast": "Mensagem enviada ao servidor",
+      "restartMatch": "Partida reiniciada (encerrada e recarregada)",
+      "reallocateServer": "Partida movida para outro servidor",
+      "forceCancel": "Partida cancelada",
+      "default": "Comando executado",
+      "addTime_many": "{{count}} segundos adicionados ao tempo do round"
+    },
+    "hold": {
+      "title": "Segurar em vez de dar W.O.",
+      "description": "Enquanto segurada, a partida não é carregada nem iniciada e ninguém ganha por W.O. Quando ela seguir, os times têm o tempo inteiro de novo.",
+      "reason": "Motivo (visível para admins)",
+      "delay": "Adiar {{minutes}} min",
+      "holdUntilReleased": "Segurar até liberar",
+      "release": "Liberar agora",
+      "restartCountdown": "Reiniciar a contagem",
+      "heldUntil": "Segurada até {{time}}",
+      "heldIndefinitely": "Segurada até ser liberada",
+      "tournamentPaused": "O torneio está pausado",
+      "heldDone": "Partida segurada",
+      "delayedDone": "Partida adiada {{minutes}} min",
+      "releasedDone": "Partida liberada",
+      "restartedDone": "Contagem reiniciada: os times têm o tempo inteiro de novo",
+      "failed": "Não foi possível mudar a retenção"
+    }
+  },
+  "adminCalls": {
+    "header": "Chamadas de admin ({{count}})",
+    "title": "{{player}} está chamando um admin",
+    "justNow": "agora mesmo",
+    "minutesAgo": "há {{count}} min",
+    "hoursAgo": "há {{count}} h",
+    "spectator": "Espectador",
+    "team1": "Time 1",
+    "team2": "Time 2",
+    "noMessage": "Sem mensagem",
+    "unknownPlayer": "Jogador desconhecido",
+    "unknownServer": "Servidor desconhecido",
+    "matchMap": "{{match}}, mapa {{map}}",
+    "openMatch": "Abrir partida",
+    "openServers": "Servidores",
+    "resolve": "Marcar como resolvida",
+    "resolveAll": "Resolver todas",
+    "resolveFailed": "Não foi possível marcar a chamada como resolvida. Tente de novo.",
+    "matchUnavailable": "Não foi possível abrir essa partida.",
+    "enableSound": "Ativar som",
+    "mute": "Silenciar",
+    "unmute": "Ativar som",
+    "minimize": "Minimizar",
+    "show": "Mostrar",
+    "openChat": "Abrir chat",
+    "claim": "Assumir",
+    "release": "Liberar",
+    "claimedBy": "Assumida por {{name}}",
+    "claimedByYou": "Assumida por você",
+    "anAdmin": "um admin"
+  }
+}
