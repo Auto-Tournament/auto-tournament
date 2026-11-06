@@ -1,0 +1,203 @@
+{
+  "templatesPage": {
+    "header": {
+      "createFromTournament": "Creează șablon din turneu"
+    },
+    "errors": {
+      "load": "Șabloanele nu au putut fi încărcate"
+    },
+    "delete": {
+      "title": "Șterge șablonul",
+      "message": "Sigur vrei să ștergi șablonul „{{name}}”? Această acțiune nu poate fi anulată.",
+      "success": "Șablonul „{{name}}” a fost șters",
+      "error": "Șablonul nu a putut fi șters"
+    },
+    "update": {
+      "success": "Șablonul „{{name}}” a fost actualizat",
+      "error": "Șablonul nu a putut fi actualizat"
+    },
+    "createFromTemplate": {
+      "errors": {
+        "inProgressOrCompleted": "Nu poți crea un turneu din șablon cât timp un turneu este în desfășurare sau încheiat. Șterge sau resetează mai întâi turneul curent.",
+        "alreadyExists": "Există deja un turneu. Șterge sau resetează turneul curent înainte de a crea unul nou dintr-un șablon."
+      },
+      "button": "Creează turneu din șablon"
+    },
+    "edit": {
+      "title": "Editează șablonul",
+      "nameLabel": "Numele șablonului",
+      "descriptionLabel": "Descriere (opțional)",
+      "typeLabel": "Tipul turneului",
+      "formatLabel": "Formatul meciurilor",
+      "mapPool": {
+        "title": "Set de hărți",
+        "selectLabel": "Alege un set de hărți",
+        "customOption": "Personalizat",
+        "selectedLabel": "Hărți selectate ({{count}}):",
+        "vetoWarning": "Formatele cu veto (BO1/BO3/BO5) necesită exact 7 hărți. Selectate acum: {{count}}",
+        "chooseMaps": "Alege hărți..."
+      },
+      "save": "Salvează"
+    },
+    "emptyTitle": "Încă nu există șabloane",
+    "emptyDescription": "Salvează configurația unui turneu ca șablon din pagina Turneu, apoi pornește de aici turnee noi din el."
+  },
+  "saveTemplateModal": {
+    "title": "Salvează ca șablon",
+    "nameLabel": "Numele șablonului",
+    "namePlaceholder": "Eliminare directă cu 8 echipe BO3",
+    "descriptionLabel": "Descriere (opțional)",
+    "descriptionPlaceholder": "Turneu săptămânal cu eliminare directă, 8 echipe",
+    "saveButton": "Salvează șablonul",
+    "errors": {
+      "nameRequired": "Numele șablonului este obligatoriu",
+      "saveFailed": "Șablonul nu a putut fi salvat"
+    }
+  },
+  "eloTemplatesPage": {
+    "errors": {
+      "load": "Șabloanele de rating nu au putut fi încărcate"
+    },
+    "header": {
+      "createTemplate": "Creează șablon",
+      "importJson": "Importă din JSON"
+    },
+    "empty": {
+      "title": "Nu există șabloane de rating",
+      "description": "Creează primul șablon pentru a stabili cum influențează statisticile jucătorilor ajustările ELO",
+      "action": "Creează șablon"
+    },
+    "delete": {
+      "title": "Șterge șablonul de rating",
+      "message": "Sigur vrei să ștergi „{{name}}”? Această acțiune nu poate fi anulată.",
+      "success": "Șablonul „{{name}}” a fost șters",
+      "error": "Șablonul nu a putut fi șters",
+      "defaultProtected": "Șablonul implicit „pure-win-loss” nu poate fi șters."
+    },
+    "import": {
+      "success_one": "A fost importat {{count}} șablon de rating",
+      "success_other": "Au fost importate {{count}} de șabloane de rating",
+      "success_few": "Au fost importate {{count}} șabloane de rating"
+    },
+    "weights": {
+      "noAdjustmentsPure": "Fără ajustări pe statistici (doar victorie/înfrângere)"
+    },
+    "card": {
+      "enabled": "Activat",
+      "disabled": "Dezactivat",
+      "default": "Implicit",
+      "adjustment": {
+        "none": "Ajustare pe statistici per meci: niciuna (0; ELO doar din rezultat)",
+        "uncapped": "Ajustare pe statistici per meci: nelimitată (folosește cu grijă)",
+        "range": "Interval de ajustare pe statistici per meci: {{min}} până la {{max}} ELO",
+        "noMin": "fără minim",
+        "noMax": "fără maxim"
+      },
+      "tooltips": {
+        "edit": "Editează șablonul",
+        "delete": "Șterge șablonul"
+      },
+      "weightsTitle": "Ponderi statistici:",
+      "limitsTitle": "Limite de ajustare:",
+      "minAdjustment": "Min: {{value}}",
+      "maxAdjustment": "Max: {{value}}"
+    },
+    "importModal": {
+      "title": "Importă șabloane de rating din JSON",
+      "introTitle": "Lipește mai jos JSON-ul cu definițiile șabloanelor de rating.",
+      "introBody": "Format așteptat: un array de șabloane cu name, description opțional, enabled, weights, maxAdjustment și minAdjustment. Dacă omiți id, acesta este generat din nume.",
+      "jsonLabel": "Date JSON",
+      "validJsonTitle": "✓ JSON valid!",
+      "previewTitle": "Previzualizare:",
+      "previewButton": "Previzualizare",
+      "importButton": "Importă șabloanele",
+      "validJsonBody_one": "A fost găsit {{count}} șablon.",
+      "validJsonBody_other": "Au fost găsite {{count}} de șabloane.",
+      "validJsonBody_few": "Au fost găsite {{count}} șabloane."
+    },
+    "editor": {
+      "titleEdit": "Editează șablonul de rating",
+      "titleCreate": "Creează șablon de rating",
+      "info": "Stabilește cum influențează statisticile individuale ale jucătorilor ajustările ELO. Ponderile se aplică după ce OpenSkill calculează schimbarea de bază a ELO (victorie/înfrângere). Ponderile pozitive cresc ELO, cele negative îl scad.",
+      "nameLabel": "Numele șablonului",
+      "nameDefaultLocked": "Numele șablonului implicit nu poate fi schimbat",
+      "descriptionLabel": "Descriere",
+      "descriptionPlaceholder": "Descriere opțională a scopului acestui șablon",
+      "enabledLabel": "Activat",
+      "weights": {
+        "title": "Ponderi statistici",
+        "subtitle": "Ajustează glisorul pentru fiecare statistică. Valoarea 0 înseamnă că statistica respectivă nu ajustează nimic."
+      },
+      "limits": {
+        "title": "Limite de ajustare (opțional)",
+        "subtitle": "Stabilește ajustarea ELO maximă și minimă per meci, pentru a evita schimbările extreme.",
+        "maxLabel": "Ajustare maximă",
+        "maxHelper": "Ajustarea ELO pozitivă maximă per meci",
+        "minLabel": "Ajustare minimă",
+        "minHelper": "Ajustarea ELO negativă maximă per meci"
+      },
+      "errors": {
+        "nameRequired": "Numele șablonului este obligatoriu"
+      },
+      "create": {
+        "success": "Șablonul „{{name}}” a fost creat",
+        "error": "Șablonul nu a putut fi creat"
+      },
+      "update": {
+        "success": "Șablonul „{{name}}” a fost actualizat",
+        "error": "Șablonul nu a putut fi actualizat"
+      },
+      "buttons": {
+        "saving": "Se salvează...",
+        "update": "Actualizează",
+        "create": "Creează"
+      }
+    },
+    "stats": {
+      "kills": {
+        "label": "Kill-uri",
+        "description": "Numărul de kill-uri per meci"
+      },
+      "deaths": {
+        "label": "Decese",
+        "description": "Numărul de decese per meci (de obicei pondere negativă)"
+      },
+      "assists": {
+        "label": "Asisturi",
+        "description": "Numărul de asisturi per meci"
+      },
+      "flashAssists": {
+        "label": "Asisturi cu flash",
+        "description": "Numărul de asisturi cu flash per meci"
+      },
+      "headshotKills": {
+        "label": "Kill-uri cu headshot",
+        "description": "Numărul de kill-uri cu headshot per meci"
+      },
+      "damage": {
+        "label": "Damage",
+        "description": "Damage total făcut per meci"
+      },
+      "utilityDamage": {
+        "label": "Damage din utilitare",
+        "description": "Damage făcut cu utilitare (grenade)"
+      },
+      "kast": {
+        "label": "KAST %",
+        "description": "Procentul de runde cu kill, asist, supraviețuire sau trade"
+      },
+      "mvps": {
+        "label": "MVP-uri",
+        "description": "Numărul de premii MVP per meci"
+      },
+      "score": {
+        "label": "Scor",
+        "description": "Scorul meciului (combină mai mulți factori)"
+      },
+      "adr": {
+        "label": "ADR",
+        "description": "Damage mediu pe rundă"
+      }
+    }
+  }
+}

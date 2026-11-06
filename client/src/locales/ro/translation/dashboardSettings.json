@@ -1,0 +1,1001 @@
+{
+  "dashboard": {
+    "title": "Admin",
+    "restartTournament": {
+      "button": "Repornește meciurile turneului",
+      "restarting": "Se repornesc meciurile turneului…",
+      "intro": "🔄 Asta repornește toate meciurile active și le reîncarcă pe servere.",
+      "actionsTitle": "Acțiuni:",
+      "actionEndMatch": "Rulează at_endmatch pe toate serverele cu meciuri încărcate/live",
+      "actionReset": "Readuce meciurile în starea „ready”",
+      "actionReallocate": "Realocă meciurile pe serverele disponibile",
+      "actionReload": "Reîncarcă configurațiile meciurilor pe serverele de joc",
+      "hint": "Folosește asta dacă meciurile sunt blocate sau au nevoie de un nou început.",
+      "confirm": "Repornește turneul"
+    },
+    "header": {
+      "brand": "Auto Tournament",
+      "version": "Site-ul tău Auto Tournament · versiunea {{version}}",
+      "unknownVersion": "dev",
+      "createTournament": "Creează turneu"
+    },
+    "setup": {
+      "title": "Termină configurarea",
+      "openSettings": "Deschide setările",
+      "signIn": "Furnizor de conectare",
+      "game": "Instalează un joc (CS2) din Module",
+      "discordBot": "Adaugă propriul bot Discord (tokenul lui), ca site-ul să le poată trimite jucătorilor mesaje private despre meciurile lor"
+    },
+    "tournaments": {
+      "title": "Turneu",
+      "empty": "Acest site rulează câte un turneu pe rând. Creează-l și apare aici, în Explorează și pe pagina lui de eveniment.",
+      "status": {
+        "setup": "Ciornă",
+        "ready": "Înscriere",
+        "inProgress": "Live",
+        "completed": "Încheiat"
+      },
+      "state": {
+        "teams_one": "{{count}} echipă",
+        "teams_other": "{{count}} de echipe",
+        "entered_one": "{{count}} echipă înscrisă",
+        "entered_other": "{{count}} de echipe înscrise",
+        "draftTeams_one": "Ciornă · {{count}} echipă selectată",
+        "draftTeams_other": "Ciornă · {{count}} de echipe selectate",
+        "draftEmpty": "Ciornă · încă nicio echipă",
+        "live_one": "{{count}} meci live",
+        "live_other": "{{count}} de meciuri live",
+        "completed_one": "{{count}} echipă a participat",
+        "completed_other": "{{count}} de echipe au participat",
+        "winner": "Câștigător: {{name}}",
+        "teamsPlayers_one": "{{count}} jucător",
+        "teamsPlayers_other": "{{count}} de jucători",
+        "enteredPlayers_one": "{{count}} jucător înscris",
+        "enteredPlayers_other": "{{count}} de jucători înscriși",
+        "draftTeamsPlayers_one": "Ciornă · {{count}} jucător",
+        "draftTeamsPlayers_other": "Ciornă · {{count}} de jucători",
+        "completedPlayers_one": "{{count}} jucător a participat",
+        "completedPlayers_other": "{{count}} de jucători au participat",
+        "teams_few": "{{count}} echipe",
+        "entered_few": "{{count}} echipe înscrise",
+        "draftTeams_few": "Ciornă · {{count}} echipe selectate",
+        "live_few": "{{count}} meciuri live",
+        "completed_few": "{{count}} echipe au participat",
+        "teamsPlayers_few": "{{count}} jucători",
+        "enteredPlayers_few": "{{count}} jucători înscriși",
+        "draftTeamsPlayers_few": "Ciornă · {{count}} jucători",
+        "completedPlayers_few": "{{count}} jucători au participat"
+      },
+      "actions": {
+        "manage": "Administrează",
+        "continueSetup": "Continuă configurarea",
+        "view": "Vezi"
+      },
+      "eventPage": "Pagina evenimentului",
+      "emptyTitle": "Încă niciun turneu"
+    },
+    "site": {
+      "title": "Site",
+      "players": {
+        "label": "Jucători",
+        "hint": "Toți cei care s-au conectat"
+      },
+      "teams": {
+        "label": "Echipe",
+        "hint": "Cluburi și loturi"
+      },
+      "templates": {
+        "label": "Șabloane",
+        "hint": "Configurații reutilizabile"
+      },
+      "ratings": {
+        "label": "Ratinguri",
+        "hint": "Cum se calculează ratingurile"
+      },
+      "settings": {
+        "label": "Setări",
+        "hint": "Conectare, chei API"
+      },
+      "adminTools": {
+        "label": "Sistem",
+        "hint": "Recuperarea meciurilor și jurnale"
+      },
+      "disputes": {
+        "label": "Dispute",
+        "hint": "Rezultate de stabilit"
+      },
+      "modules": {
+        "label": "Module",
+        "hint": "Jocurile pe care le rulează această instanță"
+      }
+    },
+    "people": {
+      "title": "Oameni",
+      "open": "Deschide",
+      "players": "Jucători",
+      "admins": "Admini",
+      "signedInThisWeek": "Conectați săptămâna aceasta"
+    },
+    "loading": "Se încarcă pagina principală de admin"
+  },
+  "settingsPage": {
+    "email": {
+      "title": "E-mail",
+      "short": "Trimite confirmări de adresă, resetări de parolă și e-mailuri despre turnee.",
+      "enabled": "Trimite e-mailuri",
+      "enabledOn": "Pornit. E-mailurile pleacă de la {{from}}.",
+      "enabledOff": "Oprit. Nu se trimite nimic.",
+      "needsServer": "Configurează mai întâi serverul de mai jos.",
+      "turnedOn": "E-mailul este pornit",
+      "turnedOff": "E-mailul este oprit",
+      "server": "Server de e-mail",
+      "serverNone": "Neconfigurat",
+      "host": "Server SMTP",
+      "port": "Port",
+      "security": "Securitate",
+      "securityStarttls": "STARTTLS (de obicei portul 587)",
+      "securityTls": "TLS (de obicei portul 465)",
+      "securityNone": "Niciuna (doar într-o rețea de încredere)",
+      "username": "Nume de utilizator",
+      "password": "Parolă",
+      "passwordKept": "Lasă gol ca să păstrezi parola salvată",
+      "passwordSaved": "Salvat",
+      "fromAddress": "Adresa expeditorului",
+      "fromAddressHelp": "Adresa de la care pleacă e-mailurile. Furnizorul tău de e-mail trebuie să o permită.",
+      "fromName": "Numele expeditorului",
+      "fromNameHelp": "Opțional. Apare ca expeditor al e-mailului, de ex. NTLAN.",
+      "siteUrl": "Adresa site-ului",
+      "siteUrlHelp": "Linkurile din e-mailuri pornesc de aici, de ex. https://cs.example.com.",
+      "siteUrlHelpDefault": "Linkurile din e-mailuri pornesc de aici. Gol: {{url}}.",
+      "save": "Salvează",
+      "saved": "Setările de e-mail au fost salvate",
+      "loadError": "Setările de e-mail nu au putut fi încărcate",
+      "saveError": "Setările de e-mail nu au putut fi salvate",
+      "test": "E-mail de test",
+      "testShort": "Trimite unul ca să verifici că setările funcționează.",
+      "testTo": "Trimite către",
+      "testSend": "Trimite testul",
+      "testNeedsOn": "Pornește trimiterea (și salvează serverul) înainte de test.",
+      "testSent": "Trimis către {{to}}. Verifică inboxul și folderul de spam.",
+      "testFailed": "E-mailul de test nu a putut fi trimis"
+    },
+    "title": "Setări",
+    "intro": "Setările proprii ale platformei. Fiecare joc își păstrează setările în meniu, la el.",
+    "tabs": {
+      "general": "General",
+      "signIn": "Conectare",
+      "players": "Jucători și acces",
+      "ratings": "Ratinguri",
+      "developer": "Dezvoltator",
+      "license": "Licență",
+      "webhooks": "Webhookuri",
+      "experimental": "Experimental"
+    },
+    "signIn": {
+      "title": "Furnizori de conectare",
+      "intro": "Alege cum se conectează oamenii. Oricare dintre aceștia poate fi contul cuiva; oamenii pot lega și altele din pagina lor de conexiuni. Modificările se aplică imediat, fără repornire.",
+      "keySource": "Secretele salvate sunt criptate cu {{name}}.",
+      "keySourceDefault": "Secretele salvate sunt criptate cu o cheie de dezvoltare încorporată. Setează SECRETS_KEY sau SESSION_SECRET înainte de lansare.",
+      "loadError": "Furnizorii de conectare nu au putut fi încărcați",
+      "saveError": "Nu s-a putut salva",
+      "testError": "Testul nu a putut fi rulat",
+      "saved": "Conectarea cu {{provider}} a fost salvată",
+      "enabled": "Activat",
+      "clientId": "Client ID",
+      "issuerUrl": "Issuer URL",
+      "issuerUrlHelp": "Adresa realm-ului sau tenantului tău OpenID Connect. Auto Tournament își citește endpointurile din /.well-known/openid-configuration.",
+      "buttonName": "Numele butonului",
+      "buttonNameHelp": "Apare ca „Conectează-te cu …” pe pagina de conectare, de ex. comunitatea sau serverul tău de identitate.",
+      "logoUpload": "Încarcă logo",
+      "logoReplace": "Înlocuiește logo-ul",
+      "logoRemove": "Elimină logo-ul",
+      "logoType": "Logo-ul trebuie să fie o imagine PNG, JPEG, WebP sau SVG.",
+      "logoSize": "Logo-ul poate avea cel mult 150 KB.",
+      "buttonColor": "Culoarea butonului",
+      "buttonColorDefault": "Culoare implicită",
+      "clientSecret": "Client secret",
+      "steamKey": "Cheie Steam Web API",
+      "secretSet": "setat",
+      "secretUnreadable": "Secretul salvat nu mai poate fi decriptat (cheia de criptare s-a schimbat). Introdu-l din nou.",
+      "replace": "Înlocuiește",
+      "cancel": "Anulează",
+      "save": "Salvează",
+      "callbackHint": "Setat automat. Lipește-l ca URL de redirecționare în setările de dezvoltator ale {{provider}}:",
+      "copy": "Copiază",
+      "copyCallback": "Copiază URL-ul de callback",
+      "copied": "Copiat",
+      "copyError": "Nu s-a putut copia",
+      "guide": "Ghid de configurare",
+      "howTo": "Consola dezvoltatorului",
+      "test": "Testează",
+      "comingSoon": "În curând",
+      "comingSoonNote": "Conectarea cu {{provider}} nu este încă disponibilă.",
+      "status": {
+        "active": "Pe pagina de conectare",
+        "missing": "Activat, lipsesc datele de autentificare",
+        "off": "Oprit"
+      },
+      "testResult": {
+        "ok": "Furnizorul a acceptat aceste date de autentificare.",
+        "invalid_credentials": "Furnizorul a respins aceste date de autentificare. Verifică client ID-ul și secretul (sau cheia).",
+        "unreachable": "Furnizorul nu a putut fi contactat. Verifică rețeaua și încearcă din nou.",
+        "not_configured": "Introdu mai întâi datele de autentificare.",
+        "not_supported": "Acest furnizor nu poate fi testat.",
+        "unexpected": "Furnizorul a dat un răspuns pe care testul nu îl înțelege."
+      },
+      "welcomeTitle": "Configurează cum se conectează jucătorii",
+      "welcomeBody": "Ești conectat ca admin. Activează cel puțin un furnizor mai jos (Steam, Discord, Google, GitHub sau Twitch) ca jucătorii să se poată conecta.",
+      "adminAccess": {
+        "title": "Acces de admin",
+        "localLogin": "Permite conectarea de admin local",
+        "localLoginHelp": "Conectare cu nume de utilizator și parolă la /login/admin. Dacă pierzi accesul, rulează reset-admin pe server.",
+        "localLoginLocked": "Rămâne activă până când alt admin se poate conecta cu un furnizor activat.",
+        "steamIds": "Steam ID-uri de admin",
+        "steamIdsHelp": "Steam64 ID-uri, separate prin virgule. Devin admini la salvare și la fiecare pornire. Eliminarea unuia nu îi ia drepturile de admin.",
+        "emails": "E-mailuri de admin",
+        "emailsHelp": "Adrese care primesc drepturi de admin când proprietarul lor se conectează cu un furnizor care le-a verificat (Google, Discord, GitHub).",
+        "unsaved": "Încă nesalvat.",
+        "saved": "Accesul de admin a fost salvat",
+        "loadError": "Setările accesului de admin nu au putut fi încărcate",
+        "short": "Cine se poate conecta ca admin"
+      },
+      "short": "Cum se conectează jucătorii și adminii. Modificările se aplică imediat.",
+      "enabledFor": "Conectare cu {{provider}}",
+      "setUp": "Configurează {{provider}}",
+      "accounts": {
+        "title": "Conturi",
+        "short": "Conturi cu nume de utilizator și parolă create de tine",
+        "help": "Cu acestea se conectează oamenii la /login/admin. Dă drepturi de admin celor care conduc site-ul; ceilalți se conectează ca jucători.",
+        "none": "Încă nu există conturi.",
+        "admin": "Admin",
+        "twoStep": "În doi pași activ",
+        "lastLogin": "Ultima conectare {{date}}",
+        "neverSignedIn": "Nu s-a conectat niciodată",
+        "setPassword": "Setează parola",
+        "remove": "Elimină",
+        "addTitle": "Adaugă un cont",
+        "username": "Nume de utilizator",
+        "usernameHelp": "3–32 de caractere: litere mici, cifre, puncte, cratime și liniuțe jos.",
+        "name": "Nume afișat",
+        "nameHelp": "Opțional. Apare pe site; dacă e gol, se folosește numele de utilizator.",
+        "password": "Parolă",
+        "makeAdmin": "Admin",
+        "create": "Creează contul",
+        "created": "Contul {{username}} a fost creat",
+        "madeAdmin": "{{username}} este acum admin",
+        "adminRemoved": "{{username}} nu mai este admin",
+        "setPasswordTitle": "Parolă nouă pentru {{username}}",
+        "setPasswordTotp": "Autentificarea în doi pași îi este oprită și ei; o configurează din nou după conectare.",
+        "newPassword": "Parolă nouă",
+        "savePassword": "Salvează parola",
+        "passwordSet": "Parola nouă pentru {{username}} a fost salvată",
+        "removeTitle": "Elimini pe {{username}}?",
+        "removeBody": "Nu se mai poate conecta cu acest nume de utilizator și această parolă și nu mai este admin. Jucătorul, meciurile și statisticile rămân; crearea din nou a aceluiași nume de utilizator le aduce înapoi.",
+        "removeConfirm": "Elimină",
+        "removed": "{{username}} a fost eliminat",
+        "cancel": "Anulează",
+        "loadError": "Conturile nu au putut fi încărcate",
+        "saveError": "Contul nu a putut fi salvat"
+      },
+      "oidcScopes": "Pe serverul tău OpenID Connect, dă acestui client scope-urile openid, profile și email (în Keycloak: Clients → acest client → Client scopes, cu profile și email ca Default). Fără profile și email oamenii se pot conecta totuși, dar platforma nu primește numele sau adresa lor de e-mail."
+    },
+    "integrations": {
+      "steam": {
+        "title": "Integrarea Steam",
+        "apiKeyLabel": "Cheie Steam Web API",
+        "apiKeyHelper": "Găsește URL-urile vanity Steam și informațiile jucătorilor. Lasă gol ca să dezactivezi căutările.",
+        "checkButtonChecking": "Se verifică Steam…",
+        "checkButtonIdle": "Verifică conexiunea cu Steam",
+        "statusOk": "Cheia API Steam este setată și accesibilă.",
+        "statusNotConfigured": "Cheia API Steam nu este setată. URL-urile vanity nu pot fi găsite până nu adaugi o cheie.",
+        "statusUnreachable": "Cheia API Steam pare setată, dar Steam nu a putut fi contactat. Verifică rețeaua sau cheia.",
+        "statusError": "Starea API-ului Steam nu a putut fi verificată. Încearcă din nou."
+      }
+    },
+    "matchRating": {
+      "ratings": {
+        "title": "Actualizarea ratingurilor",
+        "description": "Controlează dacă meciurile încheiate actualizează ratingurile jucătorilor. Dezactivează pentru evenimente în care un sistem extern (de exemplu foaia ta Excel) este sursa de adevăr pentru ratinguri.",
+        "toggleLabel": "Actualizează ratingurile jucătorilor din meciurile încheiate",
+        "note": "Când e dezactivat, toate meciurile înregistrează în continuare statisticile (ADR, K/D etc.), dar ratingurile jucătorilor rămân neschimbate.",
+        "short": "Ratingurile se schimbă după fiecare meci."
+      }
+    },
+    "players": {
+      "registration": {
+        "title": "Înregistrarea jucătorilor",
+        "description": "Controlează dacă la conectare se creează un jucător pentru cineva nou, indiferent de metoda de conectare (Steam, Discord, Google și celelalte activate). Când e dezactivat, în turneele private și în grupurile shuffle apar doar jucătorii creați sau importați de admini.",
+        "toggleLabel": "Permite oricui să se înregistreze prin conectare",
+        "recommendation": "Recomandat: ține opțiunea oprită pentru turneele pe invitație sau private, ca să nu se umple lista de jucători cu conectări întâmplătoare.",
+        "short": "Conectarea transformă în jucător pe oricine nou. Oprit: doar jucătorii adăugați de tine."
+      },
+      "title": "Jucători",
+      "short": "Cine intră și cum se schimbă ratingurile.",
+      "chooseName": {
+        "toggleLabel": "Jucătorii își aleg numele afișat",
+        "short": "Jucătorii sunt întrebați cum se numesc și îl pot schimba o dată pe zi. Oprit: numele vin din importuri și de la admini."
+      }
+    },
+    "developer": {
+      "resetApiTitle": "Resetează API-ul și baza de date",
+      "resetApiDescription": "Zonă periculoasă: șterge și recreează întreaga schemă a bazei de date, apoi reinițializează datele implicite (hărți, seturi de hărți etc.). Folosește doar pentru dezvoltare locală. Este ireversibil.",
+      "resetApiButton": "Resetează API-ul (șterge toate datele)",
+      "resetApiButtonLoading": "Se resetează API-ul…",
+      "resetApiSuccess": "API-ul și baza de date au fost resetate. Toate datele au fost șterse, iar valorile implicite reinițializate.",
+      "resetApiError": "API-ul și baza de date nu au putut fi resetate. Vezi jurnalele API pentru detalii.",
+      "resetApiDialog": {
+        "title": "Resetezi API-ul și ștergi toate datele?",
+        "description": "Asta va șterge și recrea întreaga schemă a bazei de date. Toate turneele, meciurile, jucătorii, echipele, ratingurile, evenimentele, jurnalele și setările vor fi șterse definitiv. Această acțiune nu poate fi anulată. Continui?",
+        "cancel": "Anulează",
+        "confirm": "Da, resetează API-ul și șterge datele",
+        "confirmLoading": "Se resetează…"
+      }
+    },
+    "footer": {
+      "version": "Versiune",
+      "unknownVersion": "Necunoscut"
+    },
+    "errors": {
+      "loadSettings": "Setările nu au putut fi încărcate",
+      "saveSettings": "Setările nu au putut fi salvate"
+    },
+    "success": {
+      "saveSettings": "Setări salvate"
+    },
+    "site": {
+      "title": "Site",
+      "description": "Cum se numește acest site. Pagina principală de admin îl folosește ca titlu.",
+      "label": "Numele site-ului",
+      "helper": "Lasă gol ca să folosești „Auto Tournament”.",
+      "save": "Salvează",
+      "saved": "Numele site-ului a fost salvat",
+      "saveFailed": "Numele site-ului nu a putut fi salvat"
+    },
+    "experimental": {
+      "title": "Experimental",
+      "description": "Funcții încă în lucru. Sunt oprite implicit și se pot schimba sau strica. Doar adminii le văd.",
+      "saved": "Salvat",
+      "saveFailed": "Funcția nu a putut fi salvată",
+      "loadFailed": "Funcțiile experimentale nu au putut fi încărcate",
+      "envOverride": "Setat prin variabila de mediu {{env}}. Schimb-o acolo.",
+      "features": {},
+      "short": "Încă în lucru: oprite implicit, doar adminii le văd."
+    },
+    "matchmaking": {
+      "openLabel": "Deschis pentru jucători",
+      "openDescription": "Pornit: fiecare jucător conectat vede Joacă și poate intra la coadă. Oprit: doar adminii pot căuta meciuri.",
+      "boardLabel": "Clasament vizibil pentru toată lumea",
+      "boardDescription": "Oprit: doar jucătorii conectați văd clasamentul de matchmaking. Pornit: oricine are linkul.",
+      "windowTitle": "Fereastra de căutare",
+      "windowDescription": "Cât de departe pot fi jucătorii ca rating. Pornește de la primul număr, crește cu pasul la fiecare 30 de secunde până la plafon, iar după ultimul număr de minute oricine poate fi împerecheat (lasă gol pentru niciodată).",
+      "window": {
+        "start": "Start (Elo)",
+        "step": "Pas (Elo)",
+        "cap": "Plafon (Elo)",
+        "uncappedAfterMinutes": "Oricine după (min)"
+      },
+      "reservedTitle": "Servere păstrate libere pentru matchmaking",
+      "reservedDescription": "Meciurile de turneu au prioritate, dar lasă atâtea servere libere pentru matchmaking cât timp jucătorii caută. 0 = niciunul.",
+      "reservedLabel": "Servere",
+      "modesTitle": "Moduri",
+      "modesDescription": "Ce pot căuta jucătorii. Toate modurile sunt pornite implicit. 1v1 este un duel de aim.",
+      "poolsTitle": "Hărți pe mod",
+      "poolsDescription": "Setul de hărți din care alege fiecare mod (pagina Hărți; merg și hărțile din Workshop). Camera meciului arată o ruletă pe set înainte să dezvăluie harta.",
+      "poolDefault": {
+        "5v5": "Implicit: Active Duty",
+        "2v2": "Implicit: toate hărțile wingman",
+        "1v1": "Implicit: Active Duty"
+      },
+      "save": "Salvează",
+      "title": "Matchmaking",
+      "short": "Mereu pornit. Jucătorii caută un meci, intră la coadă și acceptă, apoi joacă pe un server liber.",
+      "saved": "Salvat",
+      "saveFailed": "Setările de matchmaking nu au putut fi salvate",
+      "loadFailed": "Setările de matchmaking nu au putut fi încărcate"
+    },
+    "groups": {
+      "platform": "Platformă"
+    },
+    "navLabel": "Pagini de setări",
+    "gameLinks": {
+      "title": "Setările jocurilor",
+      "hint": "Fiecare joc își păstrează setările în meniu, la el."
+    },
+    "sections": {
+      "label": "Secțiuni de setări",
+      "site": {
+        "name": "Site",
+        "hint": "Nume, logo, limbă"
+      },
+      "signin": {
+        "name": "Conectare",
+        "hint": "Furnizori, conturi de admin"
+      },
+      "email": {
+        "name": "E-mail",
+        "hint": "SMTP, ce se trimite"
+      },
+      "players": {
+        "name": "Jucători",
+        "hint": "Înscriere, ratinguri"
+      },
+      "matchmaking": {
+        "name": "Matchmaking",
+        "hint": "Cozile și regulile lor"
+      },
+      "news": {
+        "name": "Noutăți",
+        "hint": "Postări pe pagina principală"
+      },
+      "adminnotices": {
+        "name": "Notificări",
+        "hint": "Ce li se spune adminilor"
+      },
+      "webhooks": {
+        "name": "Integrări",
+        "hint": "Webhookuri"
+      },
+      "apitokens": {
+        "name": "Tokenuri API",
+        "hint": "Pentru scripturi și MCP"
+      },
+      "advanced": {
+        "name": "Avansat",
+        "hint": "Experimental, dezvoltator"
+      },
+      "module": {
+        "hint": "Setările acestui modul"
+      }
+    }
+  },
+  "managePage": {
+    "tournamentNotFound": "Niciun turneu cu acest id. Alege unul din Toate turneele.",
+    "title": "Administrare",
+    "needsYouHeading": "Te așteaptă",
+    "noTournament": "Încă niciun turneu",
+    "rail": {
+      "needsYou": "Te așteaptă",
+      "matches": "Meciuri",
+      "bracket": "Tablou",
+      "teams": "Echipe",
+      "players": "Jucători",
+      "reports": "Raportări",
+      "tournament": "Configurarea turneului",
+      "settings": "Setări",
+      "label": "Admin",
+      "disputes": "Dispute",
+      "publicPage": "Pagina publică",
+      "modules": "Module",
+      "templates": "Șabloane",
+      "ratings": "Ratinguri",
+      "adminTools": "Jurnale și unelte",
+      "license": "Licență",
+      "devTools": "Unelte de dezvoltare",
+      "documentation": "Documentație",
+      "opensInNewTab": "(se deschide într-o filă nouă)",
+      "groups": {
+        "operate": "Operare",
+        "tournament": "Turneu",
+        "people": "Oameni",
+        "game": "Joc",
+        "home": "Acasă",
+        "history": "Istoric",
+        "setup": "Configurare",
+        "configuration": "Configurație",
+        "site": "Site",
+        "tournaments": "Turnee",
+        "system": "Sistem",
+        "gamesOf": "Jocuri · {{game}}"
+      },
+      "templatesAndRatings": "Șabloane și ratinguri",
+      "allTournaments": "Toate turneele",
+      "switcher": "Turneu",
+      "newTournament": "Turneu nou",
+      "playedMatches": "Meciuri jucate",
+      "tournamentBar": "Acest turneu",
+      "scope": {
+        "label": "Administrezi",
+        "platform": "Platformă",
+        "platformHint": "Turnee, oameni, site-ul",
+        "gameHint": "Paginile și setările lui"
+      },
+      "highlights": "Faze",
+      "state": {
+        "live": "live",
+        "setup": "configurare"
+      },
+      "openMenu": "Deschide meniul Administrare",
+      "closeMenu": "Închide meniul",
+      "setupTab": "Configurare",
+      "prizes": "Premii",
+      "schedule": "Program",
+      "liveMatches": "Meciuri live"
+    },
+    "status": {
+      "live": "LIVE",
+      "inVeto": "ÎN VETO",
+      "queued": "LA COADĂ",
+      "round": "RUNDA"
+    },
+    "needsYou": {
+      "empty": "Nimic nu te așteaptă acum.",
+      "secondsAgo": "{{count}} s",
+      "minutesAgo": "{{count}} min",
+      "hoursAgo": "{{count}} h",
+      "vsLabel": "{{team1}} vs {{team2}}",
+      "decide": {
+        "title": "{{teams}} au nevoie de un câștigător",
+        "detail": "Toate hărțile au fost jucate, iar seria e încă egală.",
+        "action": "Decide"
+      },
+      "reallocateSuccess": "Meci mutat pe alt server",
+      "forceCancelSuccess": "Meci anulat",
+      "actionFailed": "Nu a mers. Încearcă din nou.",
+      "reallocateConfirmTitle": "Muți acest meci pe alt server?",
+      "reallocateConfirmBody": "Meciul va fi alocat următorului server disponibil.",
+      "forceCancelConfirmTitle": "Anulezi forțat acest meci?",
+      "forceCancelConfirmBody": "Asta încheie meciul imediat și îl marchează ca anulat, chiar dacă serverul nu poate fi contactat.",
+      "listLabel": "Lucruri care cer o decizie"
+    },
+    "recent": {
+      "heading": "Recente",
+      "viewAll": "Jurnal complet",
+      "empty": "Încă nicio activitate recentă.",
+      "closingLine": "Tot restul merge singur. Vezi ceva aici doar când e nevoie de o decizie.",
+      "team1Fallback": "Echipa 1",
+      "team2Fallback": "Echipa 2",
+      "mapResult": "{{winner}} a câștigat harta {{map}} împotriva {{loser}}, {{score}}",
+      "seriesEnd": "{{winner}} a câștigat seria împotriva {{loser}}, {{score}}"
+    },
+    "announce": {
+      "button": "Anunț",
+      "title": "Anunță pe toate serverele",
+      "label": "Mesaj",
+      "send": "Trimite",
+      "success": "Anunț trimis",
+      "failed": "Anunțul nu a putut fi trimis"
+    }
+  },
+  "license": {
+    "title": "Licență",
+    "getKey": "Ai deja o licență? Copiază-ți cheia din <consoleLink>consola Auto Tournament</consoleLink>. Ai nevoie de una? <pricingLink>Vezi prețurile</pricingLink>.",
+    "useFromPaidKey": "Setat de cheia de licență plătită de mai jos.",
+    "useFromFreeKey": "Setat de cheia gratuită de mai jos: doar pentru uz nonprofit.",
+    "useWithoutKey": "Fără cheie: gratuit pentru uz nonprofit. Lipește mai jos o cheie plătită pentru uz comercial.",
+    "publicLine": "Jucătorii văd „{{line}}” în partea de jos a paginilor de eveniment.",
+    "pageIntro": "Cheia ta de licență și starea ei. O cheie plătită este pentru uz comercial; o cheie gratuită este pentru uz nonprofit.",
+    "description": "Lipește cheia de licență Auto Tournament: una plătită pentru uz comercial sau una gratuită pentru uz nonprofit. Este verificată pe acest server și o dată pe zi cu autotournament.gg.",
+    "loading": "Se încarcă starea licenței",
+    "loadFailed": "Starea licenței nu a putut fi citită.",
+    "none": "Încă nu ai o cheie de licență. Gratuit pentru uz nonprofit; uzul comercial necesită o licență plătită.",
+    "pricing": "Prețuri",
+    "open": "Setări",
+    "id": "ID licență {{id}}",
+    "verify": "Verifică această licență",
+    "invalid": "Această cheie nu a putut fi verificată.",
+    "invalidShort": "Cheia salvată nu a putut fi verificată.",
+    "warningsShort_one": "1 notificare de licență în Setări.",
+    "warningsShort_other": "{{count}} de notificări de licență în Setări.",
+    "warningsNote": "Nimic nu este blocat sau limitat. Este doar o notificare.",
+    "label": "Cheie de licență",
+    "replaceLabel": "Înlocuiește cheia de licență",
+    "helper": "Începe cu ATL1. Copiaz-o din <consoleLink>licențele tale din consola Auto Tournament</consoleLink>. După salvare se afișează doar ID-ul licenței. Fără internet acolo unde jucați? Lipește aici și leasingul offline din consolă.",
+    "checkInNote": "Fără cheie de licență, nu se trimite nimic către Auto Tournament. Cu o cheie, acest server raportează o dată pe zi cu ID-ul cheii și numărul de servere.",
+    "save": "Salvează cheia",
+    "saved": "Cheia de licență a fost salvată",
+    "saveFailed": "Cheia de licență nu a putut fi salvată",
+    "remove": "Elimină cheia",
+    "removed": "Cheia de licență a fost eliminată",
+    "removeFailed": "Cheia de licență nu a putut fi eliminată",
+    "summary": {
+      "licensedTo": "Licențiat pentru {{licensee}}",
+      "licensed": "Licențiat",
+      "product": {
+        "platform": "Platformă {{pack}}",
+        "servers": "Servere {{pack}}"
+      },
+      "servers_one": "{{count}} server",
+      "servers_other": "{{count}} de servere",
+      "updatesUntil": "actualizări până la {{date}}",
+      "updatesForLife": "actualizări pe viață",
+      "eventWindow": "eveniment {{from}}–{{to}}",
+      "free": "Cheie gratuită, uz necomercial",
+      "freeFor": "Cheie gratuită pentru {{licensee}}, uz necomercial",
+      "noLimit": "fără limită de servere",
+      "servers_few": "{{count}} servere"
+    },
+    "badge": {
+      "label": "Arată „Licențiat” și tipul de utilizare pe paginile publice de eveniment",
+      "note": "Oprit implicit. Duce la pagina publică de verificare a licenței și apare doar cât timp cheia salvată e validă.",
+      "on": "Linia publică de licență a fost pornită",
+      "off": "Linia publică de licență a fost oprită",
+      "failed": "Linia publică de licență nu a putut fi schimbată",
+      "short": "Pornită singură după ce se salvează o cheie. Jucătorii o văd în partea de jos a paginilor de eveniment.",
+      "needsKey": "Apare doar cu o cheie de licență salvată, gratuită sau plătită. Salvează mai întâi una mai sus."
+    },
+    "public": {
+      "licensed": "Licențiat",
+      "commercial": "Licențiat · Uz comercial",
+      "nonCommercial": "Licențiat · Uz nonprofit",
+      "unlicensed": "Fără cheie de licență",
+      "about": {
+        "title": "Despre licența acestui site",
+        "none": "Acest site rulează Auto Tournament fără cheie de licență. E în regulă pentru evenimente din care nimeni nu câștigă bani: prieteni, cluburi, LAN-uri școlare, organizații caritabile.",
+        "nonCommercial": "Acest site are o licență nonprofit gratuită: poate organiza evenimente din care nimeni nu câștigă bani.",
+        "commercial": "Acest site are o licență comercială plătită: poate organiza evenimente plătite și poate percepe taxă de participare.",
+        "free": "Auto Tournament este gratuit când nimeni nu câștigă bani cu el, iar pentru organizații caritabile, școli și instituții publice chiar și când percep taxă de participare. Oricine altcineva câștigă bani cu el, prin taxă de participare, vânzarea de locuri sau folosirea lui într-o afacere, are nevoie de o licență plătită.",
+        "paidTitle": "Ți s-a cerut să plătești ca să participi?",
+        "paidBody": "Dacă ai plătit o taxă de participare sau ți s-a cerut una, iar organizatorul nu este o organizație caritabilă, o școală sau o instituție publică, acest eveniment ar putea folosi Auto Tournament încălcând licența. Ne poți spune; citim fiecare raport și nu dezvăluim niciodată cine l-a trimis.",
+        "paidCommercial": "Aici participarea cu plată este permisă. Dacă totuși ceva pare în neregulă, ne poți spune.",
+        "report": "Raportează către Auto Tournament",
+        "rules": "Citește licența",
+        "verify": "Verifică această licență"
+      }
+    },
+    "consent": {
+      "title": "Încă un lucru: licența",
+      "subtitle": "Scuze, încă un pas și ai terminat. Auto Tournament este gratuit dacă nimeni nu câștigă bani din el; dacă cineva câștigă, ai nevoie de o licență. Aruncă o privire peste versiunea scurtă, alege cum îl folosești și scrie I AGREE.",
+      "intro": "Auto Tournament are codul sursă disponibil sub {{name}}. Pe scurt:",
+      "points": {
+        "free": "Gratuit pentru uz personal, proiecte hobby, învățare și evenimente din care nimeni nu câștigă bani.",
+        "orgs": "Gratuit pentru organizații caritabile, școli, universități, cercetare publică și instituții guvernamentale, chiar și când percep taxă de participare.",
+        "commercial": "Uzul comercial necesită o licență. Asta include găzduirea plătită, vânzarea lui sau a unui serviciu construit pe el, evenimentele cu profit, folosirea în cadrul unei firme și plata primită pentru a-l configura pentru altcineva.",
+        "servers": "Fiecare server de joc intră în licență.",
+        "nothingLocked": "Nimic nu este blocat sau limitat fără cheie. Poți adăuga o cheie acum sau mai târziu.",
+        "forks": "Poți modifica și distribui codul. Păstrează licența alături de el; se aplică aceleași reguli."
+      },
+      "readLicense": "Citește licența completă",
+      "readRules": "Licențiere și uz comercial",
+      "summaryNote": "Acesta este un rezumat scurt, iar textul din versiunea ta poate fi depășit. Licența curentă și regulile de licențiere sunt pe autotournament.gg – dacă diferă de acest rezumat, acelea au prioritate.",
+      "useQuestion": "Cum este folosită această instanță?",
+      "privacyNote": "Răspunsul tău este salvat doar pe acest server. Fără cheie de licență, nu se trimite nimic către Auto Tournament. Cu o cheie, acest server raportează o dată pe zi cu ID-ul cheii și numărul de servere.",
+      "use": {
+        "noncommercial": "Necomercial",
+        "noncommercialHint": "Gratuit. Nimeni nu câștigă bani din el.",
+        "commercial": "Comercial",
+        "commercialHint": "Ai nevoie de o licență. Lipește cheia acum sau mai târziu."
+      },
+      "keyLabel": "Cheie de licență (opțional)",
+      "keyHelper": "Începe cu ATL1. Copiaz-o din <consoleLink>licențele tale din consola Auto Tournament</consoleLink> sau adaug-o mai târziu din Setări > Licență.",
+      "confirmLabel": "Scrie {{phrase}} ca să accepți termenii licenței",
+      "confirmHelper": "Scriind {{phrase}} accepți termenii licenței pentru această instanță.",
+      "accept": "Acceptă și continuă",
+      "cancel": "Anulează",
+      "failed": "Răspunsul tău nu a putut fi salvat",
+      "accepted": "Termenii licenței au fost acceptați",
+      "termsChanged": "Termenii licenței s-au schimbat de la ultima acceptare. Citește-i și acceptă-i din nou.",
+      "onlyAdmins": "Doar adminii văd asta, o dată pe instanță. Jucătorii, paginile publice și meciurile în desfășurare nu sunt afectate.",
+      "declared": {
+        "noncommercial": "Uz necomercial",
+        "commercial": "Uz comercial",
+        "none": "Termenii licenței nu au fost încă acceptați"
+      },
+      "acceptedLine": "Termeni acceptați pe {{date}} de {{who}} (versiunea termenilor {{version}})",
+      "byEnv": "setarea AT_ACCEPT_LICENSE",
+      "change": "Schimbă",
+      "changeTitle": "Schimbă modul în care e folosită această instanță",
+      "changeNote": "Alege din nou și scrie I AGREE. Schimbarea este salvată cu data și contul tău.",
+      "commercialNoKey": "Această instanță este folosită comercial, deci ai nevoie de o licență. Copiază-ți cheia din <consoleLink>licențele tale din consola Auto Tournament</consoleLink> și lipește-o mai jos. Nimic nu este blocat cât timp lipsește.",
+      "readHeading": "Înainte să accepți, citește acestea și bifează-le pe fiecare:",
+      "readItem": "Am citit",
+      "readLinks": {
+        "license": "licența completă",
+        "rules": "regulile pentru uz comercial",
+        "pricing": "prețurile"
+      }
+    },
+    "checkin": {
+      "last": "Ultima raportare a licenței: {{time}}",
+      "offlineUntil": "Leasing offline: serverele noi funcționează fără internet până la {{date}}.",
+      "never": "Încă nicio raportare a licenței. Prima rulează la scurt timp după salvarea unei chei.",
+      "whatIsSent": "Ce se trimite",
+      "intro": "O dată pe zi, și doar cât timp e salvată o cheie, acest server trimite:",
+      "keyId": "Cheia de licență, ca ID-ul și semnătura ei să poată fi verificate",
+      "instanceId": "Un ID aleatoriu pentru această instalare, creat o singură dată",
+      "serverCount": "Numărul de servere de joc",
+      "version": "Versiunea platformei",
+      "publicUrl": "Ce produs este acesta (platforma) și adresa lui publică, ca să arate consola unde rulează cheia",
+      "activity": "Numere de la ultima raportare: meciuri încheiate, turnee cu activitate și cel mai mare număr de echipe",
+      "declared": "Răspunsul tău la întrebarea despre datele evenimentului, dacă ai dat unul",
+      "notSent": "Fără nume, adrese, jucători sau detalii despre meciuri.",
+      "privacy": "Politica de confidențialitate",
+      "noticeTitle": "O notă de la Auto Tournament",
+      "answered": "Răspunsul tău pentru această licență: {{answer}} ({{time}})"
+    },
+    "eventPrompt": {
+      "title": "Planifici ceva nou?",
+      "body": "Licența ta de eveniment acoperă {{dates}}. Spune-ne dacă testezi, ai un eveniment nou sau datele s-au mutat – cât testezi nu trebuie să faci nimic.",
+      "datesRange": "{{from}}–{{to}}",
+      "testing": "Testez sau configurez",
+      "newEvent": "Un eveniment nou",
+      "datesMoved": "Datele evenimentului nostru s-au mutat",
+      "dontAsk": "Nu mă mai întreba",
+      "close": "Închide",
+      "thanks": "Mulțumim, am notat.",
+      "failed": "Răspunsul tău nu a putut fi salvat"
+    },
+    "warning": {
+      "periodEnded": "Această licență de eveniment a acoperit datele până la {{date}}. Testarea și configurarea nu cer nimic; un eveniment nou primește propria licență de eveniment.",
+      "periodNotStarted": "Această licență de eveniment acoperă datele de la {{date}}. Configurarea și testarea înainte de atunci sunt în regulă."
+    },
+    "short": "Cum este folosită această instalare și cheia ei.",
+    "keyRow": "Cheie de licență",
+    "state": {
+      "active": "Activă",
+      "warning": "Verifică",
+      "invalid": "Invalidă",
+      "none": "Fără cheie"
+    },
+    "thirdParty": "Această aplicație este construită cu pachete open-source, sub propriile lor licențe.",
+    "thirdPartyLink": "Notificări terțe",
+    "warningsShort_few": "{{count}} notificări de licență în Setări."
+  },
+  "tournamentsPage": {
+    "title": "Turnee",
+    "subtitle": "Fiecare turneu de pe acest site. Selectorul din partea de sus a meniului alege turneul asupra căruia acționează celelalte pagini de admin.",
+    "liveShared": "Live: {{count}}, cu servere comune. Meciurile primesc server în ordinea în care au devenit gata.",
+    "new": "Turneu nou",
+    "empty": "Încă niciun turneu. Creează-l pe primul.",
+    "col": {
+      "name": "Nume",
+      "status": "Stare",
+      "when": "Când",
+      "entries": "Înscrieri",
+      "frontPage": "Prima pagină",
+      "actions": "Acțiuni"
+    },
+    "status": {
+      "live": "Live",
+      "finished": "Încheiat",
+      "signup": "Înscriere deschisă",
+      "draft": "Ciornă"
+    },
+    "front": {
+      "featured": "Recomandat",
+      "shown": "Afișat",
+      "hidden": "Ascuns",
+      "archived": "Arhivat",
+      "results": "Rezultate"
+    },
+    "won": "{{name}} a câștigat",
+    "selected": "selectat",
+    "more": "Mai multe pentru {{name}}",
+    "menu": {
+      "open": "Deschide",
+      "page": "Pagina publică",
+      "feature": "Recomandă pe prima pagină",
+      "archive": "Arhivează (scoate de pe prima pagină)",
+      "delete": "Șterge"
+    },
+    "toast": {
+      "featured": "Recomandat pe prima pagină",
+      "archived": "Arhivat",
+      "deleted": "Turneu șters"
+    },
+    "deleteTitle": "Ștergi acest turneu?",
+    "deleteMessage": "{{name}} și meciurile, rezultatele și statisticile lui sunt șterse. Asta nu poate fi anulată.",
+    "newName": "Nume",
+    "newNameBlank": "Îl numești în configurare",
+    "startFrom": "Pornește de la",
+    "blank": "Gol",
+    "blankHint": "Alege jocul, formatul și hărțile în configurare",
+    "copy": "Copiază {{name}}",
+    "copyHint": "Același format, aceleași hărți, reguli și pagină. Echipele și datele pornesc goale.",
+    "create": "Creează și configurează",
+    "round": "turul {{n}}",
+    "whenToday": "Azi, de la {{time}}",
+    "whenTomorrow": "Mâine, {{time}}",
+    "notSet": "Nesetat",
+    "emptyTitle": "Încă niciun turneu",
+    "template": "Un șablon",
+    "templateHint": "O configurație salvată: format, hărți și reguli. Tu alegi echipele și datele.",
+    "copyOne": "Copiază un turneu",
+    "copyWhich": "Care"
+  },
+  "playedMatches": {
+    "title": "Toate meciurile",
+    "subtitle": "Fiecare meci jucat pe acest site: turnee (și cele șterse), meciuri independente și matchmaking, cu demo-urile lor.",
+    "downloadAll_one": "Descarcă demo-urile pentru {{count}} meci",
+    "downloadAll_other": "Descarcă demo-urile pentru {{count}} de meciuri",
+    "search": "Caută echipe sau turnee",
+    "kindLabel": "Tip",
+    "kind": {
+      "all": "Toate tipurile",
+      "tournament": "Turneu",
+      "standalone": "Independent",
+      "matchmaking": "Matchmaking",
+      "imported": "Importat"
+    },
+    "withDemos": "Cu demo-uri",
+    "none": "Încă nu s-a jucat niciun meci.",
+    "noneFiltered": "Niciun meci nu corespunde acestor filtre.",
+    "vs": "vs",
+    "deleted": "turneu șters",
+    "noDemo": "Fără demo",
+    "demo": "Demo",
+    "map": "Harta {{n}}",
+    "import": "Importă un meci",
+    "downloadAll_few": "Descarcă demo-urile pentru {{count}} meciuri"
+  },
+  "importMatch": {
+    "title": "Importă un meci",
+    "subtitle": "Adaugă un meci jucat în altă parte, din demo-urile lui. Echipele, jucătorii și scorul sunt citite din demo-uri, apoi meciul primește statistici, un replay 2D și faze ca oricare altul.",
+    "event": "Unde s-a jucat",
+    "eventHelp": "Opțional, de exemplu numele evenimentului.",
+    "files": "Demo-uri",
+    "filesHelp": "Un demo CS2 (.dem) pe hartă, în ordinea în care s-au jucat hărțile.",
+    "choose": "Alege demo-uri",
+    "moveUp": "Mută {{name}} în sus",
+    "moveDown": "Mută {{name}} în jos",
+    "remove": "Elimină {{name}}",
+    "start": "Importă",
+    "uploading": "Se încarcă harta {{n}} ({{percent}}%)",
+    "tooMany": "Demo-uri: maximum {{max}}, câte unul pe hartă.",
+    "notDemo": "{{name}} nu este un fișier .dem.",
+    "error": "Importul s-a oprit: {{error}}",
+    "progress": "Progres",
+    "mapN": "Harta {{n}}",
+    "state": {
+      "uploading": "Se încarcă",
+      "waiting": "Se așteaptă procesorul de demo-uri",
+      "running": "Se citește demo-ul",
+      "done": "Gata",
+      "failed": "Demo-ul nu a putut fi citit"
+    },
+    "teams": "{{team1}} vs {{team2}}",
+    "doneAll": "Importat. Urmează înregistrarea fazelor, dacă e conectat un înregistrator de faze.",
+    "openMatch": "Deschide meciul",
+    "another": "Importă altul",
+    "dropHint": "sau trage-le aici. Alege mai multe deodată cu Cmd sau Ctrl.",
+    "recordingGroup": "Grup de înregistratoare",
+    "allRecorders": "Toate înregistratoarele",
+    "groupHelp": "Alege ce grup randează acest meci. Grupurile dezactivate așteaptă până sunt activate.",
+    "groupDisabled": "Dezactivat",
+    "notCs2Demo": "{{name}} nu este un demo CS2 (demo-urile CS:GO nu pot fi importate)."
+  },
+  "apiTokens": {
+    "title": "Tokenuri API",
+    "hint": "Pentru scripturi, boți și serverul MCP Auto Tournament. Un token doar-citire poate doar să citească; un token de admin poate face tot ce poate un admin. Doar tu vezi secretul unui token, o singură dată, când e creat.",
+    "line": "{{scope}} · {{fingerprint}} · folosit ultima dată {{used}}",
+    "never": "niciodată",
+    "none": "Încă niciun token API.",
+    "name": "Nume",
+    "nameHelp": "1–32 de litere, cifre, - sau _",
+    "scopeLabel": "Acces",
+    "scope": {
+      "readonly": "Doar citire",
+      "admin": "Admin"
+    },
+    "make": "Creează token",
+    "madeTitle": "Tokenul „{{label}}”",
+    "madeHelp": "Copiază-l acum: e singura dată când apare. Lipește-l acolo de unde îl citește scriptul sau serverul MCP (AT_TOKEN).",
+    "copy": "Copiază tokenul",
+    "copied": "Copiat",
+    "done": "Gata",
+    "revoke": "Revocă {{label}}",
+    "revokeTitle": "Revoci „{{label}}”?",
+    "revokeHelp": "Orice îl folosește încetează imediat să funcționeze.",
+    "revokeConfirm": "Revocă",
+    "revoked": "{{label}} a fost revocat",
+    "cancel": "Anulează",
+    "loadFailed": "Tokenurile API nu au putut fi încărcate",
+    "makeFailed": "Tokenul nu a putut fi creat",
+    "revokeFailed": "Tokenul nu a putut fi revocat"
+  },
+  "discordBot": {
+    "title": "Bot Discord",
+    "token": "Tokenul botului",
+    "replace": "Token nou pentru bot",
+    "save": "Salvează",
+    "remove": "Elimină",
+    "connected": "Conectat ca {{name}}",
+    "setNoAnswer": "Un token este setat, dar Discord nu a răspuns acum.",
+    "saved": "Botul Discord a fost salvat: {{name}}",
+    "cleared": "Botul Discord a fost eliminat",
+    "saveFailed": "Tokenul botului nu a putut fi salvat.",
+    "howTo": "Creează o aplicație, adaugă un bot, copiază-i tokenul și invită-l pe serverul tău Discord:",
+    "portal": "Discord Developer Portal",
+    "guild": "Server Discord",
+    "guildHint": "Unde creează botul canalele echipelor și postează. Aici apar doar serverele pe care e botul.",
+    "noGuilds": "Botul nu este încă pe niciun server Discord. Invită-l, apoi reîncarcă pagina.",
+    "noGuild": "Niciunul",
+    "guildSaved": "Serverul Discord a fost salvat",
+    "movedHint": "Botul Discord este acum un add-on: pornește-l și configurează-l din Module.",
+    "open": "Deschide botul Discord",
+    "voice": {
+      "label": "Canale vocale ale echipelor",
+      "help": "Cât timp un meci e pe serverul lui, jucătorii lui aflați deja pe voce sunt mutați în canalul vocal al echipei; ceilalți primesc un link în mesaj privat.",
+      "saved": "Setările canalelor vocale au fost salvate"
+    },
+    "teamChannels": {
+      "label": "Canalele echipelor",
+      "help": "Cât timp rulează un turneu, fiecare echipă primește un canal privat de text și unul vocal sub „Echipa ta”. Jucătorii ei găsesc canalul de text pe pagina echipei.",
+      "link": "Canalul echipei pe Discord"
+    },
+    "commands": {
+      "label": "Comenzi slash: /matches, /mymatch și /lobby",
+      "help": "Funcționează imediat ce botul e conectat. Opțional: ca Discord să le trimită către acest site, lipește asta ca Interactions Endpoint URL al aplicației în Discord Developer Portal."
+    },
+    "invite": "Invită pe un server",
+    "linking": {
+      "label": "Jucătorii își leagă Discordul",
+      "help": "Folosește chiar aplicația Discord a botului tău, așa că nu trebuie creată a doua aplicație. În Developer Portal, deschide OAuth2 în aplicația botului, adaugă această redirecționare, apoi copiază client secret-ul și lipește-l aici.",
+      "portal": "Deschide OAuth2",
+      "secret": "Client secret",
+      "save": "Activează legarea",
+      "saved": "Jucătorii își pot lega acum Discordul",
+      "ready": "Pornit: jucătorii își leagă Discordul din Cont → Conexiuni.",
+      "invite": "Jucătorii care nu sunt pe serverul tău sunt rugați să intre cu {{url}}.",
+      "noInvite": "Botul nu poate încă crea o invitație pe serverul tău. Apasă din nou Invită pe un server ca să primească permisiunea Create Invite."
+    },
+    "missing": "Botului îi lipsește {{list}} pe serverul tău, așa că unele părți nu vor funcționa. Apasă Invită pe un server mai sus: îi actualizează permisiunile fără să-l elimine."
+  },
+  "liveMatchesPage": {
+    "title": "Meciuri live",
+    "subtitle": "Fiecare meci aflat acum pe un server. Rândurile care te așteaptă sunt primele.",
+    "loading": "Se încarcă…",
+    "loadFailed": "Meciurile live nu au putut fi citite. Se reîncearcă…",
+    "empty": "Niciun meci în desfășurare",
+    "chat": "Chat",
+    "mapOf": "Harta {{n}}/{{total}}",
+    "columns": {
+      "match": "Meci",
+      "map": "Hartă",
+      "phase": "Fază",
+      "score": "Scor",
+      "round": "Runda",
+      "players": "Jucători",
+      "pause": "Pauză",
+      "call": "Apel admin",
+      "server": "Server",
+      "chat": "Chat"
+    },
+    "source": {
+      "matchmaking": "Matchmaking",
+      "manual": "Independent"
+    },
+    "phase": {
+      "none": "Fără starea serverului",
+      "loading": "Se încarcă",
+      "warmup": "Încălzire",
+      "knife": "Cuțit",
+      "side_pick": "Alegerea părții",
+      "live": "Live",
+      "paused": "Pe pauză",
+      "halftime": "Pauză de la jumătate",
+      "overtime": "Prelungiri",
+      "map_end": "După meci",
+      "series_end": "După meci",
+      "restoring": "Se restaurează",
+      "error": "Eroare"
+    },
+    "players": {
+      "summary": "Intrați: {{connected}}/{{total}} · gata: {{ready}}",
+      "connected": "Conectat",
+      "disconnected": "Neconectat",
+      "readyTag": "gata",
+      "none": "Fără jucători"
+    },
+    "pause": {
+      "by": "de {{name}}",
+      "unpause": "Vrea să reia",
+      "type": {
+        "tactical": "Tactică",
+        "technical": "Tehnică",
+        "admin": "Admin",
+        "offline": "Jucător offline",
+        "halftime": "Pauză de la jumătate",
+        "auto_5v5": "Se așteaptă 5v5",
+        "unknown": "Pe pauză"
+      }
+    },
+    "call": {
+      "noMessage": "Fără mesaj"
+    },
+    "server": {
+      "online": "Online",
+      "offline": "Offline",
+      "unknown": "Stare necunoscută"
+    }
+  }
+}

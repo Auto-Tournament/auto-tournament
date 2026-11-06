@@ -1,0 +1,12 @@
+{
+  "devAccountSwitcher": {
+    "tooltip": "Schimbă contul (dev)",
+    "adminTest": "Admin (test)",
+    "playerA": "Jucătorul A (dev)",
+    "playerB": "Jucătorul B (dev)",
+    "playerC": "Jucătorul C (dev)",
+    "newPlayer": "Jucător nou (prima vizită) (dev)",
+    "signOut": "Deconectare",
+    "disabled": "Conectarea de test este dezactivată pe acest server"
+  }
+}

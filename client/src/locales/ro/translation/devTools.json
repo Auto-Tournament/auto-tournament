@@ -1,0 +1,142 @@
+{
+  "devToolsPage": {
+    "alert": "Aceste unelte sunt disponibile doar în modul de dezvoltare. Folosește-le pentru a genera rapid date de test pentru testarea aplicației.",
+    "sections": {
+      "testData": {
+        "title": "Creează date de test"
+      }
+    },
+    "testTeams": {
+      "title": "Echipe de test",
+      "description": "Creează echipe cu jucători aleatori pentru a testa tablourile și meciurile turneelor.",
+      "success": "Echipe de test create: {{count}}!",
+      "errors": {
+        "create": "Echipele de test nu au putut fi create",
+        "partial": "Echipe create: {{created}}, eșuate: {{failed}}. Vezi consola pentru detalii."
+      },
+      "customLabel": "Număr personalizat de echipe",
+      "buttons": {
+        "createFixed": "Creează echipe ({{count}})",
+        "createCustom": "Creează echipe"
+      }
+    },
+    "testPlayers": {
+      "title": "Jucători de test",
+      "description": "Creează jucători cu rating ELO pentru a testa turneele shuffle și administrarea jucătorilor.",
+      "success": "Jucători de test creați: {{created}}!",
+      "errors": {
+        "create": "Jucătorii de test nu au putut fi creați",
+        "partial": "Jucători creați: {{created}}, actualizați: {{updated}}, eșuați: {{failed}}. Vezi consola pentru detalii."
+      },
+      "customLabel": "Număr personalizat de jucători",
+      "buttons": {
+        "createFixed": "Creează jucători ({{count}})",
+        "createCustom": "Creează jucători"
+      },
+      "successWithUpdated": "Jucători de test creați: {{created}}, actualizați: {{updated}}!"
+    },
+    "testServers": {
+      "title": "Servere de test",
+      "description": "Creează servere de test pentru a încerca administrarea meciurilor.",
+      "success": "Servere de test create: {{count}}!",
+      "errors": {
+        "create": "Serverele de test nu au putut fi create",
+        "partial": "Servere create: {{created}}, eșuate: {{failed}}. Vezi consola pentru detalii."
+      },
+      "customLabel": "Număr personalizat de servere",
+      "buttons": {
+        "createCustom": "Creează servere",
+        "createFixed_one": "Creează {{count}} server",
+        "createFixed_other": "Creează {{count}} de servere",
+        "createFixed_few": "Creează {{count}} servere"
+      }
+    },
+    "dangerZone": {
+      "title": "Zonă periculoasă"
+    },
+    "deleteTestData": {
+      "title": "Șterge datele de test",
+      "description": "Șterge toate datele de test (echipele și serverele cu prefixul „test-”). Această acțiune nu poate fi anulată.",
+      "button": "Șterge toate datele de test",
+      "confirmPrompt": "Sigur vrei să ștergi TOATE datele de test?",
+      "success": "Toate datele de test au fost șterse!",
+      "error": "Datele de test nu au putut fi șterse"
+    },
+    "wipeTable": {
+      "title": "Golește anumite tabele",
+      "description": "Șterge toate datele dintr-un anumit tabel. Util pentru curățenie fără a reseta totul. Tabelele sunt grupate pe categorii.",
+      "confirmPrompt": "Sigur vrei să golești tabelul {{table}}? Vor fi șterse toate datele din el.",
+      "success": "Tabelul {{table}} a fost golit!",
+      "error": "Tabelul {{table}} nu a putut fi golit",
+      "core": {
+        "title": "Tabele de bază",
+        "teams": "Golește echipele",
+        "servers": "Golește serverele",
+        "tournament": "Golește turneul",
+        "matches": "Golește meciurile"
+      },
+      "players": {
+        "title": "Jucători și turnee shuffle",
+        "players": "Golește jucătorii",
+        "ratingHistory": "Golește istoricul ratingului",
+        "matchStats": "Golește statisticile meciurilor",
+        "shufflePlayers": "Golește jucătorii shuffle"
+      },
+      "maps": {
+        "title": "Hărți și șabloane",
+        "maps": "Golește hărțile",
+        "mapPools": "Golește seturile de hărți",
+        "tournamentTemplates": "Golește șabloanele de turneu",
+        "eloTemplates": "Golește șabloanele de rating"
+      },
+      "matchEvents": {
+        "title": "Evenimente și rezultate ale meciurilor",
+        "events": "Golește evenimentele meciurilor",
+        "mapResults": "Golește rezultatele hărților"
+      },
+      "settings": {
+        "title": "Setări",
+        "appSettings": "Golește setările aplicației"
+      }
+    },
+    "simulation": {
+      "title": "Starea simulării",
+      "description": "Șterge toate meciurile și statisticile istorice, ca să poți apăsa „Pornește turneul” în modul de simulare pe un tablou curat, păstrând serverele, echipele, hărțile și configurația curentă a turneului.",
+      "button": "Resetează starea simulării (păstrează configurația)",
+      "reset": {
+        "success": "Starea simulării a fost resetată. Meciurile și statisticile au fost șterse; serverele, echipele și configurația turneului au fost păstrate.",
+        "error": "Starea simulării nu a putut fi resetată"
+      }
+    },
+    "wipeDatabase": {
+      "title": "Golește întreaga bază de date",
+      "warningTitle": "EXTREM DE DISTRUCTIV!",
+      "warningBody": "Asta va șterge TOATE datele.",
+      "permanentlyDeletes": "Șterge definitiv:",
+      "items": {
+        "tournaments": "Toate turneele și tablourile",
+        "matches": "Toate meciurile și evenimentele",
+        "teams": "Toate echipele și jucătorii",
+        "servers": "Toate configurațiile serverelor"
+      },
+      "button": "Golește întreaga bază de date",
+      "successRedirect": "Baza de date a fost golită! Redirecționare...",
+      "error": "Baza de date nu a putut fi golită",
+      "dialog": {
+        "title": "Confirmă golirea bazei de date",
+        "areYouSure": "Ești absolut sigur?",
+        "actionWill": "Această acțiune va",
+        "permanentlyDelete": "șterge definitiv",
+        "items": {
+          "tournaments": "Toate datele turneelor și tablourile",
+          "matches": "Tot istoricul meciurilor și evenimentele",
+          "teams": "Toate echipele și configurațiile jucătorilor",
+          "servers": "Toate configurațiile serverelor"
+        },
+        "cannotUndo": "Această acțiune nu poate fi anulată!",
+        "wiping": "Se golește baza de date...",
+        "yesWipe": "Da, golește tot"
+      }
+    }
+  }
+}

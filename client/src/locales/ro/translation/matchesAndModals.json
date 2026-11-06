@@ -1,0 +1,505 @@
+{
+  "matchesPage": {
+    "errors": {
+      "loadMatches": "Meciurile nu au putut fi încărcate",
+      "loadTitle": "Eroare la încărcarea meciurilor",
+      "bulkDelete": "Unul sau mai multe meciuri nu au putut fi șterse"
+    },
+    "header": {
+      "createMatch": "Creează meci"
+    },
+    "bulkSelect": {
+      "select": "Selectează",
+      "done": "Gata cu selecția",
+      "selectAll": "Selectează tot",
+      "unselectAll": "Deselectează tot",
+      "deleteSelected": "Șterge selecția"
+    },
+    "empty": {
+      "title": "Niciun meci de afișat",
+      "description": "Creează un turneu și generează tabloul ca să vezi meciurile aici",
+      "createManual": "Sau creează un meci manual"
+    },
+    "sections": {
+      "live": "Meciuri live ({{count}})",
+      "upcoming": "Meciuri viitoare ({{count}})",
+      "history": "Istoricul meciurilor ({{count}})",
+      "inQueue": "În coadă: {{count}}"
+    },
+    "manualMatchLabel": "Meci manual",
+    "create": {
+      "success": "Meci manual creat: {{slug}}"
+    },
+    "bulkDelete": {
+      "title": "Șterge meciurile manuale",
+      "deleted_one": "A fost șters {{count}} meci",
+      "deleted_other": "Au fost șterse {{count}} de meciuri",
+      "message_one": "Sigur vrei să ștergi {{count}} meci manual? Această acțiune nu poate fi anulată.",
+      "message_other": "Sigur vrei să ștergi {{count}} de meciuri manuale? Această acțiune nu poate fi anulată.",
+      "deleted_few": "Au fost șterse {{count}} meciuri",
+      "message_few": "Sigur vrei să ștergi {{count}} meciuri manuale? Această acțiune nu poate fi anulată."
+    },
+    "card": {
+      "matchNumber": "Meciul #{{number}}",
+      "server": "Server: {{name}}",
+      "queuePosition": "Poziția în coadă: #{{position}}",
+      "shuffle": "Shuffle",
+      "shuffleManual": "Shuffle manual",
+      "manual": "Manual",
+      "simulation": "Simulare",
+      "winner": "CÂȘTIGĂTOR",
+      "mapN": "Harta {{n}}"
+    },
+    "statusLabel": {
+      "walkover": "WALKOVER",
+      "waitingForTournament": "SE AȘTEAPTĂ ÎNCEPEREA TURNEULUI",
+      "waitingForServer": "SE AȘTEAPTĂ UN SERVER",
+      "waitingForPairing": "SE AȘTEAPTĂ ÎMPERECHEREA",
+      "vetoPending": "VETO ÎN AȘTEPTARE",
+      "mapVeto": "VETO HĂRȚI",
+      "serverAllocated": "SERVER ALOCAT",
+      "warmup": "ÎNCĂLZIRE",
+      "overtime": "PRELUNGIRI #{{n}}",
+      "live": "LIVE",
+      "completed": "ÎNCHEIAT",
+      "cancelled": "ANULAT",
+      "needsDecision": "NECESITĂ DECIZIA UNUI ADMIN"
+    },
+    "statusGuide": {
+      "title": "Ghidul stărilor meciurilor",
+      "pending": "Meciul este programat, dar încă nu are un server. Va fi alocat când un server devine disponibil.",
+      "loaded": "Meciul este încărcat pe server și în modul de încălzire. Jucătorii trebuie să se conecteze și să se declare gata pentru start.",
+      "live": "Meciul se joacă pe serverul său.",
+      "completed": "Meciul s-a încheiat. Câștigătorul a fost stabilit, iar tabloul a fost actualizat.",
+      "proTipTitle": "Sfat:",
+      "proTip": "Când un meci arată „Se așteaptă jucătorii (X/Y)”, serverul e gata și jucătorii trebuie să se conecteze. După ce toți jucătorii așteptați se conectează și se declară gata, meciul pornește automat."
+    },
+    "latestEvent": "Ultimul: {{event}}",
+    "matchLabel": {
+      "upper": "TS T{{round}} M{{match}}",
+      "lower": "TI T{{round}} M{{match}}",
+      "grandFinal": "Marea finală",
+      "grandFinalReset": "Marea finală – resetare",
+      "group": "Grupa {{group}} · Turul {{round}}",
+      "playoffs": "Playoff · Turul {{round}}"
+    },
+    "table": {
+      "filterLabel": "Arată",
+      "search": "Găsește o echipă sau un jucător",
+      "tbd": "TBD",
+      "manage": "Administrează meciul",
+      "empty": "Niciun meci aici.",
+      "filter": {
+        "attention_one": "Necesită atenție · {{count}}",
+        "attention_other": "Necesită atenție · {{count}}",
+        "live_one": "Live · {{count}}",
+        "live_other": "Live · {{count}}",
+        "veto_one": "Veto · {{count}}",
+        "veto_other": "Veto · {{count}}",
+        "waiting_one": "În așteptare · {{count}}",
+        "waiting_other": "În așteptare · {{count}}",
+        "finished_one": "Încheiate · {{count}}",
+        "finished_other": "Încheiate · {{count}}",
+        "all_one": "Toate · {{count}}",
+        "all_other": "Toate · {{count}}",
+        "attention_few": "Necesită atenție · {{count}}",
+        "live_few": "Live · {{count}}",
+        "veto_few": "Veto · {{count}}",
+        "waiting_few": "În așteptare · {{count}}",
+        "finished_few": "Încheiate · {{count}}",
+        "all_few": "Toate · {{count}}"
+      },
+      "columns": {
+        "match": "Meci",
+        "teams": "Echipe",
+        "phase": "Fază",
+        "server": "Server",
+        "attention": "Necesită atenție",
+        "open": "Deschide"
+      },
+      "attention": {
+        "calls_one": "Apel de admin",
+        "calls_other": "{{count}} de apeluri de admin",
+        "decide": "Decide rezultatul",
+        "calls_few": "{{count}} apeluri de admin"
+      },
+      "phase": {
+        "live": "Live · harta {{map}}",
+        "finished": "Încheiat",
+        "finishedScore": "Încheiat · {{score}}",
+        "veto": "Veto hărți",
+        "waitingTeams": "Se așteaptă echipele",
+        "queued": "Se așteaptă un server · #{{position}} în coadă",
+        "waiting": "În așteptare"
+      },
+      "server": {
+        "freed": "Eliberat"
+      }
+    }
+  },
+  "matchDetailsModal": {
+    "tiebreakHint": "Scor egal: {{team}} a câștigat harta, decisă la departajare.",
+    "delete": {
+      "dialogTitle": "Șterge meciul",
+      "confirmTitle": "Ștergi acest meci?",
+      "confirmBody": "Sigur vrei să ștergi meciul „{{slug}}”? Această acțiune nu poate fi anulată.",
+      "button": "Șterge meciul",
+      "success": "Meci șters",
+      "failed": "Meciul nu a putut fi șters"
+    },
+    "roster": {
+      "title": "Lotul de jucători",
+      "yourTeam": "Echipa ta",
+      "openPlayerPage": "Deschide pagina jucătorului",
+      "ready": "GATA",
+      "connected": "CONECTAT",
+      "offline": "OFFLINE",
+      "bot": "BOT"
+    },
+    "decision": {
+      "body": "Toate hărțile au fost jucate, dar seria este egală la hărți, runde și damage. Alege câștigătorul pentru a avansa în tablou.",
+      "setWinner": "{{team}} câștigă",
+      "confirmTitle": "Stabilește câștigătorul seriei",
+      "confirmBody": "Închei această serie cu {{team}} drept câștigătoare? Tabloul avansează, iar asta nu poate fi anulată aici.",
+      "confirm": "Stabilește câștigătorul",
+      "success": "Câștigător stabilit",
+      "failed": "Câștigătorul nu a putut fi stabilit"
+    },
+    "config": {
+      "loadFailed": "Configurația meciului nu a putut fi încărcată",
+      "view": "Vezi configurația JSON a meciului",
+      "title": "Configurația JSON a meciului",
+      "loading": "Se încarcă configurația meciului...",
+      "empty": "Nicio configurație disponibilă pentru acest meci."
+    },
+    "tiebreak": {
+      "regulationOnly": "Prelungirile sunt dezactivate pentru acest meci (doar timpul regulamentar), așa că egalitățile se decid după damage-ul total al echipelor.",
+      "segmentsExhausted": "Prelungirile sunt configurate cu un număr maxim de segmente. Dacă scorul rămâne egal, câștigătorul se decide după damage-ul total al echipelor.",
+      "overtimeDisabled": "Prelungirile sunt dezactivate pentru acest meci, așa că egalitățile se decid după damage-ul total al echipelor.",
+      "tiedByDamage": "Scorul final a fost egal, așa că, potrivit setărilor meciului, câștigătorul a fost ales după damage-ul total al echipelor."
+    },
+    "team1": "Echipa 1",
+    "team2": "Echipa 2",
+    "matchTime": "Ora meciului:",
+    "server": "Server:",
+    "queuePosition": "Poziția în coadă:",
+    "totalDamage": "Damage total: {{team1}} - {{team2}}",
+    "mapOfTotal": "Harta {{index}} din {{total}}: {{map}}",
+    "mapIndex": "Harta {{index}}: {{map}}",
+    "round": "Runda {{round}}",
+    "shuffle": {
+      "averageElo": "ELO echipă (medie): {{team1}} vs {{team2}}",
+      "balancerHint": "Echipele shuffle sunt generate de un echilibrator bazat pe OpenSkill, care împarte jucătorii cu rating mare și mic pe ambele părți ca mediile să rămână apropiate."
+    },
+    "playerLeaderboards": "Clasamentele jucătorilor",
+    "noPlayerData": "Nu există date despre jucători",
+    "currentMap": "Harta curentă",
+    "maps": "Hărți",
+    "mapsNotPicked": "Hărțile nu sunt alese încă.",
+    "mapsViaVeto": "Se stabilește prin veto",
+    "matchInformation": "Informații despre meci",
+    "created": "Creat:",
+    "started": "Început:",
+    "completed": "Încheiat:",
+    "adminControls": "Controale de admin",
+    "slug": "Slug-ul meciului:",
+    "openChat": "Chatul meciului"
+  },
+  "bulkShuffleMatchesModal": {
+    "title": "Creează în masă meciuri shuffle",
+    "description": "Configurează un meci shuffle pe o singură hartă (hartă + limită de runde), apoi definește câte meciuri unu-la-unu vrei, alegând formația exactă pentru fiecare parte. Meciurile sunt create în cadrul turneului shuffle curent și primesc servere când pornești turneul.",
+    "mapSelect": {
+      "label": "Hartă",
+      "noMaps": "Nicio hartă configurată pentru acest turneu",
+      "helper": "Toate meciurile din acest lot vor folosi această hartă."
+    },
+    "maxRounds": {
+      "label": "Runde maxime pe hartă",
+      "helperWithValue": "Runde maxime: {{maxRounds}}; câștigă primul care ajunge la {{winRounds}}.",
+      "helperDefault": "Numărul maxim de runde pe hartă (implicit: 24, maximum: 30)."
+    },
+    "matchesSection": {
+      "title": "Meciuri ({{count}})",
+      "addMatch": "Adaugă meci"
+    },
+    "players": {
+      "empty": "Încă nu sunt jucători înscriși în acest turneu shuffle. Înscrie mai întâi jucători, apoi poți crea meciuri manuale."
+    },
+    "matchRow": {
+      "title": "Meciul {{index}}",
+      "teamCounts": "{{team1}}/{{teamSize}} • {{team2}}/{{teamSize}}",
+      "team1Label": "Jucătorii echipei 1 ({{team1Count}}/{{teamSize}})",
+      "team2Label": "Jucătorii echipei 2 ({{team2Count}}/{{teamSize}})",
+      "searchPlaceholder": "Caută și selectează jucători",
+      "mapOverrideLabel": "Hartă (suprascriere opțională)",
+      "mapOverrideHelperOwn": "Acest meci folosește propria hartă.",
+      "mapOverrideHelperDefault": "Lasă gol pentru a folosi harta implicită de mai sus.",
+      "maxRoundsOverrideLabel": "Runde maxime (suprascriere opțională)",
+      "maxRoundsOverrideHelperOwn": "Suprascrie numărul implicit de runde maxime pentru acest meci (acum {{value}}).",
+      "maxRoundsOverrideHelperDefault": "Lasă gol pentru a folosi numărul implicit de runde de mai sus."
+    },
+    "errors": {
+      "loadPlayers": "Jucătorii înscriși nu au putut fi încărcați",
+      "noMatches": "Adaugă cel puțin un meci de creat.",
+      "bothTeamsRequired": "Meciul {{index}}: ambele echipe trebuie să aibă cel puțin un jucător.",
+      "conflictingPlayers": "Meciul {{index}}: același jucător nu poate fi în ambele echipe. ID-uri în conflict: {{ids}}",
+      "mapRequired": "Meciul {{index}}: harta este obligatorie (setează o hartă implicită mai sus sau alege una pentru acest meci).",
+      "rowMaxRoundsRange": "Meciul {{index}}: rundele maxime trebuie să fie între 1 și 30 când sunt suprascrise per meci.",
+      "globalMaxRoundsRange": "Rundele maxime trebuie să fie între 1 și 30.",
+      "createFailed": "Meciurile shuffle manuale nu au putut fi create"
+    },
+    "success": {
+      "created": "Meciurile shuffle manuale au fost create. Vor primi servere când pornește turneul."
+    },
+    "createMatchesButton": {
+      "default": "Creează meciurile",
+      "creating": "Se creează…"
+    }
+  },
+  "teamModal": {
+    "titleCreate": "Creează echipă nouă",
+    "titleEdit": "Editează echipa",
+    "teamNameLabel": "Numele echipei",
+    "teamNamePlaceholder": "Astralis",
+    "teamNameHelper": "Numele echipei poate conține orice limbă sau caractere speciale",
+    "teamTagLabel": "Tag-ul echipei",
+    "teamTagPlaceholder": "AST",
+    "teamTagHelper": "Generat automat din numele echipei (maximum 4 caractere)",
+    "playersHeader": "Jucători ({{count}})",
+    "selectPlayers": "Selectează jucători",
+    "noPlayersInfo": "Încă nu ai adăugat jucători. Adaugă cel puțin unul.",
+    "addPlayersHelper": "Adaugă mai jos un jucător nou sau selectează dintre jucătorii existenți",
+    "addPlayersHelper_steam": "Adaugă jucători lipind un URL Steam sau selectând dintre jucătorii existenți",
+    "steamInputLabel": "Steam ID / URL vanity",
+    "steamInputPlaceholder": "gaben sau steamcommunity.com/id/gaben",
+    "resolveSteam": "Găsește Steam ID",
+    "resolving": "Se caută...",
+    "playerNameLabel": "Numele jucătorului",
+    "playerNamePlaceholder": "s1mple",
+    "eloLabel": "ELO (opțional)",
+    "eloPlaceholder": "1500",
+    "eloHelper": "Implicit: 1500",
+    "errors": {
+      "steamLookupEmpty": "Introdu un Steam ID, un URL vanity sau un URL de profil",
+      "steamApiNotConfigured": "API-ul Steam nu este configurat – introdu manual Steam ID64",
+      "steamResolveFailed": "Steam ID-ul nu a putut fi găsit – introdu manual Steam ID64",
+      "steamAndNameRequired": "Sunt obligatorii atât Steam ID-ul, cât și numele jucătorului",
+      "steamDuplicate": "Acest Steam ID este deja în echipă",
+      "teamNameRequired": "Numele echipei este obligatoriu",
+      "playersRequired": "Este necesar cel puțin un jucător",
+      "saveFailed": "Echipa nu a putut fi salvată",
+      "deleteFailed": "Echipa nu a putut fi ștearsă",
+      "discordIdInvalid": "ID-ul Discord trebuie să aibă 17–20 de cifre (ID-ul numeric al utilizatorului, nu numele)",
+      "discordIdInvalidPlayers": "ID Discord invalid pentru: {{names}}. Trebuie să aibă 17–20 de cifre sau să rămână gol.",
+      "discordIdSaveFailed": "Echipa a fost salvată, dar ID-ul Discord nu a putut fi salvat pentru: {{names}}. {{message}}",
+      "nameRequired": "Introdu numele jucătorului",
+      "addPlayerFailed": "Jucătorul nu a putut fi adăugat"
+    },
+    "success": {
+      "playerAdded": "Jucător adăugat în echipă",
+      "playerReplaced": "Jucător înlocuit",
+      "teamUpdated": "Echipă actualizată",
+      "teamCreated": "Echipă creată",
+      "teamDeleted": "Echipă ștearsă"
+    },
+    "buttons": {
+      "deleteTeam": "Șterge echipa",
+      "cancel": "Anulează",
+      "saving": "Se salvează...",
+      "saveChanges": "Salvează modificările",
+      "createTeam": "Creează echipa"
+    },
+    "confirmDelete": {
+      "title": "Șterge echipa",
+      "message": "Sigur vrei să ștergi „{{name}}”? Această acțiune nu poate fi anulată."
+    },
+    "replacePlayerAria": "Înlocuiește jucătorul {{name}}",
+    "replacePlayerTooltip": "Înlocuiește acest jucător",
+    "accountLabel": "Cont {{account}} (opțional)",
+    "accountHelper": "Pentru {{games}}. Când se conectează cu {{account}}, devine acest jucător."
+  },
+  "playerModal": {
+    "titleCreate": "Creează jucător",
+    "titleEdit": "Editează jucătorul",
+    "steamLabel": "Steam ID sau URL de profil (opțional)",
+    "steamHelperEditing": "Steam ID-ul nu poate fi schimbat",
+    "steamHelperNew": "Pentru {{games}}. Introdu un Steam ID64, un URL vanity sau un URL de profil; „Găsește” completează numele și avatarul.",
+    "resolveSteam": "Găsește Steam ID",
+    "resolving": "Se caută...",
+    "playerNameLabel": "Numele jucătorului",
+    "playerNamePlaceholder": "Jucător",
+    "eloLabelNew": "ELO inițial",
+    "eloLabelEdit": "ELO",
+    "eloHelperNew": "Lasă gol pentru valoarea implicită (rating 1500).",
+    "eloHelperEdit": "Schimbarea ELO va reseta ratingul și statisticile jucătorului. Această acțiune nu poate fi anulată.",
+    "isAdminLabel": "Este admin (administrează acest site; modulele de joc pot da adminilor și drepturi în joc)",
+    "currentElo": "ELO curent: {{value}}",
+    "startingElo": "ELO de pornire: {{value}}",
+    "matchesPlayed": "Meciuri jucate: {{count}}",
+    "errors": {
+      "steamRequired": "Steam ID-ul este obligatoriu",
+      "nameRequired": "Numele jucătorului este obligatoriu",
+      "steamLookupEmpty": "Introdu un Steam ID, un URL vanity sau un URL de profil",
+      "steamApiNotConfigured": "API-ul Steam nu este configurat – introdu manual Steam ID64",
+      "steamResolveFailed": "Steam ID-ul nu a putut fi găsit – introdu manual Steam ID64",
+      "saveFailed": "Jucătorul nu a putut fi salvat"
+    },
+    "success": {
+      "playerUpdated": "Jucător actualizat",
+      "playerCreated": "Jucător creat"
+    },
+    "buttons": {
+      "delete": "Șterge",
+      "cancel": "Anulează",
+      "saving": "Se salvează...",
+      "save": "Salvează",
+      "create": "Creează"
+    },
+    "confirmDelete": {
+      "title": "Șterge jucătorul",
+      "message": "Sigur vrei să ștergi jucătorul „{{name}}”? Această acțiune nu poate fi anulată."
+    },
+    "confirmEloUpdate": {
+      "title": "Actualizează ELO-ul jucătorului",
+      "message": "Sigur vrei să schimbi ELO-ul acestui jucător de la {{from}} la {{to}}? Statisticile și istoricul ratingului vor fi resetate. Această acțiune nu poate fi anulată."
+    },
+    "discordIdHelper": "Opțional. 17–20 de cifre. Le permite organizatorilor să contacteze acest jucător pe Discord. Nu este afișat niciodată public.",
+    "accountLabel": "Cont {{account}} (opțional)",
+    "accountHelper": "Pentru {{games}}. ID-ul contului; când se conectează cu {{account}}, devine acest jucător.",
+    "accountVerified": "Legat: s-a conectat cu {{account}}. Îl schimbă singur."
+  },
+  "teamImportModal": {
+    "title": "Importă echipe din JSON",
+    "info": {
+      "title": "Lipește mai jos JSON-ul cu datele echipelor.",
+      "format": "Format așteptat: un array de echipe cu name, tag (opțional) și players (name + steamId, plus un discordId opțional ca șir între ghilimele).",
+      "link": "Vezi documentația cu exemple"
+    },
+    "jsonLabel": "Date JSON",
+    "errors": {
+      "mustBeArray": "JSON-ul trebuie să fie un array de echipe",
+      "emptyArray": "Array-ul nu poate fi gol",
+      "parseWithMessage": "Eroare de parsare JSON: {{message}}",
+      "parseGeneric": "Format JSON invalid. Verifică sintaxa.",
+      "importFailed": "Echipele nu au putut fi importate",
+      "noJson": "Introdu date JSON"
+    },
+    "preview": {
+      "summary": "✓ JSON valid! Găsite: {{teams}}, cu {{players}} în total.",
+      "title": "Previzualizare:",
+      "missingDiscordTotal": "Jucători fără ID Discord: {{count}}",
+      "missingDiscordChip": "Fără Discord: {{count}}",
+      "playersChip_one": "{{count}} jucător",
+      "playersChip_other": "{{count}} de jucători",
+      "teamsCount_one": "{{count}} echipă",
+      "teamsCount_other": "{{count}} de echipe",
+      "playersChip_few": "{{count}} jucători",
+      "teamsCount_few": "{{count}} echipe"
+    },
+    "actions": {
+      "preview": "Previzualizare",
+      "importing": "Se importă...",
+      "import_one": "Importă {{count}} echipă",
+      "import_other": "Importă {{count}} de echipe",
+      "import_few": "Importă {{count}} echipe"
+    },
+    "warnings": {
+      "title": "Unele ID-uri Discord au fost ignorate. Acești jucători vor fi importați fără:",
+      "discordIdNumber": "Echipa „{{team}}”, jucătorul „{{player}}”: discordId trebuie să fie un șir între ghilimele. Numerele mari își pierd precizia în JSON, așa că ID-ul a fost eliminat.",
+      "discordIdInvalid": "Echipa „{{team}}”, jucătorul „{{player}}”: „{{value}}” nu este un ID de utilizator Discord (se așteaptă 17–20 de cifre), așa că a fost eliminat."
+    }
+  },
+  "playerImportModal": {
+    "title": "Importă jucători",
+    "info": {
+      "description": "Importă jucători din format JSON sau CSV. Câmpuri obligatorii: steamId, name. Opționale: initialELO (implicit 1500), avatarUrl.",
+      "link": "Vezi documentația cu exemple"
+    },
+    "placeholders": {
+      "jsonCsv": "Format JSON:\n[\n  {\n    \"steamId\": \"76561198012345678\",\n    \"name\": \"Jucătorul Unu\",\n    \"initialELO\": 1500,\n    \"avatarUrl\": \"https://...\"\n  }\n]\n\nFormat CSV:\nsteamId,name,initialELO,avatarUrl\n76561198012345678,Jucătorul Unu,1500,https://..."
+    },
+    "actions": {
+      "parseValidate": "Parsează și validează",
+      "importing": "Se importă...",
+      "import_one": "Importă {{count}} jucător",
+      "import_other": "Importă {{count}} de jucători",
+      "import_few": "Importă {{count}} jucători"
+    },
+    "preview": {
+      "title": "Jucători de importat ({{count}}):",
+      "steamId": "Steam ID: {{steamId}}",
+      "name": "Nume: {{name}}",
+      "initialElo": "ELO inițial: {{elo}}",
+      "avatar": "Avatar: {{url}}",
+      "readyChip_one": "{{count}} jucător gata de import",
+      "readyChip_other": "{{count}} de jucători gata de import",
+      "readyChip_few": "{{count}} jucători gata de import"
+    },
+    "errors": {
+      "noData": "Introdu date JSON sau CSV",
+      "noPlayers": "Nu s-au găsit jucători în date",
+      "validationPrefix": "Erori de validare:",
+      "parseFailed": "Datele nu au putut fi parsate: {{message}}",
+      "importFailed": "Jucătorii nu au putut fi importați",
+      "parseFirst": "Parsează și validează mai întâi datele"
+    }
+  },
+  "playerSelectionModal": {
+    "title": "Selectează jucători",
+    "selectedCount": "Selectați: {{count}}",
+    "searchPlaceholder": "Caută jucători după nume...",
+    "searchPlaceholder_steam": "Caută jucători după nume sau Steam ID...",
+    "selectAll": {
+      "select": "Selectează tot",
+      "deselect": "Deselectează tot"
+    },
+    "empty": {
+      "noSearchResults": "Niciun jucător nu corespunde căutării",
+      "noPlayers": "Nu există jucători disponibili"
+    },
+    "playerCard": {
+      "alreadyInTeam": "Deja în echipă"
+    },
+    "errors": {
+      "loadFailed": "Jucătorii nu au putut fi încărcați",
+      "noSelectable": "Nu există jucători care pot fi selectați"
+    },
+    "addPlayersButton_one": "Adaugă {{count}} jucător",
+    "addPlayersButton_other": "Adaugă {{count}} de jucători",
+    "addPlayersButton_few": "Adaugă {{count}} jucători"
+  },
+  "soundSettingsModal": {
+    "title": "Setări de sunet",
+    "soundSelect": {
+      "label": "Sunet de notificare"
+    },
+    "volume": {
+      "label": "Volum: {{percent}}%"
+    },
+    "testButton": "Testează sunetul",
+    "footer": "Notificările sonore se aud când meciul tău e gata sau când au loc evenimente importante."
+  },
+  "addBackupPlayer": {
+    "title": "Adaugă jucător",
+    "loadFailed": "Lista de jucători nu a putut fi încărcată",
+    "added": "{{name}} a fost adăugat în {{target}}",
+    "addFailed": "Jucătorul nu a putut fi adăugat",
+    "addToMatchFailed": "Jucătorul nu a putut fi adăugat în meci",
+    "searchLabel": "Caută jucătorul",
+    "searchPlaceholder": "Scrie numele jucătorului...",
+    "available": "Jucători disponibili (care nu sunt deja în meci): {{count}}",
+    "noneAvailable": "Nu există jucători disponibili",
+    "displayNameLabel": "Nume afișat (opțional)",
+    "displayNamePlaceholder": "Implicit numele curent al jucătorului",
+    "side": "Parte",
+    "spectator": "Spectator",
+    "selected": "Selectat:",
+    "fromTeam": "Din echipa: {{team}}",
+    "steamId": "Steam ID: {{id}}",
+    "adding": "Se adaugă jucătorul...",
+    "add": "Adaugă jucătorul în meci",
+    "underlyingCommand": "Comanda folosită:",
+    "important": "Important:",
+    "reconnectHint": "Jucătorul trebuie să se reconecteze la server după ce e adăugat. Dacă e deja conectat, poate fi nevoie să intre din nou."
+  }
+}

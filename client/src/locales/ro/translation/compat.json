@@ -1,0 +1,82 @@
+{
+  "compatPage": {
+    "title": "Compatibilitate Ready Up",
+    "subtitle": "Dacă pluginurile Ready Up funcționează cu cea mai recentă actualizare Counter-Strike 2, verificat automat la fiecare build CS2 nou.",
+    "live": "Live",
+    "offline": "Se reconectează…",
+    "loading": "Se încarcă compatibilitatea",
+    "loadError": "Compatibilitatea nu a putut fi încărcată. Încearcă din nou peste puțin timp.",
+    "disabledTitle": "Indisponibil aici",
+    "disabledDescription": "Acest site nu publică compatibilitatea Ready Up.",
+    "emptyTitle": "Încă nu există rezultate",
+    "emptyDescription": "Nicio verificare de compatibilitate nu a raportat încă. Pagina se actualizează singură imediat ce apare una.",
+    "checkedAgo": "Verificat {{time}}",
+    "viewRun": "Vezi rularea",
+    "factsLabel": "Ce s-a verificat",
+    "facts": {
+      "patch": "Patch CS2",
+      "buildid": "Build ID",
+      "readyup": "Ready Up",
+      "stage": "Etapă"
+    },
+    "overall": {
+      "pass": "Compatibil",
+      "warn": "Compatibil, cu avertismente",
+      "fail": "Incompatibil",
+      "checking": "Se verifică…",
+      "no_verdict": "Fără verdict"
+    },
+    "overallHint": {
+      "pass": "Fiecare componentă a trecut verificările pe acest build.",
+      "warn": "Ready Up funcționează pe acest build, dar unele verificări trebuie privite mai atent.",
+      "fail": "Cel puțin o componentă nu funcționează pe acest build. Amână actualizarea serverelor.",
+      "checking": "O verificare a acestui build rulează chiar acum.",
+      "no_verdict": "Ultima verificare nu a ajuns la un verdict."
+    },
+    "status": {
+      "pass": "Trecut",
+      "warn": "Avertisment",
+      "fail": "Eșuat",
+      "pending": "În așteptare",
+      "checking": "Se verifică…"
+    },
+    "stage": {
+      "static": "Analiză statică",
+      "selftest": "Autotest",
+      "live": "Server live"
+    },
+    "state": {
+      "queued": "În coadă",
+      "checking": "Se verifică",
+      "pass": "Trecut",
+      "warn": "Avertismente",
+      "fail": "Eșuat",
+      "no_verdict": "Fără verdict"
+    },
+    "trigger": {
+      "build_change": "Build CS2 nou",
+      "surface_change": "Datele jocului s-au schimbat",
+      "code_change": "Modificare Ready Up",
+      "nightly": "Nocturn",
+      "release": "Lansare Ready Up",
+      "manual": "Manual"
+    },
+    "kind": {
+      "signature": "Semnături",
+      "rtti": "RTTI",
+      "vtable": "Tabele virtuale",
+      "hook_site": "Puncte de hook",
+      "layout": "Structura memoriei",
+      "schema": "Schemă",
+      "event": "Evenimente de joc",
+      "selftest": "Autotest",
+      "livetest": "Test live"
+    },
+    "componentsTitle": "Componente",
+    "checksSummary": "{{passed}} din {{total}} verificări trecute",
+    "noChecks": "Nicio verificare raportată încă",
+    "failures": "Eșecuri",
+    "historyTitle": "Rulări recente",
+    "historyItem": "CS2 {{patch}} · build {{buildid}}"
+  }
+}
