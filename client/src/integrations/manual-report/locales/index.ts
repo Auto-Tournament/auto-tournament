@@ -9,6 +9,7 @@
  */
 
 import type { ModuleLocales } from '../../types';
+import cs from './cs.json';
 import de from './de.json';
 import en from './en.json';
 import es from './es.json';
@@ -47,4 +48,5 @@ export const manualReportLocales: ModuleLocales = {
   tr,
   ja,
   ko,
+  cs,
 };
