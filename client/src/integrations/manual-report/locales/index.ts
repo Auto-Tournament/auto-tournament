@@ -15,6 +15,7 @@ import de from './de.json';
 import en from './en.json';
 import es from './es.json';
 import es419 from './es-419.json';
+import fi from './fi.json';
 import fr from './fr.json';
 import it from './it.json';
 import ja from './ja.json';
@@ -53,4 +54,5 @@ export const manualReportLocales: ModuleLocales = {
   cs,
   sv,
   da,
+  fi,
 };
