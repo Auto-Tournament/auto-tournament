@@ -34,4 +34,5 @@ export const cs2Locales: ModuleLocales = {
   sv: () => import('./sv.json'),
   da: () => import('./da.json'),
   fi: () => import('./fi.json'),
+  hu: () => import('./hu.json'),
 };
