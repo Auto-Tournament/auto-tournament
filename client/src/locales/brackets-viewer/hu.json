@@ -1,0 +1,124 @@
+{
+  "origin-hint": {
+    "seed": "Kiemelt {{position}}",
+    "winner-bracket": "$t(abbreviations.winner-bracket) {{round}}.{{position}} vesztese",
+    "winner-bracket-semi-final": "$t(abbreviations.winner-bracket) elődöntő {{position}} vesztese",
+    "winner-bracket-final": "$t(abbreviations.winner-bracket) döntő vesztese",
+    "consolation-final": "Elődöntő {{position}} vesztese",
+    "grand-final": "$t(abbreviations.loser-bracket) döntő győztese",
+    "double-elimination-consolation-final-opponent-1": "$t(abbreviations.loser-bracket) elődöntő 1 vesztese",
+    "double-elimination-consolation-final-opponent-2": "$t(abbreviations.loser-bracket) döntő vesztese"
+  },
+  "match-label": {
+    "default": "{{matchNumber}}. meccs",
+    "winner-bracket": "$t(abbreviations.winner-bracket)",
+    "loser-bracket": "$t(abbreviations.loser-bracket)",
+    "standard-bracket": "$t(abbreviations.match)",
+    "standard-bracket-semi-final": "Elődöntő {{matchNumber}}",
+    "standard-bracket-final": "Döntő",
+    "double-elimination": "{{matchPrefix}} {{roundNumber}}.{{matchNumber}}",
+    "double-elimination-semi-final": "{{matchPrefix}} elődöntő {{matchNumber}}",
+    "double-elimination-final": "{{matchPrefix}} döntő",
+    "consolation-final": "Bronzmeccs",
+    "grand-final-single": "Nagydöntő",
+    "grand-final": "$t(abbreviations.grand-final) {{roundNumber}}. forduló",
+    "match-game": "{{gameNumber}}. játék"
+  },
+  "match-status": {
+    "locked": "Zárolva",
+    "waiting": "Várakozik",
+    "ready": "Kész",
+    "running": "Folyamatban",
+    "completed": "Befejezett",
+    "archived": "Archivált"
+  },
+  "abbreviations": {
+    "win": "Gy",
+    "loss": "V",
+    "forfeit": "F",
+    "position": "Hely",
+    "seed": "#",
+    "winner-bracket": "FÁ",
+    "loser-bracket": "AÁ",
+    "match": "M",
+    "grand-final": "ND"
+  },
+  "ranking": {
+    "rank": {
+      "text": "#",
+      "tooltip": "Helyezés"
+    },
+    "id": {
+      "text": "Név",
+      "tooltip": "Név"
+    },
+    "played": {
+      "text": "J",
+      "tooltip": "Játszott"
+    },
+    "wins": {
+      "text": "$t(abbreviations.win)",
+      "tooltip": "Győzelmek"
+    },
+    "draws": {
+      "text": "D",
+      "tooltip": "Döntetlenek"
+    },
+    "losses": {
+      "text": "$t(abbreviations.loss)",
+      "tooltip": "Vereségek"
+    },
+    "forfeits": {
+      "text": "$t(abbreviations.forfeit)",
+      "tooltip": "Feladások"
+    },
+    "scoreFor": {
+      "text": "SzP",
+      "tooltip": "Szerzett pontok"
+    },
+    "scoreAgainst": {
+      "text": "KP",
+      "tooltip": "Kapott pontok"
+    },
+    "scoreDifference": {
+      "text": "+/-",
+      "tooltip": "Pontkülönbség"
+    },
+    "points": {
+      "text": "P",
+      "tooltip": "Pontok"
+    }
+  },
+  "common": {
+    "bye": "ERŐNYERŐ",
+    "best-of-x": "Bo{{x}}",
+    "consolation": "Helyosztó",
+    "group-name": "{{groupNumber}}. csoport",
+    "group-name-winner-bracket": "Felső ág",
+    "group-name-loser-bracket": "Alsó ág",
+    "round-name": "{{roundNumber}}. forduló",
+    "round-name-final": "Utolsó forduló",
+    "round-name-winner-bracket": "$t(abbreviations.winner-bracket) {{roundNumber}}. forduló",
+    "round-name-winner-bracket-final": "$t(abbreviations.winner-bracket) utolsó forduló",
+    "round-name-loser-bracket": "$t(abbreviations.loser-bracket) {{roundNumber}}. forduló",
+    "round-name-loser-bracket-final": "$t(abbreviations.loser-bracket) utolsó forduló"
+  },
+  "form-creator": {
+    "stage-name-label": "Nevezd el a szakaszt",
+    "stage-name-placeholder": "Adj nevet a szakasznak",
+    "stage-selector-label": "Válassz szakaszt",
+    "team-label": "Nevezd el a csapataidat",
+    "team-label-placeholder": "Csapatnevek vesszővel elválasztott listája (2^n darab)",
+    "team-count": "Vagy egy csapatszám",
+    "team-count-placeholder": "Hány csapatot szeretnél?",
+    "group-label": "Hány csoport legyen?",
+    "group-placeholder": "Hány csoportot szeretnél?",
+    "seed-order-label": "Hogyan rendezzük a kiemeléseket?",
+    "double-elimination-seed-order-placeholder": "Kiemelési sorrend dupla kieséshez, vesszővel elválasztva",
+    "round-robin-mode-label": "Milyen körmérkőzéses módot szeretnél?",
+    "consolation-final-label": "Bronzmeccs",
+    "skip-first-round-label": "Első forduló kihagyása",
+    "grand-final-type-label": "Nagydöntő típusa",
+    "submit": "Létrehozás"
+  }
+}
