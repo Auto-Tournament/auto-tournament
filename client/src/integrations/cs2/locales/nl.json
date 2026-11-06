@@ -1348,11 +1348,11 @@
       "immortal": "Onsterfelijk"
     },
     "wear": {
-      "fn": "Factory New",
-      "mw": "Minimal Wear",
-      "ft": "Field-Tested",
-      "ww": "Well-Worn",
-      "bs": "Battle-Scarred"
+      "fn": "Gloednieuw",
+      "mw": "Zo goed als nieuw",
+      "ft": "Lichte slijtage",
+      "ww": "Versleten",
+      "bs": "Gevechtssporen"
     },
     "float": "Float",
     "pattern": "Patroon",
@@ -1442,11 +1442,11 @@
         "phase": "Fase",
         "wear": "Wear",
         "wears": {
-          "fn": "Factory New",
-          "mw": "Minimal Wear",
-          "ft": "Field-Tested",
-          "ww": "Well-Worn",
-          "bs": "Battle-Scarred"
+          "fn": "Gloednieuw",
+          "mw": "Zo goed als nieuw",
+          "ft": "Lichte slijtage",
+          "ww": "Versleten",
+          "bs": "Gevechtssporen"
         },
         "float": "Float",
         "pattern": "Patroonseed",

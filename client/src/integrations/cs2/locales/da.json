@@ -1349,10 +1349,10 @@
     },
     "wear": {
       "fn": "Fabriksny",
-      "mw": "Minimalt slidt",
-      "ft": "Felttestet",
-      "ww": "Godt slidt",
-      "bs": "Kamparret"
+      "mw": "Lidt slidt",
+      "ft": "Afprøvet i marken",
+      "ww": "Meget slidt",
+      "bs": "Kampvansiret"
     },
     "priceScale": {
       "label": "Markedspris {{price}}: {{rarity}} {{range}}",
@@ -1449,10 +1449,10 @@
         "wear": "Slid",
         "wears": {
           "fn": "Fabriksny",
-          "mw": "Minimalt slidt",
-          "ft": "Felttestet",
-          "ww": "Godt slidt",
-          "bs": "Kamparret"
+          "mw": "Lidt slidt",
+          "ft": "Afprøvet i marken",
+          "ww": "Meget slidt",
+          "bs": "Kampvansiret"
         },
         "float": "Float",
         "pattern": "Mønster-seed",

@@ -1348,11 +1348,11 @@
       "immortal": "Udødelig"
     },
     "wear": {
-      "fn": "Factory New",
-      "mw": "Minimal Wear",
-      "ft": "Field-Tested",
-      "ww": "Well-Worn",
-      "bs": "Battle-Scarred"
+      "fn": "Fabrikkny",
+      "mw": "Lite slitasje",
+      "ft": "Felttestet",
+      "ww": "Velbrukt",
+      "bs": "Krigssåret"
     },
     "priceScale": {
       "label": "Markedspris {{price}}: {{rarity}} {{range}}",
@@ -1448,11 +1448,11 @@
         "phase": "Fase",
         "wear": "Slitasje",
         "wears": {
-          "fn": "Factory New",
-          "mw": "Minimal Wear",
-          "ft": "Field-Tested",
-          "ww": "Well-Worn",
-          "bs": "Battle-Scarred"
+          "fn": "Fabrikkny",
+          "mw": "Lite slitasje",
+          "ft": "Felttestet",
+          "ww": "Velbrukt",
+          "bs": "Krigssåret"
         },
         "float": "Float",
         "pattern": "Mønsterseed",
