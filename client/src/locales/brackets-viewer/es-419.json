@@ -33,14 +33,14 @@
     "archived": "Archivado"
   },
   "abbreviations": {
-    "win": "W",
-    "loss": "L",
-    "forfeit": "F",
-    "position": "P",
+    "win": "G",
+    "loss": "P",
+    "forfeit": "WO",
+    "position": "Pos",
     "seed": "#",
-    "winner-bracket": "WB",
-    "loser-bracket": "LB",
-    "match": "M",
+    "winner-bracket": "CS",
+    "loser-bracket": "CI",
+    "match": "P",
     "grand-final": "GF"
   },
   "ranking": {
@@ -53,7 +53,7 @@
       "tooltip": "Nombre"
     },
     "played": {
-      "text": "P",
+      "text": "PJ",
       "tooltip": "Jugados"
     },
     "wins": {
@@ -94,8 +94,8 @@
     "best-of-x": "Bo{{x}}",
     "consolation": "Consolación",
     "group-name": "Grupo {{groupNumber}}",
-    "group-name-winner-bracket": "Winner Bracket",
-    "group-name-loser-bracket": "Loser Bracket",
+    "group-name-winner-bracket": "Cuadro superior",
+    "group-name-loser-bracket": "Cuadro inferior",
     "round-name": "Ronda {{roundNumber}}",
     "round-name-final": "Ronda final",
     "round-name-winner-bracket": "$t(abbreviations.winner-bracket) Ronda {{roundNumber}}",
