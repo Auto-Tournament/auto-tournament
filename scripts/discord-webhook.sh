@@ -91,62 +91,12 @@ fi
 echo -e "${BLUE}Webhook URL: ${YELLOW}${DISCORD_WEBHOOK_URL:0:50}...${NC}"
 echo ""
 
-# Function to get changelog from merged PR titles
-get_changelog() {
-    local prev_tag
-    local current_tag="v${NEW_VERSION}"
-    
-    # Get the previous tag (second most recent, excluding the current one)
-    # A stable release counts from the previous stable one (its betas may share its commit).
-    if [[ "$NEW_VERSION" == *-* ]]; then
-        prev_tag=$(git tag --sort=-v:refname | grep -v "^${current_tag}$" | sed -n '1p' 2>/dev/null || echo "")
-    else
-        prev_tag=$(git tag --sort=-v:refname | grep -v "^${current_tag}$" | grep -v -- '-' | sed -n '1p' 2>/dev/null || echo "")
-    fi
-    
-    # Extract PR titles from merge commits
-    # Format: "Merge pull request #XX..." followed by blank line, then PR title
-    # Reverse order so oldest PRs are first (git log shows newest first by default)
-    extract_pr_titles() {
-        local log_range="$1"
-        local temp_output
-        temp_output=$(git log ${log_range} --merges --format="%B" | \
-            awk '
-                /^Merge pull request/ {
-                    # Skip the merge line and blank line, get the next non-empty line (PR title)
-                    getline
-                    getline
-                    if (NF > 0) {
-                        print "- " $0
-                    }
-                }
-            ' | head -20)
-        
-        # Reverse the order (oldest first) - use tail -r on macOS, tac on Linux
-        if [[ "$OSTYPE" == "darwin"* ]]; then
-            echo "$temp_output" | tail -r
-        else
-            echo "$temp_output" | tac
-        fi
-    }
-    
-    if [ -z "$prev_tag" ]; then
-        # No previous tag, get all merged PRs up to the current tag
-        if git rev-parse "${current_tag}" >/dev/null 2>&1; then
-            extract_pr_titles "${current_tag}"
-        else
-            # Tag doesn't exist, get recent merged PRs
-            extract_pr_titles ""
-        fi
-    else
-        # Get merged PRs between previous tag and current tag
-        extract_pr_titles "${prev_tag}..${current_tag}"
-    fi
-}
+# collect_changes: the PRs in this release, the same list as the GitHub release.
+source "${SCRIPT_DIR}/release-changes.sh"
 
 # Get changelog
 echo -e "${YELLOW}Generating changelog...${NC}"
-CHANGELOG=$(get_changelog)
+CHANGELOG=$(collect_changes)
 
 # If changelog is empty or too short, use a default message
 if [ -z "$CHANGELOG" ] || [ ${#CHANGELOG} -lt 10 ]; then
