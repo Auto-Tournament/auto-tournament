@@ -1,0 +1,124 @@
+{
+  "origin-hint": {
+    "seed": "Seed {{position}}",
+    "winner-bracket": "$t(abbreviations.winner-bracket) {{round}}.{{position}} häviäjä",
+    "winner-bracket-semi-final": "$t(abbreviations.winner-bracket) välierän {{position}} häviäjä",
+    "winner-bracket-final": "$t(abbreviations.winner-bracket) finaalin häviäjä",
+    "consolation-final": "Välierän {{position}} häviäjä",
+    "grand-final": "$t(abbreviations.loser-bracket) finaalin voittaja",
+    "double-elimination-consolation-final-opponent-1": "$t(abbreviations.loser-bracket) välierän 1 häviäjä",
+    "double-elimination-consolation-final-opponent-2": "$t(abbreviations.loser-bracket) finaalin häviäjä"
+  },
+  "match-label": {
+    "default": "Ottelu {{matchNumber}}",
+    "winner-bracket": "$t(abbreviations.winner-bracket)",
+    "loser-bracket": "$t(abbreviations.loser-bracket)",
+    "standard-bracket": "$t(abbreviations.match)",
+    "standard-bracket-semi-final": "Välierä {{matchNumber}}",
+    "standard-bracket-final": "Finaali",
+    "double-elimination": "{{matchPrefix}} {{roundNumber}}.{{matchNumber}}",
+    "double-elimination-semi-final": "{{matchPrefix}} välierä {{matchNumber}}",
+    "double-elimination-final": "{{matchPrefix}} finaali",
+    "consolation-final": "Pronssiottelu",
+    "grand-final-single": "Suurfinaali",
+    "grand-final": "$t(abbreviations.grand-final) kierros {{roundNumber}}",
+    "match-game": "Peli {{gameNumber}}"
+  },
+  "match-status": {
+    "locked": "Lukittu",
+    "waiting": "Odottaa",
+    "ready": "Valmis",
+    "running": "Käynnissä",
+    "completed": "Päättynyt",
+    "archived": "Arkistoitu"
+  },
+  "abbreviations": {
+    "win": "V",
+    "loss": "H",
+    "forfeit": "L",
+    "position": "Sij",
+    "seed": "#",
+    "winner-bracket": "YK",
+    "loser-bracket": "AK",
+    "match": "O",
+    "grand-final": "SF"
+  },
+  "ranking": {
+    "rank": {
+      "text": "#",
+      "tooltip": "Sijoitus"
+    },
+    "id": {
+      "text": "Nimi",
+      "tooltip": "Nimi"
+    },
+    "played": {
+      "text": "P",
+      "tooltip": "Pelatut"
+    },
+    "wins": {
+      "text": "$t(abbreviations.win)",
+      "tooltip": "Voitot"
+    },
+    "draws": {
+      "text": "T",
+      "tooltip": "Tasapelit"
+    },
+    "losses": {
+      "text": "$t(abbreviations.loss)",
+      "tooltip": "Tappiot"
+    },
+    "forfeits": {
+      "text": "$t(abbreviations.forfeit)",
+      "tooltip": "Luovutukset"
+    },
+    "scoreFor": {
+      "text": "TP",
+      "tooltip": "Tehdyt pisteet"
+    },
+    "scoreAgainst": {
+      "text": "PP",
+      "tooltip": "Päästetyt pisteet"
+    },
+    "scoreDifference": {
+      "text": "+/-",
+      "tooltip": "Piste-ero"
+    },
+    "points": {
+      "text": "Pist",
+      "tooltip": "Pisteet"
+    }
+  },
+  "common": {
+    "bye": "VAPAA",
+    "best-of-x": "Bo{{x}}",
+    "consolation": "Sijoitusottelu",
+    "group-name": "Lohko {{groupNumber}}",
+    "group-name-winner-bracket": "Yläkaavio",
+    "group-name-loser-bracket": "Alakaavio",
+    "round-name": "Kierros {{roundNumber}}",
+    "round-name-final": "Viimeinen kierros",
+    "round-name-winner-bracket": "$t(abbreviations.winner-bracket) kierros {{roundNumber}}",
+    "round-name-winner-bracket-final": "$t(abbreviations.winner-bracket) viimeinen kierros",
+    "round-name-loser-bracket": "$t(abbreviations.loser-bracket) kierros {{roundNumber}}",
+    "round-name-loser-bracket-final": "$t(abbreviations.loser-bracket) viimeinen kierros"
+  },
+  "form-creator": {
+    "stage-name-label": "Nimeä vaiheesi",
+    "stage-name-placeholder": "Anna vaiheellesi nimi",
+    "stage-selector-label": "Valitse vaihe",
+    "team-label": "Nimeä joukkueesi",
+    "team-label-placeholder": "Pilkuilla erotettu lista joukkueiden nimistä (oltava 2^n)",
+    "team-count": "Tai joukkueiden määrä",
+    "team-count-placeholder": "Kuinka monta joukkuetta haluat?",
+    "group-label": "Kuinka monta lohkoa?",
+    "group-placeholder": "Kuinka monta lohkoa haluat?",
+    "seed-order-label": "Miten haluat järjestää seedit?",
+    "double-elimination-seed-order-placeholder": "Double eliminationin seed-järjestys pilkuilla erotettuna",
+    "round-robin-mode-label": "Minkä kaikki kaikkia vastaan -tilan haluat?",
+    "consolation-final-label": "Pronssiottelu",
+    "skip-first-round-label": "Ohita ensimmäinen kierros",
+    "grand-final-type-label": "Suurfinaalin tyyppi",
+    "submit": "Luo"
+  }
+}
