@@ -1,0 +1,81 @@
+{
+  "manualReport": {
+    "title": "Ottelun tulos",
+    "unknownTeam": "toinen joukkue",
+    "state": {
+      "nothing": "Tulosta ei ole vielä ilmoitettu. Kuka tahansa pelanneista voi ilmoittaa tuloksen.",
+      "waitingOpponent": "Ilmoitettu. Odotetaan, että {{team}} vahvistaa.",
+      "needsAnswer": "{{team}} ilmoitti tämän tuloksen. Vahvista se, jos se on oikein.",
+      "disputed": "Tämä tulos on kiistetty. Ylläpitäjä ratkaisee sen.",
+      "awaitingAdmin": "Odotetaan, että ylläpitäjä ratkaisee tämän ottelun.",
+      "confirmed": "Molemmat joukkueet hyväksyvät tämän tuloksen."
+    },
+    "deadline": {
+      "autoConfirm": "Vahvistuu itsestään {{minutes}} minuutissa, jos kukaan ei vastaa.",
+      "autoConfirmSoon": "Vahvistuu itsestään minä hetkenä hyvänsä.",
+      "escalate": "Siirtyy ylläpitäjälle {{minutes}} minuutissa, jos kukaan ei vastaa.",
+      "escalateSoon": "Siirtyy ylläpitäjälle minä hetkenä hyvänsä."
+    },
+    "score": "{{team1}} {{score1}} – {{score2}} {{team2}}",
+    "game": "Peli {{number}}",
+    "note": "Huomautus",
+    "notePlaceholder": "Mitä tahansa, mitä toisen joukkueen pitäisi tietää (valinnainen)",
+    "noteGiven": "Huomautus: {{note}}",
+    "disputeReason": "Mikä siinä on vialla?",
+    "disputeReasonGiven": "Kiistetty: {{reason}}",
+    "formHint": "Joukkueiden {{team1}} ja {{team2}} tulokset peli kerrallaan.",
+    "actions": {
+      "report": "Ilmoita tulos",
+      "reportAgain": "Ilmoita eri tulos",
+      "submit": "Lähetä ilmoitus",
+      "cancel": "Peruuta",
+      "confirm": "Vahvista",
+      "dispute": "Kiistä",
+      "disputeSubmit": "Lähetä kiista",
+      "withdraw": "Peru ilmoitukseni"
+    },
+    "errors": {
+      "stale": "Tämä ilmoitus muuttui sen ollessa näytölläsi. Lue se uudelleen ennen kuin vahvistat.",
+      "incomplete": "Täytä molemmat tulokset vähintään yhdestä pelistä.",
+      "failed": "Se ei mennyt läpi. Yritä uudelleen."
+    },
+    "captains": {
+      "title": "Kapteenit",
+      "hint": "Vain kapteeni voi ilmoittaa tai vahvistaa tämän joukkueen tuloksen.",
+      "make": "Tee kapteeniksi",
+      "remove": "Poista kapteenius",
+      "isCaptain": "Kapteeni",
+      "empty": "Kukaan tästä joukkueesta ei ole vielä kirjautunut, joten ketään ei voi nimittää.",
+      "unknown": "Tuntematon pelaaja",
+      "failed": "Sitä ei voitu muuttaa. Yritä uudelleen."
+    },
+    "stats": {
+      "hint": "Lisäluvut, joita tämä turnaus pyytää. Jätä kenttä tyhjäksi, jos kenelläkään ei ole sellaista.",
+      "required": "pakollinen",
+      "recorded": "Ilmoitetut tilastot",
+      "value": "{{subject}}: {{value}}{{suffix}}",
+      "errors": {
+        "number": "Kentän {{field}} kohteelle {{subject}} on oltava luku.",
+        "integer": "Kentän {{field}} kohteelle {{subject}} on oltava kokonaisluku.",
+        "range": "Kenttä {{field}} kohteelle {{subject}} on liian suuri ollakseen todellinen luku.",
+        "tooLong": "Kenttä {{field}} kohteelle {{subject}} on pidempi kuin {{max}} merkkiä.",
+        "missing": "{{field}} on pakollinen, eikä joukkueelle {{team}} ole täytetty mitään."
+      },
+      "tournamentTitle": "Ilmoitetut tilastot",
+      "tournamentHelp": "Laskettu yhteen vahvistetuista ilmoituksista. Vastustajaa yhä odottavaa tulosta ei lasketa tähän.",
+      "byTeam": "Joukkueittain",
+      "byPlayer": "Pelaajittain",
+      "team": "Joukkue",
+      "player": "Pelaaja",
+      "matches": "Ottelut"
+    },
+    "chip": {
+      "none": "Ei vielä tulosta",
+      "yours": "Ilmoituksesi",
+      "reported": "Ilmoitettu",
+      "confirm": "Vahvista se",
+      "disputed": "Kiistetty",
+      "final": "Lopullinen"
+    }
+  }
+}
