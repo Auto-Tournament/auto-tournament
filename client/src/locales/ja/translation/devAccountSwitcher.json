@@ -1,0 +1,12 @@
+{
+  "devAccountSwitcher": {
+    "tooltip": "アカウント切り替え(dev)",
+    "adminTest": "管理者(テスト)",
+    "playerA": "プレイヤー A(dev)",
+    "playerB": "プレイヤー B(dev)",
+    "playerC": "プレイヤー C(dev)",
+    "newPlayer": "新規プレイヤー(初回訪問)(dev)",
+    "signOut": "サインアウト",
+    "disabled": "このサーバーではテスト用サインインが無効です"
+  }
+}

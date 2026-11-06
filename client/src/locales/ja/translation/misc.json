@@ -1,0 +1,1278 @@
+{
+  "notFound": {
+    "title": "ページが見つかりません",
+    "description": "お探しのページは存在しないか、移動されました。",
+    "backToDashboard": "ダッシュボードに戻る",
+    "publicPlayerSearch": "公開プレイヤー検索"
+  },
+  "publicLinks": {
+    "intro": "プレイヤーや視聴者と共有できる公開ページへのクイックリンク。",
+    "common": {
+      "publicUrl": "公開 URL",
+      "urlPattern": "URL の形式"
+    },
+    "playerSearch": {
+      "title": "公開プレイヤー検索",
+      "description": "登録プレイヤーを名前、Steam ID、プロフィール URL で検索します。",
+      "openButton": "/player を開く"
+    },
+    "playerProfile": {
+      "title": "プレイヤープロフィール(公開)",
+      "description": "Steam ID64 によるプレイヤープロフィールへの直接リンク。Steam でサインインしたプレイヤーは、URL をコピーする代わりに上部バーの「マイプロフィール」も使えます。",
+      "requiresSteamId": "Steam ID64 が必要"
+    },
+    "teamMatch": {
+      "title": "チームの試合ページ(公開)",
+      "description": "チームの現在または直近の試合の閲覧専用ページ。",
+      "openExample": "サンプルチームを開く"
+    },
+    "tournamentLeaderboard": {
+      "title": "トーナメントのランキング(公開)",
+      "description": "現在のトーナメントの公開順位ページ(デフォルトはトーナメント 1)。",
+      "open": "ランキングを開く"
+    }
+  },
+  "games": {
+    "prompt": {
+      "title": "何をプレイしますか?",
+      "description": "これらのゲームのトーナメントを優先して表示します。いつでも変更できます。",
+      "skip": "スキップ",
+      "save": "ゲームを保存"
+    },
+    "picker": {
+      "searchLabel": "ゲームを検索",
+      "placeholder": "ゲーム名を入力",
+      "minChars": "2文字以上入力してください",
+      "noResults": "ゲームが見つかりません",
+      "loading": "検索中…",
+      "searchFailed": "現在検索は利用できません",
+      "yourGames": "あなたのゲーム",
+      "none": "まだゲームが選ばれていません",
+      "remove": "{{name}} を削除",
+      "supported": "トーナメント対応",
+      "limit": "最大 {{max}} 個のゲームを選べます",
+      "creditWikidata": "ゲームデータは Wikidata より"
+    },
+    "profile": {
+      "title": "プレイするゲーム",
+      "description": "プレイするゲームを選んでください。これらのゲームのトーナメントが優先して表示されます。",
+      "empty": "まだゲームを選んでいません。",
+      "edit": "編集",
+      "add": "ゲームを追加",
+      "dialogTitle": "プレイするゲーム",
+      "cancel": "キャンセル",
+      "save": "保存",
+      "saved": "ゲームを保存しました",
+      "saveFailed": "ゲームを保存できませんでした"
+    },
+    "welcome": {
+      "gridTitle": "人気のゲーム",
+      "continue": "続行",
+      "notNow": "後で",
+      "selectedGames": "選んだゲーム",
+      "selectedCount": "{{max}} 個中 {{count}} 個を選択",
+      "pickOne": "1つ以上のゲームを選んでください",
+      "supportedLegend": "ここでトーナメント開催"
+    }
+  },
+  "account": {
+    "email": {
+      "title": "メール",
+      "description": "パスワードを忘れたときにアカウントへ戻るため、また希望すればトーナメントの参加受付開始時にメールを受け取るためのものです。",
+      "address": "メールアドレス",
+      "sendLink": "確認メールを送信",
+      "cancel": "キャンセル",
+      "verified": "確認済み",
+      "unverified": "未確認",
+      "checkInbox": "送ったメールのリンクを開いて確認してください。",
+      "resend": "再送信",
+      "change": "変更",
+      "remove": "削除",
+      "sent": "{{email}} に確認メールを送りました。メール内のリンクを開いてください。",
+      "saved": "メールアドレスを保存しました",
+      "removed": "メールアドレスを削除しました",
+      "saveFailed": "メールアドレスを保存できませんでした",
+      "notifyLabel": "トーナメントの参加受付が始まったらメールで知らせる",
+      "notifyHint": "トーナメントごとに1通。すべてのメールに配信停止リンクがあります。",
+      "notifyNeedsVerified": "先にアドレスを確認してください。",
+      "notifyOn": "参加受付が始まるとメールが届きます",
+      "notifyOff": "今後トーナメントのメールは届きません",
+      "siteCannotSend": "このサイトは現在メールを送信していません。"
+    },
+    "title": "接続",
+    "subtitle": "このサイトのすべてのトーナメントで使える1つのアカウント。",
+    "loadFailed": "アカウントを読み込めませんでした。",
+    "impersonating": "プレイヤーになりすました状態でこのページを表示しています。表示されているのはあなた自身のアカウントです。変更するにはなりすましを終了してください。",
+    "rail": {
+      "label": "アカウント",
+      "profile": "プロフィール",
+      "connections": "接続"
+    },
+    "gameAccounts": {
+      "title": "ゲームアカウント",
+      "description": "試合であなたを識別するため、ゲームごとにアカウントが必要です。",
+      "verified": "確認済み",
+      "id": "Steam ID {{id}}",
+      "more": "このサイトにゲームが追加されると、ここにゲームアカウントが増えます。",
+      "notConnected": "これらのゲームをプレイするには {{provider}} アカウントを接続してください。",
+      "notOffered": "ここではまだ {{provider}} サインインが有効になっていません。管理者に 設定 → サインイン で有効にするよう依頼してください。"
+    },
+    "signIn": {
+      "title": "サインイン方法",
+      "description": "どれを使っても同じアカウントにサインインします。少なくとも1つは残してください。",
+      "primary": "メイン",
+      "primaryDetail": "アカウントの ID · {{games}} のゲームアカウントでもあります",
+      "primaryDetailNoGames": "アカウントの ID",
+      "connected": "接続済み",
+      "accountId": "ID",
+      "linkedOn": "{{date}} に接続",
+      "turnedOff": "このサイトではこの方法でのサインインはオフです",
+      "notConnected": "未接続",
+      "connect": "接続",
+      "remove": "削除",
+      "lastMethod": "これが唯一のサインイン方法です。先に別の方法を接続してください。",
+      "removeTitle": "{{provider}} を削除しますか?",
+      "removeBody": "{{provider}} でサインインできなくなります。後でもう一度接続できます。",
+      "removed": "{{provider}} を削除しました",
+      "removeFailed": "このサインイン方法を削除できませんでした",
+      "linked": "{{provider}} を接続しました",
+      "taken": "その {{provider}} アカウントは、このサイトの別のアカウントにすでに接続されています。",
+      "linkFailed": "{{provider}} を接続できませんでした。もう一度お試しください。",
+      "localLabel": "管理者ログイン(ユーザー名 + パスワード)",
+      "localDetail": "ユーザー名 {{username}}"
+    },
+    "changePassword": {
+      "button": "パスワードを変更",
+      "title": "パスワードを変更",
+      "current": "現在のパスワード",
+      "new": "新しいパスワード",
+      "repeat": "新しいパスワード(確認)",
+      "totp": "認証コード",
+      "mismatch": "新しいパスワードが一致しません",
+      "save": "パスワードを変更",
+      "cancel": "キャンセル",
+      "done": "パスワードを変更しました",
+      "failed": "パスワードを変更できませんでした",
+      "totpNeeded": "認証アプリのコードも入力してください。",
+      "tooLong": "新しいパスワードが長すぎます"
+    },
+    "reauth": {
+      "title": "管理者パスワードの確認",
+      "body": "サインイン方法を変更する前に {{username}} のパスワードを入力してください。",
+      "password": "パスワード",
+      "totp": "認証コード",
+      "confirm": "確認",
+      "failed": "パスワードまたはコードが正しくありません",
+      "totpNeeded": "認証アプリのコードも入力してください。"
+    },
+    "merge": {
+      "title": "アカウントを統合しますか?",
+      "body": "この Steam アカウントには、このサイトにすでにプレイヤーがいます。管理者アカウントに統合しますか?",
+      "explain": "プレイヤーの試合と統計はそのまま残り、管理者になります。管理者ログインと接続済みのサインイン方法がそちらに移ります。",
+      "matches_one": "{{count}} 試合プレイ",
+      "matches_other": "{{count}} 試合プレイ",
+      "confirm": "アカウントを統合",
+      "failed": "アカウントを統合できませんでした"
+    },
+    "twoStep": {
+      "turnOn": "2段階認証をオン",
+      "turnOff": "2段階認証をオフ",
+      "isOn": "2段階認証オン",
+      "isOff": "2段階認証オフ",
+      "onTitle": "2段階認証をオンにする",
+      "offTitle": "2段階認証をオフにする",
+      "offWarning": "オフにすると、この管理者アカウントはパスワードだけでサインインできます。",
+      "password": "パスワード",
+      "code": "認証コード",
+      "codeNeeded": "認証アプリのコードを入力してください。",
+      "failed": "オフにできませんでした",
+      "cancel": "キャンセル",
+      "turnedOn": "2段階認証はオンです",
+      "turnedOff": "2段階認証はオフです"
+    },
+    "passkeys": {
+      "title": "パスキー",
+      "description": "管理者サインインページで、パスワードとコードの代わりに指紋、顔、デバイスの PIN でサインインします。",
+      "add": "パスキーを追加",
+      "name": "名前",
+      "nameHelp": "区別するための名前(例:「MacBook」「スマホ」)。次にブラウザが指紋、顔、PIN を求めます。",
+      "continue": "続行",
+      "added": "パスキーを追加しました",
+      "addFailed": "パスキーを追加できませんでした",
+      "removed": "{{name}} を削除しました",
+      "removeFailed": "パスキーを削除できませんでした",
+      "lastUsed": "最終使用 {{date}}",
+      "addedOn": "{{date}} に追加、未使用",
+      "needsHttps": "パスキーにはサイトが https(または localhost)である必要があります。運営者に https 化を依頼してください。"
+    },
+    "name": {
+      "title": "表示名",
+      "description": "サイトとゲーム内に表示されます。1日1回変更できます。",
+      "lockedUntil": "サイトとゲーム内に表示されます。最近変更したため、{{date}} から再び変更できます。",
+      "label": "名前",
+      "lengthHint": "{{min}}〜{{max}} 文字",
+      "badChars": "引用符、< や >、制御文字は使えません",
+      "promptTitle": "あなたの名前は?",
+      "promptBody": "ゲーム内とサイトに表示されます。",
+      "notNow": "後で",
+      "save": "保存",
+      "saved": "名前を保存しました。次の試合からゲームサーバーで使われます。",
+      "saveFailed": "名前を保存できませんでした"
+    }
+  },
+  "home": {
+    "title": "ホーム",
+    "greeting": "こんにちは、{{name}} さん",
+    "greetingFallback": "こんにちは",
+    "editGames": "ゲームを編集",
+    "vs": "対",
+    "tbd": "未定",
+    "openMatch": "試合を開く",
+    "connectToServer": "サーバーに接続",
+    "matchStatus": {
+      "pending": "待機中",
+      "ready": "準備完了",
+      "loaded": "読み込み済み",
+      "live": "ライブ",
+      "completed": "完了"
+    },
+    "yourTournaments": {
+      "title": "あなたのトーナメント",
+      "empty": "現在参加しているトーナメントはありません。"
+    },
+    "tournaments": {
+      "playingNow": "プレイ中",
+      "waiting": "待機中",
+      "eliminated": "敗退",
+      "finished": "終了",
+      "placement": "{{total}} 中 {{position}}"
+    },
+    "openForYourGames": {
+      "title": "あなたのゲームで受付中",
+      "browseAll": "すべてのトーナメントを見る",
+      "empty": "現在、あなたのゲームで受付中のトーナメントはありません。",
+      "steamLinked": "Steam 連携済み",
+      "titleAll": "受付中のトーナメント",
+      "emptyAll": "現在受付中のトーナメントはありません。"
+    },
+    "summary": {
+      "match": "待機中の試合があります。",
+      "open_one": "あなたがプレイするゲームで {{count}} 件のトーナメントが受付中です。",
+      "open_other": "あなたがプレイするゲームで {{count}} 件のトーナメントが受付中です。",
+      "openAll_one": "このサイトで {{count}} 件のトーナメントが受付中です。",
+      "openAll_other": "このサイトで {{count}} 件のトーナメントが受付中です。",
+      "none": "今は対応が必要なものはありません。"
+    },
+    "yourGames": "プレイするゲーム",
+    "loading": "ホームを読み込み中",
+    "nextMatch": "次の試合",
+    "live": {
+      "title": "ライブ中",
+      "count": "{{count}} 件進行中",
+      "chip": "ライブ",
+      "matchesOn_one": "{{count}} 試合が進行中",
+      "matchesOn_other": "{{count}} 試合が進行中"
+    },
+    "quiet": {
+      "title": "今後の予定",
+      "more": "その他の予定",
+      "next": "次"
+    },
+    "play": {
+      "title": "今すぐ試合をプレイ",
+      "quietTitle": "何もない?試合をしよう。",
+      "hint": "十分な人数がキューに入るとすぐ、マッチメイキングで試合に入れます。",
+      "cta": "キューに入る"
+    },
+    "signup": {
+      "open": "参加受付中",
+      "cta": "参加登録",
+      "short": "参加登録",
+      "view": "見る",
+      "title": "参加登録",
+      "aside": "今後の予定"
+    },
+    "champions": {
+      "title": "優勝",
+      "aside": "最近終了",
+      "all": "すべての結果",
+      "won": "{{name}} で優勝",
+      "finished": "終了"
+    },
+    "lastTime": {
+      "title": "前回",
+      "results": "すべての結果",
+      "second": "2位",
+      "third": "3位",
+      "champion": "優勝"
+    },
+    "teams": "チーム:{{count}}",
+    "none": "まだトーナメントはありません。しばらくしてからまた見てください。",
+    "allTournaments": "すべてのトーナメント",
+    "empty": {
+      "soon": "近日公開",
+      "heroTitle": "まだトーナメントはありません",
+      "heroHint": "次のトーナメントが発表されると、日付と参加登録とともにここに表示されます。",
+      "create": "トーナメントを作成",
+      "nextTitle": "他に予定はありません",
+      "nextHint": "このトーナメントの次のトーナメントがここに表示されます。",
+      "signupTitle": "参加登録できるものはありません",
+      "signupHint": "参加受付中のトーナメントがここに表示されます。",
+      "slotTitle": "もう1つ入ります",
+      "slotHint": "ここに別のトーナメントを入れられます。",
+      "championTitle": "まだ優勝チームはいません",
+      "championHint": "最初の優勝チームがここに表示されます。"
+    },
+    "browse": {
+      "title": "プレイヤーとチームを探す",
+      "hint": "ここでプレイしている人を見て、参加するチームを探しましょう。",
+      "cta": "プレイヤーを見る"
+    },
+    "next": {
+      "label": {
+        "vetoTurn": "BAN/ピックのあなたの番",
+        "ready": "試合の準備ができました",
+        "warmup": "ウォームアップ",
+        "live": "ライブ",
+        "paused": "試合一時停止中"
+      },
+      "opponent": "対戦相手",
+      "startsAt": "開始",
+      "untilVeto": "BAN/ピックまで",
+      "untilMatch": "試合まで",
+      "veto": "BAN/ピック",
+      "yourTurn": "あなたの番",
+      "ban": "マップを BAN",
+      "pick": "マップをピック",
+      "side": "サイドを選ぶ",
+      "theirTurn": "相手の番",
+      "vetoOpen": "BAN/ピック受付中",
+      "waiting": "待機中",
+      "forServer": "サーバー待ち",
+      "join": "参加",
+      "serverReady": "サーバー準備完了",
+      "ready": "準備完了",
+      "mapRound": "{{map}} · R{{round}}",
+      "round": "ラウンド {{round}}",
+      "halftime": "ハーフタイム",
+      "nextMap": "次のマップ",
+      "goVeto": "BAN/ピックへ",
+      "paused": "一時停止中",
+      "about": "約 {{minutes}} 分",
+      "joinServer": "サーバーに参加"
+    }
+  },
+  "browsePage": {
+    "title": "トーナメントを探す",
+    "searchPlaceholder": "名前、主催者、場所で検索",
+    "searchLabel": "トーナメントを検索",
+    "loading": "トーナメントを読み込み中",
+    "loadError": "トーナメントを読み込めませんでした。",
+    "listLabel": "トーナメント",
+    "createTournament": "トーナメントを作成",
+    "teamsCount_one": "{{count}} チーム",
+    "teamsCount_other": "{{count}} チーム",
+    "filters": {
+      "allGames": "すべてのゲーム",
+      "status": {
+        "all": "すべての状態",
+        "live": "ライブ",
+        "registration_open": "参加受付中",
+        "finished": "終了"
+      },
+      "where": {
+        "all": "オンラインと LAN",
+        "online": "オンライン",
+        "lan": "LAN"
+      },
+      "gameLabel": "ゲーム",
+      "statusLabel": "状態",
+      "whereLabel": "場所"
+    },
+    "columns": {
+      "tournament": "トーナメント",
+      "format": "フォーマット",
+      "when": "日時"
+    },
+    "when": {
+      "starts": "{{date}} 開始",
+      "finished": "終了",
+      "finishedOn": "{{date}} に終了",
+      "noDate": "日程未定"
+    },
+    "actions": {
+      "signUp": "参加登録",
+      "watch": "開く",
+      "results": "結果",
+      "youreIn": "参加済み"
+    },
+    "status": {
+      "live": "ライブ"
+    },
+    "emptyNone": {
+      "title": "まだトーナメントはありません",
+      "description": "このサイトでトーナメントが開催されると、ここに表示されます。",
+      "descriptionAdmin": "このサイトにはまだトーナメントがありません。作成するとここに表示されます。"
+    },
+    "emptyFiltered": {
+      "title": "フィルターに一致するトーナメントはありません",
+      "description": "別のゲームや状態を試すか、フィルターをクリアしてください。",
+      "clear": "フィルターをクリア"
+    },
+    "groups": {
+      "live": "ライブ",
+      "soon": "今後の予定",
+      "finished": "終了"
+    },
+    "showOlder_one": "古いものを {{count}} 件表示",
+    "showOlder_other": "古いものを {{count}} 件表示",
+    "mine": {
+      "label": "どのトーナメント",
+      "all": "すべて",
+      "mine": "自分の"
+    },
+    "roundN": "{{n}}回戦",
+    "entries": {
+      "teams_one": "{{count}} チーム",
+      "teams_other": "{{count}} チーム",
+      "teamsOf": "{{count}} / {{max}} チーム",
+      "players_one": "{{count}} 人",
+      "players_other": "{{count}} 人",
+      "playersOf": "{{count}} / {{max}} 人"
+    }
+  },
+  "modulesPage": {
+    "title": "モジュール",
+    "subheading": "このインスタンスで実行できるものと、追加したゲーム。",
+    "builtIn": "組み込み",
+    "loadFailed": "インストール済みのパックを読み込めませんでした",
+    "removed": "{{name}} を削除しました",
+    "removeFailed": "そのパックを削除できませんでした",
+    "installed": {
+      "title": "ゲームモジュール",
+      "hint": "試合の進め方と結果の受け取り方を知っているコード。アプリに同梱されています。"
+    },
+    "module": {
+      "cs2": {
+        "name": "Counter-Strike 2",
+        "hint": "ゲームサーバーとやり取りします:試合を読み込み、すべてのラウンドを読み取り、結果を記録します。"
+      },
+      "manual-report": {
+        "name": "手動の結果報告",
+        "hint": "何も監視できないゲーム用。キャプテンがスコアを報告し、相手が同意します。"
+      }
+    },
+    "packs": {
+      "title": "ゲームパック",
+      "hint": "パックは1つのゲームを記述したファイルです(名前、タイル、結果の報告方法)。コードは含まず、上のモジュールの上で動きます。",
+      "empty": "まだパックはありません。このインスタンスに同梱されていないゲームを追加するにはインポートしてください。",
+      "runBy": "{{engine}} で動作",
+      "bundled": "Auto Tournament に同梱"
+    },
+    "import": {
+      "action": "パックをインポート",
+      "added": "{{name}} を追加しました",
+      "updated": "{{name}} を更新しました",
+      "failed": "そのパックをインポートできませんでした",
+      "notJson": "そのファイルは JSON ではないため、パックではありません",
+      "tooLarge": "そのファイルはパックにしては大きすぎます",
+      "noJson": "パックの .json ファイルを選んでください",
+      "missingIcon": "このパックは {{file}} を使います。そのファイルも選ぶか、タイルなしで JSON のみをインポートしてください"
+    },
+    "confirmRemove": {
+      "title": "{{name}} を削除しますか?",
+      "body": "ゲームは設定ウィザードから消えます。他は何も削除されず、パックを再インポートすれば戻ります。"
+    },
+    "browse": {
+      "action": "探す",
+      "title": "追加できるゲーム",
+      "hint": "コミュニティのパックリストから。これを開くまで何も取得していません。",
+      "add": "追加",
+      "update": "更新",
+      "installed": "インストール済み",
+      "empty": "このインスタンスで追加できるゲームはまだリストにありません。",
+      "offline": "リストに接続できませんでした",
+      "staleWith": "このインスタンスが最後に取得したリストを表示しています:{{reason}}。",
+      "failed": "リストを読み取れませんでした"
+    },
+    "pending": "{{game}} のゲームモジュールを読み込み中…",
+    "pendingRoute": "このページのモジュールを読み込み中…",
+    "notInstalled": {
+      "title": "{{game}} のゲームモジュールがインストールされていません",
+      "body": "このトーナメントのゲーム固有の部分は非表示になり、モジュールを再インストールするまで試合は実行できません。"
+    },
+    "code": {
+      "chip": "コードモジュール",
+      "hint": "運営者がこのサーバーのディスクにインストールしたものです。",
+      "noReason": "理由の記載なし",
+      "broken": "このモジュールは壊れています:{{reason}}",
+      "status": {
+        "ok": "OK",
+        "incompatible": "互換性なし",
+        "broken": "破損",
+        "disabled": "無効"
+      },
+      "enable": "有効にする",
+      "disable": "無効にする",
+      "enabled": "{{name}} を有効にしました",
+      "disabled": "{{name}} を無効にしました",
+      "toggleFailed": "そのモジュールを変更できませんでした",
+      "listFailed": "コードモジュールを読み取れませんでした:{{reason}}",
+      "safeMode": "セーフモード:このページではコードモジュールを読み込んでいません。再び読み込むには ?modules=off なしで開いてください。",
+      "slotFailed": "{{id}} モジュールがここで失敗しました。理由はモジュールページにあります。",
+      "reload": {
+        "body": "モジュールのコードを読み込み/解除するにはページを再読み込みしてください。",
+        "action": "再読み込み"
+      },
+      "confirm": {
+        "title": "{{name}} を有効にしますか?",
+        "warningTitle": "これはコードモジュールです。",
+        "warning": "Auto Tournament のサーバー内でデータベース、ファイル、シークレットへの完全なアクセス権を持って動作し、描画するページを開いたすべての管理者とプレイヤーのブラウザ内でも、その人の権限で動作します。Auto Tournament はコードモジュールを審査も隔離もしません。このプラットフォームと同じくらい作者を信頼できる場合のみ有効にしてください。",
+        "source": "入手元",
+        "onDisk": "このサーバーのディスク",
+        "version": "バージョン",
+        "clientApi": "クライアント API",
+        "serverApi": "サーバー API",
+        "none": "未宣言",
+        "typeId": "有効にするには {{id}} と入力してください。"
+      },
+      "failure": {
+        "badEntry": "コードが {{prefix}} から配信されていません",
+        "noClientApi": "クライアント API の範囲を宣言していません。このプラットフォームは {{platform}} を提供しています",
+        "badClientApi": "クライアント API の範囲「{{range}}」は semver の範囲ではありません",
+        "outOfRange": "クライアント API {{range}} 向けに作られています。このプラットフォームは {{platform}} を提供しています",
+        "notFound": "コードが見つかりません(HTTP 404)",
+        "httpError": "コードを取得できませんでした(HTTP {{status}})",
+        "notJavaScript": "コードが JavaScript ではなく {{contentType}} として配信されています",
+        "importFailed": "コードの読み込みに失敗しました:{{error}}",
+        "timeout": "{{seconds}} 秒以内にコードが読み込まれませんでした",
+        "sharedFailed": "プラットフォームがパッケージを共有できませんでした:{{error}}",
+        "badExport": "コードがモジュール定義ではありません:{{detail}}",
+        "idMismatch": "コード上の名前は「{{id}}」ですが、「{{expected}}」としてインストールされています",
+        "idTaken": "「{{id}}」はすでに組み込みのモジュールです",
+        "render": "「{{slot}}」スロットの描画中に失敗しました:{{error}}"
+      }
+    },
+    "signInNeed": {
+      "body": "{{game}} のプレイヤーは {{provider}} でサインインしますが、{{provider}} サインインがオフです。ゲームに必要なアカウントを連携できません。",
+      "action": "オンにする"
+    },
+    "addons": {
+      "title": "アドオン",
+      "hint": "ゲーム以外の機能。オン/オフはすぐに反映されます。",
+      "open": "開く",
+      "toggle": "{{name}} のオン/オフ",
+      "toggleFailed": "アドオンを変更できませんでした。",
+      "startFailed": "オンですが起動しませんでした:{{error}}",
+      "notFound": "そのようなアドオンはありません。",
+      "off": "このアドオンはオフです。設定するにはモジュールでオンにしてください。"
+    }
+  },
+  "catalog": {
+    "title": "ゲーム",
+    "hint": "このインスタンスで動くすべてのゲームと、追加できるゲーム。ゲームパックはデータで、コードモジュールは Auto Tournament が署名しています。どちらもワンクリックでインストールでき、「このイメージ内」と表示されたものはネットワーク不要です。",
+    "search": "ゲームを検索",
+    "installedTitle": "インストール済み({{count}})",
+    "availableTitle": "利用可能({{count}})",
+    "empty": "一致するゲームはありません。",
+    "allInstalled": "カタログのすべてがインストール済みです。",
+    "noneInstalled": "まだゲームがインストールされていません。トーナメントを開催したいゲームをインストールしてください。プレイヤーはその中から選びます。",
+    "loadFailed": "ゲームカタログを読み取れませんでした:{{reason}}",
+    "loadFailedFallback": "サーバーが応答しませんでした",
+    "retry": "再試行",
+    "failed": "{{name}}:{{reason}}",
+    "failedFallback": "操作に失敗しました",
+    "updateAll": {
+      "action": "すべて更新({{count}})",
+      "running": "更新中…",
+      "done": "{{count}} 件のゲームとモジュールを更新しました",
+      "summary": "更新 {{updated}}、スキップ {{skipped}}、失敗 {{failed}}。",
+      "failedItem": "{{name}}:{{reason}}",
+      "failedFallback": "すべてを更新できませんでした"
+    },
+    "feed": {
+      "cache": "{{time}} 時点のカタログを表示中:オンラインカタログに接続できませんでした({{reason}})。このイメージ内のゲームはネットワークなしでもインストールできます。",
+      "none": "オンラインカタログに接続できませんでした({{reason}})。このイメージ内のゲームを表示しています。ネットワークなしでインストールできます。",
+      "unknown": "理由の記載なし",
+      "cacheRefreshing": "オンラインカタログの読み込み中は {{time}} 時点のカタログを表示しています。",
+      "noneRefreshing": "オンラインカタログを読み込み中… その間はこのイメージ内のゲームを表示しています。ネットワークなしでインストールできます。",
+      "reason": {
+        "timeout": "時間内に応答しませんでした",
+        "unreachable": "接続できませんでした",
+        "bad_response": "応答がカタログではありませんでした",
+        "newer_schema": "新しい Auto Tournament 向けです",
+        "too_large": "大きすぎます",
+        "offline": "CATALOG_OFFLINE が設定されています",
+        "http": "HTTP {{status}} で応答しました"
+      }
+    },
+    "kind": {
+      "module": "コードモジュール"
+    },
+    "source": {
+      "snapshot": "このイメージ内"
+    },
+    "state": {
+      "available": "利用可能",
+      "installed": "インストール済み",
+      "update-available": "アップデートあり",
+      "disabled": "無効",
+      "broken": "破損",
+      "incompatible": "互換性なし",
+      "builtin": "組み込み",
+      "installing": "インストール中…",
+      "working": "処理中…",
+      "restart": "再起動が必要"
+    },
+    "action": {
+      "install": "インストール",
+      "update": "{{version}} に更新",
+      "enable": "有効にする",
+      "disable": "無効にする",
+      "remove": "削除",
+      "uninstall": "アンインストール"
+    },
+    "done": {
+      "installed": "{{name}} をインストールしました",
+      "updated": "{{name}} を更新しました",
+      "enabled": "{{name}} を有効にしました",
+      "disabled": "{{name}} を無効にしました",
+      "removed": "{{name}} を削除しました"
+    },
+    "reload": {
+      "body": "{{names}} が動作中です。ここで使うにはページを再読み込みしてください。",
+      "action": "再読み込み"
+    },
+    "restart": "完了するには Auto Tournament を再起動してください:{{names}}。",
+    "restartNow": {
+      "action": "今すぐ再起動",
+      "restarting": "再起動中…",
+      "failed": "再起動できませんでした",
+      "timeout": "Auto Tournament がまだ戻っていません。コンテナを確認してからページを再読み込みしてください。"
+    },
+    "confirmInstall": {
+      "title": "{{name}} をインストールしますか?",
+      "body": "これは Auto Tournament が署名したコードモジュールです。このサーバー内でデータベースとファイルにアクセスして動作し、描画するページを開いた全員のブラウザでも動作します。",
+      "version": "バージョン {{version}}",
+      "from": "入手元:{{source}}",
+      "fromRemote": "GitHub の Auto Tournament",
+      "fromSnapshot": "このイメージ内のコピー(ネットワーク不要)"
+    },
+    "confirmUninstall": {
+      "title": "{{name}} をアンインストールしますか?",
+      "body": "ファイルは削除されます。データ(トーナメント、サーバー、設定)は残り、再インストールすれば戻ります。",
+      "packBody": "ゲームは設定ウィザードから消えます。他は何も削除されず、再インストールすれば戻ります。"
+    },
+    "welcome": {
+      "title": "このインスタンスのゲーム",
+      "hint": "このインスタンスの運営者として、提供するゲームを選びます。プレイヤーはその中から選びます。"
+    },
+    "signedBy": "署名:{{label}}(キー {{keyId}})"
+  },
+  "matchmaking": {
+    "play": {
+      "title": "プレイ",
+      "subtitle": "5v5 の試合を探します。最も長く待っているプレイヤーとマッチし、パーティーは常に同じチームになります。",
+      "unavailable": "このサイトではまだマッチメイキングが開いていません。",
+      "findTitle": "試合を探す",
+      "findHelp": "待っている間もサイトを見ていられます。試合が見つかったら20秒以内に承認してください。",
+      "searchingHelp": "検索中。下のバーに待ち時間が表示されます。",
+      "find": "試合を探す",
+      "leaderStarts": "検索はパーティーリーダーが開始します。",
+      "cooldown": "試合を辞退または見逃しました。{{minutes}} 分後に再び検索できます。",
+      "rating_one": "レーティング {{elo}} · {{count}} 試合 · {{wins}} 勝",
+      "rating_other": "レーティング {{elo}} · {{count}} 試合 · {{wins}} 勝",
+      "mode": "モード",
+      "modeName": {
+        "5v5": "5v5",
+        "2v2": "2v2 相棒",
+        "1v1": "1v1"
+      },
+      "inQueue_one": "キューに {{count}} 人",
+      "inQueue_other": "キューに {{count}} 人",
+      "partyTitle": "あなたのパーティー",
+      "invite": "招待",
+      "partyOf": "{{max}} 人中 {{count}} 人",
+      "you": "あなた",
+      "selected": "選択中",
+      "modeTitle": {
+        "5v5": "競技",
+        "2v2": "相棒",
+        "1v1": "デュエル"
+      },
+      "lookingTitle": "プレイヤーを探しています",
+      "seats": "{{count}} 人が検索中 · 1試合に {{total}} 人必要",
+      "leaveQueue": "キューを抜ける",
+      "level": "あなたのレベル",
+      "xp": "{{into}} / {{next}} XP",
+      "ratingShort": "レーティング",
+      "recent": "最近",
+      "noRecent": "まだ試合はありません。",
+      "result": {
+        "win": "勝ち",
+        "loss": "負け",
+        "draw": "引き分け"
+      },
+      "resultShort": {
+        "win": "W",
+        "loss": "L",
+        "draw": "D"
+      },
+      "backToMatch": "試合に戻る",
+      "online_one": "{{count}} 人オンライン",
+      "online_other": "{{count}} 人オンライン",
+      "usuallyWait_one": "通常約 {{count}} 分",
+      "usuallyWait_other": "通常約 {{count}} 分",
+      "aboutWait_one": "約 {{count}} 分",
+      "aboutWait_other": "約 {{count}} 分",
+      "defaultPool": {
+        "5v5": "Active Duty",
+        "2v2": "相棒マップ",
+        "1v1": "相棒マップ"
+      },
+      "searchAnyone": "検索中のプレイヤーが少ないため、空いている誰とでもマッチします({{count}} 人検索中、{{total}} 人必要)",
+      "searchRating": "レーティングの近い試合を検索中(±{{elo}})· {{count}} 人検索中",
+      "botFill": "空席を BOT で埋める",
+      "botFillUnrated": "空席は BOT が埋めます · レーティング対象外:レーティング、XP、ドロップなし",
+      "searchRatingPlain": "レーティングの近い試合を検索中 · {{count}} 人検索中",
+      "searchWidening": "検索範囲を拡大中:±{{elo}} · {{count}} 人検索中",
+      "searchAnyRating": "すべてのレーティングで検索中 · {{count}} 人検索中",
+      "inTournament": "進行中のトーナメント({{tournament}})に参加しているため、今はマッチメイキングのキューに入れません。",
+      "partyInTournament": "進行中のトーナメントに参加中のため、パーティーは今キューに入れません:{{names}}。",
+      "inMatch_one": "{{count}} 人が試合中",
+      "inMatch_other": "{{count}} 人が試合中"
+    },
+    "queue": {
+      "searching": "{{mode}} を検索中",
+      "cancel": "検索をやめる"
+    },
+    "found": {
+      "title": "試合が見つかりました",
+      "accept": "承認",
+      "decline": "辞退",
+      "waiting": "他のプレイヤーを待っています",
+      "accepted": "{{accepted}} / {{total}} 人が承認",
+      "secondsLeft_one": "残り {{count}} 秒",
+      "secondsLeft_other": "残り {{count}} 秒",
+      "subtitle": "{{mode}} · {{seconds}} 秒以内に承認"
+    },
+    "party": {
+      "title": "パーティー",
+      "help": "フレンドと一緒にプレイ:パーティーを作ってリンクを送りましょう。最大5人、常に同じチームです。",
+      "create": "パーティーを作る",
+      "members_one": "パーティーに {{count}} 人",
+      "members_other": "パーティーに {{count}} 人",
+      "inviteLink": "招待リンク",
+      "copy": "コピー",
+      "copied": "招待リンクをコピーしました",
+      "code": "招待コード",
+      "join": "参加",
+      "joined": "パーティーに参加しました",
+      "leave": "パーティーを抜ける",
+      "disband": "パーティーを解散"
+    },
+    "room": {
+      "title": "試合ルーム",
+      "missing": "この試合は存在しないか、あなたは参加していません。",
+      "back": "プレイに戻る",
+      "team": "チーム {{n}}",
+      "status": {
+        "accepting": "承認待ち",
+        "ready": "全員承認",
+        "cancelled": "キャンセル"
+      },
+      "match": {
+        "pending": "マップ BAN:1つ残るまで交互にマップを BAN します。チームの誰でもクリックでき、最初のクリックが有効です。",
+        "ready": "空きサーバーを待っています。",
+        "loaded": "サーバーの準備ができました。参加してください。",
+        "live": "試合はライブ中です。",
+        "completed": "試合は終了しました。",
+        "other": "試合:{{status}}"
+      },
+      "pickedBy": "{{mode}} · マップルーレットで決定",
+      "pickedByVeto": "{{mode}} · BAN/ピックで決定",
+      "vs": "対",
+      "you": "(あなた)",
+      "accepted": "承認済み",
+      "matchChat": "試合チャット",
+      "playAgain": "もう一度プレイ",
+      "fullScoreboard": "スコアボード全体",
+      "newSkin": "新しいスキン",
+      "inventory": "装備",
+      "victory": "勝利",
+      "defeat": "敗北",
+      "draw": "引き分け",
+      "inServer": "サーバーに {{total}} 人中 {{n}} 人",
+      "warmupRule": "{{total}} 人全員がそろうまでウォームアップが続きます。",
+      "warmupRuleTimed": "{{total}} 人全員がそろうか {{minutes}} 分経つまでウォームアップが続き、その後いるメンバーで始まります。",
+      "teamLetter": "チーム {{letter}}",
+      "sideFirst": "{{side}} スタート",
+      "presence": {
+        "in": "サーバー内",
+        "notYet": "未入室"
+      },
+      "equip": "装備する",
+      "equipped": "装備中",
+      "equipFailed": "装備できませんでした",
+      "rematch": {
+        "title": "再戦しますか?",
+        "ask": "同じチームで新しい試合。あなたの回答はパーティー全体に適用されます。チームの過半数が賛成すると、相手チームに30秒の承認時間が与えられます。",
+        "yes": "はい、再戦",
+        "no": "いいえ、結構です",
+        "button": "再戦",
+        "offerTitle": "相手チームが再戦を希望しています",
+        "teamTitle": "あなたのチームが再戦を希望しています",
+        "offerBody": "同じチームで新しい試合。チームの過半数の賛成が必要です。あなたの回答はパーティー全体に適用されます。",
+        "waitingOther": "相手チームを待っています… {{s}} 秒",
+        "waitingTeam": "あなたのチームを待っています… {{s}} 秒",
+        "accepted": "再戦が承認されました。新しい試合を開いています…",
+        "refused": "再戦は辞退されました。"
+      }
+    },
+    "result": {
+      "title": "結果",
+      "map": "マップ {{n}}",
+      "rating": "レーティング",
+      "xp": "+{{xp}} XP · レベル {{level}}",
+      "levelProgress": "次のレベルまで {{next}} XP 中 {{into}}",
+      "xpReason": {
+        "completed": "プレイ",
+        "win": "勝利",
+        "draw": "引き分け",
+        "performance": "パフォーマンス",
+        "first_win": "本日初勝利",
+        "admin": "管理者"
+      },
+      "player": "プレイヤー",
+      "commend": "評価",
+      "thumbsUp": "グッド",
+      "thumbsDown": "バッド",
+      "thumbsUpFor": "{{name}} にグッド",
+      "thumbsDownFor": "{{name}} にバッド",
+      "downReason": "理由は?",
+      "downTag": {
+        "toxic": "暴言・迷惑行為",
+        "griefing": "妨害",
+        "afk": "放置・離脱",
+        "other": "その他"
+      },
+      "commendFailed": "保存できませんでした",
+      "outcome": {
+        "win": "勝利",
+        "loss": "敗北",
+        "draw": "引き分け"
+      },
+      "minutes_one": "{{count}} 分",
+      "minutes_other": "{{count}} 分",
+      "yourGame": "あなたの試合",
+      "fullBoard": "スコアボード全体",
+      "hideBoard": "スコアボードを隠す"
+    },
+    "profile": {
+      "level": "レベル {{level}}",
+      "xp": "{{xp}} XP",
+      "thumbsUp_one": "グッド {{count}}",
+      "thumbsUp_other": "グッド {{count}}",
+      "thumbsDown_one": "バッド {{count}}",
+      "thumbsDown_other": "バッド {{count}}",
+      "tag": {
+        "friendly": "フレンドリー",
+        "team_player": "チームプレイヤー",
+        "leader": "リーダー",
+        "good_comms": "コミュニケーション上手",
+        "teacher": "先生",
+        "good_sport": "スポーツマン",
+        "toxic": "暴言・迷惑行為",
+        "griefing": "妨害",
+        "unhelpful": "非協力的",
+        "bad_sport": "スポーツマンシップに欠ける",
+        "afk": "放置・離脱",
+        "other": "その他"
+      },
+      "negativesPrivate": "これらはあなたと管理者だけが見られます。",
+      "history": "マッチメイキングの試合",
+      "historyEmpty": "まだマッチメイキングの試合はありません。",
+      "win": "勝ち",
+      "loss": "負け",
+      "draw": "引き分け",
+      "positivePercent": "{{percent}}% が好評価"
+    },
+    "leaderboard": {
+      "toLadder": "マッチメイキングのランキング →",
+      "title": "ランキング",
+      "subtitle_one": "直近30日間で {{count}} 試合以上プレイしたプレイヤー。",
+      "subtitle_other": "直近30日間で {{count}} 試合以上プレイしたプレイヤー。",
+      "empty_one": "まだ誰もいません。30日間で {{count}} 試合プレイするとここに表示されます。",
+      "empty_other": "まだ誰もいません。30日間で {{count}} 試合プレイするとここに表示されます。",
+      "level": "レベル",
+      "games": "試合",
+      "winRate": "勝率"
+    },
+    "admin": {
+      "title": "キュー(管理者)",
+      "summary": "{{players}} 人が検索中、{{lobbies}} 件の試合が受付中",
+      "waited": "{{minutes}} 分",
+      "cooldowns": "クールダウン",
+      "until": "残り {{minutes}} 分",
+      "clear": "解除",
+      "cleared": "クールダウンを解除しました",
+      "clearFailed": "クールダウンを解除できませんでした",
+      "kind": {
+        "decline": "辞退",
+        "no_show": "試合を見逃した",
+        "abandon": "試合を離脱"
+      },
+      "review": "確認が必要なプレイヤー(バッド評価)",
+      "voters_one": "{{count}} 人が投票",
+      "voters_other": "{{count}} 人が投票"
+    },
+    "roulette": {
+      "rolling": "マップを選んでいます…",
+      "picked": "マップ:{{map}}"
+    }
+  },
+  "chat": {
+    "title": "チャット",
+    "close": "チャットを閉じる",
+    "tabsLabel": "チャット",
+    "tabMatch": "試合",
+    "tabTeam": "チーム",
+    "tabParty": "パーティー",
+    "tabDm": "ダイレクトメッセージ",
+    "dmWho": "2人だけが読めます",
+    "placeholderDm": "{{name}} にメッセージ",
+    "friends": "フレンド",
+    "messageFriend": "{{name}} にメッセージを送る",
+    "matchWho": "あなたのチーム、{{title}}、管理者",
+    "matchWhoAdmin": "両チームと管理者",
+    "teamWho": "{{team}} の全員",
+    "partyWho": "パーティーの全員",
+    "placeholderMatch": "両チームと管理者へのメッセージ",
+    "placeholderTeam": "チームへのメッセージ",
+    "placeholderParty": "パーティーへのメッセージ",
+    "send": "送信",
+    "you": "あなた",
+    "adminBadge": "管理者",
+    "callAdmin": "管理者を呼ぶ",
+    "adminCallOpen": "ここで管理者呼び出しが受付中です",
+    "callAdminConfirmTitle": "管理者を呼びますか?",
+    "callAdminConfirmBody": "管理者に通知が届き、このチャットに参加します。試合で助けが必要なときだけ呼んでください。",
+    "adminCalled": "管理者を呼びました",
+    "callFailed": "管理者を呼べませんでした",
+    "sendFailed": "メッセージを送信できませんでした",
+    "logLabel": "チャット:{{title}}",
+    "none": "まだチャットはありません。試合、チーム、パーティーのチャットがここに表示されます。",
+    "empty": "まだメッセージはありません。あいさつしましょう。",
+    "loading": "メッセージを読み込み中",
+    "readOnlyImpersonating": "別のプレイヤーとして表示しています。書き込むにはなりすましを終了してください。",
+    "peekMatch": "試合 · {{title}}",
+    "peekTeam": "チーム",
+    "peekParty": "パーティー",
+    "buttonUnread": "チャット、未読 {{count}} 件",
+    "system": {
+      "vetoStarted": "BAN/ピック開始 · 先攻 {{team}}",
+      "vetoBan": "{{team}} が {{map}} を BAN",
+      "vetoReset": "管理者が BAN/ピックをやり直しました",
+      "vetoPick": "{{team}} が {{map}} をピック",
+      "vetoSide": "{{team}} は {{map}} で {{side}} スタート",
+      "vetoDone": "BAN/ピック完了 · {{maps}}",
+      "serverReady": "サーバー準備完了 · {{map}} · 試合ページから参加",
+      "playerJoined": "{{name}} がサーバーに参加 · {{n}} 人",
+      "playerLeft": "{{name}} がサーバーから退出 · {{n}} 人",
+      "mapLive": "マップ {{n}} がライブ · {{map}}",
+      "mapResult": "マップ {{n}} · {{map}} · {{team1}} {{s1}}–{{s2}} {{team2}}",
+      "seriesWon": "{{team}} がシリーズを {{a}}–{{b}} で制しました",
+      "adminCalled": "{{name}} が管理者を呼びました",
+      "adminClaimed": "{{name}} が管理者呼び出しに対応しました",
+      "adminResolved": "{{name}} が管理者呼び出しを解決しました",
+      "timedOut": "時間切れ",
+      "remindAccount": "{{name}}:{{tournament}} に出場するには一度 Steam でサインインしてください。",
+      "remindGame": "{{name}}:{{tournament}} のチェックイン前にプロフィール(プレイするゲーム)にゲームを追加してください。",
+      "serverDown": "試合サーバーがクラッシュしました。復旧しています…",
+      "serverBack": "試合が戻りました:マップ {{map}}、ラウンド {{round}}。再接続してください。"
+    },
+    "party": {
+      "inviteCopied": "招待リンクをコピーしました",
+      "inviteFailed": "リンクをコピーできませんでした",
+      "leader": "リーダー",
+      "invite": "招待",
+      "queue": "一緒にキューに入る",
+      "leaveQueue": "キューを抜ける",
+      "searching": "試合を検索中",
+      "leaderQueues": "検索はリーダーが開始します"
+    },
+    "back": "戻る",
+    "typing": {
+      "one": "{{name}} が入力中…",
+      "two": "{{first}} と {{second}} が入力中…",
+      "many": "{{count}} 人が入力中…"
+    },
+    "emoji": {
+      "open": "絵文字",
+      "title": "絵文字を選ぶ",
+      "search": "絵文字を検索",
+      "none": "絵文字が見つかりません",
+      "categories": {
+        "results": "結果",
+        "recent": "最近使った絵文字",
+        "smileys": "スマイリー",
+        "gestures": "手",
+        "people": "人物",
+        "animals": "自然",
+        "food": "食べ物と飲み物",
+        "activity": "ゲームとスポーツ",
+        "travel": "場所",
+        "objects": "物",
+        "symbols": "記号"
+      }
+    }
+  },
+  "search": {
+    "open": "検索",
+    "placeholder": "ページ、プレイヤー、チーム、ハイライトを検索…",
+    "placeholderAdmin": "ページ、設定、プレイヤー、チーム、サーバーを検索…",
+    "hint": "2文字以上入力してください。Ctrl K(⌘ K)または / でどこからでも開けます。",
+    "none": "「{{q}}」に一致するものはありません。",
+    "versus": "{{team1}} 対 {{team2}}",
+    "groups": {
+      "pages": "ページと設定",
+      "players": "プレイヤー",
+      "teams": "チーム",
+      "tournaments": "トーナメント",
+      "matches": "試合",
+      "highlights": "ハイライト",
+      "maps": "マップ",
+      "servers": "サーバーとマシン",
+      "recorders": "レコーダー"
+    },
+    "status": {
+      "setup": "設定中",
+      "in_progress": "進行中",
+      "completed": "終了"
+    },
+    "pages": {
+      "manage": "管理",
+      "tournaments": "トーナメント",
+      "newTournament": "トーナメント設定",
+      "playedMatches": "すべての試合",
+      "importMatch": "試合をインポート",
+      "teams": "チーム",
+      "players": "プレイヤー",
+      "reports": "通報",
+      "templates": "テンプレート",
+      "ratings": "レーティング",
+      "modules": "モジュール",
+      "servers": "サーバー",
+      "maps": "マップとマッププール",
+      "skins": "スキン",
+      "matchRules": "試合ルール",
+      "highlights": "ハイライト",
+      "adminTools": "システム",
+      "settings": "設定",
+      "settingsSite": "設定:サイトとメール",
+      "settingsSignIn": "設定:サインインプロバイダー",
+      "settingsPlayers": "設定:プレイヤーとアクセス",
+      "settingsWebhooks": "設定:Webhook",
+      "settingsLicense": "ライセンス",
+      "settingsMatchmaking": "設定:マッチメイキング",
+      "settingsAdvanced": "設定:詳細設定",
+      "liveMatches": "ライブ中の試合"
+    },
+    "clips_one": "{{count}} 件のクリップ",
+    "clips_other": "{{count}} 件のクリップ",
+    "fieldLabel": "検索"
+  },
+  "highlightsPage": {
+    "recorderStats": "匿名のベンチマーク結果を送信",
+    "recorderStatsHint": "ベンチマーク後、レコーダーは GPU と CPU のモデル、バージョン、時間をウェブサイトに送り、どの環境でどれくらい速く描画できるかの公開表に使われます。試合やプレイヤーの情報は含みません。オフでも録画は同じように動きます。",
+    "title": "ハイライト",
+    "subtitle": "すべての試合のハイライトクリップとまとめ動画:レコーダーが作るもの、まとめ動画の BGM、各ゲームのレコーダー。",
+    "tabs": {
+      "settings": "設定"
+    },
+    "perPlayer": {
+      "label": "マップごと・プレイヤーごとのクリップ数",
+      "helper": "1〜6。クリップが多いほど試合のハイライトの完成に時間がかかります。"
+    },
+    "preset": {
+      "label": "画質",
+      "smooth": "なめらか(推奨):最大 1080p、240 fps",
+      "crisp": "くっきり:最大 1440p、120 fps",
+      "lan": "LAN・最高:最大 4K、240 fps",
+      "custom": "カスタム",
+      "light": "軽量:720p、60 fps のみ"
+    },
+    "bitrate": {
+      "label": "ビットレート",
+      "auto": "自動(推奨)",
+      "option": "{{mbps}} Mbit/s"
+    },
+    "resolution": {
+      "label": "最大解像度"
+    },
+    "fps": {
+      "label": "最大フレームレート",
+      "option": "{{fps}} fps"
+    },
+    "quality": {
+      "helper": "レコーダーは各クリップとまとめ動画を最高画質で1回作り、そこから低画質版を切り出します。スローモーションはどのフレームレートでもなめらかです。作成済みのクリップは作り直すまで画質が変わりません。"
+    },
+    "music": {
+      "label": "まとめ動画の BGM",
+      "all": "すべての曲({{count}})",
+      "pick": "選んだ曲のみ",
+      "off": "音楽なし",
+      "listen": "{{title}} を聴く",
+      "stop": "{{title}} を停止",
+      "contentId": "YouTube Content ID",
+      "volume": "音量",
+      "byo": "自分の音楽を用意:使用権のある曲を追加してください。Auto Tournament は曲を同梱していません。プレイヤーはまとめ動画ごとに別の曲を流し、ダウンロードは音楽あり・なしを選べます。",
+      "remove": "{{title}} を削除",
+      "removeConfirm": "削除",
+      "keep": "残す",
+      "addTitle": "曲を追加",
+      "chooseFile": "ファイルを選ぶ",
+      "noFile": "ファイルが選ばれていません(MP3、M4A、WAV…)",
+      "trackTitle": "タイトル",
+      "artist": "アーティスト",
+      "genre": "ジャンル(メニューのグループ分け)",
+      "source": "入手元(クレジット用のリンク)",
+      "contentIdLabel": "YouTube Content ID に登録済み(これを使った動画は申し立てを受けることがあります)",
+      "add": "曲を追加",
+      "adding": "追加中…",
+      "rights": "動画での使用権がある曲だけを追加してください。音量は他の曲とそろえられます。",
+      "suggestions_one": "Pixabay にあるまとめ動画に合う {{count}} 曲",
+      "suggestions_other": "Pixabay にあるまとめ動画に合う {{count}} 曲",
+      "suggestionsHelp": "1つ開いて、そのライセンスに従い Pixabay からダウンロードし、ここに追加してください。ライセンスでは動画での使用が認められていますが、ファイルの再配布は認められていません。",
+      "link": "または音声ファイルへのリンク",
+      "addLink": "リンクから追加"
+    },
+    "overlay": {
+      "label": "オーバーレイ",
+      "helper_one": "{{count}} 件のクリップにクリーンなコピーがあります。再描画すると現在のキャプションカード、キルフィード、名前を載せ直し、まとめ動画も作り直します。CS2 は不要です。",
+      "helper_other": "{{count}} 件のクリップにクリーンなコピーがあります。再描画すると現在のキャプションカード、キルフィード、名前を載せ直し、まとめ動画も作り直します。CS2 は不要です。",
+      "redraw": "オーバーレイを再描画",
+      "pending_one": "レコーダー待ちの動画 {{count}} 件",
+      "pending_other": "レコーダー待ちの動画 {{count}} 件",
+      "failed_one": "再描画できなかった動画 {{count}} 件",
+      "failed_other": "再描画できなかった動画 {{count}} 件",
+      "keepClean": "クリップのクリーンなコピーを保存",
+      "keepCleanHelper": "各クリップはカードやキルフィードのない録画そのままの状態でも保存されます。まとめ動画はクリーンなクリップから独自のオーバーレイ付きで作られ、オーバーレイは再描画できます。オフにすると容量は約半分です。",
+      "redrawFailed": "再描画をキューに追加できませんでした。"
+    },
+    "moved": "ハイライトの設定、レコーダー、追加方法は専用ページに移りました:",
+    "saved": "保存しました",
+    "saveFailed": "保存できませんでした",
+    "reels": {
+      "title": "まとめ動画のサイズ",
+      "description": "各まとめ動画に入るクリップ数。多いほど長くなり、作成に時間がかかります。",
+      "funnyPerPlayer": "マップごと・プレイヤーごとの面白いクリップ数",
+      "mapReelPerPlayer": "マップのまとめ動画でのプレイヤーごとのクリップ数",
+      "seriesReelMax": "シリーズのまとめ動画のクリップ数",
+      "seriesReelPerPlayer": "シリーズのまとめ動画でのプレイヤーごとのクリップ数",
+      "teamReelPerPlayer": "チームのまとめ動画でのプレイヤーごとのクリップ数",
+      "tournamentReelMax": "トーナメントのまとめ動画のクリップ数",
+      "tournamentReelPerPlayer": "トーナメントのまとめ動画でのプレイヤーごとのクリップ数",
+      "range": "{{min}}〜{{max}}"
+    },
+    "minResolution": {
+      "label": "最低解像度"
+    },
+    "ladder": {
+      "title": "視聴者が選べる画質",
+      "recordedAt": "{{quality}} で録画",
+      "highest": "最高",
+      "lowest": "スマホ、低速回線",
+      "rate": "約 {{mbps}} Mbit/s"
+    },
+    "cost": {
+      "single": "録画には 1080p・120 fps の約 {{time}} 倍の時間がかかります。目安です。",
+      "withCuts": "録画には 1080p・120 fps の約 {{time}} 倍の時間がかかり、すべての画質が保存されます:容量は約 {{storage}} 倍です。目安です。"
+    },
+    "keepMasters": {
+      "label": "最高画質を保存",
+      "always": "常に",
+      "30": "30日間",
+      "7": "7日間",
+      "reels": "まとめ動画が完成するまで",
+      "helper": "その後は次の画質に置き換わり、クリーンなコピーは削除されるため、容量を大きく節約できます。最高画質のない動画はオーバーレイの再描画や、その画質での新しいまとめ動画への結合ができず、録画し直す必要があります。"
+    },
+    "matchmaking": {
+      "minimumTitle": "どのプレイをクリップにするか",
+      "minimumDescription": "すべての試合に適用。マッチメイキングはさらに下で設定した上位数件だけを残します。",
+      "title": "マッチメイキングのハイライト",
+      "description": "マッチメイキングは試合数が多いです。レコーダーが一日中ふさがらないよう、各試合の上位数件だけを残します。",
+      "on": "マッチメイキングのハイライトを録画",
+      "onHelp": "オフ:マッチメイキングの試合にはクリップもまとめ動画も作られません。",
+      "clips": "試合ごとのクリップ数",
+      "clipsHelp": "ベストプレイから順に。プレイヤーのまとめ動画は同じクリップで作られます。",
+      "all": "すべて",
+      "minKills": "残す最小のプレイ",
+      "minKillsHelp": "これ未満のプレイは、枠があってもクリップになりません。",
+      "kills": {
+        "2": "2キル",
+        "3": "3キル",
+        "4": "4キル",
+        "5": "エース"
+      },
+      "killsInline": {
+        "2": "2キル",
+        "3": "3キル",
+        "4": "4キル",
+        "5": "エース"
+      },
+      "clutch": "クラッチは常に対象",
+      "clutchHelp": "勝った 1vX は、最小プレイよりキルが少なくても対象になります。",
+      "summary": "マッチメイキングの各試合で {{kills}} 以上を {{clips}}。",
+      "summaryClutch": "マッチメイキングの各試合で {{kills}} 以上を {{clips}}、さらにすべてのクラッチ。",
+      "summaryEvery": "すべてのプレイ",
+      "summaryBest_one": "上位 1 件のプレイ",
+      "summaryBest_other": "上位 {{count}} 件のプレイ"
+    }
+  },
+  "update": {
+    "available": "Auto Tournament {{latest}} が公開されました(現在 {{running}})。",
+    "notes": "新機能",
+    "module": "{{name}} {{version}} が利用可能です(現在 {{installed}})。",
+    "moduleProblem": "{{name}}:更新が反映されませんでした。{{problem}}",
+    "openModules": "モジュール"
+  },
+  "licenseGate": {
+    "expiredTitle": "このプラットフォームのライセンスは期限切れです",
+    "expiredAdmin": "ライセンスの支払いが遅れているため、プラットフォームは停止しました。支払うとすぐに再開します。データは安全です。",
+    "expiredPlayer": "試合と参加登録は一時停止中です。主催者には通知済みです。後でもう一度確認してください。",
+    "pay": "コンソールで支払う ↗",
+    "settings": "ライセンス設定",
+    "fix": "対応する ↗",
+    "pastDue": "ライセンスの支払いに失敗しました。支払わない場合、プラットフォームは {{date}} に停止します。",
+    "elsewhereTitle": "このライセンスキーは別のインストールで使われています",
+    "elsewhereAdmin": "1つのライセンスキーは1つの Auto Tournament インストールでのみ使えますが、別のインストールがこのキーを使っています。このインストール用のキーを貼り付けるか、コンソールで「別のインストールに移動」を使ってください。データは安全です。",
+    "replacedTitle": "このライセンスキーは置き換えられました",
+    "replacedAdmin": "コンソールでこのライセンスの新しいキーが作られたため、古いキーは停止しました。ライセンス設定に新しいキーを貼り付けてください。データは安全です。",
+    "openConsole": "コンソールを開く ↗",
+    "pasteKey": "新しいキーを貼り付け",
+    "replacedSoon": "コンソールでこのライセンスの新しいキーが作られました。ライセンス設定に貼り付けてください:このキーは {{date}} に停止します。"
+  },
+  "matchAdmin": {
+    "openChat": "チャットを開く",
+    "resetVeto": "BAN/ピックをやり直す",
+    "resetVetoTitle": "BAN/ピックをやり直しますか?",
+    "resetVetoBody": "これまでの BAN、ピック、サイドはすべて消去され、両チームは BAN/ピックを最初からやり直します。両チームとも試合チャットで確認できます。",
+    "vetoReset": "BAN/ピックをやり直します",
+    "vetoResetFailed": "BAN/ピックをやり直せませんでした"
+  },
+  "addressMismatch": {
+    "open": "{{host}} を開く",
+    "text": "現在 {{current}} にいますが、このサイトは {{host}} 用に設定されています:Steam サインイン、メール、ゲームサーバーはそのアドレスを使います。"
+  },
+  "siteFooter": {
+    "support": "プロジェクトを支援",
+    "trademarks": "Counter-Strike、CS2、Steam は Valve Corporation の商標です。その他のゲーム名は各所有者の商標です。Auto Tournament は Valve やいかなるゲームパブリッシャーとも提携しておらず、承認も受けていません。"
+  },
+  "discordNotice": {
+    "link": "Discord アカウントを連携すると、ボットがあなたをチームのボイスチャンネルに移動し、チームのチャンネルで見つけられるようになります。",
+    "linkAction": "Discord を連携",
+    "join": "Discord サーバーに参加してください。チームのチャンネルと試合カードがあります。",
+    "joinAction": "サーバーに参加"
+  }
+}

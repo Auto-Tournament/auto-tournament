@@ -1,0 +1,989 @@
+{
+  "dashboard": {
+    "title": "管理",
+    "restartTournament": {
+      "button": "トーナメントの試合をやり直す",
+      "restarting": "トーナメントの試合をやり直しています…",
+      "intro": "🔄 進行中のすべての試合をやり直し、サーバーに読み込み直します。",
+      "actionsTitle": "実行内容:",
+      "actionEndMatch": "試合が読み込み済み/ライブ中のすべてのサーバーで at_endmatch を実行",
+      "actionReset": "試合を「準備完了」の状態に戻す",
+      "actionReallocate": "試合を空きサーバーに再割り当て",
+      "actionReload": "ゲームサーバーで試合設定を読み込み直す",
+      "hint": "試合が止まったときや、やり直しが必要なときに使ってください。",
+      "confirm": "トーナメントをやり直す"
+    },
+    "header": {
+      "brand": "Auto Tournament",
+      "version": "あなたの Auto Tournament サイト · バージョン {{version}}",
+      "unknownVersion": "dev",
+      "createTournament": "トーナメントを作成"
+    },
+    "setup": {
+      "title": "セットアップを完了しましょう",
+      "openSettings": "設定を開く",
+      "signIn": "サインインプロバイダー",
+      "game": "モジュールからゲーム(CS2)をインストール",
+      "discordBot": "サイトがプレイヤーに試合の DM を送れるよう、自分の Discord ボット(トークン)を追加"
+    },
+    "tournaments": {
+      "title": "トーナメント",
+      "empty": "このサイトでは一度に1つのトーナメントを開催します。作成すると、ここ、探す、イベントページに表示されます。",
+      "status": {
+        "setup": "下書き",
+        "ready": "参加受付",
+        "inProgress": "ライブ",
+        "completed": "終了"
+      },
+      "state": {
+        "teams_one": "{{count}} チーム",
+        "teams_other": "{{count}} チーム",
+        "entered_one": "{{count}} チームが参加",
+        "entered_other": "{{count}} チームが参加",
+        "draftTeams_one": "下書き · {{count}} チームを選択",
+        "draftTeams_other": "下書き · {{count}} チームを選択",
+        "draftEmpty": "下書き · まだチームなし",
+        "live_one": "{{count}} 試合ライブ中",
+        "live_other": "{{count}} 試合ライブ中",
+        "completed_one": "{{count}} チームが出場",
+        "completed_other": "{{count}} チームが出場",
+        "winner": "優勝:{{name}}",
+        "teamsPlayers_one": "{{count}} 人",
+        "teamsPlayers_other": "{{count}} 人",
+        "enteredPlayers_one": "{{count}} 人が参加",
+        "enteredPlayers_other": "{{count}} 人が参加",
+        "draftTeamsPlayers_one": "下書き · {{count}} 人",
+        "draftTeamsPlayers_other": "下書き · {{count}} 人",
+        "completedPlayers_one": "{{count}} 人が出場",
+        "completedPlayers_other": "{{count}} 人が出場"
+      },
+      "actions": {
+        "manage": "管理",
+        "continueSetup": "設定を続ける",
+        "view": "表示"
+      },
+      "eventPage": "イベントページ",
+      "emptyTitle": "まだトーナメントはありません"
+    },
+    "site": {
+      "title": "サイト",
+      "players": {
+        "label": "プレイヤー",
+        "hint": "サインインした全員"
+      },
+      "teams": {
+        "label": "チーム",
+        "hint": "クラブとメンバー"
+      },
+      "templates": {
+        "label": "テンプレート",
+        "hint": "再利用できる設定"
+      },
+      "ratings": {
+        "label": "レーティング",
+        "hint": "レーティングの計算方法"
+      },
+      "settings": {
+        "label": "設定",
+        "hint": "サインイン、API キー"
+      },
+      "adminTools": {
+        "label": "システム",
+        "hint": "試合の復旧とログ"
+      },
+      "disputes": {
+        "label": "異議申し立て",
+        "hint": "判定待ちの結果"
+      },
+      "modules": {
+        "label": "モジュール",
+        "hint": "このインスタンスで動くゲーム"
+      }
+    },
+    "people": {
+      "title": "人",
+      "open": "開く",
+      "players": "プレイヤー",
+      "admins": "管理者",
+      "signedInThisWeek": "今週サインイン"
+    },
+    "loading": "管理ホームを読み込み中"
+  },
+  "settingsPage": {
+    "email": {
+      "title": "メール",
+      "short": "アドレス確認、パスワードリセット、トーナメントのメールを送信します。",
+      "enabled": "メールを送信",
+      "enabledOn": "オン。メールは {{from}} から送信されます。",
+      "enabledOff": "オフ。何も送信されません。",
+      "needsServer": "先に下のサーバーを設定してください。",
+      "turnedOn": "メールをオンにしました",
+      "turnedOff": "メールをオフにしました",
+      "server": "メールサーバー",
+      "serverNone": "未設定",
+      "host": "SMTP サーバー",
+      "port": "ポート",
+      "security": "セキュリティ",
+      "securityStarttls": "STARTTLS(通常ポート 587)",
+      "securityTls": "TLS(通常ポート 465)",
+      "securityNone": "なし(信頼できるネットワークのみ)",
+      "username": "ユーザー名",
+      "password": "パスワード",
+      "passwordKept": "保存済みのものを使う場合は空欄",
+      "passwordSaved": "保存済み",
+      "fromAddress": "送信元アドレス",
+      "fromAddressHelp": "メールの送信元アドレス。メールプロバイダーで許可されている必要があります。",
+      "fromName": "送信者名",
+      "fromNameHelp": "任意。メールの差出人として表示されます(例:NTLAN)。",
+      "siteUrl": "サイトのアドレス",
+      "siteUrlHelp": "メール内のリンクはここから始まります(例:https://cs.example.com)。",
+      "siteUrlHelpDefault": "メール内のリンクはここから始まります。空欄:{{url}}。",
+      "save": "保存",
+      "saved": "メール設定を保存しました",
+      "loadError": "メール設定を読み込めませんでした",
+      "saveError": "メール設定を保存できませんでした",
+      "test": "テストメール",
+      "testShort": "設定が正しいか確認するために1通送ります。",
+      "testTo": "送信先",
+      "testSend": "テストを送信",
+      "testNeedsOn": "テストの前に送信をオンにしてください(サーバーも保存)。",
+      "testSent": "{{to}} に送信しました。受信トレイと迷惑メールフォルダを確認してください。",
+      "testFailed": "テストメールを送信できませんでした"
+    },
+    "title": "設定",
+    "intro": "プラットフォーム自体の設定です。各ゲームの設定はメニューのゲームごとにあります。",
+    "tabs": {
+      "general": "一般",
+      "signIn": "サインイン",
+      "players": "プレイヤーとアクセス",
+      "ratings": "レーティング",
+      "developer": "開発者",
+      "license": "ライセンス",
+      "webhooks": "Webhook",
+      "experimental": "実験的機能"
+    },
+    "signIn": {
+      "title": "サインインプロバイダー",
+      "intro": "サインイン方法を選びます。どれも誰かのアカウントになり得ます。接続ページでさらに連携できます。変更は再起動なしですぐに反映されます。",
+      "keySource": "保存されたシークレットは {{name}} で暗号化されます。",
+      "keySourceDefault": "保存されたシークレットは組み込みの開発用キーで暗号化されています。本番運用の前に SECRETS_KEY または SESSION_SECRET を設定してください。",
+      "loadError": "サインインプロバイダーを読み込めませんでした",
+      "saveError": "保存できませんでした",
+      "testError": "テストを実行できませんでした",
+      "saved": "{{provider}} サインインを保存しました",
+      "enabled": "有効",
+      "clientId": "Client ID",
+      "issuerUrl": "Issuer URL",
+      "issuerUrlHelp": "OpenID Connect のレルムまたはテナントのアドレス。Auto Tournament は /.well-known/openid-configuration からエンドポイントを読み取ります。",
+      "buttonName": "ボタン名",
+      "buttonNameHelp": "ログインページに「… でサインイン」として表示されます(例:コミュニティ名や ID サーバー名)。",
+      "logoUpload": "ロゴをアップロード",
+      "logoReplace": "ロゴを差し替え",
+      "logoRemove": "ロゴを削除",
+      "logoType": "ロゴは PNG、JPEG、WebP、SVG の画像にしてください。",
+      "logoSize": "ロゴは 150 KB までです。",
+      "buttonColor": "ボタンの色",
+      "buttonColorDefault": "デフォルトの色",
+      "clientSecret": "Client secret",
+      "steamKey": "Steam Web API キー",
+      "secretSet": "設定済み",
+      "secretUnreadable": "保存されたシークレットを復号できなくなりました(暗号化キーが変わりました)。もう一度入力してください。",
+      "replace": "差し替え",
+      "cancel": "キャンセル",
+      "save": "保存",
+      "callbackHint": "自動で設定されます。{{provider}} の開発者設定でリダイレクト URL として貼り付けてください:",
+      "copy": "コピー",
+      "copyCallback": "コールバック URL をコピー",
+      "copied": "コピーしました",
+      "copyError": "コピーできませんでした",
+      "guide": "設定ガイド",
+      "howTo": "開発者コンソール",
+      "test": "テスト",
+      "comingSoon": "近日公開",
+      "comingSoonNote": "{{provider}} サインインはまだ利用できません。",
+      "status": {
+        "active": "ログインページに表示中",
+        "missing": "有効、認証情報なし",
+        "off": "オフ"
+      },
+      "testResult": {
+        "ok": "プロバイダーがこの認証情報を受け付けました。",
+        "invalid_credentials": "プロバイダーがこの認証情報を拒否しました。Client ID と secret(またはキー)を確認してください。",
+        "unreachable": "プロバイダーに接続できませんでした。ネットワークを確認してもう一度お試しください。",
+        "not_configured": "先に認証情報を入力してください。",
+        "not_supported": "このプロバイダーはテストできません。",
+        "unexpected": "プロバイダーからテストで解釈できない応答がありました。"
+      },
+      "welcomeTitle": "プレイヤーのサインイン方法を設定",
+      "welcomeBody": "管理者としてサインインしました。プレイヤーがサインインできるよう、下で1つ以上のプロバイダー(Steam、Discord、Google、GitHub、Twitch)をオンにしてください。",
+      "adminAccess": {
+        "title": "管理者アクセス",
+        "localLogin": "ローカル管理者ログインを許可",
+        "localLoginHelp": "/login/admin でユーザー名とパスワードでサインインします。アクセスできなくなったらサーバーで reset-admin を実行してください。",
+        "localLoginLocked": "別の管理者が有効なプロバイダーでサインインできるようになるまでオンのままです。",
+        "steamIds": "管理者の Steam ID",
+        "steamIdsHelp": "カンマ区切りの Steam64 ID。保存時と起動時に管理者になります。削除しても管理者権限は外れません。",
+        "emails": "管理者のメールアドレス",
+        "emailsHelp": "本人がそのアドレスを確認済みのプロバイダー(Google、Discord、GitHub)でサインインすると管理者になります。",
+        "unsaved": "まだ保存されていません。",
+        "saved": "管理者アクセスを保存しました",
+        "loadError": "管理者アクセスの設定を読み込めませんでした",
+        "short": "管理者としてサインインできる人"
+      },
+      "short": "プレイヤーと管理者のサインイン方法。変更はすぐに反映されます。",
+      "enabledFor": "{{provider}} サインイン",
+      "setUp": "{{provider}} を設定",
+      "accounts": {
+        "title": "アカウント",
+        "short": "作成したユーザー名とパスワードのアカウント",
+        "help": "これらは /login/admin でサインインします。サイトを運営する人には管理者を付与し、その他はプレイヤーとしてサインインします。",
+        "none": "まだアカウントがありません。",
+        "admin": "管理者",
+        "twoStep": "2段階認証オン",
+        "lastLogin": "最終サインイン {{date}}",
+        "neverSignedIn": "サインイン履歴なし",
+        "setPassword": "パスワードを設定",
+        "remove": "削除",
+        "addTitle": "アカウントを追加",
+        "username": "ユーザー名",
+        "usernameHelp": "3〜32文字:小文字、数字、ドット、ハイフン、アンダースコア。",
+        "name": "表示名",
+        "nameHelp": "任意。サイトに表示されます。空欄ならユーザー名を使います。",
+        "password": "パスワード",
+        "makeAdmin": "管理者",
+        "create": "アカウントを作成",
+        "created": "アカウント {{username}} を作成しました",
+        "madeAdmin": "{{username}} は管理者になりました",
+        "adminRemoved": "{{username}} は管理者ではなくなりました",
+        "setPasswordTitle": "{{username}} の新しいパスワード",
+        "setPasswordTotp": "2段階認証もオフになります。サインイン後に本人が再設定します。",
+        "newPassword": "新しいパスワード",
+        "savePassword": "パスワードを保存",
+        "passwordSet": "{{username}} の新しいパスワードを保存しました",
+        "removeTitle": "{{username}} を削除しますか?",
+        "removeBody": "このユーザー名とパスワードではサインインできなくなり、管理者でもなくなります。プレイヤー、試合、統計は残り、同じユーザー名を作り直すと戻ります。",
+        "removeConfirm": "削除",
+        "removed": "{{username}} を削除しました",
+        "cancel": "キャンセル",
+        "loadError": "アカウントを読み込めませんでした",
+        "saveError": "アカウントを保存できませんでした"
+      },
+      "oidcScopes": "OpenID Connect サーバーで、このクライアントに openid、profile、email スコープを付与してください(Keycloak の場合:Clients → このクライアント → Client scopes で profile と email を Default に)。profile と email がなくてもサインインはできますが、プラットフォームは名前やメールアドレスを取得できません。"
+    },
+    "integrations": {
+      "steam": {
+        "title": "Steam 連携",
+        "apiKeyLabel": "Steam Web API キー",
+        "apiKeyHelper": "Steam のカスタム URL とプレイヤー情報を解決します。空欄にすると検索が無効になります。",
+        "checkButtonChecking": "Steam を確認中…",
+        "checkButtonIdle": "Steam の接続を確認",
+        "statusOk": "Steam API キーは設定済みで、接続できます。",
+        "statusNotConfigured": "Steam API キーが設定されていません。キーを追加するまでカスタム URL は解決できません。",
+        "statusUnreachable": "Steam API キーは設定済みのようですが、Steam に接続できませんでした。ネットワークまたはキーを確認してください。",
+        "statusError": "Steam API の状態を確認できませんでした。もう一度お試しください。"
+      }
+    },
+    "matchRating": {
+      "ratings": {
+        "title": "レーティングの更新",
+        "description": "完了した試合でプレイヤーの Skill Rating を更新するかどうか。外部システム(例:Excel のシート)がレーティングの正とするイベントではオフにしてください。",
+        "toggleLabel": "完了した試合からプレイヤーのレーティングを更新",
+        "note": "オフの場合も統計(ADR、K/D など)は記録されますが、Skill Rating は変わりません。",
+        "short": "レーティングは試合ごとに変動します。"
+      }
+    },
+    "players": {
+      "registration": {
+        "title": "プレイヤー登録",
+        "description": "サインイン方法(Steam、Discord、Google など有効にしたもの)にかかわらず、新しい人がサインインしたときにプレイヤー記録を作成するかどうか。オフの場合、非公開トーナメントやシャッフルの候補には管理者が作成・インポートしたプレイヤーだけが表示されます。",
+        "toggleLabel": "サインインすれば誰でも登録できる",
+        "recommendation": "推奨:招待制や非公開のトーナメントでは、無関係なサインインでプレイヤー一覧が埋まらないようオフにしてください。",
+        "short": "サインインした新しい人は誰でもプレイヤーになります。オフ:追加したプレイヤーのみ。"
+      },
+      "title": "プレイヤー",
+      "short": "誰が参加でき、レーティングがどう変わるか。",
+      "chooseName": {
+        "toggleLabel": "プレイヤーが表示名を選べる",
+        "short": "プレイヤーに名前を入力してもらい、1日1回変更できます。オフ:名前はインポートと管理者が決めます。"
+      }
+    },
+    "developer": {
+      "resetApiTitle": "API とデータベースをリセット",
+      "resetApiDescription": "危険な操作:データベーススキーマ全体を削除して作り直し、デフォルトデータ(マップ、マッププールなど)を再作成します。ローカル開発でのみ使ってください。元に戻せません。",
+      "resetApiButton": "API をリセット(全データ削除)",
+      "resetApiButtonLoading": "API をリセット中…",
+      "resetApiSuccess": "API とデータベースをリセットしました。すべてのデータが削除され、デフォルトが再作成されました。",
+      "resetApiError": "API とデータベースをリセットできませんでした。詳細は API のログを確認してください。",
+      "resetApiDialog": {
+        "title": "API をリセットして全データを削除しますか?",
+        "description": "データベーススキーマ全体を削除して作り直します。すべてのトーナメント、試合、プレイヤー、チーム、レーティング、イベント、ログ、設定が完全に削除されます。この操作は元に戻せません。続行しますか?",
+        "cancel": "キャンセル",
+        "confirm": "はい、API をリセットしてデータを削除します",
+        "confirmLoading": "リセット中…"
+      }
+    },
+    "footer": {
+      "version": "バージョン",
+      "unknownVersion": "不明"
+    },
+    "errors": {
+      "loadSettings": "設定を読み込めませんでした",
+      "saveSettings": "設定を保存できませんでした"
+    },
+    "success": {
+      "saveSettings": "設定を保存しました"
+    },
+    "site": {
+      "title": "サイト",
+      "description": "このサイトの名前。管理ホームの見出しに使われます。",
+      "label": "サイト名",
+      "helper": "空欄なら「Auto Tournament」を使います。",
+      "save": "保存",
+      "saved": "サイト名を保存しました",
+      "saveFailed": "サイト名を保存できませんでした"
+    },
+    "experimental": {
+      "title": "実験的機能",
+      "description": "開発中の機能です。デフォルトでオフで、変更されたり動かなくなったりすることがあります。管理者にだけ表示されます。",
+      "saved": "保存しました",
+      "saveFailed": "機能を保存できませんでした",
+      "loadFailed": "実験的機能を読み込めませんでした",
+      "envOverride": "環境変数 {{env}} で設定されています。そちらで変更してください。",
+      "features": {},
+      "short": "開発中:デフォルトでオフ、管理者にのみ表示されます。"
+    },
+    "matchmaking": {
+      "openLabel": "プレイヤーに公開",
+      "openDescription": "オン:サインインしたプレイヤー全員にプレイが表示され、キューに入れます。オフ:管理者だけが試合を探せます。",
+      "boardLabel": "ランキングを全員に公開",
+      "boardDescription": "オフ:マッチメイキングのランキングはサインインしたプレイヤーだけが見られます。オン:リンクを知っている誰でも見られます。",
+      "windowTitle": "検索範囲",
+      "windowDescription": "マッチングできるレーティング差。最初の値から始まり、30秒ごとにステップ分広がって上限まで達し、最後の分数を過ぎると誰とでもマッチします(空欄なら無期限)。",
+      "window": {
+        "start": "開始(Elo)",
+        "step": "ステップ(Elo)",
+        "cap": "上限(Elo)",
+        "uncappedAfterMinutes": "誰とでも(分後)"
+      },
+      "reservedTitle": "マッチメイキング用に空けておくサーバー",
+      "reservedDescription": "トーナメントの試合が優先ですが、プレイヤーが検索中の間はこの台数のサーバーをマッチメイキング用に空けておきます。0 = なし。",
+      "reservedLabel": "サーバー",
+      "modesTitle": "モード",
+      "modesDescription": "プレイヤーが検索できるモード。デフォルトですべてオンです。1v1 はエイム対決です。",
+      "poolsTitle": "モードごとのマップ",
+      "poolsDescription": "各モードが選ぶマッププール(マップページ。ワークショップのマップも使えます)。試合ルームではマップを公開する前にプールのルーレットが表示されます。",
+      "poolDefault": {
+        "5v5": "デフォルト:Active Duty",
+        "2v2": "デフォルト:すべての相棒マップ",
+        "1v1": "デフォルト:Active Duty"
+      },
+      "save": "保存",
+      "title": "マッチメイキング",
+      "short": "常にオン。プレイヤーは試合を探し、キューに入って承認し、空きサーバーでプレイします。",
+      "saved": "保存しました",
+      "saveFailed": "マッチメイキングの設定を保存できませんでした",
+      "loadFailed": "マッチメイキングの設定を読み込めませんでした"
+    },
+    "groups": {
+      "platform": "プラットフォーム"
+    },
+    "navLabel": "設定ページ",
+    "gameLinks": {
+      "title": "ゲームの設定",
+      "hint": "各ゲームの設定はメニューのゲームごとにあります。"
+    },
+    "sections": {
+      "label": "設定セクション",
+      "site": {
+        "name": "サイト",
+        "hint": "名前、ロゴ、言語"
+      },
+      "signin": {
+        "name": "サインイン",
+        "hint": "プロバイダー、管理者アカウント"
+      },
+      "email": {
+        "name": "メール",
+        "hint": "SMTP、送信内容"
+      },
+      "players": {
+        "name": "プレイヤー",
+        "hint": "参加登録、レーティング"
+      },
+      "matchmaking": {
+        "name": "マッチメイキング",
+        "hint": "キューとそのルール"
+      },
+      "news": {
+        "name": "お知らせ",
+        "hint": "ホームページの投稿"
+      },
+      "adminnotices": {
+        "name": "通知",
+        "hint": "管理者への通知内容"
+      },
+      "webhooks": {
+        "name": "連携",
+        "hint": "Webhook"
+      },
+      "apitokens": {
+        "name": "API トークン",
+        "hint": "スクリプトと MCP 用"
+      },
+      "advanced": {
+        "name": "詳細設定",
+        "hint": "実験的機能、開発者"
+      },
+      "module": {
+        "hint": "このモジュールの設定"
+      }
+    }
+  },
+  "managePage": {
+    "tournamentNotFound": "この ID のトーナメントはありません。すべてのトーナメントから選んでください。",
+    "title": "管理",
+    "needsYouHeading": "対応が必要",
+    "noTournament": "まだトーナメントはありません",
+    "rail": {
+      "needsYou": "対応が必要",
+      "matches": "試合",
+      "bracket": "トーナメント表",
+      "teams": "チーム",
+      "players": "プレイヤー",
+      "reports": "通報",
+      "tournament": "トーナメント設定",
+      "settings": "設定",
+      "label": "管理",
+      "disputes": "異議申し立て",
+      "publicPage": "公開ページ",
+      "modules": "モジュール",
+      "templates": "テンプレート",
+      "ratings": "レーティング",
+      "adminTools": "ログとツール",
+      "license": "ライセンス",
+      "devTools": "開発ツール",
+      "documentation": "ドキュメント",
+      "opensInNewTab": "(新しいタブで開きます)",
+      "groups": {
+        "operate": "運営",
+        "tournament": "トーナメント",
+        "people": "人",
+        "game": "ゲーム",
+        "home": "ホーム",
+        "history": "履歴",
+        "setup": "設定",
+        "configuration": "構成",
+        "site": "サイト",
+        "tournaments": "トーナメント",
+        "system": "システム",
+        "gamesOf": "ゲーム · {{game}}"
+      },
+      "templatesAndRatings": "テンプレートとレーティング",
+      "allTournaments": "すべてのトーナメント",
+      "switcher": "トーナメント",
+      "newTournament": "新しいトーナメント",
+      "playedMatches": "プレイ済みの試合",
+      "tournamentBar": "このトーナメント",
+      "scope": {
+        "label": "管理対象",
+        "platform": "プラットフォーム",
+        "platformHint": "トーナメント、人、サイト",
+        "gameHint": "ページと設定"
+      },
+      "highlights": "ハイライト",
+      "state": {
+        "live": "ライブ",
+        "setup": "設定中"
+      },
+      "openMenu": "管理メニューを開く",
+      "closeMenu": "メニューを閉じる",
+      "setupTab": "設定",
+      "prizes": "賞品",
+      "schedule": "スケジュール",
+      "liveMatches": "ライブ中の試合"
+    },
+    "status": {
+      "live": "ライブ",
+      "inVeto": "BAN/ピック中",
+      "queued": "待機中",
+      "round": "ラウンド"
+    },
+    "needsYou": {
+      "empty": "今は対応が必要なものはありません。",
+      "secondsAgo": "{{count}}秒",
+      "minutesAgo": "{{count}}分",
+      "hoursAgo": "{{count}}時間",
+      "vsLabel": "{{team1}} 対 {{team2}}",
+      "decide": {
+        "title": "{{teams}} の勝者を決める必要があります",
+        "detail": "すべてのマップを終えましたが、シリーズは同点のままです。",
+        "action": "判定"
+      },
+      "reallocateSuccess": "試合を別のサーバーに移動しました",
+      "forceCancelSuccess": "試合をキャンセルしました",
+      "actionFailed": "うまくいきませんでした。もう一度お試しください。",
+      "reallocateConfirmTitle": "この試合を別のサーバーに移しますか?",
+      "reallocateConfirmBody": "試合は次に空いたサーバーに再割り当てされます。",
+      "forceCancelConfirmTitle": "この試合を強制キャンセルしますか?",
+      "forceCancelConfirmBody": "サーバーに接続できなくても、試合をすぐに終了してキャンセル扱いにします。",
+      "listLabel": "判断が必要なもの"
+    },
+    "recent": {
+      "heading": "最近",
+      "viewAll": "ログ全体",
+      "empty": "まだ最近のアクティビティはありません。",
+      "closingLine": "それ以外はすべて自動で進みます。判断が必要なときだけここに表示されます。",
+      "team1Fallback": "チーム 1",
+      "team2Fallback": "チーム 2",
+      "mapResult": "{{winner}} がマップ {{map}} で {{loser}} に勝利、{{score}}",
+      "seriesEnd": "{{winner}} がシリーズで {{loser}} に勝利、{{score}}"
+    },
+    "announce": {
+      "button": "アナウンス",
+      "title": "全サーバーにアナウンス",
+      "label": "メッセージ",
+      "send": "送信",
+      "success": "アナウンスを送信しました",
+      "failed": "アナウンスを送信できませんでした"
+    }
+  },
+  "license": {
+    "title": "ライセンス",
+    "getKey": "ライセンスをお持ちですか?<consoleLink>Auto Tournament コンソール</consoleLink>からキーをコピーしてください。必要ですか?<pricingLink>料金を見る</pricingLink>。",
+    "useFromPaidKey": "下の有料ライセンスキーで設定されています。",
+    "useFromFreeKey": "下の無料キーで設定されています:非営利利用のみ。",
+    "useWithoutKey": "キーなし:非営利利用は無料です。商用利用には下に有料キーを貼り付けてください。",
+    "publicLine": "イベントページの下部にプレイヤー向けに「{{line}}」と表示されます。",
+    "pageIntro": "ライセンスキーとその状態。有料キーは商用利用、無料キーは非営利利用向けです。",
+    "description": "Auto Tournament のライセンスキーを貼り付けてください:商用利用なら有料キー、非営利利用なら無料キー。このサーバーで確認され、1日1回 autotournament.gg とも照合されます。",
+    "loading": "ライセンスの状態を読み込み中",
+    "loadFailed": "ライセンスの状態を読み取れませんでした。",
+    "none": "まだライセンスキーがありません。非営利利用は無料、商用利用には有料ライセンスが必要です。",
+    "pricing": "料金",
+    "open": "設定",
+    "id": "ライセンス ID {{id}}",
+    "verify": "このライセンスを確認",
+    "invalid": "このキーを確認できませんでした。",
+    "invalidShort": "保存されたキーを確認できませんでした。",
+    "warningsShort_one": "設定にライセンスのお知らせが 1 件あります。",
+    "warningsShort_other": "設定にライセンスのお知らせが {{count}} 件あります。",
+    "warningsNote": "ブロックや制限はありません。お知らせのみです。",
+    "label": "ライセンスキー",
+    "replaceLabel": "ライセンスキーを差し替え",
+    "helper": "ATL1 で始まります。<consoleLink>Auto Tournament コンソールのライセンス</consoleLink>からコピーしてください。保存後はライセンス ID のみ表示されます。プレイ会場にインターネットがない場合は、コンソールのオフラインリースもここに貼り付けてください。",
+    "checkInNote": "ライセンスキーがなければ、Auto Tournament には何も送信されません。キーがある場合、このサーバーは1日1回キーの ID とサーバー数を送信します。",
+    "save": "キーを保存",
+    "saved": "ライセンスキーを保存しました",
+    "saveFailed": "ライセンスキーを保存できませんでした",
+    "remove": "キーを削除",
+    "removed": "ライセンスキーを削除しました",
+    "removeFailed": "ライセンスキーを削除できませんでした",
+    "summary": {
+      "licensedTo": "{{licensee}} にライセンス",
+      "licensed": "ライセンス済み",
+      "product": {
+        "platform": "プラットフォーム {{pack}}",
+        "servers": "サーバー {{pack}}"
+      },
+      "servers_one": "{{count}} 台のサーバー",
+      "servers_other": "{{count}} 台のサーバー",
+      "updatesUntil": "{{date}} までアップデート",
+      "updatesForLife": "永久アップデート",
+      "eventWindow": "イベント {{from}}〜{{to}}",
+      "free": "無料キー、非営利利用",
+      "freeFor": "{{licensee}} の無料キー、非営利利用",
+      "noLimit": "サーバー数無制限"
+    },
+    "badge": {
+      "label": "公開イベントページに「ライセンス済み」と利用区分を表示",
+      "note": "デフォルトでオフ。ライセンスの公開確認ページにリンクし、保存されたキーが有効な間だけ表示されます。",
+      "on": "公開ライセンス表示をオンにしました",
+      "off": "公開ライセンス表示をオフにしました",
+      "failed": "公開ライセンス表示を変更できませんでした",
+      "short": "キーを保存すると自動でオンになります。イベントページの下部にプレイヤー向けに表示されます。",
+      "needsKey": "無料・有料を問わずライセンスキーが保存されている場合のみ表示されます。先に上でキーを保存してください。"
+    },
+    "public": {
+      "licensed": "ライセンス済み",
+      "commercial": "ライセンス済み · 商用利用",
+      "nonCommercial": "ライセンス済み · 非営利利用",
+      "unlicensed": "ライセンスキーなし",
+      "about": {
+        "title": "このサイトのライセンスについて",
+        "none": "このサイトはライセンスキーなしで Auto Tournament を使っています。誰も収益を得ないイベント(友人同士、クラブ、学校の LAN、チャリティなど)であれば問題ありません。",
+        "nonCommercial": "このサイトは無料の非営利ライセンスを持っています:誰も収益を得ないイベントを開催できます。",
+        "commercial": "このサイトは有料の商用ライセンスを持っています:有料イベントを開催し、参加費を徴収できます。",
+        "free": "Auto Tournament は誰も収益を得ない場合は無料で、チャリティ、学校、公的機関は参加費を取る場合でも無料です。それ以外で参加費、枠の販売、事業での運用などで収益を得る場合は、有料ライセンスが必要です。",
+        "paidTitle": "参加にお金を求められましたか?",
+        "paidBody": "参加費を払った(または求められた)うえで、主催者がチャリティ、学校、公的機関でない場合、このイベントはライセンスに反して Auto Tournament を使っている可能性があります。お知らせください。すべての報告を確認し、送信者を明かすことはありません。",
+        "paidCommercial": "ここでは有料参加が認められています。それでも何かおかしいと感じたらお知らせください。",
+        "report": "Auto Tournament に報告",
+        "rules": "ライセンスを読む",
+        "verify": "このライセンスを確認"
+      }
+    },
+    "consent": {
+      "title": "最後にひとつ:ライセンス",
+      "subtitle": "すみません、あと1ステップで完了です。Auto Tournament は誰も収益を得ないなら無料、誰かが収益を得るならライセンスが必要です。短い要約を読み、利用方法を選んで I AGREE と入力してください。",
+      "intro": "Auto Tournament は {{name}} のもとでソースが公開されています。要約:",
+      "points": {
+        "free": "個人利用、趣味のプロジェクト、学習、誰も収益を得ないイベントは無料。",
+        "orgs": "チャリティ、学校、大学、公的研究機関、行政機関は参加費を取る場合でも無料。",
+        "commercial": "商用利用にはライセンスが必要です。有料ホスティング、本ソフトやそれを使ったサービスの販売、利益の出るイベント、企業内での利用、他人のために有償で設定することが含まれます。",
+        "servers": "すべてのゲームサーバーがライセンスの対象として数えられます。",
+        "nothingLocked": "キーがなくてもロックや制限はありません。キーは今でも後でも追加できます。",
+        "forks": "コードを変更して共有できます。ライセンスを一緒に付けてください。同じルールが適用されます。"
+      },
+      "readLicense": "ライセンス全文を読む",
+      "readRules": "ライセンスと商用利用",
+      "summaryNote": "これは短い要約で、お使いのバージョンの文章は古い可能性があります。最新のライセンスとルールは autotournament.gg にあり、この要約と異なる場合はそちらが優先されます。",
+      "useQuestion": "このインスタンスの用途は?",
+      "privacyNote": "回答はこのサーバーにのみ保存されます。ライセンスキーがなければ Auto Tournament には何も送信されません。キーがある場合、このサーバーは1日1回キーの ID とサーバー数を送信します。",
+      "use": {
+        "noncommercial": "非営利",
+        "noncommercialHint": "無料。誰も収益を得ません。",
+        "commercial": "商用",
+        "commercialHint": "ライセンスが必要です。キーは今でも後でも貼り付けられます。"
+      },
+      "keyLabel": "ライセンスキー(任意)",
+      "keyHelper": "ATL1 で始まります。<consoleLink>Auto Tournament コンソールのライセンス</consoleLink>からコピーするか、後で 設定 > ライセンス で追加してください。",
+      "confirmLabel": "ライセンス条項に同意するには {{phrase}} と入力してください",
+      "confirmHelper": "{{phrase}} と入力すると、このインスタンスのライセンス条項に同意したことになります。",
+      "accept": "同意して続行",
+      "cancel": "キャンセル",
+      "failed": "回答を保存できませんでした",
+      "accepted": "ライセンス条項に同意しました",
+      "termsChanged": "前回同意した後にライセンス条項が変わりました。読んでもう一度同意してください。",
+      "onlyAdmins": "管理者にだけ、インスタンスごとに1回表示されます。プレイヤー、公開ページ、進行中の試合には影響しません。",
+      "declared": {
+        "noncommercial": "非営利利用",
+        "commercial": "商用利用",
+        "none": "まだライセンス条項に同意していません"
+      },
+      "acceptedLine": "{{date}} に {{who}} が同意(条項バージョン {{version}})",
+      "byEnv": "AT_ACCEPT_LICENSE の設定",
+      "change": "変更",
+      "changeTitle": "このインスタンスの用途を変更",
+      "changeNote": "もう一度選び、I AGREE と入力してください。変更は日時とあなたのアカウントとともに保存されます。",
+      "commercialNoKey": "このインスタンスは商用で使われているため、ライセンスが必要です。<consoleLink>Auto Tournament コンソールのライセンス</consoleLink>からキーをコピーして下に貼り付けてください。ない間もロックはされません。",
+      "readHeading": "同意する前に、次を読んでそれぞれにチェックしてください:",
+      "readItem": "次を読みました:",
+      "readLinks": {
+        "license": "ライセンス全文",
+        "rules": "商用利用のルール",
+        "pricing": "料金"
+      }
+    },
+    "checkin": {
+      "last": "最後のライセンス確認:{{time}}",
+      "offlineUntil": "オフラインリース:新しいサーバーは {{date}} までインターネットなしで動作します。",
+      "never": "まだライセンス確認はありません。キーを保存するとまもなく最初の確認が行われます。",
+      "whatIsSent": "送信される内容",
+      "intro": "1日1回、キーが保存されている間だけ、このサーバーは次を送信します:",
+      "keyId": "ID と署名を確認するためのライセンスキー",
+      "instanceId": "このインストール用に1回だけ作られるランダムな ID",
+      "serverCount": "ゲームサーバーの台数",
+      "version": "プラットフォームのバージョン",
+      "publicUrl": "製品の種類(プラットフォーム)と公開アドレス。コンソールでキーの利用場所を表示するためです",
+      "activity": "前回の確認以降の件数:終了した試合、動きのあったトーナメント、最大チーム数",
+      "declared": "イベント日程の質問への回答(回答した場合)",
+      "notSent": "名前、住所、プレイヤー、試合の詳細は送信しません。",
+      "privacy": "プライバシーポリシー",
+      "noticeTitle": "Auto Tournament からのお知らせ",
+      "answered": "このライセンスへの回答:{{answer}}({{time}})"
+    },
+    "eventPrompt": {
+      "title": "新しい予定がありますか?",
+      "body": "イベントライセンスの対象期間は {{dates}} です。テスト中、新しいイベント、日程変更のいずれかをお知らせください。テスト中は何もする必要はありません。",
+      "datesRange": "{{from}}〜{{to}}",
+      "testing": "テストまたは準備中",
+      "newEvent": "新しいイベント",
+      "datesMoved": "イベントの日程が変わった",
+      "dontAsk": "今後表示しない",
+      "close": "閉じる",
+      "thanks": "ありがとうございます。記録しました。",
+      "failed": "回答を保存できませんでした"
+    },
+    "warning": {
+      "periodEnded": "このイベントライセンスの対象は {{date}} までの期間でした。テストや準備には対応不要です。新しいイベントには個別のイベントライセンスが必要です。",
+      "periodNotStarted": "このイベントライセンスの対象は {{date}} からの期間です。それ以前に準備やテストをするのは問題ありません。"
+    },
+    "short": "このインストールの用途とキー。",
+    "keyRow": "ライセンスキー",
+    "state": {
+      "active": "有効",
+      "warning": "要確認",
+      "invalid": "無効",
+      "none": "キーなし"
+    },
+    "thirdParty": "このアプリは、それぞれのライセンスのもとで提供されるオープンソースパッケージを使って作られています。",
+    "thirdPartyLink": "サードパーティの表記"
+  },
+  "tournamentsPage": {
+    "title": "トーナメント",
+    "subtitle": "このサイトのすべてのトーナメント。メニュー上部の切り替えで、他の管理ページが対象とするトーナメントを選びます。",
+    "liveShared": "{{count}} 件がライブ中でサーバーを共有しています。試合は準備ができた順にサーバーを割り当てられます。",
+    "new": "新しいトーナメント",
+    "empty": "まだトーナメントはありません。最初の1つを作成しましょう。",
+    "col": {
+      "name": "名前",
+      "status": "状態",
+      "when": "日時",
+      "entries": "参加",
+      "frontPage": "トップページ",
+      "actions": "操作"
+    },
+    "status": {
+      "live": "ライブ",
+      "finished": "終了",
+      "signup": "参加受付中",
+      "draft": "下書き"
+    },
+    "front": {
+      "featured": "注目",
+      "shown": "表示",
+      "hidden": "非表示",
+      "archived": "アーカイブ済み",
+      "results": "結果"
+    },
+    "won": "{{name}} が優勝",
+    "selected": "選択中",
+    "more": "{{name}} のその他の操作",
+    "menu": {
+      "open": "開く",
+      "page": "公開ページ",
+      "feature": "トップページで注目にする",
+      "archive": "アーカイブ(トップページから外す)",
+      "delete": "削除"
+    },
+    "toast": {
+      "featured": "トップページで注目にしました",
+      "archived": "アーカイブしました",
+      "deleted": "トーナメントを削除しました"
+    },
+    "deleteTitle": "このトーナメントを削除しますか?",
+    "deleteMessage": "{{name}} とその試合、結果、統計が削除されます。この操作は元に戻せません。",
+    "newName": "名前",
+    "newNameBlank": "名前は設定で決めます",
+    "startFrom": "開始方法",
+    "blank": "空白",
+    "blankHint": "ゲーム、フォーマット、マップは設定で選びます",
+    "copy": "{{name}} をコピー",
+    "copyHint": "同じフォーマット、マップ、ルール、ページ。チームと日程は空の状態から始まります。",
+    "create": "作成して設定",
+    "round": "{{n}}回戦",
+    "whenToday": "今日、{{time}} から",
+    "whenTomorrow": "明日、{{time}}",
+    "notSet": "未設定",
+    "emptyTitle": "まだトーナメントはありません",
+    "template": "テンプレート",
+    "templateHint": "保存された設定:フォーマット、マップ、ルール。チームと日程はあなたが選びます。",
+    "copyOne": "トーナメントをコピー",
+    "copyWhich": "どれを"
+  },
+  "playedMatches": {
+    "title": "すべての試合",
+    "subtitle": "このサイトで行われたすべての試合:トーナメント(削除済みも含む)、単独の試合、マッチメイキング。デモ付き。",
+    "downloadAll_one": "{{count}} 試合のデモをダウンロード",
+    "downloadAll_other": "{{count}} 試合のデモをダウンロード",
+    "search": "チームまたはトーナメントを検索",
+    "kindLabel": "種類",
+    "kind": {
+      "all": "すべての種類",
+      "tournament": "トーナメント",
+      "standalone": "単独",
+      "matchmaking": "マッチメイキング",
+      "imported": "インポート"
+    },
+    "withDemos": "デモあり",
+    "none": "まだ試合は行われていません。",
+    "noneFiltered": "この条件に一致する試合はありません。",
+    "vs": "対",
+    "deleted": "トーナメント削除済み",
+    "noDemo": "デモなし",
+    "demo": "デモ",
+    "map": "マップ {{n}}",
+    "import": "試合をインポート"
+  },
+  "importMatch": {
+    "title": "試合をインポート",
+    "subtitle": "他の場所で行われた試合をデモから追加します。チーム、プレイヤー、スコアはデモから読み取られ、他の試合と同様に統計、2D リプレイ、ハイライトが付きます。",
+    "event": "開催場所",
+    "eventHelp": "任意。例:イベント名。",
+    "files": "デモ",
+    "filesHelp": "マップごとに CS2 のデモ(.dem)を1つ、プレイした順に。",
+    "choose": "デモを選ぶ",
+    "moveUp": "{{name}} を上へ",
+    "moveDown": "{{name}} を下へ",
+    "remove": "{{name}} を削除",
+    "start": "インポート",
+    "uploading": "マップ {{n}} をアップロード中({{percent}}%)",
+    "tooMany": "最大 {{max}} 個、1マップに1つ。",
+    "notDemo": "{{name}} は .dem ファイルではありません。",
+    "error": "インポートが止まりました:{{error}}",
+    "progress": "進行状況",
+    "mapN": "マップ {{n}}",
+    "state": {
+      "uploading": "アップロード中",
+      "waiting": "デモワーカーを待っています",
+      "running": "デモを読み込み中",
+      "done": "完了",
+      "failed": "デモを読み込めませんでした"
+    },
+    "teams": "{{team1}} 対 {{team2}}",
+    "doneAll": "インポートしました。ハイライトレコーダーが接続されていれば、次にハイライトが録画されます。",
+    "openMatch": "試合を開く",
+    "another": "別の試合をインポート",
+    "dropHint": "またはここにドロップ。Cmd または Ctrl で複数選択できます。",
+    "recordingGroup": "レコーダーグループ",
+    "allRecorders": "すべてのレコーダー",
+    "groupHelp": "この試合をレンダリングするグループを選びます。無効なグループは有効になるまで待機します。",
+    "groupDisabled": "無効",
+    "notCs2Demo": "{{name}} は CS2 のデモではありません(CS:GO のデモはインポートできません)。"
+  },
+  "apiTokens": {
+    "title": "API トークン",
+    "hint": "スクリプト、ボット、Auto Tournament の MCP サーバー用。読み取り専用トークンは読み取りのみ、管理者トークンは管理者と同じ操作ができます。トークンのシークレットは作成時に一度だけ、あなたにだけ表示されます。",
+    "line": "{{scope}} · {{fingerprint}} · 最終使用 {{used}}",
+    "never": "なし",
+    "none": "まだ API トークンはありません。",
+    "name": "名前",
+    "nameHelp": "1〜32文字の英数字、- または _",
+    "scopeLabel": "アクセス",
+    "scope": {
+      "readonly": "読み取り専用",
+      "admin": "管理者"
+    },
+    "make": "トークンを作成",
+    "madeTitle": "トークン「{{label}}」",
+    "madeHelp": "今すぐコピーしてください:表示されるのはこの一度だけです。スクリプトや MCP サーバーが読み取る場所(AT_TOKEN)に貼り付けてください。",
+    "copy": "トークンをコピー",
+    "copied": "コピーしました",
+    "done": "完了",
+    "revoke": "{{label}} を無効化",
+    "revokeTitle": "「{{label}}」を無効化しますか?",
+    "revokeHelp": "これを使っているものはすぐに動かなくなります。",
+    "revokeConfirm": "無効化",
+    "revoked": "{{label}} を無効化しました",
+    "cancel": "キャンセル",
+    "loadFailed": "API トークンを読み込めませんでした",
+    "makeFailed": "トークンを作成できませんでした",
+    "revokeFailed": "トークンを無効化できませんでした"
+  },
+  "discordBot": {
+    "title": "Discord ボット",
+    "token": "ボットトークン",
+    "replace": "新しいボットトークン",
+    "save": "保存",
+    "remove": "削除",
+    "connected": "{{name}} として接続中",
+    "setNoAnswer": "トークンは設定されていますが、今は Discord から応答がありませんでした。",
+    "saved": "Discord ボットを保存しました:{{name}}",
+    "cleared": "Discord ボットを削除しました",
+    "saveFailed": "ボットトークンを保存できませんでした。",
+    "howTo": "アプリケーションを作成してボットを追加し、トークンをコピーして Discord サーバーに招待してください:",
+    "portal": "Discord Developer Portal",
+    "guild": "Discord サーバー",
+    "guildHint": "ボットがチームのチャンネルを作り投稿する場所。ボットが参加しているサーバーのみ表示されます。",
+    "noGuilds": "ボットはまだどの Discord サーバーにも参加していません。招待してからこのページを再読み込みしてください。",
+    "noGuild": "なし",
+    "guildSaved": "Discord サーバーを保存しました",
+    "movedHint": "Discord ボットはアドオンになりました:モジュールでオンにして設定してください。",
+    "open": "Discord ボットを開く",
+    "voice": {
+      "label": "チームのボイスチャンネル",
+      "help": "試合がサーバーにある間、すでにボイスにいるプレイヤーはチームのボイスチャンネルに移動され、それ以外の人には DM でリンクが届きます。",
+      "saved": "ボイスチャンネルの設定を保存しました"
+    },
+    "teamChannels": {
+      "label": "チームのチャンネル",
+      "help": "トーナメント中、各チームには「あなたのチーム」の下に非公開のテキストとボイスチャンネルが作られます。プレイヤーはチームページでテキストチャンネルを見つけられます。",
+      "link": "Discord のチームチャンネル"
+    },
+    "commands": {
+      "label": "スラッシュコマンド:/matches、/mymatch、/lobby",
+      "help": "ボットが接続されるとすぐに使えます。任意:Discord からこのサイトに送らせたい場合は、Discord Developer Portal でアプリの Interactions Endpoint URL にこれを貼り付けてください。"
+    },
+    "invite": "サーバーに招待",
+    "linking": {
+      "label": "プレイヤーが Discord を連携",
+      "help": "ボット自身の Discord アプリを使うので、2つ目のアプリは不要です。Developer Portal でボットのアプリの OAuth2 を開き、このリダイレクトを追加してから client secret をコピーしてここに貼り付けてください。",
+      "portal": "OAuth2 を開く",
+      "secret": "Client secret",
+      "save": "連携をオンにする",
+      "saved": "プレイヤーが Discord を連携できるようになりました",
+      "ready": "オン:プレイヤーは アカウント → 接続 で Discord を連携します。",
+      "invite": "サーバーにいないプレイヤーには {{url}} で参加するよう案内します。",
+      "noInvite": "ボットはまだサーバーの招待を作成できません。「サーバーに招待」をもう一度押して、招待の作成権限を付与してください。"
+    },
+    "missing": "ボットにはサーバーで {{list}} が不足しているため、一部が動作しません。上の「サーバーに招待」を押してください:ボットを削除せずに権限が更新されます。"
+  },
+  "liveMatchesPage": {
+    "title": "ライブ中の試合",
+    "subtitle": "現在サーバーにあるすべての試合。対応が必要な行が先に表示されます。",
+    "loading": "読み込み中…",
+    "loadFailed": "ライブ中の試合を読み取れませんでした。再試行しています…",
+    "empty": "進行中の試合はありません",
+    "chat": "チャット",
+    "mapOf": "マップ {{n}}/{{total}}",
+    "columns": {
+      "match": "試合",
+      "map": "マップ",
+      "phase": "フェーズ",
+      "score": "スコア",
+      "round": "ラウンド",
+      "players": "プレイヤー",
+      "pause": "一時停止",
+      "call": "管理者呼び出し",
+      "server": "サーバー",
+      "chat": "チャット"
+    },
+    "source": {
+      "matchmaking": "マッチメイキング",
+      "manual": "単独"
+    },
+    "phase": {
+      "none": "サーバー状態なし",
+      "loading": "読み込み中",
+      "warmup": "ウォームアップ",
+      "knife": "ナイフ",
+      "side_pick": "サイド選択",
+      "live": "ライブ",
+      "paused": "一時停止中",
+      "halftime": "ハーフタイム",
+      "overtime": "延長戦",
+      "map_end": "試合後",
+      "series_end": "試合後",
+      "restoring": "復元中",
+      "error": "エラー"
+    },
+    "players": {
+      "summary": "{{connected}}/{{total}} 人入室 · {{ready}} 人準備完了",
+      "connected": "接続中",
+      "disconnected": "未接続",
+      "readyTag": "準備完了",
+      "none": "プレイヤーなし"
+    },
+    "pause": {
+      "by": "{{name}} による",
+      "unpause": "再開を希望",
+      "type": {
+        "tactical": "タクティカル",
+        "technical": "テクニカル",
+        "admin": "管理者",
+        "offline": "プレイヤーがオフライン",
+        "halftime": "ハーフタイム",
+        "auto_5v5": "5v5 待ち",
+        "unknown": "一時停止中"
+      }
+    },
+    "call": {
+      "noMessage": "メッセージなし"
+    },
+    "server": {
+      "online": "オンライン",
+      "offline": "オフライン",
+      "unknown": "状態不明"
+    }
+  }
+}

@@ -1,0 +1,141 @@
+{
+  "devToolsPage": {
+    "alert": "これらのツールは開発モードでのみ使えます。アプリのテスト用データをすばやく作成するのに使ってください。",
+    "sections": {
+      "testData": {
+        "title": "テストデータを作成"
+      }
+    },
+    "testTeams": {
+      "title": "テストチーム",
+      "description": "トーナメント表や試合のテスト用に、ランダムなプレイヤーデータでチームを作成します。",
+      "success": "テストチームを {{count}} 件作成しました!",
+      "errors": {
+        "create": "テストチームを作成できませんでした",
+        "partial": "{{created}} チームを作成しましたが、{{failed}} 件が失敗しました。詳細はコンソールを確認してください。"
+      },
+      "customLabel": "チーム数を指定",
+      "buttons": {
+        "createFixed": "{{count}} チームを作成",
+        "createCustom": "チームを作成"
+      }
+    },
+    "testPlayers": {
+      "title": "テストプレイヤー",
+      "description": "シャッフルトーナメントやプレイヤー管理のテスト用に、ELO 付きのプレイヤーを作成します。",
+      "success": "テストプレイヤーを {{created}} 人作成しました!",
+      "errors": {
+        "create": "テストプレイヤーを作成できませんでした",
+        "partial": "{{created}} 人を作成、{{updated}} 人を更新しましたが、{{failed}} 件が失敗しました。詳細はコンソールを確認してください。"
+      },
+      "customLabel": "プレイヤー数を指定",
+      "buttons": {
+        "createFixed": "{{count}} 人を作成",
+        "createCustom": "プレイヤーを作成"
+      },
+      "successWithUpdated": "テストプレイヤーを {{created}} 人作成、{{updated}} 人更新しました!"
+    },
+    "testServers": {
+      "title": "テストサーバー",
+      "description": "試合管理を試すためのテストサーバーを作成します。",
+      "success": "テストサーバーを {{count}} 台作成しました!",
+      "errors": {
+        "create": "テストサーバーを作成できませんでした",
+        "partial": "{{created}} 台を作成しましたが、{{failed}} 件が失敗しました。詳細はコンソールを確認してください。"
+      },
+      "customLabel": "サーバー数を指定",
+      "buttons": {
+        "createCustom": "サーバーを作成",
+        "createFixed_one": "{{count}} 台のサーバーを作成",
+        "createFixed_other": "{{count}} 台のサーバーを作成"
+      }
+    },
+    "dangerZone": {
+      "title": "危険な操作"
+    },
+    "deleteTestData": {
+      "title": "テストデータを削除",
+      "description": "すべてのテストデータ('test-' で始まるチームとサーバー)を削除します。この操作は元に戻せません。",
+      "button": "すべてのテストデータを削除",
+      "confirmPrompt": "本当にすべてのテストデータを削除しますか?",
+      "success": "すべてのテストデータを削除しました!",
+      "error": "テストデータを削除できませんでした"
+    },
+    "wipeTable": {
+      "title": "特定のテーブルを消去",
+      "description": "特定のテーブルのデータをすべて削除します。全体をリセットせずに整理するのに便利です。テーブルはカテゴリ別に並んでいます。",
+      "confirmPrompt": "{{table}} テーブルを消去しますか?そのテーブルのデータはすべて削除されます。",
+      "success": "{{table}} テーブルを消去しました!",
+      "error": "{{table}} テーブルを消去できませんでした",
+      "core": {
+        "title": "コアテーブル",
+        "teams": "チームを消去",
+        "servers": "サーバーを消去",
+        "tournament": "トーナメントを消去",
+        "matches": "試合を消去"
+      },
+      "players": {
+        "title": "プレイヤーとシャッフルトーナメント",
+        "players": "プレイヤーを消去",
+        "ratingHistory": "レーティング履歴を消去",
+        "matchStats": "試合統計を消去",
+        "shufflePlayers": "シャッフルプレイヤーを消去"
+      },
+      "maps": {
+        "title": "マップとテンプレート",
+        "maps": "マップを消去",
+        "mapPools": "マッププールを消去",
+        "tournamentTemplates": "トーナメントテンプレートを消去",
+        "eloTemplates": "レーティングテンプレートを消去"
+      },
+      "matchEvents": {
+        "title": "試合イベントと結果",
+        "events": "試合イベントを消去",
+        "mapResults": "マップ結果を消去"
+      },
+      "settings": {
+        "title": "設定",
+        "appSettings": "アプリ設定を消去"
+      }
+    },
+    "simulation": {
+      "title": "シミュレーション状態",
+      "description": "サーバー、チーム、マップ、現在のトーナメント設定を残したまま、すべての試合と過去の統計を消去します。シミュレーションモードできれいなトーナメント表で「トーナメント開始」を押せるようになります。",
+      "button": "シミュレーション状態をリセット(設定は維持)",
+      "reset": {
+        "success": "シミュレーション状態をリセットしました。試合と統計を消去し、サーバー、チーム、トーナメント設定は維持しました。",
+        "error": "シミュレーション状態をリセットできませんでした"
+      }
+    },
+    "wipeDatabase": {
+      "title": "データベース全体を消去",
+      "warningTitle": "非常に危険です!",
+      "warningBody": "すべてのデータが削除されます。",
+      "permanentlyDeletes": "完全に削除されるもの:",
+      "items": {
+        "tournaments": "すべてのトーナメントとトーナメント表",
+        "matches": "すべての試合とイベント",
+        "teams": "すべてのチームとプレイヤー",
+        "servers": "すべてのサーバー設定"
+      },
+      "button": "データベース全体を消去",
+      "successRedirect": "データベースを消去しました!リダイレクトしています...",
+      "error": "データベースを消去できませんでした",
+      "dialog": {
+        "title": "データベースの消去を確認",
+        "areYouSure": "本当によろしいですか?",
+        "actionWill": "この操作で以下が",
+        "permanentlyDelete": "完全に削除されます",
+        "items": {
+          "tournaments": "すべてのトーナメントデータとトーナメント表",
+          "matches": "すべての試合履歴とイベント",
+          "teams": "すべてのチームとプレイヤー設定",
+          "servers": "すべてのサーバー設定"
+        },
+        "cannotUndo": "この操作は元に戻せません!",
+        "wiping": "データベースを消去中...",
+        "yesWipe": "はい、すべて消去します"
+      }
+    }
+  }
+}

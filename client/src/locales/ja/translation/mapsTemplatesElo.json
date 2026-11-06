@@ -1,0 +1,201 @@
+{
+  "templatesPage": {
+    "header": {
+      "createFromTournament": "トーナメントからテンプレートを作成"
+    },
+    "errors": {
+      "load": "テンプレートを読み込めませんでした"
+    },
+    "delete": {
+      "title": "テンプレートを削除",
+      "message": "テンプレート「{{name}}」を削除しますか?この操作は元に戻せません。",
+      "success": "テンプレート「{{name}}」を削除しました",
+      "error": "テンプレートを削除できませんでした"
+    },
+    "update": {
+      "success": "テンプレート「{{name}}」を更新しました",
+      "error": "テンプレートを更新できませんでした"
+    },
+    "createFromTemplate": {
+      "errors": {
+        "inProgressOrCompleted": "トーナメントの進行中または完了後はテンプレートからトーナメントを作成できません。先に現在のトーナメントを削除またはリセットしてください。",
+        "alreadyExists": "トーナメントがすでにあります。テンプレートから新しく作成する前に、現在のトーナメントを削除またはリセットしてください。"
+      },
+      "button": "テンプレートからトーナメントを作成"
+    },
+    "edit": {
+      "title": "テンプレートを編集",
+      "nameLabel": "テンプレート名",
+      "descriptionLabel": "説明(任意)",
+      "typeLabel": "トーナメント形式",
+      "formatLabel": "試合形式",
+      "mapPool": {
+        "title": "マッププール",
+        "selectLabel": "マッププールを選択",
+        "customOption": "カスタム",
+        "selectedLabel": "選択したマップ({{count}}):",
+        "vetoWarning": "BAN/ピック形式(BO1/BO3/BO5)にはちょうど7マップが必要です。現在の選択:{{count}}",
+        "chooseMaps": "マップを選択..."
+      },
+      "save": "保存"
+    },
+    "emptyTitle": "テンプレートはまだありません",
+    "emptyDescription": "トーナメントページでトーナメントの設定をテンプレートとして保存し、ここから新しいトーナメントを始めましょう。"
+  },
+  "saveTemplateModal": {
+    "title": "テンプレートとして保存",
+    "nameLabel": "テンプレート名",
+    "namePlaceholder": "8チーム シングルエリミ BO3",
+    "descriptionLabel": "説明(任意)",
+    "descriptionPlaceholder": "毎週の8チーム シングルエリミネーション",
+    "saveButton": "テンプレートを保存",
+    "errors": {
+      "nameRequired": "テンプレート名は必須です",
+      "saveFailed": "テンプレートを保存できませんでした"
+    }
+  },
+  "eloTemplatesPage": {
+    "errors": {
+      "load": "レーティングテンプレートを読み込めませんでした"
+    },
+    "header": {
+      "createTemplate": "テンプレートを作成",
+      "importJson": "JSON からインポート"
+    },
+    "empty": {
+      "title": "レーティングテンプレートはありません",
+      "description": "プレイヤーの統計が ELO の変動にどう影響するかを調整する最初のテンプレートを作成しましょう",
+      "action": "テンプレートを作成"
+    },
+    "delete": {
+      "title": "レーティングテンプレートを削除",
+      "message": "「{{name}}」を削除しますか?この操作は元に戻せません。",
+      "success": "テンプレート「{{name}}」を削除しました",
+      "error": "テンプレートを削除できませんでした",
+      "defaultProtected": "デフォルトの「pure-win-loss」テンプレートは削除できません。"
+    },
+    "import": {
+      "success_one": "{{count}} 件のレーティングテンプレートをインポートしました",
+      "success_other": "{{count}} 件のレーティングテンプレートをインポートしました"
+    },
+    "weights": {
+      "noAdjustmentsPure": "統計による調整なし(勝敗のみ)"
+    },
+    "card": {
+      "enabled": "有効",
+      "disabled": "無効",
+      "default": "デフォルト",
+      "adjustment": {
+        "none": "試合ごとの統計調整:なし(0、結果のみの ELO)",
+        "uncapped": "試合ごとの統計調整:上限なし(注意して使用)",
+        "range": "試合ごとの統計調整の範囲:{{min}}〜{{max}} ELO",
+        "noMin": "下限なし",
+        "noMax": "上限なし"
+      },
+      "tooltips": {
+        "edit": "テンプレートを編集",
+        "delete": "テンプレートを削除"
+      },
+      "weightsTitle": "統計の重み:",
+      "limitsTitle": "調整の上限:",
+      "minAdjustment": "最小:{{value}}",
+      "maxAdjustment": "最大:{{value}}"
+    },
+    "importModal": {
+      "title": "JSON からレーティングテンプレートをインポート",
+      "introTitle": "レーティングテンプレートの定義を含む JSON を下に貼り付けてください。",
+      "introBody": "想定形式:name、任意の description、enabled、weights、maxAdjustment、minAdjustment を持つテンプレートの配列。id を省略すると name から生成されます。",
+      "jsonLabel": "JSON データ",
+      "validJsonTitle": "✓ 有効な JSON です!",
+      "previewTitle": "プレビュー:",
+      "previewButton": "プレビュー",
+      "importButton": "テンプレートをインポート",
+      "validJsonBody_one": "{{count}} 件のテンプレートが見つかりました。",
+      "validJsonBody_other": "{{count}} 件のテンプレートが見つかりました。"
+    },
+    "editor": {
+      "titleEdit": "レーティングテンプレートを編集",
+      "titleCreate": "レーティングテンプレートを作成",
+      "info": "プレイヤーの個人統計が ELO の変動にどう影響するかを設定します。重みは OpenSkill が基本の ELO 変動(勝敗)を計算した後に適用されます。正の重みは ELO を上げ、負の重みは下げます。",
+      "nameLabel": "テンプレート名",
+      "nameDefaultLocked": "デフォルトテンプレートの名前は変更できません",
+      "descriptionLabel": "説明",
+      "descriptionPlaceholder": "このテンプレートの目的の説明(任意)",
+      "enabledLabel": "有効",
+      "weights": {
+        "title": "統計の重み",
+        "subtitle": "統計ごとにスライダーを調整します。0 はその統計で調整しないことを意味します。"
+      },
+      "limits": {
+        "title": "調整の上限(任意)",
+        "subtitle": "極端な変動を防ぐため、試合ごとの ELO 調整の最大値と最小値を設定します。",
+        "maxLabel": "最大調整",
+        "maxHelper": "試合ごとのプラス方向の最大 ELO 調整",
+        "minLabel": "最小調整",
+        "minHelper": "試合ごとのマイナス方向の最大 ELO 調整"
+      },
+      "errors": {
+        "nameRequired": "テンプレート名は必須です"
+      },
+      "create": {
+        "success": "テンプレート「{{name}}」を作成しました",
+        "error": "テンプレートを作成できませんでした"
+      },
+      "update": {
+        "success": "テンプレート「{{name}}」を更新しました",
+        "error": "テンプレートを更新できませんでした"
+      },
+      "buttons": {
+        "saving": "保存中...",
+        "update": "更新",
+        "create": "作成"
+      }
+    },
+    "stats": {
+      "kills": {
+        "label": "キル",
+        "description": "試合ごとのキル数"
+      },
+      "deaths": {
+        "label": "デス",
+        "description": "試合ごとのデス数(通常は負の重み)"
+      },
+      "assists": {
+        "label": "アシスト",
+        "description": "試合ごとのアシスト数"
+      },
+      "flashAssists": {
+        "label": "フラッシュアシスト",
+        "description": "試合ごとのフラッシュアシスト数"
+      },
+      "headshotKills": {
+        "label": "ヘッドショットキル",
+        "description": "試合ごとのヘッドショットキル数"
+      },
+      "damage": {
+        "label": "ダメージ",
+        "description": "試合ごとの与ダメージ合計"
+      },
+      "utilityDamage": {
+        "label": "ユーティリティダメージ",
+        "description": "ユーティリティ(グレネード)による与ダメージ"
+      },
+      "kast": {
+        "label": "KAST %",
+        "description": "キル、アシスト、生存、トレードのいずれかがあったラウンドの割合"
+      },
+      "mvps": {
+        "label": "MVP",
+        "description": "試合ごとの MVP 獲得数"
+      },
+      "score": {
+        "label": "スコア",
+        "description": "試合スコア(複数の要素を合算)"
+      },
+      "adr": {
+        "label": "ADR",
+        "description": "ラウンドあたりの平均ダメージ"
+      }
+    }
+  }
+}

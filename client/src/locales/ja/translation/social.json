@@ -1,0 +1,287 @@
+{
+  "notificationPrompt": {
+    "title": "通知をオンにする",
+    "body": "オンにすることをおすすめします。このタブを閉じてもお知らせが届きます:",
+    "matchReady": "試合に参加できるようになったとき",
+    "vetoTurn": "マップの BAN/ピックであなたの番になったとき",
+    "starting": "登録したトーナメントがまもなく始まるとき",
+    "iphone": "iPhone では、まずこのサイトをホーム画面に追加し(共有 → ホーム画面に追加)、そこから開いてください。",
+    "change": "通知設定でいつでも変更できます。",
+    "later": "後で",
+    "turnOn": "オンにする(推奨)"
+  },
+  "social": {
+    "bell": {
+      "title": "通知",
+      "label": "通知",
+      "labelUnread_one": "通知({{count}} 件の新着)",
+      "labelUnread_other": "通知({{count}} 件の新着)",
+      "markAllRead": "すべて既読にする",
+      "show": "表示",
+      "filter": {
+        "all": "すべて",
+        "you": "対応が必要",
+        "tournaments": "トーナメント",
+        "matches": "試合",
+        "skins": "スキン",
+        "clips": "クリップ",
+        "other": "その他"
+      },
+      "empty": "まだ何もありません",
+      "emptyHint": "パーティーへの招待、フレンドリクエスト、トーナメントのお知らせ、新しいスキン、完成したハイライトがここに表示されます。",
+      "loading": "読み込み中…",
+      "seeAll": "すべての通知を見る",
+      "loadOlder": "さらに読み込む",
+      "settings": "通知設定"
+    },
+    "notice": {
+      "partyInvite": "があなたをパーティーに招待しました",
+      "teamInvite": "があなたを招待しました:",
+      "joinedTeam": "チームに参加しました",
+      "partyDetail": "{{mode}} · パーティー {{size}} 人",
+      "join": "参加",
+      "decline": "辞退",
+      "accept": "承認",
+      "ignore": "無視",
+      "friendRequest": "からフレンドリクエストが届きました",
+      "friendAccepted": "がフレンドリクエストを承認しました",
+      "skin": "新しいスキン:",
+      "highlight": "ハイライトが完成しました:",
+      "highlightVictim": "{{name}} があなたを倒したクリップ:",
+      "highlightAssist": "あなたが {{name}} をアシストしたクリップ:",
+      "highlightKiller": "あなたが {{name}} を倒したクリップ:",
+      "tournamentStarted": "が始まりました。最初の試合の出番です。",
+      "lineupGap": "· 先発メンバーがチームから抜けました。{{minutes}} 分以内に控えを選ばないと、人数が足りないまま戦うことになります。",
+      "checkInOpen": "のチェックインが始まりました。締め切り前にチェックインしてください。",
+      "joined": "パーティーに参加しました",
+      "nowFriends": "フレンドになりました",
+      "declined": "辞退しました",
+      "expired": "このパーティーは終了しました",
+      "reportNew": "が通報されました:{{reason}}",
+      "reportReviewed": "ありがとうございます:{{name}} についての通報は確認されました。",
+      "matchReady": "の準備ができました。試合ルームを開いて接続してください。",
+      "vetoTurn": ":BAN/ピックであなたのチームの番です。",
+      "startsSoon": "は {{minutes}} 分後に始まります。最初の試合に参加する準備をしてください。",
+      "startsSoonUpdate": "は {{minutes}} 分後に始まります。最初の試合までにアップデートが終わるよう、今ゲームを起動してください。",
+      "matchSoon": ":BAN/ピックは {{minutes}} 分後に始まり、あなたがいなくても進みます。PC の前にいてください。",
+      "noShow": ":試合に参加しなかったため、次のラウンドから外れています。続けるにはトーナメントを開いて戻ったと伝えてください。",
+      "discordLink": ":Discord アカウントを連携すると、チームのチャンネルに入れてボイスへ移動されます。",
+      "signedUp": "· {{team}} が登録されました。開始前に知っておくべきことを確認してください。"
+    },
+    "toast": {
+      "join": "パーティーに参加",
+      "close": "閉じる",
+      "closes_one": "{{count}} 秒後に閉じます · ベルに残ります",
+      "closes_other": "{{count}} 秒後に閉じます · ベルに残ります"
+    },
+    "friends": {
+      "title": "フレンド",
+      "tabFriends": "フレンド",
+      "tabRequests": "リクエスト",
+      "tabAdd": "フレンドを追加",
+      "online_one": "オンライン · {{count}}",
+      "online_other": "オンライン · {{count}}",
+      "offline_one": "オフライン · {{count}}",
+      "offline_other": "オフライン · {{count}}",
+      "onlineCount_one": "{{count}} 人オンライン",
+      "onlineCount_other": "{{count}} 人オンライン",
+      "invite": "招待",
+      "inParty": "パーティー参加中",
+      "more": "{{name}} のその他の操作",
+      "viewProfile": "プロフィールを見る",
+      "remove": "フレンドから外す",
+      "removed": "{{name}} はフレンドではなくなりました",
+      "none": "まだフレンドがいません",
+      "noneHint": "一緒にプレイする人を追加し、ここやプレイ画面からパーティーに招待しましょう。",
+      "incoming": "受信",
+      "sent": "送信済み",
+      "noIncoming": "届いているリクエストはありません。",
+      "noSent": "送信中のリクエストはありません。",
+      "askedAgo": "{{when}} にリクエスト",
+      "sentAgo": "{{when}} に送信",
+      "cancelRequest": "リクエストを取り消す",
+      "searchPlaceholder": "名前または Steam プロフィールのリンク",
+      "results": "Auto Tournament 上",
+      "playedWith": "最近一緒にプレイした人",
+      "noResults": "その名前の人はいません。",
+      "typeMore": "2文字以上入力してください。",
+      "noRecent": "試合をプレイすると、一緒にプレイした人がここに表示されます。",
+      "matches_one": "{{count}} 試合",
+      "matches_other": "{{count}} 試合",
+      "alreadyFriends": "フレンド",
+      "requestSent": "リクエスト送信済み",
+      "addFriend": "フレンドを追加",
+      "signIn": "サインインしてフレンドを表示",
+      "signInHint": "フレンド、リクエスト、招待はアカウントに紐づいています。",
+      "cardEmpty": "フレンドを追加すると、オンライン状況がわかり、ワンクリックで招待できます。",
+      "all_one": "すべてのフレンド({{count}})→",
+      "all_other": "すべてのフレンド({{count}})→",
+      "find": "フレンドを探す →",
+      "requestCount_one": "{{count}} 件のリクエスト",
+      "requestCount_other": "{{count}} 件のリクエスト"
+    },
+    "status": {
+      "playing": "試合中 · {{match}}",
+      "searching": "検索中 · {{mode}}",
+      "online": "オンライン",
+      "offline": "オフライン",
+      "lastSeen": "最終ログイン {{when}}"
+    },
+    "invite": {
+      "searchPlaceholder": "サイトの誰でも、名前で",
+      "friendsOnline": "オンラインのフレンド",
+      "recent": "最近一緒にプレイした人",
+      "onSite": "Auto Tournament 上",
+      "noFriends": "まだフレンドがいません。上で誰でも名前で検索できます。",
+      "nobodyOnline": "オンラインのフレンドはいません。",
+      "inMatch": "試合中",
+      "together_one": "{{count}} 試合一緒にプレイ",
+      "together_other": "{{count}} 試合一緒にプレイ",
+      "invited": "招待済み",
+      "sent": "{{name}} を招待しました",
+      "chip": "{{name}} · 招待済み",
+      "cancel": "{{name}} への招待を取り消す",
+      "orLink": "またはリンクで",
+      "copy": "コピー",
+      "copyFailed": "コピーできませんでした。リンクを選択して自分でコピーしてください。",
+      "makeLink": "招待リンクを作成",
+      "cannot": {
+        "nobody": "招待を受け付けていません",
+        "friends": "フレンドのみ",
+        "no_game": "CS2 をプレイしていません"
+      }
+    },
+    "profile": {
+      "friends": "フレンド",
+      "acceptRequest": "フレンドリクエストを承認",
+      "message": "メッセージ",
+      "invite": "パーティーに招待"
+    },
+    "settings": {
+      "title": "パーティーへの招待",
+      "description": "マッチメイキングのパーティーに誰があなたを招待できるか。招待はベルに表示され、開いているどのページでもポップアップします。",
+      "everyone": "全員",
+      "everyoneHint": "このサイトのすべてのプレイヤー。",
+      "friends": "フレンドのみ",
+      "friendsHint": "フレンドになっているプレイヤーのみ。",
+      "nobody": "誰も招待できない",
+      "nobodyHint": "招待なし。リンクからパーティーに参加することはできます。",
+      "saved": "保存しました",
+      "saveFailed": "設定を保存できませんでした"
+    },
+    "setup": {
+      "title": "検索の前に設定を完了してください",
+      "youGame": "プロフィールのゲームに CS2 を追加してください。",
+      "youGameAuto": "試合を探すとこのゲームがあなたのゲームに追加されます。",
+      "youAccount": "Steam アカウントを連携してください。",
+      "theyGame": "{{name}} はゲームに CS2 を追加していません。",
+      "theyAccount": "{{name}} は Steam アカウントを連携していません。",
+      "fix": "アカウントを開く"
+    },
+    "news": {
+      "title": "お知らせ",
+      "hint": "全プレイヤーのベルにお知らせを送ります:新シーズン、トーナメント、計画メンテナンスなど。",
+      "titleLabel": "タイトル",
+      "bodyLabel": "もう1行(任意)",
+      "urlLabel": "リンク(任意)",
+      "urlHint": "このサイト内のページ(/tournament/3)または https:// のアドレス。",
+      "urlBad": "/ または https:// で始めてください",
+      "send": "全プレイヤーに送信",
+      "confirm": "サインインしたことのあるすべてのプレイヤーに届きます。送信しますか?",
+      "sendNow": "今すぐ送信",
+      "cancel": "キャンセル",
+      "sent_one": "{{count}} 人のプレイヤーに送信しました",
+      "sent_other": "{{count}} 人のプレイヤーに送信しました",
+      "failed": "お知らせを送信できませんでした"
+    },
+    "noticeSettings": {
+      "title": "設定",
+      "alerts": "アラート",
+      "browser": "ブラウザ通知",
+      "browserHint": "このデバイスで、サイトを閉じていても通知します(試合の準備完了、BAN/ピックの番、トーナメント開始)。このブラウザのみ有効です。",
+      "browserDenied": "このブラウザのサイト設定でブロックされています。オンにするにはそこで通知を許可してください。",
+      "browserUnsupported": "このブラウザは通知に対応していません。",
+      "sound": "サウンド",
+      "test": "テスト",
+      "volume": "音量 {{percent}}%",
+      "group": {
+        "you": "あなた",
+        "tournaments": "トーナメント",
+        "other": "その他",
+        "skins": "スキン",
+        "clips": "クリップ"
+      },
+      "kind": {
+        "party_invite": "パーティーへの招待",
+        "team_invite": "チームへの招待",
+        "friend_request": "フレンドリクエスト",
+        "friend_accepted": "承認されたフレンドリクエスト",
+        "tournament": "チェックインと開始",
+        "skin": "スキンのドロップ",
+        "highlight": "あなたのハイライト",
+        "news": "お知らせ",
+        "report": "通報"
+      },
+      "delivery": {
+        "off": "オフ",
+        "bell": "ベル",
+        "sound": "ベルと音"
+      }
+    }
+  },
+  "notifyChannels": {
+    "title": "通知",
+    "description": "サイトにいないとき、対応が必要なことをどこで知らせるか。自分の試合以外はデフォルトでオフです。",
+    "event": "イベント",
+    "channel": {
+      "push": "ブラウザ / スマホ",
+      "discord": "Discord DM",
+      "email": "メール"
+    },
+    "events": {
+      "match_ready": {
+        "title": "試合の準備完了",
+        "hint": "サーバー、接続リンク、対戦相手"
+      },
+      "veto_turn": {
+        "title": "BAN/ピックのあなたの番",
+        "hint": "キャプテンのみ"
+      },
+      "checkin_open": {
+        "title": "チェックイン開始",
+        "hint": "登録しているトーナメント"
+      },
+      "new_tournament": {
+        "title": "新しいトーナメント",
+        "hint": "トーナメントが参加受付を始めたとき"
+      },
+      "tournament_starting": {
+        "title": "トーナメント開始",
+        "hint": "参加中のトーナメントが始まる前のリマインダー"
+      },
+      "direct_message": {
+        "title": "フレンドからのメッセージ",
+        "hint": "サイトにいないとき"
+      }
+    },
+    "reason": {
+      "no_bot": "このサイトでは設定されていません",
+      "no_discord": "先に Discord を連携してください",
+      "no_push": "先にこのブラウザで通知をオンにしてください",
+      "email_off": "このサイトはメールを送信できません",
+      "no_email": "先にメールアドレスを追加してください",
+      "email_unverified": "先にメールアドレスを確認してください"
+    },
+    "switchLabel": "{{channel}} で {{event}}",
+    "saveFailed": "保存できませんでした。"
+  },
+  "presence": {
+    "online": "オンライン",
+    "offline": "オフライン",
+    "away": "離席中",
+    "searching": "{{mode}} の試合を検索中",
+    "playingMatchmaking": "マッチメイキングの試合中:{{label}}",
+    "playingTournament": "トーナメントの試合中:{{label}}",
+    "playing": "試合中:{{label}}"
+  }
+}

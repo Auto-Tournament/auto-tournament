@@ -1,0 +1,490 @@
+{
+  "matchesPage": {
+    "errors": {
+      "loadMatches": "試合を読み込めませんでした",
+      "loadTitle": "試合の読み込みエラー",
+      "bulkDelete": "1件以上の試合を削除できませんでした"
+    },
+    "header": {
+      "createMatch": "試合を作成"
+    },
+    "bulkSelect": {
+      "select": "選択",
+      "done": "選択を終了",
+      "selectAll": "すべて選択",
+      "unselectAll": "選択を解除",
+      "deleteSelected": "選択したものを削除"
+    },
+    "empty": {
+      "title": "表示する試合はありません",
+      "description": "トーナメントを作成してトーナメント表を生成すると、ここに試合が表示されます",
+      "createManual": "または手動で試合を作成"
+    },
+    "sections": {
+      "live": "ライブ中の試合({{count}})",
+      "upcoming": "今後の試合({{count}})",
+      "history": "試合履歴({{count}})",
+      "inQueue": "待機中 {{count}}"
+    },
+    "manualMatchLabel": "手動の試合",
+    "create": {
+      "success": "手動の試合を作成しました:{{slug}}"
+    },
+    "bulkDelete": {
+      "title": "手動の試合を削除",
+      "deleted_one": "{{count}} 件の試合を削除しました",
+      "deleted_other": "{{count}} 件の試合を削除しました",
+      "message_one": "{{count}} 件の手動の試合を削除しますか?この操作は元に戻せません。",
+      "message_other": "{{count}} 件の手動の試合を削除しますか?この操作は元に戻せません。"
+    },
+    "card": {
+      "matchNumber": "試合 #{{number}}",
+      "server": "サーバー:{{name}}",
+      "queuePosition": "待機順:#{{position}}",
+      "shuffle": "シャッフル",
+      "shuffleManual": "シャッフル(手動)",
+      "manual": "手動",
+      "simulation": "シミュレーション",
+      "winner": "勝者",
+      "mapN": "マップ {{n}}"
+    },
+    "statusLabel": {
+      "walkover": "不戦勝",
+      "waitingForTournament": "トーナメント開始待ち",
+      "waitingForServer": "サーバー待ち",
+      "waitingForPairing": "組み合わせ待ち",
+      "vetoPending": "BAN/ピック待ち",
+      "mapVeto": "マップ BAN/ピック",
+      "serverAllocated": "サーバー割り当て済み",
+      "warmup": "ウォームアップ",
+      "overtime": "延長戦 #{{n}}",
+      "live": "ライブ",
+      "completed": "完了",
+      "cancelled": "キャンセル",
+      "needsDecision": "管理者の判断が必要"
+    },
+    "statusGuide": {
+      "title": "試合ステータスの説明",
+      "pending": "試合は予定済みですが、まだサーバーに割り当てられていません。サーバーが空くと割り当てられます。",
+      "loaded": "試合はサーバーに読み込まれ、ウォームアップ中です。プレイヤーは接続して準備完了してください。",
+      "live": "試合はサーバーでプレイ中です。",
+      "completed": "試合は終了しました。勝者が決まり、トーナメント表が更新されました。",
+      "proTipTitle": "ヒント:",
+      "proTip": "試合に「プレイヤー待ち (X/Y)」と表示されたら、サーバーの準備ができているのでプレイヤーは接続してください。想定人数が接続して準備完了すると、試合は自動で始まります。"
+    },
+    "latestEvent": "最新:{{event}}",
+    "matchLabel": {
+      "upper": "UB R{{round}} M{{match}}",
+      "lower": "LB R{{round}} M{{match}}",
+      "grandFinal": "グランドファイナル",
+      "grandFinalReset": "グランドファイナル(リセット)",
+      "group": "グループ {{group}} · {{round}}回戦",
+      "playoffs": "プレーオフ · {{round}}回戦"
+    },
+    "table": {
+      "filterLabel": "表示",
+      "search": "チームまたはプレイヤーを検索",
+      "tbd": "未定",
+      "manage": "試合を管理",
+      "empty": "ここには試合がありません。",
+      "filter": {
+        "attention_one": "要対応 · {{count}}",
+        "attention_other": "要対応 · {{count}}",
+        "live_one": "ライブ · {{count}}",
+        "live_other": "ライブ · {{count}}",
+        "veto_one": "BAN/ピック · {{count}}",
+        "veto_other": "BAN/ピック · {{count}}",
+        "waiting_one": "待機中 · {{count}}",
+        "waiting_other": "待機中 · {{count}}",
+        "finished_one": "終了 · {{count}}",
+        "finished_other": "終了 · {{count}}",
+        "all_one": "すべて · {{count}}",
+        "all_other": "すべて · {{count}}"
+      },
+      "columns": {
+        "match": "試合",
+        "teams": "チーム",
+        "phase": "フェーズ",
+        "server": "サーバー",
+        "attention": "要対応",
+        "open": "開く"
+      },
+      "attention": {
+        "calls_one": "管理者呼び出し 1 件",
+        "calls_other": "管理者呼び出し {{count}} 件",
+        "decide": "結果を判定"
+      },
+      "phase": {
+        "live": "ライブ · マップ {{map}}",
+        "finished": "終了",
+        "finishedScore": "終了 · {{score}}",
+        "veto": "マップ BAN/ピック",
+        "waitingTeams": "チーム待ち",
+        "queued": "サーバー待ち · 待機順 #{{position}}",
+        "waiting": "待機中"
+      },
+      "server": {
+        "freed": "解放済み"
+      }
+    }
+  },
+  "matchDetailsModal": {
+    "tiebreakHint": "スコアは同点:タイブレークで {{team}} がマップを獲得しました。",
+    "delete": {
+      "dialogTitle": "試合を削除",
+      "confirmTitle": "この試合を削除しますか?",
+      "confirmBody": "試合「{{slug}}」を削除しますか?この操作は元に戻せません。",
+      "button": "試合を削除",
+      "success": "試合を削除しました",
+      "failed": "試合を削除できませんでした"
+    },
+    "roster": {
+      "title": "プレイヤー名簿",
+      "yourTeam": "あなたのチーム",
+      "openPlayerPage": "プレイヤーページを開く",
+      "ready": "準備完了",
+      "connected": "接続中",
+      "offline": "オフライン",
+      "bot": "BOT"
+    },
+    "decision": {
+      "body": "すべてのマップを終えましたが、マップ数、ラウンド数、ダメージのすべてで同点です。トーナメント表を進めるため勝者を選んでください。",
+      "setWinner": "{{team}} の勝ち",
+      "confirmTitle": "シリーズの勝者を設定",
+      "confirmBody": "{{team}} を勝者としてこのシリーズを終了しますか?トーナメント表が進み、ここでは元に戻せません。",
+      "confirm": "勝者を設定",
+      "success": "勝者を設定しました",
+      "failed": "勝者を設定できませんでした"
+    },
+    "config": {
+      "loadFailed": "試合設定を読み込めませんでした",
+      "view": "試合設定 JSON を表示",
+      "title": "試合設定 JSON",
+      "loading": "試合設定を読み込み中...",
+      "empty": "この試合の設定はありません。"
+    },
+    "tiebreak": {
+      "regulationOnly": "この試合は延長戦なし(規定ラウンドのみ)のため、同点はチームの総ダメージで決着します。",
+      "segmentsExhausted": "延長戦の最大回数が設定されています。それでも同点なら、チームの総ダメージで勝者が決まります。",
+      "overtimeDisabled": "この試合は延長戦なしのため、同点はチームの総ダメージで決着します。",
+      "tiedByDamage": "最終スコアが同点だったため、試合設定に従いチームの総ダメージで勝者が決まりました。"
+    },
+    "team1": "チーム 1",
+    "team2": "チーム 2",
+    "matchTime": "試合時間:",
+    "server": "サーバー:",
+    "queuePosition": "待機順:",
+    "totalDamage": "総ダメージ:{{team1}} - {{team2}}",
+    "mapOfTotal": "マップ {{index}}/{{total}}:{{map}}",
+    "mapIndex": "マップ {{index}}:{{map}}",
+    "round": "ラウンド {{round}}",
+    "shuffle": {
+      "averageElo": "チーム ELO(平均):{{team1}} 対 {{team2}}",
+      "balancerHint": "シャッフルのチームは、レーティングの高いプレイヤーと低いプレイヤーを両チームに振り分けて平均を近づける OpenSkill ベースのバランサーで作られます。"
+    },
+    "playerLeaderboards": "プレイヤーランキング",
+    "noPlayerData": "プレイヤーデータがありません",
+    "currentMap": "現在のマップ",
+    "maps": "マップ",
+    "mapsNotPicked": "マップはまだ選ばれていません。",
+    "mapsViaVeto": "BAN/ピックで決定",
+    "matchInformation": "試合情報",
+    "created": "作成:",
+    "started": "開始:",
+    "completed": "完了:",
+    "adminControls": "管理者コントロール",
+    "slug": "試合スラッグ:",
+    "openChat": "試合チャット"
+  },
+  "bulkShuffleMatchesModal": {
+    "title": "シャッフル試合を一括作成",
+    "description": "1マップのシャッフル試合(マップとラウンド上限)を設定し、各サイドのプレイヤーを選んで好きなだけ対戦を定義します。試合は現在のシャッフルトーナメントの一部として作成され、トーナメント開始時にサーバーへ割り当てられます。",
+    "mapSelect": {
+      "label": "マップ",
+      "noMaps": "このトーナメントにはマップが設定されていません",
+      "helper": "この一括作成のすべての試合でこのマップを使います。"
+    },
+    "maxRounds": {
+      "label": "マップごとの最大ラウンド数",
+      "helperWithValue": "最大 {{maxRounds}} ラウンド、先に {{winRounds}} ラウンド取った方が勝ち。",
+      "helperDefault": "マップごとの最大ラウンド数(デフォルト:24、最大:30)。"
+    },
+    "matchesSection": {
+      "title": "試合({{count}})",
+      "addMatch": "試合を追加"
+    },
+    "players": {
+      "empty": "このシャッフルトーナメントにはまだプレイヤーが登録されていません。先にプレイヤーを登録すると手動で試合を作成できます。"
+    },
+    "matchRow": {
+      "title": "試合 {{index}}",
+      "teamCounts": "{{team1}}/{{teamSize}} • {{team2}}/{{teamSize}}",
+      "team1Label": "チーム 1 のプレイヤー({{team1Count}}/{{teamSize}})",
+      "team2Label": "チーム 2 のプレイヤー({{team2Count}}/{{teamSize}})",
+      "searchPlaceholder": "プレイヤーを検索して選択",
+      "mapOverrideLabel": "マップ(任意で上書き)",
+      "mapOverrideHelperOwn": "この試合は独自のマップを使います。",
+      "mapOverrideHelperDefault": "上のデフォルトマップを使う場合は空欄のままにしてください。",
+      "maxRoundsOverrideLabel": "最大ラウンド数(任意で上書き)",
+      "maxRoundsOverrideHelperOwn": "この試合のデフォルト最大ラウンド数を上書きします(現在 {{value}})。",
+      "maxRoundsOverrideHelperDefault": "上のデフォルト最大ラウンド数を使う場合は空欄のままにしてください。"
+    },
+    "errors": {
+      "loadPlayers": "登録プレイヤーを読み込めませんでした",
+      "noMatches": "作成する試合を1つ以上追加してください。",
+      "bothTeamsRequired": "試合 {{index}}:両チームに1人以上のプレイヤーが必要です。",
+      "conflictingPlayers": "試合 {{index}}:同じプレイヤーを両チームに入れることはできません。重複 ID:{{ids}}",
+      "mapRequired": "試合 {{index}}:マップが必要です(上でデフォルトマップを設定するか、この試合のマップを選んでください)。",
+      "rowMaxRoundsRange": "試合 {{index}}:試合ごとに上書きする場合、最大ラウンド数は 1〜30 にしてください。",
+      "globalMaxRoundsRange": "最大ラウンド数は 1〜30 にしてください。",
+      "createFailed": "手動のシャッフル試合を作成できませんでした"
+    },
+    "success": {
+      "created": "手動のシャッフル試合を作成しました。トーナメント開始時に割り当てられます。"
+    },
+    "createMatchesButton": {
+      "default": "試合を作成",
+      "creating": "作成中…"
+    }
+  },
+  "teamModal": {
+    "titleCreate": "新しいチームを作成",
+    "titleEdit": "チームを編集",
+    "teamNameLabel": "チーム名",
+    "teamNamePlaceholder": "Astralis",
+    "teamNameHelper": "チーム名にはどの言語の文字や記号も使えます",
+    "teamTagLabel": "チームタグ",
+    "teamTagPlaceholder": "AST",
+    "teamTagHelper": "チーム名から自動生成(最大4文字)",
+    "playersHeader": "プレイヤー({{count}})",
+    "selectPlayers": "プレイヤーを選択",
+    "noPlayersInfo": "まだプレイヤーがいません。少なくとも1人追加してください。",
+    "addPlayersHelper": "下で新しいプレイヤーを追加するか、既存のプレイヤーから選んでください",
+    "addPlayersHelper_steam": "Steam URL を貼り付けるか、既存のプレイヤーから選んで追加します",
+    "steamInputLabel": "Steam ID / カスタム URL",
+    "steamInputPlaceholder": "gaben または steamcommunity.com/id/gaben",
+    "resolveSteam": "Steam ID を解決",
+    "resolving": "解決中...",
+    "playerNameLabel": "プレイヤー名",
+    "playerNamePlaceholder": "s1mple",
+    "eloLabel": "ELO(任意)",
+    "eloPlaceholder": "1500",
+    "eloHelper": "デフォルト:1500",
+    "errors": {
+      "steamLookupEmpty": "Steam ID、カスタム URL、またはプロフィール URL を入力してください",
+      "steamApiNotConfigured": "Steam API が未設定です - Steam ID64 を手動で入力してください",
+      "steamResolveFailed": "Steam ID を解決できませんでした - Steam ID64 を手動で入力してください",
+      "steamAndNameRequired": "Steam ID とプレイヤー名の両方が必要です",
+      "steamDuplicate": "この Steam ID はすでにチームにいます",
+      "teamNameRequired": "チーム名は必須です",
+      "playersRequired": "プレイヤーが1人以上必要です",
+      "saveFailed": "チームを保存できませんでした",
+      "deleteFailed": "チームを削除できませんでした",
+      "discordIdInvalid": "Discord ID は17〜20桁の数字です(ユーザー名ではなく数値のユーザー ID)",
+      "discordIdInvalidPlayers": "無効な Discord ID:{{names}}。17〜20桁にするか空欄にしてください。",
+      "discordIdSaveFailed": "チームは保存されましたが、次のプレイヤーの Discord ID を保存できませんでした:{{names}}。{{message}}",
+      "nameRequired": "プレイヤー名を入力してください",
+      "addPlayerFailed": "プレイヤーを追加できませんでした"
+    },
+    "success": {
+      "playerAdded": "プレイヤーをチームに追加しました",
+      "playerReplaced": "プレイヤーを入れ替えました",
+      "teamUpdated": "チームを更新しました",
+      "teamCreated": "チームを作成しました",
+      "teamDeleted": "チームを削除しました"
+    },
+    "buttons": {
+      "deleteTeam": "チームを削除",
+      "cancel": "キャンセル",
+      "saving": "保存中...",
+      "saveChanges": "変更を保存",
+      "createTeam": "チームを作成"
+    },
+    "confirmDelete": {
+      "title": "チームを削除",
+      "message": "「{{name}}」を削除しますか?この操作は元に戻せません。"
+    },
+    "replacePlayerAria": "{{name}} を入れ替え",
+    "replacePlayerTooltip": "このプレイヤーを入れ替え",
+    "accountLabel": "{{account}} アカウント(任意)",
+    "accountHelper": "{{games}} 用。{{account}} でサインインすると、このプレイヤーになります。"
+  },
+  "playerModal": {
+    "titleCreate": "プレイヤーを作成",
+    "titleEdit": "プレイヤーを編集",
+    "steamLabel": "Steam ID またはプロフィール URL(任意)",
+    "steamHelperEditing": "Steam ID は変更できません",
+    "steamHelperNew": "{{games}} 用。Steam ID64、カスタム URL、またはプロフィール URL を入力してください。「解決」で名前とアバターが入ります。",
+    "resolveSteam": "Steam ID を解決",
+    "resolving": "解決中...",
+    "playerNameLabel": "プレイヤー名",
+    "playerNamePlaceholder": "プレイヤー",
+    "eloLabelNew": "初期 ELO",
+    "eloLabelEdit": "ELO",
+    "eloHelperNew": "空欄ならデフォルト(Skill Rating 1500)を使います。",
+    "eloHelperEdit": "ELO を変更するとプレイヤーのレーティングと統計がリセットされます。この操作は元に戻せません。",
+    "isAdminLabel": "管理者(このサイトを管理。ゲームモジュールによってはゲーム内の権限も付与)",
+    "currentElo": "現在の ELO:{{value}}",
+    "startingElo": "開始時の ELO:{{value}}",
+    "matchesPlayed": "試合数:{{count}}",
+    "errors": {
+      "steamRequired": "Steam ID は必須です",
+      "nameRequired": "プレイヤー名は必須です",
+      "steamLookupEmpty": "Steam ID、カスタム URL、またはプロフィール URL を入力してください",
+      "steamApiNotConfigured": "Steam API が未設定です - Steam ID64 を手動で入力してください",
+      "steamResolveFailed": "Steam ID を解決できませんでした - Steam ID64 を手動で入力してください",
+      "saveFailed": "プレイヤーを保存できませんでした"
+    },
+    "success": {
+      "playerUpdated": "プレイヤーを更新しました",
+      "playerCreated": "プレイヤーを作成しました"
+    },
+    "buttons": {
+      "delete": "削除",
+      "cancel": "キャンセル",
+      "saving": "保存中...",
+      "save": "保存",
+      "create": "作成"
+    },
+    "confirmDelete": {
+      "title": "プレイヤーを削除",
+      "message": "プレイヤー「{{name}}」を削除しますか?この操作は元に戻せません。"
+    },
+    "confirmEloUpdate": {
+      "title": "プレイヤーの ELO を更新",
+      "message": "このプレイヤーの ELO を {{from}} から {{to}} に更新しますか?統計とレーティング履歴がリセットされます。この操作は元に戻せません。"
+    },
+    "discordIdHelper": "任意。17〜20桁。主催者が Discord でこのプレイヤーに連絡できます。公開されることはありません。",
+    "accountLabel": "{{account}} アカウント(任意)",
+    "accountHelper": "{{games}} 用。アカウント ID です。{{account}} でサインインすると、このプレイヤーになります。",
+    "accountVerified": "連携済み:{{account}} でサインインしました。本人が変更します。"
+  },
+  "teamImportModal": {
+    "title": "JSON からチームをインポート",
+    "info": {
+      "title": "チームデータを含む JSON を下に貼り付けてください。",
+      "format": "想定形式:name、tag(任意)、players(name と steamId、任意で文字列の discordId)を持つチームの配列。",
+      "link": "例付きのドキュメントを見る"
+    },
+    "jsonLabel": "JSON データ",
+    "errors": {
+      "mustBeArray": "JSON はチームの配列である必要があります",
+      "emptyArray": "配列を空にはできません",
+      "parseWithMessage": "JSON 解析エラー:{{message}}",
+      "parseGeneric": "JSON の形式が正しくありません。構文を確認してください。",
+      "importFailed": "チームをインポートできませんでした",
+      "noJson": "JSON データを入力してください"
+    },
+    "preview": {
+      "summary": "✓ 有効な JSON です!合計 {{teams}}、{{players}} が見つかりました。",
+      "title": "プレビュー:",
+      "missingDiscordTotal": "Discord ID のないプレイヤー:{{count}}",
+      "missingDiscordChip": "Discord なし:{{count}}",
+      "playersChip_one": "{{count}} 人",
+      "playersChip_other": "{{count}} 人",
+      "teamsCount_one": "{{count}} チーム",
+      "teamsCount_other": "{{count}} チーム"
+    },
+    "actions": {
+      "preview": "プレビュー",
+      "importing": "インポート中...",
+      "import_one": "{{count}} チームをインポート",
+      "import_other": "{{count}} チームをインポート"
+    },
+    "warnings": {
+      "title": "一部の Discord ID は無視されました。次のプレイヤーは Discord ID なしでインポートされます:",
+      "discordIdNumber": "チーム「{{team}}」、プレイヤー「{{player}}」:discordId は引用符付きの文字列にしてください。大きな数値は JSON で精度が落ちるため、ID は除外されました。",
+      "discordIdInvalid": "チーム「{{team}}」、プレイヤー「{{player}}」:「{{value}}」は Discord のユーザー ID ではありません(17〜20桁が必要)。そのため除外されました。"
+    }
+  },
+  "playerImportModal": {
+    "title": "プレイヤーをインポート",
+    "info": {
+      "description": "JSON または CSV 形式でプレイヤーをインポートします。必須項目:steamId、name。任意:initialELO(デフォルト 1500)、avatarUrl。",
+      "link": "例付きのドキュメントを見る"
+    },
+    "placeholders": {
+      "jsonCsv": "JSON 形式:\n[\n  {\n    \"steamId\": \"76561198012345678\",\n    \"name\": \"Player One\",\n    \"initialELO\": 1500,\n    \"avatarUrl\": \"https://...\"\n  }\n]\n\nCSV 形式:\nsteamId,name,initialELO,avatarUrl\n76561198012345678,Player One,1500,https://..."
+    },
+    "actions": {
+      "parseValidate": "解析して検証",
+      "importing": "インポート中...",
+      "import_one": "{{count}} 人をインポート",
+      "import_other": "{{count}} 人をインポート"
+    },
+    "preview": {
+      "title": "インポートするプレイヤー({{count}}):",
+      "steamId": "Steam ID:{{steamId}}",
+      "name": "名前:{{name}}",
+      "initialElo": "初期 ELO:{{elo}}",
+      "avatar": "アバター:{{url}}",
+      "readyChip_one": "{{count}} 人がインポート可能",
+      "readyChip_other": "{{count}} 人がインポート可能"
+    },
+    "errors": {
+      "noData": "JSON または CSV データを入力してください",
+      "noPlayers": "データにプレイヤーが見つかりません",
+      "validationPrefix": "検証エラー:",
+      "parseFailed": "データを解析できませんでした:{{message}}",
+      "importFailed": "プレイヤーをインポートできませんでした",
+      "parseFirst": "先にデータを解析して検証してください"
+    }
+  },
+  "playerSelectionModal": {
+    "title": "プレイヤーを選択",
+    "selectedCount": "{{count}} 人選択中",
+    "searchPlaceholder": "名前でプレイヤーを検索...",
+    "searchPlaceholder_steam": "名前または Steam ID でプレイヤーを検索...",
+    "selectAll": {
+      "select": "すべて選択",
+      "deselect": "選択を解除"
+    },
+    "empty": {
+      "noSearchResults": "検索に一致するプレイヤーがいません",
+      "noPlayers": "選べるプレイヤーがいません"
+    },
+    "playerCard": {
+      "alreadyInTeam": "すでにチームにいます"
+    },
+    "errors": {
+      "loadFailed": "プレイヤーを読み込めませんでした",
+      "noSelectable": "選択できるプレイヤーがいません"
+    },
+    "addPlayersButton_one": "{{count}} 人を追加",
+    "addPlayersButton_other": "{{count}} 人を追加"
+  },
+  "soundSettingsModal": {
+    "title": "サウンド設定",
+    "soundSelect": {
+      "label": "通知音"
+    },
+    "volume": {
+      "label": "音量:{{percent}}%"
+    },
+    "testButton": "音をテスト",
+    "footer": "試合の準備ができたときや重要なイベントが起きたときに通知音が鳴ります。"
+  },
+  "addBackupPlayer": {
+    "title": "プレイヤーを追加",
+    "loadFailed": "プレイヤー一覧を読み込めませんでした",
+    "added": "{{name}} を {{target}} に追加しました",
+    "addFailed": "プレイヤーを追加できませんでした",
+    "addToMatchFailed": "試合にプレイヤーを追加できませんでした",
+    "searchLabel": "プレイヤーを検索",
+    "searchPlaceholder": "プレイヤー名を入力...",
+    "available": "追加可能なプレイヤー {{count}} 人(試合に未参加)",
+    "noneAvailable": "追加できるプレイヤーがいません",
+    "displayNameLabel": "表示名(任意)",
+    "displayNamePlaceholder": "デフォルトはプレイヤーの現在の名前",
+    "side": "サイド",
+    "spectator": "観戦者",
+    "selected": "選択中:",
+    "fromTeam": "チーム:{{team}}",
+    "steamId": "Steam ID:{{id}}",
+    "adding": "プレイヤーを追加中...",
+    "add": "試合にプレイヤーを追加",
+    "underlyingCommand": "実行されるコマンド:",
+    "important": "重要:",
+    "reconnectHint": "追加後、プレイヤーはサーバーに再接続する必要があります。すでに接続している場合は、入り直す必要があるかもしれません。"
+  }
+}

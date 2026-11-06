@@ -1,0 +1,198 @@
+{
+  "adminToolsPage": {
+    "description": "このサイトの試合復旧とアプリログ。",
+    "recovery": {
+      "title": "試合の復旧",
+      "description": "トーナメント中に API やサーバーが再起動して試合の状態がずれている場合(ライブ前に止まった試合や、ライブスコアが欠けている場合など)、手動で復旧処理を実行できます。全サーバーに現在の試合レポートを問い合わせ、スコアとフェーズを再同期し、可能な範囲で Webhook とデモアップロードを再設定します。",
+      "button": "今すぐ試合を復旧",
+      "success": "試合の復旧が完了しました。",
+      "error": "試合の復旧に失敗しました。",
+      "failedTrigger": "試合の復旧を開始できませんでした。もう一度お試しください。"
+    },
+    "monitoring": {
+      "title": "監視とログ",
+      "appLogs": "アプリケーションログ"
+    },
+    "logs": {
+      "loadFailed": "ログを読み込めませんでした",
+      "levelAll": "すべて",
+      "auto": "自動",
+      "refresh": "ログを更新",
+      "empty": "表示するログはありません",
+      "footer": "最新 {{count}} 件のログを表示中",
+      "footerAutoRefresh": "最新 {{count}} 件のログを表示中(自動更新)"
+    }
+  },
+  "servers": {
+    "allocation": {
+      "title": "空きサーバーを待っています",
+      "waiting": "サーバーが空き次第、この試合は自動で始まります。必要なサーバー:",
+      "nextPass": "次の割り当ては {{seconds}} 秒後"
+    }
+  },
+  "adminMatchControls": {
+    "title": "管理者コントロール",
+    "noServer": "この試合にはサーバーが割り当てられていません",
+    "unavailable": "この試合にはサーバーが割り当てられていないため、管理者コントロールは使えません。",
+    "unknownAction": "不明な操作",
+    "commandFailed": "コマンドを実行できませんでした",
+    "confirm": "確認",
+    "execute": "実行",
+    "close": "閉じる",
+    "tipLabel": "管理者向けヒント:",
+    "tip": "ライブ中の試合では慎重に使ってください。「{{endMatch}}」や「{{restartMatch}}」などの操作は元に戻せません。",
+    "sections": {
+      "matchControl": "試合コントロール",
+      "advanced": "高度な操作"
+    },
+    "actions": {
+      "pause": {
+        "button": "一時停止",
+        "tooltip": "管理者による一時停止:プレイヤーは再開できません",
+        "title": "試合を一時停止",
+        "description": "試合を強制的に一時停止します。プレイヤーは再開できません。"
+      },
+      "unpause": {
+        "button": "再開",
+        "tooltip": "一時停止から試合を再開",
+        "title": "試合を再開",
+        "description": "試合を強制的に再開します。"
+      },
+      "swap": {
+        "button": "サイド交代",
+        "tooltip": "両チームのサイドを入れ替え(CT ↔ T)",
+        "title": "サイド交代",
+        "description": "両チームのサイド(CT/T)を入れ替えます。"
+      },
+      "restartRound": {
+        "button": "ラウンドを再開",
+        "tooltip": "現在のラウンドを最初からやり直す(経済もリセット)",
+        "title": "ラウンドを再開",
+        "description": "現在のラウンドをやり直します。"
+      },
+      "skipVeto": {
+        "button": "BAN/ピックをスキップ",
+        "tooltip": "マップ選択をスキップして最初のマップをすぐに読み込む",
+        "title": "BAN/ピックをスキップ",
+        "description": "マップ選択フェーズをスキップして試合を開始します。"
+      },
+      "endWarmup": {
+        "button": "ウォームアップ終了",
+        "tooltip": "ウォームアップを終了して試合を開始(ナイフラウンドまたはライブ)",
+        "title": "ウォームアップ終了",
+        "description": "ウォームアップを終了して試合を開始します。"
+      },
+      "endMatch": {
+        "button": "試合終了",
+        "tooltip": "試合をすぐに終了して最終スコアを記録",
+        "title": "試合終了",
+        "description": "試合を強制終了します。慎重に使ってください!"
+      },
+      "restartMatch": {
+        "button": "試合をやり直す",
+        "tooltip": "試合を終了して最初から読み込み直す(進行状況はすべて失われます)",
+        "title": "試合をやり直す",
+        "description": "試合を終了して最初から読み込み直します。進行状況はすべて失われます!"
+      },
+      "reallocateServer": {
+        "button": "サーバーを再割り当て",
+        "tooltip": "試合を別のサーバーに移動(ライブ前の復旧用)",
+        "tooltipUnavailable": "準備完了/読み込み済みの試合でのみ使えます(ライブ中は不可)",
+        "title": "サーバーを再割り当て",
+        "description": "試合を別の空きサーバーに移して読み込み直します。現在のサーバーが古い場合やプレイヤーが接続できない場合に使ってください。ライブ中の試合では使えません。"
+      },
+      "forceCancel": {
+        "button": "強制キャンセル",
+        "tooltip": "サーバーがオフラインでも試合をキャンセルし、サーバーの割り当てを解放",
+        "title": "試合を強制キャンセル",
+        "description": "⚠️ サーバーがオフラインでも試合をキャンセルします。試合は完了扱いになり、サーバーは解放されます。この操作は元に戻せません。"
+      }
+    },
+    "inputs": {
+      "restoreBackup": {
+        "button": "バックアップを復元",
+        "tooltip": "保存されたラウンドバックアップを読み込む(経済と位置を復元)",
+        "title": "バックアップを復元",
+        "label": "復元するラウンド番号"
+      },
+      "addTime": {
+        "button": "時間を追加",
+        "tooltip": "現在のラウンドタイマーを延長(技術的な一時停止に便利)",
+        "title": "ラウンド時間を追加",
+        "label": "追加する秒数"
+      },
+      "broadcast": {
+        "button": "全体メッセージ",
+        "tooltip": "サーバーの全プレイヤーにメッセージを送信",
+        "title": "全体メッセージ",
+        "label": "送信するメッセージ"
+      }
+    },
+    "success": {
+      "pause": "試合を一時停止しました",
+      "unpause": "試合を再開しました",
+      "swap": "サイドを交代しました",
+      "skipVeto": "マップ選択フェーズをスキップしました",
+      "restartRound": "ラウンドをやり直しました",
+      "endMatch": "試合を終了しました",
+      "endWarmup": "ウォームアップを終了しました",
+      "startMatch": "試合を開始しました",
+      "restoreBackup": "ラウンド {{round}} のバックアップを復元しました",
+      "addTime_one": "ラウンドタイマーに {{count}} 秒追加しました",
+      "addTime_other": "ラウンドタイマーに {{count}} 秒追加しました",
+      "broadcast": "サーバーにメッセージを送信しました",
+      "restartMatch": "試合をやり直しました(終了して再読み込み)",
+      "reallocateServer": "試合を別のサーバーに移動しました",
+      "forceCancel": "試合をキャンセルしました",
+      "default": "コマンドを実行しました"
+    },
+    "hold": {
+      "title": "不戦勝の代わりに保留",
+      "description": "保留中は試合が読み込まれず開始もされず、誰も不戦勝になりません。再開すると、両チームの持ち時間は満タンに戻ります。",
+      "reason": "理由(管理者に表示)",
+      "delay": "{{minutes}} 分延期",
+      "holdUntilReleased": "解除するまで保留",
+      "release": "今すぐ解除",
+      "restartCountdown": "カウントダウンをやり直す",
+      "heldUntil": "{{time}} まで保留中",
+      "heldIndefinitely": "解除するまで保留中",
+      "tournamentPaused": "トーナメントは一時停止中です",
+      "heldDone": "試合を保留にしました",
+      "delayedDone": "試合を {{minutes}} 分延期しました",
+      "releasedDone": "試合の保留を解除しました",
+      "restartedDone": "カウントダウンをやり直しました:両チームの持ち時間が満タンに戻りました",
+      "failed": "保留を変更できませんでした"
+    }
+  },
+  "adminCalls": {
+    "header": "管理者呼び出し({{count}})",
+    "title": "{{player}} が管理者を呼んでいます",
+    "justNow": "たった今",
+    "minutesAgo": "{{count}} 分前",
+    "hoursAgo": "{{count}} 時間前",
+    "spectator": "観戦者",
+    "team1": "チーム 1",
+    "team2": "チーム 2",
+    "noMessage": "メッセージなし",
+    "unknownPlayer": "不明なプレイヤー",
+    "unknownServer": "不明なサーバー",
+    "matchMap": "{{match}}、マップ {{map}}",
+    "openMatch": "試合を開く",
+    "openServers": "サーバー",
+    "resolve": "対応済みにする",
+    "resolveAll": "すべて対応済みにする",
+    "resolveFailed": "呼び出しを対応済みにできませんでした。もう一度お試しください。",
+    "matchUnavailable": "その試合を開けませんでした。",
+    "enableSound": "音を有効にする",
+    "mute": "ミュート",
+    "unmute": "ミュート解除",
+    "minimize": "最小化",
+    "show": "表示",
+    "openChat": "チャットを開く",
+    "claim": "対応する",
+    "release": "手放す",
+    "claimedBy": "{{name}} が対応中",
+    "claimedByYou": "あなたが対応中",
+    "anAdmin": "管理者"
+  }
+}

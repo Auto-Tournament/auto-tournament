@@ -1,0 +1,1810 @@
+{
+  "tournament": {
+    "startConfirm": {
+      "intro": "トーナメントを開始しますか?",
+      "thisWill": "実行内容:",
+      "openMatches": "1回戦の試合をプレイ可能にする",
+      "statusInProgress": "トーナメントの状態を「進行中」に変更する",
+      "confirm": "はい、トーナメントを開始します",
+      "started": "トーナメントが始まりました!1回戦の試合が開いています。"
+    },
+    "steps": {
+      "create": "トーナメントを作成",
+      "review": "確認",
+      "live": "ライブトーナメント"
+    },
+    "welcome": {
+      "heading": "トーナメントを作成",
+      "chooseMethod": "トーナメントの作成方法を選んでください",
+      "createNewTitle": "新しいトーナメントを作成",
+      "createNewDescription": "ゼロから始めて、すべての設定を手動で行います"
+    },
+    "typeSelector": {
+      "categories": {
+        "professional": {
+          "label": "プロ向けシリーズ"
+        },
+        "party": {
+          "label": "パーティー&お楽しみ"
+        }
+      },
+      "types": {
+        "single_elimination": {
+          "label": "シングルエリミネーション",
+          "description": "1敗で敗退。プロのトーナメントで使われる定番の形式です。"
+        },
+        "double_elimination": {
+          "label": "ダブルエリミネーション",
+          "description": "2敗で敗退。敗者側トーナメントでもう一度チャンスがあります。"
+        },
+        "round_robin": {
+          "label": "総当たり",
+          "description": "全員が全員と対戦。リーグ戦形式に最適です。"
+        },
+        "swiss": {
+          "label": "スイス方式",
+          "description": "同じ戦績のチーム同士が対戦。トーナメントを通してバランスの取れた組み合わせになります。"
+        },
+        "shuffle": {
+          "label": "シャッフルトーナメント",
+          "description": "毎ラウンド、プレイヤーがバランスの取れたチームにシャッフルされます。ELO によるチーム調整で個人を競います。"
+        },
+        "groups": {
+          "label": "グループ、その後プレーオフ",
+          "description": "グループで総当たりを行い、各グループの上位がエリミネーションに進みます。"
+        }
+      },
+      "selectedChip": "選択中"
+    },
+    "review": {
+      "summary": {
+        "info": "トーナメントの設定を確認し、準備ができたら「{{button}}」を押してください。",
+        "nameLabel": "トーナメント名",
+        "typeLabel": "トーナメント形式",
+        "formatLabel": "試合形式",
+        "notSet": "未設定",
+        "estimatedVolumeText": "約 {{matches}}、{{rounds}}(BO{{mapsPerMatch}}、最大 {{maps}})。"
+      }
+    },
+    "formSteps": {
+      "steps": {
+        "name": "名前",
+        "type": "形式",
+        "format": "フォーマット",
+        "maps": "マップ",
+        "teams": "チーム",
+        "review": "確認"
+      },
+      "backToWelcome": "最初に戻る",
+      "back": "戻る",
+      "next": "次へ"
+    },
+    "emptyBracket": {
+      "title": "表示するトーナメント表がありません",
+      "description": "トーナメントを作成してトーナメント表を生成しましょう"
+    },
+    "common": {
+      "createTournament": "トーナメントを作成"
+    },
+    "nameLabel": "トーナメント名",
+    "namePlaceholder": "Auto Tournament 2025 春季トーナメント",
+    "champion": {
+      "title": "優勝"
+    },
+    "page": {
+      "title": "トーナメント設定"
+    },
+    "labels": {
+      "teams": "チーム",
+      "maps": "マップ",
+      "format": "フォーマット",
+      "players": "プレイヤー",
+      "matchRules": "試合ルール",
+      "servers": "サーバー",
+      "overtimeSettings": "延長戦の設定",
+      "mapPool": "マッププール"
+    },
+    "tooltips": {
+      "deleteTournament": "このトーナメントとすべてのデータを完全に削除"
+    },
+    "counts": {
+      "teams_one": "{{count}} チーム",
+      "teams_other": "{{count}} チーム",
+      "matches_one": "{{count}} 試合",
+      "matches_other": "{{count}} 試合",
+      "rounds_one": "{{count}} 回戦",
+      "rounds_other": "{{count}} 回戦",
+      "maps_one": "{{count}} マップ",
+      "maps_other": "{{count}} マップ",
+      "servers_one": "{{count}} 台のサーバー",
+      "servers_other": "{{count}} 台のサーバー",
+      "availableServers_one": "利用可能なサーバー {{count}} 台",
+      "availableServers_other": "利用可能なサーバー {{count}} 台",
+      "concurrentMatches_one": "同時試合 {{count}} 件",
+      "concurrentMatches_other": "同時試合 {{count}} 件",
+      "enabledServers_one": "有効なサーバー {{count}} 台",
+      "enabledServers_other": "有効なサーバー {{count}} 台"
+    },
+    "matchRules": {
+      "value": "マップごとに最大 {{maxRounds}} ラウンド、先に {{winRounds}} ラウンド取った方が勝ち。",
+      "teamSizeValue": "チーム人数:{{size}}v{{size}}",
+      "overtimeEnabled": "延長戦:あり",
+      "overtimeDisabled": "延長戦:なし",
+      "overtimeDisabledNoDraws": "延長戦:なし(引き分けなし – ダメージで決着)",
+      "overtimeSegments_one": "延長戦の回数:{{count}} 回",
+      "overtimeSegments_other": "延長戦の回数:{{count}} 回",
+      "overtimeSegmentsDefault": "延長戦の回数:ゲームサーバーのデフォルト",
+      "overtimeSegmentsDefaultUnlimited": "延長戦の回数:ゲームサーバーのデフォルト(通常は無制限)"
+    },
+    "toasts": {
+      "loadTemplateFailed": "テンプレートを読み込めませんでした",
+      "nameRequired": "トーナメント名は必須です",
+      "nameUpdated": "トーナメント名を更新しました",
+      "nameUpdateFailed": "トーナメント名を更新できませんでした",
+      "selectAtLeastOneMap": "マップを1つ以上選んでください",
+      "maxRoundsRange": "最大ラウンド数は 1〜30 にしてください",
+      "teamSizeRange": "チーム人数は 2〜10 人にしてください",
+      "invalidTeamCount": "チーム数が正しくありません",
+      "selectAtLeastTwoTeams": "チームを2つ以上選んでください",
+      "shuffleCreated": "シャッフルトーナメント「{{name}}」を作成しました!次のステップ:開始するには {{minPlayers}} 人以上のプレイヤーを登録してください({{teamSize}}v{{teamSize}} の試合)。",
+      "shuffleCreateFailed": "シャッフルトーナメントを作成できませんでした",
+      "shuffleCreateFailedRetry": "シャッフルトーナメントを作成できませんでした。設定を確認してもう一度お試しください。",
+      "updated": "トーナメントを更新し、トーナメント表を再生成しました!",
+      "created": "トーナメントを作成しました!",
+      "saveFailed": "トーナメントを保存できませんでした",
+      "deleted": "トーナメントを削除しました",
+      "deleteFailed": "トーナメントを削除できませんでした",
+      "regenerated": "トーナメント表を再生成しました",
+      "regenerateFailed": "トーナメント表を再生成できませんでした",
+      "resetDone": "トーナメントを設定モードに戻しました",
+      "resetFailed": "トーナメントをリセットできませんでした",
+      "started_one": "トーナメントが始まりました!{{count}} 試合をサーバーに割り当てました。",
+      "started_other": "トーナメントが始まりました!{{count}} 試合をサーバーに割り当てました。",
+      "startRequested": "トーナメントの開始をリクエストしました。まもなくサーバーが割り当てられます。",
+      "startFailed": "トーナメントを開始できませんでした",
+      "templateSaved": "テンプレートを保存しました!",
+      "disableServersFailed": "1台以上のサーバーを無効にできませんでした:{{message}}",
+      "noChangesToSave": "保存する変更はありません",
+      "invalidMapSelection": "マップの選択が正しくありません",
+      "archived": "トーナメントをアーカイブしました。次を作成しましょう。",
+      "archiveFailed": "トーナメントをアーカイブできませんでした"
+    },
+    "outdatedServers": {
+      "title": "サーバーの更新が必要です",
+      "body": "有効なサーバーのうち1台以上が Steam 上で古いバージョンです(または確認できませんでした)。更新するか、無効にして残りのサーバーで続行してください。",
+      "confirm": "対象のサーバーを無効にして再試行",
+      "disabling": "無効化中...",
+      "goToServers": "サーバーへ"
+    },
+    "live": {
+      "saveNameAria": "トーナメント名を保存",
+      "cancelRenameAria": "トーナメント名の変更をキャンセル",
+      "editNameAria": "トーナメント名を編集",
+      "renameTooltip": "トーナメント名を変更",
+      "alert": {
+        "liveTitle": "トーナメントはライブ中です",
+        "liveBody": "試合がサーバーで進行中です。ライブ中はトーナメント設定を編集できません(トーナメント名を除く)。",
+        "pendingTitle": "トーナメント進行中",
+        "pendingBody": "サーバーが割り当てられ BAN/ピックが終わり次第、試合が始まります。進行中はトーナメント設定を編集できません(トーナメント名を除く)。",
+        "completedTitle": "トーナメント完了",
+        "completedBody": "このトーナメントはすべての試合を終えました。新しいトーナメントを作成するか、これをリセットしてやり直してください。"
+      },
+      "teamsCompeting_one": "{{count}} チームが参加中",
+      "teamsCompeting_other": "{{count}} チームが参加中",
+      "playersCompeting_one": "{{count}} 人が参加中",
+      "playersCompeting_other": "{{count}} 人が参加中",
+      "playersCompetingUnknown": "参加プレイヤー",
+      "shuffleSettingsLabel": "シャッフル設定",
+      "maxRoundsPerMapValue": "マップごとの最大ラウンド数:{{rounds}}",
+      "eloTemplateValue": "ELO テンプレート:{{template}}",
+      "mapSequenceLabel": "マップの順番(回戦)",
+      "noMapsConfigured": "まだマップが設定されていません。",
+      "viewBracket": "トーナメント表を見る",
+      "viewBracketTooltip": "トーナメント表と試合の詳細を見る",
+      "leaderboardTooltip": "プレイヤーと共有できる公開ランキングページを開く",
+      "restartTooltip": "サーバー上のすべての進行中の試合を終了して読み込み直す(止まった試合に便利)",
+      "resetTooltip": "すべての試合を終了してトーナメントを設定モードに戻す(設定は残し、試合データはすべて消去)",
+      "reset": "設定に戻す",
+      "dangerZone": "危険な操作",
+      "newTournament": "新しいトーナメント"
+    },
+    "reviewCard": {
+      "needPlayersWarning": "トーナメントを始めるには {{minPlayers}} 人以上のプレイヤーが必要です({{teamSize}}v{{teamSize}} の試合)。現在の登録数:{{registered}}",
+      "start": "トーナメントを開始",
+      "starting": "開始中...",
+      "startSimulation": "シミュレーションを開始",
+      "startingSimulation": "シミュレーションを開始中...",
+      "bulkCreateMatches": "試合を一括作成",
+      "edit": "編集",
+      "regenerate": "再生成",
+      "regenerateTooltip": "現在の試合をすべて削除し、同じ設定でトーナメント表を作り直します。",
+      "regenerateDisabledTooltip": "再生成するには、一度トーナメント表を生成してください(保存してトーナメント表を生成)。"
+    },
+    "dialogs": {
+      "items": {
+        "endMatches": "サーバー上のすべての進行中の試合を終了",
+        "deleteMatches": "すべての試合とトーナメント表を削除",
+        "deleteData": "すべての試合データと統計を削除"
+      },
+      "delete": {
+        "title": "🗑️ トーナメントを削除",
+        "question": "<b>「{{name}}」</b>を完全に削除しますか?",
+        "willTitle": "⚠️ 実行内容:",
+        "items": {
+          "removeTournament": "トーナメントを完全に削除する",
+          "cannotBeUndone": "元に戻せない"
+        },
+        "note": "💡 メモ:同じ設定でやり直したいだけなら、代わりに「設定に戻す」を使ってください。",
+        "confirm": "完全に削除"
+      },
+      "regenerate": {
+        "title": "🔄 トーナメント表を再生成",
+        "liveWarning": "⚠️ 警告:トーナメントは {{status}} です!",
+        "liveBody": "トーナメント表を再生成すると、スコア、統計、イベント履歴を含む既存の試合データが<b>すべて削除</b>されます。",
+        "cannotBeUndone": "この操作は元に戻せません。",
+        "areYouSure": "本当に続行しますか?",
+        "setupBody": "既存の試合をすべて削除し、同じ設定でトーナメント表を作り直します。",
+        "continue": "続行しますか?",
+        "confirmDestructive": "はい、すべて削除します",
+        "confirm": "再生成"
+      },
+      "reset": {
+        "title": "🔄 設定に戻す",
+        "question": "<b>「{{name}}」</b>を設定モードに戻しますか?",
+        "willTitle": "実行内容:",
+        "items": {
+          "clearStatus": "トーナメントの状態をクリア(設定に戻る)",
+          "keepSettings": "トーナメントの設定(名前、チーム、形式)は<b>維持</b>",
+          "allowEdit": "設定を再び編集できるようにする",
+          "regenerateMatches": "すべての試合結果を消去し、トーナメント表を最初から作り直す"
+        },
+        "regenerated": "新しいトーナメント表がすぐに作成されるので、保留中の試合もすぐに表示されます。",
+        "note": "💡 メモ:トーナメントを完全に削除するには、代わりに「削除」を使ってください。",
+        "confirm": "設定に戻す"
+      },
+      "start": {
+        "titleNoServers": "⚠️ 利用可能なサーバーがありません",
+        "titleInsufficient": "⚠️ サーバーが足りません",
+        "titleUncertain": "⚠️ サーバーなしでトーナメントを開始しますか?",
+        "noServersHeading": "現在利用可能なサーバーがありません",
+        "noServersBody": "トーナメントは開始されますが、サーバーが空くまで試合は延期されます。サーバーの準備ができると自動で試合が割り当てられます。",
+        "insufficientHeading": "1回戦の全試合を同時に行うにはサーバーが足りません",
+        "insufficientBody": "現在 <b>{{available}}</b> ありますが、1回戦には <b>{{required}}</b> が必要です。一部の試合は待機し、サーバーが空き次第始まります。",
+        "uncertainHeading": "サーバーの状況が不明です",
+        "uncertainBody": "サーバーが少ないか、まったくない状態で始まる可能性があります。試合はサーバーが空くまで延期され、準備ができ次第自動で割り当てられます。",
+        "question": "それでもトーナメントを開始しますか?",
+        "confirm": "はい、開始します",
+        "cancel": "サーバーを確認"
+      }
+    },
+    "formActions": {
+      "saveAndGenerate": "保存してトーナメント表を生成",
+      "saveAsTemplate": "テンプレートとして保存",
+      "saveTemplateTooltip": "現在のトーナメント設定をテンプレートとして保存"
+    },
+    "wizard": {
+      "validation": {
+        "selectType": "トーナメント形式を選んでください",
+        "selectFormat": "試合形式を選んでください"
+      },
+      "shuffleInfo": "シャッフルトーナメントでは固定チームを使いません。プレイヤーは Skill Rating に基づいて試合ごとに自動でバランスの取れたチームに振り分けられます。",
+      "shuffleRounds": "このシャッフルトーナメントは約 {{rounds}} です(選んだマップごとに1回戦)。",
+      "volumeAlert": "{{type}} の {{format}} トーナメントで {{teams}} の場合、このトーナメント表は約 {{matches}}、{{rounds}} になります(最大 {{maps}})。",
+      "maxRoundsLabel": "マップごとの最大ラウンド数",
+      "maxRoundsHelper": "各マップは最大 {{maxRounds}} ラウンド、先に {{winRounds}} ラウンド取った方が勝ち。",
+      "maxRoundsHelperEmpty": "マップごとの最大ラウンド数(デフォルト:24、最大:30)。",
+      "serversSummary": "{{servers}} を設定済み。1回戦は {{matches}} です。",
+      "estimatedVolumeLabel": "想定ボリューム",
+      "mapsHeading": "マップ({{total}})",
+      "noMapsSelected": "マップが選ばれていません",
+      "matchConfiguration": "試合設定",
+      "roundLimitValue_one": "ラウンド上限:最大 {{count}} ラウンド",
+      "roundLimitValue_other": "ラウンド上限:最大 {{count}} ラウンド",
+      "teamsHeading": "チーム({{total}})",
+      "noTeamsSelected": "チームが選ばれていません(任意)",
+      "playerRegistration": "プレイヤー登録",
+      "playerRegistrationInfo_one": "プレイヤーはトーナメント作成後に登録します。選んだマップ1つが1回戦分の試合になります(全 {{count}} 回戦)。",
+      "playerRegistrationInfo_other": "プレイヤーはトーナメント作成後に登録します。選んだマップ1つが1回戦分の試合になります(全 {{count}} 回戦)。",
+      "serversSummaryQueued": "{{servers}} を設定済み。1回戦は {{matches}} です。サーバー数を超える試合は、サーバーが空くまで待機します。"
+    },
+    "overtime": {
+      "selectLabel": "延長戦",
+      "options": {
+        "enabled": "あり(標準の延長戦)",
+        "disabledDraws": "なし – 引き分けあり",
+        "disabledNoDraws": "なし – 引き分けなし(ダメージで決着)"
+      },
+      "modeHelper": "標準の延長戦では、どちらかが上回るまで延長を続けます。「引き分けあり」は同点のマップを引き分けとし、「引き分けなし」はチームの総ダメージで決着させます。",
+      "tooltip": "延長戦の挙動と、最大ラウンドでの同点の扱いを設定します。これらはゲームサーバーに overtimeMode/overtimeSegments として渡され、シャッフルトーナメントや手動の試合と同じ意味を持ちます。",
+      "shuffleTooltip": "シャッフル試合の延長戦の挙動と、最大ラウンドでの同点の決め方を設定します。延長戦なしの場合、同点の試合は選んだオプションに応じて引き分けのままか、チームの総ダメージで決着します。",
+      "segmentsLabel": "延長戦の回数(任意)",
+      "segmentsHelper": "任意:延長戦の回数を制限します。ゲームサーバーのデフォルトにするには空欄のままにしてください。",
+      "segmentsHelperValue_one": "延長戦を {{count}} 回までに制限します。延長戦後の同点はチームの総ダメージで決着します。",
+      "segmentsHelperValue_other": "延長戦を {{count}} 回までに制限します。延長戦後の同点はチームの総ダメージで決着します。"
+    },
+    "grandFinal": {
+      "sectionTitle": "グランドファイナルの方式(ダブルエリミネーション)",
+      "label": "グランドファイナル",
+      "options": {
+        "simple": "シンプル – 勝者側と敗者側の優勝チームによる1回のグランドファイナル",
+        "none": "なし – 勝者側の決勝で優勝が決まる(グランドファイナルなし)",
+        "double": "ダブル – ブラケットリセット方式(現在はシンプルと同じ動作。完全なリセット対応は予定中)"
+      },
+      "helper": "勝者側と敗者側の優勝チームが最後にどう対戦するかを決めます。"
+    },
+    "mapPool": {
+      "shuffleTitle": "シャッフルトーナメントのマップ選択",
+      "shuffleBody": "選んだマップはすべて順番にプレイされます。各マップが1回戦分の試合になります。選んだマップの数で回戦数が決まります。",
+      "shuffleSelected": "{{maps}} を選んだので、{{rounds}} がプレイされます。",
+      "chooseLabel": "マッププールを選択",
+      "custom": "カスタム",
+      "selectedMaps": "選択したマップ({{total}}):",
+      "chooseMapsPlaceholder": "マップを選択...",
+      "saveMapPool": "マッププールを保存",
+      "types": {
+        "defusal": "爆破",
+        "hostage": "人質救出",
+        "armsRace": "アームズレース",
+        "unknown": "不明"
+      }
+    },
+    "formatStep": {
+      "shuffleInfo": "シャッフルトーナメントは BO1 形式です。各試合は1マップです。"
+    },
+    "shuffleConfig": {
+      "overline": "シャッフルトーナメントの設定",
+      "subtitle": "試合ルールと設定",
+      "teamSizeLabel": "チーム人数",
+      "teamSizeTooltip": "1チームのプレイヤー数。一般的には 4v4、5v5、6v6。1チーム最少2人、最大10人。",
+      "teamSizeHelper": "1チームのプレイヤー数(デフォルト:5v5 の 5、範囲:2〜10)",
+      "maxRoundsLabel": "最大ラウンド数",
+      "maxRoundsTooltip": "1試合の最大ラウンド数。CS2 サーバーに mp_maxrounds として渡されます。例:6 = MR6、24 = MR24。",
+      "maxRoundsHelper": "最大 {{maxRounds}} ラウンド、先に {{winRounds}} ラウンド取った方が勝ち",
+      "maxRoundsHelperEmpty": "1試合の最大ラウンド数(デフォルト:24、最大:30)",
+      "eloTemplateLabel": "レーティングテンプレート",
+      "eloTemplateTooltip": "このトーナメントでの ELO の計算方法を選びます。デフォルトの「Pure Win/Loss」テンプレートは試合結果(勝敗)のみを使い、統計は記録されますが ELO は変わりません。他のテンプレートは任意で、Excel のような挙動が必要な場合に OpenSkill の勝敗変動に統計ベースの調整を加えます。",
+      "eloDefaultSuffix": "(デフォルト)",
+      "eloTemplateHelper": "Pure Win/Loss(デフォルト):ELO に影響するのは試合結果のみです。プレイヤーの統計はランキングやエクスポート用に記録されますが、カスタムテンプレートを選ばない限りレーティングは変わりません。"
+    },
+    "shuffleStats": {
+      "serverShortageWarning": "サーバーは {{needed}} 台中 {{available}} 台です。試合は数回に分けて行われるため、各回戦に時間がかかります。"
+    },
+    "changePreview": {
+      "title": "トーナメントの変更を確認",
+      "liveHeading": "トーナメントはライブ中です!",
+      "liveBody": "トーナメント形式、フォーマット、チーム数を変更すると、トーナメント表の再生成が必要になる場合があります。やり直すには「トーナメントをリセット」を検討してください。",
+      "noChangesDetected": "変更はありません",
+      "intro": "次の変更が適用されます:",
+      "before": "変更前",
+      "after": "変更後",
+      "apply": "変更を適用",
+      "applyRisky": "変更を適用(危険!)",
+      "noChangesToApply": "適用する変更はありません",
+      "none": "なし",
+      "itemCount_one": "{{count}} 件",
+      "itemCount_other": "{{count}} 件"
+    },
+    "teamSelection": {
+      "chooseTeamsPlaceholder": "チームを選択…",
+      "addAll": "すべて追加",
+      "batchAddServers": "一括追加",
+      "addServer": "サーバーを追加",
+      "importTeams": "チームをインポート",
+      "createTeam": "チームを作成",
+      "notEnoughServers": "1回戦は {{matches}} ですが、サーバーは {{servers}} です。サーバー数を超える試合は空くまで待機します。すべて同時に行うにはサーバーを追加してください。",
+      "notEnoughTeams": "トーナメントを作成するには2チーム以上が必要です。現在 {{teams}} です。"
+    },
+    "teamValidation": {
+      "invalidType": "トーナメント形式が正しくありません",
+      "powerOfTwo": "{{type}} のチーム数は2の累乗である必要があります({{counts}})。選択:{{selected}}。",
+      "minTeams": "{{type}} には {{min}} チーム以上が必要です。選択:{{selected}}。",
+      "maxTeams": "{{type}} は最大 {{max}} チームまでです。選択:{{selected}}。"
+    },
+    "eventPage": {
+      "title": "イベントページ",
+      "subtitle": "公開の概要ページでプレイヤーや来訪者に表示されます。",
+      "descriptionLabel": "説明",
+      "locationLabel": "場所",
+      "locationPlaceholder": "例:会場、東京",
+      "rulebookUrlLabel": "ルールブック全文の URL",
+      "rulebookUrlHelper": "https のリンクにするか、空欄のままにしてください。",
+      "rulesLabel": "プレイヤー向けルール",
+      "ruleFieldLabel": "ルール {{n}}",
+      "addRule": "ルールを追加",
+      "prizesLabel": "賞品",
+      "placeLabel": "順位",
+      "prizeLabel": "賞品",
+      "addPrize": "賞品を追加",
+      "scheduleLabel": "スケジュール",
+      "whenLabel": "日時",
+      "scheduleLabelLabel": "ラベル",
+      "addScheduleItem": "スケジュール項目を追加",
+      "remove": "削除",
+      "moveUp": "上へ",
+      "moveDown": "下へ",
+      "save": "イベントページを保存",
+      "saveSuccess": "イベントページを保存しました。",
+      "saveError": "イベントページを保存できませんでした:{{message}}",
+      "organizerLabel": "主催者",
+      "organizerPlaceholder": "例:Edition 35 LAN",
+      "bannerLabel": "バナー",
+      "bannerUpload": "バナーをアップロード",
+      "bannerReplace": "差し替え",
+      "bannerRemove": "削除",
+      "bannerHelp": "トーナメントページ上部に表示される横長の画像。PNG、JPEG、WEBP、最大 2 MB。1920 × 600 がおすすめです。",
+      "bannerWrongType": "バナーは PNG、JPEG、WEBP の画像にしてください。",
+      "bannerTooLarge": "バナーは 2 MB 以下にしてください。",
+      "signupHeading": "参加登録とチェックイン",
+      "signupOpen": "チームが自分で参加登録できる",
+      "signupClosesAt": "参加登録の締め切り",
+      "maxTeams": "チーム枠",
+      "checkInOpensAt": "チェックイン開始",
+      "checkInClosesAt": "チェックイン締め切り",
+      "signupHelp": "チームのオーナーまたはキャプテンがメンバーを決めて登録します。メンバーは当日チェックインします。",
+      "startLabel": "開始時刻",
+      "startsAtLabel": "開始",
+      "startsAtHelp": "あなたのローカル時刻です。サイトがカウントダウンします。",
+      "autoStartLabel": "この時刻にトーナメントを自動で開始",
+      "remindersLabel": "開始前にプレイヤーにリマインド",
+      "reminderMinutes_one": "{{count}} 分前",
+      "reminderMinutes_other": "{{count}} 分前",
+      "bannerMapLabel": "バナーがない場合はマップの画像を使う",
+      "bannerMapNone": "おまかせ",
+      "rulesHelp": "トーナメントページのルールタブで、設定からプラットフォームが作るルールの下に表示されます。",
+      "fromTemplate": "{{name}} から",
+      "clearAll": "すべてクリア",
+      "rulebookFromTemplate": "テンプレート {{name}} から。https のリンクにするか、空欄のままにしてください。"
+    },
+    "setup": {
+      "steps": {
+        "game": "ゲーム",
+        "basics": "名前と日付",
+        "format": "フォーマット",
+        "teams": "チーム",
+        "schedule": "スケジュール",
+        "maps": "マップと BAN/ピック",
+        "extras": "試合設定",
+        "review": "確認"
+      },
+      "stepsLabel": "設定ステップ",
+      "backToManage": "管理",
+      "stepDone": "完了",
+      "newTournament": "新しいトーナメント",
+      "editing": "トーナメント設定",
+      "draftSaved": "下書きをこのタブに保存しました",
+      "discardDraft": "最初からやり直す",
+      "startFromTemplate": "テンプレートから始める",
+      "continueTo": "{{step}} へ進む",
+      "questions": {
+        "game": {
+          "title": "どのゲームですか?",
+          "lede": "ゲームによって試合の進め方と使える設定が決まります。"
+        },
+        "basics": {
+          "title": "名前と日付は?",
+          "lede": "日付を選んでください。各回戦の開始時刻はスケジュールで設定します。"
+        },
+        "format": {
+          "title": "どう戦いますか?",
+          "lede": "トーナメント表と各シリーズの長さを選びます。トーナメント開始までは変更できます。"
+        },
+        "teams": {
+          "title": "誰が出場しますか?",
+          "lede": "トーナメント表に入るチームを選びます。ここでチームを作成・インポートすることもできます。",
+          "ledeShuffle": "シャッフルは個人での参加登録です:プレイヤーが登録し、回戦ごとに新しいチームが組まれます。"
+        },
+        "maps": {
+          "title": "どのマップですか?",
+          "lede": "マッププールを選びます。各シリーズはこのプールから BAN/ピックでマップを決めます。",
+          "ledeShuffle": "プレイする順にマップを選びます。1マップが1回戦です。"
+        },
+        "eventPage": {
+          "title": "イベントページに何を載せますか?",
+          "lede": "任意。公開の概要ページでプレイヤーや来訪者に表示されます。"
+        },
+        "review": {
+          "title": "準備はいいですか?",
+          "lede": "詳細を確認して、トーナメントを作成してください。",
+          "ledeExisting": "詳細を確認して、全員の準備ができたらトーナメントを開始してください。"
+        },
+        "schedule": {
+          "title": "試合はいつですか?",
+          "lede": "1回戦の時刻がトーナメントの開始時刻です。チェックインとリマインダーはそこから逆算されます。"
+        },
+        "extras": {
+          "title": "試合設定",
+          "lede": "プリセットから始めて、必要な部分を変更します。オレンジの設定はサイトのデフォルトと異なります。"
+        }
+      },
+      "game": {
+        "label": "ゲーム",
+        "loading": "このインスタンスで実行できるゲームを読み込み中です。",
+        "lockedHelp": "トーナメント作成後はゲームを変更できません。別のゲームにするには削除してやり直してください。",
+        "integrationTitles": {
+          "cs2": "自分のサーバーで実行",
+          "manual-report": "結果はチームが報告"
+        },
+        "integrationDescriptions": {
+          "cs2": "試合は Ready Up を使って自分の CS2 サーバーで行われます。",
+          "manual-report": "サーバー不要。チームが自分たちで試合を行い、キャプテンが結果を報告します。"
+        }
+      },
+      "basics": {
+        "ratingLabel": "レーティング",
+        "ratingHelp": "このトーナメントで、試合ごとにプレイヤーのレーティングがどう変動するか。"
+      },
+      "format": {
+        "label": "フォーマット",
+        "names": {
+          "single_elimination": "シングルエリミネーション",
+          "double_elimination": "ダブルエリミネーション",
+          "swiss": "スイス方式",
+          "round_robin": "総当たり",
+          "shuffle": "シャッフル",
+          "groups": "グループ、その後プレーオフ"
+        },
+        "types": {
+          "single_elimination": "1敗で敗退。最も早く終わります。",
+          "double_elimination": "敗者側でもう一度チャンスがあります。",
+          "swiss": "同じ戦績のチームと何回戦か対戦します。",
+          "round_robin": "全員が全員と対戦。少人数向けです。",
+          "shuffle": "個人で参加登録。回戦ごとにバランスの取れた新チーム。",
+          "groups": "グループで総当たりを行い、各グループの上位が決勝またはトーナメント表に進みます。"
+        },
+        "seriesLength": "シリーズの長さ",
+        "grandFinal": "グランドファイナル",
+        "grandFinalOptions": {
+          "simple": "1試合",
+          "double": "ブラケットリセット",
+          "none": "なし"
+        },
+        "grandFinalHelp": {
+          "simple": "勝者側と敗者側の優勝チームが1回のグランドファイナルで対戦します。",
+          "double": "ブラケットリセット。現在は1回のグランドファイナルとして行われます。完全なリセット対応は予定中です。",
+          "none": "グランドファイナルなし:勝者側の決勝で優勝が決まります。"
+        },
+        "teams": "チーム",
+        "teamsHelpPowerOfTwo": "エリミネーション形式のトーナメント表には {{counts}} チームが必要です。チームを選ぶまでは概要に使われます。",
+        "teamsHelpRange": "{{min}}〜{{max}} チーム。チームを選ぶまでは概要に使われます。",
+        "fewerTeams": "チームを減らす",
+        "moreTeams": "チームを増やす",
+        "shuffleTitle": "シャッフル設定",
+        "cs2Title": "Counter-Strike 2 の設定",
+        "cs2Help": "Counter-Strike 2 ゲームモジュールが CS2 サーバーに渡します。",
+        "overtime": {
+          "enabled": "延長戦",
+          "disabledDraws": "なし、引き分けあり",
+          "disabledNoDraws": "なし、ダメージで決着"
+        }
+      },
+      "teams": {
+        "shuffleBeforeCreate": "プレイヤーはトーナメント作成後に参加登録します。選ぶにはこのステップに戻ってください。",
+        "shuffleSelfSignup": "プレイヤーが自分で参加する",
+        "shuffleSelfSignupHelp": "オンの間、プレイヤーはトーナメントページの「参加」から登録します。ここからプレイヤーを追加することもできます。"
+      },
+      "maps": {
+        "vetoTitle": "BAN/ピック",
+        "vetoStandard": "各 {{format}} シリーズでマップの BAN/ピックを行います:両チームがこの7マップから BAN とピックをします。",
+        "vetoCustom": "このトーナメントには {{format}} 用のカスタム BAN/ピック順があります。",
+        "vetoNone": "このフォーマットでは BAN/ピックはありません。",
+        "vetoShuffle": "シャッフルには BAN/ピックがありません:マップはこの順に、1回戦に1マップずつプレイされます。"
+      },
+      "eventPage": {
+        "draftNote": "作成時にトーナメントと一緒に保存されます。"
+      },
+      "review": {
+        "unsaved": "保存されていない変更があります。開始前に保存する(トーナメント表が再生成されます)か、破棄してください。"
+      },
+      "summary": {
+        "label": "概要",
+        "untitled": "無題のトーナメント",
+        "format": "フォーマット",
+        "series": "シリーズ",
+        "seriesShuffle": "1回戦ごとに BO1",
+        "seriesFinal": {
+          "simple": "{{format}} · グランドファイナル",
+          "double": "{{format}} · グランドファイナル、ブラケットリセット",
+          "none": "{{format}} · グランドファイナルなし"
+        },
+        "teams": "チーム",
+        "teamSize": "{{size}}v{{size}}",
+        "teamsPlanned": "{{count}} 予定",
+        "matches": "試合",
+        "matchesAfterSignUp": "参加登録後",
+        "duration": "所要時間の目安",
+        "durationValue": "{{hours}} 時間 {{minutes}} 分",
+        "signUp": "参加登録",
+        "signUpOrganizer": "主催者が選択",
+        "signUpAfterCreate": "作成後に開始",
+        "players_one": "{{count}} 人",
+        "players_other": "{{count}} 人",
+        "maps": "マップ",
+        "mapsRounds": "{{maps}} · {{rounds}}",
+        "notSet": "未設定",
+        "signUpOpen": "チームが登録 · 1チーム {{size}} 人"
+      },
+      "checklist": {
+        "title": "開始前に必要なこと",
+        "met": "完了",
+        "notMet": "未完了",
+        "name": "名前",
+        "format": "フォーマットと試合設定",
+        "teams": "有効なチーム数",
+        "players_one": "{{count}} 人以上の参加登録",
+        "players_other": "{{count}} 人以上の参加登録",
+        "mapsVeto": "BAN/ピック用の7マップ",
+        "maps": "1つ以上のマップ",
+        "created": "トーナメント作成済み",
+        "saved": "変更を保存済み"
+      },
+      "manualReport": {
+        "title": "手動の結果報告",
+        "help": "Auto Tournament はこのゲームを監視できないため、チームが結果を伝えます。",
+        "seriesLength": "シリーズの長さ",
+        "seriesLengthHelp": "1シリーズのゲーム数。過半数を先に取ったチームが試合に勝ちます。",
+        "gameLabel": "ゲームの呼び方",
+        "gameLabelHelp": "報告フォームでの呼び方。空欄なら「{{game}}」。",
+        "allowDraw": "引き分け",
+        "allowDrawHelp": "ゲーム(ひいてはシリーズ)を引き分けで終えられるようにします。誰かが勝ち上がる必要があるトーナメント表ではオフにしてください。",
+        "allowDrawOptions": {
+          "no": "認めない",
+          "yes": "認める"
+        },
+        "confirmation": "結果が確定する前に",
+        "confirmationHelp": {
+          "opponent": "試合が確定する前に、相手チームのキャプテンが同意する必要があります。代わりに異議を申し立てると、管理者に回されます。",
+          "none": "キャプテンの報告だけで試合が確定します。手早いですが、異議が出そうにない場合にのみおすすめです。"
+        },
+        "confirmationOptions": {
+          "opponent": "相手が同意する",
+          "none": "報告で確定"
+        },
+        "confirmTimeout": "回答までの分数",
+        "confirmTimeoutHelp": "相手が回答できる時間。1440 は1日です。",
+        "confirmTimeoutNone": "期限なし:報告は回答を待ちます。",
+        "timeoutAction": "期限になったら",
+        "timeoutActionHelp": {
+          "auto_confirm": "報告どおりに確定し、誰も待たずにトーナメント表が進みます。",
+          "escalate": "試合は管理者に回され、異議申し立てページで判定されます。"
+        },
+        "timeoutActionOptions": {
+          "auto_confirm": "報告どおりにする",
+          "escalate": "管理者に任せる"
+        }
+      },
+      "signup": {
+        "how": "チームの参加方法は?",
+        "organizer": "自分が追加したチームのみ",
+        "open": "チームが参加登録できる",
+        "organizerHelp": "すべてのチームをあなたが選びます。トーナメントページから参加登録はできません。",
+        "openHelp": "チームのオーナーまたはキャプテンがトーナメントページからメンバーを決めて登録し、当日メンバーがチェックインします。下から自分でチームを追加することもできます。",
+        "teamSize": "1チームのプレイヤー数",
+        "teamSizeHelp": "参加登録時に選ぶ先発の人数(さらに控え最大2人)。",
+        "maxTeamsHelp": "空欄:上限なし。",
+        "save": "参加登録の設定を保存",
+        "saved": "参加登録の設定を保存しました",
+        "inTournament": "トーナメント参加中({{count}})",
+        "signedUp": "登録済み",
+        "addedByYou": "あなたが追加",
+        "lineup": "先発 {{starters}}/{{size}}",
+        "checkedIn": "{{count}} 人チェックイン済み",
+        "remove": "外す",
+        "removed": "{{team}} はトーナメントから外れました",
+        "noneYet": "まだチームがありません。登録されるとここに表示されます。",
+        "noTeams": "まだチームがありません。",
+        "addYourself": "自分でチームを追加",
+        "pickTeams": "チームを選ぶ",
+        "windowTitle": "参加登録期間",
+        "opensLabel": "参加登録の開始",
+        "opensNow": "今すぐ",
+        "opensLater": "指定した時刻",
+        "opensNowHelp": "トーナメントを作成したらすぐに開始します。",
+        "opensLaterHelp": "それまでは受付していません。ページでカウントダウンされます。",
+        "closesHelp": "チェックイン締め切りまでメンバーを変更できます。",
+        "checkInTitle": "チェックイン",
+        "checkInHelp": "トーナメント開始前に始まり、開始時に締め切られます。それまでにチェックインしていない先発は控えと入れ替わります。控えはチェックイン不要です。",
+        "checkInChip_one": "{{count}} 分前",
+        "checkInChip_other": "{{count}} 分前",
+        "checkInOff": "チェックインなし",
+        "checkInLine": "{{day}} {{time}} に開始し、トーナメントが {{start}} に始まると締め切ります。",
+        "checkInLineNoStart_one": "開始の {{count}} 分前に始まり、開始時に締め切られます。",
+        "checkInLineNoStart_other": "開始の {{count}} 分前に始まり、開始時に締め切られます。",
+        "checkInLineOff": "チェックインなし:登録したすべてのチームが出場します。",
+        "captainsLabel": "キャプテンがチームメイトをチェックインできる",
+        "captainsHelp": "オーナーまたはキャプテンが先発を出席扱いにできます。そのプレイヤーが来なかった場合の責任はキャプテンにあります。",
+        "perMatchLabel": "試合ごとに再チェックイン",
+        "perMatchHelp": "オフ:トーナメント前に1回チェックインすればすべての試合に有効です。オン:各試合の BAN/ピック開始時にチェックインします。",
+        "fullTeamTitle": "サーバーへの集合",
+        "fullTeamHelp": "試合のサーバーの準備ができてから、各チームは控えを含めて全員がサーバーに入るまでこの時間があります。その後、全員そろったチームが選びます:不戦勝にするか、人数の足りないチームと戦うか。両方足りない場合は管理者が判断します。",
+        "fullTeamChip_one": "{{count}} 分",
+        "fullTeamChip_other": "{{count}} 分",
+        "fullTeamOff": "不戦勝なし",
+        "fullTeamLine": "タイマーは試合ルームとサーバーのチャットに表示されます。控えは準備完了扱いなので、チームはすぐに呼べます。",
+        "fullTeamLineOff": "不戦勝なし:試合が自動開始すると、人数の足りないチームはそのまま戦います(試合設定)。"
+      },
+      "groups": {
+        "count": "グループ数",
+        "through": "各グループからの勝ち上がり",
+        "throughWinner": "1位",
+        "throughTop2": "上位2チーム",
+        "seeding": "グループ分けの方法",
+        "seedingSnake": "シード順に分散(スネーク)",
+        "seedingRandom": "ランダム",
+        "playoffs": "プレーオフ",
+        "playoffMatches": "プレーオフの試合",
+        "ties": "グループ内の同率:直接対決、次にラウンド差、次に獲得ラウンド(総当たりと同じ)。グループでトーナメント表が埋まらない場合は、残りの上位も勝ち上がります。",
+        "whatPlayersGet": "プレイヤーへの表示",
+        "stage": "グループステージ",
+        "stageLine": "{{size}} チームのグループ × {{groups}}",
+        "stageNote": "{{count}} 試合 · 各チーム {{each}}",
+        "playoffFinal": "各グループの1位同士:{{format}} の決勝",
+        "playoff": {
+          "single_elimination": "{{count}} チーム:シングルエリミネーション",
+          "double_elimination": "{{count}} チーム:ダブルエリミネーション"
+        },
+        "throughNote": "{{count}} チームが勝ち上がり",
+        "previewTitle": "グループ(シード順に分散)",
+        "previewNote": "チーム一覧の順(シード順)です。トーナメント開始時にグループが確定します。",
+        "randomNote": "グループはトーナメント開始時にランダムで決まります。",
+        "groupN": "グループ {{letter}}",
+        "groupMatches": "グループの試合"
+      },
+      "stepNotes": {
+        "game": "何をプレイするか",
+        "basics": "名前、日付、場所",
+        "format": "チームの対戦方法",
+        "teams": "追加または参加登録",
+        "schedule": "日付と時刻",
+        "maps": "マッププール",
+        "extras": "プリセット、ルール、追加設定",
+        "review": "作成"
+      },
+      "stepOf": "ステップ {{n}}/{{total}}",
+      "schedule": {
+        "timesNote": "試合は予定時刻まで待ちます。プレイヤーは試合で時刻を確認でき、リマインダーが届き、BAN/ピックは時間どおりに始まります。",
+        "breakNote_one": "試合を終えたばかりのチームは、次の BAN/ピックの前に {{count}} 分の休憩があります(試合ルール)。",
+        "breakNote_other": "試合を終えたばかりのチームは、次の BAN/ピックの前に {{count}} 分の休憩があります(試合ルール)。",
+        "noBreakNote": "チームの試合の間に休憩はありません(試合ルール)。",
+        "ownTimeNote": "トーナメント表の作成後、管理 › スケジュールで1試合だけ個別の時刻にできます。",
+        "startsTournament": "トーナメント開始 · チェックイン締め切り",
+        "newDay": "新しい日",
+        "sameDay": "同じ日",
+        "dayLabel": "日付",
+        "startsLabel": "開始",
+        "tournamentStarts": "トーナメント開始",
+        "autoStart": "{{time}} に自動で開始",
+        "autoStartNoTime": "自動で開始",
+        "autoStartOff": "オフ:管理者が管理画面から開始します。",
+        "reminders": "開始前にプレイヤーにリマインド",
+        "modeTimesNote": "各回戦に日付(ステップ2から)と時刻を設定します。試合は予定時刻まで待ち、BAN/ピックは時間どおりに始まります。",
+        "modeAsapNote": "開始時刻のみ:その後は両チームとサーバーの準備ができ次第、試合が始まります。"
+      },
+      "extras": {
+        "gotvLabel": "観戦者",
+        "gotvOn_one": "観戦者は GOTV で {{count}} 秒遅れで観戦できます(試合ルール › 観戦者)。",
+        "gotvOn_other": "観戦者は GOTV で {{count}} 秒遅れで観戦できます(試合ルール › 観戦者)。",
+        "gotvOff": "観戦者は GOTV で観戦できません(試合ルール › 観戦者)。"
+      },
+      "startFrom": {
+        "title": "開始方法",
+        "help": "テンプレートでフォーマット、マップ、試合設定が入力されます。次のステップで何でも変更できます。",
+        "blank": "空白",
+        "blankHelp": "シングルエリミネーション、BO3、サイトのマッププールと試合ルール。",
+        "siteDefaults": "サイトのデフォルト",
+        "builtIn": "組み込み",
+        "saved": "保存済み",
+        "standardRules": "標準ルール",
+        "ownTemplates": "自分のテンプレートは<link>テンプレートとレーティング</link>にあります。設定が終わったらこのトーナメントをテンプレートとして保存しましょう。"
+      },
+      "days": {
+        "title": "日程",
+        "one": "1日",
+        "several": "複数日",
+        "day": "日付",
+        "firstDay": "初日",
+        "lastDay": "最終日",
+        "markedLegend": "その日にこのサイトの別のトーナメントがあります"
+      },
+      "overlap": {
+        "headsUp": "ご注意:{{name}} も {{day}} に開催されます",
+        "headsUpBody": "同じサーバーで {{from}}–{{to}}。両方開催できます:試合は空きサーバーを待ち、回戦の時間が重ならない場合のみプレイヤーは両方に出場できます。",
+        "openOther": "{{name}} のスケジュールを開く",
+        "round": "同じサーバーで {{name}}({{day}}、{{from}}–{{to}})と重なっています。保存はできます。この回戦は同じ時間帯のため、{{name}} の参加者はここに登録できません。",
+        "see": "{{name}} を見る"
+      }
+    },
+    "startButton": {
+      "start": "トーナメントを開始",
+      "starting": "開始中...",
+      "startSimulation": "シミュレーションを開始",
+      "startingSimulation": "シミュレーションを開始中..."
+    },
+    "archiveDialog": {
+      "title": "新しいトーナメントを始めますか?",
+      "message": "{{name}} はアーカイブされます。結果、試合、統計は残り、ページのアドレスもそのままです。その後、次のトーナメントを作成します。",
+      "confirm": "アーカイブして新しく始める",
+      "delete": "削除して新しく始める",
+      "deleteHint": "または削除:結果、試合、統計も一緒に消えます。"
+    },
+    "end": {
+      "button": "トーナメントを終了",
+      "tooltip": "結果なしで今すぐトーナメントを止めます:サーバー上の試合は終了し、残りはキャンセルされます。勝者も報酬もありません。終了後にアーカイブできます。",
+      "title": "このトーナメントを終了しますか?",
+      "body": "進行中の試合はすべてサーバーで終了し、残りはキャンセルされます。勝者はなく、報酬も配られません。この操作は元に戻せません。",
+      "typeName": "確認のため「{{name}}」と入力してください",
+      "confirm": "トーナメントを終了",
+      "done_one": "トーナメントを終了し、{{count}} 試合をキャンセルしました",
+      "done_other": "トーナメントを終了し、{{count}} 試合をキャンセルしました",
+      "failed": "トーナメントを終了できませんでした"
+    },
+    "countdown": {
+      "days": "開始まで {{d}}日 {{h}}時間",
+      "hours": "開始まで {{h}}時間 {{m}}分",
+      "minutes": "開始まで {{m}}:{{s}}"
+    }
+  },
+  "bracket": {
+    "empty": {
+      "noBracketTitle": "表示するトーナメント表がありません",
+      "noBracketDescription": "トーナメントを作成してトーナメント表を生成しましょう"
+    },
+    "view": {
+      "visual": "ビジュアル",
+      "list": "リスト",
+      "refresh": "更新",
+      "enterFullscreen": "全画面表示",
+      "exitFullscreen": "全画面を終了",
+      "shuffleNoVisual": "シャッフルトーナメントにはビジュアルのトーナメント表はありません。リスト表示を使ってください。"
+    },
+    "times": {
+      "toggle": "時刻を設定",
+      "startsAt": "開始",
+      "clear": "回戦の時刻を使う",
+      "save": "保存"
+    },
+    "shuffleEmpty": {
+      "title": "シャッフルトーナメントにはトーナメント表がありません",
+      "description": "シャッフルトーナメントは固定のトーナメント表を使いません。チームはプレイヤーの ELO に基づいて回戦ごとに組み直されます。",
+      "hint": "ライブ中や今後の試合は試合ページで、プレイヤーの順位はランキングページで確認できます。",
+      "goToMatches": "試合へ",
+      "viewLeaderboard": "ランキングを見る"
+    },
+    "notGenerated": {
+      "title": "トーナメント表はまだ生成されていません",
+      "description": "トーナメント表を生成して {{name}} の試合を作成してください",
+      "goToSettings": "トーナメント設定へ"
+    },
+    "shuffleNoVisual": {
+      "title": "シャッフルトーナメントにはビジュアルのトーナメント表がありません",
+      "description": "試合はプレイヤーの ELO とチームバランスに基づいて回戦ごとに動的に生成されます。進行状況はここで確認できます:",
+      "listView": "リスト表示",
+      "matches": "試合",
+      "standings": "順位表",
+      "docsHint": "シャッフルの仕組みの詳しい説明は、ドキュメントのシャッフルトーナメントのガイドを参照してください。"
+    },
+    "swiss": {
+      "notGenerated": "未生成",
+      "generatedAfter": "{{round}}回戦が終わると試合が生成されます",
+      "bye": "不戦",
+      "standings": "順位表",
+      "team": "チーム",
+      "record": "戦績",
+      "buchholz": "BH",
+      "buchholzHint": "Buchholz:対戦相手の勝利数の合計",
+      "roundDiff": "RD",
+      "roundDiffHint": "ラウンド差:獲得ラウンド数から失ったラウンド数を引いた値"
+    },
+    "slotHint": {
+      "winnerOf": "{{match}} の勝者",
+      "loserOf": "{{match}} の敗者",
+      "matchNumber": "試合 {{number}}"
+    },
+    "pause": {
+      "pause": "トーナメント表を一時停止",
+      "reason": "一時停止の理由",
+      "forMinutes": "{{minutes}} 分間",
+      "untilResumed": "再開するまで",
+      "paused": "トーナメント表を一時停止中:進行中の試合は最後まで行われ、新しい試合は始まりません",
+      "pausedUntil": "{{time}} までトーナメント表を一時停止中:進行中の試合は最後まで行われ、新しい試合は始まりません",
+      "resume": "再開",
+      "pausedDone": "トーナメント表を一時停止しました",
+      "resumedDone": "トーナメント表を再開しました",
+      "failed": "一時停止を変更できませんでした"
+    }
+  },
+  "overviewPage": {
+    "tabs": {
+      "overview": "概要",
+      "label": "トーナメント",
+      "bracket": "トーナメント表",
+      "matches": "試合",
+      "teams": "チーム",
+      "standings": "順位表",
+      "manage": "管理",
+      "rules": "ルール",
+      "match": "あなたの試合",
+      "results": "結果",
+      "signup": "参加登録"
+    },
+    "status": {
+      "setup": "開催予定",
+      "inProgress": "ライブ",
+      "completed": "完了",
+      "finishedOn": "{{date}} に終了"
+    },
+    "liveNow": "{{count}} 試合がライブ中",
+    "howItsPlayed": "試合の進め方",
+    "facts": {
+      "teams": "チーム",
+      "teamsValue": "{{count}} チーム",
+      "teamSize": "チーム人数",
+      "teamSizeValue": "{{count}} 人",
+      "format": "フォーマット",
+      "series": "シリーズ",
+      "seriesValue": "BO{{count}}",
+      "mapVeto": "マップの BAN/ピック",
+      "mapVetoCustom": "カスタム順(キャプテン)",
+      "mapVetoStandard": "標準順(キャプテン)",
+      "overtime": "延長戦",
+      "overtimeEnabledUnlimited": "あり、無制限",
+      "overtimeEnabledSegments": "あり、{{count}} 回",
+      "overtimeDisabled": "なし(ダメージで決着)"
+    },
+    "mapPool": "マッププール",
+    "rules": "ルール",
+    "fullRulebook": "ルールブック全文",
+    "schedule": "スケジュール",
+    "yourTeam": {
+      "title": "出場しています",
+      "onRoster": "{{team}} に所属しています。",
+      "viewTeam": "自分のチームを見る",
+      "versus": "{{team}} 対 {{opponent}} · {{stage}}",
+      "tbd": "未定",
+      "goToMatch": "自分の試合へ",
+      "openMatch": "試合ページを開く",
+      "state": {
+        "live": "ライブ",
+        "loaded": "今すぐ参加",
+        "upNext": "次の試合",
+        "finished": "終了",
+        "eliminated": "敗退",
+        "waiting": "次の試合待ち",
+        "registered": "登録済み",
+        "won": "優勝",
+        "out": "敗退"
+      }
+    },
+    "prizes": {
+      "title": "賞品",
+      "note": "主催者が設定します。賞金、ハードウェア、名誉など。"
+    },
+    "requirements": {
+      "title": "参加するには",
+      "steamLinkedOk": "Steam アカウント連携済み。",
+      "steamLinkedNeutral": "参加するには Steam でサインインしてください。",
+      "onRosterOk": "このトーナメントのチームメンバーに登録されています。",
+      "onRosterNeutral": "トーナメント開始前にチームのメンバーになってください。"
+    },
+    "loadError": "このトーナメントを読み込めませんでした。",
+    "notFoundTitle": "トーナメントが見つかりません",
+    "notFoundDescription": "このトーナメントは存在しないか、まだ作成されていません。",
+    "loading": "読み込み中…",
+    "about": "概要",
+    "liveStripLabel": "ライブ中",
+    "bracketTab": {
+      "loadError": "トーナメント表を読み込めませんでした。",
+      "emptyTitle": "まだトーナメント表はありません",
+      "emptyDescription": "主催者がトーナメントを開始するとトーナメント表が表示されます。",
+      "shuffleTitle": "シャッフルにはトーナメント表がありません",
+      "shuffleDescription": "チームは回戦ごとに組み直されるため、トーナメント表はありません。試合タブに全回戦が、順位表にプレイヤーの順位が表示されます。"
+    },
+    "matchesTab": {
+      "loadError": "試合を読み込めませんでした。",
+      "emptyTitle": "まだ試合はありません",
+      "emptyDescription": "トーナメントが始まると試合が表示されます。",
+      "live": "ライブ中",
+      "upcoming": "次の試合",
+      "results": "結果",
+      "vs": "対",
+      "status": {
+        "live": "ライブ",
+        "loaded": "開始中",
+        "final": "終了",
+        "upcoming": "開催予定"
+      },
+      "emptyDescriptionAt": "トーナメントが始まると試合が表示されます:{{when}}。"
+    },
+    "teamsTab": {
+      "shuffleTitle": "チームは回戦ごとに変わります",
+      "shuffleDescription": "シャッフルトーナメントでは、登録プレイヤーから回戦ごとに新しいチームが組まれます。順位表にプレイヤーの順位が表示されます。",
+      "emptyTitle": "まだチームがありません",
+      "emptyDescription": "主催者がチームを追加するとここに表示されます。",
+      "yours": "あなたのチーム",
+      "record": "{{wins}}–{{losses}}",
+      "emptySignupOpen": "参加登録受付中です。チームは登録されるとここに表示されます。",
+      "signUp": "チームを登録"
+    },
+    "allMatches": "すべての試合",
+    "keyDates": {
+      "starts": "開始",
+      "lastOnSchedule": "最後の予定",
+      "teams": "チーム"
+    },
+    "mapPoolCount": "マッププール · {{count}} マップ",
+    "mapPoolNote": "キャプテンは各シリーズの前にこの中から BAN とピックをします。",
+    "addToCalendar": "カレンダーに追加",
+    "scheduleSoon": "主催者はまだスケジュールを公開していません。",
+    "checkInWindow": "チェックイン",
+    "mapPoolSoonTitle": "マッププール",
+    "mapPoolSoon": "主催者はまだマップを選んでいません。",
+    "adminBanner": "あなたはこのトーナメントの管理者です。運営は管理画面で行います。このページはプレイヤーが見る画面です。",
+    "manageTournament": "トーナメントを管理",
+    "fullBracket": "トーナメント表全体",
+    "allRules": "すべてのルール",
+    "archivedTitle": "このトーナメントはアーカイブされています",
+    "archivedBody": "新しいトーナメントに置き換えられました。結果、トーナメント表、順位表はここに残ります。",
+    "openCurrent": "現在のトーナメントを開く",
+    "allTournaments": "すべてのトーナメント",
+    "roundN": "{{n}}回戦",
+    "finalRound": "決勝",
+    "roundStarts": "{{round}} · BAN/ピック開始 {{time}}"
+  },
+  "roundStatusCard": {
+    "roundOf": "{{total}} 回戦中 {{current}} 回戦",
+    "complete": "完了",
+    "inProgress": "進行中",
+    "matchProgress": "試合の進行状況",
+    "completedOf": "{{completed}} / {{total}} 完了",
+    "completedCount": "{{count}} 完了",
+    "playingCount": "{{count}} プレイ中",
+    "pendingCount": "{{count}} 待機中"
+  },
+  "yourMatch": {
+    "loading": "試合を読み込み中",
+    "bestOf": "BO{{count}}",
+    "mapsScore": "マップ {{us}} – {{them}}",
+    "inServer": "サーバー内",
+    "notJoined": "未参加",
+    "waitingForPlayers": "プレイヤー待ち",
+    "inServerCount": "サーバーに {{expected}} 人中 {{count}} 人。全員の準備ができると試合が始まります。",
+    "inServerCountBots": "サーバーに {{count}} 人。空席は BOT が埋めます。ここにいる全員の準備ができると試合が始まります。",
+    "live": "ライブ",
+    "round": "ラウンド {{n}}",
+    "vetoTitle": "マップ BAN/ピック中",
+    "finished": "試合終了",
+    "mapOf": "マップ {{n}}/{{total}}",
+    "sideYou": "{{side}} · あなた",
+    "rejoin": "落ちましたか?同じボタンでもう一度参加してください。枠は確保されています。",
+    "outcome": {
+      "won": "{{opponent}} に {{us}}–{{them}} で勝利",
+      "lost": "{{opponent}} に {{us}}–{{them}} で敗北",
+      "draw": "{{opponent}} と {{us}}–{{them}}"
+    },
+    "ready": "準備完了",
+    "waitingForServer": "サーバー待ち",
+    "vetoDoneChip": "BAN/ピック完了 · {{map}}",
+    "waitingForServerBody": "サーバーが空き次第割り当てられます。通知が届き、このページは自動で更新されます。",
+    "mapDrawnChip": "抽選マップ · {{map}}",
+    "notYet": "まだ"
+  },
+  "results": {
+    "finalStandings": "最終順位",
+    "awards": "アワード",
+    "players": "プレイヤー",
+    "matchesAndDemos": "試合とデモ",
+    "place": "#{{n}}",
+    "championsOf": "{{name}} · 優勝",
+    "showAll": "全 {{count}} 人",
+    "showFewer": "少なく表示",
+    "mapResults": "マップの結果",
+    "col": {
+      "player": "プレイヤー",
+      "team": "チーム",
+      "rating": "レーティング ±",
+      "hltv": "パフォーマンス"
+    },
+    "award": {
+      "mostKills": "最多キル",
+      "bestAdr": "最高 ADR",
+      "bestHeadshots": "最高ヘッドショット率",
+      "mostFlashAssists": "最多フラッシュアシスト",
+      "mostUtility": "最多ユーティリティダメージ",
+      "biggestGain": "最大レーティング上昇",
+      "bestPlayer": "ベストプレイヤー",
+      "mostClutches": "最多クラッチ",
+      "mostTeamFlashes": "味方へのフラッシュ最多",
+      "mostMoney": "最多支出"
+    },
+    "awardValue": {
+      "mostKills": "{{value}} キル",
+      "bestAdr": "ADR {{value}}",
+      "bestHeadshots": "ヘッドショット {{value}} %",
+      "mostFlashAssists": "フラッシュアシスト {{value}}",
+      "mostUtility": "ユーティリティダメージ {{value}}",
+      "biggestGain": "レーティング +{{value}}",
+      "bestPlayer": "レーティング {{value}}",
+      "mostTeamFlashes": "味方 {{value}} 人をフラッシュ",
+      "mostClutches": "クラッチ {{value}} 回成功",
+      "mostMoney": "{{value}} 使用"
+    },
+    "wonFinal": "決勝で {{opponent}} に {{a}}–{{b}} で勝利",
+    "champions": "優勝",
+    "allMatches": "全 {{count}} 試合",
+    "demosAndReel": "デモとまとめ動画",
+    "stage": {
+      "final": "決勝",
+      "semi": "準決勝",
+      "round": "{{n}}回戦"
+    }
+  },
+  "signup": {
+    "cta": "チームを登録",
+    "keyDates": {
+      "closes": "参加登録の締め切り",
+      "checkIn": "チェックイン",
+      "spots": "チーム枠",
+      "left": "残り {{count}}",
+      "full": "満員",
+      "of": "/ {{max}}"
+    },
+    "ladder": {
+      "title": "レーティング順のチーム",
+      "yourPlace": "{{count}} チーム中 {{place}} 位"
+    },
+    "todo": {
+      "signedUp": "登録済み",
+      "beforeTheDay": "当日までに",
+      "toFix": "要修正 {{count}} 件",
+      "lineup": "メンバー",
+      "allReady": "全員準備完了",
+      "notSet": "未設定",
+      "showFixes": "修正点を表示",
+      "fixNote": "チェックイン前に修正してください。そうしないとそのプレイヤーは参加できません。"
+    },
+    "yourLineup": "あなたのメンバー",
+    "change": "変更",
+    "withdraw": "辞退",
+    "withdrawTitle": "{{team}} を辞退しますか?",
+    "withdrawBody": "チームはトーナメントから外れ、枠が他のチームに開放されます。",
+    "sub": "控え",
+    "ready": "準備完了",
+    "problem": {
+      "noAccount": "まだ Auto Tournament にサインインしていません",
+      "noGame": "プロフィールにゲームがありません"
+    },
+    "problemShort": {
+      "noAccount": "未サインイン",
+      "noGame": "ゲームが必要"
+    },
+    "checkIn": {
+      "open": "チェックイン受付中",
+      "closesIn": "{{time}} 締め切り · 残り {{left}}",
+      "imHere": "出席します",
+      "done": "チェックイン済み",
+      "teamTitle": "{{team}} がチェックイン中",
+      "keepOpen": "このページを開いたままにしてください。試合の準備ができるとお知らせします。",
+      "firstMatchIn": "最初の試合まで",
+      "count": "{{total}} 人中 {{in}} 人",
+      "you": "あなた",
+      "everyone": "全員",
+      "soundOn": "サウンドオン:時間になると音が鳴ります",
+      "soundOff": "サウンドオフ",
+      "checkInFor": "{{name}} をチェックイン",
+      "checkInShort": "チェックイン"
+    },
+    "noTeamTitle": "登録できるチームがありません",
+    "noTeamBody": "チームを登録できるのはオーナーかキャプテンだけです。チームを作るか、キャプテンに頼んでください。",
+    "goToTeams": "チーム",
+    "steps": {
+      "lineup": "メンバー",
+      "review": "確認"
+    },
+    "whichTeam": "どのチームを登録しますか?",
+    "role": {
+      "owner": "オーナー",
+      "captain": "キャプテン"
+    },
+    "playerCount": "{{count}} 人",
+    "whoPlays": "誰が出場しますか?",
+    "whoPlaysHint": "先発 {{count}} 人 · 控え最大 {{subs}} 人",
+    "rating": "レーティング {{rating}}",
+    "slotFor": "{{name}} の役割",
+    "starter": "先発",
+    "out": "外す",
+    "starters": "先発",
+    "subs": "控え",
+    "lineupRating": "メンバーのレーティング",
+    "missingAccounts": "{{names}} はまだサインインが必要です。",
+    "fixBeforeCheckIn": "今すぐ登録できます。チェックイン前に修正してください。",
+    "saveLineup": "メンバーを保存",
+    "nextReview": "次へ:確認",
+    "readyToSend": "送信してよろしいですか?",
+    "next": {
+      "lastSpot": "最後の枠を取ります",
+      "takesSpot": "枠を1つ取ります",
+      "spotsLeft": "この前に残り {{count}} 枠",
+      "checkIn": "当日チェックイン",
+      "firstMatch": "最初の試合",
+      "spotOf": "{{max}} 枠中 {{n}} 番目"
+    },
+    "vouch": "このメンバー全員が次を読んだことを確認します:",
+    "vouchNote": "全員を代表して登録します。プレイヤーがルールに違反した場合、チーム全体がペナルティや失格になることがあります。",
+    "send": "{{team}} を登録",
+    "rulesLink": "ルール",
+    "ownerTag": "オーナー",
+    "captainTag": "キャプテン",
+    "check": {
+      "steam": "Steam",
+      "game": "{{game}}",
+      "noGame": "{{game}} 未追加",
+      "steamShort": "Steam"
+    },
+    "remind": "リマインド",
+    "reminded": "チームチャットでリマインドしました",
+    "done": "完了",
+    "lineupGap": "先発がメンバーから抜けました(利用停止または削除)。試合は {{time}} まで待機します:それまでに控えを選ばないと、最初の控えが入ります。控えがいない場合は人数不足で戦います。",
+    "pickSub": "控えを選ぶ",
+    "title": "チームを登録",
+    "editTitle": "メンバーを変更",
+    "stepsLabel": "ステップ",
+    "changeUntil": "チェックイン締め切り({{when}})までメンバーを変更できます。",
+    "counts": "先発 {{starters}}/{{teamSize}} · 控え {{subs}}/{{maxSubs}}",
+    "lineupRatingValue": "メンバーのレーティング {{rating}}",
+    "missingGame": "{{names}} はプロフィールに {{game}} が必要です。",
+    "subsLine": "控え:{{names}}",
+    "overlap": {
+      "title": "このトーナメントには登録できません",
+      "body": "あなたは {{name}} に参加しており、このトーナメントと同じ {{when}} に試合があります。試合時間が重ならなければ両方のトーナメントに参加できます。",
+      "open": "{{name}} を開く"
+    },
+    "youreIn": {
+      "eyebrow": "{{team}} · 登録済み",
+      "title": "登録完了!",
+      "body": "トーナメント開始前にチームが知っておくべきことです。同じ内容をオーナーとキャプテンにも送りました。",
+      "openLineup": "メンバーを開く",
+      "listTitle": "トーナメント開始前に",
+      "checkIn": "チェックイン {{when}}–{{to}}",
+      "checkInBodyCaptains": "先発はこのページでチェックインするか、キャプテンにチェックインしてもらいます。チェックインはトーナメント開始時に締め切られます。",
+      "checkInBody": "先発はこのページでチェックインします。チェックインはトーナメント開始時に締め切られます。",
+      "subs": "控えはチェックイン不要",
+      "subsBody": "出席・準備完了扱いなので、試合が控えを待つことはありません。",
+      "replaced": "チェックインしていない先発は入れ替え",
+      "replacedBody": "チェックイン締め切り時、チェックインしていない先発は控えと入れ替わります。控えがいなければ1人少ない状態で戦います。",
+      "fullTeam_one": "{{count}} 分以内にチームをサーバーへ",
+      "fullTeam_other": "{{count}} 分以内にチームをサーバーへ",
+      "fullTeamBody_one": "サーバーの準備ができてから、控えを含めて全員がサーバーに入るまで {{count}} 分あります。それを過ぎると、相手チームは不戦勝にするか、人数不足のまま戦うかを選べます。",
+      "fullTeamBody_other": "サーバーの準備ができてから、控えを含めて全員がサーバーに入るまで {{count}} 分あります。それを過ぎると、相手チームは不戦勝にするか、人数不足のまま戦うかを選べます。",
+      "ready": "各試合の前に準備",
+      "readyBodyVeto_one": "BAN/ピックは各試合の {{count}} 分前に始まります。このページを開いたままにしてください。次の試合の準備ができるとお知らせします。",
+      "readyBodyVeto_other": "BAN/ピックは各試合の {{count}} 分前に始まります。このページを開いたままにしてください。次の試合の準備ができるとお知らせします。",
+      "readyBody": "このページを開いたままにしてください。次の試合の準備ができるとお知らせします。",
+      "eachMatch": "試合ごとに再チェックイン",
+      "eachMatchBody": "各試合の前に、先発は試合ルームでチェックインするか、キャプテンが代わりに行います。チェックインしない先発は控えと入れ替わります。"
+    }
+  },
+  "bracketCards": {
+    "you": "あなた",
+    "open": "{{a}} 対 {{b}} を開く",
+    "upper": "勝者側",
+    "lower": "敗者側",
+    "grandFinal": "グランドファイナル",
+    "thirdPlace": "3位決定戦",
+    "live": "ライブ",
+    "veto": "BAN/ピック",
+    "done": "完了",
+    "mapOf": "マップ {{n}}/{{total}}",
+    "banning": "マップ BAN 中",
+    "bestOf_one": "BO{{count}}",
+    "bestOf_other": "BO{{count}}",
+    "winnerOf": "{{match}} の勝者",
+    "loserOf": "{{match}} の敗者",
+    "tbd": "未定",
+    "liveCount_one": "{{count}} ライブ",
+    "liveCount_other": "{{count}} ライブ",
+    "matchCount_one": "{{count}} 試合",
+    "matchCount_other": "{{count}} 試合"
+  },
+  "placement": {
+    "outTitle": "{{tournament}} での戦いは終わりました",
+    "wonTitle": "{{tournament}} で優勝しました!",
+    "yourTeamPlaced": "{{team}} の順位",
+    "yourTeam": "あなたのチーム",
+    "outBody": "チームはトーナメントから敗退したため、これ以上の試合はありません。残りはトーナメント表で追いかけてください。",
+    "wonBody": "チームがトーナメントで優勝しました。おめでとうございます!",
+    "close": "閉じる",
+    "seeBracket": "トーナメント表を見る",
+    "outBodyPlay": "このトーナメントでの試合はもうありません。プレイしてくれてありがとうございました!",
+    "championsEyebrow": "優勝",
+    "teamPlaced": "{{team}} の順位",
+    "wonTitleShort": "{{tournament}} で優勝しました!",
+    "wonFinalBody": "{{team}} が決勝を {{score}} で制しました。おめでとうございます!",
+    "playHint": "もう1試合どうですか?マッチメイキングなら1〜2分で試合に入れます。"
+  },
+  "advance": {
+    "title": "勝ち残っています!",
+    "opponent": "次の相手:{{opponent}}。",
+    "feederTitle": "次の対戦相手はこの試合の勝者です",
+    "vs": "対",
+    "tbd": "未定",
+    "feederNotStarted": "その試合はまだ始まっていません。",
+    "feederMinutes_one": "残り約 {{count}} 分。",
+    "feederMinutes_other": "残り約 {{count}} 分。",
+    "feederAlmost": "もうすぐ終わります。",
+    "watch": "ライブで観る",
+    "wonEyebrow": "{{stage}} を {{score}} で勝利"
+  },
+  "whatsNext": {
+    "eyebrow": "次は",
+    "champions": "優勝",
+    "outTitle": "チームは敗退しました。順位:{{place}}",
+    "outBody": "これが {{tournament}} での最後の試合でした。お疲れさまでした!まだプレイしたいですか?マッチメイキングなら今すぐ他のプレイヤーとの試合が見つかります。",
+    "playMatchmaking": "マッチメイキングをプレイ",
+    "watchLive": "ライブの試合を観る",
+    "nextMatch": "{{stage}} · 対 {{opponent}}",
+    "nextMatchReady": "試合の準備ができました:試合ルームを開いて接続してください。",
+    "nextMatchSoon": "次の試合が決まりました。短い休憩の後に開き、お知らせします。どこにいてもナビバーにカウントダウンが表示されます。",
+    "openMatchRoom": "試合ルームを開く",
+    "throughTo": "{{stage}} に進出しました",
+    "waitingTitle": "次の対戦相手を待っています",
+    "waitingBody": "対戦相手はまだ進行中の試合から決まります。終わると短い休憩があり、その後次の試合が開きます。お知らせします。",
+    "watchOpponent": "次の対戦相手をライブで観る",
+    "shuffleTitle": "次の回戦:新しいチーム",
+    "shuffleBody": "この回戦の全試合が終わると新しいチームが組まれ、次の試合がここに表示されます。",
+    "stayHere": "このページを開いたままにしてください:自動で更新されます。",
+    "openTournament": "トーナメントを開く",
+    "winsToTitle_one": "優勝まであと 1 勝",
+    "winsToTitle_other": "優勝まであと {{count}} 勝",
+    "shuffleDoneTitle": "これが最終回戦でした",
+    "shuffleDoneBody": "シャッフルは終了しました。順位はトーナメントを開いて確認してください。",
+    "youWon": "{{opponent}} に {{a}}–{{b}} で勝利しました。",
+    "youLost": "{{opponent}} に {{a}}–{{b}} で敗北しました。",
+    "resultPlaced": "{{result}} 順位:{{place}}。",
+    "nextUp": "次:{{match}}。"
+  },
+  "navStatus": {
+    "placed": "順位確定",
+    "placedPlay": "{{place}} · マッチメイキングをプレイ",
+    "waiting": "対戦相手待ち",
+    "vetoIn": "BAN/ピックまで",
+    "vetoOpening": "BAN/ピック開始中",
+    "matchIn": "試合まで",
+    "matchLoading": "試合を読み込み中",
+    "shuffleRound": "{{round}}回戦 · プレイ中",
+    "shuffleSittingOut": "{{round}}回戦 · 休み",
+    "placedPlayLine": "順位 {{place}} · マッチメイキングをプレイ",
+    "placedLine": "順位 {{place}}",
+    "waitingOpponent": "対戦相手待ち",
+    "aboutMinutes_one": "約 {{count}} 分",
+    "aboutMinutes_other": "約 {{count}} 分"
+  },
+  "shuffleJoin": {
+    "title": "このシャッフルに参加",
+    "body": "チーム不要:個人で登録します。回戦ごとにプラットフォームが新しいバランスの取れたチームを組みます。",
+    "youreIn": "参加しています",
+    "inBody": "トーナメントが始まると最初のチームが組まれ、試合がここに表示されます。このページを開いたままにしてください。",
+    "join": "参加",
+    "leave": "抜ける",
+    "full": "満員",
+    "signInToJoin": "サインインして参加",
+    "count_one": "{{count}} 人が参加中",
+    "count_other": "{{count}} 人が参加中",
+    "countOf_one": "{{spots}} 枠中 {{count}} 人が参加中",
+    "countOf_other": "{{spots}} 枠中 {{count}} 人が参加中",
+    "playingTitle": "プレイ中です",
+    "playingBody": "チームと一緒にサーバーに参加してください。この回戦の全試合が終わると次の回戦が組まれます。",
+    "sittingOutTitle": "この回戦は休みです",
+    "sittingOutBody": "この回戦は全チーム分のプレイヤーがそろいません。{{next}}回戦の抽選には入っており、最も多くプレイした人から先に休みます。",
+    "goToMatch": "試合へ",
+    "tagPlaying": "プレイ中",
+    "tagSittingOut": "休み",
+    "roundHeading": "{{round}}回戦",
+    "versus": "対",
+    "sittingOutList": "休み:{{names}}",
+    "status": {
+      "live": "ライブ",
+      "done": "完了",
+      "waiting": "開始中"
+    },
+    "finishedTitle": "シャッフルは終了しました",
+    "finishedBody_one": "全 1 回戦が終わりました。お疲れさまでした!",
+    "finishedBody_other": "全 {{count}} 回戦が終わりました。お疲れさまでした!",
+    "roundOf": "{{total}} 回戦中 {{round}}回戦",
+    "roundsCount_one": "{{count}} 回戦",
+    "roundsCount_other": "{{count}} 回戦",
+    "now": "今",
+    "tagLeft": "抜けた",
+    "markOut": "外す",
+    "markIn": "戻す",
+    "roundShort": "{{round}}回戦",
+    "playedTitle": "{{round}}回戦の試合が終わりました",
+    "playedBody": "他の試合が終わると {{next}}回戦が組まれます。このページを開いたままにしてください:自動で更新されます。",
+    "sittingOutBodyCounts_one": "{{size}}v{{size2}} に対して {{players}} 人いるため、毎回戦 {{count}} 人が休みます。最も多くプレイした人から休みます:次の抽選には入っています。",
+    "sittingOutBodyCounts_other": "{{size}}v{{size2}} に対して {{players}} 人いるため、毎回戦 {{count}} 人が休みます。最も多くプレイした人から休みます:次の抽選には入っています。",
+    "playedBodyLeft_one": "あと {{count}} 試合を待っています。終わると {{next}}回戦が組まれ、次の試合がここに表示されて通知が届きます。",
+    "playedBodyLeft_other": "あと {{count}} 試合を待っています。終わると {{next}}回戦が組まれ、次の試合がここに表示されて通知が届きます。",
+    "joinedByMistake": "間違えて参加しましたか?",
+    "breakTitle": "休憩 · {{round}}回戦は {{time}} 開始",
+    "noShowTitle": "次の抽選から外れています",
+    "noShowBody": "試合に参加しなかったため、次の回戦はあなた抜きで組まれます。PC の前に戻りましたか?知らせてくれれば次の抽選に入ります。",
+    "backIn": "戻りました",
+    "tagNoShow": "不参加"
+  },
+  "liveOverview": {
+    "roundOf": "{{total}} 回戦中 {{round}}回戦",
+    "liveCount": "{{count}} 試合ライブ中",
+    "eta": {
+      "nextRoundAbout": "次の回戦は約 {{time}}",
+      "nextRoundAt": "次の回戦は {{time}}",
+      "finalEnds": "最終回戦:約 {{time}} に終了",
+      "endsAbout": "約 {{time}} に終了"
+    },
+    "hero": {
+      "playingTitle": "プレイ中です",
+      "playingBody": "{{us}} 対 {{them}}{{map}}。試合ルームから参加してください。",
+      "joiningTitle": "サーバーに参加",
+      "joiningBody": "{{us}} 対 {{them}}{{map}}。全員の準備ができると試合が始まります。",
+      "vetoTitle": "マップの BAN/ピックが始まっています",
+      "vetoBody": "試合ルームで {{them}} とマップの BAN とピックをしてください。",
+      "waitingTitle": "次の対戦相手を待っています",
+      "waitingBody": "相手はまだ進行中の試合から決まります。短い休憩の後に BAN/ピックが始まり、通知が届きます。",
+      "notStartedTitle": "次:{{them}}",
+      "notStartedBody": "回戦が始まると試合が開きます。このページは自動で更新されます。",
+      "outTitle": "チームは敗退しました。順位:{{place}}",
+      "outBody": "これが最後の試合でした。お疲れさまでした!続けてプレイしたいならマッチメイキングが開いています。",
+      "wonTitle": "トーナメントで優勝しました!",
+      "wonBody": "お見事です。賞品はインベントリにあります。",
+      "spectatorTitle": "{{count}} 試合ライブ中",
+      "spectatorTitleOne": "1試合ライブ中",
+      "spectatorIdleTitle": "回戦の合間",
+      "spectatorBody": "試合を開くとスコア、マップ、出場メンバーを確認できます。",
+      "openMatchRoom": "試合ルームを開く",
+      "openVeto": "BAN/ピックを開く",
+      "watchLive": "ライブの試合を観る",
+      "playMatchmaking": "マッチメイキングをプレイ",
+      "yourMatch": "あなたの試合",
+      "opponentFrom": "対戦相手はこの試合から",
+      "minutesLeft": "残り約 {{count}} 分",
+      "winsToTitle_one": "優勝まであと 1 勝",
+      "winsToTitle_other": "優勝まであと {{count}} 勝",
+      "waitingServerTitle": "サーバー待ち",
+      "waitingServerBody": "{{us}} 対 {{them}}{{map}}。サーバーが空き次第割り当てられ、通知が届きます。",
+      "wonStage": "{{stage}} を {{score}} で勝利",
+      "stageNext": "次は {{stage}}",
+      "faceWinnerOf": "{{us}} は {{a}} 対 {{b}}({{state}})の勝者と対戦します。その試合が終わると BAN/ピックが始まり、通知が届きます。",
+      "feederLive": "{{score}}、マップ {{map}} ライブ中",
+      "feederNotStarted": "まだ始まっていません",
+      "vetoOpens": "BAN/ピック開始",
+      "inAboutMinutes_one": "約 {{count}} 分後",
+      "inAboutMinutes_other": "約 {{count}} 分後",
+      "later": "後で",
+      "afterBreak": "短い休憩の後",
+      "youAre": "戦績 {{record}}",
+      "nextRoundDrawn": "次は {{round}}回戦の抽選です",
+      "lastRoundPlaying": "最終回戦が進行中です",
+      "betweenBody": "この回戦のあなたの試合は終わりました。他の試合が終わると次の回戦が組まれ、試合がここに表示されて通知が届きます。",
+      "vetoSoonTitle": "マップの BAN/ピックは {{time}} に始まります",
+      "vetoSoonBody": "前の試合の後の短い休憩です。{{them}} との BAN/ピックが始まると通知が届きます。"
+    },
+    "schedule": "スケジュール",
+    "bracket": "トーナメント表",
+    "round": "{{n}}回戦",
+    "final": "決勝",
+    "state": {
+      "now": "今",
+      "next": "次",
+      "later": "後で",
+      "done": "✓ 完了",
+      "live": "ライブ",
+      "upcoming": "開催予定"
+    },
+    "thisRound": "{{n}}回戦",
+    "earlier": "これまでの回戦",
+    "standings": "順位表",
+    "teams": "チーム",
+    "wl": "W–L",
+    "rounds": "+/−",
+    "ties": {
+      "round_robin": "同率の場合:直接対決、次にラウンド差、次に獲得ラウンド。",
+      "swiss": "同率の場合:対戦相手の強さ(Buchholz:相手の勝利数の合計)、次にラウンド差。",
+      "elim": "勝利数順。2敗で敗退。",
+      "singleElim": "勝利数順。1敗で敗退。",
+      "doubleElim": "勝利数順。2敗で敗退。",
+      "groups": "グループ内の同率:直接対決、次にラウンド差、次に獲得ラウンド。"
+    },
+    "players": {
+      "title": "プレイヤー · レーティング順",
+      "find": "プレイヤーを探す",
+      "export": "エクスポート",
+      "all": "全 {{count}} 人",
+      "player": "プレイヤー",
+      "team": "チーム",
+      "rating": "レーティング",
+      "change": "±",
+      "kd": "K / D",
+      "adr": "ADR",
+      "winRate": "勝率",
+      "none": "一致するプレイヤーはいません。"
+    }
+  },
+  "matchesCards": {
+    "show": "表示",
+    "filterAll": "すべて {{count}}",
+    "filterLive": "ライブ {{count}}",
+    "filterUpcoming": "開催予定 {{count}}",
+    "done": "完了",
+    "afterOvertime": "延長戦の後",
+    "startsAt": "{{time}} 開始 · BAN/ピック開始 {{veto}}",
+    "yourMatch": "あなたの試合",
+    "placeholderTbd": "未定",
+    "placeholderVeto": "マップ BAN/ピック",
+    "placeholderVetoAt": "BAN/ピック {{time}}"
+  },
+  "standingsTab": {
+    "champions": "優勝",
+    "championBadge": "優勝",
+    "vs": "対",
+    "rounds": "ラウンド",
+    "form": "調子",
+    "intro": {
+      "round_robin": "総当たり:各チームが他のすべてのチームと1回ずつ対戦します。",
+      "swiss": "スイス方式:各回戦で同じ戦績のチーム同士が対戦します。",
+      "single": "シングルエリミネーション:1敗で敗退。",
+      "double": "ダブルエリミネーション:2敗で敗退。",
+      "groups": "グループ、その後プレーオフ:各チームがグループ内の他チームと1回ずつ対戦し、上位がプレーオフに進みます。"
+    }
+  },
+  "teamsCards": {
+    "subs": "控え:{{names}}"
+  },
+  "rulesTab": {
+    "atAGlance": "ひと目でわかる",
+    "onThisPage": "このページの内容",
+    "fromSettings": "トーナメント設定から、常に最新",
+    "organizer": "主催者のルール",
+    "facts": {
+      "map": "マップ",
+      "firstTo": "先に {{count}}",
+      "noOvertime": "なし",
+      "overtimeSegments_one": "1回、その後ダメージ",
+      "overtimeSegments_other": "{{count}} 回、その後ダメージ",
+      "overtimeUnlimited": "回数無制限",
+      "thenDamage": "各6ラウンド、先に4",
+      "mapCount_one": "{{count}} マップ",
+      "mapCount_other": "{{count}} マップ"
+    },
+    "format": {
+      "title": "このフォーマットの仕組み",
+      "navTitle": "フォーマット",
+      "swiss_one": "全員が同じ戦績のチームと {{count}} 回戦を戦います。再戦なし。勝利数、次に下記のタイブレークで順位を決めます。",
+      "swiss_other": "全員が同じ戦績のチームと {{count}} 回戦を戦います。再戦なし。勝利数、次に下記のタイブレークで順位を決めます。",
+      "single_elimination": "1敗で敗退。トーナメント表は決勝まで進みます。",
+      "double_elimination": "勝者側と敗者側のトーナメント表。2敗で敗退。",
+      "round_robin": "全員が全員と1回ずつ対戦。勝利数、次に下記のタイブレークで順位を決めます。",
+      "shuffle": "回戦ごとに登録プレイヤーから新しいチームが組まれます。プレイヤーは勝利数で順位が決まります。",
+      "matches": "各試合は MR{{mr}} マップの {{series}}。延長戦:{{overtime}}。",
+      "damage": "最後の延長戦の後も同点なら、総ダメージの多いチームがマップを獲得します。"
+    }
+  },
+  "liveMatch": {
+    "updatesEveryRound": "毎ラウンド更新",
+    "chat": "試合チャット",
+    "system": "Auto Tournament",
+    "noMessages": "まだメッセージはありません。gl hf!",
+    "chatSignIn": "この試合のプレイヤーとしてサインインすると、読み書きできます。",
+    "messageLabel": "両チームと管理者へのメッセージ",
+    "send": "送信",
+    "callAdmin": "管理者を呼ぶ",
+    "adminCalled": "管理者が向かっています",
+    "joinTitle": "サーバーに参加:{{map}}",
+    "warmup": "ウォームアップ · 今すぐ参加",
+    "isLive": "{{map}} ライブ中",
+    "players": "プレイヤー",
+    "playersOnMap": "プレイヤー · {{map}}",
+    "noEconomy": "レーティング順。所持金や装備は非表示:チームの経済状況がわかる情報はありません。",
+    "yourTeam": "あなたのチーム",
+    "backToTournament": "トーナメントに戻る",
+    "manage": "この試合を管理",
+    "finishedAt": "{{when}} に終了",
+    "delayedNote_one": "GOTV と同じく {{count}} 秒遅れで表示します。",
+    "delayedNote_other": "GOTV と同じく {{count}} 秒遅れで表示します。"
+  },
+  "preStart": {
+    "open": "参加登録受付中",
+    "openCloses": "参加登録受付中 · {{when}} 締め切り",
+    "closed": "参加登録は締め切りました",
+    "notOpenTitle": "参加登録は受付していません",
+    "fullTitle": "すべての枠が埋まりました",
+    "spotsLeft_one": "{{max}} 枠中 残り {{count}}。キャプテンが先発と控えを選びます。",
+    "spotsLeft_other": "{{max}} 枠中 残り {{count}}。キャプテンが先発と控えを選びます。",
+    "byOrganizer": "主催者がチームを追加します。",
+    "captainsPick": "キャプテンが先発と控えを選びます。",
+    "startsIn": "開始まで",
+    "allRules": "すべてのルールと賞品",
+    "signedUpEyebrow": "{{team}} · 登録済み",
+    "inTitle": "登録完了",
+    "inToFix_one": "登録完了。要修正 1 件",
+    "inToFix_other": "登録完了。要修正 {{count}} 件",
+    "fixBefore": "{{when}} のチェックイン前に修正してください。そうしないとそのプレイヤーはサーバーに参加できません。",
+    "checkInOn": "{{when}} にチェックイン。開始までにチェックインしていない先発は控えと入れ替わります。",
+    "allSet": "全員準備完了です。開始時刻はスケジュールで確認できます。",
+    "checkInOpens": "チェックイン開始",
+    "openLineup": "メンバーを開く",
+    "yourSignup": "あなたの登録",
+    "spotOf": "{{max}} 枠中 {{place}} 番目",
+    "lineupCount": "メンバー · 先発 {{starters}}、控え {{subs}}",
+    "fixBeforeCheckIn": "チェックイン前に修正",
+    "leave": "トーナメントを抜ける",
+    "withdrawHint": "参加できなくなりましたか?辞退すると枠が他のチームに開放されます。",
+    "opensTitle": "参加登録は {{when}} に開始",
+    "opensIn": "{{time}} 後に開始。"
+  },
+  "shuffleOverview": {
+    "yourMatchLive": "あなたの試合はライブ中",
+    "yourMatchReady": "あなたの試合の準備ができました",
+    "yourMatchDone": "あなたの試合は終了しました",
+    "nextDraw": "次の抽選",
+    "round": "{{n}}回戦",
+    "whenRoundEnds": "この回戦の試合が終わったとき",
+    "oneMapPerRound": "1回戦1マップ · 回戦ごとに新しいチーム",
+    "sittingOut": "休み:",
+    "firstNextRound": "次の回戦で最優先",
+    "players": "プレイヤー",
+    "markOutHint": "抜けたプレイヤーを外すと、戻すまで休みになります。"
+  },
+  "checkIn": {
+    "areYouHere": "出席していますか?",
+    "teamCount": "{{team}} がチェックイン中:{{total}} 人中 {{in}} 人。開始までにチェックインしていない先発は控えと入れ替わります。",
+    "soundOn": "♪ サウンドオン",
+    "firstVeto_one": "最初の BAN/ピックは {{time}}、試合の {{count}} 分前に始まります:それまでに PC の前にいてください。",
+    "firstVeto_other": "最初の BAN/ピックは {{time}}、試合の {{count}} 分前に始まります:それまでに PC の前にいてください。",
+    "vetoOpensNote": "BAN/ピック開始 {{time}}"
+  },
+  "runState": {
+    "paused": "トーナメントは一時停止中です",
+    "pausedUntil": "{{time}} までトーナメントは一時停止中です",
+    "pausedBody": "すでにサーバーにある試合は続行されます。再開するまで新しい回戦は組まれず、BAN/ピックも始まりません。",
+    "reason": "理由:{{reason}}。",
+    "waitingServers_one": "{{count}} 試合がサーバーを待っています。",
+    "waitingServers_other": "{{count}} 試合がサーバーを待っています。",
+    "allBusy_one": "1 台のサーバーはすべて使用中です。空き次第始まります。",
+    "allBusy_other": "{{count}} 台のサーバーはすべて使用中です。空き次第始まります。",
+    "noneFree": "空きサーバーがありません。空き次第始まります。",
+    "servers": "サーバー",
+    "pausedShort": "一時停止中"
+  },
+  "captainsPanel": {
+    "title": "キャプテン",
+    "note": "結果を報告・確認できるのはキャプテンだけです。",
+    "make": "キャプテンにする",
+    "remove": "キャプテンから外す",
+    "role": {
+      "owner": "オーナー",
+      "captain": "キャプテン",
+      "member": "メンバー"
+    }
+  },
+  "lineupPanel": {
+    "title": "メンバー",
+    "note_one": "この試合に出る {{count}} 人を選んでください。残りはベンチです。",
+    "note_other": "この試合に出る {{count}} 人を選んでください。残りはベンチです。",
+    "picked": "{{count}} 人中 {{picked}} 人を選択",
+    "plays": "出場",
+    "bench": "ベンチ",
+    "save": "メンバーを保存",
+    "saved": "メンバーを保存しました",
+    "notOnServer": "メンバーは保存されましたが、サーバーが受け付けませんでした:{{error}}",
+    "locked": "マップがライブ中はメンバーを変更できません。マップの合間に変更できます。",
+    "captainOnly": "メンバーを変更できるのはチームのオーナーかキャプテンだけです。",
+    "source": {
+      "previous": "チームの前回の試合と同じ。",
+      "roster": "名簿の最初のプレイヤー。"
+    }
+  },
+  "prizesPage": {
+    "title": "賞品",
+    "intro": "順位に応じたスキンをトーナメント終了時にチームの全プレイヤーに、そして MVP にも賞品を贈ります。サイト内スキンのみ:Steam アイテムではなく、金銭的価値もありません。",
+    "none": "このトーナメントのゲームには賞品がありません。",
+    "loadFailed": "トーナメントを読み込めませんでした。"
+  },
+  "schedulePage": {
+    "title": "試合の時刻",
+    "intro": "各回戦に開始時刻を設定するか、1試合だけ個別の時刻にします。プレイヤーは試合で時刻を確認でき、リマインダーが届き、BAN/ピックは時間どおりに始まります。",
+    "loadFailed": "トーナメントを読み込めませんでした。",
+    "rounds": "回戦",
+    "modeLabel": "試合の開始方法",
+    "modeTimes": "指定した時刻",
+    "modeAsap": "準備ができ次第",
+    "modeTimesNote": "試合は予定時刻まで待ちます。回戦を開くと1試合だけ個別の時刻にできます。",
+    "modeAsapNote": "時刻なし:両チームとサーバーの準備ができ次第、試合が始まります。",
+    "noRounds": "トーナメント表が作成されると回戦がここに表示されます。",
+    "roundN": "{{n}}回戦",
+    "roundNote_one": "{{count}} 試合 · 開いて1試合の時刻を設定",
+    "roundNote_other": "{{count}} 試合 · 開いて1試合の時刻を設定",
+    "roundNoMatches": "前の回戦が終わると試合が作成されます",
+    "roundStartsAt": "回戦の開始",
+    "roundTimeLabel": "{{round}} の開始時刻",
+    "matchTimeLabel": "{{match}} の開始時刻",
+    "tbd": "未定",
+    "ownTime": "個別の開始時刻",
+    "sameAsRound": "回戦と同じ",
+    "useRoundTime": "回戦の時刻を使う",
+    "vetoTitle": "BAN/ピック",
+    "vetoNote": "各試合の前に自動で始まるので、試合開始時には終わっています。時間内に操作しなかったチームにはマップが自動で選ばれます。",
+    "vetoLabel": "BAN/ピック開始",
+    "vetoZero": "開始時刻",
+    "reminderTitle": "リマインダー",
+    "reminderNote": "試合の全プレイヤーにサイトと Discord で通知します。",
+    "reminderLabel": "プレイヤーにリマインド",
+    "reminderZero": "オフ",
+    "minutesBefore_one": "{{count}} 分前",
+    "minutesBefore_other": "{{count}} 分前",
+    "save": "時刻を保存",
+    "saved": "試合の時刻を保存しました",
+    "saveFailed": "時刻を保存できませんでした",
+    "rulesTitle": "適用されるルール",
+    "rules": {
+      "start": "空きサーバーがあっても、BAN/ピックが始まるまで試合は何も始まりません。",
+      "late": "遅れた回戦は次の回戦を押し下げます:まだ試合中のチームや試合間の休憩があると BAN/ピックが待ち、プレイヤーには新しい時刻が表示されます。",
+      "none": "時刻なし:従来どおり、両チームとサーバーの準備ができ次第試合が始まります。",
+      "where": "概要のスケジュール、試合カード、試合ルーム、ルール、チェックインにこれらの時刻が表示されます。"
+    },
+    "breaksTitle": "回戦の間の休憩",
+    "breaksNote_one": "空欄ならサイトの休憩 {{count}} 分を使います。任意の回戦の後に長めの休憩を追加できます(例:3回戦の後に30分)。",
+    "breaksNote_other": "空欄ならサイトの休憩 {{count}} 分を使います。任意の回戦の後に長めの休憩を追加できます(例:3回戦の後に30分)。",
+    "breakEvery": "各回戦後の休憩(分)",
+    "breakAfterRound": "この回戦の後",
+    "breakMinutes": "休憩(分)",
+    "breakRemove": "削除",
+    "breakAdd": "長めの休憩を追加",
+    "fillStart": "1回戦の時刻",
+    "fillEvery": "回戦の間隔(分)",
+    "fillApply": "回戦に入力"
+  },
+  "groups": {
+    "groupN": "グループ {{letter}}",
+    "done": "決勝",
+    "through_one": "上位 1 が勝ち上がり",
+    "through_other": "上位 {{count}} が勝ち上がり",
+    "playoffs": "プレーオフ",
+    "playoffsSoon": "グループの全試合が終わるとプレーオフが始まります。",
+    "seedSlot": "シード {{n}}"
+  },
+  "matchCheckIn": {
+    "eyebrow": "BAN/ピック受付中 · 試合は {{time}} 開始",
+    "eyebrowNoTime": "チェックイン受付中",
+    "title": "この試合にチェックイン",
+    "body": "このトーナメントでは試合ごとにチェックインします。先発が出席を伝え、キャプテンが代わりに行うこともできます。控えはすでに準備完了です。",
+    "closesIn": "チェックイン締め切りまで",
+    "yourTeam": "{{team}}(あなたのチーム)",
+    "count": "先発 {{total}} 人中 {{in}} 人がチェックイン済み",
+    "sub": "控え",
+    "starter": "先発",
+    "ready": "準備完了",
+    "checkedIn": "チェックイン済み",
+    "notYet": "まだ",
+    "rule": "開始時にチェックインしていない先発は控えと入れ替わり、試合ルームに誰が入ったか表示されます。控えがいなければ1人少ない状態で戦います。",
+    "server": {
+      "eyebrow": "サーバー準備完了 · {{time}} までに全員集合",
+      "eyebrowNoTime": "サーバー準備完了",
+      "title": "チームをサーバーに集めましょう",
+      "bodyOut": "{{out}} がチェックインしなかったため、代わりに控えが出場します。",
+      "body_one": "タイマーが切れる前に 1 人がサーバーに入る必要があります。控えも数に入ります。",
+      "body_other": "タイマーが切れる前に {{count}} 人がサーバーに入る必要があります。控えも数に入ります。",
+      "clockLabel": "全員集合まで",
+      "count": "サーバーに {{size}} 人中 {{on}} 人",
+      "onServer": "サーバー内",
+      "joining": "参加中…",
+      "subIn": "控えが入る",
+      "out": "外れる",
+      "swapped": "控えと交代",
+      "rule": "0:00 になると、全員そろったチームが選びます:不戦勝にするか、人数の足りないチームと戦うか。両方足りない場合は管理者が判断します。"
+    },
+    "choice": {
+      "eyebrow": "{{team}} はまだ人数が足りません",
+      "title": "{{team}}:サーバーに {{size}} 人中 {{on}} 人",
+      "body": "相手の時間切れです。不戦勝で勝ち上がるか、それでも対戦するかを選んでください。どちらのキャプテンでも選べます。2分以内に選ばなければ不戦勝が確定します。",
+      "take": "不戦勝にする",
+      "play": "それでも対戦する"
+    }
+  }
+}
