@@ -770,9 +770,16 @@ func (r *recorder) recordMoment(g *game, look clipLook, name string, m moment, o
 // returns (the card, the kill feed, the edit) needs no CS2 and runs later.
 func (r *recorder) recordWindow(g *game, look clipLook, card *cardRender, name string, w window, prior []feedKill, prefix, out string) (*windowCut, func() error, error) {
 	main := prefix + "-picture.yuv"
+	// Kills made after the player died and took over a bot: the camera follows
+	// that bot, or it stays on the dead player (t34, 2026-11-03).
+	followID := look.playerID
+	if bot := look.replay.BotFor(look.playerID, w.from, w.to); bot != "" {
+		log.Printf("following BOT %s: %s controlled it for this stretch", bot, name)
+		name, followID = bot, "bot:"+bot
+	}
 	// The camera is checked against where the demo has the player (capture.go checkFollow).
-	if look.replay != nil && look.playerID != "" {
-		rp, id := look.replay, look.playerID
+	if look.replay != nil && followID != "" {
+		rp, id := look.replay, followID
 		g.follow = func(tick int) ([3]float64, bool) { return rp.PositionAt(id, tick) }
 		defer func() { g.follow = nil }()
 	}
