@@ -155,7 +155,7 @@
     },
     "stats": {
       "kills": {
-        "label": "Kills",
+        "label": "Abates",
         "description": "Número de kills por jogo"
       },
       "deaths": {
