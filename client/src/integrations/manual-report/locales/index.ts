@@ -16,6 +16,7 @@ import es419 from './es-419.json';
 import fr from './fr.json';
 import it from './it.json';
 import ja from './ja.json';
+import ko from './ko.json';
 import nb from './nb.json';
 import nl from './nl.json';
 import pl from './pl.json';
@@ -45,4 +46,5 @@ export const manualReportLocales: ModuleLocales = {
   'pt-BR': ptBR,
   tr,
   ja,
+  ko,
 };
