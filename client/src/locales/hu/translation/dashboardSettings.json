@@ -1,0 +1,989 @@
+{
+  "dashboard": {
+    "title": "Admin",
+    "restartTournament": {
+      "button": "Versenymeccsek újraindítása",
+      "restarting": "Versenymeccsek újraindítása…",
+      "intro": "🔄 Ez újraindítja az összes aktív meccset, és újratölti őket a szervereken.",
+      "actionsTitle": "Műveletek:",
+      "actionEndMatch": "at_endmatch futtatása minden szerveren, ahol betöltött/élő meccs van",
+      "actionReset": "Meccsek visszaállítása „ready” állapotba",
+      "actionReallocate": "Meccsek újraosztása az elérhető szerverekre",
+      "actionReload": "Meccskonfigurációk újratöltése a játékszervereken",
+      "hint": "Akkor használd, ha a meccsek elakadtak, vagy tiszta újrakezdés kell.",
+      "confirm": "Verseny újraindítása"
+    },
+    "header": {
+      "brand": "Auto Tournament",
+      "version": "Az Auto Tournament oldalad · {{version}} verzió",
+      "unknownVersion": "dev",
+      "createTournament": "Verseny létrehozása"
+    },
+    "setup": {
+      "title": "Beállítás befejezése",
+      "openSettings": "Beállítások megnyitása",
+      "signIn": "Bejelentkezési szolgáltató",
+      "game": "Telepíts egy játékot (CS2) a Modulok közül",
+      "discordBot": "Add hozzá a saját Discord-botodat (a tokenjét), hogy az oldal DM-et küldhessen a játékosoknak a meccseikről"
+    },
+    "tournaments": {
+      "title": "Verseny",
+      "empty": "Ez az oldal egyszerre egy versenyt futtat. Hozd létre, és megjelenik itt, a Böngészés oldalon és a saját eseményoldalán.",
+      "status": {
+        "setup": "Piszkozat",
+        "ready": "Nevezés",
+        "inProgress": "Élő",
+        "completed": "Befejezett"
+      },
+      "state": {
+        "teams_one": "{{count}} csapat",
+        "teams_other": "{{count}} csapat",
+        "entered_one": "{{count}} csapat nevezett",
+        "entered_other": "{{count}} csapat nevezett",
+        "draftTeams_one": "Piszkozat · {{count}} csapat kiválasztva",
+        "draftTeams_other": "Piszkozat · {{count}} csapat kiválasztva",
+        "draftEmpty": "Piszkozat · még nincsenek csapatok",
+        "live_one": "{{count}} meccs élőben",
+        "live_other": "{{count}} meccs élőben",
+        "completed_one": "{{count}} csapat vett részt",
+        "completed_other": "{{count}} csapat vett részt",
+        "winner": "Győztes: {{name}}",
+        "teamsPlayers_one": "{{count}} játékos",
+        "teamsPlayers_other": "{{count}} játékos",
+        "enteredPlayers_one": "{{count}} játékos nevezett",
+        "enteredPlayers_other": "{{count}} játékos nevezett",
+        "draftTeamsPlayers_one": "Piszkozat · {{count}} játékos",
+        "draftTeamsPlayers_other": "Piszkozat · {{count}} játékos",
+        "completedPlayers_one": "{{count}} játékos vett részt",
+        "completedPlayers_other": "{{count}} játékos vett részt"
+      },
+      "actions": {
+        "manage": "Kezelés",
+        "continueSetup": "Beállítás folytatása",
+        "view": "Megtekintés"
+      },
+      "eventPage": "Eseményoldal",
+      "emptyTitle": "Még nincs verseny"
+    },
+    "site": {
+      "title": "Oldal",
+      "players": {
+        "label": "Játékosok",
+        "hint": "Mindenki, aki bejelentkezett"
+      },
+      "teams": {
+        "label": "Csapatok",
+        "hint": "Klubok és keretek"
+      },
+      "templates": {
+        "label": "Sablonok",
+        "hint": "Újrahasználható beállítások"
+      },
+      "ratings": {
+        "label": "Értékelések",
+        "hint": "Hogyan számoljuk az értékeléseket"
+      },
+      "settings": {
+        "label": "Beállítások",
+        "hint": "Bejelentkezés, API-kulcsok"
+      },
+      "adminTools": {
+        "label": "Rendszer",
+        "hint": "Meccshelyreállítás és naplók"
+      },
+      "disputes": {
+        "label": "Viták",
+        "hint": "Eldöntendő eredmények"
+      },
+      "modules": {
+        "label": "Modulok",
+        "hint": "Az instancián futó játékok"
+      }
+    },
+    "people": {
+      "title": "Emberek",
+      "open": "Nyitott",
+      "players": "Játékosok",
+      "admins": "Adminok",
+      "signedInThisWeek": "Ezen a héten bejelentkezett"
+    },
+    "loading": "Az admin kezdőlap betöltése"
+  },
+  "settingsPage": {
+    "email": {
+      "title": "E-mail",
+      "short": "Címmegerősítéseket, jelszó-visszaállításokat és versenyes e-maileket küld.",
+      "enabled": "E-mail küldése",
+      "enabledOn": "Be. Az e-mailek innen mennek: {{from}}.",
+      "enabledOff": "Ki. Semmit sem küldünk.",
+      "needsServer": "Előbb állítsd be lent a szervert.",
+      "turnedOn": "Az e-mail be van kapcsolva",
+      "turnedOff": "Az e-mail ki van kapcsolva",
+      "server": "Levelezőszerver",
+      "serverNone": "Nincs beállítva",
+      "host": "SMTP-szerver",
+      "port": "Port",
+      "security": "Biztonság",
+      "securityStarttls": "STARTTLS (általában 587-es port)",
+      "securityTls": "TLS (általában 465-ös port)",
+      "securityNone": "Nincs (csak megbízható hálózaton)",
+      "username": "Felhasználónév",
+      "password": "Jelszó",
+      "passwordKept": "Hagyd üresen a mentett megtartásához",
+      "passwordSaved": "Mentve",
+      "fromAddress": "Feladó címe",
+      "fromAddressHelp": "A cím, ahonnan az e-mailek érkeznek. A levelezési szolgáltatódnak engedélyeznie kell.",
+      "fromName": "Feladó neve",
+      "fromNameHelp": "Nem kötelező. Ez látszik feladóként, pl. NTLAN.",
+      "siteUrl": "Az oldal címe",
+      "siteUrlHelp": "Az e-mailekben lévő linkek innen indulnak, pl. https://cs.example.com.",
+      "siteUrlHelpDefault": "Az e-mailekben lévő linkek innen indulnak. Üresen: {{url}}.",
+      "save": "Mentés",
+      "saved": "E-mail-beállítások mentve",
+      "loadError": "Nem sikerült betölteni az e-mail-beállításokat",
+      "saveError": "Nem sikerült menteni az e-mail-beállításokat",
+      "test": "Teszt e-mail",
+      "testShort": "Küldj egyet, hogy ellenőrizd, működnek-e a beállítások.",
+      "testTo": "Címzett",
+      "testSend": "Teszt küldése",
+      "testNeedsOn": "Tesztelés előtt kapcsold be a küldést (és mentsd a szervert).",
+      "testSent": "Elküldve ide: {{to}}. Nézd meg a beérkezett üzeneteket és a spam mappát.",
+      "testFailed": "A teszt e-mailt nem sikerült elküldeni"
+    },
+    "title": "Beállítások",
+    "intro": "A platform saját beállításai. Minden játék a menüben, magánál tartja a saját beállításait.",
+    "tabs": {
+      "general": "Általános",
+      "signIn": "Bejelentkezés",
+      "players": "Játékosok és hozzáférés",
+      "ratings": "Értékelések",
+      "developer": "Fejlesztő",
+      "license": "Licenc",
+      "webhooks": "Webhookok",
+      "experimental": "Kísérleti"
+    },
+    "signIn": {
+      "title": "Bejelentkezési szolgáltatók",
+      "intro": "Válaszd ki, hogyan jelentkezzenek be az emberek. Bármelyik lehet valakinek a fiókja; továbbiakat a kapcsolatok oldalukon köthetnek hozzá. A változások azonnal érvénybe lépnek, újraindítás nélkül.",
+      "keySource": "A mentett titkos adatokat ezzel titkosítjuk: {{name}}.",
+      "keySourceDefault": "A mentett titkos adatokat egy beépített fejlesztői kulccsal titkosítjuk. Éles indulás előtt állítsd be a SECRETS_KEY vagy a SESSION_SECRET értékét.",
+      "loadError": "Nem sikerült betölteni a bejelentkezési szolgáltatókat",
+      "saveError": "Nem sikerült menteni",
+      "testError": "Nem sikerült futtatni a tesztet",
+      "saved": "{{provider}}-bejelentkezés mentve",
+      "enabled": "Engedélyezve",
+      "clientId": "Client ID",
+      "issuerUrl": "Issuer URL",
+      "issuerUrlHelp": "Az OpenID Connect realm vagy tenant címe. Az Auto Tournament innen olvassa ki a végpontjait: /.well-known/openid-configuration.",
+      "buttonName": "Gomb neve",
+      "buttonNameHelp": "A bejelentkezési oldalon „Bejelentkezés ezzel: …” formában jelenik meg, pl. a közösséged vagy az identitásszervered neve.",
+      "logoUpload": "Logó feltöltése",
+      "logoReplace": "Logó cseréje",
+      "logoRemove": "Logó eltávolítása",
+      "logoType": "A logónak PNG, JPEG, WebP vagy SVG képnek kell lennie.",
+      "logoSize": "A logó legfeljebb 150 KB lehet.",
+      "buttonColor": "Gomb színe",
+      "buttonColorDefault": "Alapértelmezett szín",
+      "clientSecret": "Client secret",
+      "steamKey": "Steam Web API-kulcs",
+      "secretSet": "beállítva",
+      "secretUnreadable": "A mentett titkos adatot már nem lehet visszafejteni (megváltozott a titkosítási kulcs). Add meg újra.",
+      "replace": "Csere",
+      "cancel": "Mégse",
+      "save": "Mentés",
+      "callbackHint": "Automatikusan beállítva. Illeszd be átirányítási URL-ként a(z) {{provider}} fejlesztői beállításaiba:",
+      "copy": "Másolás",
+      "copyCallback": "Callback URL másolása",
+      "copied": "Másolva",
+      "copyError": "Nem sikerült másolni",
+      "guide": "Beállítási útmutató",
+      "howTo": "Fejlesztői konzol",
+      "test": "Teszt",
+      "comingSoon": "Hamarosan",
+      "comingSoonNote": "A(z) {{provider}}-bejelentkezés még nem érhető el.",
+      "status": {
+        "active": "A bejelentkezési oldalon",
+        "missing": "Engedélyezve, hiányzó hitelesítő adatok",
+        "off": "Ki"
+      },
+      "testResult": {
+        "ok": "A szolgáltató elfogadta ezeket a hitelesítő adatokat.",
+        "invalid_credentials": "A szolgáltató elutasította ezeket a hitelesítő adatokat. Ellenőrizd a client ID-t és a secretet (vagy a kulcsot).",
+        "unreachable": "Nem sikerült elérni a szolgáltatót. Ellenőrizd a hálózatot, és próbáld újra.",
+        "not_configured": "Előbb add meg a hitelesítő adatokat.",
+        "not_supported": "Ez a szolgáltató nem tesztelhető.",
+        "unexpected": "A szolgáltató olyan választ adott, amelyet a teszt nem ért."
+      },
+      "welcomeTitle": "Állítsd be, hogyan jelentkezzenek be a játékosok",
+      "welcomeBody": "Adminként vagy bejelentkezve. Kapcsolj be legalább egy szolgáltatót lent (Steam, Discord, Google, GitHub vagy Twitch), hogy a játékosok bejelentkezhessenek.",
+      "adminAccess": {
+        "title": "Admin hozzáférés",
+        "localLogin": "Helyi admin bejelentkezés engedélyezése",
+        "localLoginHelp": "Bejelentkezés felhasználónévvel és jelszóval a /login/admin oldalon. Ha elveszíted a hozzáférést, futtasd a reset-admin parancsot a szerveren.",
+        "localLoginLocked": "Bekapcsolva marad, amíg egy másik admin be nem tud jelentkezni egy bekapcsolt szolgáltatóval.",
+        "steamIds": "Admin Steam ID-k",
+        "steamIdsHelp": "Steam64 ID-k vesszővel elválasztva. Mentéskor és minden indításkor adminná válnak. Egy eltávolítása nem veszi el az admin jogot.",
+        "emails": "Admin e-mailek",
+        "emailsHelp": "Címek, amelyek admin jogot kapnak, amikor a tulajdonosuk egy olyan szolgáltatóval jelentkezik be, amely ellenőrizte őket (Google, Discord, GitHub).",
+        "unsaved": "Még nincs mentve.",
+        "saved": "Admin hozzáférés mentve",
+        "loadError": "Nem sikerült betölteni az admin hozzáférés beállításait",
+        "short": "Ki jelentkezhet be adminként"
+      },
+      "short": "Hogyan jelentkeznek be a játékosok és az adminok. A változások azonnal érvénybe lépnek.",
+      "enabledFor": "{{provider}}-bejelentkezés",
+      "setUp": "{{provider}} beállítása",
+      "accounts": {
+        "title": "Fiókok",
+        "short": "Általad létrehozott felhasználónév-jelszó fiókok",
+        "help": "Ezekkel a /login/admin oldalon lehet bejelentkezni. Adj admin jogot azoknak, akik az oldalt üzemeltetik; a többiek játékosként jelentkeznek be.",
+        "none": "Még nincsenek fiókok.",
+        "admin": "Admin",
+        "twoStep": "Kétlépcsős be",
+        "lastLogin": "Utoljára bejelentkezett: {{date}}",
+        "neverSignedIn": "Még sosem jelentkezett be",
+        "setPassword": "Jelszó beállítása",
+        "remove": "Eltávolítás",
+        "addTitle": "Fiók hozzáadása",
+        "username": "Felhasználónév",
+        "usernameHelp": "3–32 karakter: kisbetűk, számjegyek, pontok, kötőjelek és aláhúzások.",
+        "name": "Megjelenített név",
+        "nameHelp": "Nem kötelező. Az oldalon jelenik meg; ha üres, a felhasználónevet használjuk.",
+        "password": "Jelszó",
+        "makeAdmin": "Admin",
+        "create": "Fiók létrehozása",
+        "created": "{{username}} fiók létrehozva",
+        "madeAdmin": "{{username}} mostantól admin",
+        "adminRemoved": "{{username}} már nem admin",
+        "setPasswordTitle": "Új jelszó neki: {{username}}",
+        "setPasswordTotp": "A kétlépcsős azonosítása is kikapcsol; bejelentkezés után újra beállítja.",
+        "newPassword": "Új jelszó",
+        "savePassword": "Jelszó mentése",
+        "passwordSet": "Új jelszó mentve neki: {{username}}",
+        "removeTitle": "Eltávolítod: {{username}}?",
+        "removeBody": "Nem tud többé bejelentkezni ezzel a felhasználónévvel és jelszóval, és nem lesz admin. A játékosa, meccsei és statisztikái megmaradnak; ugyanazzal a felhasználónévvel újra létrehozva visszakapja őket.",
+        "removeConfirm": "Eltávolítás",
+        "removed": "{{username}} eltávolítva",
+        "cancel": "Mégse",
+        "loadError": "Nem sikerült betölteni a fiókokat",
+        "saveError": "Nem sikerült menteni a fiókot"
+      },
+      "oidcScopes": "Az OpenID Connect szervereden add meg ennek a kliensnek az openid, profile és email scope-okat (Keycloakban: Clients → ez a kliens → Client scopes, a profile és az email Default legyen). Profile és email nélkül is be lehet jelentkezni, de a platform nem kap nevet vagy e-mail-címet."
+    },
+    "integrations": {
+      "steam": {
+        "title": "Steam-integráció",
+        "apiKeyLabel": "Steam Web API-kulcs",
+        "apiKeyHelper": "Feloldja a Steam vanity URL-eket és a játékosadatokat. Hagyd üresen a keresések kikapcsolásához.",
+        "checkButtonChecking": "Steam ellenőrzése…",
+        "checkButtonIdle": "Steam-kapcsolat ellenőrzése",
+        "statusOk": "A Steam API-kulcs be van állítva és elérhető.",
+        "statusNotConfigured": "A Steam API-kulcs nincs beállítva. A vanity URL-ek nem oldhatók fel, amíg nem adsz meg kulcsot.",
+        "statusUnreachable": "A Steam API-kulcs beállítottnak tűnik, de a Steam nem érhető el. Ellenőrizd a hálózatot vagy a kulcsot.",
+        "statusError": "Nem sikerült ellenőrizni a Steam API állapotát. Próbáld újra."
+      }
+    },
+    "matchRating": {
+      "ratings": {
+        "title": "Értékelésfrissítések",
+        "description": "Meghatározza, hogy a befejezett meccsek frissítik-e a játékosok értékelését. Kapcsold ki olyan eseményeknél, ahol egy külső rendszer (például az Excel-táblázatod) az értékelések forrása.",
+        "toggleLabel": "Játékosértékelések frissítése a befejezett meccsekből",
+        "note": "Kikapcsolva minden meccs továbbra is rögzíti a statisztikákat (ADR, K/D stb.), de a játékosok értékelése változatlan marad.",
+        "short": "Az értékelések minden meccs után változnak."
+      }
+    },
+    "players": {
+      "registration": {
+        "title": "Játékosregisztráció",
+        "description": "Meghatározza, hogy a bejelentkezés létrehoz-e játékosrekordot egy új személynek, bármilyen bejelentkezési módot használ is (Steam, Discord, Google és a többi engedélyezett). Kikapcsolva a privát versenyekben és shuffle-készletekben csak az adminok által létrehozott vagy importált játékosok jelennek meg.",
+        "toggleLabel": "Bárki regisztrálhat bejelentkezéssel",
+        "recommendation": "Ajánlott: meghívásos vagy privát versenyeknél tartsd kikapcsolva, hogy a véletlen bejelentkezések ne töltsék fel a játékoslistát.",
+        "short": "A bejelentkezés minden új személyből játékost csinál. Ki: csak az általad hozzáadott játékosok."
+      },
+      "title": "Játékosok",
+      "short": "Ki csatlakozik, és hogyan változnak az értékelések.",
+      "chooseName": {
+        "toggleLabel": "A játékosok maguk választják a megjelenített nevüket",
+        "short": "A játékosoktól megkérdezzük a nevüket, és naponta egyszer módosíthatják. Ki: a nevek importból és adminoktól származnak."
+      }
+    },
+    "developer": {
+      "resetApiTitle": "API és adatbázis visszaállítása",
+      "resetApiDescription": "Veszélyzóna: törli és újra létrehozza a teljes adatbázissémát, majd újra feltölti az alapértelmezett adatokat (pályák, pályakészletek stb.). Csak helyi fejlesztéshez. Ez visszafordíthatatlan.",
+      "resetApiButton": "API visszaállítása (minden adat törlése)",
+      "resetApiButtonLoading": "API visszaállítása…",
+      "resetApiSuccess": "Az API és az adatbázis sikeresen visszaállítva. Minden adat törölve, az alapértelmezések újra feltöltve.",
+      "resetApiError": "Nem sikerült visszaállítani az API-t és az adatbázist. A részletekért nézd meg az API-naplókat.",
+      "resetApiDialog": {
+        "title": "Visszaállítod az API-t és törölsz minden adatot?",
+        "description": "Ez törli és újra létrehozza a teljes adatbázissémát. Minden verseny, meccs, játékos, csapat, értékelés, esemény, napló és beállítás véglegesen törlődik. Ez a művelet nem vonható vissza. Folytatod?",
+        "cancel": "Mégse",
+        "confirm": "Igen, API visszaállítása és adatok törlése",
+        "confirmLoading": "Visszaállítás…"
+      }
+    },
+    "footer": {
+      "version": "Verzió",
+      "unknownVersion": "Ismeretlen"
+    },
+    "errors": {
+      "loadSettings": "Nem sikerült betölteni a beállításokat",
+      "saveSettings": "Nem sikerült menteni a beállításokat"
+    },
+    "success": {
+      "saveSettings": "Beállítások mentve"
+    },
+    "site": {
+      "title": "Oldal",
+      "description": "Az oldal neve. Az admin kezdőlap ezt használja címként.",
+      "label": "Az oldal neve",
+      "helper": "Hagyd üresen az „Auto Tournament” névhez.",
+      "save": "Mentés",
+      "saved": "Az oldal neve mentve",
+      "saveFailed": "Nem sikerült menteni az oldal nevét"
+    },
+    "experimental": {
+      "title": "Kísérleti",
+      "description": "Még fejlesztés alatt álló funkciók. Alapból ki vannak kapcsolva, és változhatnak vagy elromolhatnak. Csak az adminok látják őket.",
+      "saved": "Mentve",
+      "saveFailed": "Nem sikerült menteni a funkciót",
+      "loadFailed": "Nem sikerült betölteni a kísérleti funkciókat",
+      "envOverride": "A(z) {{env}} környezeti változó állítja be. Ott módosítsd.",
+      "features": {},
+      "short": "Még fejlesztés alatt: alapból ki vannak kapcsolva, csak az adminok látják őket."
+    },
+    "matchmaking": {
+      "openLabel": "Nyitva a játékosoknak",
+      "openDescription": "Be: minden bejelentkezett játékos látja a Játék menüt, és sorba állhat. Ki: csak az adminok kereshetnek meccset.",
+      "boardLabel": "A ranglista mindenki számára látható",
+      "boardDescription": "Ki: csak a bejelentkezett játékosok látják a matchmaking-ranglistát. Be: bárki, akinek megvan a link.",
+      "windowTitle": "Keresési tartomány",
+      "windowDescription": "Mekkora lehet a játékosok értékelése közti különbség. Az első számmal indul, 30 másodpercenként a lépés értékével nő a felső határig, és az utolsó perc után bárkit párosít (hagyd üresen, ha soha).",
+      "window": {
+        "start": "Kezdet (Elo)",
+        "step": "Lépés (Elo)",
+        "cap": "Felső határ (Elo)",
+        "uncappedAfterMinutes": "Bárki ennyi perc után"
+      },
+      "reservedTitle": "Matchmakingre fenntartott szerverek",
+      "reservedDescription": "A versenymeccsek az elsők, de hagyj ennyi szabad szervert a matchmakingnek, amíg játékosok keresnek. 0 = egy sem.",
+      "reservedLabel": "Szerverek",
+      "modesTitle": "Módok",
+      "modesDescription": "Mit kereshetnek a játékosok. Alapból minden mód be van kapcsolva. Az 1v1 egy aim-párbaj.",
+      "poolsTitle": "Pályák módonként",
+      "poolsDescription": "A pályakészlet, amelyből az egyes módok választanak (Pályák oldal; a Workshop-pályák is működnek). A meccsszoba egy rulettet mutat a készleten, mielőtt felfedi a pályát.",
+      "poolDefault": {
+        "5v5": "Alapértelmezett: Active Duty",
+        "2v2": "Alapértelmezett: minden Wingman-pálya",
+        "1v1": "Alapértelmezett: Active Duty"
+      },
+      "save": "Mentés",
+      "title": "Matchmaking",
+      "short": "Mindig be van kapcsolva. A játékosok meccset keresnek, sorba állnak, elfogadják, majd egy szabad szerveren játszanak.",
+      "saved": "Mentve",
+      "saveFailed": "Nem sikerült menteni a matchmaking-beállításokat",
+      "loadFailed": "Nem sikerült betölteni a matchmaking-beállításokat"
+    },
+    "groups": {
+      "platform": "Platform"
+    },
+    "navLabel": "Beállítási oldalak",
+    "gameLinks": {
+      "title": "Játékbeállítások",
+      "hint": "Minden játék a menüben, magánál tartja a saját beállításait."
+    },
+    "sections": {
+      "label": "Beállítási szakaszok",
+      "site": {
+        "name": "Oldal",
+        "hint": "Név, logó, nyelv"
+      },
+      "signin": {
+        "name": "Bejelentkezés",
+        "hint": "Szolgáltatók, admin fiókok"
+      },
+      "email": {
+        "name": "E-mail",
+        "hint": "SMTP, mit küldünk"
+      },
+      "players": {
+        "name": "Játékosok",
+        "hint": "Nevezés, értékelések"
+      },
+      "matchmaking": {
+        "name": "Matchmaking",
+        "hint": "Sorok és szabályaik"
+      },
+      "news": {
+        "name": "Hírek",
+        "hint": "Bejegyzések a kezdőlapon"
+      },
+      "adminnotices": {
+        "name": "Értesítések",
+        "hint": "Miről szólunk az adminoknak"
+      },
+      "webhooks": {
+        "name": "Integrációk",
+        "hint": "Webhookok"
+      },
+      "apitokens": {
+        "name": "API-tokenek",
+        "hint": "Szkriptekhez és MCP-hez"
+      },
+      "advanced": {
+        "name": "Haladó",
+        "hint": "Kísérleti, fejlesztő"
+      },
+      "module": {
+        "hint": "Ennek a modulnak a beállításai"
+      }
+    }
+  },
+  "managePage": {
+    "tournamentNotFound": "Nincs ilyen azonosítójú verseny. Válassz egyet az Összes verseny közül.",
+    "title": "Kezelés",
+    "needsYouHeading": "Rád vár",
+    "noTournament": "Még nincs verseny",
+    "rail": {
+      "needsYou": "Rád vár",
+      "matches": "Meccsek",
+      "bracket": "Ágrajz",
+      "teams": "Csapatok",
+      "players": "Játékosok",
+      "reports": "Jelentések",
+      "tournament": "Verseny beállítása",
+      "settings": "Beállítások",
+      "label": "Admin",
+      "disputes": "Viták",
+      "publicPage": "Nyilvános oldal",
+      "modules": "Modulok",
+      "templates": "Sablonok",
+      "ratings": "Értékelések",
+      "adminTools": "Naplók és eszközök",
+      "license": "Licenc",
+      "devTools": "Fejlesztői eszközök",
+      "documentation": "Dokumentáció",
+      "opensInNewTab": "(új lapon nyílik meg)",
+      "groups": {
+        "operate": "Üzemeltetés",
+        "tournament": "Verseny",
+        "people": "Emberek",
+        "game": "Játék",
+        "home": "Kezdőlap",
+        "history": "Előzmények",
+        "setup": "Beállítás",
+        "configuration": "Konfiguráció",
+        "site": "Oldal",
+        "tournaments": "Versenyek",
+        "system": "Rendszer",
+        "gamesOf": "Játékok · {{game}}"
+      },
+      "templatesAndRatings": "Sablonok és értékelések",
+      "allTournaments": "Összes verseny",
+      "switcher": "Verseny",
+      "newTournament": "Új verseny",
+      "playedMatches": "Lejátszott meccsek",
+      "tournamentBar": "Ez a verseny",
+      "scope": {
+        "label": "Kezelés alatt",
+        "platform": "Platform",
+        "platformHint": "Versenyek, emberek, az oldal",
+        "gameHint": "Az oldalai és beállításai"
+      },
+      "highlights": "Legjobb pillanatok",
+      "state": {
+        "live": "élő",
+        "setup": "beállítás"
+      },
+      "openMenu": "A Kezelés menü megnyitása",
+      "closeMenu": "Menü bezárása",
+      "setupTab": "Beállítás",
+      "prizes": "Díjak",
+      "schedule": "Menetrend",
+      "liveMatches": "Élő meccsek"
+    },
+    "status": {
+      "live": "ÉLŐ",
+      "inVeto": "VETÓBAN",
+      "queued": "SORBAN",
+      "round": "KÖR"
+    },
+    "needsYou": {
+      "empty": "Most semmi sem vár rád.",
+      "secondsAgo": "{{count}} mp",
+      "minutesAgo": "{{count}} p",
+      "hoursAgo": "{{count}} ó",
+      "vsLabel": "{{team1}} vs {{team2}}",
+      "decide": {
+        "title": "{{teams}}: győztes kell",
+        "detail": "Minden pályát lejátszottak, és a sorozat továbbra is döntetlen.",
+        "action": "Döntés"
+      },
+      "reallocateSuccess": "A meccs átkerült egy másik szerverre",
+      "forceCancelSuccess": "Meccs törölve",
+      "actionFailed": "Ez nem sikerült. Próbáld újra.",
+      "reallocateConfirmTitle": "Áthelyezed ezt a meccset egy másik szerverre?",
+      "reallocateConfirmBody": "A meccset a következő szabad szerverhez rendeljük.",
+      "forceCancelConfirmTitle": "Kényszerítetten törlöd ezt a meccset?",
+      "forceCancelConfirmBody": "Ez azonnal befejezi a meccset, és töröltként jelöli meg, még akkor is, ha a szerver nem érhető el.",
+      "listLabel": "Döntésre váró ügyek"
+    },
+    "recent": {
+      "heading": "Legutóbbiak",
+      "viewAll": "Teljes napló",
+      "empty": "Még nincs friss tevékenység.",
+      "closingLine": "Minden más magától fut. Csak akkor látsz itt valamit, ha döntés kell.",
+      "team1Fallback": "1. csapat",
+      "team2Fallback": "2. csapat",
+      "mapResult": "{{winner}} megnyerte a(z) {{map}} pályát {{loser}} ellen, {{score}}",
+      "seriesEnd": "{{winner}} megnyerte a sorozatot {{loser}} ellen, {{score}}"
+    },
+    "announce": {
+      "button": "Bejelentés",
+      "title": "Bejelentés minden szerverre",
+      "label": "Üzenet",
+      "send": "Küldés",
+      "success": "Bejelentés elküldve",
+      "failed": "Nem sikerült elküldeni a bejelentést"
+    }
+  },
+  "license": {
+    "title": "Licenc",
+    "getKey": "Már van licenced? Másold ki a kulcsodat <consoleLink>az Auto Tournament konzolból</consoleLink>. Kell egy? <pricingLink>Nézd meg az árakat</pricingLink>.",
+    "useFromPaidKey": "Az alábbi fizetős licenckulcs állítja be.",
+    "useFromFreeKey": "Az alábbi ingyenes kulcs állítja be: csak nonprofit használatra.",
+    "useWithoutKey": "Nincs kulcs: ingyenes nonprofit használatra. Kereskedelmi használathoz illessz be lent egy fizetős kulcsot.",
+    "publicLine": "A játékosok az eseményoldalak alján ezt látják: „{{line}}”.",
+    "pageIntro": "A licenckulcsod és az állapota. A fizetős kulcs kereskedelmi, az ingyenes kulcs nonprofit használatra szól.",
+    "description": "Illeszd be az Auto Tournament licenckulcsodat: fizetőst kereskedelmi vagy ingyenest nonprofit használatra. Ezen a szerveren ellenőrizzük, és naponta egyszer az autotournament.gg-vel.",
+    "loading": "A licencállapot betöltése",
+    "loadFailed": "Nem sikerült beolvasni a licencállapotot.",
+    "none": "Még nincs licenckulcs. Nonprofit használatra ingyenes; kereskedelmi használathoz fizetős licenc kell.",
+    "pricing": "Árak",
+    "open": "Beállítások",
+    "id": "Licencazonosító: {{id}}",
+    "verify": "A licenc ellenőrzése",
+    "invalid": "Ezt a kulcsot nem sikerült ellenőrizni.",
+    "invalidShort": "A mentett kulcsot nem sikerült ellenőrizni.",
+    "warningsShort_one": "1 licencértesítés a Beállításokban.",
+    "warningsShort_other": "{{count}} licencértesítés a Beállításokban.",
+    "warningsNote": "Semmi sincs letiltva vagy korlátozva. Ez csak egy értesítés.",
+    "label": "Licenckulcs",
+    "replaceLabel": "A licenckulcs cseréje",
+    "helper": "ATL1-gyel kezdődik. Másold ki <consoleLink>a licenceid közül az Auto Tournament konzolban</consoleLink>. Mentés után csak a licencazonosító látszik. Nincs internet ott, ahol játszotok? Ide illeszd be a konzolból az offline bérletet is.",
+    "checkInNote": "Licenckulcs nélkül semmit sem küldünk az Auto Tournamentnek. Kulccsal ez a szerver naponta egyszer jelentkezik a kulcs azonosítójával és a szerverek számával.",
+    "save": "Kulcs mentése",
+    "saved": "Licenckulcs mentve",
+    "saveFailed": "Nem sikerült menteni a licenckulcsot",
+    "remove": "Kulcs eltávolítása",
+    "removed": "Licenckulcs eltávolítva",
+    "removeFailed": "Nem sikerült eltávolítani a licenckulcsot",
+    "summary": {
+      "licensedTo": "Licencelve: {{licensee}}",
+      "licensed": "Licencelve",
+      "product": {
+        "platform": "Platform {{pack}}",
+        "servers": "Szerverek {{pack}}"
+      },
+      "servers_one": "{{count}} szerver",
+      "servers_other": "{{count}} szerver",
+      "updatesUntil": "frissítések eddig: {{date}}",
+      "updatesForLife": "frissítések örökre",
+      "eventWindow": "esemény: {{from}}–{{to}}",
+      "free": "Ingyenes kulcs, nem kereskedelmi használat",
+      "freeFor": "Ingyenes kulcs neki: {{licensee}}, nem kereskedelmi használat",
+      "noLimit": "nincs szerverkorlát"
+    },
+    "badge": {
+      "label": "A „Licencelve” felirat és a használat fajtájának megjelenítése a nyilvános eseményoldalakon",
+      "note": "Alapból ki van kapcsolva. A licenc nyilvános ellenőrző oldalára mutat, és csak érvényes mentett kulcs mellett jelenik meg.",
+      "on": "Nyilvános licencsor bekapcsolva",
+      "off": "Nyilvános licencsor kikapcsolva",
+      "failed": "Nem sikerült módosítani a nyilvános licencsort",
+      "short": "Kulcs mentése után magától bekapcsol. A játékosok az eseményoldalak alján látják.",
+      "needsKey": "Csak mentett licenckulccsal jelenik meg, akár ingyenes, akár fizetős. Előbb ments el egyet fent."
+    },
+    "public": {
+      "licensed": "Licencelve",
+      "commercial": "Licencelve · kereskedelmi használat",
+      "nonCommercial": "Licencelve · nonprofit használat",
+      "unlicensed": "Nincs licenckulcs",
+      "about": {
+        "title": "Az oldal licencéről",
+        "none": "Ez az oldal licenckulcs nélkül futtatja az Auto Tournamentet. Ez rendben van olyan eseményeknél, amelyeken senki sem keres pénzt: barátok, klubok, iskolai LAN-ok, jótékonysági szervezetek.",
+        "nonCommercial": "Ennek az oldalnak ingyenes nonprofit licence van: olyan eseményeket rendezhet, amelyeken senki sem keres pénzt.",
+        "commercial": "Ennek az oldalnak fizetős kereskedelmi licence van: rendezhet fizetős eseményeket, és szedhet nevezési díjat.",
+        "free": "Az Auto Tournament ingyenes, ha senki sem keres vele pénzt, a jótékonysági szervezeteknek, iskoláknak és állami szerveknek pedig akkor is, ha nevezési díjat szednek. Mindenki másnak, aki pénzt keres vele nevezési díjjal, helyek eladásával vagy üzleti célú futtatással, fizetős licenc kell.",
+        "paidTitle": "Fizetést kértek a részvételért?",
+        "paidBody": "Ha nevezési díjat fizettél, vagy kértek tőled, és a szervező nem jótékonysági szervezet, iskola vagy állami szerv, akkor ez az esemény lehet, hogy a licencével ellentétesen használja az Auto Tournamentet. Szólhatsz nekünk; minden bejelentést elolvasunk, és soha nem adjuk ki, ki küldte.",
+        "paidCommercial": "Itt a fizetős részvétel megengedett. Ha mégis valami nem stimmel vele, szólhatsz nekünk.",
+        "report": "Bejelentés az Auto Tournamentnek",
+        "rules": "A licenc elolvasása",
+        "verify": "A licenc ellenőrzése"
+      }
+    },
+    "consent": {
+      "title": "Még egy dolog: a licenc",
+      "subtitle": "Bocsi, még egy lépés, és kész vagy. Az Auto Tournament ingyenes, ha senki sem keres vele pénzt; ha valaki igen, licenc kell. Fusd át a rövid változatot, válaszd ki, hogyan használod, és írd be: I AGREE.",
+      "intro": "Az Auto Tournament forráskódja elérhető a(z) {{name}} alatt. Röviden:",
+      "points": {
+        "free": "Ingyenes személyes használatra, hobbiprojektekhez, tanuláshoz és olyan eseményekhez, amelyeken senki sem keres pénzt.",
+        "orgs": "Ingyenes jótékonysági szervezeteknek, iskoláknak, egyetemeknek, állami kutatásnak és állami szerveknek, akkor is, ha nevezési díjat szednek.",
+        "commercial": "A kereskedelmi használathoz licenc kell. Ide tartozik a fizetős hosztolás, maga a szoftver vagy egy ráépülő szolgáltatás eladása, a nyereséges események, a cégen belüli használat és az, ha fizetnek neked a beállításáért valakinek.",
+        "servers": "Minden játékszerver beleszámít a licencbe.",
+        "nothingLocked": "Kulcs nélkül sincs semmi zárolva vagy korlátozva. Kulcsot most vagy később is megadhatsz.",
+        "forks": "A kódot módosíthatod és megoszthatod. A licencet tartsd mellette; ugyanazok a szabályok érvényesek."
+      },
+      "readLicense": "A teljes licenc elolvasása",
+      "readRules": "Licencelés és kereskedelmi használat",
+      "summaryNote": "Ez egy rövid összefoglaló, és a verziódban lévő szöveg elavult lehet. A jelenlegi licenc és a licencelési szabályok az autotournament.gg oldalon vannak – ha eltérnek ettől az összefoglalótól, azok az irányadók.",
+      "useQuestion": "Hogyan használod ezt az instanciát?",
+      "privacyNote": "A válaszodat csak ezen a szerveren tároljuk. Licenckulcs nélkül semmit sem küldünk az Auto Tournamentnek. Kulccsal ez a szerver naponta egyszer jelentkezik a kulcs azonosítójával és a szerverek számával.",
+      "use": {
+        "noncommercial": "Nem kereskedelmi",
+        "noncommercialHint": "Ingyenes. Senki sem keres vele pénzt.",
+        "commercial": "Kereskedelmi",
+        "commercialHint": "Licenc kell. Illeszd be a kulcsodat most vagy később."
+      },
+      "keyLabel": "Licenckulcs (nem kötelező)",
+      "keyHelper": "ATL1-gyel kezdődik. Másold ki <consoleLink>a licenceid közül az Auto Tournament konzolban</consoleLink>, vagy add meg később a Beállítások > Licenc alatt.",
+      "confirmLabel": "Írd be: {{phrase}} a licencfeltételek elfogadásához",
+      "confirmHelper": "A(z) {{phrase}} beírásával elfogadod ennek az instanciának a licencfeltételeit.",
+      "accept": "Elfogadás és tovább",
+      "cancel": "Mégse",
+      "failed": "Nem sikerült menteni a válaszodat",
+      "accepted": "Licencfeltételek elfogadva",
+      "termsChanged": "A licencfeltételek megváltoztak a legutóbbi elfogadás óta. Olvasd el őket, és fogadd el újra.",
+      "onlyAdmins": "Ezt csak az adminok látják, instanciánként egyszer. A játékosokat, a nyilvános oldalakat és a futó meccseket nem érinti.",
+      "declared": {
+        "noncommercial": "Nem kereskedelmi használat",
+        "commercial": "Kereskedelmi használat",
+        "none": "A licencfeltételek még nincsenek elfogadva"
+      },
+      "acceptedLine": "Feltételek elfogadva: {{date}}, elfogadta: {{who}} (feltételek verziója: {{version}})",
+      "byEnv": "az AT_ACCEPT_LICENSE beállítás",
+      "change": "Módosítás",
+      "changeTitle": "Az instancia használatának módosítása",
+      "changeNote": "Válassz újra, és írd be: I AGREE. A változást a dátummal és a fiókoddal együtt mentjük.",
+      "commercialNoKey": "Ezt az instanciát kereskedelmi célra használják, ezért licenc kell. Másold ki a kulcsodat <consoleLink>a licenceid közül az Auto Tournament konzolban</consoleLink>, és illeszd be lent. Amíg hiányzik, semmi sincs zárolva.",
+      "readHeading": "Mielőtt elfogadod, olvasd el ezeket, és pipáld ki mindegyiket:",
+      "readItem": "Elolvastam",
+      "readLinks": {
+        "license": "a teljes licencet",
+        "rules": "a kereskedelmi használat szabályait",
+        "pricing": "az árakat"
+      }
+    },
+    "checkin": {
+      "last": "Utolsó licenc-bejelentkezés: {{time}}",
+      "offlineUntil": "Offline bérlet: az új szerverek internet nélkül is működnek eddig: {{date}}.",
+      "never": "Még nem volt licenc-bejelentkezés. Az első röviddel a kulcs mentése után fut le.",
+      "whatIsSent": "Mit küldünk",
+      "intro": "Naponta egyszer, és csak amíg kulcs van mentve, ez a szerver ezeket küldi:",
+      "keyId": "A licenckulcsot, hogy az azonosítója és az aláírása ellenőrizhető legyen",
+      "instanceId": "Ennek a telepítésnek egy véletlenszerű, egyszer létrehozott azonosítóját",
+      "serverCount": "A játékszerverek számát",
+      "version": "A platform verzióját",
+      "publicUrl": "Melyik termékről van szó (a platform), és a nyilvános címét, hogy a konzol megmutassa, hol fut a kulcs",
+      "activity": "Számok a legutóbbi bejelentkezés óta: befejezett meccsek, aktív versenyek és a legnagyobb csapatszám",
+      "declared": "A válaszodat az esemény dátumaira vonatkozó kérdésre, ha adtál",
+      "notSent": "Nevek, címek, játékosok vagy meccsrészletek nem.",
+      "privacy": "Adatvédelmi irányelvek",
+      "noticeTitle": "Üzenet az Auto Tournamenttől",
+      "answered": "A válaszod erre a licencre: {{answer}} ({{time}})"
+    },
+    "eventPrompt": {
+      "title": "Valami újat tervezel?",
+      "body": "Az eseménylicenced ezt az időszakot fedi le: {{dates}}. Szólj, ha tesztelsz, új eseményed van, vagy változtak a dátumok – tesztelés közben nincs teendő.",
+      "datesRange": "{{from}}–{{to}}",
+      "testing": "Tesztelés vagy beállítás",
+      "newEvent": "Új esemény",
+      "datesMoved": "Változtak az eseményünk dátumai",
+      "dontAsk": "Ne kérdezd újra",
+      "close": "Bezárás",
+      "thanks": "Köszönjük, feljegyeztük.",
+      "failed": "Nem sikerült menteni a válaszodat"
+    },
+    "warning": {
+      "periodEnded": "Ez az eseménylicenc eddig fedte le a dátumokat: {{date}}. A teszteléshez és a beállításhoz nincs teendő; egy új esemény saját eseménylicencet kap.",
+      "periodNotStarted": "Ez az eseménylicenc ettől a dátumtól érvényes: {{date}}. Előtte nyugodtan beállíthatod és tesztelheted."
+    },
+    "short": "Hogyan használják ezt a telepítést, és a kulcsa.",
+    "keyRow": "Licenckulcs",
+    "state": {
+      "active": "Aktív",
+      "warning": "Ellenőrzés",
+      "invalid": "Érvénytelen",
+      "none": "Nincs kulcs"
+    },
+    "thirdParty": "Ez az alkalmazás saját licencük alá eső nyílt forráskódú csomagokból készült.",
+    "thirdPartyLink": "Harmadik féltől származó közlemények"
+  },
+  "tournamentsPage": {
+    "title": "Versenyek",
+    "subtitle": "Az oldal összes versenye. A menü tetején lévő váltó választja ki, melyikre vonatkoznak a többi admin oldalak.",
+    "liveShared": "{{count}} élőben, közös szervereken. A meccsek abban a sorrendben kapnak szervert, ahogy készen álltak.",
+    "new": "Új verseny",
+    "empty": "Még nincsenek versenyek. Hozd létre az elsőt.",
+    "col": {
+      "name": "Név",
+      "status": "Állapot",
+      "when": "Mikor",
+      "entries": "Nevezések",
+      "frontPage": "Kezdőlap",
+      "actions": "Műveletek"
+    },
+    "status": {
+      "live": "Élő",
+      "finished": "Befejezett",
+      "signup": "Nevezés nyitva",
+      "draft": "Piszkozat"
+    },
+    "front": {
+      "featured": "Kiemelt",
+      "shown": "Látható",
+      "hidden": "Rejtett",
+      "archived": "Archivált",
+      "results": "Eredmények"
+    },
+    "won": "{{name}} nyert",
+    "selected": "kiválasztva",
+    "more": "Továbbiak: {{name}}",
+    "menu": {
+      "open": "Megnyitás",
+      "page": "Nyilvános oldal",
+      "feature": "Kiemelés a kezdőlapon",
+      "archive": "Archiválás (le a kezdőlapról)",
+      "delete": "Törlés"
+    },
+    "toast": {
+      "featured": "Kiemelve a kezdőlapon",
+      "archived": "Archiválva",
+      "deleted": "Verseny törölve"
+    },
+    "deleteTitle": "Törlöd ezt a versenyt?",
+    "deleteMessage": "A(z) {{name}} és a meccsei, eredményei és statisztikái törlődnek. Ez nem vonható vissza.",
+    "newName": "Név",
+    "newNameBlank": "A beállításban adsz neki nevet",
+    "startFrom": "Kiindulás",
+    "blank": "Üres",
+    "blankHint": "A játékot, a formátumot és a pályákat a beállításban választod ki",
+    "copy": "{{name}} másolása",
+    "copyHint": "Ugyanaz a formátum, pályák, szabályok és oldal. A csapatok és a dátumok üresen indulnak.",
+    "create": "Létrehozás és beállítás",
+    "round": "{{n}}. forduló",
+    "whenToday": "Ma, {{time}}-tól",
+    "whenTomorrow": "Holnap, {{time}}",
+    "notSet": "Nincs beállítva",
+    "emptyTitle": "Még nincsenek versenyek",
+    "template": "Egy sablon",
+    "templateHint": "Egy mentett beállítás: formátum, pályák és szabályok. A csapatokat és a dátumokat te választod.",
+    "copyOne": "Verseny másolása",
+    "copyWhich": "Melyiket"
+  },
+  "playedMatches": {
+    "title": "Összes meccs",
+    "subtitle": "Minden meccs, amit ezen az oldalon játszottak: versenyek (a törölteket is beleértve), önálló meccsek és matchmaking, a demóikkal együtt.",
+    "downloadAll_one": "{{count}} meccs demóinak letöltése",
+    "downloadAll_other": "{{count}} meccs demóinak letöltése",
+    "search": "Csapatok vagy versenyek keresése",
+    "kindLabel": "Fajta",
+    "kind": {
+      "all": "Minden fajta",
+      "tournament": "Verseny",
+      "standalone": "Önálló",
+      "matchmaking": "Matchmaking",
+      "imported": "Importált"
+    },
+    "withDemos": "Demóval",
+    "none": "Még nem játszottak meccset.",
+    "noneFiltered": "Egy meccs sem felel meg ezeknek a szűrőknek.",
+    "vs": "vs",
+    "deleted": "a verseny törölve",
+    "noDemo": "Nincs demó",
+    "demo": "Demó",
+    "map": "{{n}}. pálya",
+    "import": "Meccs importálása"
+  },
+  "importMatch": {
+    "title": "Meccs importálása",
+    "subtitle": "Adj hozzá máshol lejátszott meccset a demóiból. A csapatokat, a játékosokat és az eredményt a demókból olvassuk ki, majd a meccs ugyanúgy kap statisztikákat, 2D visszajátszást és legjobb pillanatokat, mint bármelyik másik.",
+    "event": "Hol játszották",
+    "eventHelp": "Nem kötelező, például az esemény neve.",
+    "files": "Demók",
+    "filesHelp": "Pályánként egy CS2-demó (.dem), a pályák lejátszási sorrendjében.",
+    "choose": "Demók kiválasztása",
+    "moveUp": "{{name}} feljebb",
+    "moveDown": "{{name}} lejjebb",
+    "remove": "{{name}} eltávolítása",
+    "start": "Importálás",
+    "uploading": "A(z) {{n}}. pálya feltöltése ({{percent}}%)",
+    "tooMany": "Legfeljebb {{max}} demó, pályánként egy.",
+    "notDemo": "A(z) {{name}} nem .dem fájl.",
+    "error": "Az importálás leállt: {{error}}",
+    "progress": "Haladás",
+    "mapN": "{{n}}. pálya",
+    "state": {
+      "uploading": "Feltöltés",
+      "waiting": "Várakozás a demófeldolgozóra",
+      "running": "A demó beolvasása",
+      "done": "Kész",
+      "failed": "A demót nem sikerült beolvasni"
+    },
+    "teams": "{{team1}} vs {{team2}}",
+    "doneAll": "Importálva. Ha van csatlakoztatott rögzítő, következőként a legjobb pillanatok rögzítése jön.",
+    "openMatch": "A meccs megnyitása",
+    "another": "Másik importálása",
+    "dropHint": "vagy húzd ide őket. Cmd vagy Ctrl lenyomásával egyszerre többet is kijelölhetsz.",
+    "recordingGroup": "Rögzítőcsoport",
+    "allRecorders": "Minden rögzítő",
+    "groupHelp": "Válaszd ki, melyik csoport renderelje ezt a meccset. A letiltott csoportok engedélyezésig várnak.",
+    "groupDisabled": "Letiltva",
+    "notCs2Demo": "A(z) {{name}} nem CS2-demó (CS:GO-demók nem importálhatók)."
+  },
+  "apiTokens": {
+    "title": "API-tokenek",
+    "hint": "Szkriptekhez, botokhoz és az Auto Tournament MCP-szerveréhez. Egy csak olvasható token csak olvasni tud; egy admin token mindent megtehet, amit egy admin. A token titkát csak te látod, egyszer, amikor létrejön.",
+    "line": "{{scope}} · {{fingerprint}} · utoljára használva: {{used}}",
+    "never": "soha",
+    "none": "Még nincsenek API-tokenek.",
+    "name": "Név",
+    "nameHelp": "1–32 betű, számjegy, - vagy _",
+    "scopeLabel": "Hozzáférés",
+    "scope": {
+      "readonly": "Csak olvasás",
+      "admin": "Admin"
+    },
+    "make": "Token létrehozása",
+    "madeTitle": "„{{label}}” token",
+    "madeHelp": "Másold ki most: csak most látod. Illeszd be oda, ahonnan a szkript vagy az MCP-szerver olvassa (AT_TOKEN).",
+    "copy": "Token másolása",
+    "copied": "Másolva",
+    "done": "Kész",
+    "revoke": "{{label}} visszavonása",
+    "revokeTitle": "Visszavonod: „{{label}}”?",
+    "revokeHelp": "Minden, ami használja, azonnal leáll.",
+    "revokeConfirm": "Visszavonás",
+    "revoked": "{{label}} visszavonva",
+    "cancel": "Mégse",
+    "loadFailed": "Nem sikerült betölteni az API-tokeneket",
+    "makeFailed": "Nem sikerült létrehozni a tokent",
+    "revokeFailed": "Nem sikerült visszavonni a tokent"
+  },
+  "discordBot": {
+    "title": "Discord-bot",
+    "token": "Bot token",
+    "replace": "Új bot token",
+    "save": "Mentés",
+    "remove": "Eltávolítás",
+    "connected": "Csatlakozva mint {{name}}",
+    "setNoAnswer": "Van token beállítva, de a Discord most nem válaszolt.",
+    "saved": "Discord-bot mentve: {{name}}",
+    "cleared": "Discord-bot eltávolítva",
+    "saveFailed": "Nem sikerült menteni a bot tokent.",
+    "howTo": "Hozz létre egy alkalmazást, adj hozzá egy botot, másold ki a tokenjét, és hívd meg a Discord-szerveredre:",
+    "portal": "Discord Developer Portal",
+    "guild": "Discord-szerver",
+    "guildHint": "Ahol a bot csapatcsatornákat hoz létre és posztol. Csak azok a szerverek látszanak itt, amelyeken a bot bent van.",
+    "noGuilds": "A bot még egyik Discord-szerveren sincs bent. Hívd meg, majd töltsd újra ezt az oldalt.",
+    "noGuild": "Nincs",
+    "guildSaved": "Discord-szerver mentve",
+    "movedHint": "A Discord-bot mostantól kiegészítő: kapcsold be és állítsd be a Modulok alatt.",
+    "open": "A Discord-bot megnyitása",
+    "voice": {
+      "label": "Csapat-hangcsatornák",
+      "help": "Amíg egy meccs a szerverén fut, a már hangcsatornán lévő játékosait átrakjuk a csapatuk hangcsatornájába; a többiek DM-ben kapnak linket.",
+      "saved": "Hangcsatorna-beállítások mentve"
+    },
+    "teamChannels": {
+      "label": "Csapatcsatornák",
+      "help": "Amíg egy verseny fut, minden csapat kap egy privát szöveges és hangcsatornát a „Csapatod” alatt. A játékosai a csapatoldalukon találják a szöveges csatornát.",
+      "link": "Csapatcsatorna a Discordon"
+    },
+    "commands": {
+      "label": "Perjeles parancsok: /matches, /mymatch és /lobby",
+      "help": "Azonnal működnek, amint a bot csatlakozott. Nem kötelező: ha azt szeretnéd, hogy a Discord ide, erre az oldalra küldje őket, illeszd be ezt az alkalmazásod Interactions Endpoint URL mezőjébe a Discord Developer Portalon."
+    },
+    "invite": "Meghívás szerverre",
+    "linking": {
+      "label": "A játékosok összekapcsolják a Discordjukat",
+      "help": "A botod saját Discord-alkalmazását használja, így nem kell második alkalmazás. A Developer Portalon nyisd meg a botod alkalmazásának OAuth2 részét, add hozzá ezt az átirányítást, majd másold ki a client secretet, és illeszd be ide.",
+      "portal": "OAuth2 megnyitása",
+      "secret": "Client secret",
+      "save": "Összekapcsolás bekapcsolása",
+      "saved": "A játékosok mostantól összekapcsolhatják a Discordot",
+      "ready": "Be: a játékosok a Fiók → Kapcsolatok alatt kapcsolják össze a Discordot.",
+      "invite": "Azokat a játékosokat, akik nincsenek a szervereden, megkérjük, hogy csatlakozzanak ezzel: {{url}}.",
+      "noInvite": "A bot még nem tud meghívót készíteni a szerveredre. Kattints újra a Meghívás szerverre gombra, hogy megkapja a Create Invite jogosultságot."
+    },
+    "missing": "A botnak hiányzik a szervereden: {{list}}, így egyes részei nem fognak működni. Kattints fent a Meghívás szerverre gombra: eltávolítás nélkül frissíti a bot jogosultságait."
+  },
+  "liveMatchesPage": {
+    "title": "Élő meccsek",
+    "subtitle": "Minden meccs, ami most szerveren van. A rád váró sorok vannak elöl.",
+    "loading": "Betöltés…",
+    "loadFailed": "Nem sikerült beolvasni az élő meccseket. Újrapróbálkozás…",
+    "empty": "Nem fut meccs",
+    "chat": "Chat",
+    "mapOf": "{{n}}/{{total}}. pálya",
+    "columns": {
+      "match": "Meccs",
+      "map": "Pálya",
+      "phase": "Fázis",
+      "score": "Állás",
+      "round": "Kör",
+      "players": "Játékosok",
+      "pause": "Szünet",
+      "call": "Adminhívás",
+      "server": "Szerver",
+      "chat": "Chat"
+    },
+    "source": {
+      "matchmaking": "Matchmaking",
+      "manual": "Önálló"
+    },
+    "phase": {
+      "none": "Nincs szerverállapot",
+      "loading": "Betöltés",
+      "warmup": "Bemelegítés",
+      "knife": "Késes kör",
+      "side_pick": "Oldalválasztás",
+      "live": "Élő",
+      "paused": "Szünetel",
+      "halftime": "Félidő",
+      "overtime": "Hosszabbítás",
+      "map_end": "Meccs után",
+      "series_end": "Meccs után",
+      "restoring": "Helyreállítás",
+      "error": "Hiba"
+    },
+    "players": {
+      "summary": "{{total}}-ból/-ből {{connected}} bent · {{ready}} kész",
+      "connected": "Csatlakozva",
+      "disconnected": "Nincs csatlakozva",
+      "readyTag": "kész",
+      "none": "Nincsenek játékosok"
+    },
+    "pause": {
+      "by": "kérte: {{name}}",
+      "unpause": "Folytatni szeretné",
+      "type": {
+        "tactical": "Taktikai",
+        "technical": "Technikai",
+        "admin": "Admin",
+        "offline": "Játékos offline",
+        "halftime": "Félidő",
+        "auto_5v5": "Várakozás 5v5-re",
+        "unknown": "Szünetel"
+      }
+    },
+    "call": {
+      "noMessage": "Nincs üzenet"
+    },
+    "server": {
+      "online": "Online",
+      "offline": "Offline",
+      "unknown": "Ismeretlen állapot"
+    }
+  }
+}

@@ -1,0 +1,201 @@
+{
+  "templatesPage": {
+    "header": {
+      "createFromTournament": "Sablon létrehozása versenyből"
+    },
+    "errors": {
+      "load": "Nem sikerült betölteni a sablonokat"
+    },
+    "delete": {
+      "title": "Sablon törlése",
+      "message": "Biztosan törölni szeretnéd a(z) „{{name}}” sablont? Ez a művelet nem vonható vissza.",
+      "success": "A(z) „{{name}}” sablon sikeresen törölve",
+      "error": "Nem sikerült törölni a sablont"
+    },
+    "update": {
+      "success": "A(z) „{{name}}” sablon sikeresen frissítve",
+      "error": "Nem sikerült frissíteni a sablont"
+    },
+    "createFromTemplate": {
+      "errors": {
+        "inProgressOrCompleted": "Nem hozhatsz létre versenyt sablonból, amíg egy verseny folyamatban van vagy befejeződött. Először töröld vagy állítsd vissza a jelenlegi versenyt.",
+        "alreadyExists": "Már létezik egy verseny. Töröld vagy állítsd vissza a jelenlegi versenyt, mielőtt újat hozol létre sablonból."
+      },
+      "button": "Verseny létrehozása sablonból"
+    },
+    "edit": {
+      "title": "Sablon szerkesztése",
+      "nameLabel": "Sablon neve",
+      "descriptionLabel": "Leírás (nem kötelező)",
+      "typeLabel": "Verseny típusa",
+      "formatLabel": "Meccsformátum",
+      "mapPool": {
+        "title": "Pályakészlet",
+        "selectLabel": "Válassz pályakészletet",
+        "customOption": "Egyéni",
+        "selectedLabel": "Kiválasztott pályák ({{count}}):",
+        "vetoWarning": "A veto formátumokhoz (BO1/BO3/BO5) pontosan 7 pálya kell. Jelenleg kiválasztva: {{count}}",
+        "chooseMaps": "Válassz pályákat..."
+      },
+      "save": "Mentés"
+    },
+    "emptyTitle": "Még nincsenek sablonok",
+    "emptyDescription": "Mentsd el egy verseny beállítását sablonként a Verseny oldalon, majd innen indíts belőle új versenyeket."
+  },
+  "saveTemplateModal": {
+    "title": "Mentés sablonként",
+    "nameLabel": "Sablon neve",
+    "namePlaceholder": "8 csapatos egyenes kiesés BO3",
+    "descriptionLabel": "Leírás (nem kötelező)",
+    "descriptionPlaceholder": "Heti 8 csapatos egyenes kieséses verseny",
+    "saveButton": "Sablon mentése",
+    "errors": {
+      "nameRequired": "A sablon neve kötelező",
+      "saveFailed": "Nem sikerült menteni a sablont"
+    }
+  },
+  "eloTemplatesPage": {
+    "errors": {
+      "load": "Nem sikerült betölteni az értékelési sablonokat"
+    },
+    "header": {
+      "createTemplate": "Sablon létrehozása",
+      "importJson": "Importálás JSON-ból"
+    },
+    "empty": {
+      "title": "Nincsenek értékelési sablonok",
+      "description": "Hozd létre az első sablonodat, hogy beállítsd, hogyan befolyásolják a játékosstatisztikák az ELO-módosításokat",
+      "action": "Sablon létrehozása"
+    },
+    "delete": {
+      "title": "Értékelési sablon törlése",
+      "message": "Biztosan törölni szeretnéd ezt: „{{name}}”? Ez a művelet nem vonható vissza.",
+      "success": "A(z) „{{name}}” sablon sikeresen törölve",
+      "error": "Nem sikerült törölni a sablont",
+      "defaultProtected": "Az alapértelmezett „pure-win-loss” sablon nem törölhető."
+    },
+    "import": {
+      "success_one": "{{count}} értékelési sablon importálva",
+      "success_other": "{{count}} értékelési sablon importálva"
+    },
+    "weights": {
+      "noAdjustmentsPure": "Nincs statisztikai módosítás (tisztán győzelem/vereség)"
+    },
+    "card": {
+      "enabled": "Engedélyezve",
+      "disabled": "Letiltva",
+      "default": "Alapértelmezett",
+      "adjustment": {
+        "none": "Meccsenkénti statisztikai módosítás: nincs (0; csak eredményalapú ELO)",
+        "uncapped": "Meccsenkénti statisztikai módosítás: korlátlan (óvatosan használd)",
+        "range": "Meccsenkénti statisztikai módosítás tartománya: {{min}}–{{max}} ELO",
+        "noMin": "nincs minimum",
+        "noMax": "nincs maximum"
+      },
+      "tooltips": {
+        "edit": "Sablon szerkesztése",
+        "delete": "Sablon törlése"
+      },
+      "weightsTitle": "Statisztikai súlyok:",
+      "limitsTitle": "Módosítási korlátok:",
+      "minAdjustment": "Min.: {{value}}",
+      "maxAdjustment": "Max.: {{value}}"
+    },
+    "importModal": {
+      "title": "Értékelési sablonok importálása JSON-ból",
+      "introTitle": "Illeszd be alább a JSON-t az értékelési sablonok definícióival.",
+      "introBody": "Várt formátum: sablonok tömbje névvel, opcionális leírással, enabled, weights, maxAdjustment és minAdjustment mezőkkel. Ha kihagyod az id-t, a névből generáljuk.",
+      "jsonLabel": "JSON-adatok",
+      "validJsonTitle": "✓ Érvényes JSON!",
+      "previewTitle": "Előnézet:",
+      "previewButton": "Előnézet",
+      "importButton": "Sablonok importálása",
+      "validJsonBody_one": "{{count}} sablon található.",
+      "validJsonBody_other": "{{count}} sablon található."
+    },
+    "editor": {
+      "titleEdit": "Értékelési sablon szerkesztése",
+      "titleCreate": "Értékelési sablon létrehozása",
+      "info": "Állítsd be, hogyan befolyásolják az egyes játékosstatisztikák az ELO-módosításokat. A súlyok azután érvényesülnek, hogy az OpenSkill kiszámolta az alap ELO-változást (győzelem/vereség). A pozitív súlyok növelik, a negatívak csökkentik az ELO-t.",
+      "nameLabel": "Sablon neve",
+      "nameDefaultLocked": "Az alapértelmezett sablon neve nem módosítható",
+      "descriptionLabel": "Leírás",
+      "descriptionPlaceholder": "A sablon céljának opcionális leírása",
+      "enabledLabel": "Engedélyezve",
+      "weights": {
+        "title": "Statisztikai súlyok",
+        "subtitle": "Állítsd be a csúszkát minden statisztikához. A 0 érték azt jelenti, hogy az adott statisztika nem módosít."
+      },
+      "limits": {
+        "title": "Módosítási korlátok (nem kötelező)",
+        "subtitle": "Állítsd be a meccsenkénti legnagyobb és legkisebb ELO-módosítást a szélsőséges változások elkerülésére.",
+        "maxLabel": "Legnagyobb módosítás",
+        "maxHelper": "Legnagyobb pozitív ELO-módosítás meccsenként",
+        "minLabel": "Legkisebb módosítás",
+        "minHelper": "Legnagyobb negatív ELO-módosítás meccsenként"
+      },
+      "errors": {
+        "nameRequired": "A sablon neve kötelező"
+      },
+      "create": {
+        "success": "A(z) „{{name}}” sablon sikeresen létrehozva",
+        "error": "Nem sikerült létrehozni a sablont"
+      },
+      "update": {
+        "success": "A(z) „{{name}}” sablon sikeresen frissítve",
+        "error": "Nem sikerült frissíteni a sablont"
+      },
+      "buttons": {
+        "saving": "Mentés...",
+        "update": "Frissítés",
+        "create": "Létrehozás"
+      }
+    },
+    "stats": {
+      "kills": {
+        "label": "Killek",
+        "description": "Killek száma meccsenként"
+      },
+      "deaths": {
+        "label": "Halálok",
+        "description": "Halálok száma meccsenként (általában negatív súly)"
+      },
+      "assists": {
+        "label": "Assistok",
+        "description": "Assistok száma meccsenként"
+      },
+      "flashAssists": {
+        "label": "Flash-assistok",
+        "description": "Flash-assistok száma meccsenként"
+      },
+      "headshotKills": {
+        "label": "Fejlövéses killek",
+        "description": "Fejlövéses killek száma meccsenként"
+      },
+      "damage": {
+        "label": "Sebzés",
+        "description": "Meccsenként okozott teljes sebzés"
+      },
+      "utilityDamage": {
+        "label": "Utility-sebzés",
+        "description": "Utilityvel (gránátokkal) okozott sebzés"
+      },
+      "kast": {
+        "label": "KAST %",
+        "description": "Azon körök aránya, amelyekben kill, assist, túlélés vagy trade volt"
+      },
+      "mvps": {
+        "label": "MVP-k",
+        "description": "MVP-díjak száma meccsenként"
+      },
+      "score": {
+        "label": "Pontszám",
+        "description": "Meccspontszám (több tényezőt kombinál)"
+      },
+      "adr": {
+        "label": "ADR",
+        "description": "Átlagos sebzés körönként"
+      }
+    }
+  }
+}

@@ -1,0 +1,287 @@
+{
+  "notificationPrompt": {
+    "title": "Értesítések bekapcsolása",
+    "body": "Javasoljuk, hogy kapcsold be őket. Így akkor is értesítünk, ha bezárod ezt a lapot:",
+    "matchReady": "a meccsed csatlakozásra kész",
+    "vetoTurn": "te jössz a pályavetóban",
+    "starting": "egy verseny, amelyre jelentkeztél, hamarosan kezdődik",
+    "iphone": "iPhone-on előbb add hozzá ezt az oldalt a Főképernyőhöz (Megosztás, majd Főképernyőhöz adás), és onnan nyisd meg.",
+    "change": "Ezt bármikor módosíthatod az értesítési beállításaidban.",
+    "later": "Most nem",
+    "turnOn": "Bekapcsolás (ajánlott)"
+  },
+  "social": {
+    "bell": {
+      "title": "Értesítések",
+      "label": "Értesítések",
+      "labelUnread_one": "Értesítések, {{count}} új",
+      "labelUnread_other": "Értesítések, {{count}} új",
+      "markAllRead": "Összes olvasottnak jelölése",
+      "show": "Mutasd",
+      "filter": {
+        "all": "Mind",
+        "you": "Rád vár",
+        "tournaments": "Versenyek",
+        "matches": "Meccsek",
+        "skins": "Skinek",
+        "clips": "Klipek",
+        "other": "Egyéb"
+      },
+      "empty": "Itt még nincs semmi",
+      "emptyHint": "Itt jelennek meg a parti-meghívók, barátkérések, versenyhírek, új skinek és elkészült legjobb pillanatok.",
+      "loading": "Betöltés…",
+      "seeAll": "Összes értesítés megtekintése",
+      "loadOlder": "Régebbiek betöltése",
+      "settings": "Értesítési beállítások"
+    },
+    "notice": {
+      "partyInvite": "meghívott a partijába",
+      "teamInvite": "meghívott ide:",
+      "joinedTeam": "Csatlakoztál a csapathoz",
+      "partyDetail": "{{mode}} · {{size}} fő a partiban",
+      "join": "Csatlakozás",
+      "decline": "Elutasítás",
+      "accept": "Elfogadás",
+      "ignore": "Figyelmen kívül hagyás",
+      "friendRequest": "barátkérést küldött neked",
+      "friendAccepted": "elfogadta a barátkérésedet",
+      "skin": "Új skin:",
+      "highlight": "Elkészült a legjobb pillanatod:",
+      "highlightVictim": "{{name}} kiütött téged a klipjében:",
+      "highlightAssist": "Assistáltál {{name}} klipjében:",
+      "highlightKiller": "Kiütötted {{name}} játékost a klipjében:",
+      "tournamentStarted": "elkezdődött. Itt az első meccsed.",
+      "lineupGap": "· egy kezdő elhagyta a felállásodat. Válassz cserét {{minutes}} percen belül, különben hiányos csapattal játszol.",
+      "checkInOpen": "check-in nyitva. Végezd el, mielőtt lezárul.",
+      "joined": "Csatlakoztál a partihoz",
+      "nowFriends": "Mostantól barátok vagytok",
+      "declined": "Elutasítva",
+      "expired": "Ez a parti véget ért",
+      "reportNew": "jelentve lett: {{reason}}",
+      "reportReviewed": "Köszönjük: a(z) {{name}} játékosról szóló jelentésedet átnéztük.",
+      "matchReady": "kész. Nyisd meg a meccsszobát a csatlakozáshoz.",
+      "vetoTurn": "a csapatod jön a vetóban.",
+      "startsSoon": "{{minutes}} perc múlva kezdődik. Készülj, hogy csatlakozz az első meccsedhez.",
+      "startsSoonUpdate": "{{minutes}} perc múlva kezdődik. Indítsd el most a játékot, hogy minden frissítés lefusson az első meccsed előtt.",
+      "matchSoon": "a vetód {{minutes}} perc múlva nyílik, és nélküled is folytatódik. Légy a gépnél.",
+      "noShow": "nem csatlakoztál a meccsedhez, ezért kimaradsz a következő fordulókból. Nyisd meg a versenyt, és jelezd, hogy visszatértél, ha tovább szeretnél játszani.",
+      "discordLink": "kapcsold össze a Discord-fiókodat, hogy megkapd a csapatod csatornáit, és átkerülj a hangcsatornájába.",
+      "signedUp": "· {{team}} bent van. Nézd meg, mit kell tudni a kezdés előtt."
+    },
+    "toast": {
+      "join": "Csatlakozás a partihoz",
+      "close": "Bezárás",
+      "closes_one": "{{count}} mp múlva bezárul · a csengőben megmarad",
+      "closes_other": "{{count}} mp múlva bezárul · a csengőben megmarad"
+    },
+    "friends": {
+      "title": "Barátok",
+      "tabFriends": "Barátok",
+      "tabRequests": "Kérések",
+      "tabAdd": "Barát hozzáadása",
+      "online_one": "Online · {{count}}",
+      "online_other": "Online · {{count}}",
+      "offline_one": "Offline · {{count}}",
+      "offline_other": "Offline · {{count}}",
+      "onlineCount_one": "{{count}} online",
+      "onlineCount_other": "{{count}} online",
+      "invite": "Meghívás",
+      "inParty": "A partidban",
+      "more": "Továbbiak: {{name}}",
+      "viewProfile": "Profil megtekintése",
+      "remove": "Barát eltávolítása",
+      "removed": "{{name}} már nem a barátod",
+      "none": "Még nincsenek barátaid",
+      "noneHint": "Add hozzá azokat, akikkel játszol, majd hívd meg őket a partidba innen vagy a Játék oldalról.",
+      "incoming": "Bejövő",
+      "sent": "Elküldött",
+      "noIncoming": "Nincs rád váró kérés.",
+      "noSent": "Nincs függőben lévő kérésed.",
+      "askedAgo": "Kérte: {{when}}",
+      "sentAgo": "Elküldve: {{when}}",
+      "cancelRequest": "Kérés visszavonása",
+      "searchPlaceholder": "Egy név vagy egy Steam-profillink",
+      "results": "Az Auto Tournamenten",
+      "playedWith": "Akikkel nemrég játszottál",
+      "noResults": "Nincs ilyen nevű játékos.",
+      "typeMore": "Írj be legalább két betűt.",
+      "noRecent": "Játssz egy meccset, és akikkel játszottál, itt jelennek meg.",
+      "matches_one": "{{count}} meccs",
+      "matches_other": "{{count}} meccs",
+      "alreadyFriends": "Barátok",
+      "requestSent": "Kérés elküldve",
+      "addFriend": "Barát hozzáadása",
+      "signIn": "Jelentkezz be a barátaid megtekintéséhez",
+      "signInHint": "A barátok, kérések és meghívók a fiókodhoz tartoznak.",
+      "cardEmpty": "Adj hozzá barátokat, hogy lásd, mikor vannak online, és egy kattintással meghívhasd őket.",
+      "all_one": "Összes barát ({{count}}) →",
+      "all_other": "Összes barát ({{count}}) →",
+      "find": "Barátok keresése →",
+      "requestCount_one": "{{count}} kérés",
+      "requestCount_other": "{{count}} kérés"
+    },
+    "status": {
+      "playing": "Meccsben · {{match}}",
+      "searching": "Keresés · {{mode}}",
+      "online": "Online",
+      "offline": "Offline",
+      "lastSeen": "Utoljára látva: {{when}}"
+    },
+    "invite": {
+      "searchPlaceholder": "Bárki az oldalon, név szerint",
+      "friendsOnline": "Online barátok",
+      "recent": "Akikkel nemrég játszottál",
+      "onSite": "Az Auto Tournamenten",
+      "noFriends": "Még nincsenek barátaid. Keress bárkit név szerint fent.",
+      "nobodyOnline": "Egyik barátod sincs online.",
+      "inMatch": "Meccsben",
+      "together_one": "{{count}} közös meccs",
+      "together_other": "{{count}} közös meccs",
+      "invited": "Meghívva",
+      "sent": "{{name}} meghívva",
+      "chip": "{{name}} · meghívva",
+      "cancel": "{{name}} meghívásának visszavonása",
+      "orLink": "Vagy egy link",
+      "copy": "Másolás",
+      "copyFailed": "Nem sikerült másolni. Jelöld ki a linket, és másold ki magad.",
+      "makeLink": "Meghívólink készítése",
+      "cannot": {
+        "nobody": "Nem fogad meghívókat",
+        "friends": "Csak barátok",
+        "no_game": "Nem játszik CS2-vel"
+      }
+    },
+    "profile": {
+      "friends": "Barátok",
+      "acceptRequest": "Barátkérés elfogadása",
+      "message": "Üzenet",
+      "invite": "Meghívás a partiba"
+    },
+    "settings": {
+      "title": "Parti-meghívók",
+      "description": "Ki hívhat meg egy matchmaking-partiba. A meghívók megjelennek a csengőben, és felugranak bármelyik nyitott oldaladon.",
+      "everyone": "Mindenki",
+      "everyoneHint": "Bármelyik játékos ezen az oldalon.",
+      "friends": "Csak barátok",
+      "friendsHint": "Csak azok a játékosok, akikkel barátok vagytok.",
+      "nobody": "Senki",
+      "nobodyHint": "Nincsenek meghívók. A linkjével így is csatlakozhatsz egy partihoz.",
+      "saved": "Mentve",
+      "saveFailed": "Nem sikerült menteni a beállítást"
+    },
+    "setup": {
+      "title": "Keresés előtt fejezd be a beállítást",
+      "youGame": "Add hozzá a CS2-t a profilodon a játékaidhoz.",
+      "youGameAuto": "A meccskeresés hozzáadja ezt a játékot a játékaidhoz.",
+      "youAccount": "Kapcsold össze a Steam-fiókodat.",
+      "theyGame": "{{name}} nem adta hozzá a CS2-t a játékaihoz.",
+      "theyAccount": "{{name}} nem kapcsolta össze a Steam-fiókját.",
+      "fix": "Fiók megnyitása"
+    },
+    "news": {
+      "title": "Hírek",
+      "hint": "Értesítés küldése minden játékos csengőjébe: új szezon, egy verseny, tervezett leállás.",
+      "titleLabel": "Cím",
+      "bodyLabel": "Még egy sor (nem kötelező)",
+      "urlLabel": "Link (nem kötelező)",
+      "urlHint": "Egy itteni oldal (/tournament/3) vagy egy https:// cím.",
+      "urlBad": "/ vagy https:// kezdettel",
+      "send": "Küldés minden játékosnak",
+      "confirm": "Minden játékos megkapja, aki valaha bejelentkezett. Elküldöd?",
+      "sendNow": "Küldés most",
+      "cancel": "Mégse",
+      "sent_one": "Elküldve {{count}} játékosnak",
+      "sent_other": "Elküldve {{count}} játékosnak",
+      "failed": "Nem sikerült elküldeni a hírt"
+    },
+    "noticeSettings": {
+      "title": "Beállítások",
+      "alerts": "Riasztások",
+      "browser": "Böngészőértesítések",
+      "browserHint": "Ezen az eszközön, akkor is, ha az oldal be van zárva (a meccsed kész, te jössz a vetóban, kezdődik egy verseny). Csak ebben a böngészőben kapcsol be.",
+      "browserDenied": "Ennek a böngészőnek a webhely-beállításaiban le van tiltva. Engedélyezd ott az értesítéseket a bekapcsolásukhoz.",
+      "browserUnsupported": "Ebben a böngészőben nincsenek értesítések.",
+      "sound": "Hang",
+      "test": "Teszt",
+      "volume": "Hangerő {{percent}}%",
+      "group": {
+        "you": "Te",
+        "tournaments": "Versenyek",
+        "other": "Egyéb",
+        "skins": "Skinek",
+        "clips": "Klipek"
+      },
+      "kind": {
+        "party_invite": "Parti-meghívók",
+        "team_invite": "Csapatmeghívók",
+        "friend_request": "Barátkérések",
+        "friend_accepted": "Elfogadott barátkérések",
+        "tournament": "Check-inek és kezdések",
+        "skin": "Skin dropok",
+        "highlight": "A legjobb pillanataid",
+        "news": "Hírek",
+        "report": "Jelentések"
+      },
+      "delivery": {
+        "off": "Ki",
+        "bell": "Csengő",
+        "sound": "Csengő és hang"
+      }
+    }
+  },
+  "notifyChannels": {
+    "title": "Értesítések",
+    "description": "Ahol szólunk azokról a dolgokról, amelyek rád várnak, amikor nem vagy az oldalon. Alapból ki van kapcsolva, kivéve a saját meccseidet.",
+    "event": "Esemény",
+    "channel": {
+      "push": "Böngésző / telefon",
+      "discord": "Discord-DM",
+      "email": "E-mail"
+    },
+    "events": {
+      "match_ready": {
+        "title": "A meccsed kész",
+        "hint": "Szerver, csatlakozási link és hogy ki ellen játszol"
+      },
+      "veto_turn": {
+        "title": "Te jössz a vetóban",
+        "hint": "Csak kapitányok"
+      },
+      "checkin_open": {
+        "title": "Megnyílik a check-in",
+        "hint": "Azokhoz a versenyekhez, amelyekre jelentkeztél"
+      },
+      "new_tournament": {
+        "title": "Új versenyek",
+        "hint": "Amikor egy verseny nevezéseket fogad"
+      },
+      "tournament_starting": {
+        "title": "Kezdődik a verseny",
+        "hint": "Emlékeztetők egy olyan verseny kezdése előtt, amelyben részt veszel"
+      },
+      "direct_message": {
+        "title": "Üzenetek barátoktól",
+        "hint": "Amikor nem vagy az oldalon"
+      }
+    },
+    "reason": {
+      "no_bot": "Ezen az oldalon nincs beállítva",
+      "no_discord": "Előbb kapcsold össze a Discordot",
+      "no_push": "Előbb kapcsold be az értesítéseket ebben a böngészőben",
+      "email_off": "Ez az oldal nem tud e-mailt küldeni",
+      "no_email": "Előbb adj meg egy e-mail-címet",
+      "email_unverified": "Előbb erősítsd meg az e-mail-címed"
+    },
+    "switchLabel": "{{event}}: {{channel}}",
+    "saveFailed": "Ezt nem sikerült menteni."
+  },
+  "presence": {
+    "online": "Online",
+    "offline": "Offline",
+    "away": "Távol",
+    "searching": "{{mode}} játékot keres",
+    "playingMatchmaking": "Matchmaking-meccsben: {{label}}",
+    "playingTournament": "Versenymeccsben: {{label}}",
+    "playing": "Meccsben: {{label}}"
+  }
+}

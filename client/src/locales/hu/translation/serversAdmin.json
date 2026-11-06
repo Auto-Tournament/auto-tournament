@@ -1,0 +1,198 @@
+{
+  "adminToolsPage": {
+    "description": "Meccshelyreállítás és az oldal alkalmazásnaplója.",
+    "recovery": {
+      "title": "Meccshelyreállítás",
+      "description": "Ha az API vagy a szerverek újraindultak egy verseny alatt, és a meccsek állapota nincs szinkronban (például az élő előtt elakadt meccsek vagy hiányzó élő eredmények), kézzel elindíthatsz egy helyreállítást. Ez minden szervertől lekéri az aktuális meccsjelentést, újraszinkronizálja az eredményeket és a fázisokat, és ahol lehet, újra beállítja a webhookokat és a demófeltöltéseket.",
+      "button": "Meccshelyreállítás futtatása most",
+      "success": "A meccshelyreállítás befejeződött.",
+      "error": "A meccshelyreállítás nem sikerült.",
+      "failedTrigger": "Nem sikerült elindítani a meccshelyreállítást. Próbáld újra."
+    },
+    "monitoring": {
+      "title": "Megfigyelés és naplók",
+      "appLogs": "Alkalmazásnaplók"
+    },
+    "logs": {
+      "loadFailed": "Nem sikerült betölteni a naplókat",
+      "levelAll": "Mind",
+      "auto": "Auto",
+      "refresh": "Naplók frissítése",
+      "empty": "Nincs megjeleníthető napló",
+      "footer": "A {{count}} legutóbbi naplóbejegyzés látható",
+      "footerAutoRefresh": "A {{count}} legutóbbi naplóbejegyzés látható (automatikus frissítéssel)"
+    }
+  },
+  "servers": {
+    "allocation": {
+      "title": "Szabad szerverre várunk",
+      "waiting": "Ez a meccs automatikusan elindul, amint felszabadulnak a szerverek. Szükséges szerverek:",
+      "nextPass": "Következő kiosztási kísérlet {{seconds}} mp múlva"
+    }
+  },
+  "adminMatchControls": {
+    "title": "Admin vezérlők",
+    "noServer": "Ehhez a meccshez nincs szerver rendelve",
+    "unavailable": "Ehhez a meccshez nincs szerver rendelve, ezért az admin vezérlők nem érhetők el.",
+    "unknownAction": "Ismeretlen művelet",
+    "commandFailed": "Nem sikerült végrehajtani a parancsot",
+    "confirm": "Megerősítés",
+    "execute": "Végrehajtás",
+    "close": "Bezárás",
+    "tipLabel": "Admin tipp:",
+    "tip": "Óvatosan használd ezeket a vezérlőket élő meccsek alatt. Néhány művelet, például a(z) „{{endMatch}}” és a(z) „{{restartMatch}}”, nem vonható vissza.",
+    "sections": {
+      "matchControl": "Meccsvezérlés",
+      "advanced": "Speciális műveletek"
+    },
+    "actions": {
+      "pause": {
+        "button": "Szünet",
+        "tooltip": "Admin szünet – a játékosok nem folytathatják",
+        "title": "Meccs szüneteltetése",
+        "description": "Ez kényszerítetten szünetelteti a meccset. A játékosok nem folytathatják."
+      },
+      "unpause": {
+        "button": "Folytatás",
+        "tooltip": "A meccs folytatása szünetből",
+        "title": "Meccs folytatása",
+        "description": "Ez kényszerítetten folytatja a meccset."
+      },
+      "swap": {
+        "button": "Oldalcsere",
+        "tooltip": "A csapatok átkerülnek az ellenkező oldalra (CT ↔ T)",
+        "title": "Oldalcsere",
+        "description": "Ez felcseréli a csapatok oldalait (CT/T)."
+      },
+      "restartRound": {
+        "button": "Kör újraindítása",
+        "tooltip": "Az aktuális kör újraindítása az elejéről (a gazdaság visszaáll)",
+        "title": "Kör újraindítása",
+        "description": "Ez újraindítja az aktuális kört."
+      },
+      "skipVeto": {
+        "button": "Veto kihagyása",
+        "tooltip": "A pályaveto kihagyása és az első pálya azonnali betöltése",
+        "title": "Veto kihagyása",
+        "description": "Ez kihagyja a veto fázist, és elindítja a meccset."
+      },
+      "endWarmup": {
+        "button": "Bemelegítés vége",
+        "tooltip": "A bemelegítés befejezése és a meccs indítása (késes kör vagy élő)",
+        "title": "Bemelegítés vége",
+        "description": "Ez befejezi a bemelegítést, és elindítja a meccset."
+      },
+      "endMatch": {
+        "button": "Meccs befejezése",
+        "tooltip": "A meccs azonnali befejezése és a végeredmény rögzítése",
+        "title": "Meccs befejezése",
+        "description": "Ez kényszerítetten befejezi a meccset. Óvatosan használd!"
+      },
+      "restartMatch": {
+        "button": "Meccs újraindítása",
+        "tooltip": "A meccs befejezése és újratöltése az elejéről – minden előrehaladás elvész",
+        "title": "Meccs újraindítása",
+        "description": "Ez befejezi a meccset, és az elejéről újratölti. Minden előrehaladás elvész!"
+      },
+      "reallocateServer": {
+        "button": "Szerver újrakiosztása",
+        "tooltip": "A meccs áthelyezése egy másik szerverre (helyreállítás az élő előtt)",
+        "tooltipUnavailable": "Csak kész/betöltött meccseknél érhető el (élő játék közben nem)",
+        "title": "Szerver újrakiosztása",
+        "description": "Ez áthelyezi a meccset egy másik szabad szerverre, és újratölti. Akkor használd, ha az aktuális szerver elavult, vagy a játékosok nem tudnak csatlakozni. Élő meccs közben nem engedélyezett."
+      },
+      "forceCancel": {
+        "button": "Kényszerített törlés",
+        "tooltip": "A meccs törlése akkor is, ha a szerver offline – felszabadítja a szerverkiosztást",
+        "title": "Meccs kényszerített törlése",
+        "description": "⚠️ Ez akkor is törli a meccset, ha a szerver offline. A meccs befejezettként lesz megjelölve, és a szerver felszabadul. Ez a művelet nem vonható vissza."
+      }
+    },
+    "inputs": {
+      "restoreBackup": {
+        "button": "Mentés visszaállítása",
+        "tooltip": "Egy mentett körmentés betöltése – visszaállítja a gazdaságot és a pozíciókat",
+        "title": "Mentés visszaállítása",
+        "label": "Visszaállítandó kör száma"
+      },
+      "addTime": {
+        "button": "Idő hozzáadása",
+        "tooltip": "Az aktuális kör időzítőjének meghosszabbítása (technikai szünetekhez hasznos)",
+        "title": "Köridő hozzáadása",
+        "label": "Hozzáadandó másodpercek"
+      },
+      "broadcast": {
+        "button": "Üzenet mindenkinek",
+        "tooltip": "Üzenet küldése a szerver összes játékosának",
+        "title": "Üzenet mindenkinek",
+        "label": "Az üzenet szövege"
+      }
+    },
+    "success": {
+      "pause": "Meccs szüneteltetve",
+      "unpause": "Meccs folytatva",
+      "swap": "Oldalak felcserélve",
+      "skipVeto": "Veto fázis kihagyva",
+      "restartRound": "Kör újraindítva",
+      "endMatch": "Meccs befejezve",
+      "endWarmup": "Bemelegítés befejezve",
+      "startMatch": "Meccs elindítva",
+      "restoreBackup": "Mentés visszaállítva a(z) {{round}}. körre",
+      "addTime_one": "{{count}} másodperc hozzáadva a köridőhöz",
+      "addTime_other": "{{count}} másodperc hozzáadva a köridőhöz",
+      "broadcast": "Üzenet elküldve a szerverre",
+      "restartMatch": "Meccs újraindítva (befejezve és újratöltve)",
+      "reallocateServer": "Meccs áthelyezve egy másik szerverre",
+      "forceCancel": "Meccs törölve",
+      "default": "Parancs végrehajtva"
+    },
+    "hold": {
+      "title": "Felfüggesztés walkover helyett",
+      "description": "Felfüggesztés alatt a meccs nem töltődik be és nem indul el, és senki sem kap walkovert. Amikor folytatódik, a csapatok ismét a teljes időt kapják.",
+      "reason": "Indok (az adminok látják)",
+      "delay": "Késleltetés {{minutes}} perccel",
+      "holdUntilReleased": "Felfüggesztés feloldásig",
+      "release": "Feloldás most",
+      "restartCountdown": "Visszaszámlálás újraindítása",
+      "heldUntil": "Felfüggesztve eddig: {{time}}",
+      "heldIndefinitely": "Felfüggesztve feloldásig",
+      "tournamentPaused": "A verseny szünetel",
+      "heldDone": "Meccs felfüggesztve",
+      "delayedDone": "Meccs {{minutes}} perccel késleltetve",
+      "releasedDone": "Meccs feloldva",
+      "restartedDone": "Visszaszámlálás újraindítva: a csapatok ismét a teljes időt kapják",
+      "failed": "Nem sikerült módosítani a felfüggesztést"
+    }
+  },
+  "adminCalls": {
+    "header": "Adminhívások ({{count}})",
+    "title": "{{player}} admint hív",
+    "justNow": "éppen most",
+    "minutesAgo": "{{count}} perce",
+    "hoursAgo": "{{count}} órája",
+    "spectator": "Néző",
+    "team1": "1. csapat",
+    "team2": "2. csapat",
+    "noMessage": "Nincs üzenet",
+    "unknownPlayer": "Ismeretlen játékos",
+    "unknownServer": "Ismeretlen szerver",
+    "matchMap": "{{match}}, {{map}}. pálya",
+    "openMatch": "Meccs megnyitása",
+    "openServers": "Szerverek",
+    "resolve": "Megoldottnak jelölés",
+    "resolveAll": "Összes megoldása",
+    "resolveFailed": "Nem sikerült megoldottnak jelölni a hívást. Próbáld újra.",
+    "matchUnavailable": "Ezt a meccset nem lehetett megnyitni.",
+    "enableSound": "Hang bekapcsolása",
+    "mute": "Némítás",
+    "unmute": "Némítás feloldása",
+    "minimize": "Kis méret",
+    "show": "Megjelenítés",
+    "openChat": "Csevegés megnyitása",
+    "claim": "Átvétel",
+    "release": "Elengedés",
+    "claimedBy": "Átvette: {{name}}",
+    "claimedByYou": "Te vetted át",
+    "anAdmin": "egy admin"
+  }
+}
