@@ -22,4 +22,5 @@ export const cs2Locales: ModuleLocales = {
   pl: () => import('./pl.json'),
   nl: () => import('./nl.json'),
   nb: () => import('./nb.json'),
+  ru: () => import('./ru.json'),
 };

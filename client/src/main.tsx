@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { I18nextProvider } from 'react-i18next';
 import { ThemeProvider, CssBaseline } from '@mui/material';
-import { zhCN, enUS, frFR, deDE, esES, itIT, ptPT, plPL, nlNL, nbNO } from '@mui/material/locale';
+import { zhCN, enUS, frFR, deDE, esES, itIT, ptPT, plPL, nlNL, nbNO, ruRU } from '@mui/material/locale';
 import App from './App';
 import './index.css';
 import i18n, { i18nReady } from './i18n';
@@ -35,6 +35,7 @@ const getMuiLocale = (lang: string) => {
   if (lang.startsWith('nl')) return nlNL;
   // Built-in MUI strings (Autocomplete "Clear"/"Open", pagination, …)
   if (lang.startsWith('nb') || lang.startsWith('no')) return nbNO;
+  if (lang.startsWith('ru')) return ruRU;
   return enUS;
 };
 
