@@ -491,6 +491,18 @@ jobs:
           export RELEASE_IMAGE_DIGESTS="${refs[*]}"
           bash ./scripts/release.sh "$RELEASE_TYPE"
 
+      # worker-image.yml pushes the recorder autoscaler as :next from main, so
+      # a stable release points :X.Y.Z and :latest at that same build.
+      - name: Tag the recorder autoscaler
+        if: inputs.channel == 'stable'
+        shell: bash
+        env:
+          VERSION: ${{ needs.prepare.outputs.version }}
+        run: |
+          set -euo pipefail
+          image="${DOCKER_USERNAME}/auto-tournament-recorder-autoscaler"
+          docker buildx imagetools create -t "${image}:${VERSION}" -t "${image}:latest" "${image}:next"
+
       # The Docker Hub token may not have "Read & Write" scope for descriptions
       # (only for image push/pull), so a failure here must never fail the
       # release itself.
