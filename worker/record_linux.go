@@ -755,6 +755,13 @@ func (r *recorder) recordMoment(g *game, look clipLook, name string, m moment, o
 				return err
 			}
 		}
+		var length float64
+		for _, d := range durations {
+			length += d
+		}
+		if err := checkNotStill(cleanPathOf(out), length); err != nil {
+			return err
+		}
 		// The clip itself: its clean twin from markers.Start, with the kill
 		// feed and logo and no caption card (standalone.go).
 		alone := out + ".alone.mp4"
