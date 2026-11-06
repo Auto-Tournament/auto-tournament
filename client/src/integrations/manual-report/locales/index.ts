@@ -20,6 +20,7 @@ import es419 from './es-419.json';
 import fi from './fi.json';
 import fr from './fr.json';
 import hu from './hu.json';
+import id from './id.json';
 import it from './it.json';
 import ja from './ja.json';
 import ko from './ko.json';
@@ -67,4 +68,5 @@ export const manualReportLocales: ModuleLocales = {
   el,
   vi,
   th,
+  id,
 };
