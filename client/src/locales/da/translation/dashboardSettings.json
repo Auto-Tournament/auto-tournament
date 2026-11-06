@@ -1,0 +1,989 @@
+{
+  "dashboard": {
+    "title": "Admin",
+    "restartTournament": {
+      "button": "Genstart turneringens kampe",
+      "restarting": "Genstarter turneringens kampe…",
+      "intro": "🔄 Alle aktive kampe genstartes og genindlæses på serverne.",
+      "actionsTitle": "Handlinger:",
+      "actionEndMatch": "Kør at_endmatch på alle servere med indlæste/livekampe",
+      "actionReset": "Nulstil kampe til status 'ready'",
+      "actionReallocate": "Tildel kampene til tilgængelige servere igen",
+      "actionReload": "Genindlæs kampkonfigurationerne på spilserverne",
+      "hint": "Brug dette, hvis kampe sidder fast eller skal startes forfra.",
+      "confirm": "Genstart turneringen"
+    },
+    "header": {
+      "brand": "Auto Tournament",
+      "version": "Din Auto Tournament-side · version {{version}}",
+      "unknownVersion": "dev",
+      "createTournament": "Opret turnering"
+    },
+    "setup": {
+      "title": "Gør opsætningen færdig",
+      "openSettings": "Åbn indstillinger",
+      "signIn": "Loginudbyder",
+      "game": "Installer et spil (CS2) fra Moduler",
+      "discordBot": "Tilføj din egen Discord-bot (dens token), så siden kan sende DM til spillere om deres kampe"
+    },
+    "tournaments": {
+      "title": "Turnering",
+      "empty": "Siden kører én turnering ad gangen. Opret den, så vises den her, under Gennemse og på sin eventside.",
+      "status": {
+        "setup": "Kladde",
+        "ready": "Tilmelding",
+        "inProgress": "Live",
+        "completed": "Færdig"
+      },
+      "state": {
+        "teams_one": "{{count}} hold",
+        "teams_other": "{{count}} hold",
+        "entered_one": "{{count}} hold tilmeldt",
+        "entered_other": "{{count}} hold tilmeldt",
+        "draftTeams_one": "Kladde · {{count}} hold valgt",
+        "draftTeams_other": "Kladde · {{count}} hold valgt",
+        "draftEmpty": "Kladde · ingen hold endnu",
+        "live_one": "{{count}} kamp live",
+        "live_other": "{{count}} kampe live",
+        "completed_one": "{{count}} hold deltog",
+        "completed_other": "{{count}} hold deltog",
+        "winner": "Vinder: {{name}}",
+        "teamsPlayers_one": "{{count}} spiller",
+        "teamsPlayers_other": "{{count}} spillere",
+        "enteredPlayers_one": "{{count}} spiller tilmeldt",
+        "enteredPlayers_other": "{{count}} spillere tilmeldt",
+        "draftTeamsPlayers_one": "Kladde · {{count}} spiller",
+        "draftTeamsPlayers_other": "Kladde · {{count}} spillere",
+        "completedPlayers_one": "{{count}} spiller deltog",
+        "completedPlayers_other": "{{count}} spillere deltog"
+      },
+      "actions": {
+        "manage": "Administrer",
+        "continueSetup": "Fortsæt opsætningen",
+        "view": "Vis"
+      },
+      "eventPage": "Eventside",
+      "emptyTitle": "Ingen turnering endnu"
+    },
+    "site": {
+      "title": "Side",
+      "players": {
+        "label": "Spillere",
+        "hint": "Alle, der har logget ind"
+      },
+      "teams": {
+        "label": "Hold",
+        "hint": "Klubber og holdopstillinger"
+      },
+      "templates": {
+        "label": "Skabeloner",
+        "hint": "Genbrugelige opsætninger"
+      },
+      "ratings": {
+        "label": "Rating",
+        "hint": "Hvordan rating beregnes"
+      },
+      "settings": {
+        "label": "Indstillinger",
+        "hint": "Login, API-nøgler"
+      },
+      "adminTools": {
+        "label": "System",
+        "hint": "Kampgendannelse og logs"
+      },
+      "disputes": {
+        "label": "Tvister",
+        "hint": "Resultater at afgøre"
+      },
+      "modules": {
+        "label": "Moduler",
+        "hint": "Spil, instansen kører"
+      }
+    },
+    "people": {
+      "title": "Personer",
+      "open": "Åbn",
+      "players": "Spillere",
+      "admins": "Admins",
+      "signedInThisWeek": "Logget ind denne uge"
+    },
+    "loading": "Indlæser adminforsiden"
+  },
+  "settingsPage": {
+    "email": {
+      "title": "E-mail",
+      "short": "Sender adressebekræftelser, nulstilling af adgangskoder og turneringsmails.",
+      "enabled": "Send e-mail",
+      "enabledOn": "Til. Mails sendes fra {{from}}.",
+      "enabledOff": "Fra. Der sendes intet.",
+      "needsServer": "Opsæt serveren nedenfor først.",
+      "turnedOn": "E-mail er slået til",
+      "turnedOff": "E-mail er slået fra",
+      "server": "Mailserver",
+      "serverNone": "Ikke opsat",
+      "host": "SMTP-server",
+      "port": "Port",
+      "security": "Sikkerhed",
+      "securityStarttls": "STARTTLS (som regel port 587)",
+      "securityTls": "TLS (som regel port 465)",
+      "securityNone": "Ingen (kun på et betroet netværk)",
+      "username": "Brugernavn",
+      "password": "Adgangskode",
+      "passwordKept": "Lad feltet være tomt for at beholde den gemte",
+      "passwordSaved": "Gemt",
+      "fromAddress": "Afsenderadresse",
+      "fromAddressHelp": "Adressen, mails kommer fra. Din mailudbyder skal tillade den.",
+      "fromName": "Afsendernavn",
+      "fromNameHelp": "Valgfrit. Vises som afsender af mailen, f.eks. NTLAN.",
+      "siteUrl": "Sidens adresse",
+      "siteUrlHelp": "Links i mails starter her, f.eks. https://cs.example.com.",
+      "siteUrlHelpDefault": "Links i mails starter her. Tomt: {{url}}.",
+      "save": "Gem",
+      "saved": "E-mailindstillingerne er gemt",
+      "loadError": "E-mailindstillingerne kunne ikke indlæses",
+      "saveError": "E-mailindstillingerne kunne ikke gemmes",
+      "test": "Testmail",
+      "testShort": "Send én for at tjekke, at indstillingerne virker.",
+      "testTo": "Send til",
+      "testSend": "Send test",
+      "testNeedsOn": "Slå afsendelse til (og gem serveren), før du tester.",
+      "testSent": "Sendt til {{to}}. Tjek indbakken og spamfilteret.",
+      "testFailed": "Testmailen kunne ikke sendes"
+    },
+    "title": "Indstillinger",
+    "intro": "Platformens egne indstillinger. Hvert spil har sine indstillinger hos sig i menuen.",
+    "tabs": {
+      "general": "Generelt",
+      "signIn": "Login",
+      "players": "Spillere og adgang",
+      "ratings": "Rating",
+      "developer": "Udvikler",
+      "license": "Licens",
+      "webhooks": "Webhooks",
+      "experimental": "Eksperimentelt"
+    },
+    "signIn": {
+      "title": "Loginudbydere",
+      "intro": "Vælg, hvordan folk logger ind. Enhver af dem kan være nogens konto; folk forbinder flere på deres forbindelsesside. Ændringer gælder med det samme, uden genstart.",
+      "keySource": "Gemte hemmeligheder krypteres med {{name}}.",
+      "keySourceDefault": "Gemte hemmeligheder krypteres med en indbygget udviklingsnøgle. Sæt SECRETS_KEY eller SESSION_SECRET, før du går live.",
+      "loadError": "Loginudbyderne kunne ikke indlæses",
+      "saveError": "Kunne ikke gemme",
+      "testError": "Testen kunne ikke køres",
+      "saved": "Login med {{provider}} er gemt",
+      "enabled": "Til",
+      "clientId": "Klient-ID",
+      "issuerUrl": "Issuer-URL",
+      "issuerUrlHelp": "Adressen på din OpenID Connect-realm eller -tenant. Auto Tournament læser sine endpoints fra /.well-known/openid-configuration.",
+      "buttonName": "Knapnavn",
+      "buttonNameHelp": "Vises som »Log ind med …« på loginsiden, f.eks. dit fællesskab eller din identitetsserver.",
+      "logoUpload": "Upload logo",
+      "logoReplace": "Erstat logo",
+      "logoRemove": "Fjern logo",
+      "logoType": "Logoet skal være et PNG-, JPEG-, WebP- eller SVG-billede.",
+      "logoSize": "Logoet må højst være 150 KB.",
+      "buttonColor": "Knapfarve",
+      "buttonColorDefault": "Standardfarve",
+      "clientSecret": "Klienthemmelighed",
+      "steamKey": "Steam Web API-nøgle",
+      "secretSet": "angivet",
+      "secretUnreadable": "Den gemte hemmelighed kan ikke længere dekrypteres (krypteringsnøglen er ændret). Indtast den igen.",
+      "replace": "Erstat",
+      "cancel": "Annuller",
+      "save": "Gem",
+      "callbackHint": "Sættes automatisk. Indsæt den som redirect-URL i udviklerindstillingerne hos {{provider}}:",
+      "copy": "Kopiér",
+      "copyCallback": "Kopiér callback-URL",
+      "copied": "Kopieret",
+      "copyError": "Kunne ikke kopiere",
+      "guide": "Opsætningsguide",
+      "howTo": "Udviklerkonsol",
+      "test": "Test",
+      "comingSoon": "Kommer snart",
+      "comingSoonNote": "Login med {{provider}} er ikke tilgængeligt endnu.",
+      "status": {
+        "active": "På loginsiden",
+        "missing": "Til, mangler loginoplysninger",
+        "off": "Fra"
+      },
+      "testResult": {
+        "ok": "Udbyderen godtog oplysningerne.",
+        "invalid_credentials": "Udbyderen afviste oplysningerne. Tjek klient-ID og hemmelighed (eller nøglen).",
+        "unreachable": "Udbyderen kunne ikke nås. Tjek netværket, og prøv igen.",
+        "not_configured": "Indtast loginoplysningerne først.",
+        "not_supported": "Denne udbyder kan ikke testes.",
+        "unexpected": "Udbyderen gav et svar, testen ikke forstår."
+      },
+      "welcomeTitle": "Opsæt, hvordan spillere logger ind",
+      "welcomeBody": "Du er logget ind som admin. Slå mindst én udbyder til nedenfor (Steam, Discord, Google, GitHub eller Twitch), så spillere kan logge ind.",
+      "adminAccess": {
+        "title": "Adminadgang",
+        "localLogin": "Tillad lokalt adminlogin",
+        "localLoginHelp": "Login med brugernavn og adgangskode på /login/admin. Mister du adgangen, så kør reset-admin på serveren.",
+        "localLoginLocked": "Forbliver slået til, indtil en anden admin kan logge ind med en udbyder, der er slået til.",
+        "steamIds": "Adminernes Steam-ID'er",
+        "steamIdsHelp": "Steam64-ID'er adskilt med kommaer. Bliver admin, når de gemmes, og ved hver start. At fjerne et tager ikke adminrettigheden væk.",
+        "emails": "Adminernes e-mails",
+        "emailsHelp": "Adresser, der får adminrettighed, når ejeren logger ind med en udbyder, der har bekræftet dem (Google, Discord, GitHub).",
+        "unsaved": "Ikke gemt endnu.",
+        "saved": "Adminadgang gemt",
+        "loadError": "Indstillingerne for adminadgang kunne ikke indlæses",
+        "short": "Hvem der kan logge ind som admin"
+      },
+      "short": "Hvordan spillere og admins logger ind. Ændringer gælder med det samme.",
+      "enabledFor": "Login med {{provider}}",
+      "setUp": "Opsæt {{provider}}",
+      "accounts": {
+        "title": "Konti",
+        "short": "Konti med brugernavn og adgangskode, som du opretter",
+        "help": "Folk logger ind med dem på /login/admin. Giv adminrettighed til dem, der driver siden; resten logger ind som spillere.",
+        "none": "Ingen konti endnu.",
+        "admin": "Admin",
+        "twoStep": "Totrin til",
+        "lastLogin": "Sidst logget ind {{date}}",
+        "neverSignedIn": "Aldrig logget ind",
+        "setPassword": "Sæt adgangskode",
+        "remove": "Fjern",
+        "addTitle": "Tilføj en konto",
+        "username": "Brugernavn",
+        "usernameHelp": "3 til 32 tegn: små bogstaver, tal, punktummer, bindestreger og understreger.",
+        "name": "Visningsnavn",
+        "nameHelp": "Valgfrit. Vises på siden; brugernavnet bruges, hvis feltet er tomt.",
+        "password": "Adgangskode",
+        "makeAdmin": "Admin",
+        "create": "Opret konto",
+        "created": "Kontoen {{username}} er oprettet",
+        "madeAdmin": "{{username}} er nu admin",
+        "adminRemoved": "{{username}} er ikke længere admin",
+        "setPasswordTitle": "Ny adgangskode for {{username}}",
+        "setPasswordTotp": "Totrinsbekræftelsen slås også fra; den sættes op igen efter login.",
+        "newPassword": "Ny adgangskode",
+        "savePassword": "Gem adgangskode",
+        "passwordSet": "Ny adgangskode gemt for {{username}}",
+        "removeTitle": "Fjern {{username}}?",
+        "removeBody": "Kontoen kan ikke længere logge ind med dette brugernavn og denne adgangskode og er ikke længere admin. Spilleren, kampene og statistikken bliver; oprettes samme brugernavn igen, kommer de tilbage.",
+        "removeConfirm": "Fjern",
+        "removed": "{{username}} er fjernet",
+        "cancel": "Annuller",
+        "loadError": "Kontiene kunne ikke indlæses",
+        "saveError": "Kontoen kunne ikke gemmes"
+      },
+      "oidcScopes": "Giv denne klient scopes openid, profile og email på din OpenID Connect-server (i Keycloak: Clients → denne klient → Client scopes, med profile og email som Default). Uden profile og email kan folk stadig logge ind, men platformen får intet navn eller nogen e-mailadresse for dem."
+    },
+    "integrations": {
+      "steam": {
+        "title": "Steam-integration",
+        "apiKeyLabel": "Steam Web API-nøgle",
+        "apiKeyHelper": "Slår Steams egne URL'er og spillerinfo op. Lad feltet være tomt for at slå opslag fra.",
+        "checkButtonChecking": "Tjekker Steam…",
+        "checkButtonIdle": "Tjek forbindelsen til Steam",
+        "statusOk": "Steam API-nøglen er angivet og kan nås.",
+        "statusNotConfigured": "Steam API-nøglen er ikke angivet. Egne URL'er kan ikke slås op, før du tilføjer en nøgle.",
+        "statusUnreachable": "Steam API-nøglen ser ud til at være angivet, men Steam kunne ikke nås. Tjek netværket eller nøglen.",
+        "statusError": "Steam API-status kunne ikke tjekkes. Prøv igen."
+      }
+    },
+    "matchRating": {
+      "ratings": {
+        "title": "Ratingopdateringer",
+        "description": "Styr, om færdige kampe opdaterer spillernes Skill Rating. Slå det fra ved events, hvor et eksternt system (for eksempel dit Excel-ark) bestemmer ratingen.",
+        "toggleLabel": "Opdater spillernes rating fra færdige kampe",
+        "note": "Når det er slået fra, registrerer alle kampe stadig statistik (ADR, K/D osv.), men spillernes Skill Rating ændres ikke.",
+        "short": "Ratingen ændres efter hver kamp."
+      }
+    },
+    "players": {
+      "registration": {
+        "title": "Spillerregistrering",
+        "description": "Styr, om login opretter en spillerpost for en ny person, uanset hvilken loginmetode de bruger (Steam, Discord, Google og de andre, du har slået til). Når det er slået fra, vises kun spillere, admins har oprettet eller importeret, i private turneringer og shuffle-puljer.",
+        "toggleLabel": "Lad alle registrere sig ved at logge ind",
+        "recommendation": "Anbefaling: lad det være slået fra til turneringer kun for inviterede eller private turneringer, så tilfældige logins ikke fylder spillerlisten.",
+        "short": "Login gør alle nye til spillere. Fra: kun spillere, du tilføjer."
+      },
+      "title": "Spillere",
+      "short": "Hvem der kommer med, og hvordan ratingen bevæger sig.",
+      "chooseName": {
+        "toggleLabel": "Spillerne vælger selv visningsnavn",
+        "short": "Spillerne bliver spurgt om deres navn og kan ændre det én gang om dagen. Fra: navnene kommer fra importer og admins."
+      }
+    },
+    "developer": {
+      "resetApiTitle": "Nulstil API og database",
+      "resetApiDescription": "Farezone: sletter og genopretter hele databaseskemaet og initialiserer derefter standarddata igen (baner, banepuljer osv.). Kun til lokal udvikling. Kan ikke fortrydes.",
+      "resetApiButton": "Nulstil API (slet alle data)",
+      "resetApiButtonLoading": "Nulstiller API…",
+      "resetApiSuccess": "API og database er nulstillet. Alle data er slettet, og standardværdier er initialiseret igen.",
+      "resetApiError": "API og database kunne ikke nulstilles. Se API-logs for detaljer.",
+      "resetApiDialog": {
+        "title": "Nulstil API og slet alle data?",
+        "description": "Hele databaseskemaet slettes og genoprettes. Alle turneringer, kampe, spillere, hold, ratings, hændelser, logs og indstillinger slettes permanent. Det kan ikke fortrydes. Fortsæt?",
+        "cancel": "Annuller",
+        "confirm": "Ja, nulstil API og slet data",
+        "confirmLoading": "Nulstiller…"
+      }
+    },
+    "footer": {
+      "version": "Version",
+      "unknownVersion": "Ukendt"
+    },
+    "errors": {
+      "loadSettings": "Indstillingerne kunne ikke indlæses",
+      "saveSettings": "Indstillingerne kunne ikke gemmes"
+    },
+    "success": {
+      "saveSettings": "Indstillingerne er gemt"
+    },
+    "site": {
+      "title": "Side",
+      "description": "Hvad siden hedder. Adminforsiden bruger det som overskrift.",
+      "label": "Sidens navn",
+      "helper": "Lad feltet være tomt for at bruge »Auto Tournament«.",
+      "save": "Gem",
+      "saved": "Sidens navn er gemt",
+      "saveFailed": "Sidens navn kunne ikke gemmes"
+    },
+    "experimental": {
+      "title": "Eksperimentelt",
+      "description": "Funktioner, der stadig bygges. De er slået fra som standard og kan ændre sig eller gå i stykker. Kun admins ser dem.",
+      "saved": "Gemt",
+      "saveFailed": "Funktionen kunne ikke gemmes",
+      "loadFailed": "De eksperimentelle funktioner kunne ikke indlæses",
+      "envOverride": "Sat af miljøvariablen {{env}}. Ret den der.",
+      "features": {},
+      "short": "Under udvikling: slået fra som standard, kun admins ser dem."
+    },
+    "matchmaking": {
+      "openLabel": "Åben for spillere",
+      "openDescription": "Til: alle loggede ind spillere ser Spil og kan stille sig i kø. Fra: kun admins kan finde kampe.",
+      "boardLabel": "Ranglisten er synlig for alle",
+      "boardDescription": "Fra: kun loggede ind spillere ser matchmaking-ranglisten. Til: alle med linket.",
+      "windowTitle": "Søgevindue",
+      "windowDescription": "Hvor langt fra hinanden i rating spillerne må være. Det starter ved det første tal, vokser med trinnet hvert 30. sekund op til loftet, og efter det sidste antal minutter matches alle (lad feltet være tomt for aldrig).",
+      "window": {
+        "start": "Start (Elo)",
+        "step": "Trin (Elo)",
+        "cap": "Loft (Elo)",
+        "uncappedAfterMinutes": "Alle efter (min)"
+      },
+      "reservedTitle": "Servere holdt fri til matchmaking",
+      "reservedDescription": "Turneringskampe går først, men lad så mange servere være ledige til matchmaking, mens spillere søger. 0 = ingen.",
+      "reservedLabel": "Servere",
+      "modesTitle": "Tilstande",
+      "modesDescription": "Hvad spillerne kan søge efter. Alle tilstande er slået til som standard. 1v1 er en aim-duel.",
+      "poolsTitle": "Baner pr. tilstand",
+      "poolsDescription": "Banepuljen, hver tilstand vælger fra (siden Baner; Workshop-baner virker også). Kamprummet viser en roulette over puljen, før banen afsløres.",
+      "poolDefault": {
+        "5v5": "Standard: Active Duty",
+        "2v2": "Standard: alle wingman-baner",
+        "1v1": "Standard: Active Duty"
+      },
+      "save": "Gem",
+      "title": "Matchmaking",
+      "short": "Altid til. Spillerne finder en kamp, stiller sig i kø, accepterer og spiller så på en ledig server.",
+      "saved": "Gemt",
+      "saveFailed": "Matchmaking-indstillingerne kunne ikke gemmes",
+      "loadFailed": "Matchmaking-indstillingerne kunne ikke indlæses"
+    },
+    "groups": {
+      "platform": "Platform"
+    },
+    "navLabel": "Indstillingssider",
+    "gameLinks": {
+      "title": "Spilindstillinger",
+      "hint": "Hvert spil har sine egne indstillinger hos sig i menuen."
+    },
+    "sections": {
+      "label": "Indstillingsafsnit",
+      "site": {
+        "name": "Side",
+        "hint": "Navn, logo, sprog"
+      },
+      "signin": {
+        "name": "Login",
+        "hint": "Udbydere, adminkonti"
+      },
+      "email": {
+        "name": "E-mail",
+        "hint": "SMTP, hvad der sendes"
+      },
+      "players": {
+        "name": "Spillere",
+        "hint": "Tilmelding, rating"
+      },
+      "matchmaking": {
+        "name": "Matchmaking",
+        "hint": "Køer og deres regler"
+      },
+      "news": {
+        "name": "Nyheder",
+        "hint": "Opslag på forsiden"
+      },
+      "adminnotices": {
+        "name": "Notifikationer",
+        "hint": "Hvad admins får at vide"
+      },
+      "webhooks": {
+        "name": "Integrationer",
+        "hint": "Webhooks"
+      },
+      "apitokens": {
+        "name": "API-tokens",
+        "hint": "Til scripts og MCP"
+      },
+      "advanced": {
+        "name": "Avanceret",
+        "hint": "Eksperimentelt, udvikler"
+      },
+      "module": {
+        "hint": "Dette moduls indstillinger"
+      }
+    }
+  },
+  "managePage": {
+    "tournamentNotFound": "Ingen turnering med dette id. Vælg en under Alle turneringer.",
+    "title": "Administrer",
+    "needsYouHeading": "Har brug for dig",
+    "noTournament": "Ingen turnering endnu",
+    "rail": {
+      "needsYou": "Har brug for dig",
+      "matches": "Kampe",
+      "bracket": "Bracket",
+      "teams": "Hold",
+      "players": "Spillere",
+      "reports": "Anmeldelser",
+      "tournament": "Turneringsopsætning",
+      "settings": "Indstillinger",
+      "label": "Admin",
+      "disputes": "Tvister",
+      "publicPage": "Offentlig side",
+      "modules": "Moduler",
+      "templates": "Skabeloner",
+      "ratings": "Rating",
+      "adminTools": "Logs og værktøjer",
+      "license": "Licens",
+      "devTools": "Udviklerværktøjer",
+      "documentation": "Dokumentation",
+      "opensInNewTab": "(åbner i en ny fane)",
+      "groups": {
+        "operate": "Drift",
+        "tournament": "Turnering",
+        "people": "Personer",
+        "game": "Spil",
+        "home": "Hjem",
+        "history": "Historik",
+        "setup": "Opsætning",
+        "configuration": "Konfiguration",
+        "site": "Side",
+        "tournaments": "Turneringer",
+        "system": "System",
+        "gamesOf": "Spil · {{game}}"
+      },
+      "templatesAndRatings": "Skabeloner og rating",
+      "allTournaments": "Alle turneringer",
+      "switcher": "Turnering",
+      "newTournament": "Ny turnering",
+      "playedMatches": "Spillede kampe",
+      "tournamentBar": "Denne turnering",
+      "scope": {
+        "label": "Administrerer",
+        "platform": "Platform",
+        "platformHint": "Turneringer, personer, siden",
+        "gameHint": "Dets sider og indstillinger"
+      },
+      "highlights": "Højdepunkter",
+      "state": {
+        "live": "live",
+        "setup": "opsætning"
+      },
+      "openMenu": "Åbn menuen Administrer",
+      "closeMenu": "Luk menuen",
+      "setupTab": "Opsætning",
+      "prizes": "Præmier",
+      "schedule": "Program",
+      "liveMatches": "Livekampe"
+    },
+    "status": {
+      "live": "LIVE",
+      "inVeto": "I VETO",
+      "queued": "I KØ",
+      "round": "RUNDE"
+    },
+    "needsYou": {
+      "empty": "Intet har brug for dig lige nu.",
+      "secondsAgo": "{{count}} s",
+      "minutesAgo": "{{count}} min",
+      "hoursAgo": "{{count}} t",
+      "vsLabel": "{{team1}} mod {{team2}}",
+      "decide": {
+        "title": "{{teams}} skal have en vinder",
+        "detail": "Alle baner er spillet, og serien er stadig lige.",
+        "action": "Afgør"
+      },
+      "reallocateSuccess": "Kampen er flyttet til en anden server",
+      "forceCancelSuccess": "Kampen er annulleret",
+      "actionFailed": "Det gik ikke igennem. Prøv igen.",
+      "reallocateConfirmTitle": "Flyt denne kamp til en anden server?",
+      "reallocateConfirmBody": "Kampen tildeles den næste ledige server.",
+      "forceCancelConfirmTitle": "Tving annullering af denne kamp?",
+      "forceCancelConfirmBody": "Kampen afsluttes med det samme og markeres som annulleret, selv om serveren ikke kan nås.",
+      "listLabel": "Ting, der kræver en beslutning"
+    },
+    "recent": {
+      "heading": "Seneste",
+      "viewAll": "Hele loggen",
+      "empty": "Ingen aktivitet endnu.",
+      "closingLine": "Alt andet kører af sig selv. Du ser det kun her, når noget kræver en beslutning.",
+      "team1Fallback": "Hold 1",
+      "team2Fallback": "Hold 2",
+      "mapResult": "{{winner}} vandt bane {{map}} mod {{loser}}, {{score}}",
+      "seriesEnd": "{{winner}} vandt serien mod {{loser}}, {{score}}"
+    },
+    "announce": {
+      "button": "Meddel",
+      "title": "Meddel alle servere",
+      "label": "Besked",
+      "send": "Send",
+      "success": "Meddelelsen er sendt",
+      "failed": "Meddelelsen kunne ikke sendes"
+    }
+  },
+  "license": {
+    "title": "Licens",
+    "getKey": "Har du allerede en licens? Kopiér din nøgle fra <consoleLink>Auto Tournament-konsollen</consoleLink>. Mangler du en? <pricingLink>Se priser</pricingLink>.",
+    "useFromPaidKey": "Sat af den betalte licensnøgle nedenfor.",
+    "useFromFreeKey": "Sat af den gratis nøgle nedenfor: kun almennyttig brug.",
+    "useWithoutKey": "Ingen nøgle: gratis til almennyttig brug. Indsæt en betalt nøgle nedenfor til kommerciel brug.",
+    "publicLine": "Spillerne ser »{{line}}« nederst på eventsiderne.",
+    "pageIntro": "Din licensnøgle og dens status. En betalt nøgle er til kommerciel brug; en gratis nøgle er til almennyttig brug.",
+    "description": "Indsæt din Auto Tournament-licensnøgle: en betalt til kommerciel brug eller en gratis til almennyttig brug. Den tjekkes på denne server og én gang om dagen hos autotournament.gg.",
+    "loading": "Indlæser licensstatus",
+    "loadFailed": "Licensstatus kunne ikke læses.",
+    "none": "Ingen licensnøgle endnu. Gratis til almennyttig brug; kommerciel brug kræver en betalt licens.",
+    "pricing": "Priser",
+    "open": "Indstillinger",
+    "id": "Licens-ID {{id}}",
+    "verify": "Tjek denne licens",
+    "invalid": "Nøglen kunne ikke bekræftes.",
+    "invalidShort": "Den gemte nøgle kunne ikke bekræftes.",
+    "warningsShort_one": "1 licensmeddelelse under Indstillinger.",
+    "warningsShort_other": "{{count}} licensmeddelelser under Indstillinger.",
+    "warningsNote": "Intet er blokeret eller begrænset. Det er kun en meddelelse.",
+    "label": "Licensnøgle",
+    "replaceLabel": "Erstat licensnøglen",
+    "helper": "Starter med ATL1. Kopiér den fra <consoleLink>dine licenser i Auto Tournament-konsollen</consoleLink>. Efter du har gemt, vises kun licens-ID'et. Intet internet, hvor I spiller? Indsæt også offline-leasen fra konsollen her.",
+    "checkInNote": "Uden licensnøgle sendes der intet til Auto Tournament. Med en nøgle melder serveren sig én gang om dagen med nøglens id og antallet af servere.",
+    "save": "Gem nøgle",
+    "saved": "Licensnøglen er gemt",
+    "saveFailed": "Licensnøglen kunne ikke gemmes",
+    "remove": "Fjern nøgle",
+    "removed": "Licensnøglen er fjernet",
+    "removeFailed": "Licensnøglen kunne ikke fjernes",
+    "summary": {
+      "licensedTo": "Licenseret til {{licensee}}",
+      "licensed": "Licenseret",
+      "product": {
+        "platform": "Platform {{pack}}",
+        "servers": "Servere {{pack}}"
+      },
+      "servers_one": "{{count}} server",
+      "servers_other": "{{count}} servere",
+      "updatesUntil": "opdateringer til {{date}}",
+      "updatesForLife": "opdateringer for livet",
+      "eventWindow": "event {{from}} til {{to}}",
+      "free": "Gratis nøgle, ikke-kommerciel brug",
+      "freeFor": "Gratis nøgle til {{licensee}}, ikke-kommerciel brug",
+      "noLimit": "ingen servergrænse"
+    },
+    "badge": {
+      "label": "Vis »Licenseret« og brugstypen på offentlige eventsider",
+      "note": "Fra som standard. Linker til licensens offentlige tjekside og vises kun, mens den gemte nøgle er gyldig.",
+      "on": "Offentlig licenslinje slået til",
+      "off": "Offentlig licenslinje slået fra",
+      "failed": "Den offentlige licenslinje kunne ikke ændres",
+      "short": "Slår sig selv til, når en nøgle er gemt. Spillerne ser den nederst på eventsiderne.",
+      "needsKey": "Vises kun med en gemt licensnøgle, gratis eller betalt. Gem en ovenfor først."
+    },
+    "public": {
+      "licensed": "Licenseret",
+      "commercial": "Licenseret · Kommerciel brug",
+      "nonCommercial": "Licenseret · Almennyttig brug",
+      "unlicensed": "Ingen licensnøgle",
+      "about": {
+        "title": "Om sidens licens",
+        "none": "Siden kører Auto Tournament uden licensnøgle. Det er fint til events, hvor ingen tjener penge på det: venner, klubber, skole-LAN, velgørenhed.",
+        "nonCommercial": "Siden har en gratis almennyttig licens: den må afholde events, hvor ingen tjener penge på det.",
+        "commercial": "Siden har en betalt kommerciel licens: den må afholde betalte events og tage deltagergebyr.",
+        "free": "Auto Tournament er gratis, når ingen tjener penge på det, og for velgørenhed, skoler og offentlige myndigheder, selv når de tager gebyr. Alle andre, der tjener penge med det, ved at tage deltagergebyr, sælge pladser eller køre det for en virksomhed, skal have en betalt licens.",
+        "paidTitle": "Bedt om at betale for at deltage?",
+        "paidBody": "Hvis du har betalt deltagergebyr eller er blevet bedt om det, og arrangøren ikke er en velgørenhed, skole eller offentlig myndighed, bruger eventet måske Auto Tournament i strid med licensen. Du kan fortælle os det; vi læser hver anmeldelse og deler aldrig, hvem der sendte den.",
+        "paidCommercial": "Betalt deltagelse er tilladt her. Hvis noget alligevel ser forkert ud, kan du fortælle os det.",
+        "report": "Anmeld det til Auto Tournament",
+        "rules": "Læs licensen",
+        "verify": "Tjek denne licens"
+      }
+    },
+    "consent": {
+      "title": "En sidste ting: licensen",
+      "subtitle": "Undskyld, ét skridt mere, så er du færdig. Auto Tournament er gratis, hvis ingen tjener penge på det; gør nogen det, skal du have en licens. Skim den korte version, vælg hvordan du bruger det, og skriv I AGREE.",
+      "intro": "Auto Tournament er source-available under {{name}}. Kort fortalt:",
+      "points": {
+        "free": "Gratis til personlig brug, hobbyprojekter, læring og events, hvor ingen tjener penge på det.",
+        "orgs": "Gratis for velgørenhed, skoler, universiteter, offentlig forskning og myndigheder, selv når de tager gebyr.",
+        "commercial": "Kommerciel brug kræver en licens. Det omfatter betalt hosting, salg af det eller en tjeneste bygget på det, events med overskud, brug i en virksomhed og at blive betalt for at sætte det op for nogen.",
+        "servers": "Hver spilserver tæller med i licensen.",
+        "nothingLocked": "Intet er låst eller begrænset uden nøgle. Du kan tilføje en nøgle nu eller senere.",
+        "forks": "Du kan ændre koden og dele den. Behold licensen med den; de samme regler gælder."
+      },
+      "readLicense": "Læs hele licensen",
+      "readRules": "Licensering og kommerciel brug",
+      "summaryNote": "Dette er et kort resumé, og teksten i din version kan være forældet. Den aktuelle licens og licensreglerne findes på autotournament.gg – afviger de fra resuméet, gælder de.",
+      "useQuestion": "Hvordan bruges denne instans?",
+      "privacyNote": "Dit svar gemmes kun på denne server. Uden licensnøgle sendes der intet til Auto Tournament. Med en nøgle melder serveren sig én gang om dagen med nøglens id og antallet af servere.",
+      "use": {
+        "noncommercial": "Ikke-kommerciel",
+        "noncommercialHint": "Gratis. Ingen tjener penge på det.",
+        "commercial": "Kommerciel",
+        "commercialHint": "Du skal have en licens. Indsæt din nøgle nu eller senere."
+      },
+      "keyLabel": "Licensnøgle (valgfri)",
+      "keyHelper": "Starter med ATL1. Kopiér den fra <consoleLink>dine licenser i Auto Tournament-konsollen</consoleLink>, eller tilføj den senere under Indstillinger > Licens.",
+      "confirmLabel": "Skriv {{phrase}} for at acceptere licensvilkårene",
+      "confirmHelper": "Ved at skrive {{phrase}} accepterer du licensvilkårene for denne instans.",
+      "accept": "Acceptér og fortsæt",
+      "cancel": "Annuller",
+      "failed": "Dit svar kunne ikke gemmes",
+      "accepted": "Licensvilkårene er accepteret",
+      "termsChanged": "Licensvilkårene er ændret, siden de sidst blev accepteret. Læs dem, og acceptér igen.",
+      "onlyAdmins": "Kun admins ser dette, én gang pr. instans. Spillere, offentlige sider og igangværende kampe påvirkes ikke.",
+      "declared": {
+        "noncommercial": "Ikke-kommerciel brug",
+        "commercial": "Kommerciel brug",
+        "none": "Licensvilkårene er ikke accepteret endnu"
+      },
+      "acceptedLine": "Vilkårene accepteret {{date}} af {{who}} (vilkårsversion {{version}})",
+      "byEnv": "indstillingen AT_ACCEPT_LICENSE",
+      "change": "Skift",
+      "changeTitle": "Skift, hvordan instansen bruges",
+      "changeNote": "Vælg igen, og skriv I AGREE. Ændringen gemmes med dato og din konto.",
+      "commercialNoKey": "Instansen bruges kommercielt, så du skal have en licens. Kopiér din nøgle fra <consoleLink>dine licenser i Auto Tournament-konsollen</consoleLink>, og indsæt den nedenfor. Intet er låst, mens den mangler.",
+      "readHeading": "Læs disse, og sæt flueben ved hver, før du accepterer:",
+      "readItem": "Jeg har læst",
+      "readLinks": {
+        "license": "hele licensen",
+        "rules": "reglerne for kommerciel brug",
+        "pricing": "priserne"
+      }
+    },
+    "checkin": {
+      "last": "Seneste licensmelding: {{time}}",
+      "offlineUntil": "Offline-lease: nye servere virker uden internet til {{date}}.",
+      "never": "Ingen licensmelding endnu. Den første kører kort efter, at en nøgle er gemt.",
+      "whatIsSent": "Hvad der sendes",
+      "intro": "Én gang om dagen, og kun mens en nøgle er gemt, sender serveren:",
+      "keyId": "Licensnøglen, så dens id og signatur kan tjekkes",
+      "instanceId": "Et tilfældigt id for installationen, lavet én gang",
+      "serverCount": "Antallet af spilservere",
+      "version": "Platformens version",
+      "publicUrl": "Hvilket produkt det er (platformen) og dets offentlige adresse, så konsollen kan vise, hvor nøglen kører",
+      "activity": "Antal siden seneste melding: færdige kampe, turneringer med aktivitet og det største antal hold",
+      "declared": "Dit svar på spørgsmålet om eventdatoer, hvis du har givet et",
+      "notSent": "Ingen navne, adresser, spillere eller kampdetaljer.",
+      "privacy": "Privatlivspolitik",
+      "noticeTitle": "En besked fra Auto Tournament",
+      "answered": "Dit svar for denne licens: {{answer}} ({{time}})"
+    },
+    "eventPrompt": {
+      "title": "Planlægger I noget nyt?",
+      "body": "Jeres eventlicens dækker {{dates}}. Giv besked, hvis I tester, har et nyt event, eller hvis datoerne er flyttet – der skal ikke gøres noget, mens I tester.",
+      "datesRange": "{{from}} til {{to}}",
+      "testing": "Tester eller sætter op",
+      "newEvent": "Et nyt event",
+      "datesMoved": "Vores eventdatoer er flyttet",
+      "dontAsk": "Spørg ikke igen",
+      "close": "Luk",
+      "thanks": "Tak, noteret.",
+      "failed": "Dit svar kunne ikke gemmes"
+    },
+    "warning": {
+      "periodEnded": "Denne eventlicens dækkede datoer frem til {{date}}. Test og opsætning kræver intet; et nyt event får sin egen eventlicens.",
+      "periodNotStarted": "Denne eventlicens dækker datoer fra {{date}}. Opsætning og test før da er fint."
+    },
+    "short": "Hvordan installationen bruges, og dens nøgle.",
+    "keyRow": "Licensnøgle",
+    "state": {
+      "active": "Aktiv",
+      "warning": "Tjek",
+      "invalid": "Ugyldig",
+      "none": "Ingen nøgle"
+    },
+    "thirdParty": "Appen er bygget med open source-pakker under deres egne licenser.",
+    "thirdPartyLink": "Tredjepartsmeddelelser"
+  },
+  "tournamentsPage": {
+    "title": "Turneringer",
+    "subtitle": "Alle turneringer på siden. Vælgeren øverst i menuen bestemmer, hvilken de andre adminsider gælder.",
+    "liveShared": "{{count}} live, som deler serverne. Kampene får en server i den rækkefølge, de blev klar.",
+    "new": "Ny turnering",
+    "empty": "Ingen turneringer endnu. Opret den første.",
+    "col": {
+      "name": "Navn",
+      "status": "Status",
+      "when": "Hvornår",
+      "entries": "Tilmeldinger",
+      "frontPage": "Forside",
+      "actions": "Handlinger"
+    },
+    "status": {
+      "live": "Live",
+      "finished": "Færdig",
+      "signup": "Tilmelding åben",
+      "draft": "Kladde"
+    },
+    "front": {
+      "featured": "Fremhævet",
+      "shown": "Vist",
+      "hidden": "Skjult",
+      "archived": "Arkiveret",
+      "results": "Resultater"
+    },
+    "won": "{{name}} vandt",
+    "selected": "valgt",
+    "more": "Mere for {{name}}",
+    "menu": {
+      "open": "Åbn",
+      "page": "Offentlig side",
+      "feature": "Fremhæv på forsiden",
+      "archive": "Arkivér (væk fra forsiden)",
+      "delete": "Slet"
+    },
+    "toast": {
+      "featured": "Fremhævet på forsiden",
+      "archived": "Arkiveret",
+      "deleted": "Turneringen er slettet"
+    },
+    "deleteTitle": "Slet denne turnering?",
+    "deleteMessage": "{{name}} og dens kampe, resultater og statistik slettes. Det kan ikke fortrydes.",
+    "newName": "Navn",
+    "newNameBlank": "Du navngiver den i opsætningen",
+    "startFrom": "Start fra",
+    "blank": "Tom",
+    "blankHint": "Vælg spil, format og baner i opsætningen",
+    "copy": "Kopiér {{name}}",
+    "copyHint": "Samme format, baner, regler og side. Hold og datoer starter tomme.",
+    "create": "Opret og sæt op",
+    "round": "runde {{n}}",
+    "whenToday": "I dag, fra {{time}}",
+    "whenTomorrow": "I morgen, {{time}}",
+    "notSet": "Ikke angivet",
+    "emptyTitle": "Ingen turneringer endnu",
+    "template": "En skabelon",
+    "templateHint": "En gemt opsætning: format, baner og regler. Du vælger hold og datoer.",
+    "copyOne": "Kopiér en turnering",
+    "copyWhich": "Hvilken"
+  },
+  "playedMatches": {
+    "title": "Alle kampe",
+    "subtitle": "Alle kampe spillet på siden: turneringer (også slettede), selvstændige kampe og matchmaking, med deres demos.",
+    "downloadAll_one": "Download demos for {{count}} kamp",
+    "downloadAll_other": "Download demos for {{count}} kampe",
+    "search": "Søg hold eller turneringer",
+    "kindLabel": "Type",
+    "kind": {
+      "all": "Alle typer",
+      "tournament": "Turnering",
+      "standalone": "Selvstændig",
+      "matchmaking": "Matchmaking",
+      "imported": "Importeret"
+    },
+    "withDemos": "Med demos",
+    "none": "Der er ikke spillet nogen kampe endnu.",
+    "noneFiltered": "Ingen kampe matcher filtrene.",
+    "vs": "mod",
+    "deleted": "turnering slettet",
+    "noDemo": "Ingen demo",
+    "demo": "Demo",
+    "map": "Bane {{n}}",
+    "import": "Importér en kamp"
+  },
+  "importMatch": {
+    "title": "Importér en kamp",
+    "subtitle": "Tilføj en kamp, der er spillet et andet sted, fra dens demos. Hold, spillere og stilling læses fra demoerne, og så får kampen statistik, 2D-replay og højdepunkter som alle andre.",
+    "event": "Hvor den blev spillet",
+    "eventHelp": "Valgfrit, for eksempel eventets navn.",
+    "files": "Demos",
+    "filesHelp": "Én CS2-demo (.dem) pr. bane, i den rækkefølge banerne blev spillet.",
+    "choose": "Vælg demos",
+    "moveUp": "Flyt {{name}} op",
+    "moveDown": "Flyt {{name}} ned",
+    "remove": "Fjern {{name}}",
+    "start": "Importér",
+    "uploading": "Uploader bane {{n}} ({{percent}} %)",
+    "tooMany": "Op til {{max}} demos, én pr. bane.",
+    "notDemo": "{{name}} er ikke en .dem-fil.",
+    "error": "Importen stoppede: {{error}}",
+    "progress": "Forløb",
+    "mapN": "Bane {{n}}",
+    "state": {
+      "uploading": "Uploader",
+      "waiting": "Venter på demo-workeren",
+      "running": "Læser demoen",
+      "done": "Færdig",
+      "failed": "Demoen kunne ikke læses"
+    },
+    "teams": "{{team1}} mod {{team2}}",
+    "doneAll": "Importeret. Højdepunkter optages derefter, hvis en højdepunktsoptager er forbundet.",
+    "openMatch": "Åbn kampen",
+    "another": "Importér en til",
+    "dropHint": "eller slip dem her. Vælg flere på én gang med Cmd eller Ctrl.",
+    "recordingGroup": "Optagergruppe",
+    "allRecorders": "Alle optagere",
+    "groupHelp": "Vælg, hvilken gruppe der renderer kampen. Slåede fra grupper venter, indtil de slås til.",
+    "groupDisabled": "Slået fra",
+    "notCs2Demo": "{{name}} er ikke en CS2-demo (CS:GO-demos kan ikke importeres)."
+  },
+  "apiTokens": {
+    "title": "API-tokens",
+    "hint": "Til scripts, bots og Auto Tournaments MCP-server. Et skrivebeskyttet token kan kun læse; et admintoken kan det, en admin kan. Kun du ser et tokens hemmelighed, én gang, når det oprettes.",
+    "line": "{{scope}} · {{fingerprint}} · sidst brugt {{used}}",
+    "never": "aldrig",
+    "none": "Ingen API-tokens endnu.",
+    "name": "Navn",
+    "nameHelp": "1–32 bogstaver, tal, - eller _",
+    "scopeLabel": "Adgang",
+    "scope": {
+      "readonly": "Skrivebeskyttet",
+      "admin": "Admin"
+    },
+    "make": "Opret token",
+    "madeTitle": "Token »{{label}}«",
+    "madeHelp": "Kopiér det nu: det er den eneste gang, det vises. Indsæt det, hvor scriptet eller MCP-serveren læser det (AT_TOKEN).",
+    "copy": "Kopiér token",
+    "copied": "Kopieret",
+    "done": "Færdig",
+    "revoke": "Tilbagekald {{label}}",
+    "revokeTitle": "Tilbagekald »{{label}}«?",
+    "revokeHelp": "Alt, der bruger det, holder op med at virke med det samme.",
+    "revokeConfirm": "Tilbagekald",
+    "revoked": "{{label}} er tilbagekaldt",
+    "cancel": "Annuller",
+    "loadFailed": "API-tokens kunne ikke indlæses",
+    "makeFailed": "Tokenet kunne ikke oprettes",
+    "revokeFailed": "Tokenet kunne ikke tilbagekaldes"
+  },
+  "discordBot": {
+    "title": "Discord-bot",
+    "token": "Bot-token",
+    "replace": "Nyt bot-token",
+    "save": "Gem",
+    "remove": "Fjern",
+    "connected": "Forbundet som {{name}}",
+    "setNoAnswer": "Et token er angivet, men Discord svarede ikke lige nu.",
+    "saved": "Discord-botten er gemt: {{name}}",
+    "cleared": "Discord-botten er fjernet",
+    "saveFailed": "Bot-tokenet kunne ikke gemmes.",
+    "howTo": "Lav en applikation, tilføj en bot, kopiér dens token, og invitér den til din Discord-server:",
+    "portal": "Discord Developer Portal",
+    "guild": "Discord-server",
+    "guildHint": "Hvor botten laver holdkanaler og opslag. Kun servere, botten er på, vises her.",
+    "noGuilds": "Botten er ikke på nogen Discord-server endnu. Invitér den, og genindlæs så siden.",
+    "noGuild": "Ingen",
+    "guildSaved": "Discord-serveren er gemt",
+    "movedHint": "Discord-botten er en tilføjelse nu: slå den til, og sæt den op under Moduler.",
+    "open": "Åbn Discord-botten",
+    "voice": {
+      "label": "Holdenes talekanaler",
+      "help": "Mens en kamp er på sin server, flyttes spillerne, der allerede er i en talekanal, ind i deres holds talekanal; resten får et link via DM.",
+      "saved": "Indstillingerne for talekanaler er gemt"
+    },
+    "teamChannels": {
+      "label": "Holdkanaler",
+      "help": "Mens en turnering kører, får hvert hold en privat tekst- og talekanal under »Dit hold«. Spillerne finder tekstkanalen på deres holdside.",
+      "link": "Holdkanal på Discord"
+    },
+    "commands": {
+      "label": "Slash-kommandoer: /matches, /mymatch og /lobby",
+      "help": "De virker, så snart botten er forbundet. Valgfrit: vil du have Discord til at sende dem til denne side i stedet, så indsæt dette som appens Interactions Endpoint URL i Discord Developer Portal."
+    },
+    "invite": "Invitér til en server",
+    "linking": {
+      "label": "Spillerne forbinder deres Discord",
+      "help": "Bruger bottens egen Discord-app, så du ikke skal lave endnu en app. Åbn OAuth2 for bottens app i Developer Portal, tilføj denne redirect, kopiér så klienthemmeligheden, og indsæt den her.",
+      "portal": "Åbn OAuth2",
+      "secret": "Klienthemmelighed",
+      "save": "Slå forbindelse til",
+      "saved": "Spillerne kan forbinde Discord nu",
+      "ready": "Til: spillerne forbinder Discord under Konto → Forbindelser.",
+      "invite": "Spillere, der ikke er på din server, bliver bedt om at deltage via {{url}}.",
+      "noInvite": "Botten kan ikke lave en invitation til din server endnu. Klik på Invitér til en server igen, så den får tilladelsen Opret invitation."
+    },
+    "missing": "Botten mangler {{list}} på din server, så dele af den virker ikke. Klik på Invitér til en server ovenfor: det opdaterer bottens tilladelser uden at fjerne den."
+  },
+  "liveMatchesPage": {
+    "title": "Livekampe",
+    "subtitle": "Alle kampe, der er på en server lige nu. Rækker, der har brug for dig, kommer først.",
+    "loading": "Indlæser…",
+    "loadFailed": "Livekampene kunne ikke læses. Prøver igen…",
+    "empty": "Ingen kampe kører",
+    "chat": "Chat",
+    "mapOf": "Bane {{n}}/{{total}}",
+    "columns": {
+      "match": "Kamp",
+      "map": "Bane",
+      "phase": "Fase",
+      "score": "Stilling",
+      "round": "Runde",
+      "players": "Spillere",
+      "pause": "Pause",
+      "call": "Adminkald",
+      "server": "Server",
+      "chat": "Chat"
+    },
+    "source": {
+      "matchmaking": "Matchmaking",
+      "manual": "Selvstændig"
+    },
+    "phase": {
+      "none": "Ingen serverstatus",
+      "loading": "Indlæser",
+      "warmup": "Opvarmning",
+      "knife": "Kniv",
+      "side_pick": "Sidevalg",
+      "live": "Live",
+      "paused": "På pause",
+      "halftime": "Halvleg",
+      "overtime": "Overtid",
+      "map_end": "Efter kampen",
+      "series_end": "Efter kampen",
+      "restoring": "Gendanner",
+      "error": "Fejl"
+    },
+    "players": {
+      "summary": "{{connected}}/{{total}} inde · {{ready}} klar",
+      "connected": "Forbundet",
+      "disconnected": "Ikke forbundet",
+      "readyTag": "klar",
+      "none": "Ingen spillere"
+    },
+    "pause": {
+      "by": "af {{name}}",
+      "unpause": "Vil ophæve pausen",
+      "type": {
+        "tactical": "Taktisk",
+        "technical": "Teknisk",
+        "admin": "Admin",
+        "offline": "Spiller offline",
+        "halftime": "Halvleg",
+        "auto_5v5": "Venter på 5v5",
+        "unknown": "På pause"
+      }
+    },
+    "call": {
+      "noMessage": "Ingen besked"
+    },
+    "server": {
+      "online": "Online",
+      "offline": "Offline",
+      "unknown": "Status ukendt"
+    }
+  }
+}

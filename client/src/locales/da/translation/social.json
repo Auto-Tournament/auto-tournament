@@ -1,0 +1,287 @@
+{
+  "notificationPrompt": {
+    "title": "Slå notifikationer til",
+    "body": "Vi anbefaler at slå dem til. Så hører du fra os, selv om du lukker fanen:",
+    "matchReady": "din kamp er klar til at forbinde",
+    "vetoTurn": "det er din tur i banevetoet",
+    "starting": "en turnering, du er tilmeldt, starter snart",
+    "iphone": "På en iPhone skal du først tilføje siden til hjemmeskærmen (Del, derefter Føj til hjemmeskærm) og åbne den derfra.",
+    "change": "Du kan til enhver tid ændre det i dine notifikationsindstillinger.",
+    "later": "Ikke nu",
+    "turnOn": "Slå til (anbefales)"
+  },
+  "social": {
+    "bell": {
+      "title": "Notifikationer",
+      "label": "Notifikationer",
+      "labelUnread_one": "Notifikationer, {{count}} ny",
+      "labelUnread_other": "Notifikationer, {{count}} nye",
+      "markAllRead": "Markér alle som læst",
+      "show": "Vis",
+      "filter": {
+        "all": "Alle",
+        "you": "Har brug for dig",
+        "tournaments": "Turneringer",
+        "matches": "Kampe",
+        "skins": "Skins",
+        "clips": "Klip",
+        "other": "Andet"
+      },
+      "empty": "Intet her endnu",
+      "emptyHint": "Partyinvitationer, venneanmodninger, turneringsnyt, nye skins og færdige højdepunkter vises her.",
+      "loading": "Indlæser…",
+      "seeAll": "Se alle notifikationer",
+      "loadOlder": "Indlæs ældre",
+      "settings": "Notifikationsindstillinger"
+    },
+    "notice": {
+      "partyInvite": "inviterede dig til sit party",
+      "teamInvite": "inviterede dig til",
+      "joinedTeam": "Du er kommet med på holdet",
+      "partyDetail": "{{mode}} · {{size}} i partyet",
+      "join": "Deltag",
+      "decline": "Afvis",
+      "accept": "Acceptér",
+      "ignore": "Ignorér",
+      "friendRequest": "sendte dig en venneanmodning",
+      "friendAccepted": "accepterede din venneanmodning",
+      "skin": "Nyt skin:",
+      "highlight": "Dit højdepunkt er klar:",
+      "highlightVictim": "{{name}} tog dig ud i sit klip:",
+      "highlightAssist": "Du assisterede {{name}} i vedkommendes klip:",
+      "highlightKiller": "Du tog {{name}} ud i vedkommendes klip:",
+      "tournamentStarted": "er startet. Din første kamp er på.",
+      "lineupGap": "· en startspiller forlod din holdopstilling. Vælg en reserve inden for {{minutes}} minutter, ellers spiller I med én mand mindre.",
+      "checkInOpen": "tjek-ind er åben. Tjek ind, før den lukker.",
+      "joined": "Du er kommet med i partyet",
+      "nowFriends": "I er nu venner",
+      "declined": "Afvist",
+      "expired": "Partyet er afsluttet",
+      "reportNew": "blev anmeldt: {{reason}}",
+      "reportReviewed": "Tak: din anmeldelse af {{name}} er blevet gennemgået.",
+      "matchReady": "er klar. Åbn kamprummet for at forbinde.",
+      "vetoTurn": "det er dit holds tur i vetoet.",
+      "startsSoon": "starter om {{minutes}} minutter. Gør dig klar til din første kamp.",
+      "startsSoonUpdate": "starter om {{minutes}} minutter. Start spillet nu, så en eventuel opdatering er færdig før din første kamp.",
+      "matchSoon": "dit veto åbner om {{minutes}} minutter og fortsætter uden dig. Vær ved computeren.",
+      "noShow": "du kom aldrig til din kamp, så du er ude af de næste runder. Åbn turneringen, og sig, at du er tilbage, for at spille videre.",
+      "discordLink": "forbind din Discord-konto for at få dit holds kanaler og blive flyttet ind i dets talekanal.",
+      "signedUp": "· {{team}} er med. Se, hvad du skal vide før start."
+    },
+    "toast": {
+      "join": "Deltag i partyet",
+      "close": "Luk",
+      "closes_one": "Lukker om {{count}} s · bliver i klokken",
+      "closes_other": "Lukker om {{count}} s · bliver i klokken"
+    },
+    "friends": {
+      "title": "Venner",
+      "tabFriends": "Venner",
+      "tabRequests": "Anmodninger",
+      "tabAdd": "Tilføj ven",
+      "online_one": "Online · {{count}}",
+      "online_other": "Online · {{count}}",
+      "offline_one": "Offline · {{count}}",
+      "offline_other": "Offline · {{count}}",
+      "onlineCount_one": "{{count}} online",
+      "onlineCount_other": "{{count}} online",
+      "invite": "Invitér",
+      "inParty": "I dit party",
+      "more": "Mere for {{name}}",
+      "viewProfile": "Se profil",
+      "remove": "Fjern ven",
+      "removed": "{{name}} er ikke længere din ven",
+      "none": "Ingen venner endnu",
+      "noneHint": "Tilføj dem, du spiller med, og invitér dem så til dit party herfra eller fra Spil.",
+      "incoming": "Indgående",
+      "sent": "Sendt",
+      "noIncoming": "Ingen anmodninger venter på dig.",
+      "noSent": "Du har ingen ventende anmodninger.",
+      "askedAgo": "Spurgte {{when}}",
+      "sentAgo": "Sendt {{when}}",
+      "cancelRequest": "Annuller anmodning",
+      "searchPlaceholder": "Et navn eller et link til en Steam-profil",
+      "results": "På Auto Tournament",
+      "playedWith": "Spillet med for nylig",
+      "noResults": "Ingen med det navn.",
+      "typeMore": "Skriv mindst to bogstaver.",
+      "noRecent": "Spil en kamp, så vises dem, du spillede med, her.",
+      "matches_one": "{{count}} kamp",
+      "matches_other": "{{count}} kampe",
+      "alreadyFriends": "Venner",
+      "requestSent": "Anmodning sendt",
+      "addFriend": "Tilføj ven",
+      "signIn": "Log ind for at se dine venner",
+      "signInHint": "Venner, anmodninger og invitationer hører til din konto.",
+      "cardEmpty": "Tilføj venner for at se, hvornår de er online, og invitér dem med ét klik.",
+      "all_one": "Alle venner ({{count}}) →",
+      "all_other": "Alle venner ({{count}}) →",
+      "find": "Find venner →",
+      "requestCount_one": "{{count}} anmodning",
+      "requestCount_other": "{{count}} anmodninger"
+    },
+    "status": {
+      "playing": "I en kamp · {{match}}",
+      "searching": "Søger · {{mode}}",
+      "online": "Online",
+      "offline": "Offline",
+      "lastSeen": "Sidst set {{when}}"
+    },
+    "invite": {
+      "searchPlaceholder": "Hvem som helst på siden, efter navn",
+      "friendsOnline": "Venner online",
+      "recent": "Spillet med for nylig",
+      "onSite": "På Auto Tournament",
+      "noFriends": "Ingen venner endnu. Søg efter hvem som helst efter navn ovenfor.",
+      "nobodyOnline": "Ingen af dine venner er online.",
+      "inMatch": "I en kamp",
+      "together_one": "{{count}} kamp sammen",
+      "together_other": "{{count}} kampe sammen",
+      "invited": "Inviteret",
+      "sent": "Inviterede {{name}}",
+      "chip": "{{name}} · inviteret",
+      "cancel": "Træk invitationen til {{name}} tilbage",
+      "orLink": "Eller et link",
+      "copy": "Kopier",
+      "copyFailed": "Kunne ikke kopiere. Markér linket, og kopier det selv.",
+      "makeLink": "Lav et invitationslink",
+      "cannot": {
+        "nobody": "Tager ikke imod invitationer",
+        "friends": "Kun venner",
+        "no_game": "Spiller ikke CS2"
+      }
+    },
+    "profile": {
+      "friends": "Venner",
+      "acceptRequest": "Acceptér venneanmodning",
+      "message": "Besked",
+      "invite": "Invitér til party"
+    },
+    "settings": {
+      "title": "Partyinvitationer",
+      "description": "Hvem der kan invitere dig til et matchmaking-party. Invitationer vises i din klokke og dukker op på enhver side, du har åben.",
+      "everyone": "Alle",
+      "everyoneHint": "Enhver spiller på siden.",
+      "friends": "Kun venner",
+      "friendsHint": "Kun spillere, du er venner med.",
+      "nobody": "Ingen",
+      "nobodyHint": "Ingen invitationer. Du kan stadig deltage i et party via dets link.",
+      "saved": "Gemt",
+      "saveFailed": "Indstillingen kunne ikke gemmes"
+    },
+    "setup": {
+      "title": "Gør opsætningen færdig, før du søger",
+      "youGame": "Tilføj CS2 til dine spil på din profil.",
+      "youGameAuto": "At finde en kamp tilføjer spillet til dine spil.",
+      "youAccount": "Forbind din Steam-konto.",
+      "theyGame": "{{name}} har ikke tilføjet CS2 til sine spil.",
+      "theyAccount": "{{name}} har ikke forbundet sin Steam-konto.",
+      "fix": "Åbn din konto"
+    },
+    "news": {
+      "title": "Nyheder",
+      "hint": "Send en notifikation til alle spilleres klokke: en ny sæson, en turnering, planlagt nedetid.",
+      "titleLabel": "Titel",
+      "bodyLabel": "En linje mere (valgfri)",
+      "urlLabel": "Link (valgfrit)",
+      "urlHint": "En side her (/tournament/3) eller en https://-adresse.",
+      "urlBad": "Start med / eller https://",
+      "send": "Send til alle spillere",
+      "confirm": "Alle spillere, der har logget ind, får dette. Send det?",
+      "sendNow": "Send nu",
+      "cancel": "Annuller",
+      "sent_one": "Sendt til {{count}} spiller",
+      "sent_other": "Sendt til {{count}} spillere",
+      "failed": "Nyheden kunne ikke sendes"
+    },
+    "noticeSettings": {
+      "title": "Indstillinger",
+      "alerts": "Advarsler",
+      "browser": "Browsernotifikationer",
+      "browserHint": "På denne enhed, selv når siden er lukket (din kamp er klar, din tur i vetoet, en turnering starter). Gælder kun denne browser.",
+      "browserDenied": "Blokeret i browserens sideindstillinger. Tillad notifikationer der for at slå dem til.",
+      "browserUnsupported": "Denne browser har ingen notifikationer.",
+      "sound": "Lyd",
+      "test": "Test",
+      "volume": "Lydstyrke {{percent}} %",
+      "group": {
+        "you": "Dig",
+        "tournaments": "Turneringer",
+        "other": "Andet",
+        "skins": "Skins",
+        "clips": "Klip"
+      },
+      "kind": {
+        "party_invite": "Partyinvitationer",
+        "team_invite": "Holdinvitationer",
+        "friend_request": "Venneanmodninger",
+        "friend_accepted": "Accepterede venneanmodninger",
+        "tournament": "Tjek-ind og starter",
+        "skin": "Skin-drops",
+        "highlight": "Dine højdepunkter",
+        "news": "Nyheder",
+        "report": "Anmeldelser"
+      },
+      "delivery": {
+        "off": "Fra",
+        "bell": "Klokke",
+        "sound": "Klokke og lyd"
+      }
+    }
+  },
+  "notifyChannels": {
+    "title": "Notifikationer",
+    "description": "Hvor vi fortæller dig om ting, der har brug for dig, når du ikke er på siden. Fra som standard, undtagen dine egne kampe.",
+    "event": "Hændelse",
+    "channel": {
+      "push": "Browser/telefon",
+      "discord": "Discord-DM",
+      "email": "E-mail"
+    },
+    "events": {
+      "match_ready": {
+        "title": "Din kamp er klar",
+        "hint": "Server, forbindelseslink og hvem du møder"
+      },
+      "veto_turn": {
+        "title": "Din tur i vetoet",
+        "hint": "Kun holdkaptajner"
+      },
+      "checkin_open": {
+        "title": "Tjek-ind åbner",
+        "hint": "For turneringer, du er tilmeldt"
+      },
+      "new_tournament": {
+        "title": "Nye turneringer",
+        "hint": "Når en turnering tager imod tilmeldinger"
+      },
+      "tournament_starting": {
+        "title": "Turneringen starter",
+        "hint": "Påmindelser, før en turnering, du er med i, starter"
+      },
+      "direct_message": {
+        "title": "Beskeder fra venner",
+        "hint": "Når du ikke er på siden"
+      }
+    },
+    "reason": {
+      "no_bot": "Ikke sat op på siden",
+      "no_discord": "Forbind Discord først",
+      "no_push": "Slå notifikationer til i denne browser først",
+      "email_off": "Siden kan ikke sende e-mail",
+      "no_email": "Tilføj en e-mail først",
+      "email_unverified": "Bekræft din e-mail først"
+    },
+    "switchLabel": "{{event}} via {{channel}}",
+    "saveFailed": "Det kunne ikke gemmes."
+  },
+  "presence": {
+    "online": "Online",
+    "offline": "Offline",
+    "away": "Væk",
+    "searching": "Søger en {{mode}}-kamp",
+    "playingMatchmaking": "I en matchmaking-kamp: {{label}}",
+    "playingTournament": "I en turneringskamp: {{label}}",
+    "playing": "I en kamp: {{label}}"
+  }
+}

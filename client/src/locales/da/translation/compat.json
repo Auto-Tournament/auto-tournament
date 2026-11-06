@@ -1,0 +1,82 @@
+{
+  "compatPage": {
+    "title": "Ready Up-kompatibilitet",
+    "subtitle": "Om Ready Up-plugins virker med den seneste Counter-Strike 2-opdatering, tjekket automatisk ved hvert nyt CS2-build.",
+    "live": "Live",
+    "offline": "Genopretter forbindelse…",
+    "loading": "Indlæser kompatibilitet",
+    "loadError": "Kompatibiliteten kunne ikke indlæses. Prøv igen om lidt.",
+    "disabledTitle": "Ikke tilgængelig her",
+    "disabledDescription": "Siden offentliggør ikke Ready Up-kompatibilitet.",
+    "emptyTitle": "Ingen resultater endnu",
+    "emptyDescription": "Ingen kompatibilitetstjek har rapporteret endnu. Siden opdaterer sig selv, så snart et gør.",
+    "checkedAgo": "Tjekket {{time}}",
+    "viewRun": "Se kørsel",
+    "factsLabel": "Hvad blev tjekket",
+    "facts": {
+      "patch": "CS2-patch",
+      "buildid": "Build-ID",
+      "readyup": "Ready Up",
+      "stage": "Trin"
+    },
+    "overall": {
+      "pass": "Kompatibel",
+      "warn": "Kompatibel, med advarsler",
+      "fail": "Ikke kompatibel",
+      "checking": "Tjekker…",
+      "no_verdict": "Ingen konklusion"
+    },
+    "overallHint": {
+      "pass": "Alle komponenter bestod deres tjek på dette build.",
+      "warn": "Ready Up virker på dette build, men nogle tjek skal ses nærmere efter.",
+      "fail": "Mindst én komponent virker ikke på dette build. Vent med at opdatere servere.",
+      "checking": "Et tjek af dette build kører lige nu.",
+      "no_verdict": "Det seneste tjek nåede ikke frem til en konklusion."
+    },
+    "status": {
+      "pass": "Bestået",
+      "warn": "Advarsel",
+      "fail": "Fejlet",
+      "pending": "Afventer",
+      "checking": "Tjekker…"
+    },
+    "stage": {
+      "static": "Statisk analyse",
+      "selftest": "Selvtest",
+      "live": "Liveserver"
+    },
+    "state": {
+      "queued": "I kø",
+      "checking": "Tjekker",
+      "pass": "Bestået",
+      "warn": "Advarsler",
+      "fail": "Fejlet",
+      "no_verdict": "Ingen konklusion"
+    },
+    "trigger": {
+      "build_change": "Nyt CS2-build",
+      "surface_change": "Spildata ændret",
+      "code_change": "Ændring i Ready Up",
+      "nightly": "Natlig",
+      "release": "Ready Up-udgivelse",
+      "manual": "Manuel"
+    },
+    "kind": {
+      "signature": "Signaturer",
+      "rtti": "RTTI",
+      "vtable": "Virtuelle tabeller",
+      "hook_site": "Hook-steder",
+      "layout": "Hukommelseslayout",
+      "schema": "Skema",
+      "event": "Spilhændelser",
+      "selftest": "Selvtest",
+      "livetest": "Livetest"
+    },
+    "componentsTitle": "Komponenter",
+    "checksSummary": "{{passed}} af {{total}} tjek bestået",
+    "noChecks": "Ingen tjek rapporteret endnu",
+    "failures": "Fejl",
+    "historyTitle": "Seneste kørsler",
+    "historyItem": "CS2 {{patch}} · build {{buildid}}"
+  }
+}

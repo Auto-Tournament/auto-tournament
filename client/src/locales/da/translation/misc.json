@@ -1,0 +1,1278 @@
+{
+  "notFound": {
+    "title": "Siden blev ikke fundet",
+    "description": "Siden, du leder efter, findes ikke eller er flyttet.",
+    "backToDashboard": "Tilbage til oversigten",
+    "publicPlayerSearch": "Offentlig spillersøgning"
+  },
+  "publicLinks": {
+    "intro": "Hurtige links til de offentlige sider, du kan dele med spillere og seere.",
+    "common": {
+      "publicUrl": "Offentlig URL",
+      "urlPattern": "URL-mønster"
+    },
+    "playerSearch": {
+      "title": "Offentlig spillersøgning",
+      "description": "Søg efter registrerede spillere på navn, Steam-ID eller profil-URL.",
+      "openButton": "Åbn /player"
+    },
+    "playerProfile": {
+      "title": "Spillerprofil (offentlig)",
+      "description": "Direkte link til en spillerprofil via Steam ID64. Spillere, der er logget ind med Steam, kan også bruge linket »Min profil« i topmenuen i stedet for at kopiere URL'er.",
+      "requiresSteamId": "Kræver Steam ID64"
+    },
+    "teamMatch": {
+      "title": "Holdets kampside (offentlig)",
+      "description": "Skrivebeskyttet visning af et holds aktuelle eller seneste kamp.",
+      "openExample": "Åbn eksempelhold"
+    },
+    "tournamentLeaderboard": {
+      "title": "Turneringens rangliste (offentlig)",
+      "description": "Offentlig stillingsside for den aktuelle turnering (standard er turnering 1).",
+      "open": "Åbn ranglisten"
+    }
+  },
+  "games": {
+    "prompt": {
+      "title": "Hvad spiller du?",
+      "description": "Vi viser turneringer i disse spil først. Du kan ændre det når som helst.",
+      "skip": "Spring over",
+      "save": "Gem mine spil"
+    },
+    "picker": {
+      "searchLabel": "Søg spil",
+      "placeholder": "Skriv et spilnavn",
+      "minChars": "Skriv mindst 2 tegn",
+      "noResults": "Ingen spil fundet",
+      "loading": "Søger…",
+      "searchFailed": "Søgningen er ikke tilgængelig lige nu",
+      "yourGames": "Dine spil",
+      "none": "Ingen spil valgt endnu",
+      "remove": "Fjern {{name}}",
+      "supported": "Turneringer understøttes",
+      "limit": "Du kan vælge op til {{max}} spil",
+      "creditWikidata": "Spildata fra Wikidata"
+    },
+    "profile": {
+      "title": "Spil, du spiller",
+      "description": "Vælg de spil, du spiller. Turneringer i disse spil vises først.",
+      "empty": "Du har ikke valgt nogen spil endnu.",
+      "edit": "Rediger",
+      "add": "Tilføj spil",
+      "dialogTitle": "Spil, du spiller",
+      "cancel": "Annuller",
+      "save": "Gem",
+      "saved": "Spillene er gemt",
+      "saveFailed": "Dine spil kunne ikke gemmes"
+    },
+    "welcome": {
+      "gridTitle": "Populære spil",
+      "continue": "Fortsæt",
+      "notNow": "Ikke nu",
+      "selectedGames": "Valgte spil",
+      "selectedCount": "{{count}} af {{max}} valgt",
+      "pickOne": "Vælg mindst ét spil",
+      "supportedLegend": "Turneringer kører her"
+    }
+  },
+  "account": {
+    "email": {
+      "title": "E-mail",
+      "description": "Til at komme ind på kontoen igen, hvis du glemmer adgangskoden, og hvis du vil, mails når en turnering åbner for tilmelding.",
+      "address": "E-mailadresse",
+      "sendLink": "Send bekræftelse",
+      "cancel": "Annuller",
+      "verified": "Bekræftet",
+      "unverified": "Ikke bekræftet",
+      "checkInbox": "Åbn linket i mailen, vi sendte, for at bekræfte den.",
+      "resend": "Send igen",
+      "change": "Skift",
+      "remove": "Fjern",
+      "sent": "Bekræftelse sendt til {{email}}. Åbn linket i den.",
+      "saved": "E-mailen er gemt",
+      "removed": "E-mailen er fjernet",
+      "saveFailed": "Din e-mail kunne ikke gemmes",
+      "notifyLabel": "Mail mig, når en turnering åbner for tilmelding",
+      "notifyHint": "Én mail pr. turnering. Hver mail har et afmeldingslink.",
+      "notifyNeedsVerified": "Bekræft din adresse først.",
+      "notifyOn": "Du får en mail, når tilmeldingen åbner",
+      "notifyOff": "Ikke flere turneringsmails",
+      "siteCannotSend": "Siden sender ikke e-mails lige nu."
+    },
+    "title": "Forbindelser",
+    "subtitle": "Én konto til alle turneringer på siden.",
+    "loadFailed": "Din konto kunne ikke indlæses.",
+    "impersonating": "Du ser denne side, mens du efterligner en spiller. Den viser din egen konto; stop med at efterligne for at ændre den.",
+    "rail": {
+      "label": "Konto",
+      "profile": "Profil",
+      "connections": "Forbindelser"
+    },
+    "gameAccounts": {
+      "title": "Spilkonti",
+      "description": "Hvert spil kræver sin egen konto, så kampene ved, hvem du er.",
+      "verified": "Bekræftet",
+      "id": "Steam-ID {{id}}",
+      "more": "Flere spilkonti vises her, efterhånden som spil tilføjes til siden.",
+      "notConnected": "Forbind din {{provider}}-konto for at spille disse spil.",
+      "notOffered": "Login med {{provider}} er ikke slået til her endnu. Bed en admin om at slå det til under Indstillinger → Login."
+    },
+    "signIn": {
+      "title": "Loginmetoder",
+      "description": "Enhver af dem logger dig ind på den samme konto. Behold mindst én.",
+      "primary": "Primær",
+      "primaryDetail": "Kontoens identitet · også din spilkonto til {{games}}",
+      "primaryDetailNoGames": "Kontoens identitet",
+      "connected": "Forbundet",
+      "accountId": "ID",
+      "linkedOn": "Forbundet {{date}}",
+      "turnedOff": "login med den er slået fra på siden",
+      "notConnected": "Ikke forbundet",
+      "connect": "Forbind",
+      "remove": "Fjern",
+      "lastMethod": "Det er din eneste måde at logge ind på. Forbind en anden metode først.",
+      "removeTitle": "Fjern {{provider}}?",
+      "removeBody": "Du kan ikke længere logge ind med {{provider}}. Du kan forbinde den igen senere.",
+      "removed": "{{provider}} er fjernet",
+      "removeFailed": "Loginmetoden kunne ikke fjernes",
+      "linked": "{{provider}} er forbundet",
+      "taken": "Den {{provider}}-konto er allerede forbundet til en anden konto på siden.",
+      "linkFailed": "{{provider}} kunne ikke forbindes. Prøv igen.",
+      "localLabel": "Adminlogin (brugernavn + adgangskode)",
+      "localDetail": "Brugernavn {{username}}"
+    },
+    "changePassword": {
+      "button": "Skift adgangskode",
+      "title": "Skift din adgangskode",
+      "current": "Nuværende adgangskode",
+      "new": "Ny adgangskode",
+      "repeat": "Ny adgangskode igen",
+      "totp": "Kode fra godkendelsesappen",
+      "mismatch": "De nye adgangskoder er ikke ens",
+      "save": "Skift adgangskode",
+      "cancel": "Annuller",
+      "done": "Adgangskoden er skiftet",
+      "failed": "Adgangskoden kunne ikke skiftes",
+      "totpNeeded": "Indtast også koden fra din godkendelsesapp.",
+      "tooLong": "Den nye adgangskode er for lang"
+    },
+    "reauth": {
+      "title": "Bekræft din adminadgangskode",
+      "body": "Indtast adgangskoden for {{username}}, før du ændrer, hvordan du logger ind.",
+      "password": "Adgangskode",
+      "totp": "Kode fra godkendelsesappen",
+      "confirm": "Bekræft",
+      "failed": "Forkert adgangskode eller kode",
+      "totpNeeded": "Indtast også koden fra din godkendelsesapp."
+    },
+    "merge": {
+      "title": "Slå kontiene sammen?",
+      "body": "Denne Steam-konto har allerede en spiller på siden. Slå den sammen med din adminkonto?",
+      "explain": "Spilleren beholder sine kampe og sin statistik og bliver admin. Dit adminlogin og dine forbundne loginmetoder flyttes til den.",
+      "matches_one": "{{count}} spillet kamp",
+      "matches_other": "{{count}} spillede kampe",
+      "confirm": "Slå kontiene sammen",
+      "failed": "Kontiene kunne ikke slås sammen"
+    },
+    "twoStep": {
+      "turnOn": "Slå totrin til",
+      "turnOff": "Slå totrin fra",
+      "isOn": "Totrinsbekræftelse til",
+      "isOff": "Totrinsbekræftelse fra",
+      "onTitle": "Slå totrinsbekræftelse til",
+      "offTitle": "Slå totrinsbekræftelse fra",
+      "offWarning": "Uden den er adgangskoden alene nok til at logge ind på denne adminkonto.",
+      "password": "Adgangskode",
+      "code": "Kode fra godkendelsesappen",
+      "codeNeeded": "Indtast koden fra din godkendelsesapp.",
+      "failed": "Den kunne ikke slås fra",
+      "cancel": "Annuller",
+      "turnedOn": "Totrinsbekræftelsen er slået til",
+      "turnedOff": "Totrinsbekræftelsen er slået fra"
+    },
+    "passkeys": {
+      "title": "Adgangsnøgler",
+      "description": "Log ind på adminloginsiden med fingeraftryk, ansigt eller enhedens PIN i stedet for adgangskode og kode.",
+      "add": "Tilføj en adgangsnøgle",
+      "name": "Navn",
+      "nameHelp": "Et navn til at skelne den, som »MacBook« eller »Telefon«. Din browser beder derefter om dit fingeraftryk, ansigt eller PIN.",
+      "continue": "Fortsæt",
+      "added": "Adgangsnøglen er tilføjet",
+      "addFailed": "Adgangsnøglen kunne ikke tilføjes",
+      "removed": "{{name}} er fjernet",
+      "removeFailed": "Adgangsnøglen kunne ikke fjernes",
+      "lastUsed": "Sidst brugt {{date}}",
+      "addedOn": "Tilføjet {{date}}, ikke brugt endnu",
+      "needsHttps": "Adgangsnøgler kræver, at siden kører på https (eller localhost). Bed den, der driver den, om at sætte den bag https."
+    },
+    "name": {
+      "title": "Visningsnavn",
+      "description": "Vises på siden og i spillet. Du kan ændre det én gang om dagen.",
+      "lockedUntil": "Vises på siden og i spillet. Du ændrede det for nylig, så du kan ændre det igen fra {{date}}.",
+      "label": "Navn",
+      "lengthHint": "{{min}}–{{max}} tegn",
+      "badChars": "Ingen anførselstegn, < eller >, eller kontroltegn",
+      "promptTitle": "Hvad hedder du?",
+      "promptBody": "Det vises i spillet og på siden.",
+      "notNow": "Ikke nu",
+      "save": "Gem",
+      "saved": "Navnet er gemt. Spilserverne bruger det fra din næste kamp.",
+      "saveFailed": "Dit navn kunne ikke gemmes"
+    }
+  },
+  "home": {
+    "title": "Hjem",
+    "greeting": "Hej, {{name}}",
+    "greetingFallback": "Hej",
+    "editGames": "Rediger spil",
+    "vs": "mod",
+    "tbd": "TBD",
+    "openMatch": "Åbn kamp",
+    "connectToServer": "Forbind til serveren",
+    "matchStatus": {
+      "pending": "Venter",
+      "ready": "Klar",
+      "loaded": "Indlæst",
+      "live": "Live",
+      "completed": "Færdig"
+    },
+    "yourTournaments": {
+      "title": "Dine turneringer",
+      "empty": "Du er ikke med i nogen turnering lige nu."
+    },
+    "tournaments": {
+      "playingNow": "Spiller nu",
+      "waiting": "Venter",
+      "eliminated": "Slået ud",
+      "finished": "Færdig",
+      "placement": "{{position}} af {{total}}"
+    },
+    "openForYourGames": {
+      "title": "Åbent for dine spil",
+      "browseAll": "Gennemse alle turneringer",
+      "empty": "Ingen åbne turneringer for dine spil lige nu.",
+      "steamLinked": "Steam forbundet",
+      "titleAll": "Åbne turneringer",
+      "emptyAll": "Ingen åbne turneringer lige nu."
+    },
+    "summary": {
+      "match": "Du har en kamp, der venter.",
+      "open_one": "{{count}} turnering er åben for spil, du spiller.",
+      "open_other": "{{count}} turneringer er åbne for spil, du spiller.",
+      "openAll_one": "{{count}} turnering er åben på siden.",
+      "openAll_other": "{{count}} turneringer er åbne på siden.",
+      "none": "Intet har brug for dig lige nu."
+    },
+    "yourGames": "Spil, du spiller",
+    "loading": "Indlæser din forside",
+    "nextMatch": "Din næste kamp",
+    "live": {
+      "title": "Live nu",
+      "count": "{{count}} i gang",
+      "chip": "Live",
+      "matchesOn_one": "{{count}} kamp i gang nu",
+      "matchesOn_other": "{{count}} kampe i gang nu"
+    },
+    "quiet": {
+      "title": "Kommende",
+      "more": "Også kommende",
+      "next": "Næste"
+    },
+    "play": {
+      "title": "Spil en kamp nu",
+      "quietTitle": "Intet i gang? Spil en kamp.",
+      "hint": "Matchmaking sætter dig i en kamp, så snart der er nok spillere i køen.",
+      "cta": "Stil dig i køen"
+    },
+    "signup": {
+      "open": "Tilmelding åben",
+      "cta": "Tilmeld",
+      "short": "Tilmeld",
+      "view": "Vis",
+      "title": "Tilmeld",
+      "aside": "Kommende"
+    },
+    "champions": {
+      "title": "Mestre",
+      "aside": "For nylig afsluttet",
+      "all": "Alle resultater",
+      "won": "vandt {{name}}",
+      "finished": "Færdig"
+    },
+    "lastTime": {
+      "title": "Sidste gang",
+      "results": "Fulde resultater",
+      "second": "2.",
+      "third": "3.",
+      "champion": "Mester"
+    },
+    "teams": "Hold: {{count}}",
+    "none": "Ingen turneringer endnu. Kig forbi igen snart.",
+    "allTournaments": "Alle turneringer",
+    "empty": {
+      "soon": "Kommer snart",
+      "heroTitle": "Ingen turnering endnu",
+      "heroHint": "Når den næste turnering annonceres, vises den her med dato og tilmelding.",
+      "create": "Opret en turnering",
+      "nextTitle": "Intet andet planlagt",
+      "nextHint": "Den næste turnering efter denne vises her.",
+      "signupTitle": "Intet at tilmelde sig",
+      "signupHint": "Turneringer med åben tilmelding vises her.",
+      "slotTitle": "Plads til én mere",
+      "slotHint": "Her er der plads til en turnering mere.",
+      "championTitle": "Ingen mester endnu",
+      "championHint": "Den første vinder vises her."
+    },
+    "browse": {
+      "title": "Find spillere og hold",
+      "hint": "Se, hvem der spiller her, og find et hold at blive en del af.",
+      "cta": "Gennemse spillere"
+    },
+    "next": {
+      "label": {
+        "vetoTurn": "Din tur i vetoet",
+        "ready": "Din kamp er klar",
+        "warmup": "Opvarmning",
+        "live": "Live",
+        "paused": "Kampen er sat på pause"
+      },
+      "opponent": "Modstanderen spiller",
+      "startsAt": "Starter",
+      "untilVeto": "Til vetoet",
+      "untilMatch": "Til kampen",
+      "veto": "Veto",
+      "yourTurn": "Din tur",
+      "ban": "Ban en bane",
+      "pick": "Pick en bane",
+      "side": "Vælg en side",
+      "theirTurn": "Deres tur",
+      "vetoOpen": "Veto åbent",
+      "waiting": "Venter",
+      "forServer": "På en server",
+      "join": "Forbind",
+      "serverReady": "Server klar",
+      "ready": "Klar",
+      "mapRound": "{{map}} · R{{round}}",
+      "round": "Runde {{round}}",
+      "halftime": "Halvleg",
+      "nextMap": "Næste bane",
+      "goVeto": "Gå til veto",
+      "paused": "På pause",
+      "about": "~{{minutes}} min",
+      "joinServer": "Forbind til serveren"
+    }
+  },
+  "browsePage": {
+    "title": "Gennemse turneringer",
+    "searchPlaceholder": "Søg på navn, arrangør eller sted",
+    "searchLabel": "Søg turneringer",
+    "loading": "Indlæser turneringer",
+    "loadError": "Turneringerne kunne ikke indlæses.",
+    "listLabel": "Turneringer",
+    "createTournament": "Opret turnering",
+    "teamsCount_one": "{{count}} hold",
+    "teamsCount_other": "{{count}} hold",
+    "filters": {
+      "allGames": "Alle spil",
+      "status": {
+        "all": "Alle statusser",
+        "live": "Live",
+        "registration_open": "Tilmelding åben",
+        "finished": "Færdig"
+      },
+      "where": {
+        "all": "Online og LAN",
+        "online": "Online",
+        "lan": "LAN"
+      },
+      "gameLabel": "Spil",
+      "statusLabel": "Status",
+      "whereLabel": "Hvor"
+    },
+    "columns": {
+      "tournament": "Turnering",
+      "format": "Format",
+      "when": "Hvornår"
+    },
+    "when": {
+      "starts": "Starter {{date}}",
+      "finished": "Færdig",
+      "finishedOn": "Afsluttet {{date}}",
+      "noDate": "Ingen dato endnu"
+    },
+    "actions": {
+      "signUp": "Tilmeld",
+      "watch": "Åbn",
+      "results": "Resultater",
+      "youreIn": "Du er med"
+    },
+    "status": {
+      "live": "Live"
+    },
+    "emptyNone": {
+      "title": "Ingen turneringer endnu",
+      "description": "Når siden afholder en turnering, vises den her.",
+      "descriptionAdmin": "Siden har ingen turnering endnu. Opret en, så vises den her."
+    },
+    "emptyFiltered": {
+      "title": "Ingen turneringer matcher dine filtre",
+      "description": "Prøv et andet spil eller en anden status, eller ryd filtrene.",
+      "clear": "Ryd filtre"
+    },
+    "groups": {
+      "live": "Live",
+      "soon": "Kommende",
+      "finished": "Færdige"
+    },
+    "showOlder_one": "Vis {{count}} ældre",
+    "showOlder_other": "Vis {{count}} ældre",
+    "mine": {
+      "label": "Hvilke turneringer",
+      "all": "Alle",
+      "mine": "Mine"
+    },
+    "roundN": "Runde {{n}}",
+    "entries": {
+      "teams_one": "{{count}} hold",
+      "teams_other": "{{count}} hold",
+      "teamsOf": "{{count}} / {{max}} hold",
+      "players_one": "{{count}} spiller",
+      "players_other": "{{count}} spillere",
+      "playersOf": "{{count}} / {{max}} spillere"
+    }
+  },
+  "modulesPage": {
+    "title": "Moduler",
+    "subheading": "Hvad instansen kan køre, og de spil, du har tilføjet.",
+    "builtIn": "Indbygget",
+    "loadFailed": "De installerede pakker kunne ikke indlæses",
+    "removed": "{{name}} er fjernet",
+    "removeFailed": "Pakken kunne ikke fjernes",
+    "installed": {
+      "title": "Spilmoduler",
+      "hint": "Kode, der ved, hvordan en kamp køres, og hvordan resultatet kommer ind. De følger med appen."
+    },
+    "module": {
+      "cs2": {
+        "name": "Counter-Strike 2",
+        "hint": "Taler med dine spilservere: indlæser kampen, læser hver runde, registrerer resultatet."
+      },
+      "manual-report": {
+        "name": "Manuel rapportering",
+        "hint": "Til spil, intet kan følge. En holdkaptajn rapporterer resultatet, og modstanderen godkender."
+      }
+    },
+    "packs": {
+      "title": "Spilpakker",
+      "hint": "En pakke er en fil, der beskriver ét spil – et navn, en flise og hvordan et resultat rapporteres. Den indeholder ingen kode og kører på et modul ovenfor.",
+      "empty": "Ingen pakker endnu. Importér en for at tilføje et spil, der ikke fulgte med instansen.",
+      "runBy": "Køres af {{engine}}",
+      "bundled": "Fulgte med Auto Tournament"
+    },
+    "import": {
+      "action": "Importér en pakke",
+      "added": "{{name}} er tilføjet",
+      "updated": "{{name}} er opdateret",
+      "failed": "Pakken kunne ikke importeres",
+      "notJson": "Filen er ikke JSON, så det er ikke en pakke",
+      "tooLarge": "Filen er for stor til at være en pakke",
+      "noJson": "Vælg pakkens .json-fil",
+      "missingIcon": "Pakken bruger {{file}} – vælg også den fil, eller importér kun JSON-filen uden flise"
+    },
+    "confirmRemove": {
+      "title": "Fjern {{name}}?",
+      "body": "Spillet forsvinder fra opsætningsguiden. Intet andet slettes, og importerer du pakken igen, kommer det tilbage."
+    },
+    "browse": {
+      "action": "Gennemse",
+      "title": "Spil, du kan tilføje",
+      "hint": "Fra fællesskabets pakkeliste. Intet blev hentet, før du åbnede dette.",
+      "add": "Tilføj",
+      "update": "Opdater",
+      "installed": "Installeret",
+      "empty": "Listen har ingen spil, instansen kan tilføje endnu.",
+      "offline": "listen kunne ikke nås",
+      "staleWith": "Viser den seneste liste, instansen så – {{reason}}.",
+      "failed": "Listen kunne ikke læses"
+    },
+    "pending": "Indlæser spilmodulet til {{game}}…",
+    "pendingRoute": "Indlæser sidens modul…",
+    "notInstalled": {
+      "title": "Spilmodulet til {{game}} er ikke installeret",
+      "body": "De spilspecifikke dele af turneringen er skjult, og kampene kan ikke køre, før modulet installeres igen."
+    },
+    "code": {
+      "chip": "Kodemodul",
+      "hint": "Installeret på serverens disk af den, der driver den.",
+      "noReason": "ingen årsag angivet",
+      "broken": "Modulet er i stykker: {{reason}}",
+      "status": {
+        "ok": "OK",
+        "incompatible": "Ikke kompatibel",
+        "broken": "I stykker",
+        "disabled": "Slået fra"
+      },
+      "enable": "Slå til",
+      "disable": "Slå fra",
+      "enabled": "{{name}} er slået til",
+      "disabled": "{{name}} er slået fra",
+      "toggleFailed": "Modulet kunne ikke ændres",
+      "listFailed": "Kodemodulerne kunne ikke læses: {{reason}}",
+      "safeMode": "Sikker tilstand: der blev ikke indlæst noget kodemodul på denne side. Åbn den uden ?modules=off for at indlæse dem igen.",
+      "slotFailed": "Modulet {{id}} fejlede her. Siden Moduler fortæller hvorfor.",
+      "reload": {
+        "body": "Genindlæs siden for at indlæse eller fjerne modulets kode.",
+        "action": "Genindlæs"
+      },
+      "confirm": {
+        "title": "Slå {{name}} til?",
+        "warningTitle": "Dette er et kodemodul.",
+        "warning": "Det kører inde i Auto Tournaments server med fuld adgang til din database, dine filer og hemmeligheder, og i browseren hos alle admins og spillere, der åbner en side, det tegner, med deres rettigheder. Auto Tournament gennemgår eller sandboxer ikke kodemoduler. Slå det kun til, hvis du stoler lige så meget på forfatteren som på platformen.",
+        "source": "Kom fra",
+        "onDisk": "Serverens disk",
+        "version": "Version",
+        "clientApi": "Klient-API",
+        "serverApi": "Server-API",
+        "none": "ikke angivet",
+        "typeId": "Skriv {{id}} for at slå det til."
+      },
+      "failure": {
+        "badEntry": "dets kode serveres ikke fra {{prefix}}",
+        "noClientApi": "det angiver intet interval for klient-API; platformen tilbyder {{platform}}",
+        "badClientApi": "dets klient-API-interval »{{range}}« er ikke et semver-interval",
+        "outOfRange": "bygget til klient-API {{range}}; platformen tilbyder {{platform}}",
+        "notFound": "dets kode mangler (HTTP 404)",
+        "httpError": "dets kode kunne ikke hentes (HTTP {{status}})",
+        "notJavaScript": "dets kode serveres som {{contentType}}, ikke JavaScript",
+        "importFailed": "dets kode kunne ikke indlæses: {{error}}",
+        "timeout": "dets kode blev ikke indlæst inden for {{seconds}} sekunder",
+        "sharedFailed": "platformen kunne ikke dele sine pakker med det: {{error}}",
+        "badExport": "dets kode er ikke en moduldefinition: {{detail}}",
+        "idMismatch": "dets kode kalder sig »{{id}}«, men det er installeret som »{{expected}}«",
+        "idTaken": "»{{id}}« er allerede et indbygget modul",
+        "render": "dets plads »{{slot}}« fejlede under rendering: {{error}}"
+      }
+    },
+    "signInNeed": {
+      "body": "{{game}}-spillere logger ind med {{provider}}, og login med {{provider}} er slået fra. De kan ikke forbinde den konto, spillet kræver.",
+      "action": "Slå det til"
+    },
+    "addons": {
+      "title": "Tilføjelser",
+      "hint": "Funktioner ved siden af spillene. At slå én til eller fra gælder med det samme.",
+      "open": "Åbn",
+      "toggle": "{{name}} til eller fra",
+      "toggleFailed": "Tilføjelsen kunne ikke ændres.",
+      "startFailed": "Til, men den startede ikke: {{error}}",
+      "notFound": "Der findes ingen sådan tilføjelse.",
+      "off": "Tilføjelsen er slået fra. Slå den til under Moduler for at sætte den op."
+    }
+  },
+  "catalog": {
+    "title": "Spil",
+    "hint": "Alle spil, instansen kører, og dem, du kan tilføje. Spilpakker er data; kodemoduler signeres af Auto Tournament. Begge installeres med ét klik, og dem, der er markeret »I dette image«, kræver intet netværk.",
+    "search": "Søg spil",
+    "installedTitle": "Installeret ({{count}})",
+    "availableTitle": "Tilgængelige ({{count}})",
+    "empty": "Ingen spil matcher.",
+    "allInstalled": "Alt i kataloget er installeret.",
+    "noneInstalled": "Ingen spil er installeret endnu. Installer dem, du vil holde turneringer i – spillerne vælger blandt dem.",
+    "loadFailed": "Spilkataloget kunne ikke læses: {{reason}}",
+    "loadFailedFallback": "serveren svarede ikke",
+    "retry": "Prøv igen",
+    "failed": "{{name}}: {{reason}}",
+    "failedFallback": "handlingen mislykkedes",
+    "updateAll": {
+      "action": "Opdater alle ({{count}})",
+      "running": "Opdaterer…",
+      "done": "{{count}} spil og moduler er opdateret",
+      "summary": "Opdateret {{updated}}, sprunget over {{skipped}}, fejlet {{failed}}.",
+      "failedItem": "{{name}}: {{reason}}",
+      "failedFallback": "alt kunne ikke opdateres"
+    },
+    "feed": {
+      "cache": "Viser kataloget fra {{time}}: onlinekataloget kunne ikke nås ({{reason}}). Spil i dette image installeres stadig uden netværk.",
+      "none": "Onlinekataloget kunne ikke nås ({{reason}}). Viser spillene i dette image; de installeres uden netværk.",
+      "unknown": "ingen årsag angivet",
+      "cacheRefreshing": "Viser kataloget fra {{time}}, mens onlinekataloget indlæses.",
+      "noneRefreshing": "Indlæser onlinekataloget… I mellemtiden er dette spillene i dette image; de installeres uden netværk.",
+      "reason": {
+        "timeout": "det svarede ikke i tide",
+        "unreachable": "det kunne ikke nås",
+        "bad_response": "svaret var ikke et katalog",
+        "newer_schema": "det er skrevet til en nyere Auto Tournament",
+        "too_large": "det er for stort",
+        "offline": "CATALOG_OFFLINE er sat",
+        "http": "det svarede med HTTP {{status}}"
+      }
+    },
+    "kind": {
+      "module": "Kodemodul"
+    },
+    "source": {
+      "snapshot": "I dette image"
+    },
+    "state": {
+      "available": "Tilgængelig",
+      "installed": "Installeret",
+      "update-available": "Opdatering tilgængelig",
+      "disabled": "Slået fra",
+      "broken": "I stykker",
+      "incompatible": "Ikke kompatibel",
+      "builtin": "Indbygget",
+      "installing": "Installerer…",
+      "working": "Arbejder…",
+      "restart": "Genstart påkrævet"
+    },
+    "action": {
+      "install": "Installer",
+      "update": "Opdater til {{version}}",
+      "enable": "Slå til",
+      "disable": "Slå fra",
+      "remove": "Fjern",
+      "uninstall": "Afinstaller"
+    },
+    "done": {
+      "installed": "{{name}} er installeret",
+      "updated": "{{name}} er opdateret",
+      "enabled": "{{name}} er slået til",
+      "disabled": "{{name}} er slået fra",
+      "removed": "{{name}} er fjernet"
+    },
+    "reload": {
+      "body": "{{names}} kører. Genindlæs siden for at bruge det her.",
+      "action": "Genindlæs"
+    },
+    "restart": "Genstart Auto Tournament for at gøre det færdigt: {{names}}.",
+    "restartNow": {
+      "action": "Genstart nu",
+      "restarting": "Genstarter…",
+      "failed": "Kunne ikke genstarte",
+      "timeout": "Auto Tournament er ikke kommet tilbage endnu. Tjek containeren, og genindlæs så siden."
+    },
+    "confirmInstall": {
+      "title": "Installer {{name}}?",
+      "body": "Dette er et kodemodul, signeret af Auto Tournament. Det kører inde i denne server med adgang til din database og dine filer, og i browseren hos alle, der åbner en side, det tegner.",
+      "version": "Version {{version}}",
+      "from": "Fra {{source}}",
+      "fromRemote": "Auto Tournament på GitHub",
+      "fromSnapshot": "kopien i dette image (intet netværk nødvendigt)"
+    },
+    "confirmUninstall": {
+      "title": "Afinstaller {{name}}?",
+      "body": "Dets filer fjernes. Dets data – turneringer, servere, indstillinger – bevares, og en ny installation bringer det tilbage.",
+      "packBody": "Spillet forsvinder fra opsætningsguiden. Intet andet slettes, og en ny installation bringer det tilbage."
+    },
+    "welcome": {
+      "title": "Spil på denne instans",
+      "hint": "Du driver instansen, så du vælger, hvilke spil den tilbyder. Spillerne vælger blandt dem."
+    },
+    "signedBy": "Signeret af {{label}} (nøgle {{keyId}})"
+  },
+  "matchmaking": {
+    "play": {
+      "title": "Spil",
+      "subtitle": "Find en 5v5-kamp. Du matches med de spillere, der har ventet længst, og dit party spiller altid på samme hold.",
+      "unavailable": "Matchmaking er ikke åben på siden endnu.",
+      "findTitle": "Find en kamp",
+      "findHelp": "Du kan gennemse siden, mens du venter. Når en kamp er fundet, har du 20 sekunder til at acceptere.",
+      "searchingHelp": "Søger. Bjælken forneden viser, hvor længe du har ventet.",
+      "find": "Find kamp",
+      "leaderStarts": "Din partyleder starter søgningen.",
+      "cooldown": "Du afviste eller missede en kamp. Du kan søge igen om {{minutes}} min.",
+      "rating_one": "Rating {{elo}} · {{count}} kamp · {{wins}} vundet",
+      "rating_other": "Rating {{elo}} · {{count}} kampe · {{wins}} vundet",
+      "mode": "Tilstand",
+      "modeName": {
+        "5v5": "5v5",
+        "2v2": "2v2 Wingman",
+        "1v1": "1v1"
+      },
+      "inQueue_one": "{{count}} i køen",
+      "inQueue_other": "{{count}} i køen",
+      "partyTitle": "Dit party",
+      "invite": "Invitér",
+      "partyOf": "{{count}} af {{max}}",
+      "you": "Dig",
+      "selected": "Valgt",
+      "modeTitle": {
+        "5v5": "Konkurrence",
+        "2v2": "Wingman",
+        "1v1": "Duel"
+      },
+      "lookingTitle": "Leder efter spillere",
+      "seats": "{{count}} søger · {{total}} skal bruges til en kamp",
+      "leaveQueue": "Forlad køen",
+      "level": "Dit niveau",
+      "xp": "{{into}} / {{next}} XP",
+      "ratingShort": "Rating",
+      "recent": "Seneste",
+      "noRecent": "Ingen kampe endnu.",
+      "result": {
+        "win": "Sejr",
+        "loss": "Nederlag",
+        "draw": "Uafgjort"
+      },
+      "resultShort": {
+        "win": "S",
+        "loss": "N",
+        "draw": "U"
+      },
+      "backToMatch": "Tilbage til din kamp",
+      "online_one": "{{count}} online",
+      "online_other": "{{count}} online",
+      "usuallyWait_one": "som regel cirka {{count}} minut",
+      "usuallyWait_other": "som regel cirka {{count}} minutter",
+      "aboutWait_one": "cirka {{count}} min",
+      "aboutWait_other": "cirka {{count}} min",
+      "defaultPool": {
+        "5v5": "Active Duty",
+        "2v2": "Wingman-baner",
+        "1v1": "Wingman-baner"
+      },
+      "searchAnyone": "Få spillere søger: du matches med alle tilgængelige ({{count}} søger, {{total}} skal bruges)",
+      "searchRating": "Finder en jævn kamp til din rating (±{{elo}}) · {{count}} søger",
+      "botFill": "Fyld tomme pladser med bots",
+      "botFillUnrated": "Bots fylder de tomme pladser · uden rating: ingen rating, XP eller drops",
+      "searchRatingPlain": "Finder en jævn kamp til din rating · {{count}} søger",
+      "searchWidening": "Udvider søgningen: ±{{elo}} · {{count}} søger",
+      "searchAnyRating": "Søger blandt alle ratings nu · {{count}} søger",
+      "inTournament": "Du er med i en aktiv turnering ({{tournament}}), så du kan ikke stille dig i kø til matchmaking lige nu.",
+      "partyInTournament": "I en aktiv turnering, så partyet kan ikke stille sig i kø lige nu: {{names}}.",
+      "inMatch_one": "{{count}} i en kamp",
+      "inMatch_other": "{{count}} i en kamp"
+    },
+    "queue": {
+      "searching": "Søger {{mode}}",
+      "cancel": "Stop søgning"
+    },
+    "found": {
+      "title": "Kamp fundet",
+      "accept": "Acceptér",
+      "decline": "Afvis",
+      "waiting": "Venter på de andre",
+      "accepted": "{{accepted}} / {{total}} har accepteret",
+      "secondsLeft_one": "{{count}} sekund tilbage",
+      "secondsLeft_other": "{{count}} sekunder tilbage",
+      "subtitle": "{{mode}} · acceptér inden for {{seconds}} sekunder"
+    },
+    "party": {
+      "title": "Party",
+      "help": "Spil med venner: lav et party, og send dem linket. Op til 5 spillere, altid på samme hold.",
+      "create": "Lav et party",
+      "members_one": "{{count}} spiller i dit party",
+      "members_other": "{{count}} spillere i dit party",
+      "inviteLink": "Invitationslink",
+      "copy": "Kopiér",
+      "copied": "Invitationslinket er kopieret",
+      "code": "Invitationskode",
+      "join": "Deltag",
+      "joined": "Du er kommet med i partyet",
+      "leave": "Forlad partyet",
+      "disband": "Opløs partyet"
+    },
+    "room": {
+      "title": "Kamprum",
+      "missing": "Kampen findes ikke, eller du er ikke med i den.",
+      "back": "Tilbage til Spil",
+      "team": "Hold {{n}}",
+      "status": {
+        "accepting": "venter på accept",
+        "ready": "alle har accepteret",
+        "cancelled": "annulleret"
+      },
+      "match": {
+        "pending": "Baneveto: ban baner på skift, indtil én er tilbage. Alle på holdet kan klikke; det første klik tæller.",
+        "ready": "Venter på en ledig server.",
+        "loaded": "Serveren er klar. Forbind.",
+        "live": "Kampen er live.",
+        "completed": "Kampen er slut.",
+        "other": "Kamp: {{status}}"
+      },
+      "pickedBy": "{{mode}} · baneroulette valgte",
+      "pickedByVeto": "{{mode}} · valgt i vetoet",
+      "vs": "mod",
+      "you": "(dig)",
+      "accepted": "accepteret",
+      "matchChat": "Kampchat",
+      "playAgain": "Spil igen",
+      "fullScoreboard": "Fuld resultattavle",
+      "newSkin": "Nyt skin",
+      "inventory": "Udstyr",
+      "victory": "Sejr",
+      "defeat": "Nederlag",
+      "draw": "Uafgjort",
+      "inServer": "{{n}} af {{total}} på serveren",
+      "warmupRule": "Opvarmningen holder, indtil alle {{total}} er inde.",
+      "warmupRuleTimed": "Opvarmningen holder, indtil alle {{total}} er inde, eller {{minutes}} minutter er gået: så starter den med dem, der er der.",
+      "teamLetter": "Hold {{letter}}",
+      "sideFirst": "{{side}} først",
+      "presence": {
+        "in": "På serveren",
+        "notYet": "Ikke inde endnu"
+      },
+      "equip": "Udstyr",
+      "equipped": "Udstyret",
+      "equipFailed": "Kunne ikke udstyre den",
+      "rematch": {
+        "title": "Returkamp?",
+        "ask": "Samme hold, en ny kamp. Dit svar gælder hele dit party. Siger de fleste på dit hold ja, får det andet hold 30 sekunder til at acceptere.",
+        "yes": "Ja, returkamp",
+        "no": "Nej tak",
+        "button": "Returkamp",
+        "offerTitle": "Det andet hold vil have returkamp",
+        "teamTitle": "Dit hold vil have returkamp",
+        "offerBody": "Samme hold, en ny kamp. De fleste på dit hold skal sige ja. Dit svar gælder hele dit party.",
+        "waitingOther": "Venter på det andet hold… {{s}} s",
+        "waitingTeam": "Venter på dit hold… {{s}} s",
+        "accepted": "Returkampen er accepteret. Åbner den nye kamp…",
+        "refused": "Returkampen er afvist."
+      }
+    },
+    "result": {
+      "title": "Resultat",
+      "map": "Bane {{n}}",
+      "rating": "Rating",
+      "xp": "+{{xp}} XP · niveau {{level}}",
+      "levelProgress": "{{into}} af {{next}} XP til næste niveau",
+      "xpReason": {
+        "completed": "Spillet",
+        "win": "Sejr",
+        "draw": "Uafgjort",
+        "performance": "Præstation",
+        "first_win": "Dagens første sejr",
+        "admin": "Admin"
+      },
+      "player": "Spiller",
+      "commend": "Bedøm",
+      "thumbsUp": "Tommel op",
+      "thumbsDown": "Tommel ned",
+      "thumbsUpFor": "Tommel op til {{name}}",
+      "thumbsDownFor": "Tommel ned til {{name}}",
+      "downReason": "Hvorfor?",
+      "downTag": {
+        "toxic": "Giftig",
+        "griefing": "Griefing",
+        "afk": "AFK eller gik",
+        "other": "Noget andet"
+      },
+      "commendFailed": "Kunne ikke gemme det",
+      "outcome": {
+        "win": "SEJR",
+        "loss": "NEDERLAG",
+        "draw": "UAFGJORT"
+      },
+      "minutes_one": "{{count}} min",
+      "minutes_other": "{{count}} min",
+      "yourGame": "Din kamp",
+      "fullBoard": "Fuld resultattavle",
+      "hideBoard": "Skjul resultattavlen"
+    },
+    "profile": {
+      "level": "Niveau {{level}}",
+      "xp": "{{xp}} XP",
+      "thumbsUp_one": "{{count}} tommel op",
+      "thumbsUp_other": "{{count}} tommel op",
+      "thumbsDown_one": "{{count}} tommel ned",
+      "thumbsDown_other": "{{count}} tommel ned",
+      "tag": {
+        "friendly": "Venlig",
+        "team_player": "Holdspiller",
+        "leader": "Leder",
+        "good_comms": "God kommunikation",
+        "teacher": "Lærer",
+        "good_sport": "Fair",
+        "toxic": "Giftig",
+        "griefing": "Griefing",
+        "unhelpful": "Uhjælpsom",
+        "bad_sport": "Usportslig",
+        "afk": "AFK eller gik",
+        "other": "Noget andet"
+      },
+      "negativesPrivate": "Kun du og admins kan se disse.",
+      "history": "Matchmaking-kampe",
+      "historyEmpty": "Ingen matchmaking-kampe endnu.",
+      "win": "Sejr",
+      "loss": "Nederlag",
+      "draw": "Uafgjort",
+      "positivePercent": "{{percent}} % positive"
+    },
+    "leaderboard": {
+      "toLadder": "Matchmaking-stige →",
+      "title": "Rangliste",
+      "subtitle_one": "Spillere med {{count}} eller flere kampe de seneste 30 dage.",
+      "subtitle_other": "Spillere med {{count}} eller flere kampe de seneste 30 dage.",
+      "empty_one": "Ingen endnu. Spil {{count}} kamp på 30 dage for at blive vist her.",
+      "empty_other": "Ingen endnu. Spil {{count}} kampe på 30 dage for at blive vist her.",
+      "level": "Niveau",
+      "games": "Kampe",
+      "winRate": "Vundet"
+    },
+    "admin": {
+      "title": "Kø (admins)",
+      "summary": "{{players}} søger, {{lobbies}} åbne kampe",
+      "waited": "{{minutes}} min",
+      "cooldowns": "Karantæner",
+      "until": "{{minutes}} min tilbage",
+      "clear": "Ryd",
+      "cleared": "Karantænen er ryddet",
+      "clearFailed": "Karantænen kunne ikke ryddes",
+      "kind": {
+        "decline": "afviste",
+        "no_show": "missede en kamp",
+        "abandon": "forlod en kamp"
+      },
+      "review": "Spillere, der skal ses på (tommel ned)",
+      "voters_one": "{{count}} stemmegiver",
+      "voters_other": "{{count}} stemmegivere"
+    },
+    "roulette": {
+      "rolling": "Vælger banen…",
+      "picked": "Bane: {{map}}"
+    }
+  },
+  "chat": {
+    "title": "Chat",
+    "close": "Luk chat",
+    "tabsLabel": "Chats",
+    "tabMatch": "Kamp",
+    "tabTeam": "Hold",
+    "tabParty": "Party",
+    "tabDm": "Direkte besked",
+    "dmWho": "Kun I to læser dette",
+    "placeholderDm": "Skriv til {{name}}",
+    "friends": "Venner",
+    "messageFriend": "Skriv til {{name}}",
+    "matchWho": "Dit hold, {{title}} og admins",
+    "matchWhoAdmin": "Begge hold og admins",
+    "teamWho": "Alle på {{team}}",
+    "partyWho": "Alle i dit party",
+    "placeholderMatch": "Skriv til begge hold og admins",
+    "placeholderTeam": "Skriv til dit hold",
+    "placeholderParty": "Skriv til dit party",
+    "send": "Send",
+    "you": "Dig",
+    "adminBadge": "ADMIN",
+    "callAdmin": "Kald på en admin",
+    "adminCallOpen": "Der er et åbent adminkald her",
+    "callAdminConfirmTitle": "Kald på en admin?",
+    "callAdminConfirmBody": "En admin får en notifikation og kommer ind i chatten. Kald kun på en, når du har brug for hjælp med kampen.",
+    "adminCalled": "En admin er kaldt",
+    "callFailed": "Kunne ikke kalde på en admin",
+    "sendFailed": "Beskeden kunne ikke sendes",
+    "logLabel": "Chat: {{title}}",
+    "none": "Ingen chats endnu. Din kamp, dit hold og dit party vises her.",
+    "empty": "Ingen beskeder endnu. Sig hej.",
+    "loading": "Indlæser beskeder",
+    "readOnlyImpersonating": "Du ser som en anden spiller. Stop med at efterligne for at skrive.",
+    "peekMatch": "Kamp · {{title}}",
+    "peekTeam": "Hold",
+    "peekParty": "Party",
+    "buttonUnread": "Chat, {{count}} ulæste",
+    "system": {
+      "vetoStarted": "Vetoet er startet · {{team}} starter",
+      "vetoBan": "{{team}} bannede {{map}}",
+      "vetoReset": "En admin genstartede vetoet",
+      "vetoPick": "{{team}} pickede {{map}}",
+      "vetoSide": "{{team}} starter som {{side}} på {{map}}",
+      "vetoDone": "Veto færdigt · {{maps}}",
+      "serverReady": "Server klar · {{map}} · forbind fra kampsiden",
+      "playerJoined": "{{name}} kom ind på serveren · {{n}} inde",
+      "playerLeft": "{{name}} forlod serveren · {{n}} inde",
+      "mapLive": "Bane {{n}} er live · {{map}}",
+      "mapResult": "Bane {{n}} · {{map}} · {{team1}} {{s1}}–{{s2}} {{team2}}",
+      "seriesWon": "{{team}} vinder serien {{a}}–{{b}}",
+      "adminCalled": "{{name}} kaldte på en admin",
+      "adminClaimed": "{{name}} overtog adminkaldet",
+      "adminResolved": "{{name}} løste adminkaldet",
+      "timedOut": "tiden løb ud",
+      "remindAccount": "{{name}}: log ind én gang med Steam, så du kan spille i {{tournament}}.",
+      "remindGame": "{{name}}: tilføj spillet til din profil (Spil, du spiller) før tjek-ind til {{tournament}}.",
+      "serverDown": "Kampserveren crashede. Bringer den tilbage…",
+      "serverBack": "Kampen er tilbage: bane {{map}}, runde {{round}}. Forbind igen."
+    },
+    "party": {
+      "inviteCopied": "Invitationslinket er kopieret",
+      "inviteFailed": "Linket kunne ikke kopieres",
+      "leader": "leder",
+      "invite": "Invitér",
+      "queue": "Stil jer i kø sammen",
+      "leaveQueue": "Forlad køen",
+      "searching": "Søger efter en kamp",
+      "leaderQueues": "Lederen starter søgningen"
+    },
+    "back": "Tilbage",
+    "typing": {
+      "one": "{{name}} skriver…",
+      "two": "{{first}} og {{second}} skriver…",
+      "many": "{{count}} personer skriver…"
+    },
+    "emoji": {
+      "open": "Emoji",
+      "title": "Vælg en emoji",
+      "search": "Søg emoji",
+      "none": "Ingen emoji fundet",
+      "categories": {
+        "results": "Resultater",
+        "recent": "Seneste",
+        "smileys": "Smileys",
+        "gestures": "Hænder",
+        "people": "Personer",
+        "animals": "Natur",
+        "food": "Mad og drikke",
+        "activity": "Spil og sport",
+        "travel": "Steder",
+        "objects": "Genstande",
+        "symbols": "Symboler"
+      }
+    }
+  },
+  "search": {
+    "open": "Søg",
+    "placeholder": "Søg sider, spillere, hold, højdepunkter…",
+    "placeholderAdmin": "Søg sider, indstillinger, spillere, hold, servere…",
+    "hint": "Skriv mindst to bogstaver. Ctrl K (⌘ K) eller / åbner søgningen alle steder.",
+    "none": "Intet fundet for »{{q}}«.",
+    "versus": "{{team1}} mod {{team2}}",
+    "groups": {
+      "pages": "Sider og indstillinger",
+      "players": "Spillere",
+      "teams": "Hold",
+      "tournaments": "Turneringer",
+      "matches": "Kampe",
+      "highlights": "Højdepunkter",
+      "maps": "Baner",
+      "servers": "Servere og maskiner",
+      "recorders": "Optagere"
+    },
+    "status": {
+      "setup": "Sættes op",
+      "in_progress": "I gang",
+      "completed": "Færdig"
+    },
+    "pages": {
+      "manage": "Administrer",
+      "tournaments": "Turneringer",
+      "newTournament": "Turneringsopsætning",
+      "playedMatches": "Alle kampe",
+      "importMatch": "Importér en kamp",
+      "teams": "Hold",
+      "players": "Spillere",
+      "reports": "Anmeldelser",
+      "templates": "Skabeloner",
+      "ratings": "Rating",
+      "modules": "Moduler",
+      "servers": "Servere",
+      "maps": "Baner og banepuljer",
+      "skins": "Skins",
+      "matchRules": "Kampregler",
+      "highlights": "Højdepunkter",
+      "adminTools": "System",
+      "settings": "Indstillinger",
+      "settingsSite": "Indstillinger: side og e-mail",
+      "settingsSignIn": "Indstillinger: loginudbydere",
+      "settingsPlayers": "Indstillinger: spillere og adgang",
+      "settingsWebhooks": "Indstillinger: webhooks",
+      "settingsLicense": "Licens",
+      "settingsMatchmaking": "Indstillinger: matchmaking",
+      "settingsAdvanced": "Indstillinger: avanceret",
+      "liveMatches": "Livekampe"
+    },
+    "clips_one": "{{count}} klip",
+    "clips_other": "{{count}} klip",
+    "fieldLabel": "Søg"
+  },
+  "highlightsPage": {
+    "recorderStats": "Send anonyme benchmarkresultater",
+    "recorderStatsHint": "Efter et benchmark sender optagerne GPU- og CPU-model, versioner og tider til hjemmesiden, til den offentlige tabel over, hvad der renderer hvor hurtigt. Intet om kampe eller spillere. Optagelse virker på samme måde, når det er slået fra.",
+    "title": "Højdepunkter",
+    "subtitle": "Højdepunktsklip og -videoer fra hver kamp: hvad optagerne laver, musikken under videoerne og hvert spils optagere.",
+    "tabs": {
+      "settings": "Indstillinger"
+    },
+    "perPlayer": {
+      "label": "Klip pr. spiller pr. bane",
+      "helper": "1 til 6. Flere klip gør, at en kamps højdepunkter tager længere tid at blive færdige."
+    },
+    "preset": {
+      "label": "Videokvalitet",
+      "smooth": "Glidende (anbefales): op til 1080p, 240 fps",
+      "crisp": "Skarp: op til 1440p, 120 fps",
+      "lan": "LAN, maksimum: op til 4K, 240 fps",
+      "custom": "Egen",
+      "light": "Let: kun 720p, 60 fps"
+    },
+    "bitrate": {
+      "label": "Bitrate",
+      "auto": "Automatisk (anbefales)",
+      "option": "{{mbps}} Mbit/s"
+    },
+    "resolution": {
+      "label": "Højeste opløsning"
+    },
+    "fps": {
+      "label": "Højeste billedfrekvens",
+      "option": "{{fps}} fps"
+    },
+    "quality": {
+      "helper": "Optagerne laver hvert klip og hver video én gang, i højeste kvalitet, og skærer de lavere ud af den. Slowmotion forbliver glidende ved enhver billedfrekvens. Allerede lavede klip beholder deres kvalitet, indtil de laves igen."
+    },
+    "music": {
+      "label": "Musik under videoerne",
+      "all": "Alle numre ({{count}})",
+      "pick": "Kun dem, jeg vælger",
+      "off": "Ingen musik",
+      "listen": "Lyt til {{title}}",
+      "stop": "Stop {{title}}",
+      "contentId": "YouTube Content ID",
+      "volume": "Lydstyrke",
+      "byo": "Tag din egen musik med: tilføj numre, du har ret til at bruge. Auto Tournament leverer ingen. Afspilleren spiller et nyt nummer til hver video, og downloads fås med eller uden.",
+      "remove": "Fjern {{title}}",
+      "removeConfirm": "Fjern",
+      "keep": "Behold",
+      "addTitle": "Tilføj et nummer",
+      "chooseFile": "Vælg en fil",
+      "noFile": "Ingen fil valgt (MP3, M4A, WAV…)",
+      "trackTitle": "Titel",
+      "artist": "Kunstner",
+      "genre": "Genre (grupperer menuen)",
+      "source": "Hvor det kommer fra (et link, til kreditering)",
+      "contentIdLabel": "Registreret i YouTube Content ID (en upload med det kan få et krav)",
+      "add": "Tilføj nummeret",
+      "adding": "Tilføjer…",
+      "rights": "Tilføj kun musik, du har ret til at bruge i videoer. Lydstyrken udjævnes med de andre numre.",
+      "suggestions_one": "{{count}} nummer, der passer til videoerne, på Pixabay",
+      "suggestions_other": "{{count}} numre, der passer til videoerne, på Pixabay",
+      "suggestionsHelp": "Åbn ét, download det fra Pixabay under dets licens, og tilføj det her. Licensen tillader brug i videoer; den tillader ikke, at nogen giver filen videre.",
+      "link": "Eller et link til lydfilen",
+      "addLink": "Tilføj fra linket"
+    },
+    "overlay": {
+      "label": "Overlays",
+      "helper_one": "{{count}} klip har en ren kopi. Gentegn lægger det aktuelle tekstkort, killfeed og navne på igen og laver så videoerne igen. Ingen CS2 nødvendig.",
+      "helper_other": "{{count}} klip har en ren kopi. Gentegn lægger det aktuelle tekstkort, killfeed og navne på igen og laver så videoerne igen. Ingen CS2 nødvendig.",
+      "redraw": "Gentegn overlays",
+      "pending_one": "{{count}} video venter på en optager",
+      "pending_other": "{{count}} videoer venter på en optager",
+      "failed_one": "{{count}} video kunne ikke gentegnes",
+      "failed_other": "{{count}} videoer kunne ikke gentegnes",
+      "keepClean": "Behold rene kopier af klip",
+      "keepCleanHelper": "Hvert klip gemmes også, som det blev optaget, uden kortet eller killfeed. Videoerne laves så af de rene klip med deres eget overlay, og overlays kan gentegnes. Fra bruger cirka halvdelen af lagerpladsen.",
+      "redrawFailed": "Gentegningen kunne ikke sættes i kø."
+    },
+    "moved": "Indstillinger for højdepunkter, optagerne og hvordan man tilføjer en findes nu på deres egen side:",
+    "saved": "Gemt",
+    "saveFailed": "Kunne ikke gemme",
+    "reels": {
+      "title": "Videostørrelser",
+      "description": "Hvor mange klip der går ind i hver video. Flere klip giver længere videoer, der tager længere tid at lave.",
+      "funnyPerPlayer": "Sjove klip pr. spiller pr. bane",
+      "mapReelPerPlayer": "Klip pr. spiller i en banevideo",
+      "seriesReelMax": "Klip i en serievideo",
+      "seriesReelPerPlayer": "Klip pr. spiller i en serievideo",
+      "teamReelPerPlayer": "Klip pr. spiller i en holdvideo",
+      "tournamentReelMax": "Klip i en turneringsvideo",
+      "tournamentReelPerPlayer": "Klip pr. spiller i en turneringsvideo",
+      "range": "{{min}} til {{max}}"
+    },
+    "minResolution": {
+      "label": "Laveste opløsning"
+    },
+    "ladder": {
+      "title": "Kvaliteter, seerne kan vælge",
+      "recordedAt": "Optaget i {{quality}}",
+      "highest": "Højeste",
+      "lowest": "Telefoner, langsomme forbindelser",
+      "rate": "≈{{mbps}} Mbit/s"
+    },
+    "cost": {
+      "single": "Optagelsen tager cirka {{time}}× så lang tid som 1080p ved 120 fps. Et skøn.",
+      "withCuts": "Optagelsen tager cirka {{time}}× så lang tid som 1080p ved 120 fps, og alle kvaliteter gemmes: cirka {{storage}}× pladsen. Skøn."
+    },
+    "keepMasters": {
+      "label": "Behold den højeste kvalitet",
+      "always": "Altid",
+      "30": "I 30 dage",
+      "7": "I 7 dage",
+      "reels": "Indtil videoerne er lavet",
+      "helper": "Derefter tager den næste kvalitet dens plads, og den rene kopi forsvinder, hvilket sparer det meste af pladsen. En video uden sin højeste kvalitet kan ikke få sit overlay gentegnet eller sættes ind i en ny video i den kvalitet; den skal optages igen."
+    },
+    "matchmaking": {
+      "minimumTitle": "Hvilke spil der bliver til klip",
+      "minimumDescription": "For hver kamp. Matchmaking beholder også kun de bedste få, sat nedenfor.",
+      "title": "Matchmaking-højdepunkter",
+      "description": "Matchmaking spiller mange kampe. Behold kun de bedste få fra hver, så optagerne ikke er optaget hele dagen.",
+      "on": "Optag matchmaking-højdepunkter",
+      "onHelp": "Fra: matchmaking-kampe får ingen klip eller videoer.",
+      "clips": "Klip pr. kamp",
+      "clipsHelp": "De bedste spil først. En spillers video laves af de samme klip.",
+      "all": "Alle",
+      "minKills": "Mindste spil at beholde",
+      "minKillsHelp": "Spil under dette bliver aldrig et klip, heller ikke når der er plads.",
+      "kills": {
+        "2": "2 kills",
+        "3": "3 kills",
+        "4": "4 kills",
+        "5": "Ace"
+      },
+      "killsInline": {
+        "2": "2 kills",
+        "3": "3 kills",
+        "4": "4 kills",
+        "5": "en ace"
+      },
+      "clutch": "Clutches tæller altid",
+      "clutchHelp": "En vundet 1vX tæller, selv med færre kills end det mindste spil.",
+      "summary": "Hver matchmaking-kamp får {{clips}} med {{kills}} eller mere.",
+      "summaryClutch": "Hver matchmaking-kamp får {{clips}} med {{kills}} eller mere, og alle clutches.",
+      "summaryEvery": "hvert spil",
+      "summaryBest_one": "sit bedste spil",
+      "summaryBest_other": "sine bedste {{count}} spil"
+    }
+  },
+  "update": {
+    "available": "Auto Tournament {{latest}} er udkommet (du kører {{running}}).",
+    "notes": "Nyheder",
+    "module": "{{name}} {{version}} er tilgængelig (du kører {{installed}}).",
+    "moduleProblem": "{{name}}: opdateringen gik ikke igennem. {{problem}}",
+    "openModules": "Moduler"
+  },
+  "licenseGate": {
+    "expiredTitle": "Platformens licens er udløbet",
+    "expiredAdmin": "Licensbetalingen er forfalden, så platformen er stoppet. En betaling tænder den igen med det samme. Dine data er i sikkerhed.",
+    "expiredPlayer": "Kampe og tilmeldinger er sat på pause. Arrangøren er informeret. Kig forbi senere.",
+    "pay": "Betal i konsollen ↗",
+    "settings": "Licensindstillinger",
+    "fix": "Ret det ↗",
+    "pastDue": "Licensbetalingen mislykkedes. Platformen stopper {{date}}, medmindre den betales.",
+    "elsewhereTitle": "Licensnøglen bruges på en anden installation",
+    "elsewhereAdmin": "Én licensnøgle virker på én Auto Tournament-installation, og en anden installation har denne. Indsæt denne installations egen nøgle, eller brug »Flyt til en anden installation« i konsollen. Dine data er i sikkerhed.",
+    "replacedTitle": "Licensnøglen er erstattet",
+    "replacedAdmin": "Der er lavet en ny nøgle til licensen i konsollen, så den gamle er stoppet. Indsæt den nye nøgle i licensindstillingerne. Dine data er i sikkerhed.",
+    "openConsole": "Åbn konsollen ↗",
+    "pasteKey": "Indsæt den nye nøgle",
+    "replacedSoon": "Der er lavet en ny nøgle til licensen i konsollen. Indsæt den i licensindstillingerne: denne nøgle stopper {{date}}."
+  },
+  "matchAdmin": {
+    "openChat": "Åbn chat",
+    "resetVeto": "Genstart veto",
+    "resetVetoTitle": "Genstart vetoet?",
+    "resetVetoBody": "Alle bans, picks og sidevalg indtil nu ryddes, og holdene starter vetoet forfra. Begge hold ser det i kampchatten.",
+    "vetoReset": "Vetoet starter forfra",
+    "vetoResetFailed": "Vetoet kunne ikke genstartes"
+  },
+  "addressMismatch": {
+    "open": "Åbn {{host}}",
+    "text": "Du er på {{current}}, men siden er sat op til {{host}}: Steam-login, mails og spilserverne bruger den adresse."
+  },
+  "siteFooter": {
+    "support": "Støt projektet",
+    "trademarks": "Counter-Strike, CS2 og Steam er varemærker tilhørende Valve Corporation. Andre spilnavne er varemærker tilhørende deres ejere. Auto Tournament er ikke tilknyttet eller godkendt af Valve eller nogen spiludgiver."
+  },
+  "discordNotice": {
+    "link": "Forbind din Discord-konto, så botten kan flytte dig ind i dit holds talekanal og finde dig i holdets kanal.",
+    "linkAction": "Forbind Discord",
+    "join": "Deltag på vores Discord-server. Dit holds kanaler og kampkort er der.",
+    "joinAction": "Deltag på serveren"
+  }
+}

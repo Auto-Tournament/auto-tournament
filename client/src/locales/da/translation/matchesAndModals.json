@@ -1,0 +1,490 @@
+{
+  "matchesPage": {
+    "errors": {
+      "loadMatches": "Kampene kunne ikke indlæses",
+      "loadTitle": "Fejl ved indlæsning af kampe",
+      "bulkDelete": "En eller flere kampe kunne ikke slettes"
+    },
+    "header": {
+      "createMatch": "Opret kamp"
+    },
+    "bulkSelect": {
+      "select": "Vælg",
+      "done": "Færdig med at vælge",
+      "selectAll": "Vælg alle",
+      "unselectAll": "Fravælg alle",
+      "deleteSelected": "Slet valgte"
+    },
+    "empty": {
+      "title": "Ingen kampe at vise",
+      "description": "Opret en turnering, og generér brackets for at se kampe her",
+      "createManual": "Eller opret en manuel kamp"
+    },
+    "sections": {
+      "live": "Livekampe ({{count}})",
+      "upcoming": "Kommende kampe ({{count}})",
+      "history": "Kamphistorik ({{count}})",
+      "inQueue": "{{count}} i kø"
+    },
+    "manualMatchLabel": "Manuel kamp",
+    "create": {
+      "success": "Manuel kamp oprettet: {{slug}}"
+    },
+    "bulkDelete": {
+      "title": "Slet manuelle kampe",
+      "deleted_one": "Slettede {{count}} kamp",
+      "deleted_other": "Slettede {{count}} kampe",
+      "message_one": "Er du sikker på, at du vil slette {{count}} manuel kamp? Det kan ikke fortrydes.",
+      "message_other": "Er du sikker på, at du vil slette {{count}} manuelle kampe? Det kan ikke fortrydes."
+    },
+    "card": {
+      "matchNumber": "Kamp #{{number}}",
+      "server": "Server: {{name}}",
+      "queuePosition": "Køplads: #{{position}}",
+      "shuffle": "Shuffle",
+      "shuffleManual": "Manuel shuffle",
+      "manual": "Manuel",
+      "simulation": "Simulering",
+      "winner": "VINDER",
+      "mapN": "Bane {{n}}"
+    },
+    "statusLabel": {
+      "walkover": "WALKOVER",
+      "waitingForTournament": "VENTER PÅ, AT TURNERINGEN STARTER",
+      "waitingForServer": "VENTER PÅ SERVER",
+      "waitingForPairing": "VENTER PÅ PARRING",
+      "vetoPending": "VETO AFVENTER",
+      "mapVeto": "BANEVETO",
+      "serverAllocated": "SERVER TILDELT",
+      "warmup": "OPVARMNING",
+      "overtime": "OVERTID #{{n}}",
+      "live": "LIVE",
+      "completed": "FÆRDIG",
+      "cancelled": "ANNULLERET",
+      "needsDecision": "KRÆVER ADMINBESLUTNING"
+    },
+    "statusGuide": {
+      "title": "Guide til kampstatus",
+      "pending": "Kampen er planlagt, men har ingen server endnu. Den tildeles, når en server bliver ledig.",
+      "loaded": "Kampen er indlæst på serveren og i opvarmning. Spillerne skal forbinde og melde sig klar for at starte.",
+      "live": "Kampen spilles på sin server.",
+      "completed": "Kampen er slut. Vinderen er fundet, og bracketen er opdateret.",
+      "proTipTitle": "Tip:",
+      "proTip": "Når en kamp viser »Venter på spillere (X/Y)«, er serveren klar, og spillerne skal forbinde. Når alle forventede spillere har forbundet og meldt sig klar, starter kampen automatisk."
+    },
+    "latestEvent": "Seneste: {{event}}",
+    "matchLabel": {
+      "upper": "ØB R{{round}} K{{match}}",
+      "lower": "NB R{{round}} K{{match}}",
+      "grandFinal": "Den store finale",
+      "grandFinalReset": "Omstart af den store finale",
+      "group": "Gruppe {{group}} · Runde {{round}}",
+      "playoffs": "Slutspil · Runde {{round}}"
+    },
+    "table": {
+      "filterLabel": "Vis",
+      "search": "Find et hold eller en spiller",
+      "tbd": "TBD",
+      "manage": "Administrer kamp",
+      "empty": "Ingen kampe her.",
+      "filter": {
+        "attention_one": "Kræver opmærksomhed · {{count}}",
+        "attention_other": "Kræver opmærksomhed · {{count}}",
+        "live_one": "Live · {{count}}",
+        "live_other": "Live · {{count}}",
+        "veto_one": "Veto · {{count}}",
+        "veto_other": "Veto · {{count}}",
+        "waiting_one": "Venter · {{count}}",
+        "waiting_other": "Venter · {{count}}",
+        "finished_one": "Færdige · {{count}}",
+        "finished_other": "Færdige · {{count}}",
+        "all_one": "Alle · {{count}}",
+        "all_other": "Alle · {{count}}"
+      },
+      "columns": {
+        "match": "Kamp",
+        "teams": "Hold",
+        "phase": "Fase",
+        "server": "Server",
+        "attention": "Kræver opmærksomhed",
+        "open": "Åbn"
+      },
+      "attention": {
+        "calls_one": "Adminkald",
+        "calls_other": "{{count}} adminkald",
+        "decide": "Afgør resultatet"
+      },
+      "phase": {
+        "live": "Live · bane {{map}}",
+        "finished": "Færdig",
+        "finishedScore": "Færdig · {{score}}",
+        "veto": "Baneveto",
+        "waitingTeams": "Venter på sine hold",
+        "queued": "Venter på server · #{{position}} i køen",
+        "waiting": "Venter"
+      },
+      "server": {
+        "freed": "Frigivet"
+      }
+    }
+  },
+  "matchDetailsModal": {
+    "tiebreakHint": "Stillingen er lige: {{team}} vandt banen, afgjort med tiebreak.",
+    "delete": {
+      "dialogTitle": "Slet kamp",
+      "confirmTitle": "Slet denne kamp?",
+      "confirmBody": "Er du sikker på, at du vil slette kampen »{{slug}}«? Det kan ikke fortrydes.",
+      "button": "Slet kamp",
+      "success": "Kampen er slettet",
+      "failed": "Kampen kunne ikke slettes"
+    },
+    "roster": {
+      "title": "Spillertrup",
+      "yourTeam": "Dit hold",
+      "openPlayerPage": "Åbn spillersiden",
+      "ready": "KLAR",
+      "connected": "FORBUNDET",
+      "offline": "OFFLINE",
+      "bot": "BOT"
+    },
+    "decision": {
+      "body": "Alle baner er spillet, men serien er lige på baner, runder og skade. Vælg vinderen, så bracketen kan gå videre.",
+      "setWinner": "{{team}} vinder",
+      "confirmTitle": "Angiv vinder af serien",
+      "confirmBody": "Afslut serien med {{team}} som vinder? Bracketen går videre, og det kan ikke fortrydes her.",
+      "confirm": "Angiv vinder",
+      "success": "Vinder angivet",
+      "failed": "Vinderen kunne ikke angives"
+    },
+    "config": {
+      "loadFailed": "Kampkonfigurationen kunne ikke indlæses",
+      "view": "Vis kampkonfigurationens JSON",
+      "title": "Kampkonfigurationens JSON",
+      "loading": "Indlæser kampkonfiguration...",
+      "empty": "Der findes ingen konfiguration for denne kamp."
+    },
+    "tiebreak": {
+      "regulationOnly": "Overtid er slået fra for denne kamp (kun ordinær tid), så lige stilling afgøres af holdenes samlede skade.",
+      "segmentsExhausted": "Overtid er sat op med et maksimalt antal perioder. Er stillingen stadig lige, afgøres vinderen af holdenes samlede skade.",
+      "overtimeDisabled": "Overtid er slået fra for denne kamp, så lige stilling afgøres af holdenes samlede skade.",
+      "tiedByDamage": "Slutstillingen var lige, så efter kampindstillingerne blev vinderen valgt ud fra holdenes samlede skade."
+    },
+    "team1": "Hold 1",
+    "team2": "Hold 2",
+    "matchTime": "Kamptid:",
+    "server": "Server:",
+    "queuePosition": "Køplads:",
+    "totalDamage": "Samlet skade: {{team1}} - {{team2}}",
+    "mapOfTotal": "Bane {{index}} af {{total}}: {{map}}",
+    "mapIndex": "Bane {{index}}: {{map}}",
+    "round": "Runde {{round}}",
+    "shuffle": {
+      "averageElo": "Holdets ELO (snit): {{team1}} mod {{team2}}",
+      "balancerHint": "Shuffle-hold laves af en OpenSkill-baseret balancering, der spreder højt og lavt ratede spillere på begge sider for at holde snittene tæt på hinanden."
+    },
+    "playerLeaderboards": "Spillerranglister",
+    "noPlayerData": "Ingen spillerdata tilgængelige",
+    "currentMap": "Aktuel bane",
+    "maps": "Baner",
+    "mapsNotPicked": "Banerne er ikke valgt endnu.",
+    "mapsViaVeto": "Afgøres via veto",
+    "matchInformation": "Kampinformation",
+    "created": "Oprettet:",
+    "started": "Startet:",
+    "completed": "Færdig:",
+    "adminControls": "Adminkontroller",
+    "slug": "Kamp-slug:",
+    "openChat": "Kampchat"
+  },
+  "bulkShuffleMatchesModal": {
+    "title": "Opret flere shuffle-kampe",
+    "description": "Sæt en shuffle-kamp op på én bane (bane + rundegrænse), og definér så mange indbyrdes kampe, du vil, ved at vælge præcise spilleropstillinger til hver side. Kampene oprettes i den aktuelle shuffle-turnering og tildeles servere, når du starter turneringen.",
+    "mapSelect": {
+      "label": "Bane",
+      "noMaps": "Ingen baner sat op for denne turnering",
+      "helper": "Alle kampe i denne omgang bruger denne bane."
+    },
+    "maxRounds": {
+      "label": "Maks. runder pr. bane",
+      "helperWithValue": "Kampen spilles op til {{maxRounds}} runder; vinderen er den, der først når {{winRounds}} runder.",
+      "helperDefault": "Højeste antal runder pr. bane (standard: 24, maks.: 30)."
+    },
+    "matchesSection": {
+      "title": "Kampe ({{count}})",
+      "addMatch": "Tilføj kamp"
+    },
+    "players": {
+      "empty": "Ingen spillere er registreret i denne shuffle-turnering endnu. Registrér spillere først, så kan du oprette manuelle kampe."
+    },
+    "matchRow": {
+      "title": "Kamp {{index}}",
+      "teamCounts": "{{team1}}/{{teamSize}} • {{team2}}/{{teamSize}}",
+      "team1Label": "Spillere på hold 1 ({{team1Count}}/{{teamSize}})",
+      "team2Label": "Spillere på hold 2 ({{team2Count}}/{{teamSize}})",
+      "searchPlaceholder": "Søg og vælg spillere",
+      "mapOverrideLabel": "Bane (valgfri tilsidesættelse)",
+      "mapOverrideHelperOwn": "Denne kamp bruger sin egen bane.",
+      "mapOverrideHelperDefault": "Lad feltet være tomt for at bruge standardbanen ovenfor.",
+      "maxRoundsOverrideLabel": "Maks. runder (valgfri tilsidesættelse)",
+      "maxRoundsOverrideHelperOwn": "Tilsidesætter standardværdien for maks. runder for denne kamp (nu {{value}}).",
+      "maxRoundsOverrideHelperDefault": "Lad feltet være tomt for at bruge standardværdien for maks. runder ovenfor."
+    },
+    "errors": {
+      "loadPlayers": "De registrerede spillere kunne ikke indlæses",
+      "noMatches": "Tilføj mindst én kamp at oprette.",
+      "bothTeamsRequired": "Kamp {{index}}: begge hold skal have mindst én spiller.",
+      "conflictingPlayers": "Kamp {{index}}: den samme spiller kan ikke være på begge hold. Konfliktende ID'er: {{ids}}",
+      "mapRequired": "Kamp {{index}}: bane er påkrævet (sæt en standardbane ovenfor, eller vælg en bane til kampen).",
+      "rowMaxRoundsRange": "Kamp {{index}}: maks. runder skal være mellem 1 og 30, når det tilsidesættes pr. kamp.",
+      "globalMaxRoundsRange": "Maks. runder skal være mellem 1 og 30.",
+      "createFailed": "De manuelle shuffle-kampe kunne ikke oprettes"
+    },
+    "success": {
+      "created": "Manuelle shuffle-kampe oprettet. De tildeles, når turneringen starter."
+    },
+    "createMatchesButton": {
+      "default": "Opret kampe",
+      "creating": "Opretter…"
+    }
+  },
+  "teamModal": {
+    "titleCreate": "Opret nyt hold",
+    "titleEdit": "Rediger hold",
+    "teamNameLabel": "Holdnavn",
+    "teamNamePlaceholder": "Astralis",
+    "teamNameHelper": "Holdnavnet kan indeholde ethvert sprog og specialtegn",
+    "teamTagLabel": "Holdtag",
+    "teamTagPlaceholder": "AST",
+    "teamTagHelper": "Laves automatisk ud fra holdnavnet (maks. 4 tegn)",
+    "playersHeader": "Spillere ({{count}})",
+    "selectPlayers": "Vælg spillere",
+    "noPlayersInfo": "Ingen spillere tilføjet endnu. Tilføj mindst én spiller.",
+    "addPlayersHelper": "Tilføj en ny spiller nedenfor, eller vælg blandt eksisterende spillere",
+    "addPlayersHelper_steam": "Tilføj spillere ved at indsætte en Steam-URL eller vælge blandt eksisterende spillere",
+    "steamInputLabel": "Steam-ID / egen URL",
+    "steamInputPlaceholder": "gaben eller steamcommunity.com/id/gaben",
+    "resolveSteam": "Slå Steam-ID op",
+    "resolving": "Slår op...",
+    "playerNameLabel": "Spillernavn",
+    "playerNamePlaceholder": "s1mple",
+    "eloLabel": "ELO (valgfri)",
+    "eloPlaceholder": "1500",
+    "eloHelper": "Standard: 1500",
+    "errors": {
+      "steamLookupEmpty": "Indtast et Steam-ID, en egen URL eller en profil-URL",
+      "steamApiNotConfigured": "Steam API er ikke konfigureret – indtast Steam ID64 manuelt",
+      "steamResolveFailed": "Steam-ID'et kunne ikke slås op – indtast Steam ID64 manuelt",
+      "steamAndNameRequired": "Både Steam-ID og spillernavn er påkrævet",
+      "steamDuplicate": "Dette Steam-ID er allerede på holdet",
+      "teamNameRequired": "Holdnavn er påkrævet",
+      "playersRequired": "Mindst én spiller er påkrævet",
+      "saveFailed": "Holdet kunne ikke gemmes",
+      "deleteFailed": "Holdet kunne ikke slettes",
+      "discordIdInvalid": "Discord-ID skal være 17–20 cifre (det numeriske bruger-ID, ikke et brugernavn)",
+      "discordIdInvalidPlayers": "Ugyldigt Discord-ID for: {{names}}. Det skal være 17–20 cifre eller tomt.",
+      "discordIdSaveFailed": "Holdet blev gemt, men Discord-ID'et kunne ikke gemmes for: {{names}}. {{message}}",
+      "nameRequired": "Indtast spillerens navn",
+      "addPlayerFailed": "Spilleren kunne ikke tilføjes"
+    },
+    "success": {
+      "playerAdded": "Spiller tilføjet til holdet",
+      "playerReplaced": "Spiller erstattet",
+      "teamUpdated": "Holdet er opdateret",
+      "teamCreated": "Holdet er oprettet",
+      "teamDeleted": "Holdet er slettet"
+    },
+    "buttons": {
+      "deleteTeam": "Slet hold",
+      "cancel": "Annuller",
+      "saving": "Gemmer...",
+      "saveChanges": "Gem ændringer",
+      "createTeam": "Opret hold"
+    },
+    "confirmDelete": {
+      "title": "Slet hold",
+      "message": "Er du sikker på, at du vil slette »{{name}}«? Det kan ikke fortrydes."
+    },
+    "replacePlayerAria": "Erstat spilleren {{name}}",
+    "replacePlayerTooltip": "Erstat denne spiller",
+    "accountLabel": "{{account}}-konto (valgfri)",
+    "accountHelper": "Til {{games}}. Når vedkommende logger ind med {{account}}, bliver de denne spiller."
+  },
+  "playerModal": {
+    "titleCreate": "Opret spiller",
+    "titleEdit": "Rediger spiller",
+    "steamLabel": "Steam-ID eller profil-URL (valgfri)",
+    "steamHelperEditing": "Steam-ID kan ikke ændres",
+    "steamHelperNew": "Til {{games}}. Indtast et Steam ID64, en egen URL eller en profil-URL; »Slå op« udfylder navn og avatar.",
+    "resolveSteam": "Slå Steam-ID op",
+    "resolving": "Slår op...",
+    "playerNameLabel": "Spillernavn",
+    "playerNamePlaceholder": "Spiller",
+    "eloLabelNew": "Start-ELO",
+    "eloLabelEdit": "ELO",
+    "eloHelperNew": "Lad feltet være tomt for standard (1500 Skill Rating).",
+    "eloHelperEdit": "Ændres ELO, nulstilles spillerens rating og statistik. Det kan ikke fortrydes.",
+    "isAdminLabel": "Er admin (administrerer siden; spilmoduler kan også give admins rettigheder i spillet)",
+    "currentElo": "Nuværende ELO: {{value}}",
+    "startingElo": "Start-ELO: {{value}}",
+    "matchesPlayed": "Spillede kampe: {{count}}",
+    "errors": {
+      "steamRequired": "Steam-ID er påkrævet",
+      "nameRequired": "Spillernavn er påkrævet",
+      "steamLookupEmpty": "Indtast et Steam-ID, en egen URL eller en profil-URL",
+      "steamApiNotConfigured": "Steam API er ikke konfigureret – indtast Steam ID64 manuelt",
+      "steamResolveFailed": "Steam-ID'et kunne ikke slås op – indtast Steam ID64 manuelt",
+      "saveFailed": "Spilleren kunne ikke gemmes"
+    },
+    "success": {
+      "playerUpdated": "Spilleren er opdateret",
+      "playerCreated": "Spilleren er oprettet"
+    },
+    "buttons": {
+      "delete": "Slet",
+      "cancel": "Annuller",
+      "saving": "Gemmer...",
+      "save": "Gem",
+      "create": "Opret"
+    },
+    "confirmDelete": {
+      "title": "Slet spiller",
+      "message": "Er du sikker på, at du vil slette spilleren »{{name}}«? Det kan ikke fortrydes."
+    },
+    "confirmEloUpdate": {
+      "title": "Opdater spillerens ELO",
+      "message": "Er du sikker på, at du vil ændre spillerens ELO fra {{from}} til {{to}}? Statistik og ratinghistorik nulstilles. Det kan ikke fortrydes."
+    },
+    "discordIdHelper": "Valgfrit. 17–20 cifre. Lader arrangører nå spilleren på Discord. Vises aldrig offentligt.",
+    "accountLabel": "{{account}}-konto (valgfri)",
+    "accountHelper": "Til {{games}}. Konto-ID'et; når vedkommende logger ind med {{account}}, bliver de denne spiller.",
+    "accountVerified": "Forbundet: vedkommende har logget ind med {{account}}. De ændrer det selv."
+  },
+  "teamImportModal": {
+    "title": "Importér hold fra JSON",
+    "info": {
+      "title": "Indsæt JSON med holddata nedenfor.",
+      "format": "Forventet format: et array af hold med name, tag (valgfri) og players (name + steamId, plus et valgfrit discordId som tekst i anførselstegn).",
+      "link": "Se dokumentation med eksempler"
+    },
+    "jsonLabel": "JSON-data",
+    "errors": {
+      "mustBeArray": "JSON skal være et array af hold",
+      "emptyArray": "Arrayet må ikke være tomt",
+      "parseWithMessage": "JSON-fortolkningsfejl: {{message}}",
+      "parseGeneric": "Ugyldigt JSON-format. Tjek syntaksen.",
+      "importFailed": "Holdene kunne ikke importeres",
+      "noJson": "Indtast JSON-data"
+    },
+    "preview": {
+      "summary": "✓ Gyldig JSON! Fandt {{teams}} med i alt {{players}}.",
+      "title": "Forhåndsvisning:",
+      "missingDiscordTotal": "Spillere uden Discord-ID: {{count}}",
+      "missingDiscordChip": "Uden Discord: {{count}}",
+      "playersChip_one": "{{count}} spiller",
+      "playersChip_other": "{{count}} spillere",
+      "teamsCount_one": "{{count}} hold",
+      "teamsCount_other": "{{count}} hold"
+    },
+    "actions": {
+      "preview": "Forhåndsvis",
+      "importing": "Importerer...",
+      "import_one": "Importér {{count}} hold",
+      "import_other": "Importér {{count}} hold"
+    },
+    "warnings": {
+      "title": "Nogle Discord-ID'er blev ignoreret. Disse spillere importeres uden:",
+      "discordIdNumber": "Holdet »{{team}}«, spilleren »{{player}}«: discordId skal være tekst i anførselstegn. Store tal mister præcision i JSON, så ID'et blev fjernet.",
+      "discordIdInvalid": "Holdet »{{team}}«, spilleren »{{player}}«: »{{value}}« er ikke et Discord-bruger-ID (17–20 cifre forventet), så det blev fjernet."
+    }
+  },
+  "playerImportModal": {
+    "title": "Importér spillere",
+    "info": {
+      "description": "Importér spillere i JSON- eller CSV-format. Påkrævede felter: steamId, name. Valgfrie: initialELO (standard 1500), avatarUrl.",
+      "link": "Se dokumentation med eksempler"
+    },
+    "placeholders": {
+      "jsonCsv": "JSON-format:\n[\n  {\n    \"steamId\": \"76561198012345678\",\n    \"name\": \"Player One\",\n    \"initialELO\": 1500,\n    \"avatarUrl\": \"https://...\"\n  }\n]\n\nCSV-format:\nsteamId,name,initialELO,avatarUrl\n76561198012345678,Player One,1500,https://..."
+    },
+    "actions": {
+      "parseValidate": "Fortolk og validér",
+      "importing": "Importerer...",
+      "import_one": "Importér {{count}} spiller",
+      "import_other": "Importér {{count}} spillere"
+    },
+    "preview": {
+      "title": "Spillere, der skal importeres ({{count}}):",
+      "steamId": "Steam-ID: {{steamId}}",
+      "name": "Navn: {{name}}",
+      "initialElo": "Start-ELO: {{elo}}",
+      "avatar": "Avatar: {{url}}",
+      "readyChip_one": "{{count}} spiller klar til import",
+      "readyChip_other": "{{count}} spillere klar til import"
+    },
+    "errors": {
+      "noData": "Indtast JSON- eller CSV-data",
+      "noPlayers": "Ingen spillere fundet i dataene",
+      "validationPrefix": "Valideringsfejl:",
+      "parseFailed": "Dataene kunne ikke fortolkes: {{message}}",
+      "importFailed": "Spillerne kunne ikke importeres",
+      "parseFirst": "Fortolk og validér dataene først"
+    }
+  },
+  "playerSelectionModal": {
+    "title": "Vælg spillere",
+    "selectedCount": "{{count}} valgt",
+    "searchPlaceholder": "Søg spillere efter navn...",
+    "searchPlaceholder_steam": "Søg spillere efter navn eller Steam-ID...",
+    "selectAll": {
+      "select": "Vælg alle",
+      "deselect": "Fravælg alle"
+    },
+    "empty": {
+      "noSearchResults": "Ingen spillere matcher din søgning",
+      "noPlayers": "Ingen spillere tilgængelige"
+    },
+    "playerCard": {
+      "alreadyInTeam": "Allerede på holdet"
+    },
+    "errors": {
+      "loadFailed": "Spillerne kunne ikke indlæses",
+      "noSelectable": "Ingen spillere at vælge"
+    },
+    "addPlayersButton_one": "Tilføj {{count}} spiller",
+    "addPlayersButton_other": "Tilføj {{count}} spillere"
+  },
+  "soundSettingsModal": {
+    "title": "Lydindstillinger",
+    "soundSelect": {
+      "label": "Notifikationslyd"
+    },
+    "volume": {
+      "label": "Lydstyrke: {{percent}} %"
+    },
+    "testButton": "Test lyd",
+    "footer": "Lydnotifikationer afspilles, når din kamp er klar, eller når noget vigtigt sker."
+  },
+  "addBackupPlayer": {
+    "title": "Tilføj spiller",
+    "loadFailed": "Spillerlisten kunne ikke indlæses",
+    "added": "{{name}} tilføjet til {{target}}",
+    "addFailed": "Spilleren kunne ikke tilføjes",
+    "addToMatchFailed": "Spilleren kunne ikke tilføjes til kampen",
+    "searchLabel": "Søg efter spiller",
+    "searchPlaceholder": "Skriv spillernavn...",
+    "available": "{{count}} tilgængelige spillere (ikke allerede i kampen)",
+    "noneAvailable": "Ingen spillere tilgængelige",
+    "displayNameLabel": "Visningsnavn (valgfrit)",
+    "displayNamePlaceholder": "Standard er spillerens nuværende navn",
+    "side": "Side",
+    "spectator": "Tilskuer",
+    "selected": "Valgt:",
+    "fromTeam": "Fra holdet: {{team}}",
+    "steamId": "Steam-ID: {{id}}",
+    "adding": "Tilføjer spiller...",
+    "add": "Tilføj spiller til kampen",
+    "underlyingCommand": "Underliggende kommando:",
+    "important": "Vigtigt:",
+    "reconnectHint": "Spilleren skal forbinde til serveren igen efter at være tilføjet. Er vedkommende allerede forbundet, skal de måske gå ind igen."
+  }
+}
