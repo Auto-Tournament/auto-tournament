@@ -1,0 +1,490 @@
+{
+  "matchesPage": {
+    "errors": {
+      "loadMatches": "Otteluita ei voitu ladata",
+      "loadTitle": "Virhe otteluiden latauksessa",
+      "bulkDelete": "Yhtä tai useampaa ottelua ei voitu poistaa"
+    },
+    "header": {
+      "createMatch": "Luo ottelu"
+    },
+    "bulkSelect": {
+      "select": "Valitse",
+      "done": "Valinta valmis",
+      "selectAll": "Valitse kaikki",
+      "unselectAll": "Poista valinnat",
+      "deleteSelected": "Poista valitut"
+    },
+    "empty": {
+      "title": "Ei näytettäviä otteluita",
+      "description": "Luo turnaus ja muodosta kaaviot, niin ottelut näkyvät täällä",
+      "createManual": "Tai luo manuaalinen ottelu"
+    },
+    "sections": {
+      "live": "Live-ottelut ({{count}})",
+      "upcoming": "Tulevat ottelut ({{count}})",
+      "history": "Otteluhistoria ({{count}})",
+      "inQueue": "{{count}} jonossa"
+    },
+    "manualMatchLabel": "Manuaalinen ottelu",
+    "create": {
+      "success": "Manuaalinen ottelu luotu: {{slug}}"
+    },
+    "bulkDelete": {
+      "title": "Poista manuaaliset ottelut",
+      "deleted_one": "Poistettiin {{count}} ottelu",
+      "deleted_other": "Poistettiin {{count}} ottelua",
+      "message_one": "Haluatko varmasti poistaa {{count}} manuaalisen ottelun? Toimintoa ei voi kumota.",
+      "message_other": "Haluatko varmasti poistaa {{count}} manuaalista ottelua? Toimintoa ei voi kumota."
+    },
+    "card": {
+      "matchNumber": "Ottelu #{{number}}",
+      "server": "Palvelin: {{name}}",
+      "queuePosition": "Jonosija: #{{position}}",
+      "shuffle": "Shuffle",
+      "shuffleManual": "Manuaalinen shuffle",
+      "manual": "Manuaalinen",
+      "simulation": "Simulaatio",
+      "winner": "VOITTAJA",
+      "mapN": "Kartta {{n}}"
+    },
+    "statusLabel": {
+      "walkover": "LUOVUTUSVOITTO",
+      "waitingForTournament": "ODOTTAA TURNAUKSEN ALKUA",
+      "waitingForServer": "ODOTTAA PALVELINTA",
+      "waitingForPairing": "ODOTTAA PARITUSTA",
+      "vetoPending": "VETO ODOTTAA",
+      "mapVeto": "KARTTAVETO",
+      "serverAllocated": "PALVELIN VARATTU",
+      "warmup": "LÄMMITTELY",
+      "overtime": "JATKOAIKA #{{n}}",
+      "live": "LIVE",
+      "completed": "PÄÄTTYNYT",
+      "cancelled": "PERUTTU",
+      "needsDecision": "VAATII YLLÄPITÄJÄN PÄÄTÖKSEN"
+    },
+    "statusGuide": {
+      "title": "Ottelun tilojen opas",
+      "pending": "Ottelu on aikataulutettu, mutta sille ei ole vielä palvelinta. Se varataan, kun palvelin vapautuu.",
+      "loaded": "Ottelu on ladattu palvelimelle ja lämmittelyssä. Pelaajien pitää yhdistää ja ilmoittautua valmiiksi aloittaakseen.",
+      "live": "Ottelua pelataan palvelimellaan.",
+      "completed": "Ottelu on päättynyt. Voittaja on selvillä ja kaavio päivitetty.",
+      "proTipTitle": "Vinkki:",
+      "proTip": "Kun ottelussa näkyy ”Odotetaan pelaajia (X/Y)”, palvelin on valmis ja pelaajien pitää yhdistää. Kun kaikki odotetut pelaajat ovat yhdistäneet ja valmiina, ottelu alkaa automaattisesti."
+    },
+    "latestEvent": "Viimeisin: {{event}}",
+    "matchLabel": {
+      "upper": "YK K{{round}} O{{match}}",
+      "lower": "AK K{{round}} O{{match}}",
+      "grandFinal": "Suurfinaali",
+      "grandFinalReset": "Suurfinaalin uusinta",
+      "group": "Lohko {{group}} · Kierros {{round}}",
+      "playoffs": "Pudotuspelit · Kierros {{round}}"
+    },
+    "table": {
+      "filterLabel": "Näytä",
+      "search": "Etsi joukkue tai pelaaja",
+      "tbd": "TBD",
+      "manage": "Hallitse ottelua",
+      "empty": "Täällä ei ole otteluita.",
+      "filter": {
+        "attention_one": "Vaatii huomiota · {{count}}",
+        "attention_other": "Vaatii huomiota · {{count}}",
+        "live_one": "Live · {{count}}",
+        "live_other": "Live · {{count}}",
+        "veto_one": "Veto · {{count}}",
+        "veto_other": "Veto · {{count}}",
+        "waiting_one": "Odottaa · {{count}}",
+        "waiting_other": "Odottaa · {{count}}",
+        "finished_one": "Päättyneet · {{count}}",
+        "finished_other": "Päättyneet · {{count}}",
+        "all_one": "Kaikki · {{count}}",
+        "all_other": "Kaikki · {{count}}"
+      },
+      "columns": {
+        "match": "Ottelu",
+        "teams": "Joukkueet",
+        "phase": "Vaihe",
+        "server": "Palvelin",
+        "attention": "Vaatii huomiota",
+        "open": "Avaa"
+      },
+      "attention": {
+        "calls_one": "Ylläpitäjäkutsu",
+        "calls_other": "{{count}} ylläpitäjäkutsua",
+        "decide": "Ratkaise tulos"
+      },
+      "phase": {
+        "live": "Live · kartta {{map}}",
+        "finished": "Päättynyt",
+        "finishedScore": "Päättynyt · {{score}}",
+        "veto": "Karttaveto",
+        "waitingTeams": "Odottaa joukkueitaan",
+        "queued": "Odottaa palvelinta · #{{position}} jonossa",
+        "waiting": "Odottaa"
+      },
+      "server": {
+        "freed": "Vapautettu"
+      }
+    }
+  },
+  "matchDetailsModal": {
+    "tiebreakHint": "Tilanne on tasan: {{team}} voitti kartan, ratkaisu tiebreakilla.",
+    "delete": {
+      "dialogTitle": "Poista ottelu",
+      "confirmTitle": "Poistetaanko tämä ottelu?",
+      "confirmBody": "Haluatko varmasti poistaa ottelun ”{{slug}}”? Toimintoa ei voi kumota.",
+      "button": "Poista ottelu",
+      "success": "Ottelu poistettu",
+      "failed": "Ottelun poistaminen epäonnistui"
+    },
+    "roster": {
+      "title": "Pelaajaluettelo",
+      "yourTeam": "Joukkueesi",
+      "openPlayerPage": "Avaa pelaajan sivu",
+      "ready": "VALMIS",
+      "connected": "YHDISTETTY",
+      "offline": "OFFLINE",
+      "bot": "BOTTI"
+    },
+    "decision": {
+      "body": "Kaikki kartat on pelattu, mutta sarja on tasan kartoissa, erissä ja vahingossa. Valitse voittaja, jotta kaavio etenee.",
+      "setWinner": "{{team}} voittaa",
+      "confirmTitle": "Aseta sarjan voittaja",
+      "confirmBody": "Päätetäänkö sarja voittajana {{team}}? Kaavio etenee, eikä tätä voi kumota täällä.",
+      "confirm": "Aseta voittaja",
+      "success": "Voittaja asetettu",
+      "failed": "Voittajan asettaminen epäonnistui"
+    },
+    "config": {
+      "loadFailed": "Ottelun asetuksia ei voitu ladata",
+      "view": "Näytä ottelun asetukset JSON-muodossa",
+      "title": "Ottelun asetukset JSON-muodossa",
+      "loading": "Ladataan ottelun asetuksia...",
+      "empty": "Tälle ottelulle ei ole asetuksia."
+    },
+    "tiebreak": {
+      "regulationOnly": "Jatkoaika on pois käytöstä tässä ottelussa (vain varsinainen peliaika), joten tasatilanteen ratkaisee joukkueiden kokonaisvahinko.",
+      "segmentsExhausted": "Jatkoajalle on asetettu enimmäismäärä jaksoja. Jos tilanne on yhä tasan, voittajan ratkaisee joukkueiden kokonaisvahinko.",
+      "overtimeDisabled": "Jatkoaika on pois käytöstä tässä ottelussa, joten tasatilanteen ratkaisee joukkueiden kokonaisvahinko.",
+      "tiedByDamage": "Lopputulos oli tasan, joten ottelun asetusten mukaan voittaja valittiin joukkueiden kokonaisvahingon perusteella."
+    },
+    "team1": "Joukkue 1",
+    "team2": "Joukkue 2",
+    "matchTime": "Ottelun aika:",
+    "server": "Palvelin:",
+    "queuePosition": "Jonosija:",
+    "totalDamage": "Kokonaisvahinko: {{team1}} - {{team2}}",
+    "mapOfTotal": "Kartta {{index}}/{{total}}: {{map}}",
+    "mapIndex": "Kartta {{index}}: {{map}}",
+    "round": "Erä {{round}}",
+    "shuffle": {
+      "averageElo": "Joukkueen ELO (keskiarvo): {{team1}} vs {{team2}}",
+      "balancerHint": "Shuffle-joukkueet muodostaa OpenSkill-pohjainen tasapainottaja, joka jakaa korkean ja matalan luokituksen pelaajat molemmille puolille, jotta keskiarvot pysyvät lähellä toisiaan."
+    },
+    "playerLeaderboards": "Pelaajien rankingit",
+    "noPlayerData": "Pelaajatietoja ei ole saatavilla",
+    "currentMap": "Nykyinen kartta",
+    "maps": "Kartat",
+    "mapsNotPicked": "Karttoja ei ole vielä valittu.",
+    "mapsViaVeto": "Ratkaistaan vetolla",
+    "matchInformation": "Ottelun tiedot",
+    "created": "Luotu:",
+    "started": "Alkoi:",
+    "completed": "Päättyi:",
+    "adminControls": "Ylläpitäjän toiminnot",
+    "slug": "Ottelun slug:",
+    "openChat": "Ottelun chat"
+  },
+  "bulkShuffleMatchesModal": {
+    "title": "Luo useita shuffle-otteluita",
+    "description": "Määritä yhden kartan shuffle-ottelu (kartta + erärajoitus) ja määritä sitten niin monta kaksinottelua kuin haluat valitsemalla tarkat pelaajakokoonpanot kummallekin puolelle. Ottelut luodaan nykyiseen shuffle-turnaukseen, ja niille varataan palvelimet, kun aloitat turnauksen.",
+    "mapSelect": {
+      "label": "Kartta",
+      "noMaps": "Tälle turnaukselle ei ole määritetty karttoja",
+      "helper": "Kaikki tämän erän ottelut käyttävät tätä karttaa."
+    },
+    "maxRounds": {
+      "label": "Erien enimmäismäärä kartalla",
+      "helperWithValue": "Ottelussa pelataan enintään {{maxRounds}} erää; voittaja on se, joka ensin saa {{winRounds}} erää.",
+      "helperDefault": "Erien enimmäismäärä kartalla (oletus: 24, enintään: 30)."
+    },
+    "matchesSection": {
+      "title": "Ottelut ({{count}})",
+      "addMatch": "Lisää ottelu"
+    },
+    "players": {
+      "empty": "Tähän shuffle-turnaukseen ei ole vielä rekisteröity pelaajia. Rekisteröi ensin pelaajat, sitten voit luoda manuaalisia otteluita."
+    },
+    "matchRow": {
+      "title": "Ottelu {{index}}",
+      "teamCounts": "{{team1}}/{{teamSize}} • {{team2}}/{{teamSize}}",
+      "team1Label": "Joukkueen 1 pelaajat ({{team1Count}}/{{teamSize}})",
+      "team2Label": "Joukkueen 2 pelaajat ({{team2Count}}/{{teamSize}})",
+      "searchPlaceholder": "Hae ja valitse pelaajia",
+      "mapOverrideLabel": "Kartta (valinnainen ohitus)",
+      "mapOverrideHelperOwn": "Tämä ottelu käyttää omaa karttaansa.",
+      "mapOverrideHelperDefault": "Jätä tyhjäksi käyttääksesi yllä olevaa oletuskarttaa.",
+      "maxRoundsOverrideLabel": "Erien enimmäismäärä (valinnainen ohitus)",
+      "maxRoundsOverrideHelperOwn": "Ohittaa tämän ottelun oletusarvoisen erien enimmäismäärän (nyt {{value}}).",
+      "maxRoundsOverrideHelperDefault": "Jätä tyhjäksi käyttääksesi yllä olevaa oletusarvoa."
+    },
+    "errors": {
+      "loadPlayers": "Rekisteröityjä pelaajia ei voitu ladata",
+      "noMatches": "Lisää vähintään yksi luotava ottelu.",
+      "bothTeamsRequired": "Ottelu {{index}}: kummassakin joukkueessa on oltava vähintään yksi pelaaja.",
+      "conflictingPlayers": "Ottelu {{index}}: sama pelaaja ei voi olla molemmissa joukkueissa. Ristiriitaiset tunnukset: {{ids}}",
+      "mapRequired": "Ottelu {{index}}: kartta vaaditaan (aseta oletuskartta yllä tai valitse kartta tälle ottelulle).",
+      "rowMaxRoundsRange": "Ottelu {{index}}: erien enimmäismäärän on oltava 1–30, kun se ohitetaan ottelukohtaisesti.",
+      "globalMaxRoundsRange": "Erien enimmäismäärän on oltava 1–30.",
+      "createFailed": "Manuaalisia shuffle-otteluita ei voitu luoda"
+    },
+    "success": {
+      "created": "Manuaaliset shuffle-ottelut luotu. Niille varataan palvelimet, kun turnaus alkaa."
+    },
+    "createMatchesButton": {
+      "default": "Luo ottelut",
+      "creating": "Luodaan…"
+    }
+  },
+  "teamModal": {
+    "titleCreate": "Luo uusi joukkue",
+    "titleEdit": "Muokkaa joukkuetta",
+    "teamNameLabel": "Joukkueen nimi",
+    "teamNamePlaceholder": "Astralis",
+    "teamNameHelper": "Joukkueen nimessä voi olla mitä tahansa kieltä tai erikoismerkkejä",
+    "teamTagLabel": "Joukkueen tunniste",
+    "teamTagPlaceholder": "AST",
+    "teamTagHelper": "Luodaan automaattisesti joukkueen nimestä (enintään 4 merkkiä)",
+    "playersHeader": "Pelaajat ({{count}})",
+    "selectPlayers": "Valitse pelaajat",
+    "noPlayersInfo": "Pelaajia ei ole vielä lisätty. Lisää vähintään yksi pelaaja.",
+    "addPlayersHelper": "Lisää uusi pelaaja alla tai valitse olemassa olevista pelaajista",
+    "addPlayersHelper_steam": "Lisää pelaajia liittämällä Steam-URL tai valitsemalla olemassa olevista pelaajista",
+    "steamInputLabel": "Steam-tunnus / oma URL",
+    "steamInputPlaceholder": "gaben tai steamcommunity.com/id/gaben",
+    "resolveSteam": "Hae Steam-tunnus",
+    "resolving": "Haetaan...",
+    "playerNameLabel": "Pelaajan nimi",
+    "playerNamePlaceholder": "s1mple",
+    "eloLabel": "ELO (valinnainen)",
+    "eloPlaceholder": "1500",
+    "eloHelper": "Oletus: 1500",
+    "errors": {
+      "steamLookupEmpty": "Anna Steam-tunnus, oma URL tai profiilin URL",
+      "steamApiNotConfigured": "Steam API ei ole määritetty – anna Steam ID64 käsin",
+      "steamResolveFailed": "Steam-tunnusta ei voitu hakea – anna Steam ID64 käsin",
+      "steamAndNameRequired": "Sekä Steam-tunnus että pelaajan nimi vaaditaan",
+      "steamDuplicate": "Tämä Steam-tunnus on jo joukkueessa",
+      "teamNameRequired": "Joukkueen nimi vaaditaan",
+      "playersRequired": "Vähintään yksi pelaaja vaaditaan",
+      "saveFailed": "Joukkuetta ei voitu tallentaa",
+      "deleteFailed": "Joukkuetta ei voitu poistaa",
+      "discordIdInvalid": "Discord-tunnuksen on oltava 17–20 numeroa (numeerinen käyttäjätunnus, ei käyttäjänimi)",
+      "discordIdInvalidPlayers": "Virheellinen Discord-tunnus: {{names}}. Sen on oltava 17–20 numeroa tai tyhjä.",
+      "discordIdSaveFailed": "Joukkue tallennettiin, mutta Discord-tunnusta ei voitu tallentaa: {{names}}. {{message}}",
+      "nameRequired": "Anna pelaajan nimi",
+      "addPlayerFailed": "Pelaajaa ei voitu lisätä"
+    },
+    "success": {
+      "playerAdded": "Pelaaja lisätty joukkueeseen",
+      "playerReplaced": "Pelaaja vaihdettu",
+      "teamUpdated": "Joukkue päivitetty",
+      "teamCreated": "Joukkue luotu",
+      "teamDeleted": "Joukkue poistettu"
+    },
+    "buttons": {
+      "deleteTeam": "Poista joukkue",
+      "cancel": "Peruuta",
+      "saving": "Tallennetaan...",
+      "saveChanges": "Tallenna muutokset",
+      "createTeam": "Luo joukkue"
+    },
+    "confirmDelete": {
+      "title": "Poista joukkue",
+      "message": "Haluatko varmasti poistaa joukkueen ”{{name}}”? Toimintoa ei voi kumota."
+    },
+    "replacePlayerAria": "Vaihda pelaaja {{name}}",
+    "replacePlayerTooltip": "Vaihda tämä pelaaja",
+    "accountLabel": "{{account}}-tili (valinnainen)",
+    "accountHelper": "Peleille {{games}}. Kun pelaaja kirjautuu palvelulla {{account}}, hänestä tulee tämä pelaaja."
+  },
+  "playerModal": {
+    "titleCreate": "Luo pelaaja",
+    "titleEdit": "Muokkaa pelaajaa",
+    "steamLabel": "Steam-tunnus tai profiilin URL (valinnainen)",
+    "steamHelperEditing": "Steam-tunnusta ei voi muuttaa",
+    "steamHelperNew": "Peleille {{games}}. Anna Steam ID64, oma URL tai profiilin URL; ”Hae” täyttää nimen ja avatarin.",
+    "resolveSteam": "Hae Steam-tunnus",
+    "resolving": "Haetaan...",
+    "playerNameLabel": "Pelaajan nimi",
+    "playerNamePlaceholder": "Pelaaja",
+    "eloLabelNew": "Alku-ELO",
+    "eloLabelEdit": "ELO",
+    "eloHelperNew": "Jätä tyhjäksi käyttääksesi oletusta (1500 Skill Rating).",
+    "eloHelperEdit": "ELOn muuttaminen nollaa pelaajan luokituksen ja tilastot. Toimintoa ei voi kumota.",
+    "isAdminLabel": "On ylläpitäjä (hallitsee tätä sivustoa; pelimoduulit voivat antaa ylläpitäjille myös pelinsisäisiä oikeuksia)",
+    "currentElo": "Nykyinen ELO: {{value}}",
+    "startingElo": "Alku-ELO: {{value}}",
+    "matchesPlayed": "Pelatut ottelut: {{count}}",
+    "errors": {
+      "steamRequired": "Steam-tunnus vaaditaan",
+      "nameRequired": "Pelaajan nimi vaaditaan",
+      "steamLookupEmpty": "Anna Steam-tunnus, oma URL tai profiilin URL",
+      "steamApiNotConfigured": "Steam API ei ole määritetty – anna Steam ID64 käsin",
+      "steamResolveFailed": "Steam-tunnusta ei voitu hakea – anna Steam ID64 käsin",
+      "saveFailed": "Pelaajaa ei voitu tallentaa"
+    },
+    "success": {
+      "playerUpdated": "Pelaaja päivitetty",
+      "playerCreated": "Pelaaja luotu"
+    },
+    "buttons": {
+      "delete": "Poista",
+      "cancel": "Peruuta",
+      "saving": "Tallennetaan...",
+      "save": "Tallenna",
+      "create": "Luo"
+    },
+    "confirmDelete": {
+      "title": "Poista pelaaja",
+      "message": "Haluatko varmasti poistaa pelaajan ”{{name}}”? Toimintoa ei voi kumota."
+    },
+    "confirmEloUpdate": {
+      "title": "Päivitä pelaajan ELO",
+      "message": "Haluatko varmasti muuttaa tämän pelaajan ELOn arvosta {{from}} arvoon {{to}}? Tämä nollaa hänen tilastonsa ja luokitushistoriansa. Toimintoa ei voi kumota."
+    },
+    "discordIdHelper": "Valinnainen. 17–20 numeroa. Järjestäjät tavoittavat pelaajan Discordissa. Ei näy koskaan julkisesti.",
+    "accountLabel": "{{account}}-tili (valinnainen)",
+    "accountHelper": "Peleille {{games}}. Tilin tunnus; kun pelaaja kirjautuu palvelulla {{account}}, hänestä tulee tämä pelaaja.",
+    "accountVerified": "Yhdistetty: pelaaja on kirjautunut palvelulla {{account}}. Hän muuttaa sitä itse."
+  },
+  "teamImportModal": {
+    "title": "Tuo joukkueet JSONista",
+    "info": {
+      "title": "Liitä alle joukkuetiedot JSON-muodossa.",
+      "format": "Odotettu muoto: taulukko joukkueita, joissa name, tag (valinnainen) ja players (name + steamId sekä valinnainen discordId lainausmerkeissä).",
+      "link": "Näytä dokumentaatio esimerkkeineen"
+    },
+    "jsonLabel": "JSON-data",
+    "errors": {
+      "mustBeArray": "JSONin on oltava joukkueiden taulukko",
+      "emptyArray": "Taulukko ei voi olla tyhjä",
+      "parseWithMessage": "JSON-jäsennysvirhe: {{message}}",
+      "parseGeneric": "Virheellinen JSON-muoto. Tarkista syntaksi.",
+      "importFailed": "Joukkueita ei voitu tuoda",
+      "noJson": "Anna JSON-data"
+    },
+    "preview": {
+      "summary": "✓ Kelvollinen JSON! Löytyi {{teams}}, yhteensä {{players}}.",
+      "title": "Esikatselu:",
+      "missingDiscordTotal": "Pelaajia ilman Discord-tunnusta: {{count}}",
+      "missingDiscordChip": "Ei Discordia: {{count}}",
+      "playersChip_one": "{{count}} pelaaja",
+      "playersChip_other": "{{count}} pelaajaa",
+      "teamsCount_one": "{{count}} joukkue",
+      "teamsCount_other": "{{count}} joukkuetta"
+    },
+    "actions": {
+      "preview": "Esikatsele",
+      "importing": "Tuodaan...",
+      "import_one": "Tuo {{count}} joukkue",
+      "import_other": "Tuo {{count}} joukkuetta"
+    },
+    "warnings": {
+      "title": "Osa Discord-tunnuksista ohitettiin. Nämä pelaajat tuodaan ilman tunnusta:",
+      "discordIdNumber": "Joukkue ”{{team}}”, pelaaja ”{{player}}”: discordId:n on oltava merkkijono lainausmerkeissä. Suuret luvut menettävät tarkkuutta JSONissa, joten tunnus jätettiin pois.",
+      "discordIdInvalid": "Joukkue ”{{team}}”, pelaaja ”{{player}}”: ”{{value}}” ei ole Discordin käyttäjätunnus (odotettiin 17–20 numeroa), joten se jätettiin pois."
+    }
+  },
+  "playerImportModal": {
+    "title": "Tuo pelaajia",
+    "info": {
+      "description": "Tuo pelaajia JSON- tai CSV-muodossa. Pakolliset kentät: steamId, name. Valinnaiset: initialELO (oletus 1500), avatarUrl.",
+      "link": "Näytä dokumentaatio esimerkkeineen"
+    },
+    "placeholders": {
+      "jsonCsv": "JSON-muoto:\n[\n  {\n    \"steamId\": \"76561198012345678\",\n    \"name\": \"Player One\",\n    \"initialELO\": 1500,\n    \"avatarUrl\": \"https://...\"\n  }\n]\n\nCSV-muoto:\nsteamId,name,initialELO,avatarUrl\n76561198012345678,Player One,1500,https://..."
+    },
+    "actions": {
+      "parseValidate": "Jäsennä ja tarkista",
+      "importing": "Tuodaan...",
+      "import_one": "Tuo {{count}} pelaaja",
+      "import_other": "Tuo {{count}} pelaajaa"
+    },
+    "preview": {
+      "title": "Tuotavat pelaajat ({{count}}):",
+      "steamId": "Steam-tunnus: {{steamId}}",
+      "name": "Nimi: {{name}}",
+      "initialElo": "Alku-ELO: {{elo}}",
+      "avatar": "Avatar: {{url}}",
+      "readyChip_one": "{{count}} pelaaja valmiina tuotavaksi",
+      "readyChip_other": "{{count}} pelaajaa valmiina tuotavaksi"
+    },
+    "errors": {
+      "noData": "Anna JSON- tai CSV-data",
+      "noPlayers": "Datasta ei löytynyt pelaajia",
+      "validationPrefix": "Tarkistusvirheet:",
+      "parseFailed": "Datan jäsentäminen epäonnistui: {{message}}",
+      "importFailed": "Pelaajia ei voitu tuoda",
+      "parseFirst": "Jäsennä ja tarkista data ensin"
+    }
+  },
+  "playerSelectionModal": {
+    "title": "Valitse pelaajat",
+    "selectedCount": "{{count}} valittu",
+    "searchPlaceholder": "Hae pelaajia nimellä...",
+    "searchPlaceholder_steam": "Hae pelaajia nimellä tai Steam-tunnuksella...",
+    "selectAll": {
+      "select": "Valitse kaikki",
+      "deselect": "Poista valinnat"
+    },
+    "empty": {
+      "noSearchResults": "Haulla ei löytynyt pelaajia",
+      "noPlayers": "Pelaajia ei ole saatavilla"
+    },
+    "playerCard": {
+      "alreadyInTeam": "Jo joukkueessa"
+    },
+    "errors": {
+      "loadFailed": "Pelaajia ei voitu ladata",
+      "noSelectable": "Valittavia pelaajia ei ole"
+    },
+    "addPlayersButton_one": "Lisää {{count}} pelaaja",
+    "addPlayersButton_other": "Lisää {{count}} pelaajaa"
+  },
+  "soundSettingsModal": {
+    "title": "Ääniasetukset",
+    "soundSelect": {
+      "label": "Ilmoitusääni"
+    },
+    "volume": {
+      "label": "Äänenvoimakkuus: {{percent}} %"
+    },
+    "testButton": "Testaa ääni",
+    "footer": "Ääni-ilmoitukset soivat, kun ottelusi on valmis tai jotain tärkeää tapahtuu."
+  },
+  "addBackupPlayer": {
+    "title": "Lisää pelaaja",
+    "loadFailed": "Pelaajaluetteloa ei voitu ladata",
+    "added": "{{name}} lisätty: {{target}}",
+    "addFailed": "Pelaajaa ei voitu lisätä",
+    "addToMatchFailed": "Pelaajaa ei voitu lisätä otteluun",
+    "searchLabel": "Hae pelaajaa",
+    "searchPlaceholder": "Kirjoita pelaajan nimi...",
+    "available": "{{count}} pelaajaa saatavilla (ei jo ottelussa)",
+    "noneAvailable": "Pelaajia ei ole saatavilla",
+    "displayNameLabel": "Näyttönimi (valinnainen)",
+    "displayNamePlaceholder": "Oletuksena pelaajan nykyinen nimi",
+    "side": "Puoli",
+    "spectator": "Katsoja",
+    "selected": "Valittu:",
+    "fromTeam": "Joukkueesta: {{team}}",
+    "steamId": "Steam-tunnus: {{id}}",
+    "adding": "Lisätään pelaajaa...",
+    "add": "Lisää pelaaja otteluun",
+    "underlyingCommand": "Taustalla oleva komento:",
+    "important": "Tärkeää:",
+    "reconnectHint": "Pelaajan on yhdistettävä palvelimelle uudelleen lisäämisen jälkeen. Jos hän on jo yhdistetty, hänen on ehkä liityttävä uudelleen."
+  }
+}

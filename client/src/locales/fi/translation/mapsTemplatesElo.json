@@ -1,0 +1,201 @@
+{
+  "templatesPage": {
+    "header": {
+      "createFromTournament": "Luo malli turnauksesta"
+    },
+    "errors": {
+      "load": "Malleja ei voitu ladata"
+    },
+    "delete": {
+      "title": "Poista malli",
+      "message": "Haluatko varmasti poistaa mallin ”{{name}}”? Toimintoa ei voi kumota.",
+      "success": "Malli ”{{name}}” poistettu",
+      "error": "Mallia ei voitu poistaa"
+    },
+    "update": {
+      "success": "Malli ”{{name}}” päivitetty",
+      "error": "Mallia ei voitu päivittää"
+    },
+    "createFromTemplate": {
+      "errors": {
+        "inProgressOrCompleted": "Turnausta ei voi luoda mallista, kun turnaus on käynnissä tai päättynyt. Poista tai nollaa nykyinen turnaus ensin.",
+        "alreadyExists": "Turnaus on jo olemassa. Poista tai nollaa nykyinen turnaus ennen kuin luot uuden mallista."
+      },
+      "button": "Luo turnaus mallista"
+    },
+    "edit": {
+      "title": "Muokkaa mallia",
+      "nameLabel": "Mallin nimi",
+      "descriptionLabel": "Kuvaus (valinnainen)",
+      "typeLabel": "Turnauksen tyyppi",
+      "formatLabel": "Ottelumuoto",
+      "mapPool": {
+        "title": "Karttapooli",
+        "selectLabel": "Valitse karttapooli",
+        "customOption": "Oma",
+        "selectedLabel": "Valitut kartat ({{count}}):",
+        "vetoWarning": "Vetomuodot (BO1/BO3/BO5) vaativat tasan 7 karttaa. Valittuna nyt: {{count}}",
+        "chooseMaps": "Valitse kartat..."
+      },
+      "save": "Tallenna"
+    },
+    "emptyTitle": "Ei vielä malleja",
+    "emptyDescription": "Tallenna turnauksen asetukset malliksi turnaussivulta ja aloita sitten uusia turnauksia siitä täällä."
+  },
+  "saveTemplateModal": {
+    "title": "Tallenna malliksi",
+    "nameLabel": "Mallin nimi",
+    "namePlaceholder": "8 joukkuetta, single elim, BO3",
+    "descriptionLabel": "Viikoittainen 8 joukkueen pudotusturnaus",
+    "descriptionPlaceholder": "Kuvaus (valinnainen)",
+    "saveButton": "Tallenna malli",
+    "errors": {
+      "nameRequired": "Mallin nimi vaaditaan",
+      "saveFailed": "Mallia ei voitu tallentaa"
+    }
+  },
+  "eloTemplatesPage": {
+    "errors": {
+      "load": "Luokitusmalleja ei voitu ladata"
+    },
+    "header": {
+      "createTemplate": "Luo malli",
+      "importJson": "Tuo JSONista"
+    },
+    "empty": {
+      "title": "Ei luokitusmalleja",
+      "description": "Luo ensimmäinen mallisi määrittääksesi, miten pelaajien tilastot vaikuttavat ELO-muutoksiin",
+      "action": "Luo malli"
+    },
+    "delete": {
+      "title": "Poista luokitusmalli",
+      "message": "Haluatko varmasti poistaa mallin ”{{name}}”? Toimintoa ei voi kumota.",
+      "success": "Malli ”{{name}}” poistettu",
+      "error": "Mallia ei voitu poistaa",
+      "defaultProtected": "Oletusmallia ”pure-win-loss” ei voi poistaa."
+    },
+    "import": {
+      "success_one": "Tuotiin {{count}} luokitusmalli",
+      "success_other": "Tuotiin {{count}} luokitusmallia"
+    },
+    "weights": {
+      "noAdjustmentsPure": "Ei tilastoihin perustuvia muutoksia (pelkkä voitto/tappio)"
+    },
+    "card": {
+      "enabled": "Käytössä",
+      "disabled": "Pois käytöstä",
+      "default": "Oletus",
+      "adjustment": {
+        "none": "Tilastoihin perustuva muutos ottelua kohden: ei mitään (0; ELO vain tuloksen mukaan)",
+        "uncapped": "Tilastoihin perustuva muutos ottelua kohden: rajoittamaton (käytä varoen)",
+        "range": "Tilastoihin perustuvan muutoksen vaihteluväli ottelua kohden: {{min}}–{{max}} ELO",
+        "noMin": "ei alarajaa",
+        "noMax": "ei ylärajaa"
+      },
+      "tooltips": {
+        "edit": "Muokkaa mallia",
+        "delete": "Poista malli"
+      },
+      "weightsTitle": "Tilastojen painot:",
+      "limitsTitle": "Muutosrajat:",
+      "minAdjustment": "Min: {{value}}",
+      "maxAdjustment": "Max: {{value}}"
+    },
+    "importModal": {
+      "title": "Tuo luokitusmalleja JSONista",
+      "introTitle": "Liitä alle JSON, jossa on luokitusmallien määritelmät.",
+      "introBody": "Odotettu muoto: taulukko malleja, joissa name, valinnainen description, enabled, weights, maxAdjustment ja minAdjustment. Jos jätät id:n pois, se luodaan nimestä.",
+      "jsonLabel": "JSON-data",
+      "validJsonTitle": "✓ Kelvollinen JSON!",
+      "previewTitle": "Esikatselu:",
+      "previewButton": "Esikatsele",
+      "importButton": "Tuo mallit",
+      "validJsonBody_one": "Löytyi {{count}} malli.",
+      "validJsonBody_other": "Löytyi {{count}} mallia."
+    },
+    "editor": {
+      "titleEdit": "Muokkaa luokitusmallia",
+      "titleCreate": "Luo luokitusmalli",
+      "info": "Määritä, miten yksittäisen pelaajan tilastot vaikuttavat ELO-muutoksiin. Painot otetaan käyttöön sen jälkeen, kun OpenSkill on laskenut perusmuutoksen ELOon (voitto/tappio). Positiiviset painot nostavat ELOa, negatiiviset laskevat sitä.",
+      "nameLabel": "Mallin nimi",
+      "nameDefaultLocked": "Oletusmallin nimeä ei voi muuttaa",
+      "descriptionLabel": "Kuvaus",
+      "descriptionPlaceholder": "Valinnainen kuvaus mallin tarkoituksesta",
+      "enabledLabel": "Käytössä",
+      "weights": {
+        "title": "Tilastojen painot",
+        "subtitle": "Säädä liukusäädintä kunkin tilaston kohdalla. Arvo 0 tarkoittaa, ettei tilasto vaikuta."
+      },
+      "limits": {
+        "title": "Muutosrajat (valinnainen)",
+        "subtitle": "Aseta suurin ja pienin ELO-muutos ottelua kohden äärimmäisten muutosten estämiseksi.",
+        "maxLabel": "Suurin muutos",
+        "maxHelper": "Suurin positiivinen ELO-muutos ottelua kohden",
+        "minLabel": "Pienin muutos",
+        "minHelper": "Suurin negatiivinen ELO-muutos ottelua kohden"
+      },
+      "errors": {
+        "nameRequired": "Mallin nimi vaaditaan"
+      },
+      "create": {
+        "success": "Malli ”{{name}}” luotu",
+        "error": "Mallia ei voitu luoda"
+      },
+      "update": {
+        "success": "Malli ”{{name}}” päivitetty",
+        "error": "Mallia ei voitu päivittää"
+      },
+      "buttons": {
+        "saving": "Tallennetaan...",
+        "update": "Päivitä",
+        "create": "Luo"
+      }
+    },
+    "stats": {
+      "kills": {
+        "label": "Kills",
+        "description": "Killien määrä ottelua kohden"
+      },
+      "deaths": {
+        "label": "Deaths",
+        "description": "Kuolemien määrä ottelua kohden (yleensä negatiivinen paino)"
+      },
+      "assists": {
+        "label": "Assists",
+        "description": "Assistien määrä ottelua kohden"
+      },
+      "flashAssists": {
+        "label": "Flash-assistit",
+        "description": "Flash-assistien määrä ottelua kohden"
+      },
+      "headshotKills": {
+        "label": "Headshot-killit",
+        "description": "Headshot-killien määrä ottelua kohden"
+      },
+      "damage": {
+        "label": "Vahinko",
+        "description": "Kokonaisvahinko ottelua kohden"
+      },
+      "utilityDamage": {
+        "label": "Utility-vahinko",
+        "description": "Utilityllä (kranaateilla) tehty vahinko"
+      },
+      "kast": {
+        "label": "KAST %",
+        "description": "Niiden erien osuus, joissa on kill, assist, selviytyminen tai trade"
+      },
+      "mvps": {
+        "label": "MVP",
+        "description": "MVP-palkintojen määrä ottelua kohden"
+      },
+      "score": {
+        "label": "Pisteet",
+        "description": "Ottelupisteet (yhdistää useita tekijöitä)"
+      },
+      "adr": {
+        "label": "ADR",
+        "description": "Keskimääräinen vahinko erää kohden"
+      }
+    }
+  }
+}

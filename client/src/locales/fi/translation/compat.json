@@ -1,0 +1,82 @@
+{
+  "compatPage": {
+    "title": "Ready Up -yhteensopivuus",
+    "subtitle": "Toimivatko Ready Up -lisäosat uusimman Counter-Strike 2 -päivityksen kanssa, tarkistettu automaattisesti jokaisesta uudesta CS2-buildista.",
+    "live": "Live",
+    "offline": "Yhdistetään uudelleen…",
+    "loading": "Ladataan yhteensopivuutta",
+    "loadError": "Yhteensopivuutta ei voitu ladata. Yritä hetken päästä uudelleen.",
+    "disabledTitle": "Ei saatavilla täällä",
+    "disabledDescription": "Tämä sivusto ei julkaise Ready Up -yhteensopivuutta.",
+    "emptyTitle": "Ei vielä tuloksia",
+    "emptyDescription": "Mikään yhteensopivuustarkistus ei ole vielä raportoinut. Sivu päivittyy itsestään heti, kun jokin raportoi.",
+    "checkedAgo": "Tarkistettu {{time}}",
+    "viewRun": "Näytä ajo",
+    "factsLabel": "Mitä tarkistettiin",
+    "facts": {
+      "patch": "CS2-päivitys",
+      "buildid": "Build-tunnus",
+      "readyup": "Ready Up",
+      "stage": "Vaihe"
+    },
+    "overall": {
+      "pass": "Yhteensopiva",
+      "warn": "Yhteensopiva, varoituksin",
+      "fail": "Ei yhteensopiva",
+      "checking": "Tarkistetaan…",
+      "no_verdict": "Ei tulosta"
+    },
+    "overallHint": {
+      "pass": "Kaikki komponentit läpäisivät tarkistuksensa tässä buildissa.",
+      "warn": "Ready Up toimii tässä buildissa, mutta osa tarkistuksista kaipaa tarkempaa katsomista.",
+      "fail": "Vähintään yksi komponentti ei toimi tässä buildissa. Älä vielä päivitä palvelimia.",
+      "checking": "Tämän buildin tarkistus on käynnissä juuri nyt.",
+      "no_verdict": "Viimeisin tarkistus ei päässyt tulokseen."
+    },
+    "status": {
+      "pass": "Läpäisty",
+      "warn": "Varoitus",
+      "fail": "Epäonnistui",
+      "pending": "Odottaa",
+      "checking": "Tarkistetaan…"
+    },
+    "stage": {
+      "static": "Staattinen analyysi",
+      "selftest": "Itsetesti",
+      "live": "Live-palvelin"
+    },
+    "state": {
+      "queued": "Jonossa",
+      "checking": "Tarkistetaan",
+      "pass": "Läpäisty",
+      "warn": "Varoituksia",
+      "fail": "Epäonnistui",
+      "no_verdict": "Ei tulosta"
+    },
+    "trigger": {
+      "build_change": "Uusi CS2-build",
+      "surface_change": "Pelidata muuttui",
+      "code_change": "Ready Up -muutos",
+      "nightly": "Öinen",
+      "release": "Ready Up -julkaisu",
+      "manual": "Manuaalinen"
+    },
+    "kind": {
+      "signature": "Allekirjoitukset",
+      "rtti": "RTTI",
+      "vtable": "Virtuaalitaulut",
+      "hook_site": "Hook-kohdat",
+      "layout": "Muistiasettelu",
+      "schema": "Skeema",
+      "event": "Pelitapahtumat",
+      "selftest": "Itsetesti",
+      "livetest": "Live-testi"
+    },
+    "componentsTitle": "Komponentit",
+    "checksSummary": "{{passed}}/{{total}} tarkistusta läpäisty",
+    "noChecks": "Tarkistuksia ei ole vielä raportoitu",
+    "failures": "Virheet",
+    "historyTitle": "Viimeisimmät ajot",
+    "historyItem": "CS2 {{patch}} · build {{buildid}}"
+  }
+}
