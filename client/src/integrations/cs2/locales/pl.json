@@ -2344,7 +2344,7 @@
     "runFailed_one": "Nieudane: {{count}}",
     "runFailed_other": "Nieudane: {{count}}",
     "fbfMovie": "CS2 {{cs2}} wyłączył precyzyjne polecenia klatkowe Frame by Frame. Nagrywanie klipów trwa dłużej. Zaktualizuj rejestrator, gdy wyjdzie nowy Frame by Frame.",
-    "fbfOff": "CS2 {{cs2}} wyłączył Frame by Frame. Klipy są nagrywane ze strumienia wideo, jak przed Frame by Frame. Zaktualizuj rejestrator, gdy wyjdzie nowy Frame by Frame.",
+    "fbfOff": "CS2 {{cs2}} wyłączył Frame by Frame, więc rejestrator nie może nagrywać klipów. Zaktualizuj rejestrator, gdy wyjdzie nowy Frame by Frame.",
     "runs_few": "{{count}} przebiegi",
     "runs_many": "{{count}} przebiegów",
     "clips_few": "{{count}} klipy",

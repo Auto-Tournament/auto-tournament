@@ -2247,7 +2247,7 @@
     "runFailed_one": "{{count}} fehlgeschlagen",
     "runFailed_other": "{{count}} fehlgeschlagen",
     "fbfMovie": "CS2 {{cs2}} hat die bildgenauen Befehle von Frame by Frame abgeschaltet. Clips brauchen länger. Aktualisiere den Recorder, sobald ein neues Frame by Frame da ist.",
-    "fbfOff": "CS2 {{cs2}} hat Frame by Frame abgeschaltet. Clips werden aus dem Videostream aufgenommen, wie vor Frame by Frame. Aktualisiere den Recorder, sobald ein neues Frame by Frame da ist."
+    "fbfOff": "CS2 {{cs2}} hat Frame by Frame abgeschaltet, deshalb kann der Recorder keine Clips aufnehmen. Aktualisiere den Recorder, sobald ein neues Frame by Frame da ist."
   },
   "tournament": {
     "botFill": {

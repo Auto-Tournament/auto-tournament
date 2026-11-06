@@ -2061,7 +2061,7 @@
     "lastSeen": "senast sedd {{time}}",
     "pausedUntil": "Inget arbete till {{time}}: {{reason}}",
     "fbfMovie": "CS2 {{cs2}} stängde av Frame by Frames bildexakta kommandon. Klippen tar längre tid att spela in. Uppdatera inspelaren när en ny Frame by Frame har kommit.",
-    "fbfOff": "CS2 {{cs2}} stängde av Frame by Frame. Klippen spelas in från videoströmmen, som före Frame by Frame. Uppdatera inspelaren när en ny Frame by Frame har kommit.",
+    "fbfOff": "CS2 {{cs2}} stängde av Frame by Frame, så inspelaren kan inte spela in klipp. Uppdatera inspelaren när en ny Frame by Frame har kommit.",
     "stat": {
       "perClip": "Per klipp",
       "kept": "Sparade klipp",

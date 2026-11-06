@@ -2061,7 +2061,7 @@
     "lastSeen": "son görülme {{time}}",
     "pausedUntil": "{{time}} saatine kadar iş yok: {{reason}}",
     "fbfMovie": "CS2 {{cs2}}, Frame by Frame'in kare hassasiyetli komutlarını kapattı. Kliplerin kaydı daha uzun sürer. Yeni bir Frame by Frame çıkınca kaydediciyi güncelle.",
-    "fbfOff": "CS2 {{cs2}}, Frame by Frame'i kapattı. Klipler, Frame by Frame öncesindeki gibi video akışından kaydedilir. Yeni bir Frame by Frame çıkınca kaydediciyi güncelle.",
+    "fbfOff": "CS2 {{cs2}}, Frame by Frame'i kapattı; bu yüzden kaydedici klip kaydedemiyor. Yeni bir Frame by Frame çıkınca kaydediciyi güncelle.",
     "stat": {
       "perClip": "Klip başına",
       "kept": "Saklanan klipler",

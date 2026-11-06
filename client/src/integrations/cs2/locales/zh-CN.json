@@ -2247,7 +2247,7 @@
     "runFailed_one": "{{count}} 个失败",
     "runFailed_other": "{{count}} 个失败",
     "fbfMovie": "CS2 {{cs2}} 关闭了 Frame by Frame 的逐帧精确命令。片段录制时间更长。新版 Frame by Frame 发布后请更新录制器。",
-    "fbfOff": "CS2 {{cs2}} 关闭了 Frame by Frame。片段从视频流录制，和使用 Frame by Frame 之前一样。新版 Frame by Frame 发布后请更新录制器。"
+    "fbfOff": "CS2 {{cs2}} 关闭了 Frame by Frame，录制器因此无法录制片段。新版 Frame by Frame 发布后请更新录制器。"
   },
   "tournament": {
     "botFill": {

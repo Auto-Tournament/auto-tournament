@@ -2247,7 +2247,7 @@
     "runFailed_one": "{{count}} mislukt",
     "runFailed_other": "{{count}} mislukt",
     "fbfMovie": "CS2 {{cs2}} heeft de frame-exacte commando's van Frame by Frame uitgezet. Clips opnemen duurt langer. Werk de recorder bij zodra er een nieuwe Frame by Frame is.",
-    "fbfOff": "CS2 {{cs2}} heeft Frame by Frame uitgezet. Clips worden opgenomen uit de videostream, zoals voor Frame by Frame. Werk de recorder bij zodra er een nieuwe Frame by Frame is."
+    "fbfOff": "CS2 {{cs2}} heeft Frame by Frame uitgezet, dus de recorder kan geen clips opnemen. Werk de recorder bij zodra er een nieuwe Frame by Frame is."
   },
   "tournament": {
     "botFill": {

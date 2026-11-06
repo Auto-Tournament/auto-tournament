@@ -2061,7 +2061,7 @@
     "lastSeen": "sidst set {{time}}",
     "pausedUntil": "Intet arbejde indtil {{time}}: {{reason}}",
     "fbfMovie": "CS2 {{cs2}} slog Frame by Frames billedpræcise kommandoer fra. Klip tager længere tid at optage. Opdater optageren, når en ny Frame by Frame er udkommet.",
-    "fbfOff": "CS2 {{cs2}} slog Frame by Frame fra. Klip optages fra videostrømmen som før Frame by Frame. Opdater optageren, når en ny Frame by Frame er udkommet.",
+    "fbfOff": "CS2 {{cs2}} slog Frame by Frame fra, så optageren kan ikke optage klip. Opdater optageren, når en ny Frame by Frame er udkommet.",
     "stat": {
       "perClip": "Pr. klip",
       "kept": "Gemte klip",

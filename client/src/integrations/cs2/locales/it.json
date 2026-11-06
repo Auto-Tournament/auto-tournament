@@ -2296,7 +2296,7 @@
     "runFailed_one": "{{count}} non riuscita",
     "runFailed_other": "{{count}} non riuscite",
     "fbfMovie": "CS2 {{cs2}} ha disattivato i comandi al fotogramma esatto di Frame by Frame. Le clip richiedono più tempo per essere registrate. Aggiorna il registratore quando esce un nuovo Frame by Frame.",
-    "fbfOff": "CS2 {{cs2}} ha disattivato Frame by Frame. Le clip vengono registrate dal flusso video, come prima di Frame by Frame. Aggiorna il registratore quando esce un nuovo Frame by Frame.",
+    "fbfOff": "CS2 {{cs2}} ha disattivato Frame by Frame, quindi il registratore non può registrare clip. Aggiorna il registratore quando esce un nuovo Frame by Frame.",
     "runs_many": "{{count}} esecuzioni",
     "clips_many": "{{count}} clip",
     "workingOn_many": "Registra {{count}} clip della mappa {{map}} ({{match}}) dalle {{time}}",

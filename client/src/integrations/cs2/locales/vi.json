@@ -2061,7 +2061,7 @@
     "lastSeen": "lần cuối thấy {{time}}",
     "pausedUntil": "Không nhận việc đến {{time}}: {{reason}}",
     "fbfMovie": "CS2 {{cs2}} đã tắt các lệnh chính xác từng khung hình của Frame by Frame. Clip sẽ ghi lâu hơn. Hãy cập nhật trình ghi hình khi có bản Frame by Frame mới.",
-    "fbfOff": "CS2 {{cs2}} đã tắt Frame by Frame. Clip được ghi từ luồng video, như trước khi có Frame by Frame. Hãy cập nhật trình ghi hình khi có bản Frame by Frame mới.",
+    "fbfOff": "CS2 {{cs2}} đã tắt Frame by Frame nên trình ghi hình không thể ghi clip. Hãy cập nhật trình ghi hình khi có bản Frame by Frame mới.",
     "stat": {
       "perClip": "Mỗi clip",
       "kept": "Clip đã giữ",

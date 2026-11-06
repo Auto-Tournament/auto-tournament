@@ -2061,7 +2061,7 @@
     "lastSeen": "terakhir terlihat {{time}}",
     "pausedUntil": "Tidak ada pekerjaan sampai {{time}}: {{reason}}",
     "fbfMovie": "CS2 {{cs2}} menonaktifkan perintah frame-exact Frame by Frame. Klip butuh waktu lebih lama untuk direkam. Perbarui perekam saat Frame by Frame baru tersedia.",
-    "fbfOff": "CS2 {{cs2}} menonaktifkan Frame by Frame. Klip direkam dari stream video, seperti sebelum ada Frame by Frame. Perbarui perekam saat Frame by Frame baru tersedia.",
+    "fbfOff": "CS2 {{cs2}} menonaktifkan Frame by Frame, jadi perekam tidak bisa merekam klip. Perbarui perekam saat Frame by Frame baru tersedia.",
     "stat": {
       "perClip": "Per klip",
       "kept": "Klip disimpan",

@@ -2105,7 +2105,7 @@
     "lastSeen": "visto pela última vez {{time}}",
     "pausedUntil": "Sem trabalho até {{time}}: {{reason}}",
     "fbfMovie": "O CS2 {{cs2}} desativou os comandos de quadro exato do Frame by Frame. Os clipes demoram mais para gravar. Atualize o gravador quando sair um Frame by Frame novo.",
-    "fbfOff": "O CS2 {{cs2}} desativou o Frame by Frame. Os clipes são gravados a partir do fluxo de vídeo, como antes do Frame by Frame. Atualize o gravador quando sair um Frame by Frame novo.",
+    "fbfOff": "O CS2 {{cs2}} desativou o Frame by Frame, então o gravador não consegue gravar clipes. Atualize o gravador quando sair um Frame by Frame novo.",
     "stat": {
       "perClip": "Por clipe",
       "kept": "Clipes guardados",
