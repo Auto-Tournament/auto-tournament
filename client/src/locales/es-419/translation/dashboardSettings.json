@@ -1,0 +1,1001 @@
+{
+  "dashboard": {
+    "title": "Admin",
+    "restartTournament": {
+      "button": "Reiniciar los partidos del torneo",
+      "restarting": "Reiniciando los partidos del torneo…",
+      "intro": "🔄 Esto reinicia todos los partidos activos y los vuelve a cargar en los servidores.",
+      "actionsTitle": "Acciones:",
+      "actionEndMatch": "Ejecutar at_endmatch en todos los servidores con partidos cargados o en vivo",
+      "actionReset": "Devolver los partidos al estado «listo»",
+      "actionReallocate": "Reasignar los partidos a servidores disponibles",
+      "actionReload": "Recargar la configuración de las partidas en los servidores de juego",
+      "hint": "Úsalo si los partidos se han atascado o necesitan empezar de cero.",
+      "confirm": "Reiniciar el torneo"
+    },
+    "header": {
+      "brand": "Auto Tournament",
+      "version": "Tu sitio de Auto Tournament · versión {{version}}",
+      "unknownVersion": "dev",
+      "createTournament": "Crear torneo"
+    },
+    "setup": {
+      "title": "Termina la configuración",
+      "openSettings": "Abrir ajustes",
+      "signIn": "Proveedor de inicio de sesión",
+      "game": "Instala un juego (CS2) desde Módulos",
+      "discordBot": "Añade tu propio bot de Discord (su token) para que el sitio pueda escribir por MD a los jugadores sobre sus partidos"
+    },
+    "tournaments": {
+      "title": "Torneo",
+      "empty": "Este sitio organiza un torneo cada vez. Créalo y aparecerá aquí, en Explorar y en su página del evento.",
+      "status": {
+        "setup": "Borrador",
+        "ready": "Inscripción",
+        "inProgress": "En vivo",
+        "completed": "Terminado"
+      },
+      "state": {
+        "teams_one": "{{count}} equipo",
+        "teams_other": "{{count}} equipos",
+        "teams_many": "{{count}} equipos",
+        "entered_one": "{{count}} equipo inscrito",
+        "entered_other": "{{count}} equipos inscritos",
+        "entered_many": "{{count}} equipos inscritos",
+        "draftTeams_one": "Borrador · {{count}} equipo elegido",
+        "draftTeams_other": "Borrador · {{count}} equipos elegidos",
+        "draftTeams_many": "Borrador · {{count}} equipos elegidos",
+        "draftEmpty": "Borrador · aún sin equipos",
+        "live_one": "{{count}} partido en vivo",
+        "live_other": "{{count}} partidos en vivo",
+        "live_many": "{{count}} partidos en vivo",
+        "completed_one": "Participó {{count}} equipo",
+        "completed_other": "Participaron {{count}} equipos",
+        "completed_many": "Participaron {{count}} equipos",
+        "winner": "Ganador: {{name}}",
+        "teamsPlayers_one": "{{count}} jugador",
+        "teamsPlayers_other": "{{count}} jugadores",
+        "teamsPlayers_many": "{{count}} jugadores",
+        "enteredPlayers_one": "{{count}} jugador inscrito",
+        "enteredPlayers_other": "{{count}} jugadores inscritos",
+        "enteredPlayers_many": "{{count}} jugadores inscritos",
+        "draftTeamsPlayers_one": "Borrador · {{count}} jugador",
+        "draftTeamsPlayers_other": "Borrador · {{count}} jugadores",
+        "draftTeamsPlayers_many": "Borrador · {{count}} jugadores",
+        "completedPlayers_one": "Participó {{count}} jugador",
+        "completedPlayers_other": "Participaron {{count}} jugadores",
+        "completedPlayers_many": "Participaron {{count}} jugadores"
+      },
+      "actions": {
+        "manage": "Gestionar",
+        "continueSetup": "Seguir configurando",
+        "view": "Ver"
+      },
+      "eventPage": "Página del evento",
+      "emptyTitle": "Aún no hay torneo"
+    },
+    "site": {
+      "title": "Sitio",
+      "players": {
+        "label": "Jugadores",
+        "hint": "Todos los que han iniciado sesión"
+      },
+      "teams": {
+        "label": "Equipos",
+        "hint": "Clubes y plantillas"
+      },
+      "templates": {
+        "label": "Plantillas",
+        "hint": "Configuraciones reutilizables"
+      },
+      "ratings": {
+        "label": "Ratings",
+        "hint": "Cómo se calculan los ratings"
+      },
+      "settings": {
+        "label": "Ajustes",
+        "hint": "Inicio de sesión, claves de API"
+      },
+      "adminTools": {
+        "label": "Sistema",
+        "hint": "Recuperación de partidos y logs"
+      },
+      "disputes": {
+        "label": "Disputas",
+        "hint": "Resultados por resolver"
+      },
+      "modules": {
+        "label": "Módulos",
+        "hint": "Juegos que ejecuta esta instancia"
+      }
+    },
+    "people": {
+      "title": "Personas",
+      "open": "Abrir",
+      "players": "Jugadores",
+      "admins": "Administradores",
+      "signedInThisWeek": "Iniciaron sesión esta semana"
+    },
+    "loading": "Cargando el inicio de administración"
+  },
+  "settingsPage": {
+    "email": {
+      "title": "Correo",
+      "short": "Envía confirmaciones de dirección, restablecimientos de contraseña y correos de torneos.",
+      "enabled": "Enviar correos",
+      "enabledOn": "Activado. Los correos salen desde {{from}}.",
+      "enabledOff": "Desactivado. No se envía nada.",
+      "needsServer": "Configura antes el servidor de abajo.",
+      "turnedOn": "El correo está activado",
+      "turnedOff": "El correo está desactivado",
+      "server": "Servidor de correo",
+      "serverNone": "Sin configurar",
+      "host": "Servidor SMTP",
+      "port": "Puerto",
+      "security": "Seguridad",
+      "securityStarttls": "STARTTLS (normalmente puerto 587)",
+      "securityTls": "TLS (normalmente puerto 465)",
+      "securityNone": "Ninguna (solo en una red de confianza)",
+      "username": "Usuario",
+      "password": "Contraseña",
+      "passwordKept": "Déjalo vacío para conservar la guardada",
+      "passwordSaved": "Guardada",
+      "fromAddress": "Dirección del remitente",
+      "fromAddressHelp": "La dirección desde la que salen los correos. Tu proveedor de correo tiene que permitirla.",
+      "fromName": "Nombre del remitente",
+      "fromNameHelp": "Opcional. Aparece como quién envía el correo, p. ej. NTLAN.",
+      "siteUrl": "Dirección del sitio",
+      "siteUrlHelp": "Los enlaces de los correos empiezan aquí, p. ej. https://cs.example.com.",
+      "siteUrlHelpDefault": "Los enlaces de los correos empiezan aquí. Vacío: {{url}}.",
+      "save": "Guardar",
+      "saved": "Ajustes de correo guardados",
+      "loadError": "No se pudieron cargar los ajustes de correo",
+      "saveError": "No se pudieron guardar los ajustes de correo",
+      "test": "Correo de prueba",
+      "testShort": "Envía uno para comprobar que los ajustes funcionan.",
+      "testTo": "Enviar a",
+      "testSend": "Enviar prueba",
+      "testNeedsOn": "Activa el envío (y guarda el servidor) antes de probar.",
+      "testSent": "Enviado a {{to}}. Revisa la bandeja de entrada y la de spam.",
+      "testFailed": "No se pudo enviar el correo de prueba"
+    },
+    "title": "Ajustes",
+    "intro": "Los ajustes propios de la plataforma. Cada juego tiene los suyos en el menú.",
+    "tabs": {
+      "general": "General",
+      "signIn": "Inicio de sesión",
+      "players": "Jugadores y acceso",
+      "ratings": "Partidos y rating",
+      "developer": "Desarrollador / simulación",
+      "license": "Licencia",
+      "webhooks": "Webhooks",
+      "experimental": "Experimental"
+    },
+    "signIn": {
+      "title": "Proveedores de inicio de sesión",
+      "intro": "Elige cómo inicia sesión la gente. Cualquiera de estos puede ser su cuenta; se pueden vincular más en la página de conexiones. Los cambios se aplican al momento, sin reiniciar.",
+      "keySource": "Los secretos guardados se cifran con {{name}}.",
+      "keySourceDefault": "Los secretos guardados se cifran con una clave de desarrollo integrada. Define SECRETS_KEY o SESSION_SECRET antes de ponerlo en producción.",
+      "loadError": "No se pudieron cargar los proveedores de inicio de sesión",
+      "saveError": "No se pudo guardar",
+      "testError": "No se pudo hacer la prueba",
+      "saved": "Inicio de sesión con {{provider}} guardado",
+      "enabled": "Activado",
+      "clientId": "ID de cliente",
+      "issuerUrl": "URL del emisor",
+      "issuerUrlHelp": "La dirección de tu realm o tenant de OpenID Connect. Auto Tournament lee sus endpoints de /.well-known/openid-configuration.",
+      "buttonName": "Nombre del botón",
+      "buttonNameHelp": "Aparece como «Iniciar sesión con …» en la página de inicio de sesión, p. ej. tu comunidad o tu servidor de identidad.",
+      "logoUpload": "Subir logo",
+      "logoReplace": "Cambiar logo",
+      "logoRemove": "Quitar logo",
+      "logoType": "El logo debe ser una imagen PNG, JPEG, WebP o SVG.",
+      "logoSize": "El logo puede ocupar como máximo 150 KB.",
+      "buttonColor": "Color del botón",
+      "buttonColorDefault": "Color por defecto",
+      "clientSecret": "Secreto de cliente",
+      "steamKey": "Clave de la Steam Web API",
+      "secretSet": "definido",
+      "secretUnreadable": "El secreto guardado ya no se puede descifrar (cambió la clave de cifrado). Vuelve a introducirlo.",
+      "replace": "Sustituir",
+      "cancel": "Cancelar",
+      "save": "Guardar",
+      "callbackHint": "Se completa solo. Pégalo como URL de redirección en los ajustes de desarrollador de {{provider}}:",
+      "copy": "Copiar",
+      "copyCallback": "Copiar la URL de retorno",
+      "copied": "Copiado",
+      "copyError": "No se pudo copiar",
+      "guide": "Guía de configuración",
+      "howTo": "Consola de desarrollador",
+      "test": "Probar",
+      "comingSoon": "Próximamente",
+      "comingSoonNote": "El inicio de sesión con {{provider}} aún no está disponible.",
+      "status": {
+        "active": "En la página de inicio de sesión",
+        "missing": "Activado, faltan credenciales",
+        "off": "Desactivado"
+      },
+      "testResult": {
+        "ok": "El proveedor aceptó estas credenciales.",
+        "invalid_credentials": "El proveedor rechazó estas credenciales. Revisa el ID y el secreto de cliente (o la clave).",
+        "unreachable": "No se pudo contactar con el proveedor. Revisa la red y vuelve a intentarlo.",
+        "not_configured": "Introduce primero las credenciales.",
+        "not_supported": "Este proveedor no se puede probar.",
+        "unexpected": "El proveedor dio una respuesta que la prueba no entiende."
+      },
+      "welcomeTitle": "Configura cómo inician sesión los jugadores",
+      "welcomeBody": "Iniciaste sesión como administrador. Activa al menos un proveedor de abajo (Steam, Discord, Google, GitHub o Twitch) para que los jugadores puedan iniciar sesión.",
+      "adminAccess": {
+        "title": "Acceso de administrador",
+        "localLogin": "Permitir el inicio de sesión de administrador local",
+        "localLoginHelp": "Inicio de sesión con usuario y contraseña en /login/admin. Si pierdes el acceso, ejecuta reset-admin en el servidor.",
+        "localLoginLocked": "Sigue activado hasta que otro administrador pueda iniciar sesión con un proveedor activado.",
+        "steamIds": "Steam IDs de administradores",
+        "steamIdsHelp": "Steam64 IDs separados por comas. Pasan a ser administradores al guardar y en cada arranque. Quitar uno no le retira el rol de administrador.",
+        "emails": "Correos de administradores",
+        "emailsHelp": "Direcciones que reciben el rol de administrador cuando su dueño inicia sesión con un proveedor que las verificó (Google, Discord, GitHub).",
+        "unsaved": "Aún sin guardar.",
+        "saved": "Acceso de administrador guardado",
+        "loadError": "No se pudieron cargar los ajustes de acceso de administrador",
+        "short": "Quién puede entrar como administrador"
+      },
+      "short": "Cómo inician sesión jugadores y administradores. Los cambios se aplican al momento.",
+      "enabledFor": "Inicio de sesión con {{provider}}",
+      "setUp": "Configurar {{provider}}",
+      "accounts": {
+        "title": "Cuentas",
+        "short": "Cuentas con usuario y contraseña que creas tú",
+        "help": "Se inicia sesión con ellas en /login/admin. Da el rol de administrador a quienes gestionan el sitio; el resto inicia sesión como jugador.",
+        "none": "Aún no hay cuentas.",
+        "admin": "Admin",
+        "twoStep": "Dos pasos activado",
+        "lastLogin": "Último inicio de sesión: {{date}}",
+        "neverSignedIn": "Nunca ha iniciado sesión",
+        "setPassword": "Poner contraseña",
+        "remove": "Quitar",
+        "addTitle": "Añadir una cuenta",
+        "username": "Nombre de usuario",
+        "usernameHelp": "De 3 a 32 caracteres: letras minúsculas, números, puntos, guiones y guiones bajos.",
+        "name": "Nombre visible",
+        "nameHelp": "Opcional. Se muestra en el sitio; si se deja vacío, se usa el nombre de usuario.",
+        "password": "Contraseña",
+        "makeAdmin": "Admin",
+        "create": "Crear cuenta",
+        "created": "Cuenta {{username}} creada",
+        "madeAdmin": "{{username}} ahora es administrador",
+        "adminRemoved": "{{username}} ya no es administrador",
+        "setPasswordTitle": "Contraseña nueva para {{username}}",
+        "setPasswordTotp": "Su verificación en dos pasos también se desactiva; la vuelve a configurar tras iniciar sesión.",
+        "newPassword": "Contraseña nueva",
+        "savePassword": "Guardar contraseña",
+        "passwordSet": "Contraseña nueva guardada para {{username}}",
+        "removeTitle": "¿Quitar a {{username}}?",
+        "removeBody": "Ya no podrá iniciar sesión con este nombre de usuario y contraseña, y dejará de ser admin. Su jugador, sus partidos y sus estadísticas se conservan; crear de nuevo el mismo nombre de usuario se lo devuelve todo.",
+        "removeConfirm": "Quitar",
+        "removed": "{{username}} quitado",
+        "cancel": "Cancelar",
+        "loadError": "No se pudieron cargar las cuentas",
+        "saveError": "No se pudo guardar la cuenta"
+      },
+      "oidcScopes": "En tu servidor OpenID Connect, da a este cliente los scopes openid, profile y email (en Keycloak: Clients → este cliente → Client scopes, con profile y email como Default). Sin profile y email se puede iniciar sesión igual, pero la plataforma no recibe nombre ni correo."
+    },
+    "integrations": {
+      "steam": {
+        "title": "Integración de Steam",
+        "apiKeyLabel": "Clave de Steam Web API",
+        "apiKeyHelper": "Resuelve vanity URLs de Steam e información del jugador. Déjalo en blanco para desactivar las búsquedas.",
+        "checkButtonChecking": "Comprobando Steam…",
+        "checkButtonIdle": "Comprobar conectividad con Steam",
+        "statusOk": "La clave de la API de Steam está configurada y Steam es accesible.",
+        "statusNotConfigured": "La clave de la API de Steam no está configurada. No se podrán resolver vanity URLs hasta que añadas una clave.",
+        "statusUnreachable": "La clave de la API de Steam parece configurada, pero Steam no es accesible. Revisa tu red o la clave.",
+        "statusError": "No se pudo comprobar el estado de la API de Steam. Inténtalo de nuevo."
+      }
+    },
+    "matchRating": {
+      "ratings": {
+        "title": "Actualizaciones de rating",
+        "description": "Controla si los partidos completados actualizan el Skill Rating de los jugadores.",
+        "toggleLabel": "Actualizar el rating de los jugadores con los partidos completados",
+        "note": "Cuando está deshabilitado, los partidos seguirán registrando estadísticas (ADR, K/D, etc.), pero el Skill Rating no cambiará.",
+        "short": "Las puntuaciones cambian tras cada partida."
+      }
+    },
+    "players": {
+      "registration": {
+        "title": "Registro de jugadores",
+        "description": "Controla si los nuevos inicios de sesión con Steam crean automáticamente registros de jugador. Cuando está deshabilitado, solo los jugadores creados o importados por admins aparecerán en torneos privados y pools shuffle.",
+        "toggleLabel": "Permitir que cualquiera se registre mediante inicio de sesión con Steam",
+        "recommendation": "Recomendado: mantenlo desactivado para torneos por invitación o privados, para que inicios de sesión aleatorios no ensucien la lista de jugadores.",
+        "short": "Iniciar sesión crea un jugador para cualquiera nuevo. Desactivado: solo los jugadores que añadas."
+      },
+      "title": "Jugadores",
+      "short": "Quién entra y cómo cambian las puntuaciones.",
+      "chooseName": {
+        "toggleLabel": "Los jugadores eligen su nombre visible",
+        "short": "A los jugadores se les pide su nombre y pueden cambiarlo una vez al día. Desactivado: los nombres vienen de importaciones y administradores."
+      }
+    },
+    "developer": {
+      "resetApiTitle": "Restablecer API y base de datos",
+      "resetApiDescription": "Zona de peligro: elimina y recrea todo el esquema de base de datos y reinicializa datos por defecto (mapas, pools, etc.). Solo para desarrollo local. Irreversible.",
+      "resetApiButton": "Restablecer API (borrar todos los datos)",
+      "resetApiButtonLoading": "Restableciendo API…",
+      "resetApiSuccess": "API y base de datos restablecidas. Todos los datos se borraron y se reinicializaron los valores por defecto.",
+      "resetApiError": "No se pudo restablecer la API y la base de datos. Revisa los logs del API.",
+      "resetApiDialog": {
+        "title": "¿Restablecer API y borrar todos los datos?",
+        "description": "Esto eliminará y recreará todo el esquema de base de datos. Todos los torneos, partidos, jugadores, equipos, ratings, eventos, logs y ajustes se eliminarán permanentemente. Esta acción no se puede deshacer. ¿Continuar?",
+        "cancel": "Cancelar",
+        "confirm": "Sí, restablecer API y borrar datos",
+        "confirmLoading": "Restableciendo…"
+      }
+    },
+    "footer": {
+      "version": "Versión",
+      "unknownVersion": "Desconocida"
+    },
+    "errors": {
+      "loadSettings": "No se pudieron cargar los ajustes",
+      "saveSettings": "No se pudieron guardar los ajustes"
+    },
+    "success": {
+      "saveSettings": "Ajustes guardados"
+    },
+    "site": {
+      "title": "Sitio",
+      "description": "Cómo se llama este sitio. El inicio de administración lo usa como título.",
+      "label": "Nombre del sitio",
+      "helper": "Déjalo vacío para usar «Auto Tournament».",
+      "save": "Guardar",
+      "saved": "Nombre del sitio guardado",
+      "saveFailed": "No se pudo guardar el nombre del sitio"
+    },
+    "experimental": {
+      "title": "Experimental",
+      "description": "Funciones que aún se están construyendo. Están desactivadas por defecto y pueden cambiar o fallar. Solo las ven los administradores.",
+      "saved": "Guardado",
+      "saveFailed": "No se pudo guardar la función",
+      "loadFailed": "No se pudieron cargar las funciones experimentales",
+      "envOverride": "Lo fija la variable de entorno {{env}}. Cámbialo ahí.",
+      "features": {},
+      "short": "Aún en desarrollo: desactivadas por defecto, solo las ven los administradores."
+    },
+    "matchmaking": {
+      "openLabel": "Abierto a los jugadores",
+      "openDescription": "Activado: todos los jugadores con sesión iniciada ven «Jugar» y pueden entrar en la cola. Desactivado: solo los administradores pueden buscar partidos.",
+      "boardLabel": "Clasificación visible para todos",
+      "boardDescription": "Desactivado: solo los jugadores con sesión iniciada ven la clasificación de matchmaking. Activado: cualquiera con el enlace.",
+      "windowTitle": "Margen de búsqueda",
+      "windowDescription": "Cuánta diferencia de rating puede haber entre jugadores. Empieza en el primer número, crece con el paso cada 30 segundos hasta el tope y, tras el último número de minutos, se empareja a cualquiera (déjalo vacío para nunca).",
+      "window": {
+        "start": "Inicio (Elo)",
+        "step": "Paso (Elo)",
+        "cap": "Tope (Elo)",
+        "uncappedAfterMinutes": "Cualquiera tras (min)"
+      },
+      "reservedTitle": "Servidores reservados para el matchmaking",
+      "reservedDescription": "Los partidos de torneo van primero, pero se dejan libres estos servidores para el matchmaking mientras haya jugadores buscando. 0 = ninguno.",
+      "reservedLabel": "Servidores",
+      "modesTitle": "Modos",
+      "modesDescription": "Qué pueden buscar los jugadores. Todos los modos están activados por defecto. 1v1 es un duelo de puntería.",
+      "poolsTitle": "Mapas por modo",
+      "poolsDescription": "El pool de mapas del que elige cada modo (página Mapas; los mapas del Workshop también sirven). La sala del partido muestra una ruleta sobre el pool antes de revelar el mapa.",
+      "poolDefault": {
+        "5v5": "Por defecto: Active Duty",
+        "2v2": "Por defecto: todos los mapas de Wingman",
+        "1v1": "Por defecto: Active Duty"
+      },
+      "save": "Guardar",
+      "title": "Matchmaking",
+      "short": "Siempre activado. Los jugadores buscan partido, entran en la cola, aceptan y juegan en un servidor libre.",
+      "saved": "Guardado",
+      "saveFailed": "No se pudieron guardar los ajustes de matchmaking",
+      "loadFailed": "No se pudieron cargar los ajustes de matchmaking"
+    },
+    "groups": {
+      "platform": "Plataforma"
+    },
+    "navLabel": "Páginas de ajustes",
+    "gameLinks": {
+      "title": "Ajustes del juego",
+      "hint": "Cada juego tiene sus propios ajustes en el menú."
+    },
+    "sections": {
+      "label": "Secciones de ajustes",
+      "site": {
+        "name": "Sitio",
+        "hint": "Nombre, logo, idioma"
+      },
+      "signin": {
+        "name": "Inicio de sesión",
+        "hint": "Proveedores, cuentas de administrador"
+      },
+      "email": {
+        "name": "Correo",
+        "hint": "SMTP, qué se envía"
+      },
+      "players": {
+        "name": "Jugadores",
+        "hint": "Inscripción, ratings"
+      },
+      "matchmaking": {
+        "name": "Matchmaking",
+        "hint": "Colas y sus reglas"
+      },
+      "news": {
+        "name": "Noticias",
+        "hint": "Publicaciones en la página de inicio"
+      },
+      "adminnotices": {
+        "name": "Notificaciones",
+        "hint": "Qué se avisa a los administradores"
+      },
+      "webhooks": {
+        "name": "Integraciones",
+        "hint": "Webhooks"
+      },
+      "apitokens": {
+        "name": "Tokens de API",
+        "hint": "Para scripts y MCP"
+      },
+      "advanced": {
+        "name": "Avanzado",
+        "hint": "Experimental, desarrollador"
+      },
+      "module": {
+        "hint": "Los ajustes de este módulo"
+      }
+    }
+  },
+  "managePage": {
+    "tournamentNotFound": "No hay ningún torneo con este id. Elige uno en Todos los torneos.",
+    "title": "Gestionar",
+    "needsYouHeading": "Te necesita",
+    "noTournament": "Aún no hay torneo",
+    "rail": {
+      "needsYou": "Te necesita",
+      "matches": "Partidos",
+      "bracket": "Bracket",
+      "teams": "Equipos",
+      "players": "Jugadores",
+      "reports": "Denuncias",
+      "tournament": "Configuración del torneo",
+      "settings": "Ajustes",
+      "label": "Admin",
+      "disputes": "Disputas",
+      "publicPage": "Página pública",
+      "modules": "Módulos",
+      "templates": "Plantillas",
+      "ratings": "Cálculo ELO",
+      "adminTools": "Herramientas admin",
+      "license": "Licencia",
+      "devTools": "Herramientas dev",
+      "documentation": "Documentación",
+      "opensInNewTab": "(se abre en una pestaña nueva)",
+      "groups": {
+        "operate": "Operar",
+        "tournament": "Torneo",
+        "people": "Personas",
+        "game": "Juego",
+        "home": "Inicio",
+        "history": "Historial",
+        "setup": "Configuración",
+        "configuration": "Configuración",
+        "site": "Sitio",
+        "tournaments": "Torneos",
+        "system": "Sistema",
+        "gamesOf": "Juegos · {{game}}"
+      },
+      "templatesAndRatings": "Plantillas y ratings",
+      "allTournaments": "Todos los torneos",
+      "switcher": "Torneo",
+      "newTournament": "Nuevo torneo",
+      "playedMatches": "Partidos jugados",
+      "tournamentBar": "Este torneo",
+      "scope": {
+        "label": "Gestionando",
+        "platform": "Plataforma",
+        "platformHint": "Torneos, personas, el sitio",
+        "gameHint": "Sus páginas y ajustes"
+      },
+      "highlights": "Highlights",
+      "state": {
+        "live": "en vivo",
+        "setup": "configuración"
+      },
+      "openMenu": "Abrir el menú Gestionar",
+      "closeMenu": "Cerrar el menú",
+      "setupTab": "Configuración",
+      "prizes": "Premios",
+      "schedule": "Calendario",
+      "liveMatches": "Partidos en vivo"
+    },
+    "status": {
+      "live": "EN VIVO",
+      "inVeto": "EN VETO",
+      "queued": "EN COLA",
+      "round": "RONDA"
+    },
+    "needsYou": {
+      "empty": "Ahora mismo no hay nada pendiente.",
+      "secondsAgo": "{{count}} s",
+      "minutesAgo": "{{count}} min",
+      "hoursAgo": "{{count}} h",
+      "vsLabel": "{{team1}} vs {{team2}}",
+      "decide": {
+        "title": "{{teams}} necesita un ganador",
+        "detail": "Se jugaron todos los mapas y la serie sigue empatada.",
+        "action": "Decidir"
+      },
+      "reallocateSuccess": "Partido movido a otro servidor",
+      "forceCancelSuccess": "Partido cancelado",
+      "actionFailed": "No ha funcionado. Inténtalo de nuevo.",
+      "reallocateConfirmTitle": "¿Mover este partido a otro servidor?",
+      "reallocateConfirmBody": "El partido se reasigna al siguiente servidor disponible.",
+      "forceCancelConfirmTitle": "¿Forzar la cancelación de este partido?",
+      "forceCancelConfirmBody": "Esto termina el partido al momento y lo marca como cancelado, aunque no se pueda contactar con el servidor.",
+      "listLabel": "Cosas que necesitan una decisión"
+    },
+    "recent": {
+      "heading": "Reciente",
+      "viewAll": "Registro completo",
+      "empty": "Aún no hay actividad reciente.",
+      "closingLine": "Todo lo demás funciona solo. Solo lo verás aquí cuando algo necesite una decisión.",
+      "team1Fallback": "Equipo 1",
+      "team2Fallback": "Equipo 2",
+      "mapResult": "{{winner}} ganó el mapa {{map}} a {{loser}}, {{score}}",
+      "seriesEnd": "{{winner}} ganó la serie a {{loser}}, {{score}}"
+    },
+    "announce": {
+      "button": "Anunciar",
+      "title": "Anunciar en todos los servidores",
+      "label": "Mensaje",
+      "send": "Enviar",
+      "success": "Anuncio enviado",
+      "failed": "No se pudo enviar el anuncio"
+    }
+  },
+  "license": {
+    "title": "Licencia",
+    "getKey": "¿Ya tienes licencia? Copia tu clave de <consoleLink>la consola de Auto Tournament</consoleLink>. ¿Necesitas una? <pricingLink>Mira los precios</pricingLink>.",
+    "useFromPaidKey": "Lo fija la clave de licencia de pago de abajo.",
+    "useFromFreeKey": "Lo fija la clave gratuita de abajo: solo uso sin ánimo de lucro.",
+    "useWithoutKey": "Sin clave: gratis para uso sin ánimo de lucro. Pega abajo una clave de pago para uso comercial.",
+    "publicLine": "Los jugadores ven «{{line}}» al pie de las páginas de eventos.",
+    "pageIntro": "Tu clave de licencia y su estado. Una clave de pago es para uso comercial; una gratuita, para uso sin ánimo de lucro.",
+    "description": "Pega tu clave de licencia de Auto Tournament para uso comercial. Se comprueba en este servidor, sin conexión. Una licencia nunca bloquea ni limita nada: si algo no cuadra, aquí solo aparece un aviso.",
+    "loading": "Cargando el estado de la licencia",
+    "loadFailed": "No se pudo leer el estado de la licencia.",
+    "none": "Sin clave de licencia comercial. Gratis para uso no comercial; el uso comercial necesita una licencia.",
+    "pricing": "Precios",
+    "open": "Ajustes",
+    "id": "ID de licencia {{id}}",
+    "verify": "Comprobar esta licencia",
+    "invalid": "No se pudo verificar esta clave.",
+    "invalidShort": "No se pudo verificar la clave guardada.",
+    "warningsShort_one": "1 aviso de licencia en Ajustes.",
+    "warningsShort_other": "{{count}} avisos de licencia en Ajustes.",
+    "warningsShort_many": "{{count}} avisos de licencia en Ajustes.",
+    "warningsNote": "No se bloquea ni se limita nada. Es solo un aviso.",
+    "label": "Clave de licencia",
+    "replaceLabel": "Reemplazar la clave de licencia",
+    "helper": "Empieza por ATL1. Cópiala desde <consoleLink>tus licencias en la consola de Auto Tournament</consoleLink>. Después de guardar, solo se muestra el ID de la licencia.",
+    "checkInNote": "Sin clave de licencia, no se envía nada a Auto Tournament. Con clave, este servidor se comunica una vez al día con el ID de la clave y su número de servidores.",
+    "save": "Guardar clave",
+    "saved": "Clave de licencia guardada",
+    "saveFailed": "No se pudo guardar la clave de licencia",
+    "remove": "Quitar clave",
+    "removed": "Clave de licencia eliminada",
+    "removeFailed": "No se pudo quitar la clave de licencia",
+    "summary": {
+      "licensedTo": "Licenciado a {{licensee}}",
+      "licensed": "Con licencia",
+      "product": {
+        "platform": "Plataforma {{pack}}",
+        "servers": "Servidores {{pack}}"
+      },
+      "servers_one": "{{count}} servidor",
+      "servers_other": "{{count}} servidores",
+      "servers_many": "{{count}} servidores",
+      "updatesUntil": "actualizaciones hasta {{date}}",
+      "updatesForLife": "actualizaciones de por vida",
+      "eventWindow": "evento del {{from}} al {{to}}",
+      "free": "Clave gratuita, uso no comercial",
+      "freeFor": "Clave gratuita para {{licensee}}, uso no comercial",
+      "noLimit": "sin límite de servidores"
+    },
+    "badge": {
+      "label": "Mostrar «Con licencia» en las páginas públicas de eventos",
+      "note": "Desactivado por defecto. Enlaza a la página pública de comprobación de la licencia y solo se muestra mientras la clave guardada sea válida.",
+      "on": "Línea pública de licencia activada",
+      "off": "Línea pública de licencia desactivada",
+      "failed": "No se pudo cambiar la línea pública de licencia",
+      "short": "Se muestra en las páginas públicas.",
+      "needsKey": "Solo aparece con una clave de licencia guardada, gratuita o de pago. Guarda una arriba primero."
+    },
+    "public": {
+      "licensed": "Con licencia",
+      "commercial": "Con licencia · Uso comercial",
+      "nonCommercial": "Con licencia · Uso sin ánimo de lucro",
+      "unlicensed": "Sin clave de licencia",
+      "about": {
+        "title": "Sobre la licencia de este sitio",
+        "none": "Este sitio usa Auto Tournament sin clave de licencia. Es válido para eventos con los que nadie gana dinero: amigos, clubes, LAN de centros educativos, organizaciones benéficas.",
+        "nonCommercial": "Este sitio tiene una licencia gratuita sin ánimo de lucro: puede organizar eventos con los que nadie gana dinero.",
+        "commercial": "Este sitio tiene una licencia comercial de pago: puede organizar eventos de pago y cobrar inscripción.",
+        "free": "Auto Tournament es gratis cuando nadie gana dinero con él, y para organizaciones benéficas, centros educativos y organismos públicos incluso cuando cobran inscripción. Cualquier otro que gane dinero con él, cobrando inscripción, vendiendo cupos o usándolo para una empresa, necesita una licencia de pago.",
+        "paidTitle": "¿Te han pedido pagar para participar?",
+        "paidBody": "Si pagaste una inscripción, o te la pidieron, y el organizador no es una organización benéfica, un centro educativo ni un organismo público, puede que este evento use Auto Tournament en contra de su licencia. Puedes decírnoslo; leemos cada aviso y nunca compartimos quién lo envió.",
+        "paidCommercial": "Aquí se permite la inscripción de pago. Si aun así algo te parece mal, puedes decírnoslo.",
+        "report": "Avisar a Auto Tournament",
+        "rules": "Leer la licencia",
+        "verify": "Comprobar esta licencia"
+      }
+    },
+    "consent": {
+      "title": "Antes de empezar: la licencia",
+      "subtitle": "Auto Tournament es gratis para uso no comercial. El uso comercial necesita una licencia. Lee la versión corta, elige cómo se usa esta instancia y escribe I AGREE.",
+      "intro": "El código de Auto Tournament está disponible bajo la {{name}}. En resumen:",
+      "points": {
+        "free": "Gratis para uso personal, proyectos de hobby, aprendizaje y eventos en los que nadie gana dinero con ello.",
+        "orgs": "Gratis para organizaciones benéficas, escuelas, universidades, investigación pública y organismos públicos, aunque cobren entrada.",
+        "commercial": "El uso comercial necesita una licencia. Eso incluye el hosting de pago, vender el software o un servicio basado en él, eventos con beneficios, el uso dentro de una empresa y cobrar por instalarlo para otros.",
+        "servers": "Cada servidor de juego cuenta para la licencia.",
+        "nothingLocked": "Sin clave no se bloquea ni se limita nada. Puedes añadir una clave ahora o más tarde.",
+        "forks": "Puedes cambiar el código y compartirlo. Incluye la licencia; se aplican las mismas reglas."
+      },
+      "readLicense": "Leer la licencia completa",
+      "readRules": "Licencias y uso comercial",
+      "summaryNote": "Este es un resumen corto y el texto de tu versión puede estar desactualizado. La licencia vigente y las reglas de licencia están en autotournament.gg. Si difieren de este resumen, prevalecen ellas.",
+      "useQuestion": "¿Cómo se usa esta instancia?",
+      "privacyNote": "Tu respuesta se guarda solo en este servidor. Sin clave de licencia, no se envía nada a Auto Tournament. Con clave, este servidor se comunica una vez al día con el ID de la clave y su número de servidores.",
+      "use": {
+        "noncommercial": "No comercial",
+        "noncommercialHint": "Gratis. Nadie gana dinero con ello.",
+        "commercial": "Comercial",
+        "commercialHint": "Necesitas una licencia. Pega tu clave ahora o más tarde."
+      },
+      "keyLabel": "Clave de licencia (opcional)",
+      "keyHelper": "Empieza por ATL1. Cópiala desde <consoleLink>tus licencias en la consola de Auto Tournament</consoleLink> o añádela más tarde en Ajustes > Licencia.",
+      "confirmLabel": "Escribe {{phrase}} para aceptar los términos de la licencia",
+      "confirmHelper": "Al escribir {{phrase}} aceptas los términos de la licencia para esta instancia.",
+      "accept": "Aceptar y continuar",
+      "cancel": "Cancelar",
+      "failed": "No se pudo guardar tu respuesta",
+      "accepted": "Términos de la licencia aceptados",
+      "termsChanged": "Los términos de la licencia han cambiado desde la última aceptación. Léelos y acéptalos de nuevo.",
+      "onlyAdmins": "Solo lo ven los administradores, una vez por instancia. No afecta a jugadores, páginas públicas ni partidas en curso.",
+      "declared": {
+        "noncommercial": "Uso no comercial",
+        "commercial": "Uso comercial",
+        "none": "Términos de la licencia aún no aceptados"
+      },
+      "acceptedLine": "Términos aceptados el {{date}} por {{who}} (versión {{version}})",
+      "byEnv": "el ajuste AT_ACCEPT_LICENSE",
+      "change": "Cambiar",
+      "changeTitle": "Cambiar cómo se usa esta instancia",
+      "changeNote": "Elige de nuevo y escribe I AGREE. El cambio se guarda con la fecha y tu cuenta.",
+      "commercialNoKey": "Esta instancia tiene uso comercial, así que necesitas una licencia. Copia tu clave desde <consoleLink>tus licencias en la consola de Auto Tournament</consoleLink> y pégala abajo. No se bloquea nada mientras falte.",
+      "readHeading": "Antes de aceptar, lee esto y marca cada punto:",
+      "readItem": "He leído",
+      "readLinks": {
+        "license": "la licencia completa",
+        "rules": "las reglas para el uso comercial",
+        "pricing": "los precios"
+      }
+    },
+    "checkin": {
+      "last": "Última comunicación de licencia: {{time}}",
+      "offlineUntil": "Concesión sin conexión: los servidores nuevos funcionan sin internet hasta el {{date}}.",
+      "never": "Todavía no hay ninguna comunicación de licencia. La primera se hace poco después de guardar una clave.",
+      "whatIsSent": "Qué se envía",
+      "intro": "Una vez al día, y solo mientras haya una clave guardada, este servidor envía:",
+      "keyId": "La clave de licencia, para poder comprobar su ID y su firma",
+      "instanceId": "Un ID aleatorio de esta instalación, creado una sola vez",
+      "serverCount": "El número de servidores de juego",
+      "version": "La versión de la plataforma",
+      "publicUrl": "Qué producto es (la plataforma) y su dirección pública, para que la consola muestre dónde se usa la clave",
+      "activity": "Recuentos desde la última comunicación: partidas terminadas, torneos con actividad y el mayor número de equipos",
+      "declared": "Tu respuesta a la pregunta sobre las fechas del evento, si la diste",
+      "notSent": "Ni nombres, ni direcciones, ni jugadores, ni detalles de partidas.",
+      "privacy": "Política de privacidad",
+      "noticeTitle": "Una nota de Auto Tournament",
+      "answered": "Tu respuesta para esta licencia: {{answer}} ({{time}})"
+    },
+    "eventPrompt": {
+      "title": "¿Preparas algo nuevo?",
+      "body": "Tu licencia de evento cubre {{dates}}. Cuéntanos si estás haciendo pruebas, tienes un evento nuevo o han cambiado tus fechas; mientras estés probando no hace falta hacer nada.",
+      "datesRange": "del {{from}} al {{to}}",
+      "testing": "Pruebas o preparación",
+      "newEvent": "Un evento nuevo",
+      "datesMoved": "Han cambiado las fechas del evento",
+      "dontAsk": "No volver a preguntar",
+      "close": "Cerrar",
+      "thanks": "Gracias, anotado.",
+      "failed": "No se pudo guardar tu respuesta"
+    },
+    "warning": {
+      "periodEnded": "Esta licencia de evento cubría hasta el {{date}}. Las pruebas y la preparación no requieren nada; un evento nuevo lleva su propia licencia de evento.",
+      "periodNotStarted": "Esta licencia de evento cubre desde el {{date}}. Preparar y probar antes de esa fecha está bien."
+    },
+    "short": "Cómo se usa esta instancia, y su clave.",
+    "keyRow": "Clave de licencia",
+    "state": {
+      "active": "Activa",
+      "warning": "Revisar",
+      "invalid": "No válida",
+      "none": "Sin clave"
+    },
+    "thirdParty": "Esta app está hecha con paquetes de código abierto bajo sus propias licencias.",
+    "thirdPartyLink": "Avisos de terceros"
+  },
+  "tournamentsPage": {
+    "title": "Torneos",
+    "subtitle": "Todos los torneos de este sitio. El selector de arriba del menú elige el torneo sobre el que actúan las demás páginas de administración.",
+    "liveShared": "{{count}} en vivo, compartiendo los servidores. Los partidos reciben servidor en el orden en que estuvieron listos.",
+    "new": "Nuevo torneo",
+    "empty": "Aún no hay torneos. Crea el primero.",
+    "col": {
+      "name": "Nombre",
+      "status": "Estado",
+      "when": "Cuándo",
+      "entries": "Inscritos",
+      "frontPage": "Portada",
+      "actions": "Acciones"
+    },
+    "status": {
+      "live": "En vivo",
+      "finished": "Terminado",
+      "signup": "Inscripción abierta",
+      "draft": "Borrador"
+    },
+    "front": {
+      "featured": "Destacado",
+      "shown": "Visible",
+      "hidden": "Oculto",
+      "archived": "Archivado",
+      "results": "Resultados"
+    },
+    "won": "Ganó {{name}}",
+    "selected": "seleccionado",
+    "more": "Más para {{name}}",
+    "menu": {
+      "open": "Abrir",
+      "page": "Página pública",
+      "feature": "Destacar en la portada",
+      "archive": "Archivar (fuera de la portada)",
+      "delete": "Eliminar"
+    },
+    "toast": {
+      "featured": "Destacado en la portada",
+      "archived": "Archivado",
+      "deleted": "Torneo eliminado"
+    },
+    "deleteTitle": "¿Eliminar este torneo?",
+    "deleteMessage": "Se eliminan {{name}} y sus partidos, resultados y estadísticas. No se puede deshacer.",
+    "newName": "Nombre",
+    "newNameBlank": "Le pones nombre en la configuración",
+    "startFrom": "Empezar desde",
+    "blank": "En blanco",
+    "blankHint": "Elige el juego, el formato y los mapas en la configuración",
+    "copy": "Copiar {{name}}",
+    "copyHint": "El mismo formato, mapas, reglas y página. Equipos y fechas empiezan vacíos.",
+    "create": "Crear y configurar",
+    "round": "ronda {{n}}",
+    "whenToday": "Hoy, desde las {{time}}",
+    "whenTomorrow": "Mañana, {{time}}",
+    "notSet": "Sin fecha",
+    "emptyTitle": "Aún no hay torneos",
+    "template": "Una plantilla",
+    "templateHint": "Una configuración guardada: formato, mapas y reglas. Tú eliges equipos y fechas.",
+    "copyOne": "Copiar un torneo",
+    "copyWhich": "Cuál"
+  },
+  "playedMatches": {
+    "title": "Todos los partidos",
+    "subtitle": "Todos los partidos jugados en este sitio: de torneos (también eliminados), independientes y de matchmaking, con sus demos.",
+    "downloadAll_one": "Descargar las demos de {{count}} partido",
+    "downloadAll_other": "Descargar las demos de {{count}} partidos",
+    "downloadAll_many": "Descargar las demos de {{count}} partidos",
+    "search": "Buscar equipos o torneos",
+    "kindLabel": "Tipo",
+    "kind": {
+      "all": "Todos los tipos",
+      "tournament": "Torneo",
+      "standalone": "Independiente",
+      "matchmaking": "Matchmaking",
+      "imported": "Importado"
+    },
+    "withDemos": "Con demos",
+    "none": "Aún no se ha jugado ningún partido.",
+    "noneFiltered": "Ningún partido coincide con estos filtros.",
+    "vs": "vs",
+    "deleted": "torneo eliminado",
+    "noDemo": "Sin demo",
+    "demo": "Demo",
+    "map": "Mapa {{n}}",
+    "import": "Importar un partido"
+  },
+  "importMatch": {
+    "title": "Importar un partido",
+    "subtitle": "Añade un partido jugado en otro sitio a partir de sus demos. Los equipos, los jugadores y el marcador se leen de las demos, y el partido recibe estadísticas, una repetición 2D y highlights como cualquier otro.",
+    "event": "Dónde se jugó",
+    "eventHelp": "Opcional, por ejemplo el nombre del evento.",
+    "files": "Demos",
+    "filesHelp": "Una demo de CS2 (.dem) por mapa, en el orden en que se jugaron.",
+    "choose": "Elegir demos",
+    "moveUp": "Subir {{name}}",
+    "moveDown": "Bajar {{name}}",
+    "remove": "Quitar {{name}}",
+    "start": "Importar",
+    "uploading": "Subiendo el mapa {{n}} ({{percent}} %)",
+    "tooMany": "Hasta {{max}} demos, una por mapa.",
+    "notDemo": "{{name}} no es un archivo .dem.",
+    "error": "La importación se detuvo: {{error}}",
+    "progress": "Progreso",
+    "mapN": "Mapa {{n}}",
+    "state": {
+      "uploading": "Subiendo",
+      "waiting": "Esperando al procesador de demos",
+      "running": "Leyendo la demo",
+      "done": "Hecho",
+      "failed": "No se pudo leer la demo"
+    },
+    "teams": "{{team1}} vs {{team2}}",
+    "doneAll": "Importado. Después se graban los highlights si hay un grabador conectado.",
+    "openMatch": "Abrir el partido",
+    "another": "Importar otro",
+    "dropHint": "o suéltalas aquí. Elige varias a la vez con Cmd o Ctrl.",
+    "recordingGroup": "Grupo de grabadores",
+    "allRecorders": "Todos los grabadores",
+    "groupHelp": "Elige qué grupo renderiza este partido. Los grupos desactivados esperan hasta que se activen.",
+    "groupDisabled": "Desactivado",
+    "notCs2Demo": "{{name}} no es una demo de CS2 (las demos de CS:GO no se pueden importar)."
+  },
+  "apiTokens": {
+    "title": "Tokens de API",
+    "hint": "Para scripts, bots y el servidor MCP de Auto Tournament. Un token de solo lectura solo puede leer; un token de administrador puede hacer lo mismo que un administrador. Solo tú ves el secreto de un token, una vez, al crearlo.",
+    "line": "{{scope}} · {{fingerprint}} · último uso {{used}}",
+    "never": "nunca",
+    "none": "Aún no hay tokens de API.",
+    "name": "Nombre",
+    "nameHelp": "1–32 letras, números, - o _",
+    "scopeLabel": "Acceso",
+    "scope": {
+      "readonly": "Solo lectura",
+      "admin": "Admin"
+    },
+    "make": "Crear token",
+    "madeTitle": "Token «{{label}}»",
+    "madeHelp": "Cópialo ahora: es la única vez que se muestra. Pégalo donde lo lea el script o el servidor MCP (AT_TOKEN).",
+    "copy": "Copiar token",
+    "copied": "Copiado",
+    "done": "Listo",
+    "revoke": "Revocar {{label}}",
+    "revokeTitle": "¿Revocar «{{label}}»?",
+    "revokeHelp": "Todo lo que lo use deja de funcionar al momento.",
+    "revokeConfirm": "Revocar",
+    "revoked": "{{label}} revocado",
+    "cancel": "Cancelar",
+    "loadFailed": "No se pudieron cargar los tokens de API",
+    "makeFailed": "No se pudo crear el token",
+    "revokeFailed": "No se pudo revocar el token"
+  },
+  "discordBot": {
+    "title": "Bot de Discord",
+    "token": "Token del bot",
+    "replace": "Token del bot nuevo",
+    "save": "Guardar",
+    "remove": "Quitar",
+    "connected": "Conectado como {{name}}",
+    "setNoAnswer": "Hay un token, pero Discord no ha respondido ahora mismo.",
+    "saved": "Bot de Discord guardado: {{name}}",
+    "cleared": "Bot de Discord quitado",
+    "saveFailed": "No se pudo guardar el token del bot.",
+    "howTo": "Crea una aplicación, añade un bot, copia su token e invítalo a tu servidor de Discord:",
+    "portal": "Discord Developer Portal",
+    "guild": "Servidor de Discord",
+    "guildHint": "Donde el bot crea los canales de equipo y publica. Solo aparecen los servidores en los que está el bot.",
+    "noGuilds": "El bot aún no está en ningún servidor de Discord. Invítalo y recarga esta página.",
+    "noGuild": "Ninguno",
+    "guildSaved": "Servidor de Discord guardado",
+    "movedHint": "El bot de Discord ahora es un complemento: actívalo y configúralo en Módulos.",
+    "open": "Abrir el bot de Discord",
+    "voice": {
+      "label": "Canales de voz de equipo",
+      "help": "Mientras un partido está en su servidor, sus jugadores que ya están en un canal de voz pasan al canal de voz de su equipo; los demás reciben un enlace por MD.",
+      "saved": "Ajustes de canales de voz guardados"
+    },
+    "teamChannels": {
+      "label": "Canales de equipo",
+      "help": "Mientras dura un torneo, cada equipo tiene un canal privado de texto y otro de voz bajo «Your team». Sus jugadores encuentran el canal de texto en la página de su equipo.",
+      "link": "Canal del equipo en Discord"
+    },
+    "commands": {
+      "label": "Comandos de barra: /matches, /mymatch y /lobby",
+      "help": "Funcionan en cuanto el bot está conectado. Opcional: para que Discord los envíe a este sitio, pega esto como Interactions Endpoint URL de tu app en el Discord Developer Portal."
+    },
+    "invite": "Invitar a un servidor",
+    "linking": {
+      "label": "Los jugadores vinculan su Discord",
+      "help": "Usa la propia app de Discord de tu bot, así que no hay que crear otra. En el Developer Portal, abre OAuth2 en la app de tu bot, añade esta redirección y luego copia el secreto de cliente y pégalo aquí.",
+      "portal": "Abrir OAuth2",
+      "secret": "Secreto de cliente",
+      "save": "Activar la vinculación",
+      "saved": "Los jugadores ya pueden vincular Discord",
+      "ready": "Activado: los jugadores vinculan Discord en Cuenta → Conexiones.",
+      "invite": "A los jugadores que no están en tu servidor se les pide unirse con {{url}}.",
+      "noInvite": "El bot aún no puede crear una invitación a tu servidor. Vuelve a hacer clic en Invitar a un servidor para que tenga el permiso Crear invitación."
+    },
+    "missing": "Al bot le falta {{list}} en tu servidor, así que parte de él no funcionará. Haz clic en Invitar a un servidor arriba: actualiza los permisos del bot sin quitarlo."
+  },
+  "liveMatchesPage": {
+    "title": "Partidos en vivo",
+    "subtitle": "Todos los partidos que hay ahora en un servidor. Las filas que te necesitan van primero.",
+    "loading": "Cargando…",
+    "loadFailed": "No se pudieron leer los partidos en vivo. Volviendo a intentarlo…",
+    "empty": "No hay partidos en marcha",
+    "chat": "Chat",
+    "mapOf": "Mapa {{n}}/{{total}}",
+    "columns": {
+      "match": "Partido",
+      "map": "Mapa",
+      "phase": "Fase",
+      "score": "Marcador",
+      "round": "Ronda",
+      "players": "Jugadores",
+      "pause": "Pausa",
+      "call": "Llamada a admin",
+      "server": "Servidor",
+      "chat": "Chat"
+    },
+    "source": {
+      "matchmaking": "Matchmaking",
+      "manual": "Independiente"
+    },
+    "phase": {
+      "none": "Sin estado del servidor",
+      "loading": "Cargando",
+      "warmup": "Calentamiento",
+      "knife": "Cuchillo",
+      "side_pick": "Elección de lado",
+      "live": "En vivo",
+      "paused": "En pausa",
+      "halftime": "Descanso",
+      "overtime": "Prórroga",
+      "map_end": "Pospartido",
+      "series_end": "Pospartido",
+      "restoring": "Restaurando",
+      "error": "Error"
+    },
+    "players": {
+      "summary": "{{connected}}/{{total}} dentro · {{ready}} listos",
+      "connected": "Conectado",
+      "disconnected": "Sin conectar",
+      "readyTag": "listo",
+      "none": "Sin jugadores"
+    },
+    "pause": {
+      "by": "por {{name}}",
+      "unpause": "Quiere reanudar",
+      "type": {
+        "tactical": "Táctica",
+        "technical": "Técnica",
+        "admin": "Admin",
+        "offline": "Jugador desconectado",
+        "halftime": "Descanso",
+        "auto_5v5": "Esperando al 5v5",
+        "unknown": "En pausa"
+      }
+    },
+    "call": {
+      "noMessage": "Sin mensaje"
+    },
+    "server": {
+      "online": "En línea",
+      "offline": "Desconectado",
+      "unknown": "Estado desconocido"
+    }
+  }
+}

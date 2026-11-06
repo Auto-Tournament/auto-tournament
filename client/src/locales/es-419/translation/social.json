@@ -1,0 +1,297 @@
+{
+  "notificationPrompt": {
+    "title": "Activa las notificaciones",
+    "body": "Te recomendamos activarlas. Así te avisamos aunque cierres esta pestaña:",
+    "matchReady": "cuando tu partida esté lista",
+    "vetoTurn": "cuando te toque en el veto de mapas",
+    "starting": "cuando un torneo en el que estás inscrito esté a punto de empezar",
+    "iphone": "En iPhone, añade primero este sitio a la pantalla de inicio (Compartir, luego Añadir a pantalla de inicio) y ábrelo desde ahí.",
+    "change": "Puedes cambiarlo cuando quieras en tus ajustes de notificaciones.",
+    "later": "Ahora no",
+    "turnOn": "Activar (recomendado)"
+  },
+  "social": {
+    "bell": {
+      "title": "Notificaciones",
+      "label": "Notificaciones",
+      "labelUnread_one": "Notificaciones, {{count}} nueva",
+      "labelUnread_other": "Notificaciones, {{count}} nuevas",
+      "labelUnread_many": "Notificaciones, {{count}} nuevas",
+      "markAllRead": "Marcar todo como leído",
+      "show": "Mostrar",
+      "filter": {
+        "all": "Todo",
+        "you": "Te necesita",
+        "tournaments": "Torneos",
+        "matches": "Partidos",
+        "skins": "Skins",
+        "clips": "Clips",
+        "other": "Otros"
+      },
+      "empty": "Aún no hay nada",
+      "emptyHint": "Aquí aparecen invitaciones a grupos, solicitudes de amistad, novedades de torneos, skins nuevas y highlights listos.",
+      "loading": "Cargando…",
+      "seeAll": "Ver todas las notificaciones",
+      "loadOlder": "Cargar anteriores",
+      "settings": "Ajustes de notificaciones"
+    },
+    "notice": {
+      "partyInvite": "te ha invitado a su grupo",
+      "teamInvite": "te invitó a",
+      "joinedTeam": "Te uniste al equipo",
+      "partyDetail": "{{mode}} · {{size}} en el grupo",
+      "join": "Unirse",
+      "decline": "Rechazar",
+      "accept": "Aceptar",
+      "ignore": "Ignorar",
+      "friendRequest": "te ha enviado una solicitud de amistad",
+      "friendAccepted": "ha aceptado tu solicitud de amistad",
+      "skin": "Skin nueva:",
+      "highlight": "Tu highlight está listo:",
+      "highlightVictim": "{{name}} te eliminó en su clip:",
+      "highlightAssist": "Asististe a {{name}} en su clip:",
+      "highlightKiller": "Eliminaste a {{name}} en su clip:",
+      "tournamentStarted": "ha empezado. Tu primer partido está listo.",
+      "lineupGap": "· un titular dejó tu alineación. Elige un suplente en {{minutes}} minutos o jugarán con uno menos.",
+      "checkInOpen": "el check-in está abierto. Hazlo antes de que cierre.",
+      "joined": "Te uniste al grupo",
+      "nowFriends": "Ahora son amigos",
+      "declined": "Rechazada",
+      "expired": "Este grupo ha terminado",
+      "reportNew": "ha sido denunciado: {{reason}}",
+      "reportReviewed": "Gracias: se ha revisado tu denuncia sobre {{name}}.",
+      "matchReady": "está listo. Abre la sala del partido para conectarte.",
+      "vetoTurn": "le toca a tu equipo en el veto.",
+      "startsSoon": "empieza en {{minutes}} minutos. Prepárate para entrar en tu primer partido.",
+      "startsSoonUpdate": "empieza en {{minutes}} minutos. Abre el juego ya para que cualquier actualización termine antes de tu primer partido.",
+      "matchSoon": "tu veto se abre en {{minutes}} minutos y sigue sin ti. Estate en tu PC.",
+      "noShow": "no entraste en tu partido, así que quedas fuera de las próximas rondas. Abre el torneo y avisa que volviste para seguir jugando.",
+      "discordLink": "vincula tu cuenta de Discord para tener los canales de tu equipo y que te muevan a su canal de voz.",
+      "signedUp": "· {{team}} está dentro. Mira lo que hay que saber antes del inicio."
+    },
+    "toast": {
+      "join": "Unirse al grupo",
+      "close": "Cerrar",
+      "closes_one": "Se cierra en {{count}} s · queda en la campana",
+      "closes_other": "Se cierra en {{count}} s · queda en la campana",
+      "closes_many": "Se cierra en {{count}} s · queda en la campana"
+    },
+    "friends": {
+      "title": "Amigos",
+      "tabFriends": "Amigos",
+      "tabRequests": "Solicitudes",
+      "tabAdd": "Añadir amigo",
+      "online_one": "En línea · {{count}}",
+      "online_other": "En línea · {{count}}",
+      "online_many": "En línea · {{count}}",
+      "offline_one": "Desconectado · {{count}}",
+      "offline_other": "Desconectados · {{count}}",
+      "offline_many": "Desconectados · {{count}}",
+      "onlineCount_one": "{{count}} en línea",
+      "onlineCount_other": "{{count}} en línea",
+      "onlineCount_many": "{{count}} en línea",
+      "invite": "Invitar",
+      "inParty": "En tu grupo",
+      "more": "Más para {{name}}",
+      "viewProfile": "Ver perfil",
+      "remove": "Eliminar amigo",
+      "removed": "{{name}} ya no es tu amigo",
+      "none": "Aún no tienes amigos",
+      "noneHint": "Añade a la gente con la que juegas e invítala a tu grupo desde aquí o desde Jugar.",
+      "incoming": "Recibidas",
+      "sent": "Enviadas",
+      "noIncoming": "No tienes solicitudes pendientes.",
+      "noSent": "No tienes solicitudes enviadas pendientes.",
+      "askedAgo": "La envió {{when}}",
+      "sentAgo": "Enviada {{when}}",
+      "cancelRequest": "Cancelar solicitud",
+      "searchPlaceholder": "Un nombre o un enlace de perfil de Steam",
+      "results": "En Auto Tournament",
+      "playedWith": "Jugaste con ellos hace poco",
+      "noResults": "No hay nadie con ese nombre.",
+      "typeMore": "Escribe al menos dos letras.",
+      "noRecent": "Juega un partido y la gente con la que jugaste aparecerá aquí.",
+      "matches_one": "{{count}} partido",
+      "matches_other": "{{count}} partidos",
+      "matches_many": "{{count}} partidos",
+      "alreadyFriends": "Amigos",
+      "requestSent": "Solicitud enviada",
+      "addFriend": "Añadir amigo",
+      "signIn": "Inicia sesión para ver a tus amigos",
+      "signInHint": "Los amigos, las solicitudes y las invitaciones van con tu cuenta.",
+      "cardEmpty": "Añade amigos para ver cuándo están en línea e invitarlos con un clic.",
+      "all_one": "Todos los amigos ({{count}}) →",
+      "all_other": "Todos los amigos ({{count}}) →",
+      "all_many": "Todos los amigos ({{count}}) →",
+      "find": "Buscar amigos →",
+      "requestCount_one": "{{count}} solicitud",
+      "requestCount_other": "{{count}} solicitudes",
+      "requestCount_many": "{{count}} solicitudes"
+    },
+    "status": {
+      "playing": "En un partido · {{match}}",
+      "searching": "Buscando · {{mode}}",
+      "online": "En línea",
+      "offline": "Desconectado",
+      "lastSeen": "Visto por última vez {{when}}"
+    },
+    "invite": {
+      "searchPlaceholder": "Cualquiera del sitio, por nombre",
+      "friendsOnline": "Amigos en línea",
+      "recent": "Jugaste con ellos hace poco",
+      "onSite": "En Auto Tournament",
+      "noFriends": "Aún no tienes amigos. Busca a quien quieras por nombre arriba.",
+      "nobodyOnline": "Ninguno de tus amigos está en línea.",
+      "inMatch": "En un partido",
+      "together_one": "{{count}} partido juntos",
+      "together_other": "{{count}} partidos juntos",
+      "together_many": "{{count}} partidos juntos",
+      "invited": "Invitado",
+      "sent": "Invitaste a {{name}}",
+      "chip": "{{name}} · invitado",
+      "cancel": "Retirar la invitación a {{name}}",
+      "orLink": "O con un enlace",
+      "copy": "Copiar",
+      "copyFailed": "No se pudo copiar. Selecciona el enlace y cópialo tú.",
+      "makeLink": "Crear un enlace de invitación",
+      "cannot": {
+        "nobody": "No acepta invitaciones",
+        "friends": "Solo amigos",
+        "no_game": "No juega a CS2"
+      }
+    },
+    "profile": {
+      "friends": "Amigos",
+      "acceptRequest": "Aceptar solicitud de amistad",
+      "message": "Mensaje",
+      "invite": "Invitar al grupo"
+    },
+    "settings": {
+      "title": "Invitaciones a grupos",
+      "description": "Quién puede invitarte a un grupo de matchmaking. Las invitaciones aparecen en tu campana y saltan en cualquier página que tengas abierta.",
+      "everyone": "Todos",
+      "everyoneHint": "Cualquier jugador de este sitio.",
+      "friends": "Solo amigos",
+      "friendsHint": "Solo jugadores que son tus amigos.",
+      "nobody": "Nadie",
+      "nobodyHint": "Sin invitaciones. Aun así puedes unirte a un grupo con su enlace.",
+      "saved": "Guardado",
+      "saveFailed": "No se pudo guardar el ajuste"
+    },
+    "setup": {
+      "title": "Termina la configuración antes de buscar",
+      "youGame": "Añade CS2 a tus juegos en tu perfil.",
+      "youGameAuto": "Al buscar partido, este juego se añade a tus juegos.",
+      "youAccount": "Conecta tu cuenta de Steam.",
+      "theyGame": "{{name}} no ha añadido CS2 a sus juegos.",
+      "theyAccount": "{{name}} no ha conectado su cuenta de Steam.",
+      "fix": "Abrir tu cuenta"
+    },
+    "news": {
+      "title": "Noticias",
+      "hint": "Envía un aviso a la campana de todos los jugadores: una temporada nueva, un torneo, una parada prevista.",
+      "titleLabel": "Título",
+      "bodyLabel": "Una línea más (opcional)",
+      "urlLabel": "Enlace (opcional)",
+      "urlHint": "Una página de aquí (/tournament/3) o una dirección https://.",
+      "urlBad": "Empieza con / o https://",
+      "send": "Enviar a todos los jugadores",
+      "confirm": "Lo recibirán todos los jugadores que hayan iniciado sesión. ¿Enviarlo?",
+      "sendNow": "Enviar ahora",
+      "cancel": "Cancelar",
+      "sent_one": "Enviado a {{count}} jugador",
+      "sent_other": "Enviado a {{count}} jugadores",
+      "sent_many": "Enviado a {{count}} jugadores",
+      "failed": "No se pudo enviar la noticia"
+    },
+    "noticeSettings": {
+      "title": "Ajustes",
+      "alerts": "Alertas",
+      "browser": "Notificaciones del navegador",
+      "browserHint": "En este dispositivo, aunque el sitio esté cerrado (tu partido está listo, te toca en el veto, empieza un torneo). Solo en este navegador.",
+      "browserDenied": "Bloqueadas en los ajustes del sitio de este navegador. Permite las notificaciones ahí para activarlas.",
+      "browserUnsupported": "Este navegador no tiene notificaciones.",
+      "sound": "Sonido",
+      "test": "Probar",
+      "volume": "Volumen {{percent}} %",
+      "group": {
+        "you": "Tú",
+        "tournaments": "Torneos",
+        "other": "Otros",
+        "skins": "Skins",
+        "clips": "Clips"
+      },
+      "kind": {
+        "party_invite": "Invitaciones a grupos",
+        "team_invite": "Invitaciones a equipos",
+        "friend_request": "Solicitudes de amistad",
+        "friend_accepted": "Solicitudes de amistad aceptadas",
+        "tournament": "Check-ins e inicios",
+        "skin": "Drops de skins",
+        "highlight": "Tus highlights",
+        "news": "Noticias",
+        "report": "Denuncias"
+      },
+      "delivery": {
+        "off": "Desactivado",
+        "bell": "Campana",
+        "sound": "Campana y sonido"
+      }
+    }
+  },
+  "notifyChannels": {
+    "title": "Notificaciones",
+    "description": "Dónde te avisamos de lo que te necesita cuando no estás en el sitio. Desactivado por defecto, salvo tus propios partidos.",
+    "event": "Evento",
+    "channel": {
+      "push": "Navegador / celular",
+      "discord": "MD de Discord",
+      "email": "Correo"
+    },
+    "events": {
+      "match_ready": {
+        "title": "Tu partido está listo",
+        "hint": "Servidor, enlace de conexión y contra quién juegas"
+      },
+      "veto_turn": {
+        "title": "Te toca en el veto",
+        "hint": "Solo capitanes"
+      },
+      "checkin_open": {
+        "title": "Se abre el check-in",
+        "hint": "En los torneos en los que estás inscrito"
+      },
+      "new_tournament": {
+        "title": "Torneos nuevos",
+        "hint": "Cuando un torneo abre inscripciones"
+      },
+      "tournament_starting": {
+        "title": "Un torneo empieza",
+        "hint": "Recordatorios antes de que empiece un torneo en el que estás"
+      },
+      "direct_message": {
+        "title": "Mensajes de amigos",
+        "hint": "Cuando no estás en el sitio"
+      }
+    },
+    "reason": {
+      "no_bot": "No está configurado en este sitio",
+      "no_discord": "Vincula Discord primero",
+      "no_push": "Activa primero las notificaciones en este navegador",
+      "email_off": "Este sitio no puede enviar correos",
+      "no_email": "Añade un correo primero",
+      "email_unverified": "Confirma tu correo primero"
+    },
+    "switchLabel": "{{event}} por {{channel}}",
+    "saveFailed": "No se pudo guardar."
+  },
+  "presence": {
+    "online": "En línea",
+    "offline": "Desconectado",
+    "away": "Ausente",
+    "searching": "Buscando partida de {{mode}}",
+    "playingMatchmaking": "En un partido de matchmaking: {{label}}",
+    "playingTournament": "En un partido de torneo: {{label}}",
+    "playing": "En un partido: {{label}}"
+  }
+}
