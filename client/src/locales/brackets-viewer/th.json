@@ -1,0 +1,124 @@
+{
+  "origin-hint": {
+    "seed": "ซีด {{position}}",
+    "winner-bracket": "ผู้แพ้ $t(abbreviations.winner-bracket) {{round}}.{{position}}",
+    "winner-bracket-semi-final": "ผู้แพ้รอบรอง $t(abbreviations.winner-bracket) {{position}}",
+    "winner-bracket-final": "ผู้แพ้รอบชิง $t(abbreviations.winner-bracket)",
+    "consolation-final": "ผู้แพ้รอบรอง {{position}}",
+    "grand-final": "ผู้ชนะรอบชิง $t(abbreviations.loser-bracket)",
+    "double-elimination-consolation-final-opponent-1": "ผู้แพ้รอบรอง $t(abbreviations.loser-bracket) 1",
+    "double-elimination-consolation-final-opponent-2": "ผู้แพ้รอบชิง $t(abbreviations.loser-bracket)"
+  },
+  "match-label": {
+    "default": "แมตช์ {{matchNumber}}",
+    "winner-bracket": "$t(abbreviations.winner-bracket)",
+    "loser-bracket": "$t(abbreviations.loser-bracket)",
+    "standard-bracket": "$t(abbreviations.match)",
+    "standard-bracket-semi-final": "รอบรอง {{matchNumber}}",
+    "standard-bracket-final": "รอบชิง",
+    "double-elimination": "{{matchPrefix}} {{roundNumber}}.{{matchNumber}}",
+    "double-elimination-semi-final": "{{matchPrefix}} รอบรอง {{matchNumber}}",
+    "double-elimination-final": "{{matchPrefix}} รอบชิง",
+    "consolation-final": "ชิงอันดับสาม",
+    "grand-final-single": "แกรนด์ไฟนอล",
+    "grand-final": "$t(abbreviations.grand-final) รอบ {{roundNumber}}",
+    "match-game": "เกม {{gameNumber}}"
+  },
+  "match-status": {
+    "locked": "ล็อก",
+    "waiting": "รอ",
+    "ready": "พร้อม",
+    "running": "กำลังแข่ง",
+    "completed": "จบแล้ว",
+    "archived": "เก็บถาวร"
+  },
+  "abbreviations": {
+    "win": "ช",
+    "loss": "พ",
+    "forfeit": "ย",
+    "position": "ต",
+    "seed": "#",
+    "winner-bracket": "สบ",
+    "loser-bracket": "สล",
+    "match": "ม",
+    "grand-final": "GF"
+  },
+  "ranking": {
+    "rank": {
+      "text": "#",
+      "tooltip": "อันดับ"
+    },
+    "id": {
+      "text": "ชื่อ",
+      "tooltip": "ชื่อ"
+    },
+    "played": {
+      "text": "น",
+      "tooltip": "นัดที่แข่ง"
+    },
+    "wins": {
+      "text": "$t(abbreviations.win)",
+      "tooltip": "ชนะ"
+    },
+    "draws": {
+      "text": "ส",
+      "tooltip": "เสมอ"
+    },
+    "losses": {
+      "text": "$t(abbreviations.loss)",
+      "tooltip": "แพ้"
+    },
+    "forfeits": {
+      "text": "$t(abbreviations.forfeit)",
+      "tooltip": "ยอมแพ้"
+    },
+    "scoreFor": {
+      "text": "ได้",
+      "tooltip": "คะแนนได้"
+    },
+    "scoreAgainst": {
+      "text": "เสีย",
+      "tooltip": "คะแนนเสีย"
+    },
+    "scoreDifference": {
+      "text": "+/-",
+      "tooltip": "ผลต่างคะแนน"
+    },
+    "points": {
+      "text": "แต้ม",
+      "tooltip": "แต้ม"
+    }
+  },
+  "common": {
+    "bye": "บาย",
+    "best-of-x": "Bo{{x}}",
+    "consolation": "ปลอบใจ",
+    "group-name": "กลุ่ม {{groupNumber}}",
+    "group-name-winner-bracket": "สายบน",
+    "group-name-loser-bracket": "สายล่าง",
+    "round-name": "รอบ {{roundNumber}}",
+    "round-name-final": "รอบสุดท้าย",
+    "round-name-winner-bracket": "$t(abbreviations.winner-bracket) รอบ {{roundNumber}}",
+    "round-name-winner-bracket-final": "$t(abbreviations.winner-bracket) รอบสุดท้าย",
+    "round-name-loser-bracket": "$t(abbreviations.loser-bracket) รอบ {{roundNumber}}",
+    "round-name-loser-bracket-final": "$t(abbreviations.loser-bracket) รอบสุดท้าย"
+  },
+  "form-creator": {
+    "stage-name-label": "ตั้งชื่อสเตจ",
+    "stage-name-placeholder": "ใส่ชื่อสเตจของคุณ",
+    "stage-selector-label": "เลือกสเตจ",
+    "team-label": "ตั้งชื่อทีม",
+    "team-label-placeholder": "รายชื่อทีมคั่นด้วยจุลภาค (ต้องเป็น 2^n)",
+    "team-count": "หรือจำนวนทีม",
+    "team-count-placeholder": "ต้องการกี่ทีม?",
+    "group-label": "กี่กลุ่ม?",
+    "group-placeholder": "ต้องการกี่กลุ่ม?",
+    "seed-order-label": "ต้องการเรียงซีดอย่างไร?",
+    "double-elimination-seed-order-placeholder": "ลำดับซีดสำหรับแพ้สองครั้งตกรอบ คั่นด้วยจุลภาค",
+    "round-robin-mode-label": "ต้องการโหมดพบกันหมดแบบไหน?",
+    "consolation-final-label": "ชิงอันดับสาม",
+    "skip-first-round-label": "ข้ามรอบแรก",
+    "grand-final-type-label": "ประเภทแกรนด์ไฟนอล",
+    "submit": "สร้าง"
+  }
+}
