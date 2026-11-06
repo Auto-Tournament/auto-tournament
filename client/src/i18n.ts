@@ -77,6 +77,10 @@ const LOADERS: Record<string, () => Promise<Bundle>> = {
     translation: (await import('./locales/tr/translation')).default,
     bracketsViewer: (await import('./locales/brackets-viewer/tr.json')).default,
   }),
+  ja: async () => ({
+    translation: (await import('./locales/ja/translation')).default,
+    bracketsViewer: (await import('./locales/brackets-viewer/ja.json')).default,
+  }),
 };
 
 const i18n = createInstance();
@@ -104,6 +108,7 @@ const initialized = i18n
       'zh-TW',
       'pt-BR',
       'tr',
+      'ja',
     ],
     // Each module adds its own namespace, named by its id, when it registers
     // (module-loader/moduleLocales.ts); core's strings are 'translation'.
