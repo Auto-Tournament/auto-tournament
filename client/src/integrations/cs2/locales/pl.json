@@ -1388,11 +1388,11 @@
       "immortal": "Nieśmiertelny"
     },
     "wear": {
-      "fn": "Fabrycznie nowy",
-      "mw": "Minimalnie zużyty",
-      "ft": "Po przejściach",
-      "ww": "Znacznie zużyty",
-      "bs": "Zaprawiony w boju"
+      "fn": "Prosto z fabryki",
+      "mw": "Lekkie zużycie",
+      "ft": "Po testach bojowych",
+      "ww": "Mocne zużycie",
+      "bs": "Po ciężkich walkach"
     },
     "float": "Float",
     "pattern": "Wzór",
@@ -1482,11 +1482,11 @@
         "phase": "Faza",
         "wear": "Zużycie",
         "wears": {
-          "fn": "Fabrycznie nowy",
-          "mw": "Minimalnie zużyty",
-          "ft": "Po przejściach",
-          "ww": "Znacznie zużyty",
-          "bs": "Zaprawiony w boju"
+          "fn": "Prosto z fabryki",
+          "mw": "Lekkie zużycie",
+          "ft": "Po testach bojowych",
+          "ww": "Mocne zużycie",
+          "bs": "Po ciężkich walkach"
         },
         "float": "Float",
         "pattern": "Seed wzoru",

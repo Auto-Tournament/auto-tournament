@@ -1368,11 +1368,11 @@
       "immortal": "Imortal"
     },
     "wear": {
-      "fn": "Nova de Fábrica",
-      "mw": "Pouco Usada",
-      "ft": "Testada em Campo",
-      "ww": "Bem Usada",
-      "bs": "Veterana de Guerra"
+      "fn": "Original de Fábrica",
+      "mw": "Com Pouco Uso",
+      "ft": "Testado no Terreno",
+      "ww": "Com Muito Uso",
+      "bs": "Gasto"
     },
     "float": "Float",
     "pattern": "Padrão",
@@ -1462,11 +1462,11 @@
         "phase": "Fase",
         "wear": "Desgaste",
         "wears": {
-          "fn": "Nova de Fábrica",
-          "mw": "Pouco Usada",
-          "ft": "Testada em Campo",
-          "ww": "Bem Usada",
-          "bs": "Veterana de Guerra"
+          "fn": "Original de Fábrica",
+          "mw": "Com Pouco Uso",
+          "ft": "Testado no Terreno",
+          "ww": "Com Muito Uso",
+          "bs": "Gasto"
         },
         "float": "Float",
         "pattern": "Seed do padrão",

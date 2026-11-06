@@ -1350,8 +1350,8 @@
     "wear": {
       "fn": "Fabriksny",
       "mw": "Minimalt slitage",
-      "ft": "Fälttestad",
-      "ww": "Väl använd",
+      "ft": "Testad i fält",
+      "ww": "Välanvänd",
       "bs": "Stridsärrad"
     },
     "priceScale": {
@@ -1450,8 +1450,8 @@
         "wears": {
           "fn": "Fabriksny",
           "mw": "Minimalt slitage",
-          "ft": "Fälttestad",
-          "ww": "Väl använd",
+          "ft": "Testad i fält",
+          "ww": "Välanvänd",
           "bs": "Stridsärrad"
         },
         "float": "Float",

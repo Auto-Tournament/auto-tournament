@@ -1368,11 +1368,11 @@
       "immortal": "Nemuritor"
     },
     "wear": {
-      "fn": "Fabricat nou",
+      "fn": "Nouă",
       "mw": "Uzură minimă",
-      "ft": "Testat pe teren",
-      "ww": "Uzură accentuată",
-      "bs": "Bătut de război"
+      "ft": "Testată",
+      "ww": "Uzată",
+      "bs": "Deteriorată"
     },
     "priceScale": {
       "label": "Prețul de piață {{price}}: {{rarity}} {{range}}",
@@ -1468,11 +1468,11 @@
         "phase": "Fază",
         "wear": "Uzură",
         "wears": {
-          "fn": "Fabricat nou",
+          "fn": "Nouă",
           "mw": "Uzură minimă",
-          "ft": "Testat pe teren",
-          "ww": "Uzură accentuată",
-          "bs": "Bătut de război"
+          "ft": "Testată",
+          "ww": "Uzată",
+          "bs": "Deteriorată"
         },
         "float": "Float",
         "pattern": "Seed de model",
