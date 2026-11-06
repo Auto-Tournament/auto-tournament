@@ -1,0 +1,81 @@
+{
+  "manualReport": {
+    "title": "Matchresultat",
+    "unknownTeam": "det andra laget",
+    "state": {
+      "nothing": "Inget resultat rapporterat än. Den som spelade matchen, rapportera resultatet.",
+      "waitingOpponent": "Rapporterat. Väntar på att {{team}} bekräftar.",
+      "needsAnswer": "{{team}} rapporterade det här resultatet. Bekräfta det om det stämmer.",
+      "disputed": "Resultatet ifrågasätts. En admin avgör det.",
+      "awaitingAdmin": "Väntar på att en admin avgör matchen.",
+      "confirmed": "Båda lagen är överens om resultatet."
+    },
+    "deadline": {
+      "autoConfirm": "Bekräftas av sig självt om {{minutes}} min om ingen svarar.",
+      "autoConfirmSoon": "Bekräftas av sig självt när som helst nu.",
+      "escalate": "Går till en admin om {{minutes}} min om ingen svarar.",
+      "escalateSoon": "Går till en admin när som helst nu."
+    },
+    "score": "{{team1}} {{score1}} – {{score2}} {{team2}}",
+    "game": "Spel {{number}}",
+    "note": "Anteckning",
+    "notePlaceholder": "Något det andra laget bör veta (valfritt)",
+    "noteGiven": "Anteckning: {{note}}",
+    "disputeReason": "Vad är fel med det?",
+    "disputeReasonGiven": "Ifrågasatt: {{reason}}",
+    "formHint": "Resultat för {{team1}} och {{team2}}, spel för spel.",
+    "actions": {
+      "report": "Rapportera resultatet",
+      "reportAgain": "Rapportera ett annat resultat",
+      "submit": "Skicka rapport",
+      "cancel": "Avbryt",
+      "confirm": "Bekräfta",
+      "dispute": "Ifrågasätt",
+      "disputeSubmit": "Skicka invändning",
+      "withdraw": "Dra tillbaka min rapport"
+    },
+    "errors": {
+      "stale": "Rapporten ändrades medan den visades. Läs den igen innan du bekräftar.",
+      "incomplete": "Fyll i båda resultaten för minst ett spel.",
+      "failed": "Det gick inte igenom. Försök igen."
+    },
+    "captains": {
+      "title": "Lagkaptener",
+      "hint": "Bara en lagkapten kan rapportera eller bekräfta ett resultat för laget.",
+      "make": "Gör till lagkapten",
+      "remove": "Ta bort lagkapten",
+      "isCaptain": "Lagkapten",
+      "empty": "Ingen i laget har loggat in än, så det finns ingen att utse.",
+      "unknown": "Okänd spelare",
+      "failed": "Det kunde inte ändras. Försök igen."
+    },
+    "stats": {
+      "hint": "De extra siffror turneringen frågar efter. Lämna ett fält tomt om ingen har något.",
+      "required": "obligatoriskt",
+      "recorded": "Rapporterad statistik",
+      "value": "{{subject}}: {{value}}{{suffix}}",
+      "errors": {
+        "number": "{{field}} för {{subject}} måste vara ett tal.",
+        "integer": "{{field}} för {{subject}} måste vara ett heltal.",
+        "range": "{{field}} för {{subject}} är för stort för att vara ett verkligt tal.",
+        "tooLong": "{{field}} för {{subject}} är längre än {{max}} tecken.",
+        "missing": "{{field}} är obligatoriskt, och inget är ifyllt för {{team}}."
+      },
+      "tournamentTitle": "Rapporterad statistik",
+      "tournamentHelp": "Sammanlagt från bekräftade rapporter. Ett resultat som fortfarande väntar på motståndaren räknas inte här.",
+      "byTeam": "Per lag",
+      "byPlayer": "Per spelare",
+      "team": "Lag",
+      "player": "Spelare",
+      "matches": "Matcher"
+    },
+    "chip": {
+      "none": "Inget resultat än",
+      "yours": "Din rapport",
+      "reported": "Rapporterat",
+      "confirm": "Bekräfta det",
+      "disputed": "Ifrågasatt",
+      "final": "Slutgiltigt"
+    }
+  }
+}

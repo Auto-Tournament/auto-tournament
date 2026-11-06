@@ -1,0 +1,124 @@
+{
+  "origin-hint": {
+    "seed": "Seed {{position}}",
+    "winner-bracket": "Förlorare av $t(abbreviations.winner-bracket) {{round}}.{{position}}",
+    "winner-bracket-semi-final": "Förlorare av $t(abbreviations.winner-bracket) semi {{position}}",
+    "winner-bracket-final": "Förlorare av $t(abbreviations.winner-bracket) final",
+    "consolation-final": "Förlorare av semi {{position}}",
+    "grand-final": "Vinnare av $t(abbreviations.loser-bracket) final",
+    "double-elimination-consolation-final-opponent-1": "Förlorare av $t(abbreviations.loser-bracket) semi 1",
+    "double-elimination-consolation-final-opponent-2": "Förlorare av $t(abbreviations.loser-bracket) final"
+  },
+  "match-label": {
+    "default": "Match {{matchNumber}}",
+    "winner-bracket": "$t(abbreviations.winner-bracket)",
+    "loser-bracket": "$t(abbreviations.loser-bracket)",
+    "standard-bracket": "$t(abbreviations.match)",
+    "standard-bracket-semi-final": "Semi {{matchNumber}}",
+    "standard-bracket-final": "Final",
+    "double-elimination": "{{matchPrefix}} {{roundNumber}}.{{matchNumber}}",
+    "double-elimination-semi-final": "{{matchPrefix}} semi {{matchNumber}}",
+    "double-elimination-final": "{{matchPrefix}} final",
+    "consolation-final": "Bronsmatch",
+    "grand-final-single": "Stora finalen",
+    "grand-final": "$t(abbreviations.grand-final) omgång {{roundNumber}}",
+    "match-game": "Spel {{gameNumber}}"
+  },
+  "match-status": {
+    "locked": "Låst",
+    "waiting": "Väntar",
+    "ready": "Redo",
+    "running": "Pågår",
+    "completed": "Klar",
+    "archived": "Arkiverad"
+  },
+  "abbreviations": {
+    "win": "V",
+    "loss": "F",
+    "forfeit": "WO",
+    "position": "Pl",
+    "seed": "#",
+    "winner-bracket": "ÖB",
+    "loser-bracket": "NB",
+    "match": "M",
+    "grand-final": "SF"
+  },
+  "ranking": {
+    "rank": {
+      "text": "#",
+      "tooltip": "Placering"
+    },
+    "id": {
+      "text": "Namn",
+      "tooltip": "Namn"
+    },
+    "played": {
+      "text": "S",
+      "tooltip": "Spelade"
+    },
+    "wins": {
+      "text": "$t(abbreviations.win)",
+      "tooltip": "Vinster"
+    },
+    "draws": {
+      "text": "O",
+      "tooltip": "Oavgjorda"
+    },
+    "losses": {
+      "text": "$t(abbreviations.loss)",
+      "tooltip": "Förluster"
+    },
+    "forfeits": {
+      "text": "$t(abbreviations.forfeit)",
+      "tooltip": "Walkovers"
+    },
+    "scoreFor": {
+      "text": "GP",
+      "tooltip": "Gjorda poäng"
+    },
+    "scoreAgainst": {
+      "text": "IP",
+      "tooltip": "Insläppta poäng"
+    },
+    "scoreDifference": {
+      "text": "+/-",
+      "tooltip": "Poängskillnad"
+    },
+    "points": {
+      "text": "P",
+      "tooltip": "Poäng"
+    }
+  },
+  "common": {
+    "bye": "BYE",
+    "best-of-x": "Bo{{x}}",
+    "consolation": "Tröstomgång",
+    "group-name": "Grupp {{groupNumber}}",
+    "group-name-winner-bracket": "Övre bracket",
+    "group-name-loser-bracket": "Nedre bracket",
+    "round-name": "Omgång {{roundNumber}}",
+    "round-name-final": "Finalomgång",
+    "round-name-winner-bracket": "$t(abbreviations.winner-bracket) omgång {{roundNumber}}",
+    "round-name-winner-bracket-final": "$t(abbreviations.winner-bracket) finalomgång",
+    "round-name-loser-bracket": "$t(abbreviations.loser-bracket) omgång {{roundNumber}}",
+    "round-name-loser-bracket-final": "$t(abbreviations.loser-bracket) finalomgång"
+  },
+  "form-creator": {
+    "stage-name-label": "Namnge ditt steg",
+    "stage-name-placeholder": "Ge steget ett namn",
+    "stage-selector-label": "Välj ett steg",
+    "team-label": "Namnge dina lag",
+    "team-label-placeholder": "Kommaseparerad lista med lagnamn (måste vara 2^n)",
+    "team-count": "Eller ett antal lag",
+    "team-count-placeholder": "Hur många lag vill du ha?",
+    "group-label": "Hur många grupper?",
+    "group-placeholder": "Hur många grupper vill du ha?",
+    "seed-order-label": "Hur vill du ordna seedningen?",
+    "double-elimination-seed-order-placeholder": "Seedningsordning för double elimination, kommaseparerad",
+    "round-robin-mode-label": "Vilket alla mot alla-läge vill du ha?",
+    "consolation-final-label": "Bronsmatch",
+    "skip-first-round-label": "Hoppa över första omgången",
+    "grand-final-type-label": "Typ av stor final",
+    "submit": "Skapa"
+  }
+}
