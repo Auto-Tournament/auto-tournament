@@ -724,9 +724,9 @@
         "draw": "Empate"
       },
       "resultShort": {
-        "win": "W",
-        "loss": "L",
-        "draw": "D"
+        "win": "G",
+        "loss": "P",
+        "draw": "E"
       },
       "backToMatch": "Volver a tu partido",
       "online_one": "{{count}} en línea",

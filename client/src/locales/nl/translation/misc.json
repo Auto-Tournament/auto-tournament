@@ -715,8 +715,8 @@
       },
       "resultShort": {
         "win": "W",
-        "loss": "L",
-        "draw": "D"
+        "loss": "V",
+        "draw": "G"
       },
       "backToMatch": "Terug naar je wedstrijd",
       "online_one": "{{count}} online",
