@@ -1,0 +1,1810 @@
+{
+  "tournament": {
+    "startConfirm": {
+      "intro": "Valmis aloittamaan turnauksen?",
+      "thisWill": "Tämä:",
+      "openMatches": "Avaa ensimmäisen kierroksen ottelut pelattaviksi",
+      "statusInProgress": "Muuttaa turnauksen tilaksi KÄYNNISSÄ",
+      "confirm": "Kyllä, aloita turnaus",
+      "started": "Turnaus alkoi! Ensimmäisen kierroksen ottelut ovat auki."
+    },
+    "steps": {
+      "create": "Luo turnaus",
+      "review": "Tarkista ja vahvista",
+      "live": "Live-turnaus"
+    },
+    "welcome": {
+      "heading": "Luo turnaus",
+      "chooseMethod": "Valitse, miten haluat luoda turnauksesi",
+      "createNewTitle": "Luo uusi turnaus",
+      "createNewDescription": "Aloita alusta ja määritä kaikki turnauksen asetukset käsin"
+    },
+    "typeSelector": {
+      "categories": {
+        "professional": {
+          "label": "Ammattilaissarjat"
+        },
+        "party": {
+          "label": "Juhlat ja hauskanpito"
+        }
+      },
+      "types": {
+        "single_elimination": {
+          "label": "Single elimination",
+          "description": "Yksi tappio ja olet ulkona. Klassinen kaaviomuoto ammattilaisturnauksista."
+        },
+        "double_elimination": {
+          "label": "Double elimination",
+          "description": "Kaksi tappiota putoamiseen. Joukkueet saavat toisen mahdollisuuden alakaaviossa."
+        },
+        "round_robin": {
+          "label": "Kaikki kaikkia vastaan",
+          "description": "Jokainen pelaa jokaista vastaan. Täydellinen liigamuotoisiin kilpailuihin."
+        },
+        "swiss": {
+          "label": "Sveitsiläinen järjestelmä",
+          "description": "Samankaltaisen tilaston joukkueet kohtaavat. Tasaisia otteluita koko turnauksen ajan."
+        },
+        "shuffle": {
+          "label": "Shuffle-turnaus",
+          "description": "Pelaajat sekoitetaan joka kierroksella tasaisiin joukkueisiin. Yksilökilpailu, jossa joukkueet tasapainotetaan ELOn mukaan."
+        },
+        "groups": {
+          "label": "Lohkot, sitten pudotuspelit",
+          "description": "Kaikki kaikkia vastaan lohkoissa; kunkin lohkon parhaat pelaavat pudotuspelit."
+        }
+      },
+      "selectedChip": "Valittu"
+    },
+    "review": {
+      "summary": {
+        "info": "Tarkista turnauksen asetukset ja napsauta ”{{button}}”, kun olet valmis.",
+        "nameLabel": "Turnauksen nimi",
+        "typeLabel": "Turnauksen tyyppi",
+        "formatLabel": "Ottelumuoto",
+        "notSet": "Ei asetettu",
+        "estimatedVolumeText": "Noin {{matches}}, {{rounds}} (paras {{mapsPerMatch}}:sta, yhteensä enintään {{maps}})."
+      }
+    },
+    "formSteps": {
+      "steps": {
+        "name": "Nimi",
+        "type": "Tyyppi",
+        "format": "Muoto",
+        "maps": "Kartat",
+        "teams": "Joukkueet",
+        "review": "Tarkistus"
+      },
+      "backToWelcome": "Takaisin alkuun",
+      "back": "Takaisin",
+      "next": "Seuraava"
+    },
+    "emptyBracket": {
+      "title": "Ei näytettävää kaaviota",
+      "description": "Luo turnaus ja muodosta kaavio aloittaaksesi"
+    },
+    "common": {
+      "createTournament": "Luo turnaus"
+    },
+    "nameLabel": "Turnauksen nimi",
+    "namePlaceholder": "Auto Tournament 2025 -kevätturnaus",
+    "champion": {
+      "title": "Mestari"
+    },
+    "page": {
+      "title": "Turnauksen asetukset"
+    },
+    "labels": {
+      "teams": "Joukkueet",
+      "maps": "Kartat",
+      "format": "Muoto",
+      "players": "Pelaajat",
+      "matchRules": "Ottelusäännöt",
+      "servers": "Palvelimet",
+      "overtimeSettings": "Jatkoajan asetukset",
+      "mapPool": "Karttapooli"
+    },
+    "tooltips": {
+      "deleteTournament": "Poista tämä turnaus ja kaikki sen tiedot pysyvästi"
+    },
+    "counts": {
+      "teams_one": "{{count}} joukkue",
+      "teams_other": "{{count}} joukkuetta",
+      "matches_one": "{{count}} ottelu",
+      "matches_other": "{{count}} ottelua",
+      "rounds_one": "{{count}} kierros",
+      "rounds_other": "{{count}} kierrosta",
+      "maps_one": "{{count}} kartta",
+      "maps_other": "{{count}} karttaa",
+      "servers_one": "{{count}} palvelin",
+      "servers_other": "{{count}} palvelinta",
+      "availableServers_one": "{{count}} vapaa palvelin",
+      "availableServers_other": "{{count}} vapaata palvelinta",
+      "concurrentMatches_one": "{{count}} samanaikainen ottelu",
+      "concurrentMatches_other": "{{count}} samanaikaista ottelua",
+      "enabledServers_one": "{{count}} käytössä oleva palvelin",
+      "enabledServers_other": "{{count}} käytössä olevaa palvelinta"
+    },
+    "matchRules": {
+      "value": "Enintään {{maxRounds}} erää kartalla; voittaja on se, joka ensin saa {{winRounds}} erää.",
+      "teamSizeValue": "Joukkueen koko: {{size}}v{{size}}",
+      "overtimeEnabled": "Jatkoaika: käytössä",
+      "overtimeDisabled": "Jatkoaika: pois (ei jatkoaikaa)",
+      "overtimeDisabledNoDraws": "Jatkoaika: pois (ei tasapelejä – vahinko ratkaisee)",
+      "overtimeSegments_one": "Jatkoajan jaksot: {{count}} jakso",
+      "overtimeSegments_other": "Jatkoajan jaksot: {{count}} jaksoa",
+      "overtimeSegmentsDefault": "Jatkoajan jaksot: pelipalvelimen oletus",
+      "overtimeSegmentsDefaultUnlimited": "Jatkoajan jaksot: pelipalvelimen oletus (yleensä rajaton)"
+    },
+    "toasts": {
+      "loadTemplateFailed": "Mallia ei voitu ladata",
+      "nameRequired": "Turnauksen nimi vaaditaan",
+      "nameUpdated": "Turnauksen nimi päivitetty",
+      "nameUpdateFailed": "Turnauksen nimeä ei voitu päivittää",
+      "selectAtLeastOneMap": "Valitse vähintään 1 kartta",
+      "maxRoundsRange": "Erien enimmäismäärän on oltava 1–30",
+      "teamSizeRange": "Joukkueen koon on oltava 2–10 pelaajaa",
+      "invalidTeamCount": "Virheellinen joukkuemäärä",
+      "selectAtLeastTwoTeams": "Valitse vähintään 2 joukkuetta",
+      "shuffleCreated": "Shuffle-turnaus ”{{name}}” luotu! Seuraava vaihe: rekisteröi vähintään {{minPlayers}} pelaajaa aloittaaksesi turnauksen ({{teamSize}}v{{teamSize}}-ottelut).",
+      "shuffleCreateFailed": "Shuffle-turnausta ei voitu luoda",
+      "shuffleCreateFailedRetry": "Shuffle-turnausta ei voitu luoda. Tarkista asetukset ja yritä uudelleen.",
+      "updated": "Turnaus päivitetty ja kaaviot muodostettu uudelleen!",
+      "created": "Turnaus luotu!",
+      "saveFailed": "Turnausta ei voitu tallentaa",
+      "deleted": "Turnaus poistettu",
+      "deleteFailed": "Turnausta ei voitu poistaa",
+      "regenerated": "Kaaviot muodostettu uudelleen",
+      "regenerateFailed": "Kaavioita ei voitu muodostaa uudelleen",
+      "resetDone": "Turnaus palautettu valmisteluun",
+      "resetFailed": "Turnausta ei voitu nollata",
+      "started_one": "Turnaus alkoi! {{count}} ottelu jaettu palvelimille.",
+      "started_other": "Turnaus alkoi! {{count}} ottelua jaettu palvelimille.",
+      "startRequested": "Turnauksen aloitusta pyydetty. Palvelimet jaetaan pian.",
+      "startFailed": "Turnausta ei voitu aloittaa",
+      "templateSaved": "Malli tallennettu!",
+      "disableServersFailed": "Yhtä tai useampaa palvelinta ei voitu poistaa käytöstä: {{message}}",
+      "noChangesToSave": "Ei tallennettavia muutoksia",
+      "invalidMapSelection": "Virheellinen karttavalinta",
+      "archived": "Turnaus arkistoitu. Luo seuraava.",
+      "archiveFailed": "Turnausta ei voitu arkistoida"
+    },
+    "outdatedServers": {
+      "title": "Palvelimet tarvitsevat päivityksen",
+      "body": "Yksi tai useampi käytössä oleva palvelin on Steamin mukaan vanhentunut (tai sitä ei voitu tarkistaa). Päivitä ne tai poista ne käytöstä jatkaaksesi muilla.",
+      "confirm": "Poista käytöstä kyseiset palvelimet ja yritä uudelleen",
+      "disabling": "Poistetaan käytöstä...",
+      "goToServers": "Siirry palvelimiin"
+    },
+    "live": {
+      "saveNameAria": "Tallenna turnauksen nimi",
+      "cancelRenameAria": "Peru turnauksen uudelleennimeäminen",
+      "editNameAria": "Muokkaa turnauksen nimeä",
+      "renameTooltip": "Nimeä turnaus uudelleen",
+      "alert": {
+        "liveTitle": "Turnaus on live",
+        "liveBody": "Palvelimilla on parhaillaan käynnissä otteluita. Turnauksen asetuksia ei voi muuttaa sen ollessa live (paitsi nimeä).",
+        "pendingTitle": "Turnaus käynnissä",
+        "pendingBody": "Ottelut alkavat heti, kun palvelimet on jaettu ja vedot tehty. Turnauksen asetuksia ei voi muuttaa sen ollessa käynnissä (paitsi nimeä).",
+        "completedTitle": "Turnaus päättynyt",
+        "completedBody": "Tämän turnauksen kaikki ottelut on pelattu. Luo uusi turnaus tai nollaa tämä aloittaaksesi alusta."
+      },
+      "teamsCompeting_one": "{{count}} joukkue kilpailee",
+      "teamsCompeting_other": "{{count}} joukkuetta kilpailee",
+      "playersCompeting_one": "{{count}} pelaaja kilpailee",
+      "playersCompeting_other": "{{count}} pelaajaa kilpailee",
+      "playersCompetingUnknown": "Kilpailevat pelaajat",
+      "shuffleSettingsLabel": "Shuffle-asetukset",
+      "maxRoundsPerMapValue": "Erien enimmäismäärä kartalla: {{rounds}}",
+      "eloTemplateValue": "ELO-malli: {{template}}",
+      "mapSequenceLabel": "Karttajärjestys (kierrokset)",
+      "noMapsConfigured": "Karttoja ei ole vielä määritetty.",
+      "viewBracket": "Näytä kaavio",
+      "viewBracketTooltip": "Näytä turnauskaavio ja ottelujen tiedot",
+      "leaderboardTooltip": "Avaa julkinen ranking-sivu jaettavaksi pelaajille",
+      "restartTooltip": "Lopeta kaikki palvelimien aktiiviset ottelut ja lataa ne uudelleen (hyödyllinen jumiutuneille otteluille)",
+      "resetTooltip": "Lopeta kaikki ottelut ja palauta turnaus valmisteluun (asetukset säilyvät, mutta kaikki otteludata tyhjennetään)",
+      "reset": "Palauta valmisteluun",
+      "dangerZone": "Vaaravyöhyke",
+      "newTournament": "Uusi turnaus"
+    },
+    "reviewCard": {
+      "needPlayersWarning": "Turnauksen aloittamiseen tarvitaan vähintään {{minPlayers}} pelaajaa ({{teamSize}}v{{teamSize}}-ottelut). Rekisteröity nyt: {{registered}}",
+      "start": "Aloita turnaus",
+      "starting": "Aloitetaan...",
+      "startSimulation": "Aloita simulaatio",
+      "startingSimulation": "Aloitetaan simulaatiota...",
+      "bulkCreateMatches": "Luo useita otteluita",
+      "edit": "Muokkaa",
+      "regenerate": "Muodosta uudelleen",
+      "regenerateTooltip": "Poista kaikki nykyiset ottelut ja muodosta kaavio uudelleen samoilla asetuksilla.",
+      "regenerateDisabledTooltip": "Muodosta kaavio vähintään kerran (Tallenna ja muodosta kaaviot), ennen kuin voit muodostaa sen uudelleen."
+    },
+    "dialogs": {
+      "items": {
+        "endMatches": "Lopeta kaikki palvelimien aktiiviset ottelut",
+        "deleteMatches": "Poista kaikki ottelut ja kaaviot",
+        "deleteData": "Poista kaikki otteludata ja tilastot"
+      },
+      "delete": {
+        "title": "🗑️ Poista turnaus",
+        "question": "Haluatko varmasti POISTAA pysyvästi turnauksen <b>”{{name}}”</b>?",
+        "willTitle": "⚠️ Tämä:",
+        "items": {
+          "removeTournament": "Poistaa turnauksen kokonaan",
+          "cannotBeUndone": "Ei voi kumota"
+        },
+        "note": "💡 Huom: Jos haluat vain aloittaa alusta samoilla turnauksen asetuksilla, käytä sen sijaan ”Palauta valmisteluun”.",
+        "confirm": "Poista pysyvästi"
+      },
+      "regenerate": {
+        "title": "🔄 Muodosta kaaviot uudelleen",
+        "liveWarning": "⚠️ VAROITUS: Turnauksen tila on {{status}}!",
+        "liveBody": "Kaavioiden uudelleenmuodostus <b>POISTAA KAIKEN</b> olemassa olevan otteludatan, mukaan lukien tilanteet, tilastot ja tapahtumahistorian.",
+        "cannotBeUndone": "Toimintoa ei voi kumota.",
+        "areYouSure": "Haluatko aivan varmasti jatkaa?",
+        "setupBody": "Tämä poistaa kaikki olemassa olevat ottelut ja muodostaa kaavion uudelleen samoilla asetuksilla.",
+        "continue": "Jatketaanko?",
+        "confirmDestructive": "KYLLÄ, POISTA KAIKKI",
+        "confirm": "Muodosta uudelleen"
+      },
+      "reset": {
+        "title": "🔄 Palauta valmisteluun",
+        "question": "Palautetaanko <b>”{{name}}”</b> VALMISTELU-tilaan?",
+        "willTitle": "Tämä:",
+        "items": {
+          "clearStatus": "Tyhjentää turnauksen tilan (takaisin valmisteluun)",
+          "keepSettings": "<b>Säilyttää</b> turnauksen asetukset (nimi, joukkueet, muoto)",
+          "allowEdit": "Antaa sinun muokata asetuksia uudelleen",
+          "regenerateMatches": "Tyhjentää kaikki ottelutulokset ja muodostaa kaaviot alusta"
+        },
+        "regenerated": "Uudet kaaviot luodaan heti, joten odottavat ottelut näkyvät heti uudelleen.",
+        "note": "💡 Huom: Poistaaksesi turnauksen kokonaan käytä sen sijaan ”Poista”.",
+        "confirm": "Palauta valmisteluun"
+      },
+      "start": {
+        "titleNoServers": "⚠️ Ei palvelimia saatavilla",
+        "titleInsufficient": "⚠️ Liian vähän palvelimia",
+        "titleUncertain": "⚠️ Aloitetaanko turnaus ilman palvelimia?",
+        "noServersHeading": "Palvelimia ei ole juuri nyt saatavilla",
+        "noServersBody": "Turnaus alkaa, mutta ottelut siirtyvät, kunnes palvelin vapautuu. Järjestelmä jakaa ottelut automaattisesti, kun palvelimet ovat valmiita.",
+        "insufficientHeading": "Liian vähän palvelimia kaikkien ensimmäisen kierroksen otteluiden samanaikaiseen pelaamiseen",
+        "insufficientBody": "Sinulla on nyt <b>{{available}}</b>, mutta ensimmäinen kierros tarvitsee <b>{{required}}</b>. Osa otteluista jonottaa ja alkaa myöhemmin, kun palvelimia vapautuu.",
+        "uncertainHeading": "Palvelimien saatavuus on epävarma",
+        "uncertainBody": "Turnaus voi alkaa vähillä palvelimilla tai ilman niitä. Ottelut siirtyvät, kunnes palvelimia on saatavilla, ja ne jaetaan automaattisesti, kun ne ovat valmiita.",
+        "question": "Haluatko silti aloittaa turnauksen?",
+        "confirm": "Kyllä, aloita silti",
+        "cancel": "Tarkista palvelimet"
+      }
+    },
+    "formActions": {
+      "saveAndGenerate": "Tallenna ja muodosta kaaviot",
+      "saveAsTemplate": "Tallenna malliksi",
+      "saveTemplateTooltip": "Tallenna nykyiset turnauksen asetukset malliksi"
+    },
+    "wizard": {
+      "validation": {
+        "selectType": "Valitse turnauksen tyyppi",
+        "selectFormat": "Valitse ottelumuoto"
+      },
+      "shuffleInfo": "Shuffle-turnaukset eivät käytä kiinteitä joukkueita. Pelaajat tasapainotetaan automaattisesti joukkueisiin jokaiseen otteluun Skill Ratingin mukaan.",
+      "shuffleRounds": "Tässä shuffle-turnauksessa on noin {{rounds}} (yksi jokaista valittua karttaa kohden).",
+      "volumeAlert": "Joukkueet: {{teams}}, {{type}}-turnaus ({{format}}): kaaviossa on noin {{matches}}, {{rounds}} (yhteensä enintään {{maps}}).",
+      "maxRoundsLabel": "Erien enimmäismäärä kartalla",
+      "maxRoundsHelper": "Jokainen kartta pelataan enintään {{maxRounds}} erää; voittaja on se, joka ensin saa {{winRounds}} erää.",
+      "maxRoundsHelperEmpty": "Erien enimmäismäärä kartalla (oletus: 24, enintään: 30).",
+      "serversSummary": "Palvelimia määritetty: {{servers}}; ensimmäisellä kierroksella: {{matches}}.",
+      "estimatedVolumeLabel": "Arvioitu laajuus",
+      "mapsHeading": "Kartat ({{total}})",
+      "noMapsSelected": "Karttoja ei valittu",
+      "matchConfiguration": "Ottelun asetukset",
+      "roundLimitValue_one": "Erärajoitus: enintään {{count}} erä",
+      "roundLimitValue_other": "Erärajoitus: enintään {{count}} erää",
+      "teamsHeading": "Joukkueet ({{total}})",
+      "noTeamsSelected": "Joukkueita ei valittu (valinnainen)",
+      "playerRegistration": "Pelaajien rekisteröinti",
+      "playerRegistrationInfo_one": "Pelaajat rekisteröidään turnauksen luomisen jälkeen. Jokainen valittu kartta on yksi otteluiden kierros (yhteensä {{count}} kierros).",
+      "playerRegistrationInfo_other": "Pelaajat rekisteröidään turnauksen luomisen jälkeen. Jokainen valittu kartta on yksi otteluiden kierros (yhteensä {{count}} kierrosta).",
+      "serversSummaryQueued": "Palvelimia määritetty: {{servers}}; ensimmäisellä kierroksella: {{matches}}. Palvelinmäärän ylittävät ottelut odottavat jonossa, kunnes palvelin vapautuu."
+    },
+    "overtime": {
+      "selectLabel": "Jatkoaika",
+      "options": {
+        "enabled": "Käytössä (normaali jatkoaika)",
+        "disabledDraws": "Pois – tasapelit sallittu",
+        "disabledNoDraws": "Pois – ei tasapelejä (vahinko ratkaisee)"
+      },
+      "modeHelper": "Normaali jatkoaika pelaa lisäjaksoja, kunnes joukkue on johdossa. ”Tasapelit sallittu” päättää tasaisen kartan tasapeliin, kun taas ”ei tasapelejä” ratkaisee sen joukkueen kokonaisvahingon mukaan.",
+      "tooltip": "Määritä jatkoajan toiminta ja se, miten tasatilanteet enimmäiserissä käsitellään. Asetukset välitetään pelipalvelimille overtimeMode/overtimeSegments-arvoina, ja ne toimivat samoin kuin shuffle-turnauksissa ja manuaalisissa otteluissa.",
+      "shuffleTooltip": "Määritä shuffle-otteluiden jatkoajan toiminta ja se, miten tasatilanteet ratkaistaan enimmäiserissä. Kun jatkoaika on pois, tasaiset ottelut voivat jäädä tasapeleiksi tai ne ratkaistaan joukkueen kokonaisvahingolla valitsemasi vaihtoehdon mukaan.",
+      "segmentsLabel": "Jatkoajan jaksot (valinnainen)",
+      "segmentsHelper": "Valinnainen: rajoita jatkoajan jaksojen määrää. Jätä tyhjäksi pelipalvelimen oletusta varten.",
+      "segmentsHelperValue_one": "Rajoita jatkoaika {{count}} jaksoon. Jatkoajan jälkeisen tasatilanteen ratkaisee joukkueen kokonaisvahinko.",
+      "segmentsHelperValue_other": "Rajoita jatkoaika {{count}} jaksoon. Jatkoajan jälkeisen tasatilanteen ratkaisee joukkueen kokonaisvahinko."
+    },
+    "grandFinal": {
+      "sectionTitle": "Suurfinaalin tila (double elimination)",
+      "label": "Suurfinaali",
+      "options": {
+        "simple": "Yksinkertainen – yksi suurfinaali ylä- ja alakaavion voittajien välillä",
+        "none": "Ei mitään – yläkaavion finaali ratkaisee turnauksen (ei suurfinaalia)",
+        "double": "Kaksinkertainen – kaavion nollaus (toimii toistaiseksi kuten Yksinkertainen; täysi nollaus suunnitteilla)"
+      },
+      "helper": "Määrittää, miten ylä- ja alakaavion voittajat kohtaavat turnauksen lopussa."
+    },
+    "mapPool": {
+      "shuffleTitle": "Karttojen valinta shuffle-turnauksiin",
+      "shuffleBody": "Kaikki valitut kartat pelataan järjestyksessä. Jokainen kartta on yksi otteluiden kierros. Valitsemiesi karttojen määrä ratkaisee pelattavien kierrosten määrän.",
+      "shuffleSelected": "Olet valinnut {{maps}}, joten pelataan {{rounds}}.",
+      "chooseLabel": "Valitse karttapooli",
+      "custom": "Oma",
+      "selectedMaps": "Valitut kartat ({{total}}):",
+      "chooseMapsPlaceholder": "Valitse kartat...",
+      "saveMapPool": "Tallenna karttapooli",
+      "types": {
+        "defusal": "Pommin purku",
+        "hostage": "Panttivangit",
+        "armsRace": "Arms Race",
+        "unknown": "Tuntematon"
+      }
+    },
+    "formatStep": {
+      "shuffleInfo": "Shuffle-turnaukset käyttävät muotoa paras yhdestä. Jokainen ottelu on yksi kartta."
+    },
+    "shuffleConfig": {
+      "overline": "Shuffle-turnauksen asetukset",
+      "subtitle": "Ottelusäännöt ja asetukset",
+      "teamSizeLabel": "Joukkueen koko",
+      "teamSizeTooltip": "Pelaajien määrä joukkueessa. Yleiset vaihtoehdot: 4v4, 5v5, 6v6. Vähintään 2, enintään 10 pelaajaa joukkueessa.",
+      "teamSizeHelper": "Pelaajien määrä joukkueessa (oletus: 5 eli 5v5, väli: 2–10)",
+      "maxRoundsLabel": "Erien enimmäismäärä",
+      "maxRoundsTooltip": "Erien enimmäismäärä ottelua kohden. Arvo välitetään CS2-palvelimille mp_maxrounds-arvona. Esimerkki: 6 = MR6, 24 = MR24.",
+      "maxRoundsHelper": "Ottelussa pelataan enintään {{maxRounds}} erää; voittaja on se, joka ensin saa {{winRounds}} erää",
+      "maxRoundsHelperEmpty": "Erien enimmäismäärä ottelua kohden (oletus: 24, enintään: 30)",
+      "eloTemplateLabel": "Luokitusmalli",
+      "eloTemplateTooltip": "Valitse, miten ELO lasketaan tässä turnauksessa. Oletuksena malli ”Pure Win/Loss” käyttää vain ottelun tulosta (voitto/tappio); tilastot kirjataan, mutta ne eivät muuta ELOa. Muut mallit ovat valinnaisia ja lisäävät tilastoihin perustuvia muutoksia OpenSkillin voitto/tappio-muutoksen päälle, jos haluat Excelin kaltaista toimintaa.",
+      "eloDefaultSuffix": "(oletus)",
+      "eloTemplateHelper": "Pure Win/Loss (oletus): vain ottelun tulos vaikuttaa ELOon. Pelaajien tilastot tallennetaan silti rankingeja ja vientejä varten, mutta ne eivät muuta luokitusta, ellet valitse omaa mallia."
+    },
+    "shuffleStats": {
+      "serverShortageWarning": "Sinulla on {{available}}/{{needed}} palvelinta. Ottelut pelataan aalloissa, joten kierrokset kestävät pidempään."
+    },
+    "changePreview": {
+      "title": "Tarkista turnauksen muutokset",
+      "liveHeading": "Turnaus on LIVE!",
+      "liveBody": "Turnauksen tyypin, muodon tai joukkuemäärän muuttaminen voi vaatia kaavion uudelleenmuodostusta. Harkitse ”Nollaa turnaus” aloittaaksesi puhtaalta pöydältä.",
+      "noChangesDetected": "Muutoksia ei havaittu",
+      "intro": "Seuraavat muutokset otetaan käyttöön:",
+      "before": "ENNEN",
+      "after": "JÄLKEEN",
+      "apply": "Ota muutokset käyttöön",
+      "applyRisky": "Ota muutokset käyttöön (riskialtista!)",
+      "noChangesToApply": "Ei käyttöön otettavia muutoksia",
+      "none": "Ei mitään",
+      "itemCount_one": "{{count}} kohde",
+      "itemCount_other": "{{count}} kohdetta"
+    },
+    "teamSelection": {
+      "chooseTeamsPlaceholder": "Valitse joukkueet…",
+      "addAll": "Lisää kaikki",
+      "batchAddServers": "Lisää useita",
+      "addServer": "Lisää palvelin",
+      "importTeams": "Tuo joukkueita",
+      "createTeam": "Luo joukkue",
+      "notEnoughServers": "Ensimmäisellä kierroksella on {{matches}}, mutta sinulla on {{servers}}. Palvelinmäärän ylittävät ottelut odottavat jonossa, kunnes palvelin vapautuu – lisää palvelimia pelataksesi ne kaikki kerralla.",
+      "notEnoughTeams": "Tarvitset vähintään 2 joukkuetta turnauksen luomiseen. Sinulla on nyt {{teams}}."
+    },
+    "teamValidation": {
+      "invalidType": "Virheellinen turnauksen tyyppi",
+      "powerOfTwo": "{{type}} vaatii joukkuemäärän, joka on 2:n potenssi ({{counts}}). Valitsit {{selected}}.",
+      "minTeams": "{{type}} vaatii vähintään {{min}} joukkuetta. Valitsit {{selected}}.",
+      "maxTeams": "{{type}} sallii enintään {{max}} joukkuetta. Valitsit {{selected}}."
+    },
+    "eventPage": {
+      "title": "Tapahtumasivu",
+      "subtitle": "Näytetään pelaajille ja vierailijoille julkisella Yleiskatsaus-sivulla.",
+      "descriptionLabel": "Kuvaus",
+      "locationLabel": "Paikka",
+      "locationPlaceholder": "esim. Paikan päällä, Tampere",
+      "rulebookUrlLabel": "Koko sääntökirjan URL",
+      "rulebookUrlHelper": "Oltava https-linkki, tai jätä tyhjäksi.",
+      "rulesLabel": "Säännöt pelaajille",
+      "ruleFieldLabel": "Sääntö {{n}}",
+      "addRule": "Lisää sääntö",
+      "prizesLabel": "Palkinnot",
+      "placeLabel": "Sijoitus",
+      "prizeLabel": "Palkinto",
+      "addPrize": "Lisää palkinto",
+      "scheduleLabel": "Aikataulu",
+      "whenLabel": "Milloin",
+      "scheduleLabelLabel": "Selite",
+      "addScheduleItem": "Lisää aikataulun kohta",
+      "remove": "Poista",
+      "moveUp": "Siirrä ylös",
+      "moveDown": "Siirrä alas",
+      "save": "Tallenna tapahtumasivu",
+      "saveSuccess": "Tapahtumasivu tallennettu.",
+      "saveError": "Tapahtumasivua ei voitu tallentaa: {{message}}",
+      "organizerLabel": "Järjestäjä",
+      "organizerPlaceholder": "esim. Edition 35 LAN",
+      "bannerLabel": "Banneri",
+      "bannerUpload": "Lataa banneri",
+      "bannerReplace": "Korvaa",
+      "bannerRemove": "Poista",
+      "bannerHelp": "Leveä kuva turnaussivun yläreunassa. PNG, JPEG tai WEBP, enintään 2 Mt; 1920 × 600 toimii hyvin.",
+      "bannerWrongType": "Bannerin on oltava PNG-, JPEG- tai WEBP-kuva.",
+      "bannerTooLarge": "Bannerin on oltava enintään 2 Mt.",
+      "signupHeading": "Ilmoittautuminen ja check-in",
+      "signupOpen": "Joukkueet voivat ilmoittautua itse",
+      "signupClosesAt": "Ilmoittautuminen sulkeutuu",
+      "maxTeams": "Joukkuepaikat",
+      "checkInOpensAt": "Check-in avautuu",
+      "checkInClosesAt": "Check-in sulkeutuu",
+      "signupHelp": "Joukkueen omistaja tai kapteeni ilmoittaa joukkueen kokoonpanon kanssa. Kokoonpanon pelaajat tekevät check-inin turnauspäivänä.",
+      "startLabel": "Aloitusaika",
+      "startsAtLabel": "Alkaa",
+      "startsAtHelp": "Paikallinen aikasi. Sivusto laskee aikaa siihen.",
+      "autoStartLabel": "Aloita turnaus automaattisesti tähän aikaan",
+      "remindersLabel": "Muistuta pelaajia ennen alkua",
+      "reminderMinutes_one": "{{count}} minuutti ennen",
+      "reminderMinutes_other": "{{count}} minuuttia ennen",
+      "bannerMapLabel": "Ei banneria? Käytä kartan kuvaa",
+      "bannerMapNone": "Valitse puolestani",
+      "rulesHelp": "Näytetään turnaussivun Säännöt-välilehdellä niiden sääntöjen alla, jotka alusta kirjoittaa asetustesi perusteella.",
+      "fromTemplate": "Lähde: {{name}}",
+      "clearAll": "Tyhjennä kaikki",
+      "rulebookFromTemplate": "Mallista {{name}}. https-linkki, tai jätä tyhjäksi."
+    },
+    "setup": {
+      "steps": {
+        "game": "Peli",
+        "basics": "Nimi ja päivä",
+        "format": "Muoto",
+        "teams": "Joukkueet",
+        "schedule": "Aikataulu",
+        "maps": "Kartat ja veto",
+        "extras": "Ottelun asetukset",
+        "review": "Tarkistus"
+      },
+      "stepsLabel": "Asetusvaiheet",
+      "backToManage": "Hallinta",
+      "stepDone": "valmis",
+      "newTournament": "Uusi turnaus",
+      "editing": "Turnauksen asetukset",
+      "draftSaved": "luonnos tallennettu tähän välilehteen",
+      "discardDraft": "Aloita alusta",
+      "startFromTemplate": "Aloita mallista",
+      "continueTo": "Jatka: {{step}}",
+      "questions": {
+        "game": {
+          "title": "Mikä peli?",
+          "lede": "Peli ratkaisee, miten ottelut pelataan ja mitä asetuksia saat."
+        },
+        "basics": {
+          "title": "Mikä nimi ja mikä päivä?",
+          "lede": "Valitse päivä. Kunkin kierroksen alkamisaika asetetaan kohdassa Aikataulu."
+        },
+        "format": {
+          "title": "Miten sitä pelataan?",
+          "lede": "Valitse kaavio ja kunkin sarjan pituus. Voit muuttaa näitä, kunnes turnaus alkaa."
+        },
+        "teams": {
+          "title": "Ketkä pelaavat?",
+          "lede": "Valitse kaavion joukkueet. Voit myös luoda tai tuoda joukkueita täällä.",
+          "ledeShuffle": "Shufflessa ilmoittaudutaan yksin: pelaajat rekisteröityvät ja uudet joukkueet arvotaan joka kierroksella."
+        },
+        "maps": {
+          "title": "Mitkä kartat?",
+          "lede": "Valitse karttapooli. Sarjat valitsevat karttansa siitä vetolla.",
+          "ledeShuffle": "Valitse kartat siinä järjestyksessä, jossa ne pelataan. Jokainen kartta on yksi kierros."
+        },
+        "eventPage": {
+          "title": "Mitä tapahtumasivulle tulee?",
+          "lede": "Valinnainen. Näytetään pelaajille ja vierailijoille julkisella Yleiskatsaus-sivulla."
+        },
+        "review": {
+          "title": "Valmis lähtöön?",
+          "lede": "Tarkista tiedot ja luo sitten turnaus.",
+          "ledeExisting": "Tarkista tiedot ja aloita turnaus, kun kaikki ovat valmiina."
+        },
+        "schedule": {
+          "title": "Milloin ottelut ovat?",
+          "lede": "Ensimmäisen kierroksen aika on turnauksen alkamisaika. Check-in ja muistutukset lasketaan siitä taaksepäin."
+        },
+        "extras": {
+          "title": "Ottelun asetukset",
+          "lede": "Aloita esiasetuksesta ja muuta sitten tarpeen mukaan. Oranssit asetukset poikkeavat sivuston oletuksista."
+        }
+      },
+      "game": {
+        "label": "Peli",
+        "loading": "Ladataan pelejä, joita tämä instanssi voi ajaa.",
+        "lockedHelp": "Peli lukittuu, kun turnaus on luotu. Poista turnaus ja aloita alusta pelataksesi toista peliä.",
+        "integrationTitles": {
+          "cs2": "Toimii omilla palvelimillasi",
+          "manual-report": "Joukkueet ilmoittavat tuloksen"
+        },
+        "integrationDescriptions": {
+          "cs2": "Ottelut pelataan omilla CS2-palvelimillasi Ready Upin kanssa.",
+          "manual-report": "Ei palvelimia. Joukkueet pelaavat ottelun itse ja kapteeni ilmoittaa tuloksen."
+        }
+      },
+      "basics": {
+        "ratingLabel": "Luokitukset",
+        "ratingHelp": "Miten pelaajien luokitukset muuttuvat jokaisen tämän turnauksen ottelun jälkeen."
+      },
+      "format": {
+        "label": "Muoto",
+        "names": {
+          "single_elimination": "Single elimination",
+          "double_elimination": "Double elimination",
+          "swiss": "Sveitsiläinen",
+          "round_robin": "Kaikki kaikkia vastaan",
+          "shuffle": "Shuffle",
+          "groups": "Lohkot, sitten pudotuspelit"
+        },
+        "types": {
+          "single_elimination": "Yksi tappio ja olet ulkona. Nopein.",
+          "double_elimination": "Toinen mahdollisuus alakaaviossa.",
+          "swiss": "Joukkueet pelaavat useita kierroksia samankaltaisen tilaston joukkueita vastaan.",
+          "round_robin": "Jokainen pelaa jokaista vastaan. Paras pienille ryhmille.",
+          "shuffle": "Ilmoittautuminen yksin. Uudet tasaiset joukkueet joka kierroksella.",
+          "groups": "Kaikki kaikkia vastaan lohkoissa; kunkin parhaat jatkavat finaaliin tai kaavioon."
+        },
+        "seriesLength": "Sarjan pituus",
+        "grandFinal": "Suurfinaali",
+        "grandFinalOptions": {
+          "simple": "Yksi ottelu",
+          "double": "Kaavion nollaus",
+          "none": "Ei mitään"
+        },
+        "grandFinalHelp": {
+          "simple": "Ylä- ja alakaavion voittajat kohtaavat yhdessä suurfinaalissa.",
+          "double": "Kaavion nollaus. Toistaiseksi se pelataan yhtenä suurfinaalina; täysi nollaus on suunnitteilla.",
+          "none": "Ei suurfinaalia: yläkaavion finaali ratkaisee turnauksen."
+        },
+        "teams": "Joukkueet",
+        "teamsHelpPowerOfTwo": "Pudotuskaaviot vaativat {{counts}} joukkuetta. Käytetään yhteenvedossa, kunnes valitset joukkueet.",
+        "teamsHelpRange": "{{min}}–{{max}} joukkuetta. Käytetään yhteenvedossa, kunnes valitset joukkueet.",
+        "fewerTeams": "Vähemmän joukkueita",
+        "moreTeams": "Enemmän joukkueita",
+        "shuffleTitle": "Shuffle-asetukset",
+        "cs2Title": "Counter-Strike 2 -asetukset",
+        "cs2Help": "Counter-Strike 2 -pelimoduuli välittää nämä CS2-palvelimillesi.",
+        "overtime": {
+          "enabled": "Jatkoaika",
+          "disabledDraws": "Pois, tasapelit sallittu",
+          "disabledNoDraws": "Pois, vahinko ratkaisee"
+        }
+      },
+      "teams": {
+        "shuffleBeforeCreate": "Pelaajat ilmoittautuvat, kun olet luonut turnauksen. Palaa tähän vaiheeseen valitaksesi heidät.",
+        "shuffleSelfSignup": "Pelaajat liittyvät itse",
+        "shuffleSelfSignupHelp": "He ilmoittautuvat turnaussivun Liity-painikkeella, kun tämä on käytössä; voit silti lisätä pelaajia täällä."
+      },
+      "maps": {
+        "vetoTitle": "Veto",
+        "vetoStandard": "Jokaisessa {{format}}-sarjassa on karttaveto: joukkueet bannaavat ja pickaavat näistä 7 kartasta.",
+        "vetoCustom": "Tällä turnauksella on oma vetojärjestys muodolle {{format}}.",
+        "vetoNone": "Tälle muodolle ei ole vetoa.",
+        "vetoShuffle": "Shufflessa ei ole vetoa: kartat pelataan tässä järjestyksessä, yksi kierrosta kohden."
+      },
+      "eventPage": {
+        "draftNote": "Tallennetaan turnauksen kanssa, kun luot sen."
+      },
+      "review": {
+        "unsaved": "Sinulla on tallentamattomia muutoksia. Tallenna ne (kaavio muodostetaan uudelleen) tai hylkää ne ennen aloitusta."
+      },
+      "summary": {
+        "label": "Yhteenveto",
+        "untitled": "Nimetön turnaus",
+        "format": "Muoto",
+        "series": "Sarja",
+        "seriesShuffle": "Bo1 kierrosta kohden",
+        "seriesFinal": {
+          "simple": "{{format}} · suurfinaali",
+          "double": "{{format}} · suurfinaali, kaavion nollaus",
+          "none": "{{format}} · ei suurfinaalia"
+        },
+        "teams": "Joukkueet",
+        "teamSize": "{{size}}v{{size}}",
+        "teamsPlanned": "{{count}} suunniteltu",
+        "matches": "Ottelut",
+        "matchesAfterSignUp": "Ilmoittautumisen jälkeen",
+        "duration": "Kestää noin",
+        "durationValue": "{{hours}} h {{minutes}} min",
+        "signUp": "Ilmoittautuminen",
+        "signUpOrganizer": "Järjestäjä valitsee",
+        "signUpAfterCreate": "Avautuu luomisen jälkeen",
+        "players_one": "{{count}} pelaaja",
+        "players_other": "{{count}} pelaajaa",
+        "maps": "Kartat",
+        "mapsRounds": "{{maps}} · {{rounds}}",
+        "notSet": "Ei asetettu",
+        "signUpOpen": "Joukkueet ilmoittautuvat · {{size}} joukkuetta kohden"
+      },
+      "checklist": {
+        "title": "Ennen kuin voit aloittaa",
+        "met": "valmis",
+        "notMet": "ei valmis",
+        "name": "Nimi",
+        "format": "Muoto ja ottelun asetukset",
+        "teams": "Kelvollinen joukkuemäärä",
+        "players_one": "Vähintään {{count}} pelaaja ilmoittautunut",
+        "players_other": "Vähintään {{count}} pelaajaa ilmoittautunut",
+        "mapsVeto": "7 karttaa vetoa varten",
+        "maps": "Vähintään yksi kartta",
+        "created": "Turnaus luotu",
+        "saved": "Muutokset tallennettu"
+      },
+      "manualReport": {
+        "title": "Manuaalinen raportointi",
+        "help": "Auto Tournament ei voi seurata tätä peliä, joten joukkueet kertovat, mitä tapahtui.",
+        "seriesLength": "Sarjan pituus",
+        "seriesLengthHelp": "Montako peliä sarjassa on. Ensimmäisenä yli puolet voittanut joukkue voittaa ottelun.",
+        "gameLabel": "Pelin nimitys",
+        "gameLabelHelp": "Miksi sitä kutsutaan raporttilomakkeessa. Jätä tyhjäksi käyttääksesi nimeä ”{{game}}”.",
+        "allowDraw": "Tasapelit",
+        "allowDrawHelp": "Salli pelin, ja siten sarjan, päättyä tasan. Jätä pois päältä kaaviossa, jossa jonkun on edettävä.",
+        "allowDrawOptions": {
+          "no": "Ei sallittu",
+          "yes": "Sallittu"
+        },
+        "confirmation": "Ennen kuin tulos lasketaan",
+        "confirmationHelp": {
+          "opponent": "Toisen joukkueen kapteenin on hyväksyttävä ennen kuin ottelu ratkeaa. Hän voi sen sijaan kiistää sen, jolloin se siirtyy ylläpitäjälle.",
+          "none": "Kapteenin ilmoitus ratkaisee ottelun yksin. Nopeaa, ja kannattaa vain siellä, missä kukaan tuskin on eri mieltä."
+        },
+        "confirmationOptions": {
+          "opponent": "Vastustaja hyväksyy",
+          "none": "Ilmoitus pätee"
+        },
+        "confirmTimeout": "Vastausaika minuutteina",
+        "confirmTimeoutHelp": "Kuinka kauan vastustajalla on aikaa ennen määräaikaa. 1440 on vuorokausi.",
+        "confirmTimeoutNone": "Ei määräaikaa: ilmoitus odottaa vastausta.",
+        "timeoutAction": "Määräajan umpeutuessa",
+        "timeoutActionHelp": {
+          "auto_confirm": "Ilmoitus hyväksytään sellaisenaan, ja kaavio etenee kenenkään odottamatta.",
+          "escalate": "Ottelu siirretään ylläpitäjälle, joka ratkaisee sen Kiistat-sivulla."
+        },
+        "timeoutActionOptions": {
+          "auto_confirm": "Hyväksy ilmoitus",
+          "escalate": "Kysy ylläpitäjältä"
+        }
+      },
+      "signup": {
+        "how": "Miten joukkueet pääsevät mukaan?",
+        "organizer": "Vain lisäämäni joukkueet",
+        "open": "Joukkueet voivat ilmoittautua",
+        "organizerHelp": "Sinä valitset jokaisen joukkueen. Kukaan ei voi ilmoittautua turnaussivulta.",
+        "openHelp": "Joukkueen omistaja tai kapteeni ilmoittaa joukkueen kokoonpanon kanssa turnaussivulta, ja kokoonpano tekee check-inin turnauspäivänä. Voit silti lisätä joukkueita itse alla.",
+        "teamSize": "Pelaajia joukkueessa",
+        "teamSizeHelp": "Aloittajat, jotka joukkue valitsee ilmoittautuessaan (lisäksi enintään 2 varapelaajaa).",
+        "maxTeamsHelp": "Tyhjä: ei rajaa.",
+        "save": "Tallenna ilmoittautumisen asetukset",
+        "saved": "Ilmoittautumisen asetukset tallennettu",
+        "inTournament": "Turnauksessa ({{count}})",
+        "signedUp": "Ilmoittautunut",
+        "addedByYou": "Sinun lisäämäsi",
+        "lineup": "{{starters}}/{{size}} aloittajaa",
+        "checkedIn": "{{count}} tehnyt check-inin",
+        "remove": "Poista",
+        "removed": "{{team}} on pois turnauksesta",
+        "noneYet": "Ei vielä joukkueita. Ne näkyvät täällä ilmoittautuessaan.",
+        "noTeams": "Ei vielä joukkueita.",
+        "addYourself": "Lisää joukkueet itse",
+        "pickTeams": "Valitse joukkueet",
+        "windowTitle": "Ilmoittautumisaika",
+        "opensLabel": "Ilmoittautuminen avautuu",
+        "opensNow": "Nyt",
+        "opensLater": "Tiettynä aikana",
+        "opensNowHelp": "Avautuu heti, kun luot turnauksen.",
+        "opensLaterHelp": "Suljettu siihen asti. Sivu laskee aikaa siihen.",
+        "closesHelp": "Kokoonpanoja voi muuttaa, kunnes check-in sulkeutuu.",
+        "checkInTitle": "Check-in",
+        "checkInHelp": "Avautuu ennen turnauksen alkua ja sulkeutuu, kun se alkaa. Aloittaja, joka ei ole tehnyt check-iniä siihen mennessä, korvataan varapelaajalla; varapelaajat eivät tee check-iniä.",
+        "checkInChip_one": "{{count}} min ennen",
+        "checkInChip_other": "{{count}} min ennen",
+        "checkInOff": "Ei check-iniä",
+        "checkInLine": "Avautuu {{day}} klo {{time}}, sulkeutuu, kun turnaus alkaa klo {{start}}.",
+        "checkInLineNoStart_one": "Avautuu {{count}} minuutti ennen alkua ja sulkeutuu, kun se alkaa.",
+        "checkInLineNoStart_other": "Avautuu {{count}} minuuttia ennen alkua ja sulkeutuu, kun se alkaa.",
+        "checkInLineOff": "Ei check-iniä: kaikki ilmoittautuneet joukkueet pelaavat.",
+        "captainsLabel": "Kapteenit voivat tehdä check-inin joukkuetovereilleen",
+        "captainsHelp": "Omistaja tai kapteeni voi merkitä aloittajan paikalla olevaksi. He vastaavat siitä, jos pelaaja ei tule.",
+        "perMatchLabel": "Tee check-in uudelleen ennen jokaista ottelua",
+        "perMatchHelp": "Pois: yksi check-in ennen turnausta kattaa kaikki ottelut. Päällä: pelaajat tekevät check-inin, kun kunkin ottelun veto avautuu.",
+        "fullTeamTitle": "Palvelimelle pääsy",
+        "fullTeamHelp": "Kun ottelun palvelin on valmis, kullakin joukkueella on näin paljon aikaa saada täysi joukkue palvelimelle, varapelaajat mukaan lukien. Sitten täysi joukkue valitsee: ota luovutusvoitto tai pelaa vajaata joukkuetta vastaan. Molemmat vajaita: ylläpitäjä päättää.",
+        "fullTeamChip_one": "{{count}} min",
+        "fullTeamChip_other": "{{count}} min",
+        "fullTeamOff": "Ei luovutusvoittoa",
+        "fullTeamLine": "Pelaajat näkevät ajastimen otteluhuoneessa ja palvelimen chatissa. Varapelaajat lasketaan valmiiksi, joten joukkue voi tuoda sellaisen heti.",
+        "fullTeamLineOff": "Ei luovutusvoittoa: vajaa joukkue pelaa vajaalla, kun ottelu alkaa automaattisesti (Ottelun asetukset)."
+      },
+      "groups": {
+        "count": "Lohkojen määrä",
+        "through": "Jatkoon kustakin lohkosta",
+        "throughWinner": "Voittaja",
+        "throughTop2": "Kaksi parasta",
+        "seeding": "Miten joukkueet jaetaan lohkoihin",
+        "seedingSnake": "Jaettu sijoituksen mukaan (käärme)",
+        "seedingRandom": "Satunnaisesti",
+        "playoffs": "Pudotuspelit",
+        "playoffMatches": "Pudotuspeliottelut",
+        "ties": "Tasapisteissä lohkossa: keskinäinen ottelu, sitten eräero, sitten voitetut erät (kuten kaikki kaikkia vastaan). Jos lohkot eivät täytä kaaviota, myös muiden parhaat pääsevät jatkoon.",
+        "whatPlayersGet": "Mitä pelaajat saavat",
+        "stage": "Lohkovaihe",
+        "stageLine": "{{groups}} lohkoa, {{size}} joukkuetta kussakin",
+        "stageNote": "{{count}} ottelua · {{each}} kullekin joukkueelle",
+        "playoffFinal": "Kaksi lohkovoittajaa: {{format}}-finaali",
+        "playoff": {
+          "single_elimination": "{{count}} joukkuetta: single elimination",
+          "double_elimination": "{{count}} joukkuetta: double elimination"
+        },
+        "throughNote": "{{count}} joukkuetta jatkaa",
+        "previewTitle": "Lohkot (jaettu sijoituksen mukaan)",
+        "previewNote": "Joukkueluettelon järjestyksessä (sijoitus). Lohkot lukitaan, kun turnaus alkaa.",
+        "randomNote": "Lohkot arvotaan satunnaisesti, kun turnaus alkaa.",
+        "groupN": "Lohko {{letter}}",
+        "groupMatches": "Lohko-ottelut"
+      },
+      "stepNotes": {
+        "game": "Mitä pelataan",
+        "basics": "Nimi, päivä, paikka",
+        "format": "Miten joukkueet kohtaavat",
+        "teams": "Lisätyt tai ilmoittautuminen",
+        "schedule": "Päivät ja ajat",
+        "maps": "Karttapooli",
+        "extras": "Esiasetus, säännöt, lisät",
+        "review": "Luo se"
+      },
+      "stepOf": "Vaihe {{n}}/{{total}}",
+      "schedule": {
+        "timesNote": "Ottelut odottavat aikaansa. Pelaajat näkevät sen ottelussa, saavat muistutuksen, ja veto avautuu ajallaan.",
+        "breakNote_one": "Juuri pelannut joukkue saa {{count}} minuutin tauon ennen seuraavaa vetoa (Ottelusäännöt).",
+        "breakNote_other": "Juuri pelannut joukkue saa {{count}} minuutin tauon ennen seuraavaa vetoa (Ottelusäännöt).",
+        "noBreakNote": "Joukkueen otteluiden välillä ei ole taukoa (Ottelusäännöt).",
+        "ownTimeNote": "Anna yksittäiselle ottelulle oma aika kohdassa Hallinta › Aikataulu, kun kaavio on luotu.",
+        "startsTournament": "Aloittaa turnauksen · check-in sulkeutuu",
+        "newDay": "Uusi päivä",
+        "sameDay": "Sama päivä",
+        "dayLabel": "Päivä",
+        "startsLabel": "Alkaa",
+        "tournamentStarts": "Turnaus alkaa",
+        "autoStart": "Aloita automaattisesti klo {{time}}",
+        "autoStartNoTime": "Aloita automaattisesti",
+        "autoStartOff": "Pois: ylläpitäjä aloittaa sen Hallinnasta.",
+        "reminders": "Muistuta pelaajia ennen alkua",
+        "modeTimesNote": "Jokainen kierros saa päivän (vaiheesta 2) ja ajan. Ottelut odottavat aikaansa, ja veto avautuu ajallaan.",
+        "modeAsapNote": "Vain alku: sen jälkeen ottelu alkaa heti, kun molemmat joukkueet ja palvelin ovat valmiina."
+      },
+      "extras": {
+        "gotvLabel": "Katsojat",
+        "gotvOn_one": "Katsojat voivat seurata GOTV:ssä {{count}} sekunnin viiveellä (Ottelusäännöt › Katsojat).",
+        "gotvOn_other": "Katsojat voivat seurata GOTV:ssä {{count}} sekunnin viiveellä (Ottelusäännöt › Katsojat).",
+        "gotvOff": "Katsojat eivät voi seurata GOTV:ssä (Ottelusäännöt › Katsojat)."
+      },
+      "startFrom": {
+        "title": "Aloituspohja",
+        "help": "Malli täyttää muodon, kartat ja ottelun asetukset. Voit muuttaa mitä tahansa seuraavissa vaiheissa.",
+        "blank": "Tyhjä",
+        "blankHelp": "Single elimination, Bo3, sivuston karttapooli ja ottelusäännöt.",
+        "siteDefaults": "Sivuston oletukset",
+        "builtIn": "Sisäänrakennettu",
+        "saved": "Tallennettu",
+        "standardRules": "Vakiosäännöt",
+        "ownTemplates": "Omat mallisi tulevat kohdasta <link>Mallit ja luokitukset</link>. Tallenna tämä turnaus malliksi, kun se on valmis."
+      },
+      "days": {
+        "title": "Päivä",
+        "one": "Yksi päivä",
+        "several": "Useana päivänä",
+        "day": "Päivä",
+        "firstDay": "Ensimmäinen päivä",
+        "lastDay": "Viimeinen päivä",
+        "markedLegend": "Sivuston toinen turnaus pelataan sinä päivänä"
+      },
+      "overlap": {
+        "headsUp": "Huomio: {{name}} pelataan myös {{day}}",
+        "headsUpBody": "{{from}}–{{to}} samoilla palvelimilla. Molemmat voivat olla käynnissä: ottelut odottavat vapaata palvelinta, ja pelaaja voi olla molemmissa vain, jos hänen kierrostensa ajat eivät mene päällekkäin.",
+        "openOther": "Avaa aikataulu: {{name}}",
+        "round": "Menee päällekkäin turnauksen {{name}} kanssa ({{day}}, {{from}}–{{to}}) samoilla palvelimilla. Voit silti tallentaa. Turnauksen {{name}} pelaaja ei voi ilmoittautua tänne, koska tämä kierros pelataan samaan aikaan.",
+        "see": "Näytä {{name}}"
+      }
+    },
+    "startButton": {
+      "start": "Aloita turnaus",
+      "starting": "Aloitetaan...",
+      "startSimulation": "Aloita simulaatio",
+      "startingSimulation": "Aloitetaan simulaatiota..."
+    },
+    "archiveDialog": {
+      "title": "Aloitetaanko uusi turnaus?",
+      "message": "{{name}} arkistoidaan. Sen tulokset, ottelut ja tilastot säilyvät, ja sen sivu pitää osoitteensa. Sitten luot seuraavan.",
+      "confirm": "Arkistoi ja aloita uusi",
+      "delete": "Poista se ja aloita uusi",
+      "deleteHint": "Tai poista se: sen tulokset, ottelut ja tilastot poistuvat sen mukana."
+    },
+    "end": {
+      "button": "Päätä turnaus",
+      "tooltip": "Pysäyttää turnauksen nyt ilman tulosta: palvelimilla olevat ottelut päättyvät, loput perutaan. Ei voittajaa eikä palkintoja. Sen voi arkistoida jälkeenpäin.",
+      "title": "Päätetäänkö tämä turnaus?",
+      "body": "Jokainen yhä käynnissä oleva ottelu päättyy palvelimellaan, ja loput perutaan. Kukaan ei voita eikä palkintoja jaeta. Toimintoa ei voi kumota.",
+      "typeName": "Vahvista kirjoittamalla ”{{name}}”",
+      "confirm": "Päätä turnaus",
+      "done_one": "Turnaus päätetty, {{count}} ottelu peruttu",
+      "done_other": "Turnaus päätetty, {{count}} ottelua peruttu",
+      "failed": "Turnausta ei voitu päättää"
+    },
+    "countdown": {
+      "days": "Alkaa {{d}} pv {{h}} h päästä",
+      "hours": "Alkaa {{h}} h {{m}} min päästä",
+      "minutes": "Alkaa {{m}}:{{s}} päästä"
+    }
+  },
+  "bracket": {
+    "empty": {
+      "noBracketTitle": "Ei näytettävää kaaviota",
+      "noBracketDescription": "Luo turnaus ja muodosta kaavio aloittaaksesi"
+    },
+    "view": {
+      "visual": "Graafinen",
+      "list": "Lista",
+      "refresh": "Päivitä",
+      "enterFullscreen": "Koko näyttö",
+      "exitFullscreen": "Poistu koko näytöstä",
+      "shuffleNoVisual": "Shuffle-turnauksissa ei ole graafista kaaviota; käytä sen sijaan listanäkymää."
+    },
+    "times": {
+      "toggle": "Aseta ajat",
+      "startsAt": "Alkaa",
+      "clear": "Käytä kierroksen aikaa",
+      "save": "Tallenna"
+    },
+    "shuffleEmpty": {
+      "title": "Shuffle-turnauksissa ei ole kaaviota",
+      "description": "Shuffle-turnaukset eivät käytä kiinteää kaaviota. Joukkueet sekoitetaan joka kierroksella pelaajien ELOn mukaan.",
+      "hint": "Seuraa live- ja tulevia otteluita Ottelut-sivulla ja pelaajien sijoituksia Ranking-sivulla.",
+      "goToMatches": "Siirry otteluihin",
+      "viewLeaderboard": "Näytä ranking"
+    },
+    "notGenerated": {
+      "title": "Kaaviota ei ole vielä muodostettu",
+      "description": "Muodosta kaavio luodaksesi ottelut turnaukselle {{name}}",
+      "goToSettings": "Siirry turnauksen asetuksiin"
+    },
+    "shuffleNoVisual": {
+      "title": "Shuffle-turnauksissa ei ole graafista kaaviota",
+      "description": "Ottelut muodostetaan dynaamisesti joka kierroksella pelaajien ELOn ja joukkueiden tasapainon mukaan. Seuraa etenemistä täällä:",
+      "listView": "Listanäkymä",
+      "matches": "Ottelut",
+      "standings": "Sarjataulukko",
+      "docsHint": "Katso dokumentaation Shuffle-turnaukset-oppaasta, miten shuffle toimii."
+    },
+    "swiss": {
+      "notGenerated": "Ei muodostettu",
+      "generatedAfter": "Ottelut muodostetaan, kun kierros {{round}} on päättynyt",
+      "bye": "BYE",
+      "standings": "Sarjataulukko",
+      "team": "Joukkue",
+      "record": "Tilasto",
+      "buchholz": "BH",
+      "buchholzHint": "Buchholz: vastustajien voittojen summa",
+      "roundDiff": "ED",
+      "roundDiffHint": "Eräero: voitetut erät miinus hävityt"
+    },
+    "slotHint": {
+      "winnerOf": "Voittaja: {{match}}",
+      "loserOf": "Häviäjä: {{match}}",
+      "matchNumber": "ottelu {{number}}"
+    },
+    "pause": {
+      "pause": "Keskeytä kaavio",
+      "reason": "Keskeytyksen syy",
+      "forMinutes": "{{minutes}} minuutiksi",
+      "untilResumed": "Kunnes jatketaan",
+      "paused": "Kaavio keskeytetty: pelattavat ottelut pelataan loppuun, uusia ei aloiteta",
+      "pausedUntil": "Kaavio keskeytetty {{time}} asti: pelattavat ottelut pelataan loppuun, uusia ei aloiteta",
+      "resume": "Jatka",
+      "pausedDone": "Kaavio keskeytetty",
+      "resumedDone": "Kaavio jatkuu",
+      "failed": "Keskeytystä ei voitu muuttaa"
+    }
+  },
+  "overviewPage": {
+    "tabs": {
+      "overview": "Yleiskatsaus",
+      "label": "Turnaus",
+      "bracket": "Kaavio",
+      "matches": "Ottelut",
+      "teams": "Joukkueet",
+      "standings": "Sarjataulukko",
+      "manage": "Hallinta",
+      "rules": "Säännöt",
+      "match": "Ottelusi",
+      "results": "Tulokset",
+      "signup": "Ilmoittaudu"
+    },
+    "status": {
+      "setup": "Tuleva",
+      "inProgress": "Live",
+      "completed": "Päättynyt",
+      "finishedOn": "Päättyi {{date}}"
+    },
+    "liveNow": "{{count}} livenä nyt",
+    "howItsPlayed": "Miten ottelut pelataan",
+    "facts": {
+      "teams": "Joukkueet",
+      "teamsValue": "{{count}} joukkuetta",
+      "teamSize": "Joukkueen koko",
+      "teamSizeValue": "{{count}} pelaajaa",
+      "format": "Muoto",
+      "series": "Sarja",
+      "seriesValue": "Paras {{count}}:sta",
+      "mapVeto": "Karttaveto",
+      "mapVetoCustom": "Oma järjestys (kapteenit)",
+      "mapVetoStandard": "Vakiojärjestys (kapteenit)",
+      "overtime": "Jatkoaika",
+      "overtimeEnabledUnlimited": "Käytössä, rajaton",
+      "overtimeEnabledSegments": "Käytössä, {{count}} jaksoa",
+      "overtimeDisabled": "Pois (vahinko ratkaisee)"
+    },
+    "mapPool": "Karttapooli",
+    "rules": "Säännöt",
+    "fullRulebook": "Koko sääntökirja",
+    "schedule": "Aikataulu",
+    "yourTeam": {
+      "title": "Pelaat",
+      "onRoster": "Olet joukkueessa {{team}}.",
+      "viewTeam": "Näytä joukkueesi",
+      "versus": "{{team}} vs {{opponent}} · {{stage}}",
+      "tbd": "TBD",
+      "goToMatch": "Siirry otteluusi",
+      "openMatch": "Avaa ottelusivu",
+      "state": {
+        "live": "Live",
+        "loaded": "Liity nyt",
+        "upNext": "Seuraavaksi",
+        "finished": "Päättynyt",
+        "eliminated": "Pudonnut",
+        "waiting": "Odottaa seuraavaa ottelua",
+        "registered": "Ilmoittautunut",
+        "won": "Voittaja",
+        "out": "Ulkona"
+      }
+    },
+    "prizes": {
+      "title": "Palkinnot",
+      "note": "Järjestäjän asettamat. Palkintorahaa, laitteita tai kunniaa."
+    },
+    "requirements": {
+      "title": "Osallistuaksesi",
+      "steamLinkedOk": "Steam-tili yhdistetty.",
+      "steamLinkedNeutral": "Kirjaudu Steamilla osallistuaksesi.",
+      "onRosterOk": "Olet joukkueen kokoonpanossa tässä turnauksessa.",
+      "onRosterNeutral": "Ole joukkueen kokoonpanossa ennen turnauksen alkua."
+    },
+    "loadError": "Turnausta ei voitu ladata.",
+    "notFoundTitle": "Turnausta ei löytynyt",
+    "notFoundDescription": "Tätä turnausta ei ole olemassa tai sitä ei ole vielä luotu.",
+    "loading": "Ladataan…",
+    "about": "Tietoja",
+    "liveStripLabel": "Live nyt",
+    "bracketTab": {
+      "loadError": "Kaaviota ei voitu ladata.",
+      "emptyTitle": "Ei vielä kaaviota",
+      "emptyDescription": "Kaavio näkyy täällä, kun järjestäjä aloittaa turnauksen.",
+      "shuffleTitle": "Shufflessa ei ole kaaviota",
+      "shuffleDescription": "Joukkueet arvotaan uudelleen joka kierroksella, joten kaaviota ei ole. Ottelut listaa jokaisen kierroksen, ja Sarjataulukko järjestää pelaajat."
+    },
+    "matchesTab": {
+      "loadError": "Otteluita ei voitu ladata.",
+      "emptyTitle": "Ei vielä otteluita",
+      "emptyDescription": "Ottelut näkyvät täällä, kun turnaus alkaa.",
+      "live": "Live nyt",
+      "upcoming": "Seuraavaksi",
+      "results": "Tulokset",
+      "vs": "vs",
+      "status": {
+        "live": "Live",
+        "loaded": "Alkamassa",
+        "final": "Lopputulos",
+        "upcoming": "Tuleva"
+      },
+      "emptyDescriptionAt": "Ottelut näkyvät täällä, kun turnaus alkaa: {{when}}."
+    },
+    "teamsTab": {
+      "shuffleTitle": "Joukkueet vaihtuvat joka kierroksella",
+      "shuffleDescription": "Shuffle-turnaus arpoo uudet joukkueet joka kierroksella rekisteröityneistä pelaajista. Sarjataulukko järjestää pelaajat.",
+      "emptyTitle": "Ei vielä joukkueita",
+      "emptyDescription": "Joukkueet näkyvät täällä, kun järjestäjä lisää ne.",
+      "yours": "Joukkueesi",
+      "record": "{{wins}}–{{losses}}",
+      "emptySignupOpen": "Ilmoittautuminen on auki. Joukkueet näkyvät täällä ilmoittautuessaan.",
+      "signUp": "Ilmoita joukkueesi"
+    },
+    "allMatches": "Kaikki ottelut",
+    "keyDates": {
+      "starts": "Alkaa",
+      "lastOnSchedule": "Viimeisenä aikataulussa",
+      "teams": "Joukkueet"
+    },
+    "mapPoolCount": "Karttapooli · {{count}} karttaa",
+    "mapPoolNote": "Kapteenit bannaavat ja pickaavat näistä ennen jokaista sarjaa.",
+    "addToCalendar": "Lisää kalenteriin",
+    "scheduleSoon": "Järjestäjä ei ole vielä julkaissut aikataulua.",
+    "checkInWindow": "Check-in",
+    "mapPoolSoonTitle": "Karttapooli",
+    "mapPoolSoon": "Järjestäjä ei ole vielä valinnut karttoja.",
+    "adminBanner": "Olet tämän turnauksen ylläpitäjä. Turnausta ajetaan Hallinnassa; tämä sivu on se, mitä pelaajat näkevät.",
+    "manageTournament": "Hallitse turnausta",
+    "fullBracket": "Koko kaavio",
+    "allRules": "Kaikki säännöt",
+    "archivedTitle": "Tämä turnaus on arkistoitu",
+    "archivedBody": "Uudempi turnaus korvasi sen. Sen tulokset, kaavio ja sarjataulukko säilyvät täällä.",
+    "openCurrent": "Avaa nykyinen turnaus",
+    "allTournaments": "Kaikki turnaukset",
+    "roundN": "Kierros {{n}}",
+    "finalRound": "Finaali",
+    "roundStarts": "{{round}} · veto avautuu {{time}}"
+  },
+  "roundStatusCard": {
+    "roundOf": "Kierros {{current}}/{{total}}",
+    "complete": "Valmis",
+    "inProgress": "Käynnissä",
+    "matchProgress": "Otteluiden eteneminen",
+    "completedOf": "{{completed}} / {{total}} valmiina",
+    "completedCount": "{{count}} valmiina",
+    "playingCount": "{{count}} pelaa",
+    "pendingCount": "{{count}} odottaa"
+  },
+  "yourMatch": {
+    "loading": "Ladataan otteluasi",
+    "bestOf": "Paras {{count}}:sta",
+    "mapsScore": "Kartat {{us}} – {{them}}",
+    "inServer": "Palvelimella",
+    "notJoined": "Ei liittynyt",
+    "waitingForPlayers": "Odotetaan pelaajia",
+    "inServerCount": "{{count}}/{{expected}} palvelimella. Ottelu alkaa, kun kaikki ovat valmiina.",
+    "inServerCountBots": "{{count}} palvelimella. Botit täyttävät tyhjät paikat; ottelu alkaa, kun kaikki paikalla olevat ovat valmiina.",
+    "live": "Live",
+    "round": "Erä {{n}}",
+    "vetoTitle": "Karttaveto käynnissä",
+    "finished": "Ottelu päättyi",
+    "mapOf": "Kartta {{n}}/{{total}}",
+    "sideYou": "{{side}} · sinä",
+    "rejoin": "Putositko? Liity uudelleen samalla painikkeella: paikkasi säilyy.",
+    "outcome": {
+      "won": "Voititte {{us}}–{{them}} vastustajaa {{opponent}} vastaan",
+      "lost": "Hävisitte {{us}}–{{them}} vastustajaa {{opponent}} vastaan",
+      "draw": "{{us}}–{{them}} vastustajaa {{opponent}} vastaan"
+    },
+    "ready": "Valmis",
+    "waitingForServer": "Odotetaan palvelinta",
+    "vetoDoneChip": "Veto valmis · {{map}}",
+    "waitingForServerBody": "Palvelin varataan heti, kun sellainen vapautuu. Saat ilmoituksen ja tämä sivu päivittyy itsestään.",
+    "mapDrawnChip": "Kartta arvottu · {{map}}",
+    "notYet": "Ei vielä"
+  },
+  "results": {
+    "finalStandings": "Lopulliset sijoitukset",
+    "awards": "Palkinnot",
+    "players": "Pelaajat",
+    "matchesAndDemos": "Ottelut ja demot",
+    "place": "#{{n}}",
+    "championsOf": "{{name}} · Mestarit",
+    "showAll": "Kaikki {{count}} pelaajaa",
+    "showFewer": "Näytä vähemmän",
+    "mapResults": "Karttojen tulokset",
+    "col": {
+      "player": "Pelaaja",
+      "team": "Joukkue",
+      "rating": "Luokitus ±",
+      "hltv": "Suoritus"
+    },
+    "award": {
+      "mostKills": "Eniten killejä",
+      "bestAdr": "Korkein ADR",
+      "bestHeadshots": "Paras headshot-%",
+      "mostFlashAssists": "Eniten flash-assisteja",
+      "mostUtility": "Eniten utility-vahinkoa",
+      "biggestGain": "Suurin luokituksen nousu",
+      "bestPlayer": "Paras pelaaja",
+      "mostClutches": "Eniten clutcheja",
+      "mostTeamFlashes": "Eniten sokaistuja joukkuetovereita",
+      "mostMoney": "Käytti eniten rahaa"
+    },
+    "awardValue": {
+      "mostKills": "{{value}} killiä",
+      "bestAdr": "{{value}} ADR",
+      "bestHeadshots": "{{value}} % headshotteja",
+      "mostFlashAssists": "{{value}} flash-assistia",
+      "mostUtility": "{{value}} utility-vahinkoa",
+      "biggestGain": "+{{value}} luokitusta",
+      "bestPlayer": "luokitus {{value}}",
+      "mostTeamFlashes": "{{value}} sokaistua joukkuetoveria",
+      "mostClutches": "{{value}} voitettua clutchia",
+      "mostMoney": "{{value}} käytetty"
+    },
+    "wonFinal": "Voitti finaalin {{a}}–{{b}} vastustajaa {{opponent}} vastaan",
+    "champions": "Mestarit",
+    "allMatches": "Kaikki {{count}} ottelua",
+    "demosAndReel": "Demot ja koostevideo",
+    "stage": {
+      "final": "Finaali",
+      "semi": "Välierä",
+      "round": "Kierros {{n}}"
+    }
+  },
+  "signup": {
+    "cta": "Ilmoita joukkueesi",
+    "keyDates": {
+      "closes": "Ilmoittautuminen sulkeutuu",
+      "checkIn": "Check-in",
+      "spots": "Joukkuepaikat",
+      "left": "{{count}} jäljellä",
+      "full": "Täynnä",
+      "of": "/{{max}}"
+    },
+    "ladder": {
+      "title": "Joukkueet luokituksen mukaan",
+      "yourPlace": "Olette {{place}}. / {{count}}"
+    },
+    "todo": {
+      "signedUp": "Ilmoittautunut",
+      "beforeTheDay": "Ennen turnauspäivää",
+      "toFix": "{{count}} korjattavaa",
+      "lineup": "Kokoonpano",
+      "allReady": "Kaikki valmiina",
+      "notSet": "Ei asetettu",
+      "showFixes": "Näytä korjattavat",
+      "fixNote": "Korjaa nämä ennen check-iniä, tai pelaaja ei pääse mukaan."
+    },
+    "yourLineup": "Kokoonpanosi",
+    "change": "Muuta",
+    "withdraw": "Vedä pois",
+    "withdrawTitle": "Vedetäänkö {{team}} pois?",
+    "withdrawBody": "Joukkue poistuu turnauksesta, ja sen paikka vapautuu toiselle joukkueelle.",
+    "sub": "Varapelaaja",
+    "ready": "Valmis",
+    "problem": {
+      "noAccount": "Ei ole vielä kirjautunut Auto Tournamentiin",
+      "noGame": "Peli puuttuu profiilista"
+    },
+    "problemShort": {
+      "noAccount": "ei kirjautunut",
+      "noGame": "peli puuttuu"
+    },
+    "checkIn": {
+      "open": "Check-in on auki",
+      "closesIn": "Sulkeutuu {{time}} · {{left}} jäljellä",
+      "imHere": "Olen paikalla",
+      "done": "Check-in tehty",
+      "teamTitle": "{{team}} tekee check-iniä",
+      "keepOpen": "Pidä tämä sivu auki. Se kertoo, kun ottelusi on valmis.",
+      "firstMatchIn": "Ensimmäinen ottelu",
+      "count": "{{in}}/{{total}}",
+      "you": "sinä",
+      "everyone": "Kaikki",
+      "soundOn": "Ääni päällä: kuulet, kun on aika",
+      "soundOff": "Ääni pois",
+      "checkInFor": "Tee check-in: {{name}}",
+      "checkInShort": "Tee check-in"
+    },
+    "noTeamTitle": "Ei ilmoitettavaa joukkuetta",
+    "noTeamBody": "Vain joukkueen omistaja tai kapteeni voi ilmoittaa sen. Luo joukkue tai kysy kapteeniltasi.",
+    "goToTeams": "Joukkueet",
+    "steps": {
+      "lineup": "Kokoonpano",
+      "review": "Tarkistus"
+    },
+    "whichTeam": "Minkä joukkueen ilmoitat?",
+    "role": {
+      "owner": "Omistat sen",
+      "captain": "Olet kapteeni"
+    },
+    "playerCount": "{{count}} pelaajaa",
+    "whoPlays": "Ketkä pelaavat?",
+    "whoPlaysHint": "{{count}} aloittajaa · enintään {{subs}} varapelaajaa",
+    "rating": "Luokitus {{rating}}",
+    "slotFor": "Rooli: {{name}}",
+    "starter": "Aloittaja",
+    "out": "Pois",
+    "starters": "Aloittajat",
+    "subs": "Varapelaajat",
+    "lineupRating": "Kokoonpanon luokitus",
+    "missingAccounts": "{{names}} pitää vielä kirjautua.",
+    "fixBeforeCheckIn": "Voit ilmoittautua nyt; korjaa se ennen check-iniä.",
+    "saveLineup": "Tallenna kokoonpano",
+    "nextReview": "Seuraavaksi: tarkistus",
+    "readyToSend": "Valmis lähettämään?",
+    "next": {
+      "lastSpot": "Vie viimeisen paikan",
+      "takesSpot": "Vie paikan",
+      "spotsLeft": "{{count}} jäljellä ennen tätä",
+      "checkIn": "Check-in turnauspäivänä",
+      "firstMatch": "Ensimmäinen ottelu",
+      "spotOf": "{{n}}/{{max}}"
+    },
+    "vouch": "Vahvistan, että jokainen tämän kokoonpanon pelaaja on lukenut",
+    "vouchNote": "Ilmoitan heidät heidän puolestaan. Jos pelaaja rikkoo sääntöjä, koko joukkue voidaan rangaista tai hylätä.",
+    "send": "Ilmoita {{team}}",
+    "rulesLink": "säännöt",
+    "ownerTag": "omistaja",
+    "captainTag": "kapteeni",
+    "check": {
+      "steam": "Steam",
+      "game": "{{game}}",
+      "noGame": "{{game}} puuttuu",
+      "steamShort": "Steam"
+    },
+    "remind": "Muistuta",
+    "reminded": "Muistutus lähetetty joukkueen chattiin",
+    "done": "Valmis",
+    "lineupGap": "Aloittaja poistui kokoonpanostasi (estetty tai poistettu). Ottelusi odottavat {{time}} asti: valitse varapelaaja sitä ennen, tai ensimmäinen varapelaaja astuu tilalle. Ilman varapelaajaa pelaatte vajaalla.",
+    "pickSub": "Valitse varapelaaja",
+    "title": "Ilmoita joukkueesi",
+    "editTitle": "Muuta kokoonpanoasi",
+    "stepsLabel": "Vaiheet",
+    "changeUntil": "Voit muuttaa kokoonpanoa, kunnes check-in sulkeutuu, {{when}}.",
+    "counts": "{{starters}}/{{teamSize}} aloittajaa · {{subs}}/{{maxSubs}} varapelaajaa",
+    "lineupRatingValue": "Kokoonpanon luokitus {{rating}}",
+    "missingGame": "{{names}} tarvitsevat profiiliinsa pelin {{game}}.",
+    "subsLine": "varapelaajat: {{names}}",
+    "overlap": {
+      "title": "Et voi ilmoittautua tähän",
+      "body": "Olet turnauksessa {{name}}, jossa sinulla on ottelu {{when}}, samaan aikaan kuin tässä turnauksessa. Voit olla molemmissa turnauksissa, kun ottelujen ajat eivät mene päällekkäin.",
+      "open": "Avaa {{name}}"
+    },
+    "youreIn": {
+      "eyebrow": "{{team}} · ilmoittautunut",
+      "title": "Olette mukana!",
+      "body": "Tässä on, mitä joukkueesi pitää tietää ennen turnauksen alkua. Lähetimme saman listan omistajalle ja kapteeneille.",
+      "openLineup": "Avaa kokoonpanosi",
+      "listTitle": "Ennen turnauksen alkua",
+      "checkIn": "Check-in {{when}}–{{to}}",
+      "checkInBodyCaptains": "Jokainen aloittaja tekee check-inin tällä sivulla, tai kapteeni tekee sen heidän puolestaan. Check-in sulkeutuu, kun turnaus alkaa.",
+      "checkInBody": "Jokainen aloittaja tekee check-inin tällä sivulla. Check-in sulkeutuu, kun turnaus alkaa.",
+      "subs": "Varapelaajien ei tarvitse tehdä check-iniä",
+      "subsBody": "Heidät lasketaan paikalla oleviksi ja valmiiksi, joten ottelu ei koskaan odota heitä.",
+      "replaced": "Aloittaja ilman check-iniä korvataan",
+      "replacedBody": "Kun check-in sulkeutuu, varapelaaja ottaa jokaisen check-inin tekemättä jättäneen aloittajan paikan. Jos varapelaajia ei ole, pelaatte yhden pelaajan vajaalla.",
+      "fullTeam_one": "{{count}} minuutti aikaa saada joukkue palvelimelle",
+      "fullTeam_other": "{{count}} minuuttia aikaa saada joukkue palvelimelle",
+      "fullTeamBody_one": "Kun palvelimenne on valmis, joukkueellanne on {{count}} minuutti aikaa saada täysi joukkue palvelimelle, varapelaajat mukaan lukien. Sen jälkeen toinen joukkue voi ottaa luovutusvoiton tai pelata teitä vastaan vajaalla.",
+      "fullTeamBody_other": "Kun palvelimenne on valmis, joukkueellanne on {{count}} minuuttia aikaa saada täysi joukkue palvelimelle, varapelaajat mukaan lukien. Sen jälkeen toinen joukkue voi ottaa luovutusvoiton tai pelata teitä vastaan vajaalla.",
+      "ready": "Ole valmiina ennen jokaista ottelua",
+      "readyBodyVeto_one": "Veto avautuu {{count}} minuutti ennen jokaista ottelua. Pidä tämä sivu auki: se kertoo, kun seuraava ottelusi on valmis.",
+      "readyBodyVeto_other": "Veto avautuu {{count}} minuuttia ennen jokaista ottelua. Pidä tämä sivu auki: se kertoo, kun seuraava ottelusi on valmis.",
+      "readyBody": "Pidä tämä sivu auki: se kertoo, kun seuraava ottelusi on valmis.",
+      "eachMatch": "Tee check-in uudelleen ennen jokaista ottelua",
+      "eachMatchBody": "Ennen jokaista ottelua jokainen aloittaja tekee check-inin otteluhuoneessa, tai kapteeni tekee sen heidän puolestaan. Aloittaja, joka ei tee, vaihdetaan varapelaajaan."
+    }
+  },
+  "bracketCards": {
+    "you": "Sinä",
+    "open": "Avaa {{a}} vs {{b}}",
+    "upper": "Yläkaavio",
+    "lower": "Alakaavio",
+    "grandFinal": "Suurfinaali",
+    "thirdPlace": "Kolmas sija",
+    "live": "Live",
+    "veto": "Veto",
+    "done": "Valmis",
+    "mapOf": "Kartta {{n}}/{{total}}",
+    "banning": "Bannataan karttoja",
+    "bestOf_one": "Paras {{count}}:sta",
+    "bestOf_other": "Paras {{count}}:sta",
+    "winnerOf": "Voittaja {{match}}",
+    "loserOf": "Häviäjä {{match}}",
+    "tbd": "Ei vielä ratkaistu",
+    "liveCount_one": "{{count}} livenä",
+    "liveCount_other": "{{count}} livenä",
+    "matchCount_one": "{{count}} ottelu",
+    "matchCount_other": "{{count}} ottelua"
+  },
+  "placement": {
+    "outTitle": "Turnauksesi {{tournament}} on päättynyt",
+    "wonTitle": "Voititte turnauksen {{tournament}}!",
+    "yourTeamPlaced": "{{team}} sijoittui",
+    "yourTeam": "Joukkueesi",
+    "outBody": "Joukkueesi on pudonnut turnauksesta, joten sinulla ei ole enää otteluita. Seuraa loput kaaviosta.",
+    "wonBody": "Joukkueesi voitti turnauksen. Hienosti pelattu!",
+    "close": "Sulje",
+    "seeBracket": "Näytä kaavio",
+    "outBodyPlay": "Sinulla ei ole enää otteluita tässä turnauksessa. Kiitos pelaamisesta!",
+    "championsEyebrow": "Mestarit",
+    "teamPlaced": "{{team}} sijoittui",
+    "wonTitleShort": "Voititte turnauksen {{tournament}}!",
+    "wonFinalBody": "{{team}} voitti finaalin {{score}}. Hienosti pelattu!",
+    "playHint": "Toinen peli? Matchmaking löytää sinulle ottelun minuutissa tai kahdessa."
+  },
+  "advance": {
+    "title": "Hienoa, olette yhä mukana!",
+    "opponent": "Seuraavaksi: {{opponent}}.",
+    "feederTitle": "Seuraava vastustajasi tulee ottelusta",
+    "vs": "vs",
+    "tbd": "TBD",
+    "feederNotStarted": "Tuo ottelu ei ole vielä alkanut.",
+    "feederMinutes_one": "Noin {{count}} minuutti jäljellä.",
+    "feederMinutes_other": "Noin {{count}} minuuttia jäljellä.",
+    "feederAlmost": "Melkein valmis.",
+    "watch": "Katso livenä",
+    "wonEyebrow": "{{stage}} voitettu {{score}}"
+  },
+  "whatsNext": {
+    "eyebrow": "Mitä seuraavaksi",
+    "champions": "Mestarit",
+    "outTitle": "Joukkueesi putosi. Sijoituksenne: {{place}}",
+    "outBody": "Se oli viimeinen ottelusi turnauksessa {{tournament}}. Hyviä pelejä! Haluatko jatkaa pelaamista? Matchmaking löytää sinulle ottelun muiden pelaajien kanssa heti.",
+    "playMatchmaking": "Pelaa matchmakingia",
+    "watchLive": "Katso live-ottelua",
+    "nextMatch": "{{stage}} vs {{opponent}}",
+    "nextMatchReady": "Ottelusi on valmis: avaa otteluhuone ja yhdistä.",
+    "nextMatchSoon": "Seuraava ottelusi on sovittu. Se avautuu lyhyen tauon jälkeen, ja saat ilmoituksen. Navigointipalkki näyttää lähtölaskennan, missä ikinä oletkin.",
+    "openMatchRoom": "Avaa otteluhuone",
+    "throughTo": "Jatkoon: {{stage}}",
+    "waitingTitle": "Odotetaan seuraavaa vastustajaasi",
+    "waitingBody": "Vastustajasi tulee ottelusta, jota pelataan vielä. Kun se päättyy, on lyhyt tauko, ja sitten seuraava ottelusi avautuu. Saat ilmoituksen.",
+    "watchOpponent": "Katso seuraavaa vastustajaasi livenä",
+    "shuffleTitle": "Seuraava kierros: uudet joukkueet",
+    "shuffleBody": "Kun kaikki tämän kierroksen ottelut ovat valmiita, arvotaan uudet joukkueet ja seuraava ottelusi näkyy tässä.",
+    "stayHere": "Pysy tällä sivulla: se päivittyy itsestään.",
+    "openTournament": "Avaa turnaus",
+    "winsToTitle_one": "Yksi voitto mestaruuteen",
+    "winsToTitle_other": "{{count}} voittoa mestaruuteen",
+    "shuffleDoneTitle": "Se oli viimeinen kierros",
+    "shuffleDoneBody": "Shuffle on ohi. Avaa turnaus nähdäksesi sarjataulukon.",
+    "youWon": "Voititte {{a}}–{{b}} vastustajaa {{opponent}} vastaan.",
+    "youLost": "Hävisitte {{a}}–{{b}} vastustajaa {{opponent}} vastaan.",
+    "resultPlaced": "{{result}} Sijoituksenne: {{place}}.",
+    "nextUp": "Seuraavaksi: {{match}}."
+  },
+  "navStatus": {
+    "placed": "Sijoitus",
+    "placedPlay": "{{place}} · Pelaa matchmakingia",
+    "waiting": "Odotetaan vastustajaa",
+    "vetoIn": "Veto alkaa",
+    "vetoOpening": "Veto avautuu",
+    "matchIn": "Ottelu alkaa",
+    "matchLoading": "Ottelu latautuu",
+    "shuffleRound": "Kierros {{round}} · Pelaa",
+    "shuffleSittingOut": "Kierros {{round}} · Sivussa",
+    "placedPlayLine": "Sijoitus {{place}} · Pelaa matchmakingia",
+    "placedLine": "Sijoitus {{place}}",
+    "waitingOpponent": "Odotetaan vastustajaa",
+    "aboutMinutes_one": "~{{count}} min",
+    "aboutMinutes_other": "~{{count}} min"
+  },
+  "shuffleJoin": {
+    "title": "Liity tähän shuffleen",
+    "body": "Joukkuetta ei tarvita: ilmoittaudu yksin. Joka kierroksella alusta arpoo uudet, tasaväkiset joukkueet.",
+    "youreIn": "Olet mukana",
+    "inBody": "Kun turnaus alkaa, ensimmäinen joukkueesi arvotaan ja ottelusi näkyy tässä. Pidä tämä sivu auki.",
+    "join": "Liity",
+    "leave": "Poistu",
+    "full": "Täynnä",
+    "signInToJoin": "Kirjaudu liittyäksesi",
+    "count_one": "{{count}} pelaaja mukana",
+    "count_other": "{{count}} pelaajaa mukana",
+    "countOf_one": "{{count}}/{{spots}} pelaajaa mukana",
+    "countOf_other": "{{count}}/{{spots}} pelaajaa mukana",
+    "playingTitle": "Pelaat nyt",
+    "playingBody": "Liity palvelimelle joukkueesi kanssa. Seuraava kierros arvotaan, kun kaikki tämän kierroksen ottelut ovat päättyneet.",
+    "sittingOutTitle": "Olet sivussa tämän kierroksen",
+    "sittingOutBody": "Tällä kierroksella pelaajia ei riitä jokaiseen joukkueeseen. Olet mukana kierroksen {{next}} arvonnassa, ja eniten pelanneet jäävät sivuun ensin.",
+    "goToMatch": "Siirry otteluun",
+    "tagPlaying": "Pelaa",
+    "tagSittingOut": "Sivussa",
+    "roundHeading": "Kierros {{round}}",
+    "versus": "vs",
+    "sittingOutList": "Sivussa: {{names}}",
+    "status": {
+      "live": "Live",
+      "done": "Valmis",
+      "waiting": "Alkamassa"
+    },
+    "finishedTitle": "Shuffle on ohi",
+    "finishedBody_one": "Kierros on pelattu. Hyviä pelejä!",
+    "finishedBody_other": "Kaikki {{count}} kierrosta on pelattu. Hyviä pelejä!",
+    "roundOf": "Kierros {{round}}/{{total}}",
+    "roundsCount_one": "{{count}} kierros",
+    "roundsCount_other": "{{count}} kierrosta",
+    "now": "Nyt",
+    "tagLeft": "Poistunut",
+    "markOut": "Merkitse poissa olevaksi",
+    "markIn": "Takaisin mukaan",
+    "roundShort": "Kierros {{round}}",
+    "playedTitle": "Kierroksen {{round}} ottelusi on valmis",
+    "playedBody": "Kierros {{next}} arvotaan, kun muut ottelut päättyvät. Pysy tällä sivulla: se päivittyy itsestään.",
+    "sittingOutBodyCounts_one": "Pelaajia on {{players}} muodolle {{size}}v{{size2}}, joten {{count}} pelaaja lepää joka kierroksella. Eniten pelanneet lepäävät ensin: olet mukana seuraavassa arvonnassa.",
+    "sittingOutBodyCounts_other": "Pelaajia on {{players}} muodolle {{size}}v{{size2}}, joten {{count}} pelaajaa lepää joka kierroksella. Eniten pelanneet lepäävät ensin: olet mukana seuraavassa arvonnassa.",
+    "playedBodyLeft_one": "Vielä {{count}} ottelu kesken. Kierros {{next}} arvotaan, kun se päättyy; seuraava ottelusi näkyy tässä ja saat ilmoituksen.",
+    "playedBodyLeft_other": "Vielä {{count}} ottelua kesken. Kierros {{next}} arvotaan, kun ne päättyvät; seuraava ottelusi näkyy tässä ja saat ilmoituksen.",
+    "joinedByMistake": "Liityitkö vahingossa?",
+    "breakTitle": "Tauko · kierros {{round}} alkaa {{time}}",
+    "noShowTitle": "Et ole mukana seuraavissa arvonnoissa",
+    "noShowBody": "Et liittynyt otteluusi, joten seuraavat kierrokset arvotaan ilman sinua. Takaisin koneella? Kerro siitä, niin olet mukana seuraavassa arvonnassa.",
+    "backIn": "Olen takaisin",
+    "tagNoShow": "Ei saapunut"
+  },
+  "liveOverview": {
+    "roundOf": "Kierros {{round}}/{{total}}",
+    "liveCount": "{{count}} livenä nyt",
+    "eta": {
+      "nextRoundAbout": "Seuraava kierros noin {{time}}",
+      "nextRoundAt": "Seuraava kierros {{time}}",
+      "finalEnds": "Viimeinen kierros: päättyy noin {{time}}",
+      "endsAbout": "päättyy noin {{time}}"
+    },
+    "hero": {
+      "playingTitle": "Pelaat nyt",
+      "playingBody": "{{us}} vs {{them}}{{map}}. Liity otteluhuoneesta.",
+      "joiningTitle": "Liity palvelimelle",
+      "joiningBody": "{{us}} vs {{them}}{{map}}. Ottelu alkaa, kun kaikki ovat valmiina.",
+      "vetoTitle": "Karttavetosi on auki",
+      "vetoBody": "Bannatkaa ja pickatkaa kartat joukkueen {{them}} kanssa otteluhuoneessa.",
+      "waitingTitle": "Odotetaan seuraavaa vastustajaasi",
+      "waitingBody": "He tulevat ottelusta, jota pelataan vielä. Lyhyen tauon jälkeen veto avautuu, ja saat ilmoituksen.",
+      "notStartedTitle": "Seuraavaksi: {{them}}",
+      "notStartedBody": "Ottelusi avautuu, kun kierros alkaa. Tämä sivu päivittyy itsestään.",
+      "outTitle": "Joukkueesi putosi. Sijoituksenne: {{place}}",
+      "outBody": "Se oli viimeinen ottelusi. Hyviä pelejä! Matchmaking on auki, jos haluat jatkaa pelaamista.",
+      "wonTitle": "Voititte turnauksen!",
+      "wonBody": "Hienosti pelattu. Palkintosi on inventaariossasi.",
+      "spectatorTitle": "{{count}} ottelua livenä",
+      "spectatorTitleOne": "1 ottelu livenä",
+      "spectatorIdleTitle": "Kierrosten välissä",
+      "spectatorBody": "Avaa ottelu nähdäksesi tuloksen, kartat ja pelaajat.",
+      "openMatchRoom": "Avaa otteluhuone",
+      "openVeto": "Avaa veto",
+      "watchLive": "Katso live-ottelua",
+      "playMatchmaking": "Pelaa matchmakingia",
+      "yourMatch": "Ottelusi",
+      "opponentFrom": "Vastustajasi tulee ottelusta",
+      "minutesLeft": "noin {{count}} min jäljellä",
+      "winsToTitle_one": "yksi voitto mestaruuteen",
+      "winsToTitle_other": "{{count}} voittoa mestaruuteen",
+      "waitingServerTitle": "Odotetaan palvelinta",
+      "waitingServerBody": "{{us}} vs {{them}}{{map}}. Palvelin osoitetaan heti, kun sellainen vapautuu; saat ilmoituksen.",
+      "wonStage": "{{stage}} voitettu {{score}}",
+      "stageNext": "Seuraavaksi {{stage}}",
+      "faceWinnerOf": "{{us}} kohtaa ottelun {{a}} vs {{b}} voittajan ({{state}}). Veto avautuu, kun se ottelu päättyy; saat ilmoituksen.",
+      "feederLive": "{{score}}, kartta {{map}} livenä",
+      "feederNotStarted": "ei vielä alkanut",
+      "vetoOpens": "Veto avautuu",
+      "inAboutMinutes_one": "~{{count}} min päästä",
+      "inAboutMinutes_other": "~{{count}} min päästä",
+      "later": "myöhemmin",
+      "afterBreak": "lyhyen tauon jälkeen",
+      "youAre": "tilanteenne {{record}}",
+      "nextRoundDrawn": "Kierros {{round}} arvotaan seuraavaksi",
+      "lastRoundPlaying": "Viimeistä kierrosta pelataan",
+      "betweenBody": "Tämän kierroksen ottelusi on valmis. Seuraava kierros arvotaan, kun muut ottelut päättyvät; ottelusi näkyy tässä ja saat ilmoituksen.",
+      "vetoSoonTitle": "Karttavetosi avautuu {{time}}",
+      "vetoSoonBody": "Lyhyt tauko viimeisen ottelusi jälkeen. Saat ilmoituksen, kun veto joukkuetta {{them}} vastaan avautuu."
+    },
+    "schedule": "Aikataulu",
+    "bracket": "Kaavio",
+    "round": "Kierros {{n}}",
+    "final": "Finaali",
+    "state": {
+      "now": "Nyt",
+      "next": "Seuraavaksi",
+      "later": "Myöhemmin",
+      "done": "✓ Valmis",
+      "live": "Live",
+      "upcoming": "Tulossa"
+    },
+    "thisRound": "Kierros {{n}}",
+    "earlier": "Aiemmat kierrokset",
+    "standings": "Sarjataulukko",
+    "teams": "Joukkueet",
+    "wl": "V–H",
+    "rounds": "+/−",
+    "ties": {
+      "round_robin": "Tasapisteissä: keskinäinen ottelu, sitten eräero, sitten voitetut erät.",
+      "swiss": "Tasapisteissä: vastustajien vahvuus (Buchholz: heidän voittojensa summa), sitten eräero.",
+      "elim": "Järjestys voittojen mukaan. Kahdella tappiolla joukkue putoaa.",
+      "singleElim": "Järjestys voittojen mukaan. Yhdellä tappiolla joukkue putoaa.",
+      "doubleElim": "Järjestys voittojen mukaan. Kahdella tappiolla joukkue putoaa.",
+      "groups": "Tasapisteissä lohkossa: keskinäinen ottelu, sitten eräero, sitten voitetut erät."
+    },
+    "players": {
+      "title": "Pelaajat · luokituksen mukaan",
+      "find": "Etsi pelaaja",
+      "export": "Vie",
+      "all": "Kaikki {{count}} pelaajaa",
+      "player": "Pelaaja",
+      "team": "Joukkue",
+      "rating": "Luokitus",
+      "change": "±",
+      "kd": "K / D",
+      "adr": "ADR",
+      "winRate": "Voitto-%",
+      "none": "Ei vastaavia pelaajia."
+    }
+  },
+  "matchesCards": {
+    "show": "Näytä",
+    "filterAll": "Kaikki {{count}}",
+    "filterLive": "Live {{count}}",
+    "filterUpcoming": "Tulossa {{count}}",
+    "done": "Valmis",
+    "afterOvertime": "jatkoajan jälkeen",
+    "startsAt": "alkaa {{time}} · veto avautuu {{veto}}",
+    "yourMatch": "Ottelusi",
+    "placeholderTbd": "TBD",
+    "placeholderVeto": "Karttaveto",
+    "placeholderVetoAt": "Veto {{time}}"
+  },
+  "standingsTab": {
+    "champions": "Mestarit",
+    "championBadge": "MESTARIT",
+    "vs": "vs",
+    "rounds": "Erät",
+    "form": "Vire",
+    "intro": {
+      "round_robin": "Kaikki kaikkia vastaan: jokainen joukkue pelaa kerran jokaista muuta joukkuetta vastaan.",
+      "swiss": "Sveitsiläinen: joka kierroksella vastakkain asetetaan joukkueet, joilla on sama tilanne.",
+      "single": "Single elimination: yhdellä tappiolla joukkue putoaa.",
+      "double": "Double elimination: kahdella tappiolla joukkue putoaa.",
+      "groups": "Lohkot, sitten pudotuspelit: jokainen joukkue pelaa kerran lohkonsa muita joukkueita vastaan; parhaat jatkavat pudotuspeleihin."
+    }
+  },
+  "teamsCards": {
+    "subs": "Varapelaajat: {{names}}"
+  },
+  "rulesTab": {
+    "atAGlance": "Pikakatsaus",
+    "onThisPage": "Tällä sivulla",
+    "fromSettings": "turnauksen asetuksista, aina ajan tasalla",
+    "organizer": "Järjestäjän säännöt",
+    "facts": {
+      "map": "Kartta",
+      "firstTo": "ensimmäisenä {{count}} erävoittoon",
+      "noOvertime": "Ei",
+      "overtimeSegments_one": "1, sitten vahinko",
+      "overtimeSegments_other": "{{count}}, sitten vahinko",
+      "overtimeUnlimited": "Niin monta kuin tarvitaan",
+      "thenDamage": "Kukin 6 erää, ensimmäisenä 4 erävoittoon",
+      "mapCount_one": "{{count}} kartta",
+      "mapCount_other": "{{count}} karttaa"
+    },
+    "format": {
+      "title": "Näin tämä muoto toimii",
+      "navTitle": "Muoto",
+      "swiss_one": "Jokainen pelaa {{count}} kierroksen joukkuetta vastaan, jolla on sama tilanne. Ei uusintaotteluita. Järjestys voittojen mukaan, sitten alla olevat tasapistesäännöt.",
+      "swiss_other": "Jokainen pelaa {{count}} kierrosta, joka kierroksella joukkuetta vastaan, jolla on sama tilanne. Ei uusintaotteluita. Järjestys voittojen mukaan, sitten alla olevat tasapistesäännöt.",
+      "single_elimination": "Yhdellä tappiolla putoat. Kaavio etenee finaaliin.",
+      "double_elimination": "Ylä- ja alakaavio. Kahdella tappiolla putoat.",
+      "round_robin": "Jokainen kohtaa jokaisen kerran. Järjestys voittojen mukaan, sitten alla olevat tasapistesäännöt.",
+      "shuffle": "Joukkueet arvotaan joka kierroksella uudelleen ilmoittautuneista pelaajista. Pelaajat järjestetään voittojen mukaan.",
+      "matches": "Jokainen ottelu on {{series}} MR{{mr}}-kartoilla. Jatkoaika: {{overtime}}.",
+      "damage": "Jos kartta on yhä tasan viimeisen jatkoajan jälkeen, sen voittaa joukkue, joka teki yhteensä enemmän vahinkoa."
+    }
+  },
+  "liveMatch": {
+    "updatesEveryRound": "Päivittyy joka erän jälkeen",
+    "chat": "Ottelun chat",
+    "system": "Auto Tournament",
+    "noMessages": "Ei vielä viestejä. Sano gl hf!",
+    "chatSignIn": "Kirjaudu tämän ottelun pelaajana, niin voit lukea ja kirjoittaa täällä.",
+    "messageLabel": "Viesti molemmille joukkueille ja ylläpitäjille",
+    "send": "Lähetä",
+    "callAdmin": "Kutsu ylläpitäjä",
+    "adminCalled": "Ylläpitäjä on tulossa",
+    "joinTitle": "Liity palvelimelle: {{map}}",
+    "warmup": "Lämmittely · liity nyt",
+    "isLive": "{{map}} on livenä",
+    "players": "Pelaajat",
+    "playersOnMap": "Pelaajat · {{map}}",
+    "noEconomy": "Järjestetty luokituksen mukaan. Ei rahaa tai varusteita: ei mitään, mikä paljastaisi joukkueen talouden.",
+    "yourTeam": "Joukkueesi",
+    "backToTournament": "Takaisin turnaukseen",
+    "manage": "Hallitse tätä ottelua",
+    "finishedAt": "päättyi {{when}}",
+    "delayedNote_one": "Näyttää saman kuin GOTV, {{count}} sekunnin viiveellä.",
+    "delayedNote_other": "Näyttää saman kuin GOTV, {{count}} s viiveellä."
+  },
+  "preStart": {
+    "open": "Ilmoittautuminen on auki",
+    "openCloses": "Ilmoittautuminen on auki · sulkeutuu {{when}}",
+    "closed": "Ilmoittautuminen on suljettu",
+    "notOpenTitle": "Ilmoittautuminen ei ole auki",
+    "fullTitle": "Kaikki paikat on viety",
+    "spotsLeft_one": "{{count}}/{{max}} paikkaa jäljellä. Kapteenit valitsevat aloittajat ja varapelaajat.",
+    "spotsLeft_other": "{{count}}/{{max}} paikkaa jäljellä. Kapteenit valitsevat aloittajat ja varapelaajat.",
+    "byOrganizer": "Järjestäjä lisää joukkueet.",
+    "captainsPick": "Kapteenit valitsevat aloittajat ja varapelaajat.",
+    "startsIn": "Alkuun aikaa",
+    "allRules": "Kaikki säännöt ja palkinnot",
+    "signedUpEyebrow": "{{team}} · ilmoittautunut",
+    "inTitle": "Olette mukana",
+    "inToFix_one": "Olette mukana. Yksi asia korjattavana",
+    "inToFix_other": "Olette mukana. {{count}} asiaa korjattavana",
+    "fixBefore": "Korjaa se ennen check-iniä {{when}}, tai se pelaaja ei pääse palvelimelle.",
+    "checkInOn": "Check-in {{when}}. Aloittaja, joka ei ole tehnyt check-iniä alkuun mennessä, korvataan varapelaajalla.",
+    "allSet": "Kaikki ovat valmiina. Aikataulusta näet, milloin turnaus alkaa.",
+    "checkInOpens": "Check-in avautuu",
+    "openLineup": "Avaa kokoonpanosi",
+    "yourSignup": "Ilmoittautumisesi",
+    "spotOf": "paikka {{place}}/{{max}}",
+    "lineupCount": "Kokoonpano · {{starters}} aloittajaa, {{subs}} varapelaajaa",
+    "fixBeforeCheckIn": "Korjaa ennen check-iniä",
+    "leave": "Poistu turnauksesta",
+    "withdrawHint": "Etkö pääse? Vetäytyminen vapauttaa paikan toiselle joukkueelle.",
+    "opensTitle": "Ilmoittautuminen avautuu {{when}}",
+    "opensIn": "Avautuu {{time}}."
+  },
+  "shuffleOverview": {
+    "yourMatchLive": "ottelusi on livenä",
+    "yourMatchReady": "ottelusi on valmis",
+    "yourMatchDone": "ottelusi on päättynyt",
+    "nextDraw": "Seuraava arvonta",
+    "round": "Kierros {{n}}",
+    "whenRoundEnds": "kun tämän kierroksen ottelut päättyvät",
+    "oneMapPerRound": "Yksi kartta kierrosta kohden · uudet joukkueet joka kierroksella",
+    "sittingOut": "Sivussa:",
+    "firstNextRound": "ensimmäisenä seuraavalla kierroksella",
+    "players": "Pelaajat",
+    "markOutHint": "Merkitse poissa olevaksi pelaaja, joka lähti; hän on sivussa, kunnes merkitset hänet takaisin mukaan."
+  },
+  "checkIn": {
+    "areYouHere": "Oletko paikalla?",
+    "teamCount": "{{team}} tekee check-iniä: {{in}}/{{total}}. Aloittaja, joka ei ole tehnyt check-iniä alkuun mennessä, korvataan varapelaajalla.",
+    "soundOn": "♪ Ääni päällä",
+    "firstVeto_one": "Ensimmäinen vetosi avautuu {{time}}, {{count}} minuutti ennen ottelua: ole koneella siihen mennessä.",
+    "firstVeto_other": "Ensimmäinen vetosi avautuu {{time}}, {{count}} minuuttia ennen ottelua: ole koneella siihen mennessä.",
+    "vetoOpensNote": "veto avautuu {{time}}"
+  },
+  "runState": {
+    "paused": "Turnaus on tauolla",
+    "pausedUntil": "Turnaus on tauolla {{time}} asti",
+    "pausedBody": "Palvelimella jo olevat ottelut jatkuvat. Uutta kierrosta ei arvota eikä vetoa avata ennen kuin turnaus jatkuu.",
+    "reason": "Syy: {{reason}}.",
+    "waitingServers_one": "{{count}} ottelu odottaa palvelinta.",
+    "waitingServers_other": "{{count}} ottelua odottaa palvelinta.",
+    "allBusy_one": "Palvelin on varattu; ottelu alkaa heti, kun se vapautuu.",
+    "allBusy_other": "Kaikki {{count}} palvelinta ovat varattuina; ottelut alkavat heti, kun jokin vapautuu.",
+    "noneFree": "Vapaata palvelinta ei ole; ottelut alkavat heti, kun sellainen vapautuu.",
+    "servers": "Palvelimet",
+    "pausedShort": "Tauolla"
+  },
+  "captainsPanel": {
+    "title": "Kapteenit",
+    "note": "Vain kapteeni voi ilmoittaa tai vahvistaa tuloksen.",
+    "make": "Tee kapteeniksi",
+    "remove": "Poista kapteenius",
+    "role": {
+      "owner": "Omistaja",
+      "captain": "Kapteeni",
+      "member": "Jäsen"
+    }
+  },
+  "lineupPanel": {
+    "title": "Kokoonpano",
+    "note_one": "Valitse {{count}} pelaaja tähän otteluun. Muut ovat penkillä.",
+    "note_other": "Valitse {{count}} pelaajaa tähän otteluun. Muut ovat penkillä.",
+    "picked": "{{picked}}/{{count}} valittu",
+    "plays": "Pelaa",
+    "bench": "Penkki",
+    "save": "Tallenna kokoonpano",
+    "saved": "Kokoonpano tallennettu",
+    "notOnServer": "Kokoonpano tallennettiin, mutta palvelin ei ottanut sitä vastaan: {{error}}",
+    "locked": "Kokoonpano on lukittu, kun kartta on käynnissä. Sitä voi muuttaa karttojen välillä.",
+    "captainOnly": "Vain joukkueen omistaja tai kapteeni voi muuttaa kokoonpanoa.",
+    "source": {
+      "previous": "Sama kuin joukkueen edellisessä ottelussa.",
+      "roster": "Pelaajalistan ensimmäiset pelaajat."
+    }
+  },
+  "prizesPage": {
+    "title": "Palkinnot",
+    "intro": "Skinejä sijoituksesta, jaetaan jokaiselle joukkueen pelaajalle turnauksen päättyessä, sekä palkinto MVP:lle. Vain sivuston skinejä: ei Steam-esineitä, ei rahallista arvoa.",
+    "none": "Tämän turnauksen pelissä ei ole palkintoja.",
+    "loadFailed": "Turnausta ei voitu ladata."
+  },
+  "schedulePage": {
+    "title": "Otteluiden ajat",
+    "intro": "Anna jokaiselle kierrokselle alkamisaika tai yksittäiselle ottelulle oma aikansa. Pelaajat näkevät sen ottelussa, saavat muistutuksen, ja veto avautuu ajallaan.",
+    "loadFailed": "Turnausta ei voitu ladata.",
+    "rounds": "Kierrokset",
+    "modeLabel": "Milloin ottelut alkavat",
+    "modeTimes": "Määräaikoina",
+    "modeAsap": "Heti kun valmiina",
+    "modeTimesNote": "Ottelut odottavat aikaansa. Avaa kierros, niin voit antaa yhdelle ottelulle oman ajan.",
+    "modeAsapNote": "Ei aikoja: ottelu alkaa, kun molemmat joukkueet ja palvelin ovat valmiina.",
+    "noRounds": "Kierrokset näkyvät tässä, kun kaavio on luotu.",
+    "roundN": "Kierros {{n}}",
+    "roundNote_one": "{{count}} ottelu · avaa ja aseta sille oma aika",
+    "roundNote_other": "{{count}} ottelua · avaa ja aseta yhdelle ottelulle oma aika",
+    "roundNoMatches": "Sen ottelut luodaan, kun edellinen kierros päättyy",
+    "roundStartsAt": "Kierros alkaa",
+    "roundTimeLabel": "Alkamisaika: {{round}}",
+    "matchTimeLabel": "Alkamisaika: {{match}}",
+    "tbd": "TBD",
+    "ownTime": "Oma alkamisaika",
+    "sameAsRound": "Sama kuin kierroksella",
+    "useRoundTime": "Käytä kierroksen aikaa",
+    "vetoTitle": "Veto",
+    "vetoNote": "Avautuu itsestään ennen jokaista ottelua, joten se on valmis, kun ottelu alkaa. Jos joukkue ei toimi ajoissa, sille valitaan kartta.",
+    "vetoLabel": "Veto avautuu",
+    "vetoZero": "Alkamisaikana",
+    "reminderTitle": "Muistutus",
+    "reminderNote": "Ilmoitus sivustolla ja Discordissa jokaiselle ottelun pelaajalle.",
+    "reminderLabel": "Muistuta pelaajia",
+    "reminderZero": "Pois",
+    "minutesBefore_one": "{{count}} min ennen",
+    "minutesBefore_other": "{{count}} min ennen",
+    "save": "Tallenna ajat",
+    "saved": "Otteluiden ajat tallennettu",
+    "saveFailed": "Aikoja ei voitu tallentaa",
+    "rulesTitle": "Säännöt, joita se noudattaa",
+    "rules": {
+      "start": "Mikään ottelussa ei ala ennen kuin sen veto avautuu, vaikka palvelin olisi vapaana.",
+      "late": "Myöhässä oleva kierros siirtää seuraavaa: yhä pelaava joukkue tai otteluiden välinen tauko pitää vetoa odottamassa, ja pelaajat näkevät uuden ajan.",
+      "none": "Ei asetettua aikaa: kuten ennenkin, ottelu alkaa heti, kun molemmat joukkueet ja palvelin ovat valmiina.",
+      "where": "Yleiskatsauksen aikataulu, ottelukortit, otteluhuone, säännöt ja check-in näyttävät nämä ajat."
+    },
+    "breaksTitle": "Tauot kierrosten välillä",
+    "breaksNote_one": "Jätä tauko tyhjäksi, niin käytetään sivuston {{count}} minuutin taukoa. Lisää pidempi tauko minkä tahansa kierroksen jälkeen, esim. 30 minuuttia kierroksen 3 jälkeen.",
+    "breaksNote_other": "Jätä tauko tyhjäksi, niin käytetään sivuston {{count}} minuutin taukoa. Lisää pidempi tauko minkä tahansa kierroksen jälkeen, esim. 30 minuuttia kierroksen 3 jälkeen.",
+    "breakEvery": "Tauko jokaisen kierroksen jälkeen (min)",
+    "breakAfterRound": "Kierroksen jälkeen",
+    "breakMinutes": "Tauko (min)",
+    "breakRemove": "Poista",
+    "breakAdd": "Lisää pidempi tauko",
+    "fillStart": "Ensimmäinen kierros alkaa",
+    "fillEvery": "Minuutteja kierrosten välillä",
+    "fillApply": "Täytä kierrokset"
+  },
+  "groups": {
+    "groupN": "Lohko {{letter}}",
+    "done": "Finaali",
+    "through_one": "voittaja jatkaa",
+    "through_other": "{{count}} parasta jatkaa",
+    "playoffs": "Pudotuspelit",
+    "playoffsSoon": "Pudotuspelit alkavat, kun kaikki lohko-ottelut on pelattu.",
+    "seedSlot": "Seed {{n}}"
+  },
+  "matchCheckIn": {
+    "eyebrow": "Veto auki · ottelu alkaa {{time}}",
+    "eyebrowNoTime": "Check-in auki",
+    "title": "Tee check-in tähän otteluun",
+    "body": "Tässä turnauksessa tehdään check-in ennen jokaista ottelua. Aloittajat ilmoittavat olevansa paikalla; kapteeni voi tehdä sen heidän puolestaan. Varapelaajat ovat jo valmiina.",
+    "closesIn": "Check-in sulkeutuu",
+    "yourTeam": "{{team}} (joukkueesi)",
+    "count": "{{in}}/{{total}} aloittajaa tehnyt check-inin",
+    "sub": "VARA",
+    "starter": "ALOITTAJA",
+    "ready": "Valmis",
+    "checkedIn": "Check-in tehty",
+    "notYet": "Ei vielä",
+    "rule": "Ei check-iniä alkuun mennessä: aloittaja vaihdetaan varapelaajaan, ja otteluhuone kertoo, kehen. Jos varapelaajia ei ole jäljellä, joukkue pelaa yhden pelaajan vajaalla.",
+    "server": {
+      "eyebrow": "Palvelin valmis · täysi joukkue {{time}} mennessä",
+      "eyebrowNoTime": "Palvelin valmis",
+      "title": "Saa joukkueesi palvelimelle",
+      "bodyOut": "{{out}} ei tehnyt check-iniä, joten varapelaaja pelaa tilalla.",
+      "body_one": "Yhden teistä täytyy olla palvelimella ennen kuin aika loppuu. Varapelaajat lasketaan.",
+      "body_other": "{{count}} teistä täytyy olla palvelimella ennen kuin aika loppuu. Varapelaajat lasketaan.",
+      "clockLabel": "Aikaa saada täysi joukkue",
+      "count": "{{on}}/{{size}} palvelimella",
+      "onServer": "Palvelimella",
+      "joining": "Liittyy…",
+      "subIn": "VAIHTO SISÄÄN",
+      "out": "POIS",
+      "swapped": "Vaihdettu varapelaajaan",
+      "rule": "Kun aika on 0:00, täysi joukkue valitsee: ota luovutusvoitto tai pelaa vajaata joukkuetta vastaan. Jos molemmat joukkueet ovat vajaita, ylläpitäjä päättää."
+    },
+    "choice": {
+      "eyebrow": "{{team}} on yhä vajaa",
+      "title": "Joukkueella {{team}} on {{on}}/{{size}} palvelimella",
+      "body": "Heidän aikansa on loppu. Ota luovutusvoitto ja jatka, tai pelaa heitä vastaan silti. Kumpi tahansa kapteeni voi valita. Jos valintaa ei tehdä 2 minuutissa, luovutusvoitto jää voimaan.",
+      "take": "Ota luovutusvoitto",
+      "play": "Pelaa silti"
+    }
+  }
+}

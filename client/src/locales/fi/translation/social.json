@@ -1,0 +1,287 @@
+{
+  "notificationPrompt": {
+    "title": "Ota ilmoitukset käyttöön",
+    "body": "Suosittelemme ottamaan ne käyttöön. Silloin kuulet meistä, vaikka sulkisit tämän välilehden:",
+    "matchReady": "ottelusi on valmis yhdistettäväksi",
+    "vetoTurn": "on sinun vuorosi karttavetossa",
+    "starting": "turnaus, johon ilmoittauduit, alkaa pian",
+    "iphone": "iPhonessa lisää tämä sivusto ensin Koti-valikkoon (Jaa, sitten Lisää Koti-valikkoon) ja avaa se sieltä.",
+    "change": "Voit muuttaa tätä milloin tahansa ilmoitusasetuksissa.",
+    "later": "Ei nyt",
+    "turnOn": "Ota käyttöön (suositeltu)"
+  },
+  "social": {
+    "bell": {
+      "title": "Ilmoitukset",
+      "label": "Ilmoitukset",
+      "labelUnread_one": "Ilmoitukset, {{count}} uusi",
+      "labelUnread_other": "Ilmoitukset, {{count}} uutta",
+      "markAllRead": "Merkitse kaikki luetuiksi",
+      "show": "Näytä",
+      "filter": {
+        "all": "Kaikki",
+        "you": "Tarvitsee sinua",
+        "tournaments": "Turnaukset",
+        "matches": "Ottelut",
+        "skins": "Skinit",
+        "clips": "Klipit",
+        "other": "Muut"
+      },
+      "empty": "Täällä ei ole vielä mitään",
+      "emptyHint": "Partykutsut, kaveripyynnöt, turnausuutiset, uudet skinit ja valmiit kohokohdat näkyvät täällä.",
+      "loading": "Ladataan…",
+      "seeAll": "Näytä kaikki ilmoitukset",
+      "loadOlder": "Lataa vanhempia",
+      "settings": "Ilmoitusasetukset"
+    },
+    "notice": {
+      "partyInvite": "kutsui sinut partyynsä",
+      "teamInvite": "kutsui sinut joukkueeseen",
+      "joinedTeam": "Liityit joukkueeseen",
+      "partyDetail": "{{mode}} · partyssä {{size}}",
+      "join": "Liity",
+      "decline": "Hylkää",
+      "accept": "Hyväksy",
+      "ignore": "Ohita",
+      "friendRequest": "lähetti sinulle kaveripyynnön",
+      "friendAccepted": "hyväksyi kaveripyyntösi",
+      "skin": "Uusi skini:",
+      "highlight": "Kohokohtasi on valmis:",
+      "highlightVictim": "{{name}} kaatoi sinut klipissään:",
+      "highlightAssist": "Avustit pelaajaa {{name}} hänen klipissään:",
+      "highlightKiller": "Kaadoit pelaajan {{name}} hänen klipissään:",
+      "tournamentStarted": "on alkanut. Ensimmäinen ottelusi on vuorossa.",
+      "lineupGap": "· aloittaja poistui kokoonpanostasi. Valitse varapelaaja {{minutes}} minuutin kuluessa, tai pelaatte vajaalla.",
+      "checkInOpen": "check-in on auki. Tee check-in ennen kuin se sulkeutuu.",
+      "joined": "Liityit partyyn",
+      "nowFriends": "Olette nyt kavereita",
+      "declined": "Hylätty",
+      "expired": "Tämä party on päättynyt",
+      "reportNew": "ilmiannettiin: {{reason}}",
+      "reportReviewed": "Kiitos: ilmiantosi pelaajasta {{name}} on käsitelty.",
+      "matchReady": "on valmis. Avaa otteluhuone yhdistääksesi.",
+      "vetoTurn": "on joukkueesi vuoro vetossa.",
+      "startsSoon": "alkaa {{minutes}} minuutin päästä. Valmistaudu ensimmäiseen otteluusi.",
+      "startsSoonUpdate": "alkaa {{minutes}} minuutin päästä. Käynnistä peli nyt, jotta mahdollinen päivitys on valmis ennen ensimmäistä otteluasi.",
+      "matchSoon": "vetosi avautuu {{minutes}} minuutin päästä ja jatkuu ilman sinua. Ole koneella.",
+      "noShow": "et koskaan tullut otteluusi, joten olet pois seuraavista kierroksista. Avaa turnaus ja ilmoita olevasi takaisin jatkaaksesi pelaamista.",
+      "discordLink": "yhdistä Discord-tilisi saadaksesi joukkueesi kanavat ja siirron sen puhekanavalle.",
+      "signedUp": "· {{team}} on mukana. Katso, mitä pitää tietää ennen alkua."
+    },
+    "toast": {
+      "join": "Liity partyyn",
+      "close": "Sulje",
+      "closes_one": "Sulkeutuu {{count}} s päästä · jää kelloon",
+      "closes_other": "Sulkeutuu {{count}} s päästä · jää kelloon"
+    },
+    "friends": {
+      "title": "Kaverit",
+      "tabFriends": "Kaverit",
+      "tabRequests": "Pyynnöt",
+      "tabAdd": "Lisää kaveri",
+      "online_one": "Online · {{count}}",
+      "online_other": "Online · {{count}}",
+      "offline_one": "Offline · {{count}}",
+      "offline_other": "Offline · {{count}}",
+      "onlineCount_one": "{{count}} online",
+      "onlineCount_other": "{{count}} online",
+      "invite": "Kutsu",
+      "inParty": "Partyssäsi",
+      "more": "Lisää: {{name}}",
+      "viewProfile": "Näytä profiili",
+      "remove": "Poista kaveri",
+      "removed": "{{name}} ei ole enää kaverisi",
+      "none": "Ei vielä kavereita",
+      "noneHint": "Lisää ne, joiden kanssa pelaat, ja kutsu heidät sitten partyysi täältä tai kohdasta Pelaa.",
+      "incoming": "Saapuneet",
+      "sent": "Lähetetyt",
+      "noIncoming": "Sinua ei odota pyyntöjä.",
+      "noSent": "Sinulla ei ole odottavia pyyntöjä.",
+      "askedAgo": "Pyydetty {{when}}",
+      "sentAgo": "Lähetetty {{when}}",
+      "cancelRequest": "Peru pyyntö",
+      "searchPlaceholder": "Nimi tai Steam-profiilin linkki",
+      "results": "Auto Tournamentissa",
+      "playedWith": "Pelattu kanssa äskettäin",
+      "noResults": "Kukaan ei käytä tätä nimeä.",
+      "typeMore": "Kirjoita vähintään kaksi kirjainta.",
+      "noRecent": "Pelaa ottelu, niin pelikaverisi näkyvät täällä.",
+      "matches_one": "{{count}} ottelu",
+      "matches_other": "{{count}} ottelua",
+      "alreadyFriends": "Kaverit",
+      "requestSent": "Pyyntö lähetetty",
+      "addFriend": "Lisää kaveri",
+      "signIn": "Kirjaudu sisään nähdäksesi kaverisi",
+      "signInHint": "Kaverit, pyynnöt ja kutsut kuuluvat tiliisi.",
+      "cardEmpty": "Lisää kavereita nähdäksesi, milloin he ovat online, ja kutsu heidät yhdellä napsautuksella.",
+      "all_one": "Kaikki kaverit ({{count}}) →",
+      "all_other": "Kaikki kaverit ({{count}}) →",
+      "find": "Etsi kavereita →",
+      "requestCount_one": "{{count}} pyyntö",
+      "requestCount_other": "{{count}} pyyntöä"
+    },
+    "status": {
+      "playing": "Ottelussa · {{match}}",
+      "searching": "Etsii · {{mode}}",
+      "online": "Online",
+      "offline": "Offline",
+      "lastSeen": "Viimeksi nähty {{when}}"
+    },
+    "invite": {
+      "searchPlaceholder": "Kuka tahansa sivustolla, nimellä",
+      "friendsOnline": "Kaverit online",
+      "recent": "Pelattu kanssa äskettäin",
+      "onSite": "Auto Tournamentissa",
+      "noFriends": "Ei vielä kavereita. Etsi ketä tahansa nimellä yllä.",
+      "nobodyOnline": "Kukaan kavereistasi ei ole online.",
+      "inMatch": "Ottelussa",
+      "together_one": "{{count}} yhteinen ottelu",
+      "together_other": "{{count}} yhteistä ottelua",
+      "invited": "Kutsuttu",
+      "sent": "Kutsuttu: {{name}}",
+      "chip": "{{name}} · kutsuttu",
+      "cancel": "Peru kutsu: {{name}}",
+      "orLink": "Tai linkki",
+      "copy": "Kopioi",
+      "copyFailed": "Kopiointi epäonnistui. Valitse linkki ja kopioi se itse.",
+      "makeLink": "Luo kutsulinkki",
+      "cannot": {
+        "nobody": "Ei ota vastaan kutsuja",
+        "friends": "Vain kaverit",
+        "no_game": "Ei pelaa CS2:ta"
+      }
+    },
+    "profile": {
+      "friends": "Kaverit",
+      "acceptRequest": "Hyväksy kaveripyyntö",
+      "message": "Viesti",
+      "invite": "Kutsu partyyn"
+    },
+    "settings": {
+      "title": "Partykutsut",
+      "description": "Kuka voi kutsua sinut matchmaking-partyyn. Kutsut näkyvät kellossasi ja ponnahtavat esiin millä tahansa avoimella sivulla.",
+      "everyone": "Kaikki",
+      "everyoneHint": "Kuka tahansa tämän sivuston pelaaja.",
+      "friends": "Vain kaverit",
+      "friendsHint": "Vain pelaajat, joiden kanssa olet kavereita.",
+      "nobody": "Ei kukaan",
+      "nobodyHint": "Ei kutsuja. Voit silti liittyä partyyn sen linkillä.",
+      "saved": "Tallennettu",
+      "saveFailed": "Asetusta ei voitu tallentaa"
+    },
+    "setup": {
+      "title": "Viimeistele asetukset ennen hakua",
+      "youGame": "Lisää CS2 peleihisi profiilissa.",
+      "youGameAuto": "Ottelun haku lisää tämän pelin peleihisi.",
+      "youAccount": "Yhdistä Steam-tilisi.",
+      "theyGame": "{{name}} ei ole lisännyt CS2:ta peleihinsä.",
+      "theyAccount": "{{name}} ei ole yhdistänyt Steam-tiliään.",
+      "fix": "Avaa tilisi"
+    },
+    "news": {
+      "title": "Uutiset",
+      "hint": "Lähetä ilmoitus jokaisen pelaajan kelloon: uusi kausi, turnaus, suunniteltu katko.",
+      "titleLabel": "Otsikko",
+      "bodyLabel": "Yksi rivi lisää (valinnainen)",
+      "urlLabel": "Linkki (valinnainen)",
+      "urlHint": "Sivu täällä (/tournament/3) tai https://-osoite.",
+      "urlBad": "Aloita merkillä / tai https://",
+      "send": "Lähetä kaikille pelaajille",
+      "confirm": "Jokainen sisäänkirjautunut pelaaja saa tämän. Lähetetäänkö?",
+      "sendNow": "Lähetä nyt",
+      "cancel": "Peruuta",
+      "sent_one": "Lähetetty {{count}} pelaajalle",
+      "sent_other": "Lähetetty {{count}} pelaajalle",
+      "failed": "Uutista ei voitu lähettää"
+    },
+    "noticeSettings": {
+      "title": "Asetukset",
+      "alerts": "Hälytykset",
+      "browser": "Selaimen ilmoitukset",
+      "browserHint": "Tällä laitteella, myös kun sivusto on suljettu (ottelusi on valmis, vetovuorosi, turnaus alkaa). Käytössä vain tässä selaimessa.",
+      "browserDenied": "Estetty tämän selaimen sivustoasetuksissa. Salli ilmoitukset siellä ottaaksesi ne käyttöön.",
+      "browserUnsupported": "Tässä selaimessa ei ole ilmoituksia.",
+      "sound": "Ääni",
+      "test": "Testaa",
+      "volume": "Äänenvoimakkuus {{percent}} %",
+      "group": {
+        "you": "Sinä",
+        "tournaments": "Turnaukset",
+        "other": "Muut",
+        "skins": "Skinit",
+        "clips": "Klipit"
+      },
+      "kind": {
+        "party_invite": "Partykutsut",
+        "team_invite": "Joukkuekutsut",
+        "friend_request": "Kaveripyynnöt",
+        "friend_accepted": "Hyväksytyt kaveripyynnöt",
+        "tournament": "Check-init ja aloitukset",
+        "skin": "Skin-dropit",
+        "highlight": "Kohokohtasi",
+        "news": "Uutiset",
+        "report": "Ilmiannot"
+      },
+      "delivery": {
+        "off": "Pois",
+        "bell": "Kello",
+        "sound": "Kello ja ääni"
+      }
+    }
+  },
+  "notifyChannels": {
+    "title": "Ilmoitukset",
+    "description": "Missä kerromme sinua tarvitsevista asioista, kun et ole sivustolla. Oletuksena pois, paitsi omat ottelusi.",
+    "event": "Tapahtuma",
+    "channel": {
+      "push": "Selain / puhelin",
+      "discord": "Discord-yksityisviesti",
+      "email": "Sähköposti"
+    },
+    "events": {
+      "match_ready": {
+        "title": "Ottelusi on valmis",
+        "hint": "Palvelin, yhdistämislinkki ja vastustaja"
+      },
+      "veto_turn": {
+        "title": "Sinun vuorosi vetossa",
+        "hint": "Vain kapteenit"
+      },
+      "checkin_open": {
+        "title": "Check-in avautuu",
+        "hint": "Turnauksiin, joihin olet ilmoittautunut"
+      },
+      "new_tournament": {
+        "title": "Uudet turnaukset",
+        "hint": "Kun turnaus ottaa ilmoittautumisia"
+      },
+      "tournament_starting": {
+        "title": "Turnaus alkaa",
+        "hint": "Muistutukset ennen kuin turnaus, jossa olet mukana, alkaa"
+      },
+      "direct_message": {
+        "title": "Viestit kavereilta",
+        "hint": "Kun et ole sivustolla"
+      }
+    },
+    "reason": {
+      "no_bot": "Ei määritetty tällä sivustolla",
+      "no_discord": "Yhdistä Discord ensin",
+      "no_push": "Ota ilmoitukset ensin käyttöön tässä selaimessa",
+      "email_off": "Tämä sivusto ei voi lähettää sähköpostia",
+      "no_email": "Lisää sähköposti ensin",
+      "email_unverified": "Vahvista sähköpostisi ensin"
+    },
+    "switchLabel": "{{event}} kautta {{channel}}",
+    "saveFailed": "Sitä ei voitu tallentaa."
+  },
+  "presence": {
+    "online": "Online",
+    "offline": "Offline",
+    "away": "Poissa",
+    "searching": "Etsii {{mode}}-ottelua",
+    "playingMatchmaking": "Matchmaking-ottelussa: {{label}}",
+    "playingTournament": "Turnausottelussa: {{label}}",
+    "playing": "Ottelussa: {{label}}"
+  }
+}

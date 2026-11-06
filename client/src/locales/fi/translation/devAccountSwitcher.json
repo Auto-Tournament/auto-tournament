@@ -1,0 +1,12 @@
+{
+  "devAccountSwitcher": {
+    "tooltip": "Vaihda tiliä (dev)",
+    "adminTest": "Ylläpitäjä (testi)",
+    "playerA": "Pelaaja A (dev)",
+    "playerB": "Pelaaja B (dev)",
+    "playerC": "Pelaaja C (dev)",
+    "newPlayer": "Uusi pelaaja (ensimmäinen käynti) (dev)",
+    "signOut": "Kirjaudu ulos",
+    "disabled": "Testikirjautuminen on poistettu käytöstä tällä palvelimella"
+  }
+}

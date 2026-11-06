@@ -1,0 +1,198 @@
+{
+  "adminToolsPage": {
+    "description": "Otteluiden palautus ja tämän sivuston sovellusloki.",
+    "recovery": {
+      "title": "Otteluiden palautus",
+      "description": "Jos API tai palvelimet käynnistettiin uudelleen turnauksen aikana ja otteluiden tila näyttää olevan epäsynkassa (esim. ottelut jumissa ennen liveä tai live-tilanteet puuttuvat), voit käynnistää palautuksen käsin. Kaikilta palvelimilta kysytään niiden nykyinen otteluraportti, tilanteet ja vaiheet synkronoidaan uudelleen, ja webhookit ja demojen lataukset määritetään uudelleen, missä se on mahdollista.",
+      "button": "Aja otteluiden palautus nyt",
+      "success": "Otteluiden palautus valmis.",
+      "error": "Otteluiden palautus epäonnistui.",
+      "failedTrigger": "Otteluiden palautusta ei voitu käynnistää. Yritä uudelleen."
+    },
+    "monitoring": {
+      "title": "Valvonta ja lokit",
+      "appLogs": "Sovelluslokit"
+    },
+    "logs": {
+      "loadFailed": "Lokeja ei voitu ladata",
+      "levelAll": "Kaikki",
+      "auto": "Auto",
+      "refresh": "Päivitä lokit",
+      "empty": "Ei näytettäviä lokeja",
+      "footer": "Näytetään {{count}} uusinta lokimerkintää",
+      "footerAutoRefresh": "Näytetään {{count}} uusinta lokimerkintää (päivittyy automaattisesti)"
+    }
+  },
+  "servers": {
+    "allocation": {
+      "title": "Odotetaan vapaata palvelinta",
+      "waiting": "Tämä ottelu alkaa automaattisesti, kun palvelimia vapautuu. Tarvittavat palvelimet:",
+      "nextPass": "Seuraava jakoyritys {{seconds}} s päästä"
+    }
+  },
+  "adminMatchControls": {
+    "title": "Ylläpitäjän toiminnot",
+    "noServer": "Tälle ottelulle ei ole määritetty palvelinta",
+    "unavailable": "Tälle ottelulle ei ole määritetty palvelinta, joten ylläpitäjän toiminnot eivät ole käytettävissä.",
+    "unknownAction": "Tuntematon toiminto",
+    "commandFailed": "Komentoa ei voitu suorittaa",
+    "confirm": "Vahvista",
+    "execute": "Suorita",
+    "close": "Sulje",
+    "tipLabel": "Vinkki ylläpitäjälle:",
+    "tip": "Käytä näitä toimintoja harkiten live-otteluiden aikana. Joitakin toimintoja, kuten ”{{endMatch}}” ja ”{{restartMatch}}”, ei voi kumota.",
+    "sections": {
+      "matchControl": "Ottelun hallinta",
+      "advanced": "Lisätoiminnot"
+    },
+    "actions": {
+      "pause": {
+        "button": "Tauko",
+        "tooltip": "Ylläpitäjän tauko – pelaajat eivät voi jatkaa",
+        "title": "Keskeytä ottelu",
+        "description": "Tämä pakottaa ottelun tauolle. Pelaajat eivät voi jatkaa."
+      },
+      "unpause": {
+        "button": "Jatka",
+        "tooltip": "Jatka ottelua tauolta",
+        "title": "Jatka ottelua",
+        "description": "Tämä pakottaa ottelun jatkumaan."
+      },
+      "swap": {
+        "button": "Vaihda puolet",
+        "tooltip": "Vaihda joukkueet vastakkaisille puolille (CT ↔ T)",
+        "title": "Vaihda puolet",
+        "description": "Tämä vaihtaa joukkueiden puolet (CT/T)."
+      },
+      "restartRound": {
+        "button": "Aloita erä alusta",
+        "tooltip": "Aloita nykyinen erä alusta (nollaa talouden)",
+        "title": "Aloita erä alusta",
+        "description": "Tämä aloittaa nykyisen erän alusta."
+      },
+      "skipVeto": {
+        "button": "Ohita veto",
+        "tooltip": "Ohita karttaveto ja lataa ensimmäinen kartta heti",
+        "title": "Ohita veto",
+        "description": "Tämä ohittaa vetovaiheen ja aloittaa ottelun."
+      },
+      "endWarmup": {
+        "button": "Lopeta lämmittely",
+        "tooltip": "Lopeta lämmittely ja aloita ottelu (veitsierä tai live)",
+        "title": "Lopeta lämmittely",
+        "description": "Tämä lopettaa lämmittelyn ja aloittaa ottelun."
+      },
+      "endMatch": {
+        "button": "Lopeta ottelu",
+        "tooltip": "Lopeta ottelu heti ja kirjaa lopputulos",
+        "title": "Lopeta ottelu",
+        "description": "Tämä pakottaa ottelun päättymään. Käytä varoen!"
+      },
+      "restartMatch": {
+        "button": "Aloita ottelu alusta",
+        "tooltip": "Lopeta ja lataa ottelu uudelleen alusta – kaikki edistyminen menetetään",
+        "title": "Aloita ottelu alusta",
+        "description": "Tämä lopettaa ottelun ja lataa sen uudelleen alusta. Kaikki edistyminen menetetään!"
+      },
+      "reallocateServer": {
+        "button": "Vaihda palvelinta",
+        "tooltip": "Siirrä ottelu toiselle palvelimelle (palautus ennen liveä)",
+        "tooltipUnavailable": "Käytettävissä vain valmiille/ladatuille otteluille (ei live-pelin aikana)",
+        "title": "Vaihda palvelinta",
+        "description": "Tämä siirtää ottelun toiselle vapaalle palvelimelle ja lataa sen uudelleen. Käytä, jos nykyinen palvelin on vanhentunut tai pelaajat eivät pääse yhdistämään. Ei sallittu live-ottelun aikana."
+      },
+      "forceCancel": {
+        "button": "Pakota peruutus",
+        "tooltip": "Peru ottelu, vaikka palvelin olisi offline – vapauttaa palvelinvarauksen",
+        "title": "Pakota ottelun peruutus",
+        "description": "⚠️ Tämä peruu ottelun, vaikka palvelin olisi offline. Ottelu merkitään valmiiksi ja palvelin vapautetaan. Toimintoa ei voi kumota."
+      }
+    },
+    "inputs": {
+      "restoreBackup": {
+        "button": "Palauta varmuuskopio",
+        "tooltip": "Lataa tallennettu erän varmuuskopio – palauttaa talouden ja sijainnit",
+        "title": "Palauta varmuuskopio",
+        "label": "Palautettavan erän numero"
+      },
+      "addTime": {
+        "button": "Lisää aikaa",
+        "tooltip": "Pidennä nykyisen erän ajastinta (hyödyllinen teknisissä tauoissa)",
+        "title": "Lisää erän aikaa",
+        "label": "Lisättävät sekunnit"
+      },
+      "broadcast": {
+        "button": "Kuulutus",
+        "tooltip": "Lähetä viesti kaikille palvelimen pelaajille",
+        "title": "Lähetä kuulutus",
+        "label": "Kuulutettava viesti"
+      }
+    },
+    "success": {
+      "pause": "Ottelu tauolla",
+      "unpause": "Ottelu jatkuu",
+      "swap": "Joukkueet vaihtoivat puolia",
+      "skipVeto": "Vetovaihe ohitettu",
+      "restartRound": "Erä aloitettu alusta",
+      "endMatch": "Ottelu lopetettu",
+      "endWarmup": "Lämmittely lopetettu",
+      "startMatch": "Ottelu aloitettu",
+      "restoreBackup": "Varmuuskopio palautettu erään {{round}}",
+      "addTime_one": "Lisättiin {{count}} sekunti erän ajastimeen",
+      "addTime_other": "Lisättiin {{count}} sekuntia erän ajastimeen",
+      "broadcast": "Viesti lähetetty palvelimelle",
+      "restartMatch": "Ottelu aloitettu alusta (lopetettu ja ladattu uudelleen)",
+      "reallocateServer": "Ottelu siirretty toiselle palvelimelle",
+      "forceCancel": "Ottelu peruttu",
+      "default": "Komento suoritettu"
+    },
+    "hold": {
+      "title": "Pidätä luovutusvoiton sijaan",
+      "description": "Pidätyksen aikana ottelua ei ladata eikä aloiteta, eikä kukaan saa luovutusvoittoa. Kun ottelu jatkuu, joukkueet saavat taas koko ajan.",
+      "reason": "Syy (näkyy ylläpitäjille)",
+      "delay": "Viivytä {{minutes}} min",
+      "holdUntilReleased": "Pidätä, kunnes vapautetaan",
+      "release": "Vapauta nyt",
+      "restartCountdown": "Aloita lähtölaskenta alusta",
+      "heldUntil": "Pidätetty {{time}} asti",
+      "heldIndefinitely": "Pidätetty, kunnes vapautetaan",
+      "tournamentPaused": "Turnaus on tauolla",
+      "heldDone": "Ottelu pidätetty",
+      "delayedDone": "Ottelua viivytetty {{minutes}} min",
+      "releasedDone": "Ottelu vapautettu",
+      "restartedDone": "Lähtölaskenta aloitettu alusta: joukkueilla on taas koko aika",
+      "failed": "Pidätystä ei voitu muuttaa"
+    }
+  },
+  "adminCalls": {
+    "header": "Ylläpitäjäkutsut ({{count}})",
+    "title": "{{player}} kutsuu ylläpitäjää",
+    "justNow": "juuri nyt",
+    "minutesAgo": "{{count}} min sitten",
+    "hoursAgo": "{{count}} h sitten",
+    "spectator": "Katsoja",
+    "team1": "Joukkue 1",
+    "team2": "Joukkue 2",
+    "noMessage": "Ei viestiä",
+    "unknownPlayer": "Tuntematon pelaaja",
+    "unknownServer": "Tuntematon palvelin",
+    "matchMap": "{{match}}, kartta {{map}}",
+    "openMatch": "Avaa ottelu",
+    "openServers": "Palvelimet",
+    "resolve": "Merkitse ratkaistuksi",
+    "resolveAll": "Ratkaise kaikki",
+    "resolveFailed": "Kutsua ei voitu merkitä ratkaistuksi. Yritä uudelleen.",
+    "matchUnavailable": "Ottelua ei voitu avata.",
+    "enableSound": "Ota äänet käyttöön",
+    "mute": "Mykistä",
+    "unmute": "Poista mykistys",
+    "minimize": "Pienennä",
+    "show": "Näytä",
+    "openChat": "Avaa chat",
+    "claim": "Ota hoitaaksesi",
+    "release": "Vapauta",
+    "claimedBy": "Hoitaa: {{name}}",
+    "claimedByYou": "Hoitaa: sinä",
+    "anAdmin": "ylläpitäjä"
+  }
+}

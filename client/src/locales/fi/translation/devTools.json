@@ -1,0 +1,141 @@
+{
+  "devToolsPage": {
+    "alert": "Nämä työkalut ovat käytettävissä vain kehitystilassa. Niillä voi luoda nopeasti testidataa sovelluksen testaamiseen.",
+    "sections": {
+      "testData": {
+        "title": "Luo testidataa"
+      }
+    },
+    "testTeams": {
+      "title": "Testijoukkueet",
+      "description": "Luo joukkueita satunnaisilla pelaajilla turnauskaavioiden ja otteluiden testaamiseen.",
+      "success": "Luotiin {{count}} testijoukkuetta!",
+      "errors": {
+        "create": "Testijoukkueiden luominen epäonnistui",
+        "partial": "Luotiin {{created}} joukkuetta, mutta {{failed}} epäonnistui. Katso tiedot konsolista."
+      },
+      "customLabel": "Oma joukkuemäärä",
+      "buttons": {
+        "createFixed": "Luo {{count}} joukkuetta",
+        "createCustom": "Luo joukkueet"
+      }
+    },
+    "testPlayers": {
+      "title": "Testipelaajat",
+      "description": "Luo pelaajia ELO-luokituksella shuffle-turnausten ja pelaajien hallinnan testaamiseen.",
+      "success": "Luotiin {{created}} testipelaajaa!",
+      "errors": {
+        "create": "Testipelaajien luominen epäonnistui",
+        "partial": "Luotiin {{created}} pelaajaa, päivitettiin {{updated}}, mutta {{failed}} epäonnistui. Katso tiedot konsolista."
+      },
+      "customLabel": "Oma pelaajamäärä",
+      "buttons": {
+        "createFixed": "Luo {{count}} pelaajaa",
+        "createCustom": "Luo pelaajat"
+      },
+      "successWithUpdated": "Luotiin {{created}} ja päivitettiin {{updated}} testipelaajaa!"
+    },
+    "testServers": {
+      "title": "Testipalvelimet",
+      "description": "Luo testipalvelimia otteluiden hallinnan kokeilemiseen.",
+      "success": "Luotiin {{count}} testipalvelinta!",
+      "errors": {
+        "create": "Testipalvelimien luominen epäonnistui",
+        "partial": "Luotiin {{created}} palvelinta, mutta {{failed}} epäonnistui. Katso tiedot konsolista."
+      },
+      "customLabel": "Oma palvelinmäärä",
+      "buttons": {
+        "createCustom": "Luo palvelimet",
+        "createFixed_one": "Luo {{count}} palvelin",
+        "createFixed_other": "Luo {{count}} palvelinta"
+      }
+    },
+    "dangerZone": {
+      "title": "Vaaravyöhyke"
+    },
+    "deleteTestData": {
+      "title": "Poista testidata",
+      "description": "Poista kaikki testidata (joukkueet ja palvelimet, joiden etuliite on 'test-'). Toimintoa ei voi kumota.",
+      "button": "Poista kaikki testidata",
+      "confirmPrompt": "Haluatko varmasti poistaa KAIKEN testidatan?",
+      "success": "Kaikki testidata poistettiin!",
+      "error": "Testidatan poistaminen epäonnistui"
+    },
+    "wipeTable": {
+      "title": "Tyhjennä tiettyjä tauluja",
+      "description": "Poista kaikki tiedot tietystä taulusta. Hyödyllinen siivoamiseen ilman kaiken nollaamista. Taulut on järjestetty luokittain.",
+      "confirmPrompt": "Haluatko varmasti tyhjentää taulun {{table}}? Kaikki taulun tiedot poistetaan.",
+      "success": "Taulu {{table}} tyhjennettiin!",
+      "error": "Taulun {{table}} tyhjentäminen epäonnistui",
+      "core": {
+        "title": "Ydintaulut",
+        "teams": "Tyhjennä joukkueet",
+        "servers": "Tyhjennä palvelimet",
+        "tournament": "Tyhjennä turnaus",
+        "matches": "Tyhjennä ottelut"
+      },
+      "players": {
+        "title": "Pelaajat ja shuffle-turnaukset",
+        "players": "Tyhjennä pelaajat",
+        "ratingHistory": "Tyhjennä luokitushistoria",
+        "matchStats": "Tyhjennä ottelutilastot",
+        "shufflePlayers": "Tyhjennä shuffle-pelaajat"
+      },
+      "maps": {
+        "title": "Kartat ja mallit",
+        "maps": "Tyhjennä kartat",
+        "mapPools": "Tyhjennä karttapoolit",
+        "tournamentTemplates": "Tyhjennä turnausmallit",
+        "eloTemplates": "Tyhjennä luokitusmallit"
+      },
+      "matchEvents": {
+        "title": "Ottelutapahtumat ja tulokset",
+        "events": "Tyhjennä ottelutapahtumat",
+        "mapResults": "Tyhjennä karttatulokset"
+      },
+      "settings": {
+        "title": "Asetukset",
+        "appSettings": "Tyhjennä sovelluksen asetukset"
+      }
+    },
+    "simulation": {
+      "title": "Simulaation tila",
+      "description": "Tyhjennä kaikki ottelut ja historialliset tilastot, jotta voit napsauttaa simulaatiotilassa ”Aloita turnaus” puhtaalla kaaviolla. Palvelimet, joukkueet, kartat ja nykyinen turnauksen asetus säilyvät.",
+      "button": "Nollaa simulaation tila (säilytä asetukset)",
+      "reset": {
+        "success": "Simulaation tila nollattiin. Ottelut ja tilastot tyhjennettiin; palvelimet, joukkueet ja turnauksen asetus säilytettiin.",
+        "error": "Simulaation tilan nollaaminen epäonnistui"
+      }
+    },
+    "wipeDatabase": {
+      "title": "Tyhjennä koko tietokanta",
+      "warningTitle": "ERITTÄIN TUHOISA!",
+      "warningBody": "Tämä poistaa KAIKEN datan.",
+      "permanentlyDeletes": "Poistaa pysyvästi:",
+      "items": {
+        "tournaments": "Kaikki turnaukset ja kaaviot",
+        "matches": "Kaikki ottelut ja tapahtumat",
+        "teams": "Kaikki joukkueet ja pelaajat",
+        "servers": "Kaikki palvelinasetukset"
+      },
+      "button": "Tyhjennä koko tietokanta",
+      "successRedirect": "Tietokanta tyhjennettiin! Ohjataan uudelleen...",
+      "error": "Tietokannan tyhjentäminen epäonnistui",
+      "dialog": {
+        "title": "Vahvista tietokannan tyhjennys",
+        "areYouSure": "Oletko aivan varma?",
+        "actionWill": "Tämä toiminto",
+        "permanentlyDelete": "poistaa pysyvästi",
+        "items": {
+          "tournaments": "Kaikki turnausdata ja kaaviot",
+          "matches": "Koko otteluhistorian ja tapahtumat",
+          "teams": "Kaikki joukkueet ja pelaaja-asetukset",
+          "servers": "Kaikki palvelinasetukset"
+        },
+        "cannotUndo": "Toimintoa ei voi kumota!",
+        "wiping": "Tyhjennetään tietokantaa...",
+        "yesWipe": "Kyllä, tyhjennä kaikki"
+      }
+    }
+  }
+}

@@ -1,0 +1,989 @@
+{
+  "dashboard": {
+    "title": "Ylläpito",
+    "restartTournament": {
+      "button": "Käynnistä turnauksen ottelut uudelleen",
+      "restarting": "Käynnistetään turnauksen otteluita uudelleen…",
+      "intro": "🔄 Tämä käynnistää kaikki aktiiviset ottelut uudelleen ja lataa ne palvelimille uudestaan.",
+      "actionsTitle": "Toimenpiteet:",
+      "actionEndMatch": "Aja at_endmatch kaikilla palvelimilla, joilla on ladattuja tai live-otteluita",
+      "actionReset": "Palauta ottelut tilaan ”ready”",
+      "actionReallocate": "Jaa ottelut uudelleen vapaille palvelimille",
+      "actionReload": "Lataa otteluiden asetukset uudelleen pelipalvelimille",
+      "hint": "Käytä tätä, jos ottelut ovat jumissa tai tarvitsevat uuden alun.",
+      "confirm": "Käynnistä turnaus uudelleen"
+    },
+    "header": {
+      "brand": "Auto Tournament",
+      "version": "Auto Tournament -sivustosi · versio {{version}}",
+      "unknownVersion": "dev",
+      "createTournament": "Luo turnaus"
+    },
+    "setup": {
+      "title": "Viimeistele käyttöönotto",
+      "openSettings": "Avaa asetukset",
+      "signIn": "Kirjautumispalvelu",
+      "game": "Asenna peli (CS2) kohdasta Moduulit",
+      "discordBot": "Lisää oma Discord-botti (sen token), jotta sivusto voi lähettää pelaajille yksityisviestejä heidän otteluistaan"
+    },
+    "tournaments": {
+      "title": "Turnaus",
+      "empty": "Tällä sivustolla on yksi turnaus kerrallaan. Luo se, niin se näkyy täällä, Selaa-sivulla ja omalla tapahtumasivullaan.",
+      "status": {
+        "setup": "Luonnos",
+        "ready": "Ilmoittautuminen",
+        "inProgress": "Live",
+        "completed": "Päättynyt"
+      },
+      "state": {
+        "teams_one": "{{count}} joukkue",
+        "teams_other": "{{count}} joukkuetta",
+        "entered_one": "{{count}} joukkue ilmoittautunut",
+        "entered_other": "{{count}} joukkuetta ilmoittautunut",
+        "draftTeams_one": "Luonnos · {{count}} joukkue valittu",
+        "draftTeams_other": "Luonnos · {{count}} joukkuetta valittu",
+        "draftEmpty": "Luonnos · ei vielä joukkueita",
+        "live_one": "{{count}} ottelu livenä",
+        "live_other": "{{count}} ottelua livenä",
+        "completed_one": "{{count}} joukkue osallistui",
+        "completed_other": "{{count}} joukkuetta osallistui",
+        "winner": "Voittaja: {{name}}",
+        "teamsPlayers_one": "{{count}} pelaaja",
+        "teamsPlayers_other": "{{count}} pelaajaa",
+        "enteredPlayers_one": "{{count}} pelaaja ilmoittautunut",
+        "enteredPlayers_other": "{{count}} pelaajaa ilmoittautunut",
+        "draftTeamsPlayers_one": "Luonnos · {{count}} pelaaja",
+        "draftTeamsPlayers_other": "Luonnos · {{count}} pelaajaa",
+        "completedPlayers_one": "{{count}} pelaaja osallistui",
+        "completedPlayers_other": "{{count}} pelaajaa osallistui"
+      },
+      "actions": {
+        "manage": "Hallitse",
+        "continueSetup": "Jatka käyttöönottoa",
+        "view": "Näytä"
+      },
+      "eventPage": "Tapahtumasivu",
+      "emptyTitle": "Ei vielä turnausta"
+    },
+    "site": {
+      "title": "Sivusto",
+      "players": {
+        "label": "Pelaajat",
+        "hint": "Kaikki, jotka ovat kirjautuneet"
+      },
+      "teams": {
+        "label": "Joukkueet",
+        "hint": "Seurat ja kokoonpanot"
+      },
+      "templates": {
+        "label": "Mallit",
+        "hint": "Uudelleenkäytettävät asetukset"
+      },
+      "ratings": {
+        "label": "Luokitukset",
+        "hint": "Miten luokitukset lasketaan"
+      },
+      "settings": {
+        "label": "Asetukset",
+        "hint": "Kirjautuminen, API-avaimet"
+      },
+      "adminTools": {
+        "label": "Järjestelmä",
+        "hint": "Otteluiden palautus ja lokit"
+      },
+      "disputes": {
+        "label": "Kiistat",
+        "hint": "Ratkaistavat tulokset"
+      },
+      "modules": {
+        "label": "Moduulit",
+        "hint": "Pelit, joita tämä instanssi ajaa"
+      }
+    },
+    "people": {
+      "title": "Ihmiset",
+      "open": "Avaa",
+      "players": "Pelaajat",
+      "admins": "Ylläpitäjät",
+      "signedInThisWeek": "Kirjautuneet tällä viikolla"
+    },
+    "loading": "Ladataan ylläpidon etusivua"
+  },
+  "settingsPage": {
+    "email": {
+      "title": "Sähköposti",
+      "short": "Lähettää osoitteiden vahvistukset, salasanan palautukset ja turnausviestit.",
+      "enabled": "Lähetä sähköpostia",
+      "enabledOn": "Päällä. Viestit lähtevät osoitteesta {{from}}.",
+      "enabledOff": "Pois. Mitään ei lähetetä.",
+      "needsServer": "Määritä ensin palvelin alla.",
+      "turnedOn": "Sähköposti on päällä",
+      "turnedOff": "Sähköposti on pois",
+      "server": "Sähköpostipalvelin",
+      "serverNone": "Ei määritetty",
+      "host": "SMTP-palvelin",
+      "port": "Portti",
+      "security": "Suojaus",
+      "securityStarttls": "STARTTLS (yleensä portti 587)",
+      "securityTls": "TLS (yleensä portti 465)",
+      "securityNone": "Ei mitään (vain luotetussa verkossa)",
+      "username": "Käyttäjänimi",
+      "password": "Salasana",
+      "passwordKept": "Jätä tyhjäksi, niin tallennettu säilyy",
+      "passwordSaved": "Tallennettu",
+      "fromAddress": "Lähettäjän osoite",
+      "fromAddressHelp": "Osoite, josta viestit lähtevät. Sähköpostipalveluntarjoajasi täytyy sallia se.",
+      "fromName": "Lähettäjän nimi",
+      "fromNameHelp": "Valinnainen. Näytetään viestin lähettäjänä, esim. NTLAN.",
+      "siteUrl": "Sivuston osoite",
+      "siteUrlHelp": "Sähköpostien linkit alkavat tästä, esim. https://cs.example.com.",
+      "siteUrlHelpDefault": "Sähköpostien linkit alkavat tästä. Tyhjänä: {{url}}.",
+      "save": "Tallenna",
+      "saved": "Sähköpostiasetukset tallennettu",
+      "loadError": "Sähköpostiasetuksia ei voitu ladata",
+      "saveError": "Sähköpostiasetuksia ei voitu tallentaa",
+      "test": "Testiviesti",
+      "testShort": "Lähetä yksi ja tarkista, että asetukset toimivat.",
+      "testTo": "Vastaanottaja",
+      "testSend": "Lähetä testi",
+      "testNeedsOn": "Laita lähetys päälle (ja tallenna palvelin) ennen testaamista.",
+      "testSent": "Lähetetty osoitteeseen {{to}}. Tarkista saapuneet ja roskapostikansio.",
+      "testFailed": "Testiviestiä ei voitu lähettää"
+    },
+    "title": "Asetukset",
+    "intro": "Alustan omat asetukset. Jokaisen pelin asetukset ovat valikossa pelin kohdalla.",
+    "tabs": {
+      "general": "Yleiset",
+      "signIn": "Kirjautuminen",
+      "players": "Pelaajat ja pääsy",
+      "ratings": "Luokitukset",
+      "developer": "Kehittäjä",
+      "license": "Lisenssi",
+      "webhooks": "Webhookit",
+      "experimental": "Kokeelliset"
+    },
+    "signIn": {
+      "title": "Kirjautumispalvelut",
+      "intro": "Valitse, miten ihmiset kirjautuvat. Mikä tahansa näistä voi olla jonkun tili; lisää voi yhdistää yhteydet-sivulla. Muutokset tulevat voimaan heti, ilman uudelleenkäynnistystä.",
+      "keySource": "Tallennetut salaisuudet salataan avaimella {{name}}.",
+      "keySourceDefault": "Tallennetut salaisuudet salataan sisäänrakennetulla kehitysavaimella. Aseta SECRETS_KEY tai SESSION_SECRET ennen tuotantokäyttöä.",
+      "loadError": "Kirjautumispalveluita ei voitu ladata",
+      "saveError": "Tallennus epäonnistui",
+      "testError": "Testiä ei voitu ajaa",
+      "saved": "{{provider}}-kirjautuminen tallennettu",
+      "enabled": "Käytössä",
+      "clientId": "Client ID",
+      "issuerUrl": "Issuer URL",
+      "issuerUrlHelp": "OpenID Connect -realmin tai -tenantin osoite. Auto Tournament lukee sen päätepisteet osoitteesta /.well-known/openid-configuration.",
+      "buttonName": "Painikkeen nimi",
+      "buttonNameHelp": "Näytetään kirjautumissivulla muodossa ”Kirjaudu: …”, esim. yhteisösi tai identiteettipalvelimesi nimi.",
+      "logoUpload": "Lataa logo",
+      "logoReplace": "Vaihda logo",
+      "logoRemove": "Poista logo",
+      "logoType": "Logon täytyy olla PNG-, JPEG-, WebP- tai SVG-kuva.",
+      "logoSize": "Logo voi olla enintään 150 kt.",
+      "buttonColor": "Painikkeen väri",
+      "buttonColorDefault": "Oletusväri",
+      "clientSecret": "Client secret",
+      "steamKey": "Steam Web API -avain",
+      "secretSet": "asetettu",
+      "secretUnreadable": "Tallennettua salaisuutta ei voi enää purkaa (salausavain on vaihtunut). Syötä se uudelleen.",
+      "replace": "Vaihda",
+      "cancel": "Peruuta",
+      "save": "Tallenna",
+      "callbackHint": "Asetetaan automaattisesti. Liitä se uudelleenohjaus-URL:ksi palvelun {{provider}} kehittäjäasetuksiin:",
+      "copy": "Kopioi",
+      "copyCallback": "Kopioi callback-URL",
+      "copied": "Kopioitu",
+      "copyError": "Kopiointi epäonnistui",
+      "guide": "Asennusopas",
+      "howTo": "Kehittäjäkonsoli",
+      "test": "Testaa",
+      "comingSoon": "Tulossa pian",
+      "comingSoonNote": "{{provider}}-kirjautuminen ei ole vielä saatavilla.",
+      "status": {
+        "active": "Kirjautumissivulla",
+        "missing": "Käytössä, tunnukset puuttuvat",
+        "off": "Pois"
+      },
+      "testResult": {
+        "ok": "Palvelu hyväksyi nämä tunnukset.",
+        "invalid_credentials": "Palvelu hylkäsi nämä tunnukset. Tarkista client ID ja secret (tai avain).",
+        "unreachable": "Palveluun ei saatu yhteyttä. Tarkista verkko ja yritä uudelleen.",
+        "not_configured": "Syötä ensin tunnukset.",
+        "not_supported": "Tätä palvelua ei voi testata.",
+        "unexpected": "Palvelu antoi vastauksen, jota testi ei ymmärrä."
+      },
+      "welcomeTitle": "Määritä, miten pelaajat kirjautuvat",
+      "welcomeBody": "Olet kirjautunut ylläpitäjänä. Ota käyttöön vähintään yksi palvelu alla (Steam, Discord, Google, GitHub tai Twitch), jotta pelaajat voivat kirjautua.",
+      "adminAccess": {
+        "title": "Ylläpitäjän pääsy",
+        "localLogin": "Salli paikallinen ylläpitäjän kirjautuminen",
+        "localLoginHelp": "Kirjautuminen käyttäjänimellä ja salasanalla osoitteessa /login/admin. Jos menetät pääsyn, aja reset-admin palvelimella.",
+        "localLoginLocked": "Pysyy päällä, kunnes toinen ylläpitäjä voi kirjautua käytössä olevalla palvelulla.",
+        "steamIds": "Ylläpitäjien Steam ID:t",
+        "steamIdsHelp": "Steam64-ID:t pilkuilla erotettuina. Tehdään ylläpitäjiksi tallennettaessa ja jokaisessa käynnistyksessä. Yhden poistaminen ei poista ylläpito-oikeutta.",
+        "emails": "Ylläpitäjien sähköpostit",
+        "emailsHelp": "Osoitteet, jotka saavat ylläpito-oikeuden, kun omistaja kirjautuu palvelulla, joka on vahvistanut ne (Google, Discord, GitHub).",
+        "unsaved": "Ei vielä tallennettu.",
+        "saved": "Ylläpitäjän pääsy tallennettu",
+        "loadError": "Ylläpitäjän pääsyn asetuksia ei voitu ladata",
+        "short": "Kuka voi kirjautua ylläpitäjänä"
+      },
+      "short": "Miten pelaajat ja ylläpitäjät kirjautuvat. Muutokset tulevat voimaan heti.",
+      "enabledFor": "{{provider}}-kirjautuminen",
+      "setUp": "Määritä {{provider}}",
+      "accounts": {
+        "title": "Tilit",
+        "short": "Luomasi käyttäjänimi- ja salasanatilit",
+        "help": "Näillä kirjaudutaan osoitteessa /login/admin. Anna ylläpito-oikeus niille, jotka pyörittävät sivustoa; muut kirjautuvat pelaajina.",
+        "none": "Ei vielä tilejä.",
+        "admin": "Ylläpitäjä",
+        "twoStep": "Kaksivaiheinen päällä",
+        "lastLogin": "Kirjautui viimeksi {{date}}",
+        "neverSignedIn": "Ei ole koskaan kirjautunut",
+        "setPassword": "Aseta salasana",
+        "remove": "Poista",
+        "addTitle": "Lisää tili",
+        "username": "Käyttäjänimi",
+        "usernameHelp": "3–32 merkkiä: pieniä kirjaimia, numeroita, pisteitä, väliviivoja ja alaviivoja.",
+        "name": "Näyttönimi",
+        "nameHelp": "Valinnainen. Näytetään sivustolla; jos tyhjä, käytetään käyttäjänimeä.",
+        "password": "Salasana",
+        "makeAdmin": "Ylläpitäjä",
+        "create": "Luo tili",
+        "created": "Tili {{username}} luotu",
+        "madeAdmin": "{{username}} on nyt ylläpitäjä",
+        "adminRemoved": "{{username}} ei ole enää ylläpitäjä",
+        "setPasswordTitle": "Uusi salasana käyttäjälle {{username}}",
+        "setPasswordTotp": "Myös hänen kaksivaiheinen tunnistautumisensa poistetaan; hän ottaa sen uudelleen käyttöön kirjauduttuaan.",
+        "newPassword": "Uusi salasana",
+        "savePassword": "Tallenna salasana",
+        "passwordSet": "Uusi salasana tallennettu käyttäjälle {{username}}",
+        "removeTitle": "Poistetaanko {{username}}?",
+        "removeBody": "Hän ei voi enää kirjautua tällä käyttäjänimellä ja salasanalla, eikä hän ole enää ylläpitäjä. Hänen pelaajansa, ottelunsa ja tilastonsa säilyvät; saman käyttäjänimen luominen uudelleen palauttaa ne.",
+        "removeConfirm": "Poista",
+        "removed": "{{username}} poistettu",
+        "cancel": "Peruuta",
+        "loadError": "Tilejä ei voitu ladata",
+        "saveError": "Tiliä ei voitu tallentaa"
+      },
+      "oidcScopes": "Anna OpenID Connect -palvelimellasi tälle clientille scopet openid, profile ja email (Keycloakissa: Clients → tämä client → Client scopes, profile ja email oletuksina). Ilman profilea ja emailia ihmiset voivat yhä kirjautua, mutta alusta ei saa heidän nimeään tai sähköpostiosoitettaan."
+    },
+    "integrations": {
+      "steam": {
+        "title": "Steam-integraatio",
+        "apiKeyLabel": "Steam Web API -avain",
+        "apiKeyHelper": "Selvittää Steamin vanity-URL:t ja pelaajatiedot. Jätä tyhjäksi, niin haut ovat pois käytöstä.",
+        "checkButtonChecking": "Tarkistetaan Steamia…",
+        "checkButtonIdle": "Tarkista Steam-yhteys",
+        "statusOk": "Steam API -avain on asetettu ja tavoitettavissa.",
+        "statusNotConfigured": "Steam API -avainta ei ole asetettu. Vanity-URL:iä ei voi selvittää ennen kuin lisäät avaimen.",
+        "statusUnreachable": "Steam API -avain näyttää olevan asetettu, mutta Steamiin ei saatu yhteyttä. Tarkista verkko tai avain.",
+        "statusError": "Steam API:n tilan tarkistus epäonnistui. Yritä uudelleen."
+      }
+    },
+    "matchRating": {
+      "ratings": {
+        "title": "Luokitusten päivitykset",
+        "description": "Määritä, päivittävätkö päättyneet ottelut pelaajien taitoluokituksia. Poista käytöstä tapahtumissa, joissa ulkoinen järjestelmä (esimerkiksi Excel-taulukkosi) on luokitusten totuuden lähde.",
+        "toggleLabel": "Päivitä pelaajien luokitukset päättyneistä otteluista",
+        "note": "Kun pois käytöstä, kaikki ottelut tallentavat yhä tilastot (ADR, K/D jne.), mutta pelaajien taitoluokitukset eivät muutu.",
+        "short": "Luokitukset muuttuvat jokaisen ottelun jälkeen."
+      }
+    },
+    "players": {
+      "registration": {
+        "title": "Pelaajien rekisteröityminen",
+        "description": "Määritä, luoko kirjautuminen pelaajatietueen uudelle henkilölle, millä tahansa kirjautumistavalla (Steam, Discord, Google ja muut käyttöön otetut). Kun pois käytöstä, yksityisissä turnauksissa ja shuffle-pooleissa näkyvät vain ylläpitäjien luomat tai tuomat pelaajat.",
+        "toggleLabel": "Salli kenen tahansa rekisteröityä kirjautumalla",
+        "recommendation": "Suositus: pidä tämä pois päältä kutsuturnauksissa ja yksityisissä turnauksissa, jotta satunnaiset kirjautumiset eivät täytä pelaajalistaa.",
+        "short": "Kirjautuminen tekee pelaajan jokaisesta uudesta. Pois: vain lisäämäsi pelaajat."
+      },
+      "title": "Pelaajat",
+      "short": "Kuka liittyy, ja miten luokitukset muuttuvat.",
+      "chooseName": {
+        "toggleLabel": "Pelaajat valitsevat näyttönimensä",
+        "short": "Pelaajilta kysytään nimeä, ja he voivat vaihtaa sen kerran päivässä. Pois: nimet tulevat tuonneista ja ylläpitäjiltä."
+      }
+    },
+    "developer": {
+      "resetApiTitle": "Nollaa API ja tietokanta",
+      "resetApiDescription": "Vaaravyöhyke: poistaa ja luo koko tietokantaskeeman uudelleen ja alustaa sitten oletustiedot (kartat, karttapoolit jne.). Käytä vain paikallisessa kehityksessä. Tätä ei voi perua.",
+      "resetApiButton": "Nollaa API (poista kaikki tiedot)",
+      "resetApiButtonLoading": "Nollataan APIa…",
+      "resetApiSuccess": "API ja tietokanta nollattiin. Kaikki tiedot on poistettu ja oletukset alustettu uudelleen.",
+      "resetApiError": "API:n ja tietokannan nollaus epäonnistui. Katso lisätiedot API-lokeista.",
+      "resetApiDialog": {
+        "title": "Nollataanko API ja poistetaanko kaikki tiedot?",
+        "description": "Tämä poistaa ja luo koko tietokantaskeeman uudelleen. Kaikki turnaukset, ottelut, pelaajat, joukkueet, luokitukset, tapahtumat, lokit ja asetukset poistetaan pysyvästi. Tätä ei voi perua. Jatketaanko?",
+        "cancel": "Peruuta",
+        "confirm": "Kyllä, nollaa API ja poista tiedot",
+        "confirmLoading": "Nollataan…"
+      }
+    },
+    "footer": {
+      "version": "Versio",
+      "unknownVersion": "Tuntematon"
+    },
+    "errors": {
+      "loadSettings": "Asetuksia ei voitu ladata",
+      "saveSettings": "Asetuksia ei voitu tallentaa"
+    },
+    "success": {
+      "saveSettings": "Asetukset tallennettu"
+    },
+    "site": {
+      "title": "Sivusto",
+      "description": "Sivuston nimi. Ylläpidon etusivu käyttää sitä otsikkonaan.",
+      "label": "Sivuston nimi",
+      "helper": "Jätä tyhjäksi, niin käytetään nimeä ”Auto Tournament”.",
+      "save": "Tallenna",
+      "saved": "Sivuston nimi tallennettu",
+      "saveFailed": "Sivuston nimeä ei voitu tallentaa"
+    },
+    "experimental": {
+      "title": "Kokeelliset",
+      "description": "Ominaisuudet, joita rakennetaan vielä. Ne ovat oletuksena pois päältä ja voivat muuttua tai rikkoutua. Vain ylläpitäjät näkevät ne.",
+      "saved": "Tallennettu",
+      "saveFailed": "Ominaisuutta ei voitu tallentaa",
+      "loadFailed": "Kokeellisia ominaisuuksia ei voitu ladata",
+      "envOverride": "Asetettu ympäristömuuttujalla {{env}}. Muuta sitä siellä.",
+      "features": {},
+      "short": "Vielä työn alla: oletuksena pois päältä, vain ylläpitäjät näkevät ne."
+    },
+    "matchmaking": {
+      "openLabel": "Avoin pelaajille",
+      "openDescription": "Päällä: jokainen kirjautunut pelaaja näkee Pelaa-kohdan ja voi jonottaa. Pois: vain ylläpitäjät voivat etsiä otteluita.",
+      "boardLabel": "Ranking näkyy kaikille",
+      "boardDescription": "Pois: vain kirjautuneet pelaajat näkevät matchmakingin rankingin. Päällä: kuka tahansa, jolla on linkki.",
+      "windowTitle": "Hakuikkuna",
+      "windowDescription": "Kuinka kaukana toisistaan pelaajien luokitukset saavat olla. Se alkaa ensimmäisestä luvusta, kasvaa askeleen verran 30 sekunnin välein enimmäisarvoon asti, ja viimeisen minuuttimäärän jälkeen kuka tahansa yhdistetään (jätä tyhjäksi, jos ei koskaan).",
+      "window": {
+        "start": "Alku (Elo)",
+        "step": "Askel (Elo)",
+        "cap": "Enimmäisarvo (Elo)",
+        "uncappedAfterMinutes": "Kuka tahansa jälkeen (min)"
+      },
+      "reservedTitle": "Matchmakingille varatut palvelimet",
+      "reservedDescription": "Turnausottelut menevät ensin, mutta jätä näin monta palvelinta vapaaksi matchmakingille, kun pelaajat hakevat. 0 = ei yhtään.",
+      "reservedLabel": "Palvelimet",
+      "modesTitle": "Pelimuodot",
+      "modesDescription": "Mitä pelaajat voivat hakea. Kaikki pelimuodot ovat oletuksena päällä. 1v1 on aim-kaksintaistelu.",
+      "poolsTitle": "Kartat pelimuodoittain",
+      "poolsDescription": "Karttapooli, josta kukin pelimuoto valitsee (Kartat-sivu; myös Workshop-kartat toimivat). Otteluhuone näyttää rulettiarvonnan poolista ennen kuin kartta paljastetaan.",
+      "poolDefault": {
+        "5v5": "Oletus: Active Duty",
+        "2v2": "Oletus: kaikki Wingman-kartat",
+        "1v1": "Oletus: Active Duty"
+      },
+      "save": "Tallenna",
+      "title": "Matchmaking",
+      "short": "Aina päällä. Pelaajat etsivät ottelun, jonottavat ja hyväksyvät, ja pelaavat sitten vapaalla palvelimella.",
+      "saved": "Tallennettu",
+      "saveFailed": "Matchmakingin asetuksia ei voitu tallentaa",
+      "loadFailed": "Matchmakingin asetuksia ei voitu ladata"
+    },
+    "groups": {
+      "platform": "Alusta"
+    },
+    "navLabel": "Asetussivut",
+    "gameLinks": {
+      "title": "Peliasetukset",
+      "hint": "Jokaisen pelin asetukset ovat valikossa pelin kohdalla."
+    },
+    "sections": {
+      "label": "Asetusosiot",
+      "site": {
+        "name": "Sivusto",
+        "hint": "Nimi, logo, kieli"
+      },
+      "signin": {
+        "name": "Kirjautuminen",
+        "hint": "Palvelut, ylläpitäjien tilit"
+      },
+      "email": {
+        "name": "Sähköposti",
+        "hint": "SMTP, mitä lähetetään"
+      },
+      "players": {
+        "name": "Pelaajat",
+        "hint": "Ilmoittautuminen, luokitukset"
+      },
+      "matchmaking": {
+        "name": "Matchmaking",
+        "hint": "Jonot ja niiden säännöt"
+      },
+      "news": {
+        "name": "Uutiset",
+        "hint": "Julkaisut etusivulla"
+      },
+      "adminnotices": {
+        "name": "Ilmoitukset",
+        "hint": "Mistä ylläpitäjille kerrotaan"
+      },
+      "webhooks": {
+        "name": "Integraatiot",
+        "hint": "Webhookit"
+      },
+      "apitokens": {
+        "name": "API-tokenit",
+        "hint": "Skripteille ja MCP:lle"
+      },
+      "advanced": {
+        "name": "Lisäasetukset",
+        "hint": "Kokeelliset, kehittäjä"
+      },
+      "module": {
+        "hint": "Tämän moduulin asetukset"
+      }
+    }
+  },
+  "managePage": {
+    "tournamentNotFound": "Tällä tunnisteella ei ole turnausta. Valitse yksi kohdasta Kaikki turnaukset.",
+    "title": "Hallitse",
+    "needsYouHeading": "Vaatii sinua",
+    "noTournament": "Ei vielä turnausta",
+    "rail": {
+      "needsYou": "Vaatii sinua",
+      "matches": "Ottelut",
+      "bracket": "Kaavio",
+      "teams": "Joukkueet",
+      "players": "Pelaajat",
+      "reports": "Ilmoitukset",
+      "tournament": "Turnauksen asetukset",
+      "settings": "Asetukset",
+      "label": "Ylläpito",
+      "disputes": "Kiistat",
+      "publicPage": "Julkinen sivu",
+      "modules": "Moduulit",
+      "templates": "Mallit",
+      "ratings": "Luokitukset",
+      "adminTools": "Lokit ja työkalut",
+      "license": "Lisenssi",
+      "devTools": "Kehitystyökalut",
+      "documentation": "Dokumentaatio",
+      "opensInNewTab": "(avautuu uuteen välilehteen)",
+      "groups": {
+        "operate": "Käyttö",
+        "tournament": "Turnaus",
+        "people": "Ihmiset",
+        "game": "Peli",
+        "home": "Etusivu",
+        "history": "Historia",
+        "setup": "Käyttöönotto",
+        "configuration": "Määritykset",
+        "site": "Sivusto",
+        "tournaments": "Turnaukset",
+        "system": "Järjestelmä",
+        "gamesOf": "Pelit · {{game}}"
+      },
+      "templatesAndRatings": "Mallit ja luokitukset",
+      "allTournaments": "Kaikki turnaukset",
+      "switcher": "Turnaus",
+      "newTournament": "Uusi turnaus",
+      "playedMatches": "Pelatut ottelut",
+      "tournamentBar": "Tämä turnaus",
+      "scope": {
+        "label": "Hallinnassa",
+        "platform": "Alusta",
+        "platformHint": "Turnaukset, ihmiset, sivusto",
+        "gameHint": "Sen sivut ja asetukset"
+      },
+      "highlights": "Kohokohdat",
+      "state": {
+        "live": "live",
+        "setup": "käyttöönotto"
+      },
+      "openMenu": "Avaa Hallitse-valikko",
+      "closeMenu": "Sulje valikko",
+      "setupTab": "Käyttöönotto",
+      "prizes": "Palkinnot",
+      "schedule": "Aikataulu",
+      "liveMatches": "Live-ottelut"
+    },
+    "status": {
+      "live": "LIVE",
+      "inVeto": "VETOSSA",
+      "queued": "JONOSSA",
+      "round": "ERÄ"
+    },
+    "needsYou": {
+      "empty": "Mikään ei vaadi sinua juuri nyt.",
+      "secondsAgo": "{{count}} s",
+      "minutesAgo": "{{count}} min",
+      "hoursAgo": "{{count}} h",
+      "vsLabel": "{{team1}} vs {{team2}}",
+      "decide": {
+        "title": "{{teams}} tarvitsee voittajan",
+        "detail": "Kaikki kartat pelattiin, ja sarja on yhä tasan.",
+        "action": "Ratkaise"
+      },
+      "reallocateSuccess": "Ottelu siirretty toiselle palvelimelle",
+      "forceCancelSuccess": "Ottelu peruttu",
+      "actionFailed": "Se ei mennyt läpi. Yritä uudelleen.",
+      "reallocateConfirmTitle": "Siirretäänkö tämä ottelu toiselle palvelimelle?",
+      "reallocateConfirmBody": "Ottelu osoitetaan seuraavalle vapaalle palvelimelle.",
+      "forceCancelConfirmTitle": "Perutaanko tämä ottelu pakolla?",
+      "forceCancelConfirmBody": "Tämä päättää ottelun heti ja merkitsee sen perutuksi, vaikka palvelimeen ei saataisi yhteyttä.",
+      "listLabel": "Päätöstä vaativat asiat"
+    },
+    "recent": {
+      "heading": "Viimeaikaiset",
+      "viewAll": "Koko loki",
+      "empty": "Ei vielä viimeaikaista toimintaa.",
+      "closingLine": "Kaikki muu hoituu itsestään. Näet asian täällä vain, kun jokin vaatii päätöstä.",
+      "team1Fallback": "Joukkue 1",
+      "team2Fallback": "Joukkue 2",
+      "mapResult": "{{winner}} voitti kartan {{map}} joukkuetta {{loser}} vastaan, {{score}}",
+      "seriesEnd": "{{winner}} voitti sarjan joukkuetta {{loser}} vastaan, {{score}}"
+    },
+    "announce": {
+      "button": "Tiedota",
+      "title": "Tiedota kaikille palvelimille",
+      "label": "Viesti",
+      "send": "Lähetä",
+      "success": "Tiedote lähetetty",
+      "failed": "Tiedotteen lähetys epäonnistui"
+    }
+  },
+  "license": {
+    "title": "Lisenssi",
+    "getKey": "Onko sinulla jo lisenssi? Kopioi avaimesi <consoleLink>Auto Tournament -konsolista</consoleLink>. Tarvitsetko sellaisen? <pricingLink>Katso hinnat</pricingLink>.",
+    "useFromPaidKey": "Asetettu alla olevalla maksullisella lisenssiavaimella.",
+    "useFromFreeKey": "Asetettu alla olevalla ilmaisella avaimella: vain voittoa tavoittelematon käyttö.",
+    "useWithoutKey": "Ei avainta: ilmainen voittoa tavoittelemattomaan käyttöön. Liitä alle maksullinen avain kaupallista käyttöä varten.",
+    "publicLine": "Pelaajat näkevät tapahtumasivujen alareunassa tekstin ”{{line}}”.",
+    "pageIntro": "Lisenssiavaimesi ja sen tila. Maksullinen avain on kaupalliseen käyttöön; ilmainen avain on voittoa tavoittelemattomaan käyttöön.",
+    "description": "Liitä Auto Tournament -lisenssiavaimesi: maksullinen kaupalliseen käyttöön tai ilmainen voittoa tavoittelemattomaan käyttöön. Se tarkistetaan tällä palvelimella ja kerran päivässä autotournament.gg:n kanssa.",
+    "loading": "Ladataan lisenssin tilaa",
+    "loadFailed": "Lisenssin tilaa ei voitu lukea.",
+    "none": "Ei vielä lisenssiavainta. Ilmainen voittoa tavoittelemattomaan käyttöön; kaupallinen käyttö vaatii maksullisen lisenssin.",
+    "pricing": "Hinnat",
+    "open": "Asetukset",
+    "id": "Lisenssin tunniste {{id}}",
+    "verify": "Tarkista tämä lisenssi",
+    "invalid": "Tätä avainta ei voitu vahvistaa.",
+    "invalidShort": "Tallennettua avainta ei voitu vahvistaa.",
+    "warningsShort_one": "1 lisenssi-ilmoitus asetuksissa.",
+    "warningsShort_other": "{{count}} lisenssi-ilmoitusta asetuksissa.",
+    "warningsNote": "Mitään ei ole estetty tai rajoitettu. Tämä on vain ilmoitus.",
+    "label": "Lisenssiavain",
+    "replaceLabel": "Vaihda lisenssiavain",
+    "helper": "Alkaa ATL1. Kopioi se <consoleLink>lisensseistäsi Auto Tournament -konsolissa</consoleLink>. Tallennuksen jälkeen näytetään vain lisenssin tunniste. Eikö pelipaikalla ole internetiä? Liitä konsolin offline-vuokra myös tähän.",
+    "checkInNote": "Ilman lisenssiavainta Auto Tournamentille ei lähetetä mitään. Avaimen kanssa tämä palvelin ilmoittautuu kerran päivässä avaimen tunnisteella ja palvelinmäärällään.",
+    "save": "Tallenna avain",
+    "saved": "Lisenssiavain tallennettu",
+    "saveFailed": "Lisenssiavainta ei voitu tallentaa",
+    "remove": "Poista avain",
+    "removed": "Lisenssiavain poistettu",
+    "removeFailed": "Lisenssiavainta ei voitu poistaa",
+    "summary": {
+      "licensedTo": "Lisensoitu: {{licensee}}",
+      "licensed": "Lisensoitu",
+      "product": {
+        "platform": "Alusta {{pack}}",
+        "servers": "Palvelimet {{pack}}"
+      },
+      "servers_one": "{{count}} palvelin",
+      "servers_other": "{{count}} palvelinta",
+      "updatesUntil": "päivitykset {{date}} asti",
+      "updatesForLife": "päivitykset koko elinkaaren ajan",
+      "eventWindow": "tapahtuma {{from}}–{{to}}",
+      "free": "Ilmainen avain, ei-kaupallinen käyttö",
+      "freeFor": "Ilmainen avain: {{licensee}}, ei-kaupallinen käyttö",
+      "noLimit": "ei palvelinrajaa"
+    },
+    "badge": {
+      "label": "Näytä ”Lisensoitu” ja käytön laji julkisilla tapahtumasivuilla",
+      "note": "Oletuksena pois. Linkittää lisenssin julkiseen tarkistussivuun ja näkyy vain, kun tallennettu avain on voimassa.",
+      "on": "Julkinen lisenssirivi otettu käyttöön",
+      "off": "Julkinen lisenssirivi poistettu käytöstä",
+      "failed": "Julkista lisenssiriviä ei voitu muuttaa",
+      "short": "Päällä itsestään, kun avain on tallennettu. Pelaajat näkevät sen tapahtumasivujen alareunassa.",
+      "needsKey": "Näkyy vain, kun lisenssiavain on tallennettu, ilmainen tai maksullinen. Tallenna ensin avain yllä."
+    },
+    "public": {
+      "licensed": "Lisensoitu",
+      "commercial": "Lisensoitu · Kaupallinen käyttö",
+      "nonCommercial": "Lisensoitu · Voittoa tavoittelematon käyttö",
+      "unlicensed": "Ei lisenssiavainta",
+      "about": {
+        "title": "Tietoa tämän sivuston lisenssistä",
+        "none": "Tämä sivusto ajaa Auto Tournamentia ilman lisenssiavainta. Se on kunnossa tapahtumissa, joista kukaan ei ansaitse rahaa: kaverit, seurat, koulujen LANit, hyväntekeväisyys.",
+        "nonCommercial": "Tällä sivustolla on ilmainen voittoa tavoittelemattoman käytön lisenssi: se saa järjestää tapahtumia, joista kukaan ei ansaitse rahaa.",
+        "commercial": "Tällä sivustolla on maksullinen kaupallinen lisenssi: se saa järjestää maksullisia tapahtumia ja periä osallistumismaksun.",
+        "free": "Auto Tournament on ilmainen, kun kukaan ei tienaa sillä rahaa, ja hyväntekeväisyysjärjestöille, kouluille ja julkisille toimijoille silloinkin, kun ne perivät osallistumismaksun. Kaikki muut, jotka tienaavat sillä rahaa perimällä osallistumismaksua, myymällä paikkoja tai käyttämällä sitä yrityksessä, tarvitsevat maksullisen lisenssin.",
+        "paidTitle": "Pyydettiinkö sinua maksamaan osallistumisesta?",
+        "paidBody": "Jos maksoit osallistumismaksun tai sinua pyydettiin maksamaan, eikä järjestäjä ole hyväntekeväisyysjärjestö, koulu tai julkinen toimija, tämä tapahtuma saattaa käyttää Auto Tournamentia lisenssin vastaisesti. Voit kertoa siitä meille; luemme jokaisen ilmoituksen emmekä koskaan kerro, kuka sen lähetti.",
+        "paidCommercial": "Maksullinen osallistuminen on täällä sallittua. Jos jokin siinä näyttää silti väärältä, voit kertoa siitä meille.",
+        "report": "Ilmoita Auto Tournamentille",
+        "rules": "Lue lisenssi",
+        "verify": "Tarkista tämä lisenssi"
+      }
+    },
+    "consent": {
+      "title": "Vielä yksi asia: lisenssi",
+      "subtitle": "Pahoittelut, vielä yksi vaihe, niin olet valmis. Auto Tournament on ilmainen, jos kukaan ei tienaa sillä rahaa; jos joku tienaa, tarvitset lisenssin. Silmäile lyhyt versio, valitse, miten käytät sitä, ja kirjoita I AGREE.",
+      "intro": "Auto Tournament on lähdekoodiltaan saatavilla lisenssillä {{name}}. Lyhyesti:",
+      "points": {
+        "free": "Ilmainen henkilökohtaiseen käyttöön, harrastusprojekteihin, oppimiseen ja tapahtumiin, joista kukaan ei ansaitse rahaa.",
+        "orgs": "Ilmainen hyväntekeväisyysjärjestöille, kouluille, yliopistoille, julkiselle tutkimukselle ja viranomaisille, silloinkin kun ne perivät osallistumismaksun.",
+        "commercial": "Kaupallinen käyttö vaatii lisenssin. Siihen kuuluvat maksullinen hosting, sen tai sen päälle rakennetun palvelun myyminen, voittoa tuottavat tapahtumat, käyttö yrityksen sisällä ja maksu sen asentamisesta jollekulle.",
+        "servers": "Jokainen pelipalvelin lasketaan lisenssiin.",
+        "nothingLocked": "Mitään ei ole lukittu tai rajoitettu ilman avainta. Voit lisätä avaimen nyt tai myöhemmin.",
+        "forks": "Voit muuttaa koodia ja jakaa sitä. Pidä lisenssi mukana; samat säännöt pätevät."
+      },
+      "readLicense": "Lue koko lisenssi",
+      "readRules": "Lisensointi ja kaupallinen käyttö",
+      "summaryNote": "Tämä on lyhyt tiivistelmä, ja versiosi teksti voi olla vanhentunut. Voimassa oleva lisenssi ja lisensointisäännöt ovat osoitteessa autotournament.gg – jos ne eroavat tästä tiivistelmästä, ne ovat voimassa.",
+      "useQuestion": "Miten tätä instanssia käytetään?",
+      "privacyNote": "Vastauksesi tallennetaan vain tälle palvelimelle. Ilman lisenssiavainta Auto Tournamentille ei lähetetä mitään. Avaimen kanssa tämä palvelin ilmoittautuu kerran päivässä avaimen tunnisteella ja palvelinmäärällään.",
+      "use": {
+        "noncommercial": "Ei-kaupallinen",
+        "noncommercialHint": "Ilmainen. Kukaan ei ansaitse sillä rahaa.",
+        "commercial": "Kaupallinen",
+        "commercialHint": "Tarvitset lisenssin. Liitä avaimesi nyt tai myöhemmin."
+      },
+      "keyLabel": "Lisenssiavain (valinnainen)",
+      "keyHelper": "Alkaa ATL1. Kopioi se <consoleLink>lisensseistäsi Auto Tournament -konsolissa</consoleLink> tai lisää se myöhemmin kohdassa Asetukset > Lisenssi.",
+      "confirmLabel": "Kirjoita {{phrase}} hyväksyäksesi lisenssiehdot",
+      "confirmHelper": "Kirjoittamalla {{phrase}} hyväksyt tämän instanssin lisenssiehdot.",
+      "accept": "Hyväksy ja jatka",
+      "cancel": "Peruuta",
+      "failed": "Vastaustasi ei voitu tallentaa",
+      "accepted": "Lisenssiehdot hyväksytty",
+      "termsChanged": "Lisenssiehdot ovat muuttuneet sen jälkeen, kun ne viimeksi hyväksyttiin. Lue ne ja hyväksy uudelleen.",
+      "onlyAdmins": "Vain ylläpitäjät näkevät tämän, kerran instanssia kohden. Pelaajiin, julkisiin sivuihin ja käynnissä oleviin otteluihin tämä ei vaikuta.",
+      "declared": {
+        "noncommercial": "Ei-kaupallinen käyttö",
+        "commercial": "Kaupallinen käyttö",
+        "none": "Lisenssiehtoja ei ole vielä hyväksytty"
+      },
+      "acceptedLine": "Ehdot hyväksytty {{date}}, hyväksyjä {{who}} (ehtojen versio {{version}})",
+      "byEnv": "AT_ACCEPT_LICENSE-asetus",
+      "change": "Muuta",
+      "changeTitle": "Muuta tämän instanssin käyttötapaa",
+      "changeNote": "Valitse uudelleen ja kirjoita I AGREE. Muutos tallennetaan päivämäärän ja tilisi kanssa.",
+      "commercialNoKey": "Tätä instanssia käytetään kaupallisesti, joten tarvitset lisenssin. Kopioi avaimesi <consoleLink>lisensseistäsi Auto Tournament -konsolissa</consoleLink> ja liitä se alle. Mitään ei ole lukittu, vaikka avain puuttuu.",
+      "readHeading": "Lue nämä ja rastita jokainen ennen kuin hyväksyt:",
+      "readItem": "Olen lukenut",
+      "readLinks": {
+        "license": "koko lisenssin",
+        "rules": "kaupallisen käytön säännöt",
+        "pricing": "hinnat"
+      }
+    },
+    "checkin": {
+      "last": "Viimeisin lisenssin tarkistus: {{time}}",
+      "offlineUntil": "Offline-vuokra: uudet palvelimet toimivat ilman internetiä {{date}} asti.",
+      "never": "Lisenssin tarkistusta ei ole vielä tehty. Ensimmäinen ajetaan pian sen jälkeen, kun avain on tallennettu.",
+      "whatIsSent": "Mitä lähetetään",
+      "intro": "Kerran päivässä, ja vain kun avain on tallennettu, tämä palvelin lähettää:",
+      "keyId": "Lisenssiavaimen, jotta sen tunniste ja allekirjoitus voidaan tarkistaa",
+      "instanceId": "Satunnaisen tunnisteen tälle asennukselle, luotu kerran",
+      "serverCount": "Pelipalvelimien määrän",
+      "version": "Alustan version",
+      "publicUrl": "Mikä tuote tämä on (alusta) ja sen julkisen osoitteen, jotta konsoli voi näyttää, missä avain on käytössä",
+      "activity": "Määrät edellisen tarkistuksen jälkeen: päättyneet ottelut, turnaukset, joissa on ollut toimintaa, ja suurin joukkuemäärä",
+      "declared": "Vastauksesi tapahtuman päivämääriä koskevaan kysymykseen, jos annoit sellaisen",
+      "notSent": "Ei nimiä, osoitteita, pelaajia tai otteluiden tietoja.",
+      "privacy": "Tietosuojaseloste",
+      "noticeTitle": "Viesti Auto Tournamentilta",
+      "answered": "Vastauksesi tähän lisenssiin: {{answer}} ({{time}})"
+    },
+    "eventPrompt": {
+      "title": "Suunnitteletko jotain uutta?",
+      "body": "Tapahtumalisenssisi kattaa ajan {{dates}}. Kerro meille, jos testaat, sinulla on uusi tapahtuma tai päivämäärät ovat muuttuneet – testauksen aikana mitään ei tarvitse tehdä.",
+      "datesRange": "{{from}}–{{to}}",
+      "testing": "Testaan tai otan käyttöön",
+      "newEvent": "Uusi tapahtuma",
+      "datesMoved": "Tapahtumamme päivämäärät muuttuivat",
+      "dontAsk": "Älä kysy uudelleen",
+      "close": "Sulje",
+      "thanks": "Kiitos, merkitty.",
+      "failed": "Vastaustasi ei voitu tallentaa"
+    },
+    "warning": {
+      "periodEnded": "Tämä tapahtumalisenssi kattoi päivämäärät {{date}} asti. Testaus ja käyttöönotto eivät vaadi toimia; uusi tapahtuma saa oman tapahtumalisenssinsä.",
+      "periodNotStarted": "Tämä tapahtumalisenssi kattaa päivämäärät alkaen {{date}}. Käyttöönotto ja testaus ennen sitä on kunnossa."
+    },
+    "short": "Miten tätä asennusta käytetään, ja sen avain.",
+    "keyRow": "Lisenssiavain",
+    "state": {
+      "active": "Voimassa",
+      "warning": "Tarkista",
+      "invalid": "Virheellinen",
+      "none": "Ei avainta"
+    },
+    "thirdParty": "Tämä sovellus on rakennettu avoimen lähdekoodin paketeista, joilla on omat lisenssinsä.",
+    "thirdPartyLink": "Kolmansien osapuolten ilmoitukset"
+  },
+  "tournamentsPage": {
+    "title": "Turnaukset",
+    "subtitle": "Kaikki tämän sivuston turnaukset. Valikon yläosan valitsin määrää, mihin turnaukseen muut ylläpitosivut kohdistuvat.",
+    "liveShared": "{{count}} livenä, jakavat palvelimet. Ottelut saavat palvelimen siinä järjestyksessä, jossa ne tulivat valmiiksi.",
+    "new": "Uusi turnaus",
+    "empty": "Ei vielä turnauksia. Luo ensimmäinen.",
+    "col": {
+      "name": "Nimi",
+      "status": "Tila",
+      "when": "Milloin",
+      "entries": "Ilmoittautuneet",
+      "frontPage": "Etusivu",
+      "actions": "Toiminnot"
+    },
+    "status": {
+      "live": "Live",
+      "finished": "Päättynyt",
+      "signup": "Ilmoittautuminen auki",
+      "draft": "Luonnos"
+    },
+    "front": {
+      "featured": "Nostettu",
+      "shown": "Näkyvissä",
+      "hidden": "Piilotettu",
+      "archived": "Arkistoitu",
+      "results": "Tulokset"
+    },
+    "won": "{{name}} voitti",
+    "selected": "valittu",
+    "more": "Lisää: {{name}}",
+    "menu": {
+      "open": "Avaa",
+      "page": "Julkinen sivu",
+      "feature": "Nosta etusivulle",
+      "archive": "Arkistoi (pois etusivulta)",
+      "delete": "Poista"
+    },
+    "toast": {
+      "featured": "Nostettu etusivulle",
+      "archived": "Arkistoitu",
+      "deleted": "Turnaus poistettu"
+    },
+    "deleteTitle": "Poistetaanko tämä turnaus?",
+    "deleteMessage": "{{name}} sekä sen ottelut, tulokset ja tilastot poistetaan. Tätä ei voi perua.",
+    "newName": "Nimi",
+    "newNameBlank": "Nimeät sen asetuksissa",
+    "startFrom": "Lähtökohta",
+    "blank": "Tyhjä",
+    "blankHint": "Valitse peli, muoto ja kartat asetuksissa",
+    "copy": "Kopioi {{name}}",
+    "copyHint": "Sama muoto, kartat, säännöt ja sivu. Joukkueet ja päivämäärät alkavat tyhjinä.",
+    "create": "Luo ja määritä",
+    "round": "kierros {{n}}",
+    "whenToday": "Tänään, alkaen {{time}}",
+    "whenTomorrow": "Huomenna, {{time}}",
+    "notSet": "Ei asetettu",
+    "emptyTitle": "Ei vielä turnauksia",
+    "template": "Malli",
+    "templateHint": "Tallennettu asetus: muoto, kartat ja säännöt. Valitset joukkueet ja päivämäärät.",
+    "copyOne": "Kopioi turnaus",
+    "copyWhich": "Mikä"
+  },
+  "playedMatches": {
+    "title": "Kaikki ottelut",
+    "subtitle": "Jokainen tällä sivustolla pelattu ottelu: turnaukset (myös poistetut), erilliset ottelut ja matchmaking demoineen.",
+    "downloadAll_one": "Lataa {{count}} ottelun demot",
+    "downloadAll_other": "Lataa {{count}} ottelun demot",
+    "search": "Hae joukkueita tai turnauksia",
+    "kindLabel": "Laji",
+    "kind": {
+      "all": "Kaikki lajit",
+      "tournament": "Turnaus",
+      "standalone": "Erillinen",
+      "matchmaking": "Matchmaking",
+      "imported": "Tuotu"
+    },
+    "withDemos": "Demoineen",
+    "none": "Otteluita ei ole vielä pelattu.",
+    "noneFiltered": "Mikään ottelu ei vastaa näitä suodattimia.",
+    "vs": "vs",
+    "deleted": "turnaus poistettu",
+    "noDemo": "Ei demoa",
+    "demo": "Demo",
+    "map": "Kartta {{n}}",
+    "import": "Tuo ottelu"
+  },
+  "importMatch": {
+    "title": "Tuo ottelu",
+    "subtitle": "Lisää muualla pelattu ottelu sen demoista. Joukkueet, pelaajat ja tulos luetaan demoista, ja sitten ottelu saa tilastot, 2D-uusinnan ja kohokohdat kuten mikä tahansa muu.",
+    "event": "Missä se pelattiin",
+    "eventHelp": "Valinnainen, esimerkiksi tapahtuman nimi.",
+    "files": "Demot",
+    "filesHelp": "Yksi CS2-demo (.dem) karttaa kohden, siinä järjestyksessä kuin kartat pelattiin.",
+    "choose": "Valitse demot",
+    "moveUp": "Siirrä {{name}} ylös",
+    "moveDown": "Siirrä {{name}} alas",
+    "remove": "Poista {{name}}",
+    "start": "Tuo",
+    "uploading": "Ladataan karttaa {{n}} ({{percent}} %)",
+    "tooMany": "Enintään {{max}} demoa, yksi karttaa kohden.",
+    "notDemo": "{{name}} ei ole .dem-tiedosto.",
+    "error": "Tuonti pysähtyi: {{error}}",
+    "progress": "Edistyminen",
+    "mapN": "Kartta {{n}}",
+    "state": {
+      "uploading": "Ladataan",
+      "waiting": "Odotetaan demotyöntekijää",
+      "running": "Luetaan demoa",
+      "done": "Valmis",
+      "failed": "Demoa ei voitu lukea"
+    },
+    "teams": "{{team1}} vs {{team2}}",
+    "doneAll": "Tuotu. Kohokohdat tallennetaan seuraavaksi, jos kohokohtien tallentaja on yhdistetty.",
+    "openMatch": "Avaa ottelu",
+    "another": "Tuo toinen",
+    "dropHint": "tai pudota ne tähän. Valitse useita kerralla Cmd- tai Ctrl-näppäimellä.",
+    "recordingGroup": "Tallentajaryhmä",
+    "allRecorders": "Kaikki tallentajat",
+    "groupHelp": "Valitse, mikä ryhmä renderöi tämän ottelun. Pois käytöstä olevat ryhmät odottavat, kunnes ne otetaan käyttöön.",
+    "groupDisabled": "Pois käytöstä",
+    "notCs2Demo": "{{name}} ei ole CS2-demo (CS:GO-demoja ei voi tuoda)."
+  },
+  "apiTokens": {
+    "title": "API-tokenit",
+    "hint": "Skripteille, boteille ja Auto Tournamentin MCP-palvelimelle. Vain luku -token voi vain lukea; ylläpitäjän token voi tehdä kaiken, mitä ylläpitäjä voi. Vain sinä näet tokenin salaisuuden, kerran, kun se luodaan.",
+    "line": "{{scope}} · {{fingerprint}} · käytetty viimeksi {{used}}",
+    "never": "ei koskaan",
+    "none": "Ei vielä API-tokeneita.",
+    "name": "Nimi",
+    "nameHelp": "1–32 kirjainta, numeroa, - tai _",
+    "scopeLabel": "Pääsy",
+    "scope": {
+      "readonly": "Vain luku",
+      "admin": "Ylläpitäjä"
+    },
+    "make": "Luo token",
+    "madeTitle": "Token ”{{label}}”",
+    "madeHelp": "Kopioi se nyt: tämä on ainoa kerta, kun se näytetään. Liitä se sinne, mistä skripti tai MCP-palvelin sen lukee (AT_TOKEN).",
+    "copy": "Kopioi token",
+    "copied": "Kopioitu",
+    "done": "Valmis",
+    "revoke": "Peru {{label}}",
+    "revokeTitle": "Perutaanko ”{{label}}”?",
+    "revokeHelp": "Kaikki sitä käyttävä lakkaa toimimasta heti.",
+    "revokeConfirm": "Peru",
+    "revoked": "{{label}} peruttu",
+    "cancel": "Peruuta",
+    "loadFailed": "API-tokeneita ei voitu ladata",
+    "makeFailed": "Tokenia ei voitu luoda",
+    "revokeFailed": "Tokenia ei voitu perua"
+  },
+  "discordBot": {
+    "title": "Discord-botti",
+    "token": "Botin token",
+    "replace": "Uusi botin token",
+    "save": "Tallenna",
+    "remove": "Poista",
+    "connected": "Yhdistetty nimellä {{name}}",
+    "setNoAnswer": "Token on asetettu, mutta Discord ei vastannut juuri nyt.",
+    "saved": "Discord-botti tallennettu: {{name}}",
+    "cleared": "Discord-botti poistettu",
+    "saveFailed": "Botin tokenia ei voitu tallentaa.",
+    "howTo": "Luo sovellus, lisää botti, kopioi sen token ja kutsu se Discord-palvelimellesi:",
+    "portal": "Discord Developer Portal",
+    "guild": "Discord-palvelin",
+    "guildHint": "Missä botti luo joukkueiden kanavat ja julkaisee viestit. Tässä näkyvät vain palvelimet, joilla botti on.",
+    "noGuilds": "Botti ei ole vielä millään Discord-palvelimella. Kutsu se ja lataa sitten tämä sivu uudelleen.",
+    "noGuild": "Ei mitään",
+    "guildSaved": "Discord-palvelin tallennettu",
+    "movedHint": "Discord-botti on nyt lisäosa: ota se käyttöön ja määritä se kohdassa Moduulit.",
+    "open": "Avaa Discord-botti",
+    "voice": {
+      "label": "Joukkueiden puhekanavat",
+      "help": "Kun ottelu on palvelimellaan, sen pelaajat, jotka ovat jo puhekanavalla, siirretään joukkueensa puhekanavalle; muut saavat linkin yksityisviestinä.",
+      "saved": "Puhekanavien asetukset tallennettu"
+    },
+    "teamChannels": {
+      "label": "Joukkueiden kanavat",
+      "help": "Turnauksen aikana jokainen joukkue saa yksityisen teksti- ja puhekanavan kohtaan ”Joukkueesi”. Sen pelaajat löytävät tekstikanavan joukkueensa sivulta.",
+      "link": "Joukkueen kanava Discordissa"
+    },
+    "commands": {
+      "label": "Slash-komennot: /matches, /mymatch ja /lobby",
+      "help": "Ne toimivat heti, kun botti on yhdistetty. Valinnainen: jos haluat Discordin lähettävän ne tälle sivustolle, liitä tämä sovelluksesi Interactions Endpoint URL -kenttään Discord Developer Portalissa."
+    },
+    "invite": "Kutsu palvelimelle",
+    "linking": {
+      "label": "Pelaajat yhdistävät Discordinsa",
+      "help": "Käyttää bottisi omaa Discord-sovellusta, joten toista sovellusta ei tarvitse luoda. Avaa Developer Portalissa bottisi sovelluksen OAuth2, lisää tämä uudelleenohjaus, kopioi sitten client secret ja liitä se tähän.",
+      "portal": "Avaa OAuth2",
+      "secret": "Client secret",
+      "save": "Ota yhdistäminen käyttöön",
+      "saved": "Pelaajat voivat nyt yhdistää Discordin",
+      "ready": "Päällä: pelaajat yhdistävät Discordin kohdassa Tili → Yhteydet.",
+      "invite": "Pelaajia, jotka eivät ole palvelimellasi, pyydetään liittymään osoitteessa {{url}}.",
+      "noInvite": "Botti ei voi vielä luoda kutsua palvelimellesi. Napsauta Kutsu palvelimelle uudelleen, jotta se saa Create Invite -oikeuden."
+    },
+    "missing": "Botilta puuttuu palvelimellasi {{list}}, joten osa siitä ei toimi. Napsauta yllä Kutsu palvelimelle: se päivittää botin oikeudet poistamatta sitä."
+  },
+  "liveMatchesPage": {
+    "title": "Live-ottelut",
+    "subtitle": "Jokainen palvelimella juuri nyt oleva ottelu. Sinua vaativat rivit tulevat ensin.",
+    "loading": "Ladataan…",
+    "loadFailed": "Live-otteluita ei voitu lukea. Yritetään uudelleen…",
+    "empty": "Ei käynnissä olevia otteluita",
+    "chat": "Chat",
+    "mapOf": "Kartta {{n}}/{{total}}",
+    "columns": {
+      "match": "Ottelu",
+      "map": "Kartta",
+      "phase": "Vaihe",
+      "score": "Tulos",
+      "round": "Erä",
+      "players": "Pelaajat",
+      "pause": "Tauko",
+      "call": "Ylläpitäjäkutsu",
+      "server": "Palvelin",
+      "chat": "Chat"
+    },
+    "source": {
+      "matchmaking": "Matchmaking",
+      "manual": "Erillinen"
+    },
+    "phase": {
+      "none": "Ei palvelimen tilaa",
+      "loading": "Ladataan",
+      "warmup": "Lämmittely",
+      "knife": "Veitsierä",
+      "side_pick": "Puolen valinta",
+      "live": "Live",
+      "paused": "Tauolla",
+      "halftime": "Puoliaika",
+      "overtime": "Jatkoaika",
+      "map_end": "Ottelun jälkeen",
+      "series_end": "Ottelun jälkeen",
+      "restoring": "Palautetaan",
+      "error": "Virhe"
+    },
+    "players": {
+      "summary": "{{connected}}/{{total}} sisällä · {{ready}} valmiina",
+      "connected": "Yhdistetty",
+      "disconnected": "Ei yhdistetty",
+      "readyTag": "valmis",
+      "none": "Ei pelaajia"
+    },
+    "pause": {
+      "by": "tehnyt {{name}}",
+      "unpause": "Haluaa jatkaa",
+      "type": {
+        "tactical": "Taktinen",
+        "technical": "Tekninen",
+        "admin": "Ylläpitäjä",
+        "offline": "Pelaaja offline",
+        "halftime": "Puoliaika",
+        "auto_5v5": "Odotetaan 5v5:tä",
+        "unknown": "Tauolla"
+      }
+    },
+    "call": {
+      "noMessage": "Ei viestiä"
+    },
+    "server": {
+      "online": "Online",
+      "offline": "Offline",
+      "unknown": "Tila tuntematon"
+    }
+  }
+}
