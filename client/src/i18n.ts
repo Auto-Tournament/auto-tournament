@@ -53,6 +53,10 @@ const LOADERS: Record<string, () => Promise<Bundle>> = {
     translation: (await import('./locales/nb/translation')).default,
     bracketsViewer: (await import('./locales/brackets-viewer/nb.json')).default,
   }),
+  ru: async () => ({
+    translation: (await import('./locales/ru/translation')).default,
+    bracketsViewer: (await import('./locales/brackets-viewer/ru.json')).default,
+  }),
 };
 
 const i18n = createInstance();
@@ -63,7 +67,7 @@ const initialized = i18n
   .init({
     resources,
     fallbackLng: 'en',
-    supportedLngs: ['en', 'fr', 'de', 'es', 'it', 'pt-PT', 'pl', 'nl', 'zh-CN', 'nb'],
+    supportedLngs: ['en', 'fr', 'de', 'es', 'it', 'pt-PT', 'pl', 'nl', 'zh-CN', 'nb', 'ru'],
     // Each module adds its own namespace, named by its id, when it registers
     // (module-loader/moduleLocales.ts); core's strings are 'translation'.
     ns: ['translation', 'bracketsViewer'],

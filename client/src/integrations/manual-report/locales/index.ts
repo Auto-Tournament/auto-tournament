@@ -18,6 +18,7 @@ import nb from './nb.json';
 import nl from './nl.json';
 import pl from './pl.json';
 import pt from './pt-PT.json';
+import ru from './ru.json';
 import zhCN from './zh-CN.json';
 
 export const manualReportLocales: ModuleLocales = {
@@ -31,4 +32,5 @@ export const manualReportLocales: ModuleLocales = {
   pl,
   nl,
   nb,
+  ru,
 };
