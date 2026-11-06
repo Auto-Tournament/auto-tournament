@@ -1,0 +1,81 @@
+{
+  "manualReport": {
+    "title": "Výsledek zápasu",
+    "unknownTeam": "druhý tým",
+    "state": {
+      "nothing": "Zatím nenahlášen žádný výsledek. Kdokoli, kdo zápas hrál, ať nahlásí skóre.",
+      "waitingOpponent": "Nahlášeno. Čeká se, až to {{team}} potvrdí.",
+      "needsAnswer": "{{team}} nahlásil tento výsledek. Pokud sedí, potvrď ho.",
+      "disputed": "Tento výsledek je sporný. Rozhodne správce.",
+      "awaitingAdmin": "Čeká se, až správce tento zápas rozhodne.",
+      "confirmed": "Oba týmy s tímto výsledkem souhlasí."
+    },
+    "deadline": {
+      "autoConfirm": "Pokud nikdo neodpoví, potvrdí se samo za {{minutes}} min.",
+      "autoConfirmSoon": "Každou chvíli se potvrdí samo.",
+      "escalate": "Pokud nikdo neodpoví, za {{minutes}} min to jde ke správci.",
+      "escalateSoon": "Každou chvíli to jde ke správci."
+    },
+    "score": "{{team1}} {{score1}} – {{score2}} {{team2}}",
+    "game": "Hra {{number}}",
+    "note": "Poznámka",
+    "notePlaceholder": "Cokoli, co by měl druhý tým vědět (volitelné)",
+    "noteGiven": "Poznámka: {{note}}",
+    "disputeReason": "Co je na tom špatně?",
+    "disputeReasonGiven": "Rozporováno: {{reason}}",
+    "formHint": "Skóre pro {{team1}} a {{team2}}, hru po hře.",
+    "actions": {
+      "report": "Nahlásit skóre",
+      "reportAgain": "Nahlásit jiné skóre",
+      "submit": "Odeslat hlášení",
+      "cancel": "Zrušit",
+      "confirm": "Potvrdit",
+      "dispute": "Rozporovat",
+      "disputeSubmit": "Odeslat rozporování",
+      "withdraw": "Stáhnout moje hlášení"
+    },
+    "errors": {
+      "stale": "Hlášení se mezitím změnilo. Než potvrdíš, přečti si ho znovu.",
+      "incomplete": "Vyplň obě skóre aspoň u jedné hry.",
+      "failed": "Neprošlo to. Zkus to znovu."
+    },
+    "captains": {
+      "title": "Kapitáni",
+      "hint": "Výsledek za tento tým může nahlásit nebo potvrdit jen kapitán.",
+      "make": "Jmenovat kapitánem",
+      "remove": "Odebrat kapitána",
+      "isCaptain": "Kapitán",
+      "empty": "V tomto týmu se zatím nikdo nepřihlásil, takže není koho jmenovat.",
+      "unknown": "Neznámý hráč",
+      "failed": "Nepodařilo se to změnit. Zkus to znovu."
+    },
+    "stats": {
+      "hint": "Čísla navíc, která tento turnaj chce. Pokud je nikdo nemá, nech pole prázdné.",
+      "required": "povinné",
+      "recorded": "Nahlášené statistiky",
+      "value": "{{subject}}: {{value}}{{suffix}}",
+      "errors": {
+        "number": "{{field}} pro {{subject}} musí být číslo.",
+        "integer": "{{field}} pro {{subject}} musí být celé číslo.",
+        "range": "{{field}} pro {{subject}} je příliš velké na skutečné číslo.",
+        "tooLong": "{{field}} pro {{subject}} je delší než {{max}} znaků.",
+        "missing": "{{field}} je povinné a pro {{team}} není nic vyplněno."
+      },
+      "tournamentTitle": "Nahlášené statistiky",
+      "tournamentHelp": "Sečteno z potvrzených hlášení. Výsledek, který ještě čeká na soupeře, se tu nepočítá.",
+      "byTeam": "Podle týmu",
+      "byPlayer": "Podle hráče",
+      "team": "Tým",
+      "player": "Hráč",
+      "matches": "Zápasy"
+    },
+    "chip": {
+      "none": "Zatím bez výsledku",
+      "yours": "Tvoje hlášení",
+      "reported": "Nahlášeno",
+      "confirm": "Potvrdit",
+      "disputed": "Sporné",
+      "final": "Konečné"
+    }
+  }
+}

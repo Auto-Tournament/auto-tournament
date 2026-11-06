@@ -1,0 +1,124 @@
+{
+  "origin-hint": {
+    "seed": "Nasazení {{position}}",
+    "winner-bracket": "Poražený z $t(abbreviations.winner-bracket) {{round}}.{{position}}",
+    "winner-bracket-semi-final": "Poražený ze semifinále $t(abbreviations.winner-bracket) {{position}}",
+    "winner-bracket-final": "Poražený z finále $t(abbreviations.winner-bracket)",
+    "consolation-final": "Poražený ze semifinále {{position}}",
+    "grand-final": "Vítěz finále $t(abbreviations.loser-bracket)",
+    "double-elimination-consolation-final-opponent-1": "Poražený ze semifinále $t(abbreviations.loser-bracket) 1",
+    "double-elimination-consolation-final-opponent-2": "Poražený z finále $t(abbreviations.loser-bracket)"
+  },
+  "match-label": {
+    "default": "Zápas {{matchNumber}}",
+    "winner-bracket": "$t(abbreviations.winner-bracket)",
+    "loser-bracket": "$t(abbreviations.loser-bracket)",
+    "standard-bracket": "$t(abbreviations.match)",
+    "standard-bracket-semi-final": "Semifinále {{matchNumber}}",
+    "standard-bracket-final": "Finále",
+    "double-elimination": "{{matchPrefix}} {{roundNumber}}.{{matchNumber}}",
+    "double-elimination-semi-final": "{{matchPrefix}} semifinále {{matchNumber}}",
+    "double-elimination-final": "{{matchPrefix}} finále",
+    "consolation-final": "Zápas o 3. místo",
+    "grand-final-single": "Velké finále",
+    "grand-final": "$t(abbreviations.grand-final) {{roundNumber}}. kolo",
+    "match-game": "Hra {{gameNumber}}"
+  },
+  "match-status": {
+    "locked": "Zamčeno",
+    "waiting": "Čeká",
+    "ready": "Připraveno",
+    "running": "Probíhá",
+    "completed": "Dokončeno",
+    "archived": "Archivováno"
+  },
+  "abbreviations": {
+    "win": "V",
+    "loss": "P",
+    "forfeit": "K",
+    "position": "Poz.",
+    "seed": "#",
+    "winner-bracket": "HP",
+    "loser-bracket": "DP",
+    "match": "Z",
+    "grand-final": "VF"
+  },
+  "ranking": {
+    "rank": {
+      "text": "#",
+      "tooltip": "Pořadí"
+    },
+    "id": {
+      "text": "Název",
+      "tooltip": "Název"
+    },
+    "played": {
+      "text": "Z",
+      "tooltip": "Odehráno"
+    },
+    "wins": {
+      "text": "$t(abbreviations.win)",
+      "tooltip": "Výhry"
+    },
+    "draws": {
+      "text": "R",
+      "tooltip": "Remízy"
+    },
+    "losses": {
+      "text": "$t(abbreviations.loss)",
+      "tooltip": "Prohry"
+    },
+    "forfeits": {
+      "text": "$t(abbreviations.forfeit)",
+      "tooltip": "Kontumace"
+    },
+    "scoreFor": {
+      "text": "VS",
+      "tooltip": "Vstřelené skóre"
+    },
+    "scoreAgainst": {
+      "text": "OS",
+      "tooltip": "Obdržené skóre"
+    },
+    "scoreDifference": {
+      "text": "+/-",
+      "tooltip": "Rozdíl skóre"
+    },
+    "points": {
+      "text": "B",
+      "tooltip": "Body"
+    }
+  },
+  "common": {
+    "bye": "BYE",
+    "best-of-x": "Bo{{x}}",
+    "consolation": "Útěcha",
+    "group-name": "Skupina {{groupNumber}}",
+    "group-name-winner-bracket": "Horní pavouk",
+    "group-name-loser-bracket": "Dolní pavouk",
+    "round-name": "{{roundNumber}}. kolo",
+    "round-name-final": "Finálové kolo",
+    "round-name-winner-bracket": "$t(abbreviations.winner-bracket) {{roundNumber}}. kolo",
+    "round-name-winner-bracket-final": "$t(abbreviations.winner-bracket) finálové kolo",
+    "round-name-loser-bracket": "$t(abbreviations.loser-bracket) {{roundNumber}}. kolo",
+    "round-name-loser-bracket-final": "$t(abbreviations.loser-bracket) finálové kolo"
+  },
+  "form-creator": {
+    "stage-name-label": "Pojmenuj fázi",
+    "stage-name-placeholder": "Zadej název fáze",
+    "stage-selector-label": "Vyber fázi",
+    "team-label": "Pojmenuj týmy",
+    "team-label-placeholder": "Seznam názvů týmů oddělený čárkami (musí jich být 2^n)",
+    "team-count": "Nebo počet týmů",
+    "team-count-placeholder": "Kolik týmů chceš?",
+    "group-label": "Kolik skupin?",
+    "group-placeholder": "Kolik skupin chceš?",
+    "seed-order-label": "Jak chceš seřadit nasazení?",
+    "double-elimination-seed-order-placeholder": "Pořadí nasazení pro double elimination oddělené čárkami",
+    "round-robin-mode-label": "Který režim každý s každým chceš?",
+    "consolation-final-label": "Zápas o 3. místo",
+    "skip-first-round-label": "Přeskočit první kolo",
+    "grand-final-type-label": "Typ velkého finále",
+    "submit": "Vytvořit"
+  }
+}
