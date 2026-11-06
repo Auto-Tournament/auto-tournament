@@ -1,0 +1,81 @@
+{
+  "manualReport": {
+    "title": "Resultado del partido",
+    "unknownTeam": "el otro equipo",
+    "state": {
+      "nothing": "Aún no se ha informado ningún resultado. Quien lo haya jugado, que informe del marcador.",
+      "waitingOpponent": "Informado. Esperando a que {{team}} lo confirme.",
+      "needsAnswer": "{{team}} informó este resultado. Confírmalo si es correcto.",
+      "disputed": "Este resultado está en disputa. Lo decidirá un administrador.",
+      "awaitingAdmin": "Esperando a que un administrador decida este partido.",
+      "confirmed": "Los dos equipos están de acuerdo con este resultado."
+    },
+    "deadline": {
+      "autoConfirm": "Se confirma solo en {{minutes}} min si nadie responde.",
+      "autoConfirmSoon": "Se confirma solo de un momento a otro.",
+      "escalate": "Pasa a un administrador en {{minutes}} min si nadie responde.",
+      "escalateSoon": "Pasa a un administrador de un momento a otro."
+    },
+    "score": "{{team1}} {{score1}} – {{score2}} {{team2}}",
+    "game": "Partida {{number}}",
+    "note": "Nota",
+    "notePlaceholder": "Lo que deba saber el otro equipo (opcional)",
+    "noteGiven": "Nota: {{note}}",
+    "disputeReason": "¿Qué tiene de malo?",
+    "disputeReasonGiven": "En disputa: {{reason}}",
+    "formHint": "Marcadores de {{team1}} y {{team2}}, partida a partida.",
+    "actions": {
+      "report": "Informar del marcador",
+      "reportAgain": "Informar de otro marcador",
+      "submit": "Enviar informe",
+      "cancel": "Cancelar",
+      "confirm": "Confirmar",
+      "dispute": "Disputar",
+      "disputeSubmit": "Enviar disputa",
+      "withdraw": "Retirar mi informe"
+    },
+    "errors": {
+      "stale": "Este informe cambió mientras lo tenías en pantalla. Vuelve a leerlo antes de confirmar.",
+      "incomplete": "Completa los dos marcadores de al menos una partida.",
+      "failed": "No ha funcionado. Inténtalo de nuevo."
+    },
+    "captains": {
+      "title": "Capitanes",
+      "hint": "Solo un capitán puede informar o confirmar un resultado de este equipo.",
+      "make": "Hacer capitán",
+      "remove": "Quitar como capitán",
+      "isCaptain": "Capitán",
+      "empty": "Nadie de este equipo ha iniciado sesión todavía, así que no hay a quién nombrar.",
+      "unknown": "Jugador desconocido",
+      "failed": "No se pudo cambiar. Inténtalo de nuevo."
+    },
+    "stats": {
+      "hint": "Los datos extra que pide este torneo. Deja un campo en blanco si nadie tiene ese dato.",
+      "required": "obligatorio",
+      "recorded": "Estadísticas informadas",
+      "value": "{{subject}}: {{value}}{{suffix}}",
+      "errors": {
+        "number": "{{field}} de {{subject}} tiene que ser un número.",
+        "integer": "{{field}} de {{subject}} tiene que ser un número entero.",
+        "range": "{{field}} de {{subject}} es demasiado grande para ser un número real.",
+        "tooLong": "{{field}} de {{subject}} tiene más de {{max}} caracteres.",
+        "missing": "{{field}} es obligatorio y no hay nada para {{team}}."
+      },
+      "tournamentTitle": "Estadísticas informadas",
+      "tournamentHelp": "Sumadas de los informes confirmados. Un resultado que aún espera al rival no cuenta aquí.",
+      "byTeam": "Por equipo",
+      "byPlayer": "Por jugador",
+      "team": "Equipo",
+      "player": "Jugador",
+      "matches": "Partidos"
+    },
+    "chip": {
+      "none": "Aún sin resultado",
+      "yours": "Tu informe",
+      "reported": "Informado",
+      "confirm": "Confírmalo",
+      "disputed": "En disputa",
+      "final": "Final"
+    }
+  }
+}
