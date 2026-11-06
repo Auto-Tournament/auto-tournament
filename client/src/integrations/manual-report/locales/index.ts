@@ -21,6 +21,7 @@ import pl from './pl.json';
 import pt from './pt-PT.json';
 import ptBR from './pt-BR.json';
 import ru from './ru.json';
+import tr from './tr.json';
 import uk from './uk.json';
 import zhCN from './zh-CN.json';
 import zhTW from './zh-TW.json';
@@ -41,4 +42,5 @@ export const manualReportLocales: ModuleLocales = {
   'es-419': es419,
   'zh-TW': zhTW,
   'pt-BR': ptBR,
+  tr,
 };
