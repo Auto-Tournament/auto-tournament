@@ -2169,7 +2169,7 @@
       "pcNeeds": "一臺裝有 Docker、Steam（已登入）和 CS2 的 Linux 電腦。在其桌面會話的終端中貼上此命令。錄製器使用其 GPU，並在 Steam 庫中找到 CS2。錄製時不要在上面玩遊戲或執行其他 GPU 任務：片段會卡頓。",
       "serverNeeds": "一臺帶 NVIDIA GPU 的 Ubuntu 24.04 伺服器，無需桌面。第一行（執行一次，需要 sudo）安裝 NVIDIA 驅動和 Docker 並關閉休眠；如有提示請重啟。第二行在容器中啟動 Steam、CS2 和錄製器。",
       "pcAfter": "它現在就會啟動，並在每次 Docker 啟動時啟動。",
-      "serverAfter": "Then, once: open the web UI it prints (port 8483), sign Steam in, set it to offline mode and install CS2. The recorder starts taking work when CS2 is there. Run the second line again to update it."
+      "serverAfter": "接著執行一次：開啟它輸出的網頁介面（https，連接埠 8483），用它輸出的首次登入資訊登入，再設定你自己的帳號。登入 Steam（首次登入可能會顯示「等待網路」約一分鐘），將其設為離線模式並安裝 CS2。裝好 CS2 後，錄製器就會開始接任務。再次執行第二行即可更新。"
     },
     "rename": "重新命名",
     "renameTitle": "為此錄製器命名",
