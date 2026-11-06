@@ -714,9 +714,9 @@
         "draw": "Unentschieden"
       },
       "resultShort": {
-        "win": "W",
-        "loss": "L",
-        "draw": "D"
+        "win": "S",
+        "loss": "N",
+        "draw": "U"
       },
       "backToMatch": "Zurück zu deinem Match",
       "online_one": "{{count}} online",

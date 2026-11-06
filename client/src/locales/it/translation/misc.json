@@ -722,9 +722,9 @@
         "draw": "Pareggio"
       },
       "resultShort": {
-        "win": "W",
-        "loss": "L",
-        "draw": "D"
+        "win": "V",
+        "loss": "P",
+        "draw": "N"
       },
       "backToMatch": "Torna alla tua partita",
       "online_one": "{{count}} online",

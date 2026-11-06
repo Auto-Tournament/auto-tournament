@@ -722,9 +722,9 @@
         "draw": "Empate"
       },
       "resultShort": {
-        "win": "W",
-        "loss": "L",
-        "draw": "D"
+        "win": "V",
+        "loss": "D",
+        "draw": "E"
       },
       "backToMatch": "Voltar ao teu jogo",
       "online_one": "{{count}} online",
