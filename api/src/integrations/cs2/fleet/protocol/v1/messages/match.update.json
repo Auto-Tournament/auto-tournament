@@ -4,13 +4,7 @@
   "title": "match.update (platform → server, reliable)",
   "description": "Roster / rule changes mid-match (§7.3). Compare-and-set: applied only when base_config_rev equals the server's config_rev, else cmd.result rejected `conflict` with `rev` = the server's config_rev (plus a state.snapshot). All ops apply or none. On ok, cmd.result.rev = the new config_rev.",
   "type": "object",
-  "required": [
-    "match_id",
-    "epoch",
-    "base_config_rev",
-    "config_rev",
-    "ops"
-  ],
+  "required": ["match_id", "epoch", "base_config_rev", "config_rev", "ops"],
   "properties": {
     "match_id": {
       "$ref": "../match.defs.json#/$defs/matchId"
@@ -34,22 +28,13 @@
         "oneOf": [
           {
             "type": "object",
-            "required": [
-              "op",
-              "team",
-              "steamid64",
-              "name"
-            ],
+            "required": ["op", "team", "steamid64", "name"],
             "properties": {
               "op": {
                 "const": "add_player"
               },
               "team": {
-                "enum": [
-                  "team1",
-                  "team2",
-                  "spectator"
-                ]
+                "enum": ["team1", "team2", "spectator"]
               },
               "steamid64": {
                 "$ref": "../defs.json#/$defs/u64s"
@@ -65,10 +50,7 @@
           },
           {
             "type": "object",
-            "required": [
-              "op",
-              "steamid64"
-            ],
+            "required": ["op", "steamid64"],
             "properties": {
               "op": {
                 "const": "remove_player"
@@ -80,11 +62,7 @@
           },
           {
             "type": "object",
-            "required": [
-              "op",
-              "team",
-              "name"
-            ],
+            "required": ["op", "team", "name"],
             "properties": {
               "op": {
                 "const": "rename_team"
@@ -101,10 +79,7 @@
           },
           {
             "type": "object",
-            "required": [
-              "op",
-              "password"
-            ],
+            "required": ["op", "password"],
             "properties": {
               "op": {
                 "const": "set_password"
@@ -116,10 +91,7 @@
           },
           {
             "type": "object",
-            "required": [
-              "op",
-              "rules"
-            ],
+            "required": ["op", "rules"],
             "properties": {
               "op": {
                 "const": "set_rules"
