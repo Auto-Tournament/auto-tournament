@@ -33,14 +33,14 @@
     "archived": "已归档"
   },
   "abbreviations": {
-    "win": "W",
-    "loss": "L",
-    "forfeit": "F",
-    "position": "P",
+    "win": "胜",
+    "loss": "负",
+    "forfeit": "弃",
+    "position": "名次",
     "seed": "#",
     "winner-bracket": "胜者组",
     "loser-bracket": "败者组",
-    "match": "M",
+    "match": "场",
     "grand-final": "总决赛"
   },
   "ranking": {

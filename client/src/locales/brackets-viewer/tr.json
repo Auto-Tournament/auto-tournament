@@ -33,10 +33,10 @@
     "archived": "Arşivlendi"
   },
   "abbreviations": {
-    "win": "W",
-    "loss": "L",
-    "forfeit": "F",
-    "position": "P",
+    "win": "G",
+    "loss": "M",
+    "forfeit": "H",
+    "position": "S",
     "seed": "#",
     "winner-bracket": "ÜA",
     "loser-bracket": "AA",
@@ -53,7 +53,7 @@
       "tooltip": "Ad"
     },
     "played": {
-      "text": "P",
+      "text": "O",
       "tooltip": "Oynanan"
     },
     "wins": {
@@ -61,7 +61,7 @@
       "tooltip": "Galibiyet"
     },
     "draws": {
-      "text": "D",
+      "text": "B",
       "tooltip": "Beraberlik"
     },
     "losses": {

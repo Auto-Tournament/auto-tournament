@@ -33,15 +33,15 @@
     "archived": "В архіві"
   },
   "abbreviations": {
-    "win": "W",
-    "loss": "L",
-    "forfeit": "F",
-    "position": "P",
+    "win": "В",
+    "loss": "П",
+    "forfeit": "Т",
+    "position": "М",
     "seed": "#",
-    "winner-bracket": "WB",
-    "loser-bracket": "LB",
-    "match": "M",
-    "grand-final": "GF"
+    "winner-bracket": "ВС",
+    "loser-bracket": "НС",
+    "match": "М",
+    "grand-final": "ГФ"
   },
   "ranking": {
     "rank": {
@@ -53,7 +53,7 @@
       "tooltip": "Назва"
     },
     "played": {
-      "text": "P",
+      "text": "І",
       "tooltip": "Зіграно"
     },
     "wins": {
@@ -61,7 +61,7 @@
       "tooltip": "Перемоги"
     },
     "draws": {
-      "text": "D",
+      "text": "Н",
       "tooltip": "Нічиї"
     },
     "losses": {
