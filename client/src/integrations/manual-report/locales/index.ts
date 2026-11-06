@@ -9,6 +9,7 @@
  */
 
 import type { ModuleLocales } from '../../types';
+import bg from './bg.json';
 import cs from './cs.json';
 import da from './da.json';
 import de from './de.json';
@@ -59,4 +60,5 @@ export const manualReportLocales: ModuleLocales = {
   fi,
   hu,
   ro,
+  bg,
 };
