@@ -1,0 +1,124 @@
+{
+  "origin-hint": {
+    "seed": "Посев {{position}}",
+    "winner-bracket": "Проигравший $t(abbreviations.winner-bracket) {{round}}.{{position}}",
+    "winner-bracket-semi-final": "Проигравший полуфинала $t(abbreviations.winner-bracket) {{position}}",
+    "winner-bracket-final": "Проигравший финала $t(abbreviations.winner-bracket)",
+    "consolation-final": "Проигравший полуфинала {{position}}",
+    "grand-final": "Победитель финала $t(abbreviations.loser-bracket)",
+    "double-elimination-consolation-final-opponent-1": "Проигравший полуфинала $t(abbreviations.loser-bracket) 1",
+    "double-elimination-consolation-final-opponent-2": "Проигравший финала $t(abbreviations.loser-bracket)"
+  },
+  "match-label": {
+    "default": "Матч {{matchNumber}}",
+    "winner-bracket": "$t(abbreviations.winner-bracket)",
+    "loser-bracket": "$t(abbreviations.loser-bracket)",
+    "standard-bracket": "$t(abbreviations.match)",
+    "standard-bracket-semi-final": "Полуфинал {{matchNumber}}",
+    "standard-bracket-final": "Финал",
+    "double-elimination": "{{matchPrefix}} {{roundNumber}}.{{matchNumber}}",
+    "double-elimination-semi-final": "{{matchPrefix}} полуфинал {{matchNumber}}",
+    "double-elimination-final": "{{matchPrefix}} финал",
+    "consolation-final": "Матч за 3-е место",
+    "grand-final-single": "Гранд-финал",
+    "grand-final": "$t(abbreviations.grand-final), раунд {{roundNumber}}",
+    "match-game": "Игра {{gameNumber}}"
+  },
+  "match-status": {
+    "locked": "Закрыт",
+    "waiting": "Ожидание",
+    "ready": "Готов",
+    "running": "Идёт",
+    "completed": "Завершён",
+    "archived": "В архиве"
+  },
+  "abbreviations": {
+    "win": "W",
+    "loss": "L",
+    "forfeit": "F",
+    "position": "P",
+    "seed": "#",
+    "winner-bracket": "WB",
+    "loser-bracket": "LB",
+    "match": "M",
+    "grand-final": "GF"
+  },
+  "ranking": {
+    "rank": {
+      "text": "#",
+      "tooltip": "Место"
+    },
+    "id": {
+      "text": "Название",
+      "tooltip": "Название"
+    },
+    "played": {
+      "text": "P",
+      "tooltip": "Сыграно"
+    },
+    "wins": {
+      "text": "$t(abbreviations.win)",
+      "tooltip": "Победы"
+    },
+    "draws": {
+      "text": "D",
+      "tooltip": "Ничьи"
+    },
+    "losses": {
+      "text": "$t(abbreviations.loss)",
+      "tooltip": "Поражения"
+    },
+    "forfeits": {
+      "text": "$t(abbreviations.forfeit)",
+      "tooltip": "Технические поражения"
+    },
+    "scoreFor": {
+      "text": "ЗО",
+      "tooltip": "Забито очков"
+    },
+    "scoreAgainst": {
+      "text": "ПО",
+      "tooltip": "Пропущено очков"
+    },
+    "scoreDifference": {
+      "text": "+/-",
+      "tooltip": "Разница очков"
+    },
+    "points": {
+      "text": "Оч.",
+      "tooltip": "Очки"
+    }
+  },
+  "common": {
+    "bye": "АВТОПРОХОД",
+    "best-of-x": "Bo{{x}}",
+    "consolation": "Утешительный",
+    "group-name": "Группа {{groupNumber}}",
+    "group-name-winner-bracket": "Верхняя сетка",
+    "group-name-loser-bracket": "Нижняя сетка",
+    "round-name": "Раунд {{roundNumber}}",
+    "round-name-final": "Финальный раунд",
+    "round-name-winner-bracket": "$t(abbreviations.winner-bracket), раунд {{roundNumber}}",
+    "round-name-winner-bracket-final": "$t(abbreviations.winner-bracket), финальный раунд",
+    "round-name-loser-bracket": "$t(abbreviations.loser-bracket), раунд {{roundNumber}}",
+    "round-name-loser-bracket-final": "$t(abbreviations.loser-bracket), финальный раунд"
+  },
+  "form-creator": {
+    "stage-name-label": "Назови стадию",
+    "stage-name-placeholder": "Введи название стадии",
+    "stage-selector-label": "Выбери стадию",
+    "team-label": "Назови команды",
+    "team-label-placeholder": "Список названий команд через запятую (должно быть 2^n)",
+    "team-count": "Или число команд",
+    "team-count-placeholder": "Сколько нужно команд?",
+    "group-label": "Сколько групп?",
+    "group-placeholder": "Сколько нужно групп?",
+    "seed-order-label": "Как упорядочить посев?",
+    "double-elimination-seed-order-placeholder": "Порядок посева для двойного выбывания через запятую",
+    "round-robin-mode-label": "Какой режим круговой системы выбрать?",
+    "consolation-final-label": "Матч за 3-е место",
+    "skip-first-round-label": "Пропустить первый раунд",
+    "grand-final-type-label": "Тип гранд-финала",
+    "submit": "Создать"
+  }
+}
