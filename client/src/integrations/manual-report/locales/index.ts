@@ -31,6 +31,7 @@ import ptBR from './pt-BR.json';
 import ro from './ro.json';
 import ru from './ru.json';
 import sv from './sv.json';
+import th from './th.json';
 import tr from './tr.json';
 import uk from './uk.json';
 import vi from './vi.json';
@@ -65,4 +66,5 @@ export const manualReportLocales: ModuleLocales = {
   bg,
   el,
   vi,
+  th,
 };

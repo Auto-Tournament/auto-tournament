@@ -28,6 +28,7 @@ import ro from '../../locales/ro/translation/devAccountSwitcher.json';
 import bg from '../../locales/bg/translation/devAccountSwitcher.json';
 import el from '../../locales/el/translation/devAccountSwitcher.json';
 import vi from '../../locales/vi/translation/devAccountSwitcher.json';
+import th from '../../locales/th/translation/devAccountSwitcher.json';
 
 /**
  * `devAccountSwitcher.*` strings live in their own JSON file per locale
@@ -70,6 +71,7 @@ export function registerDevAccountSwitcherTranslations(): void {
     bg,
     el,
     vi,
+    th,
   };
 
   for (const [lng, bundle] of Object.entries(bundles)) {
