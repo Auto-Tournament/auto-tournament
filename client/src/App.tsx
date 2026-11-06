@@ -30,6 +30,7 @@ import { ChatDock } from './components/chat/ChatDock';
 import { PartyInviteToast } from './components/social/PartyInviteToast';
 import { PresenceReporter } from './components/social/PresenceReporter';
 import { SocketIdentity } from './components/SocketIdentity';
+import { SaveLanguage } from './components/SaveLanguage';
 import Layout from './components/layout/Layout';
 import { ScrollToTop } from './components/layout/ScrollToTop';
 import { SiteFooter } from './components/layout/SiteFooter';
@@ -799,6 +800,7 @@ export default function App() {
                 {/* Online or away: this tab says when it goes idle. */}
                 <PresenceReporter />
                 <SocketIdentity />
+                <SaveLanguage />
               </PageHeaderProvider>
             </SnackbarProvider>
           </AuthProvider>

@@ -272,6 +272,46 @@ router.put('/name', async (req: Request, res: Response) => {
   }
 });
 
+/** A language-menu code: 'nb', 'pt-BR', 'zh-CN', 'es-419'. Ready Up falls back to English for one it has no table for. */
+const LANGUAGE_CODE = /^[a-z]{2,3}(-[A-Za-z0-9]{2,4})?$/;
+
+/**
+ * @openapi
+ * /api/me/language:
+ *   put:
+ *     tags: [Me]
+ *     summary: Save the site language the signed-in player uses
+ *     description: |
+ *       The client sends the language the site is shown in (picked in the
+ *       language menu, or the browser's). Game servers get it per player at
+ *       the next match assign, so Ready Up talks to them in it.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema: { type: object, properties: { language: { type: string, example: nb } } }
+ *     responses:
+ *       200: { description: Saved }
+ *       400: { description: Not a language code }
+ *       401: { description: Not signed in }
+ *       403: { description: Impersonating }
+ */
+router.put('/language', async (req: Request, res: Response) => {
+  try {
+    const account = await resolveAccount(req, res, { write: true, what: 'account' });
+    if (!account) return;
+    const language = (req.body as { language?: Untrusted })?.language;
+    if (typeof language !== 'string' || !LANGUAGE_CODE.test(language)) {
+      return res.status(400).json({ success: false, error: 'Not a language code' });
+    }
+    await db.runAsync('UPDATE players SET language = ? WHERE id = ?', [language, account.steamId]);
+    return res.json({ success: true, language });
+  } catch (error) {
+    log.error('Error saving own language', error);
+    return res.status(500).json({ success: false, error: 'Failed to save your language' });
+  }
+});
+
 // ---------------------------------------------------------------------------
 // Connections: sign-in methods and game accounts
 // ---------------------------------------------------------------------------

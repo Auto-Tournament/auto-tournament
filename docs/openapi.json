@@ -13157,6 +13157,45 @@
         }
       }
     },
+    "/api/me/language": {
+      "put": {
+        "tags": [
+          "Me"
+        ],
+        "summary": "Save the site language the signed-in player uses",
+        "description": "The client sends the language the site is shown in (picked in the\nlanguage menu, or the browser's). Game servers get it per player at\nthe next match assign, so Ready Up talks to them in it.\n",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "language": {
+                    "type": "string",
+                    "example": "nb"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Saved"
+          },
+          "400": {
+            "description": "Not a language code"
+          },
+          "401": {
+            "description": "Not signed in"
+          },
+          "403": {
+            "description": "Impersonating"
+          }
+        }
+      }
+    },
     "/api/me/name": {
       "get": {
         "tags": [

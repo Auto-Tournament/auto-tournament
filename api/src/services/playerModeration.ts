@@ -326,7 +326,7 @@ export async function deletePlayer(playerId: string, by: Actor): Promise<boolean
   await db.runAsync(
     `UPDATE players SET name = ?, avatar_url = NULL, discord_id = NULL, discord_id_edited_at = NULL,
        is_admin = 0, banned_at = NULL, ban_reason = NULL, banned_by = NULL, last_sign_in_at = NULL,
-       last_seen_at = NULL, party_invites_from = 'nobody', deleted_at = ?, updated_at = ?
+       last_seen_at = NULL, language = NULL, party_invites_from = 'nobody', deleted_at = ?, updated_at = ?
      WHERE id = ?`,
     [DELETED_PLAYER_NAME, now(), now(), playerId]
   );
