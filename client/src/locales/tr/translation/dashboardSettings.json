@@ -1,0 +1,989 @@
+{
+  "dashboard": {
+    "title": "Yönetici",
+    "restartTournament": {
+      "button": "Turnuva maçlarını yeniden başlat",
+      "restarting": "Turnuva maçları yeniden başlatılıyor…",
+      "intro": "🔄 Bu, tüm aktif maçları yeniden başlatır ve sunucularda yeniden yükler.",
+      "actionsTitle": "İşlemler:",
+      "actionEndMatch": "Yüklenmiş/canlı maçı olan tüm sunucularda at_endmatch çalıştır",
+      "actionReset": "Maçları 'hazır' durumuna sıfırla",
+      "actionReallocate": "Maçları kullanılabilir sunuculara yeniden ata",
+      "actionReload": "Oyun sunucularında maç yapılandırmalarını yeniden yükle",
+      "hint": "Maçlar takılırsa veya yeniden başlaması gerekirse bunu kullan.",
+      "confirm": "Turnuvayı yeniden başlat"
+    },
+    "header": {
+      "brand": "Auto Tournament",
+      "version": "Auto Tournament siten · sürüm {{version}}",
+      "unknownVersion": "dev",
+      "createTournament": "Turnuva oluştur"
+    },
+    "setup": {
+      "title": "Kurulumu bitir",
+      "openSettings": "Ayarları aç",
+      "signIn": "Giriş sağlayıcısı",
+      "game": "Modüller'den bir oyun (CS2) kur",
+      "discordBot": "Sitenin oyunculara maçları hakkında DM atabilmesi için kendi Discord botunu (token'ını) ekle"
+    },
+    "tournaments": {
+      "title": "Turnuva",
+      "empty": "Bu site aynı anda bir turnuva çalıştırır. Oluştur; burada, Keşfet'te ve etkinlik sayfasında görünür.",
+      "status": {
+        "setup": "Taslak",
+        "ready": "Kayıt",
+        "inProgress": "Canlı",
+        "completed": "Bitti"
+      },
+      "state": {
+        "teams_one": "{{count}} takım",
+        "teams_other": "{{count}} takım",
+        "entered_one": "{{count}} takım katıldı",
+        "entered_other": "{{count}} takım katıldı",
+        "draftTeams_one": "Taslak · {{count}} takım seçildi",
+        "draftTeams_other": "Taslak · {{count}} takım seçildi",
+        "draftEmpty": "Taslak · henüz takım yok",
+        "live_one": "{{count}} maç canlı",
+        "live_other": "{{count}} maç canlı",
+        "completed_one": "{{count}} takım katıldı",
+        "completed_other": "{{count}} takım katıldı",
+        "winner": "Kazanan: {{name}}",
+        "teamsPlayers_one": "{{count}} oyuncu",
+        "teamsPlayers_other": "{{count}} oyuncu",
+        "enteredPlayers_one": "{{count}} oyuncu katıldı",
+        "enteredPlayers_other": "{{count}} oyuncu katıldı",
+        "draftTeamsPlayers_one": "Taslak · {{count}} oyuncu",
+        "draftTeamsPlayers_other": "Taslak · {{count}} oyuncu",
+        "completedPlayers_one": "{{count}} oyuncu katıldı",
+        "completedPlayers_other": "{{count}} oyuncu katıldı"
+      },
+      "actions": {
+        "manage": "Yönet",
+        "continueSetup": "Kuruluma devam et",
+        "view": "Görüntüle"
+      },
+      "eventPage": "Etkinlik sayfası",
+      "emptyTitle": "Henüz turnuva yok"
+    },
+    "site": {
+      "title": "Site",
+      "players": {
+        "label": "Oyuncular",
+        "hint": "Giriş yapan herkes"
+      },
+      "teams": {
+        "label": "Takımlar",
+        "hint": "Kulüpler ve kadrolar"
+      },
+      "templates": {
+        "label": "Şablonlar",
+        "hint": "Yeniden kullanılabilir kurulumlar"
+      },
+      "ratings": {
+        "label": "Puanlar",
+        "hint": "Puanların nasıl hesaplandığı"
+      },
+      "settings": {
+        "label": "Ayarlar",
+        "hint": "Giriş, API anahtarları"
+      },
+      "adminTools": {
+        "label": "Sistem",
+        "hint": "Maç kurtarma ve günlükler"
+      },
+      "disputes": {
+        "label": "İtirazlar",
+        "hint": "Çözülecek sonuçlar"
+      },
+      "modules": {
+        "label": "Modüller",
+        "hint": "Bu sistemin çalıştırdığı oyunlar"
+      }
+    },
+    "people": {
+      "title": "Kişiler",
+      "open": "Aç",
+      "players": "Oyuncular",
+      "admins": "Yöneticiler",
+      "signedInThisWeek": "Bu hafta giriş yapanlar"
+    },
+    "loading": "Yönetici ana sayfası yükleniyor"
+  },
+  "settingsPage": {
+    "email": {
+      "title": "E-posta",
+      "short": "Adres onayları, şifre sıfırlama ve turnuva e-postaları gönderir.",
+      "enabled": "E-posta gönder",
+      "enabledOn": "Açık. E-postalar {{from}} adresinden gider.",
+      "enabledOff": "Kapalı. Hiçbir şey gönderilmez.",
+      "needsServer": "Önce aşağıdaki sunucuyu ayarla.",
+      "turnedOn": "E-posta açık",
+      "turnedOff": "E-posta kapalı",
+      "server": "Posta sunucusu",
+      "serverNone": "Ayarlanmadı",
+      "host": "SMTP sunucusu",
+      "port": "Port",
+      "security": "Güvenlik",
+      "securityStarttls": "STARTTLS (genellikle port 587)",
+      "securityTls": "TLS (genellikle port 465)",
+      "securityNone": "Yok (yalnızca güvenilir bir ağda)",
+      "username": "Kullanıcı adı",
+      "password": "Şifre",
+      "passwordKept": "Kayıtlı olanı korumak için boş bırak",
+      "passwordSaved": "Kaydedildi",
+      "fromAddress": "Gönderen adresi",
+      "fromAddressHelp": "E-postaların geldiği adres. Posta sağlayıcın buna izin vermeli.",
+      "fromName": "Gönderen adı",
+      "fromNameHelp": "İsteğe bağlı. E-postayı kimin gönderdiği olarak gösterilir, örn. NTLAN.",
+      "siteUrl": "Site adresi",
+      "siteUrlHelp": "E-postalardaki bağlantılar burada başlar, örn. https://cs.example.com.",
+      "siteUrlHelpDefault": "E-postalardaki bağlantılar burada başlar. Boş: {{url}}.",
+      "save": "Kaydet",
+      "saved": "E-posta ayarları kaydedildi",
+      "loadError": "E-posta ayarları yüklenemedi",
+      "saveError": "E-posta ayarları kaydedilemedi",
+      "test": "Test e-postası",
+      "testShort": "Ayarların çalıştığını kontrol etmek için bir tane gönder.",
+      "testTo": "Alıcı",
+      "testSend": "Test gönder",
+      "testNeedsOn": "Test etmeden önce gönderimi aç (ve sunucuyu kaydet).",
+      "testSent": "{{to}} adresine gönderildi. Gelen kutusunu ve spam klasörünü kontrol et.",
+      "testFailed": "Test e-postası gönderilemedi"
+    },
+    "title": "Ayarlar",
+    "intro": "Platformun kendi ayarları. Her oyun kendi ayarlarını menüde tutar.",
+    "tabs": {
+      "general": "Genel",
+      "signIn": "Giriş",
+      "players": "Oyuncular ve erişim",
+      "ratings": "Puanlar",
+      "developer": "Geliştirici",
+      "license": "Lisans",
+      "webhooks": "Webhook'lar",
+      "experimental": "Deneysel"
+    },
+    "signIn": {
+      "title": "Giriş sağlayıcıları",
+      "intro": "İnsanların nasıl giriş yapacağını seç. Bunlardan herhangi biri birinin hesabı olabilir; kişiler bağlantılar sayfasında daha fazlasını bağlar. Değişiklikler yeniden başlatmadan hemen geçerli olur.",
+      "keySource": "Kayıtlı gizli anahtarlar {{name}} ile şifrelenir.",
+      "keySourceDefault": "Kayıtlı gizli anahtarlar yerleşik bir geliştirme anahtarıyla şifrelenir. Yayına almadan önce SECRETS_KEY veya SESSION_SECRET ayarla.",
+      "loadError": "Giriş sağlayıcıları yüklenemedi",
+      "saveError": "Kaydedilemedi",
+      "testError": "Test çalıştırılamadı",
+      "saved": "{{provider}} girişi kaydedildi",
+      "enabled": "Etkin",
+      "clientId": "Client ID",
+      "issuerUrl": "Issuer URL",
+      "issuerUrlHelp": "OpenID Connect realm'inin veya tenant'ının adresi. Auto Tournament uç noktalarını /.well-known/openid-configuration adresinden okur.",
+      "buttonName": "Düğme adı",
+      "buttonNameHelp": "Giriş sayfasında “… ile giriş yap” olarak gösterilir, örn. topluluğun veya kimlik sunucun.",
+      "logoUpload": "Logo yükle",
+      "logoReplace": "Logoyu değiştir",
+      "logoRemove": "Logoyu kaldır",
+      "logoType": "Logo PNG, JPEG, WebP veya SVG resmi olmalı.",
+      "logoSize": "Logo en fazla 150 KB olabilir.",
+      "buttonColor": "Düğme rengi",
+      "buttonColorDefault": "Varsayılan renk",
+      "clientSecret": "Client secret",
+      "steamKey": "Steam Web API anahtarı",
+      "secretSet": "ayarlı",
+      "secretUnreadable": "Kayıtlı gizli anahtar artık çözülemiyor (şifreleme anahtarı değişti). Yeniden gir.",
+      "replace": "Değiştir",
+      "cancel": "İptal",
+      "save": "Kaydet",
+      "callbackHint": "Otomatik ayarlanır. {{provider}} geliştirici ayarlarında yönlendirme URL'si olarak yapıştır:",
+      "copy": "Kopyala",
+      "copyCallback": "Callback URL'sini kopyala",
+      "copied": "Kopyalandı",
+      "copyError": "Kopyalanamadı",
+      "guide": "Kurulum rehberi",
+      "howTo": "Geliştirici konsolu",
+      "test": "Test et",
+      "comingSoon": "Yakında",
+      "comingSoonNote": "{{provider}} girişi henüz kullanılamıyor.",
+      "status": {
+        "active": "Giriş sayfasında",
+        "missing": "Etkin, kimlik bilgileri eksik",
+        "off": "Kapalı"
+      },
+      "testResult": {
+        "ok": "Sağlayıcı bu kimlik bilgilerini kabul etti.",
+        "invalid_credentials": "Sağlayıcı bu kimlik bilgilerini reddetti. Client ID'yi ve secret'ı (ya da anahtarı) kontrol et.",
+        "unreachable": "Sağlayıcıya ulaşılamadı. Ağı kontrol edip tekrar dene.",
+        "not_configured": "Önce kimlik bilgilerini gir.",
+        "not_supported": "Bu sağlayıcı test edilemez.",
+        "unexpected": "Sağlayıcı, testin anlamadığı bir yanıt verdi."
+      },
+      "welcomeTitle": "Oyuncuların nasıl giriş yapacağını ayarla",
+      "welcomeBody": "Yönetici olarak giriş yaptın. Oyuncuların giriş yapabilmesi için aşağıdan en az bir sağlayıcıyı (Steam, Discord, Google, GitHub veya Twitch) aç.",
+      "adminAccess": {
+        "title": "Yönetici erişimi",
+        "localLogin": "Yerel yönetici girişine izin ver",
+        "localLoginHelp": "/login/admin adresinde kullanıcı adı ve şifreyle giriş. Erişimi kaybedersen sunucuda reset-admin çalıştır.",
+        "localLoginLocked": "Başka bir yönetici açık bir sağlayıcıyla giriş yapabilene kadar açık kalır.",
+        "steamIds": "Yönetici Steam ID'leri",
+        "steamIdsHelp": "Virgülle ayrılmış Steam64 ID'leri. Kaydedildiğinde ve her başlangıçta yönetici yapılır. Birini kaldırmak yöneticiliği geri almaz.",
+        "emails": "Yönetici e-postaları",
+        "emailsHelp": "Sahibi bunları doğrulayan bir sağlayıcıyla (Google, Discord, GitHub) giriş yaptığında yönetici olan adresler.",
+        "unsaved": "Henüz kaydedilmedi.",
+        "saved": "Yönetici erişimi kaydedildi",
+        "loadError": "Yönetici erişimi ayarları yüklenemedi",
+        "short": "Kimler yönetici olarak giriş yapabilir"
+      },
+      "short": "Oyuncuların ve yöneticilerin nasıl giriş yaptığı. Değişiklikler hemen geçerli olur.",
+      "enabledFor": "{{provider}} girişi",
+      "setUp": "{{provider}} ayarla",
+      "accounts": {
+        "title": "Hesaplar",
+        "short": "Oluşturduğun kullanıcı adı ve şifreli hesaplar",
+        "help": "Kişiler bunlarla /login/admin adresinde giriş yapar. Siteyi yönetenlere yöneticilik ver; diğerleri oyuncu olarak giriş yapar.",
+        "none": "Henüz hesap yok.",
+        "admin": "Yönetici",
+        "twoStep": "İki adımlı açık",
+        "lastLogin": "Son giriş {{date}}",
+        "neverSignedIn": "Hiç giriş yapmadı",
+        "setPassword": "Şifre belirle",
+        "remove": "Kaldır",
+        "addTitle": "Hesap ekle",
+        "username": "Kullanıcı adı",
+        "usernameHelp": "3 ile 32 karakter: küçük harfler, rakamlar, noktalar, tireler ve alt çizgiler.",
+        "name": "Görünen ad",
+        "nameHelp": "İsteğe bağlı. Sitede gösterilir; boş bırakılırsa kullanıcı adı kullanılır.",
+        "password": "Şifre",
+        "makeAdmin": "Yönetici",
+        "create": "Hesap oluştur",
+        "created": "{{username}} hesabı oluşturuldu",
+        "madeAdmin": "{{username}} artık yönetici",
+        "adminRemoved": "{{username}} artık yönetici değil",
+        "setPasswordTitle": "Yeni şifre: {{username}}",
+        "setPasswordTotp": "İki adımlı doğrulaması da kapatılır; giriş yaptıktan sonra yeniden kurar.",
+        "newPassword": "Yeni şifre",
+        "savePassword": "Şifreyi kaydet",
+        "passwordSet": "{{username}} için yeni şifre kaydedildi",
+        "removeTitle": "{{username}} kaldırılsın mı?",
+        "removeBody": "Artık bu kullanıcı adı ve şifreyle giriş yapamaz ve yönetici değildir. Oyuncusu, maçları ve istatistikleri kalır; aynı kullanıcı adını yeniden oluşturmak bunları geri verir.",
+        "removeConfirm": "Kaldır",
+        "removed": "{{username}} kaldırıldı",
+        "cancel": "İptal",
+        "loadError": "Hesaplar yüklenemedi",
+        "saveError": "Hesap kaydedilemedi"
+      },
+      "oidcScopes": "OpenID Connect sunucunda bu client'a openid, profile ve email scope'larını ver (Keycloak'ta: Clients → bu client → Client scopes, profile ve email Default olarak). profile ve email olmadan da giriş yapılabilir ama platform kişilerin adını veya e-posta adresini alamaz."
+    },
+    "integrations": {
+      "steam": {
+        "title": "Steam entegrasyonu",
+        "apiKeyLabel": "Steam Web API anahtarı",
+        "apiKeyHelper": "Steam özel URL'lerini ve oyuncu bilgilerini çözümler. Aramaları kapatmak için boş bırak.",
+        "checkButtonChecking": "Steam kontrol ediliyor…",
+        "checkButtonIdle": "Steam bağlantısını kontrol et",
+        "statusOk": "Steam API anahtarı ayarlı ve erişilebilir.",
+        "statusNotConfigured": "Steam API anahtarı ayarlı değil. Bir anahtar ekleyene kadar özel URL'ler çözümlenemez.",
+        "statusUnreachable": "Steam API anahtarı ayarlı görünüyor ama Steam'e ulaşılamadı. Ağını veya anahtarı kontrol et.",
+        "statusError": "Steam API durumu kontrol edilemedi. Lütfen tekrar dene."
+      }
+    },
+    "matchRating": {
+      "ratings": {
+        "title": "Puan güncellemeleri",
+        "description": "Tamamlanan maçların oyuncuların Skill Rating'ini güncelleyip güncellemeyeceğini belirle. Puanların asıl kaynağının harici bir sistem (örneğin Excel tablon) olduğu etkinliklerde kapat.",
+        "toggleLabel": "Tamamlanan maçlardan oyuncu puanlarını güncelle",
+        "note": "Kapalıyken tüm maçlar yine istatistik (ADR, K/D vb.) tutar ama oyuncuların Skill Rating'i değişmez.",
+        "short": "Puanlar her maçtan sonra değişir."
+      }
+    },
+    "players": {
+      "registration": {
+        "title": "Oyuncu kaydı",
+        "description": "Hangi giriş yöntemini kullanırsa kullansın (Steam, Discord, Google ve açtığın diğerleri), giriş yapmanın yeni biri için oyuncu kaydı oluşturup oluşturmayacağını belirle. Kapalıyken özel turnuvalarda ve karışık havuzlarda yalnızca yöneticilerin oluşturduğu veya içe aktardığı oyuncular görünür.",
+        "toggleLabel": "Giriş yaparak herkesin kaydolmasına izin ver",
+        "recommendation": "Önerilir: rastgele girişler oyuncu listesini doldurmasın diye davetli veya özel turnuvalarda bunu kapalı tut.",
+        "short": "Giriş yapmak her yeni kişiyi oyuncu yapar. Kapalı: yalnızca eklediğin oyuncular."
+      },
+      "title": "Oyuncular",
+      "short": "Kimler katılır ve puanlar nasıl değişir.",
+      "chooseName": {
+        "toggleLabel": "Oyuncular görünen adlarını seçer",
+        "short": "Oyunculardan adları istenir ve günde bir kez değiştirebilirler. Kapalı: adlar içe aktarımlardan ve yöneticilerden gelir."
+      }
+    },
+    "developer": {
+      "resetApiTitle": "API ve veritabanını sıfırla",
+      "resetApiDescription": "Tehlikeli bölge: tüm veritabanı şemasını siler ve yeniden oluşturur, ardından varsayılan verileri (haritalar, harita havuzları vb.) yeniden başlatır. Yalnızca yerel geliştirmede kullan. Geri alınamaz.",
+      "resetApiButton": "API'yi sıfırla (tüm verileri sil)",
+      "resetApiButtonLoading": "API sıfırlanıyor…",
+      "resetApiSuccess": "API ve veritabanı sıfırlandı. Tüm veriler silindi ve varsayılanlar yeniden başlatıldı.",
+      "resetApiError": "API ve veritabanı sıfırlanamadı. Ayrıntılar için API günlüklerine bak.",
+      "resetApiDialog": {
+        "title": "API sıfırlansın ve tüm veriler silinsin mi?",
+        "description": "Bu, tüm veritabanı şemasını siler ve yeniden oluşturur. Tüm turnuvalar, maçlar, oyuncular, takımlar, puanlar, olaylar, günlükler ve ayarlar kalıcı olarak silinir. Bu işlem geri alınamaz. Devam edilsin mi?",
+        "cancel": "İptal",
+        "confirm": "Evet, API'yi sıfırla ve verileri sil",
+        "confirmLoading": "Sıfırlanıyor…"
+      }
+    },
+    "footer": {
+      "version": "Sürüm",
+      "unknownVersion": "Bilinmiyor"
+    },
+    "errors": {
+      "loadSettings": "Ayarlar yüklenemedi",
+      "saveSettings": "Ayarlar kaydedilemedi"
+    },
+    "success": {
+      "saveSettings": "Ayarlar kaydedildi"
+    },
+    "site": {
+      "title": "Site",
+      "description": "Bu sitenin adı. Yönetici ana sayfası bunu başlık olarak kullanır.",
+      "label": "Site adı",
+      "helper": "\"Auto Tournament\" kullanmak için boş bırak.",
+      "save": "Kaydet",
+      "saved": "Site adı kaydedildi",
+      "saveFailed": "Site adı kaydedilemedi"
+    },
+    "experimental": {
+      "title": "Deneysel",
+      "description": "Hâlâ geliştirilmekte olan özellikler. Varsayılan olarak kapalıdır ve değişebilir ya da bozulabilir. Yalnızca yöneticiler görür.",
+      "saved": "Kaydedildi",
+      "saveFailed": "Özellik kaydedilemedi",
+      "loadFailed": "Deneysel özellikler yüklenemedi",
+      "envOverride": "{{env}} ortam değişkeniyle ayarlandı. Oradan değiştir.",
+      "features": {},
+      "short": "Hâlâ geliştiriliyor: varsayılan olarak kapalı, yalnızca yöneticiler görür."
+    },
+    "matchmaking": {
+      "openLabel": "Oyunculara açık",
+      "openDescription": "Açık: giriş yapan her oyuncu Oyna'yı görür ve sıraya girebilir. Kapalı: yalnızca yöneticiler maç arayabilir.",
+      "boardLabel": "Sıralama herkese görünür",
+      "boardDescription": "Kapalı: eşleştirme sıralamasını yalnızca giriş yapan oyuncular görür. Açık: bağlantıya sahip herkes.",
+      "windowTitle": "Arama aralığı",
+      "windowDescription": "Oyuncuların puanları arasında ne kadar fark olabileceği. İlk sayıdan başlar, her 30 saniyede bir adım kadar büyüyerek sınıra ulaşır ve son dakika sayısından sonra herkes eşleştirilir (asla için boş bırak).",
+      "window": {
+        "start": "Başlangıç (Elo)",
+        "step": "Adım (Elo)",
+        "cap": "Sınır (Elo)",
+        "uncappedAfterMinutes": "Herkes, şu kadar sonra (dk)"
+      },
+      "reservedTitle": "Eşleştirme için boş tutulan sunucular",
+      "reservedDescription": "Turnuva maçları önceliklidir ama oyuncular ararken eşleştirme için bu kadar sunucuyu boş bırak. 0 = hiç.",
+      "reservedLabel": "Sunucular",
+      "modesTitle": "Modlar",
+      "modesDescription": "Oyuncuların neyi arayabileceği. Tüm modlar varsayılan olarak açık. 1v1 bir nişan düellosudur.",
+      "poolsTitle": "Mod başına haritalar",
+      "poolsDescription": "Her modun seçtiği harita havuzu (Haritalar sayfası; Workshop haritaları da çalışır). Maç odası haritayı açıklamadan önce havuz üzerinde bir rulet gösterir.",
+      "poolDefault": {
+        "5v5": "Varsayılan: Active Duty",
+        "2v2": "Varsayılan: tüm Wingman haritaları",
+        "1v1": "Varsayılan: Active Duty"
+      },
+      "save": "Kaydet",
+      "title": "Eşleştirme",
+      "short": "Her zaman açık. Oyuncular maç arar, sıraya girip kabul eder, sonra boş bir sunucuda oynar.",
+      "saved": "Kaydedildi",
+      "saveFailed": "Eşleştirme ayarları kaydedilemedi",
+      "loadFailed": "Eşleştirme ayarları yüklenemedi"
+    },
+    "groups": {
+      "platform": "Platform"
+    },
+    "navLabel": "Ayar sayfaları",
+    "gameLinks": {
+      "title": "Oyun ayarları",
+      "hint": "Her oyun kendi ayarlarını menüde tutar."
+    },
+    "sections": {
+      "label": "Ayar bölümleri",
+      "site": {
+        "name": "Site",
+        "hint": "Ad, logo, dil"
+      },
+      "signin": {
+        "name": "Giriş",
+        "hint": "Sağlayıcılar, yönetici hesapları"
+      },
+      "email": {
+        "name": "E-posta",
+        "hint": "SMTP, neler gönderilir"
+      },
+      "players": {
+        "name": "Oyuncular",
+        "hint": "Kayıt, puanlar"
+      },
+      "matchmaking": {
+        "name": "Eşleştirme",
+        "hint": "Sıralar ve kuralları"
+      },
+      "news": {
+        "name": "Haberler",
+        "hint": "Ana sayfadaki gönderiler"
+      },
+      "adminnotices": {
+        "name": "Bildirimler",
+        "hint": "Yöneticilere ne bildirilir"
+      },
+      "webhooks": {
+        "name": "Entegrasyonlar",
+        "hint": "Webhook'lar"
+      },
+      "apitokens": {
+        "name": "API anahtarları",
+        "hint": "Betikler ve MCP için"
+      },
+      "advanced": {
+        "name": "Gelişmiş",
+        "hint": "Deneysel, geliştirici"
+      },
+      "module": {
+        "hint": "Bu modülün ayarları"
+      }
+    }
+  },
+  "managePage": {
+    "tournamentNotFound": "Bu kimlikte turnuva yok. Tüm turnuvalar'dan birini seç.",
+    "title": "Yönet",
+    "needsYouHeading": "Sana ihtiyaç var",
+    "noTournament": "Henüz turnuva yok",
+    "rail": {
+      "needsYou": "Sana ihtiyaç var",
+      "matches": "Maçlar",
+      "bracket": "Turnuva ağacı",
+      "teams": "Takımlar",
+      "players": "Oyuncular",
+      "reports": "Şikâyetler",
+      "tournament": "Turnuva kurulumu",
+      "settings": "Ayarlar",
+      "label": "Yönetici",
+      "disputes": "İtirazlar",
+      "publicPage": "Herkese açık sayfa",
+      "modules": "Modüller",
+      "templates": "Şablonlar",
+      "ratings": "Puanlar",
+      "adminTools": "Günlükler ve araçlar",
+      "license": "Lisans",
+      "devTools": "Geliştirici araçları",
+      "documentation": "Belgeler",
+      "opensInNewTab": "(yeni sekmede açılır)",
+      "groups": {
+        "operate": "Operasyon",
+        "tournament": "Turnuva",
+        "people": "Kişiler",
+        "game": "Oyun",
+        "home": "Ana sayfa",
+        "history": "Geçmiş",
+        "setup": "Kurulum",
+        "configuration": "Yapılandırma",
+        "site": "Site",
+        "tournaments": "Turnuvalar",
+        "system": "Sistem",
+        "gamesOf": "Oyunlar · {{game}}"
+      },
+      "templatesAndRatings": "Şablonlar ve puanlar",
+      "allTournaments": "Tüm turnuvalar",
+      "switcher": "Turnuva",
+      "newTournament": "Yeni turnuva",
+      "playedMatches": "Oynanan maçlar",
+      "tournamentBar": "Bu turnuva",
+      "scope": {
+        "label": "Yönetilen",
+        "platform": "Platform",
+        "platformHint": "Turnuvalar, kişiler, site",
+        "gameHint": "Sayfaları ve ayarları"
+      },
+      "highlights": "Öne çıkanlar",
+      "state": {
+        "live": "canlı",
+        "setup": "kurulum"
+      },
+      "openMenu": "Yönet menüsünü aç",
+      "closeMenu": "Menüyü kapat",
+      "setupTab": "Kurulum",
+      "prizes": "Ödüller",
+      "schedule": "Program",
+      "liveMatches": "Canlı maçlar"
+    },
+    "status": {
+      "live": "CANLI",
+      "inVeto": "VETODA",
+      "queued": "SIRADA",
+      "round": "RAUNT"
+    },
+    "needsYou": {
+      "empty": "Şu anda sana ihtiyaç yok.",
+      "secondsAgo": "{{count}} sn",
+      "minutesAgo": "{{count}} dk",
+      "hoursAgo": "{{count}} sa",
+      "vsLabel": "{{team1}} - {{team2}}",
+      "decide": {
+        "title": "{{teams}} için bir kazanan gerekiyor",
+        "detail": "Her harita oynandı ve seri hâlâ eşit.",
+        "action": "Karar ver"
+      },
+      "reallocateSuccess": "Maç başka bir sunucuya taşındı",
+      "forceCancelSuccess": "Maç iptal edildi",
+      "actionFailed": "Olmadı. Tekrar dene.",
+      "reallocateConfirmTitle": "Bu maç başka bir sunucuya taşınsın mı?",
+      "reallocateConfirmBody": "Maç bir sonraki kullanılabilir sunucuya yeniden atanacak.",
+      "forceCancelConfirmTitle": "Bu maç zorla iptal edilsin mi?",
+      "forceCancelConfirmBody": "Bu, sunucuya ulaşılamasa bile maçı hemen bitirir ve iptal edildi olarak işaretler.",
+      "listLabel": "Karar gerektiren şeyler"
+    },
+    "recent": {
+      "heading": "Son olanlar",
+      "viewAll": "Tüm günlük",
+      "empty": "Henüz yakın zamanda etkinlik yok.",
+      "closingLine": "Geri kalan her şey kendiliğinden işler. Burada yalnızca bir şey karar gerektirdiğinde görürsün.",
+      "team1Fallback": "Takım 1",
+      "team2Fallback": "Takım 2",
+      "mapResult": "{{winner}}, {{map}} haritasında {{loser}} karşısında kazandı, {{score}}",
+      "seriesEnd": "{{winner}}, seriyi {{loser}} karşısında kazandı, {{score}}"
+    },
+    "announce": {
+      "button": "Duyur",
+      "title": "Tüm sunuculara duyur",
+      "label": "Mesaj",
+      "send": "Gönder",
+      "success": "Duyuru gönderildi",
+      "failed": "Duyuru gönderilemedi"
+    }
+  },
+  "license": {
+    "title": "Lisans",
+    "getKey": "Zaten lisansın var mı? Anahtarını <consoleLink>Auto Tournament konsolundan</consoleLink> kopyala. Lisansa mı ihtiyacın var? <pricingLink>Fiyatlara bak</pricingLink>.",
+    "useFromPaidKey": "Aşağıdaki ücretli lisans anahtarıyla ayarlandı.",
+    "useFromFreeKey": "Aşağıdaki ücretsiz anahtarla ayarlandı: yalnızca kâr amacı gütmeyen kullanım.",
+    "useWithoutKey": "Anahtar yok: kâr amacı gütmeyen kullanım için ücretsiz. Ticari kullanım için aşağıya ücretli bir anahtar yapıştır.",
+    "publicLine": "Oyuncular etkinlik sayfalarının altında “{{line}}” görür.",
+    "pageIntro": "Lisans anahtarın ve durumu. Ücretli anahtar ticari kullanım içindir; ücretsiz anahtar kâr amacı gütmeyen kullanım içindir.",
+    "description": "Auto Tournament lisans anahtarını yapıştır: ticari kullanım için ücretli ya da kâr amacı gütmeyen kullanım için ücretsiz. Bu sunucuda ve günde bir kez autotournament.gg ile kontrol edilir.",
+    "loading": "Lisans durumu yükleniyor",
+    "loadFailed": "Lisans durumu okunamadı.",
+    "none": "Henüz lisans anahtarı yok. Kâr amacı gütmeyen kullanım için ücretsiz; ticari kullanım ücretli lisans gerektirir.",
+    "pricing": "Fiyatlar",
+    "open": "Ayarlar",
+    "id": "Lisans ID {{id}}",
+    "verify": "Bu lisansı kontrol et",
+    "invalid": "Bu anahtar doğrulanamadı.",
+    "invalidShort": "Kayıtlı anahtar doğrulanamadı.",
+    "warningsShort_one": "Ayarlar'da 1 lisans uyarısı.",
+    "warningsShort_other": "Ayarlar'da {{count}} lisans uyarısı.",
+    "warningsNote": "Hiçbir şey engellenmedi veya sınırlanmadı. Bu yalnızca bir uyarı.",
+    "label": "Lisans anahtarı",
+    "replaceLabel": "Lisans anahtarını değiştir",
+    "helper": "ATL1 ile başlar. <consoleLink>Auto Tournament konsolundaki lisanslarından</consoleLink> kopyala. Kaydettikten sonra yalnızca lisans ID'si gösterilir. Oynadığın yerde internet yok mu? Konsoldaki çevrimdışı kirayı da buraya yapıştır.",
+    "checkInNote": "Lisans anahtarı olmadan Auto Tournament'a hiçbir şey gönderilmez. Bir anahtarla bu sunucu, anahtarın kimliği ve sunucu sayısıyla günde bir kez bağlantı kurar.",
+    "save": "Anahtarı kaydet",
+    "saved": "Lisans anahtarı kaydedildi",
+    "saveFailed": "Lisans anahtarı kaydedilemedi",
+    "remove": "Anahtarı kaldır",
+    "removed": "Lisans anahtarı kaldırıldı",
+    "removeFailed": "Lisans anahtarı kaldırılamadı",
+    "summary": {
+      "licensedTo": "Lisans sahibi: {{licensee}}",
+      "licensed": "Lisanslı",
+      "product": {
+        "platform": "Platform {{pack}}",
+        "servers": "Sunucular {{pack}}"
+      },
+      "servers_one": "{{count}} sunucu",
+      "servers_other": "{{count}} sunucu",
+      "updatesUntil": "{{date}} tarihine kadar güncellemeler",
+      "updatesForLife": "ömür boyu güncellemeler",
+      "eventWindow": "etkinlik {{from}} – {{to}}",
+      "free": "Ücretsiz anahtar, ticari olmayan kullanım",
+      "freeFor": "{{licensee}} için ücretsiz anahtar, ticari olmayan kullanım",
+      "noLimit": "sunucu sınırı yok"
+    },
+    "badge": {
+      "label": "Herkese açık etkinlik sayfalarında \"Lisanslı\" ve kullanım türünü göster",
+      "note": "Varsayılan olarak kapalı. Lisansın herkese açık kontrol sayfasına bağlanır ve yalnızca kayıtlı anahtar geçerliyken görünür.",
+      "on": "Herkese açık lisans satırı açıldı",
+      "off": "Herkese açık lisans satırı kapatıldı",
+      "failed": "Herkese açık lisans satırı değiştirilemedi",
+      "short": "Bir anahtar kaydedilince kendiliğinden açılır. Oyuncular etkinlik sayfalarının altında görür.",
+      "needsKey": "Yalnızca ücretsiz veya ücretli bir lisans anahtarı kayıtlıyken görünür. Önce yukarıdan bir tane kaydet."
+    },
+    "public": {
+      "licensed": "Lisanslı",
+      "commercial": "Lisanslı · Ticari kullanım",
+      "nonCommercial": "Lisanslı · Kâr amacı gütmeyen kullanım",
+      "unlicensed": "Lisans anahtarı yok",
+      "about": {
+        "title": "Bu sitenin lisansı hakkında",
+        "none": "Bu site Auto Tournament'ı lisans anahtarı olmadan çalıştırıyor. Kimsenin para kazanmadığı etkinlikler için bu sorun değil: arkadaşlar, kulüpler, okul LAN'ları, hayır kurumları.",
+        "nonCommercial": "Bu sitenin ücretsiz, kâr amacı gütmeyen bir lisansı var: kimsenin para kazanmadığı etkinlikler düzenleyebilir.",
+        "commercial": "Bu sitenin ücretli ticari lisansı var: ücretli etkinlikler düzenleyebilir ve katılım ücreti alabilir.",
+        "free": "Auto Tournament, kimse ondan para kazanmadığında ücretsizdir; hayır kurumları, okullar ve kamu kurumları için katılım ücreti alsalar bile ücretsizdir. Katılım ücreti alarak, yer satarak veya bir işletme için çalıştırarak onunla para kazanan herkesin ücretli lisansa ihtiyacı vardır.",
+        "paidTitle": "Katılmak için ödeme yapman mı istendi?",
+        "paidBody": "Bir katılım ücreti ödediysen ya da ödemen istendiyse ve organizatör bir hayır kurumu, okul veya kamu kurumu değilse, bu etkinlik Auto Tournament'ı lisansına aykırı kullanıyor olabilir. Bize bildirebilirsin; her bildirimi okuruz ve kimin gönderdiğini asla paylaşmayız.",
+        "paidCommercial": "Burada ücretli katılıma izin var. Yine de bir şey yanlış görünüyorsa bize bildirebilirsin.",
+        "report": "Auto Tournament'a bildir",
+        "rules": "Lisansı oku",
+        "verify": "Bu lisansı kontrol et"
+      }
+    },
+    "consent": {
+      "title": "Son bir şey: lisans",
+      "subtitle": "Kusura bakma, bir adım daha ve bitiyor. Auto Tournament, kimse ondan para kazanmıyorsa ücretsizdir; biri kazanıyorsa lisansa ihtiyacın var. Kısa sürüme göz at, nasıl kullandığını seç ve I AGREE yaz.",
+      "intro": "Auto Tournament, {{name}} kapsamında kaynağı açık olarak sunulur. Kısaca:",
+      "points": {
+        "free": "Kişisel kullanım, hobi projeleri, öğrenme ve kimsenin para kazanmadığı etkinlikler için ücretsiz.",
+        "orgs": "Hayır kurumları, okullar, üniversiteler, kamu araştırmaları ve devlet kurumları için katılım ücreti alsalar bile ücretsiz.",
+        "commercial": "Ticari kullanım lisans gerektirir. Buna ücretli barındırma, yazılımı veya üzerine kurulu bir hizmeti satmak, kâr eden etkinlikler, bir işletme içinde kullanım ve birine kurmak için para almak dahildir.",
+        "servers": "Her oyun sunucusu lisansa dahil edilir.",
+        "nothingLocked": "Anahtar olmadan hiçbir şey kilitlenmez veya sınırlanmaz. Bir anahtarı şimdi ya da sonra ekleyebilirsin.",
+        "forks": "Kodu değiştirip paylaşabilirsin. Lisansı onunla birlikte tut; aynı kurallar geçerli."
+      },
+      "readLicense": "Lisansın tamamını oku",
+      "readRules": "Lisanslama ve ticari kullanım",
+      "summaryNote": "Bu kısa bir özettir ve sürümündeki metin güncel olmayabilir. Güncel lisans ve lisanslama kuralları autotournament.gg'dedir; bu özetten farklıysa onlar geçerlidir.",
+      "useQuestion": "Bu sistem nasıl kullanılıyor?",
+      "privacyNote": "Cevabın yalnızca bu sunucuda kaydedilir. Lisans anahtarı olmadan Auto Tournament'a hiçbir şey gönderilmez. Bir anahtarla bu sunucu, anahtarın kimliği ve sunucu sayısıyla günde bir kez bağlantı kurar.",
+      "use": {
+        "noncommercial": "Ticari olmayan",
+        "noncommercialHint": "Ücretsiz. Kimse ondan para kazanmıyor.",
+        "commercial": "Ticari",
+        "commercialHint": "Lisansa ihtiyacın var. Anahtarını şimdi ya da sonra yapıştır."
+      },
+      "keyLabel": "Lisans anahtarı (isteğe bağlı)",
+      "keyHelper": "ATL1 ile başlar. <consoleLink>Auto Tournament konsolundaki lisanslarından</consoleLink> kopyala ya da sonra Ayarlar > Lisans'tan ekle.",
+      "confirmLabel": "Lisans koşullarını kabul etmek için {{phrase}} yaz",
+      "confirmHelper": "{{phrase}} yazarak bu sistem için lisans koşullarını kabul etmiş olursun.",
+      "accept": "Kabul et ve devam et",
+      "cancel": "İptal",
+      "failed": "Cevabın kaydedilemedi",
+      "accepted": "Lisans koşulları kabul edildi",
+      "termsChanged": "Lisans koşulları son kabul edildiğinden beri değişti. Lütfen okuyup yeniden kabul et.",
+      "onlyAdmins": "Bunu yalnızca yöneticiler, sistem başına bir kez görür. Oyuncular, herkese açık sayfalar ve devam eden maçlar etkilenmez.",
+      "declared": {
+        "noncommercial": "Ticari olmayan kullanım",
+        "commercial": "Ticari kullanım",
+        "none": "Lisans koşulları henüz kabul edilmedi"
+      },
+      "acceptedLine": "Koşullar {{date}} tarihinde {{who}} tarafından kabul edildi (koşul sürümü {{version}})",
+      "byEnv": "AT_ACCEPT_LICENSE ayarı",
+      "change": "Değiştir",
+      "changeTitle": "Bu sistemin nasıl kullanıldığını değiştir",
+      "changeNote": "Yeniden seç ve I AGREE yaz. Değişiklik tarih ve hesabınla birlikte kaydedilir.",
+      "commercialNoKey": "Bu sistem ticari olarak kullanılıyor, bu yüzden lisansa ihtiyacın var. Anahtarını <consoleLink>Auto Tournament konsolundaki lisanslarından</consoleLink> kopyalayıp aşağıya yapıştır. Eksikken hiçbir şey kilitlenmez.",
+      "readHeading": "Kabul etmeden önce bunları oku ve her birini işaretle:",
+      "readItem": "Okudum:",
+      "readLinks": {
+        "license": "lisansın tamamı",
+        "rules": "ticari kullanım kuralları",
+        "pricing": "fiyatlar"
+      }
+    },
+    "checkin": {
+      "last": "Son lisans bağlantısı: {{time}}",
+      "offlineUntil": "Çevrimdışı kira: yeni sunucular {{date}} tarihine kadar internetsiz çalışır.",
+      "never": "Henüz lisans bağlantısı yok. İlki, bir anahtar kaydedildikten kısa süre sonra çalışır.",
+      "whatIsSent": "Neler gönderilir",
+      "intro": "Günde bir kez ve yalnızca bir anahtar kayıtlıyken bu sunucu şunları gönderir:",
+      "keyId": "Kimliği ve imzası kontrol edilebilsin diye lisans anahtarı",
+      "instanceId": "Bu kurulum için bir kez oluşturulan rastgele bir kimlik",
+      "serverCount": "Oyun sunucusu sayısı",
+      "version": "Platform sürümü",
+      "publicUrl": "Konsolun anahtarın nerede çalıştığını gösterebilmesi için bunun hangi ürün olduğu (platform) ve herkese açık adresi",
+      "activity": "Son bağlantıdan bu yana sayılar: biten maçlar, etkinlik olan turnuvalar ve en yüksek takım sayısı",
+      "declared": "Verdiysen etkinlik tarihleri sorusuna cevabın",
+      "notSent": "Ad, adres, oyuncu veya maç ayrıntısı yok.",
+      "privacy": "Gizlilik politikası",
+      "noticeTitle": "Auto Tournament'tan bir not",
+      "answered": "Bu lisans için cevabın: {{answer}} ({{time}})"
+    },
+    "eventPrompt": {
+      "title": "Yeni bir şey mi planlıyorsun?",
+      "body": "Etkinlik lisansın {{dates}} tarihlerini kapsıyor. Test ediyorsan, yeni bir etkinliğin varsa ya da tarihlerin değiştiyse bize haber ver; test ederken bir şey yapman gerekmez.",
+      "datesRange": "{{from}} – {{to}}",
+      "testing": "Test ediyoruz veya kuruyoruz",
+      "newEvent": "Yeni bir etkinlik",
+      "datesMoved": "Etkinlik tarihlerimiz değişti",
+      "dontAsk": "Bir daha sorma",
+      "close": "Kapat",
+      "thanks": "Teşekkürler, not edildi.",
+      "failed": "Cevabın kaydedilemedi"
+    },
+    "warning": {
+      "periodEnded": "Bu etkinlik lisansı {{date}} tarihine kadarki günleri kapsıyordu. Test ve kurulum için bir şey yapman gerekmez; yeni bir etkinlik kendi etkinlik lisansını alır.",
+      "periodNotStarted": "Bu etkinlik lisansı {{date}} tarihinden itibaren kapsar. O zamandan önce kurmak ve test etmek sorun değil."
+    },
+    "short": "Bu kurulumun nasıl kullanıldığı ve anahtarı.",
+    "keyRow": "Lisans anahtarı",
+    "state": {
+      "active": "Etkin",
+      "warning": "Kontrol et",
+      "invalid": "Geçersiz",
+      "none": "Anahtar yok"
+    },
+    "thirdParty": "Bu uygulama kendi lisanslarına sahip açık kaynak paketlerle yapılmıştır.",
+    "thirdPartyLink": "Üçüncü taraf bildirimleri"
+  },
+  "tournamentsPage": {
+    "title": "Turnuvalar",
+    "subtitle": "Bu sitedeki tüm turnuvalar. Menünün üstündeki seçici, diğer yönetici sayfalarının hangisi üzerinde çalışacağını belirler.",
+    "liveShared": "{{count}} canlı, sunucuları paylaşıyor. Maçlar hazır oldukları sırayla sunucu alır.",
+    "new": "Yeni turnuva",
+    "empty": "Henüz turnuva yok. İlkini oluştur.",
+    "col": {
+      "name": "Ad",
+      "status": "Durum",
+      "when": "Ne zaman",
+      "entries": "Katılımlar",
+      "frontPage": "Ana sayfa",
+      "actions": "İşlemler"
+    },
+    "status": {
+      "live": "Canlı",
+      "finished": "Bitti",
+      "signup": "Kayıt açık",
+      "draft": "Taslak"
+    },
+    "front": {
+      "featured": "Öne çıkan",
+      "shown": "Gösteriliyor",
+      "hidden": "Gizli",
+      "archived": "Arşivlendi",
+      "results": "Sonuçlar"
+    },
+    "won": "{{name}} kazandı",
+    "selected": "seçili",
+    "more": "{{name}} için diğer seçenekler",
+    "menu": {
+      "open": "Aç",
+      "page": "Herkese açık sayfa",
+      "feature": "Ana sayfada öne çıkar",
+      "archive": "Arşivle (ana sayfadan kaldır)",
+      "delete": "Sil"
+    },
+    "toast": {
+      "featured": "Ana sayfada öne çıkarıldı",
+      "archived": "Arşivlendi",
+      "deleted": "Turnuva silindi"
+    },
+    "deleteTitle": "Bu turnuva silinsin mi?",
+    "deleteMessage": "{{name}} ve maçları, sonuçları ve istatistikleri silinir. Bu geri alınamaz.",
+    "newName": "Ad",
+    "newNameBlank": "Adı kurulumda verirsin",
+    "startFrom": "Başlangıç noktası",
+    "blank": "Boş",
+    "blankHint": "Oyunu, formatı ve haritaları kurulumda seç",
+    "copy": "Kopyala: {{name}}",
+    "copyHint": "Aynı format, haritalar, kurallar ve sayfa. Takımlar ve tarihler boş başlar.",
+    "create": "Oluştur ve kur",
+    "round": "tur {{n}}",
+    "whenToday": "Bugün, {{time}} itibarıyla",
+    "whenTomorrow": "Yarın, {{time}}",
+    "notSet": "Ayarlanmadı",
+    "emptyTitle": "Henüz turnuva yok",
+    "template": "Bir şablon",
+    "templateHint": "Kayıtlı bir kurulum: format, haritalar ve kurallar. Takımları ve tarihleri sen seçersin.",
+    "copyOne": "Bir turnuvayı kopyala",
+    "copyWhich": "Hangisi"
+  },
+  "playedMatches": {
+    "title": "Tüm maçlar",
+    "subtitle": "Bu sitede oynanan tüm maçlar: turnuvalar (silinenler dahil), bağımsız maçlar ve eşleştirme, demolarıyla birlikte.",
+    "downloadAll_one": "{{count}} maçın demolarını indir",
+    "downloadAll_other": "{{count}} maçın demolarını indir",
+    "search": "Takım veya turnuva ara",
+    "kindLabel": "Tür",
+    "kind": {
+      "all": "Tüm türler",
+      "tournament": "Turnuva",
+      "standalone": "Bağımsız",
+      "matchmaking": "Eşleştirme",
+      "imported": "İçe aktarılan"
+    },
+    "withDemos": "Demolu",
+    "none": "Henüz hiç maç oynanmadı.",
+    "noneFiltered": "Bu filtrelerle eşleşen maç yok.",
+    "vs": "-",
+    "deleted": "turnuva silindi",
+    "noDemo": "Demo yok",
+    "demo": "Demo",
+    "map": "Harita {{n}}",
+    "import": "Bir maçı içe aktar"
+  },
+  "importMatch": {
+    "title": "Bir maçı içe aktar",
+    "subtitle": "Başka bir yerde oynanmış bir maçı demolarından ekle. Takımlar, oyuncular ve skor demolardan okunur; ardından maç da diğerleri gibi istatistik, 2D tekrar ve öne çıkanlar alır.",
+    "event": "Nerede oynandı",
+    "eventHelp": "İsteğe bağlı, örneğin etkinliğin adı.",
+    "files": "Demolar",
+    "filesHelp": "Harita başına bir CS2 demosu (.dem), haritaların oynandığı sırayla.",
+    "choose": "Demoları seç",
+    "moveUp": "{{name}} yukarı taşı",
+    "moveDown": "{{name}} aşağı taşı",
+    "remove": "{{name}} kaldır",
+    "start": "İçe aktar",
+    "uploading": "Harita {{n}} yükleniyor (%{{percent}})",
+    "tooMany": "En fazla {{max}} demo, harita başına bir.",
+    "notDemo": "{{name}} bir .dem dosyası değil.",
+    "error": "İçe aktarma durdu: {{error}}",
+    "progress": "İlerleme",
+    "mapN": "Harita {{n}}",
+    "state": {
+      "uploading": "Yükleniyor",
+      "waiting": "Demo işleyicisi bekleniyor",
+      "running": "Demo okunuyor",
+      "done": "Tamamlandı",
+      "failed": "Demo okunamadı"
+    },
+    "teams": "{{team1}} - {{team2}}",
+    "doneAll": "İçe aktarıldı. Bir öne çıkanlar kaydedicisi bağlıysa öne çıkanlar sırada kaydedilir.",
+    "openMatch": "Maçı aç",
+    "another": "Başka birini içe aktar",
+    "dropHint": "ya da buraya bırak. Cmd veya Ctrl ile birkaçını birden seç.",
+    "recordingGroup": "Kaydedici grubu",
+    "allRecorders": "Tüm kaydediciler",
+    "groupHelp": "Bu maçı hangi grubun işleyeceğini seç. Devre dışı gruplar etkinleştirilene kadar bekler.",
+    "groupDisabled": "Devre dışı",
+    "notCs2Demo": "{{name}} bir CS2 demosu değil (CS:GO demoları içe aktarılamaz)."
+  },
+  "apiTokens": {
+    "title": "API anahtarları",
+    "hint": "Betikler, botlar ve Auto Tournament MCP sunucusu için. Salt okunur bir anahtar yalnızca okuyabilir; yönetici anahtarı bir yöneticinin yapabildiklerini yapabilir. Bir anahtarın gizli değerini yalnızca sen, oluşturulduğunda bir kez görürsün.",
+    "line": "{{scope}} · {{fingerprint}} · son kullanım {{used}}",
+    "never": "hiç",
+    "none": "Henüz API anahtarı yok.",
+    "name": "Ad",
+    "nameHelp": "1–32 harf, rakam, - veya _",
+    "scopeLabel": "Erişim",
+    "scope": {
+      "readonly": "Salt okunur",
+      "admin": "Yönetici"
+    },
+    "make": "Anahtar oluştur",
+    "madeTitle": "\"{{label}}\" anahtarı",
+    "madeHelp": "Şimdi kopyala: yalnızca bu kez gösterilir. Betiğin veya MCP sunucusunun okuduğu yere yapıştır (AT_TOKEN).",
+    "copy": "Anahtarı kopyala",
+    "copied": "Kopyalandı",
+    "done": "Tamam",
+    "revoke": "{{label}} iptal et",
+    "revokeTitle": "\"{{label}}\" iptal edilsin mi?",
+    "revokeHelp": "Onu kullanan her şey hemen çalışmayı bırakır.",
+    "revokeConfirm": "İptal et",
+    "revoked": "{{label}} iptal edildi",
+    "cancel": "Vazgeç",
+    "loadFailed": "API anahtarları yüklenemedi",
+    "makeFailed": "Anahtar oluşturulamadı",
+    "revokeFailed": "Anahtar iptal edilemedi"
+  },
+  "discordBot": {
+    "title": "Discord botu",
+    "token": "Bot token'ı",
+    "replace": "Yeni bot token'ı",
+    "save": "Kaydet",
+    "remove": "Kaldır",
+    "connected": "Bağlı: {{name}}",
+    "setNoAnswer": "Bir token ayarlı ama Discord şu anda yanıt vermedi.",
+    "saved": "Discord botu kaydedildi: {{name}}",
+    "cleared": "Discord botu kaldırıldı",
+    "saveFailed": "Bot token'ı kaydedilemedi.",
+    "howTo": "Bir uygulama oluştur, bir bot ekle, token'ını kopyala ve onu Discord sunucuna davet et:",
+    "portal": "Discord Developer Portal",
+    "guild": "Discord sunucusu",
+    "guildHint": "Botun takım kanalları oluşturup gönderi yaptığı yer. Yalnızca botun bulunduğu sunucular burada görünür.",
+    "noGuilds": "Bot henüz hiçbir Discord sunucusunda değil. Onu davet et, sonra bu sayfayı yenile.",
+    "noGuild": "Yok",
+    "guildSaved": "Discord sunucusu kaydedildi",
+    "movedHint": "Discord botu artık bir eklenti: Modüller'den aç ve ayarla.",
+    "open": "Discord botunu aç",
+    "voice": {
+      "label": "Takım ses kanalları",
+      "help": "Bir maç sunucusundayken, zaten seste olan oyuncuları takımlarının ses kanalına taşınır; diğerleri DM ile bir bağlantı alır.",
+      "saved": "Ses kanalı ayarları kaydedildi"
+    },
+    "teamChannels": {
+      "label": "Takım kanalları",
+      "help": "Bir turnuva sürerken her takım \"Takımın\" altında özel bir yazı ve ses kanalı alır. Oyuncular yazı kanalını takım sayfalarında bulur.",
+      "link": "Discord'daki takım kanalı"
+    },
+    "commands": {
+      "label": "Eğik çizgi komutları: /matches, /mymatch ve /lobby",
+      "help": "Bot bağlanır bağlanmaz çalışır. İsteğe bağlı: Discord'un bunları bu siteye göndermesi için bunu Discord Developer Portal'da uygulamanın Interactions Endpoint URL'si olarak yapıştır."
+    },
+    "invite": "Bir sunucuya davet et",
+    "linking": {
+      "label": "Oyuncular Discord'larını bağlar",
+      "help": "Botunun kendi Discord uygulamasını kullanır, yani ikinci bir uygulama oluşturmaya gerek yok. Developer Portal'da botunun uygulamasında OAuth2'yi aç, bu yönlendirmeyi ekle, sonra client secret'ı kopyalayıp buraya yapıştır.",
+      "portal": "OAuth2'yi aç",
+      "secret": "Client secret",
+      "save": "Bağlamayı aç",
+      "saved": "Oyuncular artık Discord'u bağlayabilir",
+      "ready": "Açık: oyuncular Discord'u Hesap → Bağlantılar'dan bağlar.",
+      "invite": "Sunucunda olmayan oyunculardan {{url}} ile katılmaları istenir.",
+      "noInvite": "Bot henüz sunucun için davet oluşturamıyor. Davet Oluştur iznini alması için yeniden Bir sunucuya davet et'e tıkla."
+    },
+    "missing": "Botun sunucunda şu izinleri eksik: {{list}}; bu yüzden bazı kısımları çalışmayacak. Yukarıdaki Bir sunucuya davet et'e tıkla: bu, botu kaldırmadan izinlerini günceller."
+  },
+  "liveMatchesPage": {
+    "title": "Canlı maçlar",
+    "subtitle": "Şu anda bir sunucudaki tüm maçlar. Sana ihtiyaç duyan satırlar önce gelir.",
+    "loading": "Yükleniyor…",
+    "loadFailed": "Canlı maçlar okunamadı. Tekrar deneniyor…",
+    "empty": "Çalışan maç yok",
+    "chat": "Sohbet",
+    "mapOf": "Harita {{n}}/{{total}}",
+    "columns": {
+      "match": "Maç",
+      "map": "Harita",
+      "phase": "Aşama",
+      "score": "Skor",
+      "round": "Raunt",
+      "players": "Oyuncular",
+      "pause": "Duraklatma",
+      "call": "Yönetici çağrısı",
+      "server": "Sunucu",
+      "chat": "Sohbet"
+    },
+    "source": {
+      "matchmaking": "Eşleştirme",
+      "manual": "Bağımsız"
+    },
+    "phase": {
+      "none": "Sunucu durumu yok",
+      "loading": "Yükleniyor",
+      "warmup": "Isınma",
+      "knife": "Bıçak",
+      "side_pick": "Taraf seçimi",
+      "live": "Canlı",
+      "paused": "Duraklatıldı",
+      "halftime": "Devre arası",
+      "overtime": "Uzatma",
+      "map_end": "Maç sonu",
+      "series_end": "Maç sonu",
+      "restoring": "Geri yükleniyor",
+      "error": "Hata"
+    },
+    "players": {
+      "summary": "{{connected}}/{{total}} içeride · {{ready}} hazır",
+      "connected": "Bağlı",
+      "disconnected": "Bağlı değil",
+      "readyTag": "hazır",
+      "none": "Oyuncu yok"
+    },
+    "pause": {
+      "by": "duraklatan: {{name}}",
+      "unpause": "Devam etmek istiyor",
+      "type": {
+        "tactical": "Taktik",
+        "technical": "Teknik",
+        "admin": "Yönetici",
+        "offline": "Oyuncu çevrimdışı",
+        "halftime": "Devre arası",
+        "auto_5v5": "5v5 bekleniyor",
+        "unknown": "Duraklatıldı"
+      }
+    },
+    "call": {
+      "noMessage": "Mesaj yok"
+    },
+    "server": {
+      "online": "Çevrimiçi",
+      "offline": "Çevrimdışı",
+      "unknown": "Durum bilinmiyor"
+    }
+  }
+}

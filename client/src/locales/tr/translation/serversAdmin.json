@@ -1,0 +1,198 @@
+{
+  "adminToolsPage": {
+    "description": "Bu site için maç kurtarma ve uygulama günlüğü.",
+    "recovery": {
+      "title": "Maç kurtarma",
+      "description": "Turnuva sırasında API veya sunucular yeniden başlatıldıysa ve maç durumu uyumsuz görünüyorsa (örneğin canlıya geçmeden takılan maçlar ya da eksik canlı skorlar), bir kurtarma işlemini elle başlatabilirsin. Bu, tüm sunuculardan güncel maç raporlarını ister, skorları ve aşamaları yeniden eşitler, mümkün olduğunda webhook'ları ve demo yüklemelerini yeniden yapılandırır.",
+      "button": "Maç kurtarmayı şimdi çalıştır",
+      "success": "Maç kurtarma tamamlandı.",
+      "error": "Maç kurtarma başarısız oldu.",
+      "failedTrigger": "Maç kurtarma başlatılamadı. Lütfen tekrar dene."
+    },
+    "monitoring": {
+      "title": "İzleme ve günlükler",
+      "appLogs": "Uygulama günlükleri"
+    },
+    "logs": {
+      "loadFailed": "Günlükler yüklenemedi",
+      "levelAll": "Tümü",
+      "auto": "Otomatik",
+      "refresh": "Günlükleri yenile",
+      "empty": "Gösterilecek günlük yok",
+      "footer": "En son {{count}} günlük kaydı gösteriliyor",
+      "footerAutoRefresh": "En son {{count}} günlük kaydı gösteriliyor (otomatik yenileniyor)"
+    }
+  },
+  "servers": {
+    "allocation": {
+      "title": "Boş bir sunucu bekleniyor",
+      "waiting": "Bu maç sunucular boşalınca otomatik başlayacak. Gereken sunucular:",
+      "nextPass": "Sonraki atama denemesi {{seconds}} sn sonra"
+    }
+  },
+  "adminMatchControls": {
+    "title": "Yönetici kontrolleri",
+    "noServer": "Bu maça atanmış sunucu yok",
+    "unavailable": "Bu maça atanmış sunucu olmadığı için yönetici kontrolleri kullanılamıyor.",
+    "unknownAction": "Bilinmeyen işlem",
+    "commandFailed": "Komut çalıştırılamadı",
+    "confirm": "Onayla",
+    "execute": "Çalıştır",
+    "close": "Kapat",
+    "tipLabel": "Yönetici ipucu:",
+    "tip": "Bu kontrolleri canlı maçlarda dikkatli kullan. \"{{endMatch}}\" ve \"{{restartMatch}}\" gibi bazı işlemler geri alınamaz.",
+    "sections": {
+      "matchControl": "Maç kontrolü",
+      "advanced": "Gelişmiş işlemler"
+    },
+    "actions": {
+      "pause": {
+        "button": "Duraklat",
+        "tooltip": "Yönetici duraklatması: oyuncular devam ettiremez",
+        "title": "Maçı duraklat",
+        "description": "Bu, maçı zorla duraklatır. Oyuncular devam ettiremez."
+      },
+      "unpause": {
+        "button": "Devam ettir",
+        "tooltip": "Maçı duraklatmadan devam ettir",
+        "title": "Maçı devam ettir",
+        "description": "Bu, maçı zorla devam ettirir."
+      },
+      "swap": {
+        "button": "Takımların tarafını değiştir",
+        "tooltip": "Takımları karşı taraflara geçir (CT ↔ T)",
+        "title": "Takımların tarafını değiştir",
+        "description": "Bu, takımların taraflarını (CT/T) değiştirir."
+      },
+      "restartRound": {
+        "button": "Raundu yeniden başlat",
+        "tooltip": "Mevcut raundu baştan başlat (ekonomiyi sıfırlar)",
+        "title": "Raundu yeniden başlat",
+        "description": "Bu, mevcut raundu yeniden başlatır."
+      },
+      "skipVeto": {
+        "button": "Vetoyu atla",
+        "tooltip": "Harita vetosunu atla ve ilk haritayı hemen yükle",
+        "title": "Vetoyu atla",
+        "description": "Bu, veto aşamasını atlar ve maçı başlatır."
+      },
+      "endWarmup": {
+        "button": "Isınmayı bitir",
+        "tooltip": "Isınmayı bitir ve maçı başlat (bıçak raundu veya canlı)",
+        "title": "Isınmayı bitir",
+        "description": "Bu, ısınmayı bitirir ve maçı başlatır."
+      },
+      "endMatch": {
+        "button": "Maçı bitir",
+        "tooltip": "Maçı hemen bitir ve son skoru kaydet",
+        "title": "Maçı bitir",
+        "description": "Bu, maçı zorla bitirir. Dikkatli kullan!"
+      },
+      "restartMatch": {
+        "button": "Maçı yeniden başlat",
+        "tooltip": "Maçı bitir ve sıfırdan yeniden yükle; tüm ilerleme kaybolur",
+        "title": "Maçı yeniden başlat",
+        "description": "Bu, maçı bitirir ve baştan yeniden yükler. Tüm ilerleme kaybolur!"
+      },
+      "reallocateServer": {
+        "button": "Sunucuyu yeniden ata",
+        "tooltip": "Maçı başka bir sunucuya taşı (canlıya geçmeden önce kurtarma)",
+        "tooltipUnavailable": "Yalnızca hazır/yüklenmiş maçlar için kullanılabilir (canlı oyunda değil)",
+        "title": "Sunucuyu yeniden ata",
+        "description": "Bu, maçı boşta olan başka bir sunucuya taşır ve yeniden yükler. Mevcut sunucu güncel değilse veya oyuncular bağlanamıyorsa kullan. Canlı maç sırasında izin verilmez."
+      },
+      "forceCancel": {
+        "button": "Zorla iptal et",
+        "tooltip": "Sunucu çevrimdışı olsa bile maçı iptal et; sunucu atamasını boşaltır",
+        "title": "Maçı zorla iptal et",
+        "description": "⚠️ Bu, sunucu çevrimdışı olsa bile maçı iptal eder. Maç tamamlandı olarak işaretlenir ve sunucu boşaltılır. Bu işlem geri alınamaz."
+      }
+    },
+    "inputs": {
+      "restoreBackup": {
+        "button": "Yedeği geri yükle",
+        "tooltip": "Kayıtlı bir raunt yedeğini yükle; ekonomiyi ve pozisyonları geri getirir",
+        "title": "Yedeği geri yükle",
+        "label": "Geri yüklenecek raunt numarası"
+      },
+      "addTime": {
+        "button": "Süre ekle",
+        "tooltip": "Mevcut raunt süresini uzat (teknik duraklamalar için kullanışlı)",
+        "title": "Raunt süresi ekle",
+        "label": "Eklenecek saniye"
+      },
+      "broadcast": {
+        "button": "Duyuru",
+        "tooltip": "Sunucudaki tüm oyunculara mesaj gönder",
+        "title": "Duyuru mesajı",
+        "label": "Duyurulacak mesaj"
+      }
+    },
+    "success": {
+      "pause": "Maç duraklatıldı",
+      "unpause": "Maç devam ettirildi",
+      "swap": "Takımların tarafı değiştirildi",
+      "skipVeto": "Veto aşaması atlandı",
+      "restartRound": "Raunt yeniden başlatıldı",
+      "endMatch": "Maç bitirildi",
+      "endWarmup": "Isınma bitirildi",
+      "startMatch": "Maç başlatıldı",
+      "restoreBackup": "Yedek {{round}}. raunda geri yüklendi",
+      "addTime_one": "Raunt süresine {{count}} saniye eklendi",
+      "addTime_other": "Raunt süresine {{count}} saniye eklendi",
+      "broadcast": "Mesaj sunucuya gönderildi",
+      "restartMatch": "Maç yeniden başlatıldı (bitirildi ve yeniden yüklendi)",
+      "reallocateServer": "Maç başka bir sunucuya taşındı",
+      "forceCancel": "Maç iptal edildi",
+      "default": "Komut çalıştırıldı"
+    },
+    "hold": {
+      "title": "Hükmen yerine beklet",
+      "description": "Bekletilirken maç yüklenmez, başlatılmaz ve kimse hükmen galibiyet almaz. Maç devam ettiğinde takımlara süre yeniden tam olarak verilir.",
+      "reason": "Neden (yöneticilere gösterilir)",
+      "delay": "{{minutes}} dk ertele",
+      "holdUntilReleased": "Serbest bırakılana kadar beklet",
+      "release": "Şimdi serbest bırak",
+      "restartCountdown": "Geri sayımı yeniden başlat",
+      "heldUntil": "Bekletiliyor: {{time}} saatine kadar",
+      "heldIndefinitely": "Serbest bırakılana kadar bekletiliyor",
+      "tournamentPaused": "Turnuva duraklatıldı",
+      "heldDone": "Maç bekletiliyor",
+      "delayedDone": "Maç {{minutes}} dk ertelendi",
+      "releasedDone": "Maç serbest bırakıldı",
+      "restartedDone": "Geri sayım yeniden başladı: takımlara süre yeniden tam olarak verildi",
+      "failed": "Bekletme değiştirilemedi"
+    }
+  },
+  "adminCalls": {
+    "header": "Yönetici çağrıları ({{count}})",
+    "title": "{{player}} bir yönetici çağırıyor",
+    "justNow": "az önce",
+    "minutesAgo": "{{count}} dk önce",
+    "hoursAgo": "{{count}} sa önce",
+    "spectator": "İzleyici",
+    "team1": "Takım 1",
+    "team2": "Takım 2",
+    "noMessage": "Mesaj yok",
+    "unknownPlayer": "Bilinmeyen oyuncu",
+    "unknownServer": "Bilinmeyen sunucu",
+    "matchMap": "{{match}}, harita {{map}}",
+    "openMatch": "Maçı aç",
+    "openServers": "Sunucular",
+    "resolve": "Çözüldü olarak işaretle",
+    "resolveAll": "Tümünü çöz",
+    "resolveFailed": "Çağrı çözüldü olarak işaretlenemedi. Tekrar dene.",
+    "matchUnavailable": "O maç açılamadı.",
+    "enableSound": "Sesi aç",
+    "mute": "Sessize al",
+    "unmute": "Sesi aç",
+    "minimize": "Küçült",
+    "show": "Göster",
+    "openChat": "Sohbeti aç",
+    "claim": "Üstlen",
+    "release": "Bırak",
+    "claimedBy": "Üstlenen: {{name}}",
+    "claimedByYou": "Sen üstlendin",
+    "anAdmin": "bir yönetici"
+  }
+}

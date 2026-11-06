@@ -1,0 +1,141 @@
+{
+  "devToolsPage": {
+    "alert": "Bu araçlar yalnızca geliştirme modunda kullanılabilir. Uygulamayı test etmek için hızlıca test verisi oluşturmakta kullan.",
+    "sections": {
+      "testData": {
+        "title": "Test verisi oluştur"
+      }
+    },
+    "testTeams": {
+      "title": "Test takımları",
+      "description": "Turnuva ağaçlarını ve maçları test etmek için rastgele oyuncu verisiyle takımlar oluştur.",
+      "success": "{{count}} test takımı oluşturuldu!",
+      "errors": {
+        "create": "Test takımları oluşturulamadı",
+        "partial": "{{created}} takım oluşturuldu ama {{failed}} tanesi başarısız oldu. Ayrıntılar için konsola bak."
+      },
+      "customLabel": "Özel takım sayısı",
+      "buttons": {
+        "createFixed": "{{count}} takım oluştur",
+        "createCustom": "Takım oluştur"
+      }
+    },
+    "testPlayers": {
+      "title": "Test oyuncuları",
+      "description": "Karışık turnuvaları ve oyuncu yönetimini test etmek için ELO puanlı oyuncular oluştur.",
+      "success": "{{created}} test oyuncusu oluşturuldu!",
+      "errors": {
+        "create": "Test oyuncuları oluşturulamadı",
+        "partial": "{{created}} oyuncu oluşturuldu, {{updated}} güncellendi ama {{failed}} tanesi başarısız oldu. Ayrıntılar için konsola bak."
+      },
+      "customLabel": "Özel oyuncu sayısı",
+      "buttons": {
+        "createFixed": "{{count}} oyuncu oluştur",
+        "createCustom": "Oyuncu oluştur"
+      },
+      "successWithUpdated": "{{created}} test oyuncusu oluşturuldu, {{updated}} güncellendi!"
+    },
+    "testServers": {
+      "title": "Test sunucuları",
+      "description": "Maç yönetimini denemek için test sunucuları oluştur.",
+      "success": "{{count}} test sunucusu oluşturuldu!",
+      "errors": {
+        "create": "Test sunucuları oluşturulamadı",
+        "partial": "{{created}} sunucu oluşturuldu ama {{failed}} tanesi başarısız oldu. Ayrıntılar için konsola bak."
+      },
+      "customLabel": "Özel sunucu sayısı",
+      "buttons": {
+        "createCustom": "Sunucu oluştur",
+        "createFixed_one": "{{count}} sunucu oluştur",
+        "createFixed_other": "{{count}} sunucu oluştur"
+      }
+    },
+    "dangerZone": {
+      "title": "Tehlikeli bölge"
+    },
+    "deleteTestData": {
+      "title": "Test verisini sil",
+      "description": "Tüm test verisini sil ('test-' önekli takımlar ve sunucular). Bu işlem geri alınamaz.",
+      "button": "Tüm test verisini sil",
+      "confirmPrompt": "TÜM test verisini silmek istediğinden emin misin?",
+      "success": "Tüm test verisi silindi!",
+      "error": "Test verisi silinemedi"
+    },
+    "wipeTable": {
+      "title": "Belirli tabloları temizle",
+      "description": "Belirli bir tablodaki tüm verileri sil. Her şeyi sıfırlamadan temizlik yapmak için kullanışlı. Tablolar kategoriye göre düzenlenmiştir.",
+      "confirmPrompt": "{{table}} tablosunu temizlemek istediğinden emin misin? Bu, o tablodaki tüm verileri siler.",
+      "success": "{{table}} tablosu temizlendi!",
+      "error": "{{table}} tablosu temizlenemedi",
+      "core": {
+        "title": "Temel tablolar",
+        "teams": "Takımları temizle",
+        "servers": "Sunucuları temizle",
+        "tournament": "Turnuvayı temizle",
+        "matches": "Maçları temizle"
+      },
+      "players": {
+        "title": "Oyuncular ve karışık turnuvalar",
+        "players": "Oyuncuları temizle",
+        "ratingHistory": "Puan geçmişini temizle",
+        "matchStats": "Maç istatistiklerini temizle",
+        "shufflePlayers": "Karışık oyuncuları temizle"
+      },
+      "maps": {
+        "title": "Haritalar ve şablonlar",
+        "maps": "Haritaları temizle",
+        "mapPools": "Harita havuzlarını temizle",
+        "tournamentTemplates": "Turnuva şablonlarını temizle",
+        "eloTemplates": "Puan şablonlarını temizle"
+      },
+      "matchEvents": {
+        "title": "Maç olayları ve sonuçları",
+        "events": "Maç olaylarını temizle",
+        "mapResults": "Harita sonuçlarını temizle"
+      },
+      "settings": {
+        "title": "Ayarlar",
+        "appSettings": "Uygulama ayarlarını temizle"
+      }
+    },
+    "simulation": {
+      "title": "Simülasyon durumu",
+      "description": "Sunucuları, takımları, haritaları ve mevcut turnuva kurulumunu korurken tüm maçları ve geçmiş istatistikleri temizle; böylece simülasyon modunda temiz bir turnuva ağacında \"Turnuvayı başlat\"a tıklayabilirsin.",
+      "button": "Simülasyon durumunu sıfırla (ayarları koru)",
+      "reset": {
+        "success": "Simülasyon durumu sıfırlandı. Maçlar ve istatistikler temizlendi; sunucular, takımlar ve turnuva kurulumu korundu.",
+        "error": "Simülasyon durumu sıfırlanamadı"
+      }
+    },
+    "wipeDatabase": {
+      "title": "Tüm veritabanını temizle",
+      "warningTitle": "SON DERECE YIKICI!",
+      "warningBody": "Bu, TÜM verileri siler.",
+      "permanentlyDeletes": "Kalıcı olarak silinenler:",
+      "items": {
+        "tournaments": "Tüm turnuvalar ve turnuva ağaçları",
+        "matches": "Tüm maçlar ve olaylar",
+        "teams": "Tüm takımlar ve oyuncular",
+        "servers": "Tüm sunucu yapılandırmaları"
+      },
+      "button": "Tüm veritabanını temizle",
+      "successRedirect": "Veritabanı temizlendi! Yönlendiriliyor...",
+      "error": "Veritabanı temizlenemedi",
+      "dialog": {
+        "title": "Veritabanı temizliğini onayla",
+        "areYouSure": "Kesinlikle emin misin?",
+        "actionWill": "Bu işlem şunları",
+        "permanentlyDelete": "kalıcı olarak siler",
+        "items": {
+          "tournaments": "Tüm turnuva verileri ve turnuva ağaçları",
+          "matches": "Tüm maç geçmişi ve olaylar",
+          "teams": "Tüm takımlar ve oyuncu yapılandırmaları",
+          "servers": "Tüm sunucu yapılandırmaları"
+        },
+        "cannotUndo": "Bu işlem geri alınamaz!",
+        "wiping": "Veritabanı temizleniyor...",
+        "yesWipe": "Evet, her şeyi temizle"
+      }
+    }
+  }
+}
