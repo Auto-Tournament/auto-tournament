@@ -1,0 +1,81 @@
+{
+  "manualReport": {
+    "title": "Meccseredmény",
+    "unknownTeam": "a másik csapat",
+    "state": {
+      "nothing": "Még nincs jelentett eredmény. Aki játszotta, jelentse az állást.",
+      "waitingOpponent": "Jelentve. Várakozás, hogy {{team}} megerősítse.",
+      "needsAnswer": "{{team}} jelentette ezt az eredményt. Erősítsd meg, ha helyes.",
+      "disputed": "Ezt az eredményt vitatják. Egy admin dönt róla.",
+      "awaitingAdmin": "Várakozás, hogy egy admin döntsön erről a meccsről.",
+      "confirmed": "Mindkét csapat egyetért ezzel az eredménnyel."
+    },
+    "deadline": {
+      "autoConfirm": "{{minutes}} perc múlva magától megerősítődik, ha senki sem válaszol.",
+      "autoConfirmSoon": "Bármelyik pillanatban magától megerősítődik.",
+      "escalate": "{{minutes}} perc múlva egy adminhoz kerül, ha senki sem válaszol.",
+      "escalateSoon": "Bármelyik pillanatban egy adminhoz kerül."
+    },
+    "score": "{{team1}} {{score1}} – {{score2}} {{team2}}",
+    "game": "{{number}}. játék",
+    "note": "Megjegyzés",
+    "notePlaceholder": "Bármi, amit a másik csapatnak tudnia kell (nem kötelező)",
+    "noteGiven": "Megjegyzés: {{note}}",
+    "disputeReason": "Mi a gond vele?",
+    "disputeReasonGiven": "Vitatott: {{reason}}",
+    "formHint": "A(z) {{team1}} és a(z) {{team2}} állása, játékonként.",
+    "actions": {
+      "report": "Állás jelentése",
+      "reportAgain": "Másik állás jelentése",
+      "submit": "Jelentés küldése",
+      "cancel": "Mégse",
+      "confirm": "Megerősítés",
+      "dispute": "Vitatás",
+      "disputeSubmit": "Vitatás küldése",
+      "withdraw": "Jelentésem visszavonása"
+    },
+    "errors": {
+      "stale": "Ez a jelentés megváltozott, amíg a képernyődön volt. Olvasd el újra, mielőtt megerősíted.",
+      "incomplete": "Legalább egy játékhoz töltsd ki mindkét állást.",
+      "failed": "Ez nem ment át. Próbáld újra."
+    },
+    "captains": {
+      "title": "Kapitányok",
+      "hint": "Csak egy kapitány jelenthet vagy erősíthet meg eredményt ennél a csapatnál.",
+      "make": "Kinevezés kapitánnyá",
+      "remove": "Kapitányság elvétele",
+      "isCaptain": "Kapitány",
+      "empty": "Ebben a csapatban még senki sem jelentkezett be, így nincs kit kinevezni.",
+      "unknown": "Ismeretlen játékos",
+      "failed": "Ezt nem sikerült módosítani. Próbáld újra."
+    },
+    "stats": {
+      "hint": "A verseny által kért további számok. Hagyd üresen a mezőt, ha senkinek nincs ilyen.",
+      "required": "kötelező",
+      "recorded": "Jelentett statisztikák",
+      "value": "{{subject}}: {{value}}{{suffix}}",
+      "errors": {
+        "number": "A(z) {{field}} értéknek ({{subject}}) számnak kell lennie.",
+        "integer": "A(z) {{field}} értéknek ({{subject}}) egész számnak kell lennie.",
+        "range": "A(z) {{field}} érték ({{subject}}) túl nagy ahhoz, hogy valós szám legyen.",
+        "tooLong": "A(z) {{field}} érték ({{subject}}) hosszabb {{max}} karakternél.",
+        "missing": "A(z) {{field}} kötelező, de a(z) {{team}} csapatnál nincs kitöltve."
+      },
+      "tournamentTitle": "Jelentett statisztikák",
+      "tournamentHelp": "A megerősített jelentésekből összeadva. Az ellenfélre még váró eredmény itt nem számít.",
+      "byTeam": "Csapatonként",
+      "byPlayer": "Játékosonként",
+      "team": "Csapat",
+      "player": "Játékos",
+      "matches": "Meccsek"
+    },
+    "chip": {
+      "none": "Még nincs eredmény",
+      "yours": "A jelentésed",
+      "reported": "Jelentve",
+      "confirm": "Erősítsd meg",
+      "disputed": "Vitatott",
+      "final": "Végleges"
+    }
+  }
+}
