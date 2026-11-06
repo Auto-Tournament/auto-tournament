@@ -18,7 +18,8 @@ const LANGUAGES: Language[] = [
   { code: 'es', flagCode: 'ES', label: 'Español' },
   { code: 'es-419', flagCode: 'MX', label: 'Español (Latinoamérica)' },
   { code: 'it', flagCode: 'IT', label: 'Italiano' },
-  { code: 'pt-PT', flagCode: 'PT', label: 'Português' },
+  { code: 'pt-PT', flagCode: 'PT', label: 'Português (Portugal)' },
+  { code: 'pt-BR', flagCode: 'BR', label: 'Português (Brasil)' },
   { code: 'pl', flagCode: 'PL', label: 'Polski' },
   { code: 'nl', flagCode: 'NL', label: 'Nederlands' },
   { code: 'zh-CN', flagCode: 'CN', label: '简体中文' },
@@ -63,6 +64,7 @@ function normalizeLanguageCode(raw: string): string {
   const lng = raw || 'en';
   if (/^zh-(TW|HK|MO|Hant)/i.test(lng)) return 'zh-TW';
   if (lng.startsWith('zh')) return 'zh-CN';
+  if (/^pt-BR/i.test(lng)) return 'pt-BR';
   if (lng.startsWith('pt')) return 'pt-PT';
   if (lng.startsWith('fr')) return 'fr';
   if (lng.startsWith('de')) return 'de';

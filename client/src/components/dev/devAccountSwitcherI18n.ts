@@ -15,6 +15,7 @@ import ru from '../../locales/ru/translation/devAccountSwitcher.json';
 import uk from '../../locales/uk/translation/devAccountSwitcher.json';
 import es419 from '../../locales/es-419/translation/devAccountSwitcher.json';
 import zhTW from '../../locales/zh-TW/translation/devAccountSwitcher.json';
+import ptBR from '../../locales/pt-BR/translation/devAccountSwitcher.json';
 
 /**
  * `devAccountSwitcher.*` strings live in their own JSON file per locale
@@ -44,6 +45,7 @@ export function registerDevAccountSwitcherTranslations(): void {
     uk,
     'es-419': es419,
     'zh-TW': zhTW,
+    'pt-BR': ptBR,
   };
 
   for (const [lng, bundle] of Object.entries(bundles)) {

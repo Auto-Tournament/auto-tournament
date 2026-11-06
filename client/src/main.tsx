@@ -16,6 +16,7 @@ import {
   ruRU,
   ukUA,
   zhTW,
+  ptBR,
 } from '@mui/material/locale';
 import App from './App';
 import './index.css';
@@ -45,6 +46,7 @@ const getMuiLocale = (lang: string) => {
   if (lang.startsWith('de')) return deDE;
   if (lang.startsWith('es')) return esES;
   if (lang.startsWith('it')) return itIT;
+  if (/^pt-BR/i.test(lang)) return ptBR;
   if (lang.startsWith('pt')) return ptPT;
   if (lang.startsWith('pl')) return plPL;
   if (lang.startsWith('nl')) return nlNL;
