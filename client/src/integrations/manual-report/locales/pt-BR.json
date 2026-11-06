@@ -1,0 +1,81 @@
+{
+  "manualReport": {
+    "title": "Resultado da partida",
+    "unknownTeam": "o outro time",
+    "state": {
+      "nothing": "Nenhum resultado informado ainda. Quem jogou, informe o placar.",
+      "waitingOpponent": "Informado. Esperando {{team}} confirmar.",
+      "needsAnswer": "{{team}} informou este resultado. Confirme se estiver certo.",
+      "disputed": "Este resultado está em disputa. Um admin vai decidir.",
+      "awaitingAdmin": "Esperando um admin decidir esta partida.",
+      "confirmed": "Os dois times concordam com este resultado."
+    },
+    "deadline": {
+      "autoConfirm": "Confirma sozinho em {{minutes}} min se ninguém responder.",
+      "autoConfirmSoon": "Confirma sozinho a qualquer momento.",
+      "escalate": "Vai para um admin em {{minutes}} min se ninguém responder.",
+      "escalateSoon": "Vai para um admin a qualquer momento."
+    },
+    "score": "{{team1}} {{score1}} – {{score2}} {{team2}}",
+    "game": "Jogo {{number}}",
+    "note": "Nota",
+    "notePlaceholder": "Algo que o outro time deva saber (opcional)",
+    "noteGiven": "Nota: {{note}}",
+    "disputeReason": "O que está errado?",
+    "disputeReasonGiven": "Disputado: {{reason}}",
+    "formHint": "Placares de {{team1}} e {{team2}}, jogo a jogo.",
+    "actions": {
+      "report": "Informar o placar",
+      "reportAgain": "Informar outro placar",
+      "submit": "Enviar",
+      "cancel": "Cancelar",
+      "confirm": "Confirmar",
+      "dispute": "Contestar",
+      "disputeSubmit": "Enviar contestação",
+      "withdraw": "Retirar meu resultado"
+    },
+    "errors": {
+      "stale": "Este resultado mudou enquanto estava na sua tela. Leia de novo antes de confirmar.",
+      "incomplete": "Preencha os dois placares de pelo menos um jogo.",
+      "failed": "Não deu certo. Tente de novo."
+    },
+    "captains": {
+      "title": "Capitães",
+      "hint": "Só um capitão pode informar ou confirmar um resultado por este time.",
+      "make": "Tornar capitão",
+      "remove": "Remover capitão",
+      "isCaptain": "Capitão",
+      "empty": "Ninguém deste time entrou ainda, então não há quem nomear.",
+      "unknown": "Jogador desconhecido",
+      "failed": "Não foi possível mudar. Tente de novo."
+    },
+    "stats": {
+      "hint": "Os números extras que este torneio pede. Deixe um campo vazio se ninguém tiver.",
+      "required": "obrigatório",
+      "recorded": "Estatísticas informadas",
+      "value": "{{subject}}: {{value}}{{suffix}}",
+      "errors": {
+        "number": "{{field}} de {{subject}} precisa ser um número.",
+        "integer": "{{field}} de {{subject}} precisa ser um número inteiro.",
+        "range": "{{field}} de {{subject}} é grande demais para ser um número real.",
+        "tooLong": "{{field}} de {{subject}} tem mais de {{max}} caracteres.",
+        "missing": "{{field}} é obrigatório, e nada foi preenchido para {{team}}."
+      },
+      "tournamentTitle": "Estatísticas informadas",
+      "tournamentHelp": "Somadas a partir dos resultados confirmados. Um resultado que ainda espera o adversário não conta aqui.",
+      "byTeam": "Por time",
+      "byPlayer": "Por jogador",
+      "team": "Time",
+      "player": "Jogador",
+      "matches": "Partidas"
+    },
+    "chip": {
+      "none": "Sem resultado ainda",
+      "yours": "Seu resultado",
+      "reported": "Informado",
+      "confirm": "Confirme",
+      "disputed": "Em disputa",
+      "final": "Final"
+    }
+  }
+}
