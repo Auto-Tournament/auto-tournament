@@ -106,8 +106,11 @@ const initialized = i18n
       order: ['localStorage', 'navigator'],
       caches: ['localStorage'],
       // Regional browser languages that have their own translation.
-      convertDetectedLanguage: (lng: string) =>
-        /^es-(?!ES$)/i.test(lng) ? 'es-419' : /^zh-(TW|HK|MO|Hant)/i.test(lng) ? 'zh-TW' : lng,
+      convertDetectedLanguage: (lng: string) => {
+        if (/^es-(?!ES$)/i.test(lng)) return 'es-419';
+        if (/^zh-(TW|HK|MO|Hant)/i.test(lng)) return 'zh-TW';
+        return lng;
+      },
     },
     // A language that loads later (LOADERS) re-renders the page when its strings arrive.
     react: { bindI18nStore: 'added' },
