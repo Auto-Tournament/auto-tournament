@@ -38,10 +38,10 @@
     "forfeit": "F",
     "position": "P",
     "seed": "#",
-    "winner-bracket": "WB",
-    "loser-bracket": "LB",
+    "winner-bracket": "胜者组",
+    "loser-bracket": "败者组",
     "match": "M",
-    "grand-final": "GF"
+    "grand-final": "总决赛"
   },
   "ranking": {
     "rank": {

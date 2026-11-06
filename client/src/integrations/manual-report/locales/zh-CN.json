@@ -1,81 +1,81 @@
 {
   "manualReport": {
-    "title": "Match result",
-    "unknownTeam": "the other team",
+    "title": "比赛结果",
+    "unknownTeam": "另一支战队",
     "state": {
-      "nothing": "No result reported yet. Whoever played it, report the score.",
-      "waitingOpponent": "Reported. Waiting for {{team}} to confirm.",
-      "needsAnswer": "{{team}} reported this result. Confirm it if it is right.",
-      "disputed": "This result is disputed. An admin will decide it.",
-      "awaitingAdmin": "Waiting for an admin to decide this match.",
-      "confirmed": "Both teams agree on this result."
+      "nothing": "还没有上报结果。参赛的任意一方都可以上报比分。",
+      "waitingOpponent": "已上报。等待 {{team}} 确认。",
+      "needsAnswer": "{{team}} 上报了这个结果。如果正确请确认。",
+      "disputed": "此结果有争议。将由管理员决定。",
+      "awaitingAdmin": "等待管理员决定这场比赛。",
+      "confirmed": "双方都同意这个结果。"
     },
     "deadline": {
-      "autoConfirm": "Confirms on its own in {{minutes}} min if nobody answers.",
-      "autoConfirmSoon": "Confirms on its own any moment now.",
-      "escalate": "Goes to an admin in {{minutes}} min if nobody answers.",
-      "escalateSoon": "Goes to an admin any moment now."
+      "autoConfirm": "如无人回应，将在 {{minutes}} 分钟后自动确认。",
+      "autoConfirmSoon": "即将自动确认。",
+      "escalate": "如无人回应，将在 {{minutes}} 分钟后交给管理员。",
+      "escalateSoon": "即将交给管理员。"
     },
     "score": "{{team1}} {{score1}} – {{score2}} {{team2}}",
-    "game": "Game {{number}}",
-    "note": "Note",
-    "notePlaceholder": "Anything the other team should know (optional)",
-    "noteGiven": "Note: {{note}}",
-    "disputeReason": "What is wrong with it?",
-    "disputeReasonGiven": "Disputed: {{reason}}",
-    "formHint": "Scores for {{team1}} and {{team2}}, game by game.",
+    "game": "第 {{number}} 局",
+    "note": "备注",
+    "notePlaceholder": "需要对方知道的事（可选）",
+    "noteGiven": "备注：{{note}}",
+    "disputeReason": "哪里不对？",
+    "disputeReasonGiven": "异议：{{reason}}",
+    "formHint": "{{team1}} 和 {{team2}} 的比分，逐局填写。",
     "actions": {
-      "report": "Report the score",
-      "reportAgain": "Report a different score",
-      "submit": "Send report",
-      "cancel": "Cancel",
-      "confirm": "Confirm",
-      "dispute": "Dispute",
-      "disputeSubmit": "Send dispute",
-      "withdraw": "Withdraw my report"
+      "report": "上报比分",
+      "reportAgain": "上报不同的比分",
+      "submit": "发送上报",
+      "cancel": "取消",
+      "confirm": "确认",
+      "dispute": "提出异议",
+      "disputeSubmit": "发送异议",
+      "withdraw": "撤回我的上报"
     },
     "errors": {
-      "stale": "This report changed while it was on your screen. Read it again before you confirm.",
-      "incomplete": "Fill in both scores for at least one game.",
-      "failed": "That did not go through. Try again."
+      "stale": "此上报在你查看期间已更改。确认前请重新阅读。",
+      "incomplete": "请至少为一局填写双方的比分。",
+      "failed": "操作没有成功。请重试。"
     },
     "captains": {
-      "title": "Captains",
-      "hint": "Only a captain can report or confirm a result for this team.",
-      "make": "Make captain",
-      "remove": "Remove captain",
-      "isCaptain": "Captain",
-      "empty": "Nobody on this team has signed in yet, so there is nobody to appoint.",
-      "unknown": "Unknown player",
-      "failed": "Could not change that. Try again."
+      "title": "队长",
+      "hint": "只有队长可以为此战队上报或确认结果。",
+      "make": "设为队长",
+      "remove": "取消队长",
+      "isCaptain": "队长",
+      "empty": "此战队还没有人登录，因此无人可任命。",
+      "unknown": "未知玩家",
+      "failed": "无法更改。请重试。"
     },
     "stats": {
-      "hint": "The extra numbers this tournament asks for. Leave a field blank if nobody has one.",
-      "required": "required",
-      "recorded": "Reported stats",
-      "value": "{{subject}}: {{value}}{{suffix}}",
+      "hint": "此赛事要求的额外数据。如果没有人有，留空即可。",
+      "required": "必填",
+      "recorded": "已上报的数据",
+      "value": "{{subject}}：{{value}}{{suffix}}",
       "errors": {
-        "number": "{{field}} for {{subject}} has to be a number.",
-        "integer": "{{field}} for {{subject}} has to be a whole number.",
-        "range": "{{field}} for {{subject}} is too big to be a real number.",
-        "tooLong": "{{field}} for {{subject}} is longer than {{max}} characters.",
-        "missing": "{{field}} is required, and nothing is filled in for {{team}}."
+        "number": "{{subject}} 的 {{field}} 必须是数字。",
+        "integer": "{{subject}} 的 {{field}} 必须是整数。",
+        "range": "{{subject}} 的 {{field}} 太大，不可能是真实数值。",
+        "tooLong": "{{subject}} 的 {{field}} 超过 {{max}} 个字符。",
+        "missing": "{{field}} 为必填项，但 {{team}} 没有填写。"
       },
-      "tournamentTitle": "Reported stats",
-      "tournamentHelp": "Added up from confirmed reports. A result still waiting for the opponent is not counted here.",
-      "byTeam": "By team",
-      "byPlayer": "By player",
-      "team": "Team",
-      "player": "Player",
-      "matches": "Matches"
+      "tournamentTitle": "已上报的数据",
+      "tournamentHelp": "由已确认的上报汇总。仍在等待对手确认的结果不计入。",
+      "byTeam": "按战队",
+      "byPlayer": "按玩家",
+      "team": "战队",
+      "player": "玩家",
+      "matches": "比赛"
     },
     "chip": {
-      "none": "No result yet",
-      "yours": "Your report",
-      "reported": "Reported",
-      "confirm": "Confirm it",
-      "disputed": "Disputed",
-      "final": "Final"
+      "none": "还没有结果",
+      "yours": "你的上报",
+      "reported": "已上报",
+      "confirm": "请确认",
+      "disputed": "有争议",
+      "final": "最终"
     }
   }
 }
