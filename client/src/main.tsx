@@ -25,6 +25,7 @@ import {
   daDK,
   fiFI,
   huHU,
+  roRO,
 } from '@mui/material/locale';
 import App from './App';
 import './index.css';
@@ -70,6 +71,7 @@ const getMuiLocale = (lang: string) => {
   if (lang.startsWith('da')) return daDK;
   if (lang.startsWith('fi')) return fiFI;
   if (lang.startsWith('hu')) return huHU;
+  if (lang.startsWith('ro')) return roRO;
   return enUS;
 };
 

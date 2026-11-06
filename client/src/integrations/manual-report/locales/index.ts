@@ -26,6 +26,7 @@ import nl from './nl.json';
 import pl from './pl.json';
 import pt from './pt-PT.json';
 import ptBR from './pt-BR.json';
+import ro from './ro.json';
 import ru from './ru.json';
 import sv from './sv.json';
 import tr from './tr.json';
@@ -57,4 +58,5 @@ export const manualReportLocales: ModuleLocales = {
   da,
   fi,
   hu,
+  ro,
 };
