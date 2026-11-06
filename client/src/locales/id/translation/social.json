@@ -1,0 +1,287 @@
+{
+  "notificationPrompt": {
+    "title": "Aktifkan notifikasi",
+    "body": "Kami sarankan untuk mengaktifkannya. Dengan begitu Anda tetap mendapat kabar dari kami meskipun tab ini ditutup:",
+    "matchReady": "pertandingan Anda siap untuk dimasuki",
+    "vetoTurn": "giliran Anda di veto peta",
+    "starting": "turnamen yang Anda ikuti akan segera dimulai",
+    "iphone": "Di iPhone, tambahkan dulu situs ini ke Layar Utama (Bagikan, lalu Tambahkan ke Layar Utama), lalu buka dari sana.",
+    "change": "Anda bisa mengubahnya kapan saja di pengaturan notifikasi.",
+    "later": "Nanti saja",
+    "turnOn": "Aktifkan (disarankan)"
+  },
+  "social": {
+    "bell": {
+      "title": "Notifikasi",
+      "label": "Notifikasi",
+      "labelUnread_one": "Notifikasi, {{count}} baru",
+      "labelUnread_other": "Notifikasi, {{count}} baru",
+      "markAllRead": "Tandai semua sudah dibaca",
+      "show": "Tampilkan",
+      "filter": {
+        "all": "Semua",
+        "you": "Butuh Anda",
+        "tournaments": "Turnamen",
+        "matches": "Pertandingan",
+        "skins": "Skin",
+        "clips": "Klip",
+        "other": "Lainnya"
+      },
+      "empty": "Belum ada apa-apa di sini",
+      "emptyHint": "Undangan party, permintaan pertemanan, kabar turnamen, skin baru, dan highlight yang sudah jadi muncul di sini.",
+      "loading": "Memuat…",
+      "seeAll": "Lihat semua notifikasi",
+      "loadOlder": "Muat yang lebih lama",
+      "settings": "Pengaturan notifikasi"
+    },
+    "notice": {
+      "partyInvite": "mengundang Anda ke party mereka",
+      "teamInvite": "mengundang Anda ke",
+      "joinedTeam": "Anda bergabung dengan tim",
+      "partyDetail": "{{mode}} · {{size}} di party",
+      "join": "Gabung",
+      "decline": "Tolak",
+      "accept": "Terima",
+      "ignore": "Abaikan",
+      "friendRequest": "mengirimi Anda permintaan pertemanan",
+      "friendAccepted": "menerima permintaan pertemanan Anda",
+      "skin": "Skin baru:",
+      "highlight": "Highlight Anda sudah jadi:",
+      "highlightVictim": "{{name}} mengalahkan Anda di klipnya:",
+      "highlightAssist": "Anda membantu {{name}} di klipnya:",
+      "highlightKiller": "Anda mengalahkan {{name}} di klipnya:",
+      "tournamentStarted": "sudah dimulai. Pertandingan pertama Anda sudah siap.",
+      "lineupGap": "· seorang pemain inti keluar dari lineup Anda. Pilih cadangan dalam {{minutes}} menit, atau Anda bermain kurang pemain.",
+      "checkInOpen": "check-in sudah dibuka. Lakukan check-in sebelum ditutup.",
+      "joined": "Anda bergabung dengan party",
+      "nowFriends": "Kalian sekarang berteman",
+      "declined": "Ditolak",
+      "expired": "Party ini sudah berakhir",
+      "reportNew": "dilaporkan: {{reason}}",
+      "reportReviewed": "Terima kasih: laporan Anda tentang {{name}} sudah ditinjau.",
+      "matchReady": "sudah siap. Buka ruang pertandingan untuk terhubung.",
+      "vetoTurn": "giliran tim Anda di veto.",
+      "startsSoon": "dimulai dalam {{minutes}} menit. Bersiaplah masuk ke pertandingan pertama Anda.",
+      "startsSoonUpdate": "dimulai dalam {{minutes}} menit. Jalankan game Anda sekarang agar pembaruan selesai sebelum pertandingan pertama.",
+      "matchSoon": "veto Anda dibuka dalam {{minutes}} menit dan tetap berjalan tanpa Anda. Bersiaplah di depan PC.",
+      "noShow": "Anda tidak pernah masuk ke pertandingan, jadi Anda dikeluarkan dari babak berikutnya. Buka turnamen dan nyatakan Anda kembali untuk lanjut bermain.",
+      "discordLink": "tautkan akun Discord Anda untuk mendapatkan saluran tim dan dipindahkan ke voice tim.",
+      "signedUp": "· {{team}} sudah terdaftar. Lihat hal yang perlu diketahui sebelum mulai."
+    },
+    "toast": {
+      "join": "Gabung party",
+      "close": "Tutup",
+      "closes_one": "Tertutup dalam {{count}} dtk · tetap ada di lonceng",
+      "closes_other": "Tertutup dalam {{count}} dtk · tetap ada di lonceng"
+    },
+    "friends": {
+      "title": "Teman",
+      "tabFriends": "Teman",
+      "tabRequests": "Permintaan",
+      "tabAdd": "Tambah teman",
+      "online_one": "Online · {{count}}",
+      "online_other": "Online · {{count}}",
+      "offline_one": "Offline · {{count}}",
+      "offline_other": "Offline · {{count}}",
+      "onlineCount_one": "{{count}} online",
+      "onlineCount_other": "{{count}} online",
+      "invite": "Undang",
+      "inParty": "Di party Anda",
+      "more": "Lainnya untuk {{name}}",
+      "viewProfile": "Lihat profil",
+      "remove": "Hapus teman",
+      "removed": "{{name}} bukan teman Anda lagi",
+      "none": "Belum ada teman",
+      "noneHint": "Tambahkan orang yang bermain dengan Anda, lalu undang mereka ke party dari sini atau dari Main.",
+      "incoming": "Masuk",
+      "sent": "Terkirim",
+      "noIncoming": "Tidak ada permintaan yang menunggu Anda.",
+      "noSent": "Tidak ada permintaan Anda yang menunggu.",
+      "askedAgo": "Meminta {{when}}",
+      "sentAgo": "Dikirim {{when}}",
+      "cancelRequest": "Batalkan permintaan",
+      "searchPlaceholder": "Nama, atau tautan profil Steam",
+      "results": "Di Auto Tournament",
+      "playedWith": "Baru-baru ini bermain bersama",
+      "noResults": "Tidak ada yang bernama itu.",
+      "typeMore": "Ketik minimal dua huruf.",
+      "noRecent": "Mainkan pertandingan dan orang yang bermain dengan Anda akan muncul di sini.",
+      "matches_one": "{{count}} pertandingan",
+      "matches_other": "{{count}} pertandingan",
+      "alreadyFriends": "Teman",
+      "requestSent": "Permintaan terkirim",
+      "addFriend": "Tambah teman",
+      "signIn": "Masuk untuk melihat teman Anda",
+      "signInHint": "Teman, permintaan, dan undangan terkait dengan akun Anda.",
+      "cardEmpty": "Tambahkan teman untuk melihat kapan mereka online dan mengundang mereka dengan satu klik.",
+      "all_one": "Semua teman ({{count}}) →",
+      "all_other": "Semua teman ({{count}}) →",
+      "find": "Cari teman →",
+      "requestCount_one": "{{count}} permintaan",
+      "requestCount_other": "{{count}} permintaan"
+    },
+    "status": {
+      "playing": "Sedang bertanding · {{match}}",
+      "searching": "Mencari · {{mode}}",
+      "online": "Online",
+      "offline": "Offline",
+      "lastSeen": "Terakhir terlihat {{when}}"
+    },
+    "invite": {
+      "searchPlaceholder": "Siapa saja di situs, berdasarkan nama",
+      "friendsOnline": "Teman yang online",
+      "recent": "Baru-baru ini bermain bersama",
+      "onSite": "Di Auto Tournament",
+      "noFriends": "Belum ada teman. Cari siapa saja berdasarkan nama di atas.",
+      "nobodyOnline": "Tidak ada teman Anda yang online.",
+      "inMatch": "Sedang bertanding",
+      "together_one": "{{count}} pertandingan bersama",
+      "together_other": "{{count}} pertandingan bersama",
+      "invited": "Diundang",
+      "sent": "{{name}} diundang",
+      "chip": "{{name}} · diundang",
+      "cancel": "Tarik kembali undangan untuk {{name}}",
+      "orLink": "Atau tautan",
+      "copy": "Salin",
+      "copyFailed": "Tidak dapat menyalin. Pilih tautannya dan salin sendiri.",
+      "makeLink": "Buat tautan undangan",
+      "cannot": {
+        "nobody": "Tidak menerima undangan",
+        "friends": "Hanya teman",
+        "no_game": "Tidak bermain CS2"
+      }
+    },
+    "profile": {
+      "friends": "Teman",
+      "acceptRequest": "Terima permintaan pertemanan",
+      "message": "Pesan",
+      "invite": "Undang ke party"
+    },
+    "settings": {
+      "title": "Undangan party",
+      "description": "Siapa yang bisa mengundang Anda ke party matchmaking. Undangan muncul di lonceng dan sebagai pop-up di halaman mana pun yang Anda buka.",
+      "everyone": "Semua orang",
+      "everyoneHint": "Pemain mana pun di situs ini.",
+      "friends": "Hanya teman",
+      "friendsHint": "Hanya pemain yang berteman dengan Anda.",
+      "nobody": "Tidak ada",
+      "nobodyHint": "Tanpa undangan. Anda tetap bisa bergabung ke party lewat tautannya.",
+      "saved": "Tersimpan",
+      "saveFailed": "Tidak dapat menyimpan pengaturan"
+    },
+    "setup": {
+      "title": "Selesaikan penyiapan sebelum mencari",
+      "youGame": "Tambahkan CS2 ke game di profil Anda.",
+      "youGameAuto": "Mencari pertandingan akan menambahkan game ini ke game Anda.",
+      "youAccount": "Hubungkan akun Steam Anda.",
+      "theyGame": "{{name}} belum menambahkan CS2 ke game mereka.",
+      "theyAccount": "{{name}} belum menghubungkan akun Steam mereka.",
+      "fix": "Buka akun Anda"
+    },
+    "news": {
+      "title": "Kabar",
+      "hint": "Kirim pemberitahuan ke lonceng setiap pemain: musim baru, turnamen, jadwal pemeliharaan.",
+      "titleLabel": "Judul",
+      "bodyLabel": "Satu baris tambahan (opsional)",
+      "urlLabel": "Tautan (opsional)",
+      "urlHint": "Halaman di sini (/tournament/3) atau alamat https://.",
+      "urlBad": "Awali dengan / atau https://",
+      "send": "Kirim ke semua pemain",
+      "confirm": "Setiap pemain yang pernah masuk akan menerima ini. Kirim?",
+      "sendNow": "Kirim sekarang",
+      "cancel": "Batal",
+      "sent_one": "Dikirim ke {{count}} pemain",
+      "sent_other": "Dikirim ke {{count}} pemain",
+      "failed": "Tidak dapat mengirim kabar"
+    },
+    "noticeSettings": {
+      "title": "Pengaturan",
+      "alerts": "Peringatan",
+      "browser": "Notifikasi browser",
+      "browserHint": "Di perangkat ini, meskipun situs ditutup (pertandingan Anda siap, giliran veto Anda, turnamen dimulai). Aktif hanya untuk browser ini.",
+      "browserDenied": "Diblokir di pengaturan situs browser ini. Izinkan notifikasi di sana untuk mengaktifkannya.",
+      "browserUnsupported": "Browser ini tidak mendukung notifikasi.",
+      "sound": "Suara",
+      "test": "Uji",
+      "volume": "Volume {{percent}}%",
+      "group": {
+        "you": "Anda",
+        "tournaments": "Turnamen",
+        "other": "Lainnya",
+        "skins": "Skin",
+        "clips": "Klip"
+      },
+      "kind": {
+        "party_invite": "Undangan party",
+        "team_invite": "Undangan tim",
+        "friend_request": "Permintaan pertemanan",
+        "friend_accepted": "Permintaan pertemanan diterima",
+        "tournament": "Check-in dan dimulainya turnamen",
+        "skin": "Drop skin",
+        "highlight": "Highlight Anda",
+        "news": "Kabar",
+        "report": "Laporan"
+      },
+      "delivery": {
+        "off": "Nonaktif",
+        "bell": "Lonceng",
+        "sound": "Lonceng dan suara"
+      }
+    }
+  },
+  "notifyChannels": {
+    "title": "Notifikasi",
+    "description": "Tempat kami memberi tahu hal yang butuh Anda saat Anda tidak sedang di situs. Nonaktif secara bawaan, kecuali pertandingan Anda sendiri.",
+    "event": "Event",
+    "channel": {
+      "push": "Browser / ponsel",
+      "discord": "DM Discord",
+      "email": "Email"
+    },
+    "events": {
+      "match_ready": {
+        "title": "Pertandingan Anda siap",
+        "hint": "Server, tautan koneksi, dan lawan Anda"
+      },
+      "veto_turn": {
+        "title": "Giliran Anda di veto",
+        "hint": "Hanya kapten"
+      },
+      "checkin_open": {
+        "title": "Check-in dibuka",
+        "hint": "Untuk turnamen yang Anda ikuti"
+      },
+      "new_tournament": {
+        "title": "Turnamen baru",
+        "hint": "Saat turnamen membuka pendaftaran"
+      },
+      "tournament_starting": {
+        "title": "Turnamen dimulai",
+        "hint": "Pengingat sebelum turnamen yang Anda ikuti dimulai"
+      },
+      "direct_message": {
+        "title": "Pesan dari teman",
+        "hint": "Saat Anda tidak sedang di situs"
+      }
+    },
+    "reason": {
+      "no_bot": "Belum disiapkan di situs ini",
+      "no_discord": "Tautkan Discord dulu",
+      "no_push": "Aktifkan notifikasi di browser ini dulu",
+      "email_off": "Situs ini tidak bisa mengirim email",
+      "no_email": "Tambahkan email dulu",
+      "email_unverified": "Konfirmasi email Anda dulu"
+    },
+    "switchLabel": "{{event}} melalui {{channel}}",
+    "saveFailed": "Tidak dapat menyimpan itu."
+  },
+  "presence": {
+    "online": "Online",
+    "offline": "Offline",
+    "away": "Pergi",
+    "searching": "Mencari game {{mode}}",
+    "playingMatchmaking": "Dalam pertandingan matchmaking: {{label}}",
+    "playingTournament": "Dalam pertandingan turnamen: {{label}}",
+    "playing": "Dalam pertandingan: {{label}}"
+  }
+}

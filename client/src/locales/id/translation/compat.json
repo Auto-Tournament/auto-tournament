@@ -1,0 +1,82 @@
+{
+  "compatPage": {
+    "title": "Kompatibilitas Ready Up",
+    "subtitle": "Apakah plugin Ready Up berfungsi dengan pembaruan Counter-Strike 2 terbaru, diperiksa otomatis pada setiap build CS2 baru.",
+    "live": "Langsung",
+    "offline": "Menyambung ulang…",
+    "loading": "Memuat kompatibilitas",
+    "loadError": "Tidak dapat memuat kompatibilitas. Coba lagi sebentar lagi.",
+    "disabledTitle": "Tidak tersedia di sini",
+    "disabledDescription": "Situs ini tidak menerbitkan kompatibilitas Ready Up.",
+    "emptyTitle": "Belum ada hasil",
+    "emptyDescription": "Belum ada pemeriksaan kompatibilitas yang melapor. Halaman ini otomatis diperbarui begitu ada.",
+    "checkedAgo": "Diperiksa {{time}}",
+    "viewRun": "Lihat run",
+    "factsLabel": "Yang diperiksa",
+    "facts": {
+      "patch": "Patch CS2",
+      "buildid": "Build ID",
+      "readyup": "Ready Up",
+      "stage": "Tahap"
+    },
+    "overall": {
+      "pass": "Kompatibel",
+      "warn": "Kompatibel, dengan peringatan",
+      "fail": "Tidak kompatibel",
+      "checking": "Memeriksa…",
+      "no_verdict": "Belum ada keputusan"
+    },
+    "overallHint": {
+      "pass": "Semua komponen lolos pemeriksaan pada build ini.",
+      "warn": "Ready Up berfungsi pada build ini, tetapi beberapa pemeriksaan perlu dilihat lebih teliti.",
+      "fail": "Setidaknya satu komponen tidak berfungsi pada build ini. Tunda pembaruan server.",
+      "checking": "Pemeriksaan build ini sedang berjalan.",
+      "no_verdict": "Pemeriksaan terakhir tidak bisa mencapai keputusan."
+    },
+    "status": {
+      "pass": "Lolos",
+      "warn": "Peringatan",
+      "fail": "Gagal",
+      "pending": "Menunggu",
+      "checking": "Memeriksa…"
+    },
+    "stage": {
+      "static": "Analisis statis",
+      "selftest": "Uji mandiri",
+      "live": "Server langsung"
+    },
+    "state": {
+      "queued": "Dalam antrean",
+      "checking": "Memeriksa",
+      "pass": "Lolos",
+      "warn": "Peringatan",
+      "fail": "Gagal",
+      "no_verdict": "Belum ada keputusan"
+    },
+    "trigger": {
+      "build_change": "Build CS2 baru",
+      "surface_change": "Data game berubah",
+      "code_change": "Perubahan Ready Up",
+      "nightly": "Harian",
+      "release": "Rilis Ready Up",
+      "manual": "Manual"
+    },
+    "kind": {
+      "signature": "Signature",
+      "rtti": "RTTI",
+      "vtable": "Tabel virtual",
+      "hook_site": "Titik hook",
+      "layout": "Tata letak memori",
+      "schema": "Skema",
+      "event": "Event game",
+      "selftest": "Uji mandiri",
+      "livetest": "Uji langsung"
+    },
+    "componentsTitle": "Komponen",
+    "checksSummary": "{{passed}} dari {{total}} pemeriksaan lolos",
+    "noChecks": "Belum ada pemeriksaan yang melapor",
+    "failures": "Kegagalan",
+    "historyTitle": "Run terbaru",
+    "historyItem": "CS2 {{patch}} · build {{buildid}}"
+  }
+}

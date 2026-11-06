@@ -1,0 +1,989 @@
+{
+  "dashboard": {
+    "title": "Admin",
+    "restartTournament": {
+      "button": "Mulai ulang pertandingan turnamen",
+      "restarting": "Memulai ulang pertandingan turnamen…",
+      "intro": "🔄 Ini akan memulai ulang semua pertandingan aktif dan memuatnya ulang di server.",
+      "actionsTitle": "Tindakan:",
+      "actionEndMatch": "Jalankan at_endmatch di semua server dengan pertandingan yang dimuat/live",
+      "actionReset": "Reset pertandingan ke status 'siap'",
+      "actionReallocate": "Alokasikan ulang pertandingan ke server yang tersedia",
+      "actionReload": "Muat ulang konfigurasi pertandingan di server game",
+      "hint": "Gunakan ini jika pertandingan macet atau perlu dimulai dari awal.",
+      "confirm": "Mulai ulang turnamen"
+    },
+    "header": {
+      "brand": "Auto Tournament",
+      "version": "Situs Auto Tournament Anda · versi {{version}}",
+      "unknownVersion": "dev",
+      "createTournament": "Buat turnamen"
+    },
+    "setup": {
+      "title": "Selesaikan penyiapan",
+      "openSettings": "Buka pengaturan",
+      "signIn": "Penyedia masuk",
+      "game": "Pasang game (CS2) dari Modul",
+      "discordBot": "Tambahkan bot Discord Anda sendiri (token-nya) agar situs bisa mengirim DM ke pemain tentang pertandingan mereka"
+    },
+    "tournaments": {
+      "title": "Turnamen",
+      "empty": "Situs ini menjalankan satu turnamen dalam satu waktu. Buat turnamen, dan turnamen itu muncul di sini, di Jelajahi, dan di halaman acaranya.",
+      "status": {
+        "setup": "Draf",
+        "ready": "Pendaftaran",
+        "inProgress": "Live",
+        "completed": "Selesai"
+      },
+      "state": {
+        "teams_one": "{{count}} tim",
+        "teams_other": "{{count}} tim",
+        "entered_one": "{{count}} tim ikut",
+        "entered_other": "{{count}} tim ikut",
+        "draftTeams_one": "Draf · {{count}} tim dipilih",
+        "draftTeams_other": "Draf · {{count}} tim dipilih",
+        "draftEmpty": "Draf · belum ada tim",
+        "live_one": "{{count}} pertandingan live",
+        "live_other": "{{count}} pertandingan live",
+        "completed_one": "{{count}} tim ikut serta",
+        "completed_other": "{{count}} tim ikut serta",
+        "winner": "Pemenang: {{name}}",
+        "teamsPlayers_one": "{{count}} pemain",
+        "teamsPlayers_other": "{{count}} pemain",
+        "enteredPlayers_one": "{{count}} pemain ikut",
+        "enteredPlayers_other": "{{count}} pemain ikut",
+        "draftTeamsPlayers_one": "Draf · {{count}} pemain",
+        "draftTeamsPlayers_other": "Draf · {{count}} pemain",
+        "completedPlayers_one": "{{count}} pemain ikut serta",
+        "completedPlayers_other": "{{count}} pemain ikut serta"
+      },
+      "actions": {
+        "manage": "Kelola",
+        "continueSetup": "Lanjutkan penyiapan",
+        "view": "Lihat"
+      },
+      "eventPage": "Halaman acara",
+      "emptyTitle": "Belum ada turnamen"
+    },
+    "site": {
+      "title": "Situs",
+      "players": {
+        "label": "Pemain",
+        "hint": "Semua yang pernah masuk"
+      },
+      "teams": {
+        "label": "Tim",
+        "hint": "Klub dan roster"
+      },
+      "templates": {
+        "label": "Template",
+        "hint": "Pengaturan yang bisa dipakai ulang"
+      },
+      "ratings": {
+        "label": "Rating",
+        "hint": "Cara rating dihitung"
+      },
+      "settings": {
+        "label": "Pengaturan",
+        "hint": "Masuk, API key"
+      },
+      "adminTools": {
+        "label": "Sistem",
+        "hint": "Pemulihan pertandingan dan log"
+      },
+      "disputes": {
+        "label": "Sengketa",
+        "hint": "Hasil yang perlu diselesaikan"
+      },
+      "modules": {
+        "label": "Modul",
+        "hint": "Game yang dijalankan instans ini"
+      }
+    },
+    "people": {
+      "title": "Orang",
+      "open": "Buka",
+      "players": "Pemain",
+      "admins": "Admin",
+      "signedInThisWeek": "Masuk minggu ini"
+    },
+    "loading": "Memuat beranda admin"
+  },
+  "settingsPage": {
+    "email": {
+      "title": "Email",
+      "short": "Mengirim konfirmasi alamat, reset kata sandi, dan email turnamen.",
+      "enabled": "Kirim email",
+      "enabledOn": "Aktif. Email dikirim dari {{from}}.",
+      "enabledOff": "Nonaktif. Tidak ada yang dikirim.",
+      "needsServer": "Siapkan server di bawah terlebih dahulu.",
+      "turnedOn": "Email aktif",
+      "turnedOff": "Email nonaktif",
+      "server": "Server email",
+      "serverNone": "Belum disiapkan",
+      "host": "Server SMTP",
+      "port": "Port",
+      "security": "Keamanan",
+      "securityStarttls": "STARTTLS (biasanya port 587)",
+      "securityTls": "TLS (biasanya port 465)",
+      "securityNone": "Tidak ada (hanya di jaringan tepercaya)",
+      "username": "Nama pengguna",
+      "password": "Kata sandi",
+      "passwordKept": "Biarkan kosong untuk mempertahankan yang tersimpan",
+      "passwordSaved": "Tersimpan",
+      "fromAddress": "Alamat pengirim",
+      "fromAddressHelp": "Alamat asal email. Penyedia email Anda harus mengizinkannya.",
+      "fromName": "Nama pengirim",
+      "fromNameHelp": "Opsional. Ditampilkan sebagai pengirim email, mis. NTLAN.",
+      "siteUrl": "Alamat situs",
+      "siteUrlHelp": "Tautan di email dimulai dari sini, mis. https://cs.example.com.",
+      "siteUrlHelpDefault": "Tautan di email dimulai dari sini. Kosong: {{url}}.",
+      "save": "Simpan",
+      "saved": "Pengaturan email tersimpan",
+      "loadError": "Tidak dapat memuat pengaturan email",
+      "saveError": "Tidak dapat menyimpan pengaturan email",
+      "test": "Email uji",
+      "testShort": "Kirim satu untuk memeriksa apakah pengaturannya berfungsi.",
+      "testTo": "Kirim ke",
+      "testSend": "Kirim uji",
+      "testNeedsOn": "Aktifkan pengiriman (dan simpan servernya) sebelum menguji.",
+      "testSent": "Dikirim ke {{to}}. Periksa kotak masuk dan folder spam.",
+      "testFailed": "Email uji tidak dapat dikirim"
+    },
+    "title": "Pengaturan",
+    "intro": "Pengaturan milik platform. Setiap game menyimpan pengaturannya sendiri di menu.",
+    "tabs": {
+      "general": "Umum",
+      "signIn": "Masuk",
+      "players": "Pemain & akses",
+      "ratings": "Rating",
+      "developer": "Pengembang",
+      "license": "Lisensi",
+      "webhooks": "Webhook",
+      "experimental": "Eksperimental"
+    },
+    "signIn": {
+      "title": "Penyedia masuk",
+      "intro": "Pilih cara orang masuk. Salah satu dari ini bisa menjadi akun seseorang; orang menautkan lebih banyak di halaman koneksi mereka. Perubahan langsung berlaku, tanpa restart.",
+      "keySource": "Secret yang tersimpan dienkripsi dengan {{name}}.",
+      "keySourceDefault": "Secret yang tersimpan dienkripsi dengan kunci pengembangan bawaan. Atur SECRETS_KEY atau SESSION_SECRET sebelum situs dipakai sungguhan.",
+      "loadError": "Tidak dapat memuat penyedia masuk",
+      "saveError": "Tidak dapat menyimpan",
+      "testError": "Tidak dapat menjalankan uji",
+      "saved": "Masuk dengan {{provider}} tersimpan",
+      "enabled": "Aktif",
+      "clientId": "Client ID",
+      "issuerUrl": "URL issuer",
+      "issuerUrlHelp": "Alamat realm atau tenant OpenID Connect Anda. Auto Tournament membaca endpoint-nya dari /.well-known/openid-configuration.",
+      "buttonName": "Nama tombol",
+      "buttonNameHelp": "Ditampilkan sebagai “Masuk dengan …” di halaman masuk, mis. komunitas atau server identitas Anda.",
+      "logoUpload": "Unggah logo",
+      "logoReplace": "Ganti logo",
+      "logoRemove": "Hapus logo",
+      "logoType": "Logo harus berupa gambar PNG, JPEG, WebP, atau SVG.",
+      "logoSize": "Logo maksimal 150 KB.",
+      "buttonColor": "Warna tombol",
+      "buttonColorDefault": "Warna bawaan",
+      "clientSecret": "Client secret",
+      "steamKey": "Steam Web API key",
+      "secretSet": "diatur",
+      "secretUnreadable": "Secret yang tersimpan tidak bisa didekripsi lagi (kunci enkripsi berubah). Masukkan lagi.",
+      "replace": "Ganti",
+      "cancel": "Batal",
+      "save": "Simpan",
+      "callbackHint": "Diatur otomatis. Tempel sebagai URL redirect di pengaturan pengembang {{provider}}:",
+      "copy": "Salin",
+      "copyCallback": "Salin URL callback",
+      "copied": "Disalin",
+      "copyError": "Tidak dapat menyalin",
+      "guide": "Panduan penyiapan",
+      "howTo": "Konsol pengembang",
+      "test": "Uji",
+      "comingSoon": "Segera hadir",
+      "comingSoonNote": "Masuk dengan {{provider}} belum tersedia.",
+      "status": {
+        "active": "Di halaman masuk",
+        "missing": "Aktif, kredensial belum lengkap",
+        "off": "Nonaktif"
+      },
+      "testResult": {
+        "ok": "Penyedia menerima kredensial ini.",
+        "invalid_credentials": "Penyedia menolak kredensial ini. Periksa client ID dan secret (atau key-nya).",
+        "unreachable": "Tidak dapat menghubungi penyedia. Periksa jaringan lalu coba lagi.",
+        "not_configured": "Masukkan kredensial terlebih dahulu.",
+        "not_supported": "Penyedia ini tidak bisa diuji.",
+        "unexpected": "Penyedia memberi jawaban yang tidak dipahami oleh uji ini."
+      },
+      "welcomeTitle": "Atur cara pemain masuk",
+      "welcomeBody": "Anda masuk sebagai admin. Aktifkan minimal satu penyedia di bawah (Steam, Discord, Google, GitHub, atau Twitch) agar pemain bisa masuk.",
+      "adminAccess": {
+        "title": "Akses admin",
+        "localLogin": "Izinkan masuk admin lokal",
+        "localLoginHelp": "Masuk dengan nama pengguna dan kata sandi di /login/admin. Jika kehilangan akses, jalankan reset-admin di server.",
+        "localLoginLocked": "Tetap aktif sampai admin lain bisa masuk dengan penyedia yang aktif.",
+        "steamIds": "Steam ID admin",
+        "steamIdsHelp": "Steam64 ID, dipisahkan koma. Dijadikan admin saat disimpan dan di setiap start. Menghapus satu ID tidak mencabut status admin.",
+        "emails": "Email admin",
+        "emailsHelp": "Alamat yang mendapat status admin saat pemiliknya masuk dengan penyedia yang memverifikasinya (Google, Discord, GitHub).",
+        "unsaved": "Belum disimpan.",
+        "saved": "Akses admin tersimpan",
+        "loadError": "Tidak dapat memuat pengaturan akses admin",
+        "short": "Siapa yang bisa masuk sebagai admin"
+      },
+      "short": "Cara pemain dan admin masuk. Perubahan langsung berlaku.",
+      "enabledFor": "Masuk dengan {{provider}}",
+      "setUp": "Siapkan {{provider}}",
+      "accounts": {
+        "title": "Akun",
+        "short": "Akun nama pengguna dan kata sandi yang Anda buat",
+        "help": "Orang masuk dengan akun ini di /login/admin. Beri status admin kepada yang mengelola situs; sisanya masuk sebagai pemain.",
+        "none": "Belum ada akun.",
+        "admin": "Admin",
+        "twoStep": "Dua langkah aktif",
+        "lastLogin": "Terakhir masuk {{date}}",
+        "neverSignedIn": "Belum pernah masuk",
+        "setPassword": "Atur kata sandi",
+        "remove": "Hapus",
+        "addTitle": "Tambah akun",
+        "username": "Nama pengguna",
+        "usernameHelp": "3 sampai 32 karakter: huruf kecil, angka, titik, tanda hubung, dan garis bawah.",
+        "name": "Nama tampilan",
+        "nameHelp": "Opsional. Ditampilkan di situs; nama pengguna dipakai jika dikosongkan.",
+        "password": "Kata sandi",
+        "makeAdmin": "Admin",
+        "create": "Buat akun",
+        "created": "Akun {{username}} dibuat",
+        "madeAdmin": "{{username}} sekarang admin",
+        "adminRemoved": "{{username}} bukan admin lagi",
+        "setPasswordTitle": "Kata sandi baru untuk {{username}}",
+        "setPasswordTotp": "Verifikasi dua langkahnya juga dinonaktifkan; mereka mengaturnya lagi setelah masuk.",
+        "newPassword": "Kata sandi baru",
+        "savePassword": "Simpan kata sandi",
+        "passwordSet": "Kata sandi baru untuk {{username}} tersimpan",
+        "removeTitle": "Hapus {{username}}?",
+        "removeBody": "Mereka tidak bisa lagi masuk dengan nama pengguna dan kata sandi ini, dan bukan admin lagi. Pemain, pertandingan, dan statistiknya tetap ada; membuat nama pengguna yang sama lagi akan mengembalikannya.",
+        "removeConfirm": "Hapus",
+        "removed": "{{username}} dihapus",
+        "cancel": "Batal",
+        "loadError": "Tidak dapat memuat akun",
+        "saveError": "Tidak dapat menyimpan akun"
+      },
+      "oidcScopes": "Di server OpenID Connect Anda, beri client ini scope openid, profile, dan email (di Keycloak: Clients → client ini → Client scopes, dengan profile dan email sebagai Default). Tanpa profile dan email orang tetap bisa masuk, tetapi platform tidak mendapat nama atau alamat email mereka."
+    },
+    "integrations": {
+      "steam": {
+        "title": "Integrasi Steam",
+        "apiKeyLabel": "Steam Web API key",
+        "apiKeyHelper": "Mencari URL vanity Steam dan info pemain. Biarkan kosong untuk menonaktifkan pencarian.",
+        "checkButtonChecking": "Memeriksa Steam…",
+        "checkButtonIdle": "Periksa konektivitas Steam",
+        "statusOk": "Steam API key sudah diatur dan bisa dihubungi.",
+        "statusNotConfigured": "Steam API key belum diatur. URL vanity tidak bisa dicari sampai Anda menambahkan key.",
+        "statusUnreachable": "Steam API key tampaknya sudah diatur tetapi Steam tidak bisa dihubungi. Periksa jaringan atau key Anda.",
+        "statusError": "Gagal memeriksa status Steam API. Silakan coba lagi."
+      }
+    },
+    "matchRating": {
+      "ratings": {
+        "title": "Pembaruan rating",
+        "description": "Atur apakah pertandingan yang selesai memperbarui Skill Rating pemain. Nonaktifkan ini untuk acara di mana sistem eksternal (misalnya sheet Excel Anda) menjadi sumber kebenaran rating.",
+        "toggleLabel": "Perbarui rating pemain dari pertandingan yang selesai",
+        "note": "Saat dinonaktifkan, semua pertandingan tetap mencatat statistik (ADR, K/D, dll.), tetapi Skill Rating pemain tidak berubah.",
+        "short": "Rating berubah setelah setiap pertandingan."
+      }
+    },
+    "players": {
+      "registration": {
+        "title": "Pendaftaran pemain",
+        "description": "Atur apakah masuk membuat data pemain untuk orang baru, apa pun metode masuk yang dipakai (Steam, Discord, Google, dan lainnya yang Anda aktifkan). Saat dinonaktifkan, hanya pemain yang dibuat atau diimpor admin yang muncul di turnamen privat dan kumpulan turnamen acak.",
+        "toggleLabel": "Izinkan siapa saja mendaftar dengan masuk",
+        "recommendation": "Disarankan: biarkan nonaktif untuk turnamen khusus undangan atau privat agar orang yang asal masuk tidak memenuhi daftar pemain.",
+        "short": "Masuk menjadikan setiap orang baru sebagai pemain. Nonaktif: hanya pemain yang Anda tambahkan."
+      },
+      "title": "Pemain",
+      "short": "Siapa yang bergabung, dan bagaimana rating bergerak.",
+      "chooseName": {
+        "toggleLabel": "Pemain memilih nama tampilan sendiri",
+        "short": "Pemain diminta nama mereka dan bisa mengubahnya sekali sehari. Nonaktif: nama berasal dari impor dan admin."
+      }
+    },
+    "developer": {
+      "resetApiTitle": "Reset API & database",
+      "resetApiDescription": "Zona berbahaya: menghapus dan membuat ulang seluruh skema database, lalu menginisialisasi ulang data bawaan (peta, kumpulan peta, dll.). Hanya untuk pengembangan lokal. Tidak bisa dibatalkan.",
+      "resetApiButton": "Reset API (hapus semua data)",
+      "resetApiButtonLoading": "Mereset API…",
+      "resetApiSuccess": "API dan database berhasil direset. Semua data sudah dihapus dan data bawaan diinisialisasi ulang.",
+      "resetApiError": "Gagal mereset API dan database. Periksa log API untuk detailnya.",
+      "resetApiDialog": {
+        "title": "Reset API & hapus semua data?",
+        "description": "Ini akan menghapus dan membuat ulang seluruh skema database. Semua turnamen, pertandingan, pemain, tim, rating, event, log, dan pengaturan akan dihapus permanen. Tindakan ini tidak bisa dibatalkan. Lanjutkan?",
+        "cancel": "Batal",
+        "confirm": "Ya, reset API & hapus data",
+        "confirmLoading": "Mereset…"
+      }
+    },
+    "footer": {
+      "version": "Versi",
+      "unknownVersion": "Tidak dikenal"
+    },
+    "errors": {
+      "loadSettings": "Gagal memuat pengaturan",
+      "saveSettings": "Gagal menyimpan pengaturan"
+    },
+    "success": {
+      "saveSettings": "Pengaturan tersimpan"
+    },
+    "site": {
+      "title": "Situs",
+      "description": "Nama situs ini. Beranda admin memakainya sebagai judul.",
+      "label": "Nama situs",
+      "helper": "Biarkan kosong untuk memakai \"Auto Tournament\".",
+      "save": "Simpan",
+      "saved": "Nama situs tersimpan",
+      "saveFailed": "Tidak dapat menyimpan nama situs"
+    },
+    "experimental": {
+      "title": "Eksperimental",
+      "description": "Fitur yang masih dikembangkan. Nonaktif secara bawaan dan bisa berubah atau rusak. Hanya admin yang melihatnya.",
+      "saved": "Tersimpan",
+      "saveFailed": "Tidak dapat menyimpan fitur",
+      "loadFailed": "Tidak dapat memuat fitur eksperimental",
+      "envOverride": "Diatur oleh variabel lingkungan {{env}}. Ubah di sana.",
+      "features": {},
+      "short": "Masih dikembangkan: nonaktif secara bawaan, hanya admin yang melihatnya."
+    },
+    "matchmaking": {
+      "openLabel": "Terbuka untuk pemain",
+      "openDescription": "Aktif: setiap pemain yang masuk melihat Main dan bisa mengantre. Nonaktif: hanya admin yang bisa mencari pertandingan.",
+      "boardLabel": "Papan peringkat terlihat oleh semua",
+      "boardDescription": "Nonaktif: hanya pemain yang masuk yang melihat papan peringkat matchmaking. Aktif: siapa saja yang punya tautannya.",
+      "windowTitle": "Rentang pencarian",
+      "windowDescription": "Seberapa jauh selisih rating antarpemain yang diizinkan. Dimulai dari angka pertama, bertambah sebesar langkah setiap 30 detik hingga batas, dan setelah angka menit terakhir siapa pun dicocokkan (kosongkan untuk tidak pernah).",
+      "window": {
+        "start": "Awal (Elo)",
+        "step": "Langkah (Elo)",
+        "cap": "Batas (Elo)",
+        "uncappedAfterMinutes": "Siapa pun setelah (mnt)"
+      },
+      "reservedTitle": "Server yang disisihkan untuk matchmaking",
+      "reservedDescription": "Pertandingan turnamen didahulukan, tetapi sisakan sebanyak ini server kosong untuk matchmaking saat pemain sedang mencari. 0 = tidak ada.",
+      "reservedLabel": "Server",
+      "modesTitle": "Mode",
+      "modesDescription": "Apa yang bisa dicari pemain. Semua mode aktif secara bawaan. 1v1 adalah duel aim.",
+      "poolsTitle": "Peta per mode",
+      "poolsDescription": "Kumpulan peta yang dipakai setiap mode (halaman Peta; peta Workshop juga bisa). Ruang pertandingan menampilkan roulette dari kumpulan itu sebelum mengungkap petanya.",
+      "poolDefault": {
+        "5v5": "Bawaan: Active Duty",
+        "2v2": "Bawaan: semua peta wingman",
+        "1v1": "Bawaan: Active Duty"
+      },
+      "save": "Simpan",
+      "title": "Matchmaking",
+      "short": "Selalu aktif. Pemain mencari pertandingan, mengantre dan menerima, lalu bermain di server yang kosong.",
+      "saved": "Tersimpan",
+      "saveFailed": "Tidak dapat menyimpan pengaturan matchmaking",
+      "loadFailed": "Tidak dapat memuat pengaturan matchmaking"
+    },
+    "groups": {
+      "platform": "Platform"
+    },
+    "navLabel": "Halaman pengaturan",
+    "gameLinks": {
+      "title": "Pengaturan game",
+      "hint": "Setiap game menyimpan pengaturannya sendiri di menu."
+    },
+    "sections": {
+      "label": "Bagian pengaturan",
+      "site": {
+        "name": "Situs",
+        "hint": "Nama, logo, bahasa"
+      },
+      "signin": {
+        "name": "Masuk",
+        "hint": "Penyedia, akun admin"
+      },
+      "email": {
+        "name": "Email",
+        "hint": "SMTP, apa yang dikirim"
+      },
+      "players": {
+        "name": "Pemain",
+        "hint": "Pendaftaran, rating"
+      },
+      "matchmaking": {
+        "name": "Matchmaking",
+        "hint": "Antrean dan aturannya"
+      },
+      "news": {
+        "name": "Kabar",
+        "hint": "Postingan di beranda"
+      },
+      "adminnotices": {
+        "name": "Notifikasi",
+        "hint": "Apa yang diberitahukan ke admin"
+      },
+      "webhooks": {
+        "name": "Integrasi",
+        "hint": "Webhook"
+      },
+      "apitokens": {
+        "name": "Token API",
+        "hint": "Untuk skrip dan MCP"
+      },
+      "advanced": {
+        "name": "Lanjutan",
+        "hint": "Eksperimental, pengembang"
+      },
+      "module": {
+        "hint": "Pengaturan modul ini"
+      }
+    }
+  },
+  "managePage": {
+    "tournamentNotFound": "Tidak ada turnamen dengan id ini. Pilih salah satu dari Semua turnamen.",
+    "title": "Kelola",
+    "needsYouHeading": "Butuh Anda",
+    "noTournament": "Belum ada turnamen",
+    "rail": {
+      "needsYou": "Butuh Anda",
+      "matches": "Pertandingan",
+      "bracket": "Bracket",
+      "teams": "Tim",
+      "players": "Pemain",
+      "reports": "Laporan",
+      "tournament": "Penyiapan turnamen",
+      "settings": "Pengaturan",
+      "label": "Admin",
+      "disputes": "Sengketa",
+      "publicPage": "Halaman publik",
+      "modules": "Modul",
+      "templates": "Template",
+      "ratings": "Rating",
+      "adminTools": "Log & alat",
+      "license": "Lisensi",
+      "devTools": "Alat dev",
+      "documentation": "Dokumentasi",
+      "opensInNewTab": "(terbuka di tab baru)",
+      "groups": {
+        "operate": "Operasikan",
+        "tournament": "Turnamen",
+        "people": "Orang",
+        "game": "Game",
+        "home": "Beranda",
+        "history": "Riwayat",
+        "setup": "Penyiapan",
+        "configuration": "Konfigurasi",
+        "site": "Situs",
+        "tournaments": "Turnamen",
+        "system": "Sistem",
+        "gamesOf": "Game · {{game}}"
+      },
+      "templatesAndRatings": "Template & rating",
+      "allTournaments": "Semua turnamen",
+      "switcher": "Turnamen",
+      "newTournament": "Turnamen baru",
+      "playedMatches": "Pertandingan yang dimainkan",
+      "tournamentBar": "Turnamen ini",
+      "scope": {
+        "label": "Mengelola",
+        "platform": "Platform",
+        "platformHint": "Turnamen, orang, situs",
+        "gameHint": "Halaman dan pengaturannya"
+      },
+      "highlights": "Highlight",
+      "state": {
+        "live": "live",
+        "setup": "penyiapan"
+      },
+      "openMenu": "Buka menu Kelola",
+      "closeMenu": "Tutup menu",
+      "setupTab": "Penyiapan",
+      "prizes": "Hadiah",
+      "schedule": "Jadwal",
+      "liveMatches": "Pertandingan live"
+    },
+    "status": {
+      "live": "LIVE",
+      "inVeto": "DALAM VETO",
+      "queued": "DALAM ANTREAN",
+      "round": "RONDE"
+    },
+    "needsYou": {
+      "empty": "Tidak ada yang butuh Anda saat ini.",
+      "secondsAgo": "{{count}} dtk",
+      "minutesAgo": "{{count}} mnt",
+      "hoursAgo": "{{count}} j",
+      "vsLabel": "{{team1}} vs {{team2}}",
+      "decide": {
+        "title": "{{teams}} butuh pemenang",
+        "detail": "Semua peta sudah dimainkan dan seri masih imbang.",
+        "action": "Putuskan"
+      },
+      "reallocateSuccess": "Pertandingan dipindahkan ke server lain",
+      "forceCancelSuccess": "Pertandingan dibatalkan",
+      "actionFailed": "Tidak berhasil. Coba lagi.",
+      "reallocateConfirmTitle": "Pindahkan pertandingan ini ke server lain?",
+      "reallocateConfirmBody": "Pertandingan akan ditugaskan ulang ke server berikutnya yang tersedia.",
+      "forceCancelConfirmTitle": "Paksa batalkan pertandingan ini?",
+      "forceCancelConfirmBody": "Ini mengakhiri pertandingan segera dan menandainya dibatalkan, meskipun server tidak bisa dihubungi.",
+      "listLabel": "Hal yang butuh keputusan"
+    },
+    "recent": {
+      "heading": "Terbaru",
+      "viewAll": "Log lengkap",
+      "empty": "Belum ada aktivitas terbaru.",
+      "closingLine": "Semua yang lain berjalan sendiri. Anda hanya melihatnya di sini saat ada yang butuh keputusan.",
+      "team1Fallback": "Tim 1",
+      "team2Fallback": "Tim 2",
+      "mapResult": "{{winner}} memenangkan peta {{map}} melawan {{loser}}, {{score}}",
+      "seriesEnd": "{{winner}} memenangkan seri melawan {{loser}}, {{score}}"
+    },
+    "announce": {
+      "button": "Umumkan",
+      "title": "Umumkan ke semua server",
+      "label": "Pesan",
+      "send": "Kirim",
+      "success": "Pengumuman terkirim",
+      "failed": "Gagal mengirim pengumuman"
+    }
+  },
+  "license": {
+    "title": "Lisensi",
+    "getKey": "Sudah punya lisensi? Salin key Anda dari <consoleLink>konsol Auto Tournament</consoleLink>. Butuh lisensi? <pricingLink>Lihat harga</pricingLink>.",
+    "useFromPaidKey": "Diatur oleh license key berbayar di bawah.",
+    "useFromFreeKey": "Diatur oleh key gratis di bawah: hanya untuk penggunaan nirlaba.",
+    "useWithoutKey": "Tanpa key: gratis untuk penggunaan nirlaba. Tempel key berbayar di bawah untuk penggunaan komersial.",
+    "publicLine": "Pemain melihat “{{line}}” di bagian bawah halaman acara.",
+    "pageIntro": "License key Anda dan statusnya. Key berbayar untuk penggunaan komersial; key gratis untuk penggunaan nirlaba.",
+    "description": "Tempel license key Auto Tournament Anda: key berbayar untuk penggunaan komersial, atau key gratis untuk penggunaan nirlaba. Key diperiksa di server ini, dan sekali sehari dengan autotournament.gg.",
+    "loading": "Memuat status lisensi",
+    "loadFailed": "Tidak dapat membaca status lisensi.",
+    "none": "Belum ada license key. Gratis untuk penggunaan nirlaba; penggunaan komersial butuh lisensi berbayar.",
+    "pricing": "Harga",
+    "open": "Pengaturan",
+    "id": "ID lisensi {{id}}",
+    "verify": "Periksa lisensi ini",
+    "invalid": "Key ini tidak dapat diverifikasi.",
+    "invalidShort": "Key yang tersimpan tidak dapat diverifikasi.",
+    "warningsShort_one": "1 pemberitahuan lisensi di Pengaturan.",
+    "warningsShort_other": "{{count}} pemberitahuan lisensi di Pengaturan.",
+    "warningsNote": "Tidak ada yang diblokir atau dibatasi. Ini hanya pemberitahuan.",
+    "label": "License key",
+    "replaceLabel": "Ganti license key",
+    "helper": "Diawali ATL1. Salin dari <consoleLink>lisensi Anda di konsol Auto Tournament</consoleLink>. Setelah disimpan, hanya ID lisensi yang ditampilkan. Tidak ada internet di tempat Anda bermain? Tempel juga offline lease dari konsol di sini.",
+    "checkInNote": "Tanpa license key, tidak ada yang dikirim ke Auto Tournament. Dengan key, server ini melapor sekali sehari dengan id key dan jumlah servernya.",
+    "save": "Simpan key",
+    "saved": "License key tersimpan",
+    "saveFailed": "Tidak dapat menyimpan license key",
+    "remove": "Hapus key",
+    "removed": "License key dihapus",
+    "removeFailed": "Tidak dapat menghapus license key",
+    "summary": {
+      "licensedTo": "Dilisensikan kepada {{licensee}}",
+      "licensed": "Berlisensi",
+      "product": {
+        "platform": "Platform {{pack}}",
+        "servers": "Server {{pack}}"
+      },
+      "servers_one": "{{count}} server",
+      "servers_other": "{{count}} server",
+      "updatesUntil": "pembaruan sampai {{date}}",
+      "updatesForLife": "pembaruan seumur hidup",
+      "eventWindow": "acara {{from}} sampai {{to}}",
+      "free": "Key gratis, penggunaan nonkomersial",
+      "freeFor": "Key gratis untuk {{licensee}}, penggunaan nonkomersial",
+      "noLimit": "tanpa batas server"
+    },
+    "badge": {
+      "label": "Tampilkan \"Berlisensi\" dan jenis penggunaan di halaman acara publik",
+      "note": "Nonaktif secara bawaan. Menautkan ke halaman pemeriksaan publik lisensi, dan hanya tampil selama key yang tersimpan valid.",
+      "on": "Baris lisensi publik diaktifkan",
+      "off": "Baris lisensi publik dinonaktifkan",
+      "failed": "Tidak dapat mengubah baris lisensi publik",
+      "short": "Aktif sendiri begitu key disimpan. Pemain melihatnya di bagian bawah halaman acara.",
+      "needsKey": "Hanya tampil jika license key tersimpan, gratis atau berbayar. Simpan satu di atas terlebih dahulu."
+    },
+    "public": {
+      "licensed": "Berlisensi",
+      "commercial": "Berlisensi · Penggunaan komersial",
+      "nonCommercial": "Berlisensi · Penggunaan nirlaba",
+      "unlicensed": "Tanpa license key",
+      "about": {
+        "title": "Tentang lisensi situs ini",
+        "none": "Situs ini menjalankan Auto Tournament tanpa license key. Itu tidak masalah untuk acara yang tidak menghasilkan uang bagi siapa pun: teman, klub, LAN sekolah, badan amal.",
+        "nonCommercial": "Situs ini punya lisensi nirlaba gratis: boleh menjalankan acara yang tidak menghasilkan uang bagi siapa pun.",
+        "commercial": "Situs ini punya lisensi komersial berbayar: boleh menjalankan acara berbayar dan memungut biaya pendaftaran.",
+        "free": "Auto Tournament gratis jika tidak ada yang menghasilkan uang darinya, dan untuk badan amal, sekolah, dan lembaga publik meskipun mereka memungut biaya pendaftaran. Siapa pun yang menghasilkan uang dengannya, dengan memungut biaya pendaftaran, menjual slot, atau menjalankannya untuk bisnis, butuh lisensi berbayar.",
+        "paidTitle": "Diminta membayar untuk ikut?",
+        "paidBody": "Jika Anda membayar biaya pendaftaran, atau diminta membayar, dan penyelenggaranya bukan badan amal, sekolah, atau lembaga publik, acara ini mungkin memakai Auto Tournament di luar lisensinya. Anda bisa memberi tahu kami; kami membaca setiap laporan dan tidak pernah membagikan siapa pengirimnya.",
+        "paidCommercial": "Pendaftaran berbayar diizinkan di sini. Jika tetap ada yang terlihat salah, Anda bisa memberi tahu kami.",
+        "report": "Laporkan ke Auto Tournament",
+        "rules": "Baca lisensi",
+        "verify": "Periksa lisensi ini"
+      }
+    },
+    "consent": {
+      "title": "Satu hal terakhir: lisensi",
+      "subtitle": "Maaf, satu langkah lagi dan selesai. Auto Tournament gratis jika tidak ada yang menghasilkan uang darinya; jika ada, Anda butuh lisensi. Baca sekilas versi singkatnya, pilih cara Anda memakainya, lalu ketik I AGREE.",
+      "intro": "Auto Tournament bersifat source-available di bawah {{name}}. Singkatnya:",
+      "points": {
+        "free": "Gratis untuk penggunaan pribadi, proyek hobi, belajar, dan acara yang tidak menghasilkan uang bagi siapa pun.",
+        "orgs": "Gratis untuk badan amal, sekolah, universitas, riset publik, dan lembaga pemerintah, meskipun mereka memungut biaya pendaftaran.",
+        "commercial": "Penggunaan komersial butuh lisensi. Itu termasuk hosting berbayar, menjualnya atau layanan yang dibangun di atasnya, acara yang menghasilkan keuntungan, penggunaan di dalam bisnis, dan dibayar untuk menyiapkannya bagi orang lain.",
+        "servers": "Setiap server game dihitung dalam lisensi.",
+        "nothingLocked": "Tidak ada yang dikunci atau dibatasi tanpa key. Anda bisa menambahkan key sekarang atau nanti.",
+        "forks": "Anda boleh mengubah kodenya dan membagikannya. Sertakan lisensinya; aturan yang sama berlaku."
+      },
+      "readLicense": "Baca lisensi lengkap",
+      "readRules": "Lisensi dan penggunaan komersial",
+      "summaryNote": "Ini ringkasan singkat, dan teks di versi Anda mungkin sudah usang. Lisensi dan aturan lisensi terbaru ada di autotournament.gg — jika berbeda dengan ringkasan ini, yang di sana yang berlaku.",
+      "useQuestion": "Bagaimana instans ini dipakai?",
+      "privacyNote": "Jawaban Anda hanya disimpan di server ini. Tanpa license key, tidak ada yang dikirim ke Auto Tournament. Dengan key, server ini melapor sekali sehari dengan id key dan jumlah servernya.",
+      "use": {
+        "noncommercial": "Nonkomersial",
+        "noncommercialHint": "Gratis. Tidak ada yang menghasilkan uang darinya.",
+        "commercial": "Komersial",
+        "commercialHint": "Anda butuh lisensi. Tempel key Anda sekarang atau nanti."
+      },
+      "keyLabel": "License key (opsional)",
+      "keyHelper": "Diawali ATL1. Salin dari <consoleLink>lisensi Anda di konsol Auto Tournament</consoleLink>, atau tambahkan nanti di Pengaturan > Lisensi.",
+      "confirmLabel": "Ketik {{phrase}} untuk menerima ketentuan lisensi",
+      "confirmHelper": "Dengan mengetik {{phrase}} Anda menerima ketentuan lisensi untuk instans ini.",
+      "accept": "Terima dan lanjutkan",
+      "cancel": "Batal",
+      "failed": "Tidak dapat menyimpan jawaban Anda",
+      "accepted": "Ketentuan lisensi diterima",
+      "termsChanged": "Ketentuan lisensi berubah sejak terakhir diterima. Silakan baca dan terima lagi.",
+      "onlyAdmins": "Hanya admin yang melihat ini, sekali per instans. Pemain, halaman publik, dan pertandingan yang sedang berjalan tidak terpengaruh.",
+      "declared": {
+        "noncommercial": "Penggunaan nonkomersial",
+        "commercial": "Penggunaan komersial",
+        "none": "Ketentuan lisensi belum diterima"
+      },
+      "acceptedLine": "Ketentuan diterima {{date}} oleh {{who}} (versi ketentuan {{version}})",
+      "byEnv": "pengaturan AT_ACCEPT_LICENSE",
+      "change": "Ubah",
+      "changeTitle": "Ubah cara instans ini dipakai",
+      "changeNote": "Pilih lagi dan ketik I AGREE. Perubahan disimpan bersama tanggal dan akun Anda.",
+      "commercialNoKey": "Instans ini dipakai secara komersial, jadi Anda butuh lisensi. Salin key Anda dari <consoleLink>lisensi Anda di konsol Auto Tournament</consoleLink> dan tempel di bawah. Tidak ada yang dikunci selama key belum ada.",
+      "readHeading": "Sebelum menerima, baca ini dan centang masing-masing:",
+      "readItem": "Saya sudah membaca",
+      "readLinks": {
+        "license": "lisensi lengkap",
+        "rules": "aturan penggunaan komersial",
+        "pricing": "harga"
+      }
+    },
+    "checkin": {
+      "last": "Laporan lisensi terakhir: {{time}}",
+      "offlineUntil": "Offline lease: server baru berfungsi tanpa internet sampai {{date}}.",
+      "never": "Belum ada laporan lisensi. Laporan pertama berjalan tak lama setelah key disimpan.",
+      "whatIsSent": "Apa yang dikirim",
+      "intro": "Sekali sehari, dan hanya selama key tersimpan, server ini mengirim:",
+      "keyId": "License key, agar id dan tanda tangannya bisa diperiksa",
+      "instanceId": "Id acak untuk instalasi ini, dibuat sekali",
+      "serverCount": "Jumlah server game",
+      "version": "Versi platform",
+      "publicUrl": "Produk apa ini (platform), dan alamat publiknya, agar konsol bisa menampilkan di mana key dipakai",
+      "activity": "Hitungan sejak laporan terakhir: pertandingan selesai, turnamen yang aktif, dan jumlah tim terbanyak",
+      "declared": "Jawaban Anda untuk pertanyaan tanggal acara, jika Anda memberikannya",
+      "notSent": "Tanpa nama, alamat, pemain, atau detail pertandingan.",
+      "privacy": "Kebijakan privasi",
+      "noticeTitle": "Catatan dari Auto Tournament",
+      "answered": "Jawaban Anda untuk lisensi ini: {{answer}} ({{time}})"
+    },
+    "eventPrompt": {
+      "title": "Merencanakan sesuatu yang baru?",
+      "body": "Lisensi acara Anda mencakup {{dates}}. Beri tahu kami jika Anda sedang menguji, punya acara baru, atau tanggal Anda bergeser — tidak perlu melakukan apa pun selama Anda menguji.",
+      "datesRange": "{{from}} sampai {{to}}",
+      "testing": "Menguji atau menyiapkan",
+      "newEvent": "Acara baru",
+      "datesMoved": "Tanggal acara kami bergeser",
+      "dontAsk": "Jangan tanya lagi",
+      "close": "Tutup",
+      "thanks": "Terima kasih, sudah dicatat.",
+      "failed": "Tidak dapat menyimpan jawaban Anda"
+    },
+    "warning": {
+      "periodEnded": "Lisensi acara ini mencakup tanggal sampai {{date}}. Pengujian dan penyiapan tidak perlu tindakan apa pun; acara baru mendapat lisensi acaranya sendiri.",
+      "periodNotStarted": "Lisensi acara ini mencakup tanggal mulai {{date}}. Menyiapkan dan menguji sebelum itu tidak masalah."
+    },
+    "short": "Cara instalasi ini dipakai, dan key-nya.",
+    "keyRow": "License key",
+    "state": {
+      "active": "Aktif",
+      "warning": "Periksa",
+      "invalid": "Tidak valid",
+      "none": "Tanpa key"
+    },
+    "thirdParty": "Aplikasi ini dibuat dengan paket open source di bawah lisensinya masing-masing.",
+    "thirdPartyLink": "Pemberitahuan pihak ketiga"
+  },
+  "tournamentsPage": {
+    "title": "Turnamen",
+    "subtitle": "Semua turnamen di situs ini. Pengalih di bagian atas menu memilih turnamen yang diolah halaman admin lainnya.",
+    "liveShared": "{{count}} live, berbagi server. Pertandingan mendapat server sesuai urutan siapnya.",
+    "new": "Turnamen baru",
+    "empty": "Belum ada turnamen. Buat yang pertama.",
+    "col": {
+      "name": "Nama",
+      "status": "Status",
+      "when": "Kapan",
+      "entries": "Peserta",
+      "frontPage": "Halaman depan",
+      "actions": "Tindakan"
+    },
+    "status": {
+      "live": "Live",
+      "finished": "Selesai",
+      "signup": "Pendaftaran dibuka",
+      "draft": "Draf"
+    },
+    "front": {
+      "featured": "Diunggulkan",
+      "shown": "Ditampilkan",
+      "hidden": "Disembunyikan",
+      "archived": "Diarsipkan",
+      "results": "Hasil"
+    },
+    "won": "{{name}} menang",
+    "selected": "dipilih",
+    "more": "Lainnya untuk {{name}}",
+    "menu": {
+      "open": "Buka",
+      "page": "Halaman publik",
+      "feature": "Tampilkan di halaman depan",
+      "archive": "Arsipkan (keluar dari halaman depan)",
+      "delete": "Hapus"
+    },
+    "toast": {
+      "featured": "Ditampilkan di halaman depan",
+      "archived": "Diarsipkan",
+      "deleted": "Turnamen dihapus"
+    },
+    "deleteTitle": "Hapus turnamen ini?",
+    "deleteMessage": "{{name}} beserta pertandingan, hasil, dan statistiknya dihapus. Ini tidak bisa dibatalkan.",
+    "newName": "Nama",
+    "newNameBlank": "Anda memberi nama saat penyiapan",
+    "startFrom": "Mulai dari",
+    "blank": "Kosong",
+    "blankHint": "Pilih game, format, dan peta saat penyiapan",
+    "copy": "Salin {{name}}",
+    "copyHint": "Format, peta, aturan, dan halaman yang sama. Tim dan tanggal dimulai kosong.",
+    "create": "Buat dan siapkan",
+    "round": "babak {{n}}",
+    "whenToday": "Hari ini, mulai {{time}}",
+    "whenTomorrow": "Besok, {{time}}",
+    "notSet": "Belum diatur",
+    "emptyTitle": "Belum ada turnamen",
+    "template": "Template",
+    "templateHint": "Pengaturan tersimpan: format, peta, dan aturan. Anda memilih tim dan tanggal.",
+    "copyOne": "Salin turnamen",
+    "copyWhich": "Yang mana"
+  },
+  "playedMatches": {
+    "title": "Semua pertandingan",
+    "subtitle": "Semua pertandingan yang dimainkan di situs ini: turnamen (termasuk yang dihapus), pertandingan mandiri, dan matchmaking, beserta demonya.",
+    "downloadAll_one": "Unduh demo {{count}} pertandingan",
+    "downloadAll_other": "Unduh demo {{count}} pertandingan",
+    "search": "Cari tim atau turnamen",
+    "kindLabel": "Jenis",
+    "kind": {
+      "all": "Semua jenis",
+      "tournament": "Turnamen",
+      "standalone": "Mandiri",
+      "matchmaking": "Matchmaking",
+      "imported": "Diimpor"
+    },
+    "withDemos": "Dengan demo",
+    "none": "Belum ada pertandingan yang dimainkan.",
+    "noneFiltered": "Tidak ada pertandingan yang cocok dengan filter ini.",
+    "vs": "vs",
+    "deleted": "turnamen dihapus",
+    "noDemo": "Tanpa demo",
+    "demo": "Demo",
+    "map": "Peta {{n}}",
+    "import": "Impor pertandingan"
+  },
+  "importMatch": {
+    "title": "Impor pertandingan",
+    "subtitle": "Tambahkan pertandingan yang dimainkan di tempat lain dari demonya. Tim, pemain, dan skor dibaca dari demo, lalu pertandingan mendapat statistik, replay 2D, dan highlight seperti pertandingan lain.",
+    "event": "Tempat dimainkan",
+    "eventHelp": "Opsional, misalnya nama acaranya.",
+    "files": "Demo",
+    "filesHelp": "Satu demo CS2 (.dem) per peta, sesuai urutan peta dimainkan.",
+    "choose": "Pilih demo",
+    "moveUp": "Naikkan {{name}}",
+    "moveDown": "Turunkan {{name}}",
+    "remove": "Hapus {{name}}",
+    "start": "Impor",
+    "uploading": "Mengunggah peta {{n}} ({{percent}}%)",
+    "tooMany": "Hingga {{max}} demo, satu per peta.",
+    "notDemo": "{{name}} bukan file .dem.",
+    "error": "Impor berhenti: {{error}}",
+    "progress": "Progres",
+    "mapN": "Peta {{n}}",
+    "state": {
+      "uploading": "Mengunggah",
+      "waiting": "Menunggu pemroses demo",
+      "running": "Membaca demo",
+      "done": "Selesai",
+      "failed": "Demo tidak dapat dibaca"
+    },
+    "teams": "{{team1}} vs {{team2}}",
+    "doneAll": "Diimpor. Highlight direkam berikutnya jika ada perekam highlight yang terhubung.",
+    "openMatch": "Buka pertandingan",
+    "another": "Impor yang lain",
+    "dropHint": "atau letakkan di sini. Pilih beberapa sekaligus dengan Cmd atau Ctrl.",
+    "recordingGroup": "Grup perekam",
+    "allRecorders": "Semua perekam",
+    "groupHelp": "Pilih grup yang merender pertandingan ini. Grup yang nonaktif menunggu sampai diaktifkan.",
+    "groupDisabled": "Nonaktif",
+    "notCs2Demo": "{{name}} bukan demo CS2 (demo CS:GO tidak bisa diimpor)."
+  },
+  "apiTokens": {
+    "title": "Token API",
+    "hint": "Untuk skrip, bot, dan server MCP Auto Tournament. Token baca-saja hanya bisa membaca; token admin bisa melakukan apa yang bisa dilakukan admin. Hanya Anda yang melihat secret token, sekali, saat dibuat.",
+    "line": "{{scope}} · {{fingerprint}} · terakhir dipakai {{used}}",
+    "never": "belum pernah",
+    "none": "Belum ada token API.",
+    "name": "Nama",
+    "nameHelp": "1–32 huruf, angka, - atau _",
+    "scopeLabel": "Akses",
+    "scope": {
+      "readonly": "Baca saja",
+      "admin": "Admin"
+    },
+    "make": "Buat token",
+    "madeTitle": "Token \"{{label}}\"",
+    "madeHelp": "Salin sekarang: ini satu-satunya saat token ditampilkan. Tempel di tempat skrip atau server MCP membacanya (AT_TOKEN).",
+    "copy": "Salin token",
+    "copied": "Disalin",
+    "done": "Selesai",
+    "revoke": "Cabut {{label}}",
+    "revokeTitle": "Cabut \"{{label}}\"?",
+    "revokeHelp": "Apa pun yang memakainya langsung berhenti berfungsi.",
+    "revokeConfirm": "Cabut",
+    "revoked": "{{label}} dicabut",
+    "cancel": "Batal",
+    "loadFailed": "Tidak dapat memuat token API",
+    "makeFailed": "Tidak dapat membuat token",
+    "revokeFailed": "Tidak dapat mencabut token"
+  },
+  "discordBot": {
+    "title": "Bot Discord",
+    "token": "Token bot",
+    "replace": "Token bot baru",
+    "save": "Simpan",
+    "remove": "Hapus",
+    "connected": "Terhubung sebagai {{name}}",
+    "setNoAnswer": "Token sudah diatur, tetapi Discord tidak menjawab barusan.",
+    "saved": "Bot Discord tersimpan: {{name}}",
+    "cleared": "Bot Discord dihapus",
+    "saveFailed": "Tidak dapat menyimpan token bot.",
+    "howTo": "Buat aplikasi, tambahkan bot, salin token-nya, lalu undang ke server Discord Anda:",
+    "portal": "Discord Developer Portal",
+    "guild": "Server Discord",
+    "guildHint": "Tempat bot membuat saluran tim dan mengirim postingan. Hanya server tempat bot berada yang tampil di sini.",
+    "noGuilds": "Bot belum ada di server Discord mana pun. Undang bot, lalu muat ulang halaman ini.",
+    "noGuild": "Tidak ada",
+    "guildSaved": "Server Discord tersimpan",
+    "movedHint": "Bot Discord sekarang menjadi add-on: aktifkan dan atur di Modul.",
+    "open": "Buka bot Discord",
+    "voice": {
+      "label": "Saluran voice tim",
+      "help": "Selama pertandingan berjalan di servernya, pemain yang sudah di voice dipindahkan ke saluran voice timnya; sisanya mendapat tautan lewat DM.",
+      "saved": "Pengaturan saluran voice tersimpan"
+    },
+    "teamChannels": {
+      "label": "Saluran tim",
+      "help": "Selama turnamen berjalan, setiap tim mendapat saluran teks dan voice privat di bawah \"Tim Anda\". Pemainnya menemukan saluran teks di halaman tim mereka.",
+      "link": "Saluran tim di Discord"
+    },
+    "commands": {
+      "label": "Slash command: /matches, /mymatch, dan /lobby",
+      "help": "Berfungsi begitu bot terhubung. Opsional: agar Discord mengirimnya ke situs ini, tempel ini sebagai Interactions Endpoint URL aplikasi Anda di Discord Developer Portal."
+    },
+    "invite": "Undang ke server",
+    "linking": {
+      "label": "Pemain menautkan Discord mereka",
+      "help": "Memakai aplikasi Discord milik bot Anda sendiri, jadi tidak perlu membuat aplikasi kedua. Di Developer Portal, buka OAuth2 di aplikasi bot Anda, tambahkan redirect ini, lalu salin client secret dan tempel di sini.",
+      "portal": "Buka OAuth2",
+      "secret": "Client secret",
+      "save": "Aktifkan penautan",
+      "saved": "Pemain bisa menautkan Discord sekarang",
+      "ready": "Aktif: pemain menautkan Discord di Akun → Koneksi.",
+      "invite": "Pemain yang belum ada di server Anda diminta bergabung dengan {{url}}.",
+      "noInvite": "Bot belum bisa membuat undangan ke server Anda. Klik Undang ke server lagi agar bot mendapat izin Create Invite."
+    },
+    "missing": "Bot belum punya izin {{list}} di server Anda, jadi sebagian fiturnya tidak berfungsi. Klik Undang ke server di atas: izin bot diperbarui tanpa mengeluarkannya."
+  },
+  "liveMatchesPage": {
+    "title": "Pertandingan live",
+    "subtitle": "Semua pertandingan yang sedang di server. Baris yang butuh Anda tampil lebih dulu.",
+    "loading": "Memuat…",
+    "loadFailed": "Tidak dapat membaca pertandingan live. Mencoba lagi…",
+    "empty": "Tidak ada pertandingan yang berjalan",
+    "chat": "Obrolan",
+    "mapOf": "Peta {{n}}/{{total}}",
+    "columns": {
+      "match": "Pertandingan",
+      "map": "Peta",
+      "phase": "Fase",
+      "score": "Skor",
+      "round": "Ronde",
+      "players": "Pemain",
+      "pause": "Jeda",
+      "call": "Panggilan admin",
+      "server": "Server",
+      "chat": "Obrolan"
+    },
+    "source": {
+      "matchmaking": "Matchmaking",
+      "manual": "Mandiri"
+    },
+    "phase": {
+      "none": "Tidak ada status server",
+      "loading": "Memuat",
+      "warmup": "Pemanasan",
+      "knife": "Pisau",
+      "side_pick": "Pilih sisi",
+      "live": "Live",
+      "paused": "Dijeda",
+      "halftime": "Babak pertama selesai",
+      "overtime": "Overtime",
+      "map_end": "Pascapertandingan",
+      "series_end": "Pascapertandingan",
+      "restoring": "Memulihkan",
+      "error": "Error"
+    },
+    "players": {
+      "summary": "{{connected}}/{{total}} masuk · {{ready}} siap",
+      "connected": "Terhubung",
+      "disconnected": "Tidak terhubung",
+      "readyTag": "siap",
+      "none": "Tidak ada pemain"
+    },
+    "pause": {
+      "by": "oleh {{name}}",
+      "unpause": "Ingin melanjutkan",
+      "type": {
+        "tactical": "Taktis",
+        "technical": "Teknis",
+        "admin": "Admin",
+        "offline": "Pemain offline",
+        "halftime": "Babak pertama selesai",
+        "auto_5v5": "Menunggu 5v5",
+        "unknown": "Dijeda"
+      }
+    },
+    "call": {
+      "noMessage": "Tidak ada pesan"
+    },
+    "server": {
+      "online": "Online",
+      "offline": "Offline",
+      "unknown": "Status tidak diketahui"
+    }
+  }
+}

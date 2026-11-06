@@ -1,0 +1,141 @@
+{
+  "devToolsPage": {
+    "alert": "Alat ini hanya tersedia dalam mode pengembangan. Gunakan untuk membuat data uji dengan cepat saat menguji aplikasi.",
+    "sections": {
+      "testData": {
+        "title": "Buat data uji"
+      }
+    },
+    "testTeams": {
+      "title": "Tim uji",
+      "description": "Buat tim dengan data pemain acak untuk menguji bracket dan pertandingan turnamen.",
+      "success": "Berhasil membuat {{count}} tim uji!",
+      "errors": {
+        "create": "Gagal membuat tim uji",
+        "partial": "{{created}} tim dibuat, tetapi {{failed}} gagal. Periksa konsol untuk detailnya."
+      },
+      "customLabel": "Jumlah tim kustom",
+      "buttons": {
+        "createFixed": "Buat {{count}} tim",
+        "createCustom": "Buat tim"
+      }
+    },
+    "testPlayers": {
+      "title": "Pemain uji",
+      "description": "Buat pemain dengan rating ELO untuk menguji turnamen acak dan pengelolaan pemain.",
+      "success": "{{created}} pemain uji dibuat!",
+      "errors": {
+        "create": "Gagal membuat pemain uji",
+        "partial": "{{created}} pemain dibuat, {{updated}} diperbarui, tetapi {{failed}} gagal. Periksa konsol untuk detailnya."
+      },
+      "customLabel": "Jumlah pemain kustom",
+      "buttons": {
+        "createFixed": "Buat {{count}} pemain",
+        "createCustom": "Buat pemain"
+      },
+      "successWithUpdated": "{{created}} pemain uji dibuat dan {{updated}} diperbarui!"
+    },
+    "testServers": {
+      "title": "Server uji",
+      "description": "Buat server uji untuk mencoba pengelolaan pertandingan.",
+      "success": "Berhasil membuat {{count}} server uji!",
+      "errors": {
+        "create": "Gagal membuat server uji",
+        "partial": "{{created}} server dibuat, tetapi {{failed}} gagal. Periksa konsol untuk detailnya."
+      },
+      "customLabel": "Jumlah server kustom",
+      "buttons": {
+        "createCustom": "Buat server",
+        "createFixed_one": "Buat {{count}} server",
+        "createFixed_other": "Buat {{count}} server"
+      }
+    },
+    "dangerZone": {
+      "title": "Zona berbahaya"
+    },
+    "deleteTestData": {
+      "title": "Hapus data uji",
+      "description": "Hapus semua data uji (tim dan server berawalan 'test-'). Tindakan ini tidak bisa dibatalkan.",
+      "button": "Hapus semua data uji",
+      "confirmPrompt": "Yakin ingin menghapus SEMUA data uji?",
+      "success": "Semua data uji berhasil dihapus!",
+      "error": "Gagal menghapus data uji"
+    },
+    "wipeTable": {
+      "title": "Kosongkan tabel tertentu",
+      "description": "Hapus semua data dari tabel tertentu. Berguna untuk membersihkan tanpa mereset semuanya. Tabel dikelompokkan per kategori.",
+      "confirmPrompt": "Yakin ingin mengosongkan tabel {{table}}? Ini akan menghapus semua data di tabel itu.",
+      "success": "Tabel {{table}} berhasil dikosongkan!",
+      "error": "Gagal mengosongkan tabel {{table}}",
+      "core": {
+        "title": "Tabel inti",
+        "teams": "Kosongkan tim",
+        "servers": "Kosongkan server",
+        "tournament": "Kosongkan turnamen",
+        "matches": "Kosongkan pertandingan"
+      },
+      "players": {
+        "title": "Pemain & turnamen acak",
+        "players": "Kosongkan pemain",
+        "ratingHistory": "Kosongkan riwayat rating",
+        "matchStats": "Kosongkan statistik pertandingan",
+        "shufflePlayers": "Kosongkan pemain acak"
+      },
+      "maps": {
+        "title": "Peta & template",
+        "maps": "Kosongkan peta",
+        "mapPools": "Kosongkan kumpulan peta",
+        "tournamentTemplates": "Kosongkan template turn.",
+        "eloTemplates": "Kosongkan template rating"
+      },
+      "matchEvents": {
+        "title": "Event & hasil pertandingan",
+        "events": "Kosongkan event pertandingan",
+        "mapResults": "Kosongkan hasil peta"
+      },
+      "settings": {
+        "title": "Pengaturan",
+        "appSettings": "Kosongkan pengaturan aplikasi"
+      }
+    },
+    "simulation": {
+      "title": "Status simulasi",
+      "description": "Hapus semua pertandingan dan statistik riwayat agar Anda bisa klik \"Mulai turnamen\" dalam mode simulasi pada bracket yang bersih, dengan tetap menyimpan server, tim, peta, dan pengaturan turnamen saat ini.",
+      "button": "Reset status simulasi (pertahankan konfigurasi)",
+      "reset": {
+        "success": "Status simulasi direset. Pertandingan dan statistik dihapus; server, tim, dan pengaturan turnamen dipertahankan.",
+        "error": "Gagal mereset status simulasi"
+      }
+    },
+    "wipeDatabase": {
+      "title": "Kosongkan seluruh database",
+      "warningTitle": "SANGAT MERUSAK!",
+      "warningBody": "Ini akan menghapus SEMUA data.",
+      "permanentlyDeletes": "Menghapus permanen:",
+      "items": {
+        "tournaments": "Semua turnamen & bracket",
+        "matches": "Semua pertandingan & event",
+        "teams": "Semua tim & pemain",
+        "servers": "Semua konfigurasi server"
+      },
+      "button": "Kosongkan seluruh database",
+      "successRedirect": "Database berhasil dikosongkan! Mengalihkan...",
+      "error": "Gagal mengosongkan database",
+      "dialog": {
+        "title": "Konfirmasi pengosongan database",
+        "areYouSure": "Anda benar-benar yakin?",
+        "actionWill": "Tindakan ini akan",
+        "permanentlyDelete": "menghapus permanen",
+        "items": {
+          "tournaments": "Semua data turnamen dan bracket",
+          "matches": "Semua riwayat dan event pertandingan",
+          "teams": "Semua tim dan konfigurasi pemain",
+          "servers": "Semua konfigurasi server"
+        },
+        "cannotUndo": "Tindakan ini tidak bisa dibatalkan!",
+        "wiping": "Mengosongkan database...",
+        "yesWipe": "Ya, kosongkan semuanya"
+      }
+    }
+  }
+}
