@@ -10,6 +10,7 @@ import {
   rulesFromMatchConfig,
   pausesOnDisconnect,
   rostersFull,
+  withLanguages,
 } from '../../api/src/integrations/cs2/fleet/assignConfig';
 import { validatePayload } from '../../api/src/integrations/cs2/fleet/protocol/v1';
 import type { MatchConfig } from '../../api/src/types/match.types';
@@ -451,6 +452,52 @@ test.describe('Fleet match.assign config', () => {
       ops: diffAssignConfig(from, to),
     };
     expect(validatePayload('match.update', update)).toEqual({ ok: true, errors: [] });
+  });
+
+  test('player languages: set where known, sent with a joining player, valid for the schema', () => {
+    const base = buildAssignConfig(tournamentConfig(), 'pw');
+    const config = withLanguages(
+      base,
+      new Map([
+        [STEAM(1), 'nb'],
+        [STEAM(3), 'pt-BR'],
+      ])
+    );
+    expect(config.team1.players.find((p) => p.steamid64 === STEAM(1))?.language).toBe('nb');
+    expect(config.team2.players.find((p) => p.steamid64 === STEAM(3))?.language).toBe('pt-BR');
+    expect(config.team1.players.find((p) => p.steamid64 === STEAM(2))).not.toHaveProperty(
+      'language'
+    );
+    expect(base.team1.players.some((p) => 'language' in p)).toBe(false); // the input is not changed
+    expect(
+      validatePayload('match.assign', { match_id: 'r1m1', epoch: 1, config_rev: 1, config })
+    ).toEqual(expect.objectContaining({ ok: true }));
+
+    const joined = withLanguages(
+      buildAssignConfig(
+        tournamentConfig({
+          team1: {
+            id: 'team-a',
+            name: 'Alpha',
+            players: { [STEAM(1)]: 'alice', [STEAM(2)]: 'bob', [STEAM(8)]: 'dave' },
+          },
+        }),
+        'pw'
+      ),
+      new Map([[STEAM(8), 'ja']])
+    );
+    expect(diffAssignConfig(base, joined)).toContainEqual(
+      expect.objectContaining({ op: 'add_player', steamid64: STEAM(8), language: 'ja' })
+    );
+    expect(
+      validatePayload('match.update', {
+        match_id: 'r1m1',
+        epoch: 1,
+        base_config_rev: 1,
+        config_rev: 2,
+        ops: diffAssignConfig(base, joined),
+      })
+    ).toEqual({ ok: true, errors: [] });
   });
 
   test('substitutes keep role sub; a player made a sub (or back) is removed, then added with the role', () => {

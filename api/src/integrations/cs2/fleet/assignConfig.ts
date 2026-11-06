@@ -370,6 +370,21 @@ export function pausesOnDisconnect(
   return size === undefined || size === 5;
 }
 
+/** Each rostered player's `language` from `languages` (steamid64 -> code); players without one stay as they are. */
+export function withLanguages(
+  config: AssignConfig,
+  languages: ReadonlyMap<string, string>
+): AssignConfig {
+  const add = (side: AssignTeam): AssignTeam => ({
+    ...side,
+    players: side.players.map((p) => {
+      const language = languages.get(p.steamid64);
+      return language ? { ...p, language } : p;
+    }),
+  });
+  return { ...config, team1: add(config.team1), team2: add(config.team2) };
+}
+
 /** Both sides have five players on the roster (subs and coaches not counted). */
 export function rostersFull(config: Pick<AssignConfig, 'team1' | 'team2'>): boolean {
   return (['team1', 'team2'] as const).every(
@@ -452,6 +467,7 @@ export function diffAssignConfig(
         steamid64: id,
         name: now.player.name,
         ...(now.player.role ? { role: now.player.role } : {}),
+        ...(now.player.language ? { language: now.player.language } : {}),
       });
     }
   }
