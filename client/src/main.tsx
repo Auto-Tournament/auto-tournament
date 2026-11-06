@@ -18,6 +18,7 @@ import {
   zhTW,
   ptBR,
   trTR,
+  jaJP,
 } from '@mui/material/locale';
 import App from './App';
 import './index.css';
@@ -56,6 +57,7 @@ const getMuiLocale = (lang: string) => {
   if (lang.startsWith('ru')) return ruRU;
   if (lang.startsWith('uk')) return ukUA;
   if (lang.startsWith('tr')) return trTR;
+  if (lang.startsWith('ja')) return jaJP;
   return enUS;
 };
 
