@@ -1,0 +1,81 @@
+{
+  "manualReport": {
+    "title": "比賽結果",
+    "unknownTeam": "另一支戰隊",
+    "state": {
+      "nothing": "還沒有上報結果。參賽的任意一方都可以上報比分。",
+      "waitingOpponent": "已上報。等待 {{team}} 確認。",
+      "needsAnswer": "{{team}} 上報了這個結果。如果正確請確認。",
+      "disputed": "此結果有爭議。將由管理員決定。",
+      "awaitingAdmin": "等待管理員決定這場比賽。",
+      "confirmed": "雙方都同意這個結果。"
+    },
+    "deadline": {
+      "autoConfirm": "如無人回應，將在 {{minutes}} 分鐘後自動確認。",
+      "autoConfirmSoon": "即將自動確認。",
+      "escalate": "如無人回應，將在 {{minutes}} 分鐘後交給管理員。",
+      "escalateSoon": "即將交給管理員。"
+    },
+    "score": "{{team1}} {{score1}} – {{score2}} {{team2}}",
+    "game": "第 {{number}} 局",
+    "note": "備註",
+    "notePlaceholder": "需要對方知道的事（可選）",
+    "noteGiven": "備註：{{note}}",
+    "disputeReason": "哪裡不對？",
+    "disputeReasonGiven": "異議：{{reason}}",
+    "formHint": "{{team1}} 和 {{team2}} 的比分，逐局填寫。",
+    "actions": {
+      "report": "上報比分",
+      "reportAgain": "上報不同的比分",
+      "submit": "傳送上報",
+      "cancel": "取消",
+      "confirm": "確認",
+      "dispute": "提出異議",
+      "disputeSubmit": "傳送異議",
+      "withdraw": "撤回我的上報"
+    },
+    "errors": {
+      "stale": "此上報在你檢視期間已更改。確認前請重新閱讀。",
+      "incomplete": "請至少為一局填寫雙方的比分。",
+      "failed": "操作沒有成功。請重試。"
+    },
+    "captains": {
+      "title": "隊長",
+      "hint": "只有隊長可以為此戰隊上報或確認結果。",
+      "make": "設為隊長",
+      "remove": "取消隊長",
+      "isCaptain": "隊長",
+      "empty": "此戰隊還沒有人登入，因此無人可任命。",
+      "unknown": "未知玩家",
+      "failed": "無法更改。請重試。"
+    },
+    "stats": {
+      "hint": "此賽事要求的額外資料。如果沒有人有，留空即可。",
+      "required": "必填",
+      "recorded": "已上報的資料",
+      "value": "{{subject}}：{{value}}{{suffix}}",
+      "errors": {
+        "number": "{{subject}} 的 {{field}} 必須是數字。",
+        "integer": "{{subject}} 的 {{field}} 必須是整數。",
+        "range": "{{subject}} 的 {{field}} 太大，不可能是真實數值。",
+        "tooLong": "{{subject}} 的 {{field}} 超過 {{max}} 個字元。",
+        "missing": "{{field}} 為必填項，但 {{team}} 沒有填寫。"
+      },
+      "tournamentTitle": "已上報的資料",
+      "tournamentHelp": "由已確認的上報彙總。仍在等待對手確認的結果不計入。",
+      "byTeam": "按戰隊",
+      "byPlayer": "按玩家",
+      "team": "戰隊",
+      "player": "玩家",
+      "matches": "比賽"
+    },
+    "chip": {
+      "none": "還沒有結果",
+      "yours": "你的上報",
+      "reported": "已上報",
+      "confirm": "請確認",
+      "disputed": "有爭議",
+      "final": "最終"
+    }
+  }
+}
