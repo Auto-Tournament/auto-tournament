@@ -13,6 +13,7 @@ import bg from './bg.json';
 import cs from './cs.json';
 import da from './da.json';
 import de from './de.json';
+import el from './el.json';
 import en from './en.json';
 import es from './es.json';
 import es419 from './es-419.json';
@@ -61,4 +62,5 @@ export const manualReportLocales: ModuleLocales = {
   hu,
   ro,
   bg,
+  el,
 };

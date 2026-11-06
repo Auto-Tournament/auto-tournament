@@ -27,6 +27,7 @@ import {
   huHU,
   roRO,
   bgBG,
+  elGR,
 } from '@mui/material/locale';
 import App from './App';
 import './index.css';
@@ -74,6 +75,7 @@ const getMuiLocale = (lang: string) => {
   if (lang.startsWith('hu')) return huHU;
   if (lang.startsWith('ro')) return roRO;
   if (lang.startsWith('bg')) return bgBG;
+  if (lang.startsWith('el')) return elGR;
   return enUS;
 };
 
