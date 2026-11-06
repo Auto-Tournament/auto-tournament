@@ -1,0 +1,12 @@
+{
+  "devAccountSwitcher": {
+    "tooltip": "Смени профила (dev)",
+    "adminTest": "Администратор (тест)",
+    "playerA": "Играч A (dev)",
+    "playerB": "Играч B (dev)",
+    "playerC": "Играч C (dev)",
+    "newPlayer": "Нов играч (първо посещение) (dev)",
+    "signOut": "Изход",
+    "disabled": "Тестовият вход е изключен на този сървър"
+  }
+}

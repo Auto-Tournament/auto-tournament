@@ -1,0 +1,490 @@
+{
+  "matchesPage": {
+    "errors": {
+      "loadMatches": "Мачовете не можаха да се заредят",
+      "loadTitle": "Грешка при зареждане на мачовете",
+      "bulkDelete": "Един или повече мачове не можаха да бъдат изтрити"
+    },
+    "header": {
+      "createMatch": "Създай мач"
+    },
+    "bulkSelect": {
+      "select": "Избери",
+      "done": "Край на избора",
+      "selectAll": "Избери всички",
+      "unselectAll": "Премахни избора",
+      "deleteSelected": "Изтрий избраните"
+    },
+    "empty": {
+      "title": "Няма мачове за показване",
+      "description": "Създай турнир и генерирай схемата, за да видиш мачовете тук",
+      "createManual": "Или създай ръчен мач"
+    },
+    "sections": {
+      "live": "Мачове на живо ({{count}})",
+      "upcoming": "Предстоящи мачове ({{count}})",
+      "history": "История на мачовете ({{count}})",
+      "inQueue": "{{count}} на опашка"
+    },
+    "manualMatchLabel": "Ръчен мач",
+    "create": {
+      "success": "Създаден е ръчен мач: {{slug}}"
+    },
+    "bulkDelete": {
+      "title": "Изтрий ръчните мачове",
+      "deleted_one": "Изтрит е {{count}} мач",
+      "deleted_other": "Изтрити са {{count}} мача",
+      "message_one": "Сигурен ли си, че искаш да изтриеш {{count}} ръчен мач? Това действие е необратимо.",
+      "message_other": "Сигурен ли си, че искаш да изтриеш {{count}} ръчни мача? Това действие е необратимо."
+    },
+    "card": {
+      "matchNumber": "Мач #{{number}}",
+      "server": "Сървър: {{name}}",
+      "queuePosition": "Място на опашката: #{{position}}",
+      "shuffle": "Шъфъл",
+      "shuffleManual": "Ръчен шъфъл",
+      "manual": "Ръчен",
+      "simulation": "Симулация",
+      "winner": "ПОБЕДИТЕЛ",
+      "mapN": "Карта {{n}}"
+    },
+    "statusLabel": {
+      "walkover": "СЛУЖЕБНА ПОБЕДА",
+      "waitingForTournament": "ИЗЧАКВА СТАРТА НА ТУРНИРА",
+      "waitingForServer": "ИЗЧАКВА СЪРВЪР",
+      "waitingForPairing": "ИЗЧАКВА ЖРЕБИЙ",
+      "vetoPending": "ВЕТО ПРЕДСТОИ",
+      "mapVeto": "ВЕТО НА КАРТИТЕ",
+      "serverAllocated": "СЪРВЪРЪТ Е РАЗПРЕДЕЛЕН",
+      "warmup": "ЗАГРЯВКА",
+      "overtime": "ПРОДЪЛЖЕНИЕ #{{n}}",
+      "live": "НА ЖИВО",
+      "completed": "ЗАВЪРШЕН",
+      "cancelled": "ОТМЕНЕН",
+      "needsDecision": "НУЖНО Е РЕШЕНИЕ НА АДМИНИСТРАТОР"
+    },
+    "statusGuide": {
+      "title": "Ръководство за състоянията на мачовете",
+      "pending": "Мачът е насрочен, но още няма сървър. Ще бъде разпределен, когато се освободи сървър.",
+      "loaded": "Мачът е зареден на сървъра и е в режим на загрявка. Играчите трябва да се свържат и да се обявят за готови.",
+      "live": "Мачът се играе на своя сървър.",
+      "completed": "Мачът приключи. Победителят е определен и схемата е обновена.",
+      "proTipTitle": "Съвет:",
+      "proTip": "Когато мач показва „Изчакване на играчи (X/Y)“, сървърът е готов и играчите трябва да се свържат. Щом всички очаквани играчи се свържат и се обявят за готови, мачът започва автоматично."
+    },
+    "latestEvent": "Последно: {{event}}",
+    "matchLabel": {
+      "upper": "ГС К{{round}} М{{match}}",
+      "lower": "ДС К{{round}} М{{match}}",
+      "grandFinal": "Голям финал",
+      "grandFinalReset": "Голям финал – повторен",
+      "group": "Група {{group}} · Кръг {{round}}",
+      "playoffs": "Плейоф · Кръг {{round}}"
+    },
+    "table": {
+      "filterLabel": "Покажи",
+      "search": "Намери отбор или играч",
+      "tbd": "TBD",
+      "manage": "Управлявай мача",
+      "empty": "Тук няма мачове.",
+      "filter": {
+        "attention_one": "Изискват внимание · {{count}}",
+        "attention_other": "Изискват внимание · {{count}}",
+        "live_one": "На живо · {{count}}",
+        "live_other": "На живо · {{count}}",
+        "veto_one": "Вето · {{count}}",
+        "veto_other": "Вето · {{count}}",
+        "waiting_one": "Изчакват · {{count}}",
+        "waiting_other": "Изчакват · {{count}}",
+        "finished_one": "Завършени · {{count}}",
+        "finished_other": "Завършени · {{count}}",
+        "all_one": "Всички · {{count}}",
+        "all_other": "Всички · {{count}}"
+      },
+      "columns": {
+        "match": "Мач",
+        "teams": "Отбори",
+        "phase": "Фаза",
+        "server": "Сървър",
+        "attention": "Изисква внимание",
+        "open": "Отвори"
+      },
+      "attention": {
+        "calls_one": "Повикване на администратор",
+        "calls_other": "{{count}} повиквания на администратор",
+        "decide": "Реши резултата"
+      },
+      "phase": {
+        "live": "На живо · карта {{map}}",
+        "finished": "Завършен",
+        "finishedScore": "Завършен · {{score}}",
+        "veto": "Вето на картите",
+        "waitingTeams": "Изчаква отборите си",
+        "queued": "Изчаква сървър · #{{position}} на опашката",
+        "waiting": "Изчаква"
+      },
+      "server": {
+        "freed": "Освободен"
+      }
+    }
+  },
+  "matchDetailsModal": {
+    "tiebreakHint": "Резултатът е равен: {{team}} спечели картата при тайбрек.",
+    "delete": {
+      "dialogTitle": "Изтрий мача",
+      "confirmTitle": "Да се изтрие ли този мач?",
+      "confirmBody": "Сигурен ли си, че искаш да изтриеш мача „{{slug}}“? Това действие е необратимо.",
+      "button": "Изтрий мача",
+      "success": "Мачът е изтрит",
+      "failed": "Мачът не можа да бъде изтрит"
+    },
+    "roster": {
+      "title": "Състав на отбора",
+      "yourTeam": "Твоят отбор",
+      "openPlayerPage": "Отвори страницата на играча",
+      "ready": "ГОТОВ",
+      "connected": "СВЪРЗАН",
+      "offline": "ОФЛАЙН",
+      "bot": "БОТ"
+    },
+    "decision": {
+      "body": "Всички карти са изиграни, но серията е равна по карти, рундове и щети. Избери победителя, за да продължи схемата.",
+      "setWinner": "{{team}} печели",
+      "confirmTitle": "Задай победител в серията",
+      "confirmBody": "Да приключи ли серията с {{team}} като победител? Схемата продължава и това не може да се отмени тук.",
+      "confirm": "Задай победител",
+      "success": "Победителят е зададен",
+      "failed": "Победителят не можа да бъде зададен"
+    },
+    "config": {
+      "loadFailed": "Конфигурацията на мача не можа да се зареди",
+      "view": "Виж JSON конфигурацията на мача",
+      "title": "JSON конфигурация на мача",
+      "loading": "Зареждане на конфигурацията на мача...",
+      "empty": "Няма конфигурация за този мач."
+    },
+    "tiebreak": {
+      "regulationOnly": "Продълженията са изключени за този мач (само редовно време), затова равенствата се решават по общите щети на отборите.",
+      "segmentsExhausted": "Продълженията са настроени с максимален брой сегменти. Ако резултатът остане равен, победителят се определя по общите щети на отборите.",
+      "overtimeDisabled": "Продълженията са изключени за този мач, затова равенствата се решават по общите щети на отборите.",
+      "tiedByDamage": "Крайният резултат беше равен, затова според настройките на мача победителят е избран по общите щети на отборите."
+    },
+    "team1": "Отбор 1",
+    "team2": "Отбор 2",
+    "matchTime": "Час на мача:",
+    "server": "Сървър:",
+    "queuePosition": "Място на опашката:",
+    "totalDamage": "Общо щети: {{team1}} - {{team2}}",
+    "mapOfTotal": "Карта {{index}} от {{total}}: {{map}}",
+    "mapIndex": "Карта {{index}}: {{map}}",
+    "round": "Рунд {{round}}",
+    "shuffle": {
+      "averageElo": "ELO на отбора (средно): {{team1}} vs {{team2}}",
+      "balancerHint": "Шъфъл отборите се създават от балансьор на база OpenSkill, който разпределя играчи с висок и нисък рейтинг в двете страни, за да са средните стойности близки."
+    },
+    "playerLeaderboards": "Ранглисти на играчите",
+    "noPlayerData": "Няма данни за играчите",
+    "currentMap": "Текуща карта",
+    "maps": "Карти",
+    "mapsNotPicked": "Картите още не са избрани.",
+    "mapsViaVeto": "Ще се реши чрез вето",
+    "matchInformation": "Информация за мача",
+    "created": "Създаден:",
+    "started": "Започнал:",
+    "completed": "Завършен:",
+    "adminControls": "Администраторски контроли",
+    "slug": "Slug на мача:",
+    "openChat": "Чат на мача"
+  },
+  "bulkShuffleMatchesModal": {
+    "title": "Създай масово шъфъл мачове",
+    "description": "Настрой шъфъл мач на една карта (карта + лимит на рундовете), след което определи колкото искаш двубои, като избереш точния състав за всяка страна. Мачовете се създават в текущия шъфъл турнир и получават сървъри, когато стартираш турнира.",
+    "mapSelect": {
+      "label": "Карта",
+      "noMaps": "Няма настроени карти за този турнир",
+      "helper": "Всички мачове в тази партида ще използват тази карта."
+    },
+    "maxRounds": {
+      "label": "Максимум рундове на карта",
+      "helperWithValue": "Мачът се играе до {{maxRounds}} рунда; печели първият, стигнал {{winRounds}} рунда.",
+      "helperDefault": "Максимален брой рундове на карта (по подразбиране: 24, максимум: 30)."
+    },
+    "matchesSection": {
+      "title": "Мачове ({{count}})",
+      "addMatch": "Добави мач"
+    },
+    "players": {
+      "empty": "Още няма записани играчи за този шъфъл турнир. Първо запиши играчи, после можеш да създадеш ръчни мачове."
+    },
+    "matchRow": {
+      "title": "Мач {{index}}",
+      "teamCounts": "{{team1}}/{{teamSize}} • {{team2}}/{{teamSize}}",
+      "team1Label": "Играчи на отбор 1 ({{team1Count}}/{{teamSize}})",
+      "team2Label": "Играчи на отбор 2 ({{team2Count}}/{{teamSize}})",
+      "searchPlaceholder": "Търси и избери играчи",
+      "mapOverrideLabel": "Карта (замяна по избор)",
+      "mapOverrideHelperOwn": "Този мач използва своя карта.",
+      "mapOverrideHelperDefault": "Остави празно, за да използваш картата по подразбиране по-горе.",
+      "maxRoundsOverrideLabel": "Максимум рундове (замяна по избор)",
+      "maxRoundsOverrideHelperOwn": "Заменя максималния брой рундове по подразбиране за този мач (в момента {{value}}).",
+      "maxRoundsOverrideHelperDefault": "Остави празно, за да използваш максималния брой рундове по подразбиране по-горе."
+    },
+    "errors": {
+      "loadPlayers": "Записаните играчи не можаха да се заредят",
+      "noMatches": "Добави поне един мач за създаване.",
+      "bothTeamsRequired": "Мач {{index}}: и двата отбора трябва да имат поне един играч.",
+      "conflictingPlayers": "Мач {{index}}: един и същ играч не може да е в двата отбора. ID в конфликт: {{ids}}",
+      "mapRequired": "Мач {{index}}: картата е задължителна (задай карта по подразбиране по-горе или избери карта за този мач).",
+      "rowMaxRoundsRange": "Мач {{index}}: максималният брой рундове трябва да е между 1 и 30 при замяна за мача.",
+      "globalMaxRoundsRange": "Максималният брой рундове трябва да е между 1 и 30.",
+      "createFailed": "Ръчните шъфъл мачове не можаха да бъдат създадени"
+    },
+    "success": {
+      "created": "Ръчните шъфъл мачове са създадени. Ще получат сървъри при старта на турнира."
+    },
+    "createMatchesButton": {
+      "default": "Създай мачовете",
+      "creating": "Създаване…"
+    }
+  },
+  "teamModal": {
+    "titleCreate": "Създай нов отбор",
+    "titleEdit": "Редактирай отбора",
+    "teamNameLabel": "Име на отбора",
+    "teamNamePlaceholder": "Astralis",
+    "teamNameHelper": "Името на отбора може да е на всеки език и да съдържа специални знаци",
+    "teamTagLabel": "Таг на отбора",
+    "teamTagPlaceholder": "AST",
+    "teamTagHelper": "Генерира се автоматично от името (най-много 4 знака)",
+    "playersHeader": "Играчи ({{count}})",
+    "selectPlayers": "Избери играчи",
+    "noPlayersInfo": "Още няма добавени играчи. Добави поне един.",
+    "addPlayersHelper": "Добави нов играч по-долу или избери от съществуващите",
+    "addPlayersHelper_steam": "Добави играчи, като поставиш URL от Steam или избереш от съществуващите",
+    "steamInputLabel": "Steam ID / Vanity URL",
+    "steamInputPlaceholder": "gaben или steamcommunity.com/id/gaben",
+    "resolveSteam": "Намери Steam ID",
+    "resolving": "Търсене...",
+    "playerNameLabel": "Име на играча",
+    "playerNamePlaceholder": "s1mple",
+    "eloLabel": "ELO (по избор)",
+    "eloPlaceholder": "1500",
+    "eloHelper": "По подразбиране: 1500",
+    "errors": {
+      "steamLookupEmpty": "Въведи Steam ID, vanity URL или URL на профил",
+      "steamApiNotConfigured": "Steam API не е настроен – въведи Steam ID64 ръчно",
+      "steamResolveFailed": "Steam ID не можа да бъде намерен – въведи Steam ID64 ръчно",
+      "steamAndNameRequired": "Изискват се и Steam ID, и име на играча",
+      "steamDuplicate": "Този Steam ID вече е в отбора",
+      "teamNameRequired": "Името на отбора е задължително",
+      "playersRequired": "Нужен е поне един играч",
+      "saveFailed": "Отборът не можа да бъде запазен",
+      "deleteFailed": "Отборът не можа да бъде изтрит",
+      "discordIdInvalid": "Discord ID трябва да е от 17 до 20 цифри (числовото ID на потребителя, не потребителското име)",
+      "discordIdInvalidPlayers": "Невалиден Discord ID за: {{names}}. Трябва да е от 17 до 20 цифри или да остане празен.",
+      "discordIdSaveFailed": "Отборът е запазен, но Discord ID не можа да бъде запазен за: {{names}}. {{message}}",
+      "nameRequired": "Въведи името на играча",
+      "addPlayerFailed": "Играчът не можа да бъде добавен"
+    },
+    "success": {
+      "playerAdded": "Играчът е добавен към отбора",
+      "playerReplaced": "Играчът е заменен",
+      "teamUpdated": "Отборът е обновен",
+      "teamCreated": "Отборът е създаден",
+      "teamDeleted": "Отборът е изтрит"
+    },
+    "buttons": {
+      "deleteTeam": "Изтрий отбора",
+      "cancel": "Отказ",
+      "saving": "Запазване...",
+      "saveChanges": "Запази промените",
+      "createTeam": "Създай отбор"
+    },
+    "confirmDelete": {
+      "title": "Изтрий отбора",
+      "message": "Сигурен ли си, че искаш да изтриеш „{{name}}“? Това действие е необратимо."
+    },
+    "replacePlayerAria": "Замени играча {{name}}",
+    "replacePlayerTooltip": "Замени този играч",
+    "accountLabel": "Профил в {{account}} (по избор)",
+    "accountHelper": "За {{games}}. Когато влезе с {{account}}, става този играч."
+  },
+  "playerModal": {
+    "titleCreate": "Създай играч",
+    "titleEdit": "Редактирай играча",
+    "steamLabel": "Steam ID или URL на профил (по избор)",
+    "steamHelperEditing": "Steam ID не може да се променя",
+    "steamHelperNew": "За {{games}}. Въведи Steam ID64, vanity URL или URL на профил; „Намери“ попълва името и аватара.",
+    "resolveSteam": "Намери Steam ID",
+    "resolving": "Търсене...",
+    "playerNameLabel": "Име на играча",
+    "playerNamePlaceholder": "Играч",
+    "eloLabelNew": "Начално ELO",
+    "eloLabelEdit": "ELO",
+    "eloHelperNew": "Остави празно за стойността по подразбиране (рейтинг 1500).",
+    "eloHelperEdit": "Промяната на ELO нулира рейтинга и статистиката на играча. Това действие е необратимо.",
+    "isAdminLabel": "Администратор (управлява този сайт; игровите модули може да дават на администраторите и права в играта)",
+    "currentElo": "Текущо ELO: {{value}}",
+    "startingElo": "Начално ELO: {{value}}",
+    "matchesPlayed": "Изиграни мачове: {{count}}",
+    "errors": {
+      "steamRequired": "Steam ID е задължителен",
+      "nameRequired": "Името на играча е задължително",
+      "steamLookupEmpty": "Въведи Steam ID, vanity URL или URL на профил",
+      "steamApiNotConfigured": "Steam API не е настроен – въведи Steam ID64 ръчно",
+      "steamResolveFailed": "Steam ID не можа да бъде намерен – въведи Steam ID64 ръчно",
+      "saveFailed": "Играчът не можа да бъде запазен"
+    },
+    "success": {
+      "playerUpdated": "Играчът е обновен",
+      "playerCreated": "Играчът е създаден"
+    },
+    "buttons": {
+      "delete": "Изтрий",
+      "cancel": "Отказ",
+      "saving": "Запазване...",
+      "save": "Запази",
+      "create": "Създай"
+    },
+    "confirmDelete": {
+      "title": "Изтрий играча",
+      "message": "Сигурен ли си, че искаш да изтриеш играча „{{name}}“? Това действие е необратимо."
+    },
+    "confirmEloUpdate": {
+      "title": "Обнови ELO на играча",
+      "message": "Сигурен ли си, че искаш да промениш ELO на този играч от {{from}} на {{to}}? Това ще нулира статистиката и историята на рейтинга му. Това действие е необратимо."
+    },
+    "discordIdHelper": "По избор. От 17 до 20 цифри. Позволява на организаторите да се свържат с този играч в Discord. Никога не се показва публично.",
+    "accountLabel": "Профил в {{account}} (по избор)",
+    "accountHelper": "За {{games}}. ID на профила; когато влезе с {{account}}, става този играч.",
+    "accountVerified": "Свързано: влезе с {{account}}. Той сам го променя."
+  },
+  "teamImportModal": {
+    "title": "Импортирай отбори от JSON",
+    "info": {
+      "title": "Постави по-долу JSON с данните за отборите.",
+      "format": "Очакван формат: масив от отбори с name, tag (по избор) и players (name + steamId, плюс по избор discordId като низ в кавички).",
+      "link": "Виж документацията с примери"
+    },
+    "jsonLabel": "JSON данни",
+    "errors": {
+      "mustBeArray": "JSON трябва да е масив от отбори",
+      "emptyArray": "Масивът не може да е празен",
+      "parseWithMessage": "Грешка при разбор на JSON: {{message}}",
+      "parseGeneric": "Невалиден JSON формат. Провери синтаксиса.",
+      "importFailed": "Отборите не можаха да бъдат импортирани",
+      "noJson": "Въведи JSON данни"
+    },
+    "preview": {
+      "summary": "✓ Валиден JSON! Намерени: {{teams}}, общо {{players}}.",
+      "title": "Преглед:",
+      "missingDiscordTotal": "Играчи без Discord ID: {{count}}",
+      "missingDiscordChip": "Без Discord: {{count}}",
+      "playersChip_one": "{{count}} играч",
+      "playersChip_other": "{{count}} играча",
+      "teamsCount_one": "{{count}} отбор",
+      "teamsCount_other": "{{count}} отбора"
+    },
+    "actions": {
+      "preview": "Преглед",
+      "importing": "Импортиране...",
+      "import_one": "Импортирай {{count}} отбор",
+      "import_other": "Импортирай {{count}} отбора"
+    },
+    "warnings": {
+      "title": "Някои Discord ID бяха пренебрегнати. Тези играчи ще бъдат импортирани без такъв:",
+      "discordIdNumber": "Отбор „{{team}}“, играч „{{player}}“: discordId трябва да е низ в кавички. Големите числа губят точност в JSON, затова ID беше премахнат.",
+      "discordIdInvalid": "Отбор „{{team}}“, играч „{{player}}“: „{{value}}“ не е потребителско ID в Discord (очакват се 17–20 цифри), затова беше премахнат."
+    }
+  },
+  "playerImportModal": {
+    "title": "Импортирай играчи",
+    "info": {
+      "description": "Импортирай играчи от JSON или CSV. Задължителни полета: steamId, name. По избор: initialELO (по подразбиране 1500), avatarUrl.",
+      "link": "Виж документацията с примери"
+    },
+    "placeholders": {
+      "jsonCsv": "JSON формат:\n[\n  {\n    \"steamId\": \"76561198012345678\",\n    \"name\": \"Играч Едно\",\n    \"initialELO\": 1500,\n    \"avatarUrl\": \"https://...\"\n  }\n]\n\nCSV формат:\nsteamId,name,initialELO,avatarUrl\n76561198012345678,Играч Едно,1500,https://..."
+    },
+    "actions": {
+      "parseValidate": "Разбор и проверка",
+      "importing": "Импортиране...",
+      "import_one": "Импортирай {{count}} играч",
+      "import_other": "Импортирай {{count}} играча"
+    },
+    "preview": {
+      "title": "Играчи за импортиране ({{count}}):",
+      "steamId": "Steam ID: {{steamId}}",
+      "name": "Име: {{name}}",
+      "initialElo": "Начално ELO: {{elo}}",
+      "avatar": "Аватар: {{url}}",
+      "readyChip_one": "{{count}} играч е готов за импортиране",
+      "readyChip_other": "{{count}} играча са готови за импортиране"
+    },
+    "errors": {
+      "noData": "Въведи JSON или CSV данни",
+      "noPlayers": "В данните не са намерени играчи",
+      "validationPrefix": "Грешки при проверката:",
+      "parseFailed": "Данните не можаха да бъдат разчетени: {{message}}",
+      "importFailed": "Играчите не можаха да бъдат импортирани",
+      "parseFirst": "Първо разчети и провери данните"
+    }
+  },
+  "playerSelectionModal": {
+    "title": "Избери играчи",
+    "selectedCount": "Избрани: {{count}}",
+    "searchPlaceholder": "Търси играчи по име...",
+    "searchPlaceholder_steam": "Търси играчи по име или Steam ID...",
+    "selectAll": {
+      "select": "Избери всички",
+      "deselect": "Премахни избора"
+    },
+    "empty": {
+      "noSearchResults": "Няма играчи, отговарящи на търсенето",
+      "noPlayers": "Няма налични играчи"
+    },
+    "playerCard": {
+      "alreadyInTeam": "Вече е в отбора"
+    },
+    "errors": {
+      "loadFailed": "Играчите не можаха да се заредят",
+      "noSelectable": "Няма играчи, които могат да бъдат избрани"
+    },
+    "addPlayersButton_one": "Добави {{count}} играч",
+    "addPlayersButton_other": "Добави {{count}} играча"
+  },
+  "soundSettingsModal": {
+    "title": "Настройки на звука",
+    "soundSelect": {
+      "label": "Звук за известия"
+    },
+    "volume": {
+      "label": "Сила на звука: {{percent}}%"
+    },
+    "testButton": "Тествай звука",
+    "footer": "Звукови известия се чуват, когато мачът ти е готов или се случи нещо важно."
+  },
+  "addBackupPlayer": {
+    "title": "Добави играч",
+    "loadFailed": "Списъкът с играчи не можа да се зареди",
+    "added": "{{name}} е добавен в {{target}}",
+    "addFailed": "Играчът не можа да бъде добавен",
+    "addToMatchFailed": "Играчът не можа да бъде добавен в мача",
+    "searchLabel": "Търси играч",
+    "searchPlaceholder": "Напиши името на играча...",
+    "available": "Налични играчи (още не са в мача): {{count}}",
+    "noneAvailable": "Няма налични играчи",
+    "displayNameLabel": "Показвано име (по избор)",
+    "displayNamePlaceholder": "По подразбиране текущото име на играча",
+    "side": "Страна",
+    "spectator": "Зрител",
+    "selected": "Избран:",
+    "fromTeam": "От отбор: {{team}}",
+    "steamId": "Steam ID: {{id}}",
+    "adding": "Добавяне на играча...",
+    "add": "Добави играча в мача",
+    "underlyingCommand": "Използвана команда:",
+    "important": "Важно:",
+    "reconnectHint": "Играчът трябва да се свърже отново със сървъра, след като бъде добавен. Ако вече е свързан, може да се наложи да влезе отново."
+  }
+}
