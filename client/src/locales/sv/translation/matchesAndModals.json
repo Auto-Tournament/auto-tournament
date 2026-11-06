@@ -1,0 +1,490 @@
+{
+  "matchesPage": {
+    "errors": {
+      "loadMatches": "Matcherna kunde inte laddas",
+      "loadTitle": "Fel vid laddning av matcher",
+      "bulkDelete": "En eller flera matcher kunde inte tas bort"
+    },
+    "header": {
+      "createMatch": "Skapa match"
+    },
+    "bulkSelect": {
+      "select": "Välj",
+      "done": "Klar med val",
+      "selectAll": "Välj alla",
+      "unselectAll": "Avmarkera alla",
+      "deleteSelected": "Ta bort valda"
+    },
+    "empty": {
+      "title": "Inga matcher att visa",
+      "description": "Skapa en turnering och generera brackets för att se matcher här",
+      "createManual": "Eller skapa en manuell match"
+    },
+    "sections": {
+      "live": "Livematcher ({{count}})",
+      "upcoming": "Kommande matcher ({{count}})",
+      "history": "Matchhistorik ({{count}})",
+      "inQueue": "{{count}} i kö"
+    },
+    "manualMatchLabel": "Manuell match",
+    "create": {
+      "success": "Manuell match skapad: {{slug}}"
+    },
+    "bulkDelete": {
+      "title": "Ta bort manuella matcher",
+      "deleted_one": "Tog bort {{count}} match",
+      "deleted_other": "Tog bort {{count}} matcher",
+      "message_one": "Är du säker på att du vill ta bort {{count}} manuell match? Det går inte att ångra.",
+      "message_other": "Är du säker på att du vill ta bort {{count}} manuella matcher? Det går inte att ångra."
+    },
+    "card": {
+      "matchNumber": "Match #{{number}}",
+      "server": "Server: {{name}}",
+      "queuePosition": "Köplats: #{{position}}",
+      "shuffle": "Shuffle",
+      "shuffleManual": "Manuell shuffle",
+      "manual": "Manuell",
+      "simulation": "Simulering",
+      "winner": "VINNARE",
+      "mapN": "Karta {{n}}"
+    },
+    "statusLabel": {
+      "walkover": "WALKOVER",
+      "waitingForTournament": "VÄNTAR PÅ ATT TURNERINGEN STARTAR",
+      "waitingForServer": "VÄNTAR PÅ SERVER",
+      "waitingForPairing": "VÄNTAR PÅ PARNING",
+      "vetoPending": "VETO VÄNTAR",
+      "mapVeto": "KARTVETO",
+      "serverAllocated": "SERVER TILLDELAD",
+      "warmup": "UPPVÄRMNING",
+      "overtime": "ÖVERTID #{{n}}",
+      "live": "LIVE",
+      "completed": "KLAR",
+      "cancelled": "AVBRUTEN",
+      "needsDecision": "BEHÖVER ADMINBESLUT"
+    },
+    "statusGuide": {
+      "title": "Guide till matchstatus",
+      "pending": "Matchen är schemalagd men har ingen server än. Den tilldelas när en server blir ledig.",
+      "loaded": "Matchen är laddad på servern och i uppvärmning. Spelarna ska ansluta och göra sig redo för att starta.",
+      "live": "Matchen spelas på sin server.",
+      "completed": "Matchen är slut. Vinnaren är avgjord och bracketen uppdaterad.",
+      "proTipTitle": "Tips:",
+      "proTip": "När en match visar ”Väntar på spelare (X/Y)” är servern redo och spelarna ska ansluta. När alla väntade spelare har anslutit och gjort sig redo startar matchen automatiskt."
+    },
+    "latestEvent": "Senast: {{event}}",
+    "matchLabel": {
+      "upper": "ÖB R{{round}} M{{match}}",
+      "lower": "NB R{{round}} M{{match}}",
+      "grandFinal": "Stora finalen",
+      "grandFinalReset": "Omstart av stora finalen",
+      "group": "Grupp {{group}} · Omgång {{round}}",
+      "playoffs": "Slutspel · Omgång {{round}}"
+    },
+    "table": {
+      "filterLabel": "Visa",
+      "search": "Hitta ett lag eller en spelare",
+      "tbd": "TBD",
+      "manage": "Hantera match",
+      "empty": "Inga matcher här.",
+      "filter": {
+        "attention_one": "Behöver åtgärd · {{count}}",
+        "attention_other": "Behöver åtgärd · {{count}}",
+        "live_one": "Live · {{count}}",
+        "live_other": "Live · {{count}}",
+        "veto_one": "Veto · {{count}}",
+        "veto_other": "Veto · {{count}}",
+        "waiting_one": "Väntar · {{count}}",
+        "waiting_other": "Väntar · {{count}}",
+        "finished_one": "Klara · {{count}}",
+        "finished_other": "Klara · {{count}}",
+        "all_one": "Alla · {{count}}",
+        "all_other": "Alla · {{count}}"
+      },
+      "columns": {
+        "match": "Match",
+        "teams": "Lag",
+        "phase": "Fas",
+        "server": "Server",
+        "attention": "Behöver åtgärd",
+        "open": "Öppna"
+      },
+      "attention": {
+        "calls_one": "Adminanrop",
+        "calls_other": "{{count}} adminanrop",
+        "decide": "Bestäm resultatet"
+      },
+      "phase": {
+        "live": "Live · karta {{map}}",
+        "finished": "Klar",
+        "finishedScore": "Klar · {{score}}",
+        "veto": "Kartveto",
+        "waitingTeams": "Väntar på sina lag",
+        "queued": "Väntar på server · #{{position}} i kön",
+        "waiting": "Väntar"
+      },
+      "server": {
+        "freed": "Frigjord"
+      }
+    }
+  },
+  "matchDetailsModal": {
+    "tiebreakHint": "Ställningen är lika: {{team}} vann kartan, avgjort med tiebreak.",
+    "delete": {
+      "dialogTitle": "Ta bort match",
+      "confirmTitle": "Ta bort den här matchen?",
+      "confirmBody": "Är du säker på att du vill ta bort matchen ”{{slug}}”? Det går inte att ångra.",
+      "button": "Ta bort match",
+      "success": "Matchen har tagits bort",
+      "failed": "Matchen kunde inte tas bort"
+    },
+    "roster": {
+      "title": "Spelartrupp",
+      "yourTeam": "Ditt lag",
+      "openPlayerPage": "Öppna spelarsidan",
+      "ready": "REDO",
+      "connected": "ANSLUTEN",
+      "offline": "OFFLINE",
+      "bot": "BOT"
+    },
+    "decision": {
+      "body": "Alla kartor är spelade men serien är lika på kartor, rundor och skada. Välj vinnaren så att bracketen går vidare.",
+      "setWinner": "{{team}} vinner",
+      "confirmTitle": "Ange vinnare av serien",
+      "confirmBody": "Avsluta serien med {{team}} som vinnare? Bracketen går vidare och det går inte att ångra här.",
+      "confirm": "Ange vinnare",
+      "success": "Vinnare angiven",
+      "failed": "Vinnaren kunde inte anges"
+    },
+    "config": {
+      "loadFailed": "Matchkonfigurationen kunde inte laddas",
+      "view": "Visa matchkonfigurationens JSON",
+      "title": "Matchkonfigurationens JSON",
+      "loading": "Laddar matchkonfiguration...",
+      "empty": "Ingen konfiguration finns för den här matchen."
+    },
+    "tiebreak": {
+      "regulationOnly": "Övertid är avstängd för den här matchen (bara ordinarie tid), så lika ställning avgörs av lagens totala skada.",
+      "segmentsExhausted": "Övertid är inställd med ett högsta antal perioder. Om det fortfarande är lika avgörs vinnaren av lagens totala skada.",
+      "overtimeDisabled": "Övertid är avstängd för den här matchen, så lika ställning avgörs av lagens totala skada.",
+      "tiedByDamage": "Slutställningen var lika, så enligt matchinställningarna valdes vinnaren efter lagens totala skada."
+    },
+    "team1": "Lag 1",
+    "team2": "Lag 2",
+    "matchTime": "Matchtid:",
+    "server": "Server:",
+    "queuePosition": "Köplats:",
+    "totalDamage": "Total skada: {{team1}} - {{team2}}",
+    "mapOfTotal": "Karta {{index}} av {{total}}: {{map}}",
+    "mapIndex": "Karta {{index}}: {{map}}",
+    "round": "Runda {{round}}",
+    "shuffle": {
+      "averageElo": "Lagets ELO (snitt): {{team1}} mot {{team2}}",
+      "balancerHint": "Shuffle-lag skapas av en OpenSkill-baserad balanserare som sprider högt och lågt rankade spelare över båda sidor för att hålla snitten nära varandra."
+    },
+    "playerLeaderboards": "Spelartopplistor",
+    "noPlayerData": "Ingen spelardata tillgänglig",
+    "currentMap": "Aktuell karta",
+    "maps": "Kartor",
+    "mapsNotPicked": "Kartorna är inte valda än.",
+    "mapsViaVeto": "Bestäms genom veto",
+    "matchInformation": "Matchinformation",
+    "created": "Skapad:",
+    "started": "Startad:",
+    "completed": "Klar:",
+    "adminControls": "Adminkontroller",
+    "slug": "Matchslug:",
+    "openChat": "Matchchatt"
+  },
+  "bulkShuffleMatchesModal": {
+    "title": "Skapa flera shuffle-matcher",
+    "description": "Ställ in en shuffle-match på en karta (karta + rundgräns) och lägg sedan upp så många inbördes matcher du vill genom att välja exakta spelaruppställningar för varje sida. Matcherna skapas i den aktuella shuffle-turneringen och tilldelas servrar när du startar turneringen.",
+    "mapSelect": {
+      "label": "Karta",
+      "noMaps": "Inga kartor inställda för den här turneringen",
+      "helper": "Alla matcher i den här omgången använder den här kartan."
+    },
+    "maxRounds": {
+      "label": "Max rundor per karta",
+      "helperWithValue": "Matchen spelas upp till {{maxRounds}} rundor; vinnare är den som först når {{winRounds}} rundor.",
+      "helperDefault": "Högsta antal rundor per karta (standard: 24, max: 30)."
+    },
+    "matchesSection": {
+      "title": "Matcher ({{count}})",
+      "addMatch": "Lägg till match"
+    },
+    "players": {
+      "empty": "Inga spelare är registrerade i den här shuffle-turneringen än. Registrera spelare först, sedan kan du skapa manuella matcher."
+    },
+    "matchRow": {
+      "title": "Match {{index}}",
+      "teamCounts": "{{team1}}/{{teamSize}} • {{team2}}/{{teamSize}}",
+      "team1Label": "Spelare i lag 1 ({{team1Count}}/{{teamSize}})",
+      "team2Label": "Spelare i lag 2 ({{team2Count}}/{{teamSize}})",
+      "searchPlaceholder": "Sök och välj spelare",
+      "mapOverrideLabel": "Karta (valfri överskrivning)",
+      "mapOverrideHelperOwn": "Den här matchen använder en egen karta.",
+      "mapOverrideHelperDefault": "Lämna tomt för att använda standardkartan ovan.",
+      "maxRoundsOverrideLabel": "Max rundor (valfri överskrivning)",
+      "maxRoundsOverrideHelperOwn": "Skriver över standardvärdet för max rundor för den här matchen (nu {{value}}).",
+      "maxRoundsOverrideHelperDefault": "Lämna tomt för att använda standardvärdet för max rundor ovan."
+    },
+    "errors": {
+      "loadPlayers": "De registrerade spelarna kunde inte laddas",
+      "noMatches": "Lägg till minst en match att skapa.",
+      "bothTeamsRequired": "Match {{index}}: båda lagen måste ha minst en spelare.",
+      "conflictingPlayers": "Match {{index}}: samma spelare kan inte vara i båda lagen. Krockande ID: {{ids}}",
+      "mapRequired": "Match {{index}}: karta krävs (ange en standardkarta ovan eller välj en karta för den här matchen).",
+      "rowMaxRoundsRange": "Match {{index}}: max rundor måste vara mellan 1 och 30 när det skrivs över per match.",
+      "globalMaxRoundsRange": "Max rundor måste vara mellan 1 och 30.",
+      "createFailed": "De manuella shuffle-matcherna kunde inte skapas"
+    },
+    "success": {
+      "created": "Manuella shuffle-matcher skapade. De tilldelas när turneringen startar."
+    },
+    "createMatchesButton": {
+      "default": "Skapa matcher",
+      "creating": "Skapar…"
+    }
+  },
+  "teamModal": {
+    "titleCreate": "Skapa nytt lag",
+    "titleEdit": "Redigera lag",
+    "teamNameLabel": "Lagnamn",
+    "teamNamePlaceholder": "Astralis",
+    "teamNameHelper": "Lagnamnet kan innehålla vilket språk eller specialtecken som helst",
+    "teamTagLabel": "Lagtagg",
+    "teamTagPlaceholder": "AST",
+    "teamTagHelper": "Skapas automatiskt från lagnamnet (max 4 tecken)",
+    "playersHeader": "Spelare ({{count}})",
+    "selectPlayers": "Välj spelare",
+    "noPlayersInfo": "Inga spelare tillagda än. Lägg till minst en spelare.",
+    "addPlayersHelper": "Lägg till en ny spelare nedan, eller välj bland befintliga spelare",
+    "addPlayersHelper_steam": "Lägg till spelare genom att klistra in en Steam-URL eller välja bland befintliga spelare",
+    "steamInputLabel": "Steam-ID / egen URL",
+    "steamInputPlaceholder": "gaben eller steamcommunity.com/id/gaben",
+    "resolveSteam": "Slå upp Steam-ID",
+    "resolving": "Slår upp...",
+    "playerNameLabel": "Spelarnamn",
+    "playerNamePlaceholder": "s1mple",
+    "eloLabel": "ELO (valfritt)",
+    "eloPlaceholder": "1500",
+    "eloHelper": "Standard: 1500",
+    "errors": {
+      "steamLookupEmpty": "Ange ett Steam-ID, en egen URL eller en profil-URL",
+      "steamApiNotConfigured": "Steam API är inte konfigurerat – ange Steam ID64 manuellt",
+      "steamResolveFailed": "Steam-ID:t kunde inte slås upp – ange Steam ID64 manuellt",
+      "steamAndNameRequired": "Både Steam-ID och spelarnamn krävs",
+      "steamDuplicate": "Det här Steam-ID:t finns redan i laget",
+      "teamNameRequired": "Lagnamn krävs",
+      "playersRequired": "Minst en spelare krävs",
+      "saveFailed": "Laget kunde inte sparas",
+      "deleteFailed": "Laget kunde inte tas bort",
+      "discordIdInvalid": "Discord-ID måste vara 17–20 siffror (det numeriska användar-ID:t, inte ett användarnamn)",
+      "discordIdInvalidPlayers": "Ogiltigt Discord-ID för: {{names}}. Det måste vara 17–20 siffror eller tomt.",
+      "discordIdSaveFailed": "Laget sparades, men Discord-ID:t kunde inte sparas för: {{names}}. {{message}}",
+      "nameRequired": "Ange spelarens namn",
+      "addPlayerFailed": "Spelaren kunde inte läggas till"
+    },
+    "success": {
+      "playerAdded": "Spelaren tillagd i laget",
+      "playerReplaced": "Spelaren ersatt",
+      "teamUpdated": "Laget har uppdaterats",
+      "teamCreated": "Laget har skapats",
+      "teamDeleted": "Laget har tagits bort"
+    },
+    "buttons": {
+      "deleteTeam": "Ta bort lag",
+      "cancel": "Avbryt",
+      "saving": "Sparar...",
+      "saveChanges": "Spara ändringar",
+      "createTeam": "Skapa lag"
+    },
+    "confirmDelete": {
+      "title": "Ta bort lag",
+      "message": "Är du säker på att du vill ta bort ”{{name}}”? Det går inte att ångra."
+    },
+    "replacePlayerAria": "Ersätt spelaren {{name}}",
+    "replacePlayerTooltip": "Ersätt den här spelaren",
+    "accountLabel": "{{account}}-konto (valfritt)",
+    "accountHelper": "För {{games}}. När spelaren loggar in med {{account}} blir hen den här spelaren."
+  },
+  "playerModal": {
+    "titleCreate": "Skapa spelare",
+    "titleEdit": "Redigera spelare",
+    "steamLabel": "Steam-ID eller profil-URL (valfritt)",
+    "steamHelperEditing": "Steam-ID kan inte ändras",
+    "steamHelperNew": "För {{games}}. Ange ett Steam ID64, en egen URL eller en profil-URL; ”Slå upp” fyller i namn och avatar.",
+    "resolveSteam": "Slå upp Steam-ID",
+    "resolving": "Slår upp...",
+    "playerNameLabel": "Spelarnamn",
+    "playerNamePlaceholder": "Spelare",
+    "eloLabelNew": "Start-ELO",
+    "eloLabelEdit": "ELO",
+    "eloHelperNew": "Lämna tomt för standardvärdet (1500 Skill Rating).",
+    "eloHelperEdit": "Om ELO ändras återställs spelarens rating och statistik. Det går inte att ångra.",
+    "isAdminLabel": "Är admin (hanterar webbplatsen; spelmoduler kan också ge admins rättigheter i spelet)",
+    "currentElo": "Nuvarande ELO: {{value}}",
+    "startingElo": "Start-ELO: {{value}}",
+    "matchesPlayed": "Spelade matcher: {{count}}",
+    "errors": {
+      "steamRequired": "Steam-ID krävs",
+      "nameRequired": "Spelarnamn krävs",
+      "steamLookupEmpty": "Ange ett Steam-ID, en egen URL eller en profil-URL",
+      "steamApiNotConfigured": "Steam API är inte konfigurerat – ange Steam ID64 manuellt",
+      "steamResolveFailed": "Steam-ID:t kunde inte slås upp – ange Steam ID64 manuellt",
+      "saveFailed": "Spelaren kunde inte sparas"
+    },
+    "success": {
+      "playerUpdated": "Spelaren har uppdaterats",
+      "playerCreated": "Spelaren har skapats"
+    },
+    "buttons": {
+      "delete": "Ta bort",
+      "cancel": "Avbryt",
+      "saving": "Sparar...",
+      "save": "Spara",
+      "create": "Skapa"
+    },
+    "confirmDelete": {
+      "title": "Ta bort spelare",
+      "message": "Är du säker på att du vill ta bort spelaren ”{{name}}”? Det går inte att ångra."
+    },
+    "confirmEloUpdate": {
+      "title": "Uppdatera spelarens ELO",
+      "message": "Är du säker på att du vill ändra spelarens ELO från {{from}} till {{to}}? Statistiken och ratinghistoriken återställs. Det går inte att ångra."
+    },
+    "discordIdHelper": "Valfritt. 17–20 siffror. Låter arrangörer nå spelaren på Discord. Visas aldrig offentligt.",
+    "accountLabel": "{{account}}-konto (valfritt)",
+    "accountHelper": "För {{games}}. Konto-ID:t; när spelaren loggar in med {{account}} blir hen den här spelaren.",
+    "accountVerified": "Kopplat: spelaren har loggat in med {{account}}. Hen ändrar det själv."
+  },
+  "teamImportModal": {
+    "title": "Importera lag från JSON",
+    "info": {
+      "title": "Klistra in JSON med lagdata nedan.",
+      "format": "Förväntat format: en array av lag med name, tag (valfritt) och players (name + steamId, plus ett valfritt discordId som sträng inom citattecken).",
+      "link": "Visa dokumentation med exempel"
+    },
+    "jsonLabel": "JSON-data",
+    "errors": {
+      "mustBeArray": "JSON måste vara en array av lag",
+      "emptyArray": "Arrayen får inte vara tom",
+      "parseWithMessage": "JSON-tolkningsfel: {{message}}",
+      "parseGeneric": "Ogiltigt JSON-format. Kontrollera syntaxen.",
+      "importFailed": "Lagen kunde inte importeras",
+      "noJson": "Ange JSON-data"
+    },
+    "preview": {
+      "summary": "✓ Giltig JSON! Hittade {{teams}} med totalt {{players}}.",
+      "title": "Förhandsvisning:",
+      "missingDiscordTotal": "Spelare utan Discord-ID: {{count}}",
+      "missingDiscordChip": "Utan Discord: {{count}}",
+      "playersChip_one": "{{count}} spelare",
+      "playersChip_other": "{{count}} spelare",
+      "teamsCount_one": "{{count}} lag",
+      "teamsCount_other": "{{count}} lag"
+    },
+    "actions": {
+      "preview": "Förhandsgranska",
+      "importing": "Importerar...",
+      "import_one": "Importera {{count}} lag",
+      "import_other": "Importera {{count}} lag"
+    },
+    "warnings": {
+      "title": "Vissa Discord-ID:n ignorerades. De här spelarna importeras utan:",
+      "discordIdNumber": "Laget ”{{team}}”, spelaren ”{{player}}”: discordId måste vara en sträng inom citattecken. Stora tal tappar precision i JSON, så ID:t togs bort.",
+      "discordIdInvalid": "Laget ”{{team}}”, spelaren ”{{player}}”: ”{{value}}” är inget Discord-användar-ID (17–20 siffror väntades), så det togs bort."
+    }
+  },
+  "playerImportModal": {
+    "title": "Importera spelare",
+    "info": {
+      "description": "Importera spelare i JSON- eller CSV-format. Obligatoriska fält: steamId, name. Valfria: initialELO (standard 1500), avatarUrl.",
+      "link": "Visa dokumentation med exempel"
+    },
+    "placeholders": {
+      "jsonCsv": "JSON-format:\n[\n  {\n    \"steamId\": \"76561198012345678\",\n    \"name\": \"Player One\",\n    \"initialELO\": 1500,\n    \"avatarUrl\": \"https://...\"\n  }\n]\n\nCSV-format:\nsteamId,name,initialELO,avatarUrl\n76561198012345678,Player One,1500,https://..."
+    },
+    "actions": {
+      "parseValidate": "Tolka och validera",
+      "importing": "Importerar...",
+      "import_one": "Importera {{count}} spelare",
+      "import_other": "Importera {{count}} spelare"
+    },
+    "preview": {
+      "title": "Spelare att importera ({{count}}):",
+      "steamId": "Steam-ID: {{steamId}}",
+      "name": "Namn: {{name}}",
+      "initialElo": "Start-ELO: {{elo}}",
+      "avatar": "Avatar: {{url}}",
+      "readyChip_one": "{{count}} spelare redo att importeras",
+      "readyChip_other": "{{count}} spelare redo att importeras"
+    },
+    "errors": {
+      "noData": "Ange JSON- eller CSV-data",
+      "noPlayers": "Inga spelare hittades i datan",
+      "validationPrefix": "Valideringsfel:",
+      "parseFailed": "Datan kunde inte tolkas: {{message}}",
+      "importFailed": "Spelarna kunde inte importeras",
+      "parseFirst": "Tolka och validera datan först"
+    }
+  },
+  "playerSelectionModal": {
+    "title": "Välj spelare",
+    "selectedCount": "{{count}} valda",
+    "searchPlaceholder": "Sök spelare efter namn...",
+    "searchPlaceholder_steam": "Sök spelare efter namn eller Steam-ID...",
+    "selectAll": {
+      "select": "Välj alla",
+      "deselect": "Avmarkera alla"
+    },
+    "empty": {
+      "noSearchResults": "Inga spelare matchar din sökning",
+      "noPlayers": "Inga spelare tillgängliga"
+    },
+    "playerCard": {
+      "alreadyInTeam": "Redan i laget"
+    },
+    "errors": {
+      "loadFailed": "Spelarna kunde inte laddas",
+      "noSelectable": "Inga valbara spelare tillgängliga"
+    },
+    "addPlayersButton_one": "Lägg till {{count}} spelare",
+    "addPlayersButton_other": "Lägg till {{count}} spelare"
+  },
+  "soundSettingsModal": {
+    "title": "Ljudinställningar",
+    "soundSelect": {
+      "label": "Aviseringsljud"
+    },
+    "volume": {
+      "label": "Volym: {{percent}} %"
+    },
+    "testButton": "Testa ljud",
+    "footer": "Ljudaviseringar spelas när din match är redo eller när något viktigt händer."
+  },
+  "addBackupPlayer": {
+    "title": "Lägg till spelare",
+    "loadFailed": "Spelarlistan kunde inte laddas",
+    "added": "{{name}} tillagd i {{target}}",
+    "addFailed": "Spelaren kunde inte läggas till",
+    "addToMatchFailed": "Spelaren kunde inte läggas till i matchen",
+    "searchLabel": "Sök efter spelare",
+    "searchPlaceholder": "Skriv spelarnamn...",
+    "available": "{{count}} tillgängliga spelare (inte redan i matchen)",
+    "noneAvailable": "Inga spelare tillgängliga",
+    "displayNameLabel": "Visningsnamn (valfritt)",
+    "displayNamePlaceholder": "Standard är spelarens nuvarande namn",
+    "side": "Sida",
+    "spectator": "Åskådare",
+    "selected": "Vald:",
+    "fromTeam": "Från laget: {{team}}",
+    "steamId": "Steam-ID: {{id}}",
+    "adding": "Lägger till spelare...",
+    "add": "Lägg till spelare i matchen",
+    "underlyingCommand": "Underliggande kommando:",
+    "important": "Viktigt:",
+    "reconnectHint": "Spelaren måste ansluta till servern igen efter att ha lagts till. Om hen redan är ansluten kan hen behöva ansluta på nytt."
+  }
+}

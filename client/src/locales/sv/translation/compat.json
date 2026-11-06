@@ -1,0 +1,82 @@
+{
+  "compatPage": {
+    "title": "Ready Up-kompatibilitet",
+    "subtitle": "Om Ready Up-pluginen fungerar med den senaste uppdateringen av Counter-Strike 2, kontrollerat automatiskt vid varje nytt CS2-bygge.",
+    "live": "Live",
+    "offline": "Återansluter…",
+    "loading": "Laddar kompatibilitet",
+    "loadError": "Kompatibiliteten kunde inte laddas. Försök igen om en stund.",
+    "disabledTitle": "Inte tillgängligt här",
+    "disabledDescription": "Den här webbplatsen publicerar inte Ready Up-kompatibilitet.",
+    "emptyTitle": "Inga resultat än",
+    "emptyDescription": "Ingen kompatibilitetskontroll har rapporterat än. Sidan uppdateras av sig själv så fort en gör det.",
+    "checkedAgo": "Kontrollerat {{time}}",
+    "viewRun": "Visa körning",
+    "factsLabel": "Vad som kontrollerades",
+    "facts": {
+      "patch": "CS2-patch",
+      "buildid": "Bygg-ID",
+      "readyup": "Ready Up",
+      "stage": "Steg"
+    },
+    "overall": {
+      "pass": "Kompatibelt",
+      "warn": "Kompatibelt, med varningar",
+      "fail": "Inte kompatibelt",
+      "checking": "Kontrollerar…",
+      "no_verdict": "Inget utlåtande"
+    },
+    "overallHint": {
+      "pass": "Alla komponenter klarade sina kontroller på det här bygget.",
+      "warn": "Ready Up fungerar på det här bygget, men vissa kontroller behöver granskas närmare.",
+      "fail": "Minst en komponent fungerar inte på det här bygget. Vänta med att uppdatera servrar.",
+      "checking": "En kontroll av det här bygget pågår just nu.",
+      "no_verdict": "Den senaste kontrollen kom inte fram till något utlåtande."
+    },
+    "status": {
+      "pass": "Godkänd",
+      "warn": "Varning",
+      "fail": "Underkänd",
+      "pending": "Väntar",
+      "checking": "Kontrollerar…"
+    },
+    "stage": {
+      "static": "Statisk analys",
+      "selftest": "Självtest",
+      "live": "Liveserver"
+    },
+    "state": {
+      "queued": "I kö",
+      "checking": "Kontrollerar",
+      "pass": "Godkänd",
+      "warn": "Varningar",
+      "fail": "Underkänd",
+      "no_verdict": "Inget utlåtande"
+    },
+    "trigger": {
+      "build_change": "Nytt CS2-bygge",
+      "surface_change": "Speldata ändrade",
+      "code_change": "Ändring i Ready Up",
+      "nightly": "Nattlig",
+      "release": "Ready Up-version",
+      "manual": "Manuell"
+    },
+    "kind": {
+      "signature": "Signaturer",
+      "rtti": "RTTI",
+      "vtable": "Virtuella tabeller",
+      "hook_site": "Hook-platser",
+      "layout": "Minneslayout",
+      "schema": "Schema",
+      "event": "Spelhändelser",
+      "selftest": "Självtest",
+      "livetest": "Livetest"
+    },
+    "componentsTitle": "Komponenter",
+    "checksSummary": "{{passed}} av {{total}} kontroller godkända",
+    "noChecks": "Inga kontroller rapporterade än",
+    "failures": "Fel",
+    "historyTitle": "Senaste körningar",
+    "historyItem": "CS2 {{patch}} · bygge {{buildid}}"
+  }
+}

@@ -1,0 +1,201 @@
+{
+  "templatesPage": {
+    "header": {
+      "createFromTournament": "Skapa mall från turnering"
+    },
+    "errors": {
+      "load": "Mallarna kunde inte laddas"
+    },
+    "delete": {
+      "title": "Ta bort mall",
+      "message": "Är du säker på att du vill ta bort mallen ”{{name}}”? Det går inte att ångra.",
+      "success": "Mallen ”{{name}}” har tagits bort",
+      "error": "Mallen kunde inte tas bort"
+    },
+    "update": {
+      "success": "Mallen ”{{name}}” har uppdaterats",
+      "error": "Mallen kunde inte uppdateras"
+    },
+    "createFromTemplate": {
+      "errors": {
+        "inProgressOrCompleted": "Det går inte att skapa en turnering från en mall medan en turnering pågår eller är klar. Ta bort eller återställ den nuvarande turneringen först.",
+        "alreadyExists": "En turnering finns redan. Ta bort eller återställ den nuvarande turneringen innan du skapar en ny från en mall."
+      },
+      "button": "Skapa turnering från mall"
+    },
+    "edit": {
+      "title": "Redigera mall",
+      "nameLabel": "Mallnamn",
+      "descriptionLabel": "Beskrivning (valfritt)",
+      "typeLabel": "Turneringstyp",
+      "formatLabel": "Matchformat",
+      "mapPool": {
+        "title": "Kartpool",
+        "selectLabel": "Välj en kartpool",
+        "customOption": "Egen",
+        "selectedLabel": "Valda kartor ({{count}}):",
+        "vetoWarning": "Vetoformat (BO1/BO3/BO5) kräver exakt 7 kartor. Valda nu: {{count}}",
+        "chooseMaps": "Välj kartor..."
+      },
+      "save": "Spara"
+    },
+    "emptyTitle": "Inga mallar än",
+    "emptyDescription": "Spara en turnerings inställningar som mall från turneringssidan och starta sedan nya turneringar från den här."
+  },
+  "saveTemplateModal": {
+    "title": "Spara som mall",
+    "nameLabel": "Mallnamn",
+    "namePlaceholder": "8 lag, single elim, BO3",
+    "descriptionLabel": "Veckoturnering med 8 lag och utslagning",
+    "descriptionPlaceholder": "Beskrivning (valfritt)",
+    "saveButton": "Spara mall",
+    "errors": {
+      "nameRequired": "Mallnamn krävs",
+      "saveFailed": "Mallen kunde inte sparas"
+    }
+  },
+  "eloTemplatesPage": {
+    "errors": {
+      "load": "Ratingmallarna kunde inte laddas"
+    },
+    "header": {
+      "createTemplate": "Skapa mall",
+      "importJson": "Importera från JSON"
+    },
+    "empty": {
+      "title": "Inga ratingmallar",
+      "description": "Skapa din första mall för att styra hur spelarstatistik påverkar ELO-justeringar",
+      "action": "Skapa mall"
+    },
+    "delete": {
+      "title": "Ta bort ratingmall",
+      "message": "Är du säker på att du vill ta bort ”{{name}}”? Det går inte att ångra.",
+      "success": "Mallen ”{{name}}” har tagits bort",
+      "error": "Mallen kunde inte tas bort",
+      "defaultProtected": "Standardmallen ”pure-win-loss” kan inte tas bort."
+    },
+    "import": {
+      "success_one": "Importerade {{count}} ratingmall",
+      "success_other": "Importerade {{count}} ratingmallar"
+    },
+    "weights": {
+      "noAdjustmentsPure": "Inga statistikjusteringar (ren vinst/förlust)"
+    },
+    "card": {
+      "enabled": "På",
+      "disabled": "Av",
+      "default": "Standard",
+      "adjustment": {
+        "none": "Statistikjustering per match: ingen (0; ELO bara efter resultat)",
+        "uncapped": "Statistikjustering per match: utan tak (använd med försiktighet)",
+        "range": "Intervall för statistikjustering per match: {{min}} till {{max}} ELO",
+        "noMin": "inget min",
+        "noMax": "inget max"
+      },
+      "tooltips": {
+        "edit": "Redigera mall",
+        "delete": "Ta bort mall"
+      },
+      "weightsTitle": "Statistikvikter:",
+      "limitsTitle": "Justeringsgränser:",
+      "minAdjustment": "Min: {{value}}",
+      "maxAdjustment": "Max: {{value}}"
+    },
+    "importModal": {
+      "title": "Importera ratingmallar från JSON",
+      "introTitle": "Klistra in JSON med definitioner av ratingmallar nedan.",
+      "introBody": "Förväntat format: en array av mallar med name, valfri description, enabled, weights, maxAdjustment och minAdjustment. Utelämnar du id skapas det från namnet.",
+      "jsonLabel": "JSON-data",
+      "validJsonTitle": "✓ Giltig JSON!",
+      "previewTitle": "Förhandsvisning:",
+      "previewButton": "Förhandsgranska",
+      "importButton": "Importera mallar",
+      "validJsonBody_one": "Hittade {{count}} mall.",
+      "validJsonBody_other": "Hittade {{count}} mallar."
+    },
+    "editor": {
+      "titleEdit": "Redigera ratingmall",
+      "titleCreate": "Skapa ratingmall",
+      "info": "Ställ in hur enskild spelarstatistik påverkar ELO-justeringar. Vikterna tillämpas efter att OpenSkill räknat ut grundändringen i ELO (vinst/förlust). Positiva vikter höjer ELO, negativa sänker det.",
+      "nameLabel": "Mallnamn",
+      "nameDefaultLocked": "Standardmallens namn kan inte ändras",
+      "descriptionLabel": "Beskrivning",
+      "descriptionPlaceholder": "Valfri beskrivning av vad mallen är till för",
+      "enabledLabel": "På",
+      "weights": {
+        "title": "Statistikvikter",
+        "subtitle": "Justera reglaget för varje statistik. Värdet 0 betyder ingen justering för den statistiken."
+      },
+      "limits": {
+        "title": "Justeringsgränser (valfritt)",
+        "subtitle": "Ange högsta och lägsta ELO-justering per match för att undvika extrema ändringar.",
+        "maxLabel": "Max justering",
+        "maxHelper": "Största positiva ELO-justering per match",
+        "minLabel": "Min justering",
+        "minHelper": "Största negativa ELO-justering per match"
+      },
+      "errors": {
+        "nameRequired": "Mallnamn krävs"
+      },
+      "create": {
+        "success": "Mallen ”{{name}}” har skapats",
+        "error": "Mallen kunde inte skapas"
+      },
+      "update": {
+        "success": "Mallen ”{{name}}” har uppdaterats",
+        "error": "Mallen kunde inte uppdateras"
+      },
+      "buttons": {
+        "saving": "Sparar...",
+        "update": "Uppdatera",
+        "create": "Skapa"
+      }
+    },
+    "stats": {
+      "kills": {
+        "label": "Kills",
+        "description": "Antal kills per match"
+      },
+      "deaths": {
+        "label": "Deaths",
+        "description": "Antal deaths per match (oftast negativ vikt)"
+      },
+      "assists": {
+        "label": "Assists",
+        "description": "Antal assists per match"
+      },
+      "flashAssists": {
+        "label": "Flash-assists",
+        "description": "Antal flash-assists per match"
+      },
+      "headshotKills": {
+        "label": "Headshot-kills",
+        "description": "Antal headshot-kills per match"
+      },
+      "damage": {
+        "label": "Skada",
+        "description": "Total skada per match"
+      },
+      "utilityDamage": {
+        "label": "Utility-skada",
+        "description": "Skada med utility (granater)"
+      },
+      "kast": {
+        "label": "KAST %",
+        "description": "Andel rundor med kill, assist, överlevnad eller trade"
+      },
+      "mvps": {
+        "label": "MVP",
+        "description": "Antal MVP-utmärkelser per match"
+      },
+      "score": {
+        "label": "Poäng",
+        "description": "Matchpoäng (kombinerar flera faktorer)"
+      },
+      "adr": {
+        "label": "ADR",
+        "description": "Genomsnittlig skada per runda"
+      }
+    }
+  }
+}
