@@ -98,6 +98,16 @@ test.describe('Highlight moments', () => {
     expect(flair[0]!.score - plain[0]!.score).toBe(10 + 10);
   });
 
+  test('kills on bots make no moment', { tag: ['@api'] }, () => {
+    const bot = { victimBot: true };
+    const kills = [
+      kill(1000, A, 'bot:Hugg', bot),
+      kill(1100, A, 'bot:Kask', bot),
+      kill(1200, A, 'bot:Sarge', bot),
+    ];
+    expect(pickMoments({ kills, rounds } as never)).toHaveLength(0);
+  });
+
   test('a triple kill is a moment; a lone kill is not', { tag: ['@api'] }, () => {
     const kills = [
       kill(500, A2, B4),

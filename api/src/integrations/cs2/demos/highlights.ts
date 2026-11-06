@@ -136,7 +136,8 @@ export function pickMoments(
   funnyPerPlayer = FUNNY_PER_PLAYER
 ): Moment[] {
   const kills = analysis.kills
-    .filter((k) => k.attacker && k.attackerSide && k.attackerSide !== k.victimSide)
+    // No clips of kills on bots: a bot-filled match has nothing worth a clip.
+    .filter((k) => k.attacker && k.attackerSide && k.attackerSide !== k.victimSide && !k.victimBot)
     .sort((a, b) => a.tick - b.tick);
   const all = analysis.kills.slice().sort((a, b) => a.tick - b.tick);
   // How far a clip of a round may run: into the time after the round ends
@@ -239,7 +240,13 @@ export function pickMoments(
     if (list.length < perPlayer) list.push(m);
     byPlayer.set(m.playerId, list);
   }
-  return [...byPlayer.values()].flat().concat(funnyMoments(all, roundEnd, funnyPerPlayer));
+  return [...byPlayer.values()].flat().concat(
+    funnyMoments(
+      all.filter((k) => !k.victimBot),
+      roundEnd,
+      funnyPerPlayer
+    )
+  );
 }
 
 /**
