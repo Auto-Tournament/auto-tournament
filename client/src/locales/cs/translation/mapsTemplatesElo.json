@@ -1,0 +1,205 @@
+{
+  "templatesPage": {
+    "header": {
+      "createFromTournament": "Vytvořit šablonu z turnaje"
+    },
+    "errors": {
+      "load": "Šablony se nepodařilo načíst"
+    },
+    "delete": {
+      "title": "Smazat šablonu",
+      "message": "Opravdu chceš smazat šablonu „{{name}}“? Tuto akci nejde vrátit.",
+      "success": "Šablona „{{name}}“ smazána",
+      "error": "Šablonu se nepodařilo smazat"
+    },
+    "update": {
+      "success": "Šablona „{{name}}“ aktualizována",
+      "error": "Šablonu se nepodařilo aktualizovat"
+    },
+    "createFromTemplate": {
+      "errors": {
+        "inProgressOrCompleted": "Ze šablony nejde vytvořit turnaj, když nějaký turnaj probíhá nebo je dokončený. Nejdřív aktuální turnaj smaž nebo resetuj.",
+        "alreadyExists": "Turnaj už existuje. Než vytvoříš nový ze šablony, aktuální turnaj smaž nebo resetuj."
+      },
+      "button": "Vytvořit turnaj ze šablony"
+    },
+    "edit": {
+      "title": "Upravit šablonu",
+      "nameLabel": "Název šablony",
+      "descriptionLabel": "Popis (volitelný)",
+      "typeLabel": "Typ turnaje",
+      "formatLabel": "Formát zápasu",
+      "mapPool": {
+        "title": "Map pool",
+        "selectLabel": "Vyber map pool",
+        "customOption": "Vlastní",
+        "selectedLabel": "Vybrané mapy ({{count}}):",
+        "vetoWarning": "Formáty s vetem (BO1/BO3/BO5) potřebují přesně 7 map. Teď vybráno: {{count}}",
+        "chooseMaps": "Vyber mapy..."
+      },
+      "save": "Uložit"
+    },
+    "emptyTitle": "Zatím žádné šablony",
+    "emptyDescription": "Ulož nastavení turnaje jako šablonu na stránce Turnaj a tady z ní pak zakládej nové turnaje."
+  },
+  "saveTemplateModal": {
+    "title": "Uložit jako šablonu",
+    "nameLabel": "Název šablony",
+    "namePlaceholder": "8 týmů, single elim., BO3",
+    "descriptionLabel": "Popis (volitelný)",
+    "descriptionPlaceholder": "Týdenní turnaj 8 týmů na jednu porážku",
+    "saveButton": "Uložit šablonu",
+    "errors": {
+      "nameRequired": "Název šablony je povinný",
+      "saveFailed": "Šablonu se nepodařilo uložit"
+    }
+  },
+  "eloTemplatesPage": {
+    "errors": {
+      "load": "Šablony hodnocení se nepodařilo načíst"
+    },
+    "header": {
+      "createTemplate": "Vytvořit šablonu",
+      "importJson": "Importovat z JSON"
+    },
+    "empty": {
+      "title": "Žádné šablony hodnocení",
+      "description": "Vytvoř první šablonu a urči, jak statistiky hráčů ovlivňují úpravy ELO",
+      "action": "Vytvořit šablonu"
+    },
+    "delete": {
+      "title": "Smazat šablonu hodnocení",
+      "message": "Opravdu chceš smazat „{{name}}“? Tuto akci nejde vrátit.",
+      "success": "Šablona „{{name}}“ smazána",
+      "error": "Šablonu se nepodařilo smazat",
+      "defaultProtected": "Výchozí šablonu „pure-win-loss“ nejde smazat."
+    },
+    "import": {
+      "success_one": "Importována {{count}} šablona hodnocení",
+      "success_other": "Importováno {{count}} šablon hodnocení",
+      "success_few": "Importovány {{count}} šablony hodnocení",
+      "success_many": "Importováno {{count}} šablon hodnocení"
+    },
+    "weights": {
+      "noAdjustmentsPure": "Bez úprav podle statistik (čistě výhra/prohra)"
+    },
+    "card": {
+      "enabled": "Zapnuto",
+      "disabled": "Vypnuto",
+      "default": "Výchozí",
+      "adjustment": {
+        "none": "Úprava podle statistik za zápas: žádná (0; ELO jen podle výsledku)",
+        "uncapped": "Úprava podle statistik za zápas: bez limitu (opatrně)",
+        "range": "Rozsah úpravy podle statistik za zápas: {{min}} až {{max}} ELO",
+        "noMin": "bez minima",
+        "noMax": "bez maxima"
+      },
+      "tooltips": {
+        "edit": "Upravit šablonu",
+        "delete": "Smazat šablonu"
+      },
+      "weightsTitle": "Váhy statistik:",
+      "limitsTitle": "Limity úprav:",
+      "minAdjustment": "Min.: {{value}}",
+      "maxAdjustment": "Max.: {{value}}"
+    },
+    "importModal": {
+      "title": "Importovat šablony hodnocení z JSON",
+      "introTitle": "Níže vlož JSON s definicemi šablon hodnocení.",
+      "introBody": "Očekávaný formát: pole šablon s name, volitelně description, enabled, weights, maxAdjustment a minAdjustment. Když vynecháš id, vygeneruje se z názvu.",
+      "jsonLabel": "Data JSON",
+      "validJsonTitle": "✓ Platný JSON!",
+      "previewTitle": "Náhled:",
+      "previewButton": "Náhled",
+      "importButton": "Importovat šablony",
+      "validJsonBody_one": "Nalezena {{count}} šablona.",
+      "validJsonBody_other": "Nalezeno {{count}} šablon.",
+      "validJsonBody_few": "Nalezeny {{count}} šablony.",
+      "validJsonBody_many": "Nalezeno {{count}} šablon."
+    },
+    "editor": {
+      "titleEdit": "Upravit šablonu hodnocení",
+      "titleCreate": "Vytvořit šablonu hodnocení",
+      "info": "Nastav, jak jednotlivé statistiky hráčů ovlivňují úpravy ELO. Váhy se použijí poté, co OpenSkill spočítá základní změnu ELO (výhra/prohra). Kladné váhy ELO zvyšují, záporné ho snižují.",
+      "nameLabel": "Název šablony",
+      "nameDefaultLocked": "Název výchozí šablony nejde změnit",
+      "descriptionLabel": "Popis",
+      "descriptionPlaceholder": "Volitelný popis účelu této šablony",
+      "enabledLabel": "Zapnuto",
+      "weights": {
+        "title": "Váhy statistik",
+        "subtitle": "U každé statistiky nastav posuvník. Hodnota 0 znamená, že se podle ní neupravuje."
+      },
+      "limits": {
+        "title": "Limity úprav (volitelné)",
+        "subtitle": "Nastav maximální a minimální úpravu ELO za zápas, aby nedocházelo k extrémním změnám.",
+        "maxLabel": "Max. úprava",
+        "maxHelper": "Maximální kladná úprava ELO za zápas",
+        "minLabel": "Min. úprava",
+        "minHelper": "Maximální záporná úprava ELO za zápas"
+      },
+      "errors": {
+        "nameRequired": "Název šablony je povinný"
+      },
+      "create": {
+        "success": "Šablona „{{name}}“ vytvořena",
+        "error": "Šablonu se nepodařilo vytvořit"
+      },
+      "update": {
+        "success": "Šablona „{{name}}“ aktualizována",
+        "error": "Šablonu se nepodařilo aktualizovat"
+      },
+      "buttons": {
+        "saving": "Ukládám...",
+        "update": "Aktualizovat",
+        "create": "Vytvořit"
+      }
+    },
+    "stats": {
+      "kills": {
+        "label": "Zabití",
+        "description": "Počet zabití za zápas"
+      },
+      "deaths": {
+        "label": "Úmrtí",
+        "description": "Počet úmrtí za zápas (obvykle záporná váha)"
+      },
+      "assists": {
+        "label": "Asistence",
+        "description": "Počet asistencí za zápas"
+      },
+      "flashAssists": {
+        "label": "Asistence flashkou",
+        "description": "Počet asistencí flashkou za zápas"
+      },
+      "headshotKills": {
+        "label": "Zabití headshotem",
+        "description": "Počet zabití headshotem za zápas"
+      },
+      "damage": {
+        "label": "Poškození",
+        "description": "Celkové poškození za zápas"
+      },
+      "utilityDamage": {
+        "label": "Poškození granáty",
+        "description": "Poškození způsobené granáty (utility)"
+      },
+      "kast": {
+        "label": "KAST %",
+        "description": "Podíl kol se zabitím, asistencí, přežitím nebo tradem"
+      },
+      "mvps": {
+        "label": "MVP",
+        "description": "Počet ocenění MVP za zápas"
+      },
+      "score": {
+        "label": "Skóre",
+        "description": "Skóre zápasu (kombinuje více faktorů)"
+      },
+      "adr": {
+        "label": "ADR",
+        "description": "Průměrné poškození za kolo"
+      }
+    }
+  }
+}

@@ -1,0 +1,200 @@
+{
+  "adminToolsPage": {
+    "description": "Obnova zápasů a log aplikace pro tento web.",
+    "recovery": {
+      "title": "Obnova zápasů",
+      "description": "Pokud se během turnaje restartovalo API nebo servery a stav zápasů vypadá nesynchronizovaně (např. zápasy uvízlé před startem nebo chybějící živé skóre), můžeš obnovu spustit ručně. Všechny servery se zeptají na aktuální report zápasu, znovu se synchronizuje skóre a fáze a kde to jde, znovu se nastaví webhooky a nahrávání dem.",
+      "button": "Spustit obnovu zápasů teď",
+      "success": "Obnova zápasů dokončena.",
+      "error": "Obnova zápasů selhala.",
+      "failedTrigger": "Obnovu zápasů se nepodařilo spustit. Zkus to znovu."
+    },
+    "monitoring": {
+      "title": "Monitoring a logy",
+      "appLogs": "Logy aplikace"
+    },
+    "logs": {
+      "loadFailed": "Logy se nepodařilo načíst",
+      "levelAll": "Vše",
+      "auto": "Auto",
+      "refresh": "Obnovit logy",
+      "empty": "Žádné logy k zobrazení",
+      "footer": "Zobrazeno {{count}} nejnovějších záznamů logu",
+      "footerAutoRefresh": "Zobrazeno {{count}} nejnovějších záznamů logu (automatické obnovování)"
+    }
+  },
+  "servers": {
+    "allocation": {
+      "title": "Čeká se na volný server",
+      "waiting": "Tento zápas začne automaticky, jakmile se uvolní servery. Potřebné servery:",
+      "nextPass": "Další pokus o přidělení za {{seconds}} s"
+    }
+  },
+  "adminMatchControls": {
+    "title": "Ovládání správce",
+    "noServer": "K tomuto zápasu není přidělený žádný server",
+    "unavailable": "K tomuto zápasu není přidělený žádný server, takže ovládání správce není k dispozici.",
+    "unknownAction": "Neznámá akce",
+    "commandFailed": "Příkaz se nepodařilo provést",
+    "confirm": "Potvrdit",
+    "execute": "Provést",
+    "close": "Zavřít",
+    "tipLabel": "Tip pro správce:",
+    "tip": "Během živých zápasů tato ovládání používej opatrně. Některé akce, jako „{{endMatch}}“ a „{{restartMatch}}“, nejde vrátit.",
+    "sections": {
+      "matchControl": "Ovládání zápasu",
+      "advanced": "Pokročilé akce"
+    },
+    "actions": {
+      "pause": {
+        "button": "Pauza",
+        "tooltip": "Pauza správce – hráči ji nemůžou zrušit",
+        "title": "Pozastavit zápas",
+        "description": "Vynutí pauzu zápasu. Hráči ji nemůžou zrušit."
+      },
+      "unpause": {
+        "button": "Zrušit pauzu",
+        "tooltip": "Pokračovat v zápase po pauze",
+        "title": "Zrušit pauzu zápasu",
+        "description": "Vynutí zrušení pauzy zápasu."
+      },
+      "swap": {
+        "button": "Prohodit týmy",
+        "tooltip": "Přepnout týmy na opačné strany (CT ↔ T)",
+        "title": "Prohodit týmy",
+        "description": "Prohodí strany týmů (CT/T)."
+      },
+      "restartRound": {
+        "button": "Restartovat kolo",
+        "tooltip": "Spustit aktuální kolo znovu od začátku (resetuje ekonomiku)",
+        "title": "Restartovat kolo",
+        "description": "Restartuje aktuální kolo."
+      },
+      "skipVeto": {
+        "button": "Přeskočit veto",
+        "tooltip": "Přeskočit veto map a hned načíst první mapu",
+        "title": "Přeskočit veto",
+        "description": "Přeskočí fázi veta a spustí zápas."
+      },
+      "endWarmup": {
+        "button": "Ukončit rozehřívání",
+        "tooltip": "Ukončit rozehřívání a spustit zápas (nožové kolo nebo živě)",
+        "title": "Ukončit rozehřívání",
+        "description": "Ukončí rozehřívání a spustí zápas."
+      },
+      "endMatch": {
+        "button": "Ukončit zápas",
+        "tooltip": "Ukončit zápas okamžitě a zapsat konečné skóre",
+        "title": "Ukončit zápas",
+        "description": "Vynutí ukončení zápasu. Používej opatrně!"
+      },
+      "restartMatch": {
+        "button": "Restartovat zápas",
+        "tooltip": "Ukončit a znovu načíst zápas od začátku – veškerý postup se ztratí",
+        "title": "Restartovat zápas",
+        "description": "Ukončí zápas a načte ho znovu od začátku. Veškerý postup se ztratí!"
+      },
+      "reallocateServer": {
+        "button": "Přidělit jiný server",
+        "tooltip": "Přesunout zápas na jiný server (obnova před startem)",
+        "tooltipUnavailable": "Dostupné jen pro připravené/načtené zápasy (ne během živé hry)",
+        "title": "Přidělit jiný server",
+        "description": "Přesune zápas na jiný volný server a znovu ho načte. Použij, když je aktuální server zastaralý nebo se hráči nemůžou připojit. Během živého zápasu to nejde."
+      },
+      "forceCancel": {
+        "button": "Vynutit zrušení",
+        "tooltip": "Zrušit zápas, i když je server offline – uvolní přidělený server",
+        "title": "Vynutit zrušení zápasu",
+        "description": "⚠️ Zruší zápas, i když je server offline. Zápas se označí jako dokončený a server se uvolní. Tuto akci nejde vrátit."
+      }
+    },
+    "inputs": {
+      "restoreBackup": {
+        "button": "Obnovit zálohu",
+        "tooltip": "Načíst uloženou zálohu kola – obnoví ekonomiku a pozice",
+        "title": "Obnovit zálohu",
+        "label": "Číslo kola k obnovení"
+      },
+      "addTime": {
+        "button": "Přidat čas",
+        "tooltip": "Prodloužit časovač aktuálního kola (hodí se při technických pauzách)",
+        "title": "Přidat čas kola",
+        "label": "Sekund k přidání"
+      },
+      "broadcast": {
+        "button": "Hlášení",
+        "tooltip": "Poslat zprávu všem hráčům na serveru",
+        "title": "Hromadná zpráva",
+        "label": "Zpráva k odeslání"
+      }
+    },
+    "success": {
+      "pause": "Zápas pozastaven",
+      "unpause": "Pauza zápasu zrušena",
+      "swap": "Týmy prohozeny",
+      "skipVeto": "Fáze veta přeskočena",
+      "restartRound": "Kolo restartováno",
+      "endMatch": "Zápas ukončen",
+      "endWarmup": "Rozehřívání ukončeno",
+      "startMatch": "Zápas spuštěn",
+      "restoreBackup": "Záloha obnovena na kolo {{round}}",
+      "addTime_one": "Ke časovači kola přidána {{count}} sekunda",
+      "addTime_other": "Ke časovači kola přidáno {{count}} sekund",
+      "broadcast": "Zpráva odeslána na server",
+      "restartMatch": "Zápas restartován (ukončen a znovu načten)",
+      "reallocateServer": "Zápas přesunut na jiný server",
+      "forceCancel": "Zápas zrušen",
+      "default": "Příkaz proveden",
+      "addTime_few": "Ke časovači kola přidány {{count}} sekundy",
+      "addTime_many": "Ke časovači kola přidáno {{count}} sekund"
+    },
+    "hold": {
+      "title": "Odložit místo kontumace",
+      "description": "Během odložení se zápas nenačte ani nezačne a nikdo nedostane výhru kontumací. Až zápas proběhne, týmy dostanou znovu celý čas.",
+      "reason": "Důvod (vidí správci)",
+      "delay": "Odložit o {{minutes}} min",
+      "holdUntilReleased": "Odložit do uvolnění",
+      "release": "Uvolnit teď",
+      "restartCountdown": "Spustit odpočet znovu",
+      "heldUntil": "Odloženo do {{time}}",
+      "heldIndefinitely": "Odloženo do uvolnění",
+      "tournamentPaused": "Turnaj je pozastavený",
+      "heldDone": "Zápas odložen",
+      "delayedDone": "Zápas odložen o {{minutes}} min",
+      "releasedDone": "Zápas uvolněn",
+      "restartedDone": "Odpočet spuštěn znovu: týmy mají opět celý čas",
+      "failed": "Odložení se nepodařilo změnit"
+    }
+  },
+  "adminCalls": {
+    "header": "Volání správce ({{count}})",
+    "title": "{{player}} volá správce",
+    "justNow": "právě teď",
+    "minutesAgo": "před {{count}} min",
+    "hoursAgo": "před {{count}} h",
+    "spectator": "Divák",
+    "team1": "Tým 1",
+    "team2": "Tým 2",
+    "noMessage": "Bez zprávy",
+    "unknownPlayer": "Neznámý hráč",
+    "unknownServer": "Neznámý server",
+    "matchMap": "{{match}}, mapa {{map}}",
+    "openMatch": "Otevřít zápas",
+    "openServers": "Servery",
+    "resolve": "Označit jako vyřešené",
+    "resolveAll": "Vyřešit vše",
+    "resolveFailed": "Volání se nepodařilo označit jako vyřešené. Zkus to znovu.",
+    "matchUnavailable": "Ten zápas se nepodařilo otevřít.",
+    "enableSound": "Zapnout zvuk",
+    "mute": "Ztlumit",
+    "unmute": "Zrušit ztlumení",
+    "minimize": "Minimalizovat",
+    "show": "Zobrazit",
+    "openChat": "Otevřít chat",
+    "claim": "Převzít",
+    "release": "Uvolnit",
+    "claimedBy": "Převzato: {{name}}",
+    "claimedByYou": "Převzato tebou",
+    "anAdmin": "správce"
+  }
+}

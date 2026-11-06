@@ -1,0 +1,520 @@
+{
+  "matchesPage": {
+    "errors": {
+      "loadMatches": "Zápasy se nepodařilo načíst",
+      "loadTitle": "Chyba při načítání zápasů",
+      "bulkDelete": "Jeden nebo více zápasů se nepodařilo smazat"
+    },
+    "header": {
+      "createMatch": "Vytvořit zápas"
+    },
+    "bulkSelect": {
+      "select": "Vybrat",
+      "done": "Hotovo",
+      "selectAll": "Vybrat vše",
+      "unselectAll": "Zrušit výběr",
+      "deleteSelected": "Smazat vybrané"
+    },
+    "empty": {
+      "title": "Žádné zápasy k zobrazení",
+      "description": "Vytvoř turnaj a vygeneruj pavouka, pak tu uvidíš zápasy",
+      "createManual": "Nebo vytvoř ruční zápas"
+    },
+    "sections": {
+      "live": "Živé zápasy ({{count}})",
+      "upcoming": "Nadcházející zápasy ({{count}})",
+      "history": "Historie zápasů ({{count}})",
+      "inQueue": "{{count}} ve frontě"
+    },
+    "manualMatchLabel": "Ruční zápas",
+    "create": {
+      "success": "Ruční zápas vytvořen: {{slug}}"
+    },
+    "bulkDelete": {
+      "title": "Smazat ruční zápasy",
+      "deleted_one": "Smazán {{count}} zápas",
+      "deleted_other": "Smazáno {{count}} zápasů",
+      "message_one": "Opravdu chceš smazat {{count}} ruční zápas? Tuto akci nejde vrátit.",
+      "message_other": "Opravdu chceš smazat {{count}} ručních zápasů? Tuto akci nejde vrátit.",
+      "deleted_few": "Smazány {{count}} zápasy",
+      "deleted_many": "Smazáno {{count}} zápasů",
+      "message_few": "Opravdu chceš smazat {{count}} ruční zápasy? Tuto akci nejde vrátit.",
+      "message_many": "Opravdu chceš smazat {{count}} ručních zápasů? Tuto akci nejde vrátit."
+    },
+    "card": {
+      "matchNumber": "Zápas č. {{number}}",
+      "server": "Server: {{name}}",
+      "queuePosition": "Pozice ve frontě: #{{position}}",
+      "shuffle": "Shuffle",
+      "shuffleManual": "Ruční shuffle",
+      "manual": "Ruční",
+      "simulation": "Simulace",
+      "winner": "VÍTĚZ",
+      "mapN": "Mapa {{n}}"
+    },
+    "statusLabel": {
+      "walkover": "KONTUMACE",
+      "waitingForTournament": "ČEKÁ SE NA START TURNAJE",
+      "waitingForServer": "ČEKÁ SE NA SERVER",
+      "waitingForPairing": "ČEKÁ SE NA PÁROVÁNÍ",
+      "vetoPending": "VETO ČEKÁ",
+      "mapVeto": "VETO MAP",
+      "serverAllocated": "SERVER PŘIDĚLEN",
+      "warmup": "ROZEHŘÍVÁNÍ",
+      "overtime": "PRODLOUŽENÍ #{{n}}",
+      "live": "ŽIVĚ",
+      "completed": "DOKONČENO",
+      "cancelled": "ZRUŠENO",
+      "needsDecision": "ČEKÁ NA ROZHODNUTÍ SPRÁVCE"
+    },
+    "statusGuide": {
+      "title": "Průvodce stavy zápasů",
+      "pending": "Zápas je naplánovaný, ale zatím nemá server. Přidělí se, jakmile se nějaký uvolní.",
+      "loaded": "Zápas je načtený na serveru a v rozehřívání. Hráči by se měli připojit a dát ready.",
+      "live": "Zápas se hraje na svém serveru.",
+      "completed": "Zápas skončil. Vítěz je určený a pavouk aktualizovaný.",
+      "proTipTitle": "Tip:",
+      "proTip": "Když zápas ukazuje „Čeká se na hráče (X/Y)“, server je připravený a hráči by se měli připojit. Jakmile se připojí všichni očekávaní hráči a dají ready, zápas začne automaticky."
+    },
+    "latestEvent": "Poslední: {{event}}",
+    "matchLabel": {
+      "upper": "HP K{{round}} Z{{match}}",
+      "lower": "DP K{{round}} Z{{match}}",
+      "grandFinal": "Velké finále",
+      "grandFinalReset": "Reset velkého finále",
+      "group": "Skupina {{group}} · {{round}}. kolo",
+      "playoffs": "Play-off · {{round}}. kolo"
+    },
+    "table": {
+      "filterLabel": "Zobrazit",
+      "search": "Najdi tým nebo hráče",
+      "tbd": "TBD",
+      "manage": "Spravovat zápas",
+      "empty": "Tady nejsou žádné zápasy.",
+      "filter": {
+        "attention_one": "Vyžaduje pozornost · {{count}}",
+        "attention_other": "Vyžaduje pozornost · {{count}}",
+        "live_one": "Živě · {{count}}",
+        "live_other": "Živě · {{count}}",
+        "veto_one": "Veto · {{count}}",
+        "veto_other": "Veto · {{count}}",
+        "waiting_one": "Čeká · {{count}}",
+        "waiting_other": "Čeká · {{count}}",
+        "finished_one": "Dokončeno · {{count}}",
+        "finished_other": "Dokončeno · {{count}}",
+        "all_one": "Vše · {{count}}",
+        "all_other": "Vše · {{count}}",
+        "attention_few": "Vyžaduje pozornost · {{count}}",
+        "attention_many": "Vyžaduje pozornost · {{count}}",
+        "live_few": "Živě · {{count}}",
+        "live_many": "Živě · {{count}}",
+        "veto_few": "Veto · {{count}}",
+        "veto_many": "Veto · {{count}}",
+        "waiting_few": "Čeká · {{count}}",
+        "waiting_many": "Čeká · {{count}}",
+        "finished_few": "Dokončeno · {{count}}",
+        "finished_many": "Dokončeno · {{count}}",
+        "all_few": "Vše · {{count}}",
+        "all_many": "Vše · {{count}}"
+      },
+      "columns": {
+        "match": "Zápas",
+        "teams": "Týmy",
+        "phase": "Fáze",
+        "server": "Server",
+        "attention": "Vyžaduje pozornost",
+        "open": "Otevřít"
+      },
+      "attention": {
+        "calls_one": "Volání správce",
+        "calls_other": "{{count}} volání správce",
+        "decide": "Rozhodni výsledek",
+        "calls_few": "{{count}} volání správce",
+        "calls_many": "{{count}} volání správce"
+      },
+      "phase": {
+        "live": "Živě · mapa {{map}}",
+        "finished": "Dokončeno",
+        "finishedScore": "Dokončeno · {{score}}",
+        "veto": "Veto map",
+        "waitingTeams": "Čeká na své týmy",
+        "queued": "Čeká na server · #{{position}} ve frontě",
+        "waiting": "Čeká"
+      },
+      "server": {
+        "freed": "Uvolněn"
+      }
+    }
+  },
+  "matchDetailsModal": {
+    "tiebreakHint": "Skóre je vyrovnané: mapu vyhrál {{team}}, rozhodl tiebreak.",
+    "delete": {
+      "dialogTitle": "Smazat zápas",
+      "confirmTitle": "Smazat tento zápas?",
+      "confirmBody": "Opravdu chceš smazat zápas „{{slug}}“? Tuto akci nejde vrátit.",
+      "button": "Smazat zápas",
+      "success": "Zápas smazán",
+      "failed": "Zápas se nepodařilo smazat"
+    },
+    "roster": {
+      "title": "Soupiska hráčů",
+      "yourTeam": "Tvůj tým",
+      "openPlayerPage": "Otevřít stránku hráče",
+      "ready": "READY",
+      "connected": "PŘIPOJEN",
+      "offline": "OFFLINE",
+      "bot": "BOT"
+    },
+    "decision": {
+      "body": "Všechny mapy jsou odehrané, ale série je vyrovnaná na mapy, kola i poškození. Vyber vítěze, aby pavouk mohl pokračovat.",
+      "setWinner": "{{team}} vyhrává",
+      "confirmTitle": "Určit vítěze série",
+      "confirmBody": "Ukončit sérii s vítězem {{team}}? Pavouk postoupí a tady to nepůjde vrátit.",
+      "confirm": "Určit vítěze",
+      "success": "Vítěz určen",
+      "failed": "Vítěze se nepodařilo určit"
+    },
+    "config": {
+      "loadFailed": "Konfiguraci zápasu se nepodařilo načíst",
+      "view": "Zobrazit JSON konfigurace zápasu",
+      "title": "JSON konfigurace zápasu",
+      "loading": "Načítám konfiguraci zápasu...",
+      "empty": "Pro tento zápas není žádná konfigurace."
+    },
+    "tiebreak": {
+      "regulationOnly": "Prodloužení je u tohoto zápasu vypnuté (jen základní hrací doba), takže nerozhodné skóre rozhodne celkové poškození týmu.",
+      "segmentsExhausted": "Prodloužení má nastavený maximální počet úseků. Pokud je skóre pořád nerozhodné, vítěze určí celkové poškození týmu.",
+      "overtimeDisabled": "Prodloužení je u tohoto zápasu vypnuté, takže nerozhodné skóre rozhodne celkové poškození týmu.",
+      "tiedByDamage": "Konečné skóre bylo nerozhodné, takže podle nastavení zápasu vítěze určilo celkové poškození týmu."
+    },
+    "team1": "Tým 1",
+    "team2": "Tým 2",
+    "matchTime": "Čas zápasu:",
+    "server": "Server:",
+    "queuePosition": "Pozice ve frontě:",
+    "totalDamage": "Celkové poškození: {{team1}} - {{team2}}",
+    "mapOfTotal": "Mapa {{index}} z {{total}}: {{map}}",
+    "mapIndex": "Mapa {{index}}: {{map}}",
+    "round": "{{round}}. kolo",
+    "shuffle": {
+      "averageElo": "ELO týmu (průměr): {{team1}} vs {{team2}}",
+      "balancerHint": "Shuffle týmy sestavuje vyvažovač založený na OpenSkill, který rozloží hráče s vysokým a nízkým hodnocením na obě strany, aby průměry zůstaly blízko."
+    },
+    "playerLeaderboards": "Žebříčky hráčů",
+    "noPlayerData": "Žádná data o hráčích",
+    "currentMap": "Aktuální mapa",
+    "maps": "Mapy",
+    "mapsNotPicked": "Mapy zatím nejsou vybrané.",
+    "mapsViaVeto": "Určí se vetem",
+    "matchInformation": "Informace o zápasu",
+    "created": "Vytvořeno:",
+    "started": "Začátek:",
+    "completed": "Dokončeno:",
+    "adminControls": "Ovládání správce",
+    "slug": "Slug zápasu:",
+    "openChat": "Chat zápasu"
+  },
+  "bulkShuffleMatchesModal": {
+    "title": "Hromadné vytvoření shuffle zápasů",
+    "description": "Nastav shuffle zápas na jedné mapě (mapa + limit kol) a pak definuj libovolný počet zápasů jeden na jednoho výběrem přesných sestav hráčů pro každou stranu. Zápasy se vytvoří v aktuálním shuffle turnaji a servery se jim přidělí, až turnaj spustíš.",
+    "mapSelect": {
+      "label": "Mapa",
+      "noMaps": "Pro tento turnaj nejsou nastavené žádné mapy",
+      "helper": "Všechny zápasy v této dávce použijí tuto mapu."
+    },
+    "maxRounds": {
+      "label": "Max. kol na mapu",
+      "helperWithValue": "Zápas se hraje nejvýš na {{maxRounds}} kol; vyhrává ten, kdo první získá {{winRounds}} kol.",
+      "helperDefault": "Maximální počet kol na mapu (výchozí: 24, max.: 30)."
+    },
+    "matchesSection": {
+      "title": "Zápasy ({{count}})",
+      "addMatch": "Přidat zápas"
+    },
+    "players": {
+      "empty": "V tomto shuffle turnaji zatím nejsou žádní registrovaní hráči. Nejdřív zaregistruj hráče, pak můžeš vytvářet ruční zápasy."
+    },
+    "matchRow": {
+      "title": "Zápas {{index}}",
+      "teamCounts": "{{team1}}/{{teamSize}} • {{team2}}/{{teamSize}}",
+      "team1Label": "Hráči týmu 1 ({{team1Count}}/{{teamSize}})",
+      "team2Label": "Hráči týmu 2 ({{team2Count}}/{{teamSize}})",
+      "searchPlaceholder": "Hledej a vyber hráče",
+      "mapOverrideLabel": "Mapa (volitelné přepsání)",
+      "mapOverrideHelperOwn": "Tento zápas používá vlastní mapu.",
+      "mapOverrideHelperDefault": "Nech prázdné pro výchozí mapu výše.",
+      "maxRoundsOverrideLabel": "Max. kol (volitelné přepsání)",
+      "maxRoundsOverrideHelperOwn": "Přepíše výchozí max. kol pro tento zápas (teď {{value}}).",
+      "maxRoundsOverrideHelperDefault": "Nech prázdné pro výchozí max. kol výše."
+    },
+    "errors": {
+      "loadPlayers": "Registrované hráče se nepodařilo načíst",
+      "noMatches": "Přidej aspoň jeden zápas k vytvoření.",
+      "bothTeamsRequired": "Zápas {{index}}: oba týmy musí mít aspoň jednoho hráče.",
+      "conflictingPlayers": "Zápas {{index}}: stejný hráč nemůže být v obou týmech. Kolidující ID: {{ids}}",
+      "mapRequired": "Zápas {{index}}: mapa je povinná (nastav výchozí mapu výše nebo vyber mapu pro tento zápas).",
+      "rowMaxRoundsRange": "Zápas {{index}}: při přepsání pro zápas musí být max. kol mezi 1 a 30.",
+      "globalMaxRoundsRange": "Max. kol musí být mezi 1 a 30.",
+      "createFailed": "Ruční shuffle zápasy se nepodařilo vytvořit"
+    },
+    "success": {
+      "created": "Ruční shuffle zápasy vytvořeny. Servery se přidělí, až turnaj začne."
+    },
+    "createMatchesButton": {
+      "default": "Vytvořit zápasy",
+      "creating": "Vytvářím…"
+    }
+  },
+  "teamModal": {
+    "titleCreate": "Vytvořit nový tým",
+    "titleEdit": "Upravit tým",
+    "teamNameLabel": "Název týmu",
+    "teamNamePlaceholder": "Astralis",
+    "teamNameHelper": "Název týmu může obsahovat jakýkoli jazyk i speciální znaky",
+    "teamTagLabel": "Tag týmu",
+    "teamTagPlaceholder": "AST",
+    "teamTagHelper": "Generuje se automaticky z názvu týmu (max. 4 znaky)",
+    "playersHeader": "Hráči ({{count}})",
+    "selectPlayers": "Vybrat hráče",
+    "noPlayersInfo": "Zatím žádní hráči. Přidej aspoň jednoho hráče.",
+    "addPlayersHelper": "Přidej nového hráče níže, nebo vyber z existujících hráčů",
+    "addPlayersHelper_steam": "Přidej hráče vložením URL Steamu, nebo vyber z existujících hráčů",
+    "steamInputLabel": "Steam ID / vlastní URL",
+    "steamInputPlaceholder": "gaben nebo steamcommunity.com/id/gaben",
+    "resolveSteam": "Zjistit Steam ID",
+    "resolving": "Zjišťuji...",
+    "playerNameLabel": "Jméno hráče",
+    "playerNamePlaceholder": "s1mple",
+    "eloLabel": "ELO (volitelné)",
+    "eloPlaceholder": "1500",
+    "eloHelper": "Výchozí: 1500",
+    "errors": {
+      "steamLookupEmpty": "Zadej Steam ID, vlastní URL nebo URL profilu",
+      "steamApiNotConfigured": "Steam API není nastavené – zadej Steam ID64 ručně",
+      "steamResolveFailed": "Steam ID se nepodařilo zjistit – zadej Steam ID64 ručně",
+      "steamAndNameRequired": "Steam ID i jméno hráče jsou povinné",
+      "steamDuplicate": "Toto Steam ID už v týmu je",
+      "teamNameRequired": "Název týmu je povinný",
+      "playersRequired": "Je potřeba aspoň jeden hráč",
+      "saveFailed": "Tým se nepodařilo uložit",
+      "deleteFailed": "Tým se nepodařilo smazat",
+      "discordIdInvalid": "Discord ID musí mít 17–20 číslic (číselné ID uživatele, ne uživatelské jméno)",
+      "discordIdInvalidPlayers": "Neplatné Discord ID u: {{names}}. Musí mít 17–20 číslic, nebo zůstat prázdné.",
+      "discordIdSaveFailed": "Tým se uložil, ale Discord ID se nepodařilo uložit u: {{names}}. {{message}}",
+      "nameRequired": "Zadej jméno hráče",
+      "addPlayerFailed": "Hráče se nepodařilo přidat"
+    },
+    "success": {
+      "playerAdded": "Hráč přidán do týmu",
+      "playerReplaced": "Hráč nahrazen",
+      "teamUpdated": "Tým aktualizován",
+      "teamCreated": "Tým vytvořen",
+      "teamDeleted": "Tým smazán"
+    },
+    "buttons": {
+      "deleteTeam": "Smazat tým",
+      "cancel": "Zrušit",
+      "saving": "Ukládám...",
+      "saveChanges": "Uložit změny",
+      "createTeam": "Vytvořit tým"
+    },
+    "confirmDelete": {
+      "title": "Smazat tým",
+      "message": "Opravdu chceš smazat „{{name}}“? Tuto akci nejde vrátit."
+    },
+    "replacePlayerAria": "Nahradit hráče {{name}}",
+    "replacePlayerTooltip": "Nahradit tohoto hráče",
+    "accountLabel": "Účet {{account}} (volitelný)",
+    "accountHelper": "Pro {{games}}. Když se přihlásí přes {{account}}, stane se tímto hráčem."
+  },
+  "playerModal": {
+    "titleCreate": "Vytvořit hráče",
+    "titleEdit": "Upravit hráče",
+    "steamLabel": "Steam ID nebo URL profilu (volitelné)",
+    "steamHelperEditing": "Steam ID nejde změnit",
+    "steamHelperNew": "Pro {{games}}. Zadej Steam ID64, vlastní URL nebo URL profilu; „Zjistit“ doplní jméno a avatar.",
+    "resolveSteam": "Zjistit Steam ID",
+    "resolving": "Zjišťuji...",
+    "playerNameLabel": "Jméno hráče",
+    "playerNamePlaceholder": "Hráč",
+    "eloLabelNew": "Počáteční ELO",
+    "eloLabelEdit": "ELO",
+    "eloHelperNew": "Nech prázdné pro výchozí hodnotu (1500 Skill Rating).",
+    "eloHelperEdit": "Změna ELO resetuje hodnocení a statistiky hráče. Tuto akci nejde vrátit.",
+    "isAdminLabel": "Je správce (spravuje tento web; herní moduly mohou správcům dát i práva ve hře)",
+    "currentElo": "Aktuální ELO: {{value}}",
+    "startingElo": "Počáteční ELO: {{value}}",
+    "matchesPlayed": "Odehrané zápasy: {{count}}",
+    "errors": {
+      "steamRequired": "Steam ID je povinné",
+      "nameRequired": "Jméno hráče je povinné",
+      "steamLookupEmpty": "Zadej Steam ID, vlastní URL nebo URL profilu",
+      "steamApiNotConfigured": "Steam API není nastavené – zadej Steam ID64 ručně",
+      "steamResolveFailed": "Steam ID se nepodařilo zjistit – zadej Steam ID64 ručně",
+      "saveFailed": "Hráče se nepodařilo uložit"
+    },
+    "success": {
+      "playerUpdated": "Hráč aktualizován",
+      "playerCreated": "Hráč vytvořen"
+    },
+    "buttons": {
+      "delete": "Smazat",
+      "cancel": "Zrušit",
+      "saving": "Ukládám...",
+      "save": "Uložit",
+      "create": "Vytvořit"
+    },
+    "confirmDelete": {
+      "title": "Smazat hráče",
+      "message": "Opravdu chceš smazat hráče „{{name}}“? Tuto akci nejde vrátit."
+    },
+    "confirmEloUpdate": {
+      "title": "Aktualizovat ELO hráče",
+      "message": "Opravdu chceš změnit ELO tohoto hráče z {{from}} na {{to}}? Resetuje to jeho statistiky a historii hodnocení. Tuto akci nejde vrátit."
+    },
+    "discordIdHelper": "Volitelné. 17–20 číslic. Organizátoři pak hráče zastihnou na Discordu. Nikdy se nezobrazuje veřejně.",
+    "accountLabel": "Účet {{account}} (volitelný)",
+    "accountHelper": "Pro {{games}}. ID účtu; když se přihlásí přes {{account}}, stane se tímto hráčem.",
+    "accountVerified": "Propojeno: přihlášení přes {{account}} proběhlo. Změnit si ho může jen hráč sám."
+  },
+  "teamImportModal": {
+    "title": "Import týmů z JSON",
+    "info": {
+      "title": "Níže vlož JSON s daty týmů.",
+      "format": "Očekávaný formát: pole týmů s name, tag (volitelně) a players (name + steamId, volitelně discordId jako řetězec v uvozovkách).",
+      "link": "Zobrazit dokumentaci s příklady"
+    },
+    "jsonLabel": "Data JSON",
+    "errors": {
+      "mustBeArray": "JSON musí být pole týmů",
+      "emptyArray": "Pole nesmí být prázdné",
+      "parseWithMessage": "Chyba parsování JSON: {{message}}",
+      "parseGeneric": "Neplatný formát JSON. Zkontroluj syntaxi.",
+      "importFailed": "Týmy se nepodařilo importovat",
+      "noJson": "Zadej data JSON"
+    },
+    "preview": {
+      "summary": "✓ Platný JSON! Nalezeno: {{teams}}, celkem {{players}}.",
+      "title": "Náhled:",
+      "missingDiscordTotal": "Hráči bez Discord ID: {{count}}",
+      "missingDiscordChip": "Bez Discordu: {{count}}",
+      "playersChip_one": "{{count}} hráč",
+      "playersChip_other": "{{count}} hráčů",
+      "teamsCount_one": "{{count}} tým",
+      "teamsCount_other": "{{count}} týmů",
+      "playersChip_few": "{{count}} hráči",
+      "playersChip_many": "{{count}} hráčů",
+      "teamsCount_few": "{{count}} týmy",
+      "teamsCount_many": "{{count}} týmů"
+    },
+    "actions": {
+      "preview": "Náhled",
+      "importing": "Importuji...",
+      "import_one": "Importovat {{count}} tým",
+      "import_other": "Importovat {{count}} týmů",
+      "import_few": "Importovat {{count}} týmy",
+      "import_many": "Importovat {{count}} týmů"
+    },
+    "warnings": {
+      "title": "Některá Discord ID byla ignorována. Tito hráči se naimportují bez něj:",
+      "discordIdNumber": "Tým „{{team}}“, hráč „{{player}}“: discordId musí být řetězec v uvozovkách. Velká čísla v JSON ztrácejí přesnost, proto bylo ID vynecháno.",
+      "discordIdInvalid": "Tým „{{team}}“, hráč „{{player}}“: „{{value}}“ není ID uživatele Discordu (očekává se 17–20 číslic), proto bylo vynecháno."
+    }
+  },
+  "playerImportModal": {
+    "title": "Import hráčů",
+    "info": {
+      "description": "Importuj hráče ve formátu JSON nebo CSV. Povinná pole: steamId, name. Volitelná: initialELO (výchozí 1500), avatarUrl.",
+      "link": "Zobrazit dokumentaci s příklady"
+    },
+    "placeholders": {
+      "jsonCsv": "Formát JSON:\n[\n  {\n    \"steamId\": \"76561198012345678\",\n    \"name\": \"Player One\",\n    \"initialELO\": 1500,\n    \"avatarUrl\": \"https://...\"\n  }\n]\n\nFormát CSV:\nsteamId,name,initialELO,avatarUrl\n76561198012345678,Player One,1500,https://..."
+    },
+    "actions": {
+      "parseValidate": "Načíst a ověřit",
+      "importing": "Importuji...",
+      "import_one": "Importovat {{count}} hráče",
+      "import_other": "Importovat {{count}} hráčů",
+      "import_few": "Importovat {{count}} hráče",
+      "import_many": "Importovat {{count}} hráčů"
+    },
+    "preview": {
+      "title": "Hráči k importu ({{count}}):",
+      "steamId": "Steam ID: {{steamId}}",
+      "name": "Jméno: {{name}}",
+      "initialElo": "Počáteční ELO: {{elo}}",
+      "avatar": "Avatar: {{url}}",
+      "readyChip_one": "{{count}} hráč připravený k importu",
+      "readyChip_other": "{{count}} hráčů připravených k importu",
+      "readyChip_few": "{{count}} hráči připravení k importu",
+      "readyChip_many": "{{count}} hráčů připravených k importu"
+    },
+    "errors": {
+      "noData": "Zadej data JSON nebo CSV",
+      "noPlayers": "V datech nebyli nalezeni žádní hráči",
+      "validationPrefix": "Chyby ověření:",
+      "parseFailed": "Data se nepodařilo načíst: {{message}}",
+      "importFailed": "Hráče se nepodařilo importovat",
+      "parseFirst": "Nejdřív data načti a ověř"
+    }
+  },
+  "playerSelectionModal": {
+    "title": "Vybrat hráče",
+    "selectedCount": "Vybráno: {{count}}",
+    "searchPlaceholder": "Hledej hráče podle jména...",
+    "searchPlaceholder_steam": "Hledej hráče podle jména nebo Steam ID...",
+    "selectAll": {
+      "select": "Vybrat vše",
+      "deselect": "Zrušit výběr"
+    },
+    "empty": {
+      "noSearchResults": "Hledání neodpovídá žádný hráč",
+      "noPlayers": "Žádní hráči k dispozici"
+    },
+    "playerCard": {
+      "alreadyInTeam": "Už v týmu"
+    },
+    "errors": {
+      "loadFailed": "Hráče se nepodařilo načíst",
+      "noSelectable": "Nejsou k dispozici žádní hráči k výběru"
+    },
+    "addPlayersButton_one": "Přidat {{count}} hráče",
+    "addPlayersButton_other": "Přidat {{count}} hráčů",
+    "addPlayersButton_few": "Přidat {{count}} hráče",
+    "addPlayersButton_many": "Přidat {{count}} hráčů"
+  },
+  "soundSettingsModal": {
+    "title": "Nastavení zvuku",
+    "soundSelect": {
+      "label": "Zvuk oznámení"
+    },
+    "volume": {
+      "label": "Hlasitost: {{percent}} %"
+    },
+    "testButton": "Vyzkoušet zvuk",
+    "footer": "Zvuková oznámení zazní, když je tvůj zápas připravený nebo když se stane něco důležitého."
+  },
+  "addBackupPlayer": {
+    "title": "Přidat hráče",
+    "loadFailed": "Seznam hráčů se nepodařilo načíst",
+    "added": "{{name}} přidán do {{target}}",
+    "addFailed": "Hráče se nepodařilo přidat",
+    "addToMatchFailed": "Hráče se nepodařilo přidat do zápasu",
+    "searchLabel": "Hledat hráče",
+    "searchPlaceholder": "Napiš jméno hráče...",
+    "available": "{{count}} dostupných hráčů (zatím nejsou v zápase)",
+    "noneAvailable": "Žádní hráči k dispozici",
+    "displayNameLabel": "Zobrazované jméno (volitelné)",
+    "displayNamePlaceholder": "Výchozí je aktuální jméno hráče",
+    "side": "Strana",
+    "spectator": "Divák",
+    "selected": "Vybráno:",
+    "fromTeam": "Z týmu: {{team}}",
+    "steamId": "Steam ID: {{id}}",
+    "adding": "Přidávám hráče...",
+    "add": "Přidat hráče do zápasu",
+    "underlyingCommand": "Použitý příkaz:",
+    "important": "Důležité:",
+    "reconnectHint": "Hráč se po přidání musí znovu připojit k serveru. Pokud už je připojený, může se muset připojit znovu."
+  }
+}

@@ -1,0 +1,1013 @@
+{
+  "dashboard": {
+    "title": "Správa",
+    "restartTournament": {
+      "button": "Restartovat zápasy turnaje",
+      "restarting": "Restartuji zápasy turnaje…",
+      "intro": "🔄 Restartuje všechny aktivní zápasy a znovu je načte na servery.",
+      "actionsTitle": "Akce:",
+      "actionEndMatch": "Spustit at_endmatch na všech serverech s načtenými/živými zápasy",
+      "actionReset": "Vrátit zápasy do stavu 'ready'",
+      "actionReallocate": "Znovu přidělit zápasy dostupným serverům",
+      "actionReload": "Znovu načíst konfigurace zápasů na herních serverech",
+      "hint": "Použij, pokud se zápasy zasekly nebo potřebují začít znovu.",
+      "confirm": "Restartovat turnaj"
+    },
+    "header": {
+      "brand": "Auto Tournament",
+      "version": "Tvůj web Auto Tournament · verze {{version}}",
+      "unknownVersion": "dev",
+      "createTournament": "Vytvořit turnaj"
+    },
+    "setup": {
+      "title": "Dokonči nastavení",
+      "openSettings": "Otevřít nastavení",
+      "signIn": "Poskytovatel přihlášení",
+      "game": "Nainstaluj hru (CS2) v Modulech",
+      "discordBot": "Přidej vlastního Discord bota (jeho token), aby web mohl hráčům psát DM o jejich zápasech"
+    },
+    "tournaments": {
+      "title": "Turnaj",
+      "empty": "Tento web pořádá jeden turnaj najednou. Vytvoř ho a objeví se tady, v Procházet a na jeho stránce akce.",
+      "status": {
+        "setup": "Koncept",
+        "ready": "Přihlášky",
+        "inProgress": "Živě",
+        "completed": "Dokončeno"
+      },
+      "state": {
+        "teams_one": "{{count}} tým",
+        "teams_other": "{{count}} týmů",
+        "entered_one": "Přihlášen {{count}} tým",
+        "entered_other": "Přihlášeno {{count}} týmů",
+        "draftTeams_one": "Koncept · vybrán {{count}} tým",
+        "draftTeams_other": "Koncept · vybráno {{count}} týmů",
+        "draftEmpty": "Koncept · zatím žádné týmy",
+        "live_one": "Živě {{count}} zápas",
+        "live_other": "Živě {{count}} zápasů",
+        "completed_one": "Zúčastnil se {{count}} tým",
+        "completed_other": "Zúčastnilo se {{count}} týmů",
+        "winner": "Vítěz: {{name}}",
+        "teamsPlayers_one": "{{count}} hráč",
+        "teamsPlayers_other": "{{count}} hráčů",
+        "enteredPlayers_one": "Přihlášen {{count}} hráč",
+        "enteredPlayers_other": "Přihlášeno {{count}} hráčů",
+        "draftTeamsPlayers_one": "Koncept · {{count}} hráč",
+        "draftTeamsPlayers_other": "Koncept · {{count}} hráčů",
+        "completedPlayers_one": "Zúčastnil se {{count}} hráč",
+        "completedPlayers_other": "Zúčastnilo se {{count}} hráčů",
+        "teams_few": "{{count}} týmy",
+        "teams_many": "{{count}} týmů",
+        "entered_few": "Přihlášeny {{count}} týmy",
+        "entered_many": "Přihlášeno {{count}} týmů",
+        "draftTeams_few": "Koncept · vybrány {{count}} týmy",
+        "draftTeams_many": "Koncept · vybráno {{count}} týmů",
+        "live_few": "Živě {{count}} zápasy",
+        "live_many": "Živě {{count}} zápasů",
+        "completed_few": "Zúčastnily se {{count}} týmy",
+        "completed_many": "Zúčastnilo se {{count}} týmů",
+        "teamsPlayers_few": "{{count}} hráči",
+        "teamsPlayers_many": "{{count}} hráčů",
+        "enteredPlayers_few": "Přihlášeni {{count}} hráči",
+        "enteredPlayers_many": "Přihlášeno {{count}} hráčů",
+        "draftTeamsPlayers_few": "Koncept · {{count}} hráči",
+        "draftTeamsPlayers_many": "Koncept · {{count}} hráčů",
+        "completedPlayers_few": "Zúčastnili se {{count}} hráči",
+        "completedPlayers_many": "Zúčastnilo se {{count}} hráčů"
+      },
+      "actions": {
+        "manage": "Spravovat",
+        "continueSetup": "Pokračovat v nastavení",
+        "view": "Zobrazit"
+      },
+      "eventPage": "Stránka akce",
+      "emptyTitle": "Zatím žádný turnaj"
+    },
+    "site": {
+      "title": "Web",
+      "players": {
+        "label": "Hráči",
+        "hint": "Všichni, kdo se přihlásili"
+      },
+      "teams": {
+        "label": "Týmy",
+        "hint": "Kluby a soupisky"
+      },
+      "templates": {
+        "label": "Šablony",
+        "hint": "Opakovaně použitelná nastavení"
+      },
+      "ratings": {
+        "label": "Hodnocení",
+        "hint": "Jak se počítá hodnocení"
+      },
+      "settings": {
+        "label": "Nastavení",
+        "hint": "Přihlášení, API klíče"
+      },
+      "adminTools": {
+        "label": "Systém",
+        "hint": "Obnova zápasů a logy"
+      },
+      "disputes": {
+        "label": "Spory",
+        "hint": "Výsledky k vyřešení"
+      },
+      "modules": {
+        "label": "Moduly",
+        "hint": "Hry, které tato instance spouští"
+      }
+    },
+    "people": {
+      "title": "Lidé",
+      "open": "Otevřít",
+      "players": "Hráči",
+      "admins": "Správci",
+      "signedInThisWeek": "Přihlášení tento týden"
+    },
+    "loading": "Načítám přehled správce"
+  },
+  "settingsPage": {
+    "email": {
+      "title": "E-mail",
+      "short": "Posílá potvrzení adres, obnovení hesla a e-maily o turnajích.",
+      "enabled": "Posílat e-maily",
+      "enabledOn": "Zapnuto. E-maily odcházejí z {{from}}.",
+      "enabledOff": "Vypnuto. Nic se neposílá.",
+      "needsServer": "Nejdřív nastav server níže.",
+      "turnedOn": "E-mail je zapnutý",
+      "turnedOff": "E-mail je vypnutý",
+      "server": "Poštovní server",
+      "serverNone": "Nenastaveno",
+      "host": "SMTP server",
+      "port": "Port",
+      "security": "Zabezpečení",
+      "securityStarttls": "STARTTLS (obvykle port 587)",
+      "securityTls": "TLS (obvykle port 465)",
+      "securityNone": "Žádné (jen v důvěryhodné síti)",
+      "username": "Uživatelské jméno",
+      "password": "Heslo",
+      "passwordKept": "Nech prázdné a zůstane uložené",
+      "passwordSaved": "Uloženo",
+      "fromAddress": "Adresa odesílatele",
+      "fromAddressHelp": "Adresa, ze které e-maily chodí. Tvůj poskytovatel pošty ji musí povolit.",
+      "fromName": "Jméno odesílatele",
+      "fromNameHelp": "Volitelné. Zobrazí se jako odesílatel e-mailu, např. NTLAN.",
+      "siteUrl": "Adresa webu",
+      "siteUrlHelp": "Odkazy v e-mailech začínají tady, např. https://cs.example.com.",
+      "siteUrlHelpDefault": "Odkazy v e-mailech začínají tady. Prázdné: {{url}}.",
+      "save": "Uložit",
+      "saved": "Nastavení e-mailu uloženo",
+      "loadError": "Nastavení e-mailu se nepodařilo načíst",
+      "saveError": "Nastavení e-mailu se nepodařilo uložit",
+      "test": "Testovací e-mail",
+      "testShort": "Pošli jeden a ověř, že nastavení funguje.",
+      "testTo": "Poslat na",
+      "testSend": "Poslat test",
+      "testNeedsOn": "Před testem zapni odesílání (a ulož server).",
+      "testSent": "Odesláno na {{to}}. Zkontroluj doručenou poštu i spam.",
+      "testFailed": "Testovací e-mail se nepodařilo poslat"
+    },
+    "title": "Nastavení",
+    "intro": "Vlastní nastavení platformy. Každá hra má svá nastavení u sebe v menu.",
+    "tabs": {
+      "general": "Obecné",
+      "signIn": "Přihlášení",
+      "players": "Hráči a přístup",
+      "ratings": "Hodnocení",
+      "developer": "Vývojář",
+      "license": "Licence",
+      "webhooks": "Webhooky",
+      "experimental": "Experimentální"
+    },
+    "signIn": {
+      "title": "Poskytovatelé přihlášení",
+      "intro": "Vyber, jak se lidé přihlašují. Účtem může být kterýkoli z nich; další si lidé propojí na stránce propojení. Změny platí hned, bez restartu.",
+      "keySource": "Uložená tajemství jsou šifrovaná pomocí {{name}}.",
+      "keySourceDefault": "Uložená tajemství jsou šifrovaná vestavěným vývojovým klíčem. Před ostrým provozem nastav SECRETS_KEY nebo SESSION_SECRET.",
+      "loadError": "Poskytovatele přihlášení se nepodařilo načíst",
+      "saveError": "Nepodařilo se uložit",
+      "testError": "Test se nepodařilo spustit",
+      "saved": "Přihlášení přes {{provider}} uloženo",
+      "enabled": "Zapnuto",
+      "clientId": "Client ID",
+      "issuerUrl": "Issuer URL",
+      "issuerUrlHelp": "Adresa tvého realmu nebo tenanta OpenID Connect. Auto Tournament si načte endpointy z /.well-known/openid-configuration.",
+      "buttonName": "Název tlačítka",
+      "buttonNameHelp": "Zobrazí se jako „Přihlásit se přes …“ na přihlašovací stránce, např. tvoje komunita nebo server identit.",
+      "logoUpload": "Nahrát logo",
+      "logoReplace": "Nahradit logo",
+      "logoRemove": "Odebrat logo",
+      "logoType": "Logo musí být obrázek PNG, JPEG, WebP nebo SVG.",
+      "logoSize": "Logo může mít nejvýš 150 KB.",
+      "buttonColor": "Barva tlačítka",
+      "buttonColorDefault": "Výchozí barva",
+      "clientSecret": "Client secret",
+      "steamKey": "Klíč Steam Web API",
+      "secretSet": "nastaveno",
+      "secretUnreadable": "Uložené tajemství už nejde dešifrovat (změnil se šifrovací klíč). Zadej ho znovu.",
+      "replace": "Nahradit",
+      "cancel": "Zrušit",
+      "save": "Uložit",
+      "callbackHint": "Nastaví se automaticky. Vlož ji jako redirect URL ve vývojářském nastavení {{provider}}:",
+      "copy": "Kopírovat",
+      "copyCallback": "Kopírovat callback URL",
+      "copied": "Zkopírováno",
+      "copyError": "Nepodařilo se zkopírovat",
+      "guide": "Návod k nastavení",
+      "howTo": "Vývojářská konzole",
+      "test": "Otestovat",
+      "comingSoon": "Brzy",
+      "comingSoonNote": "Přihlášení přes {{provider}} zatím není dostupné.",
+      "status": {
+        "active": "Na přihlašovací stránce",
+        "missing": "Zapnuto, chybí přihlašovací údaje",
+        "off": "Vypnuto"
+      },
+      "testResult": {
+        "ok": "Poskytovatel tyto údaje přijal.",
+        "invalid_credentials": "Poskytovatel tyto údaje odmítl. Zkontroluj client ID a secret (nebo klíč).",
+        "unreachable": "Poskytovatele se nepodařilo zastihnout. Zkontroluj síť a zkus to znovu.",
+        "not_configured": "Nejdřív zadej přihlašovací údaje.",
+        "not_supported": "Tohoto poskytovatele nejde otestovat.",
+        "unexpected": "Poskytovatel odpověděl něčím, čemu test nerozumí."
+      },
+      "welcomeTitle": "Nastav, jak se hráči přihlašují",
+      "welcomeBody": "Přihlášení správce je aktivní. Zapni níže aspoň jednoho poskytovatele (Steam, Discord, Google, GitHub nebo Twitch), aby se hráči mohli přihlásit.",
+      "adminAccess": {
+        "title": "Přístup správce",
+        "localLogin": "Povolit přihlášení místního správce",
+        "localLoginHelp": "Přihlášení uživatelským jménem a heslem na /login/admin. Pokud přístup ztratíš, spusť na serveru reset-admin.",
+        "localLoginLocked": "Zůstane zapnuté, dokud se jiný správce nemůže přihlásit přes zapnutého poskytovatele.",
+        "steamIds": "Steam ID správců",
+        "steamIdsHelp": "Steam64 ID oddělená čárkami. Správcem se stává při uložení a při každém startu. Odebrání ID práva správce nebere.",
+        "emails": "E-maily správců",
+        "emailsHelp": "Adresy, které dostanou práva správce, když se jejich vlastník přihlásí přes poskytovatele, který je ověřil (Google, Discord, GitHub).",
+        "unsaved": "Zatím neuloženo.",
+        "saved": "Přístup správce uložen",
+        "loadError": "Nastavení přístupu správce se nepodařilo načíst",
+        "short": "Kdo se může přihlásit jako správce"
+      },
+      "short": "Jak se přihlašují hráči a správci. Změny platí hned.",
+      "enabledFor": "Přihlášení přes {{provider}}",
+      "setUp": "Nastavit {{provider}}",
+      "accounts": {
+        "title": "Účty",
+        "short": "Účty s uživatelským jménem a heslem, které vytvoříš",
+        "help": "Lidé se jimi přihlašují na /login/admin. Práva správce dej těm, kdo web provozují; ostatní se přihlašují jako hráči.",
+        "none": "Zatím žádné účty.",
+        "admin": "Správce",
+        "twoStep": "Dvoufázové zapnuto",
+        "lastLogin": "Naposledy přihlášen {{date}}",
+        "neverSignedIn": "Nikdy nepřihlášen",
+        "setPassword": "Nastavit heslo",
+        "remove": "Odebrat",
+        "addTitle": "Přidat účet",
+        "username": "Uživatelské jméno",
+        "usernameHelp": "3 až 32 znaků: malá písmena, číslice, tečky, pomlčky a podtržítka.",
+        "name": "Zobrazované jméno",
+        "nameHelp": "Volitelné. Zobrazuje se na webu; když je prázdné, použije se uživatelské jméno.",
+        "password": "Heslo",
+        "makeAdmin": "Správce",
+        "create": "Vytvořit účet",
+        "created": "Účet {{username}} vytvořen",
+        "madeAdmin": "{{username}} je teď správce",
+        "adminRemoved": "{{username}} už není správce",
+        "setPasswordTitle": "Nové heslo pro {{username}}",
+        "setPasswordTotp": "Vypne se mu i dvoufázové ověření; po přihlášení si ho nastaví znovu.",
+        "newPassword": "Nové heslo",
+        "savePassword": "Uložit heslo",
+        "passwordSet": "Nové heslo pro {{username}} uloženo",
+        "removeTitle": "Odebrat {{username}}?",
+        "removeBody": "Tímto uživatelským jménem a heslem se už nepřihlásí a přestane být správcem. Jeho hráč, zápasy a statistiky zůstanou; vytvoření stejného uživatelského jména je vrátí.",
+        "removeConfirm": "Odebrat",
+        "removed": "{{username}} odebrán",
+        "cancel": "Zrušit",
+        "loadError": "Účty se nepodařilo načíst",
+        "saveError": "Účet se nepodařilo uložit"
+      },
+      "oidcScopes": "Na svém serveru OpenID Connect dej tomuto klientovi scopes openid, profile a email (v Keycloaku: Clients → tento klient → Client scopes, s profile a email jako Default). Bez profile a email se lidé pořád přihlásí, ale platforma o nich nedostane jméno ani e-mailovou adresu."
+    },
+    "integrations": {
+      "steam": {
+        "title": "Integrace se Steamem",
+        "apiKeyLabel": "Klíč Steam Web API",
+        "apiKeyHelper": "Překládá vlastní URL Steamu a údaje hráčů. Nech prázdné, pokud chceš vyhledávání vypnout.",
+        "checkButtonChecking": "Kontroluji Steam…",
+        "checkButtonIdle": "Zkontrolovat připojení ke Steamu",
+        "statusOk": "Klíč Steam API je nastavený a dostupný.",
+        "statusNotConfigured": "Klíč Steam API není nastavený. Vlastní URL nejde přeložit, dokud klíč nepřidáš.",
+        "statusUnreachable": "Klíč Steam API je asi nastavený, ale Steam není dostupný. Zkontroluj síť nebo klíč.",
+        "statusError": "Stav Steam API se nepodařilo zkontrolovat. Zkus to znovu."
+      }
+    },
+    "matchRating": {
+      "ratings": {
+        "title": "Aktualizace hodnocení",
+        "description": "Urči, zda dokončené zápasy mění Skill Rating hráčů. Vypni u akcí, kde je zdrojem pravdy pro hodnocení externí systém (například tvoje Excelová tabulka).",
+        "toggleLabel": "Aktualizovat hodnocení hráčů z dokončených zápasů",
+        "note": "Když je to vypnuté, všechny zápasy dál zaznamenávají statistiky (ADR, K/D atd.), ale Skill Rating hráčů se nemění.",
+        "short": "Hodnocení se mění po každém zápase."
+      }
+    },
+    "players": {
+      "registration": {
+        "title": "Registrace hráčů",
+        "description": "Urči, zda přihlášení vytvoří záznam hráče pro někoho nového, ať použije jakýkoli způsob přihlášení (Steam, Discord, Google a další zapnuté). Když je to vypnuté, v soukromých turnajích a shuffle poolech se objeví jen hráči vytvoření nebo importovaní správci.",
+        "toggleLabel": "Povolit komukoli registraci přihlášením",
+        "recommendation": "Doporučení: u turnajů jen na pozvánky nebo soukromých turnajů to nech vypnuté, ať náhodná přihlášení nezaplní seznam hráčů.",
+        "short": "Přihlášením se z kohokoli nového stane hráč. Vypnuto: jen hráči, které přidáš."
+      },
+      "title": "Hráči",
+      "short": "Kdo se přidá a jak se mění hodnocení.",
+      "chooseName": {
+        "toggleLabel": "Hráči si volí zobrazované jméno",
+        "short": "Hráči jsou požádáni o jméno a můžou ho jednou denně změnit. Vypnuto: jména pocházejí z importů a od správců."
+      }
+    },
+    "developer": {
+      "resetApiTitle": "Reset API a databáze",
+      "resetApiDescription": "Nebezpečná zóna: smaže a znovu vytvoří celé schéma databáze a pak znovu inicializuje výchozí data (mapy, map pooly atd.). Jen pro lokální vývoj. Nevratné.",
+      "resetApiButton": "Resetovat API (smazat všechna data)",
+      "resetApiButtonLoading": "Resetuji API…",
+      "resetApiSuccess": "API a databáze resetovány. Všechna data byla smazána a výchozí hodnoty znovu inicializovány.",
+      "resetApiError": "API a databázi se nepodařilo resetovat. Podrobnosti najdeš v logu API.",
+      "resetApiDialog": {
+        "title": "Resetovat API a smazat všechna data?",
+        "description": "Smaže a znovu vytvoří celé schéma databáze. Všechny turnaje, zápasy, hráči, týmy, hodnocení, události, logy i nastavení se trvale smažou. Tuto akci nejde vrátit. Pokračovat?",
+        "cancel": "Zrušit",
+        "confirm": "Ano, resetovat API a smazat data",
+        "confirmLoading": "Resetuji…"
+      }
+    },
+    "footer": {
+      "version": "Verze",
+      "unknownVersion": "Neznámá"
+    },
+    "errors": {
+      "loadSettings": "Nastavení se nepodařilo načíst",
+      "saveSettings": "Nastavení se nepodařilo uložit"
+    },
+    "success": {
+      "saveSettings": "Nastavení uloženo"
+    },
+    "site": {
+      "title": "Web",
+      "description": "Jak se tento web jmenuje. Přehled správce ho používá jako nadpis.",
+      "label": "Název webu",
+      "helper": "Nech prázdné pro „Auto Tournament“.",
+      "save": "Uložit",
+      "saved": "Název webu uložen",
+      "saveFailed": "Název webu se nepodařilo uložit"
+    },
+    "experimental": {
+      "title": "Experimentální",
+      "description": "Funkce, které se ještě vyvíjejí. Ve výchozím stavu jsou vypnuté a můžou se změnit nebo rozbít. Vidí je jen správci.",
+      "saved": "Uloženo",
+      "saveFailed": "Funkci se nepodařilo uložit",
+      "loadFailed": "Experimentální funkce se nepodařilo načíst",
+      "envOverride": "Nastaveno proměnnou prostředí {{env}}. Změň ji tam.",
+      "features": {},
+      "short": "Ve vývoji: ve výchozím stavu vypnuté, vidí je jen správci."
+    },
+    "matchmaking": {
+      "openLabel": "Otevřeno hráčům",
+      "openDescription": "Zapnuto: každý přihlášený hráč vidí Hrát a může do fronty. Vypnuto: zápasy můžou hledat jen správci.",
+      "boardLabel": "Žebříček viditelný pro všechny",
+      "boardDescription": "Vypnuto: žebříček matchmakingu vidí jen přihlášení hráči. Zapnuto: kdokoli s odkazem.",
+      "windowTitle": "Okno hledání",
+      "windowDescription": "Jak daleko od sebe smějí být hráči v hodnocení. Začíná na prvním čísle, každých 30 sekund roste o krok až po strop a po posledním počtu minut se páruje kdokoli (prázdné = nikdy).",
+      "window": {
+        "start": "Začátek (Elo)",
+        "step": "Krok (Elo)",
+        "cap": "Strop (Elo)",
+        "uncappedAfterMinutes": "Kdokoli po (min)"
+      },
+      "reservedTitle": "Servery držené volné pro matchmaking",
+      "reservedDescription": "Turnajové zápasy mají přednost, ale nech tolik volných serverů pro matchmaking, dokud hráči hledají. 0 = žádné.",
+      "reservedLabel": "Servery",
+      "modesTitle": "Režimy",
+      "modesDescription": "Co můžou hráči hledat. Všechny režimy jsou ve výchozím stavu zapnuté. 1v1 je aim duel.",
+      "poolsTitle": "Mapy podle režimu",
+      "poolsDescription": "Map pool, ze kterého každý režim vybírá (stránka Mapy; fungují i mapy z Workshopu). Místnost zápasu před odhalením mapy ukáže ruletu přes pool.",
+      "poolDefault": {
+        "5v5": "Výchozí: Active Duty",
+        "2v2": "Výchozí: všechny wingman mapy",
+        "1v1": "Výchozí: Active Duty"
+      },
+      "save": "Uložit",
+      "title": "Matchmaking",
+      "short": "Vždy zapnutý. Hráči najdou zápas, zařadí se do fronty a přijmou ho, pak hrají na volném serveru.",
+      "saved": "Uloženo",
+      "saveFailed": "Nastavení matchmakingu se nepodařilo uložit",
+      "loadFailed": "Nastavení matchmakingu se nepodařilo načíst"
+    },
+    "groups": {
+      "platform": "Platforma"
+    },
+    "navLabel": "Stránky nastavení",
+    "gameLinks": {
+      "title": "Nastavení her",
+      "hint": "Každá hra má svá nastavení u sebe v menu."
+    },
+    "sections": {
+      "label": "Sekce nastavení",
+      "site": {
+        "name": "Web",
+        "hint": "Název, logo, jazyk"
+      },
+      "signin": {
+        "name": "Přihlášení",
+        "hint": "Poskytovatelé, účty správců"
+      },
+      "email": {
+        "name": "E-mail",
+        "hint": "SMTP, co se posílá"
+      },
+      "players": {
+        "name": "Hráči",
+        "hint": "Přihlášky, hodnocení"
+      },
+      "matchmaking": {
+        "name": "Matchmaking",
+        "hint": "Fronty a jejich pravidla"
+      },
+      "news": {
+        "name": "Novinky",
+        "hint": "Příspěvky na domovské stránce"
+      },
+      "adminnotices": {
+        "name": "Oznámení",
+        "hint": "Co se správcům sděluje"
+      },
+      "webhooks": {
+        "name": "Integrace",
+        "hint": "Webhooky"
+      },
+      "apitokens": {
+        "name": "API tokeny",
+        "hint": "Pro skripty a MCP"
+      },
+      "advanced": {
+        "name": "Pokročilé",
+        "hint": "Experimentální, vývojář"
+      },
+      "module": {
+        "hint": "Nastavení tohoto modulu"
+      }
+    }
+  },
+  "managePage": {
+    "tournamentNotFound": "Turnaj s tímto ID neexistuje. Vyber jeden ze Všech turnajů.",
+    "title": "Správa",
+    "needsYouHeading": "Čeká na tebe",
+    "noTournament": "Zatím žádný turnaj",
+    "rail": {
+      "needsYou": "Čeká na tebe",
+      "matches": "Zápasy",
+      "bracket": "Pavouk",
+      "teams": "Týmy",
+      "players": "Hráči",
+      "reports": "Nahlášení",
+      "tournament": "Nastavení turnaje",
+      "settings": "Nastavení",
+      "label": "Správa",
+      "disputes": "Spory",
+      "publicPage": "Veřejná stránka",
+      "modules": "Moduly",
+      "templates": "Šablony",
+      "ratings": "Hodnocení",
+      "adminTools": "Logy a nástroje",
+      "license": "Licence",
+      "devTools": "Vývojářské nástroje",
+      "documentation": "Dokumentace",
+      "opensInNewTab": "(otevře se v nové kartě)",
+      "groups": {
+        "operate": "Provoz",
+        "tournament": "Turnaj",
+        "people": "Lidé",
+        "game": "Hra",
+        "home": "Domů",
+        "history": "Historie",
+        "setup": "Nastavení",
+        "configuration": "Konfigurace",
+        "site": "Web",
+        "tournaments": "Turnaje",
+        "system": "Systém",
+        "gamesOf": "Hry · {{game}}"
+      },
+      "templatesAndRatings": "Šablony a hodnocení",
+      "allTournaments": "Všechny turnaje",
+      "switcher": "Turnaj",
+      "newTournament": "Nový turnaj",
+      "playedMatches": "Odehrané zápasy",
+      "tournamentBar": "Tento turnaj",
+      "scope": {
+        "label": "Spravuješ",
+        "platform": "Platforma",
+        "platformHint": "Turnaje, lidé, web",
+        "gameHint": "Jeho stránky a nastavení"
+      },
+      "highlights": "Highlighty",
+      "state": {
+        "live": "živě",
+        "setup": "příprava"
+      },
+      "openMenu": "Otevřít menu Správa",
+      "closeMenu": "Zavřít menu",
+      "setupTab": "Nastavení",
+      "prizes": "Ceny",
+      "schedule": "Harmonogram",
+      "liveMatches": "Živé zápasy"
+    },
+    "status": {
+      "live": "ŽIVĚ",
+      "inVeto": "VE VETU",
+      "queued": "VE FRONTĚ",
+      "round": "KOLO"
+    },
+    "needsYou": {
+      "empty": "Teď na tebe nic nečeká.",
+      "secondsAgo": "{{count}} s",
+      "minutesAgo": "{{count}} min",
+      "hoursAgo": "{{count}} h",
+      "vsLabel": "{{team1}} vs {{team2}}",
+      "decide": {
+        "title": "{{teams}} potřebuje vítěze",
+        "detail": "Všechny mapy jsou odehrané a série je pořád vyrovnaná.",
+        "action": "Rozhodnout"
+      },
+      "reallocateSuccess": "Zápas přesunut na jiný server",
+      "forceCancelSuccess": "Zápas zrušen",
+      "actionFailed": "Neprošlo to. Zkus to znovu.",
+      "reallocateConfirmTitle": "Přesunout tento zápas na jiný server?",
+      "reallocateConfirmBody": "Zápas se přidělí dalšímu dostupnému serveru.",
+      "forceCancelConfirmTitle": "Vynutit zrušení tohoto zápasu?",
+      "forceCancelConfirmBody": "Zápas okamžitě skončí a označí se jako zrušený, i když je server nedostupný.",
+      "listLabel": "Věci, které potřebují rozhodnutí"
+    },
+    "recent": {
+      "heading": "Poslední",
+      "viewAll": "Celý log",
+      "empty": "Zatím žádná nedávná aktivita.",
+      "closingLine": "Všechno ostatní běží samo. Tady to uvidíš, jen když je potřeba něco rozhodnout.",
+      "team1Fallback": "Tým 1",
+      "team2Fallback": "Tým 2",
+      "mapResult": "{{winner}} vyhrál mapu {{map}} proti {{loser}}, {{score}}",
+      "seriesEnd": "{{winner}} vyhrál sérii proti {{loser}}, {{score}}"
+    },
+    "announce": {
+      "button": "Oznámit",
+      "title": "Oznámení na všechny servery",
+      "label": "Zpráva",
+      "send": "Odeslat",
+      "success": "Oznámení odesláno",
+      "failed": "Oznámení se nepodařilo odeslat"
+    }
+  },
+  "license": {
+    "title": "Licence",
+    "getKey": "Licenci už máš? Zkopíruj si klíč z <consoleLink>konzole Auto Tournament</consoleLink>. Potřebuješ ji? <pricingLink>Podívej se na ceník</pricingLink>.",
+    "useFromPaidKey": "Nastaveno placeným licenčním klíčem níže.",
+    "useFromFreeKey": "Nastaveno bezplatným klíčem níže: jen pro neziskové použití.",
+    "useWithoutKey": "Bez klíče: zdarma pro neziskové použití. Pro komerční použití vlož placený klíč níže.",
+    "publicLine": "Hráči vidí „{{line}}“ v dolní části stránek akcí.",
+    "pageIntro": "Tvůj licenční klíč a jeho stav. Placený klíč je pro komerční použití; bezplatný pro neziskové.",
+    "description": "Vlož licenční klíč Auto Tournament: placený pro komerční použití, nebo bezplatný pro neziskové. Kontroluje se na tomto serveru a jednou denně s autotournament.gg.",
+    "loading": "Načítám stav licence",
+    "loadFailed": "Stav licence se nepodařilo přečíst.",
+    "none": "Zatím žádný licenční klíč. Zdarma pro neziskové použití; komerční použití potřebuje placenou licenci.",
+    "pricing": "Ceník",
+    "open": "Nastavení",
+    "id": "ID licence {{id}}",
+    "verify": "Ověřit tuto licenci",
+    "invalid": "Tento klíč se nepodařilo ověřit.",
+    "invalidShort": "Uložený klíč se nepodařilo ověřit.",
+    "warningsShort_one": "1 upozornění k licenci v Nastavení.",
+    "warningsShort_other": "{{count}} upozornění k licenci v Nastavení.",
+    "warningsNote": "Nic není blokované ani omezené. Je to jen upozornění.",
+    "label": "Licenční klíč",
+    "replaceLabel": "Nahradit licenční klíč",
+    "helper": "Začíná ATL1. Zkopíruj ho ze <consoleLink>svých licencí v konzoli Auto Tournament</consoleLink>. Po uložení se ukáže jen ID licence. Nemáš tam, kde hraješ, internet? Sem vlož i offline lease z konzole.",
+    "checkInNote": "Bez licenčního klíče se do Auto Tournament nic neposílá. S klíčem se tento server jednou denně ohlásí s ID klíče a počtem serverů.",
+    "save": "Uložit klíč",
+    "saved": "Licenční klíč uložen",
+    "saveFailed": "Licenční klíč se nepodařilo uložit",
+    "remove": "Odebrat klíč",
+    "removed": "Licenční klíč odebrán",
+    "removeFailed": "Licenční klíč se nepodařilo odebrat",
+    "summary": {
+      "licensedTo": "Licencováno pro {{licensee}}",
+      "licensed": "Licencováno",
+      "product": {
+        "platform": "Platforma {{pack}}",
+        "servers": "Servery {{pack}}"
+      },
+      "servers_one": "{{count}} server",
+      "servers_other": "{{count}} serverů",
+      "updatesUntil": "aktualizace do {{date}}",
+      "updatesForLife": "doživotní aktualizace",
+      "eventWindow": "akce od {{from}} do {{to}}",
+      "free": "Bezplatný klíč, nekomerční použití",
+      "freeFor": "Bezplatný klíč pro {{licensee}}, nekomerční použití",
+      "noLimit": "bez omezení počtu serverů",
+      "servers_few": "{{count}} servery",
+      "servers_many": "{{count}} serverů"
+    },
+    "badge": {
+      "label": "Ukazovat „Licencováno“ a druh použití na veřejných stránkách akcí",
+      "note": "Ve výchozím stavu vypnuto. Odkazuje na veřejnou stránku ověření licence a ukazuje se, jen dokud je uložený klíč platný.",
+      "on": "Veřejný řádek licence zapnut",
+      "off": "Veřejný řádek licence vypnut",
+      "failed": "Veřejný řádek licence se nepodařilo změnit",
+      "short": "Zapne se sám, jakmile uložíš klíč. Hráči ho vidí v dolní části stránek akcí.",
+      "needsKey": "Ukazuje se jen s uloženým licenčním klíčem, bezplatným nebo placeným. Nejdřív ho ulož výše."
+    },
+    "public": {
+      "licensed": "Licencováno",
+      "commercial": "Licencováno · komerční použití",
+      "nonCommercial": "Licencováno · neziskové použití",
+      "unlicensed": "Bez licenčního klíče",
+      "about": {
+        "title": "O licenci tohoto webu",
+        "none": "Tento web provozuje Auto Tournament bez licenčního klíče. To je v pořádku u akcí, na kterých nikdo nevydělává: přátelé, kluby, školní LAN, charita.",
+        "nonCommercial": "Tento web má bezplatnou neziskovou licenci: smí pořádat akce, na kterých nikdo nevydělává.",
+        "commercial": "Tento web má placenou komerční licenci: smí pořádat placené akce a vybírat startovné.",
+        "free": "Auto Tournament je zdarma, když na něm nikdo nevydělává, a pro charitu, školy a veřejné instituce i tehdy, když vybírají startovné. Kdokoli jiný, kdo s ním vydělává, ať už startovným, prodejem míst, nebo provozem pro firmu, potřebuje placenou licenci.",
+        "paidTitle": "Chtějí po tobě poplatek za účast?",
+        "paidBody": "Pokud po tobě chtěli startovné (nebo už je zaplacené) a organizátor není charita, škola ani veřejná instituce, tato akce možná používá Auto Tournament v rozporu s licencí. Můžeš nám to říct; čteme každé hlášení a nikdy neprozradíme, kdo ho poslal.",
+        "paidCommercial": "Placený vstup je tady povolený. Pokud ti na tom přesto něco nesedí, můžeš nám to říct.",
+        "report": "Nahlásit to Auto Tournament",
+        "rules": "Přečíst licenci",
+        "verify": "Ověřit tuto licenci"
+      }
+    },
+    "consent": {
+      "title": "Ještě poslední věc: licence",
+      "subtitle": "Promiň, ještě jeden krok a máš hotovo. Auto Tournament je zdarma, pokud na něm nikdo nevydělává; pokud ano, potřebuješ licenci. Projdi si krátkou verzi, vyber, jak ho používáš, a napiš I AGREE.",
+      "intro": "Auto Tournament je source-available pod licencí {{name}}. Ve zkratce:",
+      "points": {
+        "free": "Zdarma pro osobní použití, hobby projekty, učení a akce, na kterých nikdo nevydělává.",
+        "orgs": "Zdarma pro charitu, školy, univerzity, veřejný výzkum a státní instituce, i když vybírají startovné.",
+        "commercial": "Komerční použití potřebuje licenci. To zahrnuje placený hosting, prodej softwaru nebo služby na něm postavené, ziskové akce, použití uvnitř firmy a placené nastavení pro někoho jiného.",
+        "servers": "Do licence se počítá každý herní server.",
+        "nothingLocked": "Bez klíče není nic zamčené ani omezené. Klíč můžeš přidat teď, nebo později.",
+        "forks": "Kód můžeš měnit a sdílet. Licenci k němu přilož; platí stejná pravidla."
+      },
+      "readLicense": "Přečíst celou licenci",
+      "readRules": "Licencování a komerční použití",
+      "summaryNote": "Tohle je krátké shrnutí a text ve tvé verzi může být zastaralý. Aktuální licence a pravidla licencování jsou na autotournament.gg – pokud se od tohoto shrnutí liší, platí ony.",
+      "useQuestion": "Jak se tato instance používá?",
+      "privacyNote": "Tvoje odpověď se uloží jen na tomto serveru. Bez licenčního klíče se do Auto Tournament nic neposílá. S klíčem se tento server jednou denně ohlásí s ID klíče a počtem serverů.",
+      "use": {
+        "noncommercial": "Nekomerční",
+        "noncommercialHint": "Zdarma. Nikdo na tom nevydělává.",
+        "commercial": "Komerční",
+        "commercialHint": "Potřebuješ licenci. Klíč vlož teď, nebo později."
+      },
+      "keyLabel": "Licenční klíč (volitelný)",
+      "keyHelper": "Začíná ATL1. Zkopíruj ho ze <consoleLink>svých licencí v konzoli Auto Tournament</consoleLink>, nebo ho přidej později v Nastavení > Licence.",
+      "confirmLabel": "Pro přijetí licenčních podmínek napiš {{phrase}}",
+      "confirmHelper": "Napsáním {{phrase}} přijímáš licenční podmínky pro tuto instanci.",
+      "accept": "Přijmout a pokračovat",
+      "cancel": "Zrušit",
+      "failed": "Odpověď se nepodařilo uložit",
+      "accepted": "Licenční podmínky přijaty",
+      "termsChanged": "Licenční podmínky se od posledního přijetí změnily. Přečti si je a přijmi je znovu.",
+      "onlyAdmins": "Vidí to jen správci, jednou za instanci. Hráčů, veřejných stránek a běžících zápasů se to netýká.",
+      "declared": {
+        "noncommercial": "Nekomerční použití",
+        "commercial": "Komerční použití",
+        "none": "Licenční podmínky zatím nepřijaty"
+      },
+      "acceptedLine": "Podmínky přijal {{who}} dne {{date}} (verze podmínek {{version}})",
+      "byEnv": "nastavení AT_ACCEPT_LICENSE",
+      "change": "Změnit",
+      "changeTitle": "Změnit způsob použití této instance",
+      "changeNote": "Vyber znovu a napiš I AGREE. Změna se uloží s datem a tvým účtem.",
+      "commercialNoKey": "Tato instance se používá komerčně, takže potřebuješ licenci. Zkopíruj klíč ze <consoleLink>svých licencí v konzoli Auto Tournament</consoleLink> a vlož ho níže. Dokud chybí, nic není zamčené.",
+      "readHeading": "Než přijmeš, přečti si tohle a každé zaškrtni:",
+      "readItem": "Potvrzuji, že znám",
+      "readLinks": {
+        "license": "celou licenci",
+        "rules": "pravidla pro komerční použití",
+        "pricing": "ceník"
+      }
+    },
+    "checkin": {
+      "last": "Poslední ohlášení licence: {{time}}",
+      "offlineUntil": "Offline lease: nové servery fungují bez internetu do {{date}}.",
+      "never": "Zatím žádné ohlášení licence. První proběhne krátce po uložení klíče.",
+      "whatIsSent": "Co se posílá",
+      "intro": "Jednou denně a jen dokud je uložený klíč, tento server posílá:",
+      "keyId": "Licenční klíč, aby šlo ověřit jeho ID a podpis",
+      "instanceId": "Náhodné ID této instalace, vytvořené jednou",
+      "serverCount": "Počet herních serverů",
+      "version": "Verzi platformy",
+      "publicUrl": "Který produkt to je (platforma) a jeho veřejnou adresu, aby konzole ukázala, kde klíč běží",
+      "activity": "Počty od posledního ohlášení: dokončené zápasy, turnaje s aktivitou a největší počet týmů",
+      "declared": "Tvoji odpověď na otázku o termínech akce, pokud nějaká je",
+      "notSent": "Žádná jména, adresy, hráče ani podrobnosti zápasů.",
+      "privacy": "Zásady ochrany osobních údajů",
+      "noticeTitle": "Zpráva od Auto Tournament",
+      "answered": "Tvoje odpověď pro tuto licenci: {{answer}} ({{time}})"
+    },
+    "eventPrompt": {
+      "title": "Chystáš něco nového?",
+      "body": "Tvoje licence pro akci pokrývá {{dates}}. Dej nám vědět, jestli testuješ, máš novou akci, nebo se termín posunul – během testování není potřeba nic dělat.",
+      "datesRange": "{{from}} až {{to}}",
+      "testing": "Testování nebo příprava",
+      "newEvent": "Nová akce",
+      "datesMoved": "Termín naší akce se posunul",
+      "dontAsk": "Už se neptat",
+      "close": "Zavřít",
+      "thanks": "Díky, zaznamenáno.",
+      "failed": "Odpověď se nepodařilo uložit"
+    },
+    "warning": {
+      "periodEnded": "Tato licence pro akci pokrývala termín do {{date}}. Testování a příprava nevyžadují nic; nová akce dostane vlastní licenci.",
+      "periodNotStarted": "Tato licence pro akci pokrývá termín od {{date}}. Příprava a testování před ním jsou v pořádku."
+    },
+    "short": "Jak se tato instalace používá a její klíč.",
+    "keyRow": "Licenční klíč",
+    "state": {
+      "active": "Aktivní",
+      "warning": "Zkontrolovat",
+      "invalid": "Neplatný",
+      "none": "Bez klíče"
+    },
+    "thirdParty": "Tato aplikace je postavená na open-source balíčcích pod jejich vlastními licencemi.",
+    "thirdPartyLink": "Oznámení třetích stran",
+    "warningsShort_few": "{{count}} upozornění k licenci v Nastavení.",
+    "warningsShort_many": "{{count}} upozornění k licenci v Nastavení."
+  },
+  "tournamentsPage": {
+    "title": "Turnaje",
+    "subtitle": "Všechny turnaje na tomto webu. Přepínač nahoře v menu vybírá ten, se kterým pracují ostatní stránky správy.",
+    "liveShared": "Živě: {{count}}, sdílejí servery. Zápasy dostávají server v pořadí, ve kterém byly připravené.",
+    "new": "Nový turnaj",
+    "empty": "Zatím žádné turnaje. Vytvoř první.",
+    "col": {
+      "name": "Název",
+      "status": "Stav",
+      "when": "Kdy",
+      "entries": "Přihlášky",
+      "frontPage": "Titulní stránka",
+      "actions": "Akce"
+    },
+    "status": {
+      "live": "Živě",
+      "finished": "Dokončeno",
+      "signup": "Přihlášky otevřené",
+      "draft": "Koncept"
+    },
+    "front": {
+      "featured": "Zvýrazněný",
+      "shown": "Zobrazený",
+      "hidden": "Skrytý",
+      "archived": "Archivovaný",
+      "results": "Výsledky"
+    },
+    "won": "{{name}} vyhrál",
+    "selected": "vybráno",
+    "more": "Další pro {{name}}",
+    "menu": {
+      "open": "Otevřít",
+      "page": "Veřejná stránka",
+      "feature": "Zvýraznit na titulní stránce",
+      "archive": "Archivovat (pryč z titulní stránky)",
+      "delete": "Smazat"
+    },
+    "toast": {
+      "featured": "Zvýrazněno na titulní stránce",
+      "archived": "Archivováno",
+      "deleted": "Turnaj smazán"
+    },
+    "deleteTitle": "Smazat tento turnaj?",
+    "deleteMessage": "{{name}} se smaže i se zápasy, výsledky a statistikami. Nejde to vrátit.",
+    "newName": "Název",
+    "newNameBlank": "Pojmenuješ ho v nastavení",
+    "startFrom": "Začít z",
+    "blank": "Prázdné",
+    "blankHint": "Hru, formát a mapy vybereš v nastavení",
+    "copy": "Kopírovat {{name}}",
+    "copyHint": "Stejný formát, mapy, pravidla a stránka. Týmy a termíny začínají prázdné.",
+    "create": "Vytvořit a nastavit",
+    "round": "{{n}}. kolo",
+    "whenToday": "Dnes, od {{time}}",
+    "whenTomorrow": "Zítra, {{time}}",
+    "notSet": "Nenastaveno",
+    "emptyTitle": "Zatím žádné turnaje",
+    "template": "Šablona",
+    "templateHint": "Uložené nastavení: formát, mapy a pravidla. Týmy a termíny vybereš ty.",
+    "copyOne": "Kopírovat turnaj",
+    "copyWhich": "Který"
+  },
+  "playedMatches": {
+    "title": "Všechny zápasy",
+    "subtitle": "Každý zápas odehraný na tomto webu: turnaje (i smazané), samostatné zápasy a matchmaking, s jejich demy.",
+    "downloadAll_one": "Stáhnout dema {{count}} zápasu",
+    "downloadAll_other": "Stáhnout dema {{count}} zápasů",
+    "search": "Hledat týmy nebo turnaje",
+    "kindLabel": "Druh",
+    "kind": {
+      "all": "Všechny druhy",
+      "tournament": "Turnaj",
+      "standalone": "Samostatný",
+      "matchmaking": "Matchmaking",
+      "imported": "Importovaný"
+    },
+    "withDemos": "S demy",
+    "none": "Zatím se neodehrály žádné zápasy.",
+    "noneFiltered": "Těmto filtrům neodpovídá žádný zápas.",
+    "vs": "vs",
+    "deleted": "turnaj smazán",
+    "noDemo": "Bez dema",
+    "demo": "Demo",
+    "map": "Mapa {{n}}",
+    "import": "Importovat zápas",
+    "downloadAll_few": "Stáhnout dema {{count}} zápasů",
+    "downloadAll_many": "Stáhnout dema {{count}} zápasů"
+  },
+  "importMatch": {
+    "title": "Importovat zápas",
+    "subtitle": "Přidej zápas odehraný jinde z jeho dem. Týmy, hráči a skóre se načtou z dem a zápas pak dostane statistiky, 2D replay a highlighty jako každý jiný.",
+    "event": "Kde se hrál",
+    "eventHelp": "Volitelné, například název akce.",
+    "files": "Dema",
+    "filesHelp": "Jedno demo CS2 (.dem) na mapu, v pořadí, v jakém se mapy hrály.",
+    "choose": "Vybrat dema",
+    "moveUp": "Posunout {{name}} nahoru",
+    "moveDown": "Posunout {{name}} dolů",
+    "remove": "Odebrat {{name}}",
+    "start": "Importovat",
+    "uploading": "Nahrávám mapu {{n}} ({{percent}} %)",
+    "tooMany": "Až {{max}} dem, jedno na mapu.",
+    "notDemo": "{{name}} není soubor .dem.",
+    "error": "Import se zastavil: {{error}}",
+    "progress": "Průběh",
+    "mapN": "Mapa {{n}}",
+    "state": {
+      "uploading": "Nahrávám",
+      "waiting": "Čeká se na demo worker",
+      "running": "Čtu demo",
+      "done": "Hotovo",
+      "failed": "Demo se nepodařilo přečíst"
+    },
+    "teams": "{{team1}} vs {{team2}}",
+    "doneAll": "Importováno. Pokud je připojený nahrávač highlightů, nahrají se teď highlighty.",
+    "openMatch": "Otevřít zápas",
+    "another": "Importovat další",
+    "dropHint": "nebo je sem přetáhni. Víc najednou vybereš s Cmd nebo Ctrl.",
+    "recordingGroup": "Skupina nahrávačů",
+    "allRecorders": "Všechny nahrávače",
+    "groupHelp": "Vyber, která skupina tento zápas vyrenderuje. Vypnuté skupiny čekají, dokud je nezapneš.",
+    "groupDisabled": "Vypnuto",
+    "notCs2Demo": "{{name}} není demo CS2 (dema CS:GO importovat nejde)."
+  },
+  "apiTokens": {
+    "title": "API tokeny",
+    "hint": "Pro skripty, boty a MCP server Auto Tournament. Token jen pro čtení umí jen číst; token správce zvládne to, co správce. Tajemství tokenu vidíš jen ty, jednou, při jeho vytvoření.",
+    "line": "{{scope}} · {{fingerprint}} · naposledy použit {{used}}",
+    "never": "nikdy",
+    "none": "Zatím žádné API tokeny.",
+    "name": "Název",
+    "nameHelp": "1–32 písmen, číslic, - nebo _",
+    "scopeLabel": "Přístup",
+    "scope": {
+      "readonly": "Jen čtení",
+      "admin": "Správce"
+    },
+    "make": "Vytvořit token",
+    "madeTitle": "Token „{{label}}“",
+    "madeHelp": "Zkopíruj ho teď: víc se už neukáže. Vlož ho tam, kde ho skript nebo MCP server čte (AT_TOKEN).",
+    "copy": "Kopírovat token",
+    "copied": "Zkopírováno",
+    "done": "Hotovo",
+    "revoke": "Zrušit {{label}}",
+    "revokeTitle": "Zrušit „{{label}}“?",
+    "revokeHelp": "Cokoli ho používá, okamžitě přestane fungovat.",
+    "revokeConfirm": "Zrušit",
+    "revoked": "Token {{label}} zrušen",
+    "cancel": "Zpět",
+    "loadFailed": "API tokeny se nepodařilo načíst",
+    "makeFailed": "Token se nepodařilo vytvořit",
+    "revokeFailed": "Token se nepodařilo zrušit"
+  },
+  "discordBot": {
+    "title": "Discord bot",
+    "token": "Token bota",
+    "replace": "Nový token bota",
+    "save": "Uložit",
+    "remove": "Odebrat",
+    "connected": "Připojeno jako {{name}}",
+    "setNoAnswer": "Token je nastavený, ale Discord teď neodpověděl.",
+    "saved": "Discord bot uložen: {{name}}",
+    "cleared": "Discord bot odebrán",
+    "saveFailed": "Token bota se nepodařilo uložit.",
+    "howTo": "Vytvoř aplikaci, přidej bota, zkopíruj jeho token a pozvi ho na svůj Discord server:",
+    "portal": "Discord Developer Portal",
+    "guild": "Discord server",
+    "guildHint": "Kde bot vytváří týmové kanály a příspěvky. Zobrazují se jen servery, na kterých bot je.",
+    "noGuilds": "Bot zatím není na žádném Discord serveru. Pozvi ho a pak obnov tuto stránku.",
+    "noGuild": "Žádný",
+    "guildSaved": "Discord server uložen",
+    "movedHint": "Discord bot je teď doplněk: zapni a nastav ho v Modulech.",
+    "open": "Otevřít Discord bota",
+    "voice": {
+      "label": "Týmové hlasové kanály",
+      "help": "Když je zápas na serveru, jeho hráči, kteří už jsou v hlasovém kanálu, se přesunou do hlasového kanálu svého týmu; ostatní dostanou odkaz v DM.",
+      "saved": "Nastavení hlasových kanálů uloženo"
+    },
+    "teamChannels": {
+      "label": "Týmové kanály",
+      "help": "Během turnaje dostane každý tým soukromý textový a hlasový kanál pod „Tvůj tým“. Jeho hráči najdou textový kanál na stránce svého týmu.",
+      "link": "Týmový kanál na Discordu"
+    },
+    "commands": {
+      "label": "Slash příkazy: /matches, /mymatch a /lobby",
+      "help": "Fungují, jakmile je bot připojený. Volitelné: pokud chceš, aby je Discord posílal místo toho na tento web, vlož tohle jako Interactions Endpoint URL své aplikace v Discord Developer Portalu."
+    },
+    "invite": "Pozvat na server",
+    "linking": {
+      "label": "Hráči si propojí Discord",
+      "help": "Používá vlastní Discord aplikaci tvého bota, takže druhou aplikaci dělat nemusíš. V Developer Portalu otevři OAuth2 u aplikace bota, přidej tento redirect, zkopíruj client secret a vlož ho sem.",
+      "portal": "Otevřít OAuth2",
+      "secret": "Client secret",
+      "save": "Zapnout propojení",
+      "saved": "Hráči si teď můžou propojit Discord",
+      "ready": "Zapnuto: hráči si Discord propojí v Účet → Propojení.",
+      "invite": "Hráči, kteří nejsou na tvém serveru, budou požádáni o vstup přes {{url}}.",
+      "noInvite": "Bot zatím neumí vytvořit pozvánku na tvůj server. Klikni znovu na Pozvat na server, aby dostal oprávnění Vytvořit pozvánku."
+    },
+    "missing": "Botovi na tvém serveru chybí {{list}}, takže části nebudou fungovat. Klikni výše na Pozvat na server: aktualizuje oprávnění bota, aniž by ho odebral."
+  },
+  "liveMatchesPage": {
+    "title": "Živé zápasy",
+    "subtitle": "Každý zápas, který je teď na serveru. Řádky, které na tebe čekají, jsou první.",
+    "loading": "Načítám…",
+    "loadFailed": "Živé zápasy se nepodařilo načíst. Zkouším znovu…",
+    "empty": "Neběží žádné zápasy",
+    "chat": "Chat",
+    "mapOf": "Mapa {{n}}/{{total}}",
+    "columns": {
+      "match": "Zápas",
+      "map": "Mapa",
+      "phase": "Fáze",
+      "score": "Skóre",
+      "round": "Kolo",
+      "players": "Hráči",
+      "pause": "Pauza",
+      "call": "Volání správce",
+      "server": "Server",
+      "chat": "Chat"
+    },
+    "source": {
+      "matchmaking": "Matchmaking",
+      "manual": "Samostatný"
+    },
+    "phase": {
+      "none": "Bez stavu serveru",
+      "loading": "Načítá se",
+      "warmup": "Rozehřívání",
+      "knife": "Nůž",
+      "side_pick": "Výběr strany",
+      "live": "Živě",
+      "paused": "Pozastaveno",
+      "halftime": "Poločas",
+      "overtime": "Prodloužení",
+      "map_end": "Po zápase",
+      "series_end": "Po zápase",
+      "restoring": "Obnovuje se",
+      "error": "Chyba"
+    },
+    "players": {
+      "summary": "{{connected}}/{{total}} připojeno · {{ready}} připraveno",
+      "connected": "Připojen",
+      "disconnected": "Nepřipojen",
+      "readyTag": "ready",
+      "none": "Žádní hráči"
+    },
+    "pause": {
+      "by": "od {{name}}",
+      "unpause": "Chce zrušit pauzu",
+      "type": {
+        "tactical": "Taktická",
+        "technical": "Technická",
+        "admin": "Správce",
+        "offline": "Hráč offline",
+        "halftime": "Poločas",
+        "auto_5v5": "Čeká se na 5v5",
+        "unknown": "Pozastaveno"
+      }
+    },
+    "call": {
+      "noMessage": "Bez zprávy"
+    },
+    "server": {
+      "online": "Online",
+      "offline": "Offline",
+      "unknown": "Stav neznámý"
+    }
+  }
+}

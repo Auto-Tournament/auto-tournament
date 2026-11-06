@@ -1,0 +1,82 @@
+{
+  "compatPage": {
+    "title": "Kompatibilita Ready Up",
+    "subtitle": "Zda pluginy Ready Up fungují s nejnovější aktualizací Counter-Strike 2, kontrolováno automaticky u každého nového buildu CS2.",
+    "live": "Živě",
+    "offline": "Znovu se připojuji…",
+    "loading": "Načítám kompatibilitu",
+    "loadError": "Kompatibilitu se nepodařilo načíst. Zkus to za chvíli znovu.",
+    "disabledTitle": "Tady není k dispozici",
+    "disabledDescription": "Tento web kompatibilitu Ready Up nezveřejňuje.",
+    "emptyTitle": "Zatím žádné výsledky",
+    "emptyDescription": "Zatím se neozvala žádná kontrola kompatibility. Stránka se aktualizuje sama, jakmile nějaká proběhne.",
+    "checkedAgo": "Zkontrolováno {{time}}",
+    "viewRun": "Zobrazit běh",
+    "factsLabel": "Co se kontrolovalo",
+    "facts": {
+      "patch": "Patch CS2",
+      "buildid": "ID buildu",
+      "readyup": "Ready Up",
+      "stage": "Fáze"
+    },
+    "overall": {
+      "pass": "Kompatibilní",
+      "warn": "Kompatibilní, s varováními",
+      "fail": "Nekompatibilní",
+      "checking": "Kontroluji…",
+      "no_verdict": "Bez verdiktu"
+    },
+    "overallHint": {
+      "pass": "Všechny komponenty na tomto buildu prošly kontrolami.",
+      "warn": "Ready Up na tomto buildu funguje, ale některé kontroly je potřeba prověřit.",
+      "fail": "Aspoň jedna komponenta na tomto buildu nefunguje. S aktualizací serverů zatím počkej.",
+      "checking": "Kontrola tohoto buildu právě běží.",
+      "no_verdict": "Poslední kontrola nedospěla k verdiktu."
+    },
+    "status": {
+      "pass": "Prošlo",
+      "warn": "Varování",
+      "fail": "Selhalo",
+      "pending": "Čeká",
+      "checking": "Kontroluji…"
+    },
+    "stage": {
+      "static": "Statická analýza",
+      "selftest": "Autotest",
+      "live": "Živý server"
+    },
+    "state": {
+      "queued": "Ve frontě",
+      "checking": "Kontroluje se",
+      "pass": "Prošlo",
+      "warn": "Varování",
+      "fail": "Selhalo",
+      "no_verdict": "Bez verdiktu"
+    },
+    "trigger": {
+      "build_change": "Nový build CS2",
+      "surface_change": "Změna herních dat",
+      "code_change": "Změna Ready Up",
+      "nightly": "Noční",
+      "release": "Vydání Ready Up",
+      "manual": "Ručně"
+    },
+    "kind": {
+      "signature": "Signatury",
+      "rtti": "RTTI",
+      "vtable": "Virtuální tabulky",
+      "hook_site": "Místa hooků",
+      "layout": "Rozložení paměti",
+      "schema": "Schéma",
+      "event": "Herní události",
+      "selftest": "Autotest",
+      "livetest": "Živý test"
+    },
+    "componentsTitle": "Komponenty",
+    "checksSummary": "Prošlo {{passed}} z {{total}} kontrol",
+    "noChecks": "Zatím nehlášeny žádné kontroly",
+    "failures": "Chyby",
+    "historyTitle": "Poslední běhy",
+    "historyItem": "CS2 {{patch}} · build {{buildid}}"
+  }
+}

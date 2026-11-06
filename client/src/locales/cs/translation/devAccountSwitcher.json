@@ -1,0 +1,12 @@
+{
+  "devAccountSwitcher": {
+    "tooltip": "Přepnout účet (vývoj)",
+    "adminTest": "Správce (test)",
+    "playerA": "Hráč A (vývoj)",
+    "playerB": "Hráč B (vývoj)",
+    "playerC": "Hráč C (vývoj)",
+    "newPlayer": "Nový hráč (první návštěva) (vývoj)",
+    "signOut": "Odhlásit se",
+    "disabled": "Testovací přihlášení je na tomto serveru vypnuté"
+  }
+}

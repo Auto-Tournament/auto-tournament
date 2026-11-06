@@ -1,0 +1,143 @@
+{
+  "devToolsPage": {
+    "alert": "Tyto nástroje jsou dostupné jen ve vývojovém režimu. Slouží k rychlému vytvoření testovacích dat pro zkoušení aplikace.",
+    "sections": {
+      "testData": {
+        "title": "Vytvořit testovací data"
+      }
+    },
+    "testTeams": {
+      "title": "Testovací týmy",
+      "description": "Vytvoř týmy s náhodnými hráči pro testování pavouků a zápasů.",
+      "success": "Vytvořeno testovacích týmů: {{count}}!",
+      "errors": {
+        "create": "Testovací týmy se nepodařilo vytvořit",
+        "partial": "Vytvořeno týmů: {{created}}, ale {{failed}} selhalo. Podrobnosti najdeš v konzoli."
+      },
+      "customLabel": "Vlastní počet týmů",
+      "buttons": {
+        "createFixed": "Vytvořit {{count}} týmů",
+        "createCustom": "Vytvořit týmy"
+      }
+    },
+    "testPlayers": {
+      "title": "Testovací hráči",
+      "description": "Vytvoř hráče s ELO hodnocením pro testování shuffle turnajů a správy hráčů.",
+      "success": "Vytvořeno testovacích hráčů: {{created}}!",
+      "errors": {
+        "create": "Testovací hráče se nepodařilo vytvořit",
+        "partial": "Vytvořeno hráčů: {{created}}, aktualizováno: {{updated}}, ale {{failed}} selhalo. Podrobnosti najdeš v konzoli."
+      },
+      "customLabel": "Vlastní počet hráčů",
+      "buttons": {
+        "createFixed": "Vytvořit {{count}} hráčů",
+        "createCustom": "Vytvořit hráče"
+      },
+      "successWithUpdated": "Vytvořeno {{created}} a aktualizováno {{updated}} testovacích hráčů!"
+    },
+    "testServers": {
+      "title": "Testovací servery",
+      "description": "Vytvoř testovací servery pro zkoušení správy zápasů.",
+      "success": "Vytvořeno testovacích serverů: {{count}}!",
+      "errors": {
+        "create": "Testovací servery se nepodařilo vytvořit",
+        "partial": "Vytvořeno serverů: {{created}}, ale {{failed}} selhalo. Podrobnosti najdeš v konzoli."
+      },
+      "customLabel": "Vlastní počet serverů",
+      "buttons": {
+        "createCustom": "Vytvořit servery",
+        "createFixed_one": "Vytvořit {{count}} server",
+        "createFixed_other": "Vytvořit {{count}} serverů",
+        "createFixed_few": "Vytvořit {{count}} servery",
+        "createFixed_many": "Vytvořit {{count}} serverů"
+      }
+    },
+    "dangerZone": {
+      "title": "Nebezpečná zóna"
+    },
+    "deleteTestData": {
+      "title": "Smazat testovací data",
+      "description": "Smaže všechna testovací data (týmy a servery s předponou 'test-'). Tuto akci nejde vrátit.",
+      "button": "Smazat všechna testovací data",
+      "confirmPrompt": "Opravdu chceš smazat VŠECHNA testovací data?",
+      "success": "Všechna testovací data byla smazána!",
+      "error": "Testovací data se nepodařilo smazat"
+    },
+    "wipeTable": {
+      "title": "Vymazat konkrétní tabulky",
+      "description": "Smaže všechna data z konkrétní tabulky. Hodí se k úklidu bez resetu všeho. Tabulky jsou seřazené podle kategorií.",
+      "confirmPrompt": "Opravdu chceš vymazat tabulku {{table}}? Smažou se všechna data v ní.",
+      "success": "Tabulka {{table}} byla vymazána!",
+      "error": "Tabulku {{table}} se nepodařilo vymazat",
+      "core": {
+        "title": "Hlavní tabulky",
+        "teams": "Vymazat týmy",
+        "servers": "Vymazat servery",
+        "tournament": "Vymazat turnaj",
+        "matches": "Vymazat zápasy"
+      },
+      "players": {
+        "title": "Hráči a shuffle turnaje",
+        "players": "Vymazat hráče",
+        "ratingHistory": "Vymazat historii hodnocení",
+        "matchStats": "Vymazat statistiky zápasů",
+        "shufflePlayers": "Vymazat shuffle hráče"
+      },
+      "maps": {
+        "title": "Mapy a šablony",
+        "maps": "Vymazat mapy",
+        "mapPools": "Vymazat map pooly",
+        "tournamentTemplates": "Vymazat šablony turnajů",
+        "eloTemplates": "Vymazat šablony hodnocení"
+      },
+      "matchEvents": {
+        "title": "Události a výsledky zápasů",
+        "events": "Vymazat události zápasů",
+        "mapResults": "Vymazat výsledky map"
+      },
+      "settings": {
+        "title": "Nastavení",
+        "appSettings": "Vymazat nastavení aplikace"
+      }
+    },
+    "simulation": {
+      "title": "Stav simulace",
+      "description": "Smaže všechny zápasy a historické statistiky, aby šlo v simulačním režimu kliknout na „Spustit turnaj“ nad čistým pavoukem. Servery, týmy, mapy a aktuální nastavení turnaje zůstanou.",
+      "button": "Resetovat stav simulace (zachovat konfiguraci)",
+      "reset": {
+        "success": "Stav simulace resetován. Zápasy a statistiky smazány; servery, týmy a nastavení turnaje zachovány.",
+        "error": "Stav simulace se nepodařilo resetovat"
+      }
+    },
+    "wipeDatabase": {
+      "title": "Vymazat celou databázi",
+      "warningTitle": "EXTRÉMNĚ DESTRUKTIVNÍ!",
+      "warningBody": "Smaže to VŠECHNA data.",
+      "permanentlyDeletes": "Trvale smaže:",
+      "items": {
+        "tournaments": "Všechny turnaje a pavouky",
+        "matches": "Všechny zápasy a události",
+        "teams": "Všechny týmy a hráče",
+        "servers": "Všechny konfigurace serverů"
+      },
+      "button": "Vymazat celou databázi",
+      "successRedirect": "Databáze vymazána! Přesměrovávám...",
+      "error": "Databázi se nepodařilo vymazat",
+      "dialog": {
+        "title": "Potvrdit vymazání databáze",
+        "areYouSure": "Opravdu to chceš udělat?",
+        "actionWill": "Tato akce",
+        "permanentlyDelete": "trvale smaže",
+        "items": {
+          "tournaments": "Všechna data turnajů a pavouky",
+          "matches": "Celou historii zápasů a události",
+          "teams": "Všechny týmy a konfigurace hráčů",
+          "servers": "Všechny konfigurace serverů"
+        },
+        "cannotUndo": "Tuto akci nejde vrátit!",
+        "wiping": "Mažu databázi...",
+        "yesWipe": "Ano, vymazat všechno"
+      }
+    }
+  }
+}
