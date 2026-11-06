@@ -38,4 +38,5 @@ export const cs2Locales: ModuleLocales = {
   ro: () => import('./ro.json'),
   bg: () => import('./bg.json'),
   el: () => import('./el.json'),
+  vi: () => import('./vi.json'),
 };
