@@ -52,6 +52,7 @@ import {
   buildAssignConfig,
   diffAssignConfig,
   generateMatchPassword,
+  withLanguages,
 } from './assignConfig';
 import { cs2ServerIdOf, fleetServerIdOf } from './link';
 import { fleetInbound, type FleetEventNotice } from './inbound';
@@ -695,12 +696,23 @@ export async function unassignAll(
  */
 async function withHold(matchSlug: string, config: AssignConfig): Promise<AssignConfig> {
   const hold = await holdOf(matchSlug);
-  const withTimer = await withFullTeam(matchSlug, config);
+  const withTimer = await withFullTeam(matchSlug, await withPlayerLanguages(config));
   if (!hold?.heldUntil) return withTimer;
   return {
     ...withTimer,
     rules: { ...withTimer.rules, forfeit: { ...withTimer.rules?.forfeit, team_absent_seconds: 0 } },
   };
+}
+
+/** Each player's site language (`players.language`), so Ready Up talks to them in it. */
+async function withPlayerLanguages(config: AssignConfig): Promise<AssignConfig> {
+  const ids = [...config.team1.players, ...config.team2.players].map((p) => p.steamid64);
+  if (ids.length === 0) return config;
+  const rows = await db.queryAsync<{ id: string; language: string }>(
+    `SELECT id, language FROM players WHERE language IS NOT NULL AND id IN (${ids.map(() => '?').join(', ')})`,
+    ids
+  );
+  return withLanguages(config, new Map(rows.map((r) => [r.id, r.language])));
 }
 
 /** The full-team timer and the walkover choice for the server's HUD (`rules.full_team`). */
@@ -805,12 +817,19 @@ export async function addPlayer(
   const fleetServerId = await fleetServerIdOf(cs2ServerId);
   const [assignment] = fleetServerId ? await openAssignmentsOf(fleetServerId) : [];
   if (!assignment) return { ok: false, status: 404, error: 'No match is assigned to this server' };
+  const language = (
+    await db.queryOneAsync<{ language: string | null }>(
+      'SELECT language FROM players WHERE id = ?',
+      [player.steamid64]
+    )
+  )?.language;
   const outcome = await updateMatch(assignment.matchSlug, [
     {
       op: 'add_player',
       team: player.team,
       steamid64: player.steamid64,
       name: player.name.slice(0, 128),
+      ...(language ? { language } : {}),
     },
   ]);
   if (outcome.ok && assignment.config) {
@@ -822,6 +841,7 @@ export async function addPlayer(
         steamid64: player.steamid64,
         name: player.name,
         role: 'player',
+        ...(language ? { language } : {}),
       });
     }
     await storeAckedConfig(assignment.matchSlug, assignment.epoch, {

@@ -242,6 +242,8 @@ export interface AssignPlayer {
   steamid64: U64s;
   name: string;
   role?: PlayerRole;
+  /** The player's site language (`players.language`, e.g. `nb`); Ready Up speaks English without one. */
+  language?: string;
 }
 
 export interface AssignTeam {
@@ -489,6 +491,7 @@ export type MatchUpdateOp =
       steamid64: U64s;
       name: string;
       role?: PlayerRole;
+      language?: string;
     }
   | { op: 'remove_player'; steamid64: U64s }
   | { op: 'rename_team'; team: TeamKey; name: string }
