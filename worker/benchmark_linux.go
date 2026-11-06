@@ -165,7 +165,7 @@ func (r *recorder) benchmarkTries(ctx context.Context, mj *mapJob, source *strin
 			t.Error = "no clip"
 		default:
 			t.Seconds = &secs
-			fps := r.rate.fps
+			fps := r.renderFPS
 			t.CaptureFps = &fps
 			t.OK = true
 		}
