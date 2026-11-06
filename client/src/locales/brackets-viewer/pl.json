@@ -33,20 +33,20 @@
     "archived": "Zarchiwizowany"
   },
   "abbreviations": {
-    "win": "W",
-    "loss": "L",
-    "forfeit": "F",
-    "position": "P",
+    "win": "Z",
+    "loss": "P",
+    "forfeit": "W",
+    "position": "Poz.",
     "seed": "#",
-    "winner-bracket": "WB",
-    "loser-bracket": "LB",
+    "winner-bracket": "DG",
+    "loser-bracket": "DD",
     "match": "M",
-    "grand-final": "GF"
+    "grand-final": "WF"
   },
   "ranking": {
     "rank": { "text": "#", "tooltip": "Pozycja" },
     "id": { "text": "Nazwa", "tooltip": "Nazwa" },
-    "played": { "text": "P", "tooltip": "Rozegrane" },
+    "played": { "text": "M", "tooltip": "Rozegrane" },
     "wins": { "text": "$t(abbreviations.win)", "tooltip": "Wygrane" },
     "draws": { "text": "R", "tooltip": "Remisy" },
     "losses": { "text": "$t(abbreviations.loss)", "tooltip": "Przegrane" },

@@ -33,14 +33,14 @@
     "archived": "アーカイブ済み"
   },
   "abbreviations": {
-    "win": "W",
-    "loss": "L",
-    "forfeit": "F",
-    "position": "P",
+    "win": "勝",
+    "loss": "敗",
+    "forfeit": "棄",
+    "position": "順位",
     "seed": "#",
-    "winner-bracket": "WB",
-    "loser-bracket": "LB",
-    "match": "M",
+    "winner-bracket": "勝者",
+    "loser-bracket": "敗者",
+    "match": "試合",
     "grand-final": "GF"
   },
   "ranking": {
@@ -53,7 +53,7 @@
       "tooltip": "名前"
     },
     "played": {
-      "text": "P",
+      "text": "試",
       "tooltip": "試合数"
     },
     "wins": {
@@ -61,7 +61,7 @@
       "tooltip": "勝利"
     },
     "draws": {
-      "text": "D",
+      "text": "分",
       "tooltip": "引き分け"
     },
     "losses": {
@@ -85,7 +85,7 @@
       "tooltip": "得失点差"
     },
     "points": {
-      "text": "Pts",
+      "text": "点",
       "tooltip": "ポイント"
     }
   },

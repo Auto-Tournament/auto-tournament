@@ -33,14 +33,14 @@
     "archived": "보관됨"
   },
   "abbreviations": {
-    "win": "W",
-    "loss": "L",
-    "forfeit": "F",
-    "position": "P",
+    "win": "승",
+    "loss": "패",
+    "forfeit": "기권",
+    "position": "순위",
     "seed": "#",
     "winner-bracket": "승자조",
     "loser-bracket": "패자조",
-    "match": "M",
+    "match": "경기",
     "grand-final": "GF"
   },
   "ranking": {
@@ -53,7 +53,7 @@
       "tooltip": "이름"
     },
     "played": {
-      "text": "P",
+      "text": "경기",
       "tooltip": "경기 수"
     },
     "wins": {
@@ -61,7 +61,7 @@
       "tooltip": "승리"
     },
     "draws": {
-      "text": "D",
+      "text": "무",
       "tooltip": "무승부"
     },
     "losses": {
