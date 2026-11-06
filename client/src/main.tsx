@@ -23,6 +23,7 @@ import {
   csCZ,
   svSE,
   daDK,
+  fiFI,
 } from '@mui/material/locale';
 import App from './App';
 import './index.css';
@@ -66,6 +67,7 @@ const getMuiLocale = (lang: string) => {
   if (lang.startsWith('cs')) return csCZ;
   if (lang.startsWith('sv')) return svSE;
   if (lang.startsWith('da')) return daDK;
+  if (lang.startsWith('fi')) return fiFI;
   return enUS;
 };
 
