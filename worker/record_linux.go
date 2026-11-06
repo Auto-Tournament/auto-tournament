@@ -22,10 +22,8 @@ package main
 //	AT_RESOLUTION    WIDTHxHEIGHT CS2 renders at (default: the output size)
 //	AT_ENCODER       ffmpeg video encoder (default: h264_nvenc on the GPU if it opens, else h264_vaapi, else libx264; H.264 in MP4)
 //	AT_VIDEO         CS2's video settings while it records: max (default), low or keep
-//	AT_GAMESCOPE_HZ  the capture stream's rate (default 120; a fast GPU records smoothly up to 240)
-//	AT_CAPTURE_FPS   the stream rate the first pass assumes (default 30; it follows what each pass gets)
+//	AT_GAMESCOPE_HZ  gamescope's refresh rate (default 120; the benchmark picks one)
 //	AT_FINISH_SERIAL 0 encodes a moment while the next one records (default: one after the other)
-//	AT_AUDIO_TARGET  the PipeWire sink CS2 plays into (default: the default sink)
 //	AT_KEEP_SCRATCH  set to keep each moment's raw frames, sound and logs
 //
 // record-file only: AT_TEAMS ("A vs B"),
@@ -108,7 +106,6 @@ type recorder struct {
 	width   int
 	height  int
 	encoder string
-	sink    string
 	logo    string // the watermark PNG on disk
 	// icons are the game's kill feed icons (export-hud, from this CS2): with
 	// them the recorder draws its own kill feed and turns CS2's off; without
@@ -119,8 +116,8 @@ type recorder struct {
 		width, height, outputHeight int
 		outputFPS                   float64
 	}
-	// rate is how many frames a second gamescope's stream gives (captureSpeeds).
-	rate captureRate
+	// renderFPS is how many frames a second CS2 wrote in the last capture (the benchmark's).
+	renderFPS float64
 	// live is CS2 left running between map jobs with the map's demo loaded
 	// (liveGame): the next job of the same map starts at once.
 	live *liveGame
@@ -383,7 +380,7 @@ type videoQuality struct {
 }
 
 // useQuality makes the next videos at q: CS2 captured at that size (a
-// smaller picture streams faster, so records faster) and encoded at it.
+// smaller picture renders faster, so records faster) and encoded at it.
 // AT_RESOLUTION, AT_OUTPUT_HEIGHT and AT_OUTPUT_FPS, when set, win; without
 // q the recorder goes back to what it started with.
 func (r *recorder) useQuality(q *videoQuality) {
@@ -404,10 +401,6 @@ func (r *recorder) useQuality(q *videoQuality) {
 		if os.Getenv("AT_OUTPUT_FPS") == "" {
 			fps = float64(q.FPS)
 		}
-	}
-	if width != r.width || height != r.height {
-		// The stream's rate depends on the picture's size: measure it again.
-		r.rate.fps = float64(envPositive("AT_CAPTURE_FPS", 30))
 	}
 	r.width, r.height, outputHeight, outputFPS = width, height, outH, fps
 	if q != nil {
@@ -474,7 +467,14 @@ func (r *recorder) recordMoments(ctx context.Context, demoPath string, shots []s
 		if r.live != nil {
 			r.live.g, r.live.pos = g, 0
 		}
-		return g.loadDemo("at-recorder/"+base, r.look())
+		if err := g.loadDemo("at-recorder/"+base, r.look()); err != nil {
+			return err
+		}
+		if !fbfUnhidden(g) {
+			setFbfReport("off", cs2Version(r.gameDir))
+			return errors.New("frame by frame: the plugin did not unhide startmovie (a CS2 update?)")
+		}
+		return nil
 	}
 	if r.live != nil {
 		// CS2 is up with this map's demo: go on from where it is, or play the
@@ -620,53 +620,8 @@ func (r *recorder) recordMoments(ctx context.Context, demoPath string, shots []s
 	return clips, failed, nil
 }
 
-// audioLatency is how much later CS2's sound lands in pw-record's file than
-// the picture it belongs to: measured on the recorder VM (2026-10-07) as
-// 0.12–0.17 s from AWP shots against their kills. AT_AUDIO_LATENCY_MS
-// overrides it for another machine.
-func audioLatency() float64 {
-	if v, err := strconv.Atoi(env("AT_AUDIO_LATENCY_MS", "")); err == nil {
-		return float64(v) / 1000
-	}
-	return 0.15
-}
-
 // lead is how much is played before a moment, for the view to settle.
 const lead = tickrate
-
-// capturePicture plays from `from` through the phases and returns each
-// captured frame's tick and the raw file holding them.
-func (r *recorder) capturePicture(g *game, name string, from int, phases []playPhase, raw string) ([]float64, error) {
-	var vc *videoCapture
-	spans, err := g.playPhases(from, phases, name, func() (err error) {
-		vc, err = startVideoCapture(g.node, raw, g.width, g.height)
-		return err
-	})
-	if vc != nil {
-		vc.stop()
-	}
-	if err != nil {
-		return nil, err
-	}
-	times := vc.frameTimes()
-	for _, s := range spans {
-		n := 0
-		for _, t := range times {
-			if !t.Before(s.resumed) && !t.After(s.paused) {
-				n++
-			}
-		}
-		if wall := s.paused.Sub(s.resumed).Seconds(); wall > 2 {
-			r.rate.observe(float64(n) / wall)
-			log.Printf("captured %d frames at %gx in %.1f s: %.1f a second, %.0f per game second", n, s.scale, wall, float64(n)/wall, float64(n)/wall/s.scale)
-		}
-	}
-	ticks := spanTicks(times, spans)
-	if n, err := dropRepeats(raw, int64(g.width*g.height*3/2), ticks); err == nil && n > 0 {
-		log.Printf("left out %d repeated frame(s) of %d", n, len(ticks))
-	}
-	return ticks, nil
-}
 
 // recordMoment captures a moment in CS2 and returns what turns it into the
 // clip at out (finish: encoding and joining its pieces, no CS2 needed), so
@@ -811,23 +766,9 @@ func (r *recorder) recordMoment(g *game, look clipLook, name string, m moment, o
 	return markers, finish, nil
 }
 
-// recordWindow records one stretch of a moment into `out`: the picture slowed
-// down (and again slower around the slow motion, for the last stretch), the
-// sound at real speed, and the edit.
 // recordWindow captures one window's picture and sound; the encode it
 // returns (the card, the kill feed, the edit) needs no CS2 and runs later.
 func (r *recorder) recordWindow(g *game, look clipLook, card *cardRender, name string, w window, prior []feedKill, prefix, out string) (*windowCut, func() error, error) {
-	// The picture in one pass: slowed under the caption card's opening and for the slow motion.
-	introEnd := 0
-	if card != nil && !card.settled {
-		// The opening plays slowed down under the caption card: a frame for each of its frames.
-		hold, up := introGame()
-		introEnd = min(w.from+int(math.Ceil((hold+up)*tickrate))+4, w.to)
-	}
-	slowFrom := -1
-	if w.slowmo >= 0 {
-		slowFrom = w.slowmo - int(slowBeforeSec*tickrate)
-	}
 	main := prefix + "-picture.yuv"
 	// The camera is checked against where the demo has the player (capture.go checkFollow).
 	if look.replay != nil && look.playerID != "" {
@@ -846,45 +787,9 @@ func (r *recorder) recordWindow(g *game, look clipLook, card *cardRender, name s
 	var frames []frameRef
 	var audioAt float64
 	var err error
-	if g.gameinfo != "" && !g.fbfChecked {
-		g.fbfChecked = true
-		if g.fbf = fbfUnhidden(g); g.fbf {
-			log.Printf("frame by frame: on")
-		} else {
-			log.Printf("frame by frame: the plugin did not unhide startmovie; capturing the stream")
-			setFbfReport("off", cs2Version(r.gameDir))
-		}
-	}
-	if g.fbf {
-		// CS2 writes every frame and the sound itself: one pass, nothing slowed.
-		if frames, audioAt, err = r.fbfCapture(g, name, w.from-lead, w.to, w.from, segs, main, wav); err != nil {
-			return nil, nil, err
-		}
-	} else {
-		mainTicks, err := r.capturePicture(g, name, w.from-lead, picturePhases(w, introEnd, slowFrom, speedsFor(r.rate.fps)), main)
-		if err != nil {
-			return nil, nil, fmt.Errorf("picture: %w", err)
-		}
-		sources := [][]float64{mainTicks}
-
-		// The sound, at real speed.
-		var ac *audioCapture
-		as, err := g.play(w.from-lead, w.to, 1, name, func() (err error) {
-			ac, err = startAudioCapture(r.sink, wav)
-			return err
-		})
-		if ac != nil {
-			ac.stop()
-		}
-		if err != nil {
-			return nil, nil, fmt.Errorf("sound: %w", err)
-		}
-		// What CS2 plays reaches the recording audioLatency later: start that much
-		// further in, or every shot is heard after the kill it made.
-		audioAt = as.resumed.Sub(ac.fileStart()).Seconds() + float64(w.from-as.fromTick)/tickrate + audioLatency()
-		if frames, err = timeline(sources, segs, w.from); err != nil {
-			return nil, nil, err
-		}
+	// CS2 writes every frame and the sound itself: one pass, nothing slowed.
+	if frames, audioAt, err = r.fbfCapture(g, name, w.from-lead, w.to, w.from, segs, main, wav); err != nil {
+		return nil, nil, err
 	}
 	// The kill feed: what carried over, then this piece's kills where the edit puts them.
 	var feed *feedRender
@@ -1540,7 +1445,7 @@ func newRecorder(c *client) (*recorder, error) {
 	if gameDir == "" {
 		return nil, errors.New("CS2 was not found in the Steam libraries: set AT_CS2_GAME to its game folder (it has cs2.sh)")
 	}
-	for _, tool := range []string{"gamescope", "gst-launch-1.0", "pw-link", "pw-record", "ffmpeg"} {
+	for _, tool := range []string{"gamescope", "ffmpeg"} {
 		if _, err := exec.LookPath(tool); err != nil {
 			return nil, fmt.Errorf("%s is not on PATH", tool)
 		}
@@ -1555,9 +1460,7 @@ func newRecorder(c *client) (*recorder, error) {
 	}
 	r := &recorder{client: c, gameDir: gameDir, sniper: env("AT_SNIPER_RUN", sniperRun(home)),
 		scratch: env("AT_RECORD_DIR", os.TempDir()), width: w, height: h,
-		encoder: env("AT_ENCODER", pickEncoder()), sink: defaultSink()}
-	// Until the first pass measures it: what gamescope streamed on the recorder VM (2026-10-08).
-	r.rate.fps = float64(envPositive("AT_CAPTURE_FPS", 30))
+		encoder: env("AT_ENCODER", pickEncoder())}
 	r.base.width, r.base.height, r.base.outputHeight, r.base.outputFPS = w, h, outputHeight, outputFPS
 	// A fresh machine may not have it yet (AT_RECORD_DIR in the home).
 	if err := os.MkdirAll(r.scratch, 0o755); err != nil {
@@ -1637,7 +1540,7 @@ func runRecorder(ctx context.Context, clients []*client, poll time.Duration) err
 	// Each job's log goes to the platform with its run report (runlog.go).
 	log.SetOutput(io.MultiWriter(os.Stderr, currentJobLog))
 	logStatsNotice()
-	log.Printf("recorder: %dx%d, %s, sound from %s, %s, %s", r.width, r.height, r.encoder, r.sink, recorderGPU(), platformName())
+	log.Printf("recorder: %dx%d, %s, %s, %s", r.width, r.height, r.encoder, recorderGPU(), platformName())
 	currentJobLog.take()
 	var keep awake
 	defer keep.release()

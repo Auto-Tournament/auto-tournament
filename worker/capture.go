@@ -2,23 +2,13 @@
 
 package main
 
-// The CS2 side of the recorder: CS2 runs inside a headless gamescope, which
-// hands its frames out as a PipeWire video stream; the recorder drives the
-// demo over CS2's console port (-netconport). CS2 has no frame dump of its
-// own (`startmovie` is gone), so a moment is captured live, twice:
+// The CS2 side of the recorder: CS2 runs inside a headless gamescope and the
+// recorder drives the demo over CS2's console port (-netconport). CS2 writes
+// every frame and the sound itself through Frame by Frame
+// (framebyframe_linux.go).
 //
-//   - the picture slowed down (demo_timescale), in one pass per window that
-//     slows further for the caption card's opening and the slow motion:
-//     gamescope's stream gives ~30 frames a second whatever CS2 draws, so the
-//     speeds follow from the frames the clip needs (captureSpeeds);
-//   - the sound at real speed, from the audio sink CS2 plays into.
-//
-// Which frame shows which tick: the console says where the demo resumed and
-// paused ("unpaused on tick N", "paused on tick N"); the demo plays at a
-// steady rate between, so a frame's tick follows from when it arrived.
-//
-// Needs gamescope, gst-launch-1.0 (pipewiresrc), pw-link, pw-record and Steam
-// running with the bot account signed in (CS2 asks it for a ticket).
+// Needs gamescope and Steam running with the bot account signed in (CS2 asks
+// it for a ticket).
 
 import (
 	"bufio"
@@ -45,10 +35,6 @@ const (
 	seekPoll   = 500 * time.Millisecond
 	endMargin  = tickrate // ticks kept clear of the demo's end
 )
-
-// frameSettleMs is how long the view gets to settle after a seek before the
-// picture counts (AT_SETTLE_MS).
-var frameSettleMs = envPositive("AT_SETTLE_MS", 700)
 
 // recorderLook is what every clip is played with: only the kill feed and the
 // crosshair on screen, no x-ray, no demo controls; the crosshair is the
@@ -100,7 +86,6 @@ var (
 	reStartTick = regexp.MustCompile(`server_start_tick: (\d+)`)
 	reLastTick  = regexp.MustCompile(`playback_ticks: (\d+)`)
 	reMapLoaded = regexp.MustCompile(`OnSwitchLoopModeFinished\( (game) : success \)`)
-	reNode      = regexp.MustCompile(`stream available on node ID: (\d+)`)
 )
 
 // console is CS2's console over TCP: commands in, every output line to `lines`.
@@ -193,17 +178,13 @@ func (c *console) expect(re *regexp.Regexp, wait time.Duration) (string, time.Ti
 type game struct {
 	cmd       *exec.Cmd
 	con       *console
-	node      string
 	width     int
 	height    int
 	startTick int // the demo's first tick: the console's ticks count from it
 	lastTick  int // the demo's length in ticks (the analyzer's last tick)
 	logPath   string
-	// fbf: Frame by Frame unhid startmovie (framebyframe_linux.go), known
-	// once fbfChecked; gameinfo is the gameinfo.gi it patched, restored when
-	// CS2 stops.
-	fbf, fbfChecked bool
-	gameinfo        string
+	// gameinfo is the gameinfo.gi Frame by Frame patched, restored when CS2 stops.
+	gameinfo string
 	// fbfActionsOn: the plugin runs frame actions (its frame hook is on), asked once.
 	fbfActionsOn, fbfActionsChecked bool
 	// pausedAt is the analyzer tick the last seek landed and paused on.
@@ -213,7 +194,7 @@ type game struct {
 	follow func(tick int) ([3]float64, bool)
 }
 
-// launchGame starts gamescope with CS2 and waits for its console and stream.
+// launchGame starts gamescope with CS2 and waits for its console.
 func (r *recorder) launchGame(ctx context.Context, logPath string) (*game, error) {
 	g, err := r.launchGameOnce(ctx, logPath)
 	if err != nil {
@@ -237,12 +218,9 @@ func (r *recorder) launchGameOnce(ctx context.Context, logPath string) (*game, e
 		return nil, err
 	}
 	setRecordingVideo(r.width, r.height)
-	gameinfo := ""
-	if fbfWanted() {
-		var err error
-		if gameinfo, err = fbfInstall(r.gameDir); err != nil {
-			log.Printf("frame by frame: not installed (%v); capturing the stream", err)
-		}
+	gameinfo, err := fbfInstall(r.gameDir)
+	if err != nil {
+		return nil, fmt.Errorf("frame by frame: %w", err)
 	}
 	w, h := strconv.Itoa(r.width), strconv.Itoa(r.height)
 	args := []string{"--backend", "headless", "-W", w, "-H", h, "-w", w, "-h", h, "-r", strconv.Itoa(envPositive("AT_GAMESCOPE_HZ", 120)), "--"}
@@ -263,8 +241,7 @@ func (r *recorder) launchGameOnce(ctx context.Context, logPath string) (*game, e
 		fbfRestore(gameinfo)
 		return nil, err
 	}
-	pr, pw := io.Pipe()
-	cmd.Stdout = io.MultiWriter(logFile, pw)
+	cmd.Stdout = logFile
 	cmd.Stderr = cmd.Stdout
 	if err := cmd.Start(); err != nil {
 		logFile.Close()
@@ -272,33 +249,10 @@ func (r *recorder) launchGameOnce(ctx context.Context, logPath string) (*game, e
 		return nil, fmt.Errorf("start gamescope: %w", err)
 	}
 	g := &game{cmd: cmd, width: r.width, height: r.height, logPath: logPath, gameinfo: gameinfo}
-	nodeCh := make(chan string, 1)
-	go func() {
-		sc := bufio.NewScanner(pr)
-		sc.Buffer(make([]byte, 64*1024), 1024*1024)
-		for sc.Scan() {
-			if m := reNode.FindStringSubmatch(sc.Text()); m != nil {
-				select {
-				case nodeCh <- m[1]:
-				default:
-				}
-			}
-		}
-	}()
 	go func() {
 		_ = cmd.Wait()
-		pw.Close()
 		logFile.Close()
 	}()
-	select {
-	case g.node = <-nodeCh:
-	case <-ctx.Done():
-		g.stop()
-		return nil, ctx.Err()
-	case <-time.After(90 * time.Second):
-		g.stop()
-		return nil, errors.New("gamescope never offered its video stream")
-	}
 	if g.con, err = dialConsole(ctx, 3*time.Minute, strings.TrimSuffix(logPath, filepath.Ext(logPath))+"-console.log"); err != nil {
 		g.stop()
 		return nil, err
@@ -461,10 +415,8 @@ func (g *game) checkFollow(name string, from int) error {
 	return errNotFollowing
 }
 
-// pause pauses the demo. CS2 says "paused on tick" when it pauses and
-// nothing when it already was.
 // pausedTick pauses the demo and returns the analyzer tick it stands on. A
-// demo that is already paused answers nothing (see AT_REPAUSE), so it then
+// demo that is already paused answers nothing, so it then
 // plays a frame and pauses again: trusting an older tick put every frame of
 // a clip 48 ticks off (2026-10-24, "no frame near tick" on every attempt).
 func (g *game) pausedTick() (int, bool) {
@@ -480,15 +432,6 @@ func (g *game) pausedTick() (int, bool) {
 		}
 	}
 	return 0, false
-}
-
-func (g *game) pause() error {
-	g.con.drain()
-	if err := g.con.send("demo_pause"); err != nil {
-		return err
-	}
-	_, _, _ = g.con.expect(rePaused, 2*time.Second)
-	return nil
 }
 
 // seekTimeout is how long a seek may take to land before the moment fails.
@@ -546,332 +489,6 @@ func (g *game) seekForCapture(from int, scale float64) error {
 		target = next
 	}
 	return fmt.Errorf("seek could not preserve capture run-up at tick %d after 3 attempts", from)
-}
-
-// resume plays the demo on from analyzer tick `at` (where it is paused) and
-// returns the tick it resumed at; if it said nothing, it pauses it, seeks
-// back to `at` and tries once more. Its answer can go missing while the demo
-// does play: the pause and second resume then started 120–200 ticks late,
-// past the run-up, and the clip failed with "no frame near tick" on every
-// retry (73 passes in 8 h on csm-test, 2026-10-20).
-func (g *game) resume(at int, scale float64) (string, time.Time, error) {
-	for i := 0; i < 2; i++ {
-		g.con.drain()
-		if err := g.con.send("demo_resume"); err != nil {
-			return "", time.Time{}, err
-		}
-		if v, t, err := g.con.expect(reUnpaused, 3*time.Second); err == nil {
-			return v, t, nil
-		}
-		if err := g.pause(); err != nil {
-			return "", time.Time{}, err
-		}
-		if i == 0 {
-			if err := g.seekForCapture(at, scale); err != nil {
-				return "", time.Time{}, err
-			}
-		}
-	}
-	return "", time.Time{}, errors.New("the demo would not resume")
-}
-
-// play plays the demo from analyzer tick `from` to past `to` at `scale`
-// (demo_timescale), calling started() just before it resumes. Ticks in the
-// span are the analyzer's: CS2's console counts from the demo's first tick
-// (g.startTick), its seek (demo_gototick) does not.
-func (g *game) play(from, to int, scale float64, name string, started func() error) (span, error) {
-	spans, err := g.playPhases(from, []playPhase{{to, scale}}, name, started)
-	if len(spans) == 0 {
-		return span{scale: scale}, err
-	}
-	return spans[0], err
-}
-
-// playPhases plays from `from` through each phase in turn without seeking
-// again: between phases the demo pauses, changes speed and resumes, which
-// costs a fraction of a second where a new pass costs a seek and a settle.
-// Each phase is a span of its own (a steady rate between resume and pause).
-func (g *game) playPhases(from int, phases []playPhase, name string, started func() error) ([]span, error) {
-	if from < 0 {
-		from = 0
-	}
-	// At its end the demo stops by itself and says nothing: stay clear of it.
-	for i := range phases {
-		if g.lastTick > 0 && phases[i].to > g.lastTick-endMargin {
-			phases[i].to = g.lastTick - endMargin
-		}
-	}
-	// A seek plays on by itself once it lands: seek, let it land, then pause.
-	// Resumed straight after, so a demo the last pass left paused plays on
-	// too and answers the first poll (paused, it said nothing and each seek
-	// waited out a 2 s timeout).
-	if err := g.con.send("host_timescale 1", "host_framerate 0", "fps_max 0"); err != nil {
-		return nil, err
-	}
-	// A seek far into the demo (round 19 straight after loading) takes CS2
-	// longer than a few seconds: wait until it has landed near `from`.
-	seekStart := time.Now()
-	if err := g.seekForCapture(from, phases[0].scale); err != nil {
-		return nil, err
-	}
-	seekTook := time.Since(seekStart)
-	// A seek drops the spectated player, and CS2 ignores spec_player while the
-	// seek still loads: ask once it has landed, again a moment later, and again
-	// just after resuming (the run-up before the moment covers the switch).
-	if err := g.spectate(name); err != nil {
-		return nil, err
-	}
-	time.Sleep(500 * time.Millisecond)
-	// awaitSeek left it paused: pausing again got no answer and waited out
-	// pause's 2 s timeout on every pass (AT_REPAUSE=1 for the old way).
-	if env("AT_REPAUSE", "") == "1" {
-		if err := g.pause(); err != nil {
-			return nil, err
-		}
-	}
-	if err := g.spectate(name); err != nil {
-		return nil, err
-	}
-	// The camera must be with the player: a follow that never took left it
-	// parked under the map for the whole clip, and the clip still shipped
-	// (2026-10-12/13, clips 243, 244, 505).
-	if err := g.checkFollow(name, from); err != nil {
-		return nil, err
-	}
-	// The capture starts (and links up) while the view settles.
-	settle := time.Now()
-	if err := started(); err != nil {
-		return nil, err
-	}
-	time.Sleep(time.Duration(frameSettleMs)*time.Millisecond - time.Since(settle))
-	var spans []span
-	for i, ph := range phases {
-		if i > 0 {
-			if err := g.con.send(fmt.Sprintf("demo_timescale %g", ph.scale)); err != nil {
-				return spans, err
-			}
-		}
-		back := from
-		if i > 0 {
-			back = spans[i-1].toTick
-		}
-		v, at, err := g.resume(back, ph.scale)
-		if err != nil {
-			return spans, err
-		}
-		if i == 0 {
-			_ = g.spectate(name)
-		}
-		tick, _ := strconv.Atoi(v)
-		s := span{scale: ph.scale, fromTick: tick - g.startTick, resumed: at}
-		gameSeconds := float64(ph.to-s.fromTick) / tickrate
-		wall := gameSeconds/ph.scale + 0.3
-		if i < len(phases)-1 {
-			// Pause on time rather than late: the next phase picks up wherever this one stops.
-			wall = math.Max(0, gameSeconds/ph.scale)
-		}
-		log.Printf("playing ticks %d → %d at %gx (%.1f s; seek %.1f s, ready %.1f s)", s.fromTick, ph.to, ph.scale, wall,
-			seekTook.Seconds(), time.Since(seekStart).Seconds())
-		if gameSeconds > 60 || gameSeconds < -1 {
-			return spans, fmt.Errorf("resumed at tick %d, too far from %d", s.fromTick, ph.to)
-		}
-		time.Sleep(time.Duration(wall * float64(time.Second)))
-		g.con.drain()
-		if err := g.con.send("demo_pause"); err != nil {
-			return spans, err
-		}
-		v, at, err = g.con.expect(rePaused, 10*time.Second)
-		if err != nil {
-			return spans, fmt.Errorf("pausing after the moment: %w", err)
-		}
-		tick, _ = strconv.Atoi(v)
-		s.toTick, s.paused = tick-g.startTick, at
-		spans = append(spans, s)
-	}
-	return spans, nil
-}
-
-// videoCapture records the gamescope stream as raw I420 frames to a file,
-// noting when each frame entered the pipeline (an `identity` prints a line per
-// frame; the stream carries no usable timestamps). A paused demo is a still
-// picture and gamescope sends few frames for it, so a frame's time is its own.
-type videoCapture struct {
-	cmd        *exec.Cmd
-	path       string
-	frameBytes int64
-	mu         sync.Mutex
-	times      []time.Time
-	// pts: each frame's presentation time in the stream (gstreamer's
-	// buffer pts, seconds), or -1; far steadier than when its log line
-	// reached us (frameTimes anchors them to the clock).
-	pts  []float64
-	done chan struct{}
-}
-
-func startVideoCapture(node, path string, width, height int) (*videoCapture, error) {
-	client := fmt.Sprintf("atrec%d", os.Getpid())
-	gst := []string{"-v", "-e", "pipewiresrc", "autoconnect=false", "client-name=" + client}
-	// AT_STREAM_FORMAT asks gamescope for the stream in that format (NV12:
-	// converted on the GPU, 1.5 bytes a pixel to copy out instead of 4).
-	if f := env("AT_STREAM_FORMAT", ""); f != "" {
-		gst = append(gst, "!", "video/x-raw,format="+f)
-	}
-	gst = append(gst,
-		"!", "identity", "name=tick", "silent=false",
-		"!", "queue", "max-size-buffers=1200", "max-size-time=0", "max-size-bytes=0",
-		"!", "videoconvert", "n-threads=8", "!", "video/x-raw,format=I420",
-		"!", "filesink", "location="+path)
-	name, args := "gst-launch-1.0", gst
-	if _, err := exec.LookPath("stdbuf"); err == nil {
-		name, args = "stdbuf", append([]string{"-oL", "gst-launch-1.0"}, gst...)
-	}
-	cmd := exec.Command(name, args...)
-	out, err := cmd.StdoutPipe()
-	if err != nil {
-		return nil, err
-	}
-	logFile, err := os.Create(path + ".log")
-	if err != nil {
-		return nil, err
-	}
-	cmd.Stderr = logFile
-	if err := cmd.Start(); err != nil {
-		logFile.Close()
-		return nil, fmt.Errorf("start gst-launch-1.0: %w", err)
-	}
-	c := &videoCapture{cmd: cmd, path: path, frameBytes: int64(width * height * 3 / 2), done: make(chan struct{})}
-	go func() {
-		defer close(c.done)
-		defer logFile.Close()
-		sc := bufio.NewScanner(out)
-		sc.Buffer(make([]byte, 64*1024), 1024*1024)
-		for sc.Scan() {
-			line := sc.Text()
-			if strings.Contains(line, "GstIdentity:tick: last-message = chain") {
-				now := time.Now()
-				c.mu.Lock()
-				c.times = append(c.times, now)
-				c.pts = append(c.pts, bufferPTS(line))
-				c.mu.Unlock()
-			} else if !strings.Contains(line, "last-message") {
-				fmt.Fprintln(logFile, line)
-			}
-		}
-	}()
-	if err := linkPorts("gamescope", client); err != nil {
-		c.stop()
-		return nil, err
-	}
-	time.Sleep(time.Second)
-	return c, nil
-}
-
-func (c *videoCapture) stop() {
-	if c.cmd.Process == nil {
-		return
-	}
-	_ = c.cmd.Process.Signal(os.Interrupt)
-	select {
-	case <-c.done:
-	case <-time.After(30 * time.Second):
-		_ = c.cmd.Process.Kill()
-	}
-	_ = c.cmd.Wait()
-}
-
-// frameTimes is when each frame in the file arrived.
-func (c *videoCapture) frameTimes() []time.Time {
-	c.mu.Lock()
-	times := ptsTimes(c.times, c.pts)
-	c.mu.Unlock()
-	if st, err := os.Stat(c.path); err == nil && c.frameBytes > 0 {
-		if n := int(st.Size() / c.frameBytes); n < len(times) {
-			times = times[:n]
-		}
-	}
-	return times
-}
-
-// linkPorts connects the first output port of node `from` to the first input
-// port of `to` (PipeWire's session manager won't link gamescope's stream).
-func linkPorts(from, to string) error {
-	var out, in string
-	for i := 0; i < 20 && (out == "" || in == ""); i++ {
-		time.Sleep(250 * time.Millisecond)
-		out, in = firstPort("-o", from), firstPort("-i", to)
-	}
-	if out == "" || in == "" {
-		return fmt.Errorf("no PipeWire ports to link %s → %s", from, to)
-	}
-	if b, err := exec.Command("pw-link", out, in).CombinedOutput(); err != nil {
-		return fmt.Errorf("pw-link: %v %s", err, strings.TrimSpace(string(b)))
-	}
-	return nil
-}
-
-func firstPort(dir, node string) string {
-	b, err := exec.Command("pw-link", dir).Output()
-	if err != nil {
-		return ""
-	}
-	for _, line := range strings.Split(string(b), "\n") {
-		if strings.HasPrefix(strings.TrimSpace(line), node+":") {
-			return strings.TrimSpace(line)
-		}
-	}
-	return ""
-}
-
-// audioCapture records what CS2 plays (the default sink's monitor) to a WAV.
-type audioCapture struct {
-	cmd     *exec.Cmd
-	path    string
-	started time.Time
-	stopped time.Time
-}
-
-func startAudioCapture(target, path string) (*audioCapture, error) {
-	cmd := exec.Command("pw-record", "-P", "{ stream.capture.sink=true }", "--target", target,
-		"--rate", "48000", "--channels", "2", path)
-	if err := cmd.Start(); err != nil {
-		return nil, fmt.Errorf("start pw-record: %w", err)
-	}
-	a := &audioCapture{cmd: cmd, path: path, started: time.Now()}
-	// It records from when its stream links up; give it that moment.
-	time.Sleep(500 * time.Millisecond)
-	return a, nil
-}
-
-func (a *audioCapture) stop() {
-	a.stopped = time.Now()
-	_ = a.cmd.Process.Signal(os.Interrupt)
-	_ = a.cmd.Wait()
-}
-
-// fileStart is when the file's first sample was recorded. pw-record records
-// from when its stream links up, which takes a varying few hundred
-// milliseconds after it starts, so the start is reckoned back from the stop:
-// the file runs up to the moment it was stopped.
-func (a *audioCapture) fileStart() time.Time {
-	if d, err := wavSeconds(a.path); err == nil && d > 0 && !a.stopped.IsZero() {
-		return a.stopped.Add(-time.Duration(d * float64(time.Second)))
-	}
-	return a.started
-}
-
-// defaultSink is the audio sink CS2 plays into (AT_AUDIO_TARGET overrides).
-func defaultSink() string {
-	if v := env("AT_AUDIO_TARGET", ""); v != "" {
-		return v
-	}
-	if b, err := exec.Command("wpctl", "inspect", "@DEFAULT_AUDIO_SINK@").Output(); err == nil {
-		for _, line := range strings.Split(string(b), "\n") {
-			if i := strings.Index(line, "node.name = "); i >= 0 {
-				return strings.Trim(strings.TrimSpace(line[i+len("node.name = "):]), `"`)
-			}
-		}
-	}
-	return "auto_null"
 }
 
 // demoDir is where the recorder puts demos for CS2 (playdemo reads under game/csgo).

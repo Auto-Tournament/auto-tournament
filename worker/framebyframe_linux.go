@@ -22,8 +22,7 @@ import (
 // plugin that unhides startmovie: CS2 then writes every frame of a demo and
 // its sound itself, at whatever pace the GPU manages. The recorder image ships
 // it in fbfSource (recorder.Dockerfile); without it, or when it reports the
-// movie commands still hidden (a CS2 update), the recorder captures the
-// stream as before. AT_FRAME_BY_FRAME=0 turns it off.
+// movie commands still hidden (a CS2 update), the recorder cannot record.
 
 var fbfSource = env("AT_FBF_DIR", "/opt/frame-by-frame")
 
@@ -35,10 +34,6 @@ var (
 	reFbfUnhid   = regexp.MustCompile(`\[Frame by Frame\] movie commands unhidden`)
 	reFbfOurLine = regexp.MustCompile(`csgo/frame-by-frame`)
 )
-
-func fbfWanted() bool {
-	return env("AT_FRAME_BY_FRAME", "1") != "0" && exists(filepath.Join(fbfSource, "bin", "linuxsteamrt64", "libserver.so"))
-}
 
 // fbfInstall copies the plugin into the game and adds its search path to
 // gameinfo.gi; restore with fbfRestore once CS2 has quit. The line is only
@@ -444,6 +439,7 @@ func (r *recorder) fbfCapture(g *game, name string, from, to, wantFrom int, segs
 	took := time.Since(began).Seconds()
 	log.Printf("frame by frame: ticks %d → %d in %d run(s), %d of %d frames used; %d rendered in %.1f s (%.0f a second)",
 		t0, to, len(runs), len(order), len(ticks), rendered, took, float64(rendered)/took)
+	r.renderFPS = float64(rendered) / took
 	// The sound starts where the first movie does: after the run-up, if any.
 	soundFrom := float64(t0)
 	if runs[0].runUp {
