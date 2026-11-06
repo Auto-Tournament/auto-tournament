@@ -1,0 +1,124 @@
+{
+  "origin-hint": {
+    "seed": "Hạt giống {{position}}",
+    "winner-bracket": "Đội thua $t(abbreviations.winner-bracket) {{round}}.{{position}}",
+    "winner-bracket-semi-final": "Đội thua bán kết $t(abbreviations.winner-bracket) {{position}}",
+    "winner-bracket-final": "Đội thua chung kết $t(abbreviations.winner-bracket)",
+    "consolation-final": "Đội thua bán kết {{position}}",
+    "grand-final": "Đội thắng chung kết $t(abbreviations.loser-bracket)",
+    "double-elimination-consolation-final-opponent-1": "Đội thua bán kết $t(abbreviations.loser-bracket) 1",
+    "double-elimination-consolation-final-opponent-2": "Đội thua chung kết $t(abbreviations.loser-bracket)"
+  },
+  "match-label": {
+    "default": "Trận {{matchNumber}}",
+    "winner-bracket": "$t(abbreviations.winner-bracket)",
+    "loser-bracket": "$t(abbreviations.loser-bracket)",
+    "standard-bracket": "$t(abbreviations.match)",
+    "standard-bracket-semi-final": "Bán kết {{matchNumber}}",
+    "standard-bracket-final": "Chung kết",
+    "double-elimination": "{{matchPrefix}} {{roundNumber}}.{{matchNumber}}",
+    "double-elimination-semi-final": "{{matchPrefix}} bán kết {{matchNumber}}",
+    "double-elimination-final": "{{matchPrefix}} chung kết",
+    "consolation-final": "Tranh hạng ba",
+    "grand-final-single": "Chung kết tổng",
+    "grand-final": "$t(abbreviations.grand-final) vòng {{roundNumber}}",
+    "match-game": "Ván {{gameNumber}}"
+  },
+  "match-status": {
+    "locked": "Đã khóa",
+    "waiting": "Đang chờ",
+    "ready": "Sẵn sàng",
+    "running": "Đang diễn ra",
+    "completed": "Đã xong",
+    "archived": "Đã lưu trữ"
+  },
+  "abbreviations": {
+    "win": "T",
+    "loss": "B",
+    "forfeit": "X",
+    "position": "VT",
+    "seed": "#",
+    "winner-bracket": "NT",
+    "loser-bracket": "NB",
+    "match": "Tr",
+    "grand-final": "CKT"
+  },
+  "ranking": {
+    "rank": {
+      "text": "#",
+      "tooltip": "Hạng"
+    },
+    "id": {
+      "text": "Tên",
+      "tooltip": "Tên"
+    },
+    "played": {
+      "text": "Tr",
+      "tooltip": "Đã đấu"
+    },
+    "wins": {
+      "text": "$t(abbreviations.win)",
+      "tooltip": "Thắng"
+    },
+    "draws": {
+      "text": "H",
+      "tooltip": "Hòa"
+    },
+    "losses": {
+      "text": "$t(abbreviations.loss)",
+      "tooltip": "Bại"
+    },
+    "forfeits": {
+      "text": "$t(abbreviations.forfeit)",
+      "tooltip": "Xử thua"
+    },
+    "scoreFor": {
+      "text": "Ghi",
+      "tooltip": "Điểm ghi được"
+    },
+    "scoreAgainst": {
+      "text": "Mất",
+      "tooltip": "Điểm bị ghi"
+    },
+    "scoreDifference": {
+      "text": "+/-",
+      "tooltip": "Hiệu số"
+    },
+    "points": {
+      "text": "Đ",
+      "tooltip": "Điểm"
+    }
+  },
+  "common": {
+    "bye": "BYE",
+    "best-of-x": "Bo{{x}}",
+    "consolation": "Tranh hạng ba",
+    "group-name": "Bảng {{groupNumber}}",
+    "group-name-winner-bracket": "Nhánh thắng",
+    "group-name-loser-bracket": "Nhánh bại",
+    "round-name": "Vòng {{roundNumber}}",
+    "round-name-final": "Vòng chung kết",
+    "round-name-winner-bracket": "$t(abbreviations.winner-bracket) vòng {{roundNumber}}",
+    "round-name-winner-bracket-final": "$t(abbreviations.winner-bracket) vòng chung kết",
+    "round-name-loser-bracket": "$t(abbreviations.loser-bracket) vòng {{roundNumber}}",
+    "round-name-loser-bracket-final": "$t(abbreviations.loser-bracket) vòng chung kết"
+  },
+  "form-creator": {
+    "stage-name-label": "Đặt tên giai đoạn",
+    "stage-name-placeholder": "Nhập tên cho giai đoạn",
+    "stage-selector-label": "Chọn giai đoạn",
+    "team-label": "Đặt tên các đội",
+    "team-label-placeholder": "Danh sách tên đội, cách nhau bằng dấu phẩy (phải là 2^n)",
+    "team-count": "Hoặc số đội",
+    "team-count-placeholder": "Bạn muốn bao nhiêu đội?",
+    "group-label": "Bao nhiêu bảng?",
+    "group-placeholder": "Bạn muốn bao nhiêu bảng?",
+    "seed-order-label": "Bạn muốn xếp hạt giống thế nào?",
+    "double-elimination-seed-order-placeholder": "Thứ tự hạt giống cho loại kép, cách nhau bằng dấu phẩy",
+    "round-robin-mode-label": "Bạn muốn chế độ vòng tròn nào?",
+    "consolation-final-label": "Tranh hạng ba",
+    "skip-first-round-label": "Bỏ qua vòng đầu",
+    "grand-final-type-label": "Kiểu chung kết tổng",
+    "submit": "Tạo"
+  }
+}
