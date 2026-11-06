@@ -1,0 +1,1334 @@
+{
+  "notFound": {
+    "title": "Stránka nenalezena",
+    "description": "Stránka, kterou hledáš, neexistuje nebo byla přesunuta.",
+    "backToDashboard": "Zpět na přehled",
+    "publicPlayerSearch": "Veřejné hledání hráčů"
+  },
+  "publicLinks": {
+    "intro": "Rychlé odkazy na veřejné stránky, které můžeš sdílet s hráči a diváky.",
+    "common": {
+      "publicUrl": "Veřejná URL",
+      "urlPattern": "Vzor URL"
+    },
+    "playerSearch": {
+      "title": "Veřejné hledání hráčů",
+      "description": "Hledej registrované hráče podle jména, Steam ID nebo URL profilu.",
+      "openButton": "Otevřít /player"
+    },
+    "playerProfile": {
+      "title": "Profil hráče (veřejný)",
+      "description": "Přímý odkaz na profil hráče podle Steam ID64. Hráči přihlášení přes Steam můžou místo kopírování URL použít odkaz „Můj profil“ v horní liště.",
+      "requiresSteamId": "Vyžaduje Steam ID64"
+    },
+    "teamMatch": {
+      "title": "Stránka zápasu týmu (veřejná)",
+      "description": "Zobrazení aktuálního nebo posledního zápasu týmu jen pro čtení.",
+      "openExample": "Otevřít ukázkový tým"
+    },
+    "tournamentLeaderboard": {
+      "title": "Žebříček turnaje (veřejný)",
+      "description": "Veřejná stránka s pořadím aktuálního turnaje (výchozí je turnaj 1).",
+      "open": "Otevřít žebříček"
+    }
+  },
+  "games": {
+    "prompt": {
+      "title": "Co hraješ?",
+      "description": "Turnaje v těchto hrách ti ukážeme jako první. Kdykoli to můžeš změnit.",
+      "skip": "Přeskočit",
+      "save": "Uložit moje hry"
+    },
+    "picker": {
+      "searchLabel": "Hledat hry",
+      "placeholder": "Napiš název hry",
+      "minChars": "Napiš aspoň 2 znaky",
+      "noResults": "Žádné hry nenalezeny",
+      "loading": "Hledám…",
+      "searchFailed": "Hledání teď není dostupné",
+      "yourGames": "Tvoje hry",
+      "none": "Zatím nejsou vybrané žádné hry",
+      "remove": "Odebrat {{name}}",
+      "supported": "Podporované turnaje",
+      "limit": "Vybrat můžeš až {{max}} her",
+      "creditWikidata": "Data o hrách z Wikidat"
+    },
+    "profile": {
+      "title": "Hry, které hraješ",
+      "description": "Vyber hry, které hraješ. Turnaje v těchto hrách se ukážou jako první.",
+      "empty": "Zatím nemáš vybrané žádné hry.",
+      "edit": "Upravit",
+      "add": "Přidat hry",
+      "dialogTitle": "Hry, které hraješ",
+      "cancel": "Zrušit",
+      "save": "Uložit",
+      "saved": "Hry uloženy",
+      "saveFailed": "Hry se nepodařilo uložit"
+    },
+    "welcome": {
+      "gridTitle": "Oblíbené hry",
+      "continue": "Pokračovat",
+      "notNow": "Teď ne",
+      "selectedGames": "Vybrané hry",
+      "selectedCount": "Vybráno {{count}} z {{max}}",
+      "pickOne": "Vyber aspoň jednu hru",
+      "supportedLegend": "Turnaje se tu pořádají"
+    }
+  },
+  "account": {
+    "email": {
+      "title": "E-mail",
+      "description": "Pro návrat do účtu, když zapomeneš heslo, a pokud chceš, i pro e-maily, když turnaj otevře přihlášky.",
+      "address": "E-mailová adresa",
+      "sendLink": "Poslat potvrzení",
+      "cancel": "Zrušit",
+      "verified": "Potvrzeno",
+      "unverified": "Nepotvrzeno",
+      "checkInbox": "Pro potvrzení otevři odkaz v e-mailu, který jsme poslali.",
+      "resend": "Poslat znovu",
+      "change": "Změnit",
+      "remove": "Odebrat",
+      "sent": "Potvrzení odesláno na {{email}}. Otevři odkaz v něm.",
+      "saved": "E-mail uložen",
+      "removed": "E-mail odebrán",
+      "saveFailed": "E-mail se nepodařilo uložit",
+      "notifyLabel": "Napiš mi, když turnaj otevře přihlášky",
+      "notifyHint": "Jeden e-mail na turnaj. Každý e-mail má odkaz pro odhlášení odběru.",
+      "notifyNeedsVerified": "Nejdřív potvrď svou adresu.",
+      "notifyOn": "Až se otevřou přihlášky, přijde ti e-mail",
+      "notifyOff": "Už žádné e-maily o turnajích",
+      "siteCannotSend": "Tento web teď e-maily neposílá."
+    },
+    "title": "Propojení",
+    "subtitle": "Jeden účet pro všechny turnaje na tomto webu.",
+    "loadFailed": "Tvůj účet se nepodařilo načíst.",
+    "impersonating": "Díváš se na tuto stránku v roli jiného hráče. Ukazuje tvůj vlastní účet; pro změny ukonči zobrazení jako hráč.",
+    "rail": {
+      "label": "Účet",
+      "profile": "Profil",
+      "connections": "Propojení"
+    },
+    "gameAccounts": {
+      "title": "Herní účty",
+      "description": "Každá hra potřebuje vlastní účet, aby zápasy věděly, kdo jsi.",
+      "verified": "Ověřeno",
+      "id": "Steam ID {{id}}",
+      "more": "Další herní účty se tu objeví, jak budou na web přibývat hry.",
+      "notConnected": "Propoj svůj účet {{provider}} a hraj tyto hry.",
+      "notOffered": "Přihlášení přes {{provider}} tu zatím není zapnuté. Požádej správce, ať ho zapne v Nastavení → Přihlášení."
+    },
+    "signIn": {
+      "title": "Způsoby přihlášení",
+      "description": "Kterýkoli z nich tě přihlásí do stejného účtu. Aspoň jeden si nech.",
+      "primary": "Hlavní",
+      "primaryDetail": "Identita tvého účtu · zároveň herní účet pro {{games}}",
+      "primaryDetailNoGames": "Identita tvého účtu",
+      "connected": "Propojeno",
+      "accountId": "ID",
+      "linkedOn": "Propojeno {{date}}",
+      "turnedOff": "přihlášení přes něj je na tomto webu vypnuté",
+      "notConnected": "Nepropojeno",
+      "connect": "Propojit",
+      "remove": "Odebrat",
+      "lastMethod": "Tohle je tvůj jediný způsob přihlášení. Nejdřív propoj jiný.",
+      "removeTitle": "Odebrat {{provider}}?",
+      "removeBody": "Přes {{provider}} se už nepřihlásíš. Později ho můžeš propojit znovu.",
+      "removed": "{{provider}} odebrán",
+      "removeFailed": "Tento způsob přihlášení se nepodařilo odebrat",
+      "linked": "{{provider}} propojen",
+      "taken": "Tento účet {{provider}} je už propojený s jiným účtem na tomto webu.",
+      "linkFailed": "{{provider}} se nepodařilo propojit. Zkus to znovu.",
+      "localLabel": "Přihlášení správce (uživatelské jméno + heslo)",
+      "localDetail": "Uživatelské jméno {{username}}"
+    },
+    "changePassword": {
+      "button": "Změnit heslo",
+      "title": "Změna hesla",
+      "current": "Aktuální heslo",
+      "new": "Nové heslo",
+      "repeat": "Nové heslo znovu",
+      "totp": "Kód z ověřovací aplikace",
+      "mismatch": "Nová hesla se neshodují",
+      "save": "Změnit heslo",
+      "cancel": "Zrušit",
+      "done": "Heslo změněno",
+      "failed": "Heslo se nepodařilo změnit",
+      "totpNeeded": "Zadej i kód z ověřovací aplikace.",
+      "tooLong": "Nové heslo je příliš dlouhé"
+    },
+    "reauth": {
+      "title": "Potvrď heslo správce",
+      "body": "Než změníš způsob přihlášení, zadej heslo pro {{username}}.",
+      "password": "Heslo",
+      "totp": "Kód z ověřovací aplikace",
+      "confirm": "Potvrdit",
+      "failed": "Špatné heslo nebo kód",
+      "totpNeeded": "Zadej i kód z ověřovací aplikace."
+    },
+    "merge": {
+      "title": "Sloučit účty?",
+      "body": "Tento účet Steam už má na tomto webu hráče. Sloučit ho do tvého účtu správce?",
+      "explain": "Hráč si ponechá zápasy a statistiky a stane se správcem. Přihlášení správce a propojené způsoby přihlášení se přesunou k němu.",
+      "matches_one": "Odehrán {{count}} zápas",
+      "matches_other": "Odehráno {{count}} zápasů",
+      "confirm": "Sloučit účty",
+      "failed": "Účty se nepodařilo sloučit",
+      "matches_few": "Odehrány {{count}} zápasy",
+      "matches_many": "Odehráno {{count}} zápasů"
+    },
+    "twoStep": {
+      "turnOn": "Zapnout dvoufázové ověření",
+      "turnOff": "Vypnout dvoufázové ověření",
+      "isOn": "Dvoufázové ověření zapnuto",
+      "isOff": "Dvoufázové ověření vypnuto",
+      "onTitle": "Zapnout dvoufázové ověření",
+      "offTitle": "Vypnout dvoufázové ověření",
+      "offWarning": "Bez něj se do tohoto účtu správce přihlásíš jen heslem.",
+      "password": "Heslo",
+      "code": "Kód z ověřovací aplikace",
+      "codeNeeded": "Zadej kód z ověřovací aplikace.",
+      "failed": "Nepodařilo se ho vypnout",
+      "cancel": "Zrušit",
+      "turnedOn": "Dvoufázové ověření je zapnuté",
+      "turnedOff": "Dvoufázové ověření je vypnuté"
+    },
+    "passkeys": {
+      "title": "Přístupové klíče",
+      "description": "Přihlašuj se na přihlašovací stránce správce otiskem prstu, obličejem nebo PINem zařízení místo hesla a kódu.",
+      "add": "Přidat přístupový klíč",
+      "name": "Název",
+      "nameHelp": "Název pro rozlišení, třeba „MacBook“ nebo „Telefon“. Prohlížeč se pak zeptá na otisk prstu, obličej nebo PIN.",
+      "continue": "Pokračovat",
+      "added": "Přístupový klíč přidán",
+      "addFailed": "Přístupový klíč se nepodařilo přidat",
+      "removed": "{{name}} odebrán",
+      "removeFailed": "Přístupový klíč se nepodařilo odebrat",
+      "lastUsed": "Naposledy použit {{date}}",
+      "addedOn": "Přidán {{date}}, zatím nepoužit",
+      "needsHttps": "Přístupové klíče potřebují web na https (nebo localhost). Požádej provozovatele, ať ho dá za https."
+    },
+    "name": {
+      "title": "Zobrazované jméno",
+      "description": "Zobrazuje se na webu i ve hře. Měnit ho můžeš jednou denně.",
+      "lockedUntil": "Zobrazuje se na webu i ve hře. Nedávno se změnilo, takže znovu ho můžeš změnit od {{date}}.",
+      "label": "Jméno",
+      "lengthHint": "{{min}}–{{max}} znaků",
+      "badChars": "Bez uvozovek, < nebo > a řídicích znaků",
+      "promptTitle": "Jak se jmenuješ?",
+      "promptBody": "Zobrazuje se ve hře i na webu.",
+      "notNow": "Teď ne",
+      "save": "Uložit",
+      "saved": "Jméno uloženo. Herní servery ho použijí od tvého dalšího zápasu.",
+      "saveFailed": "Jméno se nepodařilo uložit"
+    }
+  },
+  "home": {
+    "title": "Domů",
+    "greeting": "Ahoj, {{name}}",
+    "greetingFallback": "Ahoj",
+    "editGames": "Upravit hry",
+    "vs": "vs",
+    "tbd": "TBD",
+    "openMatch": "Otevřít zápas",
+    "connectToServer": "Připojit se k serveru",
+    "matchStatus": {
+      "pending": "Čeká",
+      "ready": "Připraven",
+      "loaded": "Načten",
+      "live": "Živě",
+      "completed": "Dokončen"
+    },
+    "yourTournaments": {
+      "title": "Tvoje turnaje",
+      "empty": "Teď nejsi v žádném turnaji."
+    },
+    "tournaments": {
+      "playingNow": "Právě hraje",
+      "waiting": "Čeká",
+      "eliminated": "Vyřazen",
+      "finished": "Dokončeno",
+      "placement": "{{position}} z {{total}}"
+    },
+    "openForYourGames": {
+      "title": "Otevřené pro tvoje hry",
+      "browseAll": "Procházet všechny turnaje",
+      "empty": "Pro tvoje hry teď nejsou otevřené žádné turnaje.",
+      "steamLinked": "Steam propojen",
+      "titleAll": "Otevřené turnaje",
+      "emptyAll": "Teď nejsou otevřené žádné turnaje."
+    },
+    "summary": {
+      "match": "Čeká na tebe zápas.",
+      "open_one": "Pro hry, které hraješ, je otevřený {{count}} turnaj.",
+      "open_other": "Pro hry, které hraješ, je otevřeno {{count}} turnajů.",
+      "openAll_one": "Na tomto webu je otevřený {{count}} turnaj.",
+      "openAll_other": "Na tomto webu je otevřeno {{count}} turnajů.",
+      "none": "Teď na tebe nic nečeká.",
+      "open_few": "Pro hry, které hraješ, jsou otevřené {{count}} turnaje.",
+      "open_many": "Pro hry, které hraješ, je otevřeno {{count}} turnajů.",
+      "openAll_few": "Na tomto webu jsou otevřené {{count}} turnaje.",
+      "openAll_many": "Na tomto webu je otevřeno {{count}} turnajů."
+    },
+    "yourGames": "Hry, které hraješ",
+    "loading": "Načítám tvoji domovskou stránku",
+    "nextMatch": "Tvůj další zápas",
+    "live": {
+      "title": "Živě teď",
+      "count": "Běží: {{count}}",
+      "chip": "Živě",
+      "matchesOn_one": "Právě běží {{count}} zápas",
+      "matchesOn_other": "Právě běží {{count}} zápasů",
+      "matchesOn_few": "Právě běží {{count}} zápasy",
+      "matchesOn_many": "Právě běží {{count}} zápasů"
+    },
+    "quiet": {
+      "title": "Nadcházející",
+      "more": "Také nadcházející",
+      "next": "Na řadě"
+    },
+    "play": {
+      "title": "Zahraj si zápas teď",
+      "quietTitle": "Nic se neděje? Zahraj si zápas.",
+      "hint": "Matchmaking tě dá do hry, jakmile bude ve frontě dost hráčů.",
+      "cta": "Zařadit se do fronty"
+    },
+    "signup": {
+      "open": "Přihlášky otevřené",
+      "cta": "Přihlásit se",
+      "short": "Přihlásit se",
+      "view": "Zobrazit",
+      "title": "Přihlásit se",
+      "aside": "Nadcházející"
+    },
+    "champions": {
+      "title": "Šampioni",
+      "aside": "Nedávno skončené",
+      "all": "Všechny výsledky",
+      "won": "vyhrál {{name}}",
+      "finished": "Dokončeno"
+    },
+    "lastTime": {
+      "title": "Minule",
+      "results": "Úplné výsledky",
+      "second": "2.",
+      "third": "3.",
+      "champion": "Šampion"
+    },
+    "teams": "Týmy: {{count}}",
+    "none": "Zatím žádné turnaje. Brzy se vrať.",
+    "allTournaments": "Všechny turnaje",
+    "empty": {
+      "soon": "Brzy",
+      "heroTitle": "Zatím žádný turnaj",
+      "heroHint": "Až bude oznámen další turnaj, objeví se tady s termínem a přihláškami.",
+      "create": "Vytvořit turnaj",
+      "nextTitle": "Nic dalšího v plánu",
+      "nextHint": "Další turnaj po tomto se ukáže tady.",
+      "signupTitle": "Není kam se přihlásit",
+      "signupHint": "Turnaje s otevřenými přihláškami se ukážou tady.",
+      "slotTitle": "Místo ještě pro jeden",
+      "slotHint": "Sem se vejde další turnaj.",
+      "championTitle": "Zatím žádný šampion",
+      "championHint": "První vítěz se ukáže tady."
+    },
+    "browse": {
+      "title": "Najdi hráče a týmy",
+      "hint": "Podívej se, kdo tu hraje, a najdi tým, ke kterému se přidáš.",
+      "cta": "Procházet hráče"
+    },
+    "next": {
+      "label": {
+        "vetoTurn": "Jsi na řadě ve vetu",
+        "ready": "Tvůj zápas je připravený",
+        "warmup": "Rozehřívání",
+        "live": "Živě",
+        "paused": "Zápas pozastaven"
+      },
+      "opponent": "Soupeř",
+      "startsAt": "Začíná",
+      "untilVeto": "Do veta",
+      "untilMatch": "Do zápasu",
+      "veto": "Veto",
+      "yourTurn": "Jsi na řadě",
+      "ban": "Banuj mapu",
+      "pick": "Pickni mapu",
+      "side": "Vyber stranu",
+      "theirTurn": "Na řadě je soupeř",
+      "vetoOpen": "Veto otevřené",
+      "waiting": "Čeká",
+      "forServer": "Na server",
+      "join": "Připojit",
+      "serverReady": "Server připraven",
+      "ready": "Připraven",
+      "mapRound": "{{map}} · K{{round}}",
+      "round": "{{round}}. kolo",
+      "halftime": "Poločas",
+      "nextMap": "Další mapa",
+      "goVeto": "Přejít na veto",
+      "paused": "Pozastaveno",
+      "about": "~{{minutes}} min",
+      "joinServer": "Připojit se na server"
+    }
+  },
+  "browsePage": {
+    "title": "Procházet turnaje",
+    "searchPlaceholder": "Hledej podle názvu, organizátora nebo místa",
+    "searchLabel": "Hledat turnaje",
+    "loading": "Načítám turnaje",
+    "loadError": "Turnaje se nepodařilo načíst.",
+    "listLabel": "Turnaje",
+    "createTournament": "Vytvořit turnaj",
+    "teamsCount_one": "{{count}} tým",
+    "teamsCount_other": "{{count}} týmů",
+    "filters": {
+      "allGames": "Všechny hry",
+      "status": {
+        "all": "Všechny stavy",
+        "live": "Živě",
+        "registration_open": "Přihlášky otevřené",
+        "finished": "Dokončeno"
+      },
+      "where": {
+        "all": "Online i LAN",
+        "online": "Online",
+        "lan": "LAN"
+      },
+      "gameLabel": "Hra",
+      "statusLabel": "Stav",
+      "whereLabel": "Kde"
+    },
+    "columns": {
+      "tournament": "Turnaj",
+      "format": "Formát",
+      "when": "Kdy"
+    },
+    "when": {
+      "starts": "Začíná {{date}}",
+      "finished": "Dokončeno",
+      "finishedOn": "Dokončeno {{date}}",
+      "noDate": "Zatím bez termínu"
+    },
+    "actions": {
+      "signUp": "Přihlásit se",
+      "watch": "Otevřít",
+      "results": "Výsledky",
+      "youreIn": "Přihlášeno"
+    },
+    "status": {
+      "live": "Živě"
+    },
+    "emptyNone": {
+      "title": "Zatím žádné turnaje",
+      "description": "Až tento web uspořádá turnaj, objeví se tady.",
+      "descriptionAdmin": "Tento web zatím nemá žádný turnaj. Vytvoř ho a objeví se tady."
+    },
+    "emptyFiltered": {
+      "title": "Filtrům neodpovídá žádný turnaj",
+      "description": "Zkus jinou hru nebo stav, nebo filtry vymaž.",
+      "clear": "Vymazat filtry"
+    },
+    "groups": {
+      "live": "Živě",
+      "soon": "Nadcházející",
+      "finished": "Dokončené"
+    },
+    "showOlder_one": "Zobrazit {{count}} starší",
+    "showOlder_other": "Zobrazit {{count}} starších",
+    "mine": {
+      "label": "Které turnaje",
+      "all": "Všechny",
+      "mine": "Moje"
+    },
+    "roundN": "{{n}}. kolo",
+    "entries": {
+      "teams_one": "{{count}} tým",
+      "teams_other": "{{count}} týmů",
+      "teamsOf": "{{count}} / {{max}} týmů",
+      "players_one": "{{count}} hráč",
+      "players_other": "{{count}} hráčů",
+      "playersOf": "{{count}} / {{max}} hráčů",
+      "teams_few": "{{count}} týmy",
+      "teams_many": "{{count}} týmů",
+      "players_few": "{{count}} hráči",
+      "players_many": "{{count}} hráčů"
+    },
+    "teamsCount_few": "{{count}} týmy",
+    "teamsCount_many": "{{count}} týmů",
+    "showOlder_few": "Zobrazit {{count}} starší",
+    "showOlder_many": "Zobrazit {{count}} starších"
+  },
+  "modulesPage": {
+    "title": "Moduly",
+    "subheading": "Co tato instance umí spustit a hry, které do ní byly přidané.",
+    "builtIn": "Vestavěné",
+    "loadFailed": "Nainstalované balíčky se nepodařilo načíst",
+    "removed": "{{name}} odebrán",
+    "removeFailed": "Ten balíček se nepodařilo odebrat",
+    "installed": {
+      "title": "Herní moduly",
+      "hint": "Kód, který ví, jak zápas probíhá a jak přichází jeho výsledek. Jsou součástí aplikace."
+    },
+    "module": {
+      "cs2": {
+        "name": "Counter-Strike 2",
+        "hint": "Komunikuje s tvými herními servery: načte zápas, čte každé kolo, zapíše výsledek."
+      },
+      "manual-report": {
+        "name": "Ruční hlášení",
+        "hint": "Pro hry, které nic nesleduje. Kapitán nahlásí skóre a soupeř souhlasí."
+      }
+    },
+    "packs": {
+      "title": "Herní balíčky",
+      "hint": "Balíček je soubor popisující jednu hru – název, dlaždici a jak se hlásí výsledek. Neobsahuje žádný kód a běží na modulu výše.",
+      "empty": "Zatím žádné balíčky. Importuj jeden a přidej hru, která s touto instancí nepřišla.",
+      "runBy": "Běží na {{engine}}",
+      "bundled": "Přišlo s Auto Tournament"
+    },
+    "import": {
+      "action": "Importovat balíček",
+      "added": "{{name}} přidán",
+      "updated": "{{name}} aktualizován",
+      "failed": "Ten balíček se nepodařilo importovat",
+      "notJson": "Ten soubor není JSON, takže to není balíček",
+      "tooLarge": "Ten soubor je na balíček příliš velký",
+      "noJson": "Vyber soubor .json balíčku",
+      "missingIcon": "Tento balíček používá {{file}} – vyber i ten soubor, nebo importuj samotný JSON bez dlaždice"
+    },
+    "confirmRemove": {
+      "title": "Odebrat {{name}}?",
+      "body": "Hra zmizí z průvodce nastavením. Nic jiného se nesmaže a opětovný import balíčku ji vrátí."
+    },
+    "browse": {
+      "action": "Procházet",
+      "title": "Hry, které můžeš přidat",
+      "hint": "Z komunitního seznamu balíčků. Dokud se tohle neotevřelo, nic se nestahovalo.",
+      "add": "Přidat",
+      "update": "Aktualizovat",
+      "installed": "Nainstalováno",
+      "empty": "Seznam zatím nemá žádné hry, které by tato instance mohla přidat.",
+      "offline": "seznam nebyl dostupný",
+      "staleWith": "Ukazuji poslední seznam, který tato instance viděla – {{reason}}.",
+      "failed": "Seznam se nepodařilo přečíst"
+    },
+    "pending": "Načítám herní modul pro {{game}}…",
+    "pendingRoute": "Načítám modul této stránky…",
+    "notInstalled": {
+      "title": "Herní modul pro {{game}} není nainstalovaný",
+      "body": "Části turnaje specifické pro hru jsou skryté a jeho zápasy nemůžou běžet, dokud se modul znovu nenainstaluje."
+    },
+    "code": {
+      "chip": "Kódový modul",
+      "hint": "Nainstaloval ho na disk tohoto serveru jeho provozovatel.",
+      "noReason": "bez uvedení důvodu",
+      "broken": "Tento modul je rozbitý: {{reason}}",
+      "status": {
+        "ok": "OK",
+        "incompatible": "Nekompatibilní",
+        "broken": "Rozbitý",
+        "disabled": "Vypnutý"
+      },
+      "enable": "Zapnout",
+      "disable": "Vypnout",
+      "enabled": "{{name}} zapnut",
+      "disabled": "{{name}} vypnut",
+      "toggleFailed": "Ten modul se nepodařilo změnit",
+      "listFailed": "Kódové moduly se nepodařilo přečíst: {{reason}}",
+      "safeMode": "Nouzový režim: na této stránce se nenačetl žádný kódový modul. Otevři ji bez ?modules=off a načtou se znovu.",
+      "slotFailed": "Modul {{id}} tady selhal. Proč, říká stránka Moduly.",
+      "reload": {
+        "body": "Obnov stránku a načti nebo uvolni kód modulu.",
+        "action": "Obnovit"
+      },
+      "confirm": {
+        "title": "Zapnout {{name}}?",
+        "warningTitle": "Tohle je kódový modul.",
+        "warning": "Běží uvnitř serveru Auto Tournament s plným přístupem k databázi, souborům a tajemstvím a v prohlížeči každého správce a hráče, který otevře stránku, kterou vykresluje, s jeho oprávněními. Auto Tournament kódové moduly nekontroluje ani neizoluje. Zapni ho, jen pokud autorovi věříš stejně jako této platformě.",
+        "source": "Původ",
+        "onDisk": "Disk tohoto serveru",
+        "version": "Verze",
+        "clientApi": "Client API",
+        "serverApi": "Server API",
+        "none": "neuvedeno",
+        "typeId": "Pro zapnutí napiš {{id}}."
+      },
+      "failure": {
+        "badEntry": "jeho kód se neposkytuje z {{prefix}}",
+        "noClientApi": "neuvádí rozsah client API; tato platforma poskytuje {{platform}}",
+        "badClientApi": "jeho rozsah client API „{{range}}“ není rozsah semver",
+        "outOfRange": "postavený pro client API {{range}}; tato platforma poskytuje {{platform}}",
+        "notFound": "jeho kód chybí (HTTP 404)",
+        "httpError": "jeho kód se nepodařilo stáhnout (HTTP {{status}})",
+        "notJavaScript": "jeho kód se poskytuje jako {{contentType}}, ne JavaScript",
+        "importFailed": "jeho kód se nepodařilo načíst: {{error}}",
+        "timeout": "jeho kód se nenačetl do {{seconds}} sekund",
+        "sharedFailed": "platforma s ním nemohla sdílet své balíčky: {{error}}",
+        "badExport": "jeho kód není definice modulu: {{detail}}",
+        "idMismatch": "jeho kód se nazývá „{{id}}“, ale je nainstalovaný jako „{{expected}}“",
+        "idTaken": "„{{id}}“ už je vestavěný modul",
+        "render": "jeho slot „{{slot}}“ selhal při vykreslování: {{error}}"
+      }
+    },
+    "signInNeed": {
+      "body": "Hráči {{game}} se přihlašují přes {{provider}} a přihlášení přes {{provider}} je vypnuté. Nemůžou propojit účet, který hra potřebuje.",
+      "action": "Zapnout"
+    },
+    "addons": {
+      "title": "Doplňky",
+      "hint": "Funkce vedle her. Zapnutí nebo vypnutí platí hned.",
+      "open": "Otevřít",
+      "toggle": "{{name}} zapnout nebo vypnout",
+      "toggleFailed": "Doplněk se nepodařilo změnit.",
+      "startFailed": "Zapnuto, ale nespustilo se: {{error}}",
+      "notFound": "Takový doplněk neexistuje.",
+      "off": "Tento doplněk je vypnutý. Pro nastavení ho zapni v Modulech."
+    }
+  },
+  "catalog": {
+    "title": "Hry",
+    "hint": "Každá hra, kterou tato instance spouští, a ty, které můžeš přidat. Herní balíčky jsou data; kódové moduly podepisuje Auto Tournament. Obojí se instaluje jedním kliknutím a ty označené „V tomto obrazu“ nepotřebují síť.",
+    "search": "Hledat hry",
+    "installedTitle": "Nainstalované ({{count}})",
+    "availableTitle": "Dostupné ({{count}})",
+    "empty": "Žádné hry neodpovídají.",
+    "allInstalled": "Všechno z katalogu je nainstalované.",
+    "noneInstalled": "Zatím nejsou nainstalované žádné hry. Nainstaluj ty, pro které chceš pořádat turnaje – hráči z nich vybírají.",
+    "loadFailed": "Herní katalog se nepodařilo přečíst: {{reason}}",
+    "loadFailedFallback": "server neodpověděl",
+    "retry": "Zkusit znovu",
+    "failed": "{{name}}: {{reason}}",
+    "failedFallback": "operace selhala",
+    "updateAll": {
+      "action": "Aktualizovat vše ({{count}})",
+      "running": "Aktualizuji…",
+      "done": "Aktualizováno her a modulů: {{count}}",
+      "summary": "Aktualizováno {{updated}}, přeskočeno {{skipped}}, selhalo {{failed}}.",
+      "failedItem": "{{name}}: {{reason}}",
+      "failedFallback": "všechno se aktualizovat nepodařilo"
+    },
+    "feed": {
+      "cache": "Ukazuji katalog z {{time}}: online katalog nebyl dostupný ({{reason}}). Hry v tomto obrazu se pořád instalují bez sítě.",
+      "none": "Online katalog nebyl dostupný ({{reason}}). Ukazuji hry uvnitř tohoto obrazu; instalují se bez sítě.",
+      "unknown": "bez uvedení důvodu",
+      "cacheRefreshing": "Ukazuji katalog z {{time}}, zatímco se načítá online katalog.",
+      "noneRefreshing": "Načítám online katalog… Mezitím tu jsou hry uvnitř tohoto obrazu; instalují se bez sítě.",
+      "reason": {
+        "timeout": "neodpověděl včas",
+        "unreachable": "nebyl dostupný",
+        "bad_response": "jeho odpověď nebyla katalog",
+        "newer_schema": "je napsaný pro novější Auto Tournament",
+        "too_large": "je příliš velký",
+        "offline": "je nastaveno CATALOG_OFFLINE",
+        "http": "odpověděl HTTP {{status}}"
+      }
+    },
+    "kind": {
+      "module": "Kódový modul"
+    },
+    "source": {
+      "snapshot": "V tomto obrazu"
+    },
+    "state": {
+      "available": "Dostupné",
+      "installed": "Nainstalováno",
+      "update-available": "Je dostupná aktualizace",
+      "disabled": "Vypnuto",
+      "broken": "Rozbité",
+      "incompatible": "Nekompatibilní",
+      "builtin": "Vestavěné",
+      "installing": "Instaluji…",
+      "working": "Pracuji…",
+      "restart": "Je potřeba restart"
+    },
+    "action": {
+      "install": "Nainstalovat",
+      "update": "Aktualizovat na {{version}}",
+      "enable": "Zapnout",
+      "disable": "Vypnout",
+      "remove": "Odebrat",
+      "uninstall": "Odinstalovat"
+    },
+    "done": {
+      "installed": "{{name}} nainstalován",
+      "updated": "{{name}} aktualizován",
+      "enabled": "{{name}} zapnut",
+      "disabled": "{{name}} vypnut",
+      "removed": "{{name}} odebrán"
+    },
+    "reload": {
+      "body": "{{names}} běží. Pro použití tady obnov stránku.",
+      "action": "Obnovit"
+    },
+    "restart": "Pro dokončení restartuj Auto Tournament: {{names}}.",
+    "restartNow": {
+      "action": "Restartovat teď",
+      "restarting": "Restartuji…",
+      "failed": "Restart se nepodařil",
+      "timeout": "Auto Tournament se zatím nevrátil. Zkontroluj kontejner a pak obnov stránku."
+    },
+    "confirmInstall": {
+      "title": "Nainstalovat {{name}}?",
+      "body": "Tohle je kódový modul podepsaný Auto Tournament. Běží uvnitř tohoto serveru s přístupem k databázi a souborům a v prohlížeči každého, kdo otevře stránku, kterou vykresluje.",
+      "version": "Verze {{version}}",
+      "from": "Z {{source}}",
+      "fromRemote": "Auto Tournament na GitHubu",
+      "fromSnapshot": "kopie uvnitř tohoto obrazu (síť není potřeba)"
+    },
+    "confirmUninstall": {
+      "title": "Odinstalovat {{name}}?",
+      "body": "Jeho soubory se odstraní. Jeho data – turnaje, servery, nastavení – zůstanou a opětovná instalace je vrátí.",
+      "packBody": "Hra zmizí z průvodce nastavením. Nic jiného se nesmaže a opětovná instalace ji vrátí."
+    },
+    "welcome": {
+      "title": "Hry na této instanci",
+      "hint": "Tuto instanci provozuješ ty, takže vybíráš hry, které nabízí. Hráči z nich vybírají."
+    },
+    "signedBy": "Podepsal {{label}} (klíč {{keyId}})"
+  },
+  "matchmaking": {
+    "play": {
+      "title": "Hrát",
+      "subtitle": "Najdi zápas 5v5. Spáruješ se s hráči, kteří čekají nejdéle, a tvoje parta hraje vždy ve stejném týmu.",
+      "unavailable": "Matchmaking na tomto webu zatím není otevřený.",
+      "findTitle": "Najít zápas",
+      "findHelp": "Během čekání můžeš procházet web. Když se zápas najde, máš 20 sekund na přijetí.",
+      "searchingHelp": "Hledám. Lišta dole ukazuje, jak dlouho čekáš.",
+      "find": "Najít zápas",
+      "leaderStarts": "Hledání spouští vedoucí party.",
+      "cooldown": "Zápas byl odmítnut nebo propásnut. Znovu hledat můžeš za {{minutes}} min.",
+      "rating_one": "Hodnocení {{elo}} · {{count}} hra · {{wins}} výher",
+      "rating_other": "Hodnocení {{elo}} · {{count}} her · {{wins}} výher",
+      "mode": "Režim",
+      "modeName": {
+        "5v5": "5v5",
+        "2v2": "2v2 Wingman",
+        "1v1": "1v1"
+      },
+      "inQueue_one": "Ve frontě: {{count}}",
+      "inQueue_other": "Ve frontě: {{count}}",
+      "partyTitle": "Tvoje parta",
+      "invite": "Pozvat",
+      "partyOf": "{{count}} z {{max}}",
+      "you": "Ty",
+      "selected": "Vybráno",
+      "modeTitle": {
+        "5v5": "Soutěžní",
+        "2v2": "Wingman",
+        "1v1": "Duel"
+      },
+      "lookingTitle": "Hledám hráče",
+      "seats": "Hledá {{count}} · na zápas je potřeba {{total}}",
+      "leaveQueue": "Opustit frontu",
+      "level": "Tvoje úroveň",
+      "xp": "{{into}} / {{next}} XP",
+      "ratingShort": "Hodnocení",
+      "recent": "Poslední",
+      "noRecent": "Zatím žádné zápasy.",
+      "result": {
+        "win": "Výhra",
+        "loss": "Prohra",
+        "draw": "Remíza"
+      },
+      "resultShort": {
+        "win": "V",
+        "loss": "P",
+        "draw": "R"
+      },
+      "backToMatch": "Zpět do tvého zápasu",
+      "online_one": "Online: {{count}}",
+      "online_other": "Online: {{count}}",
+      "usuallyWait_one": "obvykle asi {{count}} minuta",
+      "usuallyWait_other": "obvykle asi {{count}} minut",
+      "aboutWait_one": "asi {{count}} min",
+      "aboutWait_other": "asi {{count}} min",
+      "defaultPool": {
+        "5v5": "Active Duty",
+        "2v2": "Wingman mapy",
+        "1v1": "Wingman mapy"
+      },
+      "searchAnyone": "Hledá málo hráčů: spáruješ se s kýmkoli dostupným (hledá {{count}}, potřeba {{total}})",
+      "searchRating": "Hledám vyrovnaný zápas pro tvoje hodnocení (±{{elo}}) · hledá {{count}}",
+      "botFill": "Doplnit prázdná místa boty",
+      "botFillUnrated": "Prázdná místa doplní boti · nehodnocené: bez hodnocení, XP a dropů",
+      "searchRatingPlain": "Hledám vyrovnaný zápas pro tvoje hodnocení · hledá {{count}}",
+      "searchWidening": "Rozšiřuji hledání: ±{{elo}} · hledá {{count}}",
+      "searchAnyRating": "Teď hledám napříč všemi hodnoceními · hledá {{count}}",
+      "inTournament": "Jsi v aktivním turnaji ({{tournament}}), takže se teď do matchmakingu zařadit nemůžeš.",
+      "partyInTournament": "V aktivním turnaji, takže parta se teď do fronty zařadit nemůže: {{names}}.",
+      "inMatch_one": "V zápase: {{count}}",
+      "inMatch_other": "V zápase: {{count}}",
+      "rating_few": "Hodnocení {{elo}} · {{count}} hry · {{wins}} výher",
+      "rating_many": "Hodnocení {{elo}} · {{count}} her · {{wins}} výher",
+      "inQueue_few": "Ve frontě: {{count}}",
+      "inQueue_many": "Ve frontě: {{count}}",
+      "online_few": "Online: {{count}}",
+      "online_many": "Online: {{count}}",
+      "usuallyWait_few": "obvykle asi {{count}} minuty",
+      "usuallyWait_many": "obvykle asi {{count}} minut",
+      "aboutWait_few": "asi {{count}} min",
+      "aboutWait_many": "asi {{count}} min",
+      "inMatch_few": "V zápase: {{count}}",
+      "inMatch_many": "V zápase: {{count}}"
+    },
+    "queue": {
+      "searching": "Hledám {{mode}}",
+      "cancel": "Zastavit hledání"
+    },
+    "found": {
+      "title": "Zápas nalezen",
+      "accept": "Přijmout",
+      "decline": "Odmítnout",
+      "waiting": "Čeká se na ostatní",
+      "accepted": "Přijato {{accepted}} / {{total}}",
+      "secondsLeft_one": "Zbývá {{count}} sekunda",
+      "secondsLeft_other": "Zbývá {{count}} sekund",
+      "subtitle": "{{mode}} · přijmi do {{seconds}} sekund",
+      "secondsLeft_few": "Zbývají {{count}} sekundy",
+      "secondsLeft_many": "Zbývá {{count}} sekund"
+    },
+    "party": {
+      "title": "Parta",
+      "help": "Hraj s přáteli: založ partu a pošli jim odkaz. Až 5 hráčů, vždy ve stejném týmu.",
+      "create": "Založit partu",
+      "members_one": "V partě je {{count}} hráč",
+      "members_other": "V partě je {{count}} hráčů",
+      "inviteLink": "Odkaz s pozvánkou",
+      "copy": "Kopírovat",
+      "copied": "Odkaz s pozvánkou zkopírován",
+      "code": "Kód pozvánky",
+      "join": "Přidat se",
+      "joined": "Jsi v partě",
+      "leave": "Opustit partu",
+      "disband": "Rozpustit partu",
+      "members_few": "V partě jsou {{count}} hráči",
+      "members_many": "V partě je {{count}} hráčů"
+    },
+    "room": {
+      "title": "Místnost zápasu",
+      "missing": "Tento zápas neexistuje, nebo v něm nejsi.",
+      "back": "Zpět na Hrát",
+      "team": "Tým {{n}}",
+      "status": {
+        "accepting": "čeká se na přijetí",
+        "ready": "všichni přijali",
+        "cancelled": "zrušeno"
+      },
+      "match": {
+        "pending": "Veto map: banujte mapy na střídačku, dokud nezbude jedna. Kliknout může kdokoli z týmu; platí první kliknutí.",
+        "ready": "Čeká se na volný server.",
+        "loaded": "Server je připravený. Připoj se.",
+        "live": "Zápas běží živě.",
+        "completed": "Zápas skončil.",
+        "other": "Zápas: {{status}}"
+      },
+      "pickedBy": "{{mode}} · vybrala mapová ruleta",
+      "pickedByVeto": "{{mode}} · vybráno ve vetu",
+      "vs": "vs",
+      "you": "(ty)",
+      "accepted": "přijato",
+      "matchChat": "Chat zápasu",
+      "playAgain": "Hrát znovu",
+      "fullScoreboard": "Celá výsledková tabulka",
+      "newSkin": "Nový skin",
+      "inventory": "Inventář",
+      "victory": "Vítězství",
+      "defeat": "Porážka",
+      "draw": "Remíza",
+      "inServer": "Na serveru {{n}} z {{total}}",
+      "warmupRule": "Rozehřívání trvá, dokud nejsou na serveru všichni ({{total}}).",
+      "warmupRuleTimed": "Rozehřívání trvá, dokud nejsou na serveru všichni ({{total}}), nebo neuplyne {{minutes}} minut: pak začne s těmi, kdo tam jsou.",
+      "teamLetter": "Tým {{letter}}",
+      "sideFirst": "{{side}} první",
+      "presence": {
+        "in": "Na serveru",
+        "notYet": "Zatím není"
+      },
+      "equip": "Vybavit",
+      "equipped": "Vybaveno",
+      "equipFailed": "Nepodařilo se vybavit",
+      "rematch": {
+        "title": "Odveta?",
+        "ask": "Stejné týmy, nový zápas. Tvoje odpověď platí za celou partu. Pokud většina tvého týmu řekne ano, druhý tým dostane 30 sekund na přijetí.",
+        "yes": "Ano, odvetu",
+        "no": "Ne, díky",
+        "button": "Odveta",
+        "offerTitle": "Druhý tým chce odvetu",
+        "teamTitle": "Tvůj tým chce odvetu",
+        "offerBody": "Stejné týmy, nový zápas. Většina tvého týmu musí říct ano. Tvoje odpověď platí za celou partu.",
+        "waitingOther": "Čeká se na druhý tým… {{s}} s",
+        "waitingTeam": "Čeká se na tvůj tým… {{s}} s",
+        "accepted": "Odveta přijata. Otevírám nový zápas…",
+        "refused": "Odveta odmítnuta."
+      }
+    },
+    "result": {
+      "title": "Výsledek",
+      "map": "Mapa {{n}}",
+      "rating": "Hodnocení",
+      "xp": "+{{xp}} XP · úroveň {{level}}",
+      "levelProgress": "{{into}} z {{next}} XP do další úrovně",
+      "xpReason": {
+        "completed": "Odehráno",
+        "win": "Výhra",
+        "draw": "Remíza",
+        "performance": "Výkon",
+        "first_win": "První výhra dne",
+        "admin": "Správce"
+      },
+      "player": "Hráč",
+      "commend": "Hodnotit",
+      "thumbsUp": "Palec nahoru",
+      "thumbsDown": "Palec dolů",
+      "thumbsUpFor": "Palec nahoru pro {{name}}",
+      "thumbsDownFor": "Palec dolů pro {{name}}",
+      "downReason": "Proč?",
+      "downTag": {
+        "toxic": "Toxický",
+        "griefing": "Sabotáž",
+        "afk": "AFK nebo odešel",
+        "other": "Něco jiného"
+      },
+      "commendFailed": "Nepodařilo se uložit",
+      "outcome": {
+        "win": "VÍTĚZSTVÍ",
+        "loss": "PORÁŽKA",
+        "draw": "REMÍZA"
+      },
+      "minutes_one": "{{count}} min",
+      "minutes_other": "{{count}} min",
+      "yourGame": "Tvoje hra",
+      "fullBoard": "Celá výsledková tabulka",
+      "hideBoard": "Skrýt výsledkovou tabulku",
+      "minutes_few": "{{count}} min",
+      "minutes_many": "{{count}} min"
+    },
+    "profile": {
+      "level": "Úroveň {{level}}",
+      "xp": "{{xp}} XP",
+      "thumbsUp_one": "Palce nahoru: {{count}}",
+      "thumbsUp_other": "Palce nahoru: {{count}}",
+      "thumbsDown_one": "Palce dolů: {{count}}",
+      "thumbsDown_other": "Palce dolů: {{count}}",
+      "tag": {
+        "friendly": "Přátelský",
+        "team_player": "Týmový hráč",
+        "leader": "Vůdce",
+        "good_comms": "Dobrá komunikace",
+        "teacher": "Učitel",
+        "good_sport": "Férový",
+        "toxic": "Toxický",
+        "griefing": "Sabotáž",
+        "unhelpful": "Neochotný",
+        "bad_sport": "Nefér",
+        "afk": "AFK nebo odešel",
+        "other": "Něco jiného"
+      },
+      "negativesPrivate": "Vidíš je jen ty a správci.",
+      "history": "Zápasy matchmakingu",
+      "historyEmpty": "Zatím žádné zápasy matchmakingu.",
+      "win": "Výhra",
+      "loss": "Prohra",
+      "draw": "Remíza",
+      "positivePercent": "{{percent}} % kladných",
+      "thumbsUp_few": "Palce nahoru: {{count}}",
+      "thumbsUp_many": "Palce nahoru: {{count}}",
+      "thumbsDown_few": "Palce dolů: {{count}}",
+      "thumbsDown_many": "Palce dolů: {{count}}"
+    },
+    "leaderboard": {
+      "toLadder": "Žebříček matchmakingu →",
+      "title": "Žebříček",
+      "subtitle_one": "Hráči s aspoň {{count}} zápasy za posledních 30 dní.",
+      "subtitle_other": "Hráči s aspoň {{count}} zápasy za posledních 30 dní.",
+      "empty_one": "Zatím nikdo. Odehraj za 30 dní {{count}} zápas a objevíš se tady.",
+      "empty_other": "Zatím nikdo. Odehraj za 30 dní {{count}} zápasů a objevíš se tady.",
+      "level": "Úroveň",
+      "games": "Zápasy",
+      "winRate": "Výhry",
+      "subtitle_few": "Hráči s aspoň {{count}} zápasy za posledních 30 dní.",
+      "subtitle_many": "Hráči s aspoň {{count}} zápasy za posledních 30 dní.",
+      "empty_few": "Zatím nikdo. Odehraj za 30 dní {{count}} zápasy a objevíš se tady.",
+      "empty_many": "Zatím nikdo. Odehraj za 30 dní {{count}} zápasů a objevíš se tady."
+    },
+    "admin": {
+      "title": "Fronta (správci)",
+      "summary": "Hledá {{players}}, otevřené zápasy: {{lobbies}}",
+      "waited": "{{minutes}} min",
+      "cooldowns": "Tresty",
+      "until": "Zbývá {{minutes}} min",
+      "clear": "Zrušit",
+      "cleared": "Trest zrušen",
+      "clearFailed": "Trest se nepodařilo zrušit",
+      "kind": {
+        "decline": "odmítl",
+        "no_show": "propásl zápas",
+        "abandon": "opustil zápas"
+      },
+      "review": "Hráči k prověření (palce dolů)",
+      "voters_one": "{{count}} hlasující",
+      "voters_other": "{{count}} hlasujících",
+      "voters_few": "{{count}} hlasující",
+      "voters_many": "{{count}} hlasujících"
+    },
+    "roulette": {
+      "rolling": "Vybírám mapu…",
+      "picked": "Mapa: {{map}}"
+    }
+  },
+  "chat": {
+    "title": "Chat",
+    "close": "Zavřít chat",
+    "tabsLabel": "Chaty",
+    "tabMatch": "Zápas",
+    "tabTeam": "Tým",
+    "tabParty": "Parta",
+    "tabDm": "Soukromá zpráva",
+    "dmWho": "Čtete to jen vy dva",
+    "placeholderDm": "Zpráva pro {{name}}",
+    "friends": "Přátelé",
+    "messageFriend": "Zpráva pro {{name}}",
+    "matchWho": "Tvůj tým, {{title}} a správci",
+    "matchWhoAdmin": "Oba týmy a správci",
+    "teamWho": "Všichni v {{team}}",
+    "partyWho": "Všichni v tvé partě",
+    "placeholderMatch": "Zpráva pro oba týmy a správce",
+    "placeholderTeam": "Zpráva pro tvůj tým",
+    "placeholderParty": "Zpráva pro tvou partu",
+    "send": "Odeslat",
+    "you": "Ty",
+    "adminBadge": "SPRÁVCE",
+    "callAdmin": "Zavolat správce",
+    "adminCallOpen": "Tady je otevřené volání správce",
+    "callAdminConfirmTitle": "Zavolat správce?",
+    "callAdminConfirmBody": "Správce dostane oznámení a připojí se k tomuto chatu. Volej ho, jen když potřebuješ pomoc se zápasem.",
+    "adminCalled": "Správce byl zavolán",
+    "callFailed": "Správce se nepodařilo zavolat",
+    "sendFailed": "Zprávu se nepodařilo odeslat",
+    "logLabel": "Chat: {{title}}",
+    "none": "Zatím žádné chaty. Objeví se tu tvůj zápas, tým a parta.",
+    "empty": "Zatím žádné zprávy. Pozdrav.",
+    "loading": "Načítám zprávy",
+    "readOnlyImpersonating": "Díváš se jako jiný hráč. Pro psaní ukonči zobrazení jako hráč.",
+    "peekMatch": "Zápas · {{title}}",
+    "peekTeam": "Tým",
+    "peekParty": "Parta",
+    "buttonUnread": "Chat, nepřečtené: {{count}}",
+    "system": {
+      "vetoStarted": "Veto začalo · první je {{team}}",
+      "vetoBan": "{{team}} banuje {{map}}",
+      "vetoReset": "Správce restartoval veto",
+      "vetoPick": "{{team}} pickuje {{map}}",
+      "vetoSide": "{{team}} začíná na {{map}} za {{side}}",
+      "vetoDone": "Veto hotové · {{maps}}",
+      "serverReady": "Server připraven · {{map}} · připoj se ze stránky zápasu",
+      "playerJoined": "{{name}} je na serveru · připojeno {{n}}",
+      "playerLeft": "{{name}} už není na serveru · připojeno {{n}}",
+      "mapLive": "Mapa {{n}} běží živě · {{map}}",
+      "mapResult": "Mapa {{n}} · {{map}} · {{team1}} {{s1}}–{{s2}} {{team2}}",
+      "seriesWon": "{{team}} vyhrává sérii {{a}}–{{b}}",
+      "adminCalled": "{{name}} volá správce",
+      "adminClaimed": "{{name}} přebírá volání správce",
+      "adminResolved": "Volání správce vyřešeno ({{name}})",
+      "timedOut": "čas vypršel",
+      "remindAccount": "{{name}}: pro hraní v {{tournament}} se jednou přihlas přes Steam.",
+      "remindGame": "{{name}}: před check-inem do {{tournament}} si přidej hru do profilu (Hry, které hraješ).",
+      "serverDown": "Server zápasu spadl. Obnovuji ho…",
+      "serverBack": "Zápas je zpět: mapa {{map}}, kolo {{round}}. Připoj se znovu."
+    },
+    "party": {
+      "inviteCopied": "Odkaz s pozvánkou zkopírován",
+      "inviteFailed": "Odkaz se nepodařilo zkopírovat",
+      "leader": "vedoucí",
+      "invite": "Pozvat",
+      "queue": "Do fronty spolu",
+      "leaveQueue": "Opustit frontu",
+      "searching": "Hledá se zápas",
+      "leaderQueues": "Hledání spouští vedoucí"
+    },
+    "back": "Zpět",
+    "typing": {
+      "one": "{{name}} píše…",
+      "two": "{{first}} a {{second}} píšou…",
+      "many": "Píše {{count}} lidí…"
+    },
+    "emoji": {
+      "open": "Emoji",
+      "title": "Vyber emoji",
+      "search": "Hledat emoji",
+      "none": "Žádné emoji nenalezeno",
+      "categories": {
+        "results": "Výsledky",
+        "recent": "Poslední",
+        "smileys": "Smajlíci",
+        "gestures": "Ruce",
+        "people": "Lidé",
+        "animals": "Příroda",
+        "food": "Jídlo a pití",
+        "activity": "Hry a sport",
+        "travel": "Místa",
+        "objects": "Předměty",
+        "symbols": "Symboly"
+      }
+    }
+  },
+  "search": {
+    "open": "Hledat",
+    "placeholder": "Hledat stránky, hráče, týmy, highlighty…",
+    "placeholderAdmin": "Hledat stránky, nastavení, hráče, týmy, servery…",
+    "hint": "Napiš aspoň dvě písmena. Ctrl K (⌘ K) nebo / to otevře odkudkoli.",
+    "none": "Pro „{{q}}“ nic nenalezeno.",
+    "versus": "{{team1}} vs {{team2}}",
+    "groups": {
+      "pages": "Stránky a nastavení",
+      "players": "Hráči",
+      "teams": "Týmy",
+      "tournaments": "Turnaje",
+      "matches": "Zápasy",
+      "highlights": "Highlighty",
+      "maps": "Mapy",
+      "servers": "Servery a stroje",
+      "recorders": "Nahrávače"
+    },
+    "status": {
+      "setup": "Připravuje se",
+      "in_progress": "Běží",
+      "completed": "Dokončeno"
+    },
+    "pages": {
+      "manage": "Správa",
+      "tournaments": "Turnaje",
+      "newTournament": "Nastavení turnaje",
+      "playedMatches": "Všechny zápasy",
+      "importMatch": "Importovat zápas",
+      "teams": "Týmy",
+      "players": "Hráči",
+      "reports": "Nahlášení",
+      "templates": "Šablony",
+      "ratings": "Hodnocení",
+      "modules": "Moduly",
+      "servers": "Servery",
+      "maps": "Mapy a map pooly",
+      "skins": "Skiny",
+      "matchRules": "Pravidla zápasu",
+      "highlights": "Highlighty",
+      "adminTools": "Systém",
+      "settings": "Nastavení",
+      "settingsSite": "Nastavení: web a e-mail",
+      "settingsSignIn": "Nastavení: poskytovatelé přihlášení",
+      "settingsPlayers": "Nastavení: hráči a přístup",
+      "settingsWebhooks": "Nastavení: webhooky",
+      "settingsLicense": "Licence",
+      "settingsMatchmaking": "Nastavení: matchmaking",
+      "settingsAdvanced": "Nastavení: pokročilé",
+      "liveMatches": "Živé zápasy"
+    },
+    "clips_one": "{{count}} klip",
+    "clips_other": "{{count}} klipů",
+    "fieldLabel": "Hledat",
+    "clips_few": "{{count}} klipy",
+    "clips_many": "{{count}} klipů"
+  },
+  "highlightsPage": {
+    "recorderStats": "Posílat anonymní výsledky benchmarku",
+    "recorderStatsHint": "Po benchmarku nahrávače pošlou webu model GPU a CPU, verze a časy pro veřejnou tabulku, co jak rychle renderuje. Nic o zápasech ani hráčích. Nahrávání funguje stejně i s vypnutou volbou.",
+    "title": "Highlighty",
+    "subtitle": "Klipy a sestřihy highlightů z každého zápasu: co nahrávače vytvářejí, hudba pod sestřihy a nahrávače každé hry.",
+    "tabs": {
+      "settings": "Nastavení"
+    },
+    "perPlayer": {
+      "label": "Klipů na hráče na mapu",
+      "helper": "1 až 6. Víc klipů znamená, že highlighty zápasu se dokončí později."
+    },
+    "preset": {
+      "label": "Kvalita videa",
+      "smooth": "Plynulá (doporučeno): až 1080p, 240 fps",
+      "crisp": "Ostrá: až 1440p, 120 fps",
+      "lan": "LAN, maximum: až 4K, 240 fps",
+      "custom": "Vlastní",
+      "light": "Lehká: jen 720p, 60 fps"
+    },
+    "bitrate": {
+      "label": "Datový tok",
+      "auto": "Automaticky (doporučeno)",
+      "option": "{{mbps}} Mbit/s"
+    },
+    "resolution": {
+      "label": "Nejvyšší rozlišení"
+    },
+    "fps": {
+      "label": "Nejvyšší snímková frekvence",
+      "option": "{{fps}} fps"
+    },
+    "quality": {
+      "helper": "Nahrávače vytvoří každý klip a sestřih jednou, v nejvyšší kvalitě, a nižší z něj vyříznou. Zpomalení zůstává plynulé při jakékoli snímkové frekvenci. Už hotové klipy si kvalitu ponechají, dokud se nevytvoří znovu."
+    },
+    "music": {
+      "label": "Hudba pod sestřihy",
+      "all": "Všechny skladby ({{count}})",
+      "pick": "Jen ty, které vyberu",
+      "off": "Bez hudby",
+      "listen": "Poslechnout {{title}}",
+      "stop": "Zastavit {{title}}",
+      "contentId": "YouTube Content ID",
+      "volume": "Hlasitost",
+      "byo": "Vlastní hudba: přidej skladby, k jejichž použití máš práva. Auto Tournament žádné nedodává. Přehrávač ke každému sestřihu pustí jinou a stahování jde s ní i bez ní.",
+      "remove": "Odebrat {{title}}",
+      "removeConfirm": "Odebrat",
+      "keep": "Ponechat",
+      "addTitle": "Přidat skladbu",
+      "chooseFile": "Vybrat soubor",
+      "noFile": "Nevybrán žádný soubor (MP3, M4A, WAV…)",
+      "trackTitle": "Název",
+      "artist": "Interpret",
+      "genre": "Žánr (seskupuje menu)",
+      "source": "Odkud je (odkaz, kvůli uvedení autora)",
+      "contentIdLabel": "Registrováno v YouTube Content ID (nahrávka s ní může dostat nárok)",
+      "add": "Přidat skladbu",
+      "adding": "Přidávám…",
+      "rights": "Přidávej jen hudbu, kterou máš právo použít ve videích. Její hlasitost se srovná s ostatními skladbami.",
+      "suggestions_one": "{{count}} skladba, která se hodí k sestřihům, na Pixabay",
+      "suggestions_other": "{{count}} skladeb, které se hodí k sestřihům, na Pixabay",
+      "suggestionsHelp": "Otevři jednu, stáhni ji z Pixabay podle její licence a přidej ji sem. Licence dovoluje použití ve videích; nedovoluje soubor nikomu předávat.",
+      "link": "Nebo odkaz na zvukový soubor",
+      "addLink": "Přidat z odkazu",
+      "suggestions_few": "{{count}} skladby, které se hodí k sestřihům, na Pixabay",
+      "suggestions_many": "{{count}} skladeb, které se hodí k sestřihům, na Pixabay"
+    },
+    "overlay": {
+      "label": "Překryvy",
+      "helper_one": "{{count}} klip má čistou kopii. Překreslení na něj znovu dá aktuální kartu s popiskem, kill feed a jména a pak znovu vytvoří sestřihy. CS2 není potřeba.",
+      "helper_other": "{{count}} klipů má čistou kopii. Překreslení na ně znovu dá aktuální kartu s popiskem, kill feed a jména a pak znovu vytvoří sestřihy. CS2 není potřeba.",
+      "redraw": "Překreslit překryvy",
+      "pending_one": "{{count}} video čeká na nahrávač",
+      "pending_other": "{{count}} videí čeká na nahrávač",
+      "failed_one": "{{count}} video nešlo překreslit",
+      "failed_other": "{{count}} videí nešlo překreslit",
+      "keepClean": "Uchovávat čisté kopie klipů",
+      "keepCleanHelper": "Každý klip se uloží i tak, jak byl nahraný, bez karty a kill feedu. Sestřihy se pak dělají z čistých klipů s vlastním překryvem a překryvy jde překreslit. Vypnuto zabere asi polovinu místa.",
+      "redrawFailed": "Překreslení se nepodařilo zařadit do fronty.",
+      "helper_few": "{{count}} klipy mají čistou kopii. Překreslení na ně znovu dá aktuální kartu s popiskem, kill feed a jména a pak znovu vytvoří sestřihy. CS2 není potřeba.",
+      "helper_many": "{{count}} klipů má čistou kopii. Překreslení na ně znovu dá aktuální kartu s popiskem, kill feed a jména a pak znovu vytvoří sestřihy. CS2 není potřeba.",
+      "pending_few": "{{count}} videa čekají na nahrávač",
+      "pending_many": "{{count}} videí čeká na nahrávač",
+      "failed_few": "{{count}} videa nešla překreslit",
+      "failed_many": "{{count}} videí nešlo překreslit"
+    },
+    "moved": "Nastavení highlightů, nahrávače a návod na přidání jsou teď na vlastní stránce:",
+    "saved": "Uloženo",
+    "saveFailed": "Nepodařilo se uložit",
+    "reels": {
+      "title": "Délky sestřihů",
+      "description": "Kolik klipů jde do každého sestřihu. Víc klipů znamená delší sestřihy, jejichž výroba trvá déle.",
+      "funnyPerPlayer": "Vtipných klipů na hráče na mapu",
+      "mapReelPerPlayer": "Klipů na hráče v sestřihu mapy",
+      "seriesReelMax": "Klipů v sestřihu série",
+      "seriesReelPerPlayer": "Klipů na hráče v sestřihu série",
+      "teamReelPerPlayer": "Klipů na hráče v sestřihu týmu",
+      "tournamentReelMax": "Klipů v sestřihu turnaje",
+      "tournamentReelPerPlayer": "Klipů na hráče v sestřihu turnaje",
+      "range": "{{min}} až {{max}}"
+    },
+    "minResolution": {
+      "label": "Nejnižší rozlišení"
+    },
+    "ladder": {
+      "title": "Kvality, které si diváci můžou vybrat",
+      "recordedAt": "Nahráno v {{quality}}",
+      "highest": "Nejvyšší",
+      "lowest": "Telefony, pomalé připojení",
+      "rate": "≈{{mbps}} Mbit/s"
+    },
+    "cost": {
+      "single": "Nahrávání trvá asi {{time}}× déle než 1080p při 120 fps. Odhad.",
+      "withCuts": "Nahrávání trvá asi {{time}}× déle než 1080p při 120 fps a uchovává se každá kvalita: asi {{storage}}× víc místa. Odhady."
+    },
+    "keepMasters": {
+      "label": "Uchovávat nejvyšší kvalitu",
+      "always": "Vždy",
+      "30": "30 dní",
+      "7": "7 dní",
+      "reels": "Dokud nejsou hotové sestřihy",
+      "helper": "Pak její místo zaujme další kvalita a čistá kopie zmizí, což ušetří většinu místa. Video bez nejvyšší kvality nejde překreslit ani v této kvalitě spojit do nového sestřihu; musí se nahrát znovu."
+    },
+    "matchmaking": {
+      "minimumTitle": "Které akce se stanou klipy",
+      "minimumDescription": "Pro každý zápas. Matchmaking si navíc nechá jen pár nejlepších, nastavení níže.",
+      "title": "Highlighty z matchmakingu",
+      "description": "Matchmaking odehraje spoustu zápasů. Nech si z každého jen pár nejlepších, ať nahrávače nejsou zaneprázdněné celý den.",
+      "on": "Nahrávat highlighty z matchmakingu",
+      "onHelp": "Vypnuto: zápasy matchmakingu nedostanou žádné klipy ani sestřihy.",
+      "clips": "Klipů na zápas",
+      "clipsHelp": "Nejlepší akce první. Sestřih hráče se dělá ze stejných klipů.",
+      "all": "Vše",
+      "minKills": "Nejmenší akce, která se ponechá",
+      "minKillsHelp": "Akce pod touto hranicí se nikdy nestanou klipem, ani když je místo.",
+      "kills": {
+        "2": "2 zabití",
+        "3": "3 zabití",
+        "4": "4 zabití",
+        "5": "Ace"
+      },
+      "killsInline": {
+        "2": "2 zabití",
+        "3": "3 zabití",
+        "4": "4 zabití",
+        "5": "ace"
+      },
+      "clutch": "Clutche se počítají vždy",
+      "clutchHelp": "Vyhraný 1vX se počítá, i když má méně zabití než nejmenší akce.",
+      "summary": "Z každého zápasu matchmakingu: {{clips}} od {{kills}} výš.",
+      "summaryClutch": "Z každého zápasu matchmakingu: {{clips}} od {{kills}} výš a každý clutch.",
+      "summaryEvery": "každá akce",
+      "summaryBest_one": "nejlepší akce",
+      "summaryBest_other": "nejlepších {{count}} akcí",
+      "summaryBest_few": "nejlepší {{count}} akce",
+      "summaryBest_many": "nejlepších {{count}} akcí"
+    }
+  },
+  "update": {
+    "available": "Vyšel Auto Tournament {{latest}} (máš {{running}}).",
+    "notes": "Co je nového",
+    "module": "Je dostupný {{name}} {{version}} (máš {{installed}}).",
+    "moduleProblem": "{{name}}: aktualizace se nepovedla. {{problem}}",
+    "openModules": "Moduly"
+  },
+  "licenseGate": {
+    "expiredTitle": "Licence této platformy vypršela",
+    "expiredAdmin": "Platba za licenci je po splatnosti, takže se platforma zastavila. Zaplacení ji hned znovu zapne. Tvoje data jsou v bezpečí.",
+    "expiredPlayer": "Zápasy a přihlášky jsou pozastavené. Organizátor o tom ví. Zkus to později.",
+    "pay": "Zaplatit v konzoli ↗",
+    "settings": "Nastavení licence",
+    "fix": "Opravit ↗",
+    "pastDue": "Platba za licenci selhala. Pokud se nezaplatí, platforma se {{date}} zastaví.",
+    "elsewhereTitle": "Tento licenční klíč se používá na jiné instalaci",
+    "elsewhereAdmin": "Jeden licenční klíč funguje na jedné instalaci Auto Tournament a tenhle má jiná instalace. Vlož vlastní klíč této instalace, nebo v konzoli použij „Přesunout na jinou instalaci“. Tvoje data jsou v bezpečí.",
+    "replacedTitle": "Tento licenční klíč byl nahrazen",
+    "replacedAdmin": "Pro tuto licenci byl v konzoli vytvořen nový klíč, takže starý přestal fungovat. Vlož nový klíč do nastavení licence. Tvoje data jsou v bezpečí.",
+    "openConsole": "Otevřít konzoli ↗",
+    "pasteKey": "Vložit nový klíč",
+    "replacedSoon": "Pro tuto licenci byl v konzoli vytvořen nový klíč. Vlož ho do nastavení licence: tento klíč přestane fungovat {{date}}."
+  },
+  "matchAdmin": {
+    "openChat": "Otevřít chat",
+    "resetVeto": "Restartovat veto",
+    "resetVetoTitle": "Restartovat veto?",
+    "resetVetoBody": "Všechny dosavadní bany, picky a strany se smažou a týmy začnou veto znovu. Oba týmy to uvidí v chatu zápasu.",
+    "vetoReset": "Veto začíná znovu",
+    "vetoResetFailed": "Veto se nepodařilo restartovat"
+  },
+  "addressMismatch": {
+    "open": "Otevřít {{host}}",
+    "text": "Jsi na {{current}}, ale tento web je nastavený pro {{host}}: přihlášení přes Steam, e-maily i herní servery používají tu adresu."
+  },
+  "siteFooter": {
+    "support": "Podpořit projekt",
+    "trademarks": "Counter-Strike, CS2 a Steam jsou ochranné známky společnosti Valve Corporation. Ostatní názvy her jsou ochranné známky svých vlastníků. Auto Tournament není spojený s Valve ani žádným vydavatelem her, ani jimi podporovaný."
+  },
+  "discordNotice": {
+    "link": "Propoj svůj účet Discord, ať tě bot může přesunout do hlasového kanálu tvého týmu a najít v kanálu tvého týmu.",
+    "linkAction": "Propojit Discord",
+    "join": "Přidej se na náš Discord server. Jsou tam kanály tvého týmu a karty zápasů.",
+    "joinAction": "Připojit se na server"
+  }
+}

@@ -1,0 +1,307 @@
+{
+  "notificationPrompt": {
+    "title": "Zapni oznámení",
+    "body": "Doporučujeme je zapnout. Pak se od nás dozvíš, i když tuto kartu zavřeš:",
+    "matchReady": "tvůj zápas je připravený k připojení",
+    "vetoTurn": "jsi na řadě ve vetu map",
+    "starting": "turnaj, ve kterém máš přihlášku, brzy začne",
+    "iphone": "Na iPhonu nejdřív přidej tento web na plochu (Sdílet, pak Přidat na plochu) a otevírej ho odtamtud.",
+    "change": "Kdykoli to můžeš změnit v nastavení oznámení.",
+    "later": "Teď ne",
+    "turnOn": "Zapnout (doporučeno)"
+  },
+  "social": {
+    "bell": {
+      "title": "Oznámení",
+      "label": "Oznámení",
+      "labelUnread_one": "Oznámení, {{count}} nové",
+      "labelUnread_other": "Oznámení, {{count}} nových",
+      "markAllRead": "Označit vše jako přečtené",
+      "show": "Zobrazit",
+      "filter": {
+        "all": "Vše",
+        "you": "Čeká na tebe",
+        "tournaments": "Turnaje",
+        "matches": "Zápasy",
+        "skins": "Skiny",
+        "clips": "Klipy",
+        "other": "Ostatní"
+      },
+      "empty": "Zatím tu nic není",
+      "emptyHint": "Objeví se tu pozvánky do party, žádosti o přátelství, novinky z turnajů, nové skiny a hotové highlighty.",
+      "loading": "Načítám…",
+      "seeAll": "Zobrazit všechna oznámení",
+      "loadOlder": "Načíst starší",
+      "settings": "Nastavení oznámení",
+      "labelUnread_few": "Oznámení, {{count}} nová",
+      "labelUnread_many": "Oznámení, {{count}} nových"
+    },
+    "notice": {
+      "partyInvite": "tě zve do své party",
+      "teamInvite": "tě zve do",
+      "joinedTeam": "Jsi v týmu",
+      "partyDetail": "{{mode}} · {{size}} v partě",
+      "join": "Přidat se",
+      "decline": "Odmítnout",
+      "accept": "Přijmout",
+      "ignore": "Ignorovat",
+      "friendRequest": "ti posílá žádost o přátelství",
+      "friendAccepted": "– žádost o přátelství přijata",
+      "skin": "Nový skin:",
+      "highlight": "Tvůj highlight je hotový:",
+      "highlightVictim": "{{name}} tě sundává ve svém klipu:",
+      "highlightAssist": "Tvoje asistence v klipu hráče {{name}}:",
+      "highlightKiller": "Tvoje zabití v klipu hráče {{name}}:",
+      "tournamentStarted": "začal. Tvůj první zápas je na řadě.",
+      "lineupGap": "· ze tvé sestavy odešel hráč základu. Vyber náhradníka do {{minutes}} minut, jinak hrajete v oslabení.",
+      "checkInOpen": "– check-in je otevřený. Odbav se, než se uzavře.",
+      "joined": "Jsi v partě",
+      "nowFriends": "Teď jste přátelé",
+      "declined": "Odmítnuto",
+      "expired": "Tato parta skončila",
+      "reportNew": "– nahlášení: {{reason}}",
+      "reportReviewed": "Díky: tvoje nahlášení hráče {{name}} bylo posouzeno.",
+      "matchReady": "je připravený. Otevři místnost zápasu a připoj se.",
+      "vetoTurn": "– tvůj tým je na řadě ve vetu.",
+      "startsSoon": "začíná za {{minutes}} minut. Připrav se na svůj první zápas.",
+      "startsSoonUpdate": "začíná za {{minutes}} minut. Spusť hru teď, ať je případná aktualizace hotová před prvním zápasem.",
+      "matchSoon": "– tvoje veto se otevře za {{minutes}} minut a poběží i bez tebe. Buď u počítače.",
+      "noShow": "– do svého zápasu ses nepřipojil, takže v dalších kolech nehraješ. Otevři turnaj a dej vědět, že jsi zpět.",
+      "discordLink": "– propoj svůj účet Discord, dostaneš kanály svého týmu a přesun do jeho hlasového kanálu.",
+      "signedUp": "· {{team}} je přihlášený. Podívej se, co vědět před startem."
+    },
+    "toast": {
+      "join": "Přidat se k partě",
+      "close": "Zavřít",
+      "closes_one": "Zavře se za {{count}} s · zůstane ve zvonku",
+      "closes_other": "Zavře se za {{count}} s · zůstane ve zvonku",
+      "closes_few": "Zavře se za {{count}} s · zůstane ve zvonku",
+      "closes_many": "Zavře se za {{count}} s · zůstane ve zvonku"
+    },
+    "friends": {
+      "title": "Přátelé",
+      "tabFriends": "Přátelé",
+      "tabRequests": "Žádosti",
+      "tabAdd": "Přidat přítele",
+      "online_one": "Online · {{count}}",
+      "online_other": "Online · {{count}}",
+      "offline_one": "Offline · {{count}}",
+      "offline_other": "Offline · {{count}}",
+      "onlineCount_one": "{{count}} online",
+      "onlineCount_other": "{{count}} online",
+      "invite": "Pozvat",
+      "inParty": "V tvé partě",
+      "more": "Další pro {{name}}",
+      "viewProfile": "Zobrazit profil",
+      "remove": "Odebrat z přátel",
+      "removed": "{{name}} už není mezi tvými přáteli",
+      "none": "Zatím žádní přátelé",
+      "noneHint": "Přidej lidi, se kterými hraješ, a pak je pozvi do party odsud nebo ze sekce Hrát.",
+      "incoming": "Příchozí",
+      "sent": "Odeslané",
+      "noIncoming": "Žádné žádosti na tebe nečekají.",
+      "noSent": "Nemáš žádné čekající žádosti.",
+      "askedAgo": "Požádáno {{when}}",
+      "sentAgo": "Odesláno {{when}}",
+      "cancelRequest": "Zrušit žádost",
+      "searchPlaceholder": "Jméno nebo odkaz na profil Steam",
+      "results": "Na Auto Tournament",
+      "playedWith": "Hráli jste spolu nedávno",
+      "noResults": "Nikdo s tímto jménem.",
+      "typeMore": "Napiš aspoň dvě písmena.",
+      "noRecent": "Odehraj zápas a tvoji spoluhráči se objeví tady.",
+      "matches_one": "{{count}} zápas",
+      "matches_other": "{{count}} zápasů",
+      "alreadyFriends": "Přátelé",
+      "requestSent": "Žádost odeslána",
+      "addFriend": "Přidat přítele",
+      "signIn": "Přihlas se a uvidíš své přátele",
+      "signInHint": "Přátelé, žádosti a pozvánky patří k tvému účtu.",
+      "cardEmpty": "Přidej si přátele, uvidíš, kdy jsou online, a pozveš je jedním kliknutím.",
+      "all_one": "Všichni přátelé ({{count}}) →",
+      "all_other": "Všichni přátelé ({{count}}) →",
+      "find": "Najít přátele →",
+      "requestCount_one": "{{count}} žádost",
+      "requestCount_other": "{{count}} žádostí",
+      "online_few": "Online · {{count}}",
+      "online_many": "Online · {{count}}",
+      "offline_few": "Offline · {{count}}",
+      "offline_many": "Offline · {{count}}",
+      "onlineCount_few": "{{count}} online",
+      "onlineCount_many": "{{count}} online",
+      "matches_few": "{{count}} zápasy",
+      "matches_many": "{{count}} zápasů",
+      "all_few": "Všichni přátelé ({{count}}) →",
+      "all_many": "Všichni přátelé ({{count}}) →",
+      "requestCount_few": "{{count}} žádosti",
+      "requestCount_many": "{{count}} žádostí"
+    },
+    "status": {
+      "playing": "V zápase · {{match}}",
+      "searching": "Hledá · {{mode}}",
+      "online": "Online",
+      "offline": "Offline",
+      "lastSeen": "Naposledy online {{when}}"
+    },
+    "invite": {
+      "searchPlaceholder": "Kdokoli na webu, podle jména",
+      "friendsOnline": "Přátelé online",
+      "recent": "Nedávní spoluhráči",
+      "onSite": "Na Auto Tournament",
+      "noFriends": "Zatím žádní přátelé. Vyhledej kohokoli podle jména výše.",
+      "nobodyOnline": "Nikdo z tvých přátel není online.",
+      "inMatch": "V zápase",
+      "together_one": "{{count}} společný zápas",
+      "together_other": "{{count}} společných zápasů",
+      "invited": "Pozvánka odeslána",
+      "sent": "Pozvánka pro {{name}} odeslána",
+      "chip": "{{name}} · pozvánka",
+      "cancel": "Vzít zpět pozvánku pro {{name}}",
+      "orLink": "Nebo odkaz",
+      "copy": "Kopírovat",
+      "copyFailed": "Nepodařilo se zkopírovat. Označ odkaz a zkopíruj ho ručně.",
+      "makeLink": "Vytvořit odkaz s pozvánkou",
+      "cannot": {
+        "nobody": "Nepřijímá pozvánky",
+        "friends": "Jen přátelé",
+        "no_game": "Nehraje CS2"
+      },
+      "together_few": "{{count}} společné zápasy",
+      "together_many": "{{count}} společných zápasů"
+    },
+    "profile": {
+      "friends": "Přátelé",
+      "acceptRequest": "Přijmout žádost o přátelství",
+      "message": "Zpráva",
+      "invite": "Pozvat do party"
+    },
+    "settings": {
+      "title": "Pozvánky do party",
+      "description": "Kdo tě může pozvat do party v matchmakingu. Pozvánky se ukážou ve zvonku a vyskočí na jakékoli otevřené stránce.",
+      "everyone": "Všichni",
+      "everyoneHint": "Kterýkoli hráč na tomto webu.",
+      "friends": "Jen přátelé",
+      "friendsHint": "Jen hráči, se kterými se přátelíš.",
+      "nobody": "Nikdo",
+      "nobodyHint": "Žádné pozvánky. Do party se pořád můžeš přidat přes její odkaz.",
+      "saved": "Uloženo",
+      "saveFailed": "Nastavení se nepodařilo uložit"
+    },
+    "setup": {
+      "title": "Před hledáním dokonči nastavení",
+      "youGame": "Přidej CS2 mezi své hry na profilu.",
+      "youGameAuto": "Hledání zápasu přidá tuto hru mezi tvoje hry.",
+      "youAccount": "Propoj svůj účet Steam.",
+      "theyGame": "{{name}} nemá CS2 mezi svými hrami.",
+      "theyAccount": "{{name}} nemá propojený účet Steam.",
+      "fix": "Otevřít účet"
+    },
+    "news": {
+      "title": "Novinky",
+      "hint": "Pošli oznámení do zvonku všem hráčům: nová sezóna, turnaj, plánovaná odstávka.",
+      "titleLabel": "Nadpis",
+      "bodyLabel": "Řádek navíc (volitelný)",
+      "urlLabel": "Odkaz (volitelný)",
+      "urlHint": "Stránka tady (/tournament/3) nebo adresa https://.",
+      "urlBad": "Začni / nebo https://",
+      "send": "Poslat všem hráčům",
+      "confirm": "Dostane to každý hráč, který se kdy přihlásil. Poslat?",
+      "sendNow": "Poslat teď",
+      "cancel": "Zrušit",
+      "sent_one": "Odesláno {{count}} hráči",
+      "sent_other": "Odesláno {{count}} hráčům",
+      "failed": "Novinky se nepodařilo poslat",
+      "sent_few": "Odesláno {{count}} hráčům",
+      "sent_many": "Odesláno {{count}} hráčům"
+    },
+    "noticeSettings": {
+      "title": "Nastavení",
+      "alerts": "Upozornění",
+      "browser": "Oznámení prohlížeče",
+      "browserHint": "Na tomto zařízení, i když je web zavřený (tvůj zápas je připravený, jsi na řadě ve vetu, začíná turnaj). Zapnuto jen pro tento prohlížeč.",
+      "browserDenied": "Zablokováno v nastavení webu v tomto prohlížeči. Povol tam oznámení a pak je zapni.",
+      "browserUnsupported": "Tento prohlížeč nepodporuje oznámení.",
+      "sound": "Zvuk",
+      "test": "Vyzkoušet",
+      "volume": "Hlasitost {{percent}} %",
+      "group": {
+        "you": "Ty",
+        "tournaments": "Turnaje",
+        "other": "Ostatní",
+        "skins": "Skiny",
+        "clips": "Klipy"
+      },
+      "kind": {
+        "party_invite": "Pozvánky do party",
+        "team_invite": "Pozvánky do týmu",
+        "friend_request": "Žádosti o přátelství",
+        "friend_accepted": "Přijaté žádosti o přátelství",
+        "tournament": "Check-iny a starty",
+        "skin": "Dropy skinů",
+        "highlight": "Tvoje highlighty",
+        "news": "Novinky",
+        "report": "Nahlášení"
+      },
+      "delivery": {
+        "off": "Vypnuto",
+        "bell": "Zvonek",
+        "sound": "Zvonek a zvuk"
+      }
+    }
+  },
+  "notifyChannels": {
+    "title": "Oznámení",
+    "description": "Kde ti dáme vědět o věcech, které na tebe čekají, když nejsi na webu. Ve výchozím stavu vypnuto, kromě tvých vlastních zápasů.",
+    "event": "Událost",
+    "channel": {
+      "push": "Prohlížeč / telefon",
+      "discord": "Discord DM",
+      "email": "E-mail"
+    },
+    "events": {
+      "match_ready": {
+        "title": "Tvůj zápas je připravený",
+        "hint": "Server, odkaz pro připojení a s kým hraješ"
+      },
+      "veto_turn": {
+        "title": "Jsi na řadě ve vetu",
+        "hint": "Jen kapitáni"
+      },
+      "checkin_open": {
+        "title": "Otevírá se check-in",
+        "hint": "Pro turnaje, kde máš přihlášku"
+      },
+      "new_tournament": {
+        "title": "Nové turnaje",
+        "hint": "Když turnaj přijímá přihlášky"
+      },
+      "tournament_starting": {
+        "title": "Začátek turnaje",
+        "hint": "Připomínky před začátkem turnaje, ve kterém hraješ"
+      },
+      "direct_message": {
+        "title": "Zprávy od přátel",
+        "hint": "Když nejsi na webu"
+      }
+    },
+    "reason": {
+      "no_bot": "Na tomto webu není nastaveno",
+      "no_discord": "Nejdřív propoj Discord",
+      "no_push": "Nejdřív v tomto prohlížeči zapni oznámení",
+      "email_off": "Tento web neumí posílat e-maily",
+      "no_email": "Nejdřív přidej e-mail",
+      "email_unverified": "Nejdřív potvrď svůj e-mail"
+    },
+    "switchLabel": "{{event}} přes {{channel}}",
+    "saveFailed": "Nepodařilo se uložit."
+  },
+  "presence": {
+    "online": "Online",
+    "offline": "Offline",
+    "away": "Pryč",
+    "searching": "Hledá hru {{mode}}",
+    "playingMatchmaking": "V zápase matchmakingu: {{label}}",
+    "playingTournament": "V turnajovém zápase: {{label}}",
+    "playing": "V zápase: {{label}}"
+  }
+}
