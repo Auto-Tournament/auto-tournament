@@ -469,6 +469,9 @@ export function diffAssignConfig(
         ...(now.player.role ? { role: now.player.role } : {}),
         ...(now.player.language ? { language: now.player.language } : {}),
       });
+    } else if (now.player.language && now.player.language !== was.player.language) {
+      // The player saved a new site language (onPlayerLanguageChanged).
+      ops.push({ op: 'set_language', steamid64: id, language: now.player.language });
     }
   }
   return ops;

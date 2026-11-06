@@ -33,6 +33,7 @@ import {
   isSameSiteRequest,
 } from '../utils/accountConnections';
 import { db } from '../config/database';
+import { listIntegrations } from '../integrations/registry';
 import { localAdminService } from '../services/localAdminService';
 import { adminAccessSettings } from '../services/adminAccessSettings';
 import {
@@ -304,7 +305,20 @@ router.put('/language', async (req: Request, res: Response) => {
     if (typeof language !== 'string' || !LANGUAGE_CODE.test(language)) {
       return res.status(400).json({ success: false, error: 'Not a language code' });
     }
-    await db.runAsync('UPDATE players SET language = ? WHERE id = ?', [language, account.steamId]);
+    const { changes } = await db.runAsync(
+      'UPDATE players SET language = ? WHERE id = ? AND (language IS NULL OR language <> ?)',
+      [language, account.steamId, language]
+    );
+    if (changes > 0) {
+      // Open matches get it too (CS2: the Ready Up server, set_language).
+      for (const integration of listIntegrations()) {
+        void integration
+          .onPlayerLanguageChanged?.(account.steamId)
+          .catch((error: Error) =>
+            log.warn(`New language for ${account.steamId} not sent to ${integration.id}`, error)
+          );
+      }
+    }
     return res.json({ success: true, language });
   } catch (error) {
     log.error('Error saving own language', error);

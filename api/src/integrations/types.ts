@@ -1230,6 +1230,12 @@ export interface GameIntegration<D extends IntegrationData = IntegrationData> {
    * resource did not take it; the lineup stays saved.
    */
   onLineupChanged?(ctx: MatchContext): Promise<void>;
+  /**
+   * A player saved a new site language: tell the resources running their
+   * open matches (CS2: `match.update` set_language to the Ready Up server).
+   * Must not reject.
+   */
+  onPlayerLanguageChanged?(playerId: string): Promise<void>;
 }
 
 /** A router mounted at a fixed prefix, plus its heading in the API reference. */

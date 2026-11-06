@@ -845,6 +845,12 @@ export const cs2Integration: GameIntegration<Cs2Data> = {
     if (!outcome.ok) throw new Error(outcome.error);
   },
 
+  /** The player's open matches on Ready Up servers get the new language (`set_language`). */
+  async onPlayerLanguageChanged(playerId) {
+    const { syncPlayerLanguage } = await import('./fleet/driver');
+    await syncPlayerLanguage(playerId);
+  },
+
   clientSlots: ['MatchPanel', 'SetupStep', 'StatsPanel'],
 
   // Link previews for clips and reels (services/shareCards).
