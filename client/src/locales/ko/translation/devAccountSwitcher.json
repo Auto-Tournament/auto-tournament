@@ -1,0 +1,12 @@
+{
+  "devAccountSwitcher": {
+    "tooltip": "계정 전환(dev)",
+    "adminTest": "관리자(테스트)",
+    "playerA": "플레이어 A(dev)",
+    "playerB": "플레이어 B(dev)",
+    "playerC": "플레이어 C(dev)",
+    "newPlayer": "새 플레이어(첫 방문)(dev)",
+    "signOut": "로그아웃",
+    "disabled": "이 서버에서는 테스트 로그인이 꺼져 있어요"
+  }
+}

@@ -1,0 +1,287 @@
+{
+  "notificationPrompt": {
+    "title": "알림 켜기",
+    "body": "켜 두는 걸 추천해요. 이 탭을 닫아도 소식을 받을 수 있어요:",
+    "matchReady": "경기에 참가할 준비가 됐을 때",
+    "vetoTurn": "맵 밴/픽에서 내 차례가 됐을 때",
+    "starting": "신청한 토너먼트가 곧 시작할 때",
+    "iphone": "iPhone에서는 먼저 이 사이트를 홈 화면에 추가하고(공유 → 홈 화면에 추가) 그곳에서 여세요.",
+    "change": "알림 설정에서 언제든지 바꿀 수 있어요.",
+    "later": "나중에",
+    "turnOn": "켜기(권장)"
+  },
+  "social": {
+    "bell": {
+      "title": "알림",
+      "label": "알림",
+      "labelUnread_one": "알림, 새 알림 {{count}}개",
+      "labelUnread_other": "알림, 새 알림 {{count}}개",
+      "markAllRead": "모두 읽음으로 표시",
+      "show": "보기",
+      "filter": {
+        "all": "전체",
+        "you": "확인 필요",
+        "tournaments": "토너먼트",
+        "matches": "경기",
+        "skins": "스킨",
+        "clips": "클립",
+        "other": "기타"
+      },
+      "empty": "아직 아무것도 없어요",
+      "emptyHint": "파티 초대, 친구 요청, 토너먼트 소식, 새 스킨, 완성된 하이라이트가 여기에 표시돼요.",
+      "loading": "불러오는 중…",
+      "seeAll": "모든 알림 보기",
+      "loadOlder": "이전 알림 불러오기",
+      "settings": "알림 설정"
+    },
+    "notice": {
+      "partyInvite": "님이 파티에 초대했어요",
+      "teamInvite": "님이 초대했어요:",
+      "joinedTeam": "팀에 참가했어요",
+      "partyDetail": "{{mode}} · 파티 {{size}}명",
+      "join": "참가",
+      "decline": "거절",
+      "accept": "수락",
+      "ignore": "무시",
+      "friendRequest": "님이 친구 요청을 보냈어요",
+      "friendAccepted": "님이 친구 요청을 수락했어요",
+      "skin": "새 스킨:",
+      "highlight": "하이라이트가 완성됐어요:",
+      "highlightVictim": "{{name}}님이 나를 처치한 클립:",
+      "highlightAssist": "내가 {{name}}님을 어시스트한 클립:",
+      "highlightKiller": "내가 {{name}}님을 처치한 클립:",
+      "tournamentStarted": "이(가) 시작됐어요. 첫 경기가 곧 열려요.",
+      "lineupGap": "· 선발 선수가 명단에서 빠졌어요. {{minutes}}분 안에 후보를 고르지 않으면 인원이 부족한 채로 경기해요.",
+      "checkInOpen": "체크인이 열렸어요. 마감 전에 체크인하세요.",
+      "joined": "파티에 참가했어요",
+      "nowFriends": "이제 친구예요",
+      "declined": "거절했어요",
+      "expired": "이 파티는 종료됐어요",
+      "reportNew": "신고됨: {{reason}}",
+      "reportReviewed": "감사해요: {{name}}님에 대한 신고가 검토됐어요.",
+      "matchReady": "준비됐어요. 경기실을 열어 접속하세요.",
+      "vetoTurn": ": 밴/픽에서 우리 팀 차례예요.",
+      "startsSoon": "{{minutes}}분 후 시작해요. 첫 경기에 참가할 준비를 하세요.",
+      "startsSoonUpdate": "{{minutes}}분 후 시작해요. 첫 경기 전에 업데이트가 끝나도록 지금 게임을 실행하세요.",
+      "matchSoon": ": 밴/픽이 {{minutes}}분 후 열리고 나 없이도 진행돼요. PC 앞에 있어 주세요.",
+      "noShow": ": 경기에 참가하지 않아 다음 라운드에서 빠졌어요. 계속하려면 토너먼트를 열고 복귀를 알려 주세요.",
+      "discordLink": ": Discord 계정을 연결하면 팀 채널을 받고 음성 채널로 이동돼요.",
+      "signedUp": "· {{team}} 등록 완료. 시작 전에 알아야 할 내용을 확인하세요."
+    },
+    "toast": {
+      "join": "파티 참가",
+      "close": "닫기",
+      "closes_one": "{{count}}초 후 닫혀요 · 알림 벨에 남아요",
+      "closes_other": "{{count}}초 후 닫혀요 · 알림 벨에 남아요"
+    },
+    "friends": {
+      "title": "친구",
+      "tabFriends": "친구",
+      "tabRequests": "요청",
+      "tabAdd": "친구 추가",
+      "online_one": "온라인 · {{count}}",
+      "online_other": "온라인 · {{count}}",
+      "offline_one": "오프라인 · {{count}}",
+      "offline_other": "오프라인 · {{count}}",
+      "onlineCount_one": "{{count}}명 온라인",
+      "onlineCount_other": "{{count}}명 온라인",
+      "invite": "초대",
+      "inParty": "내 파티에 있음",
+      "more": "{{name}} 더보기",
+      "viewProfile": "프로필 보기",
+      "remove": "친구 삭제",
+      "removed": "{{name}}님은 이제 친구가 아니에요",
+      "none": "아직 친구가 없어요",
+      "noneHint": "함께 플레이하는 사람을 추가하고, 여기나 플레이에서 파티에 초대하세요.",
+      "incoming": "받은 요청",
+      "sent": "보낸 요청",
+      "noIncoming": "기다리는 요청이 없어요.",
+      "noSent": "보낸 요청이 없어요.",
+      "askedAgo": "{{when}}에 요청",
+      "sentAgo": "{{when}}에 보냄",
+      "cancelRequest": "요청 취소",
+      "searchPlaceholder": "이름 또는 Steam 프로필 링크",
+      "results": "Auto Tournament에서",
+      "playedWith": "최근 함께 플레이",
+      "noResults": "그 이름의 사람이 없어요.",
+      "typeMore": "두 글자 이상 입력하세요.",
+      "noRecent": "경기를 하면 함께 플레이한 사람이 여기에 표시돼요.",
+      "matches_one": "{{count}}경기",
+      "matches_other": "{{count}}경기",
+      "alreadyFriends": "친구",
+      "requestSent": "요청 보냄",
+      "addFriend": "친구 추가",
+      "signIn": "로그인해서 친구 보기",
+      "signInHint": "친구, 요청, 초대는 계정에 속해요.",
+      "cardEmpty": "친구를 추가하면 온라인 여부를 보고 클릭 한 번으로 초대할 수 있어요.",
+      "all_one": "모든 친구({{count}}) →",
+      "all_other": "모든 친구({{count}}) →",
+      "find": "친구 찾기 →",
+      "requestCount_one": "요청 {{count}}개",
+      "requestCount_other": "요청 {{count}}개"
+    },
+    "status": {
+      "playing": "경기 중 · {{match}}",
+      "searching": "찾는 중 · {{mode}}",
+      "online": "온라인",
+      "offline": "오프라인",
+      "lastSeen": "마지막 접속 {{when}}"
+    },
+    "invite": {
+      "searchPlaceholder": "사이트의 누구든, 이름으로",
+      "friendsOnline": "온라인 친구",
+      "recent": "최근 함께 플레이",
+      "onSite": "Auto Tournament에서",
+      "noFriends": "아직 친구가 없어요. 위에서 누구든 이름으로 검색하세요.",
+      "nobodyOnline": "온라인인 친구가 없어요.",
+      "inMatch": "경기 중",
+      "together_one": "{{count}}경기 함께 함",
+      "together_other": "{{count}}경기 함께 함",
+      "invited": "초대함",
+      "sent": "{{name}}님을 초대했어요",
+      "chip": "{{name}} · 초대함",
+      "cancel": "{{name}}님 초대 취소",
+      "orLink": "또는 링크로",
+      "copy": "복사",
+      "copyFailed": "복사하지 못했어요. 링크를 선택해 직접 복사하세요.",
+      "makeLink": "초대 링크 만들기",
+      "cannot": {
+        "nobody": "초대를 받지 않아요",
+        "friends": "친구만",
+        "no_game": "CS2를 플레이하지 않아요"
+      }
+    },
+    "profile": {
+      "friends": "친구",
+      "acceptRequest": "친구 요청 수락",
+      "message": "메시지",
+      "invite": "파티에 초대"
+    },
+    "settings": {
+      "title": "파티 초대",
+      "description": "누가 나를 매치메이킹 파티에 초대할 수 있는지 정해요. 초대는 알림 벨에 표시되고 열려 있는 어느 페이지에서나 팝업으로 떠요.",
+      "everyone": "모두",
+      "everyoneHint": "이 사이트의 모든 플레이어.",
+      "friends": "친구만",
+      "friendsHint": "친구인 플레이어만.",
+      "nobody": "아무도 없음",
+      "nobodyHint": "초대를 받지 않아요. 링크로 파티에 참가할 수는 있어요.",
+      "saved": "저장했어요",
+      "saveFailed": "설정을 저장하지 못했어요"
+    },
+    "setup": {
+      "title": "찾기 전에 설정을 마치세요",
+      "youGame": "프로필의 게임에 CS2를 추가하세요.",
+      "youGameAuto": "경기를 찾으면 이 게임이 내 게임에 추가돼요.",
+      "youAccount": "Steam 계정을 연결하세요.",
+      "theyGame": "{{name}}님이 게임에 CS2를 추가하지 않았어요.",
+      "theyAccount": "{{name}}님이 Steam 계정을 연결하지 않았어요.",
+      "fix": "계정 열기"
+    },
+    "news": {
+      "title": "소식",
+      "hint": "모든 플레이어의 알림 벨에 공지를 보내요: 새 시즌, 토너먼트, 예정된 점검 등.",
+      "titleLabel": "제목",
+      "bodyLabel": "한 줄 더(선택)",
+      "urlLabel": "링크(선택)",
+      "urlHint": "이 사이트의 페이지(/tournament/3) 또는 https:// 주소.",
+      "urlBad": "/ 또는 https://로 시작하세요",
+      "send": "모든 플레이어에게 보내기",
+      "confirm": "로그인한 적이 있는 모든 플레이어가 받아요. 보낼까요?",
+      "sendNow": "지금 보내기",
+      "cancel": "취소",
+      "sent_one": "플레이어 {{count}}명에게 보냈어요",
+      "sent_other": "플레이어 {{count}}명에게 보냈어요",
+      "failed": "소식을 보내지 못했어요"
+    },
+    "noticeSettings": {
+      "title": "설정",
+      "alerts": "알림",
+      "browser": "브라우저 알림",
+      "browserHint": "이 기기에서 사이트를 닫아도 알려 줘요(경기 준비, 밴/픽 차례, 토너먼트 시작). 이 브라우저에서만 켜져요.",
+      "browserDenied": "이 브라우저의 사이트 설정에서 차단됐어요. 켜려면 거기서 알림을 허용하세요.",
+      "browserUnsupported": "이 브라우저는 알림을 지원하지 않아요.",
+      "sound": "소리",
+      "test": "테스트",
+      "volume": "음량 {{percent}}%",
+      "group": {
+        "you": "나",
+        "tournaments": "토너먼트",
+        "other": "기타",
+        "skins": "스킨",
+        "clips": "클립"
+      },
+      "kind": {
+        "party_invite": "파티 초대",
+        "team_invite": "팀 초대",
+        "friend_request": "친구 요청",
+        "friend_accepted": "수락된 친구 요청",
+        "tournament": "체크인과 시작",
+        "skin": "스킨 드롭",
+        "highlight": "내 하이라이트",
+        "news": "소식",
+        "report": "신고"
+      },
+      "delivery": {
+        "off": "꺼짐",
+        "bell": "벨",
+        "sound": "벨과 소리"
+      }
+    }
+  },
+  "notifyChannels": {
+    "title": "알림",
+    "description": "사이트에 없을 때 확인이 필요한 일을 어디로 알려 줄지 정해요. 내 경기를 제외하면 기본적으로 꺼져 있어요.",
+    "event": "이벤트",
+    "channel": {
+      "push": "브라우저 / 휴대폰",
+      "discord": "Discord DM",
+      "email": "이메일"
+    },
+    "events": {
+      "match_ready": {
+        "title": "경기 준비 완료",
+        "hint": "서버, 접속 링크, 상대"
+      },
+      "veto_turn": {
+        "title": "밴/픽 내 차례",
+        "hint": "팀장만"
+      },
+      "checkin_open": {
+        "title": "체크인 시작",
+        "hint": "등록한 토너먼트"
+      },
+      "new_tournament": {
+        "title": "새 토너먼트",
+        "hint": "토너먼트가 참가 신청을 받을 때"
+      },
+      "tournament_starting": {
+        "title": "토너먼트 시작",
+        "hint": "참가한 토너먼트 시작 전 알림"
+      },
+      "direct_message": {
+        "title": "친구의 메시지",
+        "hint": "사이트에 없을 때"
+      }
+    },
+    "reason": {
+      "no_bot": "이 사이트에서는 설정되지 않았어요",
+      "no_discord": "먼저 Discord를 연결하세요",
+      "no_push": "먼저 이 브라우저에서 알림을 켜세요",
+      "email_off": "이 사이트는 이메일을 보낼 수 없어요",
+      "no_email": "먼저 이메일을 추가하세요",
+      "email_unverified": "먼저 이메일을 확인하세요"
+    },
+    "switchLabel": "{{channel}}(으)로 {{event}}",
+    "saveFailed": "저장하지 못했어요."
+  },
+  "presence": {
+    "online": "온라인",
+    "offline": "오프라인",
+    "away": "자리 비움",
+    "searching": "{{mode}} 경기 찾는 중",
+    "playingMatchmaking": "매치메이킹 경기 중: {{label}}",
+    "playingTournament": "토너먼트 경기 중: {{label}}",
+    "playing": "경기 중: {{label}}"
+  }
+}

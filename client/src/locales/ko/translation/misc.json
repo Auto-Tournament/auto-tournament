@@ -1,0 +1,1278 @@
+{
+  "notFound": {
+    "title": "페이지를 찾을 수 없어요",
+    "description": "찾는 페이지가 없거나 옮겨졌어요.",
+    "backToDashboard": "대시보드로 돌아가기",
+    "publicPlayerSearch": "공개 플레이어 검색"
+  },
+  "publicLinks": {
+    "intro": "플레이어와 시청자에게 공유할 수 있는 공개 페이지 바로가기예요.",
+    "common": {
+      "publicUrl": "공개 URL",
+      "urlPattern": "URL 형식"
+    },
+    "playerSearch": {
+      "title": "공개 플레이어 검색",
+      "description": "등록된 플레이어를 이름, Steam ID, 프로필 URL로 검색해요.",
+      "openButton": "/player 열기"
+    },
+    "playerProfile": {
+      "title": "플레이어 프로필(공개)",
+      "description": "Steam ID64로 플레이어 프로필에 바로 가는 링크예요. Steam으로 로그인한 플레이어는 URL을 복사하는 대신 상단 바의 \"내 프로필\" 링크를 쓸 수도 있어요.",
+      "requiresSteamId": "Steam ID64 필요"
+    },
+    "teamMatch": {
+      "title": "팀 경기 페이지(공개)",
+      "description": "팀의 현재 또는 가장 최근 경기를 읽기 전용으로 보여 줘요.",
+      "openExample": "예시 팀 열기"
+    },
+    "tournamentLeaderboard": {
+      "title": "토너먼트 순위(공개)",
+      "description": "현재 토너먼트의 공개 순위 페이지(기본값은 토너먼트 1).",
+      "open": "순위 열기"
+    }
+  },
+  "games": {
+    "prompt": {
+      "title": "어떤 게임을 하나요?",
+      "description": "이 게임들의 토너먼트를 먼저 보여 드려요. 언제든지 바꿀 수 있어요.",
+      "skip": "건너뛰기",
+      "save": "내 게임 저장"
+    },
+    "picker": {
+      "searchLabel": "게임 검색",
+      "placeholder": "게임 이름 입력",
+      "minChars": "두 글자 이상 입력하세요",
+      "noResults": "게임을 찾지 못했어요",
+      "loading": "검색 중…",
+      "searchFailed": "지금은 검색할 수 없어요",
+      "yourGames": "내 게임",
+      "none": "아직 고른 게임이 없어요",
+      "remove": "{{name}} 제거",
+      "supported": "토너먼트 지원",
+      "limit": "게임은 최대 {{max}}개까지 고를 수 있어요",
+      "creditWikidata": "게임 데이터 출처: Wikidata"
+    },
+    "profile": {
+      "title": "플레이하는 게임",
+      "description": "플레이하는 게임을 고르세요. 이 게임들의 토너먼트가 먼저 보여요.",
+      "empty": "아직 게임을 고르지 않았어요.",
+      "edit": "편집",
+      "add": "게임 추가",
+      "dialogTitle": "플레이하는 게임",
+      "cancel": "취소",
+      "save": "저장",
+      "saved": "게임을 저장했어요",
+      "saveFailed": "게임을 저장하지 못했어요"
+    },
+    "welcome": {
+      "gridTitle": "인기 게임",
+      "continue": "계속",
+      "notNow": "나중에",
+      "selectedGames": "고른 게임",
+      "selectedCount": "{{max}}개 중 {{count}}개 선택",
+      "pickOne": "게임을 하나 이상 고르세요",
+      "supportedLegend": "여기서 토너먼트 진행"
+    }
+  },
+  "account": {
+    "email": {
+      "title": "이메일",
+      "description": "비밀번호를 잊었을 때 계정에 다시 들어가기 위해, 그리고 원한다면 토너먼트가 참가 신청을 열 때 이메일을 받기 위해 써요.",
+      "address": "이메일 주소",
+      "sendLink": "확인 메일 보내기",
+      "cancel": "취소",
+      "verified": "확인됨",
+      "unverified": "확인 안 됨",
+      "checkInbox": "보내 드린 이메일의 링크를 열어 확인하세요.",
+      "resend": "다시 보내기",
+      "change": "변경",
+      "remove": "제거",
+      "sent": "{{email}}(으)로 확인 메일을 보냈어요. 메일 속 링크를 여세요.",
+      "saved": "이메일을 저장했어요",
+      "removed": "이메일을 제거했어요",
+      "saveFailed": "이메일을 저장하지 못했어요",
+      "notifyLabel": "토너먼트가 참가 신청을 열면 이메일 받기",
+      "notifyHint": "토너먼트당 한 통이에요. 모든 이메일에 수신 거부 링크가 있어요.",
+      "notifyNeedsVerified": "먼저 주소를 확인하세요.",
+      "notifyOn": "참가 신청이 열리면 이메일을 받아요",
+      "notifyOff": "더 이상 토너먼트 이메일을 받지 않아요",
+      "siteCannotSend": "이 사이트는 지금 이메일을 보내지 않아요."
+    },
+    "title": "연결",
+    "subtitle": "이 사이트의 모든 토너먼트에서 쓰는 계정 하나예요.",
+    "loadFailed": "계정을 불러오지 못했어요.",
+    "impersonating": "플레이어로 대신 보는 중에 이 페이지를 보고 있어요. 내 계정이 표시되니, 바꾸려면 대신 보기를 끝내세요.",
+    "rail": {
+      "label": "계정",
+      "profile": "프로필",
+      "connections": "연결"
+    },
+    "gameAccounts": {
+      "title": "게임 계정",
+      "description": "경기에서 나를 알아볼 수 있도록 게임마다 계정이 필요해요.",
+      "verified": "확인됨",
+      "id": "Steam ID {{id}}",
+      "more": "이 사이트에 게임이 추가되면 게임 계정이 여기에 더 생겨요.",
+      "notConnected": "이 게임을 하려면 {{provider}} 계정을 연결하세요.",
+      "notOffered": "여기서는 아직 {{provider}} 로그인이 켜져 있지 않아요. 관리자에게 설정 → 로그인에서 켜 달라고 요청하세요."
+    },
+    "signIn": {
+      "title": "로그인 방법",
+      "description": "어느 것을 써도 같은 계정으로 로그인해요. 하나 이상은 남겨 두세요.",
+      "primary": "기본",
+      "primaryDetail": "계정의 신원 · {{games}}의 게임 계정이기도 해요",
+      "primaryDetailNoGames": "계정의 신원",
+      "connected": "연결됨",
+      "accountId": "ID",
+      "linkedOn": "{{date}} 연결",
+      "turnedOff": "이 사이트에서는 이 방법의 로그인이 꺼져 있어요",
+      "notConnected": "연결 안 됨",
+      "connect": "연결",
+      "remove": "제거",
+      "lastMethod": "이게 유일한 로그인 방법이에요. 먼저 다른 방법을 연결하세요.",
+      "removeTitle": "{{provider}}을(를) 제거할까요?",
+      "removeBody": "더 이상 {{provider}}(으)로 로그인할 수 없어요. 나중에 다시 연결할 수 있어요.",
+      "removed": "{{provider}}을(를) 제거했어요",
+      "removeFailed": "이 로그인 방법을 제거하지 못했어요",
+      "linked": "{{provider}}을(를) 연결했어요",
+      "taken": "그 {{provider}} 계정은 이미 이 사이트의 다른 계정에 연결돼 있어요.",
+      "linkFailed": "{{provider}}을(를) 연결하지 못했어요. 다시 시도하세요.",
+      "localLabel": "관리자 로그인(사용자 이름 + 비밀번호)",
+      "localDetail": "사용자 이름 {{username}}"
+    },
+    "changePassword": {
+      "button": "비밀번호 변경",
+      "title": "비밀번호 변경",
+      "current": "현재 비밀번호",
+      "new": "새 비밀번호",
+      "repeat": "새 비밀번호 확인",
+      "totp": "인증 코드",
+      "mismatch": "새 비밀번호가 서로 달라요",
+      "save": "비밀번호 변경",
+      "cancel": "취소",
+      "done": "비밀번호를 바꿨어요",
+      "failed": "비밀번호를 바꾸지 못했어요",
+      "totpNeeded": "인증 앱의 코드도 입력하세요.",
+      "tooLong": "새 비밀번호가 너무 길어요"
+    },
+    "reauth": {
+      "title": "관리자 비밀번호 확인",
+      "body": "로그인 방법을 바꾸기 전에 {{username}}의 비밀번호를 입력하세요.",
+      "password": "비밀번호",
+      "totp": "인증 코드",
+      "confirm": "확인",
+      "failed": "비밀번호 또는 코드가 틀렸어요",
+      "totpNeeded": "인증 앱의 코드도 입력하세요."
+    },
+    "merge": {
+      "title": "계정을 합칠까요?",
+      "body": "이 Steam 계정은 이미 이 사이트에 플레이어가 있어요. 관리자 계정으로 합칠까요?",
+      "explain": "플레이어는 경기와 통계를 그대로 유지하고 관리자가 돼요. 관리자 로그인과 연결된 로그인 방법이 그쪽으로 옮겨져요.",
+      "matches_one": "{{count}}경기 진행",
+      "matches_other": "{{count}}경기 진행",
+      "confirm": "계정 합치기",
+      "failed": "계정을 합치지 못했어요"
+    },
+    "twoStep": {
+      "turnOn": "2단계 켜기",
+      "turnOff": "2단계 끄기",
+      "isOn": "2단계 인증 켜짐",
+      "isOff": "2단계 인증 꺼짐",
+      "onTitle": "2단계 인증 켜기",
+      "offTitle": "2단계 인증 끄기",
+      "offWarning": "끄면 이 관리자 계정은 비밀번호만으로 로그인돼요.",
+      "password": "비밀번호",
+      "code": "인증 코드",
+      "codeNeeded": "인증 앱의 코드를 입력하세요.",
+      "failed": "끄지 못했어요",
+      "cancel": "취소",
+      "turnedOn": "2단계 인증이 켜졌어요",
+      "turnedOff": "2단계 인증이 꺼졌어요"
+    },
+    "passkeys": {
+      "title": "패스키",
+      "description": "관리자 로그인 페이지에서 비밀번호와 코드 대신 지문, 얼굴, 기기 PIN으로 로그인해요.",
+      "add": "패스키 추가",
+      "name": "이름",
+      "nameHelp": "구분할 이름이에요(예: \"MacBook\", \"휴대폰\"). 다음으로 브라우저가 지문, 얼굴 또는 PIN을 물어요.",
+      "continue": "계속",
+      "added": "패스키를 추가했어요",
+      "addFailed": "패스키를 추가하지 못했어요",
+      "removed": "{{name}}을(를) 제거했어요",
+      "removeFailed": "패스키를 제거하지 못했어요",
+      "lastUsed": "마지막 사용 {{date}}",
+      "addedOn": "{{date}}에 추가, 아직 사용 안 함",
+      "needsHttps": "패스키는 사이트가 https(또는 localhost)여야 해요. 운영자에게 https로 바꿔 달라고 요청하세요."
+    },
+    "name": {
+      "title": "표시 이름",
+      "description": "사이트와 게임에 표시돼요. 하루에 한 번 바꿀 수 있어요.",
+      "lockedUntil": "사이트와 게임에 표시돼요. 최근에 바꿔서 {{date}}부터 다시 바꿀 수 있어요.",
+      "label": "이름",
+      "lengthHint": "{{min}}~{{max}}자",
+      "badChars": "따옴표, < 또는 >, 제어 문자는 안 돼요",
+      "promptTitle": "이름이 뭐예요?",
+      "promptBody": "게임과 사이트에 표시돼요.",
+      "notNow": "나중에",
+      "save": "저장",
+      "saved": "이름을 저장했어요. 다음 경기부터 게임 서버에서 써요.",
+      "saveFailed": "이름을 저장하지 못했어요"
+    }
+  },
+  "home": {
+    "title": "홈",
+    "greeting": "안녕하세요, {{name}}님",
+    "greetingFallback": "안녕하세요",
+    "editGames": "게임 편집",
+    "vs": "대",
+    "tbd": "미정",
+    "openMatch": "경기 열기",
+    "connectToServer": "서버 접속",
+    "matchStatus": {
+      "pending": "대기 중",
+      "ready": "준비",
+      "loaded": "불러옴",
+      "live": "라이브",
+      "completed": "완료"
+    },
+    "yourTournaments": {
+      "title": "내 토너먼트",
+      "empty": "지금 참가 중인 토너먼트가 없어요."
+    },
+    "tournaments": {
+      "playingNow": "지금 경기 중",
+      "waiting": "대기 중",
+      "eliminated": "탈락",
+      "finished": "종료",
+      "placement": "{{total}} 중 {{position}}"
+    },
+    "openForYourGames": {
+      "title": "내 게임 참가 신청 중",
+      "browseAll": "모든 토너먼트 둘러보기",
+      "empty": "지금 내 게임으로 열린 토너먼트가 없어요.",
+      "steamLinked": "Steam 연결됨",
+      "titleAll": "열린 토너먼트",
+      "emptyAll": "지금 열린 토너먼트가 없어요."
+    },
+    "summary": {
+      "match": "기다리는 경기가 있어요.",
+      "open_one": "플레이하는 게임으로 열린 토너먼트가 {{count}}개 있어요.",
+      "open_other": "플레이하는 게임으로 열린 토너먼트가 {{count}}개 있어요.",
+      "openAll_one": "이 사이트에 열린 토너먼트가 {{count}}개 있어요.",
+      "openAll_other": "이 사이트에 열린 토너먼트가 {{count}}개 있어요.",
+      "none": "지금은 확인할 것이 없어요."
+    },
+    "yourGames": "플레이하는 게임",
+    "loading": "홈 불러오는 중",
+    "nextMatch": "다음 경기",
+    "live": {
+      "title": "지금 라이브",
+      "count": "{{count}}개 진행 중",
+      "chip": "라이브",
+      "matchesOn_one": "지금 {{count}}경기 진행 중",
+      "matchesOn_other": "지금 {{count}}경기 진행 중"
+    },
+    "quiet": {
+      "title": "다가오는 일정",
+      "more": "그 밖의 일정",
+      "next": "다음"
+    },
+    "play": {
+      "title": "지금 경기하기",
+      "quietTitle": "할 게 없나요? 경기를 해 보세요.",
+      "hint": "대기열에 충분한 플레이어가 모이면 매치메이킹이 바로 경기에 넣어 줘요.",
+      "cta": "대기열 참가"
+    },
+    "signup": {
+      "open": "참가 신청 중",
+      "cta": "참가 신청",
+      "short": "참가 신청",
+      "view": "보기",
+      "title": "참가 신청",
+      "aside": "다가오는 일정"
+    },
+    "champions": {
+      "title": "우승",
+      "aside": "최근 종료",
+      "all": "모든 결과",
+      "won": "{{name}} 우승",
+      "finished": "종료"
+    },
+    "lastTime": {
+      "title": "지난번",
+      "results": "전체 결과",
+      "second": "2위",
+      "third": "3위",
+      "champion": "우승"
+    },
+    "teams": "팀: {{count}}",
+    "none": "아직 토너먼트가 없어요. 곧 다시 확인하세요.",
+    "allTournaments": "모든 토너먼트",
+    "empty": {
+      "soon": "곧 공개",
+      "heroTitle": "아직 토너먼트가 없어요",
+      "heroHint": "다음 토너먼트가 발표되면 날짜와 참가 신청과 함께 여기에 표시돼요.",
+      "create": "토너먼트 만들기",
+      "nextTitle": "다른 계획이 없어요",
+      "nextHint": "이 토너먼트 다음 토너먼트가 여기에 표시돼요.",
+      "signupTitle": "신청할 토너먼트가 없어요",
+      "signupHint": "참가 신청을 받는 토너먼트가 여기에 표시돼요.",
+      "slotTitle": "하나 더 들어갈 수 있어요",
+      "slotHint": "다른 토너먼트를 여기에 넣을 수 있어요.",
+      "championTitle": "아직 우승 팀이 없어요",
+      "championHint": "첫 우승 팀이 여기에 표시돼요."
+    },
+    "browse": {
+      "title": "플레이어와 팀 찾기",
+      "hint": "여기서 누가 플레이하는지 보고 들어갈 팀을 찾아보세요.",
+      "cta": "플레이어 둘러보기"
+    },
+    "next": {
+      "label": {
+        "vetoTurn": "밴/픽 내 차례",
+        "ready": "경기가 준비됐어요",
+        "warmup": "워밍업",
+        "live": "라이브",
+        "paused": "경기 일시정지"
+      },
+      "opponent": "상대",
+      "startsAt": "시작",
+      "untilVeto": "밴/픽까지",
+      "untilMatch": "경기까지",
+      "veto": "밴/픽",
+      "yourTurn": "내 차례",
+      "ban": "맵 밴",
+      "pick": "맵 픽",
+      "side": "진영 선택",
+      "theirTurn": "상대 차례",
+      "vetoOpen": "밴/픽 진행 중",
+      "waiting": "대기 중",
+      "forServer": "서버 대기",
+      "join": "참가",
+      "serverReady": "서버 준비",
+      "ready": "준비",
+      "mapRound": "{{map}} · R{{round}}",
+      "round": "라운드 {{round}}",
+      "halftime": "하프타임",
+      "nextMap": "다음 맵",
+      "goVeto": "밴/픽으로 이동",
+      "paused": "일시정지",
+      "about": "약 {{minutes}}분",
+      "joinServer": "서버 참가"
+    }
+  },
+  "browsePage": {
+    "title": "토너먼트 둘러보기",
+    "searchPlaceholder": "이름, 주최자 또는 장소로 검색",
+    "searchLabel": "토너먼트 검색",
+    "loading": "토너먼트 불러오는 중",
+    "loadError": "토너먼트를 불러오지 못했어요.",
+    "listLabel": "토너먼트",
+    "createTournament": "토너먼트 만들기",
+    "teamsCount_one": "{{count}}팀",
+    "teamsCount_other": "{{count}}팀",
+    "filters": {
+      "allGames": "모든 게임",
+      "status": {
+        "all": "모든 상태",
+        "live": "라이브",
+        "registration_open": "참가 신청 중",
+        "finished": "종료"
+      },
+      "where": {
+        "all": "온라인과 LAN",
+        "online": "온라인",
+        "lan": "LAN"
+      },
+      "gameLabel": "게임",
+      "statusLabel": "상태",
+      "whereLabel": "장소"
+    },
+    "columns": {
+      "tournament": "토너먼트",
+      "format": "형식",
+      "when": "일시"
+    },
+    "when": {
+      "starts": "{{date}} 시작",
+      "finished": "종료",
+      "finishedOn": "{{date}} 종료",
+      "noDate": "날짜 미정"
+    },
+    "actions": {
+      "signUp": "참가 신청",
+      "watch": "열기",
+      "results": "결과",
+      "youreIn": "참가 중"
+    },
+    "status": {
+      "live": "라이브"
+    },
+    "emptyNone": {
+      "title": "아직 토너먼트가 없어요",
+      "description": "이 사이트에서 토너먼트가 열리면 여기에 표시돼요.",
+      "descriptionAdmin": "이 사이트에는 아직 토너먼트가 없어요. 하나 만들면 여기에 표시돼요."
+    },
+    "emptyFiltered": {
+      "title": "필터와 일치하는 토너먼트가 없어요",
+      "description": "다른 게임이나 상태를 고르거나 필터를 지우세요.",
+      "clear": "필터 지우기"
+    },
+    "groups": {
+      "live": "라이브",
+      "soon": "다가오는 일정",
+      "finished": "종료"
+    },
+    "showOlder_one": "이전 {{count}}개 보기",
+    "showOlder_other": "이전 {{count}}개 보기",
+    "mine": {
+      "label": "어떤 토너먼트",
+      "all": "전체",
+      "mine": "내 토너먼트"
+    },
+    "roundN": "{{n}}라운드",
+    "entries": {
+      "teams_one": "{{count}}팀",
+      "teams_other": "{{count}}팀",
+      "teamsOf": "{{count}} / {{max}}팀",
+      "players_one": "{{count}}명",
+      "players_other": "{{count}}명",
+      "playersOf": "{{count}} / {{max}}명"
+    }
+  },
+  "modulesPage": {
+    "title": "모듈",
+    "subheading": "이 인스턴스가 실행할 수 있는 것과 추가한 게임이에요.",
+    "builtIn": "기본 제공",
+    "loadFailed": "설치된 팩을 불러오지 못했어요",
+    "removed": "{{name}}을(를) 제거했어요",
+    "removeFailed": "그 팩을 제거하지 못했어요",
+    "installed": {
+      "title": "게임 모듈",
+      "hint": "경기가 어떻게 진행되고 결과가 어떻게 오는지 아는 코드예요. 앱에 포함돼 있어요."
+    },
+    "module": {
+      "cs2": {
+        "name": "Counter-Strike 2",
+        "hint": "게임 서버와 통신해요: 경기를 불러오고, 모든 라운드를 읽고, 결과를 기록해요."
+      },
+      "manual-report": {
+        "name": "수동 결과 보고",
+        "hint": "아무것도 지켜볼 수 없는 게임용이에요. 팀장이 점수를 보고하고 상대가 동의해요."
+      }
+    },
+    "packs": {
+      "title": "게임 팩",
+      "hint": "팩은 게임 하나를 설명하는 파일이에요(이름, 타일, 결과 보고 방식). 코드를 담지 않고 위의 모듈 위에서 실행돼요.",
+      "empty": "아직 팩이 없어요. 이 인스턴스에 포함되지 않은 게임을 추가하려면 팩을 가져오세요.",
+      "runBy": "{{engine}}에서 실행",
+      "bundled": "Auto Tournament에 포함됨"
+    },
+    "import": {
+      "action": "팩 가져오기",
+      "added": "{{name}}을(를) 추가했어요",
+      "updated": "{{name}}을(를) 업데이트했어요",
+      "failed": "그 팩을 가져오지 못했어요",
+      "notJson": "그 파일은 JSON이 아니라서 팩이 아니에요",
+      "tooLarge": "그 파일은 팩이라기엔 너무 커요",
+      "noJson": "팩의 .json 파일을 고르세요",
+      "missingIcon": "이 팩은 {{file}}을(를) 써요. 그 파일도 고르거나, 타일 없이 JSON만 가져오세요"
+    },
+    "confirmRemove": {
+      "title": "{{name}}을(를) 제거할까요?",
+      "body": "게임이 설정 마법사에서 사라져요. 다른 것은 삭제되지 않고, 팩을 다시 가져오면 돌아와요."
+    },
+    "browse": {
+      "action": "둘러보기",
+      "title": "추가할 수 있는 게임",
+      "hint": "커뮤니티 팩 목록에서 가져와요. 이것을 열기 전까지 아무것도 받지 않았어요.",
+      "add": "추가",
+      "update": "업데이트",
+      "installed": "설치됨",
+      "empty": "목록에 아직 이 인스턴스가 추가할 수 있는 게임이 없어요.",
+      "offline": "목록에 연결할 수 없었어요",
+      "staleWith": "이 인스턴스가 마지막으로 본 목록을 보여 주고 있어요: {{reason}}.",
+      "failed": "목록을 읽지 못했어요"
+    },
+    "pending": "{{game}}의 게임 모듈을 불러오는 중…",
+    "pendingRoute": "이 페이지의 모듈을 불러오는 중…",
+    "notInstalled": {
+      "title": "{{game}}의 게임 모듈이 설치되지 않았어요",
+      "body": "이 토너먼트의 게임 관련 부분이 숨겨지고, 모듈을 다시 설치하기 전까지 경기를 진행할 수 없어요."
+    },
+    "code": {
+      "chip": "코드 모듈",
+      "hint": "서버 운영자가 이 서버의 디스크에 설치했어요.",
+      "noReason": "이유 없음",
+      "broken": "이 모듈이 고장 났어요: {{reason}}",
+      "status": {
+        "ok": "OK",
+        "incompatible": "호환 안 됨",
+        "broken": "고장",
+        "disabled": "비활성"
+      },
+      "enable": "활성화",
+      "disable": "비활성화",
+      "enabled": "{{name}}을(를) 활성화했어요",
+      "disabled": "{{name}}을(를) 비활성화했어요",
+      "toggleFailed": "그 모듈을 바꾸지 못했어요",
+      "listFailed": "코드 모듈을 읽지 못했어요: {{reason}}",
+      "safeMode": "안전 모드: 이 페이지에서는 코드 모듈을 불러오지 않았어요. 다시 불러오려면 ?modules=off 없이 여세요.",
+      "slotFailed": "{{id}} 모듈이 여기서 실패했어요. 이유는 모듈 페이지에 있어요.",
+      "reload": {
+        "body": "모듈 코드를 불러오거나 내리려면 페이지를 새로고침하세요.",
+        "action": "새로고침"
+      },
+      "confirm": {
+        "title": "{{name}}을(를) 활성화할까요?",
+        "warningTitle": "코드 모듈이에요.",
+        "warning": "Auto Tournament 서버 안에서 데이터베이스, 파일, 시크릿에 대한 전체 권한으로 실행되고, 이 모듈이 그리는 페이지를 여는 모든 관리자와 플레이어의 브라우저에서도 그 사람의 권한으로 실행돼요. Auto Tournament는 코드 모듈을 검토하거나 격리하지 않아요. 이 플랫폼만큼 작성자를 믿을 수 있을 때만 활성화하세요.",
+        "source": "출처",
+        "onDisk": "이 서버의 디스크",
+        "version": "버전",
+        "clientApi": "클라이언트 API",
+        "serverApi": "서버 API",
+        "none": "선언 안 됨",
+        "typeId": "활성화하려면 {{id}}을(를) 입력하세요."
+      },
+      "failure": {
+        "badEntry": "코드가 {{prefix}}에서 제공되지 않아요",
+        "noClientApi": "클라이언트 API 범위를 선언하지 않았어요. 이 플랫폼은 {{platform}}을(를) 제공해요",
+        "badClientApi": "클라이언트 API 범위 “{{range}}”는 semver 범위가 아니에요",
+        "outOfRange": "클라이언트 API {{range}}용이에요. 이 플랫폼은 {{platform}}을(를) 제공해요",
+        "notFound": "코드가 없어요(HTTP 404)",
+        "httpError": "코드를 가져오지 못했어요(HTTP {{status}})",
+        "notJavaScript": "코드가 JavaScript가 아니라 {{contentType}}(으)로 제공돼요",
+        "importFailed": "코드를 불러오지 못했어요: {{error}}",
+        "timeout": "{{seconds}}초 안에 코드가 불러와지지 않았어요",
+        "sharedFailed": "플랫폼이 패키지를 공유하지 못했어요: {{error}}",
+        "badExport": "코드가 모듈 정의가 아니에요: {{detail}}",
+        "idMismatch": "코드상 이름은 “{{id}}”인데 “{{expected}}”(으)로 설치돼 있어요",
+        "idTaken": "“{{id}}”은(는) 이미 기본 제공 모듈이에요",
+        "render": "“{{slot}}” 슬롯을 그리는 중 실패했어요: {{error}}"
+      }
+    },
+    "signInNeed": {
+      "body": "{{game}} 플레이어는 {{provider}}(으)로 로그인하는데 {{provider}} 로그인이 꺼져 있어요. 게임에 필요한 계정을 연결할 수 없어요.",
+      "action": "켜기"
+    },
+    "addons": {
+      "title": "애드온",
+      "hint": "게임 외의 기능이에요. 켜고 끄면 바로 적용돼요.",
+      "open": "열기",
+      "toggle": "{{name}} 켜기/끄기",
+      "toggleFailed": "애드온을 바꾸지 못했어요.",
+      "startFailed": "켜졌지만 시작하지 않았어요: {{error}}",
+      "notFound": "그런 애드온은 없어요.",
+      "off": "이 애드온은 꺼져 있어요. 설정하려면 모듈에서 켜세요."
+    }
+  },
+  "catalog": {
+    "title": "게임",
+    "hint": "이 인스턴스가 실행하는 모든 게임과 추가할 수 있는 게임이에요. 게임 팩은 데이터이고, 코드 모듈은 Auto Tournament가 서명해요. 둘 다 클릭 한 번으로 설치되고 “이 이미지 안”으로 표시된 것은 네트워크가 필요 없어요.",
+    "search": "게임 검색",
+    "installedTitle": "설치됨({{count}})",
+    "availableTitle": "사용 가능({{count}})",
+    "empty": "일치하는 게임이 없어요.",
+    "allInstalled": "카탈로그의 모든 것이 설치돼 있어요.",
+    "noneInstalled": "아직 설치된 게임이 없어요. 토너먼트를 열고 싶은 게임을 설치하세요. 플레이어는 그 중에서 골라요.",
+    "loadFailed": "게임 카탈로그를 읽지 못했어요: {{reason}}",
+    "loadFailedFallback": "서버가 응답하지 않았어요",
+    "retry": "다시 시도",
+    "failed": "{{name}}: {{reason}}",
+    "failedFallback": "작업에 실패했어요",
+    "updateAll": {
+      "action": "모두 업데이트({{count}})",
+      "running": "업데이트 중…",
+      "done": "게임과 모듈 {{count}}개를 업데이트했어요",
+      "summary": "업데이트 {{updated}}, 건너뜀 {{skipped}}, 실패 {{failed}}.",
+      "failedItem": "{{name}}: {{reason}}",
+      "failedFallback": "모두 업데이트하지 못했어요"
+    },
+    "feed": {
+      "cache": "{{time}} 기준 카탈로그를 보여 주는 중: 온라인 카탈로그에 연결할 수 없었어요({{reason}}). 이 이미지 안의 게임은 네트워크 없이도 설치돼요.",
+      "none": "온라인 카탈로그에 연결할 수 없었어요({{reason}}). 이 이미지 안의 게임을 보여 주는 중이에요. 네트워크 없이 설치돼요.",
+      "unknown": "이유 없음",
+      "cacheRefreshing": "온라인 카탈로그를 불러오는 동안 {{time}} 기준 카탈로그를 보여 주고 있어요.",
+      "noneRefreshing": "온라인 카탈로그를 불러오는 중… 그동안 이 이미지 안의 게임을 보여 드려요. 네트워크 없이 설치돼요.",
+      "reason": {
+        "timeout": "제시간에 응답하지 않았어요",
+        "unreachable": "연결할 수 없었어요",
+        "bad_response": "응답이 카탈로그가 아니었어요",
+        "newer_schema": "더 새로운 Auto Tournament용이에요",
+        "too_large": "너무 커요",
+        "offline": "CATALOG_OFFLINE이 설정돼 있어요",
+        "http": "HTTP {{status}}(으)로 응답했어요"
+      }
+    },
+    "kind": {
+      "module": "코드 모듈"
+    },
+    "source": {
+      "snapshot": "이 이미지 안"
+    },
+    "state": {
+      "available": "사용 가능",
+      "installed": "설치됨",
+      "update-available": "업데이트 있음",
+      "disabled": "비활성",
+      "broken": "고장",
+      "incompatible": "호환 안 됨",
+      "builtin": "기본 제공",
+      "installing": "설치 중…",
+      "working": "작업 중…",
+      "restart": "재시작 필요"
+    },
+    "action": {
+      "install": "설치",
+      "update": "{{version}}(으)로 업데이트",
+      "enable": "활성화",
+      "disable": "비활성화",
+      "remove": "제거",
+      "uninstall": "제거"
+    },
+    "done": {
+      "installed": "{{name}}을(를) 설치했어요",
+      "updated": "{{name}}을(를) 업데이트했어요",
+      "enabled": "{{name}}을(를) 활성화했어요",
+      "disabled": "{{name}}을(를) 비활성화했어요",
+      "removed": "{{name}}을(를) 제거했어요"
+    },
+    "reload": {
+      "body": "{{names}}이(가) 실행 중이에요. 여기서 쓰려면 페이지를 새로고침하세요.",
+      "action": "새로고침"
+    },
+    "restart": "완료하려면 Auto Tournament를 재시작하세요: {{names}}.",
+    "restartNow": {
+      "action": "지금 재시작",
+      "restarting": "재시작 중…",
+      "failed": "재시작하지 못했어요",
+      "timeout": "Auto Tournament가 아직 돌아오지 않았어요. 컨테이너를 확인한 뒤 페이지를 새로고침하세요."
+    },
+    "confirmInstall": {
+      "title": "{{name}}을(를) 설치할까요?",
+      "body": "Auto Tournament가 서명한 코드 모듈이에요. 이 서버 안에서 데이터베이스와 파일에 접근할 수 있는 상태로 실행되고, 이 모듈이 그리는 페이지를 여는 모든 사람의 브라우저에서도 실행돼요.",
+      "version": "버전 {{version}}",
+      "from": "출처: {{source}}",
+      "fromRemote": "GitHub의 Auto Tournament",
+      "fromSnapshot": "이 이미지 안의 사본(네트워크 필요 없음)"
+    },
+    "confirmUninstall": {
+      "title": "{{name}}을(를) 제거할까요?",
+      "body": "파일이 삭제돼요. 데이터(토너먼트, 서버, 설정)는 남고, 다시 설치하면 돌아와요.",
+      "packBody": "게임이 설정 마법사에서 사라져요. 다른 것은 삭제되지 않고, 다시 설치하면 돌아와요."
+    },
+    "welcome": {
+      "title": "이 인스턴스의 게임",
+      "hint": "이 인스턴스를 운영하는 분이 제공할 게임을 골라요. 플레이어는 그 중에서 선택해요."
+    },
+    "signedBy": "{{label}} 서명(키 {{keyId}})"
+  },
+  "matchmaking": {
+    "play": {
+      "title": "플레이",
+      "subtitle": "5v5 경기를 찾으세요. 가장 오래 기다린 플레이어와 매칭되고, 파티는 항상 같은 팀에서 플레이해요.",
+      "unavailable": "이 사이트에서는 아직 매치메이킹이 열리지 않았어요.",
+      "findTitle": "경기 찾기",
+      "findHelp": "기다리는 동안 사이트를 둘러봐도 돼요. 경기가 잡히면 20초 안에 수락해야 해요.",
+      "searchingHelp": "찾는 중이에요. 아래 막대에 대기 시간이 표시돼요.",
+      "find": "경기 찾기",
+      "leaderStarts": "파티장이 검색을 시작해요.",
+      "cooldown": "경기를 거절했거나 놓쳤어요. {{minutes}}분 뒤에 다시 찾을 수 있어요.",
+      "rating_one": "레이팅 {{elo}} · {{count}}경기 · {{wins}}승",
+      "rating_other": "레이팅 {{elo}} · {{count}}경기 · {{wins}}승",
+      "mode": "모드",
+      "modeName": {
+        "5v5": "5v5",
+        "2v2": "2v2 윙맨",
+        "1v1": "1v1"
+      },
+      "inQueue_one": "대기열 {{count}}명",
+      "inQueue_other": "대기열 {{count}}명",
+      "partyTitle": "내 파티",
+      "invite": "초대",
+      "partyOf": "{{count}} / {{max}}",
+      "you": "나",
+      "selected": "선택됨",
+      "modeTitle": {
+        "5v5": "경쟁",
+        "2v2": "윙맨",
+        "1v1": "결투"
+      },
+      "lookingTitle": "플레이어 찾는 중",
+      "seats": "{{count}}명 검색 중 · 경기에 {{total}}명 필요",
+      "leaveQueue": "대기열 나가기",
+      "level": "내 레벨",
+      "xp": "{{into}} / {{next}} XP",
+      "ratingShort": "레이팅",
+      "recent": "최근",
+      "noRecent": "아직 경기가 없어요.",
+      "result": {
+        "win": "승",
+        "loss": "패",
+        "draw": "무"
+      },
+      "resultShort": {
+        "win": "W",
+        "loss": "L",
+        "draw": "D"
+      },
+      "backToMatch": "내 경기로 돌아가기",
+      "online_one": "{{count}}명 온라인",
+      "online_other": "{{count}}명 온라인",
+      "usuallyWait_one": "보통 약 {{count}}분",
+      "usuallyWait_other": "보통 약 {{count}}분",
+      "aboutWait_one": "약 {{count}}분",
+      "aboutWait_other": "약 {{count}}분",
+      "defaultPool": {
+        "5v5": "현역 맵",
+        "2v2": "윙맨 맵",
+        "1v1": "윙맨 맵"
+      },
+      "searchAnyone": "검색하는 플레이어가 적어요: 가능한 누구와든 매칭돼요({{count}}명 검색 중, {{total}}명 필요)",
+      "searchRating": "내 레이팅과 비슷한 상대를 찾는 중(±{{elo}}) · {{count}}명 검색 중",
+      "botFill": "빈자리를 봇으로 채우기",
+      "botFillUnrated": "빈자리는 봇이 채워요 · 비공식: 레이팅, XP, 드롭 없음",
+      "searchRatingPlain": "내 레이팅과 비슷한 상대를 찾는 중 · {{count}}명 검색 중",
+      "searchWidening": "검색 범위 넓히는 중: ±{{elo}} · {{count}}명 검색 중",
+      "searchAnyRating": "이제 모든 레이팅에서 찾는 중 · {{count}}명 검색 중",
+      "inTournament": "진행 중인 토너먼트({{tournament}})에 참가 중이라 지금은 매치메이킹 대기열에 들어갈 수 없어요.",
+      "partyInTournament": "진행 중인 토너먼트에 참가 중이라 파티가 지금 대기열에 들어갈 수 없어요: {{names}}.",
+      "inMatch_one": "경기 중 {{count}}명",
+      "inMatch_other": "경기 중 {{count}}명"
+    },
+    "queue": {
+      "searching": "{{mode}} 찾는 중",
+      "cancel": "검색 중지"
+    },
+    "found": {
+      "title": "경기를 찾았어요",
+      "accept": "수락",
+      "decline": "거절",
+      "waiting": "다른 플레이어를 기다리는 중",
+      "accepted": "{{accepted}} / {{total}} 수락",
+      "secondsLeft_one": "{{count}}초 남음",
+      "secondsLeft_other": "{{count}}초 남음",
+      "subtitle": "{{mode}} · {{seconds}}초 안에 수락하세요"
+    },
+    "party": {
+      "title": "파티",
+      "help": "친구와 플레이하세요: 파티를 만들고 링크를 보내세요. 최대 5명, 항상 같은 팀이에요.",
+      "create": "파티 만들기",
+      "members_one": "파티에 {{count}}명",
+      "members_other": "파티에 {{count}}명",
+      "inviteLink": "초대 링크",
+      "copy": "복사",
+      "copied": "초대 링크를 복사했어요",
+      "code": "초대 코드",
+      "join": "참가",
+      "joined": "파티에 참가했어요",
+      "leave": "파티 나가기",
+      "disband": "파티 해산"
+    },
+    "room": {
+      "title": "경기 방",
+      "missing": "이 경기가 없거나 참가하지 않은 경기예요.",
+      "back": "플레이로 돌아가기",
+      "team": "{{n}}팀",
+      "status": {
+        "accepting": "수락 대기 중",
+        "ready": "모두 수락함",
+        "cancelled": "취소됨"
+      },
+      "match": {
+        "pending": "맵 밴: 한 맵이 남을 때까지 차례로 맵을 밴해요. 팀원 누구나 클릭할 수 있고, 먼저 클릭한 것이 적용돼요.",
+        "ready": "빈 서버를 기다리는 중이에요.",
+        "loaded": "서버가 준비됐어요. 참가하세요.",
+        "live": "경기가 라이브예요.",
+        "completed": "경기가 끝났어요.",
+        "other": "경기: {{status}}"
+      },
+      "pickedBy": "{{mode}} · 맵 룰렛이 골랐어요",
+      "pickedByVeto": "{{mode}} · 밴/픽에서 골랐어요",
+      "vs": "vs",
+      "you": "(나)",
+      "accepted": "수락함",
+      "matchChat": "경기 채팅",
+      "playAgain": "다시 플레이",
+      "fullScoreboard": "전체 점수표",
+      "newSkin": "새 스킨",
+      "inventory": "인벤토리",
+      "victory": "승리",
+      "defeat": "패배",
+      "draw": "무승부",
+      "inServer": "서버에 {{n}} / {{total}}명",
+      "warmupRule": "{{total}}명이 모두 들어올 때까지 워밍업이 계속돼요.",
+      "warmupRuleTimed": "{{total}}명이 모두 들어오거나 {{minutes}}분이 지날 때까지 워밍업이 계속돼요. 그 뒤에는 있는 사람으로 시작해요.",
+      "teamLetter": "{{letter}}팀",
+      "sideFirst": "{{side}} 먼저",
+      "presence": {
+        "in": "서버에 있음",
+        "notYet": "아직 안 들어옴"
+      },
+      "equip": "장착",
+      "equipped": "장착됨",
+      "equipFailed": "장착하지 못했어요",
+      "rematch": {
+        "title": "재경기?",
+        "ask": "같은 팀으로 새 경기를 해요. 내 답은 파티 전체에 적용돼요. 팀 대부분이 찬성하면 상대 팀에게 수락할 시간 30초가 주어져요.",
+        "yes": "네, 재경기",
+        "no": "괜찮아요",
+        "button": "재경기",
+        "offerTitle": "상대 팀이 재경기를 원해요",
+        "teamTitle": "우리 팀이 재경기를 원해요",
+        "offerBody": "같은 팀으로 새 경기를 해요. 팀 대부분이 찬성해야 해요. 내 답은 파티 전체에 적용돼요.",
+        "waitingOther": "상대 팀을 기다리는 중… {{s}}초",
+        "waitingTeam": "우리 팀을 기다리는 중… {{s}}초",
+        "accepted": "재경기가 수락됐어요. 새 경기를 여는 중…",
+        "refused": "재경기가 거절됐어요."
+      }
+    },
+    "result": {
+      "title": "결과",
+      "map": "{{n}}번째 맵",
+      "rating": "레이팅",
+      "xp": "+{{xp}} XP · 레벨 {{level}}",
+      "levelProgress": "다음 레벨까지 {{into}} / {{next}} XP",
+      "xpReason": {
+        "completed": "플레이",
+        "win": "승리",
+        "draw": "무승부",
+        "performance": "활약",
+        "first_win": "오늘 첫 승리",
+        "admin": "관리자"
+      },
+      "player": "플레이어",
+      "commend": "평가",
+      "thumbsUp": "좋아요",
+      "thumbsDown": "싫어요",
+      "thumbsUpFor": "{{name}}에게 좋아요",
+      "thumbsDownFor": "{{name}}에게 싫어요",
+      "downReason": "이유는요?",
+      "downTag": {
+        "toxic": "비매너",
+        "griefing": "트롤링",
+        "afk": "잠수 또는 이탈",
+        "other": "기타"
+      },
+      "commendFailed": "저장하지 못했어요",
+      "outcome": {
+        "win": "승리",
+        "loss": "패배",
+        "draw": "무승부"
+      },
+      "minutes_one": "{{count}}분",
+      "minutes_other": "{{count}}분",
+      "yourGame": "내 경기",
+      "fullBoard": "전체 점수표",
+      "hideBoard": "점수표 숨기기"
+    },
+    "profile": {
+      "level": "레벨 {{level}}",
+      "xp": "{{xp}} XP",
+      "thumbsUp_one": "좋아요 {{count}}개",
+      "thumbsUp_other": "좋아요 {{count}}개",
+      "thumbsDown_one": "싫어요 {{count}}개",
+      "thumbsDown_other": "싫어요 {{count}}개",
+      "tag": {
+        "friendly": "친절함",
+        "team_player": "팀플레이",
+        "leader": "리더",
+        "good_comms": "소통 잘함",
+        "teacher": "선생님",
+        "good_sport": "좋은 매너",
+        "toxic": "비매너",
+        "griefing": "트롤링",
+        "unhelpful": "도움 안 됨",
+        "bad_sport": "나쁜 매너",
+        "afk": "잠수 또는 이탈",
+        "other": "기타"
+      },
+      "negativesPrivate": "나와 관리자만 볼 수 있어요.",
+      "history": "매치메이킹 경기",
+      "historyEmpty": "아직 매치메이킹 경기가 없어요.",
+      "win": "승",
+      "loss": "패",
+      "draw": "무",
+      "positivePercent": "긍정 {{percent}}%"
+    },
+    "leaderboard": {
+      "toLadder": "매치메이킹 래더 →",
+      "title": "리더보드",
+      "subtitle_one": "최근 30일 동안 {{count}}경기 이상 한 플레이어예요.",
+      "subtitle_other": "최근 30일 동안 {{count}}경기 이상 한 플레이어예요.",
+      "empty_one": "아직 아무도 없어요. 30일 안에 {{count}}경기를 하면 여기에 표시돼요.",
+      "empty_other": "아직 아무도 없어요. 30일 안에 {{count}}경기를 하면 여기에 표시돼요.",
+      "level": "레벨",
+      "games": "경기",
+      "winRate": "승률"
+    },
+    "admin": {
+      "title": "대기열(관리자)",
+      "summary": "{{players}}명 검색 중, 열린 경기 {{lobbies}}개",
+      "waited": "{{minutes}}분",
+      "cooldowns": "쿨다운",
+      "until": "{{minutes}}분 남음",
+      "clear": "해제",
+      "cleared": "쿨다운을 해제했어요",
+      "clearFailed": "쿨다운을 해제하지 못했어요",
+      "kind": {
+        "decline": "거절함",
+        "no_show": "경기를 놓침",
+        "abandon": "경기에서 나감"
+      },
+      "review": "살펴볼 플레이어(싫어요)",
+      "voters_one": "투표자 {{count}}명",
+      "voters_other": "투표자 {{count}}명"
+    },
+    "roulette": {
+      "rolling": "맵 고르는 중…",
+      "picked": "맵: {{map}}"
+    }
+  },
+  "chat": {
+    "title": "채팅",
+    "close": "채팅 닫기",
+    "tabsLabel": "채팅",
+    "tabMatch": "경기",
+    "tabTeam": "팀",
+    "tabParty": "파티",
+    "tabDm": "개인 메시지",
+    "dmWho": "두 사람만 읽을 수 있어요",
+    "placeholderDm": "{{name}}에게 메시지",
+    "friends": "친구",
+    "messageFriend": "{{name}}에게 메시지",
+    "matchWho": "우리 팀, {{title}}, 관리자",
+    "matchWhoAdmin": "양 팀과 관리자",
+    "teamWho": "{{team}} 전원",
+    "partyWho": "파티 전원",
+    "placeholderMatch": "양 팀과 관리자에게 메시지",
+    "placeholderTeam": "우리 팀에게 메시지",
+    "placeholderParty": "파티에게 메시지",
+    "send": "보내기",
+    "you": "나",
+    "adminBadge": "관리자",
+    "callAdmin": "관리자 호출",
+    "adminCallOpen": "여기에 관리자 호출이 열려 있어요",
+    "callAdminConfirmTitle": "관리자를 호출할까요?",
+    "callAdminConfirmBody": "관리자가 알림을 받고 이 채팅에 들어와요. 경기에 도움이 필요할 때만 호출하세요.",
+    "adminCalled": "관리자를 호출했어요",
+    "callFailed": "관리자를 호출하지 못했어요",
+    "sendFailed": "메시지를 보내지 못했어요",
+    "logLabel": "채팅: {{title}}",
+    "none": "아직 채팅이 없어요. 경기, 팀, 파티 채팅이 여기에 표시돼요.",
+    "empty": "아직 메시지가 없어요. 인사해 보세요.",
+    "loading": "메시지 불러오는 중",
+    "readOnlyImpersonating": "다른 플레이어로 보고 있어요. 글을 쓰려면 대리 보기를 끝내세요.",
+    "peekMatch": "경기 · {{title}}",
+    "peekTeam": "팀",
+    "peekParty": "파티",
+    "buttonUnread": "채팅, 읽지 않음 {{count}}개",
+    "system": {
+      "vetoStarted": "밴/픽 시작 · {{team}} 먼저",
+      "vetoBan": "{{team}}이(가) {{map}}을(를) 밴했어요",
+      "vetoReset": "관리자가 밴/픽을 다시 시작했어요",
+      "vetoPick": "{{team}}이(가) {{map}}을(를) 픽했어요",
+      "vetoSide": "{{team}}이(가) {{map}}에서 {{side}}(으)로 시작해요",
+      "vetoDone": "밴/픽 완료 · {{maps}}",
+      "serverReady": "서버 준비 · {{map}} · 경기 페이지에서 참가하세요",
+      "playerJoined": "{{name}}이(가) 서버에 들어왔어요 · {{n}}명 접속",
+      "playerLeft": "{{name}}이(가) 서버에서 나갔어요 · {{n}}명 접속",
+      "mapLive": "{{n}}번째 맵 라이브 · {{map}}",
+      "mapResult": "{{n}}번째 맵 · {{map}} · {{team1}} {{s1}}–{{s2}} {{team2}}",
+      "seriesWon": "{{team}}이(가) 시리즈 승리 {{a}}–{{b}}",
+      "adminCalled": "{{name}}이(가) 관리자를 호출했어요",
+      "adminClaimed": "{{name}}이(가) 관리자 호출을 맡았어요",
+      "adminResolved": "{{name}}이(가) 관리자 호출을 해결했어요",
+      "timedOut": "시간 초과",
+      "remindAccount": "{{name}}: {{tournament}}에서 플레이하려면 Steam으로 한 번 로그인하세요.",
+      "remindGame": "{{name}}: {{tournament}} 체크인 전에 프로필(플레이하는 게임)에 게임을 추가하세요.",
+      "serverDown": "경기 서버가 멈췄어요. 다시 살리는 중…",
+      "serverBack": "경기가 돌아왔어요: {{map}} 맵, {{round}}라운드. 다시 접속하세요."
+    },
+    "party": {
+      "inviteCopied": "초대 링크를 복사했어요",
+      "inviteFailed": "링크를 복사하지 못했어요",
+      "leader": "파티장",
+      "invite": "초대",
+      "queue": "함께 대기열 들어가기",
+      "leaveQueue": "대기열 나가기",
+      "searching": "경기 찾는 중",
+      "leaderQueues": "파티장이 검색을 시작해요"
+    },
+    "back": "뒤로",
+    "typing": {
+      "one": "{{name}}님이 입력 중…",
+      "two": "{{first}}님과 {{second}}님이 입력 중…",
+      "many": "{{count}}명이 입력 중…"
+    },
+    "emoji": {
+      "open": "이모지",
+      "title": "이모지 고르기",
+      "search": "이모지 검색",
+      "none": "이모지를 찾지 못했어요",
+      "categories": {
+        "results": "결과",
+        "recent": "최근",
+        "smileys": "표정",
+        "gestures": "손",
+        "people": "사람",
+        "animals": "자연",
+        "food": "음식과 음료",
+        "activity": "게임과 스포츠",
+        "travel": "장소",
+        "objects": "사물",
+        "symbols": "기호"
+      }
+    }
+  },
+  "search": {
+    "open": "검색",
+    "placeholder": "페이지, 플레이어, 팀, 하이라이트 검색…",
+    "placeholderAdmin": "페이지, 설정, 플레이어, 팀, 서버 검색…",
+    "hint": "두 글자 이상 입력하세요. 어디서든 Ctrl K(⌘ K)나 /로 열 수 있어요.",
+    "none": "“{{q}}”에 대한 결과가 없어요.",
+    "versus": "{{team1}} vs {{team2}}",
+    "groups": {
+      "pages": "페이지와 설정",
+      "players": "플레이어",
+      "teams": "팀",
+      "tournaments": "토너먼트",
+      "matches": "경기",
+      "highlights": "하이라이트",
+      "maps": "맵",
+      "servers": "서버와 머신",
+      "recorders": "녹화기"
+    },
+    "status": {
+      "setup": "설정 중",
+      "in_progress": "진행 중",
+      "completed": "종료"
+    },
+    "pages": {
+      "manage": "관리",
+      "tournaments": "토너먼트",
+      "newTournament": "토너먼트 설정",
+      "playedMatches": "모든 경기",
+      "importMatch": "경기 가져오기",
+      "teams": "팀",
+      "players": "플레이어",
+      "reports": "신고",
+      "templates": "템플릿",
+      "ratings": "레이팅",
+      "modules": "모듈",
+      "servers": "서버",
+      "maps": "맵과 맵 풀",
+      "skins": "스킨",
+      "matchRules": "경기 규칙",
+      "highlights": "하이라이트",
+      "adminTools": "시스템",
+      "settings": "설정",
+      "settingsSite": "설정: 사이트와 이메일",
+      "settingsSignIn": "설정: 로그인 제공자",
+      "settingsPlayers": "설정: 플레이어와 접근 권한",
+      "settingsWebhooks": "설정: 웹훅",
+      "settingsLicense": "라이선스",
+      "settingsMatchmaking": "설정: 매치메이킹",
+      "settingsAdvanced": "설정: 고급",
+      "liveMatches": "라이브 경기"
+    },
+    "clips_one": "클립 {{count}}개",
+    "clips_other": "클립 {{count}}개",
+    "fieldLabel": "검색"
+  },
+  "highlightsPage": {
+    "recorderStats": "익명 벤치마크 결과 보내기",
+    "recorderStatsHint": "벤치마크가 끝나면 녹화기가 GPU와 CPU 모델, 버전, 소요 시간을 웹사이트로 보내요. 무엇이 얼마나 빨리 렌더링하는지 보여 주는 공개 표에 쓰여요. 경기나 플레이어에 관한 정보는 보내지 않아요. 이 옵션을 꺼도 녹화는 똑같이 돼요.",
+    "title": "하이라이트",
+    "subtitle": "모든 경기의 하이라이트 클립과 하이라이트 영상이에요: 녹화기가 만드는 것, 하이라이트 영상의 음악, 게임별 녹화기.",
+    "tabs": {
+      "settings": "설정"
+    },
+    "perPlayer": {
+      "label": "맵당 플레이어별 클립 수",
+      "helper": "1~6. 클립이 많을수록 경기 하이라이트가 완성되는 데 오래 걸려요."
+    },
+    "preset": {
+      "label": "영상 화질",
+      "smooth": "부드럽게(추천): 최대 1080p, 240fps",
+      "crisp": "선명하게: 최대 1440p, 120fps",
+      "lan": "LAN, 최대: 최대 4K, 240fps",
+      "custom": "사용자 지정",
+      "light": "가볍게: 720p, 60fps만"
+    },
+    "bitrate": {
+      "label": "비트레이트",
+      "auto": "자동(추천)",
+      "option": "{{mbps}}Mbit/s"
+    },
+    "resolution": {
+      "label": "최고 해상도"
+    },
+    "fps": {
+      "label": "최고 프레임 레이트",
+      "option": "{{fps}}fps"
+    },
+    "quality": {
+      "helper": "녹화기는 각 클립과 하이라이트 영상을 최고 화질로 한 번만 만들고, 낮은 화질은 거기서 잘라 내요. 슬로 모션은 어떤 프레임 레이트에서도 부드러워요. 이미 만든 클립은 다시 만들기 전까지 원래 화질을 유지해요."
+    },
+    "music": {
+      "label": "하이라이트 영상 음악",
+      "all": "모든 트랙({{count}})",
+      "pick": "내가 고른 것만",
+      "off": "음악 없음",
+      "listen": "{{title}} 듣기",
+      "stop": "{{title}} 정지",
+      "contentId": "YouTube Content ID",
+      "volume": "볼륨",
+      "byo": "직접 음악을 가져오세요: 사용할 권리가 있는 트랙을 추가하세요. Auto Tournament에는 음악이 들어 있지 않아요. 플레이어는 하이라이트 영상마다 다른 트랙을 함께 틀어 주고, 다운로드는 음악을 넣거나 빼고 받을 수 있어요.",
+      "remove": "{{title}} 제거",
+      "removeConfirm": "제거",
+      "keep": "유지",
+      "addTitle": "트랙 추가",
+      "chooseFile": "파일 고르기",
+      "noFile": "선택한 파일 없음(MP3, M4A, WAV…)",
+      "trackTitle": "제목",
+      "artist": "아티스트",
+      "genre": "장르(메뉴를 묶어요)",
+      "source": "출처(크레딧용 링크)",
+      "contentIdLabel": "YouTube Content ID에 등록됨(이 트랙이 들어간 업로드는 저작권 주장을 받을 수 있어요)",
+      "add": "트랙 추가",
+      "adding": "추가 중…",
+      "rights": "영상에 사용할 권리가 있는 음악만 추가하세요. 음량은 다른 트랙과 맞춰져요.",
+      "suggestions_one": "하이라이트 영상에 어울리는 Pixabay 트랙 {{count}}개",
+      "suggestions_other": "하이라이트 영상에 어울리는 Pixabay 트랙 {{count}}개",
+      "suggestionsHelp": "하나를 열어 라이선스에 따라 Pixabay에서 내려받은 뒤 여기에 추가하세요. 라이선스는 영상에 쓰는 것을 허락하지만, 파일을 다른 사람에게 넘기는 것은 허락하지 않아요.",
+      "link": "또는 오디오 파일 링크",
+      "addLink": "링크로 추가"
+    },
+    "overlay": {
+      "label": "오버레이",
+      "helper_one": "클립 {{count}}개에 깨끗한 사본이 있어요. 다시 그리기를 하면 현재 캡션 카드, 킬 피드, 이름을 다시 입힌 뒤 하이라이트 영상을 다시 만들어요. CS2가 필요 없어요.",
+      "helper_other": "클립 {{count}}개에 깨끗한 사본이 있어요. 다시 그리기를 하면 현재 캡션 카드, 킬 피드, 이름을 다시 입힌 뒤 하이라이트 영상을 다시 만들어요. CS2가 필요 없어요.",
+      "redraw": "오버레이 다시 그리기",
+      "pending_one": "녹화기를 기다리는 영상 {{count}}개",
+      "pending_other": "녹화기를 기다리는 영상 {{count}}개",
+      "failed_one": "다시 그리지 못한 영상 {{count}}개",
+      "failed_other": "다시 그리지 못한 영상 {{count}}개",
+      "keepClean": "클립의 깨끗한 사본 보관",
+      "keepCleanHelper": "각 클립을 카드나 킬 피드 없이 녹화된 그대로도 저장해요. 그러면 하이라이트 영상은 깨끗한 클립에 자체 오버레이를 입혀 만들고, 오버레이를 다시 그릴 수 있어요. 끄면 저장 공간을 절반쯤 써요.",
+      "redrawFailed": "다시 그리기를 대기열에 넣지 못했어요."
+    },
+    "moved": "하이라이트 설정, 녹화기, 녹화기 추가 방법은 이제 별도 페이지에 있어요:",
+    "saved": "저장했어요",
+    "saveFailed": "저장하지 못했어요",
+    "reels": {
+      "title": "하이라이트 영상 크기",
+      "description": "하이라이트 영상마다 들어가는 클립 수예요. 클립이 많을수록 영상이 길어지고 만드는 데 오래 걸려요.",
+      "funnyPerPlayer": "맵당 플레이어별 웃긴 클립 수",
+      "mapReelPerPlayer": "맵 하이라이트 영상의 플레이어별 클립 수",
+      "seriesReelMax": "시리즈 하이라이트 영상의 클립 수",
+      "seriesReelPerPlayer": "시리즈 하이라이트 영상의 플레이어별 클립 수",
+      "teamReelPerPlayer": "팀 하이라이트 영상의 플레이어별 클립 수",
+      "tournamentReelMax": "토너먼트 하이라이트 영상의 클립 수",
+      "tournamentReelPerPlayer": "토너먼트 하이라이트 영상의 플레이어별 클립 수",
+      "range": "{{min}}~{{max}}"
+    },
+    "minResolution": {
+      "label": "최저 해상도"
+    },
+    "ladder": {
+      "title": "시청자가 고를 수 있는 화질",
+      "recordedAt": "{{quality}}(으)로 녹화",
+      "highest": "최고",
+      "lowest": "휴대폰, 느린 연결",
+      "rate": "≈{{mbps}}Mbit/s"
+    },
+    "cost": {
+      "single": "녹화 시간은 1080p 120fps의 약 {{time}}배예요. 추정치예요.",
+      "withCuts": "녹화 시간은 1080p 120fps의 약 {{time}}배이고, 모든 화질을 보관해서 공간은 약 {{storage}}배를 써요. 추정치예요."
+    },
+    "keepMasters": {
+      "label": "최고 화질 보관",
+      "always": "항상",
+      "30": "30일 동안",
+      "7": "7일 동안",
+      "reels": "하이라이트 영상을 만들 때까지",
+      "helper": "그 뒤에는 다음 화질이 그 자리를 대신하고 깨끗한 사본은 삭제돼요. 공간을 대부분 아낄 수 있어요. 최고 화질이 없는 영상은 오버레이를 다시 그리거나 그 화질로 새 하이라이트 영상에 넣을 수 없어서, 다시 녹화해야 해요."
+    },
+    "matchmaking": {
+      "minimumTitle": "어떤 플레이를 클립으로 만들지",
+      "minimumDescription": "모든 경기에 적용돼요. 매치메이킹은 아래에서 정한 대로 가장 좋은 몇 개만 남겨요.",
+      "title": "매치메이킹 하이라이트",
+      "description": "매치메이킹은 경기가 많아요. 경기마다 가장 좋은 몇 개만 남겨서 녹화기가 하루 종일 바쁘지 않게 하세요.",
+      "on": "매치메이킹 하이라이트 녹화",
+      "onHelp": "끄면 매치메이킹 경기에는 클립이나 하이라이트 영상이 없어요.",
+      "clips": "경기당 클립 수",
+      "clipsHelp": "가장 좋은 플레이부터예요. 플레이어 하이라이트 영상도 같은 클립으로 만들어요.",
+      "all": "전부",
+      "minKills": "남길 최소 플레이",
+      "minKillsHelp": "이보다 작은 플레이는 자리가 있어도 클립이 되지 않아요.",
+      "kills": {
+        "2": "2킬",
+        "3": "3킬",
+        "4": "4킬",
+        "5": "에이스"
+      },
+      "killsInline": {
+        "2": "2킬",
+        "3": "3킬",
+        "4": "4킬",
+        "5": "에이스"
+      },
+      "clutch": "클러치는 항상 포함",
+      "clutchHelp": "이긴 1vX는 최소 플레이보다 킬이 적어도 포함돼요.",
+      "summary": "매치메이킹 경기마다 {{kills}} 이상인 플레이 중 {{clips}}이(가) 클립이 돼요.",
+      "summaryClutch": "매치메이킹 경기마다 {{kills}} 이상인 플레이 중 {{clips}}과(와) 모든 클러치가 클립이 돼요.",
+      "summaryEvery": "모든 플레이",
+      "summaryBest_one": "가장 좋은 플레이 1개",
+      "summaryBest_other": "가장 좋은 플레이 {{count}}개"
+    }
+  },
+  "update": {
+    "available": "Auto Tournament {{latest}}이(가) 나왔어요(현재 {{running}}).",
+    "notes": "새로운 기능",
+    "module": "{{name}} {{version}}을(를) 쓸 수 있어요(현재 {{installed}}).",
+    "moduleProblem": "{{name}}: 업데이트가 적용되지 않았어요. {{problem}}",
+    "openModules": "모듈"
+  },
+  "licenseGate": {
+    "expiredTitle": "이 플랫폼의 라이선스가 만료됐어요",
+    "expiredAdmin": "라이선스 결제가 연체되어 플랫폼이 멈췄어요. 결제하면 바로 다시 켜져요. 데이터는 안전해요.",
+    "expiredPlayer": "경기와 참가 신청이 일시정지됐어요. 주최자에게 알렸어요. 나중에 다시 확인하세요.",
+    "pay": "콘솔에서 결제 ↗",
+    "settings": "라이선스 설정",
+    "fix": "해결하기 ↗",
+    "pastDue": "라이선스 결제에 실패했어요. 결제하지 않으면 {{date}}에 플랫폼이 멈춰요.",
+    "elsewhereTitle": "이 라이선스 키는 다른 설치에서 사용 중이에요",
+    "elsewhereAdmin": "라이선스 키 하나는 Auto Tournament 설치 하나에서만 작동하는데, 다른 설치가 이 키를 쓰고 있어요. 이 설치 전용 키를 붙여 넣거나 콘솔에서 “다른 설치로 옮기기”를 쓰세요. 데이터는 안전해요.",
+    "replacedTitle": "이 라이선스 키는 교체됐어요",
+    "replacedAdmin": "콘솔에서 이 라이선스의 새 키를 만들어서 이전 키는 멈췄어요. 라이선스 설정에 새 키를 붙여 넣으세요. 데이터는 안전해요.",
+    "openConsole": "콘솔 열기 ↗",
+    "pasteKey": "새 키 붙여 넣기",
+    "replacedSoon": "콘솔에서 이 라이선스의 새 키를 만들었어요. 라이선스 설정에 붙여 넣으세요. 이 키는 {{date}}에 멈춰요."
+  },
+  "matchAdmin": {
+    "openChat": "채팅 열기",
+    "resetVeto": "밴/픽 다시 시작",
+    "resetVetoTitle": "밴/픽을 다시 시작할까요?",
+    "resetVetoBody": "지금까지의 모든 밴, 픽, 진영 선택이 지워지고 팀들이 밴/픽을 처음부터 다시 해요. 양 팀 모두 경기 채팅에서 볼 수 있어요.",
+    "vetoReset": "밴/픽을 처음부터 다시 해요",
+    "vetoResetFailed": "밴/픽을 다시 시작하지 못했어요"
+  },
+  "addressMismatch": {
+    "open": "{{host}} 열기",
+    "text": "지금 {{current}}에 있지만 이 사이트는 {{host}}용으로 설정돼 있어요. Steam 로그인, 이메일, 게임 서버가 그 주소를 써요."
+  },
+  "siteFooter": {
+    "support": "프로젝트 후원하기",
+    "trademarks": "Counter-Strike, CS2, Steam은 Valve Corporation의 상표예요. 다른 게임 이름은 각 소유자의 상표예요. Auto Tournament는 Valve나 어떤 게임 퍼블리셔와도 제휴하거나 보증받지 않았어요."
+  },
+  "discordNotice": {
+    "link": "Discord 계정을 연결하면 봇이 팀 음성 채널로 옮겨 주고 팀 채널에서 찾을 수 있어요.",
+    "linkAction": "Discord 연결",
+    "join": "Discord 서버에 들어오세요. 팀 채널과 경기 카드가 거기에 있어요.",
+    "joinAction": "서버 참가"
+  }
+}

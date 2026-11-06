@@ -1,0 +1,201 @@
+{
+  "templatesPage": {
+    "header": {
+      "createFromTournament": "토너먼트에서 템플릿 만들기"
+    },
+    "errors": {
+      "load": "템플릿을 불러오지 못했어요"
+    },
+    "delete": {
+      "title": "템플릿 삭제",
+      "message": "\"{{name}}\" 템플릿을 삭제할까요? 되돌릴 수 없어요.",
+      "success": "\"{{name}}\" 템플릿을 삭제했어요",
+      "error": "템플릿을 삭제하지 못했어요"
+    },
+    "update": {
+      "success": "\"{{name}}\" 템플릿을 업데이트했어요",
+      "error": "템플릿을 업데이트하지 못했어요"
+    },
+    "createFromTemplate": {
+      "errors": {
+        "inProgressOrCompleted": "토너먼트가 진행 중이거나 완료된 상태에서는 템플릿으로 토너먼트를 만들 수 없어요. 먼저 현재 토너먼트를 삭제하거나 초기화하세요.",
+        "alreadyExists": "이미 토너먼트가 있어요. 템플릿으로 새로 만들기 전에 현재 토너먼트를 삭제하거나 초기화하세요."
+      },
+      "button": "템플릿으로 토너먼트 만들기"
+    },
+    "edit": {
+      "title": "템플릿 편집",
+      "nameLabel": "템플릿 이름",
+      "descriptionLabel": "설명(선택)",
+      "typeLabel": "토너먼트 유형",
+      "formatLabel": "경기 형식",
+      "mapPool": {
+        "title": "맵 풀",
+        "selectLabel": "맵 풀 선택",
+        "customOption": "사용자 지정",
+        "selectedLabel": "선택한 맵({{count}}):",
+        "vetoWarning": "밴/픽 형식(BO1/BO3/BO5)은 정확히 7개의 맵이 필요해요. 현재 선택: {{count}}",
+        "chooseMaps": "맵 선택..."
+      },
+      "save": "저장"
+    },
+    "emptyTitle": "아직 템플릿이 없어요",
+    "emptyDescription": "토너먼트 페이지에서 토너먼트 설정을 템플릿으로 저장한 뒤, 여기서 새 토너먼트를 시작하세요."
+  },
+  "saveTemplateModal": {
+    "title": "템플릿으로 저장",
+    "nameLabel": "템플릿 이름",
+    "namePlaceholder": "8팀 싱글 엘리미네이션 BO3",
+    "descriptionLabel": "설명(선택)",
+    "descriptionPlaceholder": "매주 열리는 8팀 싱글 엘리미네이션 토너먼트",
+    "saveButton": "템플릿 저장",
+    "errors": {
+      "nameRequired": "템플릿 이름은 필수예요",
+      "saveFailed": "템플릿을 저장하지 못했어요"
+    }
+  },
+  "eloTemplatesPage": {
+    "errors": {
+      "load": "레이팅 템플릿을 불러오지 못했어요"
+    },
+    "header": {
+      "createTemplate": "템플릿 만들기",
+      "importJson": "JSON에서 가져오기"
+    },
+    "empty": {
+      "title": "레이팅 템플릿이 없어요",
+      "description": "플레이어 통계가 ELO 변동에 어떻게 반영될지 정하는 첫 템플릿을 만드세요",
+      "action": "템플릿 만들기"
+    },
+    "delete": {
+      "title": "레이팅 템플릿 삭제",
+      "message": "\"{{name}}\"을(를) 삭제할까요? 되돌릴 수 없어요.",
+      "success": "\"{{name}}\" 템플릿을 삭제했어요",
+      "error": "템플릿을 삭제하지 못했어요",
+      "defaultProtected": "기본 \"pure-win-loss\" 템플릿은 삭제할 수 없어요."
+    },
+    "import": {
+      "success_one": "레이팅 템플릿 {{count}}개를 가져왔어요",
+      "success_other": "레이팅 템플릿 {{count}}개를 가져왔어요"
+    },
+    "weights": {
+      "noAdjustmentsPure": "통계 보정 없음(승패만)"
+    },
+    "card": {
+      "enabled": "활성",
+      "disabled": "비활성",
+      "default": "기본",
+      "adjustment": {
+        "none": "경기당 통계 보정: 없음(0, 결과만 반영하는 ELO)",
+        "uncapped": "경기당 통계 보정: 제한 없음(주의해서 사용)",
+        "range": "경기당 통계 보정 범위: {{min}}~{{max}} ELO",
+        "noMin": "최소 없음",
+        "noMax": "최대 없음"
+      },
+      "tooltips": {
+        "edit": "템플릿 편집",
+        "delete": "템플릿 삭제"
+      },
+      "weightsTitle": "통계 가중치:",
+      "limitsTitle": "보정 한도:",
+      "minAdjustment": "최소: {{value}}",
+      "maxAdjustment": "최대: {{value}}"
+    },
+    "importModal": {
+      "title": "JSON에서 레이팅 템플릿 가져오기",
+      "introTitle": "레이팅 템플릿 정의가 담긴 JSON을 아래에 붙여 넣으세요.",
+      "introBody": "예상 형식: name, 선택 사항인 description, enabled, weights, maxAdjustment, minAdjustment를 가진 템플릿 배열. id를 생략하면 name으로 만들어요.",
+      "jsonLabel": "JSON 데이터",
+      "validJsonTitle": "✓ 올바른 JSON이에요!",
+      "previewTitle": "미리보기:",
+      "previewButton": "미리보기",
+      "importButton": "템플릿 가져오기",
+      "validJsonBody_one": "템플릿 {{count}}개를 찾았어요.",
+      "validJsonBody_other": "템플릿 {{count}}개를 찾았어요."
+    },
+    "editor": {
+      "titleEdit": "레이팅 템플릿 편집",
+      "titleCreate": "레이팅 템플릿 만들기",
+      "info": "개별 플레이어 통계가 ELO 변동에 어떻게 반영될지 설정해요. 가중치는 OpenSkill이 기본 ELO 변동(승패)을 계산한 뒤 적용돼요. 양수 가중치는 ELO를 올리고, 음수 가중치는 내려요.",
+      "nameLabel": "템플릿 이름",
+      "nameDefaultLocked": "기본 템플릿의 이름은 바꿀 수 없어요",
+      "descriptionLabel": "설명",
+      "descriptionPlaceholder": "이 템플릿의 용도에 대한 설명(선택)",
+      "enabledLabel": "활성",
+      "weights": {
+        "title": "통계 가중치",
+        "subtitle": "통계별로 슬라이더를 조정하세요. 0은 그 통계로 보정하지 않는다는 뜻이에요."
+      },
+      "limits": {
+        "title": "보정 한도(선택)",
+        "subtitle": "극단적인 변동을 막기 위해 경기당 ELO 보정의 최대값과 최소값을 정해요.",
+        "maxLabel": "최대 보정",
+        "maxHelper": "경기당 최대 양의 ELO 보정",
+        "minLabel": "최소 보정",
+        "minHelper": "경기당 최대 음의 ELO 보정"
+      },
+      "errors": {
+        "nameRequired": "템플릿 이름은 필수예요"
+      },
+      "create": {
+        "success": "\"{{name}}\" 템플릿을 만들었어요",
+        "error": "템플릿을 만들지 못했어요"
+      },
+      "update": {
+        "success": "\"{{name}}\" 템플릿을 업데이트했어요",
+        "error": "템플릿을 업데이트하지 못했어요"
+      },
+      "buttons": {
+        "saving": "저장 중...",
+        "update": "업데이트",
+        "create": "만들기"
+      }
+    },
+    "stats": {
+      "kills": {
+        "label": "킬",
+        "description": "경기당 킬 수"
+      },
+      "deaths": {
+        "label": "데스",
+        "description": "경기당 데스 수(보통 음의 가중치)"
+      },
+      "assists": {
+        "label": "어시스트",
+        "description": "경기당 어시스트 수"
+      },
+      "flashAssists": {
+        "label": "섬광 어시스트",
+        "description": "경기당 섬광 어시스트 수"
+      },
+      "headshotKills": {
+        "label": "헤드샷 킬",
+        "description": "경기당 헤드샷 킬 수"
+      },
+      "damage": {
+        "label": "피해량",
+        "description": "경기당 총 피해량"
+      },
+      "utilityDamage": {
+        "label": "유틸리티 피해량",
+        "description": "유틸리티(수류탄)로 입힌 피해량"
+      },
+      "kast": {
+        "label": "KAST %",
+        "description": "킬, 어시스트, 생존, 트레이드 중 하나가 있는 라운드의 비율"
+      },
+      "mvps": {
+        "label": "MVP",
+        "description": "경기당 MVP 수"
+      },
+      "score": {
+        "label": "점수",
+        "description": "경기 점수(여러 요소를 합산)"
+      },
+      "adr": {
+        "label": "ADR",
+        "description": "라운드당 평균 피해량"
+      }
+    }
+  }
+}
