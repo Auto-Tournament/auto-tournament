@@ -1369,10 +1369,10 @@
     },
     "wear": {
       "fn": "Nuovo di fabbrica",
-      "mw": "Minime tracce di usura",
+      "mw": "Usura minima",
       "ft": "Testato sul campo",
       "ww": "Consumato",
-      "bs": "Temprato dalla battaglia"
+      "bs": "Segnato dalle battaglie"
     },
     "float": "Float",
     "pattern": "Pattern",
@@ -1463,10 +1463,10 @@
         "wear": "Usura",
         "wears": {
           "fn": "Nuovo di fabbrica",
-          "mw": "Minime tracce di usura",
+          "mw": "Usura minima",
           "ft": "Testato sul campo",
           "ww": "Consumato",
-          "bs": "Temprato dalla battaglia"
+          "bs": "Segnato dalle battaglie"
         },
         "float": "Float",
         "pattern": "Seed del pattern",

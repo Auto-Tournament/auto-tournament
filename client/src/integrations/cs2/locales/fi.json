@@ -1348,11 +1348,11 @@
       "immortal": "Kuolematon"
     },
     "wear": {
-      "fn": "Tehdasuusi",
-      "mw": "Lähes käyttämätön",
-      "ft": "Kenttätestattu",
-      "ww": "Hyvin kulunut",
-      "bs": "Taistelun arpeuttama"
+      "fn": "Suoraan tehtaalta",
+      "mw": "Vähän käytetty",
+      "ft": "Käytössä kokeiltu",
+      "ww": "Aikansa elänyt",
+      "bs": "Reissussa rähjääntynyt"
     },
     "priceScale": {
       "label": "Markkinahinta {{price}}: {{rarity}} {{range}}",
@@ -1448,11 +1448,11 @@
         "phase": "Vaihe",
         "wear": "Kuluneisuus",
         "wears": {
-          "fn": "Tehdasuusi",
-          "mw": "Lähes käyttämätön",
-          "ft": "Kenttätestattu",
-          "ww": "Hyvin kulunut",
-          "bs": "Taistelun arpeuttama"
+          "fn": "Suoraan tehtaalta",
+          "mw": "Vähän käytetty",
+          "ft": "Käytössä kokeiltu",
+          "ww": "Aikansa elänyt",
+          "bs": "Reissussa rähjääntynyt"
         },
         "float": "Float",
         "pattern": "Kuvion siemen",

@@ -1388,11 +1388,11 @@
       "immortal": "Nesmrtelný"
     },
     "wear": {
-      "fn": "Zbrusu nové",
-      "mw": "Lehce opotřebované",
-      "ft": "Opotřebované",
-      "ww": "Silně opotřebované",
-      "bs": "Poničené bojem"
+      "fn": "Zbrusu nový",
+      "mw": "Lehce opotřebený",
+      "ft": "Opotřebený",
+      "ww": "Silně opotřebený",
+      "bs": "Poničený bojem"
     },
     "priceScale": {
       "label": "Tržní cena {{price}}: {{rarity}} {{range}}",
@@ -1488,11 +1488,11 @@
         "phase": "Fáze",
         "wear": "Opotřebení",
         "wears": {
-          "fn": "Zbrusu nové",
-          "mw": "Lehce opotřebované",
-          "ft": "Opotřebované",
-          "ww": "Silně opotřebované",
-          "bs": "Poničené bojem"
+          "fn": "Zbrusu nový",
+          "mw": "Lehce opotřebený",
+          "ft": "Opotřebený",
+          "ww": "Silně opotřebený",
+          "bs": "Poničený bojem"
         },
         "float": "Float",
         "pattern": "Seed patternu",
