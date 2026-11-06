@@ -101,6 +101,29 @@ type Replay struct {
 	// What each player holds and carries, one row each time it changes:
 	// [tick, player index, gun, bullets in the magazine, armor, helmet, defuse kit, money, has the bomb, scoped, crouching].
 	Gear [][11]any `json:"gear,omitempty"`
+	// Takeovers: kills a player made while controlling a bot (they had died
+	// and took it over). The recorder's camera follows the bot for them.
+	Takeovers []Takeover `json:"-"`
+}
+
+// Takeover is a kill made through a bot: the killer's SteamID64 and the bot's name in the demo.
+type Takeover struct {
+	Tick   int
+	Player string
+	Bot    string
+}
+
+// BotFor is the bot the player controlled for a kill in ticks [from, to], or "".
+func (r *Replay) BotFor(playerID string, from, to int) string {
+	if r == nil {
+		return ""
+	}
+	for _, t := range r.Takeovers {
+		if t.Player == playerID && t.Tick >= from && t.Tick <= to {
+			return t.Bot
+		}
+	}
+	return ""
 }
 
 type rawDamage struct {
@@ -349,6 +372,7 @@ func Analyze(r io.Reader, mapName string, standIns map[string]string) (*Analysis
 		sees      []rawSees
 		seeing    = map[[2]string]int{} // viewer, enemy -> since when
 		botNames  = map[string]string{} // replay ids of bots (bot:<name>) -> name
+		takeovers []Takeover
 		lastFrame = -FrameStep
 		clans     = map[int]map[string]string{} // round -> side -> the team's in-game name
 	)
@@ -473,6 +497,11 @@ func Analyze(r io.Reader, mapName string, standIns map[string]string) (*Analysis
 		victimBot := !human(e.Victim)
 		if victimBot && !human(e.Killer) {
 			return
+		}
+		if e.Killer != nil && e.Killer.IsControllingBot() {
+			if b := e.Killer.ControlledBot(); b != nil && b.Name != "" {
+				takeovers = append(takeovers, Takeover{Tick: gs.IngameTick(), Player: id(e.Killer), Bot: b.Name})
+			}
 		}
 		victim := "bot:" + e.Victim.Name
 		if !victimBot {
@@ -873,7 +902,7 @@ func Analyze(r io.Reader, mapName string, standIns map[string]string) (*Analysis
 	}
 	sort.Strings(botIDs)
 	ids = append(ids, botIDs...)
-	replay := &Replay{Map: mapName, Tickrate: p.TickRate(), Step: FrameStep, Rounds: rounds}
+	replay := &Replay{Map: mapName, Tickrate: p.TickRate(), Step: FrameStep, Rounds: rounds, Takeovers: takeovers}
 	for _, sid := range ids {
 		var name string
 		if bot, ok := botNames[sid]; ok {
