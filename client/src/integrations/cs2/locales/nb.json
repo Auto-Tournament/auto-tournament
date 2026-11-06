@@ -266,7 +266,7 @@
     "sideChoice": "Sidevalg",
     "chooseYourStartingSide": "Velg startsiden din",
     "waitingForSidePick": "Venter på at {{team}} velger startside …",
-    "counterTerrorist": "Kontraterrorist",
+    "counterTerrorist": "Antiterrorist",
     "terrorist": "Terrorist",
     "vetoHistory": "Vetohistorikk",
     "pickSummary": {
@@ -378,7 +378,7 @@
         "knife": "Knivrunde",
         "live": "Direkte",
         "paused": "Pause",
-        "halftime": "Pause",
+        "halftime": "Halvtid",
         "postgame": "Kampen er ferdig",
         "queued": "Neste kamp i kø",
         "error": "Feil"
@@ -481,9 +481,9 @@
     "update": "Oppdater",
     "create": "Lag",
     "types": {
-      "defusal": "Defusal",
+      "defusal": "Desarmering",
       "hostage": "Gisler",
-      "armsRace": "Arms Race",
+      "armsRace": "Våpenkappløp",
       "unknown": "Ukjent"
     },
     "errors": {
@@ -698,46 +698,46 @@
       },
       "music": {
         "label": "Musikk under sammendrag",
-        "all": "Alle spor ({{count}})",
+        "all": "Alle låtene ({{count}})",
         "pick": "Bare de jeg velger",
         "off": "Ingen musikk",
-        "listen": "Hør på {{title}}",
+        "listen": "Spill av {{title}}",
         "stop": "Stopp {{title}}",
         "contentId": "YouTube Content ID",
         "volume": "Volum",
-        "byo": "Ta med din egen musikk: legg til spor du har rett til å bruke. Auto Tournament leverer ingen. Spilleren spiller et annet spor ved siden av hvert sammendrag, og nedlastinger kommer med eller uten musikk.",
+        "byo": "Ta med din egen musikk: legg til låter du har rett til å bruke. Auto Tournament leverer ingen. Spilleren spiller en annen låt ved siden av hvert sammendrag, og nedlastinger kommer med eller uten musikk.",
         "remove": "Fjern {{title}}",
         "removeConfirm": "Fjern",
         "keep": "Behold",
-        "addTitle": "Legg til et spor",
+        "addTitle": "Legg til en låt",
         "chooseFile": "Velg en fil",
         "noFile": "Ingen fil valgt (MP3, M4A, WAV …)",
         "trackTitle": "Tittel",
         "artist": "Artist",
         "genre": "Sjanger (grupperer menyen)",
-        "source": "Hvor det kommer fra (en lenke, for kreditering)",
-        "contentIdLabel": "Registrert hos YouTube Content ID (laster du opp en video med det, kan du få et krav om opphavsrett)",
-        "add": "Legg til sporet",
+        "source": "Hvor den kommer fra (en lenke, for kreditering)",
+        "contentIdLabel": "Registrert hos YouTube Content ID (laster du opp en video med den, kan du få et krav om opphavsrett)",
+        "add": "Legg til låten",
         "adding": "Legger til …",
-        "rights": "Legg bare til musikk du har rett til å bruke i videoer. Lydstyrken jevnes ut med de andre sporene.",
-        "suggestions_one": "{{count}} spor som passer til sammendrag, på Pixabay",
-        "suggestions_other": "{{count}} spor som passer til sammendrag, på Pixabay",
-        "suggestionsHelp": "Åpne ett, last det ned fra Pixabay under lisensen det har, og legg det til her. Lisensen lar deg bruke det i videoer, men ikke gi filen videre.",
+        "rights": "Legg bare til musikk du har rett til å bruke i videoer. Volumet jevnes ut mot de andre låtene.",
+        "suggestions_one": "{{count}} låt som passer til sammendrag, på Pixabay",
+        "suggestions_other": "{{count}} låter som passer til sammendrag, på Pixabay",
+        "suggestionsHelp": "Åpne en, last den ned fra Pixabay under lisensen den har, og legg den til her. Lisensen lar deg bruke den i videoer, men ikke gi filen videre til andre.",
         "link": "Eller en lenke til lydfilen",
         "addLink": "Legg til fra lenken"
       },
       "overlay": {
         "label": "Overlegg",
-        "helper_one": "{{count}} klipp har en ren kopi. Tegn på nytt legger det nåværende bildekortet, drapslisten og navnene på den igjen, og lager deretter sammendragene på nytt. Krever ikke CS2.",
-        "helper_other": "{{count}} klipp har en ren kopi. Tegn på nytt legger det nåværende bildekortet, drapslisten og navnene på dem igjen, og lager deretter sammendragene på nytt. Krever ikke CS2.",
-        "redraw": "Tegn overlegg på nytt",
+        "helper_one": "{{count}} klipp har en ren kopi. Tegn på nytt legger det nåværende tekstkortet, drapslisten og navnene på den igjen og lager så sammendragene på nytt. Krever ikke CS2.",
+        "helper_other": "{{count}} klipp har en ren kopi. Tegn på nytt legger det nåværende tekstkortet, drapslisten og navnene på dem igjen og lager så sammendragene på nytt. Krever ikke CS2.",
+        "redraw": "Tegn overleggene på nytt",
         "pending_one": "{{count}} video venter på en opptaker",
         "pending_other": "{{count}} videoer venter på en opptaker",
         "failed_one": "{{count}} video kunne ikke tegnes på nytt",
         "failed_other": "{{count}} videoer kunne ikke tegnes på nytt",
         "keepClean": "Behold rene kopier av klipp",
         "keepCleanHelper": "Hvert klipp lagres også slik det ble tatt opp, uten kortet eller drapslisten. Sammendrag lages da fra de rene klippene med et eget overlegg, og overlegg kan tegnes på nytt. Er dette av, brukes omtrent halvparten av lagringsplassen.",
-        "redrawFailed": "Klarte ikke å sette tegningen i kø."
+        "redrawFailed": "Kunne ikke sette den nye tegningen i kø."
       },
       "moved": "Innstillingene for høydepunkter, musikken og opptakerne har fått en egen side:"
     },
@@ -769,7 +769,7 @@
         "label": "Hvem kan se på",
         "option_0": "Alle",
         "option_1": "Innloggede spillere",
-        "option_2": "Admins og kommentatorer"
+        "option_2": "Administratorer og kommentatorer"
       },
       "gotvLiveStats": {
         "label": "Live-statistikk på kampsiden",
@@ -844,7 +844,7 @@
     "keyAutoLinkHelp": "Bruk servere som meldes inn med denne nøkkelen, til kamper så snart de kobler til. Alle med nøkkelen kan være vert for kamper.",
     "keyAutoLink": "Auto-kobling",
     "keySkins": "Slå på virtuelle skins",
-    "keySkinsHelp": "Spillerne ser sine utstyrte virtuelle skins på servere som meldes inn med denne nøkkelen. Ikke på servere med Steam-servertoken.",
+    "keySkinsHelp": "Spillerne ser de virtuelle skinsene de har utstyrt, på servere som meldes inn med denne nøkkelen. Ikke på servere med Steam-servertoken.",
     "keyCreatedTitle": "Flåtenøkkel opprettet",
     "codeCreatedTitle": "Innmeldingskode opprettet",
     "keyCreatedHelp": "Gi denne nøkkelen til csm, eller sett den som fleet_enroll_key for «{{name}}».",
@@ -889,7 +889,7 @@
     "rename": "Gi nytt navn",
     "renamed": "Navnet er endret",
     "renameSave": "Lagre",
-    "summary": "{{servers}} Ready Up-server(e), {{online}} tilkoblet · {{keys}} flåtenøkkel(er)",
+    "summary": "Ready Up-servere: {{servers}}, {{online}} tilkoblet · flåtenøkler: {{keys}}",
     "connectGuessed": "Gjettet ut fra hvor serveren kobler seg til fra. Sjekk den, eller sett adressen spillerne bruker."
   },
   "roundBackups": {
@@ -1000,7 +1000,7 @@
     "name": "Navn (valgfritt)",
     "getCommand": "Hent kommandoen",
     "linkTitle": "Kjør dette på {{name}}",
-    "linkHelp": "Lim den inn i en terminal på Linux-maskinen, som brukeren CS2-serverne skal kjøre som (ikke root). Den installerer csm om nødvendig, ber om sudo én gang, kobler til maskinen og starter agenten. Koden virker én gang og fram til {{time}}.",
+    "linkHelp": "Lim den inn i en terminal på Linux-maskinen, logget inn som brukeren CS2-serverne skal kjøre som (ikke root). Den installerer csm om nødvendig, ber om sudo én gang, kobler til maskinen og starter agenten. Koden virker én gang og fram til {{time}}.",
     "copy": "Kopier",
     "linkConnected": "Tilkoblet. Maskinen er klar.",
     "linkWaiting": "Venter på at maskinen kobler til …",
@@ -1083,7 +1083,7 @@
       "failed": "Mislyktes",
       "timeout": "Fikk ikke svar fra csm"
     },
-    "summary": "{{machines}} maskin(er), {{online}} tilkoblet · {{servers}} server(e)",
+    "summary": "Maskiner: {{machines}}, {{online}} tilkoblet · servere: {{servers}}",
     "about": "Maskiner kjører CS2 Server Manager (csm). Plattformen starter, stopper og lager servere på dem selv.",
     "deleteServer": "Slett server",
     "deleting": "Sletter …",
@@ -1195,14 +1195,14 @@
     "csmHelp": "Før en kamp flyttes, starter csm serveren som gikk ned på nytt, og kampen venter opptil 90 s på den. Når ingen server er ledig, oppretter csm en på en maskin med plass.",
     "reserve": "Reserveservere",
     "reserveAuto": "Automatisk (1 når 2 servere er tilkoblet)",
-    "reserveStatus": "{{effective}} av {{pool}} tilkoblede server(e) holdes ledige for failover",
+    "reserveStatus": "{{effective}} av {{pool}} tilkoblede servere holdes ledige for failover",
     "reserveHelp": "Reserveservere står ledige: kamper legges ikke på dem, så én er klar når en server går ned. Minst én server tar alltid imot kamper. Reserveservere teller med i lisensen din som alle andre servere.",
     "summaryOn": "Automatisk flytting på",
     "summaryOff": "Automatisk flytting av"
   },
   "pluginSets": {
     "tryoutLicense": "En server for å prøve skins bruker en serverplass på lisensen, som alle andre servere. Den kjører ingen kamper.",
-    "presetLabel": "Utvidelsesoppsett",
+    "presetLabel": "Oppsett av programtillegg",
     "preset": {
       "tournament": "Turnering",
       "practice": "Trening",
@@ -1241,18 +1241,18 @@
     },
     "required": "Alltid på",
     "usesDefault": "Bruker standarden for flåten: {{plugins}}.",
-    "keepsBundle": "Ingen standard valgt: serveren beholder utvidelsene Ready Up-pakken laster.",
+    "keepsBundle": "Ingen standard valgt: serveren beholder programtilleggene Ready Up-pakken laster.",
     "notInstalled": "Ikke installert på denne serveren: {{plugins}}. De er av til Ready Up oppdateres med pakken «Med skins».",
-    "fullBundleNote": "Noen av disse utvidelsene trenger den fulle Ready Up-pakken. De nye serverne får den.",
-    "serverHelp": "Slår Ready Up-utvidelser av eller på på denne serveren (plugins.set). Serveren husker valget etter en omstart, og får det igjen hvis den kobler til med andre utvidelser på.",
-    "defaultButton": "Standardutvidelser",
-    "defaultTitle": "Standardutvidelser for nye servere",
-    "defaultHelp": "Servere som lages på en maskin, av automatisk skalering eller ved failover, får disse utvidelsene første gang de kobler til, med mindre de ble laget med sitt eget valg. Servere som finnes fra før, beholder sine.",
-    "createLabel": "Ready Up-utvidelser",
+    "fullBundleNote": "Noen av disse programtilleggene trenger den fulle Ready Up-pakken. De nye serverne får den.",
+    "serverHelp": "Slår Ready Up-programtillegg av eller på på denne serveren (plugins.set). Serveren husker valget etter en omstart, og får det igjen hvis den kobler til med andre programtillegg på.",
+    "defaultButton": "Standard programtillegg",
+    "defaultTitle": "Standard programtillegg for nye servere",
+    "defaultHelp": "Servere som lages på en maskin, av automatisk skalering eller ved failover, får disse programtilleggene første gang de kobler til, med mindre de ble laget med sitt eget valg. Servere som finnes fra før, beholder sine.",
+    "createLabel": "Ready Up-programtillegg",
     "save": "Lagre",
-    "saved": "Standardutvidelsene er lagret",
+    "saved": "Standard programtillegg er lagret",
     "errors": {
-      "save": "Kunne ikke lagre standardutvidelsene"
+      "save": "Kunne ikke lagre standard programtillegg"
     }
   },
   "autoscale": {
@@ -1439,7 +1439,7 @@
       "saved": "Skins-innstillingene er lagret",
       "inv": {
         "title": "Spillernes skins",
-        "hint": "Velg en spiller for å se skinsene deres, gi dem et eller ta et bort.",
+        "hint": "Velg en spiller for å se skinsene til spilleren, gi et skin eller ta et bort.",
         "player": "Spiller",
         "playerHint": "Navn eller Steam-ID",
         "give": "Gi et skin",
@@ -1477,7 +1477,7 @@
         "nobodyYet": "Ingen har et skin ennå. Søk etter en spiller for å gi ett."
       },
       "playDropChance": "Sjanse for et skin når du taper eller spiller uavgjort",
-      "knivesByPrice": "Alle skins får sjeldenhet etter markedsprisen i hver slitasje (Skinport, oppdatert daglig): et Factory New-skin kan være sjeldnere enn det samme skinet i Battle-Scarred.",
+      "knivesByPrice": "Alle skins får sjeldenhet etter markedsprisen i hver slitasje (Skinport, oppdatert daglig): et skin i Fabrikkny kan være sjeldnere enn det samme skinet i Krigssåret.",
       "pageHint": "Virtuelle skins spillerne vinner her. Utstyrte skins vises på Ready Up-servere mellom kartene.",
       "on": "På",
       "off": "Av",
@@ -1512,7 +1512,7 @@
       "tradeUpCount": "Skins per bytte",
       "drops": {
         "title": "Gi et drop",
-        "help": "Et valg mellom tre skins til hver spiller, med en gang. Hvert drop venter til spilleren åpner det neste gang de laster en side, og flere kan stå i kø.",
+        "help": "Et valg mellom tre skins til hver spiller, med en gang. Hvert drop venter til spilleren åpner det neste gang en side lastes, og flere kan stå i kø.",
         "kind": {
           "online": "Alle pålogget",
           "player": "En spiller",
@@ -1700,7 +1700,7 @@
         "inventory": "skinet, merket med turneringen og plasseringen."
       },
       "mvpTitle": "MVP",
-      "mvpIs": "{{name}} er MVP. Premien er deres.",
+      "mvpIs": "{{name}} er MVP og får premien.",
       "mvpNobody": "Ingen er valgt: ingen ros eller rating ennå.",
       "hintCommends": "Mest rost: {{name}} ({{count}})",
       "hintRating": "beste rating: {{name}} ({{rating}})",
@@ -1839,7 +1839,7 @@
       "play": "Spill av",
       "pause": "Pause",
       "scrub": "Tid",
-      "speed": "Fart",
+      "speed": "Hastighet",
       "level": "Etasje",
       "levels": {
         "default": "Øvre",
@@ -1929,8 +1929,8 @@
       "moreReels": "FLERE SAMMENDRAG",
       "clips_one": "{{count}} klipp",
       "clips_other": "{{count}} klipp",
-      "theirReel_one": "Sammendraget deres · {{count}} klipp",
-      "theirReel_other": "Sammendraget deres · {{count}} klipp",
+      "theirReel_one": "Spillerens sammendrag · {{count}} klipp",
+      "theirReel_other": "Spillerens sammendrag · {{count}} klipp",
       "teamReel": "Lagets høydepunkter · {{team}}"
     },
     "tournament": {
@@ -2027,7 +2027,7 @@
   "matchPage": {
     "recordingClips": "Tar opp klipp",
     "clipsDone": "{{done}} / {{total}} klipp",
-    "reelLead": "Spillene deres i den rekkefølgen de skjedde. Velg en sang i spilleren, og del eller last ned sammendraget.",
+    "reelLead": "Spillene deres i den rekkefølgen de skjedde. Velg en låt i spilleren, og del eller last ned sammendraget.",
     "inThisReel": "I dette sammendraget",
     "openReel": "Åpne på avspillingssiden",
     "scoreboard": "Resultattavle",
@@ -2192,7 +2192,7 @@
       "done": {
         "approved": "Godkjent",
         "redo": "Satt i kø for nytt opptak",
-        "drop": "Forkastet. Sammendragene lages på nytt",
+        "drop": "Droppet. Sammendragene lages på nytt",
         "weapon": "Lagt i kø for nytt opptak uten TrueView"
       },
       "weapon": "Ta opp igjen: våpen mangler (W)"
@@ -2265,14 +2265,14 @@
       "save": "Lagre",
       "cancel": "Avbryt",
       "valveTemplate": "Valves offisielle esportoppsett",
-      "valveTemplateHelp": "Oppsettet Valve bruker i sine Majors: Bo3, veto som velger side, Valves konkurranseregler.",
+      "valveTemplateHelp": "Oppsettet Valve bruker i Majorene: Bo3, veto som velger side, Valves konkurranseregler.",
       "valveFactVeto": "Veto velger side",
       "valveFactRules": "Valves regler",
       "preset": "Forhåndsvalg",
       "standard": "Standard (nettstedets standard)",
       "esports": "Valves offisielle regler",
       "standardHelp": "Standard: nettstedets standardinnstillinger fra Kampregler.",
-      "esportsHelp": "Valves offisielle regler: oppsettet Valve bruker i sine Majors (Counter-Strike Major Supplemental Rulebook). Premier-innstillinger, ingen kniverunde (vetoen velger side), Valves timeouter, én teknisk pause, bare spillernes egne Steam-gjenstander og standardagenter for alle. Du kan endre hver av dem under.",
+      "esportsHelp": "Valves offisielle regler: oppsettet Valve bruker i Majorene (Counter-Strike Major Supplemental Rulebook). Premier-innstillinger, ingen knivrunde (vetoen velger side), Valves timeouter, én teknisk pause, bare spillernes egne Steam-gjenstander og standardagenter for alle. Du kan endre hver av dem under.",
       "changed_one": "{{count}} innstilling avviker fra nettstedets standard",
       "changed_other": "{{count}} innstillinger avviker fra nettstedets standard",
       "resetAll": "Tilbakestill alt til nettstedets standard",
@@ -2302,7 +2302,7 @@
       "tacticalNone": "Ingen",
       "technicalNone": "Så mange som trengs",
       "knifeRound": {
-        "label": "Kniverunde om sidene",
+        "label": "Knivrunde om sidene",
         "help": "Vinnerne velger CT eller T på et kart der vetoen ikke valgte side. Av: siden trekkes."
       },
       "teamReady": {
@@ -2463,7 +2463,7 @@
       "clutch": "Andelen 1vX-runder vunnet som sistemann (minst 5).",
       "kast": "Andelen runder med drap, assist, overlevelse eller trade."
     },
-    "qualify": "Spillere trenger {{maps}} kart og {{rounds}} runder for å kvalifisere. Like verdier deler plass.",
+    "qualify": "Spillere trenger {{maps}} kart og {{rounds}} runder for å kvalifisere seg. Like verdier deler plass.",
     "empty": "Ingen kvalifiserer ennå.",
     "player": "Spiller",
     "sample": "Av",
@@ -2611,10 +2611,10 @@
     "liveText_one": "Se den i CS2: knappen åpner kampen i GOTV, {{count}} sekund bak spillerne. {{seats}} plasser.",
     "liveText_other": "Se den i CS2: knappen åpner kampen i GOTV, {{count}} sekunder bak spillerne. {{seats}} plasser.",
     "liveTextNoDelay": "Se den i CS2: knappen åpner kampen i GOTV. {{seats}} plasser.",
-    "beforeText": "GOTV åpner når kartet går live. Oppvarmingen og knivrunde vises ikke.",
+    "beforeText": "GOTV åpner når kartet går live. Oppvarmingen og knivrunden vises ikke.",
     "offText": "Denne turneringen vises ikke i GOTV. Følg den i tabellen nedenfor.",
     "offSignIn": "Logg inn for å se denne kampen i GOTV.",
-    "offAdmins": "Bare admins og kommentatorer kan se kamper i GOTV her.",
+    "offAdmins": "Bare administratorer og kommentatorer kan se kamper i GOTV her.",
     "offNoPort": "Denne serveren har ingen GOTV-port å koble til.",
     "button": "Se kampen",
     "buttonBefore": "Se kampen · åpner ved start",
