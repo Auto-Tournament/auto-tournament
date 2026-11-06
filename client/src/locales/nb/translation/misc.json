@@ -233,7 +233,7 @@
       "pending": "Venter",
       "ready": "Klar",
       "loaded": "Lastet inn",
-      "live": "Live",
+      "live": "Direkte",
       "completed": "Fullført"
     },
     "yourTournaments": {
@@ -333,7 +333,7 @@
         "vetoTurn": "Din tur i vetoen",
         "ready": "Kampen er klar",
         "warmup": "Oppvarming",
-        "live": "Live",
+        "live": "Direkte",
         "paused": "Kampen er satt på pause"
       },
       "opponent": "Motstanderen spiller",
@@ -354,7 +354,7 @@
       "ready": "Klare",
       "mapRound": "{{map}} · R{{round}}",
       "round": "Runde {{round}}",
-      "halftime": "Pause",
+      "halftime": "Halvtid",
       "nextMap": "Neste kart",
       "goVeto": "Gå til vetoen",
       "paused": "Pause",
@@ -376,7 +376,7 @@
       "allGames": "Alle spill",
       "status": {
         "all": "Alle statuser",
-        "live": "Live",
+        "live": "Direkte",
         "registration_open": "Påmelding åpen",
         "finished": "Fullført"
       },
@@ -407,7 +407,7 @@
       "youreIn": "Du er med"
     },
     "status": {
-      "live": "Live"
+      "live": "Direkte"
     },
     "emptyNone": {
       "title": "Ingen turneringer ennå",
@@ -1125,7 +1125,7 @@
       "listen": "Spill av {{title}}",
       "stop": "Stopp {{title}}",
       "contentId": "YouTube Content ID",
-      "volume": "Lydstyrke",
+      "volume": "Volum",
       "byo": "Ta med din egen musikk: legg til låter du har rett til å bruke. Auto Tournament leverer ingen. Spilleren spiller en annen låt ved siden av hvert sammendrag, og nedlastinger kommer med eller uten musikk.",
       "remove": "Fjern {{title}}",
       "removeConfirm": "Fjern",
@@ -1140,7 +1140,7 @@
       "contentIdLabel": "Registrert hos YouTube Content ID (laster du opp en video med den, kan du få et krav om opphavsrett)",
       "add": "Legg til låten",
       "adding": "Legger til …",
-      "rights": "Legg bare til musikk du har rett til å bruke i videoer. Lydstyrken jevnes ut mot de andre låtene.",
+      "rights": "Legg bare til musikk du har rett til å bruke i videoer. Volumet jevnes ut mot de andre låtene.",
       "suggestions_one": "{{count}} låt som passer til sammendrag, på Pixabay",
       "suggestions_other": "{{count}} låter som passer til sammendrag, på Pixabay",
       "suggestionsHelp": "Åpne en, last den ned fra Pixabay under lisensen den har, og legg den til her. Lisensen lar deg bruke den i videoer, men ikke gi filen videre til andre.",
@@ -1257,7 +1257,7 @@
     "openChat": "Åpne chat",
     "resetVeto": "Start vetoen på nytt",
     "resetVetoTitle": "Starte vetoen på nytt?",
-    "resetVetoBody": "Alle kart som er fjernet eller valgt, og alle sidevalg slettes, og lagene starter vetoen på nytt. Begge lagene ser det i kampchatten.",
+    "resetVetoBody": "Alle fjernede og valgte kart og alle sidevalg slettes, og lagene starter vetoen på nytt. Begge lagene ser det i kampchatten.",
     "vetoReset": "Vetoen starter på nytt",
     "vetoResetFailed": "Kunne ikke starte vetoen på nytt"
   },

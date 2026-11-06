@@ -149,7 +149,7 @@
     "hold": {
       "title": "Sett på vent i stedet for walkover",
       "description": "Mens kampen er satt på vent, lastes eller startes den ikke, og ingen får walkover. Når den går videre, får lagene full tid igjen.",
-      "reason": "Årsak (bare admins ser den)",
+      "reason": "Årsak (bare administratorene ser den)",
       "delay": "Utsett {{minutes}} min",
       "holdUntilReleased": "Sett på vent til den frigis",
       "release": "Frigi nå",

@@ -32,7 +32,7 @@
       "status": {
         "setup": "Utkast",
         "ready": "Påmelding",
-        "inProgress": "Live",
+        "inProgress": "Direkte",
         "completed": "Fullført"
       },
       "state": {
@@ -151,7 +151,7 @@
       "testFailed": "Test-e-posten kunne ikke sendes"
     },
     "title": "Innstillinger",
-    "intro": "Plattformens egne innstillinger. Hvert spill har sine innstillinger i menyen.",
+    "intro": "Plattformens egne innstillinger. Hvert spill har egne innstillinger i menyen.",
     "tabs": {
       "general": "Generelt",
       "signIn": "Innlogging",
@@ -295,9 +295,9 @@
     "players": {
       "registration": {
         "title": "Spillerregistrering",
-        "description": "Velg om nye Steam-innlogginger automatisk lager spillerprofiler. Er dette av, vises bare spillere som admins har opprettet eller importert, i private turneringer og shuffle-utvalg.",
+        "description": "Velg om nye Steam-innlogginger automatisk lager spillerprofiler. Er dette av, vises bare spillere som administratorer har opprettet eller importert, i private turneringer og shuffle-utvalg.",
         "toggleLabel": "La hvem som helst registrere seg med Steam",
-        "recommendation": "Anbefalt: la dette være av for invitasjons‑ eller private turneringer, slik at tilfeldige Steam-innlogginger ikke fyller opp spillerlisten.",
+        "recommendation": "Anbefalt: la dette være av for invitasjons- eller private turneringer, slik at tilfeldige Steam-innlogginger ikke fyller opp spillerlisten.",
         "short": "Ny innlogging gjør hvem som helst til spiller. Av: bare spillere du legger til."
       },
       "title": "Spillere",
@@ -344,7 +344,7 @@
     },
     "experimental": {
       "title": "Eksperimentelt",
-      "description": "Funksjoner som fortsatt bygges. De er av som standard og kan endre seg eller slutte å virke. Bare admins ser dem.",
+      "description": "Funksjoner som fortsatt bygges. De er av som standard og kan endre seg eller slutte å virke. Bare administratorer ser dem.",
       "saved": "Lagret",
       "saveFailed": "Kunne ikke lagre funksjonen",
       "loadFailed": "Kunne ikke hente eksperimentelle funksjoner",
@@ -390,7 +390,7 @@
     "navLabel": "Innstillingssider",
     "gameLinks": {
       "title": "Spillinnstillinger",
-      "hint": "Hvert spill har sine egne innstillinger i menyen."
+      "hint": "Hvert spill har egne innstillinger i menyen."
     },
     "sections": {
       "label": "Innstillingsseksjoner",
@@ -420,7 +420,7 @@
       },
       "adminnotices": {
         "name": "Varsler",
-        "hint": "Hva admins får beskjed om"
+        "hint": "Hva administratorene får beskjed om"
       },
       "webhooks": {
         "name": "Integrasjoner",
@@ -478,7 +478,7 @@
         "system": "System",
         "gamesOf": "Spill · {{game}}"
       },
-      "templatesAndRatings": "Maler og rangering",
+      "templatesAndRatings": "Maler og rating",
       "allTournaments": "Alle turneringer",
       "switcher": "Turnering",
       "newTournament": "Ny turnering",
@@ -492,7 +492,7 @@
       },
       "highlights": "Høydepunkter",
       "state": {
-        "live": "live",
+        "live": "direkte",
         "setup": "oppsett"
       },
       "openMenu": "Åpne Administrer-menyen",
@@ -503,7 +503,7 @@
       "liveMatches": "Direktekamper"
     },
     "status": {
-      "live": "LIVE",
+      "live": "DIREKTE",
       "inVeto": "I VETO",
       "queued": "I KØ",
       "round": "RUNDE"
@@ -551,14 +551,14 @@
     "title": "Lisens",
     "getKey": "Har du allerede en lisens? Kopier nøkkelen fra <consoleLink>Auto Tournament-konsollen</consoleLink>. Trenger du en? <pricingLink>Se priser</pricingLink>.",
     "useFromPaidKey": "Satt av den betalte lisensnøkkelen nedenfor.",
-    "useFromFreeKey": "Satt av den gratis nøkkelen nedenfor: bare ideell bruk.",
-    "useWithoutKey": "Ingen nøkkel: gratis for ideell bruk. Lim inn en betalt nøkkel nedenfor for kommersiell bruk.",
+    "useFromFreeKey": "Satt av den gratis nøkkelen nedenfor: bare ikke-kommersiell bruk.",
+    "useWithoutKey": "Ingen nøkkel: gratis for ikke-kommersiell bruk. Lim inn en betalt nøkkel nedenfor for kommersiell bruk.",
     "publicLine": "Spillere ser «{{line}}» nederst på arrangementssider.",
-    "pageIntro": "Lisensnøkkelen din og hvordan den står. En betalt nøkkel er for kommersiell bruk. En gratis nøkkel er for ideell bruk.",
-    "description": "Lim inn lisensnøkkelen for Auto Tournament: en betalt for kommersiell bruk, eller en gratis for ideell bruk. Den sjekkes på denne serveren, og én gang om dagen mot autotournament.gg.",
+    "pageIntro": "Lisensnøkkelen din og hvordan den står. En betalt nøkkel er for kommersiell bruk. En gratis nøkkel er for ikke-kommersiell bruk.",
+    "description": "Lim inn lisensnøkkelen for Auto Tournament: en betalt for kommersiell bruk, eller en gratis for ikke-kommersiell bruk. Den sjekkes på denne serveren, og én gang om dagen mot autotournament.gg.",
     "loading": "Laster lisensstatus",
     "loadFailed": "Kunne ikke lese lisensstatusen.",
-    "none": "Ingen lisensnøkkel ennå. Gratis for ideell bruk. Kommersiell bruk krever en betalt lisens.",
+    "none": "Ingen lisensnøkkel ennå. Gratis for ikke-kommersiell bruk. Kommersiell bruk krever en betalt lisens.",
     "pricing": "Priser",
     "open": "Innstillinger",
     "id": "Lisens-ID {{id}}",
@@ -606,12 +606,12 @@
     "public": {
       "licensed": "Lisensiert",
       "commercial": "Lisensiert · Kommersiell bruk",
-      "nonCommercial": "Lisensiert · Ideell bruk",
+      "nonCommercial": "Lisensiert · Ikke-kommersiell bruk",
       "unlicensed": "Ingen lisensnøkkel",
       "about": {
         "title": "Om lisensen til dette nettstedet",
         "none": "Dette nettstedet kjører Auto Tournament uten lisensnøkkel. Det er greit for arrangementer der ingen tjener penger på det: venner, klubber, skole-LAN og veldedige organisasjoner.",
-        "nonCommercial": "Dette nettstedet har en gratis ideell lisens: det kan kjøre arrangementer der ingen tjener penger på det.",
+        "nonCommercial": "Dette nettstedet har en gratis ikke-kommersiell lisens: det kan kjøre arrangementer der ingen tjener penger på det.",
         "commercial": "Dette nettstedet har en betalt kommersiell lisens: det kan kjøre arrangementer med betaling og ta inngangspenger.",
         "free": "Auto Tournament er gratis når ingen tjener penger på det, og for veldedige organisasjoner, skoler og offentlige etater også når de tar inngangspenger. Alle andre som tjener penger på det, ved å ta inngangspenger, selge plasser eller drive det for en bedrift, trenger en betalt lisens.",
         "paidTitle": "Blir du bedt om å betale for å delta?",
@@ -740,7 +740,7 @@
       "draft": "Utkast"
     },
     "front": {
-      "featured": "Fremhevet",
+      "featured": "Framhevet",
       "shown": "Vises",
       "hidden": "Skjult",
       "archived": "Arkivert",
@@ -752,12 +752,12 @@
     "menu": {
       "open": "Åpne",
       "page": "Offentlig side",
-      "feature": "Fremhev på forsiden",
+      "feature": "Framhev på forsiden",
       "archive": "Arkiver (fjern fra forsiden)",
       "delete": "Slett"
     },
     "toast": {
-      "featured": "Fremhevet på forsiden",
+      "featured": "Framhevet på forsiden",
       "archived": "Arkivert",
       "deleted": "Turneringen er slettet"
     },
@@ -807,7 +807,7 @@
   },
   "importMatch": {
     "title": "Importer en kamp",
-    "subtitle": "Legg til en kamp som ble spilt et annet sted, fra demoene. Lagene, spillerne og resultatet leses fra demoene, og så får kampen statistikk, 2D-replay og høydepunkter som alle andre.",
+    "subtitle": "Legg til en kamp som ble spilt et annet sted, fra demoene. Lagene, spillerne og resultatet leses fra demoene, og så får kampen statistikk, 2D-reprise og høydepunkter som alle andre.",
     "event": "Hvor den ble spilt",
     "eventHelp": "Valgfritt, for eksempel navnet på arrangementet.",
     "files": "Demoer",
@@ -821,7 +821,7 @@
     "tooMany": "Opptil {{max}} demoer, én per kart.",
     "notDemo": "{{name}} er ikke en .dem-fil.",
     "error": "Importen stoppet: {{error}}",
-    "progress": "Fremdrift",
+    "progress": "Framdrift",
     "mapN": "Kart {{n}}",
     "state": {
       "uploading": "Laster opp",
@@ -843,7 +843,7 @@
   },
   "apiTokens": {
     "title": "API-nøkler",
-    "hint": "For skript, botter og Auto Tournaments MCP-server. En lesenøkkel kan bare lese. En adminnøkkel kan det en admin kan. Hemmeligheten vises bare én gang, når nøkkelen lages.",
+    "hint": "For skript, boter og Auto Tournaments MCP-server. En lesenøkkel kan bare lese. En adminnøkkel kan det en admin kan. Hemmeligheten vises bare én gang, når nøkkelen lages.",
     "line": "{{scope}} · {{fingerprint}} · sist brukt {{used}}",
     "never": "aldri",
     "none": "Ingen API-nøkler ennå.",

@@ -85,7 +85,7 @@
     },
     "recentMatches": {
       "title": "Siste kamper",
-      "statsNote": "Drap / død. Statistikken som vises, avhenger av hva spillmodulen rapporterer.",
+      "statsNote": "Drap / dødsfall. Statistikken som vises, avhenger av hva spillmodulen rapporterer.",
       "roundAndRating": "{{round}} · rating {{rating}}",
       "leaderboard": "Resultatliste"
     },
@@ -133,7 +133,7 @@
       "l": "T",
       "vs": "mot {{name}}",
       "tbd": "ukjent",
-      "live": "Live"
+      "live": "Direkte"
     },
     "pageTitle": "{{name}} · Lag",
     "notFound": "Fant ikke laget. Sjekk URL-en.",
@@ -153,7 +153,7 @@
     "tournaments": {
       "title": "Turneringer",
       "empty": "Ingen turneringsaktivitet ennå.",
-      "live": "Live",
+      "live": "Direkte",
       "upcoming": "Kommende",
       "versus": "mot {{opponent}}",
       "placement": "#{{position}} av {{total}}",
@@ -295,13 +295,13 @@
     "delete": "Slett",
     "cancel": "Avbryt",
     "banTitle": "Steng ute {{name}}?",
-    "banBody": "De kan ikke logge inn, og den offentlige siden deres viser bare navnet og «Utestengt». Er de i en lagoppstilling i en pågående turnering, tas de ut av den: laget til en starter får 15 minutter på å velge en reserve før de spiller med en spiller mindre. Du kan oppheve utestengelsen senere.",
+    "banBody": "Spilleren kan ikke logge inn, og den offentlige siden viser bare navnet og «Utestengt». Står spilleren i en lagoppstilling i en pågående turnering, blir hen tatt ut av den: laget får 15 minutter på å velge en innbytter før det spiller med en spiller mindre. Du kan oppheve utestengelsen senere.",
     "banReason": "Årsak (valgfritt)",
-    "banReasonHelp": "Bare admins kan se dette.",
+    "banReasonHelp": "Bare administratorer kan se dette.",
     "bannedDone": "{{name}} er utestengt",
     "unbanned": "{{name}} kan logge inn igjen",
     "deleteTitle": "Slette {{name}}?",
-    "deleteBody": "Navn, bilde, e-post, innloggingsmetoder, venner og lag fjernes for godt. Kampene deres blir stående, vist som «Slettet spiller». Dette kan ikke angres.",
+    "deleteBody": "Navn, bilde, e-post, innloggingsmetoder, venner og lag fjernes for godt. Kampene blir stående, vist som «Slettet spiller». Dette kan ikke angres.",
     "deletedDone": "{{name}} er slettet",
     "moderationError": "Kunne ikke endre spilleren",
     "headerSelect": {
@@ -327,7 +327,7 @@
     "loadError": "Klarte ikke å laste spillerne",
     "deleteSuccess": "Spilleren er slettet",
     "deleteError": "Klarte ikke å slette spilleren",
-    "importSuccess": "Importerte {{count}} spiller(e)",
+    "importSuccess": "Importerte spillere: {{count}}",
     "importError": "Klarte ikke å importere spillerne",
     "bulkDelete": {
       "title": "Slett spillere",
@@ -381,7 +381,7 @@
       "warmup": "Oppvarming",
       "knife": "Knivrunde",
       "live": "Direkte",
-      "halftime": "Pause",
+      "halftime": "Halvtid",
       "postgame": "Kartet er ferdig – venter på neste kart",
       "overtime": "EKSTRAOMGANG {{n}}"
     },
@@ -405,13 +405,13 @@
       "tiebreak": "avgjort på tiebreak",
       "tiebreakWin": "{{team}} vant på tiebreak",
       "yourPick": "valget vårt",
-      "theirPick": "deres valg",
+      "theirPick": "valget deres",
       "decider": "avgjørende"
     },
     "demos": {
       "title": "Kartdemoer",
       "download": "Last ned demo for {{map}}",
-      "recording": "Tar opp {{map}}…"
+      "recording": "Tar opp {{map}} …"
     },
     "spectator": {
       "maps_one": "{{count}} kart vunnet",
@@ -567,7 +567,7 @@
     "locked": "Laglisten er låst mens {{tournament}} pågår. Spør en admin om den må endres.",
     "uploadLogo": "Last opp logo",
     "removeLogo": "Fjern logo",
-    "logoHelp": "PNG, JPEG eller WEBP, kvadratisk, opptil 256 KB",
+    "logoHelp": "PNG, JPEG eller WebP, kvadratisk, opptil 256 KB",
     "logoSaved": "Logoen er lagret.",
     "save": "Lagre endringer",
     "saved": "Lagret.",
@@ -615,7 +615,7 @@
     "findPlaceholder": "Navn eller profillenke",
     "findPlaceholder_steam": "Navn, Steam-ID eller profillenke",
     "find": "Finn",
-    "findNone": "Fant ingen spiller. De må logge inn her én gang først.",
+    "findNone": "Fant ingen spiller. Spilleren må logge inn her én gang først.",
     "onTeam": "På laget",
     "invited": "Invitert",
     "invitePlayer": "Inviter",
@@ -626,7 +626,7 @@
     "uploadBanner": "Last opp banner",
     "removeBanner": "Fjern banner",
     "bannerSaved": "Banneret er lagret.",
-    "bannerHelp": "Et bredt bilde bak lagkortet og lagsiden. PNG, JPEG eller WEBP, maks 1 MB. Rundt 1200 × 300 ser best ut.",
+    "bannerHelp": "Et bredt bilde bak lagkortet og lagsiden. PNG, JPEG eller WebP, maks 1 MB. Rundt 1200 × 300 ser best ut.",
     "color": "Lagfarge",
     "colorN": "Farge {{n}}",
     "colorSaved": "Fargen er lagret",
@@ -772,7 +772,7 @@
       "step": {
         "veto": "Veto",
         "server": "Server",
-        "live": "Live",
+        "live": "Direkte",
         "result": "Resultat"
       },
       "serverTitle": "Server",
@@ -792,7 +792,7 @@
   "report": {
     "button": "Rapporter",
     "title": "Rapporter {{name}}",
-    "intro": "Adminene ser dette, ikke {{name}}. De får aldri vite hvem som rapporterte dem.",
+    "intro": "Bare adminene ser dette. {{name}} får aldri vite hvem som rapporterte.",
     "reasons": {
       "cheating": "Juks",
       "toxic": "Giftig eller krenkende",
@@ -808,7 +808,7 @@
     "failed": "Kunne ikke sende rapporten",
     "link": "Rapporter en spiller (privat, til adminene)",
     "titleChoose": "Rapporter en spiller",
-    "introChoose": "Adminene ser dette, ikke spilleren. De får aldri vite hvem som rapporterte dem.",
+    "introChoose": "Bare adminene ser dette. Spilleren får aldri vite hvem som rapporterte.",
     "player": "Spiller"
   },
   "reportsPage": {
@@ -818,8 +818,8 @@
     "all": "Alle",
     "emptyOpen": "Ingen åpne rapporter",
     "empty": "Ingen rapporter ennå",
-    "emptyHelp": "Spillere kan rapportere andre fra profilsiden deres. Alle admins får et varsel.",
-    "openAbout": "{{count}} åpne om dem",
+    "emptyHelp": "Spillere kan rapportere andre fra profilsidene. Alle administratorer får et varsel.",
+    "openAbout": "{{count}} åpne om denne spilleren",
     "by": "Rapportert av {{name}} · {{time}}",
     "removedReporter": "en slettet spiller",
     "dismiss": "Avvis",

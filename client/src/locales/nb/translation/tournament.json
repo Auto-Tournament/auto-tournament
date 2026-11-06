@@ -101,7 +101,7 @@
       "players": "Spillere",
       "matchRules": "Kampregler",
       "servers": "Servere",
-      "overtimeSettings": "Innstillinger for overtid",
+      "overtimeSettings": "Innstillinger for ekstraomganger",
       "mapPool": "Kartutvalg"
     },
     "tooltips": {
@@ -128,13 +128,13 @@
     "matchRules": {
       "value": "Maks {{maxRounds}} runder per kart. Først til {{winRounds}} runder vinner.",
       "teamSizeValue": "Lagstørrelse: {{size}}v{{size}}",
-      "overtimeEnabled": "Overtid: på",
-      "overtimeDisabled": "Overtid: av",
-      "overtimeDisabledNoDraws": "Overtid: av (ingen uavgjort – skade avgjør)",
-      "overtimeSegments_one": "Overtidsperioder: {{count}} periode",
-      "overtimeSegments_other": "Overtidsperioder: {{count}} perioder",
-      "overtimeSegmentsDefault": "Overtidsperioder: spillserverens standard",
-      "overtimeSegmentsDefaultUnlimited": "Overtidsperioder: spillserverens standard (vanligvis ubegrenset)"
+      "overtimeEnabled": "Ekstraomganger: på",
+      "overtimeDisabled": "Ekstraomganger: av",
+      "overtimeDisabledNoDraws": "Ekstraomganger: av (ingen uavgjort – skade avgjør)",
+      "overtimeSegments_one": "Ekstraomganger: høyst {{count}}",
+      "overtimeSegments_other": "Ekstraomganger: høyst {{count}}",
+      "overtimeSegmentsDefault": "Antall ekstraomganger: spillserverens standard",
+      "overtimeSegmentsDefaultUnlimited": "Antall ekstraomganger: spillserverens standard (vanligvis ubegrenset)"
     },
     "toasts": {
       "loadTemplateFailed": "Kunne ikke laste malen",
@@ -308,19 +308,19 @@
       "serversSummaryQueued": "{{servers}} er satt opp. Første runde har {{matches}}. Kamper utover antall servere venter i kø til en server blir ledig."
     },
     "overtime": {
-      "selectLabel": "Overtid",
+      "selectLabel": "Ekstraomganger",
       "options": {
-        "enabled": "På (vanlig overtid)",
+        "enabled": "På (vanlige ekstraomganger)",
         "disabledDraws": "Av – uavgjort tillates",
         "disabledNoDraws": "Av – ingen uavgjort (skade avgjør)"
       },
-      "modeHelper": "Vanlig overtid spiller ekstra perioder til ett lag leder. «Uavgjort tillates» lar et kart som står likt, ende uavgjort, mens «ingen uavgjort» avgjør det på samlet lagskade.",
-      "tooltip": "Velg om det spilles overtid, og hva som skjer ved uavgjort etter maks antall runder. Innstillingene sendes til spillserverne som overtimeMode/overtimeSegments og virker likt i shuffle-turneringer og manuelle kamper.",
-      "shuffleTooltip": "Velg hvordan overtid fungerer i shuffle-kamper, og hvordan uavgjort etter maks runder avgjøres. Når overtid er av, kan like kamper enten ende uavgjort eller avgjøres på samlet lagskade, alt etter hva du velger.",
-      "segmentsLabel": "Overtidsperioder (valgfritt)",
-      "segmentsHelper": "Valgfritt: begrens antall overtidsperioder. La feltet stå tomt for spillserverens standard.",
-      "segmentsHelperValue_one": "Begrens overtiden til {{count}} periode. Er det fortsatt likt etter overtid, avgjør samlet lagskade.",
-      "segmentsHelperValue_other": "Begrens overtiden til {{count}} perioder. Er det fortsatt likt etter overtid, avgjør samlet lagskade."
+      "modeHelper": "Med ekstraomganger spilles det videre til ett lag leder. «Uavgjort tillates» lar et kart som står likt, ende uavgjort, mens «ingen uavgjort» avgjør det på samlet lagskade.",
+      "tooltip": "Velg om det spilles ekstraomganger, og hva som skjer ved uavgjort etter maks antall runder. Innstillingene sendes til spillserverne som overtimeMode/overtimeSegments og virker likt i shuffle-turneringer og manuelle kamper.",
+      "shuffleTooltip": "Velg hvordan ekstraomganger fungerer i shuffle-kamper, og hvordan uavgjort etter maks runder avgjøres. Uten ekstraomganger kan like kamper enten ende uavgjort eller avgjøres på samlet lagskade, alt etter hva du velger.",
+      "segmentsLabel": "Antall ekstraomganger (valgfritt)",
+      "segmentsHelper": "Valgfritt: begrens antall ekstraomganger. La feltet stå tomt for spillserverens standard.",
+      "segmentsHelperValue_one": "Høyst {{count}} ekstraomgang. Står det fortsatt likt etter den, avgjør samlet lagskade.",
+      "segmentsHelperValue_other": "Høyst {{count}} ekstraomganger. Står det fortsatt likt etter dem, avgjør samlet lagskade."
     },
     "grandFinal": {
       "sectionTitle": "Finalemodus (dobbel eliminasjon)",
@@ -342,9 +342,9 @@
       "chooseMapsPlaceholder": "Velg kart …",
       "saveMapPool": "Lagre kartutvalg",
       "types": {
-        "defusal": "Defusal",
+        "defusal": "Desarmering",
         "hostage": "Gisler",
-        "armsRace": "Arms Race",
+        "armsRace": "Våpenkappløp",
         "unknown": "Ukjent"
       }
     },
@@ -431,8 +431,8 @@
       "bannerUpload": "Last opp et banner",
       "bannerReplace": "Bytt",
       "bannerRemove": "Fjern",
-      "bannerHelp": "Et bredt bilde øverst på turneringssiden. PNG, JPEG eller WEBP, opptil 2 MB. 1920 × 600 passer godt.",
-      "bannerWrongType": "Banneret må være et PNG-, JPEG- eller WEBP-bilde.",
+      "bannerHelp": "Et bredt bilde øverst på turneringssiden. PNG, JPEG eller WebP, opptil 2 MB. 1920 × 600 passer godt.",
+      "bannerWrongType": "Banneret må være et PNG-, JPEG- eller WebP-bilde.",
       "bannerTooLarge": "Banneret kan være høyst 2 MB.",
       "signupHeading": "Påmelding og innsjekk",
       "signupOpen": "Lag kan melde seg på selv",
@@ -573,7 +573,7 @@
         "cs2Title": "Counter-Strike 2-innstillinger",
         "cs2Help": "Sendes til CS2-serverne dine av spillmodulen for Counter-Strike 2.",
         "overtime": {
-          "enabled": "Overtid",
+          "enabled": "Ekstraomganger",
           "disabledDraws": "Av, uavgjort tillatt",
           "disabledNoDraws": "Av, skade avgjør"
         }
@@ -653,7 +653,7 @@
         },
         "confirmation": "Før et resultat gjelder",
         "confirmationHelp": {
-          "opponent": "Kapteinen på det andre laget må si seg enig før kampen er avgjort. De kan også protestere, og da går den til en administrator.",
+          "opponent": "Kapteinen på det andre laget må si seg enig før kampen er avgjort. Kapteinen kan også protestere, og da går kampen til en administrator.",
           "none": "Rapporten fra en kaptein avgjør kampen alene. Raskt, men passer bare der ingen ventes å være uenige."
         },
         "confirmationOptions": {
@@ -712,7 +712,7 @@
         "checkInLineNoStart_other": "Åpner {{count}} minutter før starten og stenger når den starter.",
         "checkInLineOff": "Ingen innsjekk: alle påmeldte lag spiller.",
         "captainsLabel": "Kapteiner kan sjekke inn lagkameratene sine",
-        "captainsHelp": "Eieren eller en kaptein kan merke en startspiller som til stede. Møter ikke spilleren opp, er det de som har ansvaret.",
+        "captainsHelp": "Eieren eller en kaptein kan merke en startspiller som til stede. Møter ikke spilleren opp, er det eieren eller kapteinen som har ansvaret.",
         "perMatchLabel": "Sjekk inn igjen før hver kamp",
         "perMatchHelp": "Av: én innsjekk før turneringen gjelder alle kampene. På: spillerne sjekker inn når vetoen til hver kamp åpner.",
         "fullTeamTitle": "Inn på serveren",
@@ -795,7 +795,7 @@
         "builtIn": "Innebygd",
         "saved": "Lagret",
         "standardRules": "Standardregler",
-        "ownTemplates": "Egne maler kommer fra <link>Maler og rangering</link>. Lagre turneringen som mal når den er satt opp."
+        "ownTemplates": "Egne maler kommer fra <link>Maler og rating</link>. Lagre turneringen som mal når den er satt opp."
       },
       "days": {
         "title": "Dag",
@@ -822,7 +822,7 @@
     },
     "archiveDialog": {
       "title": "Starte en ny turnering?",
-      "message": "{{name}} arkiveres. Resultatene, kampene og statistikken blir værende, og siden står fortsatt på sin adresse. Deretter oppretter du den neste.",
+      "message": "{{name}} arkiveres. Resultatene, kampene og statistikken blir værende, og siden ligger fortsatt på samme adresse. Deretter oppretter du den neste.",
       "confirm": "Arkiver og start ny",
       "delete": "Slett den og start ny",
       "deleteHint": "Eller slett den: da forsvinner resultatene, kampene og statistikken."
@@ -929,11 +929,11 @@
     },
     "status": {
       "setup": "Kommende",
-      "inProgress": "Live",
+      "inProgress": "Direkte",
       "completed": "Avsluttet",
       "finishedOn": "Avsluttet {{date}}"
     },
-    "liveNow": "{{count}} live nå",
+    "liveNow": "{{count}} pågår nå",
     "howItsPlayed": "Slik spilles kampene",
     "facts": {
       "teams": "Lag",
@@ -946,9 +946,9 @@
       "mapVeto": "Kartveto",
       "mapVetoCustom": "Egendefinert rekkefølge (lagkapteiner)",
       "mapVetoStandard": "Standard rekkefølge (lagkapteiner)",
-      "overtime": "Overtid",
+      "overtime": "Ekstraomganger",
       "overtimeEnabledUnlimited": "På, ubegrenset",
-      "overtimeEnabledSegments": "På, {{count}} periode(r)",
+      "overtimeEnabledSegments": "På, høyst {{count}}",
       "overtimeDisabled": "Av (avgjøres på skade)"
     },
     "mapPool": "Kartutvalg",
@@ -964,7 +964,7 @@
       "goToMatch": "Gå til kampen din",
       "openMatch": "Åpne kampsiden",
       "state": {
-        "live": "Live",
+        "live": "Direkte",
         "loaded": "Koble til nå",
         "upNext": "Neste",
         "finished": "Ferdig",
@@ -991,7 +991,7 @@
     "notFoundDescription": "Denne turneringen finnes ikke, eller er ikke opprettet ennå.",
     "loading": "Laster …",
     "about": "Om",
-    "liveStripLabel": "Live nå",
+    "liveStripLabel": "Direkte nå",
     "bracketTab": {
       "loadError": "Kunne ikke laste turneringstreet.",
       "emptyTitle": "Ingen turneringstre ennå",
@@ -1003,12 +1003,12 @@
       "loadError": "Kunne ikke laste kampene.",
       "emptyTitle": "Ingen kamper ennå",
       "emptyDescription": "Kampene vises her når turneringen starter.",
-      "live": "Live nå",
+      "live": "Direkte nå",
       "upcoming": "Neste",
       "results": "Resultater",
       "vs": "mot",
       "status": {
-        "live": "Live",
+        "live": "Direkte",
         "loaded": "Starter",
         "final": "Ferdig",
         "upcoming": "Kommende"
@@ -1054,7 +1054,7 @@
     "roundOf": "Runde {{current}} av {{total}}",
     "complete": "Ferdig",
     "inProgress": "Pågår",
-    "matchProgress": "Kampfremdrift",
+    "matchProgress": "Kampframdrift",
     "completedOf": "{{completed}} / {{total}} ferdig",
     "completedCount": "{{count}} ferdig",
     "playingCount": "{{count}} spilles",
@@ -1069,7 +1069,7 @@
     "waitingForPlayers": "Venter på spillere",
     "inServerCount": "{{count}} av {{expected}} på serveren. Kampen starter når alle er klare.",
     "inServerCountBots": "{{count}} på serveren. Boter tar de tomme plassene. Kampen starter når alle her er klare.",
-    "live": "Live",
+    "live": "Direkte",
     "round": "Runde {{n}}",
     "vetoTitle": "Kartveto pågår",
     "finished": "Kampen er ferdig",
@@ -1167,7 +1167,7 @@
     "withdraw": "Trekk laget",
     "withdrawTitle": "Trekke {{team}}?",
     "withdrawBody": "Laget forlater turneringen, og plassen åpnes for et annet lag.",
-    "sub": "Reserve",
+    "sub": "Innbytter",
     "ready": "Klar",
     "problem": {
       "noAccount": "Har ikke logget inn på Auto Tournament ennå",
@@ -1207,13 +1207,13 @@
     },
     "playerCount": "{{count}} spillere",
     "whoPlays": "Hvem spiller?",
-    "whoPlaysHint": "Velg {{count}} startspillere og opptil {{subs}} reserver. Du kan endre oppstillingen til innsjekken stenger.",
+    "whoPlaysHint": "Velg {{count}} startspillere og opptil {{subs}} innbyttere. Du kan endre oppstillingen til innsjekken stenger.",
     "rating": "Rating {{rating}}",
     "slotFor": "Rolle for {{name}}",
     "starter": "Start",
     "out": "Ute",
     "starters": "Startspillere",
-    "subs": "Reserver",
+    "subs": "Innbyttere",
     "lineupRating": "Lagets rating",
     "missingAccounts": "{{names}} må fortsatt logge inn",
     "fixBeforeCheckIn": "Du kan melde på nå. Fiks det før innsjekk.",
@@ -1243,16 +1243,16 @@
     "remind": "Påminn",
     "reminded": "Påminnelse sendt i lagchatten",
     "done": "Ferdig",
-    "lineupGap": "En starter forlot lagoppstillingen (utestengt eller slettet). Kampene deres venter til {{time}}: velg en reserve før det, ellers flyttes den første reserven inn. Uten reserve spiller dere med en spiller mindre.",
-    "pickSub": "Velg reserve",
+    "lineupGap": "En startspiller forlot lagoppstillingen (utestengt eller slettet). Kampene deres venter til {{time}}: velg en innbytter før det, ellers flyttes den første innbytteren inn. Uten innbytter spiller dere med en spiller mindre.",
+    "pickSub": "Velg innbytter",
     "title": "Meld på laget ditt",
     "editTitle": "Endre oppstillingen",
     "stepsLabel": "Steg",
     "changeUntil": "Du kan endre oppstillingen til innsjekken stenger, {{when}}.",
-    "counts": "{{starters}} av {{teamSize}} startspillere · {{subs}} av {{maxSubs}} reserver",
+    "counts": "{{starters}} av {{teamSize}} startspillere · {{subs}} av {{maxSubs}} innbyttere",
     "lineupRatingValue": "Lagets rating {{rating}}",
     "missingGame": "{{names}} må legge til {{game}} på profilen sin.",
-    "subsLine": "reserve: {{names}}",
+    "subsLine": "innbyttere: {{names}}",
     "overlap": {
       "title": "Du kan ikke melde deg på denne",
       "body": "Du er med i {{name}}, som har en kamp {{when}}, samtidig som denne turneringen. Du kan være med i begge når kamptidene ikke overlapper.",
@@ -1300,8 +1300,8 @@
     "winnerOf": "Vinner av {{match}}",
     "loserOf": "Taper i {{match}}",
     "tbd": "Ikke avgjort",
-    "liveCount_one": "{{count}} live",
-    "liveCount_other": "{{count}} live",
+    "liveCount_one": "{{count}} pågår",
+    "liveCount_other": "{{count}} pågår",
     "matchCount_one": "{{count}} kamp",
     "matchCount_other": "{{count}} kamper"
   },
@@ -1432,7 +1432,7 @@
   },
   "liveOverview": {
     "roundOf": "Runde {{round}} av {{total}}",
-    "liveCount": "{{count}} live nå",
+    "liveCount": "{{count}} pågår nå",
     "eta": {
       "nextRoundAbout": "Neste runde ca. {{time}}",
       "nextRoundAt": "Neste runde kl. {{time}}",
@@ -1454,8 +1454,8 @@
       "outBody": "Det var den siste kampen deres. Godt spilt! Matchmaking er åpen hvis du vil fortsette å spille.",
       "wonTitle": "Du vant turneringen!",
       "wonBody": "Godt spilt. Premien din ligger i inventaret ditt.",
-      "spectatorTitle": "{{count}} kamper live",
-      "spectatorTitleOne": "1 kamp live",
+      "spectatorTitle": "{{count}} kamper pågår",
+      "spectatorTitleOne": "1 kamp pågår",
       "spectatorIdleTitle": "Mellom rundene",
       "spectatorBody": "Åpne en kamp for å se stillingen, kartene og hvem som spiller.",
       "openMatchRoom": "Åpne kamprommet",
@@ -1472,7 +1472,7 @@
       "wonStage": "{{stage}} vunnet {{score}}",
       "stageNext": "{{stage}} neste",
       "faceWinnerOf": "{{us}} møter vinneren av {{a}} mot {{b}} ({{state}}). Vetoen åpner når den kampen er ferdig. Du får et varsel.",
-      "feederLive": "{{score}}, kart {{map}} live",
+      "feederLive": "{{score}}, kart {{map}} pågår",
       "feederNotStarted": "ikke startet ennå",
       "vetoOpens": "Vetoen åpner",
       "inAboutMinutes_one": "om ~{{count}} min",
@@ -1495,7 +1495,7 @@
       "next": "Neste",
       "later": "Senere",
       "done": "✓ Ferdig",
-      "live": "Live",
+      "live": "Direkte",
       "upcoming": "Kommende"
     },
     "thisRound": "Runde {{n}}",
@@ -1523,17 +1523,17 @@
       "change": "±",
       "kd": "K / D",
       "adr": "ADR",
-      "winRate": "Seiersandel",
+      "winRate": "Seiersprosent",
       "none": "Ingen spillere passer til søket."
     }
   },
   "matchesCards": {
     "show": "Vis",
     "filterAll": "Alle {{count}}",
-    "filterLive": "Live {{count}}",
+    "filterLive": "Direkte {{count}}",
     "filterUpcoming": "Kommende {{count}}",
     "done": "Ferdig",
-    "afterOvertime": "etter overtid",
+    "afterOvertime": "etter ekstraomganger",
     "startsAt": "starter {{time}} · vetoen åpner {{veto}}",
     "yourMatch": "Kampen din",
     "placeholderTbd": "Ikke satt",
@@ -1555,7 +1555,7 @@
     }
   },
   "teamsCards": {
-    "subs": "Reserver: {{names}}"
+    "subs": "Innbyttere: {{names}}"
   },
   "rulesTab": {
     "atAGlance": "Kort fortalt",
@@ -1582,8 +1582,8 @@
       "double_elimination": "En vinnerside og en taperside. Taper du to ganger, er du ute.",
       "round_robin": "Alle møter alle én gang. Rangert etter seiere, så etter reglene for likt nedenfor.",
       "shuffle": "Lagene trekkes på nytt hver runde blant de påmeldte spillerne. Spillerne rangeres etter seiere.",
-      "matches": "Hver kamp er {{series}} på MR{{mr}}-kart. Overtid: {{overtime}}.",
-      "damage": "Står et kart fortsatt likt etter siste overtid, vinner laget med mest total skade."
+      "matches": "Hver kamp er {{series}} på MR{{mr}}-kart. Ekstraomganger: {{overtime}}.",
+      "damage": "Står et kart fortsatt likt etter siste ekstraomgang, vinner laget med mest total skade."
     }
   },
   "liveMatch": {
@@ -1598,7 +1598,7 @@
     "adminCalled": "En admin er på vei",
     "joinTitle": "Bli med på serveren: {{map}}",
     "warmup": "Oppvarming · bli med nå",
-    "isLive": "{{map}} er live",
+    "isLive": "{{map}} er i gang",
     "players": "Spillere",
     "playersOnMap": "Spillere · {{map}}",
     "noEconomy": "Sortert etter rating. Ingen penger eller utstyr: ingenting som røper økonomien til et lag.",
@@ -1607,7 +1607,7 @@
     "manage": "Administrer denne kampen",
     "finishedAt": "ferdig {{when}}",
     "delayedNote_one": "Viser det GOTV viser, {{count}} sekund bak.",
-    "delayedNote_other": "Viser det GOTV viser, {{count}} s bak."
+    "delayedNote_other": "Viser det GOTV viser, {{count}} sekunder bak."
   },
   "preStart": {
     "open": "Påmeldingen er åpen",
@@ -1615,8 +1615,8 @@
     "closed": "Påmeldingen er stengt",
     "notOpenTitle": "Påmeldingen er ikke åpen",
     "fullTitle": "Alle plassene er tatt",
-    "spotsLeft_one": "{{count}} av {{max}} plasser igjen. Kapteinene velger startspillere og reserver.",
-    "spotsLeft_other": "{{count}} av {{max}} plasser igjen. Kapteinene velger startspillere og reserver.",
+    "spotsLeft_one": "{{count}} av {{max}} plasser igjen. Kapteinene velger startspillere og innbyttere.",
+    "spotsLeft_other": "{{count}} av {{max}} plasser igjen. Kapteinene velger startspillere og innbyttere.",
     "byOrganizer": "Arrangøren legger til lagene.",
     "captainsPick": "Kapteinene velger startspillere og innbyttere.",
     "startsIn": "Starter om",
@@ -1632,7 +1632,7 @@
     "openLineup": "Åpne oppstillingen din",
     "yourSignup": "Påmeldingen din",
     "spotOf": "plass {{place}} av {{max}}",
-    "lineupCount": "Oppstilling · {{starters}} startspillere, {{subs}} reserver",
+    "lineupCount": "Oppstilling · {{starters}} startspillere, {{subs}} innbyttere",
     "fixBeforeCheckIn": "Fiks før innsjekk",
     "leave": "Forlat turneringen",
     "withdrawHint": "Kan du ikke delta? Trekker du deg, blir plassen ledig for et annet lag.",
@@ -1640,7 +1640,7 @@
     "opensIn": "Åpner om {{time}}."
   },
   "shuffleOverview": {
-    "yourMatchLive": "kampen din er live",
+    "yourMatchLive": "kampen din er i gang",
     "yourMatchReady": "kampen din er klar",
     "yourMatchDone": "kampen din er ferdig",
     "nextDraw": "Neste trekning",

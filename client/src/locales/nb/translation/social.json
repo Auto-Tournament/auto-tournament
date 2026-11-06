@@ -51,7 +51,7 @@
       "highlightAssist": "Du hjalp {{name}} i dette klippet:",
       "highlightKiller": "Du tok ut {{name}} i dette klippet:",
       "tournamentStarted": "har startet. Første kamp er klar.",
-      "lineupGap": "· en starter forlot lagoppstillingen. Velg en reserve i løpet av {{minutes}} minutter, ellers spiller dere med en spiller mindre.",
+      "lineupGap": "· en startspiller forlot lagoppstillingen. Velg en innbytter i løpet av {{minutes}} minutter, ellers spiller dere med en spiller mindre.",
       "checkInOpen": "innsjekking er åpen. Sjekk inn før den stenger.",
       "joined": "Du ble med i gruppen",
       "nowFriends": "Dere er nå venner",

@@ -14,7 +14,7 @@
       "createManual": "Eller opprett manuell kamp"
     },
     "sections": {
-      "live": "Live-kamper ({{count}})",
+      "live": "Direktekamper ({{count}})",
       "upcoming": "Kommende kamper ({{count}})",
       "history": "Kamphistorikk ({{count}})",
       "inQueue": "{{count}} i kø"
@@ -90,8 +90,8 @@
       "filter": {
         "attention_one": "Trenger oppfølging · {{count}}",
         "attention_other": "Trenger oppfølging · {{count}}",
-        "live_one": "Live · {{count}}",
-        "live_other": "Live · {{count}}",
+        "live_one": "Direkte · {{count}}",
+        "live_other": "Direkte · {{count}}",
         "veto_one": "Veto · {{count}}",
         "veto_other": "Veto · {{count}}",
         "waiting_one": "Venter · {{count}}",
@@ -115,7 +115,7 @@
         "decide": "Avgjør resultatet"
       },
       "phase": {
-        "live": "Live · kart {{map}}",
+        "live": "Direkte · kart {{map}}",
         "finished": "Ferdig",
         "finishedScore": "Ferdig · {{score}}",
         "veto": "Kartveto",
@@ -188,7 +188,7 @@
     "replacePlayerAria": "Bytt ut {{name}}",
     "replacePlayerTooltip": "Bytt ut denne spilleren",
     "accountLabel": "{{account}}-konto (valgfritt)",
-    "accountHelper": "For {{games}}. Når de logger inn med {{account}}, blir de denne spilleren."
+    "accountHelper": "For {{games}}. Den som logger inn med denne {{account}}-kontoen, blir denne spilleren."
   },
   "playerModal": {
     "titleCreate": "Opprett spiller",
@@ -204,7 +204,7 @@
     "eloLabelEdit": "ELO",
     "eloHelperNew": "La feltet stå tomt for å bruke standardverdien (1500).",
     "eloHelperEdit": "Hvis du endrer ELO, tilbakestilles spillerens rating og statistikk. Dette kan ikke angres.",
-    "isAdminLabel": "Admin – styrer dette nettstedet. Spillmoduler kan også gi admins rettigheter i spillet.",
+    "isAdminLabel": "Admin – styrer dette nettstedet. Spillmoduler kan også gi administratorer rettigheter i spillet.",
     "currentElo": "Nåværende ELO: {{value}}",
     "startingElo": "Start-ELO: {{value}}",
     "matchesPlayed": "Spilte kamper: {{count}}",
@@ -237,8 +237,8 @@
     },
     "discordIdHelper": "Valgfritt. 17–20 sifre. Lar arrangørene nå denne spilleren på Discord. Vises aldri offentlig.",
     "accountLabel": "{{account}}-konto (valgfritt)",
-    "accountHelper": "For {{games}}. Konto-ID-en. Når de logger inn med {{account}}, blir de denne spilleren.",
-    "accountVerified": "Koblet: de har logget inn med {{account}}. De endrer den selv."
+    "accountHelper": "For {{games}}. Konto-ID-en. Den som logger inn med denne {{account}}-kontoen, blir denne spilleren.",
+    "accountVerified": "Koblet: spilleren har logget inn med {{account}} og endrer den selv."
   },
   "matchDetailsModal": {
     "delete": {
@@ -250,7 +250,7 @@
       "failed": "Kunne ikke slette kampen"
     },
     "roster": {
-      "title": "Spillerstall",
+      "title": "Lagoppstillinger",
       "yourTeam": "Laget ditt",
       "openPlayerPage": "Åpne spillersiden",
       "ready": "KLAR",
@@ -345,7 +345,7 @@
       "loadPlayers": "Klarte ikke å laste registrerte spillere",
       "noMatches": "Legg til minst én kamp for å opprette.",
       "bothTeamsRequired": "Kamp {{index}}: begge lagene må ha minst én spiller.",
-      "conflictingPlayers": "Kamp {{index}}: en spiller kan ikke være på begge lagene. Konflikt-ID(er): {{ids}}",
+      "conflictingPlayers": "Kamp {{index}}: en spiller kan ikke være på begge lagene. Spillere det gjelder: {{ids}}",
       "mapRequired": "Kamp {{index}}: velg et kart (et standardkart ovenfor eller et kart for denne kampen).",
       "rowMaxRoundsRange": "Kamp {{index}}: maks runder må være mellom 1 og 30 når det overstyres per kamp.",
       "globalMaxRoundsRange": "Maks runder må være mellom 1 og 30.",
