@@ -14,6 +14,7 @@ import {
   nlNL,
   nbNO,
   ruRU,
+  ukUA,
 } from '@mui/material/locale';
 import App from './App';
 import './index.css';
@@ -48,6 +49,7 @@ const getMuiLocale = (lang: string) => {
   // Built-in MUI strings (Autocomplete "Clear"/"Open", pagination, …)
   if (lang.startsWith('nb') || lang.startsWith('no')) return nbNO;
   if (lang.startsWith('ru')) return ruRU;
+  if (lang.startsWith('uk')) return ukUA;
   return enUS;
 };
 
