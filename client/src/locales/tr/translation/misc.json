@@ -714,9 +714,9 @@
         "draw": "Beraberlik"
       },
       "resultShort": {
-        "win": "W",
-        "loss": "L",
-        "draw": "D"
+        "win": "G",
+        "loss": "M",
+        "draw": "B"
       },
       "backToMatch": "Maçına dön",
       "online_one": "{{count}} çevrimiçi",

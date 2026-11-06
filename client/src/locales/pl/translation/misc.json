@@ -730,9 +730,9 @@
         "draw": "Remis"
       },
       "resultShort": {
-        "win": "W",
-        "loss": "L",
-        "draw": "D"
+        "win": "Z",
+        "loss": "P",
+        "draw": "R"
       },
       "backToMatch": "Wróć do swojego meczu",
       "online_one": "{{count}} online",

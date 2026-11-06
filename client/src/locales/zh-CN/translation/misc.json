@@ -714,9 +714,9 @@
         "draw": "平"
       },
       "resultShort": {
-        "win": "W",
-        "loss": "L",
-        "draw": "D"
+        "win": "胜",
+        "loss": "负",
+        "draw": "平"
       },
       "backToMatch": "回到你的比赛",
       "online_one": "{{count}} 人在线",

@@ -714,9 +714,9 @@
         "draw": "引き分け"
       },
       "resultShort": {
-        "win": "W",
-        "loss": "L",
-        "draw": "D"
+        "win": "勝",
+        "loss": "敗",
+        "draw": "分"
       },
       "backToMatch": "試合に戻る",
       "online_one": "{{count}} 人オンライン",

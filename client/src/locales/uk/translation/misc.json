@@ -730,9 +730,9 @@
         "draw": "Нічия"
       },
       "resultShort": {
-        "win": "W",
-        "loss": "L",
-        "draw": "D"
+        "win": "В",
+        "loss": "П",
+        "draw": "Н"
       },
       "backToMatch": "Назад до свого матчу",
       "online_one": "У мережі: {{count}}",
