@@ -1,0 +1,124 @@
+{
+  "origin-hint": {
+    "seed": "シード {{position}}",
+    "winner-bracket": "$t(abbreviations.winner-bracket) {{round}}.{{position}} の敗者",
+    "winner-bracket-semi-final": "$t(abbreviations.winner-bracket) 準決勝 {{position}} の敗者",
+    "winner-bracket-final": "$t(abbreviations.winner-bracket) 決勝の敗者",
+    "consolation-final": "準決勝 {{position}} の敗者",
+    "grand-final": "$t(abbreviations.loser-bracket) 決勝の勝者",
+    "double-elimination-consolation-final-opponent-1": "$t(abbreviations.loser-bracket) 準決勝 1 の敗者",
+    "double-elimination-consolation-final-opponent-2": "$t(abbreviations.loser-bracket) 決勝の敗者"
+  },
+  "match-label": {
+    "default": "試合 {{matchNumber}}",
+    "winner-bracket": "$t(abbreviations.winner-bracket)",
+    "loser-bracket": "$t(abbreviations.loser-bracket)",
+    "standard-bracket": "$t(abbreviations.match)",
+    "standard-bracket-semi-final": "準決勝 {{matchNumber}}",
+    "standard-bracket-final": "決勝",
+    "double-elimination": "{{matchPrefix}} {{roundNumber}}.{{matchNumber}}",
+    "double-elimination-semi-final": "{{matchPrefix}} 準決勝 {{matchNumber}}",
+    "double-elimination-final": "{{matchPrefix}} 決勝",
+    "consolation-final": "3位決定戦",
+    "grand-final-single": "グランドファイナル",
+    "grand-final": "$t(abbreviations.grand-final) {{roundNumber}}回戦",
+    "match-game": "ゲーム {{gameNumber}}"
+  },
+  "match-status": {
+    "locked": "ロック",
+    "waiting": "待機中",
+    "ready": "準備完了",
+    "running": "進行中",
+    "completed": "完了",
+    "archived": "アーカイブ済み"
+  },
+  "abbreviations": {
+    "win": "W",
+    "loss": "L",
+    "forfeit": "F",
+    "position": "P",
+    "seed": "#",
+    "winner-bracket": "WB",
+    "loser-bracket": "LB",
+    "match": "M",
+    "grand-final": "GF"
+  },
+  "ranking": {
+    "rank": {
+      "text": "#",
+      "tooltip": "順位"
+    },
+    "id": {
+      "text": "名前",
+      "tooltip": "名前"
+    },
+    "played": {
+      "text": "P",
+      "tooltip": "試合数"
+    },
+    "wins": {
+      "text": "$t(abbreviations.win)",
+      "tooltip": "勝利"
+    },
+    "draws": {
+      "text": "D",
+      "tooltip": "引き分け"
+    },
+    "losses": {
+      "text": "$t(abbreviations.loss)",
+      "tooltip": "敗北"
+    },
+    "forfeits": {
+      "text": "$t(abbreviations.forfeit)",
+      "tooltip": "不戦敗"
+    },
+    "scoreFor": {
+      "text": "得点",
+      "tooltip": "得点"
+    },
+    "scoreAgainst": {
+      "text": "失点",
+      "tooltip": "失点"
+    },
+    "scoreDifference": {
+      "text": "+/-",
+      "tooltip": "得失点差"
+    },
+    "points": {
+      "text": "Pts",
+      "tooltip": "ポイント"
+    }
+  },
+  "common": {
+    "bye": "不戦",
+    "best-of-x": "BO{{x}}",
+    "consolation": "3位決定戦",
+    "group-name": "グループ {{groupNumber}}",
+    "group-name-winner-bracket": "勝者側",
+    "group-name-loser-bracket": "敗者側",
+    "round-name": "{{roundNumber}}回戦",
+    "round-name-final": "最終回戦",
+    "round-name-winner-bracket": "$t(abbreviations.winner-bracket) {{roundNumber}}回戦",
+    "round-name-winner-bracket-final": "$t(abbreviations.winner-bracket) 最終回戦",
+    "round-name-loser-bracket": "$t(abbreviations.loser-bracket) {{roundNumber}}回戦",
+    "round-name-loser-bracket-final": "$t(abbreviations.loser-bracket) 最終回戦"
+  },
+  "form-creator": {
+    "stage-name-label": "ステージ名",
+    "stage-name-placeholder": "ステージの名前を入力",
+    "stage-selector-label": "ステージを選択",
+    "team-label": "チーム名",
+    "team-label-placeholder": "カンマ区切りのチーム名リスト(2^n 個)",
+    "team-count": "またはチーム数",
+    "team-count-placeholder": "チーム数は?",
+    "group-label": "グループ数は?",
+    "group-placeholder": "グループ数は?",
+    "seed-order-label": "シードの並べ方は?",
+    "double-elimination-seed-order-placeholder": "ダブルエリミネーションのシード順(カンマ区切り)",
+    "round-robin-mode-label": "総当たりのモードは?",
+    "consolation-final-label": "3位決定戦",
+    "skip-first-round-label": "1回戦をスキップ",
+    "grand-final-type-label": "グランドファイナルの種類",
+    "submit": "作成"
+  }
+}
