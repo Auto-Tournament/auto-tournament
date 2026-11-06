@@ -1,0 +1,1810 @@
+{
+  "tournament": {
+    "startConfirm": {
+      "intro": "Siap memulai turnamen?",
+      "thisWill": "Ini akan:",
+      "openMatches": "Membuka pertandingan babak pertama untuk dimainkan",
+      "statusInProgress": "Mengubah status turnamen menjadi BERLANGSUNG",
+      "confirm": "Ya, mulai turnamen",
+      "started": "Turnamen dimulai! Pertandingan babak pertama sudah dibuka."
+    },
+    "steps": {
+      "create": "Buat turnamen",
+      "review": "Tinjau & konfirmasi",
+      "live": "Turnamen live"
+    },
+    "welcome": {
+      "heading": "Buat turnamen",
+      "chooseMethod": "Pilih cara Anda ingin membuat turnamen",
+      "createNewTitle": "Buat turnamen baru",
+      "createNewDescription": "Mulai dari awal dan atur semua pengaturan turnamen secara manual"
+    },
+    "typeSelector": {
+      "categories": {
+        "professional": {
+          "label": "Seri profesional"
+        },
+        "party": {
+          "label": "Party & seru-seruan"
+        }
+      },
+      "types": {
+        "single_elimination": {
+          "label": "Single elimination",
+          "description": "Sekali kalah langsung gugur. Format bracket klasik yang dipakai di turnamen profesional."
+        },
+        "double_elimination": {
+          "label": "Double elimination",
+          "description": "Gugur setelah dua kekalahan. Tim mendapat kesempatan kedua di lower bracket."
+        },
+        "round_robin": {
+          "label": "Round robin",
+          "description": "Semua melawan semua. Cocok untuk kompetisi bergaya liga."
+        },
+        "swiss": {
+          "label": "Sistem Swiss",
+          "description": "Tim dengan rekor serupa saling berhadapan. Pertandingan seimbang sepanjang turnamen."
+        },
+        "shuffle": {
+          "label": "Turnamen acak",
+          "description": "Pemain diacak secara dinamis ke tim yang seimbang setiap babak. Kompetisi individu dengan penyeimbangan tim berbasis ELO."
+        },
+        "groups": {
+          "label": "Grup, lalu playoff",
+          "description": "Round robin dalam grup; tim terbaik tiap grup bermain sistem gugur."
+        }
+      },
+      "selectedChip": "Dipilih"
+    },
+    "review": {
+      "summary": {
+        "info": "Tinjau pengaturan turnamen Anda dan klik \"{{button}}\" saat sudah siap.",
+        "nameLabel": "Nama turnamen",
+        "typeLabel": "Jenis turnamen",
+        "formatLabel": "Format pertandingan",
+        "notSet": "Belum diatur",
+        "estimatedVolumeText": "Sekitar {{matches}} dalam {{rounds}} (best of {{mapsPerMatch}}, total hingga {{maps}})."
+      }
+    },
+    "formSteps": {
+      "steps": {
+        "name": "Nama",
+        "type": "Jenis",
+        "format": "Format",
+        "maps": "Peta",
+        "teams": "Tim",
+        "review": "Tinjau"
+      },
+      "backToWelcome": "Kembali ke Selamat datang",
+      "back": "Kembali",
+      "next": "Lanjut"
+    },
+    "emptyBracket": {
+      "title": "Tidak ada bracket untuk ditampilkan",
+      "description": "Buat turnamen dan susun bracket untuk memulai"
+    },
+    "common": {
+      "createTournament": "Buat turnamen"
+    },
+    "nameLabel": "Nama turnamen",
+    "namePlaceholder": "Turnamen Musim Semi Auto Tournament 2025",
+    "champion": {
+      "title": "Juara"
+    },
+    "page": {
+      "title": "Pengaturan turnamen"
+    },
+    "labels": {
+      "teams": "Tim",
+      "maps": "Peta",
+      "format": "Format",
+      "players": "Pemain",
+      "matchRules": "Aturan pertandingan",
+      "servers": "Server",
+      "overtimeSettings": "Pengaturan overtime",
+      "mapPool": "Kumpulan peta"
+    },
+    "tooltips": {
+      "deleteTournament": "Hapus permanen turnamen ini beserta semua datanya"
+    },
+    "counts": {
+      "teams_one": "{{count}} tim",
+      "teams_other": "{{count}} tim",
+      "matches_one": "{{count}} pertandingan",
+      "matches_other": "{{count}} pertandingan",
+      "rounds_one": "{{count}} babak",
+      "rounds_other": "{{count}} babak",
+      "maps_one": "{{count}} peta",
+      "maps_other": "{{count}} peta",
+      "servers_one": "{{count}} server",
+      "servers_other": "{{count}} server",
+      "availableServers_one": "{{count}} server tersedia",
+      "availableServers_other": "{{count}} server tersedia",
+      "concurrentMatches_one": "{{count}} pertandingan bersamaan",
+      "concurrentMatches_other": "{{count}} pertandingan bersamaan",
+      "enabledServers_one": "{{count}} server aktif",
+      "enabledServers_other": "{{count}} server aktif"
+    },
+    "matchRules": {
+      "value": "Maks {{maxRounds}} ronde per peta; pemenangnya yang pertama mencapai {{winRounds}} ronde.",
+      "teamSizeValue": "Ukuran tim: {{size}}v{{size}}",
+      "overtimeEnabled": "Overtime: aktif",
+      "overtimeDisabled": "Overtime: nonaktif (tanpa overtime)",
+      "overtimeDisabledNoDraws": "Overtime: nonaktif (tanpa seri – tiebreak damage)",
+      "overtimeSegments_one": "Segmen overtime: {{count}} segmen",
+      "overtimeSegments_other": "Segmen overtime: {{count}} segmen",
+      "overtimeSegmentsDefault": "Segmen overtime: bawaan server game",
+      "overtimeSegmentsDefaultUnlimited": "Segmen overtime: bawaan server game (biasanya tanpa batas)"
+    },
+    "toasts": {
+      "loadTemplateFailed": "Gagal memuat template",
+      "nameRequired": "Nama turnamen wajib diisi",
+      "nameUpdated": "Nama turnamen diperbarui",
+      "nameUpdateFailed": "Gagal memperbarui nama turnamen",
+      "selectAtLeastOneMap": "Pilih minimal 1 peta",
+      "maxRoundsRange": "Ronde maksimum harus antara 1 dan 30",
+      "teamSizeRange": "Ukuran tim harus antara 2 dan 10 pemain",
+      "invalidTeamCount": "Jumlah tim tidak valid",
+      "selectAtLeastTwoTeams": "Pilih minimal 2 tim",
+      "shuffleCreated": "Turnamen acak \"{{name}}\" berhasil dibuat! Langkah berikutnya: daftarkan minimal {{minPlayers}} pemain untuk memulai turnamen (pertandingan {{teamSize}}v{{teamSize}}).",
+      "shuffleCreateFailed": "Gagal membuat turnamen acak",
+      "shuffleCreateFailedRetry": "Gagal membuat turnamen acak. Periksa pengaturan Anda lalu coba lagi.",
+      "updated": "Turnamen diperbarui & bracket disusun ulang!",
+      "created": "Turnamen dibuat!",
+      "saveFailed": "Gagal menyimpan turnamen",
+      "deleted": "Turnamen berhasil dihapus",
+      "deleteFailed": "Gagal menghapus turnamen",
+      "regenerated": "Bracket berhasil disusun ulang",
+      "regenerateFailed": "Gagal menyusun ulang bracket",
+      "resetDone": "Turnamen direset ke mode penyiapan",
+      "resetFailed": "Gagal mereset turnamen",
+      "started_one": "Turnamen dimulai! {{count}} pertandingan dialokasikan ke server.",
+      "started_other": "Turnamen dimulai! {{count}} pertandingan dialokasikan ke server.",
+      "startRequested": "Permintaan memulai turnamen terkirim. Server akan segera dialokasikan.",
+      "startFailed": "Gagal memulai turnamen",
+      "templateSaved": "Template berhasil disimpan!",
+      "disableServersFailed": "Gagal menonaktifkan satu atau beberapa server: {{message}}",
+      "noChangesToSave": "Tidak ada perubahan untuk disimpan",
+      "invalidMapSelection": "Pilihan peta tidak valid",
+      "archived": "Turnamen diarsipkan. Buat yang berikutnya.",
+      "archiveFailed": "Tidak dapat mengarsipkan turnamen"
+    },
+    "outdatedServers": {
+      "title": "Server perlu diperbarui",
+      "body": "Satu atau beberapa server aktif sudah usang (atau tidak dapat diverifikasi) menurut Steam. Perbarui server itu, atau nonaktifkan untuk melanjutkan dengan server yang tersisa.",
+      "confirm": "Nonaktifkan server terdampak & coba lagi",
+      "disabling": "Menonaktifkan...",
+      "goToServers": "Ke Server"
+    },
+    "live": {
+      "saveNameAria": "Simpan nama turnamen",
+      "cancelRenameAria": "Batalkan ganti nama turnamen",
+      "editNameAria": "Edit nama turnamen",
+      "renameTooltip": "Ganti nama turnamen",
+      "alert": {
+        "liveTitle": "Turnamen sedang live",
+        "liveBody": "Pertandingan sedang berjalan di server. Anda tidak bisa mengedit pengaturan turnamen saat live (kecuali nama turnamen).",
+        "pendingTitle": "Turnamen berlangsung",
+        "pendingBody": "Pertandingan dimulai begitu server dialokasikan dan veto selesai. Anda tidak bisa mengedit pengaturan turnamen selama turnamen berjalan (kecuali nama turnamen).",
+        "completedTitle": "Turnamen selesai",
+        "completedBody": "Semua pertandingan turnamen ini sudah selesai. Buat turnamen baru atau reset turnamen ini untuk mulai lagi."
+      },
+      "teamsCompeting_one": "{{count}} tim bertanding",
+      "teamsCompeting_other": "{{count}} tim bertanding",
+      "playersCompeting_one": "{{count}} pemain bertanding",
+      "playersCompeting_other": "{{count}} pemain bertanding",
+      "playersCompetingUnknown": "Pemain yang bertanding",
+      "shuffleSettingsLabel": "Pengaturan acak",
+      "maxRoundsPerMapValue": "Ronde maks per peta: {{rounds}}",
+      "eloTemplateValue": "Template ELO: {{template}}",
+      "mapSequenceLabel": "Urutan peta (babak)",
+      "noMapsConfigured": "Belum ada peta yang diatur.",
+      "viewBracket": "Lihat bracket",
+      "viewBracketTooltip": "Lihat bracket turnamen dan detail pertandingan",
+      "leaderboardTooltip": "Buka halaman papan peringkat publik untuk dibagikan ke pemain",
+      "restartTooltip": "Akhiri semua pertandingan aktif di server dan muat ulang (berguna untuk pertandingan yang macet)",
+      "resetTooltip": "Akhiri semua pertandingan dan reset turnamen ke mode penyiapan (pengaturan turnamen tetap, tetapi semua data pertandingan dihapus)",
+      "reset": "Reset ke penyiapan",
+      "dangerZone": "Zona berbahaya",
+      "newTournament": "Turnamen baru"
+    },
+    "reviewCard": {
+      "needPlayersWarning": "Butuh minimal {{minPlayers}} pemain untuk memulai turnamen (pertandingan {{teamSize}}v{{teamSize}}). Saat ini terdaftar: {{registered}}",
+      "start": "Mulai turnamen",
+      "starting": "Memulai...",
+      "startSimulation": "Mulai simulasi",
+      "startingSimulation": "Memulai simulasi...",
+      "bulkCreateMatches": "Buat banyak pertandingan",
+      "edit": "Edit",
+      "regenerate": "Susun ulang",
+      "regenerateTooltip": "Hapus semua pertandingan saat ini dan susun ulang bracket dengan pengaturan yang sama.",
+      "regenerateDisabledTooltip": "Susun bracket minimal sekali (Simpan & susun bracket) sebelum bisa menyusun ulang."
+    },
+    "dialogs": {
+      "items": {
+        "endMatches": "Akhiri semua pertandingan aktif di server",
+        "deleteMatches": "Hapus semua pertandingan dan bracket",
+        "deleteData": "Hapus semua data pertandingan dan statistik"
+      },
+      "delete": {
+        "title": "🗑️ Hapus turnamen",
+        "question": "Yakin ingin MENGHAPUS permanen <b>\"{{name}}\"</b>?",
+        "willTitle": "⚠️ Ini akan:",
+        "items": {
+          "removeTournament": "Menghapus turnamen sepenuhnya",
+          "cannotBeUndone": "Tidak bisa dibatalkan"
+        },
+        "note": "💡 Catatan: Jika Anda hanya ingin mulai lagi dengan pengaturan turnamen yang sama, gunakan \"Reset ke penyiapan\".",
+        "confirm": "Hapus permanen"
+      },
+      "regenerate": {
+        "title": "🔄 Susun ulang bracket",
+        "liveWarning": "⚠️ PERINGATAN: Turnamen sedang {{status}}!",
+        "liveBody": "Menyusun ulang bracket akan <b>MENGHAPUS SEMUA</b> data pertandingan yang ada, termasuk skor, statistik, dan riwayat event.",
+        "cannotBeUndone": "Tindakan ini tidak bisa dibatalkan.",
+        "areYouSure": "Anda benar-benar yakin ingin melanjutkan?",
+        "setupBody": "Ini akan menghapus semua pertandingan yang ada dan menyusun ulang bracket dengan pengaturan yang sama.",
+        "continue": "Lanjutkan?",
+        "confirmDestructive": "YA, HAPUS SEMUANYA",
+        "confirm": "Susun ulang"
+      },
+      "reset": {
+        "title": "🔄 Reset ke penyiapan",
+        "question": "Reset <b>\"{{name}}\"</b> kembali ke mode PENYIAPAN?",
+        "willTitle": "Ini akan:",
+        "items": {
+          "clearStatus": "Menghapus status turnamen (kembali ke penyiapan)",
+          "keepSettings": "<b>Mempertahankan</b> pengaturan turnamen (nama, tim, format)",
+          "allowEdit": "Memungkinkan Anda mengedit pengaturan lagi",
+          "regenerateMatches": "Menghapus semua hasil pertandingan dan menyusun ulang bracket dari awal"
+        },
+        "regenerated": "Bracket baru langsung dibuat, sehingga pertandingan yang tertunda langsung muncul lagi.",
+        "note": "💡 Catatan: Untuk menghapus turnamen sepenuhnya, gunakan \"Hapus\".",
+        "confirm": "Reset ke penyiapan"
+      },
+      "start": {
+        "titleNoServers": "⚠️ Tidak ada server yang tersedia",
+        "titleInsufficient": "⚠️ Server tidak cukup",
+        "titleUncertain": "⚠️ Mulai turnamen tanpa server?",
+        "noServersHeading": "Saat ini tidak ada server yang tersedia",
+        "noServersBody": "Turnamen akan dimulai, tetapi pertandingan ditunda sampai ada server yang tersedia. Sistem akan mengalokasikan pertandingan secara otomatis saat server siap.",
+        "insufficientHeading": "Server tidak cukup untuk menjalankan semua pertandingan babak pertama secara bersamaan",
+        "insufficientBody": "Saat ini Anda punya <b>{{available}}</b>, tetapi babak pertama membutuhkan <b>{{required}}</b>. Sebagian pertandingan akan mengantre dan dimulai nanti saat server kosong.",
+        "uncertainHeading": "Ketersediaan server tidak pasti",
+        "uncertainBody": "Turnamen mungkin dimulai dengan server terbatas atau tanpa server. Pertandingan ditunda sampai server tersedia, dan dialokasikan otomatis saat server siap.",
+        "question": "Tetap ingin memulai turnamen?",
+        "confirm": "Ya, tetap mulai",
+        "cancel": "Periksa server"
+      }
+    },
+    "formActions": {
+      "saveAndGenerate": "Simpan & susun bracket",
+      "saveAsTemplate": "Simpan sebagai template",
+      "saveTemplateTooltip": "Simpan konfigurasi turnamen saat ini sebagai template"
+    },
+    "wizard": {
+      "validation": {
+        "selectType": "Pilih jenis turnamen",
+        "selectFormat": "Pilih format pertandingan"
+      },
+      "shuffleInfo": "Turnamen acak tidak memakai tim tetap. Pemain otomatis diseimbangkan ke dalam tim untuk setiap pertandingan berdasarkan Skill Rating mereka.",
+      "shuffleRounds": "Turnamen acak ini akan memiliki sekitar {{rounds}} (satu per peta yang dipilih).",
+      "volumeAlert": "Dengan {{teams}} dalam turnamen {{type}} {{format}}, bracket ini akan memiliki sekitar {{matches}} dalam {{rounds}} (total hingga {{maps}}).",
+      "maxRoundsLabel": "Ronde maks per peta",
+      "maxRoundsHelper": "Setiap peta dimainkan hingga {{maxRounds}} ronde; pemenangnya yang pertama mencapai {{winRounds}} ronde.",
+      "maxRoundsHelperEmpty": "Jumlah ronde maksimum per peta (bawaan: 24, maks: 30).",
+      "serversSummary": "{{servers}} diatur; babak pertama memiliki {{matches}}.",
+      "estimatedVolumeLabel": "Perkiraan volume",
+      "mapsHeading": "Peta ({{total}})",
+      "noMapsSelected": "Tidak ada peta yang dipilih",
+      "matchConfiguration": "Konfigurasi pertandingan",
+      "roundLimitValue_one": "Batas ronde: maks {{count}} ronde",
+      "roundLimitValue_other": "Batas ronde: maks {{count}} ronde",
+      "teamsHeading": "Tim ({{total}})",
+      "noTeamsSelected": "Tidak ada tim yang dipilih (opsional)",
+      "playerRegistration": "Pendaftaran pemain",
+      "playerRegistrationInfo_one": "Pemain didaftarkan setelah turnamen dibuat. Setiap peta yang dipilih mewakili satu babak pertandingan (total {{count}} babak).",
+      "playerRegistrationInfo_other": "Pemain didaftarkan setelah turnamen dibuat. Setiap peta yang dipilih mewakili satu babak pertandingan (total {{count}} babak).",
+      "serversSummaryQueued": "{{servers}} diatur; babak pertama memiliki {{matches}}. Pertandingan di luar jumlah server Anda menunggu di antrean sampai ada server yang kosong."
+    },
+    "overtime": {
+      "selectLabel": "Overtime",
+      "options": {
+        "enabled": "Aktif (overtime standar)",
+        "disabledDraws": "Nonaktif – seri diperbolehkan",
+        "disabledNoDraws": "Nonaktif – tanpa seri (tiebreak damage)"
+      },
+      "modeHelper": "Overtime standar memainkan segmen tambahan sampai satu tim unggul. \"Seri diperbolehkan\" mengakhiri peta yang imbang sebagai seri, sedangkan \"tanpa seri\" menentukannya dengan total damage tim.",
+      "tooltip": "Atur perilaku overtime dan cara menangani skor imbang di ronde maksimum. Pengaturan ini diteruskan ke server game sebagai overtimeMode/overtimeSegments dan berarti sama dengan di turnamen acak dan pertandingan manual.",
+      "shuffleTooltip": "Atur perilaku overtime untuk pertandingan acak dan cara menentukan skor imbang di ronde maksimum. Saat overtime dinonaktifkan, pertandingan imbang bisa tetap seri atau ditentukan oleh total damage tim, tergantung opsi yang Anda pilih.",
+      "segmentsLabel": "Segmen overtime (opsional)",
+      "segmentsHelper": "Opsional: batasi jumlah segmen overtime. Biarkan kosong untuk bawaan server game.",
+      "segmentsHelperValue_one": "Batasi overtime ke {{count}} segmen. Skor imbang setelah overtime ditentukan oleh total damage tim.",
+      "segmentsHelperValue_other": "Batasi overtime ke {{count}} segmen. Skor imbang setelah overtime ditentukan oleh total damage tim."
+    },
+    "grandFinal": {
+      "sectionTitle": "Mode grand final (double elimination)",
+      "label": "Grand final",
+      "options": {
+        "simple": "Sederhana – satu grand final antara juara upper bracket dan lower bracket",
+        "none": "Tidak ada – final upper bracket menentukan turnamen (tanpa grand final)",
+        "double": "Ganda – gaya bracket reset (saat ini berperilaku seperti Sederhana; dukungan reset penuh direncanakan)"
+      },
+      "helper": "Mengatur cara juara upper bracket dan lower bracket bertemu di akhir turnamen."
+    },
+    "mapPool": {
+      "shuffleTitle": "Pemilihan peta untuk turnamen acak",
+      "shuffleBody": "Semua peta yang dipilih dimainkan berurutan. Setiap peta mewakili satu babak pertandingan. Jumlah peta yang Anda pilih menentukan jumlah babak yang dimainkan.",
+      "shuffleSelected": "Anda memilih {{maps}}, jadi {{rounds}} akan dimainkan.",
+      "chooseLabel": "Pilih kumpulan peta",
+      "custom": "Kustom",
+      "selectedMaps": "Peta terpilih ({{total}}):",
+      "chooseMapsPlaceholder": "Pilih peta...",
+      "saveMapPool": "Simpan kumpulan peta",
+      "types": {
+        "defusal": "Defusal",
+        "hostage": "Hostage",
+        "armsRace": "Arms Race",
+        "unknown": "Tidak dikenal"
+      }
+    },
+    "formatStep": {
+      "shuffleInfo": "Turnamen acak memakai format Best of 1. Setiap pertandingan satu peta."
+    },
+    "shuffleConfig": {
+      "overline": "Konfigurasi turnamen acak",
+      "subtitle": "Aturan & pengaturan pertandingan",
+      "teamSizeLabel": "Ukuran tim",
+      "teamSizeTooltip": "Jumlah pemain per tim. Pilihan umum: 4v4, 5v5, 6v6. Minimal 2 pemain, maksimal 10 pemain per tim.",
+      "teamSizeHelper": "Jumlah pemain per tim (bawaan: 5 untuk 5v5, rentang: 2-10)",
+      "maxRoundsLabel": "Ronde maks",
+      "maxRoundsTooltip": "Jumlah ronde maksimum per pertandingan. Nilai ini diteruskan ke server CS2 sebagai mp_maxrounds. Contoh: 6 = MR6, 24 = MR24.",
+      "maxRoundsHelper": "Pertandingan dimainkan hingga {{maxRounds}} ronde; pemenangnya yang pertama mencapai {{winRounds}} ronde",
+      "maxRoundsHelperEmpty": "Jumlah ronde maksimum per pertandingan (bawaan: 24, maks: 30)",
+      "eloTemplateLabel": "Template rating",
+      "eloTemplateTooltip": "Pilih cara ELO dihitung untuk turnamen ini. Secara bawaan, template 'Pure Win/Loss' hanya memakai hasil pertandingan (menang/kalah); statistik dicatat tetapi tidak mengubah ELO. Template lain bersifat opsional dan menambahkan penyesuaian berbasis statistik di atas perubahan menang/kalah OpenSkill jika Anda menginginkan perilaku ala Excel.",
+      "eloDefaultSuffix": "(Bawaan)",
+      "eloTemplateHelper": "Pure Win/Loss (bawaan): hanya hasil pertandingan yang memengaruhi ELO. Statistik pemain tetap dicatat untuk papan peringkat dan ekspor, tetapi tidak mengubah rating kecuali Anda memilih template kustom."
+    },
+    "shuffleStats": {
+      "serverShortageWarning": "Anda punya {{available}} dari {{needed}} server. Pertandingan akan berjalan bergelombang, jadi babak berlangsung lebih lama."
+    },
+    "changePreview": {
+      "title": "Tinjau perubahan turnamen",
+      "liveHeading": "Turnamen sedang LIVE!",
+      "liveBody": "Mengubah jenis, format, atau jumlah tim turnamen mungkin perlu menyusun ulang bracket. Pertimbangkan memakai \"Reset turnamen\" untuk mulai dari awal.",
+      "noChangesDetected": "Tidak ada perubahan yang terdeteksi",
+      "intro": "Perubahan berikut akan diterapkan:",
+      "before": "SEBELUM",
+      "after": "SESUDAH",
+      "apply": "Terapkan perubahan",
+      "applyRisky": "Terapkan perubahan (berisiko!)",
+      "noChangesToApply": "Tidak ada perubahan untuk diterapkan",
+      "none": "Tidak ada",
+      "itemCount_one": "{{count}} item",
+      "itemCount_other": "{{count}} item"
+    },
+    "teamSelection": {
+      "chooseTeamsPlaceholder": "Pilih tim…",
+      "addAll": "Tambah semua",
+      "batchAddServers": "Tambah sekaligus",
+      "addServer": "Tambah server",
+      "importTeams": "Impor tim",
+      "createTeam": "Buat tim",
+      "notEnoughServers": "Babak pertama memiliki {{matches}}, tetapi Anda punya {{servers}}. Pertandingan di luar jumlah server Anda menunggu di antrean sampai ada server yang kosong — tambahkan server agar semuanya berjalan bersamaan.",
+      "notEnoughTeams": "Anda butuh minimal 2 tim untuk membuat turnamen. Saat ini Anda punya {{teams}}."
+    },
+    "teamValidation": {
+      "invalidType": "Jenis turnamen tidak valid",
+      "powerOfTwo": "{{type}} memerlukan jumlah tim pangkat 2 ({{counts}}). Anda memilih {{selected}}.",
+      "minTeams": "{{type}} memerlukan minimal {{min}} tim. Anda memilih {{selected}}.",
+      "maxTeams": "{{type}} mengizinkan maksimal {{max}} tim. Anda memilih {{selected}}."
+    },
+    "eventPage": {
+      "title": "Halaman acara",
+      "subtitle": "Ditampilkan kepada pemain dan pengunjung di halaman Ringkasan publik.",
+      "descriptionLabel": "Deskripsi",
+      "locationLabel": "Lokasi",
+      "locationPlaceholder": "mis. Di lokasi, Trondheim",
+      "rulebookUrlLabel": "URL buku aturan lengkap",
+      "rulebookUrlHelper": "Harus berupa tautan https, atau biarkan kosong.",
+      "rulesLabel": "Aturan untuk pemain",
+      "ruleFieldLabel": "Aturan {{n}}",
+      "addRule": "Tambah aturan",
+      "prizesLabel": "Hadiah",
+      "placeLabel": "Peringkat",
+      "prizeLabel": "Hadiah",
+      "addPrize": "Tambah hadiah",
+      "scheduleLabel": "Jadwal",
+      "whenLabel": "Kapan",
+      "scheduleLabelLabel": "Label",
+      "addScheduleItem": "Tambah item jadwal",
+      "remove": "Hapus",
+      "moveUp": "Naikkan",
+      "moveDown": "Turunkan",
+      "save": "Simpan halaman acara",
+      "saveSuccess": "Halaman acara tersimpan.",
+      "saveError": "Gagal menyimpan halaman acara: {{message}}",
+      "organizerLabel": "Penyelenggara",
+      "organizerPlaceholder": "mis. Edition 35 LAN",
+      "bannerLabel": "Banner",
+      "bannerUpload": "Unggah banner",
+      "bannerReplace": "Ganti",
+      "bannerRemove": "Hapus",
+      "bannerHelp": "Gambar lebar di bagian atas halaman turnamen. PNG, JPEG, atau WEBP, maksimal 2 MB; 1920 × 600 cocok.",
+      "bannerWrongType": "Banner harus berupa gambar PNG, JPEG, atau WEBP.",
+      "bannerTooLarge": "Banner harus 2 MB atau lebih kecil.",
+      "signupHeading": "Pendaftaran dan check-in",
+      "signupOpen": "Tim bisa mendaftar sendiri",
+      "signupClosesAt": "Pendaftaran ditutup",
+      "maxTeams": "Slot tim",
+      "checkInOpensAt": "Check-in dibuka",
+      "checkInClosesAt": "Check-in ditutup",
+      "signupHelp": "Pemilik atau kapten tim mendaftar dengan lineup. Pemain lineup check-in pada hari H.",
+      "startLabel": "Waktu mulai",
+      "startsAtLabel": "Mulai pada",
+      "startsAtHelp": "Waktu lokal Anda. Situs menghitung mundur ke waktu itu.",
+      "autoStartLabel": "Mulai turnamen secara otomatis pada waktu ini",
+      "remindersLabel": "Ingatkan pemain sebelum dimulai",
+      "reminderMinutes_one": "{{count}} menit sebelumnya",
+      "reminderMinutes_other": "{{count}} menit sebelumnya",
+      "bannerMapLabel": "Tidak punya banner? Pakai gambar peta",
+      "bannerMapNone": "Pilihkan untuk saya",
+      "rulesHelp": "Ditampilkan di tab Aturan halaman turnamen, di bawah aturan yang ditulis platform dari pengaturan Anda.",
+      "fromTemplate": "Dari {{name}}",
+      "clearAll": "Hapus semua",
+      "rulebookFromTemplate": "Dari template {{name}}. Tautan https, atau biarkan kosong."
+    },
+    "setup": {
+      "steps": {
+        "game": "Game",
+        "basics": "Nama dan hari",
+        "format": "Format",
+        "teams": "Tim",
+        "schedule": "Jadwal",
+        "maps": "Peta dan veto",
+        "extras": "Pengaturan pertandingan",
+        "review": "Tinjau"
+      },
+      "stepsLabel": "Langkah penyiapan",
+      "backToManage": "Kelola",
+      "stepDone": "selesai",
+      "newTournament": "Turnamen baru",
+      "editing": "Penyiapan turnamen",
+      "draftSaved": "draf tersimpan di tab ini",
+      "discardDraft": "Mulai dari awal",
+      "startFromTemplate": "Mulai dari template",
+      "continueTo": "Lanjut ke {{step}}",
+      "questions": {
+        "game": {
+          "title": "Game apa?",
+          "lede": "Game menentukan cara pertandingan dijalankan dan pengaturan yang tersedia."
+        },
+        "basics": {
+          "title": "Apa namanya, dan hari apa?",
+          "lede": "Pilih harinya. Jam mulai setiap babak diatur di Jadwal."
+        },
+        "format": {
+          "title": "Bagaimana cara mainnya?",
+          "lede": "Pilih bracket dan panjang setiap seri. Anda bisa mengubahnya sampai turnamen dimulai."
+        },
+        "teams": {
+          "title": "Siapa yang bermain?",
+          "lede": "Pilih tim di bracket. Anda juga bisa membuat atau mengimpor tim di sini.",
+          "ledeShuffle": "Acak memakai pendaftaran individu: pemain mendaftar, dan tim baru diundi setiap babak."
+        },
+        "maps": {
+          "title": "Peta apa saja?",
+          "lede": "Pilih kumpulan peta. Seri memakai veto untuk memilih petanya dari kumpulan ini.",
+          "ledeShuffle": "Pilih peta sesuai urutan dimainkan. Setiap peta adalah satu babak."
+        },
+        "eventPage": {
+          "title": "Apa yang tampil di halaman acara?",
+          "lede": "Opsional. Ditampilkan kepada pemain dan pengunjung di halaman Ringkasan publik."
+        },
+        "review": {
+          "title": "Siap?",
+          "lede": "Periksa detailnya, lalu buat turnamen.",
+          "ledeExisting": "Periksa detailnya, lalu mulai turnamen saat semua sudah siap."
+        },
+        "schedule": {
+          "title": "Kapan pertandingannya?",
+          "lede": "Waktu babak pertama adalah saat turnamen dimulai. Check-in dan pengingat dihitung mundur dari waktu itu."
+        },
+        "extras": {
+          "title": "Pengaturan pertandingan",
+          "lede": "Mulai dari preset, lalu ubah yang Anda perlukan. Pengaturan oranye berbeda dari bawaan situs."
+        }
+      },
+      "game": {
+        "label": "Game",
+        "loading": "Memuat game yang bisa dijalankan instans ini.",
+        "lockedHelp": "Game tidak bisa diubah setelah turnamen dibuat. Hapus dan mulai lagi untuk menjalankan game lain.",
+        "integrationTitles": {
+          "cs2": "Berjalan di server Anda",
+          "manual-report": "Tim melaporkan hasilnya"
+        },
+        "integrationDescriptions": {
+          "cs2": "Pertandingan berjalan di server CS2 Anda sendiri dengan Ready Up.",
+          "manual-report": "Tanpa server. Tim memainkan pertandingan sendiri dan kapten melaporkan hasilnya."
+        }
+      },
+      "basics": {
+        "ratingLabel": "Rating",
+        "ratingHelp": "Cara rating pemain berubah setelah setiap pertandingan di turnamen ini."
+      },
+      "format": {
+        "label": "Format",
+        "names": {
+          "single_elimination": "Single elimination",
+          "double_elimination": "Double elimination",
+          "swiss": "Swiss",
+          "round_robin": "Round robin",
+          "shuffle": "Acak",
+          "groups": "Grup, lalu playoff"
+        },
+        "types": {
+          "single_elimination": "Sekali kalah langsung gugur. Paling cepat.",
+          "double_elimination": "Kesempatan kedua di lower bracket.",
+          "swiss": "Tim bermain beberapa babak melawan rekor yang serupa.",
+          "round_robin": "Semua melawan semua. Paling cocok untuk grup kecil.",
+          "shuffle": "Pendaftaran individu. Tim seimbang baru setiap babak.",
+          "groups": "Round robin dalam grup; tim terbaik dari masing-masing lanjut ke final atau bracket."
+        },
+        "seriesLength": "Panjang seri",
+        "grandFinal": "Grand final",
+        "grandFinalOptions": {
+          "simple": "Satu pertandingan",
+          "double": "Bracket reset",
+          "none": "Tidak ada"
+        },
+        "grandFinalHelp": {
+          "simple": "Juara upper bracket dan lower bracket bertemu dalam satu grand final.",
+          "double": "Bracket reset. Untuk saat ini dimainkan seperti satu grand final; dukungan reset penuh direncanakan.",
+          "none": "Tanpa grand final: final upper bracket menentukan turnamen."
+        },
+        "teams": "Tim",
+        "teamsHelpPowerOfTwo": "Bracket gugur membutuhkan {{counts}} tim. Dipakai untuk ringkasan sampai Anda memilih tim.",
+        "teamsHelpRange": "Antara {{min}} dan {{max}} tim. Dipakai untuk ringkasan sampai Anda memilih tim.",
+        "fewerTeams": "Lebih sedikit tim",
+        "moreTeams": "Lebih banyak tim",
+        "shuffleTitle": "Pengaturan acak",
+        "cs2Title": "Pengaturan Counter-Strike 2",
+        "cs2Help": "Diteruskan ke server CS2 Anda oleh modul game Counter-Strike 2.",
+        "overtime": {
+          "enabled": "Overtime",
+          "disabledDraws": "Nonaktif, seri diperbolehkan",
+          "disabledNoDraws": "Nonaktif, tiebreak damage"
+        }
+      },
+      "teams": {
+        "shuffleBeforeCreate": "Pemain mendaftar setelah Anda membuat turnamen. Kembali ke langkah ini untuk memilih mereka.",
+        "shuffleSelfSignup": "Pemain bergabung sendiri",
+        "shuffleSelfSignupHelp": "Mereka mendaftar dengan tombol Gabung di halaman turnamen selama ini aktif; Anda tetap bisa menambahkan pemain di sini."
+      },
+      "maps": {
+        "vetoTitle": "Veto",
+        "vetoStandard": "Setiap seri {{format}} menjalankan veto peta: tim melakukan ban dan pilih dari 7 peta ini.",
+        "vetoCustom": "Turnamen ini punya urutan veto kustom untuk {{format}}.",
+        "vetoNone": "Tanpa veto untuk format ini.",
+        "vetoShuffle": "Acak tidak memakai veto: peta dimainkan sesuai urutan ini, satu per babak."
+      },
+      "eventPage": {
+        "draftNote": "Disimpan bersama turnamen saat Anda membuatnya."
+      },
+      "review": {
+        "unsaved": "Ada perubahan yang belum disimpan. Simpan (bracket disusun ulang) atau buang sebelum memulai."
+      },
+      "summary": {
+        "label": "Ringkasan",
+        "untitled": "Turnamen tanpa judul",
+        "format": "Format",
+        "series": "Seri",
+        "seriesShuffle": "Bo1 per babak",
+        "seriesFinal": {
+          "simple": "{{format}} · grand final",
+          "double": "{{format}} · grand final, bracket reset",
+          "none": "{{format}} · tanpa grand final"
+        },
+        "teams": "Tim",
+        "teamSize": "{{size}}v{{size}}",
+        "teamsPlanned": "{{count}} direncanakan",
+        "matches": "Pertandingan",
+        "matchesAfterSignUp": "Setelah pendaftaran",
+        "duration": "Memakan waktu sekitar",
+        "durationValue": "{{hours}} jam {{minutes}} mnt",
+        "signUp": "Pendaftaran",
+        "signUpOrganizer": "Dipilih penyelenggara",
+        "signUpAfterCreate": "Dibuka setelah dibuat",
+        "players_one": "{{count}} pemain",
+        "players_other": "{{count}} pemain",
+        "maps": "Peta",
+        "mapsRounds": "{{maps}} · {{rounds}}",
+        "notSet": "Belum diatur",
+        "signUpOpen": "Tim mendaftar · {{size}} per tim"
+      },
+      "checklist": {
+        "title": "Sebelum Anda bisa mulai",
+        "met": "selesai",
+        "notMet": "belum selesai",
+        "name": "Nama",
+        "format": "Format dan pengaturan pertandingan",
+        "teams": "Jumlah tim yang valid",
+        "players_one": "Minimal {{count}} pemain terdaftar",
+        "players_other": "Minimal {{count}} pemain terdaftar",
+        "mapsVeto": "7 peta untuk veto",
+        "maps": "Minimal satu peta",
+        "created": "Turnamen dibuat",
+        "saved": "Perubahan tersimpan"
+      },
+      "manualReport": {
+        "title": "Pelaporan manual",
+        "help": "Auto Tournament tidak bisa memantau game ini, jadi tim yang memberi tahu apa yang terjadi.",
+        "seriesLength": "Panjang seri",
+        "seriesLengthHelp": "Berapa game dalam satu seri. Tim pertama yang memenangkan lebih dari separuhnya memenangkan pertandingan.",
+        "gameLabel": "Sebutan game",
+        "gameLabelHelp": "Sebutan di formulir laporan. Biarkan kosong untuk “{{game}}”.",
+        "allowDraw": "Seri",
+        "allowDrawHelp": "Izinkan game, dan juga seri, berakhir imbang. Biarkan nonaktif untuk bracket, karena harus ada yang lolos.",
+        "allowDrawOptions": {
+          "no": "Tidak diizinkan",
+          "yes": "Diizinkan"
+        },
+        "confirmation": "Sebelum hasil dihitung",
+        "confirmationHelp": {
+          "opponent": "Kapten tim lawan harus setuju sebelum pertandingan dinyatakan selesai. Mereka bisa menyengketakannya, yang akan dikirim ke admin.",
+          "none": "Laporan kapten langsung menyelesaikan pertandingan. Cepat, dan hanya layak jika kecil kemungkinan ada yang tidak setuju."
+        },
+        "confirmationOptions": {
+          "opponent": "Lawan setuju",
+          "none": "Laporan berlaku"
+        },
+        "confirmTimeout": "Menit untuk menjawab",
+        "confirmTimeoutHelp": "Berapa lama lawan punya waktu sebelum tenggat tercapai. 1440 adalah satu hari.",
+        "confirmTimeoutNone": "Tanpa tenggat: laporan menunggu jawaban.",
+        "timeoutAction": "Saat tenggat",
+        "timeoutActionHelp": {
+          "auto_confirm": "Laporan diterima sesuai yang dilaporkan, dan bracket berlanjut tanpa ada yang menunggu.",
+          "escalate": "Pertandingan diserahkan ke admin, yang memutuskannya di halaman Sengketa."
+        },
+        "timeoutActionOptions": {
+          "auto_confirm": "Terima laporan",
+          "escalate": "Tanya admin"
+        }
+      },
+      "signup": {
+        "how": "Bagaimana tim masuk?",
+        "organizer": "Hanya tim yang saya tambahkan",
+        "open": "Tim bisa mendaftar",
+        "organizerHelp": "Anda memilih setiap tim. Tidak ada yang bisa mendaftar dari halaman turnamen.",
+        "openHelp": "Pemilik atau kapten tim mendaftar dengan lineup dari halaman turnamen, dan lineup check-in pada hari H. Anda tetap bisa menambahkan tim sendiri di bawah.",
+        "teamSize": "Pemain per tim",
+        "teamSizeHelp": "Pemain inti yang dipilih tim saat mendaftar (ditambah hingga 2 cadangan).",
+        "maxTeamsHelp": "Kosong: tanpa batas.",
+        "save": "Simpan pengaturan pendaftaran",
+        "saved": "Pengaturan pendaftaran tersimpan",
+        "inTournament": "Di turnamen ({{count}})",
+        "signedUp": "Terdaftar",
+        "addedByYou": "Ditambahkan oleh Anda",
+        "lineup": "{{starters}} dari {{size}} pemain inti",
+        "checkedIn": "{{count}} sudah check-in",
+        "remove": "Hapus",
+        "removed": "{{team}} keluar dari turnamen",
+        "noneYet": "Belum ada tim. Tim muncul di sini saat mendaftar.",
+        "noTeams": "Belum ada tim.",
+        "addYourself": "Tambahkan tim sendiri",
+        "pickTeams": "Pilih tim",
+        "windowTitle": "Masa pendaftaran",
+        "opensLabel": "Pendaftaran dibuka",
+        "opensNow": "Sekarang",
+        "opensLater": "Pada waktu tertentu",
+        "opensNowHelp": "Dibuka begitu Anda membuat turnamen.",
+        "opensLaterHelp": "Ditutup sampai saat itu. Halaman menghitung mundur ke waktu itu.",
+        "closesHelp": "Lineup bisa diubah sampai check-in ditutup.",
+        "checkInTitle": "Check-in",
+        "checkInHelp": "Dibuka sebelum turnamen dimulai dan ditutup saat dimulai. Pemain inti yang belum check-in saat itu diganti oleh cadangan; cadangan tidak perlu check-in.",
+        "checkInChip_one": "{{count}} mnt sebelumnya",
+        "checkInChip_other": "{{count}} mnt sebelumnya",
+        "checkInOff": "Tanpa check-in",
+        "checkInLine": "Dibuka {{day}} pukul {{time}}, ditutup saat turnamen dimulai pukul {{start}}.",
+        "checkInLineNoStart_one": "Dibuka {{count}} menit sebelum mulai dan ditutup saat dimulai.",
+        "checkInLineNoStart_other": "Dibuka {{count}} menit sebelum mulai dan ditutup saat dimulai.",
+        "checkInLineOff": "Tanpa check-in: setiap tim yang terdaftar bermain.",
+        "captainsLabel": "Kapten bisa melakukan check-in untuk rekan setimnya",
+        "captainsHelp": "Pemilik atau kapten bisa menandai pemain inti sudah hadir. Mereka bertanggung jawab jika pemain itu tidak datang.",
+        "perMatchLabel": "Check-in lagi sebelum setiap pertandingan",
+        "perMatchHelp": "Nonaktif: sekali check-in sebelum turnamen berlaku untuk semua pertandingan. Aktif: pemain check-in saat veto setiap pertandingan dibuka.",
+        "fullTeamTitle": "Masuk ke server",
+        "fullTeamHelp": "Begitu server pertandingan siap, setiap tim punya waktu sepanjang ini untuk menghadirkan tim lengkap di server, termasuk cadangan. Lalu tim yang lengkap memilih: menang WO, atau melawan tim yang kurang pemain. Jika keduanya kurang: admin yang memutuskan.",
+        "fullTeamChip_one": "{{count}} mnt",
+        "fullTeamChip_other": "{{count}} mnt",
+        "fullTeamOff": "Tanpa WO",
+        "fullTeamLine": "Pemain melihat timer di ruang pertandingan dan di obrolan server. Cadangan dihitung siap, jadi tim bisa langsung memasukkan satu.",
+        "fullTeamLineOff": "Tanpa WO: tim yang kurang pemain tetap bermain begitu pertandingan mulai otomatis (Pengaturan pertandingan)."
+      },
+      "groups": {
+        "count": "Jumlah grup",
+        "through": "Lolos dari setiap grup",
+        "throughWinner": "Pemenang",
+        "throughTop2": "2 teratas",
+        "seeding": "Cara tim dimasukkan ke grup",
+        "seedingSnake": "Disebar berdasarkan seed (snake)",
+        "seedingRandom": "Acak",
+        "playoffs": "Playoff",
+        "playoffMatches": "Pertandingan playoff",
+        "ties": "Imbang dalam grup: head-to-head, lalu selisih ronde, lalu ronde yang dimenangkan (sama seperti round robin). Jika grup tidak mengisi bracket, tim terbaik dari sisanya juga lolos.",
+        "whatPlayersGet": "Yang didapat pemain",
+        "stage": "Fase grup",
+        "stageLine": "{{groups}} grup berisi {{size}}",
+        "stageNote": "{{count}} pertandingan · {{each}} untuk setiap tim",
+        "playoffFinal": "Dua juara grup: final {{format}}",
+        "playoff": {
+          "single_elimination": "{{count}} tim: single elimination",
+          "double_elimination": "{{count}} tim: double elimination"
+        },
+        "throughNote": "{{count}} tim lolos",
+        "previewTitle": "Grup (disebar berdasarkan seed)",
+        "previewNote": "Sesuai urutan daftar tim (seeding). Grup dikunci saat turnamen dimulai.",
+        "randomNote": "Grup diundi secara acak saat turnamen dimulai.",
+        "groupN": "Grup {{letter}}",
+        "groupMatches": "Pertandingan grup"
+      },
+      "stepNotes": {
+        "game": "Apa yang dimainkan",
+        "basics": "Nama, hari, tempat",
+        "format": "Cara tim bertemu",
+        "teams": "Ditambahkan atau mendaftar",
+        "schedule": "Hari dan jam",
+        "maps": "Kumpulan peta",
+        "extras": "Preset, aturan, tambahan",
+        "review": "Buat"
+      },
+      "stepOf": "Langkah {{n}} dari {{total}}",
+      "schedule": {
+        "timesNote": "Pertandingan menunggu waktunya. Pemain melihatnya di pertandingan, mendapat pengingat, dan veto dibuka tepat waktu.",
+        "breakNote_one": "Tim yang baru bermain mendapat istirahat {{count}} menit sebelum veto berikutnya (Aturan pertandingan).",
+        "breakNote_other": "Tim yang baru bermain mendapat istirahat {{count}} menit sebelum veto berikutnya (Aturan pertandingan).",
+        "noBreakNote": "Tidak ada istirahat di antara pertandingan sebuah tim (Aturan pertandingan).",
+        "ownTimeNote": "Beri satu pertandingan waktunya sendiri di Kelola › Jadwal setelah bracket dibuat.",
+        "startsTournament": "Memulai turnamen · check-in ditutup",
+        "newDay": "Hari baru",
+        "sameDay": "Hari yang sama",
+        "dayLabel": "Hari",
+        "startsLabel": "Mulai",
+        "tournamentStarts": "Turnamen dimulai",
+        "autoStart": "Mulai otomatis pukul {{time}}",
+        "autoStartNoTime": "Mulai otomatis",
+        "autoStartOff": "Nonaktif: admin memulainya dari Kelola.",
+        "reminders": "Ingatkan pemain sebelum mulai",
+        "modeTimesNote": "Setiap babak mendapat hari (dari langkah 2) dan jam. Pertandingan menunggu waktunya, dan veto dibuka tepat waktu.",
+        "modeAsapNote": "Hanya waktu mulai: setelah itu pertandingan dimulai begitu kedua tim dan server siap."
+      },
+      "extras": {
+        "gotvLabel": "Penonton",
+        "gotvOn_one": "Penonton bisa menonton di GOTV, tertunda {{count}} detik (Aturan pertandingan › Penonton).",
+        "gotvOn_other": "Penonton bisa menonton di GOTV, tertunda {{count}} detik (Aturan pertandingan › Penonton).",
+        "gotvOff": "Penonton tidak bisa menonton di GOTV (Aturan pertandingan › Penonton)."
+      },
+      "startFrom": {
+        "title": "Mulai dari",
+        "help": "Template mengisi format, peta, dan pengaturan pertandingan. Ubah apa saja di langkah berikutnya.",
+        "blank": "Kosong",
+        "blankHelp": "Single elimination, Bo3, kumpulan peta dan aturan pertandingan situs.",
+        "siteDefaults": "Bawaan situs",
+        "builtIn": "Bawaan",
+        "saved": "Tersimpan",
+        "standardRules": "Aturan standar",
+        "ownTemplates": "Template Anda sendiri berasal dari <link>Template & rating</link>. Simpan turnamen ini sebagai template setelah disiapkan."
+      },
+      "days": {
+        "title": "Hari",
+        "one": "Satu hari",
+        "several": "Beberapa hari",
+        "day": "Hari",
+        "firstDay": "Hari pertama",
+        "lastDay": "Hari terakhir",
+        "markedLegend": "Turnamen lain di situs ini bermain pada hari itu"
+      },
+      "overlap": {
+        "headsUp": "Perhatian: {{name}} juga bermain pada {{day}}",
+        "headsUpBody": "{{from}}–{{to}} di server yang sama. Keduanya bisa berjalan: pertandingan menunggu server kosong, dan pemain hanya bisa ikut keduanya jika jam babaknya tidak bertabrakan.",
+        "openOther": "Buka jadwal {{name}}",
+        "round": "Bertabrakan dengan {{name}} ({{day}}, {{from}}–{{to}}) di server yang sama. Anda tetap bisa menyimpannya. Pemain di {{name}} tidak bisa mendaftar di sini, karena babak ini dimainkan pada waktu yang sama.",
+        "see": "Lihat {{name}}"
+      }
+    },
+    "startButton": {
+      "start": "Mulai turnamen",
+      "starting": "Memulai...",
+      "startSimulation": "Mulai simulasi",
+      "startingSimulation": "Memulai simulasi..."
+    },
+    "archiveDialog": {
+      "title": "Mulai turnamen baru?",
+      "message": "{{name}} diarsipkan. Hasil, pertandingan, dan statistiknya tetap ada, dan halamannya tetap di alamat yang sama. Lalu Anda membuat yang berikutnya.",
+      "confirm": "Arsipkan dan mulai baru",
+      "delete": "Hapus dan mulai baru",
+      "deleteHint": "Atau hapus: hasil, pertandingan, dan statistiknya ikut terhapus."
+    },
+    "end": {
+      "button": "Akhiri turnamen",
+      "tooltip": "Menghentikan turnamen sekarang tanpa hasil: pertandingan di server berakhir, sisanya dibatalkan. Tanpa pemenang dan tanpa hadiah. Turnamen bisa diarsipkan sesudahnya.",
+      "title": "Akhiri turnamen ini?",
+      "body": "Setiap pertandingan yang masih berjalan berakhir di servernya dan sisanya dibatalkan. Tidak ada yang menang dan tidak ada hadiah. Ini tidak bisa dibatalkan.",
+      "typeName": "Ketik \"{{name}}\" untuk mengonfirmasi",
+      "confirm": "Akhiri turnamen",
+      "done_one": "Turnamen diakhiri, {{count}} pertandingan dibatalkan",
+      "done_other": "Turnamen diakhiri, {{count}} pertandingan dibatalkan",
+      "failed": "Tidak dapat mengakhiri turnamen"
+    },
+    "countdown": {
+      "days": "Mulai dalam {{d}}h {{h}}j",
+      "hours": "Mulai dalam {{h}}j {{m}}m",
+      "minutes": "Mulai dalam {{m}}:{{s}}"
+    }
+  },
+  "bracket": {
+    "empty": {
+      "noBracketTitle": "Tidak ada bracket untuk ditampilkan",
+      "noBracketDescription": "Buat turnamen dan susun bracket untuk memulai"
+    },
+    "view": {
+      "visual": "Visual",
+      "list": "Daftar",
+      "refresh": "Muat ulang",
+      "enterFullscreen": "Masuk layar penuh",
+      "exitFullscreen": "Keluar layar penuh",
+      "shuffleNoVisual": "Turnamen acak tidak memiliki bracket visual; gunakan tampilan daftar."
+    },
+    "times": {
+      "toggle": "Atur waktu",
+      "startsAt": "Mulai pada",
+      "clear": "Gunakan waktu babak",
+      "save": "Simpan"
+    },
+    "shuffleEmpty": {
+      "title": "Tidak ada bracket untuk turnamen acak",
+      "description": "Turnamen acak tidak memakai tampilan bracket tetap. Tim diacak ulang setiap babak berdasarkan ELO pemain.",
+      "hint": "Gunakan halaman Pertandingan untuk memantau pertandingan live dan mendatang, dan halaman Papan peringkat untuk melacak peringkat pemain.",
+      "goToMatches": "Ke Pertandingan",
+      "viewLeaderboard": "Lihat papan peringkat"
+    },
+    "notGenerated": {
+      "title": "Bracket belum disusun",
+      "description": "Susun bracket untuk membuat pertandingan bagi {{name}}",
+      "goToSettings": "Ke pengaturan turnamen"
+    },
+    "shuffleNoVisual": {
+      "title": "Tidak ada bracket visual untuk turnamen acak",
+      "description": "Pertandingan dibuat secara dinamis setiap babak berdasarkan ELO pemain dan penyeimbangan tim. Pantau progresnya di sini:",
+      "listView": "Tampilan daftar",
+      "matches": "Pertandingan",
+      "standings": "Klasemen",
+      "docsHint": "Untuk panduan lengkap cara kerja turnamen acak, lihat panduan Turnamen acak di dokumentasi."
+    },
+    "swiss": {
+      "notGenerated": "Belum disusun",
+      "generatedAfter": "Pertandingan akan dibuat setelah babak {{round}} selesai",
+      "bye": "BYE",
+      "standings": "Klasemen",
+      "team": "Tim",
+      "record": "Rekor",
+      "buchholz": "BH",
+      "buchholzHint": "Buchholz: jumlah kemenangan lawan",
+      "roundDiff": "SR",
+      "roundDiffHint": "Selisih ronde: ronde dimenangkan dikurangi ronde kalah"
+    },
+    "slotHint": {
+      "winnerOf": "Pemenang {{match}}",
+      "loserOf": "Yang kalah di {{match}}",
+      "matchNumber": "pertandingan {{number}}"
+    },
+    "pause": {
+      "pause": "Jeda bracket",
+      "reason": "Alasan jeda",
+      "forMinutes": "Selama {{minutes}} mnt",
+      "untilResumed": "Sampai dilanjutkan",
+      "paused": "Bracket dijeda: pertandingan yang sedang dimainkan selesai, tidak ada yang baru dimulai",
+      "pausedUntil": "Bracket dijeda sampai {{time}}: pertandingan yang sedang dimainkan selesai, tidak ada yang baru dimulai",
+      "resume": "Lanjutkan",
+      "pausedDone": "Bracket dijeda",
+      "resumedDone": "Bracket dilanjutkan",
+      "failed": "Tidak dapat mengubah jeda"
+    }
+  },
+  "overviewPage": {
+    "tabs": {
+      "overview": "Ringkasan",
+      "label": "Turnamen",
+      "bracket": "Bracket",
+      "matches": "Pertandingan",
+      "teams": "Tim",
+      "standings": "Klasemen",
+      "manage": "Kelola",
+      "rules": "Aturan",
+      "match": "Pertandingan Anda",
+      "results": "Hasil",
+      "signup": "Daftar"
+    },
+    "status": {
+      "setup": "Mendatang",
+      "inProgress": "Live",
+      "completed": "Selesai",
+      "finishedOn": "Selesai {{date}}"
+    },
+    "liveNow": "{{count}} sedang live",
+    "howItsPlayed": "Cara pertandingan dimainkan",
+    "facts": {
+      "teams": "Tim",
+      "teamsValue": "{{count}} tim",
+      "teamSize": "Ukuran tim",
+      "teamSizeValue": "{{count}} pemain",
+      "format": "Format",
+      "series": "Seri",
+      "seriesValue": "Best of {{count}}",
+      "mapVeto": "Veto peta",
+      "mapVetoCustom": "Urutan kustom (kapten)",
+      "mapVetoStandard": "Urutan standar (kapten)",
+      "overtime": "Overtime",
+      "overtimeEnabledUnlimited": "Aktif, tanpa batas",
+      "overtimeEnabledSegments": "Aktif, {{count}} segmen",
+      "overtimeDisabled": "Nonaktif (tiebreak damage)"
+    },
+    "mapPool": "Kumpulan peta",
+    "rules": "Aturan",
+    "fullRulebook": "Buku aturan lengkap",
+    "schedule": "Jadwal",
+    "yourTeam": {
+      "title": "Anda bermain",
+      "onRoster": "Anda di {{team}}.",
+      "viewTeam": "Lihat tim Anda",
+      "versus": "{{team}} vs {{opponent}} · {{stage}}",
+      "tbd": "TBD",
+      "goToMatch": "Ke pertandingan Anda",
+      "openMatch": "Buka halaman pertandingan",
+      "state": {
+        "live": "Live",
+        "loaded": "Gabung sekarang",
+        "upNext": "Berikutnya",
+        "finished": "Selesai",
+        "eliminated": "Tersingkir",
+        "waiting": "Menunggu pertandingan berikutnya",
+        "registered": "Terdaftar",
+        "won": "Pemenang",
+        "out": "Gugur"
+      }
+    },
+    "prizes": {
+      "title": "Hadiah",
+      "note": "Ditentukan penyelenggara. Uang hadiah, perangkat keras, atau sekadar gengsi."
+    },
+    "requirements": {
+      "title": "Untuk ikut serta",
+      "steamLinkedOk": "Akun Steam tertaut.",
+      "steamLinkedNeutral": "Masuk dengan Steam untuk ikut serta.",
+      "onRosterOk": "Anda ada di roster tim untuk turnamen ini.",
+      "onRosterNeutral": "Masuklah ke roster tim sebelum turnamen dimulai."
+    },
+    "loadError": "Gagal memuat turnamen ini.",
+    "notFoundTitle": "Turnamen tidak ditemukan",
+    "notFoundDescription": "Turnamen ini tidak ada atau belum dibuat.",
+    "loading": "Memuat…",
+    "about": "Tentang",
+    "liveStripLabel": "Sedang live",
+    "bracketTab": {
+      "loadError": "Gagal memuat bracket.",
+      "emptyTitle": "Belum ada bracket",
+      "emptyDescription": "Bracket muncul di sini saat penyelenggara memulai turnamen.",
+      "shuffleTitle": "Tidak ada bracket di turnamen acak",
+      "shuffleDescription": "Tim diundi lagi setiap babak, jadi tidak ada bracket. Pertandingan mencantumkan setiap babak, dan Klasemen mengurutkan pemain."
+    },
+    "matchesTab": {
+      "loadError": "Gagal memuat pertandingan.",
+      "emptyTitle": "Belum ada pertandingan",
+      "emptyDescription": "Pertandingan muncul di sini saat turnamen dimulai.",
+      "live": "Sedang live",
+      "upcoming": "Berikutnya",
+      "results": "Hasil",
+      "vs": "vs",
+      "status": {
+        "live": "Live",
+        "loaded": "Memulai",
+        "final": "Final",
+        "upcoming": "Mendatang"
+      },
+      "emptyDescriptionAt": "Pertandingan muncul di sini saat turnamen dimulai: {{when}}."
+    },
+    "teamsTab": {
+      "shuffleTitle": "Tim berganti setiap babak",
+      "shuffleDescription": "Turnamen acak mengundi tim baru setiap babak dari pemain yang terdaftar. Klasemen mengurutkan pemain.",
+      "emptyTitle": "Belum ada tim",
+      "emptyDescription": "Tim muncul di sini setelah penyelenggara menambahkannya.",
+      "yours": "Tim Anda",
+      "record": "{{wins}}–{{losses}}",
+      "emptySignupOpen": "Pendaftaran dibuka. Tim muncul di sini saat mendaftar.",
+      "signUp": "Daftarkan tim Anda"
+    },
+    "allMatches": "Semua pertandingan",
+    "keyDates": {
+      "starts": "Mulai",
+      "lastOnSchedule": "Terakhir di jadwal",
+      "teams": "Tim"
+    },
+    "mapPoolCount": "Kumpulan peta · {{count}} peta",
+    "mapPoolNote": "Kapten melakukan ban dan pilih dari peta ini sebelum setiap seri.",
+    "addToCalendar": "Tambahkan ke kalender",
+    "scheduleSoon": "Penyelenggara belum menerbitkan jadwal.",
+    "checkInWindow": "Check-in",
+    "mapPoolSoonTitle": "Kumpulan peta",
+    "mapPoolSoon": "Penyelenggara belum memilih peta.",
+    "adminBanner": "Anda admin turnamen ini. Pengelolaannya ada di Kelola; halaman ini adalah tampilan pemain.",
+    "manageTournament": "Kelola turnamen",
+    "fullBracket": "Bracket lengkap",
+    "allRules": "Semua aturan",
+    "archivedTitle": "Turnamen ini diarsipkan",
+    "archivedBody": "Turnamen yang lebih baru menggantikannya. Hasil, bracket, dan klasemennya tetap ada di sini.",
+    "openCurrent": "Buka turnamen saat ini",
+    "allTournaments": "Semua turnamen",
+    "roundN": "Babak {{n}}",
+    "finalRound": "Final",
+    "roundStarts": "{{round}} · veto dibuka {{time}}"
+  },
+  "roundStatusCard": {
+    "roundOf": "Babak {{current}} dari {{total}}",
+    "complete": "Selesai",
+    "inProgress": "Berlangsung",
+    "matchProgress": "Progres pertandingan",
+    "completedOf": "{{completed}} / {{total}} selesai",
+    "completedCount": "{{count}} selesai",
+    "playingCount": "{{count}} sedang bermain",
+    "pendingCount": "{{count}} tertunda"
+  },
+  "yourMatch": {
+    "loading": "Memuat pertandingan Anda",
+    "bestOf": "Best of {{count}}",
+    "mapsScore": "Peta {{us}} – {{them}}",
+    "inServer": "Di server",
+    "notJoined": "Belum bergabung",
+    "waitingForPlayers": "Menunggu pemain",
+    "inServerCount": "{{count}} dari {{expected}} di server. Pertandingan dimulai saat semua siap.",
+    "inServerCountBots": "{{count}} di server. Bot mengisi kursi kosong; pertandingan dimulai saat semua yang ada di sini siap.",
+    "live": "Live",
+    "round": "Ronde {{n}}",
+    "vetoTitle": "Veto peta sedang berlangsung",
+    "finished": "Pertandingan selesai",
+    "mapOf": "Peta {{n}} dari {{total}}",
+    "sideYou": "{{side}} · Anda",
+    "rejoin": "Terputus? Gabung lagi dengan tombol yang sama: tempat Anda tetap dijaga.",
+    "outcome": {
+      "won": "Anda menang {{us}}–{{them}} melawan {{opponent}}",
+      "lost": "Anda kalah {{us}}–{{them}} melawan {{opponent}}",
+      "draw": "{{us}}–{{them}} melawan {{opponent}}"
+    },
+    "ready": "Siap",
+    "waitingForServer": "Menunggu server",
+    "vetoDoneChip": "Veto selesai · {{map}}",
+    "waitingForServerBody": "Server ditugaskan begitu ada yang kosong. Anda mendapat notifikasi dan halaman ini diperbarui sendiri.",
+    "mapDrawnChip": "Peta diundi · {{map}}",
+    "notYet": "Belum"
+  },
+  "results": {
+    "finalStandings": "Klasemen akhir",
+    "awards": "Penghargaan",
+    "players": "Pemain",
+    "matchesAndDemos": "Pertandingan dan demo",
+    "place": "#{{n}}",
+    "championsOf": "{{name}} · Juara",
+    "showAll": "Semua {{count}} pemain",
+    "showFewer": "Tampilkan lebih sedikit",
+    "mapResults": "Hasil peta",
+    "col": {
+      "player": "Pemain",
+      "team": "Tim",
+      "rating": "Rating ±",
+      "hltv": "Performa"
+    },
+    "award": {
+      "mostKills": "Kill terbanyak",
+      "bestAdr": "ADR tertinggi",
+      "bestHeadshots": "Headshot % terbaik",
+      "mostFlashAssists": "Flash assist terbanyak",
+      "mostUtility": "Damage utilitas terbanyak",
+      "biggestGain": "Kenaikan rating terbesar",
+      "bestPlayer": "Pemain terbaik",
+      "mostClutches": "Clutch terbanyak",
+      "mostTeamFlashes": "Paling sering flash rekan setim",
+      "mostMoney": "Paling banyak menghabiskan uang"
+    },
+    "awardValue": {
+      "mostKills": "{{value}} kill",
+      "bestAdr": "{{value}} ADR",
+      "bestHeadshots": "{{value}} % headshot",
+      "mostFlashAssists": "{{value}} flash assist",
+      "mostUtility": "{{value}} damage utilitas",
+      "biggestGain": "+{{value}} rating",
+      "bestPlayer": "rating {{value}}",
+      "mostTeamFlashes": "{{value}} rekan setim kena flash",
+      "mostClutches": "{{value}} clutch dimenangkan",
+      "mostMoney": "{{value}} dihabiskan"
+    },
+    "wonFinal": "Menang di final {{a}}–{{b}} atas {{opponent}}",
+    "champions": "Juara",
+    "allMatches": "Semua {{count}} pertandingan",
+    "demosAndReel": "Demo dan reel",
+    "stage": {
+      "final": "Final",
+      "semi": "Semifinal",
+      "round": "Babak {{n}}"
+    }
+  },
+  "signup": {
+    "cta": "Daftarkan tim Anda",
+    "keyDates": {
+      "closes": "Pendaftaran ditutup",
+      "checkIn": "Check-in",
+      "spots": "Slot tim",
+      "left": "{{count}} tersisa",
+      "full": "Penuh",
+      "of": "dari {{max}}"
+    },
+    "ladder": {
+      "title": "Tim berdasarkan rating",
+      "yourPlace": "Anda di posisi {{place}} dari {{count}}"
+    },
+    "todo": {
+      "signedUp": "Terdaftar",
+      "beforeTheDay": "Sebelum hari H",
+      "toFix": "{{count}} perlu diperbaiki",
+      "lineup": "Lineup",
+      "allReady": "Semua siap",
+      "notSet": "Belum diatur",
+      "showFixes": "Tampilkan yang perlu diperbaiki",
+      "fixNote": "Perbaiki ini sebelum check-in, atau pemain itu tidak bisa bergabung."
+    },
+    "yourLineup": "Lineup Anda",
+    "change": "Ubah",
+    "withdraw": "Mundur",
+    "withdrawTitle": "Mundurkan {{team}}?",
+    "withdrawBody": "Tim keluar dari turnamen dan slotnya terbuka untuk tim lain.",
+    "sub": "Cadangan",
+    "ready": "Siap",
+    "problem": {
+      "noAccount": "Belum pernah masuk ke Auto Tournament",
+      "noGame": "Game belum ada di profilnya"
+    },
+    "problemShort": {
+      "noAccount": "belum masuk",
+      "noGame": "butuh game"
+    },
+    "checkIn": {
+      "open": "Check-in dibuka",
+      "closesIn": "Ditutup {{time}} · tersisa {{left}}",
+      "imHere": "Saya hadir",
+      "done": "Anda sudah check-in",
+      "teamTitle": "{{team}} sedang check-in",
+      "keepOpen": "Biarkan halaman ini terbuka. Halaman ini memberi tahu saat pertandingan Anda siap.",
+      "firstMatchIn": "Pertandingan pertama dalam",
+      "count": "{{in}} dari {{total}}",
+      "you": "Anda",
+      "everyone": "Semua orang",
+      "soundOn": "Suara aktif: Anda akan mendengar saat waktunya tiba",
+      "soundOff": "Suara mati",
+      "checkInFor": "Check-in {{name}}",
+      "checkInShort": "Check-in"
+    },
+    "noTeamTitle": "Tidak ada tim untuk didaftarkan",
+    "noTeamBody": "Hanya pemilik atau kapten tim yang bisa mendaftarkannya. Buat tim, atau minta kapten Anda.",
+    "goToTeams": "Tim",
+    "steps": {
+      "lineup": "Lineup",
+      "review": "Tinjau"
+    },
+    "whichTeam": "Tim mana yang Anda daftarkan?",
+    "role": {
+      "owner": "Anda pemiliknya",
+      "captain": "Anda kapten"
+    },
+    "playerCount": "{{count}} pemain",
+    "whoPlays": "Siapa yang bermain?",
+    "whoPlaysHint": "{{count}} pemain inti · hingga {{subs}} cadangan",
+    "rating": "Rating {{rating}}",
+    "slotFor": "Peran untuk {{name}}",
+    "starter": "Inti",
+    "out": "Tidak ikut",
+    "starters": "Pemain inti",
+    "subs": "Cadangan",
+    "lineupRating": "Rating lineup",
+    "missingAccounts": "{{names}} masih harus masuk.",
+    "fixBeforeCheckIn": "Anda bisa mendaftar sekarang; perbaiki sebelum check-in.",
+    "saveLineup": "Simpan lineup",
+    "nextReview": "Berikutnya: tinjau",
+    "readyToSend": "Siap dikirim?",
+    "next": {
+      "lastSpot": "Mengambil slot terakhir",
+      "takesSpot": "Mengambil satu slot",
+      "spotsLeft": "{{count}} tersisa sebelum ini",
+      "checkIn": "Check-in pada hari H",
+      "firstMatch": "Pertandingan pertama",
+      "spotOf": "{{n}} dari {{max}}"
+    },
+    "vouch": "Saya menyatakan setiap pemain di lineup ini sudah membaca",
+    "vouchNote": "Saya mendaftar atas nama mereka. Jika seorang pemain melanggar aturan, seluruh tim bisa dihukum atau didiskualifikasi.",
+    "send": "Daftarkan {{team}}",
+    "rulesLink": "aturan",
+    "ownerTag": "pemilik",
+    "captainTag": "kapten",
+    "check": {
+      "steam": "Steam",
+      "game": "{{game}}",
+      "noGame": "{{game}} belum ditambahkan",
+      "steamShort": "Steam"
+    },
+    "remind": "Ingatkan",
+    "reminded": "Pengingat dikirim di obrolan tim Anda",
+    "done": "Selesai",
+    "lineupGap": "Seorang pemain inti keluar dari lineup Anda (diblokir atau dihapus). Pertandingan Anda menunggu sampai {{time}}: pilih cadangan sebelum itu, atau cadangan pertama otomatis masuk. Tanpa cadangan Anda bermain kurang pemain.",
+    "pickSub": "Pilih cadangan",
+    "title": "Daftarkan tim Anda",
+    "editTitle": "Ubah lineup Anda",
+    "stepsLabel": "Langkah",
+    "changeUntil": "Anda bisa mengubah lineup sampai check-in ditutup, {{when}}.",
+    "counts": "{{starters}} dari {{teamSize}} pemain inti · {{subs}} dari {{maxSubs}} cadangan",
+    "lineupRatingValue": "Rating lineup {{rating}}",
+    "missingGame": "{{names}} perlu {{game}} di profilnya.",
+    "subsLine": "cadangan: {{names}}",
+    "overlap": {
+      "title": "Anda tidak bisa mendaftar di turnamen ini",
+      "body": "Anda ada di {{name}}, yang punya pertandingan {{when}}, bersamaan dengan turnamen ini. Anda bisa ikut kedua turnamen jika jam pertandingannya tidak bertabrakan.",
+      "open": "Buka {{name}}"
+    },
+    "youreIn": {
+      "eyebrow": "{{team}} · terdaftar",
+      "title": "Anda masuk!",
+      "body": "Berikut yang perlu diketahui tim Anda sebelum turnamen dimulai. Kami juga mengirim daftar yang sama ke pemilik dan para kapten.",
+      "openLineup": "Buka lineup Anda",
+      "listTitle": "Sebelum turnamen dimulai",
+      "checkIn": "Check-in {{when}}–{{to}}",
+      "checkInBodyCaptains": "Setiap pemain inti check-in di halaman ini, atau kapten yang melakukannya untuk mereka. Check-in ditutup saat turnamen dimulai.",
+      "checkInBody": "Setiap pemain inti check-in di halaman ini. Check-in ditutup saat turnamen dimulai.",
+      "subs": "Cadangan tidak perlu check-in",
+      "subsBody": "Mereka dihitung hadir dan siap, jadi pertandingan tidak pernah menunggu mereka.",
+      "replaced": "Pemain inti yang belum check-in akan diganti",
+      "replacedBody": "Saat check-in ditutup, cadangan menggantikan pemain inti yang belum check-in. Jika cadangan habis: Anda bermain kurang satu pemain.",
+      "fullTeam_one": "{{count}} menit untuk membawa tim Anda ke server",
+      "fullTeam_other": "{{count}} menit untuk membawa tim Anda ke server",
+      "fullTeamBody_one": "Begitu server siap, tim Anda punya {{count}} menit untuk menghadirkan tim lengkap di server, termasuk cadangan. Setelah itu, tim lawan bisa mengambil kemenangan WO atau memilih melawan tim Anda yang kurang pemain.",
+      "fullTeamBody_other": "Begitu server siap, tim Anda punya {{count}} menit untuk menghadirkan tim lengkap di server, termasuk cadangan. Setelah itu, tim lawan bisa mengambil kemenangan WO atau memilih melawan tim Anda yang kurang pemain.",
+      "ready": "Bersiaplah sebelum setiap pertandingan",
+      "readyBodyVeto_one": "Veto dibuka {{count}} menit sebelum setiap pertandingan. Biarkan halaman ini terbuka: halaman ini memberi tahu saat pertandingan berikutnya siap.",
+      "readyBodyVeto_other": "Veto dibuka {{count}} menit sebelum setiap pertandingan. Biarkan halaman ini terbuka: halaman ini memberi tahu saat pertandingan berikutnya siap.",
+      "readyBody": "Biarkan halaman ini terbuka: halaman ini memberi tahu saat pertandingan berikutnya siap.",
+      "eachMatch": "Check-in lagi sebelum setiap pertandingan",
+      "eachMatchBody": "Sebelum setiap pertandingan, setiap pemain inti check-in di ruang pertandingannya, atau kapten melakukannya untuk mereka. Pemain inti yang tidak check-in diganti oleh cadangan."
+    }
+  },
+  "bracketCards": {
+    "you": "Anda",
+    "open": "Buka {{a}} vs {{b}}",
+    "upper": "Upper bracket",
+    "lower": "Lower bracket",
+    "grandFinal": "Grand final",
+    "thirdPlace": "Juara ketiga",
+    "live": "Live",
+    "veto": "Veto",
+    "done": "Selesai",
+    "mapOf": "Peta {{n}} dari {{total}}",
+    "banning": "Ban peta",
+    "bestOf_one": "Best of {{count}}",
+    "bestOf_other": "Best of {{count}}",
+    "winnerOf": "Pemenang {{match}}",
+    "loserOf": "Yang kalah {{match}}",
+    "tbd": "Belum ditentukan",
+    "liveCount_one": "{{count}} live",
+    "liveCount_other": "{{count}} live",
+    "matchCount_one": "{{count}} pertandingan",
+    "matchCount_other": "{{count}} pertandingan"
+  },
+  "placement": {
+    "outTitle": "Perjalanan Anda di {{tournament}} sudah berakhir",
+    "wonTitle": "Anda memenangkan {{tournament}}!",
+    "yourTeamPlaced": "{{team}} finis di",
+    "yourTeam": "Tim Anda",
+    "outBody": "Tim Anda sudah keluar dari turnamen, jadi tidak ada pertandingan lagi untuk Anda. Ikuti sisanya di bracket.",
+    "wonBody": "Tim Anda memenangkan turnamen. Main bagus!",
+    "close": "Tutup",
+    "seeBracket": "Lihat bracket",
+    "outBodyPlay": "Tidak ada pertandingan lagi untuk Anda di turnamen ini. Terima kasih sudah bermain!",
+    "championsEyebrow": "Juara",
+    "teamPlaced": "{{team}} finis di",
+    "wonTitleShort": "Anda memenangkan {{tournament}}!",
+    "wonFinalBody": "{{team}} memenangkan final {{score}}. Main bagus!",
+    "playHint": "Mau main lagi? Matchmaking memasukkan Anda ke pertandingan dalam satu atau dua menit."
+  },
+  "advance": {
+    "title": "Mantap, Anda masih bertahan!",
+    "opponent": "Berikutnya: {{opponent}}.",
+    "feederTitle": "Lawan Anda berikutnya berasal dari",
+    "vs": "vs",
+    "tbd": "TBD",
+    "feederNotStarted": "Pertandingan itu belum dimulai.",
+    "feederMinutes_one": "Sekitar {{count}} menit lagi.",
+    "feederMinutes_other": "Sekitar {{count}} menit lagi.",
+    "feederAlmost": "Hampir selesai.",
+    "watch": "Tonton live",
+    "wonEyebrow": "{{stage}} dimenangkan {{score}}"
+  },
+  "whatsNext": {
+    "eyebrow": "Selanjutnya",
+    "champions": "Juara",
+    "outTitle": "Tim Anda sudah gugur. Anda finis di {{place}}",
+    "outBody": "Itu pertandingan terakhir Anda di {{tournament}}. Pertandingan yang seru! Mau terus bermain? Matchmaking mencarikan pertandingan dengan pemain lain sekarang juga.",
+    "playMatchmaking": "Main matchmaking",
+    "watchLive": "Tonton pertandingan live",
+    "nextMatch": "{{stage}} vs {{opponent}}",
+    "nextMatchReady": "Pertandingan Anda siap: buka ruang pertandingan untuk terhubung.",
+    "nextMatchSoon": "Pertandingan Anda berikutnya sudah ditetapkan. Setelah istirahat singkat pertandingan dibuka, dan kami memberi tahu Anda. Bilah navigasi menampilkan hitung mundurnya di mana pun Anda berada.",
+    "openMatchRoom": "Buka ruang pertandingan",
+    "throughTo": "Anda lolos ke {{stage}}",
+    "waitingTitle": "Menunggu lawan berikutnya",
+    "waitingBody": "Lawan Anda berasal dari pertandingan yang masih dimainkan. Setelah selesai ada istirahat singkat, lalu pertandingan Anda berikutnya dibuka. Kami memberi tahu Anda.",
+    "watchOpponent": "Tonton lawan Anda berikutnya secara live",
+    "shuffleTitle": "Babak berikutnya: tim baru",
+    "shuffleBody": "Setelah semua pertandingan babak ini selesai, tim baru diundi dan pertandingan Anda berikutnya muncul di sini.",
+    "stayHere": "Tetap di halaman ini: halaman diperbarui sendiri.",
+    "openTournament": "Buka turnamen",
+    "winsToTitle_one": "1 kemenangan lagi menuju gelar",
+    "winsToTitle_other": "{{count}} kemenangan lagi menuju gelar",
+    "shuffleDoneTitle": "Itu babak terakhir",
+    "shuffleDoneBody": "Turnamen acak sudah berakhir. Buka turnamen untuk melihat klasemen.",
+    "youWon": "Anda menang {{a}}–{{b}} melawan {{opponent}}.",
+    "youLost": "Anda kalah {{a}}–{{b}} melawan {{opponent}}.",
+    "resultPlaced": "{{result}} Anda finis di {{place}}.",
+    "nextUp": "Berikutnya: {{match}}."
+  },
+  "navStatus": {
+    "placed": "Finis di",
+    "placedPlay": "{{place}} · Main matchmaking",
+    "waiting": "Menunggu lawan",
+    "vetoIn": "Veto dalam",
+    "vetoOpening": "Veto dibuka",
+    "matchIn": "Pertandingan dalam",
+    "matchLoading": "Memuat pertandingan",
+    "shuffleRound": "Babak {{round}} · Bermain",
+    "shuffleSittingOut": "Babak {{round}} · Absen",
+    "placedPlayLine": "Finis di {{place}} · Main matchmaking",
+    "placedLine": "Finis di {{place}}",
+    "waitingOpponent": "Menunggu lawan",
+    "aboutMinutes_one": "~{{count}} mnt",
+    "aboutMinutes_other": "~{{count}} mnt"
+  },
+  "shuffleJoin": {
+    "title": "Ikuti turnamen acak ini",
+    "body": "Tidak perlu tim: daftar sendiri. Setiap babak platform mengundi tim baru yang seimbang.",
+    "youreIn": "Anda sudah ikut",
+    "inBody": "Saat turnamen dimulai, tim pertama Anda diundi dan pertandingan Anda muncul di sini. Biarkan halaman ini terbuka.",
+    "join": "Gabung",
+    "leave": "Keluar",
+    "full": "Penuh",
+    "signInToJoin": "Masuk untuk bergabung",
+    "count_one": "{{count}} pemain ikut",
+    "count_other": "{{count}} pemain ikut",
+    "countOf_one": "{{count}} dari {{spots}} pemain ikut",
+    "countOf_other": "{{count}} dari {{spots}} pemain ikut",
+    "playingTitle": "Anda sedang bermain",
+    "playingBody": "Masuk ke server bersama tim Anda. Babak berikutnya diundi setelah semua pertandingan babak ini selesai.",
+    "sittingOutTitle": "Anda absen di babak ini",
+    "sittingOutBody": "Pemain tidak cukup untuk semua tim di babak ini. Anda ikut undian babak {{next}}, dan yang paling sering bermain absen lebih dulu.",
+    "goToMatch": "Ke pertandingan",
+    "tagPlaying": "Bermain",
+    "tagSittingOut": "Absen",
+    "roundHeading": "Babak {{round}}",
+    "versus": "vs",
+    "sittingOutList": "Absen: {{names}}",
+    "status": {
+      "live": "Live",
+      "done": "Selesai",
+      "waiting": "Memulai"
+    },
+    "finishedTitle": "Turnamen acak sudah berakhir",
+    "finishedBody_one": "1 babak sudah dimainkan. Main bagus!",
+    "finishedBody_other": "{{count}} babak sudah dimainkan. Main bagus!",
+    "roundOf": "Babak {{round}} dari {{total}}",
+    "roundsCount_one": "{{count}} babak",
+    "roundsCount_other": "{{count}} babak",
+    "now": "Sekarang",
+    "tagLeft": "Keluar",
+    "markOut": "Tandai keluar",
+    "markIn": "Kembali ikut",
+    "roundShort": "Babak {{round}}",
+    "playedTitle": "Pertandingan babak {{round}} Anda sudah selesai",
+    "playedBody": "Babak {{next}} diundi setelah pertandingan lain selesai. Tetap di halaman ini: halaman diperbarui sendiri.",
+    "sittingOutBodyCounts_one": "Ada {{players}} pemain untuk {{size}}v{{size2}}, jadi {{count}} pemain istirahat setiap babak. Yang paling sering bermain istirahat lebih dulu: Anda ikut undian berikutnya.",
+    "sittingOutBodyCounts_other": "Ada {{players}} pemain untuk {{size}}v{{size2}}, jadi {{count}} pemain istirahat setiap babak. Yang paling sering bermain istirahat lebih dulu: Anda ikut undian berikutnya.",
+    "playedBodyLeft_one": "Menunggu {{count}} pertandingan lagi. Babak {{next}} diundi setelah selesai; pertandingan Anda berikutnya muncul di sini dan Anda mendapat notifikasi.",
+    "playedBodyLeft_other": "Menunggu {{count}} pertandingan lagi. Babak {{next}} diundi setelah selesai; pertandingan Anda berikutnya muncul di sini dan Anda mendapat notifikasi.",
+    "joinedByMistake": "Salah bergabung?",
+    "breakTitle": "Istirahat · babak {{round}} dimulai pukul {{time}}",
+    "noShowTitle": "Anda dikeluarkan dari undian berikutnya",
+    "noShowBody": "Anda tidak pernah masuk ke pertandingan, jadi babak berikutnya diundi tanpa Anda. Sudah kembali di depan PC? Beri tahu dan Anda ikut undian berikutnya.",
+    "backIn": "Saya kembali",
+    "tagNoShow": "Tidak hadir"
+  },
+  "liveOverview": {
+    "roundOf": "Babak {{round}} dari {{total}}",
+    "liveCount": "{{count}} sedang live",
+    "eta": {
+      "nextRoundAbout": "Babak berikutnya sekitar {{time}}",
+      "nextRoundAt": "Babak berikutnya pukul {{time}}",
+      "finalEnds": "Babak final: selesai sekitar {{time}}",
+      "endsAbout": "selesai sekitar {{time}}"
+    },
+    "hero": {
+      "playingTitle": "Anda sedang bermain",
+      "playingBody": "{{us}} vs {{them}}{{map}}. Gabung dari ruang pertandingan.",
+      "joiningTitle": "Masuk ke server",
+      "joiningBody": "{{us}} vs {{them}}{{map}}. Pertandingan dimulai saat semua siap.",
+      "vetoTitle": "Veto peta Anda sudah dibuka",
+      "vetoBody": "Ban dan pilih peta bersama {{them}} di ruang pertandingan.",
+      "waitingTitle": "Menunggu lawan berikutnya",
+      "waitingBody": "Mereka berasal dari pertandingan yang masih dimainkan. Setelah istirahat singkat veto dibuka, dan Anda mendapat notifikasi.",
+      "notStartedTitle": "Berikutnya: {{them}}",
+      "notStartedBody": "Pertandingan Anda dibuka saat babak dimulai. Halaman ini diperbarui sendiri.",
+      "outTitle": "Tim Anda sudah gugur. Anda finis di {{place}}",
+      "outBody": "Itu pertandingan terakhir Anda. Pertandingan yang seru! Matchmaking terbuka jika Anda ingin terus bermain.",
+      "wonTitle": "Anda memenangkan turnamen!",
+      "wonBody": "Main bagus. Hadiah Anda ada di inventaris.",
+      "spectatorTitle": "{{count}} pertandingan live",
+      "spectatorTitleOne": "1 pertandingan live",
+      "spectatorIdleTitle": "Di antara babak",
+      "spectatorBody": "Buka pertandingan untuk melihat skor, peta, dan siapa yang bermain.",
+      "openMatchRoom": "Buka ruang pertandingan",
+      "openVeto": "Buka veto",
+      "watchLive": "Tonton pertandingan live",
+      "playMatchmaking": "Main matchmaking",
+      "yourMatch": "Pertandingan Anda",
+      "opponentFrom": "Lawan Anda berasal dari",
+      "minutesLeft": "sekitar {{count}} mnt lagi",
+      "winsToTitle_one": "1 kemenangan lagi menuju gelar",
+      "winsToTitle_other": "{{count}} kemenangan lagi menuju gelar",
+      "waitingServerTitle": "Menunggu server",
+      "waitingServerBody": "{{us}} vs {{them}}{{map}}. Server ditugaskan begitu ada yang kosong; Anda mendapat notifikasi.",
+      "wonStage": "{{stage}} dimenangkan {{score}}",
+      "stageNext": "Berikutnya {{stage}}",
+      "faceWinnerOf": "{{us}} melawan pemenang {{a}} vs {{b}} ({{state}}). Veto dibuka saat pertandingan itu selesai; Anda mendapat notifikasi.",
+      "feederLive": "{{score}}, peta {{map}} live",
+      "feederNotStarted": "belum dimulai",
+      "vetoOpens": "Veto dibuka",
+      "inAboutMinutes_one": "dalam ~{{count}} mnt",
+      "inAboutMinutes_other": "dalam ~{{count}} mnt",
+      "later": "nanti",
+      "afterBreak": "setelah istirahat singkat",
+      "youAre": "rekor Anda {{record}}",
+      "nextRoundDrawn": "Babak {{round}} diundi berikutnya",
+      "lastRoundPlaying": "Babak terakhir sedang dimainkan",
+      "betweenBody": "Pertandingan Anda di babak ini sudah selesai. Babak berikutnya diundi setelah pertandingan lain selesai; pertandingan Anda muncul di sini dan Anda mendapat notifikasi.",
+      "vetoSoonTitle": "Veto peta Anda dibuka pukul {{time}}",
+      "vetoSoonBody": "Istirahat singkat setelah pertandingan terakhir Anda. Anda mendapat notifikasi saat veto melawan {{them}} dibuka."
+    },
+    "schedule": "Jadwal",
+    "bracket": "Bracket",
+    "round": "Babak {{n}}",
+    "final": "Final",
+    "state": {
+      "now": "Sekarang",
+      "next": "Berikutnya",
+      "later": "Nanti",
+      "done": "✓ Selesai",
+      "live": "Live",
+      "upcoming": "Mendatang"
+    },
+    "thisRound": "Babak {{n}}",
+    "earlier": "Babak sebelumnya",
+    "standings": "Klasemen",
+    "teams": "Tim",
+    "wl": "M–K",
+    "rounds": "+/−",
+    "ties": {
+      "round_robin": "Imbang: head-to-head, lalu selisih ronde, lalu ronde yang dimenangkan.",
+      "swiss": "Imbang: seberapa kuat lawan Anda (Buchholz: jumlah kemenangan mereka), lalu selisih ronde.",
+      "elim": "Diurutkan berdasarkan kemenangan. Dua kali kalah, tim gugur.",
+      "singleElim": "Diurutkan berdasarkan kemenangan. Sekali kalah, tim gugur.",
+      "doubleElim": "Diurutkan berdasarkan kemenangan. Dua kali kalah, tim gugur.",
+      "groups": "Imbang dalam grup: head-to-head, lalu selisih ronde, lalu ronde yang dimenangkan."
+    },
+    "players": {
+      "title": "Pemain · berdasarkan rating",
+      "find": "Cari pemain",
+      "export": "Ekspor",
+      "all": "Semua {{count}} pemain",
+      "player": "Pemain",
+      "team": "Tim",
+      "rating": "Rating",
+      "change": "±",
+      "kd": "K / D",
+      "adr": "ADR",
+      "winRate": "Rasio menang",
+      "none": "Tidak ada pemain yang cocok."
+    }
+  },
+  "matchesCards": {
+    "show": "Tampilkan",
+    "filterAll": "Semua {{count}}",
+    "filterLive": "Live {{count}}",
+    "filterUpcoming": "Mendatang {{count}}",
+    "done": "Selesai",
+    "afterOvertime": "setelah overtime",
+    "startsAt": "mulai {{time}} · veto dibuka {{veto}}",
+    "yourMatch": "Pertandingan Anda",
+    "placeholderTbd": "TBD",
+    "placeholderVeto": "Veto peta",
+    "placeholderVetoAt": "Veto {{time}}"
+  },
+  "standingsTab": {
+    "champions": "Juara",
+    "championBadge": "JUARA",
+    "vs": "vs",
+    "rounds": "Ronde",
+    "form": "Performa",
+    "intro": {
+      "round_robin": "Round robin: setiap tim melawan semua tim lain sekali.",
+      "swiss": "Swiss: setiap babak memasangkan tim dengan rekor yang sama.",
+      "single": "Single elimination: sekali kalah, tim gugur.",
+      "double": "Double elimination: dua kali kalah, tim gugur.",
+      "groups": "Grup, lalu playoff: setiap tim melawan tim lain di grupnya sekali; yang terbaik lanjut ke playoff."
+    }
+  },
+  "teamsCards": {
+    "subs": "Cadangan: {{names}}"
+  },
+  "rulesTab": {
+    "atAGlance": "Sekilas",
+    "onThisPage": "Di halaman ini",
+    "fromSettings": "dari pengaturan turnamen, selalu terbaru",
+    "organizer": "Aturan dari penyelenggara",
+    "facts": {
+      "map": "Peta",
+      "firstTo": "yang pertama mencapai {{count}}",
+      "noOvertime": "Tidak ada",
+      "overtimeSegments_one": "1, lalu damage",
+      "overtimeSegments_other": "{{count}}, lalu damage",
+      "overtimeUnlimited": "Sebanyak yang dibutuhkan",
+      "thenDamage": "masing-masing 6 ronde, yang pertama mencapai 4",
+      "mapCount_one": "{{count}} peta",
+      "mapCount_other": "{{count}} peta"
+    },
+    "format": {
+      "title": "Cara kerja format ini",
+      "navTitle": "Format",
+      "swiss_one": "Semua bermain {{count}} babak, masing-masing melawan tim dengan rekor yang sama. Tanpa pertandingan ulang. Diurutkan berdasarkan kemenangan, lalu tiebreaker di bawah.",
+      "swiss_other": "Semua bermain {{count}} babak, masing-masing melawan tim dengan rekor yang sama. Tanpa pertandingan ulang. Diurutkan berdasarkan kemenangan, lalu tiebreaker di bawah.",
+      "single_elimination": "Sekali kalah langsung gugur. Bracket berjalan sampai final.",
+      "double_elimination": "Upper bracket dan lower bracket. Dua kali kalah, Anda gugur.",
+      "round_robin": "Semua bertemu semua sekali. Diurutkan berdasarkan kemenangan, lalu tiebreaker di bawah.",
+      "shuffle": "Tim diundi ulang setiap babak dari pemain yang terdaftar. Pemain diurutkan berdasarkan kemenangan.",
+      "matches": "Setiap pertandingan adalah {{series}} dengan peta MR{{mr}}. Overtime: {{overtime}}.",
+      "damage": "Jika peta masih imbang setelah overtime terakhir, tim dengan total damage lebih besar memenangkannya."
+    }
+  },
+  "liveMatch": {
+    "updatesEveryRound": "Diperbarui setiap babak",
+    "chat": "Obrolan pertandingan",
+    "system": "Auto Tournament",
+    "noMessages": "Belum ada pesan. Ucapkan gl hf!",
+    "chatSignIn": "Masuk sebagai pemain di pertandingan ini untuk membaca dan menulis di sini.",
+    "messageLabel": "Kirim pesan ke kedua tim dan admin",
+    "send": "Kirim",
+    "callAdmin": "Panggil admin",
+    "adminCalled": "Admin sedang menuju",
+    "joinTitle": "Masuk ke server: {{map}}",
+    "warmup": "Pemanasan · masuk sekarang",
+    "isLive": "{{map}} sedang live",
+    "players": "Pemain",
+    "playersOnMap": "Pemain · {{map}}",
+    "noEconomy": "Diurutkan berdasarkan rating. Tanpa uang atau perlengkapan: tidak ada yang membocorkan ekonomi tim.",
+    "yourTeam": "Tim Anda",
+    "backToTournament": "Kembali ke turnamen",
+    "manage": "Kelola pertandingan ini",
+    "finishedAt": "selesai {{when}}",
+    "delayedNote_one": "Menampilkan apa yang ditampilkan GOTV, tertunda {{count}} detik.",
+    "delayedNote_other": "Menampilkan apa yang ditampilkan GOTV, tertunda {{count}} detik."
+  },
+  "preStart": {
+    "open": "Pendaftaran dibuka",
+    "openCloses": "Pendaftaran dibuka · ditutup {{when}}",
+    "closed": "Pendaftaran ditutup",
+    "notOpenTitle": "Pendaftaran belum dibuka",
+    "fullTitle": "Semua slot sudah terisi",
+    "spotsLeft_one": "{{count}} dari {{max}} slot tersisa. Kapten memilih pemain inti dan cadangan.",
+    "spotsLeft_other": "{{count}} dari {{max}} slot tersisa. Kapten memilih pemain inti dan cadangan.",
+    "byOrganizer": "Penyelenggara menambahkan tim.",
+    "captainsPick": "Kapten memilih pemain inti dan cadangan.",
+    "startsIn": "Mulai dalam",
+    "allRules": "Semua aturan dan hadiah",
+    "signedUpEyebrow": "{{team}} · terdaftar",
+    "inTitle": "Anda masuk",
+    "inToFix_one": "Anda masuk. 1 hal perlu diperbaiki",
+    "inToFix_other": "Anda masuk. {{count}} hal perlu diperbaiki",
+    "fixBefore": "Perbaiki sebelum check-in pada {{when}}, atau pemain itu tidak bisa masuk ke server.",
+    "checkInOn": "Check-in pada {{when}}. Pemain inti yang belum check-in saat mulai akan diganti oleh cadangan.",
+    "allSet": "Semua sudah siap. Jadwal menunjukkan kapan dimulai.",
+    "checkInOpens": "Check-in dibuka",
+    "openLineup": "Buka lineup Anda",
+    "yourSignup": "Pendaftaran Anda",
+    "spotOf": "slot {{place}} dari {{max}}",
+    "lineupCount": "Lineup · {{starters}} pemain inti, {{subs}} cadangan",
+    "fixBeforeCheckIn": "Perbaiki sebelum check-in",
+    "leave": "Keluar dari turnamen",
+    "withdrawHint": "Tidak bisa hadir? Mundur membebaskan slot untuk tim lain.",
+    "opensTitle": "Pendaftaran dibuka {{when}}",
+    "opensIn": "Dibuka dalam {{time}}."
+  },
+  "shuffleOverview": {
+    "yourMatchLive": "pertandingan Anda sedang live",
+    "yourMatchReady": "pertandingan Anda sudah siap",
+    "yourMatchDone": "pertandingan Anda sudah selesai",
+    "nextDraw": "Undian berikutnya",
+    "round": "Babak {{n}}",
+    "whenRoundEnds": "saat pertandingan babak ini selesai",
+    "oneMapPerRound": "Satu peta per babak · tim baru setiap babak",
+    "sittingOut": "Absen:",
+    "firstNextRound": "pertama di babak berikutnya",
+    "players": "Pemain",
+    "markOutHint": "Tandai keluar pemain yang pergi; mereka absen sampai Anda menandai mereka kembali ikut."
+  },
+  "checkIn": {
+    "areYouHere": "Anda hadir?",
+    "teamCount": "{{team}} sedang check-in: {{in}} dari {{total}}. Pemain inti yang belum check-in saat mulai akan diganti oleh cadangan.",
+    "soundOn": "♪ Suara aktif",
+    "firstVeto_one": "Veto pertama Anda dibuka pukul {{time}}, {{count}} menit sebelum pertandingan: bersiaplah di depan PC saat itu.",
+    "firstVeto_other": "Veto pertama Anda dibuka pukul {{time}}, {{count}} menit sebelum pertandingan: bersiaplah di depan PC saat itu.",
+    "vetoOpensNote": "veto dibuka {{time}}"
+  },
+  "runState": {
+    "paused": "Turnamen dijeda",
+    "pausedUntil": "Turnamen dijeda sampai {{time}}",
+    "pausedBody": "Pertandingan yang sudah ada di server tetap berjalan. Tidak ada babak baru yang diundi dan tidak ada veto yang dibuka sampai turnamen dilanjutkan.",
+    "reason": "Alasan: {{reason}}.",
+    "waitingServers_one": "{{count}} pertandingan menunggu server.",
+    "waitingServers_other": "{{count}} pertandingan menunggu server.",
+    "allBusy_one": "1 server sedang sibuk; pertandingan dimulai begitu ada yang kosong.",
+    "allBusy_other": "{{count}} server sedang sibuk; pertandingan dimulai begitu ada yang kosong.",
+    "noneFree": "Tidak ada server yang kosong; pertandingan dimulai begitu ada.",
+    "servers": "Server",
+    "pausedShort": "Dijeda"
+  },
+  "captainsPanel": {
+    "title": "Kapten",
+    "note": "Hanya kapten yang bisa melaporkan atau mengonfirmasi hasil.",
+    "make": "Jadikan kapten",
+    "remove": "Cabut kapten",
+    "role": {
+      "owner": "Pemilik",
+      "captain": "Kapten",
+      "member": "Anggota"
+    }
+  },
+  "lineupPanel": {
+    "title": "Lineup",
+    "note_one": "Pilih {{count}} pemain untuk pertandingan ini. Sisanya duduk di bangku cadangan.",
+    "note_other": "Pilih {{count}} pemain untuk pertandingan ini. Sisanya duduk di bangku cadangan.",
+    "picked": "{{picked}} dari {{count}} dipilih",
+    "plays": "Main",
+    "bench": "Bangku",
+    "save": "Simpan lineup",
+    "saved": "Lineup tersimpan",
+    "notOnServer": "Lineup tersimpan, tetapi server tidak menerimanya: {{error}}",
+    "locked": "Lineup dikunci saat peta sedang live. Bisa diubah di antara peta.",
+    "captainOnly": "Hanya pemilik atau kapten tim yang bisa mengubah lineup.",
+    "source": {
+      "previous": "Sama dengan pertandingan terakhir tim.",
+      "roster": "Pemain pertama di roster."
+    }
+  },
+  "prizesPage": {
+    "title": "Hadiah",
+    "intro": "Skin untuk peringkat, diberikan ke setiap pemain di tim saat turnamen berakhir, dan hadiah untuk MVP. Hanya skin situs: bukan item Steam, tanpa nilai uang.",
+    "none": "Game turnamen ini tidak punya hadiah.",
+    "loadFailed": "Tidak dapat memuat turnamen."
+  },
+  "schedulePage": {
+    "title": "Jadwal pertandingan",
+    "intro": "Beri setiap babak waktu mulai, atau satu pertandingan waktunya sendiri. Pemain melihatnya di pertandingan, mendapat pengingat, dan veto dibuka tepat waktu.",
+    "loadFailed": "Tidak dapat memuat turnamen.",
+    "rounds": "Babak",
+    "modeLabel": "Kapan pertandingan dimulai",
+    "modeTimes": "Pada waktu tertentu",
+    "modeAsap": "Begitu siap",
+    "modeTimesNote": "Pertandingan menunggu waktunya. Buka satu babak untuk memberi satu pertandingan waktunya sendiri.",
+    "modeAsapNote": "Tanpa waktu: pertandingan dimulai saat kedua tim dan server siap.",
+    "noRounds": "Babak muncul di sini setelah bracket dibuat.",
+    "roundN": "Babak {{n}}",
+    "roundNote_one": "{{count}} pertandingan · buka untuk mengatur waktu satu pertandingan",
+    "roundNote_other": "{{count}} pertandingan · buka untuk mengatur waktu satu pertandingan",
+    "roundNoMatches": "Pertandingannya dibuat saat babak sebelumnya selesai",
+    "roundStartsAt": "Babak dimulai pukul",
+    "roundTimeLabel": "Waktu mulai untuk {{round}}",
+    "matchTimeLabel": "Waktu mulai untuk {{match}}",
+    "tbd": "TBD",
+    "ownTime": "Waktu mulai sendiri",
+    "sameAsRound": "Sama dengan babak",
+    "useRoundTime": "Pakai waktu babak",
+    "vetoTitle": "Veto",
+    "vetoNote": "Dibuka sendiri sebelum setiap pertandingan, sehingga selesai saat pertandingan dimulai. Tim yang tidak bertindak tepat waktu akan dipilihkan peta.",
+    "vetoLabel": "Veto dibuka",
+    "vetoZero": "Pada waktu mulai",
+    "reminderTitle": "Pengingat",
+    "reminderNote": "Notifikasi di situs dan di Discord, ke setiap pemain di pertandingan.",
+    "reminderLabel": "Ingatkan pemain",
+    "reminderZero": "Nonaktif",
+    "minutesBefore_one": "{{count}} mnt sebelumnya",
+    "minutesBefore_other": "{{count}} mnt sebelumnya",
+    "save": "Simpan waktu",
+    "saved": "Jadwal pertandingan tersimpan",
+    "saveFailed": "Tidak dapat menyimpan waktu",
+    "rulesTitle": "Aturan yang diikuti",
+    "rules": {
+      "start": "Tidak ada bagian pertandingan yang dimulai sebelum vetonya dibuka, meskipun ada server kosong.",
+      "late": "Babak yang terlambat menggeser babak berikutnya: tim yang masih bermain, atau istirahat di antara pertandingan, menahan veto, dan pemain melihat waktu barunya.",
+      "none": "Tanpa waktu: seperti sebelumnya, pertandingan berjalan begitu kedua tim dan server siap.",
+      "where": "Jadwal di ringkasan, kartu pertandingan, ruang pertandingan, aturan, dan check-in menampilkan waktu ini."
+    },
+    "breaksTitle": "Istirahat di antara babak",
+    "breaksNote_one": "Biarkan istirahat kosong untuk memakai istirahat situs selama {{count}} menit. Tambahkan istirahat yang lebih lama setelah babak mana pun, misalnya 30 menit setelah babak 3.",
+    "breaksNote_other": "Biarkan istirahat kosong untuk memakai istirahat situs selama {{count}} menit. Tambahkan istirahat yang lebih lama setelah babak mana pun, misalnya 30 menit setelah babak 3.",
+    "breakEvery": "Istirahat setelah setiap babak (mnt)",
+    "breakAfterRound": "Setelah babak",
+    "breakMinutes": "Istirahat (mnt)",
+    "breakRemove": "Hapus",
+    "breakAdd": "Tambah istirahat yang lebih lama",
+    "fillStart": "Babak pertama pukul",
+    "fillEvery": "Menit di antara babak",
+    "fillApply": "Isi babak"
+  },
+  "groups": {
+    "groupN": "Grup {{letter}}",
+    "done": "Final",
+    "through_one": "1 tim teratas lolos",
+    "through_other": "{{count}} tim teratas lolos",
+    "playoffs": "Playoff",
+    "playoffsSoon": "Playoff dimulai setelah semua pertandingan grup dimainkan.",
+    "seedSlot": "Seed {{n}}"
+  },
+  "matchCheckIn": {
+    "eyebrow": "Veto dibuka · pertandingan mulai {{time}}",
+    "eyebrowNoTime": "Check-in dibuka",
+    "title": "Check-in untuk pertandingan ini",
+    "body": "Turnamen ini memakai check-in sebelum setiap pertandingan. Pemain inti menyatakan hadir; kapten bisa melakukannya untuk mereka. Cadangan sudah siap.",
+    "closesIn": "Check-in ditutup dalam",
+    "yourTeam": "{{team}} (tim Anda)",
+    "count": "{{in}} dari {{total}} pemain inti sudah check-in",
+    "sub": "CADANGAN",
+    "starter": "INTI",
+    "ready": "Siap",
+    "checkedIn": "Sudah check-in",
+    "notYet": "Belum",
+    "rule": "Belum check-in saat mulai: pemain inti diganti oleh cadangan, dan ruang pertandingan menyebutkan siapa. Jika cadangan habis, tim bermain kurang satu pemain.",
+    "server": {
+      "eyebrow": "Server siap · tim lengkap paling lambat {{time}}",
+      "eyebrowNoTime": "Server siap",
+      "title": "Bawa tim Anda ke server",
+      "bodyOut": "{{out}} tidak check-in, jadi cadangan yang bermain.",
+      "body_one": "1 orang dari tim Anda harus ada di server sebelum timer habis. Cadangan dihitung.",
+      "body_other": "{{count}} orang dari tim Anda harus ada di server sebelum timer habis. Cadangan dihitung.",
+      "clockLabel": "Tim lengkap dibutuhkan dalam",
+      "count": "{{on}} dari {{size}} di server",
+      "onServer": "Di server",
+      "joining": "Bergabung…",
+      "subIn": "CADANGAN MASUK",
+      "out": "KELUAR",
+      "swapped": "Diganti cadangan",
+      "rule": "Pada 0:00, tim yang lengkap memilih: ambil kemenangan WO, atau melawan tim yang kurang pemain. Jika kedua tim kurang: admin yang memutuskan."
+    },
+    "choice": {
+      "eyebrow": "{{team}} masih kurang pemain",
+      "title": "{{team}} punya {{on}} dari {{size}} di server",
+      "body": "Waktu mereka habis. Ambil kemenangan WO dan lolos, atau tetap lawan mereka. Kapten mana pun bisa memilih. Jika tidak memilih dalam 2 menit: kemenangan WO berlaku.",
+      "take": "Ambil kemenangan WO",
+      "play": "Tetap lawan mereka"
+    }
+  }
+}

@@ -1,0 +1,490 @@
+{
+  "matchesPage": {
+    "errors": {
+      "loadMatches": "Gagal memuat pertandingan",
+      "loadTitle": "Error saat memuat pertandingan",
+      "bulkDelete": "Gagal menghapus satu atau beberapa pertandingan"
+    },
+    "header": {
+      "createMatch": "Buat pertandingan"
+    },
+    "bulkSelect": {
+      "select": "Pilih",
+      "done": "Selesai memilih",
+      "selectAll": "Pilih semua",
+      "unselectAll": "Batalkan semua pilihan",
+      "deleteSelected": "Hapus yang dipilih"
+    },
+    "empty": {
+      "title": "Tidak ada pertandingan untuk ditampilkan",
+      "description": "Buat turnamen dan susun bracket untuk melihat pertandingan di sini",
+      "createManual": "Atau buat pertandingan manual"
+    },
+    "sections": {
+      "live": "Pertandingan live ({{count}})",
+      "upcoming": "Pertandingan mendatang ({{count}})",
+      "history": "Riwayat pertandingan ({{count}})",
+      "inQueue": "{{count}} dalam antrean"
+    },
+    "manualMatchLabel": "Pertandingan manual",
+    "create": {
+      "success": "Pertandingan manual dibuat: {{slug}}"
+    },
+    "bulkDelete": {
+      "title": "Hapus pertandingan manual",
+      "deleted_one": "{{count}} pertandingan dihapus",
+      "deleted_other": "{{count}} pertandingan dihapus",
+      "message_one": "Yakin ingin menghapus {{count}} pertandingan manual? Tindakan ini tidak bisa dibatalkan.",
+      "message_other": "Yakin ingin menghapus {{count}} pertandingan manual? Tindakan ini tidak bisa dibatalkan."
+    },
+    "card": {
+      "matchNumber": "Pertandingan #{{number}}",
+      "server": "Server: {{name}}",
+      "queuePosition": "Posisi antrean: #{{position}}",
+      "shuffle": "Acak",
+      "shuffleManual": "Acak manual",
+      "manual": "Manual",
+      "simulation": "Simulasi",
+      "winner": "PEMENANG",
+      "mapN": "Peta {{n}}"
+    },
+    "statusLabel": {
+      "walkover": "MENANG WO",
+      "waitingForTournament": "MENUNGGU TURNAMEN DIMULAI",
+      "waitingForServer": "MENUNGGU SERVER",
+      "waitingForPairing": "MENUNGGU PASANGAN",
+      "vetoPending": "MENUNGGU VETO",
+      "mapVeto": "VETO PETA",
+      "serverAllocated": "SERVER DIALOKASIKAN",
+      "warmup": "PEMANASAN",
+      "overtime": "OVERTIME #{{n}}",
+      "live": "LIVE",
+      "completed": "SELESAI",
+      "cancelled": "DIBATALKAN",
+      "needsDecision": "BUTUH KEPUTUSAN ADMIN"
+    },
+    "statusGuide": {
+      "title": "Panduan status pertandingan",
+      "pending": "Pertandingan sudah dijadwalkan tetapi belum ditugaskan ke server. Akan dialokasikan saat ada server yang tersedia.",
+      "loaded": "Pertandingan sudah dimuat di server dan dalam mode pemanasan. Pemain harus terhubung dan siap untuk memulai.",
+      "live": "Pertandingan sedang dimainkan di servernya.",
+      "completed": "Pertandingan sudah selesai. Pemenang sudah ditentukan dan bracket sudah diperbarui.",
+      "proTipTitle": "Tips pro:",
+      "proTip": "Saat pertandingan menampilkan \"Menunggu pemain (X/Y)\", server sudah siap dan pemain harus terhubung. Begitu semua pemain yang diharapkan terhubung dan siap, pertandingan akan dimulai otomatis."
+    },
+    "latestEvent": "Terbaru: {{event}}",
+    "matchLabel": {
+      "upper": "UB R{{round}} M{{match}}",
+      "lower": "LB R{{round}} M{{match}}",
+      "grandFinal": "Grand final",
+      "grandFinalReset": "Reset grand final",
+      "group": "Grup {{group}} · Babak {{round}}",
+      "playoffs": "Playoff · Babak {{round}}"
+    },
+    "table": {
+      "filterLabel": "Tampilkan",
+      "search": "Cari tim atau pemain",
+      "tbd": "TBD",
+      "manage": "Kelola pertandingan",
+      "empty": "Tidak ada pertandingan di sini.",
+      "filter": {
+        "attention_one": "Butuh perhatian · {{count}}",
+        "attention_other": "Butuh perhatian · {{count}}",
+        "live_one": "Live · {{count}}",
+        "live_other": "Live · {{count}}",
+        "veto_one": "Veto · {{count}}",
+        "veto_other": "Veto · {{count}}",
+        "waiting_one": "Menunggu · {{count}}",
+        "waiting_other": "Menunggu · {{count}}",
+        "finished_one": "Selesai · {{count}}",
+        "finished_other": "Selesai · {{count}}",
+        "all_one": "Semua · {{count}}",
+        "all_other": "Semua · {{count}}"
+      },
+      "columns": {
+        "match": "Pertandingan",
+        "teams": "Tim",
+        "phase": "Fase",
+        "server": "Server",
+        "attention": "Butuh perhatian",
+        "open": "Buka"
+      },
+      "attention": {
+        "calls_one": "1 panggilan admin",
+        "calls_other": "{{count}} panggilan admin",
+        "decide": "Putuskan hasilnya"
+      },
+      "phase": {
+        "live": "Live · peta {{map}}",
+        "finished": "Selesai",
+        "finishedScore": "Selesai · {{score}}",
+        "veto": "Veto peta",
+        "waitingTeams": "Menunggu timnya",
+        "queued": "Menunggu server · #{{position}} dalam antrean",
+        "waiting": "Menunggu"
+      },
+      "server": {
+        "freed": "Dibebaskan"
+      }
+    }
+  },
+  "matchDetailsModal": {
+    "tiebreakHint": "Skor imbang: {{team}} memenangkan peta, ditentukan lewat tiebreak.",
+    "delete": {
+      "dialogTitle": "Hapus pertandingan",
+      "confirmTitle": "Hapus pertandingan ini?",
+      "confirmBody": "Yakin ingin menghapus pertandingan \"{{slug}}\"? Tindakan ini tidak bisa dibatalkan.",
+      "button": "Hapus pertandingan",
+      "success": "Pertandingan berhasil dihapus",
+      "failed": "Gagal menghapus pertandingan"
+    },
+    "roster": {
+      "title": "Daftar pemain",
+      "yourTeam": "Tim Anda",
+      "openPlayerPage": "Buka halaman pemain",
+      "ready": "SIAP",
+      "connected": "TERHUBUNG",
+      "offline": "OFFLINE",
+      "bot": "BOT"
+    },
+    "decision": {
+      "body": "Semua peta sudah dimainkan tetapi seri imbang dalam peta, ronde, dan damage. Pilih pemenang untuk melanjutkan bracket.",
+      "setWinner": "{{team}} menang",
+      "confirmTitle": "Tetapkan pemenang seri",
+      "confirmBody": "Akhiri seri ini dengan {{team}} sebagai pemenang? Bracket akan berlanjut dan ini tidak bisa dibatalkan di sini.",
+      "confirm": "Tetapkan pemenang",
+      "success": "Pemenang ditetapkan",
+      "failed": "Gagal menetapkan pemenang"
+    },
+    "config": {
+      "loadFailed": "Gagal memuat konfigurasi pertandingan",
+      "view": "Lihat JSON konfigurasi pertandingan",
+      "title": "JSON konfigurasi pertandingan",
+      "loading": "Memuat konfigurasi pertandingan...",
+      "empty": "Tidak ada konfigurasi untuk pertandingan ini."
+    },
+    "tiebreak": {
+      "regulationOnly": "Overtime dinonaktifkan untuk pertandingan ini (hanya waktu normal), jadi skor imbang ditentukan oleh total damage tim.",
+      "segmentsExhausted": "Overtime diatur dengan jumlah segmen maksimum. Jika skor masih imbang, pemenang ditentukan oleh total damage tim.",
+      "overtimeDisabled": "Overtime dinonaktifkan untuk pertandingan ini, jadi skor imbang ditentukan oleh total damage tim.",
+      "tiedByDamage": "Skor akhir imbang, jadi sesuai pengaturan pertandingan pemenang dipilih berdasarkan total damage tim."
+    },
+    "team1": "Tim 1",
+    "team2": "Tim 2",
+    "matchTime": "Waktu pertandingan:",
+    "server": "Server:",
+    "queuePosition": "Posisi antrean:",
+    "totalDamage": "Total damage: {{team1}} - {{team2}}",
+    "mapOfTotal": "Peta {{index}} dari {{total}}: {{map}}",
+    "mapIndex": "Peta {{index}}: {{map}}",
+    "round": "Ronde {{round}}",
+    "shuffle": {
+      "averageElo": "ELO tim (rata-rata): {{team1}} vs {{team2}}",
+      "balancerHint": "Tim acak dibuat oleh penyeimbang berbasis OpenSkill yang menyebar pemain rating tinggi dan rendah ke kedua sisi agar rata-rata ini tetap berdekatan."
+    },
+    "playerLeaderboards": "Papan peringkat pemain",
+    "noPlayerData": "Tidak ada data pemain",
+    "currentMap": "Peta saat ini",
+    "maps": "Peta",
+    "mapsNotPicked": "Peta belum dipilih.",
+    "mapsViaVeto": "Akan ditentukan lewat veto",
+    "matchInformation": "Informasi pertandingan",
+    "created": "Dibuat:",
+    "started": "Dimulai:",
+    "completed": "Selesai:",
+    "adminControls": "Kontrol admin",
+    "slug": "Slug pertandingan:",
+    "openChat": "Obrolan pertandingan"
+  },
+  "bulkShuffleMatchesModal": {
+    "title": "Buat banyak pertandingan acak",
+    "description": "Atur pertandingan acak satu peta (peta + batas ronde), lalu tentukan sebanyak mungkin pertandingan head-to-head dengan memilih lineup pemain yang tepat untuk tiap sisi. Pertandingan dibuat sebagai bagian dari turnamen acak saat ini dan akan dialokasikan ke server saat Anda memulai turnamen.",
+    "mapSelect": {
+      "label": "Peta",
+      "noMaps": "Belum ada peta yang diatur untuk turnamen ini",
+      "helper": "Semua pertandingan dalam batch ini memakai peta ini."
+    },
+    "maxRounds": {
+      "label": "Ronde maksimum per peta",
+      "helperWithValue": "Pertandingan dimainkan hingga {{maxRounds}} ronde; pemenangnya yang pertama mencapai {{winRounds}} ronde.",
+      "helperDefault": "Jumlah ronde maksimum per peta (bawaan: 24, maks: 30)."
+    },
+    "matchesSection": {
+      "title": "Pertandingan ({{count}})",
+      "addMatch": "Tambah pertandingan"
+    },
+    "players": {
+      "empty": "Belum ada pemain yang terdaftar di turnamen acak ini. Daftarkan pemain dulu, lalu Anda bisa membuat pertandingan manual."
+    },
+    "matchRow": {
+      "title": "Pertandingan {{index}}",
+      "teamCounts": "{{team1}}/{{teamSize}} • {{team2}}/{{teamSize}}",
+      "team1Label": "Pemain tim 1 ({{team1Count}}/{{teamSize}})",
+      "team2Label": "Pemain tim 2 ({{team2Count}}/{{teamSize}})",
+      "searchPlaceholder": "Cari & pilih pemain",
+      "mapOverrideLabel": "Peta (opsional, menggantikan bawaan)",
+      "mapOverrideHelperOwn": "Pertandingan ini memakai petanya sendiri.",
+      "mapOverrideHelperDefault": "Biarkan kosong untuk memakai peta bawaan di atas.",
+      "maxRoundsOverrideLabel": "Ronde maksimum (opsional, menggantikan bawaan)",
+      "maxRoundsOverrideHelperOwn": "Menggantikan ronde maksimum bawaan untuk pertandingan ini (saat ini {{value}}).",
+      "maxRoundsOverrideHelperDefault": "Biarkan kosong untuk memakai ronde maksimum bawaan di atas."
+    },
+    "errors": {
+      "loadPlayers": "Gagal memuat pemain terdaftar",
+      "noMatches": "Tambahkan minimal satu pertandingan untuk dibuat.",
+      "bothTeamsRequired": "Pertandingan {{index}}: kedua tim harus punya minimal satu pemain.",
+      "conflictingPlayers": "Pertandingan {{index}}: pemain yang sama tidak boleh ada di kedua tim. ID yang bentrok: {{ids}}",
+      "mapRequired": "Pertandingan {{index}}: peta wajib diisi (atur peta bawaan di atas atau pilih peta untuk pertandingan ini).",
+      "rowMaxRoundsRange": "Pertandingan {{index}}: ronde maksimum harus antara 1 dan 30 jika diatur per pertandingan.",
+      "globalMaxRoundsRange": "Ronde maksimum harus antara 1 dan 30.",
+      "createFailed": "Gagal membuat pertandingan acak manual"
+    },
+    "success": {
+      "created": "Pertandingan acak manual dibuat. Pertandingan akan dialokasikan saat turnamen dimulai."
+    },
+    "createMatchesButton": {
+      "default": "Buat pertandingan",
+      "creating": "Membuat…"
+    }
+  },
+  "teamModal": {
+    "titleCreate": "Buat tim baru",
+    "titleEdit": "Edit tim",
+    "teamNameLabel": "Nama tim",
+    "teamNamePlaceholder": "Astralis",
+    "teamNameHelper": "Nama tim boleh memakai bahasa atau karakter khusus apa pun",
+    "teamTagLabel": "Tag tim",
+    "teamTagPlaceholder": "AST",
+    "teamTagHelper": "Dibuat otomatis dari nama tim (maks 4 karakter)",
+    "playersHeader": "Pemain ({{count}})",
+    "selectPlayers": "Pilih pemain",
+    "noPlayersInfo": "Belum ada pemain yang ditambahkan. Tambahkan minimal satu pemain.",
+    "addPlayersHelper": "Tambahkan pemain baru di bawah, atau pilih dari pemain yang sudah ada",
+    "addPlayersHelper_steam": "Tambahkan pemain dengan menempel URL Steam atau memilih dari pemain yang sudah ada",
+    "steamInputLabel": "Steam ID / URL vanity",
+    "steamInputPlaceholder": "gaben atau steamcommunity.com/id/gaben",
+    "resolveSteam": "Cari Steam ID",
+    "resolving": "Mencari...",
+    "playerNameLabel": "Nama pemain",
+    "playerNamePlaceholder": "s1mple",
+    "eloLabel": "ELO (opsional)",
+    "eloPlaceholder": "1500",
+    "eloHelper": "Bawaan: 1500",
+    "errors": {
+      "steamLookupEmpty": "Masukkan Steam ID, URL vanity, atau URL profil",
+      "steamApiNotConfigured": "Steam API belum dikonfigurasi - masukkan Steam ID64 secara manual",
+      "steamResolveFailed": "Tidak dapat menemukan Steam ID - masukkan Steam ID64 secara manual",
+      "steamAndNameRequired": "Steam ID dan nama pemain wajib diisi",
+      "steamDuplicate": "Steam ID ini sudah ada di tim",
+      "teamNameRequired": "Nama tim wajib diisi",
+      "playersRequired": "Minimal satu pemain wajib ada",
+      "saveFailed": "Gagal menyimpan tim",
+      "deleteFailed": "Gagal menghapus tim",
+      "discordIdInvalid": "Discord ID harus 17–20 digit (ID pengguna berupa angka, bukan nama pengguna)",
+      "discordIdInvalidPlayers": "Discord ID tidak valid untuk: {{names}}. Harus 17–20 digit, atau dikosongkan.",
+      "discordIdSaveFailed": "Tim sudah disimpan, tetapi Discord ID tidak dapat disimpan untuk: {{names}}. {{message}}",
+      "nameRequired": "Masukkan nama pemain",
+      "addPlayerFailed": "Tidak dapat menambahkan pemain"
+    },
+    "success": {
+      "playerAdded": "Pemain ditambahkan ke tim",
+      "playerReplaced": "Pemain diganti",
+      "teamUpdated": "Tim berhasil diperbarui",
+      "teamCreated": "Tim berhasil dibuat",
+      "teamDeleted": "Tim berhasil dihapus"
+    },
+    "buttons": {
+      "deleteTeam": "Hapus tim",
+      "cancel": "Batal",
+      "saving": "Menyimpan...",
+      "saveChanges": "Simpan perubahan",
+      "createTeam": "Buat tim"
+    },
+    "confirmDelete": {
+      "title": "Hapus tim",
+      "message": "Yakin ingin menghapus \"{{name}}\"? Tindakan ini tidak bisa dibatalkan."
+    },
+    "replacePlayerAria": "Ganti pemain {{name}}",
+    "replacePlayerTooltip": "Ganti pemain ini",
+    "accountLabel": "Akun {{account}} (opsional)",
+    "accountHelper": "Untuk {{games}}. Saat mereka masuk dengan {{account}}, mereka menjadi pemain ini."
+  },
+  "playerModal": {
+    "titleCreate": "Buat pemain",
+    "titleEdit": "Edit pemain",
+    "steamLabel": "Steam ID atau URL profil (opsional)",
+    "steamHelperEditing": "Steam ID tidak bisa diubah",
+    "steamHelperNew": "Untuk {{games}}. Masukkan Steam ID64, URL vanity, atau URL profil; \"Cari\" mengisi nama dan avatar.",
+    "resolveSteam": "Cari Steam ID",
+    "resolving": "Mencari...",
+    "playerNameLabel": "Nama pemain",
+    "playerNamePlaceholder": "Pemain",
+    "eloLabelNew": "ELO awal",
+    "eloLabelEdit": "ELO",
+    "eloHelperNew": "Biarkan kosong untuk memakai bawaan (Skill Rating 1500).",
+    "eloHelperEdit": "Mengubah ELO akan mereset rating dan statistik pemain. Tindakan ini tidak bisa dibatalkan.",
+    "isAdminLabel": "Admin (mengelola situs ini; modul game juga bisa memberi admin hak di dalam game)",
+    "currentElo": "ELO saat ini: {{value}}",
+    "startingElo": "ELO awal: {{value}}",
+    "matchesPlayed": "Pertandingan dimainkan: {{count}}",
+    "errors": {
+      "steamRequired": "Steam ID wajib diisi",
+      "nameRequired": "Nama pemain wajib diisi",
+      "steamLookupEmpty": "Masukkan Steam ID, URL vanity, atau URL profil",
+      "steamApiNotConfigured": "Steam API belum dikonfigurasi - masukkan Steam ID64 secara manual",
+      "steamResolveFailed": "Tidak dapat menemukan Steam ID - masukkan Steam ID64 secara manual",
+      "saveFailed": "Gagal menyimpan pemain"
+    },
+    "success": {
+      "playerUpdated": "Pemain berhasil diperbarui",
+      "playerCreated": "Pemain berhasil dibuat"
+    },
+    "buttons": {
+      "delete": "Hapus",
+      "cancel": "Batal",
+      "saving": "Menyimpan...",
+      "save": "Simpan",
+      "create": "Buat"
+    },
+    "confirmDelete": {
+      "title": "Hapus pemain",
+      "message": "Yakin ingin menghapus pemain \"{{name}}\"? Tindakan ini tidak bisa dibatalkan."
+    },
+    "confirmEloUpdate": {
+      "title": "Perbarui ELO pemain",
+      "message": "Yakin ingin mengubah ELO pemain ini dari {{from}} menjadi {{to}}? Ini akan mereset statistik dan riwayat ratingnya. Tindakan ini tidak bisa dibatalkan."
+    },
+    "discordIdHelper": "Opsional. 17–20 digit. Memungkinkan penyelenggara menghubungi pemain ini di Discord. Tidak pernah ditampilkan publik.",
+    "accountLabel": "Akun {{account}} (opsional)",
+    "accountHelper": "Untuk {{games}}. ID akun; saat mereka masuk dengan {{account}}, mereka menjadi pemain ini.",
+    "accountVerified": "Tertaut: mereka masuk dengan {{account}}. Mereka sendiri yang mengubahnya."
+  },
+  "teamImportModal": {
+    "title": "Impor tim dari JSON",
+    "info": {
+      "title": "Tempel JSON berisi data tim di bawah.",
+      "format": "Format yang diharapkan: array tim dengan name, tag (opsional), dan players (name + steamId, ditambah discordId opsional sebagai string berkutip).",
+      "link": "Lihat dokumentasi dengan contoh"
+    },
+    "jsonLabel": "Data JSON",
+    "errors": {
+      "mustBeArray": "JSON harus berupa array tim",
+      "emptyArray": "Array tidak boleh kosong",
+      "parseWithMessage": "Error parsing JSON: {{message}}",
+      "parseGeneric": "Format JSON tidak valid. Periksa sintaksnya.",
+      "importFailed": "Gagal mengimpor tim",
+      "noJson": "Masukkan data JSON"
+    },
+    "preview": {
+      "summary": "✓ JSON valid! Ditemukan {{teams}} dengan total {{players}}.",
+      "title": "Pratinjau:",
+      "missingDiscordTotal": "Pemain tanpa Discord ID: {{count}}",
+      "missingDiscordChip": "Tanpa Discord: {{count}}",
+      "playersChip_one": "{{count}} pemain",
+      "playersChip_other": "{{count}} pemain",
+      "teamsCount_one": "{{count}} tim",
+      "teamsCount_other": "{{count}} tim"
+    },
+    "actions": {
+      "preview": "Pratinjau",
+      "importing": "Mengimpor...",
+      "import_one": "Impor {{count}} tim",
+      "import_other": "Impor {{count}} tim"
+    },
+    "warnings": {
+      "title": "Beberapa Discord ID diabaikan. Pemain ini akan diimpor tanpa Discord ID:",
+      "discordIdNumber": "Tim \"{{team}}\", pemain \"{{player}}\": discordId harus berupa string berkutip. Angka besar kehilangan presisi di JSON, jadi ID-nya dibuang.",
+      "discordIdInvalid": "Tim \"{{team}}\", pemain \"{{player}}\": \"{{value}}\" bukan ID pengguna Discord (seharusnya 17–20 digit), jadi dibuang."
+    }
+  },
+  "playerImportModal": {
+    "title": "Impor pemain",
+    "info": {
+      "description": "Impor pemain dari format JSON atau CSV. Kolom wajib: steamId, name. Opsional: initialELO (bawaan 1500), avatarUrl.",
+      "link": "Lihat dokumentasi dengan contoh"
+    },
+    "placeholders": {
+      "jsonCsv": "Format JSON:\n[\n  {\n    \"steamId\": \"76561198012345678\",\n    \"name\": \"Pemain Satu\",\n    \"initialELO\": 1500,\n    \"avatarUrl\": \"https://...\"\n  }\n]\n\nFormat CSV:\nsteamId,name,initialELO,avatarUrl\n76561198012345678,Pemain Satu,1500,https://..."
+    },
+    "actions": {
+      "parseValidate": "Parse & validasi",
+      "importing": "Mengimpor...",
+      "import_one": "Impor {{count}} pemain",
+      "import_other": "Impor {{count}} pemain"
+    },
+    "preview": {
+      "title": "Pemain yang akan diimpor ({{count}}):",
+      "steamId": "Steam ID: {{steamId}}",
+      "name": "Nama: {{name}}",
+      "initialElo": "ELO awal: {{elo}}",
+      "avatar": "Avatar: {{url}}",
+      "readyChip_one": "{{count}} pemain siap diimpor",
+      "readyChip_other": "{{count}} pemain siap diimpor"
+    },
+    "errors": {
+      "noData": "Masukkan data JSON atau CSV",
+      "noPlayers": "Tidak ada pemain di data",
+      "validationPrefix": "Error validasi:",
+      "parseFailed": "Gagal mem-parse data: {{message}}",
+      "importFailed": "Gagal mengimpor pemain",
+      "parseFirst": "Parse dan validasi data terlebih dahulu"
+    }
+  },
+  "playerSelectionModal": {
+    "title": "Pilih pemain",
+    "selectedCount": "{{count}} dipilih",
+    "searchPlaceholder": "Cari pemain berdasarkan nama...",
+    "searchPlaceholder_steam": "Cari pemain berdasarkan nama atau Steam ID...",
+    "selectAll": {
+      "select": "Pilih semua",
+      "deselect": "Batalkan semua pilihan"
+    },
+    "empty": {
+      "noSearchResults": "Tidak ada pemain yang cocok dengan pencarian",
+      "noPlayers": "Tidak ada pemain yang tersedia"
+    },
+    "playerCard": {
+      "alreadyInTeam": "Sudah ada di tim"
+    },
+    "errors": {
+      "loadFailed": "Gagal memuat pemain",
+      "noSelectable": "Tidak ada pemain yang bisa dipilih"
+    },
+    "addPlayersButton_one": "Tambahkan {{count}} pemain",
+    "addPlayersButton_other": "Tambahkan {{count}} pemain"
+  },
+  "soundSettingsModal": {
+    "title": "Pengaturan suara",
+    "soundSelect": {
+      "label": "Suara notifikasi"
+    },
+    "volume": {
+      "label": "Volume: {{percent}}%"
+    },
+    "testButton": "Uji suara",
+    "footer": "Suara notifikasi diputar saat pertandingan Anda siap atau saat ada event penting."
+  },
+  "addBackupPlayer": {
+    "title": "Tambah pemain",
+    "loadFailed": "Gagal memuat daftar pemain",
+    "added": "{{name}} ditambahkan ke {{target}}",
+    "addFailed": "Gagal menambahkan pemain",
+    "addToMatchFailed": "Gagal menambahkan pemain ke pertandingan",
+    "searchLabel": "Cari pemain",
+    "searchPlaceholder": "Ketik nama pemain...",
+    "available": "{{count}} pemain tersedia (belum ada di pertandingan)",
+    "noneAvailable": "Tidak ada pemain yang tersedia",
+    "displayNameLabel": "Nama tampilan (opsional)",
+    "displayNamePlaceholder": "Bawaan memakai nama pemain saat ini",
+    "side": "Sisi",
+    "spectator": "Penonton",
+    "selected": "Dipilih:",
+    "fromTeam": "Dari tim: {{team}}",
+    "steamId": "Steam ID: {{id}}",
+    "adding": "Menambahkan pemain...",
+    "add": "Tambahkan pemain ke pertandingan",
+    "underlyingCommand": "Perintah yang dijalankan:",
+    "important": "Penting:",
+    "reconnectHint": "Pemain harus menyambung ulang ke server setelah ditambahkan. Jika sudah terhubung, mereka mungkin perlu masuk kembali."
+  }
+}

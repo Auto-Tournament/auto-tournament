@@ -1,0 +1,201 @@
+{
+  "templatesPage": {
+    "header": {
+      "createFromTournament": "Buat template dari turnamen"
+    },
+    "errors": {
+      "load": "Gagal memuat template"
+    },
+    "delete": {
+      "title": "Hapus template",
+      "message": "Yakin ingin menghapus template \"{{name}}\"? Tindakan ini tidak bisa dibatalkan.",
+      "success": "Template \"{{name}}\" berhasil dihapus",
+      "error": "Gagal menghapus template"
+    },
+    "update": {
+      "success": "Template \"{{name}}\" berhasil diperbarui",
+      "error": "Gagal memperbarui template"
+    },
+    "createFromTemplate": {
+      "errors": {
+        "inProgressOrCompleted": "Tidak bisa membuat turnamen dari template saat turnamen sedang berlangsung atau sudah selesai. Hapus atau reset turnamen saat ini terlebih dahulu.",
+        "alreadyExists": "Turnamen sudah ada. Hapus atau reset turnamen saat ini sebelum membuat yang baru dari template."
+      },
+      "button": "Buat turnamen dari template"
+    },
+    "edit": {
+      "title": "Edit template",
+      "nameLabel": "Nama template",
+      "descriptionLabel": "Deskripsi (opsional)",
+      "typeLabel": "Jenis turnamen",
+      "formatLabel": "Format pertandingan",
+      "mapPool": {
+        "title": "Kumpulan peta",
+        "selectLabel": "Pilih kumpulan peta",
+        "customOption": "Kustom",
+        "selectedLabel": "Peta terpilih ({{count}}):",
+        "vetoWarning": "Format veto (BO1/BO3/BO5) memerlukan tepat 7 peta. Saat ini terpilih: {{count}}",
+        "chooseMaps": "Pilih peta..."
+      },
+      "save": "Simpan"
+    },
+    "emptyTitle": "Belum ada template",
+    "emptyDescription": "Simpan pengaturan turnamen sebagai template dari halaman Turnamen, lalu mulai turnamen baru darinya di sini."
+  },
+  "saveTemplateModal": {
+    "title": "Simpan sebagai template",
+    "nameLabel": "Nama template",
+    "namePlaceholder": "8 tim Single Elim BO3",
+    "descriptionLabel": "Deskripsi (opsional)",
+    "descriptionPlaceholder": "Turnamen single elimination mingguan 8 tim",
+    "saveButton": "Simpan template",
+    "errors": {
+      "nameRequired": "Nama template wajib diisi",
+      "saveFailed": "Gagal menyimpan template"
+    }
+  },
+  "eloTemplatesPage": {
+    "errors": {
+      "load": "Gagal memuat template rating"
+    },
+    "header": {
+      "createTemplate": "Buat template",
+      "importJson": "Impor dari JSON"
+    },
+    "empty": {
+      "title": "Belum ada template rating",
+      "description": "Buat template pertama Anda untuk mengatur bagaimana statistik pemain memengaruhi penyesuaian ELO",
+      "action": "Buat template"
+    },
+    "delete": {
+      "title": "Hapus template rating",
+      "message": "Yakin ingin menghapus \"{{name}}\"? Tindakan ini tidak bisa dibatalkan.",
+      "success": "Template \"{{name}}\" berhasil dihapus",
+      "error": "Gagal menghapus template",
+      "defaultProtected": "Template bawaan \"pure-win-loss\" tidak bisa dihapus."
+    },
+    "import": {
+      "success_one": "{{count}} template rating diimpor",
+      "success_other": "{{count}} template rating diimpor"
+    },
+    "weights": {
+      "noAdjustmentsPure": "Tanpa penyesuaian statistik (murni menang/kalah)"
+    },
+    "card": {
+      "enabled": "Aktif",
+      "disabled": "Nonaktif",
+      "default": "Bawaan",
+      "adjustment": {
+        "none": "Penyesuaian statistik per pertandingan: tidak ada (0; ELO hanya dari hasil)",
+        "uncapped": "Penyesuaian statistik per pertandingan: tanpa batas (gunakan dengan hati-hati)",
+        "range": "Rentang penyesuaian statistik per pertandingan: {{min}} sampai {{max}} ELO",
+        "noMin": "tanpa minimum",
+        "noMax": "tanpa maksimum"
+      },
+      "tooltips": {
+        "edit": "Edit template",
+        "delete": "Hapus template"
+      },
+      "weightsTitle": "Bobot statistik:",
+      "limitsTitle": "Batas penyesuaian:",
+      "minAdjustment": "Min: {{value}}",
+      "maxAdjustment": "Maks: {{value}}"
+    },
+    "importModal": {
+      "title": "Impor template rating dari JSON",
+      "introTitle": "Tempel JSON berisi definisi template rating di bawah.",
+      "introBody": "Format yang diharapkan: array template dengan name, description opsional, enabled, weights, maxAdjustment, dan minAdjustment. Jika id tidak diisi, id dibuat dari nama.",
+      "jsonLabel": "Data JSON",
+      "validJsonTitle": "✓ JSON valid!",
+      "previewTitle": "Pratinjau:",
+      "previewButton": "Pratinjau",
+      "importButton": "Impor template",
+      "validJsonBody_one": "Ditemukan {{count}} template.",
+      "validJsonBody_other": "Ditemukan {{count}} template."
+    },
+    "editor": {
+      "titleEdit": "Edit template rating",
+      "titleCreate": "Buat template rating",
+      "info": "Atur bagaimana statistik tiap pemain memengaruhi penyesuaian ELO. Bobot diterapkan setelah OpenSkill menghitung perubahan ELO dasar (menang/kalah). Bobot positif menaikkan ELO, bobot negatif menurunkannya.",
+      "nameLabel": "Nama template",
+      "nameDefaultLocked": "Nama template bawaan tidak bisa diubah",
+      "descriptionLabel": "Deskripsi",
+      "descriptionPlaceholder": "Deskripsi opsional tentang tujuan template ini",
+      "enabledLabel": "Aktif",
+      "weights": {
+        "title": "Bobot statistik",
+        "subtitle": "Atur slider untuk setiap statistik. Nilai 0 berarti tidak ada penyesuaian untuk statistik itu."
+      },
+      "limits": {
+        "title": "Batas penyesuaian (opsional)",
+        "subtitle": "Atur penyesuaian ELO maksimum dan minimum per pertandingan untuk mencegah perubahan ekstrem.",
+        "maxLabel": "Penyesuaian maks",
+        "maxHelper": "Penyesuaian ELO positif maksimum per pertandingan",
+        "minLabel": "Penyesuaian min",
+        "minHelper": "Penyesuaian ELO negatif maksimum per pertandingan"
+      },
+      "errors": {
+        "nameRequired": "Nama template wajib diisi"
+      },
+      "create": {
+        "success": "Template \"{{name}}\" berhasil dibuat",
+        "error": "Gagal membuat template"
+      },
+      "update": {
+        "success": "Template \"{{name}}\" berhasil diperbarui",
+        "error": "Gagal memperbarui template"
+      },
+      "buttons": {
+        "saving": "Menyimpan...",
+        "update": "Perbarui",
+        "create": "Buat"
+      }
+    },
+    "stats": {
+      "kills": {
+        "label": "Kill",
+        "description": "Jumlah kill per pertandingan"
+      },
+      "deaths": {
+        "label": "Death",
+        "description": "Jumlah death per pertandingan (biasanya bobot negatif)"
+      },
+      "assists": {
+        "label": "Assist",
+        "description": "Jumlah assist per pertandingan"
+      },
+      "flashAssists": {
+        "label": "Flash assist",
+        "description": "Jumlah flash assist per pertandingan"
+      },
+      "headshotKills": {
+        "label": "Kill headshot",
+        "description": "Jumlah kill headshot per pertandingan"
+      },
+      "damage": {
+        "label": "Damage",
+        "description": "Total damage per pertandingan"
+      },
+      "utilityDamage": {
+        "label": "Damage utilitas",
+        "description": "Damage dari utilitas (granat)"
+      },
+      "kast": {
+        "label": "KAST %",
+        "description": "Persentase ronde dengan Kill, Assist, Survive, atau Trade"
+      },
+      "mvps": {
+        "label": "MVP",
+        "description": "Jumlah penghargaan MVP per pertandingan"
+      },
+      "score": {
+        "label": "Skor",
+        "description": "Skor pertandingan (gabungan beberapa faktor)"
+      },
+      "adr": {
+        "label": "ADR",
+        "description": "Rata-rata damage per ronde"
+      }
+    }
+  }
+}

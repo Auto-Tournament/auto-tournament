@@ -1,0 +1,198 @@
+{
+  "adminToolsPage": {
+    "description": "Pemulihan pertandingan dan log aplikasi untuk situs ini.",
+    "recovery": {
+      "title": "Pemulihan pertandingan",
+      "description": "Jika API atau server dimulai ulang selama turnamen dan status pertandingan terlihat tidak sinkron (misalnya pertandingan tertahan sebelum live atau skor live hilang), Anda bisa menjalankan pemulihan secara manual. Ini akan meminta laporan pertandingan terkini dari semua server, menyinkronkan ulang skor/fase, dan mengatur ulang webhook dan unggahan demo jika memungkinkan.",
+      "button": "Jalankan pemulihan pertandingan sekarang",
+      "success": "Pemulihan pertandingan selesai.",
+      "error": "Pemulihan pertandingan gagal.",
+      "failedTrigger": "Gagal menjalankan pemulihan pertandingan. Silakan coba lagi."
+    },
+    "monitoring": {
+      "title": "Pemantauan & log",
+      "appLogs": "Log aplikasi"
+    },
+    "logs": {
+      "loadFailed": "Gagal memuat log",
+      "levelAll": "Semua",
+      "auto": "Otomatis",
+      "refresh": "Muat ulang log",
+      "empty": "Tidak ada log untuk ditampilkan",
+      "footer": "Menampilkan {{count}} entri log terbaru",
+      "footerAutoRefresh": "Menampilkan {{count}} entri log terbaru (diperbarui otomatis)"
+    }
+  },
+  "servers": {
+    "allocation": {
+      "title": "Menunggu server yang tersedia",
+      "waiting": "Pertandingan ini akan dimulai otomatis begitu ada server yang kosong. Server yang dibutuhkan:",
+      "nextPass": "Percobaan alokasi berikutnya dalam {{seconds}} dtk"
+    }
+  },
+  "adminMatchControls": {
+    "title": "Kontrol admin",
+    "noServer": "Belum ada server yang ditugaskan ke pertandingan ini",
+    "unavailable": "Belum ada server yang ditugaskan ke pertandingan ini, jadi kontrol admin tidak tersedia.",
+    "unknownAction": "Tindakan tidak dikenal",
+    "commandFailed": "Gagal menjalankan perintah",
+    "confirm": "Konfirmasi",
+    "execute": "Jalankan",
+    "close": "Tutup",
+    "tipLabel": "Tips admin:",
+    "tip": "Gunakan kontrol ini dengan hati-hati selama pertandingan live. Beberapa tindakan, seperti \"{{endMatch}}\" dan \"{{restartMatch}}\", tidak bisa dibatalkan.",
+    "sections": {
+      "matchControl": "Kontrol pertandingan",
+      "advanced": "Tindakan lanjutan"
+    },
+    "actions": {
+      "pause": {
+        "button": "Jeda",
+        "tooltip": "Jeda admin – pemain tidak bisa melanjutkan",
+        "title": "Jeda pertandingan",
+        "description": "Ini memaksa jeda pertandingan. Pemain tidak bisa melanjutkan."
+      },
+      "unpause": {
+        "button": "Lanjutkan",
+        "tooltip": "Lanjutkan pertandingan dari jeda",
+        "title": "Lanjutkan pertandingan",
+        "description": "Ini memaksa pertandingan berlanjut."
+      },
+      "swap": {
+        "button": "Tukar tim",
+        "tooltip": "Pindahkan tim ke sisi berlawanan (CT ↔ T)",
+        "title": "Tukar tim",
+        "description": "Ini menukar sisi tim (CT/T)."
+      },
+      "restartRound": {
+        "button": "Mulai ulang ronde",
+        "tooltip": "Mulai ulang ronde saat ini dari awal (mereset ekonomi)",
+        "title": "Mulai ulang ronde",
+        "description": "Ini memulai ulang ronde saat ini."
+      },
+      "skipVeto": {
+        "button": "Lewati veto",
+        "tooltip": "Lewati veto peta dan muat peta pertama langsung",
+        "title": "Lewati veto",
+        "description": "Ini melewati fase veto dan memulai pertandingan."
+      },
+      "endWarmup": {
+        "button": "Akhiri pemanasan",
+        "tooltip": "Akhiri pemanasan dan mulai pertandingan (ronde pisau atau live)",
+        "title": "Akhiri pemanasan",
+        "description": "Ini mengakhiri pemanasan dan memulai pertandingan."
+      },
+      "endMatch": {
+        "button": "Akhiri pertandingan",
+        "tooltip": "Akhiri pertandingan segera dan catat skor akhir",
+        "title": "Akhiri pertandingan",
+        "description": "Ini memaksa pertandingan berakhir. Gunakan dengan hati-hati!"
+      },
+      "restartMatch": {
+        "button": "Mulai ulang pertandingan",
+        "tooltip": "Akhiri dan muat ulang pertandingan dari awal – semua progres hilang",
+        "title": "Mulai ulang pertandingan",
+        "description": "Ini mengakhiri pertandingan dan memuatnya ulang dari awal. Semua progres akan hilang!"
+      },
+      "reallocateServer": {
+        "button": "Pindahkan server",
+        "tooltip": "Pindahkan pertandingan ke server lain (pemulihan sebelum live)",
+        "tooltipUnavailable": "Hanya tersedia untuk pertandingan yang siap/dimuat (tidak saat live)",
+        "title": "Pindahkan server",
+        "description": "Ini memindahkan pertandingan ke server lain yang menganggur dan memuatnya ulang. Gunakan jika server saat ini sudah usang atau pemain tidak bisa terhubung. Tidak diizinkan saat pertandingan live."
+      },
+      "forceCancel": {
+        "button": "Paksa batal",
+        "tooltip": "Batalkan pertandingan meskipun server offline – membebaskan alokasi server",
+        "title": "Paksa batalkan pertandingan",
+        "description": "⚠️ Ini membatalkan pertandingan meskipun server offline. Pertandingan ditandai selesai dan server dibebaskan. Tindakan ini tidak bisa dibatalkan."
+      }
+    },
+    "inputs": {
+      "restoreBackup": {
+        "button": "Pulihkan cadangan",
+        "tooltip": "Muat cadangan ronde yang tersimpan – memulihkan ekonomi dan posisi",
+        "title": "Pulihkan cadangan",
+        "label": "Nomor ronde yang dipulihkan"
+      },
+      "addTime": {
+        "button": "Tambah waktu",
+        "tooltip": "Perpanjang timer ronde saat ini (berguna untuk jeda teknis)",
+        "title": "Tambah waktu ronde",
+        "label": "Detik yang ditambahkan"
+      },
+      "broadcast": {
+        "button": "Siaran",
+        "tooltip": "Kirim pesan ke semua pemain di server",
+        "title": "Siarkan pesan",
+        "label": "Pesan yang disiarkan"
+      }
+    },
+    "success": {
+      "pause": "Pertandingan dijeda",
+      "unpause": "Pertandingan dilanjutkan",
+      "swap": "Tim ditukar",
+      "skipVeto": "Fase veto dilewati",
+      "restartRound": "Ronde dimulai ulang",
+      "endMatch": "Pertandingan berakhir",
+      "endWarmup": "Pemanasan berakhir",
+      "startMatch": "Pertandingan dimulai",
+      "restoreBackup": "Cadangan dipulihkan ke ronde {{round}}",
+      "addTime_one": "Menambahkan {{count}} detik ke timer ronde",
+      "addTime_other": "Menambahkan {{count}} detik ke timer ronde",
+      "broadcast": "Pesan dikirim ke server",
+      "restartMatch": "Pertandingan dimulai ulang (diakhiri dan dimuat ulang)",
+      "reallocateServer": "Pertandingan dipindahkan ke server lain",
+      "forceCancel": "Pertandingan dibatalkan",
+      "default": "Perintah dijalankan"
+    },
+    "hold": {
+      "title": "Tahan alih-alih menang WO",
+      "description": "Selama ditahan, pertandingan tidak dimuat atau dimulai dan tidak ada yang menang WO. Saat dilanjutkan, tim mendapat waktu penuh lagi.",
+      "reason": "Alasan (ditampilkan ke admin)",
+      "delay": "Tunda {{minutes}} mnt",
+      "holdUntilReleased": "Tahan sampai dilepas",
+      "release": "Lepas sekarang",
+      "restartCountdown": "Mulai ulang hitung mundur",
+      "heldUntil": "Ditahan sampai {{time}}",
+      "heldIndefinitely": "Ditahan sampai dilepas",
+      "tournamentPaused": "Turnamen sedang dijeda",
+      "heldDone": "Pertandingan ditahan",
+      "delayedDone": "Pertandingan ditunda {{minutes}} mnt",
+      "releasedDone": "Pertandingan dilepas",
+      "restartedDone": "Hitung mundur dimulai ulang: tim mendapat waktu penuh lagi",
+      "failed": "Tidak dapat mengubah penahanan"
+    }
+  },
+  "adminCalls": {
+    "header": "Panggilan admin ({{count}})",
+    "title": "{{player}} memanggil admin",
+    "justNow": "baru saja",
+    "minutesAgo": "{{count}} mnt lalu",
+    "hoursAgo": "{{count}} jam lalu",
+    "spectator": "Penonton",
+    "team1": "Tim 1",
+    "team2": "Tim 2",
+    "noMessage": "Tidak ada pesan",
+    "unknownPlayer": "Pemain tidak dikenal",
+    "unknownServer": "Server tidak dikenal",
+    "matchMap": "{{match}}, peta {{map}}",
+    "openMatch": "Buka pertandingan",
+    "openServers": "Server",
+    "resolve": "Tandai selesai",
+    "resolveAll": "Selesaikan semua",
+    "resolveFailed": "Tidak dapat menandai panggilan selesai. Coba lagi.",
+    "matchUnavailable": "Pertandingan itu tidak dapat dibuka.",
+    "enableSound": "Aktifkan suara",
+    "mute": "Bisukan",
+    "unmute": "Bunyikan",
+    "minimize": "Perkecil",
+    "show": "Tampilkan",
+    "openChat": "Buka obrolan",
+    "claim": "Ambil",
+    "release": "Lepas",
+    "claimedBy": "Diambil oleh {{name}}",
+    "claimedByYou": "Diambil oleh Anda",
+    "anAdmin": "seorang admin"
+  }
+}

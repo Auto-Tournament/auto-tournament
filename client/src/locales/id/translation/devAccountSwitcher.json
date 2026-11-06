@@ -1,0 +1,12 @@
+{
+  "devAccountSwitcher": {
+    "tooltip": "Ganti akun (dev)",
+    "adminTest": "Admin (uji)",
+    "playerA": "Pemain A (dev)",
+    "playerB": "Pemain B (dev)",
+    "playerC": "Pemain C (dev)",
+    "newPlayer": "Pemain baru (kunjungan pertama) (dev)",
+    "signOut": "Keluar",
+    "disabled": "Masuk uji dinonaktifkan di server ini"
+  }
+}
