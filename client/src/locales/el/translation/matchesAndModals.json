@@ -1,0 +1,490 @@
+{
+  "matchesPage": {
+    "errors": {
+      "loadMatches": "Δεν ήταν δυνατή η φόρτωση των αγώνων",
+      "loadTitle": "Σφάλμα κατά τη φόρτωση των αγώνων",
+      "bulkDelete": "Δεν ήταν δυνατή η διαγραφή ενός ή περισσότερων αγώνων"
+    },
+    "header": {
+      "createMatch": "Δημιουργία αγώνα"
+    },
+    "bulkSelect": {
+      "select": "Επιλογή",
+      "done": "Τέλος επιλογής",
+      "selectAll": "Επιλογή όλων",
+      "unselectAll": "Αποεπιλογή όλων",
+      "deleteSelected": "Διαγραφή επιλεγμένων"
+    },
+    "empty": {
+      "title": "Δεν υπάρχουν αγώνες για εμφάνιση",
+      "description": "Δημιούργησε τουρνουά και φτιάξε το ταμπλό για να δεις αγώνες εδώ",
+      "createManual": "Ή δημιούργησε χειροκίνητο αγώνα"
+    },
+    "sections": {
+      "live": "Ζωντανοί αγώνες ({{count}})",
+      "upcoming": "Επερχόμενοι αγώνες ({{count}})",
+      "history": "Ιστορικό αγώνων ({{count}})",
+      "inQueue": "Σε ουρά: {{count}}"
+    },
+    "manualMatchLabel": "Χειροκίνητος αγώνας",
+    "create": {
+      "success": "Δημιουργήθηκε χειροκίνητος αγώνας: {{slug}}"
+    },
+    "bulkDelete": {
+      "title": "Διαγραφή χειροκίνητων αγώνων",
+      "deleted_one": "Διαγράφηκε {{count}} αγώνας",
+      "deleted_other": "Διαγράφηκαν {{count}} αγώνες",
+      "message_one": "Σίγουρα θέλεις να διαγράψεις {{count}} χειροκίνητο αγώνα; Αυτή η ενέργεια δεν αναιρείται.",
+      "message_other": "Σίγουρα θέλεις να διαγράψεις {{count}} χειροκίνητους αγώνες; Αυτή η ενέργεια δεν αναιρείται."
+    },
+    "card": {
+      "matchNumber": "Αγώνας #{{number}}",
+      "server": "Διακομιστής: {{name}}",
+      "queuePosition": "Θέση στην ουρά: #{{position}}",
+      "shuffle": "Shuffle",
+      "shuffleManual": "Χειροκίνητο shuffle",
+      "manual": "Χειροκίνητος",
+      "simulation": "Προσομοίωση",
+      "winner": "ΝΙΚΗΤΗΣ",
+      "mapN": "Χάρτης {{n}}"
+    },
+    "statusLabel": {
+      "walkover": "ΝΙΚΗ ΧΩΡΙΣ ΑΓΩΝΑ",
+      "waitingForTournament": "ΑΝΑΜΟΝΗ ΓΙΑ ΕΝΑΡΞΗ ΤΟΥΡΝΟΥΑ",
+      "waitingForServer": "ΑΝΑΜΟΝΗ ΓΙΑ ΔΙΑΚΟΜΙΣΤΗ",
+      "waitingForPairing": "ΑΝΑΜΟΝΗ ΓΙΑ ΖΕΥΓΑΡΩΜΑ",
+      "vetoPending": "ΒΕΤΟ ΣΕ ΑΝΑΜΟΝΗ",
+      "mapVeto": "ΒΕΤΟ ΧΑΡΤΩΝ",
+      "serverAllocated": "ΑΝΑΤΕΘΗΚΕ ΔΙΑΚΟΜΙΣΤΗΣ",
+      "warmup": "ΠΡΟΘΕΡΜΑΝΣΗ",
+      "overtime": "ΠΑΡΑΤΑΣΗ #{{n}}",
+      "live": "ΖΩΝΤΑΝΑ",
+      "completed": "ΟΛΟΚΛΗΡΩΘΗΚΕ",
+      "cancelled": "ΑΚΥΡΩΘΗΚΕ",
+      "needsDecision": "ΧΡΕΙΑΖΕΤΑΙ ΑΠΟΦΑΣΗ ΔΙΑΧΕΙΡΙΣΤΗ"
+    },
+    "statusGuide": {
+      "title": "Οδηγός καταστάσεων αγώνα",
+      "pending": "Ο αγώνας είναι προγραμματισμένος αλλά δεν έχει ακόμη διακομιστή. Θα ανατεθεί μόλις ελευθερωθεί διακομιστής.",
+      "loaded": "Ο αγώνας είναι φορτωμένος στον διακομιστή και σε λειτουργία προθέρμανσης. Οι παίκτες πρέπει να συνδεθούν και να δηλώσουν έτοιμοι για την έναρξη.",
+      "live": "Ο αγώνας παίζεται στον διακομιστή του.",
+      "completed": "Ο αγώνας τελείωσε. Ο νικητής ορίστηκε και το ταμπλό ενημερώθηκε.",
+      "proTipTitle": "Συμβουλή:",
+      "proTip": "Όταν ένας αγώνας δείχνει «Αναμονή για παίκτες (X/Y)», ο διακομιστής είναι έτοιμος και οι παίκτες πρέπει να συνδεθούν. Μόλις συνδεθούν και δηλώσουν έτοιμοι όλοι οι αναμενόμενοι παίκτες, ο αγώνας ξεκινά αυτόματα."
+    },
+    "latestEvent": "Τελευταίο: {{event}}",
+    "matchLabel": {
+      "upper": "ΠΤ Γ{{round}} Α{{match}}",
+      "lower": "ΚΤ Γ{{round}} Α{{match}}",
+      "grandFinal": "Μεγάλος τελικός",
+      "grandFinalReset": "Μεγάλος τελικός – επανάληψη",
+      "group": "Όμιλος {{group}} · Γύρος {{round}}",
+      "playoffs": "Playoffs · Γύρος {{round}}"
+    },
+    "table": {
+      "filterLabel": "Εμφάνιση",
+      "search": "Βρες ομάδα ή παίκτη",
+      "tbd": "TBD",
+      "manage": "Διαχείριση αγώνα",
+      "empty": "Δεν υπάρχουν αγώνες εδώ.",
+      "filter": {
+        "attention_one": "Θέλουν προσοχή · {{count}}",
+        "attention_other": "Θέλουν προσοχή · {{count}}",
+        "live_one": "Ζωντανά · {{count}}",
+        "live_other": "Ζωντανά · {{count}}",
+        "veto_one": "Βέτο · {{count}}",
+        "veto_other": "Βέτο · {{count}}",
+        "waiting_one": "Σε αναμονή · {{count}}",
+        "waiting_other": "Σε αναμονή · {{count}}",
+        "finished_one": "Ολοκληρωμένοι · {{count}}",
+        "finished_other": "Ολοκληρωμένοι · {{count}}",
+        "all_one": "Όλοι · {{count}}",
+        "all_other": "Όλοι · {{count}}"
+      },
+      "columns": {
+        "match": "Αγώνας",
+        "teams": "Ομάδες",
+        "phase": "Φάση",
+        "server": "Διακομιστής",
+        "attention": "Θέλει προσοχή",
+        "open": "Άνοιγμα"
+      },
+      "attention": {
+        "calls_one": "Κλήση διαχειριστή",
+        "calls_other": "{{count}} κλήσεις διαχειριστή",
+        "decide": "Απόφαση αποτελέσματος"
+      },
+      "phase": {
+        "live": "Ζωντανά · χάρτης {{map}}",
+        "finished": "Ολοκληρώθηκε",
+        "finishedScore": "Ολοκληρώθηκε · {{score}}",
+        "veto": "Βέτο χαρτών",
+        "waitingTeams": "Αναμονή για τις ομάδες του",
+        "queued": "Αναμονή για διακομιστή · #{{position}} στην ουρά",
+        "waiting": "Σε αναμονή"
+      },
+      "server": {
+        "freed": "Απελευθερώθηκε"
+      }
+    }
+  },
+  "matchDetailsModal": {
+    "tiebreakHint": "Ισόπαλο σκορ: η ομάδα {{team}} κέρδισε τον χάρτη στο tiebreak.",
+    "delete": {
+      "dialogTitle": "Διαγραφή αγώνα",
+      "confirmTitle": "Διαγραφή αυτού του αγώνα;",
+      "confirmBody": "Σίγουρα θέλεις να διαγράψεις τον αγώνα «{{slug}}»; Αυτή η ενέργεια δεν αναιρείται.",
+      "button": "Διαγραφή αγώνα",
+      "success": "Ο αγώνας διαγράφηκε",
+      "failed": "Δεν ήταν δυνατή η διαγραφή του αγώνα"
+    },
+    "roster": {
+      "title": "Σύνθεση παικτών",
+      "yourTeam": "Η ομάδα σου",
+      "openPlayerPage": "Άνοιγμα σελίδας παίκτη",
+      "ready": "ΕΤΟΙΜΟΣ",
+      "connected": "ΣΥΝΔΕΔΕΜΕΝΟΣ",
+      "offline": "ΕΚΤΟΣ ΣΥΝΔΕΣΗΣ",
+      "bot": "BOT"
+    },
+    "decision": {
+      "body": "Παίχτηκαν όλοι οι χάρτες, αλλά η σειρά είναι ισόπαλη σε χάρτες, γύρους και ζημιά. Επίλεξε τον νικητή για να προχωρήσει το ταμπλό.",
+      "setWinner": "Νικά η ομάδα {{team}}",
+      "confirmTitle": "Ορισμός νικητή σειράς",
+      "confirmBody": "Να ολοκληρωθεί η σειρά με νικήτρια την ομάδα {{team}}; Το ταμπλό προχωρά και αυτό δεν αναιρείται εδώ.",
+      "confirm": "Ορισμός νικητή",
+      "success": "Ο νικητής ορίστηκε",
+      "failed": "Δεν ήταν δυνατός ο ορισμός νικητή"
+    },
+    "config": {
+      "loadFailed": "Δεν ήταν δυνατή η φόρτωση των ρυθμίσεων του αγώνα",
+      "view": "Προβολή ρυθμίσεων αγώνα σε JSON",
+      "title": "Ρυθμίσεις αγώνα σε JSON",
+      "loading": "Φόρτωση ρυθμίσεων αγώνα...",
+      "empty": "Δεν υπάρχουν ρυθμίσεις για αυτόν τον αγώνα."
+    },
+    "tiebreak": {
+      "regulationOnly": "Η παράταση είναι απενεργοποιημένη για αυτόν τον αγώνα (μόνο κανονικός χρόνος), οπότε οι ισοπαλίες κρίνονται από τη συνολική ζημιά των ομάδων.",
+      "segmentsExhausted": "Η παράταση έχει ρυθμιστεί με μέγιστο αριθμό τμημάτων. Αν το σκορ μείνει ισόπαλο, ο νικητής κρίνεται από τη συνολική ζημιά των ομάδων.",
+      "overtimeDisabled": "Η παράταση είναι απενεργοποιημένη για αυτόν τον αγώνα, οπότε οι ισοπαλίες κρίνονται από τη συνολική ζημιά των ομάδων.",
+      "tiedByDamage": "Το τελικό σκορ ήταν ισόπαλο, οπότε σύμφωνα με τις ρυθμίσεις του αγώνα ο νικητής επιλέχθηκε από τη συνολική ζημιά των ομάδων."
+    },
+    "team1": "Ομάδα 1",
+    "team2": "Ομάδα 2",
+    "matchTime": "Ώρα αγώνα:",
+    "server": "Διακομιστής:",
+    "queuePosition": "Θέση στην ουρά:",
+    "totalDamage": "Συνολική ζημιά: {{team1}} - {{team2}}",
+    "mapOfTotal": "Χάρτης {{index}} από {{total}}: {{map}}",
+    "mapIndex": "Χάρτης {{index}}: {{map}}",
+    "round": "Γύρος {{round}}",
+    "shuffle": {
+      "averageElo": "ELO ομάδας (μ.ό.): {{team1}} vs {{team2}}",
+      "balancerHint": "Οι ομάδες shuffle δημιουργούνται από έναν εξισορροπητή βασισμένο στο OpenSkill, που μοιράζει παίκτες υψηλής και χαμηλής αξιολόγησης και στις δύο πλευρές ώστε οι μέσοι όροι να μένουν κοντά."
+    },
+    "playerLeaderboards": "Κατατάξεις παικτών",
+    "noPlayerData": "Δεν υπάρχουν δεδομένα παικτών",
+    "currentMap": "Τρέχων χάρτης",
+    "maps": "Χάρτες",
+    "mapsNotPicked": "Οι χάρτες δεν έχουν επιλεγεί ακόμη.",
+    "mapsViaVeto": "Θα κριθεί με βέτο",
+    "matchInformation": "Πληροφορίες αγώνα",
+    "created": "Δημιουργήθηκε:",
+    "started": "Ξεκίνησε:",
+    "completed": "Ολοκληρώθηκε:",
+    "adminControls": "Έλεγχοι διαχειριστή",
+    "slug": "Slug αγώνα:",
+    "openChat": "Συνομιλία αγώνα"
+  },
+  "bulkShuffleMatchesModal": {
+    "title": "Μαζική δημιουργία αγώνων shuffle",
+    "description": "Ρύθμισε έναν αγώνα shuffle σε έναν χάρτη (χάρτης + όριο γύρων) και μετά όρισε όσους αγώνες θέλεις, επιλέγοντας την ακριβή σύνθεση για κάθε πλευρά. Οι αγώνες δημιουργούνται ως μέρος του τρέχοντος τουρνουά shuffle και παίρνουν διακομιστές όταν ξεκινήσεις το τουρνουά.",
+    "mapSelect": {
+      "label": "Χάρτης",
+      "noMaps": "Δεν έχουν ρυθμιστεί χάρτες για αυτό το τουρνουά",
+      "helper": "Όλοι οι αγώνες αυτής της παρτίδας θα χρησιμοποιούν αυτόν τον χάρτη."
+    },
+    "maxRounds": {
+      "label": "Μέγιστοι γύροι ανά χάρτη",
+      "helperWithValue": "Ο αγώνας παίζεται έως {{maxRounds}} γύρους· νικά όποιος φτάσει πρώτος τους {{winRounds}} γύρους.",
+      "helperDefault": "Μέγιστος αριθμός γύρων ανά χάρτη (προεπιλογή: 24, μέγιστο: 30)."
+    },
+    "matchesSection": {
+      "title": "Αγώνες ({{count}})",
+      "addMatch": "Προσθήκη αγώνα"
+    },
+    "players": {
+      "empty": "Δεν υπάρχουν ακόμη εγγεγραμμένοι παίκτες σε αυτό το τουρνουά shuffle. Γράψε πρώτα παίκτες και μετά μπορείς να δημιουργήσεις χειροκίνητους αγώνες."
+    },
+    "matchRow": {
+      "title": "Αγώνας {{index}}",
+      "teamCounts": "{{team1}}/{{teamSize}} • {{team2}}/{{teamSize}}",
+      "team1Label": "Παίκτες ομάδας 1 ({{team1Count}}/{{teamSize}})",
+      "team2Label": "Παίκτες ομάδας 2 ({{team2Count}}/{{teamSize}})",
+      "searchPlaceholder": "Αναζήτηση και επιλογή παικτών",
+      "mapOverrideLabel": "Χάρτης (προαιρετική αντικατάσταση)",
+      "mapOverrideHelperOwn": "Αυτός ο αγώνας χρησιμοποιεί δικό του χάρτη.",
+      "mapOverrideHelperDefault": "Άφησέ το κενό για να χρησιμοποιηθεί ο προεπιλεγμένος χάρτης παραπάνω.",
+      "maxRoundsOverrideLabel": "Μέγιστοι γύροι (προαιρετική αντικατάσταση)",
+      "maxRoundsOverrideHelperOwn": "Αντικαθιστά τους προεπιλεγμένους μέγιστους γύρους για αυτόν τον αγώνα (τώρα {{value}}).",
+      "maxRoundsOverrideHelperDefault": "Άφησέ το κενό για να χρησιμοποιηθούν οι προεπιλεγμένοι μέγιστοι γύροι παραπάνω."
+    },
+    "errors": {
+      "loadPlayers": "Δεν ήταν δυνατή η φόρτωση των εγγεγραμμένων παικτών",
+      "noMatches": "Πρόσθεσε τουλάχιστον έναν αγώνα για δημιουργία.",
+      "bothTeamsRequired": "Αγώνας {{index}}: και οι δύο ομάδες πρέπει να έχουν τουλάχιστον έναν παίκτη.",
+      "conflictingPlayers": "Αγώνας {{index}}: ο ίδιος παίκτης δεν μπορεί να είναι και στις δύο ομάδες. ID σε σύγκρουση: {{ids}}",
+      "mapRequired": "Αγώνας {{index}}: ο χάρτης είναι υποχρεωτικός (όρισε προεπιλεγμένο χάρτη παραπάνω ή διάλεξε χάρτη για αυτόν τον αγώνα).",
+      "rowMaxRoundsRange": "Αγώνας {{index}}: οι μέγιστοι γύροι πρέπει να είναι από 1 έως 30 όταν αντικαθίστανται ανά αγώνα.",
+      "globalMaxRoundsRange": "Οι μέγιστοι γύροι πρέπει να είναι από 1 έως 30.",
+      "createFailed": "Δεν ήταν δυνατή η δημιουργία χειροκίνητων αγώνων shuffle"
+    },
+    "success": {
+      "created": "Οι χειροκίνητοι αγώνες shuffle δημιουργήθηκαν. Θα πάρουν διακομιστές όταν ξεκινήσει το τουρνουά."
+    },
+    "createMatchesButton": {
+      "default": "Δημιουργία αγώνων",
+      "creating": "Δημιουργία…"
+    }
+  },
+  "teamModal": {
+    "titleCreate": "Δημιουργία νέας ομάδας",
+    "titleEdit": "Επεξεργασία ομάδας",
+    "teamNameLabel": "Όνομα ομάδας",
+    "teamNamePlaceholder": "Astralis",
+    "teamNameHelper": "Το όνομα της ομάδας μπορεί να είναι σε οποιαδήποτε γλώσσα και να περιέχει ειδικούς χαρακτήρες",
+    "teamTagLabel": "Ετικέτα ομάδας",
+    "teamTagPlaceholder": "AST",
+    "teamTagHelper": "Δημιουργείται αυτόματα από το όνομα της ομάδας (έως 4 χαρακτήρες)",
+    "playersHeader": "Παίκτες ({{count}})",
+    "selectPlayers": "Επιλογή παικτών",
+    "noPlayersInfo": "Δεν έχουν προστεθεί ακόμη παίκτες. Πρόσθεσε τουλάχιστον έναν.",
+    "addPlayersHelper": "Πρόσθεσε νέο παίκτη παρακάτω ή επίλεξε από τους υπάρχοντες",
+    "addPlayersHelper_steam": "Πρόσθεσε παίκτες επικολλώντας URL του Steam ή επιλέγοντας από τους υπάρχοντες",
+    "steamInputLabel": "Steam ID / Vanity URL",
+    "steamInputPlaceholder": "gaben ή steamcommunity.com/id/gaben",
+    "resolveSteam": "Εύρεση Steam ID",
+    "resolving": "Αναζήτηση...",
+    "playerNameLabel": "Όνομα παίκτη",
+    "playerNamePlaceholder": "s1mple",
+    "eloLabel": "ELO (προαιρετικά)",
+    "eloPlaceholder": "1500",
+    "eloHelper": "Προεπιλογή: 1500",
+    "errors": {
+      "steamLookupEmpty": "Γράψε Steam ID, vanity URL ή URL προφίλ",
+      "steamApiNotConfigured": "Το Steam API δεν έχει ρυθμιστεί – γράψε χειροκίνητα το Steam ID64",
+      "steamResolveFailed": "Δεν βρέθηκε το Steam ID – γράψε χειροκίνητα το Steam ID64",
+      "steamAndNameRequired": "Απαιτούνται και το Steam ID και το όνομα του παίκτη",
+      "steamDuplicate": "Αυτό το Steam ID είναι ήδη στην ομάδα",
+      "teamNameRequired": "Το όνομα της ομάδας είναι υποχρεωτικό",
+      "playersRequired": "Απαιτείται τουλάχιστον ένας παίκτης",
+      "saveFailed": "Δεν ήταν δυνατή η αποθήκευση της ομάδας",
+      "deleteFailed": "Δεν ήταν δυνατή η διαγραφή της ομάδας",
+      "discordIdInvalid": "Το Discord ID πρέπει να έχει 17–20 ψηφία (το αριθμητικό ID χρήστη, όχι το όνομα χρήστη)",
+      "discordIdInvalidPlayers": "Μη έγκυρο Discord ID για: {{names}}. Πρέπει να έχει 17–20 ψηφία ή να μείνει κενό.",
+      "discordIdSaveFailed": "Η ομάδα αποθηκεύτηκε, αλλά το Discord ID δεν αποθηκεύτηκε για: {{names}}. {{message}}",
+      "nameRequired": "Γράψε το όνομα του παίκτη",
+      "addPlayerFailed": "Δεν ήταν δυνατή η προσθήκη του παίκτη"
+    },
+    "success": {
+      "playerAdded": "Ο παίκτης προστέθηκε στην ομάδα",
+      "playerReplaced": "Ο παίκτης αντικαταστάθηκε",
+      "teamUpdated": "Η ομάδα ενημερώθηκε",
+      "teamCreated": "Η ομάδα δημιουργήθηκε",
+      "teamDeleted": "Η ομάδα διαγράφηκε"
+    },
+    "buttons": {
+      "deleteTeam": "Διαγραφή ομάδας",
+      "cancel": "Ακύρωση",
+      "saving": "Αποθήκευση...",
+      "saveChanges": "Αποθήκευση αλλαγών",
+      "createTeam": "Δημιουργία ομάδας"
+    },
+    "confirmDelete": {
+      "title": "Διαγραφή ομάδας",
+      "message": "Σίγουρα θέλεις να διαγράψεις το «{{name}}»; Αυτή η ενέργεια δεν αναιρείται."
+    },
+    "replacePlayerAria": "Αντικατάσταση παίκτη {{name}}",
+    "replacePlayerTooltip": "Αντικατάσταση αυτού του παίκτη",
+    "accountLabel": "Λογαριασμός {{account}} (προαιρετικά)",
+    "accountHelper": "Για {{games}}. Όταν συνδεθεί με {{account}}, γίνεται αυτός ο παίκτης."
+  },
+  "playerModal": {
+    "titleCreate": "Δημιουργία παίκτη",
+    "titleEdit": "Επεξεργασία παίκτη",
+    "steamLabel": "Steam ID ή URL προφίλ (προαιρετικά)",
+    "steamHelperEditing": "Το Steam ID δεν αλλάζει",
+    "steamHelperNew": "Για {{games}}. Γράψε Steam ID64, vanity URL ή URL προφίλ· η «Εύρεση» συμπληρώνει όνομα και avatar.",
+    "resolveSteam": "Εύρεση Steam ID",
+    "resolving": "Αναζήτηση...",
+    "playerNameLabel": "Όνομα παίκτη",
+    "playerNamePlaceholder": "Παίκτης",
+    "eloLabelNew": "Αρχικό ELO",
+    "eloLabelEdit": "ELO",
+    "eloHelperNew": "Άφησέ το κενό για την προεπιλογή (αξιολόγηση 1500).",
+    "eloHelperEdit": "Η αλλαγή του ELO θα μηδενίσει την αξιολόγηση και τα στατιστικά του παίκτη. Αυτή η ενέργεια δεν αναιρείται.",
+    "isAdminLabel": "Είναι διαχειριστής (διαχειρίζεται αυτόν τον ιστότοπο· οι μονάδες παιχνιδιών μπορεί να δίνουν στους διαχειριστές και δικαιώματα μέσα στο παιχνίδι)",
+    "currentElo": "Τρέχον ELO: {{value}}",
+    "startingElo": "Αρχικό ELO: {{value}}",
+    "matchesPlayed": "Αγώνες που παίχτηκαν: {{count}}",
+    "errors": {
+      "steamRequired": "Το Steam ID είναι υποχρεωτικό",
+      "nameRequired": "Το όνομα του παίκτη είναι υποχρεωτικό",
+      "steamLookupEmpty": "Γράψε Steam ID, vanity URL ή URL προφίλ",
+      "steamApiNotConfigured": "Το Steam API δεν έχει ρυθμιστεί – γράψε χειροκίνητα το Steam ID64",
+      "steamResolveFailed": "Δεν βρέθηκε το Steam ID – γράψε χειροκίνητα το Steam ID64",
+      "saveFailed": "Δεν ήταν δυνατή η αποθήκευση του παίκτη"
+    },
+    "success": {
+      "playerUpdated": "Ο παίκτης ενημερώθηκε",
+      "playerCreated": "Ο παίκτης δημιουργήθηκε"
+    },
+    "buttons": {
+      "delete": "Διαγραφή",
+      "cancel": "Ακύρωση",
+      "saving": "Αποθήκευση...",
+      "save": "Αποθήκευση",
+      "create": "Δημιουργία"
+    },
+    "confirmDelete": {
+      "title": "Διαγραφή παίκτη",
+      "message": "Σίγουρα θέλεις να διαγράψεις τον παίκτη «{{name}}»; Αυτή η ενέργεια δεν αναιρείται."
+    },
+    "confirmEloUpdate": {
+      "title": "Ενημέρωση ELO παίκτη",
+      "message": "Σίγουρα θέλεις να αλλάξεις το ELO αυτού του παίκτη από {{from}} σε {{to}}; Θα μηδενιστούν τα στατιστικά και το ιστορικό αξιολόγησής του. Αυτή η ενέργεια δεν αναιρείται."
+    },
+    "discordIdHelper": "Προαιρετικά. 17–20 ψηφία. Επιτρέπει στους διοργανωτές να βρουν αυτόν τον παίκτη στο Discord. Δεν εμφανίζεται ποτέ δημόσια.",
+    "accountLabel": "Λογαριασμός {{account}} (προαιρετικά)",
+    "accountHelper": "Για {{games}}. Το ID του λογαριασμού· όταν συνδεθεί με {{account}}, γίνεται αυτός ο παίκτης.",
+    "accountVerified": "Συνδεδεμένο: συνδέθηκε με {{account}}. Το αλλάζει ο ίδιος."
+  },
+  "teamImportModal": {
+    "title": "Εισαγωγή ομάδων από JSON",
+    "info": {
+      "title": "Επικόλλησε παρακάτω JSON με δεδομένα ομάδων.",
+      "format": "Αναμενόμενη μορφή: πίνακας ομάδων με name, tag (προαιρετικά) και players (name + steamId, συν προαιρετικό discordId ως συμβολοσειρά σε εισαγωγικά).",
+      "link": "Προβολή τεκμηρίωσης με παραδείγματα"
+    },
+    "jsonLabel": "Δεδομένα JSON",
+    "errors": {
+      "mustBeArray": "Το JSON πρέπει να είναι πίνακας ομάδων",
+      "emptyArray": "Ο πίνακας δεν μπορεί να είναι κενός",
+      "parseWithMessage": "Σφάλμα ανάλυσης JSON: {{message}}",
+      "parseGeneric": "Μη έγκυρη μορφή JSON. Έλεγξε τη σύνταξη.",
+      "importFailed": "Δεν ήταν δυνατή η εισαγωγή των ομάδων",
+      "noJson": "Γράψε δεδομένα JSON"
+    },
+    "preview": {
+      "summary": "✓ Έγκυρο JSON! Βρέθηκαν {{teams}} με {{players}} συνολικά.",
+      "title": "Προεπισκόπηση:",
+      "missingDiscordTotal": "Παίκτες χωρίς Discord ID: {{count}}",
+      "missingDiscordChip": "Χωρίς Discord: {{count}}",
+      "playersChip_one": "{{count}} παίκτης",
+      "playersChip_other": "{{count}} παίκτες",
+      "teamsCount_one": "{{count}} ομάδα",
+      "teamsCount_other": "{{count}} ομάδες"
+    },
+    "actions": {
+      "preview": "Προεπισκόπηση",
+      "importing": "Εισαγωγή...",
+      "import_one": "Εισαγωγή {{count}} ομάδας",
+      "import_other": "Εισαγωγή {{count}} ομάδων"
+    },
+    "warnings": {
+      "title": "Κάποια Discord ID αγνοήθηκαν. Αυτοί οι παίκτες θα εισαχθούν χωρίς:",
+      "discordIdNumber": "Ομάδα «{{team}}», παίκτης «{{player}}»: το discordId πρέπει να είναι συμβολοσειρά σε εισαγωγικά. Οι μεγάλοι αριθμοί χάνουν ακρίβεια στο JSON, οπότε το ID αφαιρέθηκε.",
+      "discordIdInvalid": "Ομάδα «{{team}}», παίκτης «{{player}}»: το «{{value}}» δεν είναι ID χρήστη Discord (αναμένονται 17–20 ψηφία), οπότε αφαιρέθηκε."
+    }
+  },
+  "playerImportModal": {
+    "title": "Εισαγωγή παικτών",
+    "info": {
+      "description": "Εισαγωγή παικτών από JSON ή CSV. Υποχρεωτικά πεδία: steamId, name. Προαιρετικά: initialELO (προεπιλογή 1500), avatarUrl.",
+      "link": "Προβολή τεκμηρίωσης με παραδείγματα"
+    },
+    "placeholders": {
+      "jsonCsv": "Μορφή JSON:\n[\n  {\n    \"steamId\": \"76561198012345678\",\n    \"name\": \"Παίκτης Ένα\",\n    \"initialELO\": 1500,\n    \"avatarUrl\": \"https://...\"\n  }\n]\n\nΜορφή CSV:\nsteamId,name,initialELO,avatarUrl\n76561198012345678,Παίκτης Ένα,1500,https://..."
+    },
+    "actions": {
+      "parseValidate": "Ανάλυση και επικύρωση",
+      "importing": "Εισαγωγή...",
+      "import_one": "Εισαγωγή {{count}} παίκτη",
+      "import_other": "Εισαγωγή {{count}} παικτών"
+    },
+    "preview": {
+      "title": "Παίκτες για εισαγωγή ({{count}}):",
+      "steamId": "Steam ID: {{steamId}}",
+      "name": "Όνομα: {{name}}",
+      "initialElo": "Αρχικό ELO: {{elo}}",
+      "avatar": "Avatar: {{url}}",
+      "readyChip_one": "{{count}} παίκτης έτοιμος για εισαγωγή",
+      "readyChip_other": "{{count}} παίκτες έτοιμοι για εισαγωγή"
+    },
+    "errors": {
+      "noData": "Γράψε δεδομένα JSON ή CSV",
+      "noPlayers": "Δεν βρέθηκαν παίκτες στα δεδομένα",
+      "validationPrefix": "Σφάλματα επικύρωσης:",
+      "parseFailed": "Δεν ήταν δυνατή η ανάλυση των δεδομένων: {{message}}",
+      "importFailed": "Δεν ήταν δυνατή η εισαγωγή των παικτών",
+      "parseFirst": "Ανάλυσε και επικύρωσε πρώτα τα δεδομένα"
+    }
+  },
+  "playerSelectionModal": {
+    "title": "Επιλογή παικτών",
+    "selectedCount": "Επιλεγμένοι: {{count}}",
+    "searchPlaceholder": "Αναζήτηση παικτών με το όνομα...",
+    "searchPlaceholder_steam": "Αναζήτηση παικτών με όνομα ή Steam ID...",
+    "selectAll": {
+      "select": "Επιλογή όλων",
+      "deselect": "Αποεπιλογή όλων"
+    },
+    "empty": {
+      "noSearchResults": "Κανένας παίκτης δεν ταιριάζει με την αναζήτηση",
+      "noPlayers": "Δεν υπάρχουν διαθέσιμοι παίκτες"
+    },
+    "playerCard": {
+      "alreadyInTeam": "Ήδη στην ομάδα"
+    },
+    "errors": {
+      "loadFailed": "Δεν ήταν δυνατή η φόρτωση των παικτών",
+      "noSelectable": "Δεν υπάρχουν παίκτες προς επιλογή"
+    },
+    "addPlayersButton_one": "Προσθήκη {{count}} παίκτη",
+    "addPlayersButton_other": "Προσθήκη {{count}} παικτών"
+  },
+  "soundSettingsModal": {
+    "title": "Ρυθμίσεις ήχου",
+    "soundSelect": {
+      "label": "Ήχος ειδοποίησης"
+    },
+    "volume": {
+      "label": "Ένταση: {{percent}}%"
+    },
+    "testButton": "Δοκιμή ήχου",
+    "footer": "Οι ηχητικές ειδοποιήσεις παίζουν όταν ο αγώνας σου είναι έτοιμος ή όταν συμβαίνει κάτι σημαντικό."
+  },
+  "addBackupPlayer": {
+    "title": "Προσθήκη παίκτη",
+    "loadFailed": "Δεν ήταν δυνατή η φόρτωση της λίστας παικτών",
+    "added": "Ο/Η {{name}} προστέθηκε στο {{target}}",
+    "addFailed": "Δεν ήταν δυνατή η προσθήκη του παίκτη",
+    "addToMatchFailed": "Δεν ήταν δυνατή η προσθήκη του παίκτη στον αγώνα",
+    "searchLabel": "Αναζήτηση παίκτη",
+    "searchPlaceholder": "Γράψε το όνομα του παίκτη...",
+    "available": "Διαθέσιμοι παίκτες (όχι ήδη στον αγώνα): {{count}}",
+    "noneAvailable": "Δεν υπάρχουν διαθέσιμοι παίκτες",
+    "displayNameLabel": "Εμφανιζόμενο όνομα (προαιρετικά)",
+    "displayNamePlaceholder": "Προεπιλογή το τρέχον όνομα του παίκτη",
+    "side": "Πλευρά",
+    "spectator": "Θεατής",
+    "selected": "Επιλεγμένο:",
+    "fromTeam": "Από την ομάδα: {{team}}",
+    "steamId": "Steam ID: {{id}}",
+    "adding": "Προσθήκη παίκτη...",
+    "add": "Προσθήκη παίκτη στον αγώνα",
+    "underlyingCommand": "Εντολή που χρησιμοποιείται:",
+    "important": "Σημαντικό:",
+    "reconnectHint": "Ο παίκτης πρέπει να επανασυνδεθεί στον διακομιστή αφού προστεθεί. Αν είναι ήδη συνδεδεμένος, μπορεί να χρειαστεί να ξαναμπεί."
+  }
+}
