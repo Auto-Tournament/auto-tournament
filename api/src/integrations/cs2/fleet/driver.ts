@@ -381,19 +381,25 @@ export async function assignConfigPreview(
   }
 }
 
-/** The server announced `demo.stream.v1` in its hello (./limits.ts). */
-async function streamsDemos(fleetServerId: string): Promise<boolean> {
+/** The server announced `capability` in its hello. */
+async function announces(fleetServerId: string, capability: string): Promise<boolean> {
   const row = await db.queryOneAsync<{ capabilities: string | null }>(
     'SELECT capabilities FROM cs2_fleet_servers WHERE id = ?',
     [fleetServerId]
   );
   try {
     const caps = row?.capabilities ? (JSON.parse(row.capabilities) as string[]) : [];
-    return Array.isArray(caps) && caps.includes(DEMO_STREAM_CAPABILITY);
+    return Array.isArray(caps) && caps.includes(capability);
   } catch {
     return false;
   }
 }
+
+/** The server announced `demo.stream.v1` in its hello (./limits.ts). */
+const streamsDemos = (fleetServerId: string) => announces(fleetServerId, DEMO_STREAM_CAPABILITY);
+
+/** Ready Up takes match.update `set_language` (0.2.1 and later). */
+const LANGUAGE_CAPABILITY = 'match.language.v1';
 
 async function joinPasswordEnabled(): Promise<boolean> {
   try {
@@ -803,10 +809,44 @@ export async function syncMatch(matchSlug: string): Promise<FleetUpdateOutcome> 
   } catch (error) {
     return { ok: false, status: 409, error: (error as Error).message };
   }
-  const ops = diffAssignConfig(assignment.config, next);
+  let ops = diffAssignConfig(assignment.config, next);
+  // An older Ready Up rejects the whole update for an op it does not know.
+  if (
+    ops.some((op) => op.op === 'set_language') &&
+    !(assignment.serverId && (await announces(assignment.serverId, LANGUAGE_CAPABILITY)))
+  ) {
+    ops = ops.filter((op) => op.op !== 'set_language');
+  }
   const outcome = await updateMatch(matchSlug, ops);
   if (outcome.ok && ops.length > 0) await storeAckedConfig(matchSlug, assignment.epoch, next);
   return outcome;
+}
+
+/**
+ * A player saved a new site language: every open match they play in gets it
+ * (syncMatch rebuilds the config with players' languages, the diff sends
+ * `set_language`). Failures are logged; the language stays saved.
+ */
+export async function syncPlayerLanguage(playerId: string): Promise<void> {
+  const rows = await db.queryAsync<AssignmentRow>(
+    'SELECT * FROM cs2_fleet_assignments WHERE ended_at IS NULL AND config IS NOT NULL'
+  );
+  for (const assignment of rows.map(fromRow)) {
+    const config = assignment.config;
+    const plays = (['team1', 'team2'] as const).some((team) =>
+      config?.[team].players.some((p) => p.steamid64 === playerId)
+    );
+    if (!plays) continue;
+    const outcome = await syncMatch(assignment.matchSlug).catch((error: Error) => ({
+      ok: false as const,
+      error: error.message,
+    }));
+    if (!outcome.ok) {
+      log.warn(
+        `[FLEET] ${assignment.matchSlug}: new language for ${playerId} not sent: ${outcome.error}`
+      );
+    }
+  }
 }
 
 /** Add one player (the admin's "add player" on a running match). */

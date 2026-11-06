@@ -500,6 +500,31 @@ test.describe('Fleet match.assign config', () => {
     ).toEqual({ ok: true, errors: [] });
   });
 
+  test('a player who saves a new site language gets set_language, valid for the schema', () => {
+    const assigned = withLanguages(
+      buildAssignConfig(tournamentConfig(), 'pw'),
+      new Map([[STEAM(1), 'nb']])
+    );
+    const changed = withLanguages(
+      buildAssignConfig(tournamentConfig(), 'pw'),
+      new Map([[STEAM(1), 'pl']])
+    );
+    const ops = diffAssignConfig(assigned, changed);
+    expect(ops).toEqual([{ op: 'set_language', steamid64: STEAM(1), language: 'pl' }]);
+    expect(
+      validatePayload('match.update', {
+        match_id: 'r1m1',
+        epoch: 1,
+        base_config_rev: 1,
+        config_rev: 2,
+        ops,
+      })
+    ).toEqual({ ok: true, errors: [] });
+    // Unchanged, or no language known now: nothing to send.
+    expect(diffAssignConfig(assigned, assigned)).toEqual([]);
+    expect(diffAssignConfig(assigned, buildAssignConfig(tournamentConfig(), 'pw'))).toEqual([]);
+  });
+
   test('substitutes keep role sub; a player made a sub (or back) is removed, then added with the role', () => {
     const base = tournamentConfig();
     const withSub = tournamentConfig({
