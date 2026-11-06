@@ -1,0 +1,12 @@
+{
+  "devAccountSwitcher": {
+    "tooltip": "Сменить аккаунт (dev)",
+    "adminTest": "Администратор (тест)",
+    "playerA": "Игрок A (dev)",
+    "playerB": "Игрок B (dev)",
+    "playerC": "Игрок C (dev)",
+    "newPlayer": "Новый игрок (первый визит) (dev)",
+    "signOut": "Выйти",
+    "disabled": "Тестовый вход на этом сервере отключён"
+  }
+}
