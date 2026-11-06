@@ -12,6 +12,7 @@ import type { ModuleLocales } from '../../types';
 import de from './de.json';
 import en from './en.json';
 import es from './es.json';
+import es419 from './es-419.json';
 import fr from './fr.json';
 import it from './it.json';
 import nb from './nb.json';
@@ -21,6 +22,7 @@ import pt from './pt-PT.json';
 import ru from './ru.json';
 import uk from './uk.json';
 import zhCN from './zh-CN.json';
+import zhTW from './zh-TW.json';
 
 export const manualReportLocales: ModuleLocales = {
   en,
@@ -35,4 +37,6 @@ export const manualReportLocales: ModuleLocales = {
   nb,
   ru,
   uk,
+  'es-419': es419,
+  'zh-TW': zhTW,
 };

@@ -15,6 +15,7 @@ import {
   nbNO,
   ruRU,
   ukUA,
+  zhTW,
 } from '@mui/material/locale';
 import App from './App';
 import './index.css';
@@ -38,6 +39,7 @@ applyFaviconTheme(activeThemeId, {
 });
 
 const getMuiLocale = (lang: string) => {
+  if (/^zh-(TW|HK|MO|Hant)/i.test(lang)) return zhTW;
   if (lang.startsWith('zh')) return zhCN;
   if (lang.startsWith('fr')) return frFR;
   if (lang.startsWith('de')) return deDE;

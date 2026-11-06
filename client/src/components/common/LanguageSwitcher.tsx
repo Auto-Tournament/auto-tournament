@@ -16,11 +16,13 @@ const LANGUAGES: Language[] = [
   { code: 'fr', flagCode: 'FR', label: 'Français' },
   { code: 'de', flagCode: 'DE', label: 'Deutsch' },
   { code: 'es', flagCode: 'ES', label: 'Español' },
+  { code: 'es-419', flagCode: 'MX', label: 'Español (Latinoamérica)' },
   { code: 'it', flagCode: 'IT', label: 'Italiano' },
   { code: 'pt-PT', flagCode: 'PT', label: 'Português' },
   { code: 'pl', flagCode: 'PL', label: 'Polski' },
   { code: 'nl', flagCode: 'NL', label: 'Nederlands' },
   { code: 'zh-CN', flagCode: 'CN', label: '简体中文' },
+  { code: 'zh-TW', flagCode: 'TW', label: '繁體中文' },
   { code: 'nb', flagCode: 'NO', label: 'Norsk bokmål' },
   { code: 'ru', flagCode: 'RU', label: 'Русский' },
   { code: 'uk', flagCode: 'UA', label: 'Українська' },
@@ -59,10 +61,12 @@ export function FlagIcon({ code }: { code: string }) {
 
 function normalizeLanguageCode(raw: string): string {
   const lng = raw || 'en';
+  if (/^zh-(TW|HK|MO|Hant)/i.test(lng)) return 'zh-TW';
   if (lng.startsWith('zh')) return 'zh-CN';
   if (lng.startsWith('pt')) return 'pt-PT';
   if (lng.startsWith('fr')) return 'fr';
   if (lng.startsWith('de')) return 'de';
+  if (/^es-(?!ES$)/i.test(lng)) return 'es-419';
   if (lng.startsWith('es')) return 'es';
   if (lng.startsWith('it')) return 'it';
   if (lng.startsWith('pl')) return 'pl';
