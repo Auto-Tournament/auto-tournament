@@ -1,0 +1,81 @@
+{
+  "manualReport": {
+    "title": "경기 결과",
+    "unknownTeam": "상대 팀",
+    "state": {
+      "nothing": "아직 보고된 결과가 없어요. 경기한 사람 누구든 점수를 보고하세요.",
+      "waitingOpponent": "보고했어요. {{team}}의 확인을 기다리는 중이에요.",
+      "needsAnswer": "{{team}}이(가) 이 결과를 보고했어요. 맞으면 확인하세요.",
+      "disputed": "이 결과에 이의가 제기됐어요. 관리자가 결정해요.",
+      "awaitingAdmin": "관리자가 이 경기를 결정하기를 기다리는 중이에요.",
+      "confirmed": "두 팀 모두 이 결과에 동의해요."
+    },
+    "deadline": {
+      "autoConfirm": "아무도 응답하지 않으면 {{minutes}}분 뒤 자동으로 확정돼요.",
+      "autoConfirmSoon": "곧 자동으로 확정돼요.",
+      "escalate": "아무도 응답하지 않으면 {{minutes}}분 뒤 관리자에게 넘어가요.",
+      "escalateSoon": "곧 관리자에게 넘어가요."
+    },
+    "score": "{{team1}} {{score1}} – {{score2}} {{team2}}",
+    "game": "{{number}}번째 게임",
+    "note": "메모",
+    "notePlaceholder": "상대 팀이 알아야 할 것(선택)",
+    "noteGiven": "메모: {{note}}",
+    "disputeReason": "무엇이 잘못됐나요?",
+    "disputeReasonGiven": "이의 제기: {{reason}}",
+    "formHint": "{{team1}}과(와) {{team2}}의 점수를 게임별로 입력하세요.",
+    "actions": {
+      "report": "점수 보고",
+      "reportAgain": "다른 점수 보고",
+      "submit": "보고 보내기",
+      "cancel": "취소",
+      "confirm": "확인",
+      "dispute": "이의 제기",
+      "disputeSubmit": "이의 제기 보내기",
+      "withdraw": "내 보고 철회"
+    },
+    "errors": {
+      "stale": "화면에 띄워 둔 사이에 이 보고가 바뀌었어요. 확인하기 전에 다시 읽어 보세요.",
+      "incomplete": "게임 하나 이상에 두 점수를 모두 입력하세요.",
+      "failed": "처리되지 않았어요. 다시 시도하세요."
+    },
+    "captains": {
+      "title": "팀장",
+      "hint": "이 팀의 결과는 팀장만 보고하거나 확인할 수 있어요.",
+      "make": "팀장 지정",
+      "remove": "팀장 해제",
+      "isCaptain": "팀장",
+      "empty": "이 팀에는 아직 로그인한 사람이 없어서 지정할 사람이 없어요.",
+      "unknown": "알 수 없는 플레이어",
+      "failed": "바꾸지 못했어요. 다시 시도하세요."
+    },
+    "stats": {
+      "hint": "이 토너먼트가 요구하는 추가 숫자예요. 해당하는 사람이 없으면 비워 두세요.",
+      "required": "필수",
+      "recorded": "보고된 통계",
+      "value": "{{subject}}: {{value}}{{suffix}}",
+      "errors": {
+        "number": "{{subject}}의 {{field}}은(는) 숫자여야 해요.",
+        "integer": "{{subject}}의 {{field}}은(는) 정수여야 해요.",
+        "range": "{{subject}}의 {{field}}이(가) 실제 숫자라기엔 너무 커요.",
+        "tooLong": "{{subject}}의 {{field}}이(가) {{max}}자보다 길어요.",
+        "missing": "{{field}}은(는) 필수인데 {{team}}에 입력된 값이 없어요."
+      },
+      "tournamentTitle": "보고된 통계",
+      "tournamentHelp": "확정된 보고를 합친 값이에요. 아직 상대의 확인을 기다리는 결과는 포함되지 않아요.",
+      "byTeam": "팀별",
+      "byPlayer": "플레이어별",
+      "team": "팀",
+      "player": "플레이어",
+      "matches": "경기"
+    },
+    "chip": {
+      "none": "아직 결과 없음",
+      "yours": "내 보고",
+      "reported": "보고됨",
+      "confirm": "확인하기",
+      "disputed": "이의 제기됨",
+      "final": "확정"
+    }
+  }
+}

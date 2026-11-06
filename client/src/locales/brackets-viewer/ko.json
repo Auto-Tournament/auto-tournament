@@ -1,0 +1,124 @@
+{
+  "origin-hint": {
+    "seed": "시드 {{position}}",
+    "winner-bracket": "$t(abbreviations.winner-bracket) {{round}}.{{position}} 패자",
+    "winner-bracket-semi-final": "$t(abbreviations.winner-bracket) 준결승 {{position}} 패자",
+    "winner-bracket-final": "$t(abbreviations.winner-bracket) 결승 패자",
+    "consolation-final": "준결승 {{position}} 패자",
+    "grand-final": "$t(abbreviations.loser-bracket) 결승 승자",
+    "double-elimination-consolation-final-opponent-1": "$t(abbreviations.loser-bracket) 준결승 1 패자",
+    "double-elimination-consolation-final-opponent-2": "$t(abbreviations.loser-bracket) 결승 패자"
+  },
+  "match-label": {
+    "default": "{{matchNumber}}경기",
+    "winner-bracket": "$t(abbreviations.winner-bracket)",
+    "loser-bracket": "$t(abbreviations.loser-bracket)",
+    "standard-bracket": "$t(abbreviations.match)",
+    "standard-bracket-semi-final": "준결승 {{matchNumber}}",
+    "standard-bracket-final": "결승",
+    "double-elimination": "{{matchPrefix}} {{roundNumber}}.{{matchNumber}}",
+    "double-elimination-semi-final": "{{matchPrefix}} 준결승 {{matchNumber}}",
+    "double-elimination-final": "{{matchPrefix}} 결승",
+    "consolation-final": "3·4위전",
+    "grand-final-single": "그랜드 파이널",
+    "grand-final": "$t(abbreviations.grand-final) {{roundNumber}}라운드",
+    "match-game": "{{gameNumber}}번째 게임"
+  },
+  "match-status": {
+    "locked": "잠김",
+    "waiting": "대기 중",
+    "ready": "준비",
+    "running": "진행 중",
+    "completed": "완료",
+    "archived": "보관됨"
+  },
+  "abbreviations": {
+    "win": "W",
+    "loss": "L",
+    "forfeit": "F",
+    "position": "P",
+    "seed": "#",
+    "winner-bracket": "승자조",
+    "loser-bracket": "패자조",
+    "match": "M",
+    "grand-final": "GF"
+  },
+  "ranking": {
+    "rank": {
+      "text": "#",
+      "tooltip": "순위"
+    },
+    "id": {
+      "text": "이름",
+      "tooltip": "이름"
+    },
+    "played": {
+      "text": "P",
+      "tooltip": "경기 수"
+    },
+    "wins": {
+      "text": "$t(abbreviations.win)",
+      "tooltip": "승리"
+    },
+    "draws": {
+      "text": "D",
+      "tooltip": "무승부"
+    },
+    "losses": {
+      "text": "$t(abbreviations.loss)",
+      "tooltip": "패배"
+    },
+    "forfeits": {
+      "text": "$t(abbreviations.forfeit)",
+      "tooltip": "기권"
+    },
+    "scoreFor": {
+      "text": "득점",
+      "tooltip": "득점"
+    },
+    "scoreAgainst": {
+      "text": "실점",
+      "tooltip": "실점"
+    },
+    "scoreDifference": {
+      "text": "+/-",
+      "tooltip": "득실차"
+    },
+    "points": {
+      "text": "승점",
+      "tooltip": "승점"
+    }
+  },
+  "common": {
+    "bye": "부전승",
+    "best-of-x": "BO{{x}}",
+    "consolation": "3·4위전",
+    "group-name": "{{groupNumber}}조",
+    "group-name-winner-bracket": "승자조",
+    "group-name-loser-bracket": "패자조",
+    "round-name": "{{roundNumber}}라운드",
+    "round-name-final": "결승 라운드",
+    "round-name-winner-bracket": "$t(abbreviations.winner-bracket) {{roundNumber}}라운드",
+    "round-name-winner-bracket-final": "$t(abbreviations.winner-bracket) 결승 라운드",
+    "round-name-loser-bracket": "$t(abbreviations.loser-bracket) {{roundNumber}}라운드",
+    "round-name-loser-bracket-final": "$t(abbreviations.loser-bracket) 결승 라운드"
+  },
+  "form-creator": {
+    "stage-name-label": "스테이지 이름",
+    "stage-name-placeholder": "스테이지 이름을 입력하세요",
+    "stage-selector-label": "스테이지 선택",
+    "team-label": "팀 이름",
+    "team-label-placeholder": "쉼표로 구분한 팀 이름 목록(2^n개여야 해요)",
+    "team-count": "또는 팀 수",
+    "team-count-placeholder": "팀을 몇 개로 할까요?",
+    "group-label": "조는 몇 개인가요?",
+    "group-placeholder": "조를 몇 개로 할까요?",
+    "seed-order-label": "시드를 어떤 순서로 정할까요?",
+    "double-elimination-seed-order-placeholder": "더블 엘리미네이션 시드 순서(쉼표로 구분)",
+    "round-robin-mode-label": "어떤 리그전 방식을 쓸까요?",
+    "consolation-final-label": "3·4위전",
+    "skip-first-round-label": "첫 라운드 건너뛰기",
+    "grand-final-type-label": "그랜드 파이널 방식",
+    "submit": "만들기"
+  }
+}
