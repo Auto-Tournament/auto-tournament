@@ -2148,7 +2148,7 @@
     "lastSeen": "naposledy viděn {{time}}",
     "pausedUntil": "Bez práce do {{time}}: {{reason}}",
     "fbfMovie": "CS2 {{cs2}} vypnulo snímkově přesné příkazy Frame by Frame. Nahrávání klipů trvá déle. Až vyjde nový Frame by Frame, aktualizuj nahrávač.",
-    "fbfOff": "CS2 {{cs2}} vypnulo Frame by Frame. Klipy se nahrávají z video proudu jako před Frame by Frame. Až vyjde nový Frame by Frame, aktualizuj nahrávač.",
+    "fbfOff": "CS2 {{cs2}} vypnulo Frame by Frame, takže nahrávač nemůže nahrávat klipy. Až vyjde nový Frame by Frame, aktualizuj nahrávač.",
     "stat": {
       "perClip": "Na klip",
       "kept": "Uchované klipy",

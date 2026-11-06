@@ -2061,7 +2061,7 @@
     "lastSeen": "最後線上 {{time}}",
     "pausedUntil": "{{time}} 前不接任務：{{reason}}",
     "fbfMovie": "CS2 {{cs2}} 關閉了 Frame by Frame 的逐幀精確命令。片段錄製時間更長。新版 Frame by Frame 釋出後請更新錄製器。",
-    "fbfOff": "CS2 {{cs2}} 關閉了 Frame by Frame。片段從影片流錄製，和使用 Frame by Frame 之前一樣。新版 Frame by Frame 釋出後請更新錄製器。",
+    "fbfOff": "CS2 {{cs2}} 關閉了 Frame by Frame，錄製器因此無法錄製片段。新版 Frame by Frame 釋出後請更新錄製器。",
     "stat": {
       "perClip": "每個片段",
       "kept": "保留的片段",

@@ -2061,7 +2061,7 @@
     "lastSeen": "마지막 확인 {{time}}",
     "pausedUntil": "{{time}}까지 작업 없음: {{reason}}",
     "fbfMovie": "CS2 {{cs2}}에서 Frame by Frame의 프레임 정밀 명령이 꺼졌어요. 클립 녹화가 더 오래 걸려요. 새 Frame by Frame이 나오면 녹화기를 업데이트하세요.",
-    "fbfOff": "CS2 {{cs2}}에서 Frame by Frame이 꺼졌어요. Frame by Frame 이전처럼 영상 스트림으로 클립을 녹화해요. 새 Frame by Frame이 나오면 녹화기를 업데이트하세요.",
+    "fbfOff": "CS2 {{cs2}}에서 Frame by Frame이 꺼져서 녹화기가 클립을 녹화할 수 없어요. 새 Frame by Frame이 나오면 녹화기를 업데이트하세요.",
     "stat": {
       "perClip": "클립당",
       "kept": "보관된 클립",

@@ -2061,7 +2061,7 @@
     "lastSeen": "utoljára látva: {{time}}",
     "pausedUntil": "Nincs munka eddig: {{time}}: {{reason}}",
     "fbfMovie": "A CS2 {{cs2}} kikapcsolta a Frame by Frame képkockapontos parancsait. A klipek rögzítése tovább tart. Frissítsd a rögzítőt, amikor kijön egy új Frame by Frame.",
-    "fbfOff": "A CS2 {{cs2}} kikapcsolta a Frame by Frame-et. A klipeket a videófolyamból rögzítjük, mint a Frame by Frame előtt. Frissítsd a rögzítőt, amikor kijön egy új Frame by Frame.",
+    "fbfOff": "A CS2 {{cs2}} kikapcsolta a Frame by Frame-et, így a rögzítő nem tud klipeket rögzíteni. Frissítsd a rögzítőt, amikor kijön egy új Frame by Frame.",
     "stat": {
       "perClip": "Klipenként",
       "kept": "Megtartott klipek",

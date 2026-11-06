@@ -2104,7 +2104,7 @@
     "lastSeen": "văzut ultima dată {{time}}",
     "pausedUntil": "Fără lucru până la {{time}}: {{reason}}",
     "fbfMovie": "CS2 {{cs2}} a oprit comenzile exacte pe cadre ale Frame by Frame. Clipurile se înregistrează mai încet. Actualizează înregistratorul când apare un Frame by Frame nou.",
-    "fbfOff": "CS2 {{cs2}} a oprit Frame by Frame. Clipurile se înregistrează din fluxul video, ca înainte de Frame by Frame. Actualizează înregistratorul când apare un Frame by Frame nou.",
+    "fbfOff": "CS2 {{cs2}} a oprit Frame by Frame, așa că înregistratorul nu poate înregistra clipuri. Actualizează înregistratorul când apare un Frame by Frame nou.",
     "stat": {
       "perClip": "Pe clip",
       "kept": "Clipuri păstrate",

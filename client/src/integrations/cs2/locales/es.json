@@ -2296,7 +2296,7 @@
     "runFailed_one": "{{count}} fallida",
     "runFailed_other": "{{count}} fallidas",
     "fbfMovie": "CS2 {{cs2}} desactivó los comandos exactos al fotograma de Frame by Frame. Los clips tardan más en grabarse. Actualiza el grabador cuando salga un Frame by Frame nuevo.",
-    "fbfOff": "CS2 {{cs2}} desactivó Frame by Frame. Los clips se graban del flujo de vídeo, como antes de Frame by Frame. Actualiza el grabador cuando salga un Frame by Frame nuevo.",
+    "fbfOff": "CS2 {{cs2}} desactivó Frame by Frame, así que el grabador no puede grabar clips. Actualiza el grabador cuando salga un Frame by Frame nuevo.",
     "runs_many": "{{count}} ejecuciones",
     "clips_many": "{{count}} clips",
     "workingOn_many": "Grabando {{count}} clips del mapa {{map}} ({{match}}) desde {{time}}",

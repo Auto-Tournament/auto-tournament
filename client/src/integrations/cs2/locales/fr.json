@@ -2296,7 +2296,7 @@
     "runFailed_one": "{{count}} échec",
     "runFailed_other": "{{count}} échecs",
     "fbfMovie": "CS2 {{cs2}} a désactivé les commandes à l’image près de Frame by Frame. Les clips prennent plus de temps à enregistrer. Mettez à jour l’enregistreur quand un nouveau Frame by Frame sortira.",
-    "fbfOff": "CS2 {{cs2}} a désactivé Frame by Frame. Les clips sont enregistrés à partir du flux vidéo, comme avant Frame by Frame. Mettez à jour l’enregistreur quand un nouveau Frame by Frame sortira.",
+    "fbfOff": "CS2 {{cs2}} a désactivé Frame by Frame : l’enregistreur ne peut donc plus enregistrer de clips. Mettez à jour l’enregistreur quand un nouveau Frame by Frame sortira.",
     "runs_many": "{{count}} exécutions",
     "clips_many": "{{count}} clips",
     "workingOn_many": "Enregistre {{count}} clips de la carte {{map}} ({{match}}) depuis {{time}}",

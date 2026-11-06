@@ -2061,7 +2061,7 @@
     "lastSeen": "nähty viimeksi {{time}}",
     "pausedUntil": "Ei töitä {{time}} asti: {{reason}}",
     "fbfMovie": "CS2 {{cs2}} poisti käytöstä Frame by Framen kuvatarkat komennot. Klippien tallennus kestää pidempään. Päivitä tallentaja, kun uusi Frame by Frame julkaistaan.",
-    "fbfOff": "CS2 {{cs2}} poisti Frame by Framen käytöstä. Klipit tallennetaan videovirrasta kuten ennen Frame by Framea. Päivitä tallentaja, kun uusi Frame by Frame julkaistaan.",
+    "fbfOff": "CS2 {{cs2}} poisti Frame by Framen käytöstä, joten tallentaja ei voi tallentaa klippejä. Päivitä tallentaja, kun uusi Frame by Frame julkaistaan.",
     "stat": {
       "perClip": "Klippiä kohden",
       "kept": "Säilytetyt klipit",

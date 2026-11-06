@@ -2061,7 +2061,7 @@
     "lastSeen": "last seen {{time}}",
     "pausedUntil": "No work until {{time}}: {{reason}}",
     "fbfMovie": "CS2 {{cs2}} turned off Frame by Frame's frame-exact commands. Clips take longer to record. Update the recorder when a new Frame by Frame is out.",
-    "fbfOff": "CS2 {{cs2}} turned off Frame by Frame. Clips are recorded from the video stream, as before Frame by Frame. Update the recorder when a new Frame by Frame is out.",
+    "fbfOff": "CS2 {{cs2}} turned off Frame by Frame, so the recorder can't record clips. Update the recorder when a new Frame by Frame is out.",
     "stat": {
       "perClip": "Per clip",
       "kept": "Clips kept",

@@ -2061,7 +2061,7 @@
     "lastSeen": "最終応答 {{time}}",
     "pausedUntil": "{{time}} まで作業なし:{{reason}}",
     "fbfMovie": "CS2 {{cs2}} で Frame by Frame のフレーム単位のコマンドが無効になりました。クリップの録画に時間がかかります。新しい Frame by Frame が出たらレコーダーを更新してください。",
-    "fbfOff": "CS2 {{cs2}} で Frame by Frame が無効になりました。クリップは Frame by Frame 以前と同様に映像ストリームから録画されます。新しい Frame by Frame が出たらレコーダーを更新してください。",
+    "fbfOff": "CS2 {{cs2}} で Frame by Frame が無効になったため、レコーダーはクリップを録画できません。新しい Frame by Frame が出たらレコーダーを更新してください。",
     "stat": {
       "perClip": "クリップあたり",
       "kept": "保存済みクリップ",
