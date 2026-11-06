@@ -1,0 +1,198 @@
+{
+  "adminToolsPage": {
+    "description": "Kampgendannelse og app-loggen for siden.",
+    "recovery": {
+      "title": "Kampgendannelse",
+      "description": "Hvis API'et eller serverne blev genstartet under en turnering, og kamptilstanden ser ud til at være ude af sync (f.eks. kampe, der sidder fast, før de går live, eller manglende livescore), kan du starte en gendannelse manuelt. Alle servere bliver spurgt om deres aktuelle kamprapport, score og faser synkroniseres igen, og webhooks og demo-uploads konfigureres igen, hvor det er muligt.",
+      "button": "Kør kampgendannelse nu",
+      "success": "Kampgendannelsen er færdig.",
+      "error": "Kampgendannelsen mislykkedes.",
+      "failedTrigger": "Kampgendannelsen kunne ikke startes. Prøv igen."
+    },
+    "monitoring": {
+      "title": "Overvågning og logs",
+      "appLogs": "Applikationslogs"
+    },
+    "logs": {
+      "loadFailed": "Logs kunne ikke indlæses",
+      "levelAll": "Alle",
+      "auto": "Auto",
+      "refresh": "Opdater logs",
+      "empty": "Ingen logs at vise",
+      "footer": "Viser de {{count}} seneste logposter",
+      "footerAutoRefresh": "Viser de {{count}} seneste logposter (opdateres automatisk)"
+    }
+  },
+  "servers": {
+    "allocation": {
+      "title": "Venter på en ledig server",
+      "waiting": "Kampen starter automatisk, så snart servere er ledige. Servere, der skal bruges:",
+      "nextPass": "Næste tildelingsforsøg om {{seconds}} s"
+    }
+  },
+  "adminMatchControls": {
+    "title": "Adminkontroller",
+    "noServer": "Ingen server er tildelt kampen",
+    "unavailable": "Ingen server er tildelt kampen, så adminkontrollerne er ikke tilgængelige.",
+    "unknownAction": "Ukendt handling",
+    "commandFailed": "Kommandoen kunne ikke udføres",
+    "confirm": "Bekræft",
+    "execute": "Udfør",
+    "close": "Luk",
+    "tipLabel": "Admintip:",
+    "tip": "Brug kontrollerne med omtanke under livekampe. Nogle handlinger, som »{{endMatch}}« og »{{restartMatch}}«, kan ikke fortrydes.",
+    "sections": {
+      "matchControl": "Kampkontrol",
+      "advanced": "Avancerede handlinger"
+    },
+    "actions": {
+      "pause": {
+        "button": "Pause",
+        "tooltip": "Adminpause – spillerne kan ikke ophæve den",
+        "title": "Sæt kampen på pause",
+        "description": "Tvinger kampen på pause. Spillerne kan ikke ophæve den."
+      },
+      "unpause": {
+        "button": "Ophæv pause",
+        "tooltip": "Genoptag kampen efter en pause",
+        "title": "Ophæv kamppause",
+        "description": "Tvinger kampen til at fortsætte."
+      },
+      "swap": {
+        "button": "Byt sider",
+        "tooltip": "Byt holdene til de modsatte sider (CT ↔ T)",
+        "title": "Byt sider",
+        "description": "Bytter holdenes sider (CT/T)."
+      },
+      "restartRound": {
+        "button": "Genstart runden",
+        "tooltip": "Genstart den aktuelle runde fra start (nulstiller økonomien)",
+        "title": "Genstart runden",
+        "description": "Genstarter den aktuelle runde."
+      },
+      "skipVeto": {
+        "button": "Spring veto over",
+        "tooltip": "Spring baneveto over, og indlæs den første bane med det samme",
+        "title": "Spring veto over",
+        "description": "Springer vetofasen over og starter kampen."
+      },
+      "endWarmup": {
+        "button": "Afslut opvarmning",
+        "tooltip": "Afslut opvarmningen, og start kampen (knivrunde eller live)",
+        "title": "Afslut opvarmning",
+        "description": "Afslutter opvarmningen og starter kampen."
+      },
+      "endMatch": {
+        "button": "Afslut kamp",
+        "tooltip": "Afslut kampen med det samme, og registrér slutstillingen",
+        "title": "Afslut kamp",
+        "description": "Tvinger kampen til at slutte. Brug med forsigtighed!"
+      },
+      "restartMatch": {
+        "button": "Genstart kamp",
+        "tooltip": "Afslut og genindlæs kampen fra start – al fremgang går tabt",
+        "title": "Genstart kamp",
+        "description": "Afslutter kampen og genindlæser den fra start. Al fremgang går tabt!"
+      },
+      "reallocateServer": {
+        "button": "Tildel anden server",
+        "tooltip": "Flyt kampen til en anden server (gendannelse før live)",
+        "tooltipUnavailable": "Kun for klare/indlæste kampe (ikke under livespil)",
+        "title": "Tildel anden server",
+        "description": "Flytter kampen til en anden ledig server og genindlæser den. Brug det, hvis den nuværende server er forældet, eller spillerne ikke kan forbinde. Ikke tilladt under en livekamp."
+      },
+      "forceCancel": {
+        "button": "Tving annullering",
+        "tooltip": "Annuller kampen, selv om serveren er offline – frigiver servertildelingen",
+        "title": "Tving annullering af kampen",
+        "description": "⚠️ Annullerer kampen, selv om serveren er offline. Kampen markeres som færdig, og serveren frigives. Det kan ikke fortrydes."
+      }
+    },
+    "inputs": {
+      "restoreBackup": {
+        "button": "Gendan backup",
+        "tooltip": "Indlæs en gemt rundebackup – gendanner økonomi og positioner",
+        "title": "Gendan backup",
+        "label": "Rundenummer, der skal gendannes"
+      },
+      "addTime": {
+        "button": "Tilføj tid",
+        "tooltip": "Forlæng den aktuelle rundetimer (nyttigt ved tekniske pauser)",
+        "title": "Tilføj rundetid",
+        "label": "Sekunder, der skal tilføjes"
+      },
+      "broadcast": {
+        "button": "Besked",
+        "tooltip": "Send en besked til alle spillere på serveren",
+        "title": "Send besked",
+        "label": "Besked, der skal sendes"
+      }
+    },
+    "success": {
+      "pause": "Kampen er sat på pause",
+      "unpause": "Pausen er ophævet",
+      "swap": "Holdene byttede sider",
+      "skipVeto": "Vetofasen sprunget over",
+      "restartRound": "Runden genstartet",
+      "endMatch": "Kampen afsluttet",
+      "endWarmup": "Opvarmningen afsluttet",
+      "startMatch": "Kampen startet",
+      "restoreBackup": "Backup gendannet til runde {{round}}",
+      "addTime_one": "Tilføjede {{count}} sekund til rundetimeren",
+      "addTime_other": "Tilføjede {{count}} sekunder til rundetimeren",
+      "broadcast": "Beskeden er sendt til serveren",
+      "restartMatch": "Kampen genstartet (afsluttet og genindlæst)",
+      "reallocateServer": "Kampen flyttet til en anden server",
+      "forceCancel": "Kampen annulleret",
+      "default": "Kommandoen er udført"
+    },
+    "hold": {
+      "title": "Tilbagehold i stedet for walkover",
+      "description": "Mens kampen er tilbageholdt, bliver den ikke indlæst eller startet, og ingen får walkover. Når den går i gang, får holdene hele tiden igen.",
+      "reason": "Årsag (vises for admins)",
+      "delay": "Udskyd {{minutes}} min",
+      "holdUntilReleased": "Tilbagehold, indtil den frigives",
+      "release": "Frigiv nu",
+      "restartCountdown": "Genstart nedtællingen",
+      "heldUntil": "Tilbageholdt indtil {{time}}",
+      "heldIndefinitely": "Tilbageholdt, indtil den frigives",
+      "tournamentPaused": "Turneringen er sat på pause",
+      "heldDone": "Kampen er tilbageholdt",
+      "delayedDone": "Kampen udskudt {{minutes}} min",
+      "releasedDone": "Kampen frigivet",
+      "restartedDone": "Nedtællingen genstartet: holdene har hele tiden igen",
+      "failed": "Tilbageholdelsen kunne ikke ændres"
+    }
+  },
+  "adminCalls": {
+    "header": "Adminkald ({{count}})",
+    "title": "{{player}} kalder på en admin",
+    "justNow": "lige nu",
+    "minutesAgo": "for {{count}} min siden",
+    "hoursAgo": "for {{count}} t siden",
+    "spectator": "Tilskuer",
+    "team1": "Hold 1",
+    "team2": "Hold 2",
+    "noMessage": "Ingen besked",
+    "unknownPlayer": "Ukendt spiller",
+    "unknownServer": "Ukendt server",
+    "matchMap": "{{match}}, bane {{map}}",
+    "openMatch": "Åbn kamp",
+    "openServers": "Servere",
+    "resolve": "Markér som løst",
+    "resolveAll": "Løs alle",
+    "resolveFailed": "Kaldet kunne ikke markeres som løst. Prøv igen.",
+    "matchUnavailable": "Kampen kunne ikke åbnes.",
+    "enableSound": "Slå lyd til",
+    "mute": "Slå lyd fra",
+    "unmute": "Slå lyd til",
+    "minimize": "Minimér",
+    "show": "Vis",
+    "openChat": "Åbn chat",
+    "claim": "Overtag",
+    "release": "Frigiv",
+    "claimedBy": "Overtaget af {{name}}",
+    "claimedByYou": "Overtaget af dig",
+    "anAdmin": "en admin"
+  }
+}

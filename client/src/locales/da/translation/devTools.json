@@ -1,0 +1,141 @@
+{
+  "devToolsPage": {
+    "alert": "Disse værktøjer findes kun i udviklingstilstand. Brug dem til hurtigt at lave testdata, når du tester appen.",
+    "sections": {
+      "testData": {
+        "title": "Opret testdata"
+      }
+    },
+    "testTeams": {
+      "title": "Testhold",
+      "description": "Opret hold med tilfældige spillere for at teste turneringsbrackets og kampe.",
+      "success": "{{count}} testhold oprettet!",
+      "errors": {
+        "create": "Testholdene kunne ikke oprettes",
+        "partial": "{{created}} hold oprettet, men {{failed}} fejlede. Se konsollen for detaljer."
+      },
+      "customLabel": "Eget antal hold",
+      "buttons": {
+        "createFixed": "Opret {{count}} hold",
+        "createCustom": "Opret hold"
+      }
+    },
+    "testPlayers": {
+      "title": "Testspillere",
+      "description": "Opret spillere med ELO-rating for at teste shuffle-turneringer og spilleradministration.",
+      "success": "{{created}} testspillere oprettet!",
+      "errors": {
+        "create": "Testspillerne kunne ikke oprettes",
+        "partial": "{{created}} spillere oprettet, {{updated}} opdateret, men {{failed}} fejlede. Se konsollen for detaljer."
+      },
+      "customLabel": "Eget antal spillere",
+      "buttons": {
+        "createFixed": "Opret {{count}} spillere",
+        "createCustom": "Opret spillere"
+      },
+      "successWithUpdated": "{{created}} testspillere oprettet og {{updated}} opdateret!"
+    },
+    "testServers": {
+      "title": "Testservere",
+      "description": "Opret testservere at afprøve kampstyringen mod.",
+      "success": "{{count}} testservere oprettet!",
+      "errors": {
+        "create": "Testserverne kunne ikke oprettes",
+        "partial": "{{created}} servere oprettet, men {{failed}} fejlede. Se konsollen for detaljer."
+      },
+      "customLabel": "Eget antal servere",
+      "buttons": {
+        "createCustom": "Opret servere",
+        "createFixed_one": "Opret {{count}} server",
+        "createFixed_other": "Opret {{count}} servere"
+      }
+    },
+    "dangerZone": {
+      "title": "Farezone"
+    },
+    "deleteTestData": {
+      "title": "Slet testdata",
+      "description": "Slet alle testdata (hold og servere med præfikset 'test-'). Det kan ikke fortrydes.",
+      "button": "Slet alle testdata",
+      "confirmPrompt": "Er du sikker på, at du vil slette ALLE testdata?",
+      "success": "Alle testdata er slettet!",
+      "error": "Testdata kunne ikke slettes"
+    },
+    "wipeTable": {
+      "title": "Tøm bestemte tabeller",
+      "description": "Slet alle data fra en bestemt tabel. Godt til oprydning uden at nulstille alt. Tabellerne er ordnet efter kategori.",
+      "confirmPrompt": "Er du sikker på, at du vil tømme tabellen {{table}}? Alle data i tabellen slettes.",
+      "success": "Tabellen {{table}} er tømt!",
+      "error": "Tabellen {{table}} kunne ikke tømmes",
+      "core": {
+        "title": "Kernetabeller",
+        "teams": "Tøm hold",
+        "servers": "Tøm servere",
+        "tournament": "Tøm turnering",
+        "matches": "Tøm kampe"
+      },
+      "players": {
+        "title": "Spillere og shuffle-turneringer",
+        "players": "Tøm spillere",
+        "ratingHistory": "Tøm ratinghistorik",
+        "matchStats": "Tøm kampstatistik",
+        "shufflePlayers": "Tøm shuffle-spillere"
+      },
+      "maps": {
+        "title": "Baner og skabeloner",
+        "maps": "Tøm baner",
+        "mapPools": "Tøm banepuljer",
+        "tournamentTemplates": "Tøm turneringsskabeloner",
+        "eloTemplates": "Tøm ratingskabeloner"
+      },
+      "matchEvents": {
+        "title": "Kamphændelser og resultater",
+        "events": "Tøm kamphændelser",
+        "mapResults": "Tøm baneresultater"
+      },
+      "settings": {
+        "title": "Indstillinger",
+        "appSettings": "Tøm appindstillinger"
+      }
+    },
+    "simulation": {
+      "title": "Simuleringstilstand",
+      "description": "Ryd alle kampe og historisk statistik, så du kan klikke på »Start turnering« i simuleringstilstand på en ren bracket, mens servere, hold, baner og den nuværende turneringsopsætning bevares.",
+      "button": "Nulstil simuleringstilstanden (behold konfiguration)",
+      "reset": {
+        "success": "Simuleringstilstanden er nulstillet. Kampe og statistik ryddet; servere, hold og turneringsopsætning bevaret.",
+        "error": "Simuleringstilstanden kunne ikke nulstilles"
+      }
+    },
+    "wipeDatabase": {
+      "title": "Tøm hele databasen",
+      "warningTitle": "EKSTREMT DESTRUKTIVT!",
+      "warningBody": "Alle data slettes.",
+      "permanentlyDeletes": "Sletter permanent:",
+      "items": {
+        "tournaments": "Alle turneringer og brackets",
+        "matches": "Alle kampe og hændelser",
+        "teams": "Alle hold og spillere",
+        "servers": "Alle serverkonfigurationer"
+      },
+      "button": "Tøm hele databasen",
+      "successRedirect": "Databasen er tømt! Omdirigerer...",
+      "error": "Databasen kunne ikke tømmes",
+      "dialog": {
+        "title": "Bekræft tømning af databasen",
+        "areYouSure": "Er du helt sikker?",
+        "actionWill": "Denne handling vil",
+        "permanentlyDelete": "slette permanent",
+        "items": {
+          "tournaments": "Alle turneringsdata og brackets",
+          "matches": "Al kamphistorik og alle hændelser",
+          "teams": "Alle hold og spillerkonfigurationer",
+          "servers": "Alle serverkonfigurationer"
+        },
+        "cannotUndo": "Det kan ikke fortrydes!",
+        "wiping": "Tømmer databasen...",
+        "yesWipe": "Ja, tøm alt"
+      }
+    }
+  }
+}

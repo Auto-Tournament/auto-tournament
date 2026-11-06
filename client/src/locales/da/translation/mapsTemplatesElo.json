@@ -1,0 +1,201 @@
+{
+  "templatesPage": {
+    "header": {
+      "createFromTournament": "Opret skabelon fra turnering"
+    },
+    "errors": {
+      "load": "Skabelonerne kunne ikke indlæses"
+    },
+    "delete": {
+      "title": "Slet skabelon",
+      "message": "Er du sikker på, at du vil slette skabelonen »{{name}}«? Det kan ikke fortrydes.",
+      "success": "Skabelonen »{{name}}« er slettet",
+      "error": "Skabelonen kunne ikke slettes"
+    },
+    "update": {
+      "success": "Skabelonen »{{name}}« er opdateret",
+      "error": "Skabelonen kunne ikke opdateres"
+    },
+    "createFromTemplate": {
+      "errors": {
+        "inProgressOrCompleted": "Der kan ikke oprettes en turnering fra en skabelon, mens en turnering er i gang eller færdig. Slet eller nulstil den nuværende turnering først.",
+        "alreadyExists": "Der findes allerede en turnering. Slet eller nulstil den nuværende turnering, før du opretter en ny fra en skabelon."
+      },
+      "button": "Opret turnering fra skabelon"
+    },
+    "edit": {
+      "title": "Rediger skabelon",
+      "nameLabel": "Skabelonnavn",
+      "descriptionLabel": "Beskrivelse (valgfri)",
+      "typeLabel": "Turneringstype",
+      "formatLabel": "Kampformat",
+      "mapPool": {
+        "title": "Banepulje",
+        "selectLabel": "Vælg en banepulje",
+        "customOption": "Egen",
+        "selectedLabel": "Valgte baner ({{count}}):",
+        "vetoWarning": "Vetoformater (BO1/BO3/BO5) kræver præcis 7 baner. Valgt nu: {{count}}",
+        "chooseMaps": "Vælg baner..."
+      },
+      "save": "Gem"
+    },
+    "emptyTitle": "Ingen skabeloner endnu",
+    "emptyDescription": "Gem en turnerings opsætning som skabelon fra turneringssiden, og start så nye turneringer fra den her."
+  },
+  "saveTemplateModal": {
+    "title": "Gem som skabelon",
+    "nameLabel": "Skabelonnavn",
+    "namePlaceholder": "8 hold, single elim, BO3",
+    "descriptionLabel": "Ugentlig turnering med 8 hold og udslagning",
+    "descriptionPlaceholder": "Beskrivelse (valgfri)",
+    "saveButton": "Gem skabelon",
+    "errors": {
+      "nameRequired": "Skabelonnavn er påkrævet",
+      "saveFailed": "Skabelonen kunne ikke gemmes"
+    }
+  },
+  "eloTemplatesPage": {
+    "errors": {
+      "load": "Ratingskabelonerne kunne ikke indlæses"
+    },
+    "header": {
+      "createTemplate": "Opret skabelon",
+      "importJson": "Importér fra JSON"
+    },
+    "empty": {
+      "title": "Ingen ratingskabeloner",
+      "description": "Opret din første skabelon for at styre, hvordan spillerstatistik påvirker ELO-justeringer",
+      "action": "Opret skabelon"
+    },
+    "delete": {
+      "title": "Slet ratingskabelon",
+      "message": "Er du sikker på, at du vil slette »{{name}}«? Det kan ikke fortrydes.",
+      "success": "Skabelonen »{{name}}« er slettet",
+      "error": "Skabelonen kunne ikke slettes",
+      "defaultProtected": "Standardskabelonen »pure-win-loss« kan ikke slettes."
+    },
+    "import": {
+      "success_one": "Importerede {{count}} ratingskabelon",
+      "success_other": "Importerede {{count}} ratingskabeloner"
+    },
+    "weights": {
+      "noAdjustmentsPure": "Ingen statistikjusteringer (ren sejr/nederlag)"
+    },
+    "card": {
+      "enabled": "Til",
+      "disabled": "Fra",
+      "default": "Standard",
+      "adjustment": {
+        "none": "Statistikjustering pr. kamp: ingen (0; ELO kun ud fra resultat)",
+        "uncapped": "Statistikjustering pr. kamp: uden loft (brug med forsigtighed)",
+        "range": "Interval for statistikjustering pr. kamp: {{min}} til {{max}} ELO",
+        "noMin": "intet min.",
+        "noMax": "intet maks."
+      },
+      "tooltips": {
+        "edit": "Rediger skabelon",
+        "delete": "Slet skabelon"
+      },
+      "weightsTitle": "Statistikvægte:",
+      "limitsTitle": "Justeringsgrænser:",
+      "minAdjustment": "Min.: {{value}}",
+      "maxAdjustment": "Maks.: {{value}}"
+    },
+    "importModal": {
+      "title": "Importér ratingskabeloner fra JSON",
+      "introTitle": "Indsæt JSON med definitioner af ratingskabeloner nedenfor.",
+      "introBody": "Forventet format: et array af skabeloner med name, valgfri description, enabled, weights, maxAdjustment og minAdjustment. Udelader du id, laves det ud fra navnet.",
+      "jsonLabel": "JSON-data",
+      "validJsonTitle": "✓ Gyldig JSON!",
+      "previewTitle": "Forhåndsvisning:",
+      "previewButton": "Forhåndsvis",
+      "importButton": "Importér skabeloner",
+      "validJsonBody_one": "Fandt {{count}} skabelon.",
+      "validJsonBody_other": "Fandt {{count}} skabeloner."
+    },
+    "editor": {
+      "titleEdit": "Rediger ratingskabelon",
+      "titleCreate": "Opret ratingskabelon",
+      "info": "Indstil, hvordan den enkelte spillers statistik påvirker ELO-justeringer. Vægtene anvendes, efter at OpenSkill har beregnet den grundlæggende ELO-ændring (sejr/nederlag). Positive vægte hæver ELO, negative sænker den.",
+      "nameLabel": "Skabelonnavn",
+      "nameDefaultLocked": "Standardskabelonens navn kan ikke ændres",
+      "descriptionLabel": "Beskrivelse",
+      "descriptionPlaceholder": "Valgfri beskrivelse af skabelonens formål",
+      "enabledLabel": "Til",
+      "weights": {
+        "title": "Statistikvægte",
+        "subtitle": "Juster skyderen for hver statistik. Værdien 0 betyder ingen justering for den statistik."
+      },
+      "limits": {
+        "title": "Justeringsgrænser (valgfrit)",
+        "subtitle": "Angiv største og mindste ELO-justering pr. kamp for at undgå ekstreme ændringer.",
+        "maxLabel": "Maks. justering",
+        "maxHelper": "Største positive ELO-justering pr. kamp",
+        "minLabel": "Min. justering",
+        "minHelper": "Største negative ELO-justering pr. kamp"
+      },
+      "errors": {
+        "nameRequired": "Skabelonnavn er påkrævet"
+      },
+      "create": {
+        "success": "Skabelonen »{{name}}« er oprettet",
+        "error": "Skabelonen kunne ikke oprettes"
+      },
+      "update": {
+        "success": "Skabelonen »{{name}}« er opdateret",
+        "error": "Skabelonen kunne ikke opdateres"
+      },
+      "buttons": {
+        "saving": "Gemmer...",
+        "update": "Opdater",
+        "create": "Opret"
+      }
+    },
+    "stats": {
+      "kills": {
+        "label": "Kills",
+        "description": "Antal kills pr. kamp"
+      },
+      "deaths": {
+        "label": "Deaths",
+        "description": "Antal deaths pr. kamp (typisk negativ vægt)"
+      },
+      "assists": {
+        "label": "Assists",
+        "description": "Antal assists pr. kamp"
+      },
+      "flashAssists": {
+        "label": "Flash-assists",
+        "description": "Antal flash-assists pr. kamp"
+      },
+      "headshotKills": {
+        "label": "Headshot-kills",
+        "description": "Antal headshot-kills pr. kamp"
+      },
+      "damage": {
+        "label": "Skade",
+        "description": "Samlet skade pr. kamp"
+      },
+      "utilityDamage": {
+        "label": "Utility-skade",
+        "description": "Skade med utility (granater)"
+      },
+      "kast": {
+        "label": "KAST %",
+        "description": "Andel af runder med kill, assist, overlevelse eller trade"
+      },
+      "mvps": {
+        "label": "MVP",
+        "description": "Antal MVP-udmærkelser pr. kamp"
+      },
+      "score": {
+        "label": "Score",
+        "description": "Kampscore (kombinerer flere faktorer)"
+      },
+      "adr": {
+        "label": "ADR",
+        "description": "Gennemsnitlig skade pr. runde"
+      }
+    }
+  }
+}

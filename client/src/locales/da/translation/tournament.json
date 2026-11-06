@@ -1,0 +1,1810 @@
+{
+  "tournament": {
+    "startConfirm": {
+      "intro": "Klar til at starte turneringen?",
+      "thisWill": "Det sker der:",
+      "openMatches": "Første rundes kampe åbnes for spil",
+      "statusInProgress": "Turneringens status ændres til I GANG",
+      "confirm": "Ja, start turneringen",
+      "started": "Turneringen er startet! Første rundes kampe er åbne."
+    },
+    "steps": {
+      "create": "Opret turnering",
+      "review": "Gennemse og bekræft",
+      "live": "Liveturnering"
+    },
+    "welcome": {
+      "heading": "Opret turnering",
+      "chooseMethod": "Vælg, hvordan du vil oprette din turnering",
+      "createNewTitle": "Opret ny turnering",
+      "createNewDescription": "Start fra bunden, og indstil alle turneringsindstillinger manuelt"
+    },
+    "typeSelector": {
+      "categories": {
+        "professional": {
+          "label": "Professionelle serier"
+        },
+        "party": {
+          "label": "Fest og sjov"
+        }
+      },
+      "types": {
+        "single_elimination": {
+          "label": "Single elimination",
+          "description": "Ét nederlag, og du er ude. Klassisk bracketformat fra professionelle turneringer."
+        },
+        "double_elimination": {
+          "label": "Double elimination",
+          "description": "To nederlag for at ryge ud. Holdene får en ekstra chance i den nederste bracket."
+        },
+        "round_robin": {
+          "label": "Alle mod alle",
+          "description": "Alle møder alle. Perfekt til ligaformat."
+        },
+        "swiss": {
+          "label": "Schweizersystem",
+          "description": "Hold med lignende resultater mødes. Jævne kampe gennem hele turneringen."
+        },
+        "shuffle": {
+          "label": "Shuffle-turnering",
+          "description": "Spillerne blandes til jævne hold hver runde. Individuel konkurrence med holdbalancering efter ELO."
+        },
+        "groups": {
+          "label": "Grupper, derefter slutspil",
+          "description": "Alle mod alle i grupper; de bedste fra hver gruppe spiller udslagning."
+        }
+      },
+      "selectedChip": "Valgt"
+    },
+    "review": {
+      "summary": {
+        "info": "Gennemse turneringsindstillingerne, og klik på »{{button}}«, når du er klar.",
+        "nameLabel": "Turneringsnavn",
+        "typeLabel": "Turneringstype",
+        "formatLabel": "Kampformat",
+        "notSet": "Ikke angivet",
+        "estimatedVolumeText": "Cirka {{matches}} over {{rounds}} (bedst af {{mapsPerMatch}}, op til {{maps}} i alt)."
+      }
+    },
+    "formSteps": {
+      "steps": {
+        "name": "Navn",
+        "type": "Type",
+        "format": "Format",
+        "maps": "Baner",
+        "teams": "Hold",
+        "review": "Gennemse"
+      },
+      "backToWelcome": "Tilbage til start",
+      "back": "Tilbage",
+      "next": "Næste"
+    },
+    "emptyBracket": {
+      "title": "Ingen bracket at vise",
+      "description": "Opret en turnering, og generér bracketen for at komme i gang"
+    },
+    "common": {
+      "createTournament": "Opret turnering"
+    },
+    "nameLabel": "Turneringsnavn",
+    "namePlaceholder": "Auto Tournament 2025 forårsturnering",
+    "champion": {
+      "title": "Mester"
+    },
+    "page": {
+      "title": "Turneringsopsætning"
+    },
+    "labels": {
+      "teams": "Hold",
+      "maps": "Baner",
+      "format": "Format",
+      "players": "Spillere",
+      "matchRules": "Kampregler",
+      "servers": "Servere",
+      "overtimeSettings": "Overtidsindstillinger",
+      "mapPool": "Banepulje"
+    },
+    "tooltips": {
+      "deleteTournament": "Slet turneringen og alle dens data permanent"
+    },
+    "counts": {
+      "teams_one": "{{count}} hold",
+      "teams_other": "{{count}} hold",
+      "matches_one": "{{count}} kamp",
+      "matches_other": "{{count}} kampe",
+      "rounds_one": "{{count}} runde",
+      "rounds_other": "{{count}} runder",
+      "maps_one": "{{count}} bane",
+      "maps_other": "{{count}} baner",
+      "servers_one": "{{count}} server",
+      "servers_other": "{{count}} servere",
+      "availableServers_one": "{{count}} tilgængelig server",
+      "availableServers_other": "{{count}} tilgængelige servere",
+      "concurrentMatches_one": "{{count}} samtidig kamp",
+      "concurrentMatches_other": "{{count}} samtidige kampe",
+      "enabledServers_one": "{{count}} aktiveret server",
+      "enabledServers_other": "{{count}} aktiverede servere"
+    },
+    "matchRules": {
+      "value": "Maks. {{maxRounds}} runder pr. bane; vinderen er den, der først når {{winRounds}} runder.",
+      "teamSizeValue": "Holdstørrelse: {{size}}v{{size}}",
+      "overtimeEnabled": "Overtid: til",
+      "overtimeDisabled": "Overtid: fra (ingen overtid)",
+      "overtimeDisabledNoDraws": "Overtid: fra (ingen uafgjorte – skade afgør)",
+      "overtimeSegments_one": "Overtidsperioder: {{count}} periode",
+      "overtimeSegments_other": "Overtidsperioder: {{count}} perioder",
+      "overtimeSegmentsDefault": "Overtidsperioder: spilserverens standard",
+      "overtimeSegmentsDefaultUnlimited": "Overtidsperioder: spilserverens standard (som regel ubegrænset)"
+    },
+    "toasts": {
+      "loadTemplateFailed": "Skabelonen kunne ikke indlæses",
+      "nameRequired": "Turneringsnavn er påkrævet",
+      "nameUpdated": "Turneringsnavnet er opdateret",
+      "nameUpdateFailed": "Turneringsnavnet kunne ikke opdateres",
+      "selectAtLeastOneMap": "Vælg mindst 1 bane",
+      "maxRoundsRange": "Maks. runder skal være mellem 1 og 30",
+      "teamSizeRange": "Holdstørrelsen skal være mellem 2 og 10 spillere",
+      "invalidTeamCount": "Ugyldigt antal hold",
+      "selectAtLeastTwoTeams": "Vælg mindst 2 hold",
+      "shuffleCreated": "Shuffle-turneringen »{{name}}« er oprettet! Næste skridt: registrér mindst {{minPlayers}} spillere for at starte turneringen ({{teamSize}}v{{teamSize}}-kampe).",
+      "shuffleCreateFailed": "Shuffle-turneringen kunne ikke oprettes",
+      "shuffleCreateFailedRetry": "Shuffle-turneringen kunne ikke oprettes. Tjek indstillingerne, og prøv igen.",
+      "updated": "Turneringen er opdateret, og bracketen er genereret igen!",
+      "created": "Turneringen er oprettet!",
+      "saveFailed": "Turneringen kunne ikke gemmes",
+      "deleted": "Turneringen er slettet",
+      "deleteFailed": "Turneringen kunne ikke slettes",
+      "regenerated": "Bracketen er genereret igen",
+      "regenerateFailed": "Bracketen kunne ikke genereres igen",
+      "resetDone": "Turneringen er nulstillet til opsætning",
+      "resetFailed": "Turneringen kunne ikke nulstilles",
+      "started_one": "Turneringen er startet! {{count}} kamp tildelt servere.",
+      "started_other": "Turneringen er startet! {{count}} kampe tildelt servere.",
+      "startRequested": "Start af turneringen anmodet. Servere tildeles om lidt.",
+      "startFailed": "Turneringen kunne ikke startes",
+      "templateSaved": "Skabelonen er gemt!",
+      "disableServersFailed": "En eller flere servere kunne ikke slås fra: {{message}}",
+      "noChangesToSave": "Ingen ændringer at gemme",
+      "invalidMapSelection": "Ugyldigt banevalg",
+      "archived": "Turneringen er arkiveret. Opret den næste.",
+      "archiveFailed": "Turneringen kunne ikke arkiveres"
+    },
+    "outdatedServers": {
+      "title": "Servere skal opdateres",
+      "body": "En eller flere aktiverede servere er forældede (eller kunne ikke bekræftes) ifølge Steam. Opdater dem, eller slå dem fra for at fortsætte med resten.",
+      "confirm": "Slå berørte servere fra, og prøv igen",
+      "disabling": "Slår fra...",
+      "goToServers": "Gå til Servere"
+    },
+    "live": {
+      "saveNameAria": "Gem turneringsnavn",
+      "cancelRenameAria": "Annuller omdøbning",
+      "editNameAria": "Rediger turneringsnavn",
+      "renameTooltip": "Omdøb turneringen",
+      "alert": {
+        "liveTitle": "Turneringen er live",
+        "liveBody": "Der kører kampe på serverne lige nu. Du kan ikke ændre turneringsindstillinger, mens den er live (undtagen navnet).",
+        "pendingTitle": "Turneringen er i gang",
+        "pendingBody": "Kampene starter, så snart servere er tildelt og vetoerne er færdige. Du kan ikke ændre turneringsindstillinger, mens turneringen kører (undtagen navnet).",
+        "completedTitle": "Turneringen er færdig",
+        "completedBody": "Alle kampe i turneringen er færdige. Opret en ny turnering, eller nulstil denne for at starte forfra."
+      },
+      "teamsCompeting_one": "{{count}} hold deltager",
+      "teamsCompeting_other": "{{count}} hold deltager",
+      "playersCompeting_one": "{{count}} spiller deltager",
+      "playersCompeting_other": "{{count}} spillere deltager",
+      "playersCompetingUnknown": "Deltagende spillere",
+      "shuffleSettingsLabel": "Shuffle-indstillinger",
+      "maxRoundsPerMapValue": "Maks. runder pr. bane: {{rounds}}",
+      "eloTemplateValue": "ELO-skabelon: {{template}}",
+      "mapSequenceLabel": "Banerækkefølge (runder)",
+      "noMapsConfigured": "Ingen baner sat op endnu.",
+      "viewBracket": "Vis bracket",
+      "viewBracketTooltip": "Vis turneringens bracket og kampdetaljer",
+      "leaderboardTooltip": "Åbn den offentlige rangliste, og del den med spillerne",
+      "restartTooltip": "Afslut alle aktive kampe på serverne, og genindlæs dem (nyttigt ved kampe, der sidder fast)",
+      "resetTooltip": "Afslut alle kampe, og nulstil turneringen til opsætning (beholder indstillingerne, men rydder alle kampdata)",
+      "reset": "Nulstil til opsætning",
+      "dangerZone": "Farezone",
+      "newTournament": "Ny turnering"
+    },
+    "reviewCard": {
+      "needPlayersWarning": "Der skal mindst {{minPlayers}} spillere til at starte turneringen ({{teamSize}}v{{teamSize}}-kampe). Registreret nu: {{registered}}",
+      "start": "Start turnering",
+      "starting": "Starter...",
+      "startSimulation": "Start simulering",
+      "startingSimulation": "Starter simulering...",
+      "bulkCreateMatches": "Opret flere kampe",
+      "edit": "Rediger",
+      "regenerate": "Generér igen",
+      "regenerateTooltip": "Slet alle nuværende kampe, og generér bracketen igen med de samme indstillinger.",
+      "regenerateDisabledTooltip": "Generér bracketen mindst én gang (Gem og generér brackets), før du kan generere den igen."
+    },
+    "dialogs": {
+      "items": {
+        "endMatches": "Afslut alle aktive kampe på serverne",
+        "deleteMatches": "Slet alle kampe og brackets",
+        "deleteData": "Slet alle kampdata og statistik"
+      },
+      "delete": {
+        "title": "🗑️ Slet turnering",
+        "question": "Er du sikker på, at du vil SLETTE <b>»{{name}}«</b> permanent?",
+        "willTitle": "⚠️ Det sker der:",
+        "items": {
+          "removeTournament": "Turneringen fjernes helt",
+          "cannotBeUndone": "Det kan ikke fortrydes"
+        },
+        "note": "💡 Bemærk: Hvis du bare vil starte forfra med de samme turneringsindstillinger, så brug »Nulstil til opsætning« i stedet.",
+        "confirm": "Slet permanent"
+      },
+      "regenerate": {
+        "title": "🔄 Generér brackets igen",
+        "liveWarning": "⚠️ ADVARSEL: Turneringen er {{status}}!",
+        "liveBody": "At generere bracketen igen <b>SLETTER ALLE</b> eksisterende kampdata, herunder stillinger, statistik og hændelseshistorik.",
+        "cannotBeUndone": "Det kan ikke fortrydes.",
+        "areYouSure": "Er du helt sikker på, at du vil fortsætte?",
+        "setupBody": "Alle eksisterende kampe slettes, og bracketen genereres igen med de samme indstillinger.",
+        "continue": "Fortsæt?",
+        "confirmDestructive": "JA, SLET ALT",
+        "confirm": "Generér igen"
+      },
+      "reset": {
+        "title": "🔄 Nulstil til opsætning",
+        "question": "Nulstil <b>»{{name}}«</b> til OPSÆTNING?",
+        "willTitle": "Det sker der:",
+        "items": {
+          "clearStatus": "Turneringens status ryddes (tilbage til opsætning)",
+          "keepSettings": "Turneringsindstillingerne <b>bevares</b> (navn, hold, format)",
+          "allowEdit": "Du kan redigere indstillingerne igen",
+          "regenerateMatches": "Alle kampresultater ryddes, og bracketen genereres fra bunden"
+        },
+        "regenerated": "Nye brackets oprettes med det samme, så ventende kampe vises igen med det samme.",
+        "note": "💡 Bemærk: For at fjerne turneringen helt skal du bruge »Slet« i stedet.",
+        "confirm": "Nulstil til opsætning"
+      },
+      "start": {
+        "titleNoServers": "⚠️ Ingen servere tilgængelige",
+        "titleInsufficient": "⚠️ For få servere",
+        "titleUncertain": "⚠️ Start turneringen uden servere?",
+        "noServersHeading": "Ingen servere er tilgængelige lige nu",
+        "noServersBody": "Turneringen starter, men kampene udskydes, indtil en server bliver ledig. Systemet tildeler kampe automatisk, når servere er klar.",
+        "insufficientHeading": "For få servere til at køre alle første rundes kampe samtidig",
+        "insufficientBody": "Du har lige nu <b>{{available}}</b>, men første runde kræver <b>{{required}}</b>. Nogle kampe sættes i kø og starter senere, når servere bliver ledige.",
+        "uncertainHeading": "Servertilgængeligheden er usikker",
+        "uncertainBody": "Turneringen kan starte med få eller ingen servere. Kampene udskydes, indtil servere er tilgængelige, og tildeles automatisk, når de er klar.",
+        "question": "Vil du starte turneringen alligevel?",
+        "confirm": "Ja, start alligevel",
+        "cancel": "Tjek servere"
+      }
+    },
+    "formActions": {
+      "saveAndGenerate": "Gem og generér brackets",
+      "saveAsTemplate": "Gem som skabelon",
+      "saveTemplateTooltip": "Gem den nuværende turneringskonfiguration som skabelon"
+    },
+    "wizard": {
+      "validation": {
+        "selectType": "Vælg en turneringstype",
+        "selectFormat": "Vælg et kampformat"
+      },
+      "shuffleInfo": "Shuffle-turneringer bruger ikke faste hold. Spillerne balanceres automatisk i hold til hver kamp efter deres Skill Rating.",
+      "shuffleRounds": "Denne shuffle-turnering får cirka {{rounds}} (én pr. valgt bane).",
+      "volumeAlert": "Med {{teams}} i en {{type}}-turnering ({{format}}) får bracketen cirka {{matches}} over {{rounds}} (op til {{maps}} i alt).",
+      "maxRoundsLabel": "Maks. runder pr. bane",
+      "maxRoundsHelper": "Hver bane spilles op til {{maxRounds}} runder; vinderen er den, der først når {{winRounds}} runder.",
+      "maxRoundsHelperEmpty": "Højeste antal runder pr. bane (standard: 24, maks.: 30).",
+      "serversSummary": "{{servers}} sat op; første runde har {{matches}}.",
+      "estimatedVolumeLabel": "Anslået omfang",
+      "mapsHeading": "Baner ({{total}})",
+      "noMapsSelected": "Ingen baner valgt",
+      "matchConfiguration": "Kampkonfiguration",
+      "roundLimitValue_one": "Rundegrænse: maks. {{count}} runde",
+      "roundLimitValue_other": "Rundegrænse: maks. {{count}} runder",
+      "teamsHeading": "Hold ({{total}})",
+      "noTeamsSelected": "Ingen hold valgt (valgfrit)",
+      "playerRegistration": "Spillerregistrering",
+      "playerRegistrationInfo_one": "Spillerne registreres, efter at turneringen er oprettet. Hver valgt bane svarer til én runde kampe ({{count}} runde i alt).",
+      "playerRegistrationInfo_other": "Spillerne registreres, efter at turneringen er oprettet. Hver valgt bane svarer til én runde kampe ({{count}} runder i alt).",
+      "serversSummaryQueued": "{{servers}} sat op; første runde har {{matches}}. Kampe ud over antallet af servere venter i køen, indtil en server er ledig."
+    },
+    "overtime": {
+      "selectLabel": "Overtid",
+      "options": {
+        "enabled": "Til (almindelig overtid)",
+        "disabledDraws": "Fra – uafgjort tilladt",
+        "disabledNoDraws": "Fra – ingen uafgjorte (skade afgør)"
+      },
+      "modeHelper": "Almindelig overtid spiller ekstra perioder, indtil et hold fører. »Uafgjort tilladt« afslutter en lige bane uafgjort, mens »ingen uafgjorte« afgør den på holdets samlede skade.",
+      "tooltip": "Styr overtiden, og hvordan lige stilling ved maks. runder håndteres. Indstillingerne sendes til spilserverne som overtimeMode/overtimeSegments og virker som i shuffle-turneringer og manuelle kampe.",
+      "shuffleTooltip": "Styr overtiden for shuffle-kampe, og hvordan lige stilling afgøres ved maks. runder. Når overtid er slået fra, kan lige kampe enten ende uafgjort eller afgøres på holdets samlede skade, afhængigt af hvilken mulighed du vælger.",
+      "segmentsLabel": "Overtidsperioder (valgfrit)",
+      "segmentsHelper": "Valgfrit: begræns antallet af overtidsperioder. Lad feltet være tomt for spilserverens standard.",
+      "segmentsHelperValue_one": "Begræns overtiden til {{count}} periode. Lige stilling efter overtid afgøres af holdets samlede skade.",
+      "segmentsHelperValue_other": "Begræns overtiden til {{count}} perioder. Lige stilling efter overtid afgøres af holdets samlede skade."
+    },
+    "grandFinal": {
+      "sectionTitle": "Den store finales tilstand (double elimination)",
+      "label": "Den store finale",
+      "options": {
+        "simple": "Enkel – én stor finale mellem vinderne af øvre og nedre bracket",
+        "none": "Ingen – finalen i den øvre bracket afgør turneringen (ingen stor finale)",
+        "double": "Dobbelt – med bracket-reset (virker lige nu som Enkel; fuld reset er planlagt)"
+      },
+      "helper": "Styrer, hvordan vinderne af øvre og nedre bracket mødes i slutningen af turneringen."
+    },
+    "mapPool": {
+      "shuffleTitle": "Banevalg til shuffle-turneringer",
+      "shuffleBody": "Alle valgte baner spilles i rækkefølge. Hver bane svarer til én runde kampe. Antallet af baner, du vælger, afgør, hvor mange runder der spilles.",
+      "shuffleSelected": "Du har valgt {{maps}}, så der spilles {{rounds}}.",
+      "chooseLabel": "Vælg en banepulje",
+      "custom": "Egen",
+      "selectedMaps": "Valgte baner ({{total}}):",
+      "chooseMapsPlaceholder": "Vælg baner...",
+      "saveMapPool": "Gem banepulje",
+      "types": {
+        "defusal": "Desarmering",
+        "hostage": "Gidsel",
+        "armsRace": "Arms Race",
+        "unknown": "Ukendt"
+      }
+    },
+    "formatStep": {
+      "shuffleInfo": "Shuffle-turneringer bruger formatet bedst af 1. Hver kamp er én bane."
+    },
+    "shuffleConfig": {
+      "overline": "Konfiguration af shuffle-turnering",
+      "subtitle": "Kampregler og indstillinger",
+      "teamSizeLabel": "Holdstørrelse",
+      "teamSizeTooltip": "Antal spillere pr. hold. Almindelige valg: 4v4, 5v5, 6v6. Mindst 2, højst 10 spillere pr. hold.",
+      "teamSizeHelper": "Antal spillere pr. hold (standard: 5 for 5v5, interval: 2–10)",
+      "maxRoundsLabel": "Maks. runder",
+      "maxRoundsTooltip": "Højeste antal runder pr. kamp. Værdien sendes til CS2-serverne som mp_maxrounds. Eksempel: 6 = MR6, 24 = MR24.",
+      "maxRoundsHelper": "Kampen spilles op til {{maxRounds}} runder; vinderen er den, der først når {{winRounds}} runder",
+      "maxRoundsHelperEmpty": "Højeste antal runder pr. kamp (standard: 24, maks.: 30)",
+      "eloTemplateLabel": "Ratingskabelon",
+      "eloTemplateTooltip": "Vælg, hvordan ELO beregnes for denne turnering. Som standard bruger skabelonen »Pure Win/Loss« kun kampresultatet (sejr/nederlag); statistik registreres, men ændrer ikke ELO. Andre skabeloner er valgfrie og lægger statistikbaserede justeringer oven på OpenSkills sejr/nederlag-ændring, hvis du vil have Excel-lignende opførsel.",
+      "eloDefaultSuffix": "(standard)",
+      "eloTemplateHelper": "Pure Win/Loss (standard): kun kampresultatet påvirker ELO. Spillerstatistik registreres stadig til ranglister og eksport, men ændrer ikke ratingen, medmindre du vælger en egen skabelon."
+    },
+    "shuffleStats": {
+      "serverShortageWarning": "Du har {{available}} af {{needed}} servere. Kampene kører i bølger, så runderne tager længere tid."
+    },
+    "changePreview": {
+      "title": "Gennemse ændringer i turneringen",
+      "liveHeading": "Turneringen er LIVE!",
+      "liveBody": "Ændring af turneringstype, format eller antal hold kan kræve, at bracketen genereres igen. Overvej »Nulstil turnering« for at starte forfra.",
+      "noChangesDetected": "Ingen ændringer fundet",
+      "intro": "Følgende ændringer anvendes:",
+      "before": "FØR",
+      "after": "EFTER",
+      "apply": "Anvend ændringer",
+      "applyRisky": "Anvend ændringer (risikabelt!)",
+      "noChangesToApply": "Ingen ændringer at anvende",
+      "none": "Ingen",
+      "itemCount_one": "{{count}} element",
+      "itemCount_other": "{{count}} elementer"
+    },
+    "teamSelection": {
+      "chooseTeamsPlaceholder": "Vælg hold…",
+      "addAll": "Tilføj alle",
+      "batchAddServers": "Tilføj flere",
+      "addServer": "Tilføj server",
+      "importTeams": "Importér hold",
+      "createTeam": "Opret hold",
+      "notEnoughServers": "Første runde har {{matches}}, men du har {{servers}}. Kampe ud over antallet af servere venter i køen, indtil en server er ledig – tilføj flere servere for at køre dem alle på én gang.",
+      "notEnoughTeams": "Du skal have mindst 2 hold for at oprette en turnering. Du har lige nu {{teams}}."
+    },
+    "teamValidation": {
+      "invalidType": "Ugyldig turneringstype",
+      "powerOfTwo": "{{type}} kræver et antal hold, der er en potens af 2 ({{counts}}). Du valgte {{selected}}.",
+      "minTeams": "{{type}} kræver mindst {{min}} hold. Du valgte {{selected}}.",
+      "maxTeams": "{{type}} tillader højst {{max}} hold. Du valgte {{selected}}."
+    },
+    "eventPage": {
+      "title": "Eventside",
+      "subtitle": "Vises for spillere og besøgende på den offentlige oversigtsside.",
+      "descriptionLabel": "Beskrivelse",
+      "locationLabel": "Sted",
+      "locationPlaceholder": "f.eks. På stedet, Aarhus",
+      "rulebookUrlLabel": "URL til det fulde regelsæt",
+      "rulebookUrlHelper": "Skal være et https-link, eller lad feltet være tomt.",
+      "rulesLabel": "Regler for spillere",
+      "ruleFieldLabel": "Regel {{n}}",
+      "addRule": "Tilføj regel",
+      "prizesLabel": "Præmier",
+      "placeLabel": "Placering",
+      "prizeLabel": "Præmie",
+      "addPrize": "Tilføj præmie",
+      "scheduleLabel": "Program",
+      "whenLabel": "Hvornår",
+      "scheduleLabelLabel": "Etiket",
+      "addScheduleItem": "Tilføj programpunkt",
+      "remove": "Fjern",
+      "moveUp": "Flyt op",
+      "moveDown": "Flyt ned",
+      "save": "Gem eventsiden",
+      "saveSuccess": "Eventsiden er gemt.",
+      "saveError": "Eventsiden kunne ikke gemmes: {{message}}",
+      "organizerLabel": "Arrangør",
+      "organizerPlaceholder": "f.eks. Edition 35 LAN",
+      "bannerLabel": "Banner",
+      "bannerUpload": "Upload et banner",
+      "bannerReplace": "Erstat",
+      "bannerRemove": "Fjern",
+      "bannerHelp": "Et bredt billede øverst på turneringssiden. PNG, JPEG eller WEBP, op til 2 MB; 1920 × 600 fungerer godt.",
+      "bannerWrongType": "Banneret skal være et PNG-, JPEG- eller WEBP-billede.",
+      "bannerTooLarge": "Banneret må højst være 2 MB.",
+      "signupHeading": "Tilmelding og tjek-ind",
+      "signupOpen": "Hold kan tilmelde sig selv",
+      "signupClosesAt": "Tilmeldingen lukker",
+      "maxTeams": "Holdpladser",
+      "checkInOpensAt": "Tjek-ind åbner",
+      "checkInClosesAt": "Tjek-ind lukker",
+      "signupHelp": "Et holds ejer eller holdkaptajn tilmelder holdet med en holdopstilling. Spillerne i opstillingen tjekker ind på dagen.",
+      "startLabel": "Starttidspunkt",
+      "startsAtLabel": "Starter",
+      "startsAtHelp": "Din lokale tid. Siden tæller ned til den.",
+      "autoStartLabel": "Start turneringen automatisk på dette tidspunkt",
+      "remindersLabel": "Påmind spillerne før start",
+      "reminderMinutes_one": "{{count}} minut før",
+      "reminderMinutes_other": "{{count}} minutter før",
+      "bannerMapLabel": "Intet banner? Brug et banebillede",
+      "bannerMapNone": "Vælg for mig",
+      "rulesHelp": "Vises under fanen Regler på turneringssiden, under de regler, platformen skriver ud fra dine indstillinger.",
+      "fromTemplate": "Fra {{name}}",
+      "clearAll": "Ryd alle",
+      "rulebookFromTemplate": "Fra skabelonen {{name}}. Et https-link, eller lad feltet være tomt."
+    },
+    "setup": {
+      "steps": {
+        "game": "Spil",
+        "basics": "Navn og dag",
+        "format": "Format",
+        "teams": "Hold",
+        "schedule": "Program",
+        "maps": "Baner og veto",
+        "extras": "Kampindstillinger",
+        "review": "Gennemse"
+      },
+      "stepsLabel": "Trin i opsætningen",
+      "backToManage": "Administrer",
+      "stepDone": "færdig",
+      "newTournament": "Ny turnering",
+      "editing": "Turneringsopsætning",
+      "draftSaved": "kladde gemt i denne fane",
+      "discardDraft": "Start forfra",
+      "startFromTemplate": "Start fra en skabelon",
+      "continueTo": "Fortsæt til {{step}}",
+      "questions": {
+        "game": {
+          "title": "Hvilket spil?",
+          "lede": "Spillet afgør, hvordan kampene køres, og hvilke indstillinger du får."
+        },
+        "basics": {
+          "title": "Hvad hedder den, og hvilken dag?",
+          "lede": "Vælg dagen. Tidspunktet, hvor hver runde starter, sættes under Program."
+        },
+        "format": {
+          "title": "Hvordan spilles den?",
+          "lede": "Vælg bracket, og hvor lang hver serie er. Du kan ændre det, indtil turneringen starter."
+        },
+        "teams": {
+          "title": "Hvem spiller?",
+          "lede": "Vælg holdene i bracketen. Du kan også oprette eller importere hold her.",
+          "ledeShuffle": "Shuffle har individuel tilmelding: spillerne registrerer sig, og der trækkes nye hold hver runde."
+        },
+        "maps": {
+          "title": "Hvilke baner?",
+          "lede": "Vælg banepuljen. Serierne vælger deres baner fra den via veto.",
+          "ledeShuffle": "Vælg banerne i den rækkefølge, de spilles. Hver bane er én runde."
+        },
+        "eventPage": {
+          "title": "Hvad skal der stå på eventsiden?",
+          "lede": "Valgfrit. Vises for spillere og besøgende på den offentlige oversigtsside."
+        },
+        "review": {
+          "title": "Klar til at gå i gang?",
+          "lede": "Tjek detaljerne, og opret så turneringen.",
+          "ledeExisting": "Tjek detaljerne, og start så turneringen, når alle er klar."
+        },
+        "schedule": {
+          "title": "Hvornår er kampene?",
+          "lede": "Første rundes tidspunkt er, når turneringen starter. Tjek-ind og påmindelser tælles tilbage fra det."
+        },
+        "extras": {
+          "title": "Kampindstillinger",
+          "lede": "Start fra en forudindstilling, og ret så det, du har brug for. Orange indstillinger afviger fra sidens standard."
+        }
+      },
+      "game": {
+        "label": "Spil",
+        "loading": "Indlæser de spil, denne instans kan køre.",
+        "lockedHelp": "Spillet ligger fast, når turneringen findes. Slet den, og start forfra for at køre et andet.",
+        "integrationTitles": {
+          "cs2": "Kører på dine servere",
+          "manual-report": "Holdene rapporterer resultatet"
+        },
+        "integrationDescriptions": {
+          "cs2": "Kampene kører på dine egne CS2-servere med Ready Up.",
+          "manual-report": "Ingen servere. Holdene spiller kampen selv, og en holdkaptajn rapporterer resultatet."
+        }
+      },
+      "basics": {
+        "ratingLabel": "Rating",
+        "ratingHelp": "Hvordan spillernes rating ændrer sig efter hver kamp i turneringen."
+      },
+      "format": {
+        "label": "Format",
+        "names": {
+          "single_elimination": "Single elimination",
+          "double_elimination": "Double elimination",
+          "swiss": "Schweizersystem",
+          "round_robin": "Alle mod alle",
+          "shuffle": "Shuffle",
+          "groups": "Grupper, derefter slutspil"
+        },
+        "types": {
+          "single_elimination": "Ét nederlag, og du er ude. Hurtigst.",
+          "double_elimination": "En ekstra chance i den nederste bracket.",
+          "swiss": "Holdene spiller flere runder mod hold med lignende resultater.",
+          "round_robin": "Alle møder alle. Bedst til små grupper.",
+          "shuffle": "Individuel tilmelding. Nye jævne hold hver runde.",
+          "groups": "Alle mod alle i grupper; de bedste fra hver går videre til en finale eller en bracket."
+        },
+        "seriesLength": "Seriens længde",
+        "grandFinal": "Den store finale",
+        "grandFinalOptions": {
+          "simple": "Én kamp",
+          "double": "Bracket-reset",
+          "none": "Ingen"
+        },
+        "grandFinalHelp": {
+          "simple": "Vinderne af øvre og nedre bracket mødes i én stor finale.",
+          "double": "Bracket-reset. Indtil videre spilles den som én stor finale; fuld reset er planlagt.",
+          "none": "Ingen stor finale: finalen i den øvre bracket afgør turneringen."
+        },
+        "teams": "Hold",
+        "teamsHelpPowerOfTwo": "Udslagsbrackets kræver {{counts}} hold. Bruges til oversigten, indtil du vælger hold.",
+        "teamsHelpRange": "Mellem {{min}} og {{max}} hold. Bruges til oversigten, indtil du vælger hold.",
+        "fewerTeams": "Færre hold",
+        "moreTeams": "Flere hold",
+        "shuffleTitle": "Shuffle-indstillinger",
+        "cs2Title": "Indstillinger for Counter-Strike 2",
+        "cs2Help": "Sendes til dine CS2-servere af spilmodulet til Counter-Strike 2.",
+        "overtime": {
+          "enabled": "Overtid",
+          "disabledDraws": "Fra, uafgjort tilladt",
+          "disabledNoDraws": "Fra, skade afgør"
+        }
+      },
+      "teams": {
+        "shuffleBeforeCreate": "Spillerne tilmelder sig, når du har oprettet turneringen. Kom tilbage til dette trin for at vælge dem.",
+        "shuffleSelfSignup": "Spillerne tilmelder sig selv",
+        "shuffleSelfSignupHelp": "De tilmelder sig med Deltag på turneringssiden, mens dette er slået til; du kan stadig tilføje spillere her."
+      },
+      "maps": {
+        "vetoTitle": "Veto",
+        "vetoStandard": "Hver {{format}}-serie kører banevetoet: holdene banner og picker fra disse 7 baner.",
+        "vetoCustom": "Denne turnering har sin egen vetorækkefølge for {{format}}.",
+        "vetoNone": "Intet veto for dette format.",
+        "vetoShuffle": "Shuffle har intet veto: banerne spilles i denne rækkefølge, én pr. runde."
+      },
+      "eventPage": {
+        "draftNote": "Gemmes med turneringen, når du opretter den."
+      },
+      "review": {
+        "unsaved": "Du har ændringer, der ikke er gemt. Gem dem (bracketen genereres igen), eller kassér dem, før du starter."
+      },
+      "summary": {
+        "label": "Oversigt",
+        "untitled": "Unavngivet turnering",
+        "format": "Format",
+        "series": "Serie",
+        "seriesShuffle": "Bo1 pr. runde",
+        "seriesFinal": {
+          "simple": "{{format}} · stor finale",
+          "double": "{{format}} · stor finale, bracket-reset",
+          "none": "{{format}} · ingen stor finale"
+        },
+        "teams": "Hold",
+        "teamSize": "{{size}}v{{size}}",
+        "teamsPlanned": "{{count}} planlagt",
+        "matches": "Kampe",
+        "matchesAfterSignUp": "Efter tilmelding",
+        "duration": "Tager cirka",
+        "durationValue": "{{hours}} t {{minutes}} min",
+        "signUp": "Tilmelding",
+        "signUpOrganizer": "Vælges af arrangøren",
+        "signUpAfterCreate": "Åbner, når den er oprettet",
+        "players_one": "{{count}} spiller",
+        "players_other": "{{count}} spillere",
+        "maps": "Baner",
+        "mapsRounds": "{{maps}} · {{rounds}}",
+        "notSet": "Ikke angivet",
+        "signUpOpen": "Holdene tilmelder sig · {{size}} pr. hold"
+      },
+      "checklist": {
+        "title": "Før du kan starte",
+        "met": "færdig",
+        "notMet": "ikke færdig",
+        "name": "Et navn",
+        "format": "Format og kampindstillinger",
+        "teams": "Et gyldigt antal hold",
+        "players_one": "Mindst {{count}} spiller tilmeldt",
+        "players_other": "Mindst {{count}} spillere tilmeldt",
+        "mapsVeto": "7 baner til vetoet",
+        "maps": "Mindst én bane",
+        "created": "Turneringen er oprettet",
+        "saved": "Ændringerne er gemt"
+      },
+      "manualReport": {
+        "title": "Manuel rapportering",
+        "help": "Auto Tournament kan ikke følge dette spil, så holdene fortæller, hvad der skete.",
+        "seriesLength": "Seriens længde",
+        "seriesLengthHelp": "Hvor mange spil en serie har. Holdet, der først vinder mere end halvdelen, tager kampen.",
+        "gameLabel": "Kald spillet",
+        "gameLabelHelp": "Hvad det skal hedde i rapportformularen. Lad feltet være tomt for »{{game}}«.",
+        "allowDraw": "Uafgjort",
+        "allowDrawHelp": "Tillad, at et spil, og dermed en serie, ender lige. Lad det være slået fra for en bracket, hvor nogen skal gå videre.",
+        "allowDrawOptions": {
+          "no": "Ikke tilladt",
+          "yes": "Tilladt"
+        },
+        "confirmation": "Før et resultat tæller",
+        "confirmationHelp": {
+          "opponent": "Det andet holds kaptajn skal godkende, før kampen afgøres. De kan bestride det i stedet, så det går til en admin.",
+          "none": "En holdkaptajns rapport afgør kampen af sig selv. Hurtigt, og kun værd at bruge, hvor ingen sandsynligvis vil protestere."
+        },
+        "confirmationOptions": {
+          "opponent": "Modstanderen godkender",
+          "none": "Rapporten står"
+        },
+        "confirmTimeout": "Minutter til at svare",
+        "confirmTimeoutHelp": "Hvor længe modstanderen har, før fristen nås. 1440 er et døgn.",
+        "confirmTimeoutNone": "Ingen frist: rapporten venter på svar.",
+        "timeoutAction": "Ved fristen",
+        "timeoutActionHelp": {
+          "auto_confirm": "Rapporten godtages, som den er, og bracketen går videre, uden at nogen venter.",
+          "escalate": "Kampen overlades til en admin, der afgør den på siden Tvister."
+        },
+        "timeoutActionOptions": {
+          "auto_confirm": "Godtag rapporten",
+          "escalate": "Spørg en admin"
+        }
+      },
+      "signup": {
+        "how": "Hvordan kommer holdene med?",
+        "organizer": "Kun hold, jeg tilføjer",
+        "open": "Hold kan tilmelde sig",
+        "organizerHelp": "Du vælger hvert hold. Ingen kan tilmelde sig fra turneringssiden.",
+        "openHelp": "Et holds ejer eller holdkaptajn tilmelder holdet med en holdopstilling fra turneringssiden, og opstillingen tjekker ind på dagen. Du kan stadig selv tilføje hold nedenfor.",
+        "teamSize": "Spillere pr. hold",
+        "teamSizeHelp": "Startspillere, et hold vælger ved tilmelding (plus op til 2 reserver).",
+        "maxTeamsHelp": "Tomt: ingen grænse.",
+        "save": "Gem tilmeldingsindstillinger",
+        "saved": "Tilmeldingsindstillingerne er gemt",
+        "inTournament": "I turneringen ({{count}})",
+        "signedUp": "Tilmeldt",
+        "addedByYou": "Tilføjet af dig",
+        "lineup": "{{starters}} af {{size}} startspillere",
+        "checkedIn": "{{count}} tjekket ind",
+        "remove": "Fjern",
+        "removed": "{{team}} er ude af turneringen",
+        "noneYet": "Ingen hold endnu. De vises her, efterhånden som de tilmelder sig.",
+        "noTeams": "Ingen hold endnu.",
+        "addYourself": "Tilføj selv hold",
+        "pickTeams": "Vælg holdene",
+        "windowTitle": "Tilmeldingsvindue",
+        "opensLabel": "Tilmeldingen åbner",
+        "opensNow": "Nu",
+        "opensLater": "På et bestemt tidspunkt",
+        "opensNowHelp": "Åbner, så snart du opretter turneringen.",
+        "opensLaterHelp": "Lukket indtil da. Siden tæller ned til det.",
+        "closesHelp": "Holdopstillinger kan ændres, indtil tjek-ind lukker.",
+        "checkInTitle": "Tjek-ind",
+        "checkInHelp": "Åbner, før turneringen starter, og lukker, når den starter. En startspiller, der ikke har tjekket ind til den tid, erstattes af en reserve; reserver tjekker ikke ind.",
+        "checkInChip_one": "{{count}} min før",
+        "checkInChip_other": "{{count}} min før",
+        "checkInOff": "Intet tjek-ind",
+        "checkInLine": "Åbner {{day}} kl. {{time}}, lukker når turneringen starter kl. {{start}}.",
+        "checkInLineNoStart_one": "Åbner {{count}} minut før start og lukker, når den starter.",
+        "checkInLineNoStart_other": "Åbner {{count}} minutter før start og lukker, når den starter.",
+        "checkInLineOff": "Intet tjek-ind: alle tilmeldte hold spiller.",
+        "captainsLabel": "Holdkaptajner kan tjekke deres holdkammerater ind",
+        "captainsHelp": "Ejeren eller en holdkaptajn kan markere en startspiller som til stede. De står inde for det, hvis spilleren ikke dukker op.",
+        "perMatchLabel": "Tjek ind igen før hver kamp",
+        "perMatchHelp": "Fra: ét tjek-ind før turneringen gælder alle kampe. Til: spillerne tjekker ind, når hver kamps veto åbner.",
+        "fullTeamTitle": "Kom ind på serveren",
+        "fullTeamHelp": "Når en kamps server er klar, har hvert hold så lang tid til at have et fuldt hold på den, reserver medregnet. Så vælger det komplette hold: tag walkover, eller spil mod det ufuldstændige hold. Begge ufuldstændige: en admin beslutter.",
+        "fullTeamChip_one": "{{count}} min",
+        "fullTeamChip_other": "{{count}} min",
+        "fullTeamOff": "Ingen walkover",
+        "fullTeamLine": "Spillerne ser timeren i kamprummet og i serverchatten. Reserver tæller som klar, så et hold kan sætte én ind med det samme.",
+        "fullTeamLineOff": "Ingen walkover: et ufuldstændigt hold spiller med færre, når kampen starter automatisk (Kampindstillinger)."
+      },
+      "groups": {
+        "count": "Antal grupper",
+        "through": "Går videre fra hver gruppe",
+        "throughWinner": "Vinderen",
+        "throughTop2": "Top 2",
+        "seeding": "Hvordan holdene fordeles i grupper",
+        "seedingSnake": "Fordelt efter seedning (slange)",
+        "seedingRandom": "Tilfældigt",
+        "playoffs": "Slutspil",
+        "playoffMatches": "Slutspilskampe",
+        "ties": "Lige i en gruppe: indbyrdes kamp, så rundedifference, så vundne runder (som i alle mod alle). Hvis grupperne ikke fylder en bracket, går de bedste af resten også videre.",
+        "whatPlayersGet": "Hvad spillerne får",
+        "stage": "Gruppespil",
+        "stageLine": "{{groups}} grupper med {{size}}",
+        "stageNote": "{{count}} kampe · {{each}} for hvert hold",
+        "playoffFinal": "De to gruppevindere: en finale i {{format}}",
+        "playoff": {
+          "single_elimination": "{{count}} hold: single elimination",
+          "double_elimination": "{{count}} hold: double elimination"
+        },
+        "throughNote": "{{count}} hold går videre",
+        "previewTitle": "Grupperne (fordelt efter seedning)",
+        "previewNote": "I holdlistens rækkefølge (seedningen). Grupperne låses, når turneringen starter.",
+        "randomNote": "Grupperne trækkes tilfældigt, når turneringen starter.",
+        "groupN": "Gruppe {{letter}}",
+        "groupMatches": "Gruppekampe"
+      },
+      "stepNotes": {
+        "game": "Hvad der spilles",
+        "basics": "Navn, dag, sted",
+        "format": "Hvordan holdene mødes",
+        "teams": "Tilføjet eller tilmelding",
+        "schedule": "Dage og tidspunkter",
+        "maps": "Banepuljen",
+        "extras": "Forudindstilling, regler, ekstra",
+        "review": "Opret den"
+      },
+      "stepOf": "Trin {{n}} af {{total}}",
+      "schedule": {
+        "timesNote": "Kampene venter på deres tidspunkt. Spillerne ser det på kampen, får en påmindelse, og vetoet åbner til tiden.",
+        "breakNote_one": "Et hold, der lige har spillet, får en pause på {{count}} minut før næste veto (Kampregler).",
+        "breakNote_other": "Et hold, der lige har spillet, får en pause på {{count}} minutter før næste veto (Kampregler).",
+        "noBreakNote": "Der er ingen pause mellem et holds kampe (Kampregler).",
+        "ownTimeNote": "Giv én kamp sit eget tidspunkt under Administrer › Program, når bracketen er lavet.",
+        "startsTournament": "Starter turneringen · tjek-ind lukker",
+        "newDay": "Ny dag",
+        "sameDay": "Samme dag",
+        "dayLabel": "Dag",
+        "startsLabel": "Starter",
+        "tournamentStarts": "Turneringen starter",
+        "autoStart": "Start automatisk kl. {{time}}",
+        "autoStartNoTime": "Start automatisk",
+        "autoStartOff": "Fra: en admin starter den fra Administrer.",
+        "reminders": "Påmind spillerne før start",
+        "modeTimesNote": "Hver runde får en dag (fra trin 2) og et tidspunkt. Kampene venter på deres tidspunkt, og vetoet åbner til tiden.",
+        "modeAsapNote": "Kun starten: derefter starter en kamp, så snart begge hold og en server er klar."
+      },
+      "extras": {
+        "gotvLabel": "Tilskuere",
+        "gotvOn_one": "Tilskuere kan se med i GOTV, {{count}} sekund bagud (Kampregler › Tilskuere).",
+        "gotvOn_other": "Tilskuere kan se med i GOTV, {{count}} sekunder bagud (Kampregler › Tilskuere).",
+        "gotvOff": "Tilskuere kan ikke se med i GOTV (Kampregler › Tilskuere)."
+      },
+      "startFrom": {
+        "title": "Start fra",
+        "help": "En skabelon udfylder format, baner og kampindstillinger. Du kan ændre alt i de næste trin.",
+        "blank": "Tom",
+        "blankHelp": "Single elimination, Bo3, sidens banepulje og kampregler.",
+        "siteDefaults": "Sidens standard",
+        "builtIn": "Indbygget",
+        "saved": "Gemt",
+        "standardRules": "Standardregler",
+        "ownTemplates": "Dine egne skabeloner kommer fra <link>Skabeloner og rating</link>. Gem denne turnering som en, når den er sat op."
+      },
+      "days": {
+        "title": "Dag",
+        "one": "Én dag",
+        "several": "Over flere dage",
+        "day": "Dag",
+        "firstDay": "Første dag",
+        "lastDay": "Sidste dag",
+        "markedLegend": "En anden turnering på siden spiller den dag"
+      },
+      "overlap": {
+        "headsUp": "Bemærk: {{name}} spiller også {{day}}",
+        "headsUpBody": "{{from}}–{{to}} på de samme servere. Begge kan køre: kampe venter på en ledig server, og en spiller kan kun være med i begge, hvis deres rundetider ikke overlapper.",
+        "openOther": "Åbn programmet for {{name}}",
+        "round": "Overlapper {{name}} ({{day}}, {{from}}–{{to}}) på de samme servere. Du kan stadig gemme. En spiller i {{name}} kan ikke tilmelde sig her, da denne runde spilles på samme tid.",
+        "see": "Se {{name}}"
+      }
+    },
+    "startButton": {
+      "start": "Start turnering",
+      "starting": "Starter...",
+      "startSimulation": "Start simulering",
+      "startingSimulation": "Starter simulering..."
+    },
+    "archiveDialog": {
+      "title": "Start en ny turnering?",
+      "message": "{{name}} arkiveres. Resultater, kampe og statistik bliver, og siden beholder sin adresse. Derefter opretter du den næste.",
+      "confirm": "Arkivér og start ny",
+      "delete": "Slet den, og start ny",
+      "deleteHint": "Eller slet den: resultater, kampe og statistik forsvinder med den."
+    },
+    "end": {
+      "button": "Afslut turnering",
+      "tooltip": "Stopper turneringen nu uden et resultat: kampe på serverne afsluttes, resten annulleres. Ingen vinder og ingen belønninger. Den kan arkiveres bagefter.",
+      "title": "Afslut denne turnering?",
+      "body": "Alle kampe, der stadig kører, afsluttes på deres servere, og resten annulleres. Ingen vinder, og der uddeles ingen belønninger. Det kan ikke fortrydes.",
+      "typeName": "Skriv »{{name}}« for at bekræfte",
+      "confirm": "Afslut turnering",
+      "done_one": "Turneringen er afsluttet, {{count}} kamp annulleret",
+      "done_other": "Turneringen er afsluttet, {{count}} kampe annulleret",
+      "failed": "Turneringen kunne ikke afsluttes"
+    },
+    "countdown": {
+      "days": "Starter om {{d}} d {{h}} t",
+      "hours": "Starter om {{h}} t {{m}} min",
+      "minutes": "Starter om {{m}}:{{s}}"
+    }
+  },
+  "bracket": {
+    "empty": {
+      "noBracketTitle": "Ingen bracket at vise",
+      "noBracketDescription": "Opret en turnering, og generér bracketen for at komme i gang"
+    },
+    "view": {
+      "visual": "Grafisk",
+      "list": "Liste",
+      "refresh": "Opdater",
+      "enterFullscreen": "Fuld skærm",
+      "exitFullscreen": "Forlad fuld skærm",
+      "shuffleNoVisual": "Shuffle-turneringer har ingen grafisk bracket; brug listevisningen i stedet."
+    },
+    "times": {
+      "toggle": "Sæt tidspunkter",
+      "startsAt": "Starter",
+      "clear": "Brug rundens tidspunkt",
+      "save": "Gem"
+    },
+    "shuffleEmpty": {
+      "title": "Ingen bracket for shuffle-turneringer",
+      "description": "Shuffle-turneringer bruger ikke en fast bracket. Holdene blandes igen hver runde efter spillernes ELO.",
+      "hint": "Brug siden Kampe til at følge live- og kommende kampe, og siden Rangliste til at følge spillernes placeringer.",
+      "goToMatches": "Gå til Kampe",
+      "viewLeaderboard": "Se ranglisten"
+    },
+    "notGenerated": {
+      "title": "Bracketen er ikke genereret endnu",
+      "description": "Generér bracketen for at oprette kampe for {{name}}",
+      "goToSettings": "Gå til turneringsindstillinger"
+    },
+    "shuffleNoVisual": {
+      "title": "Ingen grafisk bracket for shuffle-turneringer",
+      "description": "Kampene genereres dynamisk hver runde efter spillernes ELO og holdbalancering. Følg forløbet her:",
+      "listView": "Listevisning",
+      "matches": "Kampe",
+      "standings": "Stilling",
+      "docsHint": "For en fuld gennemgang af, hvordan shuffle virker, se guiden Shuffle-turneringer i dokumentationen."
+    },
+    "swiss": {
+      "notGenerated": "Ikke genereret",
+      "generatedAfter": "Kampene genereres, når runde {{round}} er færdig",
+      "bye": "BYE",
+      "standings": "Stilling",
+      "team": "Hold",
+      "record": "Resultater",
+      "buchholz": "BH",
+      "buchholzHint": "Buchholz: summen af modstandernes sejre",
+      "roundDiff": "RD",
+      "roundDiffHint": "Rundedifference: vundne runder minus tabte"
+    },
+    "slotHint": {
+      "winnerOf": "Vinder af {{match}}",
+      "loserOf": "Taber af {{match}}",
+      "matchNumber": "kamp {{number}}"
+    },
+    "pause": {
+      "pause": "Sæt bracketen på pause",
+      "reason": "Årsag til pausen",
+      "forMinutes": "I {{minutes}} min",
+      "untilResumed": "Indtil den genoptages",
+      "paused": "Bracketen er sat på pause: kampe, der spilles, spilles færdig, ingen nye starter",
+      "pausedUntil": "Bracketen er sat på pause til {{time}}: kampe, der spilles, spilles færdig, ingen nye starter",
+      "resume": "Genoptag",
+      "pausedDone": "Bracketen er sat på pause",
+      "resumedDone": "Bracketen er genoptaget",
+      "failed": "Pausen kunne ikke ændres"
+    }
+  },
+  "overviewPage": {
+    "tabs": {
+      "overview": "Oversigt",
+      "label": "Turnering",
+      "bracket": "Bracket",
+      "matches": "Kampe",
+      "teams": "Hold",
+      "standings": "Stilling",
+      "manage": "Administrer",
+      "rules": "Regler",
+      "match": "Din kamp",
+      "results": "Resultater",
+      "signup": "Tilmelding"
+    },
+    "status": {
+      "setup": "Kommende",
+      "inProgress": "Live",
+      "completed": "Færdig",
+      "finishedOn": "Afsluttet {{date}}"
+    },
+    "liveNow": "{{count}} live nu",
+    "howItsPlayed": "Sådan spilles kampene",
+    "facts": {
+      "teams": "Hold",
+      "teamsValue": "{{count}} hold",
+      "teamSize": "Holdstørrelse",
+      "teamSizeValue": "{{count}} spillere",
+      "format": "Format",
+      "series": "Serie",
+      "seriesValue": "Bedst af {{count}}",
+      "mapVeto": "Baneveto",
+      "mapVetoCustom": "Egen rækkefølge (holdkaptajner)",
+      "mapVetoStandard": "Standardrækkefølge (holdkaptajner)",
+      "overtime": "Overtid",
+      "overtimeEnabledUnlimited": "Til, ubegrænset",
+      "overtimeEnabledSegments": "Til, {{count}} periode(r)",
+      "overtimeDisabled": "Fra (skade afgør)"
+    },
+    "mapPool": "Banepulje",
+    "rules": "Regler",
+    "fullRulebook": "Fuldt regelsæt",
+    "schedule": "Program",
+    "yourTeam": {
+      "title": "Du spiller",
+      "onRoster": "Du er på {{team}}.",
+      "viewTeam": "Se dit hold",
+      "versus": "{{team}} mod {{opponent}} · {{stage}}",
+      "tbd": "TBD",
+      "goToMatch": "Gå til din kamp",
+      "openMatch": "Åbn kampsiden",
+      "state": {
+        "live": "Live",
+        "loaded": "Forbind nu",
+        "upNext": "Næste",
+        "finished": "Færdig",
+        "eliminated": "Slået ud",
+        "waiting": "Venter på næste kamp",
+        "registered": "Tilmeldt",
+        "won": "Vinder",
+        "out": "Ude"
+      }
+    },
+    "prizes": {
+      "title": "Præmier",
+      "note": "Fastsat af arrangøren. Præmiepenge, hardware eller æren."
+    },
+    "requirements": {
+      "title": "For at deltage",
+      "steamLinkedOk": "Steam-konto forbundet.",
+      "steamLinkedNeutral": "Log ind med Steam for at deltage.",
+      "onRosterOk": "Du er på en holdopstilling i turneringen.",
+      "onRosterNeutral": "Vær på en holdopstilling, før turneringen starter."
+    },
+    "loadError": "Turneringen kunne ikke indlæses.",
+    "notFoundTitle": "Turneringen blev ikke fundet",
+    "notFoundDescription": "Turneringen findes ikke eller er ikke oprettet endnu.",
+    "loading": "Indlæser…",
+    "about": "Om",
+    "liveStripLabel": "Live nu",
+    "bracketTab": {
+      "loadError": "Bracketen kunne ikke indlæses.",
+      "emptyTitle": "Ingen bracket endnu",
+      "emptyDescription": "Bracketen vises her, når arrangøren starter turneringen.",
+      "shuffleTitle": "Ingen bracket i en shuffle",
+      "shuffleDescription": "Holdene trækkes igen hver runde, så der er ingen bracket. Kampe viser hver runde, og Stilling rangerer spillerne."
+    },
+    "matchesTab": {
+      "loadError": "Kampene kunne ikke indlæses.",
+      "emptyTitle": "Ingen kampe endnu",
+      "emptyDescription": "Kampene vises her, når turneringen starter.",
+      "live": "Live nu",
+      "upcoming": "Næste",
+      "results": "Resultater",
+      "vs": "mod",
+      "status": {
+        "live": "Live",
+        "loaded": "Starter",
+        "final": "Slut",
+        "upcoming": "Kommende"
+      },
+      "emptyDescriptionAt": "Kampene vises her, når turneringen starter: {{when}}."
+    },
+    "teamsTab": {
+      "shuffleTitle": "Holdene skifter hver runde",
+      "shuffleDescription": "En shuffle-turnering trækker nye hold hver runde blandt de registrerede spillere. Stilling rangerer spillerne.",
+      "emptyTitle": "Ingen hold endnu",
+      "emptyDescription": "Holdene vises her, når arrangøren tilføjer dem.",
+      "yours": "Dit hold",
+      "record": "{{wins}}–{{losses}}",
+      "emptySignupOpen": "Tilmeldingen er åben. Holdene vises her, efterhånden som de tilmelder sig.",
+      "signUp": "Tilmeld dit hold"
+    },
+    "allMatches": "Alle kampe",
+    "keyDates": {
+      "starts": "Starter",
+      "lastOnSchedule": "Sidst i programmet",
+      "teams": "Hold"
+    },
+    "mapPoolCount": "Banepulje · {{count}} baner",
+    "mapPoolNote": "Holdkaptajnerne banner og picker blandt disse før hver serie.",
+    "addToCalendar": "Føj til kalender",
+    "scheduleSoon": "Arrangøren har ikke offentliggjort programmet endnu.",
+    "checkInWindow": "Tjek-ind",
+    "mapPoolSoonTitle": "Banepulje",
+    "mapPoolSoon": "Arrangøren har ikke valgt banerne endnu.",
+    "adminBanner": "Du er admin for denne turnering. Den køres under Administrer; denne side er det, spillerne ser.",
+    "manageTournament": "Administrer turneringen",
+    "fullBracket": "Hele bracketen",
+    "allRules": "Alle regler",
+    "archivedTitle": "Turneringen er arkiveret",
+    "archivedBody": "En nyere turnering har erstattet den. Resultater, bracket og stilling bliver her.",
+    "openCurrent": "Åbn den aktuelle turnering",
+    "allTournaments": "Alle turneringer",
+    "roundN": "Runde {{n}}",
+    "finalRound": "Finale",
+    "roundStarts": "{{round}} · vetoet åbner {{time}}"
+  },
+  "roundStatusCard": {
+    "roundOf": "Runde {{current}} af {{total}}",
+    "complete": "Færdig",
+    "inProgress": "I gang",
+    "matchProgress": "Kampforløb",
+    "completedOf": "{{completed}} / {{total}} færdige",
+    "completedCount": "{{count}} færdige",
+    "playingCount": "{{count}} spiller",
+    "pendingCount": "{{count}} venter"
+  },
+  "yourMatch": {
+    "loading": "Indlæser din kamp",
+    "bestOf": "Bedst af {{count}}",
+    "mapsScore": "Baner {{us}} – {{them}}",
+    "inServer": "På serveren",
+    "notJoined": "Ikke forbundet",
+    "waitingForPlayers": "Venter på spillere",
+    "inServerCount": "{{count}} af {{expected}} på serveren. Kampen starter, når alle er klar.",
+    "inServerCountBots": "{{count}} på serveren. Bots tager de tomme pladser; kampen starter, når alle her er klar.",
+    "live": "Live",
+    "round": "Runde {{n}}",
+    "vetoTitle": "Baneveto i gang",
+    "finished": "Kampen er slut",
+    "mapOf": "Bane {{n}} af {{total}}",
+    "sideYou": "{{side}} · dig",
+    "rejoin": "Faldet ud? Forbind igen med samme knap: din plads er holdt.",
+    "outcome": {
+      "won": "I vandt {{us}}–{{them}} mod {{opponent}}",
+      "lost": "I tabte {{us}}–{{them}} mod {{opponent}}",
+      "draw": "{{us}}–{{them}} mod {{opponent}}"
+    },
+    "ready": "Klar",
+    "waitingForServer": "Venter på en server",
+    "vetoDoneChip": "Veto færdigt · {{map}}",
+    "waitingForServerBody": "En server tildeles, så snart en er ledig. Du får en notifikation, og siden opdaterer sig selv.",
+    "mapDrawnChip": "Bane trukket · {{map}}",
+    "notYet": "Ikke endnu"
+  },
+  "results": {
+    "finalStandings": "Slutstilling",
+    "awards": "Udmærkelser",
+    "players": "Spillere",
+    "matchesAndDemos": "Kampe og demos",
+    "place": "#{{n}}",
+    "championsOf": "{{name}} · Mestre",
+    "showAll": "Alle {{count}} spillere",
+    "showFewer": "Vis færre",
+    "mapResults": "Baneresultater",
+    "col": {
+      "player": "Spiller",
+      "team": "Hold",
+      "rating": "Rating ±",
+      "hltv": "Præstation"
+    },
+    "award": {
+      "mostKills": "Flest kills",
+      "bestAdr": "Højeste ADR",
+      "bestHeadshots": "Bedste headshot-%",
+      "mostFlashAssists": "Flest flash-assists",
+      "mostUtility": "Mest utility-skade",
+      "biggestGain": "Største ratingstigning",
+      "bestPlayer": "Bedste spiller",
+      "mostClutches": "Flest clutches",
+      "mostTeamFlashes": "Flest blændede holdkammerater",
+      "mostMoney": "Brugte flest penge"
+    },
+    "awardValue": {
+      "mostKills": "{{value}} kills",
+      "bestAdr": "{{value}} ADR",
+      "bestHeadshots": "{{value}} % headshots",
+      "mostFlashAssists": "{{value}} flash-assists",
+      "mostUtility": "{{value}} utility-skade",
+      "biggestGain": "+{{value}} rating",
+      "bestPlayer": "rating {{value}}",
+      "mostTeamFlashes": "{{value}} blændede holdkammerater",
+      "mostClutches": "{{value}} vundne clutches",
+      "mostMoney": "{{value}} brugt"
+    },
+    "wonFinal": "Vandt finalen {{a}}–{{b}} over {{opponent}}",
+    "champions": "Mestre",
+    "allMatches": "Alle {{count}} kampe",
+    "demosAndReel": "Demos og højdepunktsvideo",
+    "stage": {
+      "final": "Finale",
+      "semi": "Semifinale",
+      "round": "Runde {{n}}"
+    }
+  },
+  "signup": {
+    "cta": "Tilmeld dit hold",
+    "keyDates": {
+      "closes": "Tilmeldingen lukker",
+      "checkIn": "Tjek-ind",
+      "spots": "Holdpladser",
+      "left": "{{count}} tilbage",
+      "full": "Fuldt",
+      "of": "af {{max}}"
+    },
+    "ladder": {
+      "title": "Hold efter rating",
+      "yourPlace": "I er nr. {{place}} af {{count}}"
+    },
+    "todo": {
+      "signedUp": "Tilmeldt",
+      "beforeTheDay": "Før dagen",
+      "toFix": "{{count}} at rette",
+      "lineup": "Holdopstilling",
+      "allReady": "Alle klar",
+      "notSet": "Ikke angivet",
+      "showFixes": "Vis, hvad der skal rettes",
+      "fixNote": "Ret det før tjek-ind, ellers kan spilleren ikke være med."
+    },
+    "yourLineup": "Din holdopstilling",
+    "change": "Skift",
+    "withdraw": "Træk tilbage",
+    "withdrawTitle": "Træk {{team}} tilbage?",
+    "withdrawBody": "Holdet forlader turneringen, og pladsen åbnes for et andet hold.",
+    "sub": "Reserve",
+    "ready": "Klar",
+    "problem": {
+      "noAccount": "Har ikke logget ind på Auto Tournament endnu",
+      "noGame": "Spillet mangler på profilen"
+    },
+    "problemShort": {
+      "noAccount": "ikke logget ind",
+      "noGame": "mangler spillet"
+    },
+    "checkIn": {
+      "open": "Tjek-ind er åben",
+      "closesIn": "Lukker {{time}} · {{left}} tilbage",
+      "imHere": "Jeg er her",
+      "done": "Du er tjekket ind",
+      "teamTitle": "{{team}} tjekker ind",
+      "keepOpen": "Hold siden åben. Den siger til, når din kamp er klar.",
+      "firstMatchIn": "Første kamp om",
+      "count": "{{in}} af {{total}}",
+      "you": "dig",
+      "everyone": "Alle",
+      "soundOn": "Lyd til: du hører, når det er tid",
+      "soundOff": "Lyd fra",
+      "checkInFor": "Tjek {{name}} ind",
+      "checkInShort": "Tjek ind"
+    },
+    "noTeamTitle": "Intet hold at tilmelde",
+    "noTeamBody": "Kun et holds ejer eller holdkaptajn kan tilmelde det. Opret et hold, eller spørg din holdkaptajn.",
+    "goToTeams": "Hold",
+    "steps": {
+      "lineup": "Holdopstilling",
+      "review": "Gennemse"
+    },
+    "whichTeam": "Hvilket hold tilmelder du?",
+    "role": {
+      "owner": "Du ejer det",
+      "captain": "Du er holdkaptajn"
+    },
+    "playerCount": "{{count}} spillere",
+    "whoPlays": "Hvem spiller?",
+    "whoPlaysHint": "{{count}} startspillere · op til {{subs}} reserver",
+    "rating": "Rating {{rating}}",
+    "slotFor": "Rolle for {{name}}",
+    "starter": "Startspiller",
+    "out": "Ude",
+    "starters": "Startspillere",
+    "subs": "Reserver",
+    "lineupRating": "Opstillingens rating",
+    "missingAccounts": "{{names}} skal stadig logge ind.",
+    "fixBeforeCheckIn": "Du kan tilmelde nu; ret det før tjek-ind.",
+    "saveLineup": "Gem holdopstillingen",
+    "nextReview": "Næste: gennemse",
+    "readyToSend": "Klar til at sende?",
+    "next": {
+      "lastSpot": "Tager den sidste plads",
+      "takesSpot": "Tager en plads",
+      "spotsLeft": "{{count}} tilbage før denne",
+      "checkIn": "Tjek ind på dagen",
+      "firstMatch": "Første kamp",
+      "spotOf": "{{n}} af {{max}}"
+    },
+    "vouch": "Jeg bekræfter, at alle spillere i opstillingen har læst",
+    "vouchNote": "Jeg tilmelder dem på deres vegne. Bryder en spiller reglerne, kan hele holdet straffes eller diskvalificeres.",
+    "send": "Tilmeld {{team}}",
+    "rulesLink": "reglerne",
+    "ownerTag": "ejer",
+    "captainTag": "holdkaptajn",
+    "check": {
+      "steam": "Steam",
+      "game": "{{game}}",
+      "noGame": "{{game}} mangler",
+      "steamShort": "Steam"
+    },
+    "remind": "Påmind",
+    "reminded": "Påmindelse sendt i holdchatten",
+    "done": "Færdig",
+    "lineupGap": "En startspiller forlod din opstilling (udelukket eller slettet). Dine kampe venter til {{time}}: vælg en reserve inden da, ellers træder den første reserve ind. Uden reserve spiller I med én mand mindre.",
+    "pickSub": "Vælg en reserve",
+    "title": "Tilmeld dit hold",
+    "editTitle": "Skift din holdopstilling",
+    "stepsLabel": "Trin",
+    "changeUntil": "Du kan ændre opstillingen, indtil tjek-ind lukker, {{when}}.",
+    "counts": "{{starters}} af {{teamSize}} startspillere · {{subs}} af {{maxSubs}} reserver",
+    "lineupRatingValue": "Opstillingens rating {{rating}}",
+    "missingGame": "{{names}} skal have {{game}} på deres profil.",
+    "subsLine": "reserve: {{names}}",
+    "overlap": {
+      "title": "Du kan ikke tilmelde dig denne",
+      "body": "Du er med i {{name}}, som har en kamp {{when}}, samtidig med denne turnering. Du kan være med i begge turneringer, når kamptiderne ikke overlapper.",
+      "open": "Åbn {{name}}"
+    },
+    "youreIn": {
+      "eyebrow": "{{team}} · tilmeldt",
+      "title": "I er med!",
+      "body": "Det her skal dit hold vide, før turneringen starter. Vi har sendt den samme liste til ejeren og holdkaptajnerne.",
+      "openLineup": "Åbn din holdopstilling",
+      "listTitle": "Før turneringen starter",
+      "checkIn": "Tjek ind {{when}}–{{to}}",
+      "checkInBodyCaptains": "Hver startspiller tjekker ind på denne side, eller en holdkaptajn tjekker dem ind. Tjek-ind lukker, når turneringen starter.",
+      "checkInBody": "Hver startspiller tjekker ind på denne side. Tjek-ind lukker, når turneringen starter.",
+      "subs": "Reserver skal ikke tjekke ind",
+      "subsBody": "De tæller som til stede og klar, så en kamp venter aldrig på dem.",
+      "replaced": "En startspiller, der ikke har tjekket ind, erstattes",
+      "replacedBody": "Når tjek-ind lukker, tager en reserve pladsen for hver startspiller, der ikke har tjekket ind. Ingen reserve tilbage: I spiller med én mand mindre.",
+      "fullTeam_one": "{{count}} minut til at få holdet på serveren",
+      "fullTeam_other": "{{count}} minutter til at få holdet på serveren",
+      "fullTeamBody_one": "Når jeres server er klar, har holdet {{count}} minut til at have et fuldt hold på den, reserver medregnet. Derefter kan det andet hold tage walkover eller vælge at spille mod jer med færre.",
+      "fullTeamBody_other": "Når jeres server er klar, har holdet {{count}} minutter til at have et fuldt hold på den, reserver medregnet. Derefter kan det andet hold tage walkover eller vælge at spille mod jer med færre.",
+      "ready": "Vær klar før hver kamp",
+      "readyBodyVeto_one": "Vetoet åbner {{count}} minut før hver kamp. Hold siden åben: den siger til, når din næste kamp er klar.",
+      "readyBodyVeto_other": "Vetoet åbner {{count}} minutter før hver kamp. Hold siden åben: den siger til, når din næste kamp er klar.",
+      "readyBody": "Hold siden åben: den siger til, når din næste kamp er klar.",
+      "eachMatch": "Tjek ind igen før hver kamp",
+      "eachMatchBody": "Før hver kamp tjekker hver startspiller ind i kamprummet, eller en holdkaptajn gør det for dem. En startspiller, der ikke gør, skiftes ud med en reserve."
+    }
+  },
+  "bracketCards": {
+    "you": "Dig",
+    "open": "Åbn {{a}} mod {{b}}",
+    "upper": "Øvre bracket",
+    "lower": "Nedre bracket",
+    "grandFinal": "Den store finale",
+    "thirdPlace": "Tredjeplads",
+    "live": "Live",
+    "veto": "Veto",
+    "done": "Færdig",
+    "mapOf": "Bane {{n}} af {{total}}",
+    "banning": "Banner baner",
+    "bestOf_one": "Bedst af {{count}}",
+    "bestOf_other": "Bedst af {{count}}",
+    "winnerOf": "Vinder {{match}}",
+    "loserOf": "Taber {{match}}",
+    "tbd": "Ikke afgjort endnu",
+    "liveCount_one": "{{count}} live",
+    "liveCount_other": "{{count}} live",
+    "matchCount_one": "{{count}} kamp",
+    "matchCount_other": "{{count}} kampe"
+  },
+  "placement": {
+    "outTitle": "Din tur i {{tournament}} er slut",
+    "wonTitle": "I vandt {{tournament}}!",
+    "yourTeamPlaced": "{{team}} sluttede som",
+    "yourTeam": "Dit hold",
+    "outBody": "Dit hold er ude af turneringen, så du har ikke flere kampe. Følg resten i bracketen.",
+    "wonBody": "Dit hold vandt turneringen. Godt spillet!",
+    "close": "Luk",
+    "seeBracket": "Se bracketen",
+    "outBodyPlay": "Du har ikke flere kampe i denne turnering. Tak fordi du spillede!",
+    "championsEyebrow": "Mestre",
+    "teamPlaced": "{{team}} sluttede som",
+    "wonTitleShort": "I vandt {{tournament}}!",
+    "wonFinalBody": "{{team}} vandt finalen {{score}}. Godt spillet!",
+    "playHint": "Lyst til en kamp mere? Matchmaking giver dig en kamp inden for et minut eller to."
+  },
+  "advance": {
+    "title": "Flot, I er stadig med!",
+    "opponent": "Næste: {{opponent}}.",
+    "feederTitle": "Din næste modstander kommer fra",
+    "vs": "mod",
+    "tbd": "TBD",
+    "feederNotStarted": "Den kamp er ikke startet endnu.",
+    "feederMinutes_one": "Cirka {{count}} minut tilbage.",
+    "feederMinutes_other": "Cirka {{count}} minutter tilbage.",
+    "feederAlmost": "Næsten færdig.",
+    "watch": "Se live",
+    "wonEyebrow": "{{stage}} vundet {{score}}"
+  },
+  "whatsNext": {
+    "eyebrow": "Hvad nu",
+    "champions": "Mestre",
+    "outTitle": "Dit hold er ude. I sluttede som {{place}}",
+    "outBody": "Det var din sidste kamp i {{tournament}}. Gode kampe! Vil du blive ved med at spille? Matchmaking finder en kamp med andre spillere til dig med det samme.",
+    "playMatchmaking": "Spil matchmaking",
+    "watchLive": "Se en livekamp",
+    "nextMatch": "{{stage}} mod {{opponent}}",
+    "nextMatchReady": "Din kamp er klar: åbn kamprummet for at forbinde.",
+    "nextMatchSoon": "Din næste kamp er fastlagt. Efter en kort pause åbner den, og vi pinger dig. Menulinjen viser nedtællingen, uanset hvor du er.",
+    "openMatchRoom": "Åbn kamprummet",
+    "throughTo": "I er videre til {{stage}}",
+    "waitingTitle": "Venter på din næste modstander",
+    "waitingBody": "Din modstander kommer fra en kamp, der stadig spilles. Når den slutter, er der en kort pause, og så åbner din næste kamp. Vi pinger dig.",
+    "watchOpponent": "Se din næste modstander live",
+    "shuffleTitle": "Næste runde: nye hold",
+    "shuffleBody": "Når alle kampe i denne runde er færdige, trækkes nye hold, og din næste kamp vises her.",
+    "stayHere": "Bliv på siden: den opdaterer sig selv.",
+    "openTournament": "Åbn turneringen",
+    "winsToTitle_one": "Én sejr mere til titlen",
+    "winsToTitle_other": "{{count}} sejre mere til titlen",
+    "shuffleDoneTitle": "Det var den sidste runde",
+    "shuffleDoneBody": "Shufflen er slut. Åbn turneringen for at se stillingen.",
+    "youWon": "I vandt {{a}}–{{b}} mod {{opponent}}.",
+    "youLost": "I tabte {{a}}–{{b}} mod {{opponent}}.",
+    "resultPlaced": "{{result}} I sluttede som {{place}}.",
+    "nextUp": "Næste: {{match}}."
+  },
+  "navStatus": {
+    "placed": "Placeret",
+    "placedPlay": "{{place}} · Spil matchmaking",
+    "waiting": "Venter på modstander",
+    "vetoIn": "Veto om",
+    "vetoOpening": "Vetoet åbner",
+    "matchIn": "Kamp om",
+    "matchLoading": "Kampen indlæses",
+    "shuffleRound": "Runde {{round}} · Spiller",
+    "shuffleSittingOut": "Runde {{round}} · Sidder over",
+    "placedPlayLine": "Placeret {{place}} · Spil matchmaking",
+    "placedLine": "Placeret {{place}}",
+    "waitingOpponent": "Venter på modstander",
+    "aboutMinutes_one": "~{{count}} min",
+    "aboutMinutes_other": "~{{count}} min"
+  },
+  "shuffleJoin": {
+    "title": "Deltag i shufflen",
+    "body": "Intet hold nødvendigt: tilmeld dig selv. Hver runde trækker platformen nye, jævne hold.",
+    "youreIn": "Du er med",
+    "inBody": "Når turneringen starter, trækkes dit første hold, og din kamp vises her. Hold siden åben.",
+    "join": "Deltag",
+    "leave": "Forlad",
+    "full": "Fuldt",
+    "signInToJoin": "Log ind for at deltage",
+    "count_one": "{{count}} spiller med",
+    "count_other": "{{count}} spillere med",
+    "countOf_one": "{{count}} af {{spots}} spillere med",
+    "countOf_other": "{{count}} af {{spots}} spillere med",
+    "playingTitle": "Du spiller nu",
+    "playingBody": "Forbind til serveren med dit hold. Næste runde trækkes, når alle kampe i denne er færdige.",
+    "sittingOutTitle": "Du sidder over i denne runde",
+    "sittingOutBody": "Der er ikke spillere nok til alle hold i denne runde. Du er med i lodtrækningen til runde {{next}}, og dem, der har spillet mest, sidder over først.",
+    "goToMatch": "Gå til kamp",
+    "tagPlaying": "Spiller",
+    "tagSittingOut": "Sidder over",
+    "roundHeading": "Runde {{round}}",
+    "versus": "mod",
+    "sittingOutList": "Sidder over: {{names}}",
+    "status": {
+      "live": "Live",
+      "done": "Færdig",
+      "waiting": "Starter"
+    },
+    "finishedTitle": "Shufflen er slut",
+    "finishedBody_one": "Runden er spillet. Gode kampe!",
+    "finishedBody_other": "Alle {{count}} runder er spillet. Gode kampe!",
+    "roundOf": "Runde {{round}} af {{total}}",
+    "roundsCount_one": "{{count}} runde",
+    "roundsCount_other": "{{count}} runder",
+    "now": "Nu",
+    "tagLeft": "Gået",
+    "markOut": "Markér som ude",
+    "markIn": "Tilbage",
+    "roundShort": "Runde {{round}}",
+    "playedTitle": "Din kamp i runde {{round}} er færdig",
+    "playedBody": "Runde {{next}} trækkes, når de andre kampe er færdige. Bliv på siden: den opdaterer sig selv.",
+    "sittingOutBodyCounts_one": "Der er {{players}} spillere til {{size}}v{{size2}}, så {{count}} hviler hver runde. Dem, der har spillet mest, hviler først: du er med i næste lodtrækning.",
+    "sittingOutBodyCounts_other": "Der er {{players}} spillere til {{size}}v{{size2}}, så {{count}} hviler hver runde. Dem, der har spillet mest, hviler først: du er med i næste lodtrækning.",
+    "playedBodyLeft_one": "Venter på {{count}} kamp mere. Runde {{next}} trækkes, når den slutter; din næste kamp vises her, og du får en notifikation.",
+    "playedBodyLeft_other": "Venter på {{count}} kampe mere. Runde {{next}} trækkes, når de slutter; din næste kamp vises her, og du får en notifikation.",
+    "joinedByMistake": "Tilmeldt ved en fejl?",
+    "breakTitle": "Pause · runde {{round}} starter kl. {{time}}",
+    "noShowTitle": "Du er ude af de næste lodtrækninger",
+    "noShowBody": "Du kom aldrig til din kamp, så de næste runder trækkes uden dig. Tilbage ved computeren? Sig til, så er du med i næste lodtrækning.",
+    "backIn": "Jeg er tilbage",
+    "tagNoShow": "Mødte ikke op"
+  },
+  "liveOverview": {
+    "roundOf": "Runde {{round}} af {{total}}",
+    "liveCount": "{{count}} live nu",
+    "eta": {
+      "nextRoundAbout": "Næste runde cirka {{time}}",
+      "nextRoundAt": "Næste runde kl. {{time}}",
+      "finalEnds": "Sidste runde: slutter cirka {{time}}",
+      "endsAbout": "slutter cirka {{time}}"
+    },
+    "hero": {
+      "playingTitle": "Du spiller nu",
+      "playingBody": "{{us}} mod {{them}}{{map}}. Forbind fra kamprummet.",
+      "joiningTitle": "Forbind til serveren",
+      "joiningBody": "{{us}} mod {{them}}{{map}}. Kampen starter, når alle er klar.",
+      "vetoTitle": "Dit baneveto er åbent",
+      "vetoBody": "Ban og pick banerne mod {{them}} i kamprummet.",
+      "waitingTitle": "Venter på din næste modstander",
+      "waitingBody": "De kommer fra en kamp, der stadig spilles. Efter en kort pause åbner vetoet, og du får en notifikation.",
+      "notStartedTitle": "Næste: {{them}}",
+      "notStartedBody": "Din kamp åbner, når runden starter. Siden opdaterer sig selv.",
+      "outTitle": "Dit hold er ude. I sluttede som {{place}}",
+      "outBody": "Det var din sidste kamp. Gode kampe! Matchmaking er åben, hvis du vil spille videre.",
+      "wonTitle": "I vandt turneringen!",
+      "wonBody": "Godt spillet. Din præmie er i dit inventar.",
+      "spectatorTitle": "{{count}} kampe live",
+      "spectatorTitleOne": "1 kamp live",
+      "spectatorIdleTitle": "Mellem runder",
+      "spectatorBody": "Åbn en kamp for at se stillingen, banerne og hvem der spiller.",
+      "openMatchRoom": "Åbn kamprummet",
+      "openVeto": "Åbn vetoet",
+      "watchLive": "Se en livekamp",
+      "playMatchmaking": "Spil matchmaking",
+      "yourMatch": "Din kamp",
+      "opponentFrom": "Din modstander kommer fra",
+      "minutesLeft": "cirka {{count}} min tilbage",
+      "winsToTitle_one": "én sejr mere til titlen",
+      "winsToTitle_other": "{{count}} sejre mere til titlen",
+      "waitingServerTitle": "Venter på en server",
+      "waitingServerBody": "{{us}} mod {{them}}{{map}}. En server tildeles, så snart en er ledig; du får en notifikation.",
+      "wonStage": "{{stage}} vundet {{score}}",
+      "stageNext": "{{stage}} næste",
+      "faceWinnerOf": "{{us}} møder vinderen af {{a}} mod {{b}} ({{state}}). Vetoet åbner, når den kamp slutter; du får en notifikation.",
+      "feederLive": "{{score}}, bane {{map}} live",
+      "feederNotStarted": "ikke startet endnu",
+      "vetoOpens": "Vetoet åbner",
+      "inAboutMinutes_one": "om ~{{count}} min",
+      "inAboutMinutes_other": "om ~{{count}} min",
+      "later": "senere",
+      "afterBreak": "efter en kort pause",
+      "youAre": "I står {{record}}",
+      "nextRoundDrawn": "Runde {{round}} trækkes som den næste",
+      "lastRoundPlaying": "Den sidste runde spilles",
+      "betweenBody": "Din kamp i denne runde er færdig. Næste runde trækkes, når de andre kampe er færdige; din kamp vises her, og du får en notifikation.",
+      "vetoSoonTitle": "Dit baneveto åbner kl. {{time}}",
+      "vetoSoonBody": "En kort pause efter din seneste kamp. Du får en notifikation, når vetoet mod {{them}} åbner."
+    },
+    "schedule": "Program",
+    "bracket": "Bracket",
+    "round": "Runde {{n}}",
+    "final": "Finale",
+    "state": {
+      "now": "Nu",
+      "next": "Næste",
+      "later": "Senere",
+      "done": "✓ Færdig",
+      "live": "Live",
+      "upcoming": "Kommende"
+    },
+    "thisRound": "Runde {{n}}",
+    "earlier": "Tidligere runder",
+    "standings": "Stilling",
+    "teams": "Hold",
+    "wl": "S–N",
+    "rounds": "+/−",
+    "ties": {
+      "round_robin": "Lige: indbyrdes kamp, så rundedifference, så vundne runder.",
+      "swiss": "Lige: hvor stærke modstanderne var (Buchholz: deres sejre lagt sammen), så rundedifference.",
+      "elim": "Ordnet efter sejre. To nederlag, og holdet er ude.",
+      "singleElim": "Ordnet efter sejre. Ét nederlag, og holdet er ude.",
+      "doubleElim": "Ordnet efter sejre. To nederlag, og holdet er ude.",
+      "groups": "Lige i en gruppe: indbyrdes kamp, så rundedifference, så vundne runder."
+    },
+    "players": {
+      "title": "Spillere · efter rating",
+      "find": "Find en spiller",
+      "export": "Eksportér",
+      "all": "Alle {{count}} spillere",
+      "player": "Spiller",
+      "team": "Hold",
+      "rating": "Rating",
+      "change": "±",
+      "kd": "K / D",
+      "adr": "ADR",
+      "winRate": "Sejrsprocent",
+      "none": "Ingen spillere matcher."
+    }
+  },
+  "matchesCards": {
+    "show": "Vis",
+    "filterAll": "Alle {{count}}",
+    "filterLive": "Live {{count}}",
+    "filterUpcoming": "Kommende {{count}}",
+    "done": "Færdig",
+    "afterOvertime": "efter overtid",
+    "startsAt": "starter {{time}} · vetoet åbner {{veto}}",
+    "yourMatch": "Din kamp",
+    "placeholderTbd": "TBD",
+    "placeholderVeto": "Baneveto",
+    "placeholderVetoAt": "Veto {{time}}"
+  },
+  "standingsTab": {
+    "champions": "Mestre",
+    "championBadge": "MESTRE",
+    "vs": "mod",
+    "rounds": "Runder",
+    "form": "Form",
+    "intro": {
+      "round_robin": "Alle mod alle: hvert hold møder alle andre hold én gang.",
+      "swiss": "Schweizersystem: hver runde parrer hold med samme resultat.",
+      "single": "Single elimination: ét nederlag, og holdet er ude.",
+      "double": "Double elimination: to nederlag, og holdet er ude.",
+      "groups": "Grupper, derefter slutspil: hvert hold møder de andre i sin gruppe én gang; de bedste går videre til slutspillet."
+    }
+  },
+  "teamsCards": {
+    "subs": "Reserver: {{names}}"
+  },
+  "rulesTab": {
+    "atAGlance": "Kort fortalt",
+    "onThisPage": "På denne side",
+    "fromSettings": "fra turneringsindstillingerne, altid opdateret",
+    "organizer": "Arrangørens regler",
+    "facts": {
+      "map": "Bane",
+      "firstTo": "først til {{count}}",
+      "noOvertime": "Ingen",
+      "overtimeSegments_one": "1, så skade",
+      "overtimeSegments_other": "{{count}}, så skade",
+      "overtimeUnlimited": "Så mange som nødvendigt",
+      "thenDamage": "6 runder hver, først til 4",
+      "mapCount_one": "{{count}} bane",
+      "mapCount_other": "{{count}} baner"
+    },
+    "format": {
+      "title": "Sådan virker formatet",
+      "navTitle": "Formatet",
+      "swiss_one": "Alle spiller {{count}} runde, mod et hold med samme resultat. Ingen returkampe. Rangeret efter sejre, så de afgørende kriterier nedenfor.",
+      "swiss_other": "Alle spiller {{count}} runder, hver mod et hold med samme resultat. Ingen returkampe. Rangeret efter sejre, så de afgørende kriterier nedenfor.",
+      "single_elimination": "Ét nederlag, og du er ude. Bracketen kører frem til en finale.",
+      "double_elimination": "En øvre og en nedre bracket. To nederlag, og du er ude.",
+      "round_robin": "Alle møder alle én gang. Rangeret efter sejre, så de afgørende kriterier nedenfor.",
+      "shuffle": "Holdene trækkes på ny hver runde blandt de tilmeldte spillere. Spillerne rangeres efter sejre.",
+      "matches": "Hver kamp er {{series}} på MR{{mr}}-baner. Overtid: {{overtime}}.",
+      "damage": "Er en bane stadig lige efter den sidste overtid, vinder holdet med mest samlet skade."
+    }
+  },
+  "liveMatch": {
+    "updatesEveryRound": "Opdateres hver runde",
+    "chat": "Kampchat",
+    "system": "Auto Tournament",
+    "noMessages": "Ingen beskeder endnu. Sig gl hf!",
+    "chatSignIn": "Log ind som spiller i kampen for at læse og skrive her.",
+    "messageLabel": "Besked til begge hold og admins",
+    "send": "Send",
+    "callAdmin": "Kald på en admin",
+    "adminCalled": "En admin er på vej",
+    "joinTitle": "Forbind til serveren: {{map}}",
+    "warmup": "Opvarmning · forbind nu",
+    "isLive": "{{map}} er live",
+    "players": "Spillere",
+    "playersOnMap": "Spillere · {{map}}",
+    "noEconomy": "Sorteret efter rating. Ingen penge eller udstyr: intet, der afslører et holds økonomi.",
+    "yourTeam": "Dit hold",
+    "backToTournament": "Tilbage til turneringen",
+    "manage": "Administrer kampen",
+    "finishedAt": "afsluttet {{when}}",
+    "delayedNote_one": "Viser det, GOTV viser, {{count}} sekund bagud.",
+    "delayedNote_other": "Viser det, GOTV viser, {{count}} s bagud."
+  },
+  "preStart": {
+    "open": "Tilmeldingen er åben",
+    "openCloses": "Tilmeldingen er åben · lukker {{when}}",
+    "closed": "Tilmeldingen er lukket",
+    "notOpenTitle": "Tilmeldingen er ikke åben",
+    "fullTitle": "Alle pladser er taget",
+    "spotsLeft_one": "{{count}} af {{max}} pladser tilbage. Holdkaptajnerne vælger startspillere og reserver.",
+    "spotsLeft_other": "{{count}} af {{max}} pladser tilbage. Holdkaptajnerne vælger startspillere og reserver.",
+    "byOrganizer": "Arrangøren tilføjer holdene.",
+    "captainsPick": "Holdkaptajnerne vælger startspillere og reserver.",
+    "startsIn": "Starter om",
+    "allRules": "Alle regler og præmier",
+    "signedUpEyebrow": "{{team}} · tilmeldt",
+    "inTitle": "I er med",
+    "inToFix_one": "I er med. Én ting at rette",
+    "inToFix_other": "I er med. {{count}} ting at rette",
+    "fixBefore": "Ret det før tjek-ind {{when}}, ellers kan spilleren ikke forbinde til serveren.",
+    "checkInOn": "Tjek ind {{when}}. En startspiller, der ikke har tjekket ind ved start, erstattes af en reserve.",
+    "allSet": "Alle er klar. Programmet viser, hvornår det starter.",
+    "checkInOpens": "Tjek-ind åbner",
+    "openLineup": "Åbn din holdopstilling",
+    "yourSignup": "Din tilmelding",
+    "spotOf": "plads {{place}} af {{max}}",
+    "lineupCount": "Holdopstilling · {{starters}} startspillere, {{subs}} reserver",
+    "fixBeforeCheckIn": "Ret før tjek-ind",
+    "leave": "Forlad turneringen",
+    "withdrawHint": "Kan I ikke? Træk jer, så frigøres pladsen til et andet hold.",
+    "opensTitle": "Tilmeldingen åbner {{when}}",
+    "opensIn": "Åbner om {{time}}."
+  },
+  "shuffleOverview": {
+    "yourMatchLive": "din kamp er live",
+    "yourMatchReady": "din kamp er klar",
+    "yourMatchDone": "din kamp er færdig",
+    "nextDraw": "Næste lodtrækning",
+    "round": "Runde {{n}}",
+    "whenRoundEnds": "når rundens kampe er færdige",
+    "oneMapPerRound": "Én bane pr. runde · nye hold hver runde",
+    "sittingOut": "Sidder over:",
+    "firstNextRound": "først i næste runde",
+    "players": "Spillere",
+    "markOutHint": "Markér en spiller, der er gået, som ude; vedkommende sidder over, indtil du markerer dem som tilbage."
+  },
+  "checkIn": {
+    "areYouHere": "Er du her?",
+    "teamCount": "{{team}} tjekker ind: {{in}} af {{total}}. En startspiller, der ikke har tjekket ind ved start, erstattes af en reserve.",
+    "soundOn": "♪ Lyd til",
+    "firstVeto_one": "Dit første veto åbner kl. {{time}}, {{count}} minut før kampen: vær ved computeren til den tid.",
+    "firstVeto_other": "Dit første veto åbner kl. {{time}}, {{count}} minutter før kampen: vær ved computeren til den tid.",
+    "vetoOpensNote": "vetoet åbner {{time}}"
+  },
+  "runState": {
+    "paused": "Turneringen er sat på pause",
+    "pausedUntil": "Turneringen er sat på pause til {{time}}",
+    "pausedBody": "Kampe, der allerede er på en server, spiller videre. Der trækkes ingen ny runde, og intet veto åbner, før den genoptages.",
+    "reason": "Årsag: {{reason}}.",
+    "waitingServers_one": "{{count}} kamp venter på en server.",
+    "waitingServers_other": "{{count}} kampe venter på en server.",
+    "allBusy_one": "Serveren er optaget; den starter, så snart den er ledig.",
+    "allBusy_other": "Alle {{count}} servere er optaget; de starter, så snart én er ledig.",
+    "noneFree": "Ingen server er ledig; de starter, så snart én er.",
+    "servers": "Servere",
+    "pausedShort": "På pause"
+  },
+  "captainsPanel": {
+    "title": "Holdkaptajner",
+    "note": "Kun en holdkaptajn kan rapportere eller bekræfte et resultat.",
+    "make": "Gør til holdkaptajn",
+    "remove": "Fjern holdkaptajn",
+    "role": {
+      "owner": "Ejer",
+      "captain": "Holdkaptajn",
+      "member": "Medlem"
+    }
+  },
+  "lineupPanel": {
+    "title": "Holdopstilling",
+    "note_one": "Vælg {{count}} spiller til denne kamp. Resten sidder på bænken.",
+    "note_other": "Vælg {{count}} spillere til denne kamp. Resten sidder på bænken.",
+    "picked": "{{picked}} af {{count}} valgt",
+    "plays": "Spiller",
+    "bench": "Bænk",
+    "save": "Gem holdopstillingen",
+    "saved": "Holdopstillingen er gemt",
+    "notOnServer": "Holdopstillingen er gemt, men serveren tog ikke imod den: {{error}}",
+    "locked": "Opstillingen er låst, mens en bane er live. Den kan ændres mellem baner.",
+    "captainOnly": "Kun holdets ejer eller en holdkaptajn kan ændre opstillingen.",
+    "source": {
+      "previous": "Samme som holdets seneste kamp.",
+      "roster": "De første spillere på holdopstillingen."
+    }
+  },
+  "prizesPage": {
+    "title": "Præmier",
+    "intro": "Skins for en placering, som gives til hver spiller på holdet, når turneringen slutter, og en præmie til MVP'en. Kun sidens skins: ingen Steam-genstande, ingen pengeværdi.",
+    "none": "Turneringens spil har ingen præmier.",
+    "loadFailed": "Turneringen kunne ikke indlæses."
+  },
+  "schedulePage": {
+    "title": "Kamptidspunkter",
+    "intro": "Giv hver runde et starttidspunkt, eller én kamp sit eget. Spillerne ser det på kampen, får en påmindelse, og vetoet åbner til tiden.",
+    "loadFailed": "Turneringen kunne ikke indlæses.",
+    "rounds": "Runder",
+    "modeLabel": "Hvornår kampene starter",
+    "modeTimes": "På faste tidspunkter",
+    "modeAsap": "Så snart alt er klar",
+    "modeTimesNote": "Kampene venter på deres tidspunkt. Åbn en runde for at give én kamp sit eget tidspunkt.",
+    "modeAsapNote": "Ingen tidspunkter: en kamp starter, når begge hold og en server er klar.",
+    "noRounds": "Runderne vises her, når bracketen er lavet.",
+    "roundN": "Runde {{n}}",
+    "roundNote_one": "{{count}} kamp · åbn for at give den sit eget tidspunkt",
+    "roundNote_other": "{{count}} kampe · åbn for at give én kamp sit eget tidspunkt",
+    "roundNoMatches": "Dens kampe laves, når runden før er færdig",
+    "roundStartsAt": "Runden starter kl.",
+    "roundTimeLabel": "Starttidspunkt for {{round}}",
+    "matchTimeLabel": "Starttidspunkt for {{match}}",
+    "tbd": "TBD",
+    "ownTime": "Eget starttidspunkt",
+    "sameAsRound": "Samme som runden",
+    "useRoundTime": "Brug rundens tidspunkt",
+    "vetoTitle": "Vetoet",
+    "vetoNote": "Åbner af sig selv før hver kamp, så det er færdigt, når kampen starter. Et hold, der ikke handler i tide, får valgt en bane.",
+    "vetoLabel": "Vetoet åbner",
+    "vetoZero": "På starttidspunktet",
+    "reminderTitle": "Påmindelse",
+    "reminderNote": "En notifikation på siden og i Discord til hver spiller i kampen.",
+    "reminderLabel": "Påmind spillerne",
+    "reminderZero": "Fra",
+    "minutesBefore_one": "{{count}} min før",
+    "minutesBefore_other": "{{count}} min før",
+    "save": "Gem tidspunkter",
+    "saved": "Kamptidspunkterne er gemt",
+    "saveFailed": "Tidspunkterne kunne ikke gemmes",
+    "rulesTitle": "Regler, den følger",
+    "rules": {
+      "start": "Intet i en kamp starter, før dens veto åbner, heller ikke med en ledig server.",
+      "late": "En forsinket runde skubber den næste: et hold, der stadig spiller, eller pausen mellem kampe, holder vetoet tilbage, og spillerne ser det nye tidspunkt.",
+      "none": "Intet tidspunkt sat: som før starter en kamp, så snart begge hold og en server er klar.",
+      "where": "Oversigtens program, kampkortene, kamprummet, reglerne og tjek-ind viser disse tidspunkter."
+    },
+    "breaksTitle": "Pauser mellem runder",
+    "breaksNote_one": "Lad pausen være tom for at bruge sidens pause på {{count}} minut. Tilføj en længere pause efter en hvilken som helst runde, f.eks. 30 minutter efter runde 3.",
+    "breaksNote_other": "Lad pausen være tom for at bruge sidens pause på {{count}} minutter. Tilføj en længere pause efter en hvilken som helst runde, f.eks. 30 minutter efter runde 3.",
+    "breakEvery": "Pause efter hver runde (min)",
+    "breakAfterRound": "Efter runde",
+    "breakMinutes": "Pause (min)",
+    "breakRemove": "Fjern",
+    "breakAdd": "Tilføj en længere pause",
+    "fillStart": "Første runde kl.",
+    "fillEvery": "Minutter mellem runder",
+    "fillApply": "Udfyld runderne"
+  },
+  "groups": {
+    "groupN": "Gruppe {{letter}}",
+    "done": "Slut",
+    "through_one": "vinderen går videre",
+    "through_other": "top {{count}} går videre",
+    "playoffs": "Slutspil",
+    "playoffsSoon": "Slutspillet starter, når alle gruppekampe er spillet.",
+    "seedSlot": "Seed {{n}}"
+  },
+  "matchCheckIn": {
+    "eyebrow": "Veto åbent · kampen starter {{time}}",
+    "eyebrowNoTime": "Tjek-ind åben",
+    "title": "Tjek ind til denne kamp",
+    "body": "Denne turnering tjekker ind før hver kamp. Startspillerne siger, at de er her; en holdkaptajn kan gøre det for dem. Reserver er allerede klar.",
+    "closesIn": "Tjek-ind lukker om",
+    "yourTeam": "{{team}} (dit hold)",
+    "count": "{{in}} af {{total}} startspillere tjekket ind",
+    "sub": "RES",
+    "starter": "START",
+    "ready": "Klar",
+    "checkedIn": "Tjekket ind",
+    "notYet": "Ikke endnu",
+    "rule": "Ikke tjekket ind ved start: en startspiller skiftes ud med en reserve, og kamprummet viser hvem. Ingen reserve tilbage: holdet spiller med én mand mindre.",
+    "server": {
+      "eyebrow": "Server klar · fuldt hold senest {{time}}",
+      "eyebrowNoTime": "Server klar",
+      "title": "Få dit hold på serveren",
+      "bodyOut": "{{out}} tjekkede ikke ind, så en reserve spiller i stedet.",
+      "body_one": "En af jer skal være på serveren, før timeren løber ud. Reserver tæller.",
+      "body_other": "{{count}} af jer skal være på serveren, før timeren løber ud. Reserver tæller.",
+      "clockLabel": "Fuldt hold påkrævet om",
+      "count": "{{on}} af {{size}} på serveren",
+      "onServer": "På serveren",
+      "joining": "Forbinder…",
+      "subIn": "IND",
+      "out": "UD",
+      "swapped": "Skiftet ud med reserve",
+      "rule": "Ved 0:00 vælger det komplette hold: tag walkover, eller spil mod det ufuldstændige hold. Begge hold ufuldstændige: en admin beslutter."
+    },
+    "choice": {
+      "eyebrow": "{{team}} er stadig ufuldstændigt",
+      "title": "{{team}} har {{on}} af {{size}} på serveren",
+      "body": "Deres tid er gået. Tag walkover og gå videre, eller spil mod dem alligevel. Begge holdkaptajner kan vælge. Intet valg inden 2 minutter: walkover gælder.",
+      "take": "Tag walkover",
+      "play": "Spil alligevel"
+    }
+  }
+}

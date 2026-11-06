@@ -1,0 +1,12 @@
+{
+  "devAccountSwitcher": {
+    "tooltip": "Skift konto (dev)",
+    "adminTest": "Admin (test)",
+    "playerA": "Spiller A (dev)",
+    "playerB": "Spiller B (dev)",
+    "playerC": "Spiller C (dev)",
+    "newPlayer": "Ny spiller (første besøg) (dev)",
+    "signOut": "Log ud",
+    "disabled": "Testlogin er slået fra på denne server"
+  }
+}
