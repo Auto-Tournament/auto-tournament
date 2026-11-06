@@ -1,0 +1,12 @@
+{
+  "devAccountSwitcher": {
+    "tooltip": "สลับบัญชี (dev)",
+    "adminTest": "ผู้ดูแล (ทดสอบ)",
+    "playerA": "ผู้เล่น A (dev)",
+    "playerB": "ผู้เล่น B (dev)",
+    "playerC": "ผู้เล่น C (dev)",
+    "newPlayer": "ผู้เล่นใหม่ (เข้าครั้งแรก) (dev)",
+    "signOut": "ออกจากระบบ",
+    "disabled": "การเข้าสู่ระบบทดสอบถูกปิดบนเซิร์ฟเวอร์นี้"
+  }
+}
