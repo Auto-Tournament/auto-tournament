@@ -1,0 +1,124 @@
+{
+  "origin-hint": {
+    "seed": "Cap de serie {{position}}",
+    "winner-bracket": "Învinsul $t(abbreviations.winner-bracket) {{round}}.{{position}}",
+    "winner-bracket-semi-final": "Învinsul semifinalei $t(abbreviations.winner-bracket) {{position}}",
+    "winner-bracket-final": "Învinsul finalei $t(abbreviations.winner-bracket)",
+    "consolation-final": "Învinsul semifinalei {{position}}",
+    "grand-final": "Câștigătorul finalei $t(abbreviations.loser-bracket)",
+    "double-elimination-consolation-final-opponent-1": "Învinsul semifinalei $t(abbreviations.loser-bracket) 1",
+    "double-elimination-consolation-final-opponent-2": "Învinsul finalei $t(abbreviations.loser-bracket)"
+  },
+  "match-label": {
+    "default": "Meciul {{matchNumber}}",
+    "winner-bracket": "$t(abbreviations.winner-bracket)",
+    "loser-bracket": "$t(abbreviations.loser-bracket)",
+    "standard-bracket": "$t(abbreviations.match)",
+    "standard-bracket-semi-final": "Semifinala {{matchNumber}}",
+    "standard-bracket-final": "Finală",
+    "double-elimination": "{{matchPrefix}} {{roundNumber}}.{{matchNumber}}",
+    "double-elimination-semi-final": "{{matchPrefix}} semifinala {{matchNumber}}",
+    "double-elimination-final": "{{matchPrefix}} finală",
+    "consolation-final": "Finala mică",
+    "grand-final-single": "Marea finală",
+    "grand-final": "$t(abbreviations.grand-final) turul {{roundNumber}}",
+    "match-game": "Jocul {{gameNumber}}"
+  },
+  "match-status": {
+    "locked": "Blocat",
+    "waiting": "În așteptare",
+    "ready": "Gata",
+    "running": "În desfășurare",
+    "completed": "Încheiat",
+    "archived": "Arhivat"
+  },
+  "abbreviations": {
+    "win": "V",
+    "loss": "Î",
+    "forfeit": "A",
+    "position": "Loc",
+    "seed": "#",
+    "winner-bracket": "TS",
+    "loser-bracket": "TI",
+    "match": "M",
+    "grand-final": "MF"
+  },
+  "ranking": {
+    "rank": {
+      "text": "#",
+      "tooltip": "Loc"
+    },
+    "id": {
+      "text": "Nume",
+      "tooltip": "Nume"
+    },
+    "played": {
+      "text": "J",
+      "tooltip": "Jucate"
+    },
+    "wins": {
+      "text": "$t(abbreviations.win)",
+      "tooltip": "Victorii"
+    },
+    "draws": {
+      "text": "E",
+      "tooltip": "Egaluri"
+    },
+    "losses": {
+      "text": "$t(abbreviations.loss)",
+      "tooltip": "Înfrângeri"
+    },
+    "forfeits": {
+      "text": "$t(abbreviations.forfeit)",
+      "tooltip": "Abandonuri"
+    },
+    "scoreFor": {
+      "text": "PM",
+      "tooltip": "Puncte marcate"
+    },
+    "scoreAgainst": {
+      "text": "PP",
+      "tooltip": "Puncte primite"
+    },
+    "scoreDifference": {
+      "text": "+/-",
+      "tooltip": "Diferență de puncte"
+    },
+    "points": {
+      "text": "Pct",
+      "tooltip": "Puncte"
+    }
+  },
+  "common": {
+    "bye": "BYE",
+    "best-of-x": "Bo{{x}}",
+    "consolation": "Consolare",
+    "group-name": "Grupa {{groupNumber}}",
+    "group-name-winner-bracket": "Tabloul superior",
+    "group-name-loser-bracket": "Tabloul inferior",
+    "round-name": "Turul {{roundNumber}}",
+    "round-name-final": "Turul final",
+    "round-name-winner-bracket": "$t(abbreviations.winner-bracket) turul {{roundNumber}}",
+    "round-name-winner-bracket-final": "$t(abbreviations.winner-bracket) turul final",
+    "round-name-loser-bracket": "$t(abbreviations.loser-bracket) turul {{roundNumber}}",
+    "round-name-loser-bracket-final": "$t(abbreviations.loser-bracket) turul final"
+  },
+  "form-creator": {
+    "stage-name-label": "Denumește etapa",
+    "stage-name-placeholder": "Dă un nume etapei",
+    "stage-selector-label": "Alege o etapă",
+    "team-label": "Denumește echipele",
+    "team-label-placeholder": "Listă de nume de echipe separate prin virgulă (trebuie să fie 2^n)",
+    "team-count": "Sau un număr de echipe",
+    "team-count-placeholder": "Câte echipe vrei?",
+    "group-label": "Câte grupe?",
+    "group-placeholder": "Câte grupe vrei?",
+    "seed-order-label": "Cum vrei să ordonezi capii de serie?",
+    "double-elimination-seed-order-placeholder": "Ordinea capilor de serie pentru dublă eliminare, separată prin virgulă",
+    "round-robin-mode-label": "Ce mod round robin preferi?",
+    "consolation-final-label": "Finala mică",
+    "skip-first-round-label": "Sari peste primul tur",
+    "grand-final-type-label": "Tipul marii finale",
+    "submit": "Creează"
+  }
+}
