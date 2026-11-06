@@ -40,4 +40,5 @@ export const cs2Locales: ModuleLocales = {
   el: () => import('./el.json'),
   vi: () => import('./vi.json'),
   th: () => import('./th.json'),
+  id: () => import('./id.json'),
 };
