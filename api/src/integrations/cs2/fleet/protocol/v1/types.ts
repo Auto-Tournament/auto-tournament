@@ -494,6 +494,8 @@ export type MatchUpdateOp =
       language?: string;
     }
   | { op: 'remove_player'; steamid64: U64s }
+  /** Only to a server with the `match.language.v1` capability. */
+  | { op: 'set_language'; steamid64: U64s; language: string }
   | { op: 'rename_team'; team: TeamKey; name: string }
   | { op: 'set_password'; password: string }
   | { op: 'set_rules'; rules: MatchRules };

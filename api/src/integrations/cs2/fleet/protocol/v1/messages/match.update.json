@@ -62,6 +62,22 @@
           },
           {
             "type": "object",
+            "description": "The player's site language changed (match.defs.json $defs/language). Sent only to a server with the match.language.v1 capability. Clears the player's .lang choice like match.assign's language.",
+            "required": ["op", "steamid64", "language"],
+            "properties": {
+              "op": {
+                "const": "set_language"
+              },
+              "steamid64": {
+                "$ref": "../defs.json#/$defs/u64s"
+              },
+              "language": {
+                "$ref": "../match.defs.json#/$defs/language"
+              }
+            }
+          },
+          {
+            "type": "object",
             "required": ["op", "team", "name"],
             "properties": {
               "op": {
