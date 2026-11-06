@@ -1,0 +1,82 @@
+{
+  "compatPage": {
+    "title": "Khả năng tương thích của Ready Up",
+    "subtitle": "Plugin Ready Up có chạy được với bản cập nhật Counter-Strike 2 mới nhất hay không, được kiểm tra tự động mỗi khi có bản build CS2 mới.",
+    "live": "Trực tiếp",
+    "offline": "Đang kết nối lại…",
+    "loading": "Đang tải khả năng tương thích",
+    "loadError": "Không tải được khả năng tương thích. Hãy thử lại sau giây lát.",
+    "disabledTitle": "Không có ở đây",
+    "disabledDescription": "Trang web này không công bố khả năng tương thích của Ready Up.",
+    "emptyTitle": "Chưa có kết quả",
+    "emptyDescription": "Chưa có lần kiểm tra tương thích nào báo về. Trang này tự cập nhật ngay khi có.",
+    "checkedAgo": "Đã kiểm tra {{time}}",
+    "viewRun": "Xem lần chạy",
+    "factsLabel": "Những gì đã kiểm tra",
+    "facts": {
+      "patch": "Bản vá CS2",
+      "buildid": "Build ID",
+      "readyup": "Ready Up",
+      "stage": "Giai đoạn"
+    },
+    "overall": {
+      "pass": "Tương thích",
+      "warn": "Tương thích, có cảnh báo",
+      "fail": "Không tương thích",
+      "checking": "Đang kiểm tra…",
+      "no_verdict": "Chưa có kết luận"
+    },
+    "overallHint": {
+      "pass": "Mọi thành phần đều vượt qua kiểm tra trên bản build này.",
+      "warn": "Ready Up chạy được trên bản build này, nhưng một số kiểm tra cần xem kỹ hơn.",
+      "fail": "Ít nhất một thành phần không chạy được trên bản build này. Hãy tạm hoãn cập nhật máy chủ.",
+      "checking": "Đang kiểm tra bản build này.",
+      "no_verdict": "Lần kiểm tra gần nhất không đưa ra được kết luận."
+    },
+    "status": {
+      "pass": "Đạt",
+      "warn": "Cảnh báo",
+      "fail": "Không đạt",
+      "pending": "Đang chờ",
+      "checking": "Đang kiểm tra…"
+    },
+    "stage": {
+      "static": "Phân tích tĩnh",
+      "selftest": "Tự kiểm tra",
+      "live": "Máy chủ thật"
+    },
+    "state": {
+      "queued": "Trong hàng chờ",
+      "checking": "Đang kiểm tra",
+      "pass": "Đạt",
+      "warn": "Cảnh báo",
+      "fail": "Không đạt",
+      "no_verdict": "Chưa có kết luận"
+    },
+    "trigger": {
+      "build_change": "Bản build CS2 mới",
+      "surface_change": "Dữ liệu game thay đổi",
+      "code_change": "Ready Up thay đổi",
+      "nightly": "Hằng đêm",
+      "release": "Bản phát hành Ready Up",
+      "manual": "Thủ công"
+    },
+    "kind": {
+      "signature": "Chữ ký",
+      "rtti": "RTTI",
+      "vtable": "Bảng ảo",
+      "hook_site": "Điểm hook",
+      "layout": "Bố cục bộ nhớ",
+      "schema": "Schema",
+      "event": "Sự kiện game",
+      "selftest": "Tự kiểm tra",
+      "livetest": "Kiểm tra trực tiếp"
+    },
+    "componentsTitle": "Thành phần",
+    "checksSummary": "Đạt {{passed}} trên {{total}} kiểm tra",
+    "noChecks": "Chưa có kiểm tra nào báo về",
+    "failures": "Lỗi",
+    "historyTitle": "Các lần chạy gần đây",
+    "historyItem": "CS2 {{patch}} · build {{buildid}}"
+  }
+}

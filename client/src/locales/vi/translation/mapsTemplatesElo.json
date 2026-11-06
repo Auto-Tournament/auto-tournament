@@ -1,0 +1,201 @@
+{
+  "templatesPage": {
+    "header": {
+      "createFromTournament": "Tạo mẫu từ giải đấu"
+    },
+    "errors": {
+      "load": "Không tải được mẫu"
+    },
+    "delete": {
+      "title": "Xóa mẫu",
+      "message": "Bạn có chắc muốn xóa mẫu “{{name}}”? Thao tác này không thể hoàn tác.",
+      "success": "Đã xóa mẫu “{{name}}”",
+      "error": "Không xóa được mẫu"
+    },
+    "update": {
+      "success": "Đã cập nhật mẫu “{{name}}”",
+      "error": "Không cập nhật được mẫu"
+    },
+    "createFromTemplate": {
+      "errors": {
+        "inProgressOrCompleted": "Không thể tạo giải đấu từ mẫu khi đang có giải diễn ra hoặc đã kết thúc. Hãy xóa hoặc đặt lại giải hiện tại trước.",
+        "alreadyExists": "Đã có một giải đấu. Hãy xóa hoặc đặt lại giải hiện tại trước khi tạo giải mới từ mẫu."
+      },
+      "button": "Tạo giải đấu từ mẫu"
+    },
+    "edit": {
+      "title": "Sửa mẫu",
+      "nameLabel": "Tên mẫu",
+      "descriptionLabel": "Mô tả (tùy chọn)",
+      "typeLabel": "Loại giải đấu",
+      "formatLabel": "Thể thức trận",
+      "mapPool": {
+        "title": "Nhóm bản đồ",
+        "selectLabel": "Chọn nhóm bản đồ",
+        "customOption": "Tùy chỉnh",
+        "selectedLabel": "Bản đồ đã chọn ({{count}}):",
+        "vetoWarning": "Thể thức có veto (BO1/BO3/BO5) cần đúng 7 bản đồ. Đang chọn: {{count}}",
+        "chooseMaps": "Chọn bản đồ..."
+      },
+      "save": "Lưu"
+    },
+    "emptyTitle": "Chưa có mẫu",
+    "emptyDescription": "Lưu thiết lập của một giải đấu thành mẫu từ trang Giải đấu, rồi bắt đầu giải mới từ mẫu đó tại đây."
+  },
+  "saveTemplateModal": {
+    "title": "Lưu thành mẫu",
+    "nameLabel": "Tên mẫu",
+    "namePlaceholder": "Loại trực tiếp 8 đội BO3",
+    "descriptionLabel": "Giải loại trực tiếp 8 đội hằng tuần",
+    "descriptionPlaceholder": "Mô tả (tùy chọn)",
+    "saveButton": "Lưu mẫu",
+    "errors": {
+      "nameRequired": "Cần nhập tên mẫu",
+      "saveFailed": "Không lưu được mẫu"
+    }
+  },
+  "eloTemplatesPage": {
+    "errors": {
+      "load": "Không tải được mẫu xếp hạng"
+    },
+    "header": {
+      "createTemplate": "Tạo mẫu",
+      "importJson": "Nhập từ JSON"
+    },
+    "empty": {
+      "title": "Không có mẫu xếp hạng",
+      "description": "Tạo mẫu đầu tiên để tùy chỉnh cách thống kê người chơi ảnh hưởng đến điều chỉnh ELO",
+      "action": "Tạo mẫu"
+    },
+    "delete": {
+      "title": "Xóa mẫu xếp hạng",
+      "message": "Bạn có chắc muốn xóa “{{name}}”? Thao tác này không thể hoàn tác.",
+      "success": "Đã xóa mẫu “{{name}}”",
+      "error": "Không xóa được mẫu",
+      "defaultProtected": "Không thể xóa mẫu mặc định “pure-win-loss”."
+    },
+    "import": {
+      "success_one": "Đã nhập {{count}} mẫu xếp hạng",
+      "success_other": "Đã nhập {{count}} mẫu xếp hạng"
+    },
+    "weights": {
+      "noAdjustmentsPure": "Không điều chỉnh theo thống kê (chỉ thắng/thua)"
+    },
+    "card": {
+      "enabled": "Bật",
+      "disabled": "Tắt",
+      "default": "Mặc định",
+      "adjustment": {
+        "none": "Điều chỉnh theo thống kê mỗi trận: không có (0; ELO chỉ theo kết quả)",
+        "uncapped": "Điều chỉnh theo thống kê mỗi trận: không giới hạn (dùng cẩn thận)",
+        "range": "Khoảng điều chỉnh theo thống kê mỗi trận: {{min}} đến {{max}} ELO",
+        "noMin": "không có tối thiểu",
+        "noMax": "không có tối đa"
+      },
+      "tooltips": {
+        "edit": "Sửa mẫu",
+        "delete": "Xóa mẫu"
+      },
+      "weightsTitle": "Trọng số thống kê:",
+      "limitsTitle": "Giới hạn điều chỉnh:",
+      "minAdjustment": "Tối thiểu: {{value}}",
+      "maxAdjustment": "Tối đa: {{value}}"
+    },
+    "importModal": {
+      "title": "Nhập mẫu xếp hạng từ JSON",
+      "introTitle": "Dán JSON chứa định nghĩa mẫu xếp hạng bên dưới.",
+      "introBody": "Định dạng mong đợi: mảng các mẫu có name, description (tùy chọn), enabled, weights, maxAdjustment và minAdjustment. Nếu bỏ trống id, id sẽ được tạo từ tên.",
+      "jsonLabel": "Dữ liệu JSON",
+      "validJsonTitle": "✓ JSON hợp lệ!",
+      "previewTitle": "Xem trước:",
+      "previewButton": "Xem trước",
+      "importButton": "Nhập mẫu",
+      "validJsonBody_one": "Tìm thấy {{count}} mẫu.",
+      "validJsonBody_other": "Tìm thấy {{count}} mẫu."
+    },
+    "editor": {
+      "titleEdit": "Sửa mẫu xếp hạng",
+      "titleCreate": "Tạo mẫu xếp hạng",
+      "info": "Thiết lập cách từng chỉ số thống kê của người chơi ảnh hưởng đến điều chỉnh ELO. Trọng số được áp dụng sau khi OpenSkill tính thay đổi ELO cơ bản (thắng/thua). Trọng số dương tăng ELO, trọng số âm giảm ELO.",
+      "nameLabel": "Tên mẫu",
+      "nameDefaultLocked": "Không thể đổi tên mẫu mặc định",
+      "descriptionLabel": "Mô tả",
+      "descriptionPlaceholder": "Mô tả mục đích của mẫu này (tùy chọn)",
+      "enabledLabel": "Bật",
+      "weights": {
+        "title": "Trọng số thống kê",
+        "subtitle": "Kéo thanh trượt cho từng chỉ số. Giá trị 0 nghĩa là không điều chỉnh cho chỉ số đó."
+      },
+      "limits": {
+        "title": "Giới hạn điều chỉnh (tùy chọn)",
+        "subtitle": "Đặt mức điều chỉnh ELO tối đa và tối thiểu mỗi trận để tránh thay đổi quá lớn.",
+        "maxLabel": "Điều chỉnh tối đa",
+        "maxHelper": "Mức điều chỉnh ELO dương tối đa mỗi trận",
+        "minLabel": "Điều chỉnh tối thiểu",
+        "minHelper": "Mức điều chỉnh ELO âm tối đa mỗi trận"
+      },
+      "errors": {
+        "nameRequired": "Cần nhập tên mẫu"
+      },
+      "create": {
+        "success": "Đã tạo mẫu “{{name}}”",
+        "error": "Không tạo được mẫu"
+      },
+      "update": {
+        "success": "Đã cập nhật mẫu “{{name}}”",
+        "error": "Không cập nhật được mẫu"
+      },
+      "buttons": {
+        "saving": "Đang lưu...",
+        "update": "Cập nhật",
+        "create": "Tạo"
+      }
+    },
+    "stats": {
+      "kills": {
+        "label": "Kills",
+        "description": "Số kill mỗi trận"
+      },
+      "deaths": {
+        "label": "Deaths",
+        "description": "Số lần chết mỗi trận (thường dùng trọng số âm)"
+      },
+      "assists": {
+        "label": "Assists",
+        "description": "Số assist mỗi trận"
+      },
+      "flashAssists": {
+        "label": "Flash Assists",
+        "description": "Số flash assist mỗi trận"
+      },
+      "headshotKills": {
+        "label": "Headshot Kills",
+        "description": "Số kill bằng headshot mỗi trận"
+      },
+      "damage": {
+        "label": "Sát thương",
+        "description": "Tổng sát thương gây ra mỗi trận"
+      },
+      "utilityDamage": {
+        "label": "Sát thương từ vật phẩm",
+        "description": "Sát thương gây ra bằng vật phẩm (lựu đạn)"
+      },
+      "kast": {
+        "label": "KAST %",
+        "description": "Tỉ lệ hiệp có Kill, Assist, Survive hoặc Trade"
+      },
+      "mvps": {
+        "label": "MVP",
+        "description": "Số danh hiệu MVP mỗi trận"
+      },
+      "score": {
+        "label": "Điểm",
+        "description": "Điểm trận (tổng hợp nhiều yếu tố)"
+      },
+      "adr": {
+        "label": "ADR",
+        "description": "Sát thương trung bình mỗi hiệp"
+      }
+    }
+  }
+}

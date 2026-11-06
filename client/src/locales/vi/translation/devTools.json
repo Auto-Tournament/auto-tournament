@@ -1,0 +1,141 @@
+{
+  "devToolsPage": {
+    "alert": "Các công cụ này chỉ có trong chế độ phát triển. Dùng chúng để nhanh chóng tạo dữ liệu thử nghiệm cho ứng dụng.",
+    "sections": {
+      "testData": {
+        "title": "Tạo dữ liệu thử nghiệm"
+      }
+    },
+    "testTeams": {
+      "title": "Đội thử nghiệm",
+      "description": "Tạo đội với dữ liệu người chơi ngẫu nhiên để thử nhánh đấu và trận đấu của giải.",
+      "success": "Đã tạo {{count}} đội thử nghiệm!",
+      "errors": {
+        "create": "Không tạo được đội thử nghiệm",
+        "partial": "Đã tạo {{created}} đội, nhưng {{failed}} đội lỗi. Xem console để biết chi tiết."
+      },
+      "customLabel": "Số đội tùy chỉnh",
+      "buttons": {
+        "createFixed": "Tạo {{count}} đội",
+        "createCustom": "Tạo đội"
+      }
+    },
+    "testPlayers": {
+      "title": "Người chơi thử nghiệm",
+      "description": "Tạo người chơi có điểm ELO để thử giải đấu xáo trộn và quản lý người chơi.",
+      "success": "Đã tạo {{created}} người chơi thử nghiệm!",
+      "errors": {
+        "create": "Không tạo được người chơi thử nghiệm",
+        "partial": "Đã tạo {{created}} người chơi, cập nhật {{updated}}, nhưng {{failed}} lỗi. Xem console để biết chi tiết."
+      },
+      "customLabel": "Số người chơi tùy chỉnh",
+      "buttons": {
+        "createFixed": "Tạo {{count}} người chơi",
+        "createCustom": "Tạo người chơi"
+      },
+      "successWithUpdated": "Đã tạo {{created}} và cập nhật {{updated}} người chơi thử nghiệm!"
+    },
+    "testServers": {
+      "title": "Máy chủ thử nghiệm",
+      "description": "Tạo máy chủ thử nghiệm để thử quản lý trận đấu.",
+      "success": "Đã tạo {{count}} máy chủ thử nghiệm!",
+      "errors": {
+        "create": "Không tạo được máy chủ thử nghiệm",
+        "partial": "Đã tạo {{created}} máy chủ, nhưng {{failed}} máy chủ lỗi. Xem console để biết chi tiết."
+      },
+      "customLabel": "Số máy chủ tùy chỉnh",
+      "buttons": {
+        "createCustom": "Tạo máy chủ",
+        "createFixed_one": "Tạo {{count}} máy chủ",
+        "createFixed_other": "Tạo {{count}} máy chủ"
+      }
+    },
+    "dangerZone": {
+      "title": "Vùng nguy hiểm"
+    },
+    "deleteTestData": {
+      "title": "Xóa dữ liệu thử nghiệm",
+      "description": "Xóa toàn bộ dữ liệu thử nghiệm (đội và máy chủ có tiền tố 'test-'). Thao tác này không thể hoàn tác.",
+      "button": "Xóa toàn bộ dữ liệu thử nghiệm",
+      "confirmPrompt": "Bạn có chắc muốn xóa TOÀN BỘ dữ liệu thử nghiệm?",
+      "success": "Đã xóa toàn bộ dữ liệu thử nghiệm!",
+      "error": "Không xóa được dữ liệu thử nghiệm"
+    },
+    "wipeTable": {
+      "title": "Xóa sạch từng bảng",
+      "description": "Xóa toàn bộ dữ liệu trong một bảng cụ thể. Hữu ích để dọn dẹp mà không cần đặt lại mọi thứ. Các bảng được sắp theo nhóm.",
+      "confirmPrompt": "Bạn có chắc muốn xóa sạch bảng {{table}}? Toàn bộ dữ liệu trong bảng đó sẽ bị xóa.",
+      "success": "Đã xóa sạch bảng {{table}}!",
+      "error": "Không xóa sạch được bảng {{table}}",
+      "core": {
+        "title": "Bảng chính",
+        "teams": "Xóa đội",
+        "servers": "Xóa máy chủ",
+        "tournament": "Xóa giải đấu",
+        "matches": "Xóa trận đấu"
+      },
+      "players": {
+        "title": "Người chơi và giải đấu xáo trộn",
+        "players": "Xóa người chơi",
+        "ratingHistory": "Xóa lịch sử xếp hạng",
+        "matchStats": "Xóa thống kê trận",
+        "shufflePlayers": "Xóa người chơi xáo trộn"
+      },
+      "maps": {
+        "title": "Bản đồ và mẫu",
+        "maps": "Xóa bản đồ",
+        "mapPools": "Xóa nhóm bản đồ",
+        "tournamentTemplates": "Xóa mẫu giải đấu",
+        "eloTemplates": "Xóa mẫu xếp hạng"
+      },
+      "matchEvents": {
+        "title": "Sự kiện và kết quả trận",
+        "events": "Xóa sự kiện trận",
+        "mapResults": "Xóa kết quả bản đồ"
+      },
+      "settings": {
+        "title": "Cài đặt",
+        "appSettings": "Xóa cài đặt ứng dụng"
+      }
+    },
+    "simulation": {
+      "title": "Trạng thái mô phỏng",
+      "description": "Xóa mọi trận đấu và thống kê cũ để bạn có thể nhấn “Bắt đầu giải đấu” ở chế độ mô phỏng trên một nhánh đấu sạch, nhưng vẫn giữ máy chủ, đội, bản đồ và thiết lập giải đấu hiện tại.",
+      "button": "Đặt lại trạng thái mô phỏng (giữ cấu hình)",
+      "reset": {
+        "success": "Đã đặt lại trạng thái mô phỏng. Đã xóa trận và thống kê; giữ nguyên máy chủ, đội và thiết lập giải đấu.",
+        "error": "Không đặt lại được trạng thái mô phỏng"
+      }
+    },
+    "wipeDatabase": {
+      "title": "Xóa sạch toàn bộ cơ sở dữ liệu",
+      "warningTitle": "CỰC KỲ NGUY HIỂM!",
+      "warningBody": "Thao tác này sẽ xóa TOÀN BỘ dữ liệu.",
+      "permanentlyDeletes": "Xóa vĩnh viễn:",
+      "items": {
+        "tournaments": "Mọi giải đấu và nhánh đấu",
+        "matches": "Mọi trận đấu và sự kiện",
+        "teams": "Mọi đội và người chơi",
+        "servers": "Mọi cấu hình máy chủ"
+      },
+      "button": "Xóa sạch toàn bộ cơ sở dữ liệu",
+      "successRedirect": "Đã xóa sạch cơ sở dữ liệu! Đang chuyển hướng...",
+      "error": "Không xóa sạch được cơ sở dữ liệu",
+      "dialog": {
+        "title": "Xác nhận xóa sạch cơ sở dữ liệu",
+        "areYouSure": "Bạn thực sự chắc chắn?",
+        "actionWill": "Thao tác này sẽ",
+        "permanentlyDelete": "xóa vĩnh viễn",
+        "items": {
+          "tournaments": "Mọi dữ liệu giải đấu và nhánh đấu",
+          "matches": "Mọi lịch sử và sự kiện trận đấu",
+          "teams": "Mọi đội và cấu hình người chơi",
+          "servers": "Mọi cấu hình máy chủ"
+        },
+        "cannotUndo": "Thao tác này không thể hoàn tác!",
+        "wiping": "Đang xóa sạch cơ sở dữ liệu...",
+        "yesWipe": "Có, xóa sạch mọi thứ"
+      }
+    }
+  }
+}

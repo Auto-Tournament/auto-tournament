@@ -1,0 +1,287 @@
+{
+  "notificationPrompt": {
+    "title": "Bật thông báo",
+    "body": "Chúng tôi khuyên bạn bật. Khi đó bạn vẫn nhận tin từ chúng tôi kể cả khi đóng tab này:",
+    "matchReady": "trận của bạn đã sẵn sàng để vào",
+    "vetoTurn": "đến lượt bạn trong veto bản đồ",
+    "starting": "giải đấu bạn đã đăng ký sắp bắt đầu",
+    "iphone": "Trên iPhone, hãy thêm trang này vào Màn hình chính trước (Chia sẻ, rồi Thêm vào MH chính), và mở từ đó.",
+    "change": "Bạn có thể thay đổi bất cứ lúc nào trong cài đặt thông báo.",
+    "later": "Để sau",
+    "turnOn": "Bật (khuyến nghị)"
+  },
+  "social": {
+    "bell": {
+      "title": "Thông báo",
+      "label": "Thông báo",
+      "labelUnread_one": "Thông báo, {{count}} mới",
+      "labelUnread_other": "Thông báo, {{count}} mới",
+      "markAllRead": "Đánh dấu tất cả đã đọc",
+      "show": "Hiện",
+      "filter": {
+        "all": "Tất cả",
+        "you": "Cần bạn xử lý",
+        "tournaments": "Giải đấu",
+        "matches": "Trận đấu",
+        "skins": "Skin",
+        "clips": "Clip",
+        "other": "Khác"
+      },
+      "empty": "Chưa có gì ở đây",
+      "emptyHint": "Lời mời vào nhóm, lời mời kết bạn, tin giải đấu, skin mới và highlight đã sẵn sàng sẽ hiện ở đây.",
+      "loading": "Đang tải…",
+      "seeAll": "Xem tất cả thông báo",
+      "loadOlder": "Tải mục cũ hơn",
+      "settings": "Cài đặt thông báo"
+    },
+    "notice": {
+      "partyInvite": "đã mời bạn vào nhóm",
+      "teamInvite": "đã mời bạn tham gia",
+      "joinedTeam": "Bạn đã vào đội",
+      "partyDetail": "{{mode}} · {{size}} người trong nhóm",
+      "join": "Tham gia",
+      "decline": "Từ chối",
+      "accept": "Chấp nhận",
+      "ignore": "Bỏ qua",
+      "friendRequest": "đã gửi lời mời kết bạn",
+      "friendAccepted": "đã chấp nhận lời mời kết bạn của bạn",
+      "skin": "Skin mới:",
+      "highlight": "Highlight của bạn đã sẵn sàng:",
+      "highlightVictim": "{{name}} hạ bạn trong clip của họ:",
+      "highlightAssist": "Bạn hỗ trợ {{name}} trong clip của họ:",
+      "highlightKiller": "Bạn hạ {{name}} trong clip của họ:",
+      "tournamentStarted": "đã bắt đầu. Trận đầu tiên của bạn đã đến.",
+      "lineupGap": "· một người chơi chính đã rời đội hình. Hãy chọn dự bị trong {{minutes}} phút, nếu không đội sẽ thi đấu thiếu người.",
+      "checkInOpen": "đã mở điểm danh. Hãy điểm danh trước khi đóng.",
+      "joined": "Bạn đã vào nhóm",
+      "nowFriends": "Giờ các bạn đã là bạn bè",
+      "declined": "Đã từ chối",
+      "expired": "Nhóm này đã kết thúc",
+      "reportNew": "đã bị báo cáo: {{reason}}",
+      "reportReviewed": "Cảm ơn: báo cáo của bạn về {{name}} đã được xem xét.",
+      "matchReady": "đã sẵn sàng. Mở phòng trận để kết nối.",
+      "vetoTurn": "đến lượt đội bạn trong veto.",
+      "startsSoon": "bắt đầu sau {{minutes}} phút. Hãy sẵn sàng vào trận đầu tiên.",
+      "startsSoonUpdate": "bắt đầu sau {{minutes}} phút. Mở game ngay để mọi bản cập nhật xong trước trận đầu tiên.",
+      "matchSoon": "veto của bạn mở sau {{minutes}} phút và sẽ diễn ra dù bạn có mặt hay không. Hãy ngồi trước máy.",
+      "noShow": "bạn đã không vào trận nên bị loại khỏi các vòng tiếp theo. Mở giải đấu và báo đã quay lại để chơi tiếp.",
+      "discordLink": "liên kết tài khoản Discord để nhận kênh của đội và được chuyển vào kênh thoại.",
+      "signedUp": "· {{team}} đã vào. Xem những điều cần biết trước khi bắt đầu."
+    },
+    "toast": {
+      "join": "Vào nhóm",
+      "close": "Đóng",
+      "closes_one": "Đóng sau {{count}} giây · vẫn ở trong chuông",
+      "closes_other": "Đóng sau {{count}} giây · vẫn ở trong chuông"
+    },
+    "friends": {
+      "title": "Bạn bè",
+      "tabFriends": "Bạn bè",
+      "tabRequests": "Lời mời",
+      "tabAdd": "Thêm bạn",
+      "online_one": "Trực tuyến · {{count}}",
+      "online_other": "Trực tuyến · {{count}}",
+      "offline_one": "Ngoại tuyến · {{count}}",
+      "offline_other": "Ngoại tuyến · {{count}}",
+      "onlineCount_one": "{{count}} trực tuyến",
+      "onlineCount_other": "{{count}} trực tuyến",
+      "invite": "Mời",
+      "inParty": "Trong nhóm của bạn",
+      "more": "Thêm cho {{name}}",
+      "viewProfile": "Xem hồ sơ",
+      "remove": "Xóa bạn",
+      "removed": "{{name}} không còn là bạn của bạn",
+      "none": "Chưa có bạn bè",
+      "noneHint": "Thêm những người bạn chơi cùng, rồi mời họ vào nhóm từ đây hoặc từ Chơi.",
+      "incoming": "Đến",
+      "sent": "Đã gửi",
+      "noIncoming": "Không có lời mời nào đang chờ bạn.",
+      "noSent": "Bạn không có lời mời nào đang chờ.",
+      "askedAgo": "Đã gửi lúc {{when}}",
+      "sentAgo": "Đã gửi {{when}}",
+      "cancelRequest": "Hủy lời mời",
+      "searchPlaceholder": "Tên hoặc liên kết hồ sơ Steam",
+      "results": "Trên Auto Tournament",
+      "playedWith": "Đã chơi cùng gần đây",
+      "noResults": "Không có ai tên như vậy.",
+      "typeMore": "Nhập ít nhất hai chữ cái.",
+      "noRecent": "Chơi một trận và những người bạn đã chơi cùng sẽ hiện ở đây.",
+      "matches_one": "{{count}} trận",
+      "matches_other": "{{count}} trận",
+      "alreadyFriends": "Bạn bè",
+      "requestSent": "Đã gửi lời mời",
+      "addFriend": "Thêm bạn",
+      "signIn": "Đăng nhập để xem bạn bè",
+      "signInHint": "Bạn bè, lời mời kết bạn và lời mời vào nhóm thuộc về tài khoản của bạn.",
+      "cardEmpty": "Thêm bạn để biết khi nào họ trực tuyến và mời họ bằng một cú nhấp.",
+      "all_one": "Tất cả bạn bè ({{count}}) →",
+      "all_other": "Tất cả bạn bè ({{count}}) →",
+      "find": "Tìm bạn →",
+      "requestCount_one": "{{count}} lời mời",
+      "requestCount_other": "{{count}} lời mời"
+    },
+    "status": {
+      "playing": "Trong trận · {{match}}",
+      "searching": "Đang tìm · {{mode}}",
+      "online": "Trực tuyến",
+      "offline": "Ngoại tuyến",
+      "lastSeen": "Hoạt động {{when}}"
+    },
+    "invite": {
+      "searchPlaceholder": "Bất kỳ ai trên trang, theo tên",
+      "friendsOnline": "Bạn bè đang trực tuyến",
+      "recent": "Đã chơi cùng gần đây",
+      "onSite": "Trên Auto Tournament",
+      "noFriends": "Chưa có bạn bè. Tìm bất kỳ ai theo tên ở trên.",
+      "nobodyOnline": "Không có bạn bè nào đang trực tuyến.",
+      "inMatch": "Trong trận",
+      "together_one": "{{count}} trận cùng nhau",
+      "together_other": "{{count}} trận cùng nhau",
+      "invited": "Đã mời",
+      "sent": "Đã mời {{name}}",
+      "chip": "{{name}} · đã mời",
+      "cancel": "Thu hồi lời mời gửi {{name}}",
+      "orLink": "Hoặc một liên kết",
+      "copy": "Sao chép",
+      "copyFailed": "Không sao chép được. Hãy chọn liên kết và tự sao chép.",
+      "makeLink": "Tạo liên kết mời",
+      "cannot": {
+        "nobody": "Không nhận lời mời",
+        "friends": "Chỉ bạn bè",
+        "no_game": "Không chơi CS2"
+      }
+    },
+    "profile": {
+      "friends": "Bạn bè",
+      "acceptRequest": "Chấp nhận lời mời kết bạn",
+      "message": "Nhắn tin",
+      "invite": "Mời vào nhóm"
+    },
+    "settings": {
+      "title": "Lời mời vào nhóm",
+      "description": "Ai có thể mời bạn vào nhóm đấu xếp trận. Lời mời hiện trong chuông và bật lên ở mọi trang bạn đang mở.",
+      "everyone": "Mọi người",
+      "everyoneHint": "Bất kỳ người chơi nào trên trang này.",
+      "friends": "Chỉ bạn bè",
+      "friendsHint": "Chỉ những người chơi là bạn của bạn.",
+      "nobody": "Không ai",
+      "nobodyHint": "Không nhận lời mời. Bạn vẫn vào được nhóm bằng liên kết.",
+      "saved": "Đã lưu",
+      "saveFailed": "Không lưu được cài đặt"
+    },
+    "setup": {
+      "title": "Hoàn tất thiết lập trước khi tìm trận",
+      "youGame": "Thêm CS2 vào danh sách trò chơi trong hồ sơ của bạn.",
+      "youGameAuto": "Tìm trận sẽ thêm trò chơi này vào danh sách của bạn.",
+      "youAccount": "Kết nối tài khoản Steam của bạn.",
+      "theyGame": "{{name}} chưa thêm CS2 vào danh sách trò chơi.",
+      "theyAccount": "{{name}} chưa kết nối tài khoản Steam.",
+      "fix": "Mở tài khoản của bạn"
+    },
+    "news": {
+      "title": "Tin tức",
+      "hint": "Gửi thông báo đến chuông của mọi người chơi: mùa giải mới, một giải đấu, lịch bảo trì.",
+      "titleLabel": "Tiêu đề",
+      "bodyLabel": "Thêm một dòng (tùy chọn)",
+      "urlLabel": "Liên kết (tùy chọn)",
+      "urlHint": "Một trang ở đây (/tournament/3) hoặc địa chỉ https://.",
+      "urlBad": "Bắt đầu bằng / hoặc https://",
+      "send": "Gửi đến mọi người chơi",
+      "confirm": "Mọi người chơi đã từng đăng nhập sẽ nhận tin này. Gửi chứ?",
+      "sendNow": "Gửi ngay",
+      "cancel": "Hủy",
+      "sent_one": "Đã gửi đến {{count}} người chơi",
+      "sent_other": "Đã gửi đến {{count}} người chơi",
+      "failed": "Không gửi được tin"
+    },
+    "noticeSettings": {
+      "title": "Cài đặt",
+      "alerts": "Cảnh báo",
+      "browser": "Thông báo trình duyệt",
+      "browserHint": "Trên thiết bị này, kể cả khi đóng trang (trận của bạn sẵn sàng, đến lượt veto, giải đấu bắt đầu). Chỉ bật cho trình duyệt này.",
+      "browserDenied": "Bị chặn trong cài đặt trang của trình duyệt này. Hãy cho phép thông báo ở đó để bật.",
+      "browserUnsupported": "Trình duyệt này không hỗ trợ thông báo.",
+      "sound": "Âm thanh",
+      "test": "Thử",
+      "volume": "Âm lượng {{percent}}%",
+      "group": {
+        "you": "Bạn",
+        "tournaments": "Giải đấu",
+        "other": "Khác",
+        "skins": "Skin",
+        "clips": "Clip"
+      },
+      "kind": {
+        "party_invite": "Lời mời vào nhóm",
+        "team_invite": "Lời mời vào đội",
+        "friend_request": "Lời mời kết bạn",
+        "friend_accepted": "Lời mời kết bạn được chấp nhận",
+        "tournament": "Điểm danh và bắt đầu",
+        "skin": "Skin rơi",
+        "highlight": "Highlight của bạn",
+        "news": "Tin tức",
+        "report": "Báo cáo"
+      },
+      "delivery": {
+        "off": "Tắt",
+        "bell": "Chuông",
+        "sound": "Chuông và âm thanh"
+      }
+    }
+  },
+  "notifyChannels": {
+    "title": "Thông báo",
+    "description": "Nơi chúng tôi báo những việc cần bạn khi bạn không ở trên trang. Mặc định tắt, trừ trận của chính bạn.",
+    "event": "Sự kiện",
+    "channel": {
+      "push": "Trình duyệt / điện thoại",
+      "discord": "Tin nhắn Discord",
+      "email": "Email"
+    },
+    "events": {
+      "match_ready": {
+        "title": "Trận của bạn đã sẵn sàng",
+        "hint": "Máy chủ, liên kết kết nối và đối thủ"
+      },
+      "veto_turn": {
+        "title": "Đến lượt bạn veto",
+        "hint": "Chỉ đội trưởng"
+      },
+      "checkin_open": {
+        "title": "Mở điểm danh",
+        "hint": "Cho giải đấu bạn đã đăng ký"
+      },
+      "new_tournament": {
+        "title": "Giải đấu mới",
+        "hint": "Khi giải đấu mở đăng ký"
+      },
+      "tournament_starting": {
+        "title": "Giải đấu bắt đầu",
+        "hint": "Nhắc nhở trước khi giải bạn tham gia bắt đầu"
+      },
+      "direct_message": {
+        "title": "Tin nhắn từ bạn bè",
+        "hint": "Khi bạn không ở trên trang"
+      }
+    },
+    "reason": {
+      "no_bot": "Chưa thiết lập trên trang này",
+      "no_discord": "Liên kết Discord trước",
+      "no_push": "Bật thông báo trong trình duyệt này trước",
+      "email_off": "Trang này không gửi được email",
+      "no_email": "Thêm email trước",
+      "email_unverified": "Xác nhận email trước"
+    },
+    "switchLabel": "{{event}} qua {{channel}}",
+    "saveFailed": "Không lưu được."
+  },
+  "presence": {
+    "online": "Trực tuyến",
+    "offline": "Ngoại tuyến",
+    "away": "Vắng mặt",
+    "searching": "Đang tìm trận {{mode}}",
+    "playingMatchmaking": "Trong trận đấu xếp trận: {{label}}",
+    "playingTournament": "Trong trận giải đấu: {{label}}",
+    "playing": "Trong trận: {{label}}"
+  }
+}
