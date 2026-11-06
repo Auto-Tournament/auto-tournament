@@ -22,6 +22,7 @@ import {
   koKR,
   csCZ,
   svSE,
+  daDK,
 } from '@mui/material/locale';
 import App from './App';
 import './index.css';
@@ -64,6 +65,7 @@ const getMuiLocale = (lang: string) => {
   if (lang.startsWith('ko')) return koKR;
   if (lang.startsWith('cs')) return csCZ;
   if (lang.startsWith('sv')) return svSE;
+  if (lang.startsWith('da')) return daDK;
   return enUS;
 };
 
