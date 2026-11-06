@@ -1,0 +1,141 @@
+{
+  "devToolsPage": {
+    "alert": "이 도구는 개발 모드에서만 사용할 수 있어요. 앱 테스트용 데이터를 빠르게 만들 때 사용하세요.",
+    "sections": {
+      "testData": {
+        "title": "테스트 데이터 만들기"
+      }
+    },
+    "testTeams": {
+      "title": "테스트 팀",
+      "description": "대진표와 경기를 테스트할 수 있도록 무작위 플레이어 데이터로 팀을 만들어요.",
+      "success": "테스트 팀 {{count}}개를 만들었어요!",
+      "errors": {
+        "create": "테스트 팀을 만들지 못했어요",
+        "partial": "팀 {{created}}개를 만들었지만 {{failed}}개는 실패했어요. 자세한 내용은 콘솔을 확인하세요."
+      },
+      "customLabel": "팀 수 직접 입력",
+      "buttons": {
+        "createFixed": "팀 {{count}}개 만들기",
+        "createCustom": "팀 만들기"
+      }
+    },
+    "testPlayers": {
+      "title": "테스트 플레이어",
+      "description": "셔플 토너먼트와 플레이어 관리를 테스트할 수 있도록 ELO가 있는 플레이어를 만들어요.",
+      "success": "테스트 플레이어 {{created}}명을 만들었어요!",
+      "errors": {
+        "create": "테스트 플레이어를 만들지 못했어요",
+        "partial": "플레이어 {{created}}명을 만들고 {{updated}}명을 업데이트했지만 {{failed}}명은 실패했어요. 자세한 내용은 콘솔을 확인하세요."
+      },
+      "customLabel": "플레이어 수 직접 입력",
+      "buttons": {
+        "createFixed": "플레이어 {{count}}명 만들기",
+        "createCustom": "플레이어 만들기"
+      },
+      "successWithUpdated": "테스트 플레이어 {{created}}명을 만들고 {{updated}}명을 업데이트했어요!"
+    },
+    "testServers": {
+      "title": "테스트 서버",
+      "description": "경기 관리를 시험해 볼 테스트 서버를 만들어요.",
+      "success": "테스트 서버 {{count}}대를 만들었어요!",
+      "errors": {
+        "create": "테스트 서버를 만들지 못했어요",
+        "partial": "서버 {{created}}대를 만들었지만 {{failed}}대는 실패했어요. 자세한 내용은 콘솔을 확인하세요."
+      },
+      "customLabel": "서버 수 직접 입력",
+      "buttons": {
+        "createCustom": "서버 만들기",
+        "createFixed_one": "서버 {{count}}대 만들기",
+        "createFixed_other": "서버 {{count}}대 만들기"
+      }
+    },
+    "dangerZone": {
+      "title": "위험 구역"
+    },
+    "deleteTestData": {
+      "title": "테스트 데이터 삭제",
+      "description": "모든 테스트 데이터('test-'로 시작하는 팀과 서버)를 삭제해요. 되돌릴 수 없어요.",
+      "button": "모든 테스트 데이터 삭제",
+      "confirmPrompt": "정말 모든 테스트 데이터를 삭제할까요?",
+      "success": "모든 테스트 데이터를 삭제했어요!",
+      "error": "테스트 데이터를 삭제하지 못했어요"
+    },
+    "wipeTable": {
+      "title": "특정 테이블 비우기",
+      "description": "특정 테이블의 데이터를 모두 삭제해요. 전체를 초기화하지 않고 정리할 때 유용해요. 테이블은 범주별로 정리돼 있어요.",
+      "confirmPrompt": "{{table}} 테이블을 비울까요? 그 테이블의 모든 데이터가 삭제돼요.",
+      "success": "{{table}} 테이블을 비웠어요!",
+      "error": "{{table}} 테이블을 비우지 못했어요",
+      "core": {
+        "title": "핵심 테이블",
+        "teams": "팀 비우기",
+        "servers": "서버 비우기",
+        "tournament": "토너먼트 비우기",
+        "matches": "경기 비우기"
+      },
+      "players": {
+        "title": "플레이어와 셔플 토너먼트",
+        "players": "플레이어 비우기",
+        "ratingHistory": "레이팅 기록 비우기",
+        "matchStats": "경기 통계 비우기",
+        "shufflePlayers": "셔플 플레이어 비우기"
+      },
+      "maps": {
+        "title": "맵과 템플릿",
+        "maps": "맵 비우기",
+        "mapPools": "맵 풀 비우기",
+        "tournamentTemplates": "토너먼트 템플릿 비우기",
+        "eloTemplates": "레이팅 템플릿 비우기"
+      },
+      "matchEvents": {
+        "title": "경기 이벤트와 결과",
+        "events": "경기 이벤트 비우기",
+        "mapResults": "맵 결과 비우기"
+      },
+      "settings": {
+        "title": "설정",
+        "appSettings": "앱 설정 비우기"
+      }
+    },
+    "simulation": {
+      "title": "시뮬레이션 상태",
+      "description": "서버, 팀, 맵, 현재 토너먼트 설정은 그대로 두고 모든 경기와 지난 통계를 지워요. 깨끗한 대진표에서 시뮬레이션 모드로 \"토너먼트 시작\"을 누를 수 있어요.",
+      "button": "시뮬레이션 상태 초기화(설정 유지)",
+      "reset": {
+        "success": "시뮬레이션 상태를 초기화했어요. 경기와 통계를 지우고 서버, 팀, 토너먼트 설정은 유지했어요.",
+        "error": "시뮬레이션 상태를 초기화하지 못했어요"
+      }
+    },
+    "wipeDatabase": {
+      "title": "데이터베이스 전체 비우기",
+      "warningTitle": "매우 위험해요!",
+      "warningBody": "모든 데이터가 삭제돼요.",
+      "permanentlyDeletes": "영구 삭제되는 항목:",
+      "items": {
+        "tournaments": "모든 토너먼트와 대진표",
+        "matches": "모든 경기와 이벤트",
+        "teams": "모든 팀과 플레이어",
+        "servers": "모든 서버 설정"
+      },
+      "button": "데이터베이스 전체 비우기",
+      "successRedirect": "데이터베이스를 비웠어요! 이동하는 중...",
+      "error": "데이터베이스를 비우지 못했어요",
+      "dialog": {
+        "title": "데이터베이스 비우기 확인",
+        "areYouSure": "정말 확실한가요?",
+        "actionWill": "이 작업은 다음을",
+        "permanentlyDelete": "영구 삭제해요",
+        "items": {
+          "tournaments": "모든 토너먼트 데이터와 대진표",
+          "matches": "모든 경기 기록과 이벤트",
+          "teams": "모든 팀과 플레이어 설정",
+          "servers": "모든 서버 설정"
+        },
+        "cannotUndo": "이 작업은 되돌릴 수 없어요!",
+        "wiping": "데이터베이스를 비우는 중...",
+        "yesWipe": "네, 모두 비울게요"
+      }
+    }
+  }
+}

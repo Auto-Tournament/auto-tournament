@@ -1,0 +1,82 @@
+{
+  "compatPage": {
+    "title": "Ready Up 호환성",
+    "subtitle": "Ready Up 플러그인이 최신 Counter-Strike 2 업데이트에서 작동하는지 여부예요. CS2 새 빌드가 나올 때마다 자동으로 확인해요.",
+    "live": "라이브",
+    "offline": "다시 연결 중…",
+    "loading": "호환성 불러오는 중",
+    "loadError": "호환성을 불러오지 못했어요. 잠시 후 다시 시도하세요.",
+    "disabledTitle": "여기서는 사용할 수 없어요",
+    "disabledDescription": "이 사이트는 Ready Up 호환성을 공개하지 않아요.",
+    "emptyTitle": "아직 결과가 없어요",
+    "emptyDescription": "아직 보고된 호환성 확인이 없어요. 보고가 들어오면 이 페이지가 자동으로 업데이트돼요.",
+    "checkedAgo": "{{time}}에 확인",
+    "viewRun": "실행 보기",
+    "factsLabel": "확인 항목",
+    "facts": {
+      "patch": "CS2 패치",
+      "buildid": "빌드 ID",
+      "readyup": "Ready Up",
+      "stage": "단계"
+    },
+    "overall": {
+      "pass": "호환됨",
+      "warn": "호환됨(경고 있음)",
+      "fail": "호환되지 않음",
+      "checking": "확인 중…",
+      "no_verdict": "판정 없음"
+    },
+    "overallHint": {
+      "pass": "이 빌드에서 모든 구성 요소가 확인을 통과했어요.",
+      "warn": "이 빌드에서 Ready Up이 작동하지만 일부 확인 항목은 자세히 살펴봐야 해요.",
+      "fail": "이 빌드에서 하나 이상의 구성 요소가 작동하지 않아요. 서버 업데이트는 잠시 미뤄 두세요.",
+      "checking": "지금 이 빌드를 확인하고 있어요.",
+      "no_verdict": "마지막 확인에서 판정을 내리지 못했어요."
+    },
+    "status": {
+      "pass": "통과",
+      "warn": "경고",
+      "fail": "실패",
+      "pending": "대기 중",
+      "checking": "확인 중…"
+    },
+    "stage": {
+      "static": "정적 분석",
+      "selftest": "자체 테스트",
+      "live": "라이브 서버"
+    },
+    "state": {
+      "queued": "대기열",
+      "checking": "확인 중",
+      "pass": "통과",
+      "warn": "경고",
+      "fail": "실패",
+      "no_verdict": "판정 없음"
+    },
+    "trigger": {
+      "build_change": "새 CS2 빌드",
+      "surface_change": "게임 데이터 변경",
+      "code_change": "Ready Up 변경",
+      "nightly": "야간",
+      "release": "Ready Up 릴리스",
+      "manual": "수동"
+    },
+    "kind": {
+      "signature": "시그니처",
+      "rtti": "RTTI",
+      "vtable": "가상 테이블",
+      "hook_site": "후크 위치",
+      "layout": "메모리 레이아웃",
+      "schema": "스키마",
+      "event": "게임 이벤트",
+      "selftest": "자체 테스트",
+      "livetest": "라이브 테스트"
+    },
+    "componentsTitle": "구성 요소",
+    "checksSummary": "{{total}}개 중 {{passed}}개 확인 통과",
+    "noChecks": "아직 보고된 확인이 없어요",
+    "failures": "실패",
+    "historyTitle": "최근 실행",
+    "historyItem": "CS2 {{patch}} · 빌드 {{buildid}}"
+  }
+}

@@ -1,0 +1,198 @@
+{
+  "adminToolsPage": {
+    "description": "이 사이트의 경기 복구와 앱 로그예요.",
+    "recovery": {
+      "title": "경기 복구",
+      "description": "토너먼트 중 API나 서버가 다시 시작돼 경기 상태가 어긋나 보이면(예: 라이브 전에 멈춘 경기, 라이브 점수 누락) 복구를 직접 실행할 수 있어요. 모든 서버에 현재 경기 보고를 요청하고, 점수와 단계를 다시 맞추고, 가능하면 웹훅과 데모 업로드를 다시 설정해요.",
+      "button": "지금 경기 복구 실행",
+      "success": "경기 복구를 완료했어요.",
+      "error": "경기 복구에 실패했어요.",
+      "failedTrigger": "경기 복구를 시작하지 못했어요. 다시 시도하세요."
+    },
+    "monitoring": {
+      "title": "모니터링과 로그",
+      "appLogs": "앱 로그"
+    },
+    "logs": {
+      "loadFailed": "로그를 불러오지 못했어요",
+      "levelAll": "전체",
+      "auto": "자동",
+      "refresh": "로그 새로고침",
+      "empty": "표시할 로그가 없어요",
+      "footer": "최근 로그 {{count}}개 표시 중",
+      "footerAutoRefresh": "최근 로그 {{count}}개 표시 중(자동 새로고침)"
+    }
+  },
+  "servers": {
+    "allocation": {
+      "title": "빈 서버를 기다리는 중",
+      "waiting": "서버가 비면 이 경기가 자동으로 시작돼요. 필요한 서버:",
+      "nextPass": "다음 배정 시도까지 {{seconds}}초"
+    }
+  },
+  "adminMatchControls": {
+    "title": "관리자 제어",
+    "noServer": "이 경기에 배정된 서버가 없어요",
+    "unavailable": "이 경기에 배정된 서버가 없어 관리자 제어를 사용할 수 없어요.",
+    "unknownAction": "알 수 없는 작업",
+    "commandFailed": "명령을 실행하지 못했어요",
+    "confirm": "확인",
+    "execute": "실행",
+    "close": "닫기",
+    "tipLabel": "관리자 팁:",
+    "tip": "라이브 경기 중에는 조심해서 사용하세요. \"{{endMatch}}\", \"{{restartMatch}}\" 같은 일부 작업은 되돌릴 수 없어요.",
+    "sections": {
+      "matchControl": "경기 제어",
+      "advanced": "고급 작업"
+    },
+    "actions": {
+      "pause": {
+        "button": "일시정지",
+        "tooltip": "관리자 일시정지 – 플레이어가 재개할 수 없어요",
+        "title": "경기 일시정지",
+        "description": "경기를 강제로 일시정지해요. 플레이어는 재개할 수 없어요."
+      },
+      "unpause": {
+        "button": "재개",
+        "tooltip": "일시정지된 경기를 재개",
+        "title": "경기 재개",
+        "description": "경기를 강제로 재개해요."
+      },
+      "swap": {
+        "button": "진영 교체",
+        "tooltip": "두 팀의 진영을 서로 바꿔요(CT ↔ T)",
+        "title": "진영 교체",
+        "description": "두 팀의 진영(CT/T)을 바꿔요."
+      },
+      "restartRound": {
+        "button": "라운드 재시작",
+        "tooltip": "현재 라운드를 처음부터 다시 시작(경제 초기화)",
+        "title": "라운드 재시작",
+        "description": "현재 라운드를 다시 시작해요."
+      },
+      "skipVeto": {
+        "button": "밴/픽 건너뛰기",
+        "tooltip": "맵 밴/픽을 건너뛰고 첫 맵을 바로 불러와요",
+        "title": "밴/픽 건너뛰기",
+        "description": "밴/픽 단계를 건너뛰고 경기를 시작해요."
+      },
+      "endWarmup": {
+        "button": "워밍업 종료",
+        "tooltip": "워밍업을 끝내고 경기 시작(칼전 또는 라이브)",
+        "title": "워밍업 종료",
+        "description": "워밍업을 끝내고 경기를 시작해요."
+      },
+      "endMatch": {
+        "button": "경기 종료",
+        "tooltip": "경기를 즉시 끝내고 최종 점수를 기록",
+        "title": "경기 종료",
+        "description": "경기를 강제로 끝내요. 신중하게 사용하세요!"
+      },
+      "restartMatch": {
+        "button": "경기 재시작",
+        "tooltip": "경기를 끝내고 처음부터 다시 불러와요 – 진행 상황이 모두 사라져요",
+        "title": "경기 재시작",
+        "description": "경기를 끝내고 처음부터 다시 불러와요. 진행 상황이 모두 사라져요!"
+      },
+      "reallocateServer": {
+        "button": "서버 재배정",
+        "tooltip": "경기를 다른 서버로 옮겨요(라이브 전 복구용)",
+        "tooltipUnavailable": "준비/불러온 경기에서만 사용할 수 있어요(라이브 중 불가)",
+        "title": "서버 재배정",
+        "description": "경기를 비어 있는 다른 서버로 옮겨 다시 불러와요. 현재 서버가 오래됐거나 플레이어가 접속할 수 없을 때 사용하세요. 라이브 경기 중에는 사용할 수 없어요."
+      },
+      "forceCancel": {
+        "button": "강제 취소",
+        "tooltip": "서버가 오프라인이어도 경기를 취소하고 서버 배정을 해제해요",
+        "title": "경기 강제 취소",
+        "description": "⚠️ 서버가 오프라인이어도 경기를 취소해요. 경기는 완료로 표시되고 서버는 해제돼요. 되돌릴 수 없어요."
+      }
+    },
+    "inputs": {
+      "restoreBackup": {
+        "button": "백업 복원",
+        "tooltip": "저장된 라운드 백업을 불러와요 – 경제와 위치를 복원",
+        "title": "백업 복원",
+        "label": "복원할 라운드 번호"
+      },
+      "addTime": {
+        "button": "시간 추가",
+        "tooltip": "현재 라운드 타이머를 연장해요(기술적 일시정지에 유용)",
+        "title": "라운드 시간 추가",
+        "label": "추가할 초"
+      },
+      "broadcast": {
+        "button": "전체 메시지",
+        "tooltip": "서버의 모든 플레이어에게 메시지 보내기",
+        "title": "전체 메시지",
+        "label": "보낼 메시지"
+      }
+    },
+    "success": {
+      "pause": "경기를 일시정지했어요",
+      "unpause": "경기를 재개했어요",
+      "swap": "진영을 교체했어요",
+      "skipVeto": "밴/픽 단계를 건너뛰었어요",
+      "restartRound": "라운드를 재시작했어요",
+      "endMatch": "경기를 종료했어요",
+      "endWarmup": "워밍업을 종료했어요",
+      "startMatch": "경기를 시작했어요",
+      "restoreBackup": "라운드 {{round}} 백업을 복원했어요",
+      "addTime_one": "라운드 타이머에 {{count}}초를 추가했어요",
+      "addTime_other": "라운드 타이머에 {{count}}초를 추가했어요",
+      "broadcast": "서버에 메시지를 보냈어요",
+      "restartMatch": "경기를 재시작했어요(종료 후 다시 불러옴)",
+      "reallocateServer": "경기를 다른 서버로 옮겼어요",
+      "forceCancel": "경기를 취소했어요",
+      "default": "명령을 실행했어요"
+    },
+    "hold": {
+      "title": "부전승 대신 보류",
+      "description": "보류 중에는 경기를 불러오거나 시작하지 않고 아무도 부전승을 받지 않아요. 경기가 진행되면 두 팀의 제한 시간이 다시 채워져요.",
+      "reason": "사유(관리자에게 표시)",
+      "delay": "{{minutes}}분 연기",
+      "holdUntilReleased": "해제할 때까지 보류",
+      "release": "지금 해제",
+      "restartCountdown": "카운트다운 다시 시작",
+      "heldUntil": "{{time}}까지 보류 중",
+      "heldIndefinitely": "해제할 때까지 보류 중",
+      "tournamentPaused": "토너먼트가 일시정지됐어요",
+      "heldDone": "경기를 보류했어요",
+      "delayedDone": "경기를 {{minutes}}분 연기했어요",
+      "releasedDone": "경기 보류를 해제했어요",
+      "restartedDone": "카운트다운을 다시 시작했어요: 두 팀의 시간이 다시 채워졌어요",
+      "failed": "보류를 변경하지 못했어요"
+    }
+  },
+  "adminCalls": {
+    "header": "관리자 호출({{count}})",
+    "title": "{{player}}님이 관리자를 부르고 있어요",
+    "justNow": "방금",
+    "minutesAgo": "{{count}}분 전",
+    "hoursAgo": "{{count}}시간 전",
+    "spectator": "관전자",
+    "team1": "팀 1",
+    "team2": "팀 2",
+    "noMessage": "메시지 없음",
+    "unknownPlayer": "알 수 없는 플레이어",
+    "unknownServer": "알 수 없는 서버",
+    "matchMap": "{{match}}, 맵 {{map}}",
+    "openMatch": "경기 열기",
+    "openServers": "서버",
+    "resolve": "해결됨으로 표시",
+    "resolveAll": "모두 해결",
+    "resolveFailed": "호출을 해결됨으로 표시하지 못했어요. 다시 시도하세요.",
+    "matchUnavailable": "그 경기를 열 수 없었어요.",
+    "enableSound": "소리 켜기",
+    "mute": "음소거",
+    "unmute": "음소거 해제",
+    "minimize": "최소화",
+    "show": "보기",
+    "openChat": "채팅 열기",
+    "claim": "맡기",
+    "release": "놓기",
+    "claimedBy": "{{name}}님이 맡음",
+    "claimedByYou": "내가 맡음",
+    "anAdmin": "관리자"
+  }
+}

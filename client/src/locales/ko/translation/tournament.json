@@ -1,0 +1,1810 @@
+{
+  "tournament": {
+    "startConfirm": {
+      "intro": "토너먼트를 시작할 준비가 됐나요?",
+      "thisWill": "다음 작업을 해요:",
+      "openMatches": "1라운드 경기를 진행할 수 있게 열어요",
+      "statusInProgress": "토너먼트 상태를 진행 중으로 바꿔요",
+      "confirm": "네, 토너먼트를 시작할게요",
+      "started": "토너먼트가 시작됐어요! 1라운드 경기가 열렸어요."
+    },
+    "steps": {
+      "create": "토너먼트 만들기",
+      "review": "검토 및 확인",
+      "live": "라이브 토너먼트"
+    },
+    "welcome": {
+      "heading": "토너먼트 만들기",
+      "chooseMethod": "토너먼트를 만드는 방법을 고르세요",
+      "createNewTitle": "새 토너먼트 만들기",
+      "createNewDescription": "처음부터 시작해 모든 토너먼트 설정을 직접 정해요"
+    },
+    "typeSelector": {
+      "categories": {
+        "professional": {
+          "label": "프로 시리즈"
+        },
+        "party": {
+          "label": "파티 & 재미"
+        }
+      },
+      "types": {
+        "single_elimination": {
+          "label": "싱글 엘리미네이션",
+          "description": "한 번 지면 탈락. 프로 토너먼트에서 쓰는 전통적인 대진 방식이에요."
+        },
+        "double_elimination": {
+          "label": "더블 엘리미네이션",
+          "description": "두 번 지면 탈락. 패자조에서 두 번째 기회를 얻어요."
+        },
+        "round_robin": {
+          "label": "풀리그",
+          "description": "모두가 모두와 경기해요. 리그 방식 대회에 딱 맞아요."
+        },
+        "swiss": {
+          "label": "스위스 방식",
+          "description": "전적이 비슷한 팀끼리 만나요. 토너먼트 내내 균형 잡힌 대진이 이어져요."
+        },
+        "shuffle": {
+          "label": "셔플 토너먼트",
+          "description": "라운드마다 플레이어를 균형 잡힌 팀으로 섞어요. ELO 기반 팀 균형으로 개인이 경쟁해요."
+        },
+        "groups": {
+          "label": "조별 리그 후 플레이오프",
+          "description": "조별로 풀리그를 치르고, 각 조 상위 팀이 토너먼트를 해요."
+        }
+      },
+      "selectedChip": "선택됨"
+    },
+    "review": {
+      "summary": {
+        "info": "토너먼트 설정을 검토하고 준비되면 \"{{button}}\"을(를) 누르세요.",
+        "nameLabel": "토너먼트 이름",
+        "typeLabel": "토너먼트 유형",
+        "formatLabel": "경기 형식",
+        "notSet": "설정 안 됨",
+        "estimatedVolumeText": "약 {{matches}}, {{rounds}}(BO{{mapsPerMatch}}, 최대 {{maps}})."
+      }
+    },
+    "formSteps": {
+      "steps": {
+        "name": "이름",
+        "type": "유형",
+        "format": "형식",
+        "maps": "맵",
+        "teams": "팀",
+        "review": "검토"
+      },
+      "backToWelcome": "처음으로",
+      "back": "뒤로",
+      "next": "다음"
+    },
+    "emptyBracket": {
+      "title": "표시할 대진표가 없어요",
+      "description": "토너먼트를 만들고 대진표를 생성해 시작하세요"
+    },
+    "common": {
+      "createTournament": "토너먼트 만들기"
+    },
+    "nameLabel": "토너먼트 이름",
+    "namePlaceholder": "Auto Tournament 2025 봄 토너먼트",
+    "champion": {
+      "title": "우승"
+    },
+    "page": {
+      "title": "토너먼트 설정"
+    },
+    "labels": {
+      "teams": "팀",
+      "maps": "맵",
+      "format": "형식",
+      "players": "플레이어",
+      "matchRules": "경기 규칙",
+      "servers": "서버",
+      "overtimeSettings": "연장전 설정",
+      "mapPool": "맵 풀"
+    },
+    "tooltips": {
+      "deleteTournament": "이 토너먼트와 모든 데이터를 영구 삭제"
+    },
+    "counts": {
+      "teams_one": "{{count}}팀",
+      "teams_other": "{{count}}팀",
+      "matches_one": "{{count}}경기",
+      "matches_other": "{{count}}경기",
+      "rounds_one": "{{count}}라운드",
+      "rounds_other": "{{count}}라운드",
+      "maps_one": "맵 {{count}}개",
+      "maps_other": "맵 {{count}}개",
+      "servers_one": "서버 {{count}}대",
+      "servers_other": "서버 {{count}}대",
+      "availableServers_one": "사용 가능한 서버 {{count}}대",
+      "availableServers_other": "사용 가능한 서버 {{count}}대",
+      "concurrentMatches_one": "동시 경기 {{count}}개",
+      "concurrentMatches_other": "동시 경기 {{count}}개",
+      "enabledServers_one": "활성 서버 {{count}}대",
+      "enabledServers_other": "활성 서버 {{count}}대"
+    },
+    "matchRules": {
+      "value": "맵당 최대 {{maxRounds}}라운드, {{winRounds}}라운드를 먼저 이기면 승리해요.",
+      "teamSizeValue": "팀 인원: {{size}}v{{size}}",
+      "overtimeEnabled": "연장전: 켜짐",
+      "overtimeDisabled": "연장전: 꺼짐(연장전 없음)",
+      "overtimeDisabledNoDraws": "연장전: 꺼짐(무승부 없음 – 피해량으로 결정)",
+      "overtimeSegments_one": "연장전 횟수: {{count}}회",
+      "overtimeSegments_other": "연장전 횟수: {{count}}회",
+      "overtimeSegmentsDefault": "연장전 횟수: 게임 서버 기본값",
+      "overtimeSegmentsDefaultUnlimited": "연장전 횟수: 게임 서버 기본값(보통 무제한)"
+    },
+    "toasts": {
+      "loadTemplateFailed": "템플릿을 불러오지 못했어요",
+      "nameRequired": "토너먼트 이름은 필수예요",
+      "nameUpdated": "토너먼트 이름을 업데이트했어요",
+      "nameUpdateFailed": "토너먼트 이름을 업데이트하지 못했어요",
+      "selectAtLeastOneMap": "맵을 하나 이상 선택하세요",
+      "maxRoundsRange": "최대 라운드는 1~30이어야 해요",
+      "teamSizeRange": "팀 인원은 2~10명이어야 해요",
+      "invalidTeamCount": "팀 수가 올바르지 않아요",
+      "selectAtLeastTwoTeams": "팀을 두 개 이상 선택하세요",
+      "shuffleCreated": "셔플 토너먼트 \"{{name}}\"을(를) 만들었어요! 다음 단계: 토너먼트를 시작하려면 플레이어를 {{minPlayers}}명 이상 등록하세요({{teamSize}}v{{teamSize}} 경기).",
+      "shuffleCreateFailed": "셔플 토너먼트를 만들지 못했어요",
+      "shuffleCreateFailedRetry": "셔플 토너먼트를 만들지 못했어요. 설정을 확인하고 다시 시도하세요.",
+      "updated": "토너먼트를 업데이트하고 대진표를 다시 만들었어요!",
+      "created": "토너먼트를 만들었어요!",
+      "saveFailed": "토너먼트를 저장하지 못했어요",
+      "deleted": "토너먼트를 삭제했어요",
+      "deleteFailed": "토너먼트를 삭제하지 못했어요",
+      "regenerated": "대진표를 다시 만들었어요",
+      "regenerateFailed": "대진표를 다시 만들지 못했어요",
+      "resetDone": "토너먼트를 설정 모드로 되돌렸어요",
+      "resetFailed": "토너먼트를 초기화하지 못했어요",
+      "started_one": "토너먼트가 시작됐어요! 경기 {{count}}개를 서버에 배정했어요.",
+      "started_other": "토너먼트가 시작됐어요! 경기 {{count}}개를 서버에 배정했어요.",
+      "startRequested": "토너먼트 시작을 요청했어요. 곧 서버가 배정돼요.",
+      "startFailed": "토너먼트를 시작하지 못했어요",
+      "templateSaved": "템플릿을 저장했어요!",
+      "disableServersFailed": "하나 이상의 서버를 비활성화하지 못했어요: {{message}}",
+      "noChangesToSave": "저장할 변경 사항이 없어요",
+      "invalidMapSelection": "맵 선택이 올바르지 않아요",
+      "archived": "토너먼트를 보관했어요. 다음 토너먼트를 만드세요.",
+      "archiveFailed": "토너먼트를 보관하지 못했어요"
+    },
+    "outdatedServers": {
+      "title": "서버 업데이트 필요",
+      "body": "Steam 기준으로 하나 이상의 활성 서버가 오래됐어요(또는 확인할 수 없어요). 업데이트하거나, 비활성화하고 나머지 서버로 계속하세요.",
+      "confirm": "해당 서버를 비활성화하고 다시 시도",
+      "disabling": "비활성화 중...",
+      "goToServers": "서버로 이동"
+    },
+    "live": {
+      "saveNameAria": "토너먼트 이름 저장",
+      "cancelRenameAria": "토너먼트 이름 변경 취소",
+      "editNameAria": "토너먼트 이름 편집",
+      "renameTooltip": "토너먼트 이름 바꾸기",
+      "alert": {
+        "liveTitle": "토너먼트 라이브 중",
+        "liveBody": "경기가 서버에서 진행 중이에요. 라이브 중에는 토너먼트 설정을 편집할 수 없어요(토너먼트 이름 제외).",
+        "pendingTitle": "토너먼트 진행 중",
+        "pendingBody": "서버가 배정되고 밴/픽이 끝나면 경기가 바로 시작돼요. 진행 중에는 토너먼트 설정을 편집할 수 없어요(토너먼트 이름 제외).",
+        "completedTitle": "토너먼트 완료",
+        "completedBody": "이 토너먼트의 모든 경기가 끝났어요. 새 토너먼트를 만들거나 이 토너먼트를 초기화해 다시 시작하세요."
+      },
+      "teamsCompeting_one": "{{count}}팀 참가 중",
+      "teamsCompeting_other": "{{count}}팀 참가 중",
+      "playersCompeting_one": "{{count}}명 참가 중",
+      "playersCompeting_other": "{{count}}명 참가 중",
+      "playersCompetingUnknown": "참가 플레이어",
+      "shuffleSettingsLabel": "셔플 설정",
+      "maxRoundsPerMapValue": "맵당 최대 라운드: {{rounds}}",
+      "eloTemplateValue": "ELO 템플릿: {{template}}",
+      "mapSequenceLabel": "맵 순서(라운드)",
+      "noMapsConfigured": "아직 설정된 맵이 없어요.",
+      "viewBracket": "대진표 보기",
+      "viewBracketTooltip": "토너먼트 대진표와 경기 정보 보기",
+      "leaderboardTooltip": "플레이어와 공유할 공개 랭킹 페이지 열기",
+      "restartTooltip": "서버의 진행 중인 모든 경기를 끝내고 다시 불러와요(멈춘 경기에 유용)",
+      "resetTooltip": "모든 경기를 끝내고 토너먼트를 설정 모드로 되돌려요(설정은 유지하고 경기 데이터는 모두 지움)",
+      "reset": "설정으로 되돌리기",
+      "dangerZone": "위험 구역",
+      "newTournament": "새 토너먼트"
+    },
+    "reviewCard": {
+      "needPlayersWarning": "토너먼트를 시작하려면 플레이어가 {{minPlayers}}명 이상 필요해요({{teamSize}}v{{teamSize}} 경기). 현재 등록: {{registered}}",
+      "start": "토너먼트 시작",
+      "starting": "시작 중...",
+      "startSimulation": "시뮬레이션 시작",
+      "startingSimulation": "시뮬레이션 시작 중...",
+      "bulkCreateMatches": "경기 일괄 생성",
+      "edit": "편집",
+      "regenerate": "다시 만들기",
+      "regenerateTooltip": "현재 경기를 모두 삭제하고 같은 설정으로 대진표를 다시 만들어요.",
+      "regenerateDisabledTooltip": "다시 만들려면 먼저 대진표를 한 번 생성하세요(저장 후 대진표 생성)."
+    },
+    "dialogs": {
+      "items": {
+        "endMatches": "서버의 진행 중인 모든 경기 종료",
+        "deleteMatches": "모든 경기와 대진표 삭제",
+        "deleteData": "모든 경기 데이터와 통계 삭제"
+      },
+      "delete": {
+        "title": "🗑️ 토너먼트 삭제",
+        "question": "<b>\"{{name}}\"</b>을(를) 영구 삭제할까요?",
+        "willTitle": "⚠️ 다음 작업을 해요:",
+        "items": {
+          "removeTournament": "토너먼트를 완전히 삭제",
+          "cannotBeUndone": "되돌릴 수 없음"
+        },
+        "note": "💡 참고: 같은 설정으로 다시 시작하고 싶다면 대신 \"설정으로 되돌리기\"를 사용하세요.",
+        "confirm": "영구 삭제"
+      },
+      "regenerate": {
+        "title": "🔄 대진표 다시 만들기",
+        "liveWarning": "⚠️ 경고: 토너먼트가 {{status}} 상태예요!",
+        "liveBody": "대진표를 다시 만들면 점수, 통계, 이벤트 기록을 포함한 기존 경기 데이터가 <b>모두 삭제</b>돼요.",
+        "cannotBeUndone": "되돌릴 수 없어요.",
+        "areYouSure": "정말 계속할까요?",
+        "setupBody": "기존 경기를 모두 삭제하고 같은 설정으로 대진표를 다시 만들어요.",
+        "continue": "계속할까요?",
+        "confirmDestructive": "네, 모두 삭제할게요",
+        "confirm": "다시 만들기"
+      },
+      "reset": {
+        "title": "🔄 설정으로 되돌리기",
+        "question": "<b>\"{{name}}\"</b>을(를) 설정 모드로 되돌릴까요?",
+        "willTitle": "다음 작업을 해요:",
+        "items": {
+          "clearStatus": "토너먼트 상태 초기화(설정으로 돌아감)",
+          "keepSettings": "토너먼트 설정(이름, 팀, 형식)은 <b>유지</b>",
+          "allowEdit": "설정을 다시 편집할 수 있게 함",
+          "regenerateMatches": "모든 경기 결과를 지우고 대진표를 처음부터 다시 만듦"
+        },
+        "regenerated": "새 대진표가 바로 만들어지므로 대기 중인 경기가 곧바로 다시 보여요.",
+        "note": "💡 참고: 토너먼트를 완전히 없애려면 대신 \"삭제\"를 사용하세요.",
+        "confirm": "설정으로 되돌리기"
+      },
+      "start": {
+        "titleNoServers": "⚠️ 사용 가능한 서버 없음",
+        "titleInsufficient": "⚠️ 서버 부족",
+        "titleUncertain": "⚠️ 서버 없이 토너먼트를 시작할까요?",
+        "noServersHeading": "지금 사용 가능한 서버가 없어요",
+        "noServersBody": "토너먼트는 시작되지만 서버가 생길 때까지 경기가 미뤄져요. 서버가 준비되면 자동으로 경기를 배정해요.",
+        "insufficientHeading": "1라운드 경기를 모두 동시에 치르기에는 서버가 부족해요",
+        "insufficientBody": "현재 <b>{{available}}</b>이(가) 있지만 1라운드에는 <b>{{required}}</b>이(가) 필요해요. 일부 경기는 대기하다가 서버가 비면 시작돼요.",
+        "uncertainHeading": "서버 상황이 불확실해요",
+        "uncertainBody": "서버가 적거나 없는 상태로 시작될 수 있어요. 서버가 생길 때까지 경기가 미뤄지고, 준비되면 자동으로 배정돼요.",
+        "question": "그래도 토너먼트를 시작할까요?",
+        "confirm": "네, 그래도 시작할게요",
+        "cancel": "서버 확인"
+      }
+    },
+    "formActions": {
+      "saveAndGenerate": "저장 후 대진표 생성",
+      "saveAsTemplate": "템플릿으로 저장",
+      "saveTemplateTooltip": "현재 토너먼트 설정을 템플릿으로 저장"
+    },
+    "wizard": {
+      "validation": {
+        "selectType": "토너먼트 유형을 선택하세요",
+        "selectFormat": "경기 형식을 선택하세요"
+      },
+      "shuffleInfo": "셔플 토너먼트는 고정 팀을 쓰지 않아요. 플레이어는 경기마다 Skill Rating에 따라 균형 잡힌 팀으로 자동 배정돼요.",
+      "shuffleRounds": "이 셔플 토너먼트는 약 {{rounds}}이에요(선택한 맵마다 한 라운드).",
+      "volumeAlert": "{{type}} {{format}} 토너먼트에 {{teams}}이면 이 대진표는 약 {{matches}}, {{rounds}}이에요(최대 {{maps}}).",
+      "maxRoundsLabel": "맵당 최대 라운드",
+      "maxRoundsHelper": "각 맵은 최대 {{maxRounds}}라운드, {{winRounds}}라운드를 먼저 이기면 승리해요.",
+      "maxRoundsHelperEmpty": "맵당 최대 라운드 수(기본 24, 최대 30).",
+      "serversSummary": "{{servers}} 설정됨. 1라운드에는 {{matches}}이(가) 있어요.",
+      "estimatedVolumeLabel": "예상 규모",
+      "mapsHeading": "맵({{total}})",
+      "noMapsSelected": "선택된 맵 없음",
+      "matchConfiguration": "경기 설정",
+      "roundLimitValue_one": "라운드 한도: 최대 {{count}}라운드",
+      "roundLimitValue_other": "라운드 한도: 최대 {{count}}라운드",
+      "teamsHeading": "팀({{total}})",
+      "noTeamsSelected": "선택된 팀 없음(선택)",
+      "playerRegistration": "플레이어 등록",
+      "playerRegistrationInfo_one": "플레이어는 토너먼트를 만든 뒤 등록해요. 선택한 맵 하나가 경기 한 라운드예요(총 {{count}}라운드).",
+      "playerRegistrationInfo_other": "플레이어는 토너먼트를 만든 뒤 등록해요. 선택한 맵 하나가 경기 한 라운드예요(총 {{count}}라운드).",
+      "serversSummaryQueued": "{{servers}} 설정됨. 1라운드에는 {{matches}}이(가) 있어요. 서버 수를 넘는 경기는 서버가 빌 때까지 대기해요."
+    },
+    "overtime": {
+      "selectLabel": "연장전",
+      "options": {
+        "enabled": "켜짐(표준 연장전)",
+        "disabledDraws": "꺼짐 – 무승부 허용",
+        "disabledNoDraws": "꺼짐 – 무승부 없음(피해량으로 결정)"
+      },
+      "modeHelper": "표준 연장전은 한 팀이 앞설 때까지 추가 연장을 진행해요. \"무승부 허용\"은 동점 맵을 무승부로 끝내고, \"무승부 없음\"은 팀 총 피해량으로 결정해요.",
+      "tooltip": "연장전 동작과 최대 라운드에서 동점을 처리하는 방법을 정해요. 이 설정은 게임 서버에 overtimeMode/overtimeSegments로 전달되며 셔플 토너먼트와 수동 경기와 같은 의미예요.",
+      "shuffleTooltip": "셔플 경기의 연장전 동작과 최대 라운드에서 동점을 정하는 방법을 정해요. 연장전이 꺼져 있으면 동점 경기는 선택한 옵션에 따라 무승부로 남거나 팀 총 피해량으로 결정돼요.",
+      "segmentsLabel": "연장전 횟수(선택)",
+      "segmentsHelper": "선택: 연장전 횟수를 제한해요. 게임 서버 기본값을 쓰려면 비워 두세요.",
+      "segmentsHelperValue_one": "연장전을 {{count}}회로 제한해요. 연장전 뒤 동점은 팀 총 피해량으로 결정돼요.",
+      "segmentsHelperValue_other": "연장전을 {{count}}회로 제한해요. 연장전 뒤 동점은 팀 총 피해량으로 결정돼요."
+    },
+    "grandFinal": {
+      "sectionTitle": "그랜드 파이널 방식(더블 엘리미네이션)",
+      "label": "그랜드 파이널",
+      "options": {
+        "simple": "간단 – 승자조와 패자조 우승 팀이 그랜드 파이널 한 번",
+        "none": "없음 – 승자조 결승으로 토너먼트 결정(그랜드 파이널 없음)",
+        "double": "더블 – 대진 리셋 방식(현재는 간단과 똑같이 작동, 완전한 리셋 지원 예정)"
+      },
+      "helper": "승자조와 패자조 우승 팀이 토너먼트 마지막에 어떻게 만날지 정해요."
+    },
+    "mapPool": {
+      "shuffleTitle": "셔플 토너먼트 맵 선택",
+      "shuffleBody": "선택한 맵은 모두 순서대로 진행돼요. 맵 하나가 경기 한 라운드예요. 고른 맵 수가 진행할 라운드 수를 정해요.",
+      "shuffleSelected": "{{maps}}을(를) 골랐으니 {{rounds}}이 진행돼요.",
+      "chooseLabel": "맵 풀 선택",
+      "custom": "사용자 지정",
+      "selectedMaps": "선택한 맵({{total}}):",
+      "chooseMapsPlaceholder": "맵 선택...",
+      "saveMapPool": "맵 풀 저장",
+      "types": {
+        "defusal": "폭파",
+        "hostage": "인질 구출",
+        "armsRace": "무기 경쟁",
+        "unknown": "알 수 없음"
+      }
+    },
+    "formatStep": {
+      "shuffleInfo": "셔플 토너먼트는 BO1 형식이에요. 경기마다 맵 하나예요."
+    },
+    "shuffleConfig": {
+      "overline": "셔플 토너먼트 설정",
+      "subtitle": "경기 규칙 및 설정",
+      "teamSizeLabel": "팀 인원",
+      "teamSizeTooltip": "팀당 플레이어 수. 보통 4v4, 5v5, 6v6이에요. 팀당 최소 2명, 최대 10명.",
+      "teamSizeHelper": "팀당 플레이어 수(기본: 5v5는 5, 범위: 2~10)",
+      "maxRoundsLabel": "최대 라운드",
+      "maxRoundsTooltip": "경기당 최대 라운드 수. CS2 서버에 mp_maxrounds로 전달돼요. 예: 6 = MR6, 24 = MR24.",
+      "maxRoundsHelper": "최대 {{maxRounds}}라운드, {{winRounds}}라운드를 먼저 이기면 승리",
+      "maxRoundsHelperEmpty": "경기당 최대 라운드 수(기본 24, 최대 30)",
+      "eloTemplateLabel": "레이팅 템플릿",
+      "eloTemplateTooltip": "이 토너먼트에서 ELO를 계산하는 방법을 골라요. 기본 'Pure Win/Loss' 템플릿은 경기 결과(승패)만 사용하고, 통계는 기록되지만 ELO를 바꾸지 않아요. 다른 템플릿은 선택 사항이며, Excel 같은 방식을 원하면 OpenSkill 승패 변동에 통계 기반 보정을 더해요.",
+      "eloDefaultSuffix": "(기본)",
+      "eloTemplateHelper": "Pure Win/Loss(기본): ELO에는 경기 결과만 반영돼요. 플레이어 통계는 순위와 내보내기를 위해 기록되지만, 사용자 지정 템플릿을 고르지 않으면 레이팅이 바뀌지 않아요."
+    },
+    "shuffleStats": {
+      "serverShortageWarning": "서버가 {{needed}}대 중 {{available}}대예요. 경기가 여러 차례로 나뉘어 진행되므로 라운드가 더 오래 걸려요."
+    },
+    "changePreview": {
+      "title": "토너먼트 변경 사항 검토",
+      "liveHeading": "토너먼트가 라이브 중이에요!",
+      "liveBody": "토너먼트 유형, 형식, 팀 수를 바꾸면 대진표를 다시 만들어야 할 수 있어요. 처음부터 다시 하려면 \"토너먼트 초기화\"를 고려하세요.",
+      "noChangesDetected": "변경 사항이 없어요",
+      "intro": "다음 변경 사항이 적용돼요:",
+      "before": "변경 전",
+      "after": "변경 후",
+      "apply": "변경 적용",
+      "applyRisky": "변경 적용(위험!)",
+      "noChangesToApply": "적용할 변경 사항이 없어요",
+      "none": "없음",
+      "itemCount_one": "{{count}}개",
+      "itemCount_other": "{{count}}개"
+    },
+    "teamSelection": {
+      "chooseTeamsPlaceholder": "팀 선택…",
+      "addAll": "모두 추가",
+      "batchAddServers": "일괄 추가",
+      "addServer": "서버 추가",
+      "importTeams": "팀 가져오기",
+      "createTeam": "팀 만들기",
+      "notEnoughServers": "1라운드에는 {{matches}}이(가) 있지만 서버는 {{servers}}이에요. 서버 수를 넘는 경기는 서버가 빌 때까지 대기해요. 한 번에 모두 진행하려면 서버를 더 추가하세요.",
+      "notEnoughTeams": "토너먼트를 만들려면 팀이 2개 이상 필요해요. 현재 {{teams}}이에요."
+    },
+    "teamValidation": {
+      "invalidType": "토너먼트 유형이 올바르지 않아요",
+      "powerOfTwo": "{{type}}에는 2의 거듭제곱 팀 수가 필요해요({{counts}}). 선택: {{selected}}.",
+      "minTeams": "{{type}}에는 최소 {{min}}팀이 필요해요. 선택: {{selected}}.",
+      "maxTeams": "{{type}}은(는) 최대 {{max}}팀까지 가능해요. 선택: {{selected}}."
+    },
+    "eventPage": {
+      "title": "이벤트 페이지",
+      "subtitle": "공개 개요 페이지에서 플레이어와 방문자에게 보여요.",
+      "descriptionLabel": "설명",
+      "locationLabel": "장소",
+      "locationPlaceholder": "예: 현장, 서울",
+      "rulebookUrlLabel": "전체 규칙서 URL",
+      "rulebookUrlHelper": "https 링크여야 하며, 비워 둘 수도 있어요.",
+      "rulesLabel": "플레이어 규칙",
+      "ruleFieldLabel": "규칙 {{n}}",
+      "addRule": "규칙 추가",
+      "prizesLabel": "상품",
+      "placeLabel": "순위",
+      "prizeLabel": "상품",
+      "addPrize": "상품 추가",
+      "scheduleLabel": "일정",
+      "whenLabel": "일시",
+      "scheduleLabelLabel": "라벨",
+      "addScheduleItem": "일정 항목 추가",
+      "remove": "제거",
+      "moveUp": "위로",
+      "moveDown": "아래로",
+      "save": "이벤트 페이지 저장",
+      "saveSuccess": "이벤트 페이지를 저장했어요.",
+      "saveError": "이벤트 페이지를 저장하지 못했어요: {{message}}",
+      "organizerLabel": "주최자",
+      "organizerPlaceholder": "예: Edition 35 LAN",
+      "bannerLabel": "배너",
+      "bannerUpload": "배너 업로드",
+      "bannerReplace": "교체",
+      "bannerRemove": "제거",
+      "bannerHelp": "토너먼트 페이지 상단에 들어가는 넓은 이미지예요. PNG, JPEG 또는 WEBP, 최대 2MB. 1920 × 600이 잘 어울려요.",
+      "bannerWrongType": "배너는 PNG, JPEG 또는 WEBP 이미지여야 해요.",
+      "bannerTooLarge": "배너는 2MB 이하여야 해요.",
+      "signupHeading": "참가 신청과 체크인",
+      "signupOpen": "팀이 직접 참가 신청 가능",
+      "signupClosesAt": "참가 신청 마감",
+      "maxTeams": "팀 자리",
+      "checkInOpensAt": "체크인 시작",
+      "checkInClosesAt": "체크인 마감",
+      "signupHelp": "팀 소유자나 팀장이 명단을 정해 신청해요. 명단의 플레이어는 당일 체크인해요.",
+      "startLabel": "시작 시간",
+      "startsAtLabel": "시작",
+      "startsAtHelp": "현지 시간이에요. 사이트가 카운트다운해요.",
+      "autoStartLabel": "이 시간에 토너먼트 자동 시작",
+      "remindersLabel": "시작 전에 플레이어에게 알림",
+      "reminderMinutes_one": "{{count}}분 전",
+      "reminderMinutes_other": "{{count}}분 전",
+      "bannerMapLabel": "배너가 없나요? 맵 이미지 사용",
+      "bannerMapNone": "자동으로 고르기",
+      "rulesHelp": "토너먼트 페이지의 규칙 탭에서 플랫폼이 설정으로 만든 규칙 아래에 표시돼요.",
+      "fromTemplate": "{{name}}에서",
+      "clearAll": "모두 지우기",
+      "rulebookFromTemplate": "템플릿 {{name}}에서 가져옴. https 링크여야 하며, 비워 둘 수도 있어요."
+    },
+    "setup": {
+      "steps": {
+        "game": "게임",
+        "basics": "이름과 날짜",
+        "format": "형식",
+        "teams": "팀",
+        "schedule": "일정",
+        "maps": "맵과 밴/픽",
+        "extras": "경기 설정",
+        "review": "검토"
+      },
+      "stepsLabel": "설정 단계",
+      "backToManage": "관리",
+      "stepDone": "완료",
+      "newTournament": "새 토너먼트",
+      "editing": "토너먼트 설정",
+      "draftSaved": "이 탭에 초안을 저장했어요",
+      "discardDraft": "처음부터 다시",
+      "startFromTemplate": "템플릿으로 시작",
+      "continueTo": "{{step}}(으)로 계속",
+      "questions": {
+        "game": {
+          "title": "어떤 게임인가요?",
+          "lede": "게임에 따라 경기 진행 방식과 사용할 수 있는 설정이 정해져요."
+        },
+        "basics": {
+          "title": "이름과 날짜는요?",
+          "lede": "날짜를 고르세요. 각 라운드의 시작 시간은 일정에서 정해요."
+        },
+        "format": {
+          "title": "어떻게 진행하나요?",
+          "lede": "대진 방식과 각 시리즈 길이를 고르세요. 토너먼트가 시작되기 전까지 바꿀 수 있어요."
+        },
+        "teams": {
+          "title": "누가 참가하나요?",
+          "lede": "대진표에 들어갈 팀을 고르세요. 여기서 팀을 만들거나 가져올 수도 있어요.",
+          "ledeShuffle": "셔플은 개인 신청이에요: 플레이어가 등록하고, 라운드마다 새 팀이 정해져요."
+        },
+        "maps": {
+          "title": "어떤 맵인가요?",
+          "lede": "맵 풀을 고르세요. 각 시리즈는 이 풀에서 밴/픽으로 맵을 정해요.",
+          "ledeShuffle": "진행할 순서대로 맵을 고르세요. 맵 하나가 한 라운드예요."
+        },
+        "eventPage": {
+          "title": "이벤트 페이지에 무엇을 넣을까요?",
+          "lede": "선택 사항. 공개 개요 페이지에서 플레이어와 방문자에게 보여요."
+        },
+        "review": {
+          "title": "준비됐나요?",
+          "lede": "세부 사항을 확인한 뒤 토너먼트를 만드세요.",
+          "ledeExisting": "세부 사항을 확인하고 모두 준비되면 토너먼트를 시작하세요."
+        },
+        "schedule": {
+          "title": "경기는 언제인가요?",
+          "lede": "1라운드 시간이 토너먼트 시작 시간이에요. 체크인과 알림은 여기서 거꾸로 계산돼요."
+        },
+        "extras": {
+          "title": "경기 설정",
+          "lede": "프리셋으로 시작한 뒤 필요한 것만 바꾸세요. 주황색 설정은 사이트 기본값과 달라요."
+        }
+      },
+      "game": {
+        "label": "게임",
+        "loading": "이 인스턴스에서 실행할 수 있는 게임을 불러오는 중이에요.",
+        "lockedHelp": "토너먼트가 만들어지면 게임은 바꿀 수 없어요. 다른 게임으로 하려면 삭제하고 다시 시작하세요.",
+        "integrationTitles": {
+          "cs2": "내 서버에서 실행",
+          "manual-report": "결과는 팀이 보고"
+        },
+        "integrationDescriptions": {
+          "cs2": "경기는 Ready Up과 함께 내 CS2 서버에서 진행돼요.",
+          "manual-report": "서버가 없어요. 팀이 직접 경기하고 팀장이 결과를 보고해요."
+        }
+      },
+      "basics": {
+        "ratingLabel": "레이팅",
+        "ratingHelp": "이 토너먼트에서 경기마다 플레이어 레이팅이 어떻게 바뀌는지."
+      },
+      "format": {
+        "label": "형식",
+        "names": {
+          "single_elimination": "싱글 엘리미네이션",
+          "double_elimination": "더블 엘리미네이션",
+          "swiss": "스위스",
+          "round_robin": "풀리그",
+          "shuffle": "셔플",
+          "groups": "조별 리그 후 플레이오프"
+        },
+        "types": {
+          "single_elimination": "한 번 지면 탈락. 가장 빨라요.",
+          "double_elimination": "패자조에서 두 번째 기회.",
+          "swiss": "전적이 비슷한 팀과 여러 라운드를 치러요.",
+          "round_robin": "모두가 모두와 경기해요. 소규모 그룹에 좋아요.",
+          "shuffle": "개인 신청. 라운드마다 균형 잡힌 새 팀.",
+          "groups": "조별로 풀리그를 치르고, 각 조 상위 팀이 결승이나 대진표로 진출해요."
+        },
+        "seriesLength": "시리즈 길이",
+        "grandFinal": "그랜드 파이널",
+        "grandFinalOptions": {
+          "simple": "한 경기",
+          "double": "대진 리셋",
+          "none": "없음"
+        },
+        "grandFinalHelp": {
+          "simple": "승자조와 패자조 우승 팀이 그랜드 파이널 한 번으로 만나요.",
+          "double": "대진 리셋. 지금은 그랜드 파이널 한 번처럼 진행돼요. 완전한 리셋 지원 예정이에요.",
+          "none": "그랜드 파이널 없음: 승자조 결승으로 토너먼트가 결정돼요."
+        },
+        "teams": "팀",
+        "teamsHelpPowerOfTwo": "엘리미네이션 대진표에는 {{counts}}팀이 필요해요. 팀을 고를 때까지 요약에 사용돼요.",
+        "teamsHelpRange": "{{min}}~{{max}}팀. 팀을 고를 때까지 요약에 사용돼요.",
+        "fewerTeams": "팀 줄이기",
+        "moreTeams": "팀 늘리기",
+        "shuffleTitle": "셔플 설정",
+        "cs2Title": "Counter-Strike 2 설정",
+        "cs2Help": "Counter-Strike 2 게임 모듈이 CS2 서버로 전달해요.",
+        "overtime": {
+          "enabled": "연장전",
+          "disabledDraws": "꺼짐, 무승부 허용",
+          "disabledNoDraws": "꺼짐, 피해량으로 결정"
+        }
+      },
+      "teams": {
+        "shuffleBeforeCreate": "플레이어는 토너먼트를 만든 뒤 신청해요. 고르려면 이 단계로 돌아오세요.",
+        "shuffleSelfSignup": "플레이어가 직접 참가",
+        "shuffleSelfSignupHelp": "켜져 있는 동안 플레이어는 토너먼트 페이지의 참가로 신청해요. 여기서도 플레이어를 추가할 수 있어요."
+      },
+      "maps": {
+        "vetoTitle": "밴/픽",
+        "vetoStandard": "각 {{format}} 시리즈는 맵 밴/픽을 해요: 두 팀이 이 7개 맵에서 밴과 픽을 해요.",
+        "vetoCustom": "이 토너먼트에는 {{format}}용 사용자 지정 밴/픽 순서가 있어요.",
+        "vetoNone": "이 형식에는 밴/픽이 없어요.",
+        "vetoShuffle": "셔플에는 밴/픽이 없어요: 맵은 이 순서대로 라운드마다 하나씩 진행돼요."
+      },
+      "eventPage": {
+        "draftNote": "토너먼트를 만들 때 함께 저장돼요."
+      },
+      "review": {
+        "unsaved": "저장하지 않은 변경 사항이 있어요. 시작하기 전에 저장하거나(대진표가 다시 만들어져요) 취소하세요."
+      },
+      "summary": {
+        "label": "요약",
+        "untitled": "이름 없는 토너먼트",
+        "format": "형식",
+        "series": "시리즈",
+        "seriesShuffle": "라운드당 BO1",
+        "seriesFinal": {
+          "simple": "{{format}} · 그랜드 파이널",
+          "double": "{{format}} · 그랜드 파이널, 대진 리셋",
+          "none": "{{format}} · 그랜드 파이널 없음"
+        },
+        "teams": "팀",
+        "teamSize": "{{size}}v{{size}}",
+        "teamsPlanned": "{{count}}팀 예정",
+        "matches": "경기",
+        "matchesAfterSignUp": "신청 후",
+        "duration": "소요 시간",
+        "durationValue": "{{hours}}시간 {{minutes}}분",
+        "signUp": "참가 신청",
+        "signUpOrganizer": "주최자가 선택",
+        "signUpAfterCreate": "만든 뒤 열림",
+        "players_one": "{{count}}명",
+        "players_other": "{{count}}명",
+        "maps": "맵",
+        "mapsRounds": "{{maps}} · {{rounds}}",
+        "notSet": "설정 안 됨",
+        "signUpOpen": "팀이 신청 · 팀당 {{size}}명"
+      },
+      "checklist": {
+        "title": "시작하기 전에",
+        "met": "완료",
+        "notMet": "미완료",
+        "name": "이름",
+        "format": "형식과 경기 설정",
+        "teams": "올바른 팀 수",
+        "players_one": "{{count}}명 이상 신청",
+        "players_other": "{{count}}명 이상 신청",
+        "mapsVeto": "밴/픽용 맵 7개",
+        "maps": "맵 하나 이상",
+        "created": "토너먼트 생성됨",
+        "saved": "변경 사항 저장됨"
+      },
+      "manualReport": {
+        "title": "수동 결과 보고",
+        "help": "Auto Tournament는 이 게임을 지켜볼 수 없으므로 팀이 결과를 알려 줘요.",
+        "seriesLength": "시리즈 길이",
+        "seriesLengthHelp": "한 시리즈의 게임 수예요. 절반 넘게 먼저 이긴 팀이 경기를 가져가요.",
+        "gameLabel": "게임 이름",
+        "gameLabelHelp": "보고 양식에서 부를 이름이에요. 비워 두면 \"{{game}}\"이에요.",
+        "allowDraw": "무승부",
+        "allowDrawHelp": "게임(그리고 시리즈)이 동점으로 끝날 수 있게 해요. 누군가 올라가야 하는 대진표에서는 끄세요.",
+        "allowDrawOptions": {
+          "no": "허용 안 함",
+          "yes": "허용"
+        },
+        "confirmation": "결과가 확정되기 전에",
+        "confirmationHelp": {
+          "opponent": "경기가 확정되려면 상대 팀장이 동의해야 해요. 대신 이의를 제기하면 관리자에게 넘어가요.",
+          "none": "팀장의 보고만으로 경기가 확정돼요. 빠르지만 이견이 없을 만한 경우에만 쓰세요."
+        },
+        "confirmationOptions": {
+          "opponent": "상대가 동의",
+          "none": "보고로 확정"
+        },
+        "confirmTimeout": "응답 시간(분)",
+        "confirmTimeoutHelp": "상대가 기한까지 가진 시간이에요. 1440은 하루예요.",
+        "confirmTimeoutNone": "기한 없음: 보고가 응답을 기다려요.",
+        "timeoutAction": "기한이 되면",
+        "timeoutActionHelp": {
+          "auto_confirm": "보고대로 확정하고, 누구도 기다리지 않고 대진표가 진행돼요.",
+          "escalate": "경기가 관리자에게 넘어가고, 이의 제기 페이지에서 결정해요."
+        },
+        "timeoutActionOptions": {
+          "auto_confirm": "보고대로 확정",
+          "escalate": "관리자에게 맡기기"
+        }
+      },
+      "signup": {
+        "how": "팀은 어떻게 참가하나요?",
+        "organizer": "내가 추가한 팀만",
+        "open": "팀이 신청 가능",
+        "organizerHelp": "모든 팀을 내가 골라요. 토너먼트 페이지에서 아무도 신청할 수 없어요.",
+        "openHelp": "팀 소유자나 팀장이 토너먼트 페이지에서 명단을 정해 신청하고, 명단은 당일 체크인해요. 아래에서 직접 팀을 추가할 수도 있어요.",
+        "teamSize": "팀당 플레이어",
+        "teamSizeHelp": "신청할 때 고르는 선발 수(후보는 최대 2명 추가).",
+        "maxTeamsHelp": "비워 두면 제한 없음.",
+        "save": "참가 신청 설정 저장",
+        "saved": "참가 신청 설정을 저장했어요",
+        "inTournament": "토너먼트 참가({{count}})",
+        "signedUp": "신청함",
+        "addedByYou": "내가 추가함",
+        "lineup": "선발 {{starters}}/{{size}}",
+        "checkedIn": "{{count}}명 체크인",
+        "remove": "제거",
+        "removed": "{{team}}이(가) 토너먼트에서 빠졌어요",
+        "noneYet": "아직 팀이 없어요. 신청하면 여기에 표시돼요.",
+        "noTeams": "아직 팀이 없어요.",
+        "addYourself": "직접 팀 추가",
+        "pickTeams": "팀 고르기",
+        "windowTitle": "참가 신청 기간",
+        "opensLabel": "신청 시작",
+        "opensNow": "지금",
+        "opensLater": "정한 시간",
+        "opensNowHelp": "토너먼트를 만들자마자 열어요.",
+        "opensLaterHelp": "그때까지는 닫혀 있어요. 페이지에서 카운트다운해요.",
+        "closesHelp": "체크인이 마감될 때까지 명단을 바꿀 수 있어요.",
+        "checkInTitle": "체크인",
+        "checkInHelp": "토너먼트 시작 전에 열리고 시작하면 마감돼요. 그때까지 체크인하지 않은 선발은 후보로 교체돼요. 후보는 체크인하지 않아요.",
+        "checkInChip_one": "{{count}}분 전",
+        "checkInChip_other": "{{count}}분 전",
+        "checkInOff": "체크인 없음",
+        "checkInLine": "{{day}} {{time}}에 열리고, 토너먼트가 {{start}}에 시작하면 마감돼요.",
+        "checkInLineNoStart_one": "시작 {{count}}분 전에 열리고 시작하면 마감돼요.",
+        "checkInLineNoStart_other": "시작 {{count}}분 전에 열리고 시작하면 마감돼요.",
+        "checkInLineOff": "체크인 없음: 신청한 모든 팀이 참가해요.",
+        "captainsLabel": "팀장이 팀원을 체크인할 수 있음",
+        "captainsHelp": "소유자나 팀장이 선발을 출석으로 표시할 수 있어요. 그 플레이어가 오지 않으면 팀장이 책임져요.",
+        "perMatchLabel": "경기마다 다시 체크인",
+        "perMatchHelp": "꺼짐: 토너먼트 전에 한 번 체크인하면 모든 경기에 적용돼요. 켜짐: 플레이어가 각 경기의 밴/픽이 열릴 때 체크인해요.",
+        "fullTeamTitle": "서버에 들어가기",
+        "fullTeamHelp": "경기 서버가 준비되면 각 팀은 후보를 포함해 전원이 서버에 들어올 때까지 이 시간이 있어요. 그다음 전원이 모인 팀이 선택해요: 부전승을 받거나, 인원이 부족한 팀과 경기하거나. 둘 다 부족하면 관리자가 결정해요.",
+        "fullTeamChip_one": "{{count}}분",
+        "fullTeamChip_other": "{{count}}분",
+        "fullTeamOff": "부전승 없음",
+        "fullTeamLine": "타이머는 경기실과 서버 채팅에 표시돼요. 후보는 준비된 것으로 쳐서 팀이 바로 불러올 수 있어요.",
+        "fullTeamLineOff": "부전승 없음: 경기가 자동 시작되면 인원이 부족한 팀은 그대로 경기해요(경기 설정)."
+      },
+      "groups": {
+        "count": "조 개수",
+        "through": "조별 진출 팀",
+        "throughWinner": "1위",
+        "throughTop2": "상위 2팀",
+        "seeding": "조 편성 방식",
+        "seedingSnake": "시드 순으로 분산(스네이크)",
+        "seedingRandom": "무작위",
+        "playoffs": "플레이오프",
+        "playoffMatches": "플레이오프 경기",
+        "ties": "조 내 동률: 상대 전적, 다음 라운드 득실, 다음 이긴 라운드 수(풀리그와 같음). 조만으로 대진표가 채워지지 않으면 나머지 중 상위 팀도 진출해요.",
+        "whatPlayersGet": "플레이어에게 보이는 것",
+        "stage": "조별 리그",
+        "stageLine": "{{size}}팀 조 {{groups}}개",
+        "stageNote": "{{count}}경기 · 팀당 {{each}}",
+        "playoffFinal": "두 조 1위: {{format}} 결승",
+        "playoff": {
+          "single_elimination": "{{count}}팀: 싱글 엘리미네이션",
+          "double_elimination": "{{count}}팀: 더블 엘리미네이션"
+        },
+        "throughNote": "{{count}}팀 진출",
+        "previewTitle": "조 편성(시드 순으로 분산)",
+        "previewNote": "팀 목록 순서(시드)대로예요. 토너먼트가 시작되면 조가 확정돼요.",
+        "randomNote": "조는 토너먼트가 시작될 때 무작위로 정해져요.",
+        "groupN": "{{letter}}조",
+        "groupMatches": "조별 경기"
+      },
+      "stepNotes": {
+        "game": "무엇을 하나요",
+        "basics": "이름, 날짜, 장소",
+        "format": "팀 대결 방식",
+        "teams": "추가 또는 신청",
+        "schedule": "날짜와 시간",
+        "maps": "맵 풀",
+        "extras": "프리셋, 규칙, 추가 기능",
+        "review": "만들기"
+      },
+      "stepOf": "{{total}}단계 중 {{n}}단계",
+      "schedule": {
+        "timesNote": "경기는 정해진 시간까지 기다려요. 플레이어는 경기에서 시간을 확인하고 알림을 받으며, 밴/픽은 제시간에 열려요.",
+        "breakNote_one": "방금 경기를 마친 팀은 다음 밴/픽 전에 {{count}}분 쉬어요(경기 규칙).",
+        "breakNote_other": "방금 경기를 마친 팀은 다음 밴/픽 전에 {{count}}분 쉬어요(경기 규칙).",
+        "noBreakNote": "팀의 경기 사이에 휴식이 없어요(경기 규칙).",
+        "ownTimeNote": "대진표가 만들어진 뒤 관리 › 일정에서 한 경기만 따로 시간을 정할 수 있어요.",
+        "startsTournament": "토너먼트 시작 · 체크인 마감",
+        "newDay": "새 날",
+        "sameDay": "같은 날",
+        "dayLabel": "날짜",
+        "startsLabel": "시작",
+        "tournamentStarts": "토너먼트 시작",
+        "autoStart": "{{time}}에 자동 시작",
+        "autoStartNoTime": "자동 시작",
+        "autoStartOff": "꺼짐: 관리자가 관리에서 시작해요.",
+        "reminders": "시작 전에 플레이어에게 알림",
+        "modeTimesNote": "라운드마다 날짜(2단계에서)와 시간을 정해요. 경기는 정해진 시간까지 기다리고 밴/픽은 제시간에 열려요.",
+        "modeAsapNote": "시작 시간만: 그 뒤에는 두 팀과 서버가 준비되는 대로 경기가 시작돼요."
+      },
+      "extras": {
+        "gotvLabel": "관전자",
+        "gotvOn_one": "관전자는 GOTV에서 {{count}}초 늦게 볼 수 있어요(경기 규칙 › 관전자).",
+        "gotvOn_other": "관전자는 GOTV에서 {{count}}초 늦게 볼 수 있어요(경기 규칙 › 관전자).",
+        "gotvOff": "관전자는 GOTV에서 볼 수 없어요(경기 규칙 › 관전자)."
+      },
+      "startFrom": {
+        "title": "시작 방식",
+        "help": "템플릿이 형식, 맵, 경기 설정을 채워 줘요. 다음 단계에서 무엇이든 바꿀 수 있어요.",
+        "blank": "빈 템플릿",
+        "blankHelp": "싱글 엘리미네이션, BO3, 사이트의 맵 풀과 경기 규칙.",
+        "siteDefaults": "사이트 기본값",
+        "builtIn": "기본 제공",
+        "saved": "저장됨",
+        "standardRules": "표준 규칙",
+        "ownTemplates": "내 템플릿은 <link>템플릿과 레이팅</link>에 있어요. 설정을 마치면 이 토너먼트를 템플릿으로 저장하세요."
+      },
+      "days": {
+        "title": "일정",
+        "one": "하루",
+        "several": "여러 날",
+        "day": "날짜",
+        "firstDay": "첫날",
+        "lastDay": "마지막 날",
+        "markedLegend": "이 날 이 사이트의 다른 토너먼트가 열려요"
+      },
+      "overlap": {
+        "headsUp": "주의: {{name}}도 {{day}}에 진행돼요",
+        "headsUpBody": "같은 서버에서 {{from}}–{{to}}. 둘 다 진행할 수 있어요: 경기는 빈 서버를 기다리고, 라운드 시간이 겹치지 않을 때만 플레이어가 둘 다 참가할 수 있어요.",
+        "openOther": "{{name}} 일정 열기",
+        "round": "같은 서버에서 {{name}}({{day}}, {{from}}–{{to}})과(와) 겹쳐요. 저장은 할 수 있어요. 이 라운드가 같은 시간에 진행되므로 {{name}} 참가자는 여기에 신청할 수 없어요.",
+        "see": "{{name}} 보기"
+      }
+    },
+    "startButton": {
+      "start": "토너먼트 시작",
+      "starting": "시작 중...",
+      "startSimulation": "시뮬레이션 시작",
+      "startingSimulation": "시뮬레이션 시작 중..."
+    },
+    "archiveDialog": {
+      "title": "새 토너먼트를 시작할까요?",
+      "message": "{{name}}은(는) 보관돼요. 결과, 경기, 통계는 남고 페이지 주소도 그대로예요. 그다음 새 토너먼트를 만들어요.",
+      "confirm": "보관하고 새로 시작",
+      "delete": "삭제하고 새로 시작",
+      "deleteHint": "또는 삭제: 결과, 경기, 통계도 함께 사라져요."
+    },
+    "end": {
+      "button": "토너먼트 종료",
+      "tooltip": "결과 없이 지금 토너먼트를 멈춰요: 서버의 경기는 끝나고 나머지는 취소돼요. 우승자도 보상도 없어요. 이후 보관할 수 있어요.",
+      "title": "이 토너먼트를 종료할까요?",
+      "body": "진행 중인 모든 경기는 서버에서 끝나고 나머지는 취소돼요. 우승자는 없고 보상도 지급되지 않아요. 되돌릴 수 없어요.",
+      "typeName": "확인하려면 \"{{name}}\"을(를) 입력하세요",
+      "confirm": "토너먼트 종료",
+      "done_one": "토너먼트를 종료하고 경기 {{count}}개를 취소했어요",
+      "done_other": "토너먼트를 종료하고 경기 {{count}}개를 취소했어요",
+      "failed": "토너먼트를 종료하지 못했어요"
+    },
+    "countdown": {
+      "days": "{{d}}일 {{h}}시간 후 시작",
+      "hours": "{{h}}시간 {{m}}분 후 시작",
+      "minutes": "{{m}}:{{s}} 후 시작"
+    }
+  },
+  "bracket": {
+    "empty": {
+      "noBracketTitle": "표시할 대진표가 없어요",
+      "noBracketDescription": "토너먼트를 만들고 대진표를 생성해 시작하세요"
+    },
+    "view": {
+      "visual": "그래픽",
+      "list": "목록",
+      "refresh": "새로고침",
+      "enterFullscreen": "전체 화면",
+      "exitFullscreen": "전체 화면 종료",
+      "shuffleNoVisual": "셔플 토너먼트에는 그래픽 대진표가 없어요. 대신 목록 보기를 사용하세요."
+    },
+    "times": {
+      "toggle": "시간 설정",
+      "startsAt": "시작",
+      "clear": "라운드 시간 사용",
+      "save": "저장"
+    },
+    "shuffleEmpty": {
+      "title": "셔플 토너먼트에는 대진표가 없어요",
+      "description": "셔플 토너먼트는 고정 대진표를 쓰지 않아요. 팀은 플레이어 ELO를 기준으로 라운드마다 다시 섞여요.",
+      "hint": "라이브와 예정 경기는 경기 페이지에서, 플레이어 순위는 랭킹 페이지에서 확인하세요.",
+      "goToMatches": "경기로 이동",
+      "viewLeaderboard": "랭킹 보기"
+    },
+    "notGenerated": {
+      "title": "아직 대진표가 생성되지 않았어요",
+      "description": "{{name}}의 경기를 만들려면 대진표를 생성하세요",
+      "goToSettings": "토너먼트 설정으로 이동"
+    },
+    "shuffleNoVisual": {
+      "title": "셔플 토너먼트에는 그래픽 대진표가 없어요",
+      "description": "경기는 플레이어 ELO와 팀 균형을 바탕으로 라운드마다 동적으로 만들어져요. 진행 상황은 여기서 확인하세요:",
+      "listView": "목록 보기",
+      "matches": "경기",
+      "standings": "순위표",
+      "docsHint": "셔플 작동 방식의 자세한 설명은 문서의 셔플 토너먼트 가이드를 참고하세요."
+    },
+    "swiss": {
+      "notGenerated": "생성되지 않음",
+      "generatedAfter": "{{round}}라운드가 끝나면 경기가 만들어져요",
+      "bye": "부전승",
+      "standings": "순위표",
+      "team": "팀",
+      "record": "전적",
+      "buchholz": "BH",
+      "buchholzHint": "Buchholz: 상대 팀 승리 수의 합",
+      "roundDiff": "RD",
+      "roundDiffHint": "라운드 득실: 이긴 라운드에서 진 라운드를 뺀 값"
+    },
+    "slotHint": {
+      "winnerOf": "{{match}} 승자",
+      "loserOf": "{{match}} 패자",
+      "matchNumber": "경기 {{number}}"
+    },
+    "pause": {
+      "pause": "대진표 일시정지",
+      "reason": "일시정지 사유",
+      "forMinutes": "{{minutes}}분 동안",
+      "untilResumed": "재개할 때까지",
+      "paused": "대진표 일시정지: 진행 중인 경기는 끝까지 하고 새 경기는 시작하지 않아요",
+      "pausedUntil": "{{time}}까지 대진표 일시정지: 진행 중인 경기는 끝까지 하고 새 경기는 시작하지 않아요",
+      "resume": "재개",
+      "pausedDone": "대진표를 일시정지했어요",
+      "resumedDone": "대진표를 재개했어요",
+      "failed": "일시정지를 바꾸지 못했어요"
+    }
+  },
+  "overviewPage": {
+    "tabs": {
+      "overview": "개요",
+      "label": "토너먼트",
+      "bracket": "대진표",
+      "matches": "경기",
+      "teams": "팀",
+      "standings": "순위표",
+      "manage": "관리",
+      "rules": "규칙",
+      "match": "내 경기",
+      "results": "결과",
+      "signup": "참가 신청"
+    },
+    "status": {
+      "setup": "예정",
+      "inProgress": "라이브",
+      "completed": "완료",
+      "finishedOn": "{{date}} 종료"
+    },
+    "liveNow": "지금 {{count}}경기 라이브",
+    "howItsPlayed": "경기 진행 방식",
+    "facts": {
+      "teams": "팀",
+      "teamsValue": "{{count}}팀",
+      "teamSize": "팀 인원",
+      "teamSizeValue": "{{count}}명",
+      "format": "형식",
+      "series": "시리즈",
+      "seriesValue": "BO{{count}}",
+      "mapVeto": "맵 밴/픽",
+      "mapVetoCustom": "사용자 지정 순서(팀장)",
+      "mapVetoStandard": "표준 순서(팀장)",
+      "overtime": "연장전",
+      "overtimeEnabledUnlimited": "켜짐, 무제한",
+      "overtimeEnabledSegments": "켜짐, {{count}}회",
+      "overtimeDisabled": "꺼짐(피해량으로 결정)"
+    },
+    "mapPool": "맵 풀",
+    "rules": "규칙",
+    "fullRulebook": "전체 규칙서",
+    "schedule": "일정",
+    "yourTeam": {
+      "title": "참가 중이에요",
+      "onRoster": "{{team}} 소속이에요.",
+      "viewTeam": "내 팀 보기",
+      "versus": "{{team}} 대 {{opponent}} · {{stage}}",
+      "tbd": "미정",
+      "goToMatch": "내 경기로 이동",
+      "openMatch": "경기 페이지 열기",
+      "state": {
+        "live": "라이브",
+        "loaded": "지금 참가",
+        "upNext": "다음",
+        "finished": "종료",
+        "eliminated": "탈락",
+        "waiting": "다음 경기 대기",
+        "registered": "등록됨",
+        "won": "우승",
+        "out": "탈락"
+      }
+    },
+    "prizes": {
+      "title": "상품",
+      "note": "주최자가 정해요. 상금, 장비, 또는 자랑할 권리."
+    },
+    "requirements": {
+      "title": "참가하려면",
+      "steamLinkedOk": "Steam 계정 연결됨.",
+      "steamLinkedNeutral": "참가하려면 Steam으로 로그인하세요.",
+      "onRosterOk": "이 토너먼트의 팀 명단에 있어요.",
+      "onRosterNeutral": "토너먼트 시작 전에 팀 명단에 들어가세요."
+    },
+    "loadError": "이 토너먼트를 불러오지 못했어요.",
+    "notFoundTitle": "토너먼트를 찾을 수 없어요",
+    "notFoundDescription": "이 토너먼트는 존재하지 않거나 아직 만들어지지 않았어요.",
+    "loading": "불러오는 중…",
+    "about": "소개",
+    "liveStripLabel": "지금 라이브",
+    "bracketTab": {
+      "loadError": "대진표를 불러오지 못했어요.",
+      "emptyTitle": "아직 대진표가 없어요",
+      "emptyDescription": "주최자가 토너먼트를 시작하면 대진표가 여기에 표시돼요.",
+      "shuffleTitle": "셔플에는 대진표가 없어요",
+      "shuffleDescription": "팀이 라운드마다 다시 정해지므로 대진표가 없어요. 경기 탭에 모든 라운드가, 순위표에 플레이어 순위가 있어요."
+    },
+    "matchesTab": {
+      "loadError": "경기를 불러오지 못했어요.",
+      "emptyTitle": "아직 경기가 없어요",
+      "emptyDescription": "토너먼트가 시작되면 경기가 여기에 표시돼요.",
+      "live": "지금 라이브",
+      "upcoming": "다음",
+      "results": "결과",
+      "vs": "대",
+      "status": {
+        "live": "라이브",
+        "loaded": "시작 중",
+        "final": "종료",
+        "upcoming": "예정"
+      },
+      "emptyDescriptionAt": "토너먼트가 시작되면 경기가 여기에 표시돼요: {{when}}."
+    },
+    "teamsTab": {
+      "shuffleTitle": "팀이 라운드마다 바뀌어요",
+      "shuffleDescription": "셔플 토너먼트는 등록한 플레이어로 라운드마다 새 팀을 만들어요. 순위표에 플레이어 순위가 있어요.",
+      "emptyTitle": "아직 팀이 없어요",
+      "emptyDescription": "주최자가 팀을 추가하면 여기에 표시돼요.",
+      "yours": "내 팀",
+      "record": "{{wins}}–{{losses}}",
+      "emptySignupOpen": "참가 신청이 열려 있어요. 팀이 신청하면 여기에 표시돼요.",
+      "signUp": "팀 신청하기"
+    },
+    "allMatches": "모든 경기",
+    "keyDates": {
+      "starts": "시작",
+      "lastOnSchedule": "마지막 일정",
+      "teams": "팀"
+    },
+    "mapPoolCount": "맵 풀 · 맵 {{count}}개",
+    "mapPoolNote": "팀장은 각 시리즈 전에 이 중에서 밴과 픽을 해요.",
+    "addToCalendar": "캘린더에 추가",
+    "scheduleSoon": "주최자가 아직 일정을 공개하지 않았어요.",
+    "checkInWindow": "체크인",
+    "mapPoolSoonTitle": "맵 풀",
+    "mapPoolSoon": "주최자가 아직 맵을 고르지 않았어요.",
+    "adminBanner": "이 토너먼트의 관리자예요. 운영은 관리에서 하고, 이 페이지는 플레이어가 보는 화면이에요.",
+    "manageTournament": "토너먼트 관리",
+    "fullBracket": "전체 대진표",
+    "allRules": "모든 규칙",
+    "archivedTitle": "이 토너먼트는 보관됐어요",
+    "archivedBody": "새 토너먼트로 대체됐어요. 결과, 대진표, 순위표는 여기에 남아요.",
+    "openCurrent": "현재 토너먼트 열기",
+    "allTournaments": "모든 토너먼트",
+    "roundN": "{{n}}라운드",
+    "finalRound": "결승",
+    "roundStarts": "{{round}} · 밴/픽 시작 {{time}}"
+  },
+  "roundStatusCard": {
+    "roundOf": "{{total}}라운드 중 {{current}}라운드",
+    "complete": "완료",
+    "inProgress": "진행 중",
+    "matchProgress": "경기 진행",
+    "completedOf": "{{completed}} / {{total}} 완료",
+    "completedCount": "{{count}} 완료",
+    "playingCount": "{{count}} 진행 중",
+    "pendingCount": "{{count}} 대기"
+  },
+  "yourMatch": {
+    "loading": "내 경기 불러오는 중",
+    "bestOf": "BO{{count}}",
+    "mapsScore": "맵 {{us}} – {{them}}",
+    "inServer": "서버 안",
+    "notJoined": "미참가",
+    "waitingForPlayers": "플레이어 대기 중",
+    "inServerCount": "서버에 {{expected}}명 중 {{count}}명. 모두 준비되면 경기가 시작돼요.",
+    "inServerCountBots": "서버에 {{count}}명. 빈자리는 봇이 채우고, 여기 있는 모두가 준비되면 경기가 시작돼요.",
+    "live": "라이브",
+    "round": "라운드 {{n}}",
+    "vetoTitle": "맵 밴/픽 진행 중",
+    "finished": "경기 종료",
+    "mapOf": "맵 {{n}}/{{total}}",
+    "sideYou": "{{side}} · 나",
+    "rejoin": "튕겼나요? 같은 버튼으로 다시 들어오세요. 자리는 유지돼요.",
+    "outcome": {
+      "won": "{{opponent}}에게 {{us}}–{{them}}(으)로 이겼어요",
+      "lost": "{{opponent}}에게 {{us}}–{{them}}(으)로 졌어요",
+      "draw": "{{opponent}}와(과) {{us}}–{{them}}"
+    },
+    "ready": "준비",
+    "waitingForServer": "서버 대기 중",
+    "vetoDoneChip": "밴/픽 완료 · {{map}}",
+    "waitingForServerBody": "서버가 비는 대로 배정돼요. 알림을 받고 이 페이지는 자동으로 업데이트돼요.",
+    "mapDrawnChip": "추첨된 맵 · {{map}}",
+    "notYet": "아직"
+  },
+  "results": {
+    "finalStandings": "최종 순위",
+    "awards": "시상",
+    "players": "플레이어",
+    "matchesAndDemos": "경기와 데모",
+    "place": "#{{n}}",
+    "championsOf": "{{name}} · 우승",
+    "showAll": "{{count}}명 모두",
+    "showFewer": "적게 보기",
+    "mapResults": "맵 결과",
+    "col": {
+      "player": "플레이어",
+      "team": "팀",
+      "rating": "레이팅 ±",
+      "hltv": "퍼포먼스"
+    },
+    "award": {
+      "mostKills": "최다 킬",
+      "bestAdr": "최고 ADR",
+      "bestHeadshots": "최고 헤드샷 비율",
+      "mostFlashAssists": "최다 섬광 어시스트",
+      "mostUtility": "최다 유틸리티 피해량",
+      "biggestGain": "최대 레이팅 상승",
+      "bestPlayer": "최고의 플레이어",
+      "mostClutches": "최다 클러치",
+      "mostTeamFlashes": "최다 팀원 섬광",
+      "mostMoney": "최다 지출"
+    },
+    "awardValue": {
+      "mostKills": "{{value}}킬",
+      "bestAdr": "ADR {{value}}",
+      "bestHeadshots": "헤드샷 {{value}}%",
+      "mostFlashAssists": "섬광 어시스트 {{value}}",
+      "mostUtility": "유틸리티 피해량 {{value}}",
+      "biggestGain": "레이팅 +{{value}}",
+      "bestPlayer": "레이팅 {{value}}",
+      "mostTeamFlashes": "팀원 {{value}}명 섬광",
+      "mostClutches": "클러치 {{value}}회 성공",
+      "mostMoney": "{{value}} 지출"
+    },
+    "wonFinal": "결승에서 {{opponent}}에게 {{a}}–{{b}} 승리",
+    "champions": "우승",
+    "allMatches": "경기 {{count}}개 모두",
+    "demosAndReel": "데모와 하이라이트 영상",
+    "stage": {
+      "final": "결승",
+      "semi": "4강",
+      "round": "{{n}}라운드"
+    }
+  },
+  "signup": {
+    "cta": "팀 신청하기",
+    "keyDates": {
+      "closes": "참가 신청 마감",
+      "checkIn": "체크인",
+      "spots": "팀 자리",
+      "left": "{{count}}자리 남음",
+      "full": "마감",
+      "of": "/ {{max}}"
+    },
+    "ladder": {
+      "title": "레이팅 순 팀",
+      "yourPlace": "{{count}}팀 중 {{place}}위"
+    },
+    "todo": {
+      "signedUp": "신청 완료",
+      "beforeTheDay": "당일까지",
+      "toFix": "수정 필요 {{count}}건",
+      "lineup": "명단",
+      "allReady": "모두 준비 완료",
+      "notSet": "설정 안 됨",
+      "showFixes": "수정할 내용 보기",
+      "fixNote": "체크인 전에 수정하세요. 그렇지 않으면 그 플레이어는 참가할 수 없어요."
+    },
+    "yourLineup": "내 명단",
+    "change": "변경",
+    "withdraw": "철회",
+    "withdrawTitle": "{{team}}의 참가를 철회할까요?",
+    "withdrawBody": "팀이 토너먼트에서 빠지고 그 자리는 다른 팀에게 열려요.",
+    "sub": "후보",
+    "ready": "준비",
+    "problem": {
+      "noAccount": "아직 Auto Tournament에 로그인하지 않았어요",
+      "noGame": "프로필에 게임이 없어요"
+    },
+    "problemShort": {
+      "noAccount": "미로그인",
+      "noGame": "게임 필요"
+    },
+    "checkIn": {
+      "open": "체크인이 열렸어요",
+      "closesIn": "{{time}} 마감 · {{left}} 남음",
+      "imHere": "출석했어요",
+      "done": "체크인 완료",
+      "teamTitle": "{{team}} 체크인 중",
+      "keepOpen": "이 페이지를 열어 두세요. 경기가 준비되면 알려 드려요.",
+      "firstMatchIn": "첫 경기까지",
+      "count": "{{total}}명 중 {{in}}명",
+      "you": "나",
+      "everyone": "모두",
+      "soundOn": "소리 켜짐: 시간이 되면 소리가 나요",
+      "soundOff": "소리 꺼짐",
+      "checkInFor": "{{name}} 체크인",
+      "checkInShort": "체크인"
+    },
+    "noTeamTitle": "신청할 팀이 없어요",
+    "noTeamBody": "팀은 소유자나 팀장만 신청할 수 있어요. 팀을 만들거나 팀장에게 부탁하세요.",
+    "goToTeams": "팀",
+    "steps": {
+      "lineup": "명단",
+      "review": "검토"
+    },
+    "whichTeam": "어떤 팀을 신청하나요?",
+    "role": {
+      "owner": "내가 소유자예요",
+      "captain": "내가 팀장이에요"
+    },
+    "playerCount": "{{count}}명",
+    "whoPlays": "누가 경기하나요?",
+    "whoPlaysHint": "선발 {{count}}명 · 후보 최대 {{subs}}명",
+    "rating": "레이팅 {{rating}}",
+    "slotFor": "{{name}}의 역할",
+    "starter": "선발",
+    "out": "제외",
+    "starters": "선발",
+    "subs": "후보",
+    "lineupRating": "명단 레이팅",
+    "missingAccounts": "{{names}}님은 아직 로그인해야 해요.",
+    "fixBeforeCheckIn": "지금 신청할 수 있어요. 체크인 전에 수정하세요.",
+    "saveLineup": "명단 저장",
+    "nextReview": "다음: 검토",
+    "readyToSend": "보낼 준비가 됐나요?",
+    "next": {
+      "lastSpot": "마지막 자리를 차지해요",
+      "takesSpot": "자리를 하나 차지해요",
+      "spotsLeft": "이 전에 {{count}}자리 남음",
+      "checkIn": "당일 체크인",
+      "firstMatch": "첫 경기",
+      "spotOf": "{{max}}자리 중 {{n}}번째"
+    },
+    "vouch": "이 명단의 모든 플레이어가 다음을 읽었음을 확인해요:",
+    "vouchNote": "모두를 대신해 신청해요. 플레이어가 규칙을 어기면 팀 전체가 제재나 실격을 받을 수 있어요.",
+    "send": "{{team}} 신청",
+    "rulesLink": "규칙",
+    "ownerTag": "소유자",
+    "captainTag": "팀장",
+    "check": {
+      "steam": "Steam",
+      "game": "{{game}}",
+      "noGame": "{{game}} 미추가",
+      "steamShort": "Steam"
+    },
+    "remind": "알림",
+    "reminded": "팀 채팅에 알림을 보냈어요",
+    "done": "완료",
+    "lineupGap": "선발 선수가 명단에서 빠졌어요(이용 정지 또는 삭제). 경기는 {{time}}까지 기다려요: 그 전에 후보를 고르지 않으면 첫 번째 후보가 들어가요. 후보가 없으면 인원이 부족한 채로 경기해요.",
+    "pickSub": "후보 고르기",
+    "title": "팀 신청하기",
+    "editTitle": "명단 변경",
+    "stepsLabel": "단계",
+    "changeUntil": "체크인이 마감되는 {{when}}까지 명단을 바꿀 수 있어요.",
+    "counts": "선발 {{starters}}/{{teamSize}} · 후보 {{subs}}/{{maxSubs}}",
+    "lineupRatingValue": "명단 레이팅 {{rating}}",
+    "missingGame": "{{names}}님은 프로필에 {{game}}이(가) 필요해요.",
+    "subsLine": "후보: {{names}}",
+    "overlap": {
+      "title": "이 토너먼트에는 신청할 수 없어요",
+      "body": "{{name}}에 참가 중이고, 이 토너먼트와 같은 시간인 {{when}}에 경기가 있어요. 경기 시간이 겹치지 않으면 두 토너먼트 모두 참가할 수 있어요.",
+      "open": "{{name}} 열기"
+    },
+    "youreIn": {
+      "eyebrow": "{{team}} · 신청 완료",
+      "title": "참가 확정!",
+      "body": "토너먼트 시작 전에 팀이 알아야 할 내용이에요. 같은 목록을 소유자와 팀장에게도 보냈어요.",
+      "openLineup": "명단 열기",
+      "listTitle": "토너먼트 시작 전에",
+      "checkIn": "체크인 {{when}}–{{to}}",
+      "checkInBodyCaptains": "선발은 모두 이 페이지에서 체크인하거나 팀장이 대신 체크인해요. 체크인은 토너먼트가 시작되면 마감돼요.",
+      "checkInBody": "선발은 모두 이 페이지에서 체크인해요. 체크인은 토너먼트가 시작되면 마감돼요.",
+      "subs": "후보는 체크인할 필요 없어요",
+      "subsBody": "출석과 준비 완료로 처리되므로 경기가 후보를 기다리지 않아요.",
+      "replaced": "체크인하지 않은 선발은 교체돼요",
+      "replacedBody": "체크인이 마감되면 체크인하지 않은 선발 자리는 후보가 채워요. 후보가 없으면 한 명 부족한 채로 경기해요.",
+      "fullTeam_one": "{{count}}분 안에 팀을 서버로",
+      "fullTeam_other": "{{count}}분 안에 팀을 서버로",
+      "fullTeamBody_one": "서버가 준비되면 후보를 포함해 전원이 서버에 들어오기까지 {{count}}분이 있어요. 그 뒤에는 상대 팀이 부전승을 받거나 인원이 부족한 우리 팀과 경기하기로 선택할 수 있어요.",
+      "fullTeamBody_other": "서버가 준비되면 후보를 포함해 전원이 서버에 들어오기까지 {{count}}분이 있어요. 그 뒤에는 상대 팀이 부전승을 받거나 인원이 부족한 우리 팀과 경기하기로 선택할 수 있어요.",
+      "ready": "경기마다 미리 준비하세요",
+      "readyBodyVeto_one": "밴/픽은 매 경기 {{count}}분 전에 열려요. 이 페이지를 열어 두세요. 다음 경기가 준비되면 알려 드려요.",
+      "readyBodyVeto_other": "밴/픽은 매 경기 {{count}}분 전에 열려요. 이 페이지를 열어 두세요. 다음 경기가 준비되면 알려 드려요.",
+      "readyBody": "이 페이지를 열어 두세요. 다음 경기가 준비되면 알려 드려요.",
+      "eachMatch": "경기마다 다시 체크인",
+      "eachMatchBody": "매 경기 전 선발은 경기실에서 체크인하거나 팀장이 대신해요. 체크인하지 않은 선발은 후보로 교체돼요."
+    }
+  },
+  "bracketCards": {
+    "you": "나",
+    "open": "{{a}} 대 {{b}} 열기",
+    "upper": "승자조",
+    "lower": "패자조",
+    "grandFinal": "그랜드 파이널",
+    "thirdPlace": "3위 결정전",
+    "live": "라이브",
+    "veto": "밴/픽",
+    "done": "완료",
+    "mapOf": "맵 {{n}}/{{total}}",
+    "banning": "맵 밴 중",
+    "bestOf_one": "BO{{count}}",
+    "bestOf_other": "BO{{count}}",
+    "winnerOf": "{{match}} 승자",
+    "loserOf": "{{match}} 패자",
+    "tbd": "미정",
+    "liveCount_one": "{{count}} 라이브",
+    "liveCount_other": "{{count}} 라이브",
+    "matchCount_one": "{{count}}경기",
+    "matchCount_other": "{{count}}경기"
+  },
+  "placement": {
+    "outTitle": "{{tournament}}에서의 여정이 끝났어요",
+    "wonTitle": "{{tournament}}에서 우승했어요!",
+    "yourTeamPlaced": "{{team}} 순위",
+    "yourTeam": "내 팀",
+    "outBody": "팀이 토너먼트에서 탈락해서 더 이상 경기가 없어요. 나머지는 대진표에서 지켜보세요.",
+    "wonBody": "팀이 토너먼트에서 우승했어요. 수고했어요!",
+    "close": "닫기",
+    "seeBracket": "대진표 보기",
+    "outBodyPlay": "이 토너먼트에서 남은 경기가 없어요. 참가해 줘서 고마워요!",
+    "championsEyebrow": "우승",
+    "teamPlaced": "{{team}} 순위",
+    "wonTitleShort": "{{tournament}}에서 우승했어요!",
+    "wonFinalBody": "{{team}}이(가) 결승을 {{score}}(으)로 이겼어요. 수고했어요!",
+    "playHint": "한 판 더 할래요? 매치메이킹으로 1~2분이면 경기에 들어갈 수 있어요."
+  },
+  "advance": {
+    "title": "아직 살아남았어요!",
+    "opponent": "다음 상대: {{opponent}}.",
+    "feederTitle": "다음 상대가 나오는 경기",
+    "vs": "대",
+    "tbd": "미정",
+    "feederNotStarted": "그 경기는 아직 시작하지 않았어요.",
+    "feederMinutes_one": "약 {{count}}분 남았어요.",
+    "feederMinutes_other": "약 {{count}}분 남았어요.",
+    "feederAlmost": "거의 끝났어요.",
+    "watch": "라이브로 보기",
+    "wonEyebrow": "{{stage}} {{score}} 승리"
+  },
+  "whatsNext": {
+    "eyebrow": "다음은",
+    "champions": "우승",
+    "outTitle": "팀이 탈락했어요. 순위: {{place}}",
+    "outBody": "{{tournament}}에서의 마지막 경기였어요. 수고했어요! 계속 하고 싶나요? 매치메이킹이 지금 다른 플레이어와의 경기를 찾아 줘요.",
+    "playMatchmaking": "매치메이킹 하기",
+    "watchLive": "라이브 경기 보기",
+    "nextMatch": "{{stage}} · 상대 {{opponent}}",
+    "nextMatchReady": "경기가 준비됐어요: 경기실을 열어 접속하세요.",
+    "nextMatchSoon": "다음 경기가 정해졌어요. 짧은 휴식 후 열리고 알려 드려요. 어디에 있든 내비게이션 바에 카운트다운이 보여요.",
+    "openMatchRoom": "경기실 열기",
+    "throughTo": "{{stage}} 진출",
+    "waitingTitle": "다음 상대를 기다리는 중",
+    "waitingBody": "상대는 아직 진행 중인 경기에서 나와요. 끝나면 짧은 휴식 후 다음 경기가 열려요. 알려 드릴게요.",
+    "watchOpponent": "다음 상대를 라이브로 보기",
+    "shuffleTitle": "다음 라운드: 새 팀",
+    "shuffleBody": "이번 라운드 경기가 모두 끝나면 새 팀이 정해지고 다음 경기가 여기에 표시돼요.",
+    "stayHere": "이 페이지에 있어 주세요: 자동으로 업데이트돼요.",
+    "openTournament": "토너먼트 열기",
+    "winsToTitle_one": "우승까지 1승 남음",
+    "winsToTitle_other": "우승까지 {{count}}승 남음",
+    "shuffleDoneTitle": "마지막 라운드였어요",
+    "shuffleDoneBody": "셔플이 끝났어요. 순위는 토너먼트를 열어 확인하세요.",
+    "youWon": "{{opponent}}에게 {{a}}–{{b}}(으)로 이겼어요.",
+    "youLost": "{{opponent}}에게 {{a}}–{{b}}(으)로 졌어요.",
+    "resultPlaced": "{{result}} 순위: {{place}}.",
+    "nextUp": "다음: {{match}}."
+  },
+  "navStatus": {
+    "placed": "순위 확정",
+    "placedPlay": "{{place}} · 매치메이킹 하기",
+    "waiting": "상대 대기",
+    "vetoIn": "밴/픽까지",
+    "vetoOpening": "밴/픽 여는 중",
+    "matchIn": "경기까지",
+    "matchLoading": "경기 불러오는 중",
+    "shuffleRound": "{{round}}라운드 · 경기 중",
+    "shuffleSittingOut": "{{round}}라운드 · 휴식",
+    "placedPlayLine": "순위 {{place}} · 매치메이킹 하기",
+    "placedLine": "순위 {{place}}",
+    "waitingOpponent": "상대 대기",
+    "aboutMinutes_one": "약 {{count}}분",
+    "aboutMinutes_other": "약 {{count}}분"
+  },
+  "shuffleJoin": {
+    "title": "이 셔플에 참가",
+    "body": "팀이 필요 없어요: 혼자 신청하세요. 라운드마다 플랫폼이 균형 잡힌 새 팀을 만들어요.",
+    "youreIn": "참가했어요",
+    "inBody": "토너먼트가 시작되면 첫 팀이 정해지고 경기가 여기에 표시돼요. 이 페이지를 열어 두세요.",
+    "join": "참가",
+    "leave": "나가기",
+    "full": "마감",
+    "signInToJoin": "로그인하고 참가",
+    "count_one": "{{count}}명 참가 중",
+    "count_other": "{{count}}명 참가 중",
+    "countOf_one": "{{spots}}자리 중 {{count}}명 참가",
+    "countOf_other": "{{spots}}자리 중 {{count}}명 참가",
+    "playingTitle": "지금 경기 중이에요",
+    "playingBody": "팀과 함께 서버에 들어가세요. 이번 라운드 경기가 모두 끝나면 다음 라운드가 정해져요.",
+    "sittingOutTitle": "이번 라운드는 쉬어요",
+    "sittingOutBody": "이번 라운드에는 모든 팀을 채울 플레이어가 부족해요. {{next}}라운드 추첨에는 들어가 있고, 가장 많이 경기한 사람부터 쉬어요.",
+    "goToMatch": "경기로 이동",
+    "tagPlaying": "경기 중",
+    "tagSittingOut": "휴식",
+    "roundHeading": "{{round}}라운드",
+    "versus": "대",
+    "sittingOutList": "휴식: {{names}}",
+    "status": {
+      "live": "라이브",
+      "done": "완료",
+      "waiting": "시작 중"
+    },
+    "finishedTitle": "셔플이 끝났어요",
+    "finishedBody_one": "1라운드 모두 끝났어요. 수고했어요!",
+    "finishedBody_other": "{{count}}라운드 모두 끝났어요. 수고했어요!",
+    "roundOf": "{{total}}라운드 중 {{round}}라운드",
+    "roundsCount_one": "{{count}}라운드",
+    "roundsCount_other": "{{count}}라운드",
+    "now": "지금",
+    "tagLeft": "나감",
+    "markOut": "제외",
+    "markIn": "복귀",
+    "roundShort": "{{round}}라운드",
+    "playedTitle": "{{round}}라운드 경기가 끝났어요",
+    "playedBody": "다른 경기가 끝나면 {{next}}라운드가 정해져요. 이 페이지에 있어 주세요: 자동으로 업데이트돼요.",
+    "sittingOutBodyCounts_one": "{{size}}v{{size2}}에 플레이어가 {{players}}명이라 라운드마다 {{count}}명이 쉬어요. 가장 많이 경기한 사람부터 쉬어요: 다음 추첨에는 들어가 있어요.",
+    "sittingOutBodyCounts_other": "{{size}}v{{size2}}에 플레이어가 {{players}}명이라 라운드마다 {{count}}명이 쉬어요. 가장 많이 경기한 사람부터 쉬어요: 다음 추첨에는 들어가 있어요.",
+    "playedBodyLeft_one": "경기 {{count}}개를 더 기다리고 있어요. 끝나면 {{next}}라운드가 정해지고, 다음 경기가 여기에 표시되며 알림이 와요.",
+    "playedBodyLeft_other": "경기 {{count}}개를 더 기다리고 있어요. 끝나면 {{next}}라운드가 정해지고, 다음 경기가 여기에 표시되며 알림이 와요.",
+    "joinedByMistake": "잘못 참가했나요?",
+    "breakTitle": "휴식 · {{round}}라운드는 {{time}} 시작",
+    "noShowTitle": "다음 추첨에서 빠졌어요",
+    "noShowBody": "경기에 참가하지 않아 다음 라운드가 나 없이 정해지고 있어요. PC 앞으로 돌아왔나요? 알려 주면 다음 추첨에 들어가요.",
+    "backIn": "돌아왔어요",
+    "tagNoShow": "불참"
+  },
+  "liveOverview": {
+    "roundOf": "{{total}}라운드 중 {{round}}라운드",
+    "liveCount": "지금 {{count}}경기 라이브",
+    "eta": {
+      "nextRoundAbout": "다음 라운드 약 {{time}}",
+      "nextRoundAt": "다음 라운드 {{time}}",
+      "finalEnds": "마지막 라운드: 약 {{time}}에 종료",
+      "endsAbout": "약 {{time}}에 종료"
+    },
+    "hero": {
+      "playingTitle": "지금 경기 중이에요",
+      "playingBody": "{{us}} 대 {{them}}{{map}}. 경기실에서 참가하세요.",
+      "joiningTitle": "서버에 참가",
+      "joiningBody": "{{us}} 대 {{them}}{{map}}. 모두 준비되면 경기가 시작돼요.",
+      "vetoTitle": "맵 밴/픽이 열렸어요",
+      "vetoBody": "경기실에서 {{them}}와(과) 맵을 밴하고 픽하세요.",
+      "waitingTitle": "다음 상대를 기다리는 중",
+      "waitingBody": "상대는 아직 진행 중인 경기에서 나와요. 짧은 휴식 후 밴/픽이 열리고 알림이 와요.",
+      "notStartedTitle": "다음: {{them}}",
+      "notStartedBody": "라운드가 시작되면 경기가 열려요. 이 페이지는 자동으로 업데이트돼요.",
+      "outTitle": "팀이 탈락했어요. 순위: {{place}}",
+      "outBody": "마지막 경기였어요. 수고했어요! 계속 하고 싶다면 매치메이킹이 열려 있어요.",
+      "wonTitle": "토너먼트에서 우승했어요!",
+      "wonBody": "멋진 경기였어요. 상품은 인벤토리에 있어요.",
+      "spectatorTitle": "{{count}}경기 라이브",
+      "spectatorTitleOne": "1경기 라이브",
+      "spectatorIdleTitle": "라운드 사이",
+      "spectatorBody": "경기를 열면 점수, 맵, 출전 선수를 볼 수 있어요.",
+      "openMatchRoom": "경기실 열기",
+      "openVeto": "밴/픽 열기",
+      "watchLive": "라이브 경기 보기",
+      "playMatchmaking": "매치메이킹 하기",
+      "yourMatch": "내 경기",
+      "opponentFrom": "상대가 나오는 경기",
+      "minutesLeft": "약 {{count}}분 남음",
+      "winsToTitle_one": "우승까지 1승 남음",
+      "winsToTitle_other": "우승까지 {{count}}승 남음",
+      "waitingServerTitle": "서버 대기 중",
+      "waitingServerBody": "{{us}} 대 {{them}}{{map}}. 서버가 비는 대로 배정되고 알림이 와요.",
+      "wonStage": "{{stage}} {{score}} 승리",
+      "stageNext": "다음은 {{stage}}",
+      "faceWinnerOf": "{{us}}은(는) {{a}} 대 {{b}}({{state}})의 승자와 맞붙어요. 그 경기가 끝나면 밴/픽이 열리고 알림이 와요.",
+      "feederLive": "{{score}}, 맵 {{map}} 라이브",
+      "feederNotStarted": "아직 시작 안 함",
+      "vetoOpens": "밴/픽 시작",
+      "inAboutMinutes_one": "약 {{count}}분 후",
+      "inAboutMinutes_other": "약 {{count}}분 후",
+      "later": "나중에",
+      "afterBreak": "짧은 휴식 후",
+      "youAre": "전적 {{record}}",
+      "nextRoundDrawn": "다음은 {{round}}라운드 추첨이에요",
+      "lastRoundPlaying": "마지막 라운드 진행 중",
+      "betweenBody": "이번 라운드 내 경기는 끝났어요. 다른 경기가 끝나면 다음 라운드가 정해지고, 경기가 여기에 표시되며 알림이 와요.",
+      "vetoSoonTitle": "맵 밴/픽은 {{time}}에 열려요",
+      "vetoSoonBody": "지난 경기 뒤 짧은 휴식이에요. {{them}}와(과)의 밴/픽이 열리면 알림이 와요."
+    },
+    "schedule": "일정",
+    "bracket": "대진표",
+    "round": "{{n}}라운드",
+    "final": "결승",
+    "state": {
+      "now": "지금",
+      "next": "다음",
+      "later": "나중에",
+      "done": "✓ 완료",
+      "live": "라이브",
+      "upcoming": "예정"
+    },
+    "thisRound": "{{n}}라운드",
+    "earlier": "이전 라운드",
+    "standings": "순위표",
+    "teams": "팀",
+    "wl": "W–L",
+    "rounds": "+/−",
+    "ties": {
+      "round_robin": "동률: 상대 전적, 다음 라운드 득실, 다음 이긴 라운드 수.",
+      "swiss": "동률: 상대 팀의 강도(Buchholz: 상대 승리 수의 합), 다음 라운드 득실.",
+      "elim": "승리 수 순. 2패하면 탈락.",
+      "singleElim": "승리 수 순. 1패하면 탈락.",
+      "doubleElim": "승리 수 순. 2패하면 탈락.",
+      "groups": "조 내 동률: 상대 전적, 다음 라운드 득실, 다음 이긴 라운드 수."
+    },
+    "players": {
+      "title": "플레이어 · 레이팅 순",
+      "find": "플레이어 찾기",
+      "export": "내보내기",
+      "all": "{{count}}명 모두",
+      "player": "플레이어",
+      "team": "팀",
+      "rating": "레이팅",
+      "change": "±",
+      "kd": "K / D",
+      "adr": "ADR",
+      "winRate": "승률",
+      "none": "일치하는 플레이어가 없어요."
+    }
+  },
+  "matchesCards": {
+    "show": "보기",
+    "filterAll": "전체 {{count}}",
+    "filterLive": "라이브 {{count}}",
+    "filterUpcoming": "예정 {{count}}",
+    "done": "완료",
+    "afterOvertime": "연장전 후",
+    "startsAt": "{{time}} 시작 · 밴/픽 시작 {{veto}}",
+    "yourMatch": "내 경기",
+    "placeholderTbd": "미정",
+    "placeholderVeto": "맵 밴/픽",
+    "placeholderVetoAt": "밴/픽 {{time}}"
+  },
+  "standingsTab": {
+    "champions": "우승",
+    "championBadge": "우승",
+    "vs": "대",
+    "rounds": "라운드",
+    "form": "폼",
+    "intro": {
+      "round_robin": "풀리그: 모든 팀이 다른 모든 팀과 한 번씩 경기해요.",
+      "swiss": "스위스: 라운드마다 같은 전적의 팀끼리 맞붙어요.",
+      "single": "싱글 엘리미네이션: 1패하면 탈락.",
+      "double": "더블 엘리미네이션: 2패하면 탈락.",
+      "groups": "조별 리그 후 플레이오프: 모든 팀이 같은 조의 다른 팀과 한 번씩 경기하고, 상위 팀이 플레이오프에 진출해요."
+    }
+  },
+  "teamsCards": {
+    "subs": "후보: {{names}}"
+  },
+  "rulesTab": {
+    "atAGlance": "한눈에 보기",
+    "onThisPage": "이 페이지 내용",
+    "fromSettings": "토너먼트 설정 기준, 항상 최신",
+    "organizer": "주최자의 규칙",
+    "facts": {
+      "map": "맵",
+      "firstTo": "먼저 {{count}}",
+      "noOvertime": "없음",
+      "overtimeSegments_one": "1회, 그다음 피해량",
+      "overtimeSegments_other": "{{count}}회, 그다음 피해량",
+      "overtimeUnlimited": "필요한 만큼",
+      "thenDamage": "각 6라운드, 먼저 4",
+      "mapCount_one": "맵 {{count}}개",
+      "mapCount_other": "맵 {{count}}개"
+    },
+    "format": {
+      "title": "이 형식은 이렇게 진행돼요",
+      "navTitle": "형식",
+      "swiss_one": "모두가 같은 전적의 팀과 {{count}}라운드를 치러요. 재대결 없음. 승리 수, 다음 아래 타이브레이크로 순위를 정해요.",
+      "swiss_other": "모두가 같은 전적의 팀과 {{count}}라운드를 치러요. 재대결 없음. 승리 수, 다음 아래 타이브레이크로 순위를 정해요.",
+      "single_elimination": "한 번 지면 탈락. 대진표는 결승까지 진행돼요.",
+      "double_elimination": "승자조와 패자조. 두 번 지면 탈락.",
+      "round_robin": "모두가 모두와 한 번씩 만나요. 승리 수, 다음 아래 타이브레이크로 순위를 정해요.",
+      "shuffle": "라운드마다 신청한 플레이어로 새 팀이 정해져요. 플레이어는 승리 수로 순위가 정해져요.",
+      "matches": "각 경기는 MR{{mr}} 맵의 {{series}}이에요. 연장전: {{overtime}}.",
+      "damage": "마지막 연장전 후에도 동점이면 총 피해량이 많은 팀이 맵을 가져가요."
+    }
+  },
+  "liveMatch": {
+    "updatesEveryRound": "라운드마다 업데이트",
+    "chat": "경기 채팅",
+    "system": "Auto Tournament",
+    "noMessages": "아직 메시지가 없어요. gl hf!",
+    "chatSignIn": "이 경기의 플레이어로 로그인하면 읽고 쓸 수 있어요.",
+    "messageLabel": "두 팀과 관리자에게 메시지",
+    "send": "보내기",
+    "callAdmin": "관리자 호출",
+    "adminCalled": "관리자가 오고 있어요",
+    "joinTitle": "서버에 참가: {{map}}",
+    "warmup": "워밍업 · 지금 참가",
+    "isLive": "{{map}} 라이브",
+    "players": "플레이어",
+    "playersOnMap": "플레이어 · {{map}}",
+    "noEconomy": "레이팅 순. 돈이나 장비는 표시하지 않아요: 팀의 경제 상황을 드러내는 정보는 없어요.",
+    "yourTeam": "내 팀",
+    "backToTournament": "토너먼트로 돌아가기",
+    "manage": "이 경기 관리",
+    "finishedAt": "{{when}} 종료",
+    "delayedNote_one": "GOTV와 같이 {{count}}초 늦게 보여 줘요.",
+    "delayedNote_other": "GOTV와 같이 {{count}}초 늦게 보여 줘요."
+  },
+  "preStart": {
+    "open": "참가 신청 중",
+    "openCloses": "참가 신청 중 · {{when}} 마감",
+    "closed": "참가 신청 마감",
+    "notOpenTitle": "참가 신청이 열려 있지 않아요",
+    "fullTitle": "모든 자리가 찼어요",
+    "spotsLeft_one": "{{max}}자리 중 {{count}}자리 남음. 팀장이 선발과 후보를 정해요.",
+    "spotsLeft_other": "{{max}}자리 중 {{count}}자리 남음. 팀장이 선발과 후보를 정해요.",
+    "byOrganizer": "주최자가 팀을 추가해요.",
+    "captainsPick": "팀장이 선발과 후보를 정해요.",
+    "startsIn": "시작까지",
+    "allRules": "모든 규칙과 상품",
+    "signedUpEyebrow": "{{team}} · 신청 완료",
+    "inTitle": "참가 확정",
+    "inToFix_one": "참가 확정. 수정할 것 1건",
+    "inToFix_other": "참가 확정. 수정할 것 {{count}}건",
+    "fixBefore": "{{when}} 체크인 전에 수정하세요. 그렇지 않으면 그 플레이어는 서버에 들어갈 수 없어요.",
+    "checkInOn": "{{when}}에 체크인하세요. 시작할 때까지 체크인하지 않은 선발은 후보로 교체돼요.",
+    "allSet": "모두 준비됐어요. 시작 시간은 일정에 나와요.",
+    "checkInOpens": "체크인 시작",
+    "openLineup": "명단 열기",
+    "yourSignup": "내 신청",
+    "spotOf": "{{max}}자리 중 {{place}}번째",
+    "lineupCount": "명단 · 선발 {{starters}}명, 후보 {{subs}}명",
+    "fixBeforeCheckIn": "체크인 전에 수정",
+    "leave": "토너먼트 나가기",
+    "withdrawHint": "참가할 수 없나요? 철회하면 다른 팀에게 자리가 열려요.",
+    "opensTitle": "{{when}}에 참가 신청 시작",
+    "opensIn": "{{time}} 후 열려요."
+  },
+  "shuffleOverview": {
+    "yourMatchLive": "내 경기가 라이브예요",
+    "yourMatchReady": "내 경기가 준비됐어요",
+    "yourMatchDone": "내 경기가 끝났어요",
+    "nextDraw": "다음 추첨",
+    "round": "{{n}}라운드",
+    "whenRoundEnds": "이번 라운드 경기가 끝나면",
+    "oneMapPerRound": "라운드당 맵 하나 · 라운드마다 새 팀",
+    "sittingOut": "휴식:",
+    "firstNextRound": "다음 라운드 우선",
+    "players": "플레이어",
+    "markOutHint": "나간 플레이어를 제외하면 복귀시킬 때까지 쉬어요."
+  },
+  "checkIn": {
+    "areYouHere": "출석했나요?",
+    "teamCount": "{{team}} 체크인 중: {{total}}명 중 {{in}}명. 시작할 때까지 체크인하지 않은 선발은 후보로 교체돼요.",
+    "soundOn": "♪ 소리 켜짐",
+    "firstVeto_one": "첫 밴/픽은 경기 {{count}}분 전인 {{time}}에 열려요: 그때까지 PC 앞에 있어 주세요.",
+    "firstVeto_other": "첫 밴/픽은 경기 {{count}}분 전인 {{time}}에 열려요: 그때까지 PC 앞에 있어 주세요.",
+    "vetoOpensNote": "밴/픽 시작 {{time}}"
+  },
+  "runState": {
+    "paused": "토너먼트 일시정지",
+    "pausedUntil": "{{time}}까지 토너먼트 일시정지",
+    "pausedBody": "이미 서버에 있는 경기는 계속 진행돼요. 재개할 때까지 새 라운드가 정해지지 않고 밴/픽도 열리지 않아요.",
+    "reason": "사유: {{reason}}.",
+    "waitingServers_one": "경기 {{count}}개가 서버를 기다리고 있어요.",
+    "waitingServers_other": "경기 {{count}}개가 서버를 기다리고 있어요.",
+    "allBusy_one": "서버 1대가 모두 사용 중이에요. 하나가 비면 시작해요.",
+    "allBusy_other": "서버 {{count}}대가 모두 사용 중이에요. 하나가 비면 시작해요.",
+    "noneFree": "빈 서버가 없어요. 하나가 비면 시작해요.",
+    "servers": "서버",
+    "pausedShort": "일시정지"
+  },
+  "captainsPanel": {
+    "title": "팀장",
+    "note": "결과를 보고하거나 확인할 수 있는 건 팀장뿐이에요.",
+    "make": "팀장으로 지정",
+    "remove": "팀장 해제",
+    "role": {
+      "owner": "소유자",
+      "captain": "팀장",
+      "member": "팀원"
+    }
+  },
+  "lineupPanel": {
+    "title": "명단",
+    "note_one": "이 경기에 나갈 {{count}}명을 고르세요. 나머지는 벤치에 앉아요.",
+    "note_other": "이 경기에 나갈 {{count}}명을 고르세요. 나머지는 벤치에 앉아요.",
+    "picked": "{{count}}명 중 {{picked}}명 선택",
+    "plays": "출전",
+    "bench": "벤치",
+    "save": "명단 저장",
+    "saved": "명단을 저장했어요",
+    "notOnServer": "명단은 저장했지만 서버가 받지 않았어요: {{error}}",
+    "locked": "맵이 라이브인 동안에는 명단이 잠겨요. 맵 사이에 바꿀 수 있어요.",
+    "captainOnly": "명단은 팀 소유자나 팀장만 바꿀 수 있어요.",
+    "source": {
+      "previous": "팀의 지난 경기와 같아요.",
+      "roster": "명단의 첫 플레이어들이에요."
+    }
+  },
+  "prizesPage": {
+    "title": "상품",
+    "intro": "순위에 따른 스킨을 토너먼트가 끝나면 팀의 모든 플레이어에게, 그리고 MVP에게도 상품을 줘요. 사이트 스킨만: Steam 아이템이 아니고 금전적 가치도 없어요.",
+    "none": "이 토너먼트의 게임에는 상품이 없어요.",
+    "loadFailed": "토너먼트를 불러오지 못했어요."
+  },
+  "schedulePage": {
+    "title": "경기 시간",
+    "intro": "라운드마다 시작 시간을 정하거나 경기 하나에만 따로 시간을 정해요. 플레이어는 경기에서 시간을 보고 알림을 받으며, 밴/픽은 제시간에 열려요.",
+    "loadFailed": "토너먼트를 불러오지 못했어요.",
+    "rounds": "라운드",
+    "modeLabel": "경기 시작 방식",
+    "modeTimes": "정해진 시간에",
+    "modeAsap": "준비되는 대로",
+    "modeTimesNote": "경기는 정해진 시간까지 기다려요. 라운드를 열면 경기 하나만 따로 시간을 정할 수 있어요.",
+    "modeAsapNote": "시간 없음: 두 팀과 서버가 준비되면 경기가 시작돼요.",
+    "noRounds": "대진표가 만들어지면 라운드가 여기에 표시돼요.",
+    "roundN": "{{n}}라운드",
+    "roundNote_one": "{{count}}경기 · 열어서 한 경기 시간 정하기",
+    "roundNote_other": "{{count}}경기 · 열어서 한 경기 시간 정하기",
+    "roundNoMatches": "이전 라운드가 끝나면 경기가 만들어져요",
+    "roundStartsAt": "라운드 시작",
+    "roundTimeLabel": "{{round}} 시작 시간",
+    "matchTimeLabel": "{{match}} 시작 시간",
+    "tbd": "미정",
+    "ownTime": "개별 시작 시간",
+    "sameAsRound": "라운드와 같음",
+    "useRoundTime": "라운드 시간 사용",
+    "vetoTitle": "밴/픽",
+    "vetoNote": "각 경기 전에 자동으로 열려서 경기가 시작할 때는 끝나 있어요. 제때 행동하지 않은 팀에게는 맵이 자동으로 정해져요.",
+    "vetoLabel": "밴/픽 시작",
+    "vetoZero": "시작 시간에",
+    "reminderTitle": "알림",
+    "reminderNote": "경기의 모든 플레이어에게 사이트와 Discord로 알림을 보내요.",
+    "reminderLabel": "플레이어에게 알림",
+    "reminderZero": "꺼짐",
+    "minutesBefore_one": "{{count}}분 전",
+    "minutesBefore_other": "{{count}}분 전",
+    "save": "시간 저장",
+    "saved": "경기 시간을 저장했어요",
+    "saveFailed": "시간을 저장하지 못했어요",
+    "rulesTitle": "따르는 규칙",
+    "rules": {
+      "start": "빈 서버가 있어도 밴/픽이 열리기 전에는 경기의 어떤 것도 시작하지 않아요.",
+      "late": "늦어진 라운드는 다음 라운드를 밀어요: 아직 경기 중인 팀이나 경기 사이 휴식이 밴/픽을 붙잡고, 플레이어에게 새 시간이 보여요.",
+      "none": "시간 미설정: 예전처럼 두 팀과 서버가 준비되면 바로 경기가 진행돼요.",
+      "where": "개요의 일정, 경기 카드, 경기실, 규칙, 체크인에 이 시간이 표시돼요."
+    },
+    "breaksTitle": "라운드 사이 휴식",
+    "breaksNote_one": "비워 두면 사이트 휴식 {{count}}분을 써요. 원하는 라운드 뒤에 더 긴 휴식을 넣을 수 있어요(예: 3라운드 뒤 30분).",
+    "breaksNote_other": "비워 두면 사이트 휴식 {{count}}분을 써요. 원하는 라운드 뒤에 더 긴 휴식을 넣을 수 있어요(예: 3라운드 뒤 30분).",
+    "breakEvery": "라운드마다 휴식(분)",
+    "breakAfterRound": "이 라운드 뒤",
+    "breakMinutes": "휴식(분)",
+    "breakRemove": "제거",
+    "breakAdd": "더 긴 휴식 추가",
+    "fillStart": "1라운드 시간",
+    "fillEvery": "라운드 간격(분)",
+    "fillApply": "라운드 채우기"
+  },
+  "groups": {
+    "groupN": "{{letter}}조",
+    "done": "결승",
+    "through_one": "상위 1팀 진출",
+    "through_other": "상위 {{count}}팀 진출",
+    "playoffs": "플레이오프",
+    "playoffsSoon": "조별 경기가 모두 끝나면 플레이오프가 시작돼요.",
+    "seedSlot": "시드 {{n}}"
+  },
+  "matchCheckIn": {
+    "eyebrow": "밴/픽 진행 중 · 경기 {{time}} 시작",
+    "eyebrowNoTime": "체크인 진행 중",
+    "title": "이 경기에 체크인",
+    "body": "이 토너먼트는 경기마다 체크인해요. 선발이 출석을 알리고 팀장이 대신할 수도 있어요. 후보는 이미 준비 완료예요.",
+    "closesIn": "체크인 마감까지",
+    "yourTeam": "{{team}}(내 팀)",
+    "count": "선발 {{total}}명 중 {{in}}명 체크인",
+    "sub": "후보",
+    "starter": "선발",
+    "ready": "준비",
+    "checkedIn": "체크인 완료",
+    "notYet": "아직",
+    "rule": "시작할 때 체크인하지 않은 선발은 후보로 교체되고 경기실에 누가 들어갔는지 표시돼요. 후보가 없으면 한 명 부족한 채로 경기해요.",
+    "server": {
+      "eyebrow": "서버 준비 · {{time}}까지 전원 집합",
+      "eyebrowNoTime": "서버 준비",
+      "title": "팀을 서버로 모으세요",
+      "bodyOut": "{{out}}님이 체크인하지 않아 후보가 대신 경기해요.",
+      "body_one": "타이머가 끝나기 전에 1명이 서버에 있어야 해요. 후보도 포함돼요.",
+      "body_other": "타이머가 끝나기 전에 {{count}}명이 서버에 있어야 해요. 후보도 포함돼요.",
+      "clockLabel": "전원 집합까지",
+      "count": "서버에 {{size}}명 중 {{on}}명",
+      "onServer": "서버 안",
+      "joining": "들어오는 중…",
+      "subIn": "후보 투입",
+      "out": "제외",
+      "swapped": "후보로 교체",
+      "rule": "0:00이 되면 전원이 모인 팀이 선택해요: 부전승을 받거나 인원이 부족한 팀과 경기하거나. 두 팀 모두 부족하면 관리자가 결정해요."
+    },
+    "choice": {
+      "eyebrow": "{{team}}은(는) 아직 인원이 부족해요",
+      "title": "{{team}}: 서버에 {{size}}명 중 {{on}}명",
+      "body": "상대의 시간이 끝났어요. 부전승으로 올라가거나, 그래도 경기할 수 있어요. 어느 팀장이든 고를 수 있어요. 2분 안에 고르지 않으면 부전승이 확정돼요.",
+      "take": "부전승 받기",
+      "play": "그래도 경기하기"
+    }
+  }
+}

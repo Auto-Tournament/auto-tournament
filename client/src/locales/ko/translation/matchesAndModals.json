@@ -1,0 +1,490 @@
+{
+  "matchesPage": {
+    "errors": {
+      "loadMatches": "경기를 불러오지 못했어요",
+      "loadTitle": "경기 불러오기 오류",
+      "bulkDelete": "하나 이상의 경기를 삭제하지 못했어요"
+    },
+    "header": {
+      "createMatch": "경기 만들기"
+    },
+    "bulkSelect": {
+      "select": "선택",
+      "done": "선택 완료",
+      "selectAll": "모두 선택",
+      "unselectAll": "선택 해제",
+      "deleteSelected": "선택 항목 삭제"
+    },
+    "empty": {
+      "title": "표시할 경기가 없어요",
+      "description": "토너먼트를 만들고 대진표를 생성하면 여기에 경기가 표시돼요",
+      "createManual": "또는 수동 경기 만들기"
+    },
+    "sections": {
+      "live": "라이브 경기({{count}})",
+      "upcoming": "예정된 경기({{count}})",
+      "history": "경기 기록({{count}})",
+      "inQueue": "대기열 {{count}}"
+    },
+    "manualMatchLabel": "수동 경기",
+    "create": {
+      "success": "수동 경기를 만들었어요: {{slug}}"
+    },
+    "bulkDelete": {
+      "title": "수동 경기 삭제",
+      "deleted_one": "경기 {{count}}개를 삭제했어요",
+      "deleted_other": "경기 {{count}}개를 삭제했어요",
+      "message_one": "수동 경기 {{count}}개를 삭제할까요? 되돌릴 수 없어요.",
+      "message_other": "수동 경기 {{count}}개를 삭제할까요? 되돌릴 수 없어요."
+    },
+    "card": {
+      "matchNumber": "경기 #{{number}}",
+      "server": "서버: {{name}}",
+      "queuePosition": "대기 순서: #{{position}}",
+      "shuffle": "셔플",
+      "shuffleManual": "셔플(수동)",
+      "manual": "수동",
+      "simulation": "시뮬레이션",
+      "winner": "승자",
+      "mapN": "맵 {{n}}"
+    },
+    "statusLabel": {
+      "walkover": "부전승",
+      "waitingForTournament": "토너먼트 시작 대기",
+      "waitingForServer": "서버 대기",
+      "waitingForPairing": "대진 대기",
+      "vetoPending": "밴/픽 대기",
+      "mapVeto": "맵 밴/픽",
+      "serverAllocated": "서버 배정됨",
+      "warmup": "워밍업",
+      "overtime": "연장전 #{{n}}",
+      "live": "라이브",
+      "completed": "완료",
+      "cancelled": "취소됨",
+      "needsDecision": "관리자 결정 필요"
+    },
+    "statusGuide": {
+      "title": "경기 상태 안내",
+      "pending": "경기가 예정됐지만 아직 서버에 배정되지 않았어요. 서버가 비면 배정돼요.",
+      "loaded": "경기가 서버에 불러와졌고 워밍업 중이에요. 플레이어는 접속해서 준비해야 해요.",
+      "live": "경기가 서버에서 진행 중이에요.",
+      "completed": "경기가 끝났어요. 승자가 정해졌고 대진표가 업데이트됐어요.",
+      "proTipTitle": "팁:",
+      "proTip": "경기에 \"플레이어 대기 (X/Y)\"가 보이면 서버가 준비된 것이니 플레이어가 접속해야 해요. 예상 인원이 모두 접속해 준비하면 경기가 자동으로 시작돼요."
+    },
+    "latestEvent": "최근: {{event}}",
+    "matchLabel": {
+      "upper": "UB R{{round}} M{{match}}",
+      "lower": "LB R{{round}} M{{match}}",
+      "grandFinal": "그랜드 파이널",
+      "grandFinalReset": "그랜드 파이널 리셋",
+      "group": "그룹 {{group}} · {{round}}라운드",
+      "playoffs": "플레이오프 · {{round}}라운드"
+    },
+    "table": {
+      "filterLabel": "보기",
+      "search": "팀 또는 플레이어 찾기",
+      "tbd": "미정",
+      "manage": "경기 관리",
+      "empty": "여기에는 경기가 없어요.",
+      "filter": {
+        "attention_one": "확인 필요 · {{count}}",
+        "attention_other": "확인 필요 · {{count}}",
+        "live_one": "라이브 · {{count}}",
+        "live_other": "라이브 · {{count}}",
+        "veto_one": "밴/픽 · {{count}}",
+        "veto_other": "밴/픽 · {{count}}",
+        "waiting_one": "대기 · {{count}}",
+        "waiting_other": "대기 · {{count}}",
+        "finished_one": "종료 · {{count}}",
+        "finished_other": "종료 · {{count}}",
+        "all_one": "전체 · {{count}}",
+        "all_other": "전체 · {{count}}"
+      },
+      "columns": {
+        "match": "경기",
+        "teams": "팀",
+        "phase": "단계",
+        "server": "서버",
+        "attention": "확인 필요",
+        "open": "열기"
+      },
+      "attention": {
+        "calls_one": "관리자 호출 1건",
+        "calls_other": "관리자 호출 {{count}}건",
+        "decide": "결과 판정"
+      },
+      "phase": {
+        "live": "라이브 · 맵 {{map}}",
+        "finished": "종료",
+        "finishedScore": "종료 · {{score}}",
+        "veto": "맵 밴/픽",
+        "waitingTeams": "팀 대기 중",
+        "queued": "서버 대기 · 대기 순서 #{{position}}",
+        "waiting": "대기 중"
+      },
+      "server": {
+        "freed": "해제됨"
+      }
+    }
+  },
+  "matchDetailsModal": {
+    "tiebreakHint": "점수가 같아요: 타이브레이크로 {{team}}이(가) 맵을 가져갔어요.",
+    "delete": {
+      "dialogTitle": "경기 삭제",
+      "confirmTitle": "이 경기를 삭제할까요?",
+      "confirmBody": "\"{{slug}}\" 경기를 삭제할까요? 되돌릴 수 없어요.",
+      "button": "경기 삭제",
+      "success": "경기를 삭제했어요",
+      "failed": "경기를 삭제하지 못했어요"
+    },
+    "roster": {
+      "title": "선수 명단",
+      "yourTeam": "내 팀",
+      "openPlayerPage": "플레이어 페이지 열기",
+      "ready": "준비",
+      "connected": "접속 중",
+      "offline": "오프라인",
+      "bot": "봇"
+    },
+    "decision": {
+      "body": "모든 맵을 마쳤지만 맵, 라운드, 피해량 모두 동률이에요. 대진표를 진행하려면 승자를 고르세요.",
+      "setWinner": "{{team}} 승리",
+      "confirmTitle": "시리즈 승자 설정",
+      "confirmBody": "{{team}}을(를) 승자로 이 시리즈를 끝낼까요? 대진표가 진행되며 여기서는 되돌릴 수 없어요.",
+      "confirm": "승자 설정",
+      "success": "승자를 설정했어요",
+      "failed": "승자를 설정하지 못했어요"
+    },
+    "config": {
+      "loadFailed": "경기 설정을 불러오지 못했어요",
+      "view": "경기 설정 JSON 보기",
+      "title": "경기 설정 JSON",
+      "loading": "경기 설정을 불러오는 중...",
+      "empty": "이 경기에는 설정이 없어요."
+    },
+    "tiebreak": {
+      "regulationOnly": "이 경기는 연장전이 꺼져 있어서(정규 라운드만) 동점은 팀 총 피해량으로 결정돼요.",
+      "segmentsExhausted": "연장전이 최대 횟수로 설정돼 있어요. 그래도 동점이면 팀 총 피해량으로 승자가 정해져요.",
+      "overtimeDisabled": "이 경기는 연장전이 꺼져 있어서 동점은 팀 총 피해량으로 결정돼요.",
+      "tiedByDamage": "최종 점수가 동점이라 경기 설정에 따라 팀 총 피해량으로 승자를 정했어요."
+    },
+    "team1": "팀 1",
+    "team2": "팀 2",
+    "matchTime": "경기 시간:",
+    "server": "서버:",
+    "queuePosition": "대기 순서:",
+    "totalDamage": "총 피해량: {{team1}} - {{team2}}",
+    "mapOfTotal": "맵 {{index}}/{{total}}: {{map}}",
+    "mapIndex": "맵 {{index}}: {{map}}",
+    "round": "라운드 {{round}}",
+    "shuffle": {
+      "averageElo": "팀 ELO(평균): {{team1}} 대 {{team2}}",
+      "balancerHint": "셔플 팀은 레이팅이 높은 플레이어와 낮은 플레이어를 양쪽에 고르게 나눠 평균을 비슷하게 맞추는 OpenSkill 기반 밸런서로 만들어져요."
+    },
+    "playerLeaderboards": "플레이어 순위",
+    "noPlayerData": "플레이어 데이터가 없어요",
+    "currentMap": "현재 맵",
+    "maps": "맵",
+    "mapsNotPicked": "아직 맵이 정해지지 않았어요.",
+    "mapsViaVeto": "밴/픽으로 결정",
+    "matchInformation": "경기 정보",
+    "created": "생성:",
+    "started": "시작:",
+    "completed": "완료:",
+    "adminControls": "관리자 제어",
+    "slug": "경기 슬러그:",
+    "openChat": "경기 채팅"
+  },
+  "bulkShuffleMatchesModal": {
+    "title": "셔플 경기 일괄 생성",
+    "description": "단일 맵 셔플 경기(맵과 라운드 한도)를 설정한 뒤, 양쪽 플레이어를 직접 골라 원하는 만큼 대결을 정의하세요. 경기는 현재 셔플 토너먼트의 일부로 만들어지며 토너먼트를 시작하면 서버에 배정돼요.",
+    "mapSelect": {
+      "label": "맵",
+      "noMaps": "이 토너먼트에 설정된 맵이 없어요",
+      "helper": "이번에 만드는 모든 경기에서 이 맵을 사용해요."
+    },
+    "maxRounds": {
+      "label": "맵당 최대 라운드",
+      "helperWithValue": "최대 {{maxRounds}}라운드, {{winRounds}}라운드를 먼저 이기면 승리해요.",
+      "helperDefault": "맵당 최대 라운드 수(기본 24, 최대 30)."
+    },
+    "matchesSection": {
+      "title": "경기({{count}})",
+      "addMatch": "경기 추가"
+    },
+    "players": {
+      "empty": "이 셔플 토너먼트에 등록된 플레이어가 아직 없어요. 먼저 플레이어를 등록하면 수동 경기를 만들 수 있어요."
+    },
+    "matchRow": {
+      "title": "경기 {{index}}",
+      "teamCounts": "{{team1}}/{{teamSize}} • {{team2}}/{{teamSize}}",
+      "team1Label": "팀 1 플레이어({{team1Count}}/{{teamSize}})",
+      "team2Label": "팀 2 플레이어({{team2Count}}/{{teamSize}})",
+      "searchPlaceholder": "플레이어 검색 및 선택",
+      "mapOverrideLabel": "맵(선택, 개별 지정)",
+      "mapOverrideHelperOwn": "이 경기는 자체 맵을 사용해요.",
+      "mapOverrideHelperDefault": "위의 기본 맵을 쓰려면 비워 두세요.",
+      "maxRoundsOverrideLabel": "최대 라운드(선택, 개별 지정)",
+      "maxRoundsOverrideHelperOwn": "이 경기의 기본 최대 라운드를 덮어써요(현재 {{value}}).",
+      "maxRoundsOverrideHelperDefault": "위의 기본 최대 라운드를 쓰려면 비워 두세요."
+    },
+    "errors": {
+      "loadPlayers": "등록된 플레이어를 불러오지 못했어요",
+      "noMatches": "만들 경기를 하나 이상 추가하세요.",
+      "bothTeamsRequired": "경기 {{index}}: 두 팀 모두 플레이어가 한 명 이상 있어야 해요.",
+      "conflictingPlayers": "경기 {{index}}: 같은 플레이어를 양 팀에 넣을 수 없어요. 겹치는 ID: {{ids}}",
+      "mapRequired": "경기 {{index}}: 맵이 필요해요(위에서 기본 맵을 정하거나 이 경기의 맵을 고르세요).",
+      "rowMaxRoundsRange": "경기 {{index}}: 경기별로 지정할 때 최대 라운드는 1~30이어야 해요.",
+      "globalMaxRoundsRange": "최대 라운드는 1~30이어야 해요.",
+      "createFailed": "수동 셔플 경기를 만들지 못했어요"
+    },
+    "success": {
+      "created": "수동 셔플 경기를 만들었어요. 토너먼트가 시작되면 배정돼요."
+    },
+    "createMatchesButton": {
+      "default": "경기 만들기",
+      "creating": "만드는 중…"
+    }
+  },
+  "teamModal": {
+    "titleCreate": "새 팀 만들기",
+    "titleEdit": "팀 편집",
+    "teamNameLabel": "팀 이름",
+    "teamNamePlaceholder": "Astralis",
+    "teamNameHelper": "팀 이름에는 어떤 언어나 특수 문자도 쓸 수 있어요",
+    "teamTagLabel": "팀 태그",
+    "teamTagPlaceholder": "AST",
+    "teamTagHelper": "팀 이름에서 자동 생성(최대 4자)",
+    "playersHeader": "플레이어({{count}})",
+    "selectPlayers": "플레이어 선택",
+    "noPlayersInfo": "아직 플레이어가 없어요. 한 명 이상 추가하세요.",
+    "addPlayersHelper": "아래에서 새 플레이어를 추가하거나 기존 플레이어 중에서 고르세요",
+    "addPlayersHelper_steam": "Steam URL을 붙여 넣거나 기존 플레이어 중에서 골라 추가하세요",
+    "steamInputLabel": "Steam ID / 맞춤 URL",
+    "steamInputPlaceholder": "gaben 또는 steamcommunity.com/id/gaben",
+    "resolveSteam": "Steam ID 확인",
+    "resolving": "확인 중...",
+    "playerNameLabel": "플레이어 이름",
+    "playerNamePlaceholder": "s1mple",
+    "eloLabel": "ELO(선택)",
+    "eloPlaceholder": "1500",
+    "eloHelper": "기본값: 1500",
+    "errors": {
+      "steamLookupEmpty": "Steam ID, 맞춤 URL 또는 프로필 URL을 입력하세요",
+      "steamApiNotConfigured": "Steam API가 설정되지 않았어요 - Steam ID64를 직접 입력하세요",
+      "steamResolveFailed": "Steam ID를 확인하지 못했어요 - Steam ID64를 직접 입력하세요",
+      "steamAndNameRequired": "Steam ID와 플레이어 이름이 모두 필요해요",
+      "steamDuplicate": "이 Steam ID는 이미 팀에 있어요",
+      "teamNameRequired": "팀 이름은 필수예요",
+      "playersRequired": "플레이어가 한 명 이상 필요해요",
+      "saveFailed": "팀을 저장하지 못했어요",
+      "deleteFailed": "팀을 삭제하지 못했어요",
+      "discordIdInvalid": "Discord ID는 17~20자리 숫자예요(사용자 이름이 아니라 숫자 사용자 ID)",
+      "discordIdInvalidPlayers": "잘못된 Discord ID: {{names}}. 17~20자리이거나 비워 둬야 해요.",
+      "discordIdSaveFailed": "팀은 저장했지만 다음 플레이어의 Discord ID는 저장하지 못했어요: {{names}}. {{message}}",
+      "nameRequired": "플레이어 이름을 입력하세요",
+      "addPlayerFailed": "플레이어를 추가하지 못했어요"
+    },
+    "success": {
+      "playerAdded": "플레이어를 팀에 추가했어요",
+      "playerReplaced": "플레이어를 교체했어요",
+      "teamUpdated": "팀을 업데이트했어요",
+      "teamCreated": "팀을 만들었어요",
+      "teamDeleted": "팀을 삭제했어요"
+    },
+    "buttons": {
+      "deleteTeam": "팀 삭제",
+      "cancel": "취소",
+      "saving": "저장 중...",
+      "saveChanges": "변경 사항 저장",
+      "createTeam": "팀 만들기"
+    },
+    "confirmDelete": {
+      "title": "팀 삭제",
+      "message": "\"{{name}}\"을(를) 삭제할까요? 되돌릴 수 없어요."
+    },
+    "replacePlayerAria": "{{name}} 교체",
+    "replacePlayerTooltip": "이 플레이어 교체",
+    "accountLabel": "{{account}} 계정(선택)",
+    "accountHelper": "{{games}}용. {{account}}(으)로 로그인하면 이 플레이어가 돼요."
+  },
+  "playerModal": {
+    "titleCreate": "플레이어 만들기",
+    "titleEdit": "플레이어 편집",
+    "steamLabel": "Steam ID 또는 프로필 URL(선택)",
+    "steamHelperEditing": "Steam ID는 바꿀 수 없어요",
+    "steamHelperNew": "{{games}}용. Steam ID64, 맞춤 URL 또는 프로필 URL을 입력하세요. \"확인\"을 누르면 이름과 아바타가 채워져요.",
+    "resolveSteam": "Steam ID 확인",
+    "resolving": "확인 중...",
+    "playerNameLabel": "플레이어 이름",
+    "playerNamePlaceholder": "플레이어",
+    "eloLabelNew": "초기 ELO",
+    "eloLabelEdit": "ELO",
+    "eloHelperNew": "비워 두면 기본값(Skill Rating 1500)을 사용해요.",
+    "eloHelperEdit": "ELO를 바꾸면 플레이어의 레이팅과 통계가 초기화돼요. 되돌릴 수 없어요.",
+    "isAdminLabel": "관리자(이 사이트를 관리해요. 게임 모듈에 따라 게임 내 권한도 줄 수 있어요)",
+    "currentElo": "현재 ELO: {{value}}",
+    "startingElo": "시작 ELO: {{value}}",
+    "matchesPlayed": "경기 수: {{count}}",
+    "errors": {
+      "steamRequired": "Steam ID는 필수예요",
+      "nameRequired": "플레이어 이름은 필수예요",
+      "steamLookupEmpty": "Steam ID, 맞춤 URL 또는 프로필 URL을 입력하세요",
+      "steamApiNotConfigured": "Steam API가 설정되지 않았어요 - Steam ID64를 직접 입력하세요",
+      "steamResolveFailed": "Steam ID를 확인하지 못했어요 - Steam ID64를 직접 입력하세요",
+      "saveFailed": "플레이어를 저장하지 못했어요"
+    },
+    "success": {
+      "playerUpdated": "플레이어를 업데이트했어요",
+      "playerCreated": "플레이어를 만들었어요"
+    },
+    "buttons": {
+      "delete": "삭제",
+      "cancel": "취소",
+      "saving": "저장 중...",
+      "save": "저장",
+      "create": "만들기"
+    },
+    "confirmDelete": {
+      "title": "플레이어 삭제",
+      "message": "\"{{name}}\" 플레이어를 삭제할까요? 되돌릴 수 없어요."
+    },
+    "confirmEloUpdate": {
+      "title": "플레이어 ELO 업데이트",
+      "message": "이 플레이어의 ELO를 {{from}}에서 {{to}}(으)로 바꿀까요? 통계와 레이팅 기록이 초기화돼요. 되돌릴 수 없어요."
+    },
+    "discordIdHelper": "선택. 17~20자리. 주최자가 Discord로 이 플레이어에게 연락할 수 있어요. 공개되지 않아요.",
+    "accountLabel": "{{account}} 계정(선택)",
+    "accountHelper": "{{games}}용. 계정 ID예요. {{account}}(으)로 로그인하면 이 플레이어가 돼요.",
+    "accountVerified": "연결됨: {{account}}(으)로 로그인했어요. 본인이 직접 바꿔요."
+  },
+  "teamImportModal": {
+    "title": "JSON에서 팀 가져오기",
+    "info": {
+      "title": "팀 데이터가 담긴 JSON을 아래에 붙여 넣으세요.",
+      "format": "예상 형식: name, tag(선택), players(name과 steamId, 선택 사항으로 따옴표로 감싼 문자열 discordId)를 가진 팀 배열.",
+      "link": "예시가 있는 문서 보기"
+    },
+    "jsonLabel": "JSON 데이터",
+    "errors": {
+      "mustBeArray": "JSON은 팀 배열이어야 해요",
+      "emptyArray": "배열이 비어 있으면 안 돼요",
+      "parseWithMessage": "JSON 구문 오류: {{message}}",
+      "parseGeneric": "JSON 형식이 올바르지 않아요. 구문을 확인하세요.",
+      "importFailed": "팀을 가져오지 못했어요",
+      "noJson": "JSON 데이터를 입력하세요"
+    },
+    "preview": {
+      "summary": "✓ 올바른 JSON이에요! 총 {{teams}}, {{players}}을(를) 찾았어요.",
+      "title": "미리보기:",
+      "missingDiscordTotal": "Discord ID가 없는 플레이어: {{count}}",
+      "missingDiscordChip": "Discord 없음: {{count}}",
+      "playersChip_one": "{{count}}명",
+      "playersChip_other": "{{count}}명",
+      "teamsCount_one": "{{count}}팀",
+      "teamsCount_other": "{{count}}팀"
+    },
+    "actions": {
+      "preview": "미리보기",
+      "importing": "가져오는 중...",
+      "import_one": "{{count}}팀 가져오기",
+      "import_other": "{{count}}팀 가져오기"
+    },
+    "warnings": {
+      "title": "일부 Discord ID를 무시했어요. 다음 플레이어는 Discord ID 없이 가져와요:",
+      "discordIdNumber": "\"{{team}}\" 팀, \"{{player}}\" 플레이어: discordId는 따옴표로 감싼 문자열이어야 해요. 큰 숫자는 JSON에서 정밀도가 떨어져서 ID를 제외했어요.",
+      "discordIdInvalid": "\"{{team}}\" 팀, \"{{player}}\" 플레이어: \"{{value}}\"은(는) Discord 사용자 ID가 아니라서(17~20자리 필요) 제외했어요."
+    }
+  },
+  "playerImportModal": {
+    "title": "플레이어 가져오기",
+    "info": {
+      "description": "JSON 또는 CSV 형식으로 플레이어를 가져와요. 필수 항목: steamId, name. 선택: initialELO(기본 1500), avatarUrl.",
+      "link": "예시가 있는 문서 보기"
+    },
+    "placeholders": {
+      "jsonCsv": "JSON 형식:\n[\n  {\n    \"steamId\": \"76561198012345678\",\n    \"name\": \"Player One\",\n    \"initialELO\": 1500,\n    \"avatarUrl\": \"https://...\"\n  }\n]\n\nCSV 형식:\nsteamId,name,initialELO,avatarUrl\n76561198012345678,Player One,1500,https://..."
+    },
+    "actions": {
+      "parseValidate": "구문 분석 및 검증",
+      "importing": "가져오는 중...",
+      "import_one": "{{count}}명 가져오기",
+      "import_other": "{{count}}명 가져오기"
+    },
+    "preview": {
+      "title": "가져올 플레이어({{count}}):",
+      "steamId": "Steam ID: {{steamId}}",
+      "name": "이름: {{name}}",
+      "initialElo": "초기 ELO: {{elo}}",
+      "avatar": "아바타: {{url}}",
+      "readyChip_one": "가져올 준비가 된 플레이어 {{count}}명",
+      "readyChip_other": "가져올 준비가 된 플레이어 {{count}}명"
+    },
+    "errors": {
+      "noData": "JSON 또는 CSV 데이터를 입력하세요",
+      "noPlayers": "데이터에서 플레이어를 찾지 못했어요",
+      "validationPrefix": "검증 오류:",
+      "parseFailed": "데이터를 분석하지 못했어요: {{message}}",
+      "importFailed": "플레이어를 가져오지 못했어요",
+      "parseFirst": "먼저 데이터를 분석하고 검증하세요"
+    }
+  },
+  "playerSelectionModal": {
+    "title": "플레이어 선택",
+    "selectedCount": "{{count}}명 선택됨",
+    "searchPlaceholder": "이름으로 플레이어 검색...",
+    "searchPlaceholder_steam": "이름 또는 Steam ID로 플레이어 검색...",
+    "selectAll": {
+      "select": "모두 선택",
+      "deselect": "선택 해제"
+    },
+    "empty": {
+      "noSearchResults": "검색과 일치하는 플레이어가 없어요",
+      "noPlayers": "선택할 수 있는 플레이어가 없어요"
+    },
+    "playerCard": {
+      "alreadyInTeam": "이미 팀에 있음"
+    },
+    "errors": {
+      "loadFailed": "플레이어를 불러오지 못했어요",
+      "noSelectable": "선택 가능한 플레이어가 없어요"
+    },
+    "addPlayersButton_one": "{{count}}명 추가",
+    "addPlayersButton_other": "{{count}}명 추가"
+  },
+  "soundSettingsModal": {
+    "title": "소리 설정",
+    "soundSelect": {
+      "label": "알림음"
+    },
+    "volume": {
+      "label": "음량: {{percent}}%"
+    },
+    "testButton": "소리 테스트",
+    "footer": "경기가 준비되거나 중요한 일이 생기면 알림음이 울려요."
+  },
+  "addBackupPlayer": {
+    "title": "플레이어 추가",
+    "loadFailed": "플레이어 목록을 불러오지 못했어요",
+    "added": "{{name}}님을 {{target}}에 추가했어요",
+    "addFailed": "플레이어를 추가하지 못했어요",
+    "addToMatchFailed": "경기에 플레이어를 추가하지 못했어요",
+    "searchLabel": "플레이어 검색",
+    "searchPlaceholder": "플레이어 이름 입력...",
+    "available": "추가할 수 있는 플레이어 {{count}}명(경기에 없는 플레이어)",
+    "noneAvailable": "추가할 수 있는 플레이어가 없어요",
+    "displayNameLabel": "표시 이름(선택)",
+    "displayNamePlaceholder": "기본값은 플레이어의 현재 이름",
+    "side": "진영",
+    "spectator": "관전자",
+    "selected": "선택됨:",
+    "fromTeam": "팀: {{team}}",
+    "steamId": "Steam ID: {{id}}",
+    "adding": "플레이어 추가 중...",
+    "add": "경기에 플레이어 추가",
+    "underlyingCommand": "실행되는 명령:",
+    "important": "중요:",
+    "reconnectHint": "추가된 뒤 플레이어는 서버에 다시 접속해야 해요. 이미 접속해 있다면 다시 들어와야 할 수도 있어요."
+  }
+}
