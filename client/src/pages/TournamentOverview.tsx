@@ -9,7 +9,7 @@ import { RegisteredPanel } from '../components/tournament/signup/RegisteredPanel
 import { CheckInPanel } from '../components/tournament/signup/CheckInPanel';
 import { ShuffleJoin } from '../components/tournament/signup/ShuffleJoin';
 import { signupPhase, useTournamentSignup, viewerRegistration } from '../hooks/useTournamentSignup';
-import { signupOpenNow } from '../utils/signupOpen';
+import { signupState } from '../utils/signupState';
 import { api } from '../utils/api';
 import { mono, radii, tokens } from '../theme/tokens';
 import { useTournamentPage } from '../components/tournament/page/tournamentPageContext';
@@ -100,17 +100,15 @@ export default function TournamentOverview() {
   const canManage = Boolean(
     registration && signup.eligibleTeams.some((team) => team.id === registration.teamId)
   );
-  const spotsLeft = signup.window?.maxTeams
-    ? signup.window.maxTeams - tournament.teamIds.length
-    : null;
-  const canSignUp =
-    !isShuffle &&
-    tournament.status === 'setup' &&
+  // Where sign-up stands for a viewer without a sign-up (the hero; the sign-up tab asks the same).
+  const heroState = signupState({
+    window: signup.window,
+    status: tournament.status,
+    teamCount: tournament.teamIds.length,
+    teamIn: !!viewerTeam,
     // eslint-disable-next-line react-hooks/purity -- only needs to be right when the page renders
-    signupOpenNow(signup.window, Date.now()) &&
-    !registration &&
-    !signup.overlap &&
-    (spotsLeft === null || spotsLeft > 0);
+    now: Date.now(),
+  });
 
   // Once it is over, the overview is the results.
   if (tournament.status === 'completed' && !isShuffle) {
@@ -213,10 +211,11 @@ export default function TournamentOverview() {
           <SignUpHero
             tournament={tournament}
             signup={signup.window}
-            canSignUp={canSignUp}
+            state={heroState}
             overlap={registration ? null : signup.overlap}
             hasSteam={viewerHasSteamIdentity}
-            onRoster={!!viewerTeam || signup.eligibleTeams.length > 0}
+            teamName={viewerTeam?.name ?? null}
+            eligibleTeamNames={signup.eligibleTeams.map((team) => team.name)}
           />
         )}
         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2.5, alignItems: 'flex-start' }}>

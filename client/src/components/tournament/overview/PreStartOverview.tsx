@@ -10,10 +10,11 @@ import { fmtCountdown, fmtDayTime, fmtLongDay, fmtTime, fmtWeekdayTime } from '.
 import { Link as RouterLink } from 'react-router-dom';
 import { Box, Button, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
+import type { TFunction } from 'i18next';
 import type { Tournament } from '../../../types';
 import { layoutSchedule, scheduleToIcs } from '../../../utils/scheduleCalendar';
 import { tournamentTabPath } from '../../../paths';
-import { signupOpenNow } from '../../../utils/signupOpen';
+import type { SignupState } from '../../../utils/signupState';
 import { tokens, fontDisplay, mono, radii, textSize } from '../../../theme/tokens';
 import { StartCountdown } from '../StartCountdown';
 import { InfoTile, MapTile, SectionTitle, StatusHero, TeamLogo, panel } from '../ui/draftUi';
@@ -100,48 +101,99 @@ export function KeyDateTiles({
   );
 }
 
+/**
+ * What the hero (and the sign-up tab, when it cannot take a team) says for each sign-up
+ * state. One place, so the two pages say the same thing.
+ */
+export function signupCopy(
+  t: TFunction,
+  state: SignupState,
+  signup: Signup['window'] | null,
+  teamName: string | null,
+  now: number
+): { eyebrow: string; title: string; body: string } {
+  const max = signup?.maxTeams ?? null;
+  switch (state.kind) {
+    case 'teamIn':
+      return {
+        eyebrow: t('preStart.addedEyebrow', { team: teamName ?? '' }),
+        title: t('preStart.inTitle'),
+        body: t('preStart.addedBody'),
+      };
+    case 'off':
+      return {
+        eyebrow: t('preStart.offEyebrow'),
+        title: t('preStart.offTitle'),
+        body: t('preStart.offBody'),
+      };
+    case 'notYet':
+      return {
+        eyebrow: t('preStart.notYetEyebrow'),
+        title: t('preStart.opensTitle', { when: fmtWeekdayTime(state.opensAt ?? now) }),
+        body: t('preStart.opensIn', { time: fmtCountdown(state.opensAt ?? now, now) }),
+      };
+    case 'ended':
+      return {
+        eyebrow: t('preStart.closed'),
+        title: t('preStart.endedTitle'),
+        body:
+          state.closedAt !== null
+            ? t('preStart.endedBody', { when: fmtDayTime(state.closedAt) })
+            : t('preStart.bracketSet'),
+      };
+    case 'full':
+    case 'open': {
+      const eyebrow = signup?.registrationClosesAt
+        ? t('preStart.openCloses', { when: fmtWeekdayTime(signup.registrationClosesAt) })
+        : t('preStart.open');
+      if (state.kind === 'full')
+        return { eyebrow, title: t('preStart.fullTitle'), body: t('preStart.fullBody') };
+      return {
+        eyebrow,
+        title: t('signup.cta'),
+        body:
+          state.left !== null
+            ? t('preStart.spotsLeft', { count: state.left, max })
+            : t('preStart.captainsPick'),
+      };
+    }
+  }
+}
+
 /** The hero for a viewer who is not signed up: sign up, what it takes, when it starts. */
 export function SignUpHero({
   tournament,
   signup,
-  canSignUp,
+  state,
   overlap = null,
   hasSteam,
-  onRoster,
+  teamName,
+  eligibleTeamNames,
 }: {
   tournament: Tournament;
   signup: Signup['window'] | null;
-  canSignUp: boolean;
+  /** signupState(): where sign-up stands for this viewer. */
+  state: SignupState;
   /** The viewer is in another tournament playing at the same time. */
   overlap?: Signup['overlap'];
   hasSteam: boolean;
-  onRoster: boolean;
+  /** The viewer's team, when it is in this tournament. */
+  teamName: string | null;
+  /** Teams the viewer owns or captains, which they could sign up. */
+  eligibleTeamNames: string[];
 }) {
   const { t } = useTranslation();
   const startsAt = tournament.settings?.startsAt
     ? new Date(tournament.settings.startsAt).getTime()
     : null;
-  const max = signup?.maxTeams ?? null;
-  const left = max !== null ? Math.max(max - tournament.teamIds.length, 0) : null;
   // eslint-disable-next-line react-hooks/purity -- only needs to be right when the page renders
   const now = Date.now();
-  // "Open" means a team can sign up right now: switched on AND inside its window.
-  // The switch alone stays on after the deadline (cs.sivert.io, 2026-11-07: "open ·
-  // closes Fri 21:00" above "Sign-up is not open").
-  const open = signupOpenNow(signup, now);
-  const opensAt =
-    signup?.registrationOpen && signup.registrationOpensAt
-      ? Date.parse(signup.registrationOpensAt)
-      : NaN;
-  // Switched on, but closed until its opening time (Setup › Teams › Sign-up opens).
-  const notYet = Number.isFinite(opensAt) && opensAt > now;
-  const closesAt =
-    signup?.registrationOpen && signup.registrationClosesAt
-      ? Date.parse(signup.registrationClosesAt)
-      : NaN;
-  // Switched on and its deadline has passed: teams signed up, the organizer did not add them.
-  const ended = Number.isFinite(closesAt) && closesAt <= now;
-  if (overlap && open) return <OverlapHero overlap={overlap} />;
+  const canSignUp = state.kind === 'open';
+  if (overlap && canSignUp) return <OverlapHero overlap={overlap} />;
+  const copy = signupCopy(t, state, signup, teamName, now);
+  // What it takes to sign up: only while there is a sign-up to get ready for.
+  const showChecklist = state.kind === 'open' || state.kind === 'notYet';
+  const teams = eligibleTeamNames.join(', ');
   const req = [
     {
       ok: hasSteam,
@@ -150,50 +202,23 @@ export function SignUpHero({
         : t('overviewPage.requirements.steamLinkedNeutral'),
     },
     {
-      ok: onRoster,
-      text: onRoster
-        ? t('overviewPage.requirements.onRosterOk')
-        : t('overviewPage.requirements.onRosterNeutral'),
+      ok: eligibleTeamNames.length > 0,
+      text:
+        eligibleTeamNames.length > 0
+          ? t('overviewPage.requirements.canSignUpOk', { teams })
+          : t('overviewPage.requirements.canSignUpNeutral'),
     },
   ];
   return (
     <StatusHero
-      eyebrow={
-        notYet
-          ? t('preStart.opensTitle', { when: fmtWeekdayTime(opensAt) })
-          : open
-            ? signup?.registrationClosesAt
-              ? t('preStart.openCloses', { when: fmtWeekdayTime(signup.registrationClosesAt) })
-              : t('preStart.open')
-            : t('preStart.closed')
-      }
-      eyebrowColor={open ? color.accent : color.muted}
+      eyebrow={copy.eyebrow}
+      eyebrowColor={canSignUp || state.kind === 'teamIn' ? color.accent : color.muted}
       ring={canSignUp ? color.accent : color.rule}
-      title={
-        notYet
-          ? t('preStart.opensTitle', { when: fmtWeekdayTime(opensAt) })
-          : canSignUp
-            ? t('signup.cta')
-            : ended
-              ? t('preStart.endedTitle')
-              : open && left === 0
-                ? t('preStart.fullTitle')
-                : t('preStart.notOpenTitle')
-      }
-      body={
-        notYet
-          ? t('preStart.opensIn', { time: fmtCountdown(opensAt, now) })
-          : ended
-            ? t('preStart.endedBody', { when: fmtDayTime(closesAt) })
-            : open && left !== null && left > 0
-              ? t('preStart.spotsLeft', { count: left, max })
-              : open
-                ? t('preStart.captainsPick')
-                : t('preStart.byOrganizer')
-      }
+      title={copy.title}
+      body={copy.body}
       side={
         <>
-          {startsAt && (
+          {startsAt !== null && startsAt > now && (
             <InfoTile
               label={t('preStart.startsIn')}
               value={<StartCountdown at={startsAt} color={color.ink} />}
@@ -219,40 +244,43 @@ export function SignUpHero({
         </>
       }
     >
-      <Box
-        component="ul"
-        aria-label={t('overviewPage.requirements.title')}
-        sx={{ listStyle: 'none', m: 0, p: 0, display: 'flex', flexDirection: 'column', gap: 1 }}
-      >
-        {req.map((r) => (
-          <Box
-            component="li"
-            key={r.text}
-            sx={{ display: 'flex', alignItems: 'center', gap: 1.5, fontSize: '0.9375rem' }}
-          >
+      {showChecklist && (
+        <Box
+          component="ul"
+          aria-label={t('overviewPage.requirements.title')}
+          data-testid="overview-requirements"
+          sx={{ listStyle: 'none', m: 0, p: 0, display: 'flex', flexDirection: 'column', gap: 1 }}
+        >
+          {req.map((r) => (
             <Box
-              component="span"
-              aria-hidden
-              sx={{
-                width: 24,
-                height: 24,
-                borderRadius: '50%',
-                display: 'grid',
-                placeItems: 'center',
-                bgcolor: r.ok ? color.live : color.rule,
-                color: color.accentInk,
-                fontWeight: 700,
-                fontSize: textSize.sm,
-              }}
+              component="li"
+              key={r.text}
+              sx={{ display: 'flex', alignItems: 'center', gap: 1.5, fontSize: '0.9375rem' }}
             >
-              {r.ok ? '✓' : '·'}
+              <Box
+                component="span"
+                aria-hidden
+                sx={{
+                  width: 24,
+                  height: 24,
+                  borderRadius: '50%',
+                  display: 'grid',
+                  placeItems: 'center',
+                  bgcolor: r.ok ? color.live : color.rule,
+                  color: color.accentInk,
+                  fontWeight: 700,
+                  fontSize: textSize.sm,
+                }}
+              >
+                {r.ok ? '✓' : '·'}
+              </Box>
+              <Box component="span" sx={{ color: r.ok ? color.ink : color.ink2 }}>
+                {r.text}
+              </Box>
             </Box>
-            <Box component="span" sx={{ color: r.ok ? color.ink : color.ink2 }}>
-              {r.text}
-            </Box>
-          </Box>
-        ))}
-      </Box>
+          ))}
+        </Box>
+      )}
     </StatusHero>
   );
 }

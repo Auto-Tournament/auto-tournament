@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { fmtTime, fmtWeekdayTime } from '../utils/time';
-import { Link as RouterLink, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link as RouterLink, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { Alert, Box, Button, Checkbox, Link, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { useTournamentPage } from '../components/tournament/page/tournamentPageContext';
@@ -11,6 +11,8 @@ import {
 } from '../hooks/useTournamentSignup';
 import { useSnackbar } from '../contexts/SnackbarContext';
 import { useSetupGames } from '../components/tournament/setup/games';
+import { signupCopy } from '../components/tournament/overview/PreStartOverview';
+import { signupState } from '../utils/signupState';
 import {
   AvatarStack,
   PlayerAvatar,
@@ -37,9 +39,10 @@ type Slot = 'starter' | 'sub' | 'out';
 export default function TournamentSignupTab() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const location = useLocation();
   const [params] = useSearchParams();
   const editing = params.get('edit') === '1';
-  const { tournament } = useTournamentPage();
+  const { tournament, viewerTeam } = useTournamentPage();
   const signup = useTournamentSignup(tournament.id);
   const teamSize = tournament.teamSize ?? 5;
   const existing = viewerRegistration(signup);
@@ -145,6 +148,73 @@ export default function TournamentSignupTab() {
       )}
     </Box>
   );
+
+  // A new sign-up only while the overview offers one (same signupState); a team that is
+  // in keeps changing its lineup here (?edit=1) until check-in closes. Before, a closed
+  // tournament showed the whole form and failed only at Send (cs.sivert.io, 2026-11-07).
+  if (!editing && !existing) {
+    const now = Date.now();
+    const state = signupState({
+      window: signup.window,
+      status: tournament.status,
+      teamCount: tournament.teamIds.length,
+      teamIn: !!viewerTeam,
+      now,
+    });
+    if (state.kind !== 'open') {
+      const copy = signupCopy(t, state, signup.window, viewerTeam?.name ?? null, now);
+      return (
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, maxWidth: 880 }}>
+          {header(copy.title, false)}
+          <Box
+            component="section"
+            aria-labelledby="tournament-title"
+            sx={{ ...panel, alignItems: 'flex-start' }}
+            data-testid="signup-not-open"
+            data-state={state.kind}
+          >
+            <Typography sx={eyebrowSx}>{copy.eyebrow}</Typography>
+            <Typography sx={{ color: color.ink2 }}>{copy.body}</Typography>
+            <Button
+              component={RouterLink}
+              to={tournamentTabPath(tournament.id)}
+              variant="outlined"
+              size="small"
+            >
+              {t('liveMatch.backToTournament')}
+            </Button>
+          </Box>
+        </Box>
+      );
+    }
+  }
+
+  // Signed out: signing in comes first ("make a team" would be the wrong advice).
+  if (!signup.steamId) {
+    return (
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, maxWidth: 880 }}>
+        {header(t('signup.title'), false)}
+        <Box
+          component="section"
+          sx={{ ...panel, alignItems: 'flex-start' }}
+          data-testid="signup-signed-out"
+        >
+          <Typography sx={{ color: color.ink2 }}>
+            {t('overviewPage.requirements.steamLinkedNeutral')}
+          </Typography>
+          <Button
+            component={RouterLink}
+            to={paths.login}
+            state={{ from: location }}
+            variant="contained"
+            size="small"
+          >
+            {t('nav.signIn')}
+          </Button>
+        </Box>
+      </Box>
+    );
+  }
 
   if (!teams.length) {
     return (
