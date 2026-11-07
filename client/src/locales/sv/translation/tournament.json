@@ -930,6 +930,7 @@
       "setup": "Kommande",
       "inProgress": "Live",
       "completed": "Klar",
+      "cancelled": "Inställd",
       "finishedOn": "Avslutad {{date}}"
     },
     "liveNow": "{{count}} live nu",
@@ -1622,6 +1623,8 @@
     "bracketSet": "Turneringsträdet är klart.",
     "endedTitle": "Inga fler anmälningar",
     "endedBody": "Stängde: {{when}}.",
+    "cancelledTitle": "Turneringen ställdes in",
+    "cancelledBody": "Arrangören avslutade den innan den var klar.",
     "fullTitle": "Alla platser är tagna",
     "spotsLeft_one": "{{count}} av {{max}} platser kvar. Lagkaptenerna väljer startspelare och avbytare.",
     "spotsLeft_other": "{{count}} av {{max}} platser kvar. Lagkaptenerna väljer startspelare och avbytare.",

@@ -738,6 +738,7 @@
       "finished": "Ferdig",
       "signup": "Påmelding åpen",
       "closed": "Påmelding stengt",
+      "cancelled": "Avlyst",
       "draft": "Utkast"
     },
     "front": {

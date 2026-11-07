@@ -5,11 +5,19 @@ import type { Untrusted } from '../../types';
 /** Splits a line's bold first sentence from the rest (the view draws it strong). */
 export const STRONG_END = '\u0000';
 
+type T = (key: string, values?: Record<string, Untrusted>) => string;
+
 /** The lines, in order: pure, so the view and a test read the same words. */
-export function rulesLines(
-  t: (key: string, values?: Record<string, Untrusted>) => string,
-  tournament: TournamentRulesViewProps['tournament']
-): string[] {
+export function rulesLines(t: T, tournament: TournamentRulesViewProps['tournament']): string[] {
+  return [...matchLines(t, tournament), ...mapLines(t, tournament)];
+}
+
+/**
+ * How one match is played: team size, the series, rounds and overtime. The Overview's one
+ * line shows exactly these. It cut the full list at 3 before, which dropped overtime from
+ * every Bo3/Bo5 (cs.sivert.io, 2026-11-07: Polar Night League said nothing about it).
+ */
+export function matchLines(t: T, tournament: TournamentRulesViewProps['tournament']): string[] {
   const cs2 = cs2SettingsOf(tournament.settings as Record<string, Untrusted> | undefined);
   const lines: string[] = [];
   const wingman = cs2.mapMode === 'wingman';
@@ -30,6 +38,13 @@ export function rulesLines(
       lines.push(t('rules.overtime', { half }));
     }
   }
+  return lines;
+}
+
+/** The maps (veto, drawn or shuffle), match times and bots: the Rules tab's rest. */
+function mapLines(t: T, tournament: TournamentRulesViewProps['tournament']): string[] {
+  const cs2 = cs2SettingsOf(tournament.settings as Record<string, Untrusted> | undefined);
+  const lines: string[] = [];
   if (tournament.type === 'shuffle') lines.push(t('rules.shuffleMaps'));
   else if (cs2.veto === false) lines.push(t('rules.mapsDrawn'));
   else {

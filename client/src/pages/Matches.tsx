@@ -90,7 +90,10 @@ export default function Matches() {
   // Fetch matches
   const fetchMatches = useCallback(async () => {
     try {
-      const data = await api.get<MatchesResponse & { tournamentStatus?: string }>('/api/matches');
+      // Only this tournament's matches (the API's ?tournamentId=); before, every tournament's.
+      const data = await api.get<MatchesResponse & { tournamentStatus?: string }>(
+        scopeId ? `/api/matches?tournamentId=${scopeId}` : '/api/matches'
+      );
 
       if (data.success) {
         const matches = data.matches || [];
@@ -151,7 +154,7 @@ export default function Matches() {
     } finally {
       setLoading(false);
     }
-  }, [t]);
+  }, [t, scopeId]);
 
   // Set dynamic page title
   useEffect(() => {
@@ -531,6 +534,7 @@ export default function Matches() {
             return event?.event ? event.event.replace(/_/g, ' ') : null;
           }}
           onOpen={selectMatch}
+          tournamentStarted={tournamentStatus === 'in_progress' || tournamentStatus === 'completed'}
           selection={
             selectionMode
               ? {

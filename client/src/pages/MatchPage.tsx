@@ -372,7 +372,12 @@ export default function MatchPage() {
                   sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: tokens.color.live }}
                 />
               )}
-              {getStatusLabel(match.status)}
+              {getStatusLabel(
+                match.status,
+                false,
+                match.vetoCompleted,
+                match.tournamentStarted ?? undefined
+              )}
             </Box>
           )}
           {/* Its start time (Manage › Schedule), until it is on a server. */}

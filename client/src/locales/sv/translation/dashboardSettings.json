@@ -738,6 +738,7 @@
       "finished": "Klar",
       "signup": "Anmälan öppen",
       "closed": "Anmälan stängd",
+      "cancelled": "Inställd",
       "draft": "Utkast"
     },
     "front": {

@@ -119,6 +119,7 @@
         "finished": "Finished",
         "finishedScore": "Finished · {{score}}",
         "veto": "Map veto",
+        "notStarted": "Waiting for the start",
         "waitingTeams": "Waiting for its teams",
         "queued": "Waiting for a server · #{{position}} in queue",
         "waiting": "Waiting"

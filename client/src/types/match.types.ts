@@ -47,6 +47,11 @@ export interface Match {
   demoFilePath?: string;
   config?: MatchConfig;
   vetoCompleted?: boolean;
+  /**
+   * GET /api/matches/:slug: a bracket match's tournament has started (false: it waits for the
+   * start, no veto yet); null for a manual or matchmaking match.
+   */
+  tournamentStarted?: boolean | null;
   mapResults?: MatchMapResult[];
   maps?: string[];
   queuePosition?: number | null; // Position in allocation queue (1 = first in queue, null = already allocated)

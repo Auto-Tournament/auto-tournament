@@ -749,6 +749,7 @@
       "finished": "Terminé",
       "signup": "Inscriptions ouvertes",
       "closed": "Inscriptions fermées",
+      "cancelled": "Annulé",
       "draft": "Brouillon"
     },
     "front": {

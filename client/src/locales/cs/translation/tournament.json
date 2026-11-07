@@ -980,6 +980,7 @@
       "setup": "Nadcházející",
       "inProgress": "Živě",
       "completed": "Dokončeno",
+      "cancelled": "Zrušeno",
       "finishedOn": "Skončil {{date}}"
     },
     "liveNow": "Živě: {{count}}",
@@ -1714,6 +1715,8 @@
     "bracketSet": "Pavouk je hotový.",
     "endedTitle": "Přihlášky skončily",
     "endedBody": "Uzavřeno: {{when}}.",
+    "cancelledTitle": "Turnaj byl zrušen",
+    "cancelledBody": "Organizátor ho ukončil před koncem.",
     "fullTitle": "Všechna místa jsou obsazená",
     "spotsLeft_one": "Zbývá {{count}} z {{max}} míst. Kapitáni vybírají základ a náhradníky.",
     "spotsLeft_other": "Zbývá {{count}} z {{max}} míst. Kapitáni vybírají základ a náhradníky.",

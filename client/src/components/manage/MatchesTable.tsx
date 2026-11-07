@@ -23,6 +23,11 @@ export interface MatchesTableProps {
   /** The latest event from the server, per live match. */
   latestEvent: (match: Match) => string | null;
   onOpen: (match: Match) => void;
+  /**
+   * The tournament has started. Before that its bracket matches wait for the start (no veto
+   * yet: utils/tournamentStarted on the API); they read "Waiting for the start", not "Map veto".
+   */
+  tournamentStarted: boolean;
   /** Bulk select (manual matches): the checkbox column shows while on. */
   selection?: {
     can: (match: Match) => boolean;
@@ -44,6 +49,7 @@ export function MatchesTable({
   numberOf,
   latestEvent,
   onOpen,
+  tournamentStarted,
   selection,
 }: MatchesTableProps) {
   const { t } = useTranslation();
@@ -65,10 +71,13 @@ export function MatchesTable({
     return null;
   };
 
+  // A bracket match before the start waits for it; a manual match (round 0) runs any time.
+  const waitsForStart = (m: Match) => !tournamentStarted && m.round > 0;
   const vetoing = (m: Match) =>
     (m.status === 'pending' || m.status === 'ready') &&
     m.vetoCompleted === false &&
-    Boolean(m.team1 && m.team2);
+    Boolean(m.team1 && m.team2) &&
+    !waitsForStart(m);
   const all = useMemo(() => [...live, ...upcoming, ...history], [live, upcoming, history]);
   const counts: Record<Filter, number> = {
     attention: all.filter((m) => attentionOf(m) !== null).length,
@@ -139,6 +148,7 @@ export function MatchesTable({
         tone: 'muted',
       };
     }
+    if (waitsForStart(m)) return { text: t('matchesPage.table.phase.notStarted'), tone: 'muted' };
     if (vetoing(m)) return { text: t('matchesPage.table.phase.veto'), tone: 'warn' };
     if (!m.team1 || !m.team2)
       return { text: t('matchesPage.table.phase.waitingTeams'), tone: 'muted' };

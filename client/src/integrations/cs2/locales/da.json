@@ -331,6 +331,8 @@
     "opensBreak": "En kort pause efter seneste kamp. Du får en notifikation, når det åbner; banerne nedenfor er puljen.",
     "breakEyebrow": "Pause mellem kampe",
     "opensInTitle": "Vetoet åbner om",
+    "notStartedTitle": "Vetoet åbner, når turneringen starter",
+    "notStartedBody": "Indtil da er banerne nedenfor puljen.",
     "title": "baneveto",
     "sideInWindow": "Vælg CT eller T i vinduet.",
     "pool": "Banepulje",
@@ -1683,7 +1685,7 @@
       "saveFailed": "Præmierne kunne ikke gemmes",
       "whereTitle": "Hvor spillerne ser det",
       "where": {
-        "rulesLabel": "Oversigt:",
+        "rulesLabel": "Regler:",
         "rules": "Hvad du kan vinde, ud fra disse indstillinger.",
         "outLabel": "Når de ryger ud:",
         "out": "kamprummet fortæller, hvad de vandt.",

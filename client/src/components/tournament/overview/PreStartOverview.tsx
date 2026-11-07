@@ -48,7 +48,12 @@ export function KeyDateTiles({
   if (signup?.registrationOpen && signup.registrationClosesAt) {
     tiles.push({
       key: 'signupCloses',
-      label: t('signup.keyDates.closes'),
+      // Past its deadline the tile says it closed, not "closes" (cs.sivert.io, 2026-11-07).
+      label:
+        // eslint-disable-next-line react-hooks/purity -- only needs to be right when the page renders
+        Date.parse(signup.registrationClosesAt) <= Date.now()
+          ? t('tournamentsPage.status.closed')
+          : t('signup.keyDates.closes'),
       value: fmtDayTime(signup.registrationClosesAt),
     });
   }
@@ -158,6 +163,19 @@ export function signupCopy(
       };
     }
   }
+}
+
+/** A tournament an admin ended before it finished (scheduler.cancelTournament). */
+export function CancelledHero() {
+  const { t } = useTranslation();
+  return (
+    <StatusHero
+      testId="overview-cancelled"
+      eyebrow={t('overviewPage.status.cancelled')}
+      title={t('preStart.cancelledTitle')}
+      body={t('preStart.cancelledBody')}
+    />
+  );
 }
 
 /** The hero for a viewer who is not signed up: sign up, what it takes, when it starts. */

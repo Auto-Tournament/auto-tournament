@@ -172,6 +172,9 @@ export function TournamentPageHeader({
   let statusLabel = t('overviewPage.status.setup');
   if (isLive) {
     statusLabel = paused ? t('runState.pausedShort') : t('overviewPage.status.inProgress');
+  } else if (tournament.status === 'cancelled') {
+    // It read "Upcoming" before (cs.sivert.io, 2026-11-07).
+    statusLabel = t('overviewPage.status.cancelled');
   } else if (tournament.status === 'completed') {
     statusLabel = tournament.completed_at
       ? t('overviewPage.status.finishedOn', { date: fmtDate(tournament.completed_at) })

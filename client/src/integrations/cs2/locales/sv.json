@@ -331,6 +331,8 @@
     "opensBreak": "En kort paus efter senaste matchen. Du får en avisering när det öppnar; kartorna nedan är poolen.",
     "breakEyebrow": "Paus mellan matcher",
     "opensInTitle": "Vetot öppnar om",
+    "notStartedTitle": "Vetot öppnar när turneringen startar",
+    "notStartedBody": "Tills dess är kartorna nedan poolen.",
     "title": "kartveto",
     "sideInWindow": "Välj CT eller T i fönstret.",
     "pool": "Kartpool",
@@ -1683,7 +1685,7 @@
       "saveFailed": "Priserna kunde inte sparas",
       "whereTitle": "Var spelarna ser det",
       "where": {
-        "rulesLabel": "Översikt:",
+        "rulesLabel": "Regler:",
         "rules": "Vad du kan vinna, utifrån de här inställningarna.",
         "outLabel": "När de åker ut:",
         "out": "matchrummet säger vad de vann.",

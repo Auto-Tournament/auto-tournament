@@ -955,6 +955,7 @@
       "setup": "Em breve",
       "inProgress": "Ao vivo",
       "completed": "Concluído",
+      "cancelled": "Cancelado",
       "finishedOn": "Encerrado em {{date}}"
     },
     "liveNow": "{{count}} ao vivo agora",
@@ -1668,6 +1669,8 @@
     "bracketSet": "A chave está pronta.",
     "endedTitle": "Não há mais inscrições",
     "endedBody": "Encerradas: {{when}}.",
+    "cancelledTitle": "O torneio foi cancelado",
+    "cancelledBody": "O organizador o encerrou antes do fim.",
     "fullTitle": "Todas as vagas foram preenchidas",
     "spotsLeft_one": "{{count}} de {{max}} vagas restantes. Os capitães escolhem titulares e reservas.",
     "spotsLeft_other": "{{count}} de {{max}} vagas restantes. Os capitães escolhem titulares e reservas.",

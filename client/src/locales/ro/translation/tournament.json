@@ -955,6 +955,7 @@
       "setup": "Viitoare",
       "inProgress": "Live",
       "completed": "Încheiate",
+      "cancelled": "Anulat",
       "finishedOn": "Încheiat {{date}}"
     },
     "liveNow": "Live acum: {{count}}",
@@ -1668,6 +1669,8 @@
     "bracketSet": "Tabloul este gata.",
     "endedTitle": "Nu mai sunt înscrieri",
     "endedBody": "Închisă: {{when}}.",
+    "cancelledTitle": "Turneul a fost anulat",
+    "cancelledBody": "Organizatorul l-a oprit înainte de final.",
     "fullTitle": "Toate locurile sunt ocupate",
     "spotsLeft_one": "Locuri libere: {{count}} din {{max}}. Căpitanii aleg titularii și rezervele.",
     "spotsLeft_other": "Locuri libere: {{count}} din {{max}}. Căpitanii aleg titularii și rezervele.",

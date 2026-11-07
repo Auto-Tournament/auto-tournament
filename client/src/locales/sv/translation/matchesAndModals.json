@@ -119,6 +119,7 @@
         "finished": "Klar",
         "finishedScore": "Klar · {{score}}",
         "veto": "Kartveto",
+        "notStarted": "Väntar på start",
         "waitingTeams": "Väntar på sina lag",
         "queued": "Väntar på server · #{{position}} i kön",
         "waiting": "Väntar"

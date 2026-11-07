@@ -119,6 +119,7 @@
         "finished": "Päättynyt",
         "finishedScore": "Päättynyt · {{score}}",
         "veto": "Karttaveto",
+        "notStarted": "Odottaa alkua",
         "waitingTeams": "Odottaa joukkueitaan",
         "queued": "Odottaa palvelinta · #{{position}} jonossa",
         "waiting": "Odottaa"

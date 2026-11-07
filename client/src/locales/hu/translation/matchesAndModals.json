@@ -119,6 +119,7 @@
         "finished": "Befejezve",
         "finishedScore": "Befejezve · {{score}}",
         "veto": "Pályaveto",
+        "notStarted": "A kezdésre vár",
         "waitingTeams": "Várakozás a csapataira",
         "queued": "Várakozás szerverre · #{{position}} a sorban",
         "waiting": "Várakozik"

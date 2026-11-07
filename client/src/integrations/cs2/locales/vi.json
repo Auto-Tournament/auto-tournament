@@ -331,6 +331,8 @@
     "opensBreak": "Nghỉ ngắn sau trận vừa rồi. Bạn sẽ nhận thông báo khi veto mở; các bản đồ bên dưới là nhóm bản đồ.",
     "breakEyebrow": "Nghỉ giữa các trận",
     "opensInTitle": "Veto mở sau",
+    "notStartedTitle": "Veto mở khi giải đấu bắt đầu",
+    "notStartedBody": "Cho đến lúc đó, các bản đồ bên dưới là nhóm bản đồ.",
     "title": "veto bản đồ",
     "sideInWindow": "Chọn CT hoặc T trong cửa sổ.",
     "pool": "Nhóm bản đồ",
@@ -1683,7 +1685,7 @@
       "saveFailed": "Không lưu được giải thưởng",
       "whereTitle": "Người chơi thấy ở đâu",
       "where": {
-        "rulesLabel": "Tổng quan:",
+        "rulesLabel": "Luật:",
         "rules": "những gì có thể thắng, theo các cài đặt này.",
         "outLabel": "Khi bị loại:",
         "out": "phòng trận cho biết họ đã thắng gì.",

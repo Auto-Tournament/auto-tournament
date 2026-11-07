@@ -57,6 +57,7 @@ import * as serverAttribution from '../utils/serverAttribution';
 import * as settingFields from '../utils/settingFields';
 import * as simulationTimescale from '../utils/simulationTimescale';
 import * as tournamentRow from '../utils/tournamentRow';
+import * as tournamentStarted from '../utils/tournamentStarted';
 import * as viewerIdentity from '../utils/viewerIdentity';
 import { HOST_GLOBAL, HOST_MODULES } from './hostModules';
 import { SERVER_API_VERSION } from './version';
@@ -108,6 +109,7 @@ const MODULES: Record<string, object> = {
   'utils/settingFields': settingFields,
   'utils/simulationTimescale': simulationTimescale,
   'utils/tournamentRow': tournamentRow,
+  'utils/tournamentStarted': tournamentStarted,
   'utils/viewerIdentity': viewerIdentity,
 };
 

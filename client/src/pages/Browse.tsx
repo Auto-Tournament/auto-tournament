@@ -1,4 +1,5 @@
 import { pageTitle } from '../utils/pageTitle';
+import { isUpcoming } from '../utils/tournamentStatus';
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import {
@@ -53,7 +54,8 @@ type WhereFilter = 'all' | 'online' | 'lan';
 
 function statusBucket(tournament: TournamentSummary): StatusFilter {
   if (tournament.isLive) return 'live';
-  if (tournament.status === 'completed') return 'finished';
+  // Cancelled (an admin ended it) is over: not "Coming up" (cs.sivert.io, 2026-11-07).
+  if (tournament.status === 'completed' || tournament.status === 'cancelled') return 'finished';
   return 'registration_open';
 }
 
@@ -548,7 +550,9 @@ export default function Browse() {
                             <Box
                               sx={[STACKED_CELL_SX, { justifySelf: { xs: 'start', md: 'end' } }]}
                             >
-                              {action.key === 'signUp' && tournament.mine ? (
+                              {(action.key === 'signUp' || action.key === 'view') &&
+                              tournament.mine &&
+                              isUpcoming(tournament.status) ? (
                                 <Box
                                   component="span"
                                   data-testid={`browse-action-${tournament.id}`}

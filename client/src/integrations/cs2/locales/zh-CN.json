@@ -331,6 +331,8 @@
     "opensBreak": "上一场比赛后短暂休息。禁选开启时你会收到通知；下方的地图就是地图池。",
     "breakEyebrow": "比赛间休息",
     "opensInTitle": "禁选开启倒计时",
+    "notStartedTitle": "禁选将在赛事开始后开启",
+    "notStartedBody": "在此之前，下方的地图就是地图池。",
     "title": "地图禁选",
     "sideInWindow": "在窗口中选择 CT 或 T。",
     "pool": "地图池",
@@ -1677,7 +1679,7 @@
       "saveFailed": "无法保存奖品",
       "whereTitle": "玩家在哪里看到",
       "where": {
-        "rulesLabel": "概览：",
+        "rulesLabel": "规则：",
         "rules": "根据这些设置显示可以赢得什么。",
         "outLabel": "出局时：",
         "out": "比赛房间会显示他们赢得了什么。",

@@ -2,6 +2,7 @@ import { logoUrl } from '../services/teamSelfService';
 import { viewerTeamIdOfMatch } from '../services/matchViewer';
 import { applyMatchTimes, matchTimeFields } from '../services/matchTimes';
 import type { Request, Response } from 'express';
+import { waitsForTournamentStart } from '../utils/tournamentStarted';
 import { Router } from 'express';
 import { getGameRatings } from '../services/gameRatings';
 import { matchService } from '../services/matchService';
@@ -641,10 +642,20 @@ router.get('/', async (req: Request, res: Response) => {
     `;
 
     const params: SqlValue[] = [];
+    const where: string[] = [];
     if (serverId) {
-      query += ' WHERE m.server_id = ?';
+      where.push('m.server_id = ?');
       params.push(serverId);
     }
+    // ?tournamentId=: only that tournament's matches (Manage › a tournament › Matches). Without
+    // it every match, as before (busy players, allocation). Before, each tournament's Matches tab
+    // listed every tournament's matches (cs.sivert.io, 2026-11-07).
+    const onlyTournament = Number(req.query.tournamentId);
+    if (Number.isInteger(onlyTournament) && onlyTournament > 0) {
+      where.push('m.tournament_id = ?');
+      params.push(onlyTournament);
+    }
+    if (where.length) query += ` WHERE ${where.join(' AND ')}`;
 
     query += ' ORDER BY m.created_at DESC';
 
@@ -1107,10 +1118,12 @@ router.get('/:slug', async (req: Request, res: Response) => {
       round: number | null;
       starts_at: number | null;
       tournament_settings: string | null;
+      tournament_status: string | null;
     }>(
       `SELECT m.team1_id, m.team2_id, m.winner_id, t1.name AS team1_name, t1.tag AS team1_tag,
               t2.name AS team2_name, t2.tag AS team2_tag, m.played_in, tr.name AS tournament,
               m.tournament_id, m.round, m.starts_at, tr.settings AS tournament_settings,
+              tr.status AS tournament_status,
               t1.logo_updated_at AS team1_logo, t2.logo_updated_at AS team2_logo
          FROM matches m
          LEFT JOIN teams t1 ON t1.id = m.team1_id
@@ -1148,6 +1161,12 @@ router.get('/:slug', async (req: Request, res: Response) => {
       success: true,
       match: {
         ...match,
+        // A bracket match before its tournament starts (utils/tournamentStarted): the page
+        // says "waiting for the tournament to start", not "veto pending". null: not a bracket match.
+        tournamentStarted:
+          row?.tournament_id != null && (row.round ?? 0) > 0
+            ? !waitsForTournamentStart({ ...row, tournamentStatus: row.tournament_status })
+            : null,
         // No GOTV password for non-admins when the match broadcasts with no delay.
         config: admin ? match.config : withoutConfigSecrets(match.config),
         // Kept as they are where the match already has them (tournament matches).

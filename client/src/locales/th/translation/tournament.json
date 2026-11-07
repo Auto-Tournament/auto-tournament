@@ -930,6 +930,7 @@
       "setup": "กำลังจะมาถึง",
       "inProgress": "สด",
       "completed": "จบแล้ว",
+      "cancelled": "ยกเลิกแล้ว",
       "finishedOn": "จบเมื่อ {{date}}"
     },
     "liveNow": "สดตอนนี้ {{count}}",
@@ -1622,6 +1623,8 @@
     "bracketSet": "สายการแข่งขันพร้อมแล้ว",
     "endedTitle": "ไม่รับสมัครเพิ่มแล้ว",
     "endedBody": "ปิดเมื่อ {{when}}",
+    "cancelledTitle": "ทัวร์นาเมนต์นี้ถูกยกเลิก",
+    "cancelledBody": "ผู้จัดยุติก่อนจะจบ",
     "fullTitle": "ที่ว่างเต็มแล้ว",
     "spotsLeft_one": "เหลือที่ว่าง {{count}} จาก {{max}} กัปตันเลือกตัวจริงและตัวสำรอง",
     "spotsLeft_other": "เหลือที่ว่าง {{count}} จาก {{max}} กัปตันเลือกตัวจริงและตัวสำรอง",

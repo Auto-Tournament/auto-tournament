@@ -119,6 +119,7 @@
         "finished": "จบแล้ว",
         "finishedScore": "จบแล้ว · {{score}}",
         "veto": "วีโต้แมพ",
+        "notStarted": "รอเริ่ม",
         "waitingTeams": "รอทีมของแมตช์",
         "queued": "รอเซิร์ฟเวอร์ · อันดับ #{{position}} ในคิว",
         "waiting": "รอ"

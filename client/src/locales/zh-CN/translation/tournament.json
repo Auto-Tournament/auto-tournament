@@ -931,6 +931,7 @@
       "setup": "即将开始",
       "inProgress": "进行中",
       "completed": "已结束",
+      "cancelled": "已取消",
       "finishedOn": "{{date}} 结束"
     },
     "liveNow": "{{count}} 场正在进行",
@@ -1623,6 +1624,8 @@
     "bracketSet": "赛程表已生成。",
     "endedTitle": "报名已结束",
     "endedBody": "截止时间：{{when}}",
+    "cancelledTitle": "本赛事已取消",
+    "cancelledBody": "主办方在赛事结束前将其终止。",
     "fullTitle": "名额已满",
     "spotsLeft_one": "剩余 {{count}}/{{max}} 个名额。队长选择首发和替补。",
     "spotsLeft_other": "剩余 {{count}}/{{max}} 个名额。队长选择首发和替补。",

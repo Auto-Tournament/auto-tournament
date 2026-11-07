@@ -738,6 +738,7 @@
       "finished": "Bitti",
       "signup": "Kayıt açık",
       "closed": "Kayıt kapalı",
+      "cancelled": "İptal edildi",
       "draft": "Taslak"
     },
     "front": {

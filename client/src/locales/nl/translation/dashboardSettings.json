@@ -738,6 +738,7 @@
       "finished": "Afgelopen",
       "signup": "Inschrijving open",
       "closed": "Inschrijving gesloten",
+      "cancelled": "Geannuleerd",
       "draft": "Concept"
     },
     "front": {

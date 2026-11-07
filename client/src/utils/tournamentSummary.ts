@@ -70,6 +70,10 @@ export function tournamentWhen(
   language: string
 ): TournamentWhen {
   if (tournament.isLive) return { kind: 'live' };
+  // Ended by an admin (scheduler.cancelTournament): not "starts" a date in the past.
+  if (tournament.status === 'cancelled') {
+    return { kind: 'text', muted: true, text: t('overviewPage.status.cancelled') };
+  }
   if (tournament.status === 'completed') {
     return {
       kind: 'text',
@@ -91,15 +95,17 @@ export function tournamentWhen(
 
 export type TournamentAction = {
   /** `browsePage.actions.<key>` */
-  key: 'watch' | 'results' | 'signUp';
+  key: 'watch' | 'results' | 'signUp' | 'view';
   to: string;
   /** The one action worth the accent: signing up while it is open. */
   primary: boolean;
 };
 
 /**
- * What a visitor does next: sign up while it has not started (the event page
- * says how), watch it live, or read the results once it is over.
+ * What a visitor does next: sign up while sign-up is open now (the API's signupOpenNow,
+ * the same answer as the front page and the tournament page), else look at it; watch it
+ * live, or read the results once it is over. Before, every upcoming tournament said
+ * "Sign up", closed ones too (cs.sivert.io, 2026-11-07).
  */
 export function tournamentAction(tournament: TournamentSummary): TournamentAction {
   if (tournament.isLive) {
@@ -108,5 +114,11 @@ export function tournamentAction(tournament: TournamentSummary): TournamentActio
   if (tournament.status === 'completed') {
     return { key: 'results', to: tournamentTabPath(tournament.id), primary: false };
   }
-  return { key: 'signUp', to: tournamentTabPath(tournament.id), primary: true };
+  if (tournament.status === 'cancelled') {
+    return { key: 'view', to: tournamentTabPath(tournament.id), primary: false };
+  }
+  if (tournament.signupOpenNow) {
+    return { key: 'signUp', to: tournamentTabPath(tournament.id), primary: true };
+  }
+  return { key: 'view', to: tournamentTabPath(tournament.id), primary: false };
 }

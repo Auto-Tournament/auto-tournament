@@ -332,6 +332,8 @@
     "opensBreak": "O scurtă pauză după ultimul meci. Primești o notificare când se deschide; hărțile de mai jos sunt setul.",
     "breakEyebrow": "Pauză între meciuri",
     "opensInTitle": "Veto-ul se deschide în",
+    "notStartedTitle": "Veto-ul se deschide când începe turneul",
+    "notStartedBody": "Până atunci, hărțile de mai jos sunt setul.",
     "title": "veto hărți",
     "sideInWindow": "Alege CT sau T în fereastră.",
     "pool": "Set de hărți",
@@ -1712,7 +1714,7 @@
       "saveFailed": "Premiile nu au putut fi salvate",
       "whereTitle": "Unde îl văd jucătorii",
       "where": {
-        "rulesLabel": "Prezentare:",
+        "rulesLabel": "Reguli:",
         "rules": "ce poți câștiga, după aceste setări.",
         "outLabel": "Când ies din turneu:",
         "out": "camera meciului spune ce au câștigat.",

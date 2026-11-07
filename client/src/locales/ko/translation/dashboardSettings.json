@@ -738,6 +738,7 @@
       "finished": "종료",
       "signup": "참가 신청 중",
       "closed": "참가 신청 마감",
+      "cancelled": "취소됨",
       "draft": "초안"
     },
     "front": {

@@ -20,6 +20,9 @@ import {
 import { teamProfilePath } from '../paths';
 import type { OverviewTeamStanding } from '../hooks/usePublicTournamentOverview';
 import { panelSx } from '../components/common/ui';
+import { useTournamentSignup } from '../hooks/useTournamentSignup';
+import { signupState } from '../utils/signupState';
+import { signupCopy } from '../components/tournament/overview/PreStartOverview';
 
 const { color } = tokens;
 
@@ -32,6 +35,9 @@ const { color } = tokens;
 export default function TournamentTeamsTab() {
   const { t } = useTranslation();
   const { tournament, teams: standings, viewerTeam } = useTournamentPage();
+  // The same sign-up answer as the overview (utils/signupState): before, an empty Teams tab
+  // said "Sign-up is open" off the switch alone, after the deadline too (cs.sivert.io, 2026-11-07).
+  const signup = useTournamentSignup(tournament.id);
 
   if (tournament.type === 'shuffle') {
     return (
@@ -61,16 +67,24 @@ export default function TournamentTeamsTab() {
     .filter((team): team is NonNullable<typeof team> => !!team);
 
   if (teams.length === 0) {
-    const signupOpen =
-      tournament.status === 'setup' && tournament.settings?.registrationOpen === true;
+    // eslint-disable-next-line react-hooks/purity -- only needs to be right when the page renders
+    const now = Date.now();
+    const state = signupState({
+      window: signup.window,
+      status: tournament.status,
+      teamCount: 0,
+      teamIn: false,
+      now,
+    });
+    const signupOpen = state.kind === 'open';
+    let description = t('overviewPage.teamsTab.emptyDescription');
+    if (signupOpen) description = t('overviewPage.teamsTab.emptySignupOpen');
+    else if (state.kind === 'notYet' || state.kind === 'ended')
+      description = signupCopy(t, state, signup.window, null, now).title;
     return (
       <TabEmpty
         title={t('overviewPage.teamsTab.emptyTitle')}
-        description={
-          signupOpen
-            ? t('overviewPage.teamsTab.emptySignupOpen')
-            : t('overviewPage.teamsTab.emptyDescription')
-        }
+        description={description}
         data-testid="public-teams-empty"
       >
         {signupOpen && (

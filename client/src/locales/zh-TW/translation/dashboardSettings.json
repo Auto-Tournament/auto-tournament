@@ -738,6 +738,7 @@
       "finished": "已結束",
       "signup": "報名中",
       "closed": "報名已截止",
+      "cancelled": "已取消",
       "draft": "草稿"
     },
     "front": {

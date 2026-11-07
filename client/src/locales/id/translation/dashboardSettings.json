@@ -738,6 +738,7 @@
       "finished": "Selesai",
       "signup": "Pendaftaran dibuka",
       "closed": "Pendaftaran ditutup",
+      "cancelled": "Dibatalkan",
       "draft": "Draf"
     },
     "front": {

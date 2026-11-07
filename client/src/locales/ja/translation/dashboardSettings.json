@@ -738,6 +738,7 @@
       "finished": "終了",
       "signup": "参加受付中",
       "closed": "受付終了",
+      "cancelled": "中止",
       "draft": "下書き"
     },
     "front": {

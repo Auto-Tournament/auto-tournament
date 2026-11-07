@@ -956,6 +956,7 @@
       "setup": "Próximo",
       "inProgress": "En directo",
       "completed": "Terminado",
+      "cancelled": "Cancelado",
       "finishedOn": "Terminó el {{date}}"
     },
     "liveNow": "{{count}} en directo ahora",
@@ -1669,6 +1670,8 @@
     "bracketSet": "El cuadro está listo.",
     "endedTitle": "No se admiten más inscripciones",
     "endedBody": "Cerró: {{when}}.",
+    "cancelledTitle": "El torneo se ha cancelado",
+    "cancelledBody": "El organizador lo terminó antes de que acabara.",
     "fullTitle": "No quedan plazas",
     "spotsLeft_one": "Queda {{count}} de {{max}} plazas. Los capitanes eligen titulares y suplentes.",
     "spotsLeft_other": "Quedan {{count}} de {{max}} plazas. Los capitanes eligen titulares y suplentes.",

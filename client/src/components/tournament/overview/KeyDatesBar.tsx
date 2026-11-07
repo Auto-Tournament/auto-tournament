@@ -73,7 +73,12 @@ export function KeyDatesBar({
     cells.push({
       key: 'signupCloses',
       icon: <LockSimpleIcon size={22} color={color.muted} />,
-      label: t('signup.keyDates.closes'),
+      // Past its deadline the tile says it closed, not "closes".
+      label:
+        // eslint-disable-next-line react-hooks/purity -- only needs to be right when the page renders
+        Date.parse(signup.registrationClosesAt) <= Date.now()
+          ? t('tournamentsPage.status.closed')
+          : t('signup.keyDates.closes'),
       value: fmtDayTime(signup.registrationClosesAt),
     });
   }

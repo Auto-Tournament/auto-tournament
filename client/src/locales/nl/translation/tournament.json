@@ -931,6 +931,7 @@
       "setup": "Binnenkort",
       "inProgress": "Live",
       "completed": "Afgerond",
+      "cancelled": "Geannuleerd",
       "finishedOn": "Afgerond {{date}}"
     },
     "liveNow": "{{count}} nu live",
@@ -1623,6 +1624,8 @@
     "bracketSet": "Het schema staat klaar.",
     "endedTitle": "Geen inschrijvingen meer",
     "endedBody": "Gesloten: {{when}}.",
+    "cancelledTitle": "Dit toernooi is geannuleerd",
+    "cancelledBody": "De organisator heeft het voor het einde stopgezet.",
     "fullTitle": "Alle plekken zijn bezet",
     "spotsLeft_one": "Nog {{count}} van de {{max}} plekken. Captains kiezen de basisspelers en reserves.",
     "spotsLeft_other": "Nog {{count}} van de {{max}} plekken. Captains kiezen de basisspelers en reserves.",

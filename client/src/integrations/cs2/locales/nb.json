@@ -331,6 +331,8 @@
     "opensBreak": "En kort pause mellom kampene. Gjør deg klar – første tur får ekstra tid.",
     "breakEyebrow": "Pause mellom kampene",
     "opensInTitle": "Kartvetoen åpner om",
+    "notStartedTitle": "Kartvetoen åpner når turneringen starter",
+    "notStartedBody": "Til da er kartene nedenfor kartpuljen.",
     "title": "kartveto",
     "sideInWindow": "Velg CT eller T i tidsvinduet.",
     "pool": "Kartutvalg",
@@ -1690,7 +1692,7 @@
       "saveFailed": "Klarte ikke å lagre premiene",
       "whereTitle": "Hvor spillerne ser den",
       "where": {
-        "rulesLabel": "Oversikt:",
+        "rulesLabel": "Regler:",
         "rules": "Hva du kan vinne, fra disse innstillingene.",
         "outLabel": "Når de er ute:",
         "out": "kamprommet sier hva de vant.",

@@ -137,6 +137,7 @@
         "finished": "Dokončeno",
         "finishedScore": "Dokončeno · {{score}}",
         "veto": "Veto map",
+        "notStarted": "Čeká na start",
         "waitingTeams": "Čeká na své týmy",
         "queued": "Čeká na server · #{{position}} ve frontě",
         "waiting": "Čeká"

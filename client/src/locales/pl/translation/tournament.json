@@ -981,6 +981,7 @@
       "setup": "Nadchodzący",
       "inProgress": "Na żywo",
       "completed": "Zakończony",
+      "cancelled": "Odwołany",
       "finishedOn": "Zakończony {{date}}"
     },
     "liveNow": "Na żywo teraz: {{count}}",
@@ -1715,6 +1716,8 @@
     "bracketSet": "Drabinka jest gotowa.",
     "endedTitle": "Zapisy zakończone",
     "endedBody": "Zamknięte: {{when}}.",
+    "cancelledTitle": "Turniej został odwołany",
+    "cancelledBody": "Organizator zakończył go przed czasem.",
     "fullTitle": "Wszystkie miejsca zajęte",
     "spotsLeft_one": "Wolne miejsca: {{count}} z {{max}}. Kapitanowie wybierają podstawowych i rezerwowych.",
     "spotsLeft_other": "Wolne miejsca: {{count}} z {{max}}. Kapitanowie wybierają podstawowych i rezerwowych.",

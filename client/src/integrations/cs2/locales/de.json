@@ -331,6 +331,8 @@
     "opensBreak": "Eine kurze Pause nach dem letzten Match. Du bekommst eine Benachrichtigung, wenn es öffnet; die Karten unten sind der Pool.",
     "breakEyebrow": "Pause zwischen Matches",
     "opensInTitle": "Das Veto öffnet in",
+    "notStartedTitle": "Das Veto öffnet, wenn das Turnier startet",
+    "notStartedBody": "Bis dahin sind die Karten unten der Pool.",
     "title": "Karten-Veto",
     "sideInWindow": "Wähl im Fenster CT oder T.",
     "pool": "Kartenpool",
@@ -1677,7 +1679,7 @@
       "saveFailed": "Die Preise konnten nicht gespeichert werden",
       "whereTitle": "Wo Spieler es sehen",
       "where": {
-        "rulesLabel": "Übersicht:",
+        "rulesLabel": "Regeln:",
         "rules": "Was man gewinnen kann, aus diesen Einstellungen.",
         "outLabel": "Wenn sie raus sind:",
         "out": "Der Match-Raum sagt, was sie gewonnen haben.",

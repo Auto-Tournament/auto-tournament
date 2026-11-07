@@ -188,6 +188,7 @@
     "team2SeriesScore": 1,
     "tournament": "Golden Replay Tournament",
     "tournamentId": 1,
+    "tournamentStarted": true,
     "vetoCompleted": true,
     "vetoOpensAt": null,
     "viewerTeamId": null,

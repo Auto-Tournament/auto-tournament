@@ -137,6 +137,7 @@
         "finished": "Завершено",
         "finishedScore": "Завершено · {{score}}",
         "veto": "Вето мап",
+        "notStarted": "Очікує на початок",
         "waitingTeams": "Чекає своїх команд",
         "queued": "Чекає на сервер · №{{position}} у черзі",
         "waiting": "Очікування"

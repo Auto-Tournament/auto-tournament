@@ -930,6 +930,7 @@
       "setup": "Sắp tới",
       "inProgress": "Trực tiếp",
       "completed": "Đã kết thúc",
+      "cancelled": "Đã hủy",
       "finishedOn": "Kết thúc {{date}}"
     },
     "liveNow": "{{count}} đang diễn ra",
@@ -1622,6 +1623,8 @@
     "bracketSet": "Nhánh đấu đã sẵn sàng.",
     "endedTitle": "Không nhận thêm đăng ký",
     "endedBody": "Đã đóng: {{when}}.",
+    "cancelledTitle": "Giải đấu này đã bị hủy",
+    "cancelledBody": "Ban tổ chức đã dừng giải trước khi kết thúc.",
     "fullTitle": "Đã hết suất",
     "spotsLeft_one": "Còn {{count}} trên {{max}} suất. Đội trưởng chọn người chơi chính và dự bị.",
     "spotsLeft_other": "Còn {{count}} trên {{max}} suất. Đội trưởng chọn người chơi chính và dự bị.",
