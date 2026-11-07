@@ -70,7 +70,11 @@ export function AdminTournamentProvider({ children }: { children: React.ReactNod
 
   const reload = useCallback(async () => {
     try {
-      const r = await api.get<{ tournaments: TournamentListItem[]; featuredId: number; nextId?: number }>('/api/tournaments');
+      const r = await api.get<{
+        tournaments: TournamentListItem[];
+        featuredId: number;
+        nextId?: number;
+      }>('/api/tournaments');
       setTournaments(r.tournaments ?? []);
       setFeaturedId(r.featuredId ?? null);
       setNextId(r.nextId ?? null);
