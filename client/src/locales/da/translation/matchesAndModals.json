@@ -119,6 +119,7 @@
         "finished": "Færdig",
         "finishedScore": "Færdig · {{score}}",
         "veto": "Baneveto",
+        "notStarted": "Venter på start",
         "waitingTeams": "Venter på sine hold",
         "queued": "Venter på server · #{{position}} i køen",
         "waiting": "Venter"

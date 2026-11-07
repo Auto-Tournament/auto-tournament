@@ -316,6 +316,8 @@ export interface VetoState {
   opensAt?: string;
   /** The match's start time when it is held for it (Manage › Schedule). */
   startsAt?: string;
+  /** A bracket match whose tournament has not started: the veto is closed, no turn or clock. */
+  notStarted?: boolean;
   /** A matchmaking vote: the current step's votes, steam id → map or side. */
   votes?: Record<string, string>;
 }

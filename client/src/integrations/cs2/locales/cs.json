@@ -333,6 +333,8 @@
     "opensBreak": "Krátká pauza po posledním zápase. Až se otevře, dostaneš oznámení; mapy níže jsou pool.",
     "breakEyebrow": "Pauza mezi zápasy",
     "opensInTitle": "Veto se otevře za",
+    "notStartedTitle": "Veto se otevře, až turnaj začne",
+    "notStartedBody": "Do té doby jsou mapy níže pool.",
     "title": "veto map",
     "sideInWindow": "Vyber v okně CT nebo T.",
     "pool": "Map pool",
@@ -1741,7 +1743,7 @@
       "saveFailed": "Ceny se nepodařilo uložit",
       "whereTitle": "Kde to hráči uvidí",
       "where": {
-        "rulesLabel": "Přehled:",
+        "rulesLabel": "Pravidla:",
         "rules": "Co můžeš vyhrát, podle tohoto nastavení.",
         "outLabel": "Když vypadnou:",
         "out": "místnost zápasu řekne, co vyhráli.",

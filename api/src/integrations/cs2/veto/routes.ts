@@ -28,6 +28,7 @@ import { storeStandaloneVetoConfig } from './standaloneConfig';
 import { isVoteVeto, MM_VOTE_SECONDS, sidesOf, votersOf } from './vote';
 import { autoCompleteVetoForMatch } from './simulation';
 import type { Untrusted } from '../../../utils/untrusted';
+import { waitsForTournamentStart } from '../../../utils/tournamentStarted';
 
 const router = Router();
 
@@ -209,6 +210,16 @@ function noVeto(res: Response) {
   });
 }
 
+/** A bracket match of a tournament not started yet: its veto is closed (utils/tournamentStarted). */
+async function vetoWaitsForStart(match: DbMatchRow): Promise<boolean> {
+  if (match.tournament_id == null) return false;
+  const row = await db.queryOneAsync<{ status: string }>(
+    'SELECT status FROM tournament WHERE id = ?',
+    [match.tournament_id]
+  );
+  return waitsForTournamentStart({ ...match, tournamentStatus: row?.status });
+}
+
 router.get('/:matchSlug', async (req: Request, res: Response) => {
   try {
     const { matchSlug } = req.params;
@@ -331,8 +342,11 @@ router.get('/:matchSlug', async (req: Request, res: Response) => {
     // redacted view as a spectator. The /action endpoint explains why.
     // The current turn's time limit (./timer.ts), for both views.
     const voting = isVoteVeto(match);
+    // Before the tournament starts the veto is closed: no turn and no clock (the page says why).
+    const notStarted = vetoState.status !== 'completed' && (await vetoWaitsForStart(match));
+    if (notStarted) (vetoState as { notStarted?: boolean }).notStarted = true;
     const turnClock =
-      vetoState.status === 'completed'
+      vetoState.status === 'completed' || notStarted
         ? null
         : await vetoTurnDeadline(matchSlug, match.veto_state, voting ? MM_VOTE_SECONDS : undefined);
     // Matchmaking votes (./vote.ts): who may vote, for the avatars on the board.
@@ -409,6 +423,13 @@ async function vetoAction(req: Request, res: Response) {
       });
     }
     if (describeMatch(match).skipPreMatchPhase === true) return noVeto(res);
+    if (await vetoWaitsForStart(match)) {
+      return res.status(409).json({
+        success: false,
+        error: 'The veto opens when the tournament starts.',
+        code: 'not_started',
+      });
+    }
     // The break between a team's matches (or an admin's hold): the veto opens when it ends.
     const opensAt = await vetoWaitingOnHold(matchSlug);
     if (opensAt) {

@@ -930,6 +930,7 @@
       "setup": "Upcoming",
       "inProgress": "Live",
       "completed": "Completed",
+      "cancelled": "Cancelled",
       "finishedOn": "Finished {{date}}"
     },
     "liveNow": "{{count}} live now",
@@ -1622,6 +1623,8 @@
     "bracketSet": "The bracket is ready.",
     "endedTitle": "No more sign-ups",
     "endedBody": "It closed {{when}}.",
+    "cancelledTitle": "This tournament was cancelled",
+    "cancelledBody": "The organizer ended it before it finished.",
     "fullTitle": "All spots are taken",
     "spotsLeft_one": "{{count}} of {{max}} spots left. Captains pick the starters and subs.",
     "spotsLeft_other": "{{count}} of {{max}} spots left. Captains pick the starters and subs.",

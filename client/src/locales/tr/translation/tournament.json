@@ -930,6 +930,7 @@
       "setup": "Yaklaşan",
       "inProgress": "Canlı",
       "completed": "Tamamlandı",
+      "cancelled": "İptal edildi",
       "finishedOn": "Bitiş: {{date}}"
     },
     "liveNow": "Şu anda {{count}} canlı",
@@ -1622,6 +1623,8 @@
     "bracketSet": "Eşleşme tablosu hazır.",
     "endedTitle": "Artık kayıt alınmıyor",
     "endedBody": "Kapandı: {{when}}.",
+    "cancelledTitle": "Bu turnuva iptal edildi",
+    "cancelledBody": "Organizatör turnuvayı bitmeden sonlandırdı.",
     "fullTitle": "Tüm yerler dolu",
     "spotsLeft_one": "{{max}} yerden {{count}} tanesi boş. Kaptanlar asları ve yedekleri seçer.",
     "spotsLeft_other": "{{max}} yerden {{count}} tanesi boş. Kaptanlar asları ve yedekleri seçer.",

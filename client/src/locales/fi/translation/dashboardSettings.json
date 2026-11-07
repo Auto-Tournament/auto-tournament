@@ -738,6 +738,7 @@
       "finished": "Päättynyt",
       "signup": "Ilmoittautuminen auki",
       "closed": "Ilmoittautuminen suljettu",
+      "cancelled": "Peruttu",
       "draft": "Luonnos"
     },
     "front": {

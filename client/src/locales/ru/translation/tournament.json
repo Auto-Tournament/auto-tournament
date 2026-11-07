@@ -980,6 +980,7 @@
       "setup": "Скоро",
       "inProgress": "Идёт",
       "completed": "Завершён",
+      "cancelled": "Отменён",
       "finishedOn": "Завершён {{date}}"
     },
     "liveNow": "Сейчас идёт: {{count}}",
@@ -1714,6 +1715,8 @@
     "bracketSet": "Сетка готова.",
     "endedTitle": "Регистрация завершена",
     "endedBody": "Закрыта: {{when}}.",
+    "cancelledTitle": "Турнир отменён",
+    "cancelledBody": "Организатор завершил его досрочно.",
     "fullTitle": "Все места заняты",
     "spotsLeft_one": "Осталось {{count}} место из {{max}}. Капитаны выбирают основных и запасных.",
     "spotsLeft_other": "Осталось {{count}} места из {{max}}. Капитаны выбирают основных и запасных.",

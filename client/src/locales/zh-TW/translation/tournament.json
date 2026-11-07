@@ -930,6 +930,7 @@
       "setup": "即將開始",
       "inProgress": "進行中",
       "completed": "已結束",
+      "cancelled": "已取消",
       "finishedOn": "{{date}} 結束"
     },
     "liveNow": "{{count}} 場正在進行",
@@ -1622,6 +1623,8 @@
     "bracketSet": "賽程表已產生。",
     "endedTitle": "報名已結束",
     "endedBody": "截止時間：{{when}}",
+    "cancelledTitle": "本賽事已取消",
+    "cancelledBody": "主辦方在賽事結束前將其終止。",
     "fullTitle": "名額已滿",
     "spotsLeft_one": "剩餘 {{count}}/{{max}} 個名額。隊長選擇首發和替補。",
     "spotsLeft_other": "剩餘 {{count}}/{{max}} 個名額。隊長選擇首發和替補。",

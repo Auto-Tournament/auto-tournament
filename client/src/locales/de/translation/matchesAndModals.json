@@ -119,6 +119,7 @@
         "finished": "Beendet",
         "finishedScore": "Beendet · {{score}}",
         "veto": "Karten-Veto",
+        "notStarted": "Wartet auf den Start",
         "waitingTeams": "Wartet auf die Teams",
         "queued": "Wartet auf einen Server · Platz {{position}} in der Warteschlange",
         "waiting": "Wartend"

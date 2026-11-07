@@ -331,6 +331,8 @@
     "opensBreak": "Rövid szünet az utolsó meccs után. Értesítést kapsz, amikor megnyílik; az alábbi pályák alkotják a készletet.",
     "breakEyebrow": "Szünet a meccsek között",
     "opensInTitle": "A veto ennyi idő múlva nyílik",
+    "notStartedTitle": "A veto a verseny kezdetekor nyílik",
+    "notStartedBody": "Addig az alábbi pályák alkotják a készletet.",
     "title": "pályaveto",
     "sideInWindow": "Válassz CT-t vagy T-t az ablakban.",
     "pool": "Pályakészlet",
@@ -1683,7 +1685,7 @@
       "saveFailed": "Nem sikerült menteni a díjakat",
       "whereTitle": "Hol látják a játékosok",
       "where": {
-        "rulesLabel": "Áttekintés:",
+        "rulesLabel": "Szabályok:",
         "rules": "mit nyerhetsz, ezekből a beállításokból.",
         "outLabel": "Amikor kiesnek:",
         "out": "a meccsszoba megmondja, mit nyertek.",

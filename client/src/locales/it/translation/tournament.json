@@ -956,6 +956,7 @@
       "setup": "In arrivo",
       "inProgress": "In diretta",
       "completed": "Concluso",
+      "cancelled": "Annullato",
       "finishedOn": "Concluso il {{date}}"
     },
     "liveNow": "{{count}} in diretta ora",
@@ -1669,6 +1670,8 @@
     "bracketSet": "Il tabellone è pronto.",
     "endedTitle": "Non si accettano più iscrizioni",
     "endedBody": "Chiuse: {{when}}.",
+    "cancelledTitle": "Il torneo è stato annullato",
+    "cancelledBody": "L'organizzatore l'ha chiuso prima della fine.",
     "fullTitle": "Tutti i posti sono occupati",
     "spotsLeft_one": "{{count}} posto libero su {{max}}. I capitani scelgono titolari e riserve.",
     "spotsLeft_other": "{{count}} posti liberi su {{max}}. I capitani scelgono titolari e riserve.",

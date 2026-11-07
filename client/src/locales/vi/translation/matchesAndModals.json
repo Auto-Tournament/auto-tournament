@@ -119,6 +119,7 @@
         "finished": "Đã kết thúc",
         "finishedScore": "Đã kết thúc · {{score}}",
         "veto": "Veto bản đồ",
+        "notStarted": "Chờ bắt đầu",
         "waitingTeams": "Đang chờ các đội",
         "queued": "Chờ máy chủ · #{{position}} trong hàng chờ",
         "waiting": "Đang chờ"

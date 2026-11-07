@@ -930,6 +930,7 @@
       "setup": "Mendatang",
       "inProgress": "Live",
       "completed": "Selesai",
+      "cancelled": "Dibatalkan",
       "finishedOn": "Selesai {{date}}"
     },
     "liveNow": "{{count}} sedang live",
@@ -1622,6 +1623,8 @@
     "bracketSet": "Bagan sudah siap.",
     "endedTitle": "Tidak ada pendaftaran lagi",
     "endedBody": "Ditutup: {{when}}.",
+    "cancelledTitle": "Turnamen ini dibatalkan",
+    "cancelledBody": "Penyelenggara menghentikannya sebelum selesai.",
     "fullTitle": "Semua slot sudah terisi",
     "spotsLeft_one": "{{count}} dari {{max}} slot tersisa. Kapten memilih pemain inti dan cadangan.",
     "spotsLeft_other": "{{count}} dari {{max}} slot tersisa. Kapten memilih pemain inti dan cadangan.",

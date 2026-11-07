@@ -331,6 +331,8 @@
     "opensBreak": "前の試合の後の短い休憩です。始まると通知が届きます。下のマップがプールです。",
     "breakEyebrow": "試合間の休憩",
     "opensInTitle": "BAN/ピック開始まで",
+    "notStartedTitle": "BAN/ピックはトーナメント開始後に始まります",
+    "notStartedBody": "それまでは、下のマップがプールです。",
     "title": "マップ BAN/ピック",
     "sideInWindow": "ウィンドウで CT か T を選んでください。",
     "pool": "マッププール",
@@ -1683,7 +1685,7 @@
       "saveFailed": "賞品を保存できませんでした",
       "whereTitle": "プレイヤーに表示される場所",
       "where": {
-        "rulesLabel": "概要:",
+        "rulesLabel": "ルール:",
         "rules": "これらの設定に基づく獲得できる賞品。",
         "outLabel": "敗退時:",
         "out": "試合ルームに獲得したものが表示されます。",

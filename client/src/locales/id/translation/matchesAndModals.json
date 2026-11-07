@@ -119,6 +119,7 @@
         "finished": "Selesai",
         "finishedScore": "Selesai · {{score}}",
         "veto": "Veto peta",
+        "notStarted": "Menunggu dimulai",
         "waitingTeams": "Menunggu timnya",
         "queued": "Menunggu server · #{{position}} dalam antrean",
         "waiting": "Menunggu"

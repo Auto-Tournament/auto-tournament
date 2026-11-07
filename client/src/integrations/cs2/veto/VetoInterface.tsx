@@ -531,15 +531,17 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
         display: 'flex',
         flexDirection: 'column',
         gap: 2.5,
-        // Before the veto opens (the break between matches) the countdown is the page.
-        ...(vetoState.opensAt
+        // Before the veto opens (the break between matches, or the tournament not started)
+        // the notice is the page.
+        ...(vetoState.opensAt || vetoState.notStarted
           ? {
-              '& [data-testid="veto-opens-countdown"] ~ *': {
-                opacity: 0.25,
-                filter: 'grayscale(0.6)',
-                pointerEvents: 'none',
-                userSelect: 'none',
-              },
+              '& [data-testid="veto-opens-countdown"] ~ *, & [data-testid="veto-not-started"] ~ *':
+                {
+                  opacity: 0.25,
+                  filter: 'grayscale(0.6)',
+                  pointerEvents: 'none',
+                  userSelect: 'none',
+                },
             }
           : {}),
       }}
@@ -608,6 +610,32 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
             )}
           </Typography>
         </Box>
+      )}
+
+      {vetoState.notStarted && (
+        <Paper
+          variant="outlined"
+          role="status"
+          data-testid="veto-not-started"
+          sx={{
+            px: 3,
+            py: { xs: 4, md: 5 },
+            mb: 3,
+            textAlign: 'center',
+            borderWidth: 2,
+            borderColor: tokens.color.warning,
+            display: 'grid',
+            justifyItems: 'center',
+            gap: 1.5,
+          }}
+        >
+          <Typography sx={{ fontWeight: 600, fontSize: '1.25rem' }}>
+            {t('vetoInterface.notStartedTitle')}
+          </Typography>
+          <Typography color="text.secondary" sx={{ maxWidth: 560 }}>
+            {t('vetoInterface.notStartedBody')}
+          </Typography>
+        </Paper>
       )}
 
       {vetoState.opensAt && (

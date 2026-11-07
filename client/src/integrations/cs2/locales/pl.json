@@ -333,6 +333,8 @@
     "opensBreak": "Krótka przerwa po ostatnim meczu. Dostaniesz powiadomienie, gdy weto się otworzy; mapy poniżej to pula.",
     "breakEyebrow": "Przerwa między meczami",
     "opensInTitle": "Weto otwiera się za",
+    "notStartedTitle": "Weto otworzy się, gdy turniej się zacznie",
+    "notStartedBody": "Do tego czasu mapy poniżej to pula.",
     "title": "weto map",
     "sideInWindow": "Wybierz CT lub T w oknie.",
     "pool": "Pula map",
@@ -1735,7 +1737,7 @@
       "saveFailed": "Nie udało się zapisać nagród",
       "whereTitle": "Gdzie widzą to gracze",
       "where": {
-        "rulesLabel": "Przegląd:",
+        "rulesLabel": "Zasady:",
         "rules": "co można wygrać, według tych ustawień.",
         "outLabel": "Gdy odpadną:",
         "out": "pokój meczu mówi, co wygrali.",

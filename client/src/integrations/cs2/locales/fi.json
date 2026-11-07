@@ -331,6 +331,8 @@
     "opensBreak": "Lyhyt tauko edellisen ottelun jälkeen. Saat ilmoituksen, kun se avautuu; alla olevat kartat ovat pooli.",
     "breakEyebrow": "Tauko otteluiden välillä",
     "opensInTitle": "Veto avautuu",
+    "notStartedTitle": "Veto avautuu, kun turnaus alkaa",
+    "notStartedBody": "Siihen asti alla olevat kartat ovat pooli.",
     "title": "karttaveto",
     "sideInWindow": "Valitse CT tai T ikkunassa.",
     "pool": "Karttapooli",
@@ -1683,7 +1685,7 @@
       "saveFailed": "Palkintoja ei voitu tallentaa",
       "whereTitle": "Missä pelaajat näkevät sen",
       "where": {
-        "rulesLabel": "Yleiskatsaus:",
+        "rulesLabel": "Säännöt:",
         "rules": "Mitä voit voittaa, näiden asetusten perusteella.",
         "outLabel": "Kun he putoavat:",
         "out": "otteluhuone kertoo, mitä he voittivat.",

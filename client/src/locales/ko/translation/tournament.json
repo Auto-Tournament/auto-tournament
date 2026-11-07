@@ -930,6 +930,7 @@
       "setup": "예정",
       "inProgress": "라이브",
       "completed": "완료",
+      "cancelled": "취소됨",
       "finishedOn": "{{date}} 종료"
     },
     "liveNow": "지금 {{count}}경기 라이브",
@@ -1622,6 +1623,8 @@
     "bracketSet": "대진표가 확정됐어요.",
     "endedTitle": "더 이상 신청할 수 없어요",
     "endedBody": "마감: {{when}}",
+    "cancelledTitle": "이 대회는 취소되었어요",
+    "cancelledBody": "주최자가 끝나기 전에 종료했어요.",
     "fullTitle": "모든 자리가 찼어요",
     "spotsLeft_one": "{{max}}자리 중 {{count}}자리 남음. 팀장이 선발과 후보를 정해요.",
     "spotsLeft_other": "{{max}}자리 중 {{count}}자리 남음. 팀장이 선발과 후보를 정해요.",

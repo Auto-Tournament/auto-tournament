@@ -931,6 +931,7 @@
       "setup": "Kommende",
       "inProgress": "Direkte",
       "completed": "Avsluttet",
+      "cancelled": "Avlyst",
       "finishedOn": "Avsluttet {{date}}"
     },
     "liveNow": "{{count}} pågår nå",
@@ -1623,6 +1624,8 @@
     "bracketSet": "Turneringstreet er klart.",
     "endedTitle": "Ingen flere påmeldinger",
     "endedBody": "Den stengte {{when}}.",
+    "cancelledTitle": "Turneringen ble avlyst",
+    "cancelledBody": "Arrangøren avsluttet den før den var ferdig.",
     "fullTitle": "Alle plassene er tatt",
     "spotsLeft_one": "{{count}} av {{max}} plasser igjen. Kapteinene velger startspillere og innbyttere.",
     "spotsLeft_other": "{{count}} av {{max}} plasser igjen. Kapteinene velger startspillere og innbyttere.",

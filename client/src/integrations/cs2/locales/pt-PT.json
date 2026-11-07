@@ -332,6 +332,8 @@
     "opensBreak": "Uma pausa curta entre jogos: prepara-te, a primeira vez tem tempo extra.",
     "breakEyebrow": "Pausa entre jogos",
     "opensInTitle": "O veto abre dentro de",
+    "notStartedTitle": "O veto abre quando o torneio começar",
+    "notStartedBody": "Até lá, os mapas abaixo são o pool.",
     "title": "veto de mapas",
     "sideInWindow": "Escolhe CT ou T na janela.",
     "pool": "Pool de mapas",
@@ -1706,7 +1708,7 @@
       "saveFailed": "Não foi possível guardar os prémios",
       "whereTitle": "Onde os jogadores o veem",
       "where": {
-        "rulesLabel": "Visão geral:",
+        "rulesLabel": "Regras:",
         "rules": "o que se pode ganhar, a partir destas definições.",
         "outLabel": "Quando são eliminados:",
         "out": "a sala do jogo diz o que ganharam.",

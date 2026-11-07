@@ -119,6 +119,7 @@
         "finished": "終了",
         "finishedScore": "終了 · {{score}}",
         "veto": "マップ BAN/ピック",
+        "notStarted": "開始待ち",
         "waitingTeams": "チーム待ち",
         "queued": "サーバー待ち · 待機順 #{{position}}",
         "waiting": "待機中"

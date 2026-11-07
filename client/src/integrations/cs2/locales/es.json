@@ -332,6 +332,8 @@
     "opensBreak": "Un descanso corto tras el último partido. Recibirás una notificación cuando se abra; los mapas de abajo son el pool.",
     "breakEyebrow": "Descanso entre partidos",
     "opensInTitle": "El veto se abre en",
+    "notStartedTitle": "El veto se abre cuando empieza el torneo",
+    "notStartedBody": "Hasta entonces, los mapas de abajo son el pool.",
     "title": "veto de mapas",
     "sideInWindow": "Elige CT o T en la ventana.",
     "pool": "Pool de mapas",
@@ -1706,7 +1708,7 @@
       "saveFailed": "No se pudieron guardar los premios",
       "whereTitle": "Dónde lo ven los jugadores",
       "where": {
-        "rulesLabel": "Resumen:",
+        "rulesLabel": "Reglas:",
         "rules": "Lo que se puede ganar, según estos ajustes.",
         "outLabel": "Cuando quedan fuera:",
         "out": "la sala del partido dice qué han ganado.",

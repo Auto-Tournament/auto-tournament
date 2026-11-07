@@ -119,6 +119,7 @@
         "finished": "已結束",
         "finishedScore": "已結束 · {{score}}",
         "veto": "地圖禁選",
+        "notStarted": "等待開始",
         "waitingTeams": "等待雙方戰隊",
         "queued": "等待伺服器 · 佇列第 {{position}} 位",
         "waiting": "等待中"

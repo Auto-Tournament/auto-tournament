@@ -332,6 +332,8 @@
     "opensBreak": "Une courte pause après le dernier match. Vous recevez une notification à l’ouverture ; les cartes ci-dessous forment le pool.",
     "breakEyebrow": "Pause entre les matchs",
     "opensInTitle": "Le veto s’ouvre dans",
+    "notStartedTitle": "Le veto s’ouvre quand le tournoi commence",
+    "notStartedBody": "D’ici là, les cartes ci-dessous forment le pool.",
     "title": "veto des cartes",
     "sideInWindow": "Choisissez CT ou T dans la fenêtre.",
     "pool": "Pool de cartes",
@@ -1706,7 +1708,7 @@
       "saveFailed": "Impossible d’enregistrer les prix",
       "whereTitle": "Où les joueurs le voient",
       "where": {
-        "rulesLabel": "Aperçu :",
+        "rulesLabel": "Règles :",
         "rules": "Ce qu’on peut gagner, d’après ces paramètres.",
         "outLabel": "Quand ils sont éliminés :",
         "out": "la salle du match indique ce qu’ils ont gagné.",

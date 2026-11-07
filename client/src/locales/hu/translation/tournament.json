@@ -930,6 +930,7 @@
       "setup": "Közelgő",
       "inProgress": "Élő",
       "completed": "Befejezett",
+      "cancelled": "Törölve",
       "finishedOn": "Befejeződött: {{date}}"
     },
     "liveNow": "{{count}} élőben most",
@@ -1622,6 +1623,8 @@
     "bracketSet": "Az ágrajz elkészült.",
     "endedTitle": "További nevezés nem lehetséges",
     "endedBody": "Lezárult: {{when}}.",
+    "cancelledTitle": "A versenyt törölték",
+    "cancelledBody": "A szervező a vége előtt lezárta.",
     "fullTitle": "Minden hely betelt",
     "spotsLeft_one": "{{max}} helyből {{count}} maradt. A kapitányok választják ki a kezdőket és a cseréket.",
     "spotsLeft_other": "{{max}} helyből {{count}} maradt. A kapitányok választják ki a kezdőket és a cseréket.",

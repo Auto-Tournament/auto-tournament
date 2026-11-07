@@ -331,6 +331,8 @@
     "opensBreak": "지난 경기 뒤 잠깐 쉬는 시간이에요. 열리면 알림이 와요. 아래 맵이 맵 풀이에요.",
     "breakEyebrow": "경기 사이 휴식",
     "opensInTitle": "밴/픽 시작까지",
+    "notStartedTitle": "밴/픽은 대회가 시작되면 열려요",
+    "notStartedBody": "그때까지 아래 맵이 맵 풀이에요.",
     "title": "맵 밴/픽",
     "sideInWindow": "창에서 CT 또는 T를 고르세요.",
     "pool": "맵 풀",
@@ -1683,7 +1685,7 @@
       "saveFailed": "상품을 저장하지 못했어요",
       "whereTitle": "플레이어가 보는 곳",
       "where": {
-        "rulesLabel": "개요:",
+        "rulesLabel": "규칙:",
         "rules": "이 설정에서 정한, 얻을 수 있는 것.",
         "outLabel": "탈락했을 때:",
         "out": "경기 방에 받은 상품이 표시돼요.",

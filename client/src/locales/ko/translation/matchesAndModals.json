@@ -119,6 +119,7 @@
         "finished": "종료",
         "finishedScore": "종료 · {{score}}",
         "veto": "맵 밴/픽",
+        "notStarted": "시작 대기 중",
         "waitingTeams": "팀 대기 중",
         "queued": "서버 대기 · 대기 순서 #{{position}}",
         "waiting": "대기 중"

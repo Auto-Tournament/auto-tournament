@@ -332,6 +332,8 @@
     "opensBreak": "Una breve pausa dopo l'ultima partita. Ricevi una notifica quando si apre; le mappe qui sotto sono il pool.",
     "breakEyebrow": "Pausa tra le partite",
     "opensInTitle": "Il veto si apre tra",
+    "notStartedTitle": "Il veto si apre quando inizia il torneo",
+    "notStartedBody": "Fino ad allora, le mappe qui sotto sono il pool.",
     "title": "veto delle mappe",
     "sideInWindow": "Scegli CT o T nella finestra.",
     "pool": "Pool di mappe",
@@ -1706,7 +1708,7 @@
       "saveFailed": "Impossibile salvare i premi",
       "whereTitle": "Dove lo vedono i giocatori",
       "where": {
-        "rulesLabel": "Panoramica:",
+        "rulesLabel": "Regole:",
         "rules": "cosa si può vincere, da queste impostazioni.",
         "outLabel": "Quando vengono eliminati:",
         "out": "la stanza della partita dice cosa hanno vinto.",

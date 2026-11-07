@@ -128,6 +128,7 @@
         "finished": "Terminado",
         "finishedScore": "Terminado · {{score}}",
         "veto": "Veto de mapas",
+        "notStarted": "A aguardar o início",
         "waitingTeams": "À espera das equipas",
         "queued": "À espera de um servidor · n.º {{position}} na fila",
         "waiting": "Em espera"

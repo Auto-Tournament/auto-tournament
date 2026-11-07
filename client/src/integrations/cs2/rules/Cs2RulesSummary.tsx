@@ -8,7 +8,7 @@
 import { Box, Typography } from '@mui/material';
 import { useModuleTranslation, tokens, textSize } from '../../../module-sdk';
 import type { TournamentRulesViewProps } from '../../types';
-import { rulesLines, STRONG_END } from './rulesLines';
+import { matchLines, rulesLines, STRONG_END } from './rulesLines';
 
 export function Cs2RulesSummary({ tournament, compact }: TournamentRulesViewProps) {
   const { t } = useModuleTranslation('cs2');
@@ -19,8 +19,7 @@ export function Cs2RulesSummary({ tournament, compact }: TournamentRulesViewProp
         data-testid="rules-summary-line"
         sx={{ color: tokens.color.ink2, fontSize: textSize.sm }}
       >
-        {lines
-          .slice(0, 3)
+        {matchLines(t, tournament)
           .map((l) => l.replace(STRONG_END, ' '))
           .join(' · ')}
       </Typography>

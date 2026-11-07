@@ -119,6 +119,7 @@
         "finished": "Bitti",
         "finishedScore": "Bitti · {{score}}",
         "veto": "Harita vetosu",
+        "notStarted": "Başlamayı bekliyor",
         "waitingTeams": "Takımları bekliyor",
         "queued": "Sunucu bekliyor · sırada #{{position}}",
         "waiting": "Bekliyor"

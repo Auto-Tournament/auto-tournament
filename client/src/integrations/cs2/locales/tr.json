@@ -331,6 +331,8 @@
     "opensBreak": "Son maçtan sonra kısa bir mola. Açıldığında bildirim alırsın; aşağıdaki haritalar havuzdur.",
     "breakEyebrow": "Maçlar arası mola",
     "opensInTitle": "Veto açılışına",
+    "notStartedTitle": "Veto turnuva başlayınca açılır",
+    "notStartedBody": "O zamana kadar aşağıdaki haritalar havuzdur.",
     "title": "harita vetosu",
     "sideInWindow": "Pencereden CT veya T seç.",
     "pool": "Harita havuzu",
@@ -1683,7 +1685,7 @@
       "saveFailed": "Ödüller kaydedilemedi",
       "whereTitle": "Oyuncuların gördüğü yer",
       "where": {
-        "rulesLabel": "Genel bakış:",
+        "rulesLabel": "Kurallar:",
         "rules": "Bu ayarlara göre neler kazanılabileceği.",
         "outLabel": "Elendiklerinde:",
         "out": "maç odası ne kazandıklarını söyler.",

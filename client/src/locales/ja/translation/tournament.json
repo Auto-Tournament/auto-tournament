@@ -930,6 +930,7 @@
       "setup": "開催予定",
       "inProgress": "ライブ",
       "completed": "完了",
+      "cancelled": "中止",
       "finishedOn": "{{date}} に終了"
     },
     "liveNow": "{{count}} 試合がライブ中",
@@ -1622,6 +1623,8 @@
     "bracketSet": "トーナメント表が確定しました。",
     "endedTitle": "参加登録は終了しました",
     "endedBody": "締切：{{when}}",
+    "cancelledTitle": "このトーナメントは中止されました",
+    "cancelledBody": "主催者が終了前に打ち切りました。",
     "fullTitle": "すべての枠が埋まりました",
     "spotsLeft_one": "{{max}} 枠中 残り {{count}}。キャプテンが先発と控えを選びます。",
     "spotsLeft_other": "{{max}} 枠中 残り {{count}}。キャプテンが先発と控えを選びます。",

@@ -331,6 +331,8 @@
     "opensBreak": "A short break after the last match. You get a notification when it opens; the maps below are the pool.",
     "breakEyebrow": "Break between matches",
     "opensInTitle": "The veto opens in",
+    "notStartedTitle": "The veto opens when the tournament starts",
+    "notStartedBody": "Until then, the maps below are the pool.",
     "title": "map veto",
     "sideInWindow": "Choose CT or T in the window.",
     "pool": "Map pool",
@@ -1328,7 +1330,7 @@
     "prizes": {
       "title": "What you can win",
       "intro": "Examples of what playing in this tournament can give you, from this site's skins:",
-      "pickOne": "a {{rarity}} skin of your choice (pick 1 of 3)",
+      "pickOne": "one {{rarity}} skin of your choice (pick 1 of 3)",
       "matchDrops": "Every tournament match you play in can drop a skin too.",
       "everyone": "Everyone else who plays"
     },
@@ -1683,7 +1685,7 @@
       "saveFailed": "Could not save the prizes",
       "whereTitle": "Where players see it",
       "where": {
-        "rulesLabel": "Overview:",
+        "rulesLabel": "Rules:",
         "rules": "What you can win, from these settings.",
         "outLabel": "When they are out:",
         "out": "the match room says what they won.",

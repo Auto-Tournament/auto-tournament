@@ -738,6 +738,7 @@
       "finished": "Beendet",
       "signup": "Anmeldung offen",
       "closed": "Anmeldung geschlossen",
+      "cancelled": "Abgesagt",
       "draft": "Entwurf"
     },
     "front": {

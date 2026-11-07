@@ -956,6 +956,7 @@
       "setup": "À venir",
       "inProgress": "En direct",
       "completed": "Terminé",
+      "cancelled": "Annulé",
       "finishedOn": "Terminé le {{date}}"
     },
     "liveNow": "{{count}} en direct",
@@ -1668,6 +1669,8 @@
     "bracketSet": "Le tableau est prêt.",
     "endedTitle": "Plus d’inscriptions possibles",
     "endedBody": "Fermées : {{when}}.",
+    "cancelledTitle": "Le tournoi a été annulé",
+    "cancelledBody": "L’organisateur l’a arrêté avant la fin.",
     "fullTitle": "Toutes les places sont prises",
     "spotsLeft_one": "{{count}} place restante sur {{max}}. Les capitaines choisissent titulaires et remplaçants.",
     "spotsLeft_other": "{{count}} places restantes sur {{max}}. Les capitaines choisissent titulaires et remplaçants.",

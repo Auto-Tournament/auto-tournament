@@ -738,6 +738,7 @@
       "finished": "Befejezett",
       "signup": "Nevezés nyitva",
       "closed": "Nevezés lezárva",
+      "cancelled": "Törölve",
       "draft": "Piszkozat"
     },
     "front": {

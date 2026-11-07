@@ -331,6 +331,8 @@
     "opensBreak": "Een korte pauze na de laatste wedstrijd. Je krijgt een melding als het opent; de maps hieronder zijn de pool.",
     "breakEyebrow": "Pauze tussen wedstrijden",
     "opensInTitle": "De veto opent over",
+    "notStartedTitle": "De veto opent als het toernooi begint",
+    "notStartedBody": "Tot dan zijn de maps hieronder de pool.",
     "title": "mapveto",
     "sideInWindow": "Kies CT of T in het venster.",
     "pool": "Mappool",
@@ -1677,7 +1679,7 @@
       "saveFailed": "Kan de prijzen niet opslaan",
       "whereTitle": "Waar spelers het zien",
       "where": {
-        "rulesLabel": "Overzicht:",
+        "rulesLabel": "Regels:",
         "rules": "wat je kunt winnen, uit deze instellingen.",
         "outLabel": "Als ze eruit liggen:",
         "out": "de wedstrijdruimte zegt wat ze hebben gewonnen.",

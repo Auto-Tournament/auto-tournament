@@ -11,7 +11,8 @@ export interface Tournament {
   type:
     'single_elimination' | 'double_elimination' | 'round_robin' | 'swiss' | 'shuffle' | 'groups';
   format: 'bo1' | 'bo3' | 'bo5';
-  status: 'setup' | 'ready' | 'in_progress' | 'completed';
+  /** As the API's TournamentStatus: 'cancelled' is an admin ending it early (scheduler). */
+  status: 'setup' | 'ready' | 'in_progress' | 'completed' | 'cancelled';
   maps: string[];
   // For shuffle tournaments, mapSequence defines the map per round.
   // For non-shuffle, it will usually be undefined and we fall back to maps.

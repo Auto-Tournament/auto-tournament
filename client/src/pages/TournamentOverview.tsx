@@ -17,6 +17,7 @@ import { usePublicBracket } from '../hooks/usePublicBracket';
 import { tournamentTabPath } from '../paths';
 import { TabLoading } from '../components/tournament/page/TabState';
 import {
+  CancelledHero,
   HowMatchesPlayed,
   KeyDateTiles,
   MapPoolTiles,
@@ -109,6 +110,16 @@ export default function TournamentOverview() {
     // eslint-disable-next-line react-hooks/purity -- only needs to be right when the page renders
     now: Date.now(),
   });
+
+  // An admin ended it before it finished: say so (it fell through to the shuffle board
+  // before, which draws nothing for a team tournament: a blank page).
+  if (tournament.status === 'cancelled') {
+    return (
+      <Box data-testid="public-tournament-overview">
+        <CancelledHero />
+      </Box>
+    );
+  }
 
   // Once it is over, the overview is the results.
   if (tournament.status === 'completed' && !isShuffle) {

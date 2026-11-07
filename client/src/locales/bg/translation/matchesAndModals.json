@@ -119,6 +119,7 @@
         "finished": "Завършен",
         "finishedScore": "Завършен · {{score}}",
         "veto": "Вето на картите",
+        "notStarted": "Чака началото",
         "waitingTeams": "Изчаква отборите си",
         "queued": "Изчаква сървър · #{{position}} на опашката",
         "waiting": "Изчаква"

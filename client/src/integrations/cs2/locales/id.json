@@ -331,6 +331,8 @@
     "opensBreak": "Istirahat singkat setelah pertandingan terakhir. Anda mendapat notifikasi saat veto dibuka; peta di bawah adalah kumpulannya.",
     "breakEyebrow": "Istirahat di antara pertandingan",
     "opensInTitle": "Veto dibuka dalam",
+    "notStartedTitle": "Veto dibuka saat turnamen dimulai",
+    "notStartedBody": "Sampai saat itu, peta di bawah adalah kumpulannya.",
     "title": "veto peta",
     "sideInWindow": "Pilih CT atau T di jendela.",
     "pool": "Kumpulan peta",
@@ -1683,7 +1685,7 @@
       "saveFailed": "Tidak dapat menyimpan hadiah",
       "whereTitle": "Di mana pemain melihatnya",
       "where": {
-        "rulesLabel": "Ringkasan:",
+        "rulesLabel": "Aturan:",
         "rules": "apa yang bisa dimenangkan, dari pengaturan ini.",
         "outLabel": "Saat mereka gugur:",
         "out": "ruang pertandingan menyebutkan apa yang mereka menangkan.",

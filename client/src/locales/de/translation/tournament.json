@@ -931,6 +931,7 @@
       "setup": "Bevorstehend",
       "inProgress": "Live",
       "completed": "Beendet",
+      "cancelled": "Abgesagt",
       "finishedOn": "Beendet am {{date}}"
     },
     "liveNow": "{{count}} gerade live",
@@ -1623,6 +1624,8 @@
     "bracketSet": "Der Turnierbaum steht.",
     "endedTitle": "Keine Anmeldungen mehr",
     "endedBody": "Geschlossen: {{when}}.",
+    "cancelledTitle": "Das Turnier wurde abgesagt",
+    "cancelledBody": "Der Veranstalter hat es vor dem Ende beendet.",
     "fullTitle": "Alle Plätze sind vergeben",
     "spotsLeft_one": "{{count}} von {{max}} Plätzen frei. Die Kapitäne wählen Stamm- und Ersatzspieler.",
     "spotsLeft_other": "{{count}} von {{max}} Plätzen frei. Die Kapitäne wählen Stamm- und Ersatzspieler.",

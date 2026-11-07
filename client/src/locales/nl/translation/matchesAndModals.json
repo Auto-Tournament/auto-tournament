@@ -119,6 +119,7 @@
         "finished": "Afgelopen",
         "finishedScore": "Afgelopen · {{score}}",
         "veto": "Mapveto",
+        "notStarted": "Wacht op de start",
         "waitingTeams": "Wacht op de teams",
         "queued": "Wacht op een server · #{{position}} in de wachtrij",
         "waiting": "Wachtend"
