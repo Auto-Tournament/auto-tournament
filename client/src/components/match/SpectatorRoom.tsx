@@ -25,6 +25,8 @@ export interface SpectatorRoomMatch {
   slug?: string;
   status: string;
   vetoCompleted?: boolean;
+  /** GET /api/matches/:slug: false while its tournament has not started (no veto yet). */
+  tournamentStarted?: boolean | null;
   serverId?: string | null;
   team1?: { id?: string | null; name: string | null; tag?: string | null } | null;
   team2?: { id?: string | null; name: string | null; tag?: string | null } | null;
@@ -99,11 +101,14 @@ export function SpectatorRoom({
         : hasVeto && match.vetoCompleted === false
           ? 'veto'
           : 'server';
-  const nowIndex = steps.indexOf(now);
+  // Before the tournament starts nothing is under way: no step lit (the veto was, before).
+  const waitsForStart = match.tournamentStarted === false && match.status === 'pending';
+  const nowIndex = waitsForStart ? -1 : steps.indexOf(now);
   const live = useLiveStats(match.slug, now === 'live');
 
-  const serverText =
-    now === 'veto'
+  const serverText = waitsForStart
+    ? t('matchPage.spectator.server.notStarted')
+    : now === 'veto'
       ? t('matchPage.spectator.server.afterVeto')
       : now === 'server'
         ? match.serverId
@@ -207,11 +212,13 @@ export function SpectatorRoom({
             component="h2"
             sx={{ m: 0, fontFamily: fontDisplay, fontSize: '1.5rem', fontWeight: 700 }}
           >
-            {now === 'live'
-              ? [mapOf, mapLabel ? t('liveMatch.isLive', { map: mapLabel }) : t('yourMatch.live')]
-                  .filter(Boolean)
-                  .join(' · ')
-              : t(`matchPage.spectator.step.${now}`)}
+            {waitsForStart
+              ? t('matchPage.spectator.notStartedTitle')
+              : now === 'live'
+                ? [mapOf, mapLabel ? t('liveMatch.isLive', { map: mapLabel }) : t('yourMatch.live')]
+                    .filter(Boolean)
+                    .join(' · ')
+                : t(`matchPage.spectator.step.${now}`)}
           </Typography>
           {now === 'live' && live && (
             <Typography component="span" sx={{ ...mono, fontSize: '1.375rem' }}>

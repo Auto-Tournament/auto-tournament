@@ -399,6 +399,7 @@
     },
     "when": {
       "starts": "Begint {{date}}",
+      "overdue": "Had {{date}} moeten beginnen · wacht op de organisator",
       "finished": "Afgelopen",
       "finishedOn": "Afgelopen {{date}}",
       "noDate": "Nog geen datum"

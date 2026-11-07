@@ -633,6 +633,7 @@
         "players_one": "{{count}}명 이상 신청",
         "players_other": "{{count}}명 이상 신청",
         "mapsVeto": "밴/픽용 맵 7개",
+        "mapsVetoRange": "밴/픽용 맵 {{min}}–{{max}}개",
         "maps": "맵 하나 이상",
         "created": "토너먼트 생성됨",
         "saved": "변경 사항 저장됨"
@@ -1028,6 +1029,8 @@
     "allMatches": "모든 경기",
     "keyDates": {
       "starts": "시작",
+      "wasDue": "시작 예정이었음",
+      "waitingOrganizer": "주최자 대기 중",
       "lastOnSchedule": "마지막 일정",
       "teams": "팀"
     },

@@ -633,6 +633,7 @@
         "players_one": "Minst {{count}} spelare anmäld",
         "players_other": "Minst {{count}} spelare anmälda",
         "mapsVeto": "7 kartor för vetot",
+        "mapsVetoRange": "{{min}}–{{max}} kartor för vetot",
         "maps": "Minst en karta",
         "created": "Turneringen skapad",
         "saved": "Ändringarna sparade"
@@ -1028,6 +1029,8 @@
     "allMatches": "Alla matcher",
     "keyDates": {
       "starts": "Startar",
+      "wasDue": "Skulle ha startat",
+      "waitingOrganizer": "Väntar på arrangören",
       "lastOnSchedule": "Sist på schemat",
       "teams": "Lag"
     },

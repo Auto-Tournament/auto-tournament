@@ -769,6 +769,7 @@
     "overtime": "jatkoaika",
     "spectator": {
       "steps": "Ottelun vaiheet",
+      "notStartedTitle": "Odottaa turnauksen alkua",
       "step": {
         "veto": "Veto",
         "server": "Palvelin",
@@ -778,6 +779,7 @@
       "serverTitle": "Palvelin",
       "server": {
         "afterVeto": "Palvelin valitaan, kun veto on valmis.",
+        "notStarted": "Veto avautuu, kun turnaus alkaa.",
         "waiting": "Odotetaan vapaata palvelinta.",
         "loading": "Palvelin valmistelee ottelua. Yhdistäminen on vain kahdelle joukkueelle.",
         "playing": "Pelataan nyt. Yhdistäminen on vain kahdelle joukkueelle.",

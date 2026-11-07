@@ -396,6 +396,7 @@
     },
     "when": {
       "starts": "Startar {{date}}",
+      "overdue": "Skulle ha startat {{date}} · väntar på arrangören",
       "finished": "Klar",
       "finishedOn": "Avslutad {{date}}",
       "noDate": "Inget datum än"

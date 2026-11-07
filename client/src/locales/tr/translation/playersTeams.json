@@ -769,6 +769,7 @@
     "overtime": "uzatma",
     "spectator": {
       "steps": "Maç adımları",
+      "notStartedTitle": "Turnuvanın başlaması bekleniyor",
       "step": {
         "veto": "Veto",
         "server": "Sunucu",
@@ -778,6 +779,7 @@
       "serverTitle": "Sunucu",
       "server": {
         "afterVeto": "Veto bitince bir sunucu seçilir.",
+        "notStarted": "Veto turnuva başlayınca açılır.",
         "waiting": "Boş bir sunucu bekleniyor.",
         "loading": "Sunucu maçı hazırlıyor. Bağlanma iki takım içindir.",
         "playing": "Şu anda oynanıyor. Bağlanma iki takım içindir.",

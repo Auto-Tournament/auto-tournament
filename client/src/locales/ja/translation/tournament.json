@@ -633,6 +633,7 @@
         "players_one": "{{count}} 人以上の参加登録",
         "players_other": "{{count}} 人以上の参加登録",
         "mapsVeto": "BAN/ピック用の7マップ",
+        "mapsVetoRange": "BAN/ピック用の{{min}}–{{max}}マップ",
         "maps": "1つ以上のマップ",
         "created": "トーナメント作成済み",
         "saved": "変更を保存済み"
@@ -1028,6 +1029,8 @@
     "allMatches": "すべての試合",
     "keyDates": {
       "starts": "開始",
+      "wasDue": "開始予定だった日時",
+      "waitingOrganizer": "主催者の開始待ち",
       "lastOnSchedule": "最後の予定",
       "teams": "チーム"
     },

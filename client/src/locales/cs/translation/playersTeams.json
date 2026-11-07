@@ -806,6 +806,7 @@
     "overtime": "prodloužení",
     "spectator": {
       "steps": "Kroky zápasu",
+      "notStartedTitle": "Čeká se na začátek turnaje",
       "step": {
         "veto": "Veto",
         "server": "Server",
@@ -815,6 +816,7 @@
       "serverTitle": "Server",
       "server": {
         "afterVeto": "Server se vybere, až skončí veto.",
+        "notStarted": "Veto se otevře, až turnaj začne.",
         "waiting": "Čeká se na volný server.",
         "loading": "Server připravuje zápas. Připojení je pro oba týmy.",
         "playing": "Právě se hraje. Připojení je pro oba týmy.",

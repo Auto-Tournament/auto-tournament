@@ -769,6 +769,7 @@
     "overtime": "overtime",
     "spectator": {
       "steps": "Tahapan pertandingan",
+      "notStartedTitle": "Menunggu turnamen dimulai",
       "step": {
         "veto": "Veto",
         "server": "Server",
@@ -778,6 +779,7 @@
       "serverTitle": "Server",
       "server": {
         "afterVeto": "Server dipilih setelah veto selesai.",
+        "notStarted": "Veto dibuka saat turnamen dimulai.",
         "waiting": "Menunggu server yang kosong.",
         "loading": "Server sedang menyiapkan pertandingan. Tombol hubungkan untuk kedua tim.",
         "playing": "Sedang dimainkan. Tombol hubungkan untuk kedua tim.",

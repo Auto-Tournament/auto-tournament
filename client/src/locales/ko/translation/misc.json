@@ -396,6 +396,7 @@
     },
     "when": {
       "starts": "{{date}} 시작",
+      "overdue": "{{date}} 시작 예정이었음 · 주최자 대기 중",
       "finished": "종료",
       "finishedOn": "{{date}} 종료",
       "noDate": "날짜 미정"

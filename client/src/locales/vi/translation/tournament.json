@@ -633,6 +633,7 @@
         "players_one": "Ít nhất {{count}} người chơi đã đăng ký",
         "players_other": "Ít nhất {{count}} người chơi đã đăng ký",
         "mapsVeto": "7 bản đồ cho veto",
+        "mapsVetoRange": "{{min}}–{{max}} bản đồ cho veto",
         "maps": "Ít nhất một bản đồ",
         "created": "Đã tạo giải đấu",
         "saved": "Đã lưu thay đổi"
@@ -1028,6 +1029,8 @@
     "allMatches": "Tất cả trận",
     "keyDates": {
       "starts": "Bắt đầu",
+      "wasDue": "Lẽ ra đã bắt đầu",
+      "waitingOrganizer": "Đang chờ ban tổ chức",
       "lastOnSchedule": "Mục cuối trong lịch",
       "teams": "Đội"
     },

@@ -787,6 +787,7 @@
     "overtime": "prelungiri",
     "spectator": {
       "steps": "Etapele meciului",
+      "notStartedTitle": "Se așteaptă începerea turneului",
       "step": {
         "veto": "Veto",
         "server": "Server",
@@ -796,6 +797,7 @@
       "serverTitle": "Server",
       "server": {
         "afterVeto": "Un server este ales după veto.",
+        "notStarted": "Veto-ul se deschide când începe turneul.",
         "waiting": "Se așteaptă un server liber.",
         "loading": "Serverul pregătește meciul. Conectarea este pentru cele două echipe.",
         "playing": "Se joacă acum. Conectarea este pentru cele două echipe.",

@@ -396,6 +396,7 @@
     },
     "when": {
       "starts": "Kezdés: {{date}}",
+      "overdue": "Kezdődnie kellett volna: {{date}} · a szervezőre vár",
       "finished": "Befejezett",
       "finishedOn": "Befejeződött: {{date}}",
       "noDate": "Még nincs dátum"

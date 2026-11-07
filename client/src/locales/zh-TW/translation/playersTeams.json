@@ -769,6 +769,7 @@
     "overtime": "加時",
     "spectator": {
       "steps": "比賽步驟",
+      "notStartedTitle": "等待賽事開始",
       "step": {
         "veto": "禁選",
         "server": "伺服器",
@@ -778,6 +779,7 @@
       "serverTitle": "伺服器",
       "server": {
         "afterVeto": "禁選結束後會選定伺服器。",
+        "notStarted": "禁選將在賽事開始後開啟。",
         "waiting": "正在等待空閒伺服器。",
         "loading": "伺服器正在準備比賽。連線僅限雙方戰隊。",
         "playing": "正在比賽。連線僅限雙方戰隊。",

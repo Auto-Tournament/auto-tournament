@@ -769,6 +769,7 @@
     "overtime": "övertid",
     "spectator": {
       "steps": "Matchens steg",
+      "notStartedTitle": "Väntar på att turneringen startar",
       "step": {
         "veto": "Veto",
         "server": "Server",
@@ -778,6 +779,7 @@
       "serverTitle": "Server",
       "server": {
         "afterVeto": "En server väljs när vetot är klart.",
+        "notStarted": "Vetot öppnar när turneringen startar.",
         "waiting": "Väntar på en ledig server.",
         "loading": "Servern förbereder matchen. Anslutning är för de två lagen.",
         "playing": "Spelas nu. Anslutning är för de två lagen.",

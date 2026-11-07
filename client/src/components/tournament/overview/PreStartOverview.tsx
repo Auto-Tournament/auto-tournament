@@ -39,11 +39,15 @@ export function KeyDateTiles({
     .sort((a, b) => a.getTime() - b.getTime())[0];
   const start = startsAt ?? firstScheduled ?? null;
   const tiles: Array<{ key: string; label: string; value: ReactNode; note?: ReactNode }> = [];
+  // eslint-disable-next-line react-hooks/purity -- only needs to be right when the page renders
+  const overdue = start !== null && start.getTime() <= Date.now();
   if (start)
     tiles.push({
       key: 'starts',
-      label: t('overviewPage.keyDates.starts'),
+      // Past its start and not started (this board is only shown before the start).
+      label: overdue ? t('overviewPage.keyDates.wasDue') : t('overviewPage.keyDates.starts'),
       value: fmtDayTime(start),
+      note: overdue ? t('overviewPage.keyDates.waitingOrganizer') : undefined,
     });
   if (signup?.registrationOpen && signup.registrationClosesAt) {
     tiles.push({

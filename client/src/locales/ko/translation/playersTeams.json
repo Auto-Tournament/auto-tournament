@@ -769,6 +769,7 @@
     "overtime": "연장전",
     "spectator": {
       "steps": "경기 단계",
+      "notStartedTitle": "대회 시작 대기 중",
       "step": {
         "veto": "밴/픽",
         "server": "서버",
@@ -778,6 +779,7 @@
       "serverTitle": "서버",
       "server": {
         "afterVeto": "밴/픽이 끝나면 서버가 정해져요.",
+        "notStarted": "밴/픽은 대회가 시작되면 열려요.",
         "waiting": "빈 서버를 기다리는 중이에요.",
         "loading": "서버가 경기를 준비하고 있어요. 접속은 두 팀용이에요.",
         "playing": "지금 진행 중이에요. 접속은 두 팀용이에요.",

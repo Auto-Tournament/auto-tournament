@@ -124,7 +124,7 @@ export function MapPoolStep({
   const isShuffle = type === 'shuffle';
 
   // Use verification rules system
-  const mapValidation = validateMapCount(maps, type || '', format, veto);
+  const mapValidation = validateMapCount(maps, type || '', format, veto, mapMode);
   const shouldShowVetoError = requiresVeto(type || '', format, veto) && !mapValidation.valid;
 
   return (

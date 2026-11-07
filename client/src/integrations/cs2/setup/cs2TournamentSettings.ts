@@ -14,7 +14,7 @@ import type {
   TournamentSetupModel,
   TournamentSetupSummary,
 } from '../../types';
-import { requiresVeto, validateMapCount } from './mapRules';
+import { requiresVeto, validateMapCount, vetoMapRange } from './mapRules';
 import type { MapGameMode } from '../cs2.types';
 import { isMapMode } from '../maps/mapModes';
 import { changedLabels } from './matchPresetRules';
@@ -341,7 +341,13 @@ export const cs2TournamentSetup: TournamentSetupModel = {
     if (step === 'rules') {
       return cs2.maxRounds < 1 || cs2.maxRounds > 30 ? t('tournament.toasts.maxRoundsRange') : null;
     }
-    const validation = validateMapCount(cs2.maps, ctx.type, ctx.format, cs2.veto !== false);
+    const validation = validateMapCount(
+      cs2.maps,
+      ctx.type,
+      ctx.format,
+      cs2.veto !== false,
+      cs2.mapMode
+    );
     return validation.valid
       ? null
       : (validation.message ?? t('tournament.toasts.invalidMapSelection'));
@@ -374,10 +380,15 @@ export const cs2TournamentSetup: TournamentSetupModel = {
       checklist: [
         {
           key: 'maps',
+          // A Wingman veto takes 2–7 maps (mapRules): it said "7 maps for the veto" and
+          // never let a 4-map Wingman tournament start (Fjord, cs.sivert.io, 2026-11-07).
           label: requiresVeto(ctx.type, ctx.format, cs2.veto !== false)
-            ? t('tournament.setup.checklist.mapsVeto')
+            ? cs2.mapMode === 'wingman'
+              ? t('tournament.setup.checklist.mapsVetoRange', vetoMapRange(ctx.format, cs2.mapMode))
+              : t('tournament.setup.checklist.mapsVeto')
             : t('tournament.setup.checklist.maps'),
-          met: validateMapCount(cs2.maps, ctx.type, ctx.format, cs2.veto !== false).valid,
+          met: validateMapCount(cs2.maps, ctx.type, ctx.format, cs2.veto !== false, cs2.mapMode)
+            .valid,
         },
       ],
       review: [

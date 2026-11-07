@@ -769,6 +769,7 @@
     "overtime": "ekstraomganger",
     "spectator": {
       "steps": "Kampsteg",
+      "notStartedTitle": "Venter på at turneringen starter",
       "step": {
         "veto": "Veto",
         "server": "Server",
@@ -778,6 +779,7 @@
       "serverTitle": "Server",
       "server": {
         "afterVeto": "En server velges når vetoen er ferdig.",
+        "notStarted": "Kartvetoen åpner når turneringen starter.",
         "waiting": "Venter på en ledig server.",
         "loading": "Serveren gjør kampen klar. Bare de to lagene kan koble til.",
         "playing": "Spilles nå. Bare de to lagene kan koble til.",

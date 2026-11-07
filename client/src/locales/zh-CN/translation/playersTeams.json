@@ -770,6 +770,7 @@
     "overtime": "加时",
     "spectator": {
       "steps": "比赛步骤",
+      "notStartedTitle": "等待赛事开始",
       "step": {
         "veto": "禁选",
         "server": "服务器",
@@ -779,6 +780,7 @@
       "serverTitle": "服务器",
       "server": {
         "afterVeto": "禁选结束后会选定服务器。",
+        "notStarted": "禁选将在赛事开始后开启。",
         "waiting": "正在等待空闲服务器。",
         "loading": "服务器正在准备比赛。连接仅限双方战队。",
         "playing": "正在比赛。连接仅限双方战队。",

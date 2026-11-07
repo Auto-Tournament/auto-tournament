@@ -403,6 +403,7 @@
     },
     "when": {
       "starts": "Começa a {{date}}",
+      "overdue": "Devia ter começado a {{date}} · à espera do organizador",
       "finished": "Terminado",
       "finishedOn": "Terminou a {{date}}",
       "noDate": "Ainda sem data"

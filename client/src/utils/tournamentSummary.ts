@@ -67,7 +67,8 @@ export type TournamentWhen = { kind: 'live' } | { kind: 'text'; text: string; mu
 export function tournamentWhen(
   t: TFunction,
   tournament: TournamentSummary,
-  language: string
+  language: string,
+  now: number = Date.now()
 ): TournamentWhen {
   if (tournament.isLive) return { kind: 'live' };
   // Ended by an admin (scheduler.cancelTournament): not "starts" a date in the past.
@@ -84,10 +85,14 @@ export function tournamentWhen(
     };
   }
   if (tournament.startsAt) {
+    // Its start passed and nobody started it: not "Starts" a past date.
+    const overdue = tournament.startsAt <= now;
     return {
       kind: 'text',
       muted: false,
-      text: t('browsePage.when.starts', { date: formatDayTime(tournament.startsAt, language) }),
+      text: t(overdue ? 'browsePage.when.overdue' : 'browsePage.when.starts', {
+        date: formatDayTime(tournament.startsAt, language),
+      }),
     };
   }
   return { kind: 'text', muted: true, text: t('browsePage.when.noDate') };

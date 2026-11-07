@@ -770,6 +770,7 @@
     "overtime": "verlenging",
     "spectator": {
       "steps": "Wedstrijdstappen",
+      "notStartedTitle": "Wacht tot het toernooi begint",
       "step": {
         "veto": "Veto",
         "server": "Server",
@@ -779,6 +780,7 @@
       "serverTitle": "Server",
       "server": {
         "afterVeto": "Er wordt een server gekozen als het veto klaar is.",
+        "notStarted": "De veto opent als het toernooi begint.",
         "waiting": "Wacht op een vrije server.",
         "loading": "De server maakt de wedstrijd klaar. Verbinden is voor de twee teams.",
         "playing": "Wordt nu gespeeld. Verbinden is voor de twee teams.",
