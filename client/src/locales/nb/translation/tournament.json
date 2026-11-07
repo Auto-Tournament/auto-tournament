@@ -1614,6 +1614,8 @@
     "openCloses": "Påmeldingen er åpen · stenger {{when}}",
     "closed": "Påmeldingen er stengt",
     "notOpenTitle": "Påmeldingen er ikke åpen",
+    "endedTitle": "Ingen flere påmeldinger",
+    "endedBody": "Den stengte {{when}}.",
     "fullTitle": "Alle plassene er tatt",
     "spotsLeft_one": "{{count}} av {{max}} plasser igjen. Kapteinene velger startspillere og innbyttere.",
     "spotsLeft_other": "{{count}} av {{max}} plasser igjen. Kapteinene velger startspillere og innbyttere.",

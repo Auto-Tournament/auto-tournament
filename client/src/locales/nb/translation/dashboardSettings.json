@@ -737,6 +737,7 @@
       "live": "Pågår",
       "finished": "Ferdig",
       "signup": "Påmelding åpen",
+      "closed": "Påmelding stengt",
       "draft": "Utkast"
     },
     "front": {

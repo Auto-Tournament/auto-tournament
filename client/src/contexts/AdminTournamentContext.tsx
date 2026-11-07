@@ -14,7 +14,10 @@ export interface TournamentListItem {
   bannerUrl: string | null;
   entries: number;
   maxEntries: number | null;
+  /** The organizer's switch; stays on after the deadline. */
   registrationOpen: boolean;
+  /** A team can sign up right now (set up, switched on, inside its window). */
+  signupOpenNow?: boolean;
   registrationClosesAt: number | null;
   startsAt: number | null;
   startedAt: number | null;

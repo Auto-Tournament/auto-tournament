@@ -118,7 +118,6 @@ export function SignUpHero({
   onRoster: boolean;
 }) {
   const { t } = useTranslation();
-  if (overlap && signup?.registrationOpen) return <OverlapHero overlap={overlap} />;
   const startsAt = tournament.settings?.startsAt
     ? new Date(tournament.settings.startsAt).getTime()
     : null;
@@ -136,6 +135,13 @@ export function SignUpHero({
       : NaN;
   // Switched on, but closed until its opening time (Setup › Teams › Sign-up opens).
   const notYet = Number.isFinite(opensAt) && opensAt > now;
+  const closesAt =
+    signup?.registrationOpen && signup.registrationClosesAt
+      ? Date.parse(signup.registrationClosesAt)
+      : NaN;
+  // Switched on and its deadline has passed: teams signed up, the organizer did not add them.
+  const ended = Number.isFinite(closesAt) && closesAt <= now;
+  if (overlap && open) return <OverlapHero overlap={overlap} />;
   const req = [
     {
       ok: hasSteam,
@@ -168,18 +174,22 @@ export function SignUpHero({
           ? t('preStart.opensTitle', { when: fmtWeekdayTime(opensAt) })
           : canSignUp
             ? t('signup.cta')
-            : open && left === 0
-              ? t('preStart.fullTitle')
-              : t('preStart.notOpenTitle')
+            : ended
+              ? t('preStart.endedTitle')
+              : open && left === 0
+                ? t('preStart.fullTitle')
+                : t('preStart.notOpenTitle')
       }
       body={
         notYet
           ? t('preStart.opensIn', { time: fmtCountdown(opensAt, now) })
-          : left !== null && left > 0
-            ? t('preStart.spotsLeft', { count: left, max })
-            : open && left === null
-              ? t('preStart.captainsPick')
-              : t('preStart.byOrganizer')
+          : ended
+            ? t('preStart.endedBody', { when: fmtDayTime(closesAt) })
+            : open && left !== null && left > 0
+              ? t('preStart.spotsLeft', { count: left, max })
+              : open
+                ? t('preStart.captainsPick')
+                : t('preStart.byOrganizer')
       }
       side={
         <>

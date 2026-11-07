@@ -195,7 +195,20 @@ async function rejectOverlap(tournament: TournamentRow, steamIds: string[]): Pro
   }
 }
 
-/** Sign-up is open now: switched on, past its opening time, before its closing time. */
+/**
+ * Sign-up is open now: switched on, past its opening time, before its closing time.
+ * The switch alone stays on after the deadline, so anything that says "sign-up open"
+ * to a player (lists, share cards) asks this, not `registrationOpen`.
+ */
+export function signupOpenNow(win: SignupWindow, now = Date.now()): boolean {
+  return (
+    win.registrationOpen &&
+    !(win.registrationOpensAt && !isPast(win.registrationOpensAt, now)) &&
+    !isPast(win.registrationClosesAt, now)
+  );
+}
+
+/** Throws the reason sign-up is not open now (see signupOpenNow). */
 function requireSignupOpen(win: SignupWindow): void {
   if (!win.registrationOpen) throw new SignupError(409, 'Sign-up is not open.', 'closed');
   if (win.registrationOpensAt && !isPast(win.registrationOpensAt))

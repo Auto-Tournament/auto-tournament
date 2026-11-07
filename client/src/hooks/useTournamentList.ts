@@ -41,7 +41,10 @@ export interface TournamentSummary {
   bannerUrl?: string | null;
   /** A map picture chosen instead of an uploaded banner. */
   bannerMap?: string | null;
+  /** The organizer's switch. Stays on after the deadline: use `signupOpenNow` for "Sign-up open". */
   registrationOpen?: boolean;
+  /** A team can sign up right now (set up, switched on, inside its window). */
+  signupOpenNow?: boolean;
   /** Teams signed up (players for a shuffle), against the cap when there is one. */
   entries?: number;
   maxEntries?: number | null;
@@ -65,6 +68,7 @@ interface ListedTournament {
   entries: number;
   maxEntries: number | null;
   registrationOpen: boolean;
+  signupOpenNow?: boolean;
   startsAt: number | null;
   startedAt: number | null;
   completedAt: number | null;
@@ -97,6 +101,7 @@ function fromListed(t: ListedTournament): TournamentSummary {
     bannerUrl: t.bannerUrl,
     bannerMap: t.bannerMap ?? null,
     registrationOpen: t.registrationOpen,
+    signupOpenNow: t.signupOpenNow === true,
     entries: t.entries,
     maxEntries: t.maxEntries,
     currentRound: t.currentRound ?? null,

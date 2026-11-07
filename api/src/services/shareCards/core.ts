@@ -12,7 +12,7 @@ import { DEFAULT_GAME, type GameIntegration } from '../../integrations/types';
 import { listIntegrations } from '../../integrations/registry';
 import { tournamentService } from '../tournamentService';
 import { tournamentBannerService } from '../tournamentBannerService';
-import { tournamentSignupService } from '../tournamentSignupService';
+import { signupOpenNow, tournamentSignupService } from '../tournamentSignupService';
 import { moderationOf } from '../playerModeration';
 import { ratingGame } from '../gameRatings';
 import { fromBytes, fromUrl } from './images';
@@ -519,7 +519,7 @@ async function tournamentFacts(id: number) {
   if (t.status === 'in_progress') badge = 'Live now';
   else if (t.status === 'setup') {
     const window = await tournamentSignupService.window(id).catch(() => null);
-    badge = window?.registrationOpen ? 'Sign-up open' : 'Coming up';
+    badge = window && signupOpenNow(window) ? 'Sign-up open' : 'Coming up';
   }
   return { t, game, sub, badge };
 }

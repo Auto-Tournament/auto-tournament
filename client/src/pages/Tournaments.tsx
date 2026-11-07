@@ -38,7 +38,9 @@ const { color } = tokens;
 function statusTone(t: TournamentListItem): { label: string; fg: string; bg: string } {
   if (t.status === 'in_progress') return { label: 'live', fg: color.live, bg: color.paper3 };
   if (t.status === 'completed') return { label: 'finished', fg: color.medalGold, bg: color.paper3 };
-  if (t.registrationOpen) return { label: 'signup', fg: color.accent, bg: color.paper3 };
+  if (t.signupOpenNow) return { label: 'signup', fg: color.accent, bg: color.paper3 };
+  // Switched on but outside its window (past the deadline, or not opened yet): public, not a draft.
+  if (t.registrationOpen) return { label: 'closed', fg: color.ink2, bg: color.paper3 };
   return { label: 'draft', fg: color.ink2, bg: color.paper3 };
 }
 

@@ -1613,6 +1613,8 @@
     "openCloses": "Sign-up is open · closes {{when}}",
     "closed": "Sign-up is closed",
     "notOpenTitle": "Sign-up is not open",
+    "endedTitle": "No more sign-ups",
+    "endedBody": "It closed {{when}}.",
     "fullTitle": "All spots are taken",
     "spotsLeft_one": "{{count}} of {{max}} spots left. Captains pick the starters and subs.",
     "spotsLeft_other": "{{count}} of {{max}} spots left. Captains pick the starters and subs.",
