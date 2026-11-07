@@ -1,6 +1,6 @@
 {
   "name": "auto-tournament",
-  "version": "3.0.9",
+  "version": "3.0.10",
   "description": "Web app for running CS2 tournaments, with CS2 as the built-in game module",
   "repository": {
     "type": "git",
