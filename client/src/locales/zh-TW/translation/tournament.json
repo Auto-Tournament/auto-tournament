@@ -633,6 +633,7 @@
         "players_one": "至少 {{count}} 名玩家報名",
         "players_other": "至少 {{count}} 名玩家報名",
         "mapsVeto": "7 張地圖用於禁選",
+        "mapsVetoRange": "{{min}}–{{max}} 張地圖用於禁選",
         "maps": "至少一張地圖",
         "created": "賽事已建立",
         "saved": "更改已儲存"
@@ -1028,6 +1029,8 @@
     "allMatches": "所有比賽",
     "keyDates": {
       "starts": "開始",
+      "wasDue": "原定開始",
+      "waitingOrganizer": "等待主辦方",
       "lastOnSchedule": "日程最後一項",
       "teams": "戰隊"
     },

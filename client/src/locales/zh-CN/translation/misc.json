@@ -399,6 +399,7 @@
     },
     "when": {
       "starts": "{{date}} 开始",
+      "overdue": "原定 {{date}} 开始 · 等待主办方",
       "finished": "已结束",
       "finishedOn": "{{date}} 结束",
       "noDate": "尚无日期"

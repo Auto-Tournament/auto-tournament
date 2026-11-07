@@ -770,6 +770,7 @@
     "overtime": "Verlängerung",
     "spectator": {
       "steps": "Match-Schritte",
+      "notStartedTitle": "Wartet auf den Turnierstart",
       "step": {
         "veto": "Veto",
         "server": "Server",
@@ -779,6 +780,7 @@
       "serverTitle": "Server",
       "server": {
         "afterVeto": "Ein Server wird gewählt, wenn das Veto fertig ist.",
+        "notStarted": "Das Veto öffnet, wenn das Turnier startet.",
         "waiting": "Wartet auf einen freien Server.",
         "loading": "Der Server bereitet das Match vor. Verbinden können sich nur die beiden Teams.",
         "playing": "Wird gerade gespielt. Verbinden können sich nur die beiden Teams.",

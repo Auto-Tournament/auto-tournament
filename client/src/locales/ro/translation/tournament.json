@@ -651,6 +651,7 @@
         "players_one": "Cel puțin {{count}} jucător înscris",
         "players_other": "Cel puțin {{count}} de jucători înscriși",
         "mapsVeto": "7 hărți pentru veto",
+        "mapsVetoRange": "{{min}}–{{max}} hărți pentru veto",
         "maps": "Cel puțin o hartă",
         "created": "Turneu creat",
         "saved": "Modificări salvate",
@@ -1053,6 +1054,8 @@
     "allMatches": "Toate meciurile",
     "keyDates": {
       "starts": "Începe",
+      "wasDue": "Trebuia să înceapă",
+      "waitingOrganizer": "Așteaptă organizatorul",
       "lastOnSchedule": "Ultimul în program",
       "teams": "Echipe"
     },

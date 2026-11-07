@@ -633,6 +633,7 @@
         "players_one": "Minstens {{count}} speler ingeschreven",
         "players_other": "Minstens {{count}} spelers ingeschreven",
         "mapsVeto": "7 maps voor het veto",
+        "mapsVetoRange": "{{min}}–{{max}} maps voor het veto",
         "maps": "Minstens één map",
         "created": "Toernooi gemaakt",
         "saved": "Wijzigingen opgeslagen"
@@ -1029,6 +1030,8 @@
     "allMatches": "Alle wedstrijden",
     "keyDates": {
       "starts": "Begint",
+      "wasDue": "Had moeten beginnen",
+      "waitingOrganizer": "Wacht op de organisator",
       "lastOnSchedule": "Laatste op het programma",
       "teams": "Teams"
     },

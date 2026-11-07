@@ -633,6 +633,7 @@
         "players_one": "Legalább {{count}} nevezett játékos",
         "players_other": "Legalább {{count}} nevezett játékos",
         "mapsVeto": "7 pálya a vetóhoz",
+        "mapsVetoRange": "{{min}}–{{max}} pálya a vetóhoz",
         "maps": "Legalább egy pálya",
         "created": "Verseny létrehozva",
         "saved": "Változások mentve"
@@ -1028,6 +1029,8 @@
     "allMatches": "Összes meccs",
     "keyDates": {
       "starts": "Kezdés",
+      "wasDue": "Kezdődnie kellett volna",
+      "waitingOrganizer": "A szervezőre vár",
       "lastOnSchedule": "Utolsó a menetrendben",
       "teams": "Csapatok"
     },

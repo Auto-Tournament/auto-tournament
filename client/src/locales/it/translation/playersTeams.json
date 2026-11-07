@@ -789,6 +789,7 @@
     "overtime": "supplementari",
     "spectator": {
       "steps": "Fasi della partita",
+      "notStartedTitle": "In attesa dell'inizio del torneo",
       "step": {
         "veto": "Veto",
         "server": "Server",
@@ -798,6 +799,7 @@
       "serverTitle": "Server",
       "server": {
         "afterVeto": "Un server viene scelto quando il veto è concluso.",
+        "notStarted": "Il veto si apre quando inizia il torneo.",
         "waiting": "In attesa di un server libero.",
         "loading": "Il server sta preparando la partita. La connessione è per le due squadre.",
         "playing": "In corso ora. La connessione è per le due squadre.",

@@ -769,6 +769,7 @@
     "overtime": "overtid",
     "spectator": {
       "steps": "Kampens trin",
+      "notStartedTitle": "Venter på, at turneringen starter",
       "step": {
         "veto": "Veto",
         "server": "Server",
@@ -778,6 +779,7 @@
       "serverTitle": "Server",
       "server": {
         "afterVeto": "En server vælges, når vetoet er færdigt.",
+        "notStarted": "Vetoet åbner, når turneringen starter.",
         "waiting": "Venter på en ledig server.",
         "loading": "Serveren gør kampen klar. Forbindelse er for de to hold.",
         "playing": "Spilles nu. Forbindelse er for de to hold.",

@@ -396,6 +396,7 @@
     },
     "when": {
       "starts": "Starts {{date}}",
+      "overdue": "Was due {{date}} · waiting for the organizer",
       "finished": "Finished",
       "finishedOn": "Finished {{date}}",
       "noDate": "No date yet"

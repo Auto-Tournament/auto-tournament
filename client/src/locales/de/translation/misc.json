@@ -399,6 +399,7 @@
     },
     "when": {
       "starts": "Beginnt {{date}}",
+      "overdue": "Sollte am {{date}} beginnen · wartet auf den Veranstalter",
       "finished": "Beendet",
       "finishedOn": "Beendet am {{date}}",
       "noDate": "Noch kein Termin"

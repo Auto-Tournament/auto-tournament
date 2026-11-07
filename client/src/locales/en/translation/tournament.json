@@ -633,6 +633,7 @@
         "players_one": "At least {{count}} player signed up",
         "players_other": "At least {{count}} players signed up",
         "mapsVeto": "7 maps for the veto",
+        "mapsVetoRange": "{{min}}–{{max}} maps for the veto",
         "maps": "At least one map",
         "created": "Tournament created",
         "saved": "Changes saved"
@@ -1028,6 +1029,8 @@
     "allMatches": "All matches",
     "keyDates": {
       "starts": "Starts",
+      "wasDue": "Was due to start",
+      "waitingOrganizer": "Waiting for the organizer",
       "lastOnSchedule": "Last on the schedule",
       "teams": "Teams"
     },

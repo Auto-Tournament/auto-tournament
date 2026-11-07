@@ -396,6 +396,7 @@
     },
     "when": {
       "starts": "{{date}} 開始",
+      "overdue": "{{date}} に開始予定 · 主催者の開始待ち",
       "finished": "終了",
       "finishedOn": "{{date}} に終了",
       "noDate": "日程未定"

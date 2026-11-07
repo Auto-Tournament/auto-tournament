@@ -769,6 +769,7 @@
     "overtime": "overtime",
     "spectator": {
       "steps": "Match steps",
+      "notStartedTitle": "Waiting for the tournament to start",
       "step": {
         "veto": "Veto",
         "server": "Server",
@@ -778,6 +779,7 @@
       "serverTitle": "Server",
       "server": {
         "afterVeto": "A server is picked when the veto is done.",
+        "notStarted": "The veto opens when the tournament starts.",
         "waiting": "Waiting for a free server.",
         "loading": "The server is getting the match ready. Connect is for the two teams.",
         "playing": "Being played now. Connect is for the two teams.",

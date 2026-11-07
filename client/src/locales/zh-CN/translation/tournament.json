@@ -633,6 +633,7 @@
         "players_one": "至少 {{count}} 名玩家报名",
         "players_other": "至少 {{count}} 名玩家报名",
         "mapsVeto": "7 张地图用于禁选",
+        "mapsVetoRange": "{{min}}–{{max}} 张地图用于禁选",
         "maps": "至少一张地图",
         "created": "赛事已创建",
         "saved": "更改已保存"
@@ -1029,6 +1030,8 @@
     "allMatches": "所有比赛",
     "keyDates": {
       "starts": "开始",
+      "wasDue": "原定开始",
+      "waitingOrganizer": "等待主办方",
       "lastOnSchedule": "日程最后一项",
       "teams": "战队"
     },

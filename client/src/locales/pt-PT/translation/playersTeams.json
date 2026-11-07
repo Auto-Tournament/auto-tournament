@@ -789,6 +789,7 @@
     "overtime": "prolongamento",
     "spectator": {
       "steps": "Etapas do jogo",
+      "notStartedTitle": "À espera do início do torneio",
       "step": {
         "veto": "Veto",
         "server": "Servidor",
@@ -798,6 +799,7 @@
       "serverTitle": "Servidor",
       "server": {
         "afterVeto": "É escolhido um servidor quando o veto terminar.",
+        "notStarted": "O veto abre quando o torneio começar.",
         "waiting": "À espera de um servidor livre.",
         "loading": "O servidor está a preparar o jogo. A ligação é para as duas equipas.",
         "playing": "A ser jogado agora. A ligação é para as duas equipas.",

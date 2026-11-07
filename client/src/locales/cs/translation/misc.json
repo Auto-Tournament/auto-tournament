@@ -404,6 +404,7 @@
     },
     "when": {
       "starts": "Začíná {{date}}",
+      "overdue": "Měl začít {{date}} · čeká se na organizátora",
       "finished": "Dokončeno",
       "finishedOn": "Dokončeno {{date}}",
       "noDate": "Zatím bez termínu"

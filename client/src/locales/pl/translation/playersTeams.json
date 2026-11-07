@@ -807,6 +807,7 @@
     "overtime": "dogrywka",
     "spectator": {
       "steps": "Etapy meczu",
+      "notStartedTitle": "Czeka na start turnieju",
       "step": {
         "veto": "Weto",
         "server": "Serwer",
@@ -816,6 +817,7 @@
       "serverTitle": "Serwer",
       "server": {
         "afterVeto": "Serwer zostanie wybrany po zakończeniu weta.",
+        "notStarted": "Weto otworzy się, gdy turniej się zacznie.",
         "waiting": "Czeka na wolny serwer.",
         "loading": "Serwer przygotowuje mecz. Połączenie jest dla dwóch drużyn.",
         "playing": "Trwa rozgrywka. Połączenie jest dla dwóch drużyn.",

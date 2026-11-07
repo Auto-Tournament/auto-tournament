@@ -769,6 +769,7 @@
     "overtime": "hiệp phụ",
     "spectator": {
       "steps": "Các bước của trận",
+      "notStartedTitle": "Đang chờ giải đấu bắt đầu",
       "step": {
         "veto": "Veto",
         "server": "Máy chủ",
@@ -778,6 +779,7 @@
       "serverTitle": "Máy chủ",
       "server": {
         "afterVeto": "Máy chủ được chọn khi veto xong.",
+        "notStarted": "Veto mở khi giải đấu bắt đầu.",
         "waiting": "Đang chờ máy chủ trống.",
         "loading": "Máy chủ đang chuẩn bị trận. Kết nối dành cho hai đội.",
         "playing": "Đang thi đấu. Kết nối dành cho hai đội.",

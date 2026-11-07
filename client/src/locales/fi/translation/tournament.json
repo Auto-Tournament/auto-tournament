@@ -633,6 +633,7 @@
         "players_one": "Vähintään {{count}} pelaaja ilmoittautunut",
         "players_other": "Vähintään {{count}} pelaajaa ilmoittautunut",
         "mapsVeto": "7 karttaa vetoa varten",
+        "mapsVetoRange": "{{min}}–{{max}} karttaa vetoa varten",
         "maps": "Vähintään yksi kartta",
         "created": "Turnaus luotu",
         "saved": "Muutokset tallennettu"
@@ -1028,6 +1029,8 @@
     "allMatches": "Kaikki ottelut",
     "keyDates": {
       "starts": "Alkaa",
+      "wasDue": "Piti alkaa",
+      "waitingOrganizer": "Odottaa järjestäjää",
       "lastOnSchedule": "Viimeisenä aikataulussa",
       "teams": "Joukkueet"
     },

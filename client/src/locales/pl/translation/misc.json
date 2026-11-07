@@ -407,6 +407,7 @@
     },
     "when": {
       "starts": "Start {{date}}",
+      "overdue": "Miał się zacząć {{date}} · czeka na organizatora",
       "finished": "Zakończony",
       "finishedOn": "Zakończony {{date}}",
       "noDate": "Brak daty"

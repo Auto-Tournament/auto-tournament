@@ -633,6 +633,7 @@
         "players_one": "Поне {{count}} записан играч",
         "players_other": "Поне {{count}} записани играча",
         "mapsVeto": "7 карти за ветото",
+        "mapsVetoRange": "{{min}}–{{max}} карти за ветото",
         "maps": "Поне една карта",
         "created": "Турнирът е създаден",
         "saved": "Промените са запазени"
@@ -1028,6 +1029,8 @@
     "allMatches": "Всички мачове",
     "keyDates": {
       "starts": "Започва",
+      "wasDue": "Трябваше да започне",
+      "waitingOrganizer": "Чака организатора",
       "lastOnSchedule": "Последно в програмата",
       "teams": "Отбори"
     },

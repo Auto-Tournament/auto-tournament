@@ -396,6 +396,7 @@
     },
     "when": {
       "starts": "เริ่ม {{date}}",
+      "overdue": "ควรเริ่ม {{date}} · รอผู้จัด",
       "finished": "จบแล้ว",
       "finishedOn": "จบเมื่อ {{date}}",
       "noDate": "ยังไม่มีวันที่"

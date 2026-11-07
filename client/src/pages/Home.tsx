@@ -200,7 +200,13 @@ export default function Home() {
   const hero = quiet ? upcoming[0] : live[0];
   const restUpcoming = quiet ? upcoming.slice(1) : upcoming;
 
-  const when = (ms?: number) => (ms ? fmtDayTime(ms) : null);
+  // A start that passed without the organizer starting it: say so, not a date in the past
+  // under "Coming up" (cs.sivert.io, 2026-11-07: Midnight Sun Open, "Sat 31 Oct").
+  const when = (ms?: number) => {
+    if (!ms) return null;
+    if (ms <= Date.now()) return t('browsePage.when.overdue', { date: fmtDayTime(ms) });
+    return fmtDayTime(ms);
+  };
 
   // The page keeps one shape whatever is on (front page drafts, board 1):
   // the big card and its side column, three sign-up cards, three champions.

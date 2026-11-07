@@ -396,6 +396,7 @@
     },
     "when": {
       "starts": "Başlangıç {{date}}",
+      "overdue": "{{date}} başlaması gerekiyordu · organizatör bekleniyor",
       "finished": "Bitti",
       "finishedOn": "Bitiş {{date}}",
       "noDate": "Henüz tarih yok"

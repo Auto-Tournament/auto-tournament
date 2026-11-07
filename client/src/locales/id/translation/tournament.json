@@ -633,6 +633,7 @@
         "players_one": "Minimal {{count}} pemain terdaftar",
         "players_other": "Minimal {{count}} pemain terdaftar",
         "mapsVeto": "7 peta untuk veto",
+        "mapsVetoRange": "{{min}}–{{max}} peta untuk veto",
         "maps": "Minimal satu peta",
         "created": "Turnamen dibuat",
         "saved": "Perubahan tersimpan"
@@ -1028,6 +1029,8 @@
     "allMatches": "Semua pertandingan",
     "keyDates": {
       "starts": "Mulai",
+      "wasDue": "Seharusnya dimulai",
+      "waitingOrganizer": "Menunggu penyelenggara",
       "lastOnSchedule": "Terakhir di jadwal",
       "teams": "Tim"
     },

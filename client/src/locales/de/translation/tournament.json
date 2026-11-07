@@ -633,6 +633,7 @@
         "players_one": "Mindestens {{count}} Spieler angemeldet",
         "players_other": "Mindestens {{count}} Spieler angemeldet",
         "mapsVeto": "7 Karten für das Veto",
+        "mapsVetoRange": "{{min}}–{{max}} Karten für das Veto",
         "maps": "Mindestens eine Karte",
         "created": "Turnier erstellt",
         "saved": "Änderungen gespeichert"
@@ -1029,6 +1030,8 @@
     "allMatches": "Alle Matches",
     "keyDates": {
       "starts": "Beginnt",
+      "wasDue": "Sollte beginnen",
+      "waitingOrganizer": "Wartet auf den Veranstalter",
       "lastOnSchedule": "Zuletzt im Zeitplan",
       "teams": "Teams"
     },

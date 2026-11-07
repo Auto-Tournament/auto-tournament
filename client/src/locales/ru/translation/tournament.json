@@ -669,6 +669,7 @@
         "players_one": "Записан хотя бы {{count}} игрок",
         "players_other": "Записаны хотя бы {{count}} игрока",
         "mapsVeto": "7 карт для вето",
+        "mapsVetoRange": "{{min}}–{{max}} карт для вето",
         "maps": "Хотя бы одна карта",
         "created": "Турнир создан",
         "saved": "Изменения сохранены",
@@ -1078,6 +1079,8 @@
     "allMatches": "Все матчи",
     "keyDates": {
       "starts": "Начало",
+      "wasDue": "Должен был начаться",
+      "waitingOrganizer": "Ждёт организатора",
       "lastOnSchedule": "Последнее в расписании",
       "teams": "Команды"
     },

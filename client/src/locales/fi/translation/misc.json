@@ -396,6 +396,7 @@
     },
     "when": {
       "starts": "Alkaa {{date}}",
+      "overdue": "Piti alkaa {{date}} · odottaa järjestäjää",
       "finished": "Päättynyt",
       "finishedOn": "Päättyi {{date}}",
       "noDate": "Ei vielä päivämäärää"

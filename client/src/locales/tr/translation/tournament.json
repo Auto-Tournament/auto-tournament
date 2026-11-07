@@ -633,6 +633,7 @@
         "players_one": "En az {{count}} oyuncu kaydoldu",
         "players_other": "En az {{count}} oyuncu kaydoldu",
         "mapsVeto": "Veto için 7 harita",
+        "mapsVetoRange": "Veto için {{min}}–{{max}} harita",
         "maps": "En az bir harita",
         "created": "Turnuva oluşturuldu",
         "saved": "Değişiklikler kaydedildi"
@@ -1028,6 +1029,8 @@
     "allMatches": "Tüm maçlar",
     "keyDates": {
       "starts": "Başlangıç",
+      "wasDue": "Başlaması gerekiyordu",
+      "waitingOrganizer": "Organizatör bekleniyor",
       "lastOnSchedule": "Programdaki son maç",
       "teams": "Takımlar"
     },

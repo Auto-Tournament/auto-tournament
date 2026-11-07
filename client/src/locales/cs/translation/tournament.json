@@ -669,6 +669,7 @@
         "players_one": "Přihlášen aspoň {{count}} hráč",
         "players_other": "Přihlášeno aspoň {{count}} hráčů",
         "mapsVeto": "7 map pro veto",
+        "mapsVetoRange": "{{min}}–{{max}} map pro veto",
         "maps": "Aspoň jedna mapa",
         "created": "Turnaj vytvořen",
         "saved": "Změny uloženy",
@@ -1078,6 +1079,8 @@
     "allMatches": "Všechny zápasy",
     "keyDates": {
       "starts": "Začíná",
+      "wasDue": "Měl začít",
+      "waitingOrganizer": "Čeká se na organizátora",
       "lastOnSchedule": "Poslední v harmonogramu",
       "teams": "Týmy"
     },

@@ -769,6 +769,7 @@
     "overtime": "hosszabbítás",
     "spectator": {
       "steps": "A meccs lépései",
+      "notStartedTitle": "A verseny kezdésére vár",
       "step": {
         "veto": "Veto",
         "server": "Szerver",
@@ -778,6 +779,7 @@
       "serverTitle": "Szerver",
       "server": {
         "afterVeto": "A szervert a veto után választjuk ki.",
+        "notStarted": "A veto a verseny kezdetekor nyílik.",
         "waiting": "Várakozás szabad szerverre.",
         "loading": "A szerver előkészíti a meccset. A csatlakozás a két csapatnak szól.",
         "playing": "Most játsszák. A csatlakozás a két csapatnak szól.",

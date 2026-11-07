@@ -396,6 +396,7 @@
     },
     "when": {
       "starts": "Bắt đầu {{date}}",
+      "overdue": "Lẽ ra bắt đầu {{date}} · đang chờ ban tổ chức",
       "finished": "Đã kết thúc",
       "finishedOn": "Kết thúc {{date}}",
       "noDate": "Chưa có ngày"

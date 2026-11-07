@@ -651,6 +651,7 @@
         "players_one": "Almeno {{count}} giocatore iscritto",
         "players_other": "Almeno {{count}} giocatori iscritti",
         "mapsVeto": "7 mappe per il veto",
+        "mapsVetoRange": "{{min}}–{{max}} mappe per il veto",
         "maps": "Almeno una mappa",
         "created": "Torneo creato",
         "saved": "Modifiche salvate",
@@ -1054,6 +1055,8 @@
     "allMatches": "Tutte le partite",
     "keyDates": {
       "starts": "Inizio",
+      "wasDue": "Doveva iniziare",
+      "waitingOrganizer": "In attesa dell'organizzatore",
       "lastOnSchedule": "Ultimo in programma",
       "teams": "Squadre"
     },

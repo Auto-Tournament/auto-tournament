@@ -634,6 +634,7 @@
         "players_one": "Minst {{count}} spiller påmeldt",
         "players_other": "Minst {{count}} spillere påmeldt",
         "mapsVeto": "7 kart til vetoen",
+        "mapsVetoRange": "{{min}}–{{max}} kart til vetoen",
         "maps": "Minst ett kart",
         "created": "Turneringen er opprettet",
         "saved": "Endringene er lagret"
@@ -1029,6 +1030,8 @@
     "allMatches": "Alle kamper",
     "keyDates": {
       "starts": "Starter",
+      "wasDue": "Skulle ha startet",
+      "waitingOrganizer": "Venter på arrangøren",
       "lastOnSchedule": "Sist på programmet",
       "teams": "Lag"
     },

@@ -789,6 +789,7 @@
     "overtime": "prolongations",
     "spectator": {
       "steps": "Étapes du match",
+      "notStartedTitle": "En attente du début du tournoi",
       "step": {
         "veto": "Veto",
         "server": "Serveur",
@@ -798,6 +799,7 @@
       "serverTitle": "Serveur",
       "server": {
         "afterVeto": "Un serveur est choisi une fois le veto terminé.",
+        "notStarted": "Le veto s’ouvre quand le tournoi commence.",
         "waiting": "En attente d’un serveur libre.",
         "loading": "Le serveur prépare le match. La connexion est réservée aux deux équipes.",
         "playing": "En cours. La connexion est réservée aux deux équipes.",

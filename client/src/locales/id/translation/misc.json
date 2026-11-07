@@ -396,6 +396,7 @@
     },
     "when": {
       "starts": "Mulai {{date}}",
+      "overdue": "Seharusnya dimulai {{date}} · menunggu penyelenggara",
       "finished": "Selesai",
       "finishedOn": "Selesai {{date}}",
       "noDate": "Belum ada tanggal"

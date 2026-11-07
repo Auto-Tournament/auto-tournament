@@ -769,6 +769,7 @@
     "overtime": "延長戦",
     "spectator": {
       "steps": "試合の流れ",
+      "notStartedTitle": "トーナメントの開始待ち",
       "step": {
         "veto": "BAN/ピック",
         "server": "サーバー",
@@ -778,6 +779,7 @@
       "serverTitle": "サーバー",
       "server": {
         "afterVeto": "BAN/ピックが終わるとサーバーが選ばれます。",
+        "notStarted": "BAN/ピックはトーナメント開始後に始まります。",
         "waiting": "空きサーバーを待っています。",
         "loading": "サーバーが試合を準備中です。接続は両チーム用です。",
         "playing": "現在プレイ中です。接続は両チーム用です。",
