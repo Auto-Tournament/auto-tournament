@@ -1659,6 +1659,8 @@
     "openCloses": "Inscriptions ouvertes · fermeture {{when}}",
     "closed": "Les inscriptions sont fermées",
     "notOpenTitle": "Les inscriptions ne sont pas ouvertes",
+    "endedTitle": "Plus d’inscriptions possibles",
+    "endedBody": "Fermées : {{when}}.",
     "fullTitle": "Toutes les places sont prises",
     "spotsLeft_one": "{{count}} place restante sur {{max}}. Les capitaines choisissent titulaires et remplaçants.",
     "spotsLeft_other": "{{count}} places restantes sur {{max}}. Les capitaines choisissent titulaires et remplaçants.",

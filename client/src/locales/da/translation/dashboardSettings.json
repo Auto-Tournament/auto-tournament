@@ -737,6 +737,7 @@
       "live": "Live",
       "finished": "Færdig",
       "signup": "Tilmelding åben",
+      "closed": "Tilmelding lukket",
       "draft": "Kladde"
     },
     "front": {

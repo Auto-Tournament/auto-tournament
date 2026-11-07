@@ -737,6 +737,7 @@
       "live": "进行中",
       "finished": "已结束",
       "signup": "报名中",
+      "closed": "报名已截止",
       "draft": "草稿"
     },
     "front": {

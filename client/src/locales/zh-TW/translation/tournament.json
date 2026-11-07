@@ -1613,6 +1613,8 @@
     "openCloses": "報名已開放 · {{when}} 截止",
     "closed": "報名已截止",
     "notOpenTitle": "報名未開放",
+    "endedTitle": "報名已結束",
+    "endedBody": "截止時間：{{when}}",
     "fullTitle": "名額已滿",
     "spotsLeft_one": "剩餘 {{count}}/{{max}} 個名額。隊長選擇首發和替補。",
     "spotsLeft_other": "剩餘 {{count}}/{{max}} 個名額。隊長選擇首發和替補。",

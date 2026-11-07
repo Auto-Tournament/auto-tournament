@@ -759,6 +759,7 @@
       "live": "Na żywo",
       "finished": "Zakończony",
       "signup": "Zapisy otwarte",
+      "closed": "Zapisy zamknięte",
       "draft": "Szkic"
     },
     "front": {

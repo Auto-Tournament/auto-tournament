@@ -737,6 +737,7 @@
       "live": "Trực tiếp",
       "finished": "Đã kết thúc",
       "signup": "Đang mở đăng ký",
+      "closed": "Đã đóng đăng ký",
       "draft": "Bản nháp"
     },
     "front": {

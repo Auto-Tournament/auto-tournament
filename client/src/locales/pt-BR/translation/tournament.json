@@ -1659,6 +1659,8 @@
     "openCloses": "As inscrições estão abertas · fecham {{when}}",
     "closed": "As inscrições estão fechadas",
     "notOpenTitle": "As inscrições não estão abertas",
+    "endedTitle": "Não há mais inscrições",
+    "endedBody": "Encerradas: {{when}}.",
     "fullTitle": "Todas as vagas foram preenchidas",
     "spotsLeft_one": "{{count}} de {{max}} vagas restantes. Os capitães escolhem titulares e reservas.",
     "spotsLeft_other": "{{count}} de {{max}} vagas restantes. Os capitães escolhem titulares e reservas.",

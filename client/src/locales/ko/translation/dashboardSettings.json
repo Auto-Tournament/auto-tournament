@@ -737,6 +737,7 @@
       "live": "라이브",
       "finished": "종료",
       "signup": "참가 신청 중",
+      "closed": "참가 신청 마감",
       "draft": "초안"
     },
     "front": {

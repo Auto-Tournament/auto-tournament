@@ -737,6 +737,7 @@
       "live": "Canlı",
       "finished": "Bitti",
       "signup": "Kayıt açık",
+      "closed": "Kayıt kapalı",
       "draft": "Taslak"
     },
     "front": {

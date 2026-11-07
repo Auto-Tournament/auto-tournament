@@ -1613,6 +1613,8 @@
     "openCloses": "参加登録受付中 · {{when}} 締め切り",
     "closed": "参加登録は締め切りました",
     "notOpenTitle": "参加登録は受付していません",
+    "endedTitle": "参加登録は終了しました",
+    "endedBody": "締切：{{when}}",
     "fullTitle": "すべての枠が埋まりました",
     "spotsLeft_one": "{{max}} 枠中 残り {{count}}。キャプテンが先発と控えを選びます。",
     "spotsLeft_other": "{{max}} 枠中 残り {{count}}。キャプテンが先発と控えを選びます。",

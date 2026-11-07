@@ -737,6 +737,7 @@
       "live": "Live",
       "finished": "Afgelopen",
       "signup": "Inschrijving open",
+      "closed": "Inschrijving gesloten",
       "draft": "Concept"
     },
     "front": {
