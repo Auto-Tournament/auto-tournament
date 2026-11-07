@@ -45,7 +45,7 @@ test.describe('admin notices (rules)', () => {
     expect(s.server_crashed).toBe('off');
     expect(s.clips_failing).toBe('bell');
     expect(s.failover).toBe('sound');
-    expect(s.beta_available).toBe('bell');
+    expect(s.update_available).toBe('bell');
   });
 
   test('what a stuck match is stuck on', () => {

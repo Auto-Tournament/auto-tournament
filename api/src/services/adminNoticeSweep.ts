@@ -136,15 +136,15 @@ export async function sweepPlatform(): Promise<void> {
   const { checkPlatformUpdate } = await import('./platform/updateCheck');
   const update = await checkPlatformUpdate().catch(() => null);
   const open = await adminNoticeService.list(200);
-  for (const n of open.filter((x) => x.kind === 'beta_available' && x.resolvedAt === null)) {
+  for (const n of open.filter((x) => x.kind === 'update_available' && x.resolvedAt === null)) {
     if (!update?.available || n.data.version !== update.latest)
       await adminNoticeService.resolve(n.dedupeKey);
   }
   if (update?.available && update.latest) {
-    const dedupe = `beta_available:${update.latest}`;
+    const dedupe = `update_available:${update.latest}`;
     if (!open.some((n) => n.dedupeKey === dedupe && n.resolvedAt === null)) {
       await adminNoticeService.raise(
-        'beta_available',
+        'update_available',
         { version: update.latest, running: update.running, url: update.releaseUrl },
         dedupe,
         undefined,

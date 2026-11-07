@@ -417,6 +417,22 @@ export const SCHEMA_MIGRATIONS: readonly SchemaMigration[] = [
       await client.query('DROP INDEX IF EXISTS idx_teams_owner_uid');
     },
   },
+  {
+    id: '2026-11-07-update-available-notice',
+    description:
+      'The platform-update notice is update_available: stored notices and admin settings follow',
+    async up(client) {
+      await client.query(
+        `UPDATE admin_notices SET kind = 'update_available',
+                dedupe_key = 'update_available:' || substr(dedupe_key, length('beta_available:') + 1)
+          WHERE kind = 'beta_available'`
+      );
+      await client.query(
+        `UPDATE app_settings SET value = replace(value, '"beta_available":', '"update_available":')
+          WHERE key = 'admin_notice_settings'`
+      );
+    },
+  },
 ];
 
 /** A fixed key for the advisory lock, so two API processes never run one migration twice. */
