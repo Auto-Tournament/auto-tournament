@@ -737,6 +737,7 @@
       "live": "Élő",
       "finished": "Befejezett",
       "signup": "Nevezés nyitva",
+      "closed": "Nevezés lezárva",
       "draft": "Piszkozat"
     },
     "front": {

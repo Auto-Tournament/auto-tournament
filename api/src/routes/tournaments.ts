@@ -19,7 +19,12 @@ import {
 } from '../services/currentTournament';
 import { tournamentService } from '../services/tournamentService';
 import { otherPlayWindows } from '../services/tournamentOverlaps';
-import { SignupError, tournamentSignupService } from '../services/tournamentSignupService';
+import {
+  SignupError,
+  signupOpenNow,
+  tournamentSignupService,
+  windowOfSettings,
+} from '../services/tournamentSignupService';
 import type { DbTournamentRow } from '../types/database.types';
 import { log } from '../utils/logger';
 import { resolveTournamentId, tournamentRowToResponse } from '../utils/tournamentRow';
@@ -45,7 +50,11 @@ export interface TournamentListItem {
   /** Teams in it (players for a shuffle); for one with sign-up open, the teams signed up. */
   entries: number;
   maxEntries: number | null;
+  /** The organizer's switch (Setup › Teams). Stays on after the deadline: not "open now". */
   registrationOpen: boolean;
+  /** A team can sign up right now: set up, switched on, inside its window. */
+  signupOpenNow: boolean;
+  /** Unix seconds. */
   registrationClosesAt: number | null;
   /** When it starts: the first schedule entry, else when it was started. Unix seconds. */
   startsAt: number | null;
@@ -124,6 +133,10 @@ async function listItems(
     const t = tournamentRowToResponse(row);
     const settings: Partial<TournamentSettings> = t.settings ?? {};
     const registrationOpen = settings.registrationOpen === true;
+    const signupWindow = windowOfSettings(row.settings ?? null);
+    const closesMs = signupWindow.registrationClosesAt
+      ? Date.parse(signupWindow.registrationClosesAt)
+      : NaN;
     const draft = t.status === 'setup' && !registrationOpen;
     if (draft && !includeDrafts) continue;
 
@@ -180,8 +193,9 @@ async function listItems(
       entries,
       maxEntries: typeof settings.maxTeams === 'number' ? settings.maxTeams : null,
       registrationOpen,
-      registrationClosesAt:
-        typeof settings.registrationClosesAt === 'number' ? settings.registrationClosesAt : null,
+      signupOpenNow: t.status === 'setup' && signupOpenNow(signupWindow),
+      // Stored as an ISO string (Setup › Teams); the old number check made this always null.
+      registrationClosesAt: Number.isFinite(closesMs) ? Math.floor(closesMs / 1000) : null,
       startsAt: startOf(settings, t.started_at),
       startedAt: t.started_at ?? null,
       completedAt: t.completed_at ?? null,

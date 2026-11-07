@@ -1613,6 +1613,8 @@
     "openCloses": "참가 신청 중 · {{when}} 마감",
     "closed": "참가 신청 마감",
     "notOpenTitle": "참가 신청이 열려 있지 않아요",
+    "endedTitle": "더 이상 신청할 수 없어요",
+    "endedBody": "마감: {{when}}",
     "fullTitle": "모든 자리가 찼어요",
     "spotsLeft_one": "{{max}}자리 중 {{count}}자리 남음. 팀장이 선발과 후보를 정해요.",
     "spotsLeft_other": "{{max}}자리 중 {{count}}자리 남음. 팀장이 선발과 후보를 정해요.",

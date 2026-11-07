@@ -1613,6 +1613,8 @@
     "openCloses": "Pendaftaran dibuka · ditutup {{when}}",
     "closed": "Pendaftaran ditutup",
     "notOpenTitle": "Pendaftaran belum dibuka",
+    "endedTitle": "Tidak ada pendaftaran lagi",
+    "endedBody": "Ditutup: {{when}}.",
     "fullTitle": "Semua slot sudah terisi",
     "spotsLeft_one": "{{count}} dari {{max}} slot tersisa. Kapten memilih pemain inti dan cadangan.",
     "spotsLeft_other": "{{count}} dari {{max}} slot tersisa. Kapten memilih pemain inti dan cadangan.",

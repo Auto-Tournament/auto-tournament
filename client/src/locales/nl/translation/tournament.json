@@ -1614,6 +1614,8 @@
     "openCloses": "De inschrijving is open · sluit {{when}}",
     "closed": "De inschrijving is gesloten",
     "notOpenTitle": "De inschrijving is niet open",
+    "endedTitle": "Geen inschrijvingen meer",
+    "endedBody": "Gesloten: {{when}}.",
     "fullTitle": "Alle plekken zijn bezet",
     "spotsLeft_one": "Nog {{count}} van de {{max}} plekken. Captains kiezen de basisspelers en reserves.",
     "spotsLeft_other": "Nog {{count}} van de {{max}} plekken. Captains kiezen de basisspelers en reserves.",

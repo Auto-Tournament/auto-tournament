@@ -1614,6 +1614,8 @@
     "openCloses": "Die Anmeldung ist offen · schließt {{when}}",
     "closed": "Die Anmeldung ist geschlossen",
     "notOpenTitle": "Die Anmeldung ist nicht offen",
+    "endedTitle": "Keine Anmeldungen mehr",
+    "endedBody": "Geschlossen: {{when}}.",
     "fullTitle": "Alle Plätze sind vergeben",
     "spotsLeft_one": "{{count}} von {{max}} Plätzen frei. Die Kapitäne wählen Stamm- und Ersatzspieler.",
     "spotsLeft_other": "{{count}} von {{max}} Plätzen frei. Die Kapitäne wählen Stamm- und Ersatzspieler.",

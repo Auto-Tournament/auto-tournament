@@ -1660,6 +1660,8 @@
     "openCloses": "Inscripciones abiertas · cierran {{when}}",
     "closed": "Las inscripciones están cerradas",
     "notOpenTitle": "Las inscripciones no están abiertas",
+    "endedTitle": "No se admiten más inscripciones",
+    "endedBody": "Cerró: {{when}}.",
     "fullTitle": "No quedan plazas",
     "spotsLeft_one": "Queda {{count}} de {{max}} plazas. Los capitanes eligen titulares y suplentes.",
     "spotsLeft_other": "Quedan {{count}} de {{max}} plazas. Los capitanes eligen titulares y suplentes.",

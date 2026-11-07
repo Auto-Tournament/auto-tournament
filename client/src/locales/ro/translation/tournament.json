@@ -1659,6 +1659,8 @@
     "openCloses": "Înscrierea este deschisă · se închide {{when}}",
     "closed": "Înscrierea este închisă",
     "notOpenTitle": "Înscrierea nu este deschisă",
+    "endedTitle": "Nu mai sunt înscrieri",
+    "endedBody": "Închisă: {{when}}.",
     "fullTitle": "Toate locurile sunt ocupate",
     "spotsLeft_one": "Locuri libere: {{count}} din {{max}}. Căpitanii aleg titularii și rezervele.",
     "spotsLeft_other": "Locuri libere: {{count}} din {{max}}. Căpitanii aleg titularii și rezervele.",

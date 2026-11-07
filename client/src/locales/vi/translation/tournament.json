@@ -1613,6 +1613,8 @@
     "openCloses": "Đang mở đăng ký · đóng {{when}}",
     "closed": "Đã đóng đăng ký",
     "notOpenTitle": "Chưa mở đăng ký",
+    "endedTitle": "Không nhận thêm đăng ký",
+    "endedBody": "Đã đóng: {{when}}.",
     "fullTitle": "Đã hết suất",
     "spotsLeft_one": "Còn {{count}} trên {{max}} suất. Đội trưởng chọn người chơi chính và dự bị.",
     "spotsLeft_other": "Còn {{count}} trên {{max}} suất. Đội trưởng chọn người chơi chính và dự bị.",

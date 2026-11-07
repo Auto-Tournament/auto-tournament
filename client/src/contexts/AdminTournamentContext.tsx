@@ -14,7 +14,10 @@ export interface TournamentListItem {
   bannerUrl: string | null;
   entries: number;
   maxEntries: number | null;
+  /** The organizer's switch; stays on after the deadline. */
   registrationOpen: boolean;
+  /** A team can sign up right now (set up, switched on, inside its window). */
+  signupOpenNow?: boolean;
   registrationClosesAt: number | null;
   startsAt: number | null;
   startedAt: number | null;
@@ -67,7 +70,11 @@ export function AdminTournamentProvider({ children }: { children: React.ReactNod
 
   const reload = useCallback(async () => {
     try {
-      const r = await api.get<{ tournaments: TournamentListItem[]; featuredId: number; nextId?: number }>('/api/tournaments');
+      const r = await api.get<{
+        tournaments: TournamentListItem[];
+        featuredId: number;
+        nextId?: number;
+      }>('/api/tournaments');
       setTournaments(r.tournaments ?? []);
       setFeaturedId(r.featuredId ?? null);
       setNextId(r.nextId ?? null);

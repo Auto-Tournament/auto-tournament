@@ -748,6 +748,7 @@
       "live": "Ao vivo",
       "finished": "Encerrado",
       "signup": "Inscrições abertas",
+      "closed": "Inscrições encerradas",
       "draft": "Rascunho"
     },
     "front": {

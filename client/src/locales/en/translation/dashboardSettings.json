@@ -737,6 +737,7 @@
       "live": "Live",
       "finished": "Finished",
       "signup": "Sign-up open",
+      "closed": "Sign-up closed",
       "draft": "Draft"
     },
     "front": {

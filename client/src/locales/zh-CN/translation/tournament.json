@@ -1614,6 +1614,8 @@
     "openCloses": "报名已开放 · {{when}} 截止",
     "closed": "报名已截止",
     "notOpenTitle": "报名未开放",
+    "endedTitle": "报名已结束",
+    "endedBody": "截止时间：{{when}}",
     "fullTitle": "名额已满",
     "spotsLeft_one": "剩余 {{count}}/{{max}} 个名额。队长选择首发和替补。",
     "spotsLeft_other": "剩余 {{count}}/{{max}} 个名额。队长选择首发和替补。",

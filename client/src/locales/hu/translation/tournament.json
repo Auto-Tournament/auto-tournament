@@ -1613,6 +1613,8 @@
     "openCloses": "A nevezés nyitva · lezárul: {{when}}",
     "closed": "A nevezés lezárult",
     "notOpenTitle": "A nevezés nincs nyitva",
+    "endedTitle": "További nevezés nem lehetséges",
+    "endedBody": "Lezárult: {{when}}.",
     "fullTitle": "Minden hely betelt",
     "spotsLeft_one": "{{max}} helyből {{count}} maradt. A kapitányok választják ki a kezdőket és a cseréket.",
     "spotsLeft_other": "{{max}} helyből {{count}} maradt. A kapitányok választják ki a kezdőket és a cseréket.",

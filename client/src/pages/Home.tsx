@@ -524,13 +524,13 @@ export default function Home() {
                           px: 2.25,
                           py: 1.25,
                           borderRadius: radii.pill,
-                          bgcolor: tour.registrationOpen ? color.accent : color.paper3,
-                          color: tour.registrationOpen ? color.accentInk : color.ink,
+                          bgcolor: tour.signupOpenNow ? color.accent : color.paper3,
+                          color: tour.signupOpenNow ? color.accentInk : color.ink,
                           fontWeight: 600,
                           fontSize: '0.875rem',
                         }}
                       >
-                        {tour.registrationOpen ? t('home.signup.cta') : t('home.signup.view')}
+                        {tour.signupOpenNow ? t('home.signup.cta') : t('home.signup.view')}
                       </Box>
                     </Box>
                   </Box>
@@ -714,7 +714,7 @@ function HeroCard({ tour, when }: { tour: TournamentSummary; when: When }) {
         <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 1.75 }}>
           {tour.isLive ? (
             <LiveChip label={t('home.live.chip')} />
-          ) : tour.registrationOpen ? (
+          ) : tour.signupOpenNow ? (
             <Pill tone="accent">{t('home.signup.open')}</Pill>
           ) : null}
           <Pill>{typeLabel(t, tour.type)}</Pill>
@@ -789,7 +789,7 @@ function HeroCard({ tour, when }: { tour: TournamentSummary; when: When }) {
                 fontWeight: 600,
               }}
             >
-              {tour.registrationOpen ? t('home.signup.cta') : t('home.signup.view')}
+              {tour.signupOpenNow ? t('home.signup.cta') : t('home.signup.view')}
             </Box>
           )}
         </Box>
@@ -831,8 +831,8 @@ function SideCard({ tour, when }: { tour: TournamentSummary; when: When }) {
           {tour.isLive ? (
             <LiveChip label={t('home.live.chip')} />
           ) : (
-            <Pill tone={tour.registrationOpen ? 'accent' : undefined}>
-              {tour.registrationOpen ? t('home.signup.open') : t('home.quiet.next')}
+            <Pill tone={tour.signupOpenNow ? 'accent' : undefined}>
+              {tour.signupOpenNow ? t('home.signup.open') : t('home.quiet.next')}
             </Pill>
           )}
           <Pill>{formatBadge(tour.format)}</Pill>
