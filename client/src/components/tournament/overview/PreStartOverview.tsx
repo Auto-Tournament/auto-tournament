@@ -13,6 +13,7 @@ import { useTranslation } from 'react-i18next';
 import type { Tournament } from '../../../types';
 import { layoutSchedule, scheduleToIcs } from '../../../utils/scheduleCalendar';
 import { tournamentTabPath } from '../../../paths';
+import { signupOpenNow } from '../../../utils/signupOpen';
 import { tokens, fontDisplay, mono, radii, textSize } from '../../../theme/tokens';
 import { StartCountdown } from '../StartCountdown';
 import { InfoTile, MapTile, SectionTitle, StatusHero, TeamLogo, panel } from '../ui/draftUi';
@@ -123,11 +124,16 @@ export function SignUpHero({
     : null;
   const max = signup?.maxTeams ?? null;
   const left = max !== null ? Math.max(max - tournament.teamIds.length, 0) : null;
-  const open = !!signup?.registrationOpen;
   // eslint-disable-next-line react-hooks/purity -- only needs to be right when the page renders
   const now = Date.now();
+  // "Open" means a team can sign up right now: switched on AND inside its window.
+  // The switch alone stays on after the deadline (cs.sivert.io, 2026-11-07: "open ·
+  // closes Fri 21:00" above "Sign-up is not open").
+  const open = signupOpenNow(signup, now);
   const opensAt =
-    open && signup?.registrationOpensAt ? Date.parse(signup.registrationOpensAt) : NaN;
+    signup?.registrationOpen && signup.registrationOpensAt
+      ? Date.parse(signup.registrationOpensAt)
+      : NaN;
   // Switched on, but closed until its opening time (Setup › Teams › Sign-up opens).
   const notYet = Number.isFinite(opensAt) && opensAt > now;
   const req = [
