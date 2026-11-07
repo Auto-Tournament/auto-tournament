@@ -41,7 +41,7 @@ export const ADMIN_NOTICE_KINDS = {
   benchmark_failed: { group: 'recorders', severity: 'warn' },
   clips_failing: { group: 'recorders', severity: 'warn' },
   // Platform
-  beta_available: { group: 'platform', severity: 'info' },
+  update_available: { group: 'platform', severity: 'info' },
   license_problem: { group: 'platform', severity: 'error' },
   demos_failing: { group: 'platform', severity: 'warn' },
   discord_failed: { group: 'platform', severity: 'warn' },

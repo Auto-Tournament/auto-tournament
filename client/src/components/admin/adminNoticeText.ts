@@ -42,7 +42,7 @@ export const NOTICE_GROUPS: Record<string, string[]> = {
     'benchmark_failed',
     'clips_failing',
   ],
-  platform: ['beta_available', 'license_problem', 'demos_failing', 'discord_failed'],
+  platform: ['update_available', 'license_problem', 'demos_failing', 'discord_failed'],
 };
 
 const str = (v: Untrusted) => (typeof v === 'string' ? v : typeof v === 'number' ? String(v) : '');
@@ -95,7 +95,7 @@ export function noticeLink(
     return paths.recorders;
   }
   if (notice.kind === 'license_problem') return paths.license;
-  if (notice.kind === 'beta_available' || notice.kind === 'demos_failing') return paths.system;
+  if (notice.kind === 'update_available' || notice.kind === 'demos_failing') return paths.system;
   return null;
 }
 
