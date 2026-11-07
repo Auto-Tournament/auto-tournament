@@ -61,6 +61,7 @@ export const HOST_MODULES: readonly string[] = [
   'utils/settingFields',
   'utils/simulationTimescale',
   'utils/tournamentRow',
+  'utils/tournamentStarted',
   'utils/viewerIdentity',
 ];
 
