@@ -2689,6 +2689,10 @@
     "deleteTitle": "{{name}} löschen?",
     "deleteMessage": "Das Setup ist dann endgültig weg. Ein Server, auf dem es gerade läuft, läuft weiter, bis du ihn stoppst.",
     "saveFailed": "Setup konnte nicht gespeichert werden",
-    "deleteFailed": "Setup konnte nicht gelöscht werden"
+    "deleteFailed": "Setup konnte nicht gelöscht werden",
+    "tileLine": "Gespeichertes Setup",
+    "sheetState": "Setup {{name}}",
+    "stopSetup": "Setup stoppen",
+    "sheetHint": "Stoppen beendet das Setup für die Spieler, und der Server geht zurück an die Turniere."
   }
 }

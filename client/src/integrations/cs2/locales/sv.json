@@ -2684,6 +2684,10 @@
     "deleteTitle": "Ta bort {{name}}?",
     "deleteMessage": "Uppsättningen försvinner för gott. En server som kör den nu fortsätter tills du stoppar den.",
     "saveFailed": "Det gick inte att spara uppsättningen",
-    "deleteFailed": "Det gick inte att ta bort uppsättningen"
+    "deleteFailed": "Det gick inte att ta bort uppsättningen",
+    "tileLine": "Sparad uppsättning",
+    "sheetState": "Uppsättningen {{name}}",
+    "stopSetup": "Stoppa uppsättningen",
+    "sheetHint": "Stoppar du den är det slut för spelarna, och servern går tillbaka till turneringarna."
   }
 }

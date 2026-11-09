@@ -181,6 +181,8 @@ export interface MachineCardProps {
   onUpdateReadyUp: () => void;
   onNewCode: () => void;
   onRetry: (c: FleetHostCommand) => void;
+  /** The saved setup running on a server (by its fleet id), if one is. */
+  setupNameOf?: (fleetServerId: string) => string | null;
 }
 
 /**
@@ -200,6 +202,7 @@ export function MachineCard({
   onUpdateReadyUp,
   onNewCode,
   onRetry,
+  setupNameOf,
 }: MachineCardProps) {
   const { t } = useModuleTranslation('cs2');
   const now = useNow();
@@ -418,6 +421,7 @@ export function MachineCard({
                 state={state}
                 match={s.fleetServer ? (matchByServer[s.fleetServer.id] ?? null) : null}
                 command={own}
+                setupName={s.fleetServer ? (setupNameOf?.(s.fleetServer.id) ?? null) : null}
                 onOpen={() => onOpenServer(s.name)}
               />
             );

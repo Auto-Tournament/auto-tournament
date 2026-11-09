@@ -2829,6 +2829,10 @@
     "saveFailed": "Nastavení se nepodařilo uložit",
     "deleteFailed": "Nastavení se nepodařilo smazat",
     "mapCount_few": "{{count}} mapy",
-    "mapCount_many": "{{count}} map"
+    "mapCount_many": "{{count}} map",
+    "tileLine": "Uložené nastavení",
+    "sheetState": "Nastavení {{name}}",
+    "stopSetup": "Zastavit nastavení",
+    "sheetHint": "Zastavením hra pro hráče skončí a server se vrátí k turnajům."
   }
 }

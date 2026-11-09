@@ -2760,6 +2760,10 @@
     "deleteTitle": "Supprimer {{name}} ?",
     "deleteMessage": "La configuration disparaît définitivement. Un serveur qui l’exécute continue jusqu’à ce que vous l’arrêtiez.",
     "saveFailed": "Impossible d’enregistrer la configuration",
-    "deleteFailed": "Impossible de supprimer la configuration"
+    "deleteFailed": "Impossible de supprimer la configuration",
+    "tileLine": "Configuration enregistrée",
+    "sheetState": "Configuration {{name}}",
+    "stopSetup": "Arrêter la configuration",
+    "sheetHint": "L’arrêter y met fin pour les joueurs, et le serveur retourne aux tournois."
   }
 }

@@ -2684,6 +2684,10 @@
     "deleteTitle": "Hapus {{name}}?",
     "deleteMessage": "Pengaturan hilang selamanya. Server yang sedang menjalankannya tetap jalan sampai Anda menghentikannya.",
     "saveFailed": "Gagal menyimpan pengaturan",
-    "deleteFailed": "Gagal menghapus pengaturan"
+    "deleteFailed": "Gagal menghapus pengaturan",
+    "tileLine": "Pengaturan tersimpan",
+    "sheetState": "Pengaturan {{name}}",
+    "stopSetup": "Hentikan pengaturan",
+    "sheetHint": "Menghentikannya mengakhiri permainan pemain, dan server kembali ke turnamen."
   }
 }

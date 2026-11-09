@@ -2761,6 +2761,10 @@
     "deleteTitle": "Eliminare {{name}}?",
     "deleteMessage": "La configurazione sparisce per sempre. Un server che la sta eseguendo continua finché non lo fermi.",
     "saveFailed": "Impossibile salvare la configurazione",
-    "deleteFailed": "Impossibile eliminare la configurazione"
+    "deleteFailed": "Impossibile eliminare la configurazione",
+    "tileLine": "Configurazione salvata",
+    "sheetState": "Configurazione {{name}}",
+    "stopSetup": "Ferma la configurazione",
+    "sheetHint": "Fermarla la chiude per i giocatori e il server torna ai tornei."
   }
 }

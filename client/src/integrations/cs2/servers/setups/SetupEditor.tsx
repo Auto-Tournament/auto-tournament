@@ -13,7 +13,7 @@ import {
 import type { PluginSetValue } from '../fleetPush.types';
 import PluginSetPicker, { presetValue, usePluginCatalog } from '../PluginSetPicker';
 import { SideSheet } from '../fleet/SideSheet';
-import type { ServerSetup } from './SetupsSection';
+import type { ServerSetup } from './useSetups';
 
 const { color } = tokens;
 

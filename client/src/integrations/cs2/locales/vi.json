@@ -2684,6 +2684,10 @@
     "deleteTitle": "Xóa {{name}}?",
     "deleteMessage": "Thiết lập sẽ mất vĩnh viễn. Máy chủ đang chạy nó vẫn tiếp tục cho đến khi bạn dừng.",
     "saveFailed": "Không lưu được thiết lập",
-    "deleteFailed": "Không xóa được thiết lập"
+    "deleteFailed": "Không xóa được thiết lập",
+    "tileLine": "Thiết lập đã lưu",
+    "sheetState": "Thiết lập {{name}}",
+    "stopSetup": "Dừng thiết lập",
+    "sheetHint": "Dừng sẽ kết thúc với người chơi và máy chủ quay lại phục vụ giải đấu."
   }
 }

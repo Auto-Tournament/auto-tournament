@@ -2684,6 +2684,10 @@
     "deleteTitle": "{{name}}을(를) 삭제할까요?",
     "deleteMessage": "설정이 완전히 사라집니다. 지금 실행 중인 서버는 중지할 때까지 계속됩니다.",
     "saveFailed": "설정을 저장하지 못했습니다",
-    "deleteFailed": "설정을 삭제하지 못했습니다"
+    "deleteFailed": "설정을 삭제하지 못했습니다",
+    "tileLine": "저장된 설정",
+    "sheetState": "{{name}} 설정",
+    "stopSetup": "설정 중지",
+    "sheetHint": "중지하면 플레이어의 게임이 끝나고 서버는 대회로 돌아갑니다."
   }
 }

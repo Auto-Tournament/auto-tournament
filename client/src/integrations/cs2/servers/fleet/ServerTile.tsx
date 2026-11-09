@@ -102,6 +102,8 @@ export interface ServerTileProps {
   match: ServerMatch | null;
   /** The command csm is running for this server, for its progress. */
   command: FleetHostCommand | null;
+  /** The saved setup running on it, if one is. */
+  setupName?: string | null;
   onOpen: () => void;
 }
 
@@ -110,12 +112,25 @@ export interface ServerTileProps {
  * one or two lines of what it is doing (the match on it, or how far csm is).
  * Clicking opens it.
  */
-export function ServerTile({ host, server, state, match, command, onOpen }: ServerTileProps) {
+export function ServerTile({
+  host,
+  server,
+  state,
+  match,
+  command,
+  setupName,
+  onOpen,
+}: ServerTileProps) {
   const { t } = useModuleTranslation('cs2');
   const label = useStateLabel();
   const name = server.fleetServer?.name ?? server.name;
+  // A running setup names the server's state ("Practice"), in green.
+  const setup = state === 'free' && setupName ? setupName : null;
+  const word = setup ?? label(state, match);
   const lines: string[] = [];
-  if (state === 'match' && match) {
+  if (setup) {
+    lines.push(t('setups.tileLine'));
+  } else if (state === 'match' && match) {
     if (match.team1 || match.team2) {
       lines.push(
         [
@@ -165,7 +180,8 @@ export function ServerTile({ host, server, state, match, command, onOpen }: Serv
   }
   // Down is red only on an online machine: an offline one says so itself.
   let edge = color.rule;
-  if (state === 'match') edge = withAlpha(color.accent, 0.55);
+  if (setup) edge = withAlpha(color.live, 0.6);
+  else if (state === 'match') edge = withAlpha(color.accent, 0.55);
   else if (state === 'offline' && host.online) edge = withAlpha(color.ban, 0.6);
   // An offline machine's card is dimmed, so muted would fail contrast.
   const quiet = state === 'offline' ? color.ink2 : color.muted;
@@ -176,7 +192,7 @@ export function ServerTile({ host, server, state, match, command, onOpen }: Serv
       onClick={onOpen}
       data-testid={`machine-tile-${host.id}-${server.name}`}
       data-state={state}
-      aria-label={`${name}: ${label(state, match)}`}
+      aria-label={`${name}: ${word}`}
       sx={{
         position: 'relative',
         overflow: 'hidden',
@@ -236,7 +252,7 @@ export function ServerTile({ host, server, state, match, command, onOpen }: Serv
           ) : (
             <StateMark state={state} />
           )}
-          {label(state, match)}
+          {word}
         </Box>
       </Box>
       {lines.map((line, i) => (

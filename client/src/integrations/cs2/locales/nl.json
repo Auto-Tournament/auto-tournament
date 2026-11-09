@@ -2689,6 +2689,10 @@
     "deleteTitle": "{{name}} verwijderen?",
     "deleteMessage": "De setup is voorgoed weg. Een server die hem nu draait, gaat door tot je hem stopt.",
     "saveFailed": "Kon de setup niet opslaan",
-    "deleteFailed": "Kon de setup niet verwijderen"
+    "deleteFailed": "Kon de setup niet verwijderen",
+    "tileLine": "Opgeslagen setup",
+    "sheetState": "Setup {{name}}",
+    "stopSetup": "Setup stoppen",
+    "sheetHint": "Stoppen beëindigt de setup voor de spelers, en de server gaat terug naar de toernooien."
   }
 }

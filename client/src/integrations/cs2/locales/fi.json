@@ -2684,6 +2684,10 @@
     "deleteTitle": "Poistetaanko {{name}}?",
     "deleteMessage": "Asetelma katoaa lopullisesti. Palvelin, joka ajaa sitä nyt, jatkaa, kunnes pysäytät sen.",
     "saveFailed": "Asetelman tallennus epäonnistui",
-    "deleteFailed": "Asetelman poisto epäonnistui"
+    "deleteFailed": "Asetelman poisto epäonnistui",
+    "tileLine": "Tallennettu asetelma",
+    "sheetState": "Asetelma {{name}}",
+    "stopSetup": "Pysäytä asetelma",
+    "sheetHint": "Pysäyttäminen lopettaa sen pelaajilta, ja palvelin palaa turnauksiin."
   }
 }
