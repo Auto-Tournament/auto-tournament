@@ -2684,6 +2684,10 @@
     "deleteTitle": "Slet {{name}}?",
     "deleteMessage": "Opsætningen er væk for altid. En server, der kører den nu, fortsætter, til du stopper den.",
     "saveFailed": "Kunne ikke gemme opsætningen",
-    "deleteFailed": "Kunne ikke slette opsætningen"
+    "deleteFailed": "Kunne ikke slette opsætningen",
+    "tileLine": "Gemt opsætning",
+    "sheetState": "Opsætningen {{name}}",
+    "stopSetup": "Stop opsætningen",
+    "sheetHint": "Når du stopper opsætningen, er det slut for spillerne, og serveren går tilbage til turneringerne."
   }
 }

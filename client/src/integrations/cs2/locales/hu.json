@@ -2684,6 +2684,10 @@
     "deleteTitle": "Törlöd: {{name}}?",
     "deleteMessage": "A beállítás végleg eltűnik. Az a szerver, amelyik most futtatja, addig megy, amíg le nem állítod.",
     "saveFailed": "Nem sikerült menteni a beállítást",
-    "deleteFailed": "Nem sikerült törölni a beállítást"
+    "deleteFailed": "Nem sikerült törölni a beállítást",
+    "tileLine": "Mentett beállítás",
+    "sheetState": "{{name}} beállítás",
+    "stopSetup": "Beállítás leállítása",
+    "sheetHint": "A leállítással a játékosoknak vége, és a szerver visszamegy a tornákhoz."
   }
 }

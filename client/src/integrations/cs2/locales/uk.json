@@ -2829,6 +2829,10 @@
     "saveFailed": "Не вдалося зберегти набір",
     "deleteFailed": "Не вдалося видалити набір",
     "mapCount_few": "{{count}} мапи",
-    "mapCount_many": "{{count}} мап"
+    "mapCount_many": "{{count}} мап",
+    "tileLine": "Збережений набір",
+    "sheetState": "Набір {{name}}",
+    "stopSetup": "Зупинити набір",
+    "sheetHint": "Зупинка завершує гру для гравців, і сервер повертається до турнірів."
   }
 }

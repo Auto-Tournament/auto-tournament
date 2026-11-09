@@ -2684,6 +2684,10 @@
     "deleteTitle": "{{name}} silinsin mi?",
     "deleteMessage": "Kurulum kalıcı olarak silinir. Onu şu an çalıştıran sunucu, sen durdurana kadar devam eder.",
     "saveFailed": "Kurulum kaydedilemedi",
-    "deleteFailed": "Kurulum silinemedi"
+    "deleteFailed": "Kurulum silinemedi",
+    "tileLine": "Kayıtlı kurulum",
+    "sheetState": "{{name}} kurulumu",
+    "stopSetup": "Kurulumu durdur",
+    "sheetHint": "Durdurmak oyuncular için oyunu bitirir ve sunucu turnuvalara döner."
   }
 }

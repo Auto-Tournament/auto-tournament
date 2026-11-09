@@ -2689,6 +2689,10 @@
     "deleteTitle": "删除 {{name}}？",
     "deleteMessage": "预设将被永久删除。正在运行它的服务器会继续运行，直到你停止它。",
     "saveFailed": "无法保存预设",
-    "deleteFailed": "无法删除预设"
+    "deleteFailed": "无法删除预设",
+    "tileLine": "已保存的预设",
+    "sheetState": "{{name}} 预设",
+    "stopSetup": "停止预设",
+    "sheetHint": "停止后玩家的游戏结束，服务器回到比赛中。"
   }
 }

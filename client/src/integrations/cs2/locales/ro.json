@@ -2755,6 +2755,10 @@
     "deleteTitle": "Ștergi {{name}}?",
     "deleteMessage": "Configurația dispare definitiv. Un server care o rulează acum continuă până îl oprești.",
     "saveFailed": "Nu s-a putut salva configurația",
-    "deleteFailed": "Nu s-a putut șterge configurația"
+    "deleteFailed": "Nu s-a putut șterge configurația",
+    "tileLine": "Configurație salvată",
+    "sheetState": "Configurația {{name}}",
+    "stopSetup": "Oprește configurația",
+    "sheetHint": "Oprirea o încheie pentru jucători, iar serverul revine la turnee."
   }
 }

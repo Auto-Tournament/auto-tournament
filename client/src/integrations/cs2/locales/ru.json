@@ -2829,6 +2829,10 @@
     "saveFailed": "Не удалось сохранить набор",
     "deleteFailed": "Не удалось удалить набор",
     "mapCount_few": "{{count}} карты",
-    "mapCount_many": "{{count}} карт"
+    "mapCount_many": "{{count}} карт",
+    "tileLine": "Сохранённый набор",
+    "sheetState": "Набор {{name}}",
+    "stopSetup": "Остановить набор",
+    "sheetHint": "Остановка завершает игру для игроков, и сервер возвращается к турнирам."
   }
 }

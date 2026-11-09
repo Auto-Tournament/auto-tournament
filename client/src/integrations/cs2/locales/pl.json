@@ -2834,6 +2834,10 @@
     "saveFailed": "Nie udało się zapisać zestawu",
     "deleteFailed": "Nie udało się usunąć zestawu",
     "mapCount_few": "{{count}} mapy",
-    "mapCount_many": "{{count}} map"
+    "mapCount_many": "{{count}} map",
+    "tileLine": "Zapisany zestaw",
+    "sheetState": "Zestaw {{name}}",
+    "stopSetup": "Zatrzymaj zestaw",
+    "sheetHint": "Zatrzymanie kończy grę dla graczy, a serwer wraca do turniejów."
   }
 }
