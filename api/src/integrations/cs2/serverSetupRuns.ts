@@ -53,9 +53,13 @@ export async function startSetup(
     });
     if (!claimed) continue;
     try {
+      // essentials always: it loads the setup's maps (mapvote.set {load}, workshop downloads).
+      const set = setup.plugins.plugins.includes('essentials')
+        ? setup.plugins
+        : { ...setup.plugins, plugins: [...setup.plugins.plugins, 'essentials' as const] };
       const plugins = await setPlugins(
         fleetServerId,
-        pluginSetCommand(setup.plugins),
+        pluginSetCommand(set),
         by.issuedBy,
         by.actorId
       );
