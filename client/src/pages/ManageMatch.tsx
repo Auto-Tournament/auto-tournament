@@ -9,7 +9,6 @@ import {
   IconButton,
   Menu,
   MenuItem,
-  TextField,
   Typography,
 } from '@mui/material';
 import { DotsThreeIcon } from '@phosphor-icons/react';
@@ -359,8 +358,6 @@ export default function ManageMatch() {
   const [selectedRound, setSelectedRound] = useState<number | null>(null);
   const [levels, setLevels] = useState<string[]>(['error', 'warn', 'info', 'admin']);
   const [source, setSource] = useState<'all' | 'server' | 'platform' | 'admin'>('all');
-  const [command, setCommand] = useState('status');
-  const [commandReply, setCommandReply] = useState<string | null>(null);
   const [menu, setMenu] = useState<{
     anchor: HTMLElement;
     id: string;
@@ -446,20 +443,13 @@ export default function ManageMatch() {
   const send = useCallback(
     async (name: string, args: Record<string, Untrusted> = {}, ok?: string) => {
       try {
-        const res = await api.post<{
-          success: boolean;
-          error?: string;
-          message?: string;
-          response?: Untrusted;
-        }>(`/api/game/cs2/matches/${encodeURIComponent(slug)}/manage/command`, { name, args });
+        const res = await api.post<{ success: boolean; error?: string; message?: string }>(
+          `/api/game/cs2/matches/${encodeURIComponent(slug)}/manage/command`,
+          { name, args }
+        );
         if (res && res.success === false) throw new Error(res.error || 'The server refused it');
         if (ok) showSuccess(ok);
         await load();
-        // exec answers with the console lines it saw.
-        const out = res?.response as { lines?: Untrusted; output?: Untrusted } | string | undefined;
-        if (typeof out === 'string') return out;
-        const lines = out?.lines ?? out?.output;
-        return Array.isArray(lines) ? lines.join('\n') : typeof lines === 'string' ? lines : '';
       } catch (error) {
         showError((error as Error).message || 'The server refused it');
         throw error;
@@ -1085,77 +1075,6 @@ export default function ManageMatch() {
             {view.server.name ?? view.server.id}
             {view.server.phase ? ` · Ready Up reports ${view.server.phase}` : ''}
           </Typography>
-          {onReadyUp && (
-            <Box sx={{ display: 'grid', gap: 1 }}>
-              <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                <TextField
-                  label="Run a console command"
-                  value={command}
-                  onChange={(e) => setCommand(e.target.value)}
-                  size="small"
-                  sx={{ flex: 1, minWidth: 220 }}
-                  inputProps={{ style: { fontFamily: fontMono } }}
-                />
-                <Button
-                  variant="contained"
-                  disabled={!command.trim()}
-                  onClick={() =>
-                    setConfirm({
-                      target: 'server',
-                      title: `Run “${command.trim()}” on this server?`,
-                      effects: [
-                        'It runs in the CS2 console of the match’s server',
-                        'It is written to the admin log with your name',
-                      ],
-                      action: `Run ${command.trim().split(' ')[0]}`,
-                      cancel: 'Don’t run it',
-                      run: async () => {
-                        const out = await send('exec', { command: command.trim() });
-                        setCommandReply(out || `Sent: ${command.trim()} (no output)`);
-                      },
-                    })
-                  }
-                >
-                  Run
-                </Button>
-              </Box>
-              <Box sx={{ display: 'flex', gap: 0.75, flexWrap: 'wrap' }}>
-                {['status', 'mp_warmup_end', 'mp_pause_match', 'mp_unpause_match', 'tv_status'].map(
-                  (c) => (
-                    <Button
-                      key={c}
-                      size="small"
-                      variant="outlined"
-                      onClick={() => setCommand(c)}
-                      sx={{ fontFamily: fontMono, textTransform: 'none' }}
-                    >
-                      {c}
-                    </Button>
-                  )
-                )}
-              </Box>
-              {commandReply && (
-                <Box
-                  component="pre"
-                  sx={{
-                    m: 0,
-                    p: 1.5,
-                    borderRadius: radii.md,
-                    bgcolor: color.paper,
-                    color: color.ink2,
-                    fontFamily: fontMono,
-                    fontSize: textSize.sm,
-                    whiteSpace: 'pre-wrap',
-                    overflowWrap: 'anywhere',
-                    maxHeight: 280,
-                    overflowY: 'auto',
-                  }}
-                >
-                  {commandReply}
-                </Box>
-              )}
-            </Box>
-          )}
         </Section>
       )}
 
