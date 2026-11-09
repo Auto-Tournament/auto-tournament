@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 773 of them, 487 behind auth —
+Every endpoint this API serves — 775 of them, 489 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -85,6 +85,8 @@ Practice and fun setups (a plugin set and a map pool) an admin starts on any fre
 | `GET` | `/api/game/cs2/setups` | admin |
 | `PUT` | `/api/game/cs2/setups` | admin |
 | `DELETE` | `/api/game/cs2/setups/:id` | admin |
+| `POST` | `/api/game/cs2/setups/:id/start` | admin |
+| `POST` | `/api/game/cs2/setups/running/:serverId/stop` | admin |
 
 ### Highlights backfill
 

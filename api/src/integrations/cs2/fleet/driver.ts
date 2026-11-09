@@ -66,7 +66,7 @@ import {
 import { liveStateStore } from './state';
 import { roundBackupStore } from './backups';
 import { DEMO_STREAM_CAPABILITY } from './limits';
-import { matchPluginDisabled } from './push/pluginSets';
+import { notForMatches } from './setupRuns';
 import { fleetBus, onFleetServerReady, setFleetAssignmentResolver } from './service';
 import type {
   AssignConfig,
@@ -309,7 +309,8 @@ const availableSince = new Map<string, number>();
 
 /**
  * A linked fleet server the allocator may hand a match: online and
- * `available`, and its plugin set does not turn match off (a practice server).
+ * `available`, not running a saved setup, and its plugin set does not turn match
+ * off (a practice server).
  */
 export async function fleetServerIsIdle(cs2ServerId: string): Promise<{
   idle: boolean;
@@ -323,7 +324,7 @@ export async function fleetServerIsIdle(cs2ServerId: string): Promise<{
   const idle =
     s.online &&
     s.availability === 'available' &&
-    !(s.fleetServerId && (await matchPluginDisabled(s.fleetServerId)));
+    !(s.fleetServerId && (await notForMatches(s.fleetServerId)));
   return {
     idle,
     online: s.online,

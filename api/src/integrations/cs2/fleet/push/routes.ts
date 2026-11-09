@@ -84,7 +84,7 @@ function handler(what: string, fn: (req: Request, res: Response) => Promise<Resp
 }
 
 /** `cmd.issued_by` for the signed-in admin (their player name when there is one). */
-async function issuedBy(req: Request): Promise<CmdPayload['issued_by']> {
+export async function issuedBy(req: Request): Promise<CmdPayload['issued_by']> {
   const actor = requestActorId(req);
   let name = actor ?? 'admin';
   if (actor && isSteam64(actor)) {

@@ -121,6 +121,21 @@ export async function setWhitelist(
   return sent;
 }
 
+/** `mapvote.set`: a server's map vote pool ([] = mapvote.cfg's again); load = its first map now. */
+export async function setMapvotePool(
+  serverId: string,
+  maps: string[],
+  load: boolean,
+  issuedBy: IssuedBy
+): Promise<{ id: string; seq: number; delivered: boolean }> {
+  return sendCmd(serverId, {
+    name: 'mapvote.set',
+    args: load ? { maps, load } : { maps },
+    issued_by: issuedBy,
+    expires_at: Date.now() + PRACTICE_TTL_MS,
+  });
+}
+
 export async function setPractice(
   serverId: string,
   on: boolean,
