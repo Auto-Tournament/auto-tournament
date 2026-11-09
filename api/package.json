@@ -1,6 +1,6 @@
 {
   "name": "@auto-tournament/api",
-  "version": "3.0.14",
+  "version": "3.0.15",
   "description": "Auto Tournament API (backend)",
   "repository": {
     "type": "git",
