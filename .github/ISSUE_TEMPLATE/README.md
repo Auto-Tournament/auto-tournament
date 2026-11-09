@@ -4,19 +4,19 @@ GitHub issue forms for Auto Tournament 3. They cover the whole stack: the
 site, CS2 Server Manager (`csm`) and Ready Up. Blank issues are off, so
 everyone picks a form.
 
-| Form                | File                           | Label            |
-| ------------------- | ------------------------------ | ---------------- |
-| Bug report          | `bug_report.yml`               | 🐞 bug           |
-| Server setup help   | `server_help.yml`              | 🆘 need help     |
-| Feature request     | `feature_request.yml`          | ➕ new feature   |
-| Question            | `question.yml`                 | none             |
-| Performance problem | `performance_issue.yml`        | 🐞 bug           |
-| Documentation       | `documentation_issue.yml`      | 📖 documentation |
-| Community request   | `community_request.yml`        | 🆘 need help     |
-| Translation         | `translation_contribution.yml` | none             |
+| Form                | File                           | Label          |
+| ------------------- | ------------------------------ | -------------- |
+| Bug report          | `bug_report.yml`               | 🐞 bug         |
+| Server setup help   | `server_help.yml`              | 🆘 need help   |
+| Feature request     | `feature_request.yml`          | ➕ new feature |
+| Question            | `question.yml`                 | none           |
+| Performance problem | `performance_issue.yml`        | 🐞 bug         |
+| Community request   | `community_request.yml`        | 🆘 need help   |
+| Translation         | `translation_contribution.yml` | none           |
 
-`config.yml` adds the links in the chooser: the docs, Discord, Ready Up's own
-repository (for Ready Up without the site), and private security reports.
+`config.yml` adds the links in the chooser: the docs, Discord, the docs
+repository (for wrong pages), csm's and Ready Up's own repositories (for
+using them without the site), and private security reports.
 
 ## Editing
 

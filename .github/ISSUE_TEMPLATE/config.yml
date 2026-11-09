@@ -6,6 +6,12 @@ contact_links:
   - name: 💬 Discord
     url: https://discord.gg/n7gHYau7aW
     about: Quick questions and help from the community.
+  - name: 📖 A docs page is wrong
+    url: https://github.com/Auto-Tournament/docs/issues/new/choose
+    about: Missing, wrong or unclear pages on docs.autotournament.gg.
+  - name: 🛠️ CS2 Server Manager without Auto Tournament
+    url: https://github.com/Auto-Tournament/cs2-server-manager/issues/new/choose
+    about: Using csm on its own, without the site? Report it in the csm repository.
   - name: 🎮 Ready Up without Auto Tournament
     url: https://github.com/Auto-Tournament/ready-up/issues/new/choose
     about: Running Ready Up on its own servers, without the site? Report it in the Ready Up repository.
