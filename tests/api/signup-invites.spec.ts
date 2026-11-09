@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { signInAsPlayerViaRequest, signInViaRequest } from '../helpers/auth';
+import { signInViaRequest } from '../helpers/auth';
 
 /**
  * Sign-up invite links: an admin makes one in Settings; while self-registration is off,
@@ -48,8 +48,10 @@ test(
       // A signed-in Steam ID with no player row, as after a sign-in while registration is off.
       const browser = async (steamId: string) => {
         const ctx = await playwright.request.newContext({ baseURL });
-        expect(await signInAsPlayerViaRequest(ctx, steamId)).toBe(true);
-        expect((await request.delete(`/api/players/${steamId}`)).ok()).toBe(true);
+        const signedIn = await ctx.post('/api/test/login-player', {
+          data: { steamId, noPlayer: true },
+        });
+        expect(signedIn.ok()).toBe(true);
         return ctx;
       };
 
