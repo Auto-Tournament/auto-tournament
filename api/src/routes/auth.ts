@@ -10,7 +10,7 @@ import { playerService } from '../services/playerService';
 import { presetAccounts } from '../services/gameAccounts';
 import { passport, isStrategyConfigured } from '../config/passport';
 import { settingsService } from '../services/settingsService';
-import { signupInviteService, SIGNUP_INVITE_TOKEN } from '../services/signupInviteService';
+import { signupInviteService } from '../services/signupInviteService';
 import type { AuthProvider } from '../services/authIdentityService';
 import { authIdentityService } from '../services/authIdentityService';
 import {
@@ -1631,7 +1631,8 @@ router.get('/me', async (req: Request, res: Response) => {
  *     summary: Open a sign-up invite link
  *     description: >-
  *       A link that still works is kept in a short-lived cookie, and the browser goes to the
- *       sign-in page (?invite=ok). Signing in from there makes an account even while
+ *       sign-in page (?invite=ok, with &until=<unix seconds> when the link has an end date).
+ *       Signing in from there makes an account even while
  *       self-registration is off, using the link once. A link that no longer works goes to
  *       ?invite=invalid.
  *     parameters:
@@ -1642,8 +1643,8 @@ router.get('/me', async (req: Request, res: Response) => {
 router.get('/invite/:token', async (req: Request, res: Response) => {
   const token = String(req.params.token ?? '');
   const login = `${getFrontendBaseUrl(req)}/login`;
-  const ok = SIGNUP_INVITE_TOKEN.test(token) && (await signupInviteService.isUsable(token));
-  if (!ok) return res.redirect(302, `${login}?invite=invalid`);
+  const invite = await signupInviteService.findUsable(token);
+  if (!invite) return res.redirect(302, `${login}?invite=invalid`);
   res.cookie(SIGNUP_INVITE_COOKIE, token, {
     httpOnly: true,
     secure: shouldUseSecureCookie(req),
@@ -1651,7 +1652,9 @@ router.get('/invite/:token', async (req: Request, res: Response) => {
     path: '/',
     maxAge: 1000 * 60 * 30,
   });
-  return res.redirect(302, `${login}?invite=ok`);
+  // `until` (unix seconds) lets the sign-in page say how long the link works.
+  const until = invite.expiresAt === null ? '' : `&until=${invite.expiresAt}`;
+  return res.redirect(302, `${login}?invite=ok${until}`);
 });
 
 /**

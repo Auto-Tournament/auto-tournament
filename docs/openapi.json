@@ -1604,7 +1604,7 @@
           "Auth"
         ],
         "summary": "Open a sign-up invite link",
-        "description": "A link that still works is kept in a short-lived cookie, and the browser goes to the sign-in page (?invite=ok). Signing in from there makes an account even while self-registration is off, using the link once. A link that no longer works goes to ?invite=invalid.",
+        "description": "A link that still works is kept in a short-lived cookie, and the browser goes to the sign-in page (?invite=ok, with &until=<unix seconds> when the link has an end date). Signing in from there makes an account even while self-registration is off, using the link once. A link that no longer works goes to ?invite=invalid.",
         "parameters": [
           {
             "in": "path",

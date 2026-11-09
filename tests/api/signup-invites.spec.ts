@@ -66,7 +66,7 @@ test(
 
         const opened = await first.get(path, { maxRedirects: 0 });
         expect(opened.status()).toBe(302);
-        expect(opened.headers().location).toMatch(/\/login\?invite=ok$/);
+        expect(opened.headers().location).toMatch(/\/login\?invite=ok&until=\d+$/);
         const registered = await first.post('/api/auth/self-register');
         expect(registered.status(), await registered.text()).toBe(200);
         expect(((await registered.json()) as { created: boolean }).created).toBe(true);

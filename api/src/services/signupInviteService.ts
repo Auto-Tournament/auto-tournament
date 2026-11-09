@@ -13,6 +13,8 @@ export interface SignupInvite {
   uses: number;
   expiresAt: number | null;
   createdBy: string | null;
+  /** The maker's player name, or an API token's label. */
+  createdByName: string | null;
   createdAt: number;
 }
 
@@ -22,6 +24,7 @@ interface Row {
   uses: number;
   expires_at: number | null;
   created_by: string | null;
+  created_by_name?: string | null;
   created_at: number;
 }
 
@@ -33,6 +36,9 @@ const toInvite = (r: Row): SignupInvite => ({
   uses: Number(r.uses),
   expiresAt: r.expires_at === null ? null : Number(r.expires_at),
   createdBy: r.created_by,
+  createdByName: r.created_by?.startsWith('token:')
+    ? r.created_by.slice('token:'.length)
+    : (r.created_by_name ?? null),
   createdAt: Number(r.created_at),
 });
 
@@ -63,7 +69,9 @@ export const signupInviteService = {
   /** Links that still work, newest first. */
   async listUsable(): Promise<SignupInvite[]> {
     const rows = await db.queryAsync<Row>(
-      `SELECT * FROM signup_invites WHERE ${USABLE} ORDER BY created_at DESC`,
+      `SELECT si.*, p.name AS created_by_name FROM signup_invites si
+       LEFT JOIN players p ON p.id = si.created_by
+       WHERE ${USABLE} ORDER BY si.created_at DESC`,
       [nowS()]
     );
     return rows.map(toInvite);
@@ -77,14 +85,14 @@ export const signupInviteService = {
     return r.changes > 0;
   },
 
-  /** Whether a token is a link that still works (does not use it). */
-  async isUsable(token: string): Promise<boolean> {
-    if (!SIGNUP_INVITE_TOKEN.test(token)) return false;
-    const row = await db.queryOneAsync<{ id: string }>(
-      `SELECT id FROM signup_invites WHERE token_hash = ? AND ${USABLE}`,
+  /** The link when it still works (does not use it): its end, unix seconds, or null for none. */
+  async findUsable(token: string): Promise<{ expiresAt: number | null } | null> {
+    if (!SIGNUP_INVITE_TOKEN.test(token)) return null;
+    const row = await db.queryOneAsync<{ expires_at: number | null }>(
+      `SELECT expires_at FROM signup_invites WHERE token_hash = ? AND ${USABLE}`,
       [hash(token), nowS()]
     );
-    return !!row;
+    return row ? { expiresAt: row.expires_at === null ? null : Number(row.expires_at) } : null;
   },
 
   /** Uses the link once; false when it no longer works. One statement, so two sign-ins can't both take the last use. */
