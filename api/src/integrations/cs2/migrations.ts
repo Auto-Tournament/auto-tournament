@@ -1710,4 +1710,18 @@ export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
       );
     `,
   },
+  {
+    // Saved setups an admin starts on any free server (serverSetups.ts).
+    id: '065-server-setups',
+    up: `
+      CREATE TABLE IF NOT EXISTS cs2_server_setups (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        plugins TEXT NOT NULL,
+        maps TEXT NOT NULL,
+        created_at INTEGER NOT NULL,
+        updated_at INTEGER NOT NULL
+      );
+    `,
+  },
 ];

@@ -756,6 +756,10 @@
       "description": "A CS2 match's round backups (Ready Up servers send them inline) and \"restore to round N\" over the fleet link or RCON, audited."
     },
     {
+      "name": "Saved setups",
+      "description": "Practice and fun setups (a plugin set and a map pool) an admin starts on any free server."
+    },
+    {
       "name": "Search",
       "description": "The search box: players, teams, tournaments and played matches by name."
     },
@@ -8452,6 +8456,120 @@
           {
             "apiToken": []
           },
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/game/cs2/setups": {
+      "get": {
+        "tags": [
+          "Fleet"
+        ],
+        "summary": "The saved setups (practice and fun servers to start on any free server)",
+        "responses": {
+          "200": {
+            "description": "{ success, setups: [{ id, name, plugins: { preset, plugins }, maps, updatedAt }] }"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Fleet"
+        ],
+        "summary": "Save a setup (the same name replaces it)",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "name",
+                  "plugins",
+                  "maps"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "maxLength": 40
+                  },
+                  "plugins": {
+                    "type": "object",
+                    "description": "{ preset } or { preset: 'custom', plugins: [name] } (Ready Up plugin set)"
+                  },
+                  "maps": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 64,
+                    "description": "Map names, Workshop ids or links; the first loads on start"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "{ success, setup }"
+          },
+          "400": {
+            "description": "A bad name",
+            "plugin or map": null
+          },
+          "409": {
+            "description": "The list is full"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/game/cs2/setups/{id}": {
+      "delete": {
+        "tags": [
+          "Fleet"
+        ],
+        "summary": "Remove a saved setup",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Removed"
+          },
+          "404": {
+            "description": "No such setup"
+          }
+        },
+        "security": [
           {
             "bearerAuth": []
           },
