@@ -108,6 +108,8 @@ export interface HostInventoryServer {
   };
   cs2_build: number;
   launch_args: string[];
+  /** What server.set_launch_args saved (csm with servers.launch_args). */
+  extra_launch_args?: string[];
 }
 
 export interface HostInventoryPayload {

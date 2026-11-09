@@ -2024,7 +2024,12 @@
       "warmup": "Oppvarming",
       "creating": "Lager …"
     },
-    "offlineFor": "Frakoblet i {{time}}"
+    "offlineFor": "Frakoblet i {{time}}",
+    "launch": {
+      "label": "Oppstartsvalg",
+      "hint": "Ekstra oppstartsvalg for CS2, skilt med mellomrom. Når du lagrer, starter serveren på nytt hvis den kjører.",
+      "save": "Lagre oppstartsvalg"
+    }
   },
   "matchPage": {
     "recordingClips": "Tar opp klipp",

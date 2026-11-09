@@ -561,6 +561,7 @@ export interface FleetHostServer {
   };
   cs2_build: number;
   launch_args: string[];
+  extra_launch_args?: string[];
   fleetServer: FleetHostServerRef | null;
   matchInProgress: boolean;
 }
@@ -618,6 +619,8 @@ export interface FleetHost {
   hostname: string | null;
   os: string | null;
   csmVersion: string | null;
+  /** What the machine's csm says it can do (hello), e.g. servers.launch_args. */
+  capabilities: string[];
   online: boolean;
   connectedAt: number | null;
   lastSeen: number | null;

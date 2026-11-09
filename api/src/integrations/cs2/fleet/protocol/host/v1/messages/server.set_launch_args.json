@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://auto-tournament.dev/fleet/host/v1/messages/server.set_launch_args.json",
   "title": "server.set_launch_args (platform → host)",
-  "description": "Not supported by this csm version: always rejected unsupported (csm builds the launch line itself). Reliable; answered by exactly one host.result (ref = this message's id). Rejected with `expired` when expires_at is past, and with `stale` when the envelope ts is more than 5 min off the host's clock (a command replayed long after it was sent is not run).",
+  "description": "Saves the server's extra CS2 launch arguments (args: [] clears them) and restarts it when it runs, so they take effect; a stopped server uses them on its next start. Each argument is [A-Za-z0-9_.:/=+,@%-], the first starts with - or +, and the ones csm sets itself (-dedicated, -ip, -port, -usercon, -gslt, +tv_port, +clientport, +maxplayers, +map, +game_type, +game_mode) are rejected bad_args. Refused match_in_progress like server.restart unless force. Capability servers.launch_args. Reliable; answered by exactly one host.result (ref = this message's id). Rejected with `expired` when expires_at is past, and with `stale` when the envelope ts is more than 5 min off the host's clock (a command replayed long after it was sent is not run).",
   "type": "object",
   "required": [
     "server",

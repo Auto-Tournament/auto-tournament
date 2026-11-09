@@ -205,7 +205,16 @@
             "items": {
               "type": "string"
             },
-            "description": "csm builds the launch line; always [] in this version"
+            "description": "The launch line csm builds (instance servers; [] for server-N servers)"
+          },
+          "extra_launch_args": {
+            "type": "array",
+            "description": "The server's own launch arguments, saved by server.set_launch_args (part of launch_args once it runs). Absent when there are none.",
+            "items": {
+              "type": "string",
+              "maxLength": 256
+            },
+            "maxItems": 64
           }
         }
       }

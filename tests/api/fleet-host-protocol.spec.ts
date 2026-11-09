@@ -105,6 +105,7 @@ test.describe('Fleet host protocol v1', () => {
       'host.inventory': inventory('fh_x', [
         inventoryServer('server-1'),
         inventoryServer('server-2', { readyup: { installed: null, health: 'not_running' } }),
+        inventoryServer('server-3', { extra_launch_args: ['+exec', 'my_settings.cfg'] }),
       ]),
       'host.health': { server: 'server-2', event: 'hung', detail: '/health timed out for 30 s' },
       'host.result': {

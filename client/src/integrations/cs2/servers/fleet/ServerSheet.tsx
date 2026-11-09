@@ -1,4 +1,5 @@
-import { Box, Button, Stack, Typography } from '@mui/material';
+import { Box, Button, Stack, TextField, Typography } from '@mui/material';
+import { useState } from 'react';
 import { ArrowClockwiseIcon, PlayIcon, StopIcon, TrashIcon } from '@phosphor-icons/react';
 import {
   mono,
@@ -7,7 +8,7 @@ import {
   useModuleTranslation,
   fmtDateTime,
 } from '../../../../module-sdk';
-import type { FleetHost } from '../../cs2.types';
+import type { FleetHost, FleetHostServer } from '../../cs2.types';
 import { getMapDisplayName } from '../../maps/mapData';
 import { serverState } from '../machineState';
 import { Facts, SideSheet } from './SideSheet';
@@ -187,6 +188,15 @@ export function ServerSheet({
               </Button>
             )}
           </Stack>
+          {host.capabilities.includes('servers.launch_args') && (
+            <LaunchOptions
+              key={`${s.name}:${(s.extra_launch_args ?? []).join(' ')}`}
+              fleet={fleet}
+              host={host}
+              server={s}
+              disabled={!canAct}
+            />
+          )}
           {match && s.process.running && (
             <Typography variant="body2" sx={{ color: color.muted }}>
               {t('serversBoard.matchHint', {
@@ -206,5 +216,60 @@ export function ServerSheet({
         </>
       )}
     </SideSheet>
+  );
+}
+
+/** The server's extra CS2 launch arguments (csm's server.set_launch_args); keyed on the saved value, so a new inventory resets the field. */
+function LaunchOptions({
+  fleet,
+  host,
+  server,
+  disabled,
+}: {
+  fleet: Fleet;
+  host: FleetHost;
+  server: FleetHostServer;
+  disabled: boolean;
+}) {
+  const { t } = useModuleTranslation('cs2');
+  const saved = (server.extra_launch_args ?? []).join(' ');
+  const [value, setValue] = useState(saved);
+  const args = value.trim() ? value.trim().split(/\s+/) : [];
+  const changed = args.join(' ') !== saved;
+  return (
+    <Stack gap={1}>
+      <TextField
+        size="small"
+        label={t('serversBoard.launch.label', { defaultValue: 'Launch options' })}
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        placeholder="+exec my_settings.cfg"
+        helperText={t('serversBoard.launch.hint', {
+          defaultValue:
+            'Extra CS2 launch arguments, separated by spaces. Saving restarts the server if it is running.',
+        })}
+        disabled={disabled}
+        slotProps={{
+          htmlInput: {
+            spellCheck: false,
+            style: mono,
+            'data-testid': `launch-options-${server.name}`,
+          },
+        }}
+      />
+      <Box>
+        <Button
+          size="small"
+          variant="outlined"
+          disabled={disabled || !changed}
+          onClick={() =>
+            void fleet.send(host, 'server.set_launch_args', { server: server.name, args })
+          }
+          data-testid={`launch-options-save-${server.name}`}
+        >
+          {t('serversBoard.launch.save', { defaultValue: 'Save launch options' })}
+        </Button>
+      </Box>
+    </Stack>
   );
 }

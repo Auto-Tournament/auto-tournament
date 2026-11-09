@@ -2024,7 +2024,12 @@
     "createN_other": "Create {{count}} servers",
     "restarts_one": "{{count}} restart in 24 h",
     "restarts_other": "{{count}} restarts in 24 h",
-    "offlineFor": "Offline for {{time}}"
+    "offlineFor": "Offline for {{time}}",
+    "launch": {
+      "label": "Launch options",
+      "hint": "Extra CS2 launch arguments, separated by spaces. Saving restarts the server if it is running.",
+      "save": "Save launch options"
+    }
   },
   "matchPage": {
     "recordingClips": "Recording clips",
