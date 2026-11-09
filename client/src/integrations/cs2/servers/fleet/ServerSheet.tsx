@@ -28,6 +28,8 @@ export function ServerSheet({
   host,
   serverName,
   match,
+  setup = null,
+  onStopSetup,
   onClose,
   onDelete,
 }: {
@@ -35,6 +37,9 @@ export function ServerSheet({
   host: FleetHost | null;
   serverName: string | null;
   match: ServerMatch | null;
+  /** The saved setup running on it: named as its state, with Stop the setup. */
+  setup?: { name: string } | null;
+  onStopSetup?: () => void;
   onClose: () => void;
   onDelete: (host: FleetHost, server: string) => void;
 }) {
@@ -68,7 +73,9 @@ export function ServerSheet({
                   sx={{ display: 'inline-flex', alignItems: 'center', gap: 1 }}
                 >
                   <StateMark state={state} />
-                  {label(state, match)}
+                  {setup && state === 'free'
+                    ? t('setups.sheetState', { name: setup.name })
+                    : label(state, match)}
                 </Box>,
               ],
               match && [
@@ -124,6 +131,16 @@ export function ServerSheet({
           />
 
           <Stack direction="row" gap={1} flexWrap="wrap">
+            {setup && onStopSetup && (
+              <Button
+                variant="contained"
+                size="small"
+                onClick={onStopSetup}
+                data-testid="server-stop-setup"
+              >
+                {t('setups.stopSetup')}
+              </Button>
+            )}
             {match && (
               <Button
                 variant="contained"
@@ -187,6 +204,11 @@ export function ServerSheet({
               </Button>
             )}
           </Stack>
+          {setup && (
+            <Typography variant="body2" sx={{ color: color.ink2 }}>
+              {t('setups.sheetHint')}
+            </Typography>
+          )}
           {match && s.process.running && (
             <Typography variant="body2" sx={{ color: color.muted }}>
               {t('serversBoard.matchHint', {

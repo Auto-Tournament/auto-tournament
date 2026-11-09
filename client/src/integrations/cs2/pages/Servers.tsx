@@ -38,6 +38,7 @@ import { useFleet } from '../servers/fleet/useFleet';
 import { useServerMatches } from '../servers/fleet/useServerMatches';
 import { MachineCard } from '../servers/fleet/MachineCard';
 import { SetupsSection } from '../servers/setups/SetupsSection';
+import { useSetups } from '../servers/setups/useSetups';
 import { ServerSheet } from '../servers/fleet/ServerSheet';
 import { MachineSheet } from '../servers/fleet/MachineSheet';
 import { SideSheet } from '../servers/fleet/SideSheet';
@@ -255,6 +256,7 @@ export default function Servers() {
     }
   }, [linkInline, linkConnected]);
 
+  const setups = useSetups();
   const counts = countServers(hosts, fleet.isDeleting);
   // A server on this page by its fleet id (a running setup's server).
   const serverById = (id: string) => {
@@ -378,6 +380,7 @@ export default function Servers() {
           )}
           {hosts.length > 0 && (
             <SetupsSection
+              data={setups}
               freeCount={counts.free}
               serverName={(id) => serverById(id)?.server.name ?? id}
               onOpenServer={(id) => {
@@ -392,6 +395,7 @@ export default function Servers() {
               <MachineCard
                 key={host.id}
                 host={host}
+                setupNameOf={(id) => setups.setupOn(id)?.setup.name ?? null}
                 matchByServer={matches}
                 isDeleting={fleet.isDeleting}
                 onOpenMachine={() => openMachine(host.id)}
@@ -485,6 +489,10 @@ export default function Servers() {
         host={sheetServer ? sheetHost : null}
         serverName={sheetServer ? (serverOpen?.name ?? null) : null}
         match={sheetServer?.fleetServer ? (matches[sheetServer.fleetServer.id] ?? null) : null}
+        setup={setups.setupOn(sheetServer?.fleetServer?.id)?.setup ?? null}
+        onStopSetup={() => {
+          if (sheetServer?.fleetServer) void setups.stop(sheetServer.fleetServer.id);
+        }}
         onClose={() => setServerOpen(null)}
         onDelete={(host, server) => setDeleteServer({ host, server })}
       />

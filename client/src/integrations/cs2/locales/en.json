@@ -2684,6 +2684,10 @@
     "deleteTitle": "Delete {{name}}?",
     "deleteMessage": "The setup is gone for good. A server running it now keeps running until you stop it.",
     "saveFailed": "Couldn't save the setup",
-    "deleteFailed": "Couldn't delete the setup"
+    "deleteFailed": "Couldn't delete the setup",
+    "tileLine": "Saved setup",
+    "sheetState": "{{name}} setup",
+    "stopSetup": "Stop the setup",
+    "sheetHint": "Stopping the setup ends it for the players, and the server goes back to tournaments."
   }
 }

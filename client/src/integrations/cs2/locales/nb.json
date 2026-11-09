@@ -2684,6 +2684,10 @@
     "deleteTitle": "Slette {{name}}?",
     "deleteMessage": "Oppsettet blir borte for godt. En server som kjører det nå, fortsetter til du stopper den.",
     "saveFailed": "Klarte ikke å lagre oppsettet",
-    "deleteFailed": "Klarte ikke å slette oppsettet"
+    "deleteFailed": "Klarte ikke å slette oppsettet",
+    "tileLine": "Lagret oppsett",
+    "sheetState": "Oppsettet {{name}}",
+    "stopSetup": "Stopp oppsettet",
+    "sheetHint": "Når du stopper oppsettet, er det slutt for spillerne, og serveren går tilbake til turneringene."
   }
 }

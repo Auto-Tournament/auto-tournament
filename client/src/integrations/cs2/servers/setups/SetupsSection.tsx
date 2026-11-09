@@ -1,44 +1,30 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Box, Button, ButtonBase, Typography } from '@mui/material';
 import { PlusIcon } from '@phosphor-icons/react';
 import {
-  api,
-  apiErrorMessage,
   fmtTime,
   fontDisplay,
   mono,
   radii,
   tokens,
   useModuleTranslation,
-  useSnackbar,
 } from '../../../../module-sdk';
-import type { PluginSetValue } from '../fleetPush.types';
 import { SetupEditor } from './SetupEditor';
+import type { ServerSetup, Setups } from './useSetups';
 
 const { color } = tokens;
-
-export interface ServerSetup {
-  id: string;
-  name: string;
-  plugins: PluginSetValue;
-  maps: string[];
-}
-
-interface SetupRun {
-  setupId: string;
-  serverId: string;
-  startedAt: number;
-}
 
 /**
  * Servers › Setups: practice and fun servers an admin starts on any free server and stops when
  * done; the server goes back to tournaments after (api/src/integrations/cs2/serverSetupRuns.ts).
  */
 export function SetupsSection({
+  data,
   freeCount,
   serverName,
   onOpenServer,
 }: {
+  data: Setups;
   /** Free servers now (the page's summary): none, no Start. */
   freeCount: number;
   /** A server's name on this page, by its id. */
@@ -46,40 +32,8 @@ export function SetupsSection({
   onOpenServer: (serverId: string) => void;
 }) {
   const { t } = useModuleTranslation('cs2');
-  const { showError } = useSnackbar();
-  const [setups, setSetups] = useState<ServerSetup[] | null>(null);
-  const [running, setRunning] = useState<SetupRun[]>([]);
-  const [busy, setBusy] = useState<string | null>(null);
+  const { setups, running, busy, act, stop, reload } = data;
   const [editing, setEditing] = useState<ServerSetup | 'new' | null>(null);
-
-  const load = useCallback(async () => {
-    try {
-      const r = await api.get<{ setups: ServerSetup[]; running: SetupRun[] }>(
-        '/api/game/cs2/setups'
-      );
-      setSetups(r.setups);
-      setRunning(r.running);
-    } catch (error) {
-      showError(apiErrorMessage(error, t('setups.loadFailed')));
-      setSetups([]);
-    }
-  }, [showError, t]);
-  useEffect(() => {
-    const id = setTimeout(() => void load(), 0);
-    return () => clearTimeout(id);
-  }, [load]);
-
-  const act = async (id: string, url: string) => {
-    setBusy(id);
-    try {
-      await api.post(url, {});
-      await load();
-    } catch (error) {
-      showError(apiErrorMessage(error, t('setups.actionFailed')));
-    } finally {
-      setBusy(null);
-    }
-  };
 
   const summary = (s: ServerSetup) =>
     `${s.maps.length === 1 ? s.maps[0] : t('setups.mapCount', { count: s.maps.length })} · ${s.plugins.plugins
@@ -218,13 +172,8 @@ export function SetupsSection({
                       <Button
                         size="small"
                         variant="outlined"
-                        disabled={busy === s.id}
-                        onClick={() =>
-                          void act(
-                            s.id,
-                            `/api/game/cs2/setups/running/${encodeURIComponent(run.serverId)}/stop`
-                          )
-                        }
+                        disabled={busy === run.serverId}
+                        onClick={() => void stop(run.serverId)}
                         data-testid={`setup-stop-${s.id}`}
                         sx={{ borderRadius: radii.pill }}
                       >
@@ -257,7 +206,7 @@ export function SetupsSection({
         onClose={() => setEditing(null)}
         onSaved={() => {
           setEditing(null);
-          void load();
+          void reload();
         }}
       />
     </Box>
