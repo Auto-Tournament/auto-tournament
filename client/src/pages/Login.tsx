@@ -1,10 +1,12 @@
-import { pageTitle } from '../utils/pageTitle';
+import { pageTitle, SITE_TITLE } from '../utils/pageTitle';
+import { fmtDateTime } from '../utils/time';
 import React, { useEffect, useState } from 'react';
 import {
   Box,
   Card,
   Button,
   Alert,
+  AlertTitle,
   CircularProgress,
   Container,
   Link,
@@ -12,7 +14,7 @@ import {
   Stack,
   Typography,
 } from '@mui/material';
-import { Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink, useSearchParams } from 'react-router-dom';
 import { paths } from '../paths';
 import { BookOpenIcon, GithubLogoIcon, GlobeIcon, ScalesIcon } from '@phosphor-icons/react';
 import { useAuth } from '../contexts/AuthContext';
@@ -41,6 +43,10 @@ function readableOn(hex: string): string {
 
 export default function Login() {
   const { t } = useTranslation();
+  const [params] = useSearchParams();
+  const invite = params.get('invite');
+  // An opened invite link sends its end date (unix seconds) along.
+  const inviteUntil = Number(params.get('until')) || null;
   const { loginWithSteam } = useAuth();
   const [providers, setProviders] = useState<
     Array<{
@@ -231,6 +237,21 @@ export default function Login() {
                 </Box>
               </Stack>
 
+              {invite === 'ok' && (
+                <Alert severity="success" data-testid="login-invite-ok">
+                  <AlertTitle>{t('login.inviteOkTitle', { site: SITE_TITLE })}</AlertTitle>
+                  {inviteUntil
+                    ? t('login.inviteOkUntil', { date: fmtDateTime(inviteUntil) })
+                    : t('login.inviteOkBody')}
+                </Alert>
+              )}
+              {invite === 'invalid' && (
+                <Alert severity="warning" data-testid="login-invite-invalid">
+                  <AlertTitle>{t('login.inviteInvalidTitle')}</AlertTitle>
+                  {t('login.inviteInvalidBody')}
+                </Alert>
+              )}
+
               {localLogin?.setup && (
                 <Alert severity="info" data-testid="login-setup-notice">
                   <Stack spacing={0.5}>
@@ -267,8 +288,26 @@ export default function Login() {
                 </Alert>
               )}
 
+              {/* A dead invite link: one way back to the plain sign-in page. */}
+              {invite === 'invalid' && (
+                <Button
+                  component={RouterLink}
+                  to={paths.login}
+                  variant="contained"
+                  size="large"
+                  data-testid="login-go-to-sign-in"
+                  sx={{ borderRadius: 999 }}
+                >
+                  {t('login.goToSignIn')}
+                </Button>
+              )}
+
               {/* One button per provider the API offers, in its order. */}
-              <Stack spacing={1.25} aria-busy={loadingProviders || undefined}>
+              <Stack
+                spacing={1.25}
+                aria-busy={loadingProviders || undefined}
+                sx={invite === 'invalid' ? { display: 'none' } : undefined}
+              >
                 {providers.map((provider, index) => {
                   // The first provider gets the theme's accent; the rest are outlined.
                   const isPreferred = index === 0;
@@ -298,7 +337,10 @@ export default function Login() {
                           bgcolor: provider.buttonColor,
                           borderColor: provider.buttonColor,
                           color: readableOn(provider.buttonColor),
-                          '&:hover': { bgcolor: provider.buttonColor, filter: 'brightness(0.92)' },
+                          '&:hover': {
+                            bgcolor: provider.buttonColor,
+                            filter: 'brightness(0.92)',
+                          },
                         }),
                       }}
                     >
@@ -346,7 +388,7 @@ export default function Login() {
                   ))}
 
                 {/* The username + password admin login, while it is on (Settings → Sign-in). */}
-                {localLogin?.enabled && !localLogin.setup && (
+                {localLogin?.enabled && !localLogin.setup && invite !== 'ok' && (
                   <Button
                     component={RouterLink}
                     to={paths.adminLogin}
