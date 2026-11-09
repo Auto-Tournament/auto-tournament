@@ -53,7 +53,7 @@ import {
 } from './plan';
 import { configuredReserve, getAutoscaleSettings, type StoredAutoscaleSettings } from './settings';
 import { fleetChanged } from '../adminTopics';
-import { matchPluginDisabled } from '../push/pluginSets';
+import { notForMatches } from '../setupRuns';
 
 /** `issued_by` on the scaler's host commands. */
 export const AUTOSCALE_ACTOR = 'autoscale';
@@ -419,7 +419,8 @@ export async function gatherInputs(settings: StoredAutoscaleSettings): Promise<G
       const busy = ours || v.matchInProgress;
       // csm reports a match in progress that none of ours is behind (a local match or scrim).
       const occupied = running && v.matchInProgress && !ours;
-      const practice = await matchPluginDisabled(fid);
+      // A practice server or a running saved setup: not for matches, not the scaler's.
+      const practice = await notForMatches(fid);
       const idle =
         running &&
         linkUp &&

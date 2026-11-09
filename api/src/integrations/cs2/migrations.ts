@@ -1724,4 +1724,19 @@ export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
       );
     `,
   },
+  {
+    // A saved setup running on a server (fleet/setupRuns.ts): no match is handed to it and the
+    // scaler leaves it alone until an admin stops it. previous_plugins: what to give back.
+    id: '066-server-setup-runs',
+    up: `
+      CREATE TABLE IF NOT EXISTS cs2_server_setup_runs (
+        fleet_server_id TEXT PRIMARY KEY,
+        cs2_server_id TEXT NOT NULL,
+        setup_id TEXT NOT NULL UNIQUE,
+        previous_plugins TEXT,
+        started_by TEXT,
+        started_at INTEGER NOT NULL
+      );
+    `,
+  },
 ];

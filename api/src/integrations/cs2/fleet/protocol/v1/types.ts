@@ -537,6 +537,7 @@ export type CmdName =
   | 'plugins.set'
   | 'whitelist.set'
   | 'practice.set'
+  | 'mapvote.set'
   | 'settings.set'
   | 'tv.set';
 
