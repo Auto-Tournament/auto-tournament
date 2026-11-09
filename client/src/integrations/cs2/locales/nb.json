@@ -2626,5 +2626,18 @@
     "copyFailed": "Klarte ikke å kopiere. Marker teksten i stedet",
     "onStage": "På scenen: alle GOTV-plasser, for kommentatorene og strømmen",
     "stageFailed": "Klarte ikke å endre scenekampen"
+  },
+  "serverConsole": {
+    "title": "Serverkonsoll",
+    "command": "Konsollkommando",
+    "run": "Kjør",
+    "noOutput": "Sendt: {{command}} (ingen utdata)",
+    "map": "Kart",
+    "changeMap": "Bytt kart",
+    "mapChanged": "Bytter til {{map}}",
+    "message": "Melding i serverchatten",
+    "say": "Send",
+    "said": "Meldingen er sendt",
+    "failed": "Serveren avviste det"
   }
 }

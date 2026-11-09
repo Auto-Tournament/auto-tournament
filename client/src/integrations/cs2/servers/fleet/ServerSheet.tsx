@@ -11,6 +11,7 @@ import type { FleetHost } from '../../cs2.types';
 import { getMapDisplayName } from '../../maps/mapData';
 import { serverState } from '../machineState';
 import { Facts, SideSheet } from './SideSheet';
+import { ServerConsole } from './ServerConsole';
 import { StateMark, useStateLabel } from './ServerTile';
 import type { Fleet } from './useFleet';
 import type { ServerMatch } from './useServerMatches';
@@ -187,6 +188,9 @@ export function ServerSheet({
               </Button>
             )}
           </Stack>
+          {!match && s.process.running && s.fleetServer?.online && (
+            <ServerConsole key={s.fleetServer.id} serverId={s.fleetServer.id} disabled={!canAct} />
+          )}
           {match && s.process.running && (
             <Typography variant="body2" sx={{ color: color.muted }}>
               {t('serversBoard.matchHint', {

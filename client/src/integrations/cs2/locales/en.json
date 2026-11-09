@@ -2626,5 +2626,18 @@
     "copyFailed": "Could not copy; select the text instead",
     "onStage": "On stage: every GOTV seat, for the casters and the stream",
     "stageFailed": "Could not change the stage match"
+  },
+  "serverConsole": {
+    "title": "Server console",
+    "command": "Console command",
+    "run": "Run",
+    "noOutput": "Sent: {{command}} (no output)",
+    "map": "Map",
+    "changeMap": "Change map",
+    "mapChanged": "Changing to {{map}}",
+    "message": "Message to the server chat",
+    "say": "Send",
+    "said": "Message sent",
+    "failed": "The server refused it"
   }
 }
