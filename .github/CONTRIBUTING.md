@@ -53,7 +53,7 @@ Releases are cut with the **Release** workflow or `scripts/release.sh`. Release 
 
 [Open an issue](https://github.com/Auto-Tournament/auto-tournament/issues/new/choose)
 with what happened, how to reproduce it, what you expected, and your setup (OS,
-Docker version, MAT version).
+Docker version, Auto Tournament version).
 
 If you need several players to test something, or want feedback on a change,
 use the **Community Request** issue template. People who help with those get
