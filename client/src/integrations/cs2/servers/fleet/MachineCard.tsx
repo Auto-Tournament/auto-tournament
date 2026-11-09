@@ -15,7 +15,8 @@ import {
 } from '../../../../module-sdk';
 import type { FleetHost, FleetHostCommand, FleetHostCommandType } from '../../cs2.types';
 import { activeCommand, latestProblem, serverState } from '../machineState';
-import { CreatingTile, FailedCreateTile, ServerTile } from './ServerTile';
+import { CreatingTile, FailedCreateTile } from './CreateTiles';
+import { ServerTile } from './ServerTile';
 import type { ServerMatch } from './useServerMatches';
 
 const { color } = tokens;
