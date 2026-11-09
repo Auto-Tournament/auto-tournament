@@ -2024,7 +2024,12 @@
     "createN_other": "Skapa {{count}} servrar",
     "restarts_one": "{{count}} omstart på 24 h",
     "restarts_other": "{{count}} omstarter på 24 h",
-    "offlineFor": "Offline i {{time}}"
+    "offlineFor": "Offline i {{time}}",
+    "launch": {
+      "label": "Startalternativ",
+      "hint": "Extra startalternativ för CS2, åtskilda med mellanslag. Om servern är igång startas den om när du sparar.",
+      "save": "Spara startalternativ"
+    }
   },
   "matchPage": {
     "recordingClips": "Spelar in klipp",

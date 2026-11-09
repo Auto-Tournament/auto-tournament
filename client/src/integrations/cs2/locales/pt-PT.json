@@ -2068,7 +2068,12 @@
     "restarts_other": "{{count}} reinícios em 24 h",
     "offlineFor": "Offline há {{time}}",
     "createN_many": "Criar {{count}} servidores",
-    "restarts_many": "{{count}} reinícios em 24 h"
+    "restarts_many": "{{count}} reinícios em 24 h",
+    "launch": {
+      "label": "Opções de arranque",
+      "hint": "Argumentos de arranque adicionais do CS2, separados por espaços. Guardar reinicia o servidor se estiver em execução.",
+      "save": "Guardar opções de arranque"
+    }
   },
   "matchPage": {
     "recordingClips": "A gravar clips",

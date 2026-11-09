@@ -2024,7 +2024,12 @@
     "createN_other": "Tạo {{count}} máy chủ",
     "restarts_one": "{{count}} lần khởi động lại trong 24 giờ",
     "restarts_other": "{{count}} lần khởi động lại trong 24 giờ",
-    "offlineFor": "Ngoại tuyến {{time}}"
+    "offlineFor": "Ngoại tuyến {{time}}",
+    "launch": {
+      "label": "Tùy chọn khởi chạy",
+      "hint": "Tham số khởi chạy CS2 bổ sung, cách nhau bằng dấu cách. Khi lưu, máy chủ sẽ khởi động lại nếu đang chạy.",
+      "save": "Lưu tùy chọn khởi chạy"
+    }
   },
   "matchPage": {
     "recordingClips": "Đang ghi clip",

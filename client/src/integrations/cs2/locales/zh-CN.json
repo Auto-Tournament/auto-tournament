@@ -2024,7 +2024,12 @@
     "createN_other": "创建 {{count}} 台服务器",
     "restarts_one": "24 小时内重启 {{count}} 次",
     "restarts_other": "24 小时内重启 {{count}} 次",
-    "offlineFor": "已离线 {{time}}"
+    "offlineFor": "已离线 {{time}}",
+    "launch": {
+      "label": "启动选项",
+      "hint": "额外的 CS2 启动参数，用空格分隔。保存后，如果服务器正在运行，会重启。",
+      "save": "保存启动选项"
+    }
   },
   "matchPage": {
     "recordingClips": "正在录制片段",

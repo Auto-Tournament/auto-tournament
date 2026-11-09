@@ -2068,7 +2068,12 @@
     "restarts_other": "{{count}} riavvii in 24 h",
     "offlineFor": "Offline da {{time}}",
     "createN_many": "Crea {{count}} server",
-    "restarts_many": "{{count}} riavvii in 24 h"
+    "restarts_many": "{{count}} riavvii in 24 h",
+    "launch": {
+      "label": "Opzioni di avvio",
+      "hint": "Argomenti di avvio aggiuntivi di CS2, separati da spazi. Salvando, il server viene riavviato se è in esecuzione.",
+      "save": "Salva le opzioni di avvio"
+    }
   },
   "matchPage": {
     "recordingClips": "Registrazione delle clip",

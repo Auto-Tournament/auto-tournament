@@ -2024,7 +2024,12 @@
     "createN_other": "{{count}} Server erstellen",
     "restarts_one": "{{count}} Neustart in 24 Std.",
     "restarts_other": "{{count}} Neustarts in 24 Std.",
-    "offlineFor": "Offline seit {{time}}"
+    "offlineFor": "Offline seit {{time}}",
+    "launch": {
+      "label": "Startoptionen",
+      "hint": "Zusätzliche CS2-Startoptionen, durch Leerzeichen getrennt. Beim Speichern wird der Server neu gestartet, falls er läuft.",
+      "save": "Startoptionen speichern"
+    }
   },
   "matchPage": {
     "recordingClips": "Clips werden aufgenommen",

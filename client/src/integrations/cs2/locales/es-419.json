@@ -2068,7 +2068,12 @@
     "restarts_one": "{{count}} reinicio en 24 h",
     "restarts_other": "{{count}} reinicios en 24 h",
     "restarts_many": "{{count}} reinicios en 24 h",
-    "offlineFor": "Desconectado desde hace {{time}}"
+    "offlineFor": "Desconectado desde hace {{time}}",
+    "launch": {
+      "label": "Opciones de arranque",
+      "hint": "Argumentos de arranque adicionales de CS2, separados por espacios. Al guardar, el servidor se reinicia si está en ejecución.",
+      "save": "Guardar opciones de arranque"
+    }
   },
   "matchPage": {
     "recordingClips": "Grabando clips",

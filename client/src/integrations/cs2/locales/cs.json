@@ -2111,7 +2111,12 @@
     "createN_few": "Vytvořit {{count}} servery",
     "createN_many": "Vytvořit {{count}} serverů",
     "restarts_few": "{{count}} restarty za 24 h",
-    "restarts_many": "{{count}} restartů za 24 h"
+    "restarts_many": "{{count}} restartů za 24 h",
+    "launch": {
+      "label": "Možnosti spuštění",
+      "hint": "Další argumenty spuštění CS2 oddělené mezerami. Uložení server restartuje, pokud běží.",
+      "save": "Uložit možnosti spuštění"
+    }
   },
   "matchPage": {
     "recordingClips": "Nahrávají se klipy",

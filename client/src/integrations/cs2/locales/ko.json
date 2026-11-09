@@ -2024,7 +2024,12 @@
     "createN_other": "서버 {{count}}대 만들기",
     "restarts_one": "24시간 동안 {{count}}회 재시작",
     "restarts_other": "24시간 동안 {{count}}회 재시작",
-    "offlineFor": "{{time}} 동안 오프라인"
+    "offlineFor": "{{time}} 동안 오프라인",
+    "launch": {
+      "label": "실행 옵션",
+      "hint": "CS2에 추가할 실행 인수를 공백으로 구분해 적어요. 저장하면 서버가 실행 중일 때 재시작돼요.",
+      "save": "실행 옵션 저장"
+    }
   },
   "matchPage": {
     "recordingClips": "클립 녹화 중",

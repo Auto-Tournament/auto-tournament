@@ -2024,7 +2024,12 @@
     "createN_other": "{{count}} szerver létrehozása",
     "restarts_one": "{{count}} újraindulás 24 óra alatt",
     "restarts_other": "{{count}} újraindulás 24 óra alatt",
-    "offlineFor": "Offline ennyi ideje: {{time}}"
+    "offlineFor": "Offline ennyi ideje: {{time}}",
+    "launch": {
+      "label": "Indítási beállítások",
+      "hint": "További CS2 indítási argumentumok szóközzel elválasztva. Mentéskor a szerver újraindul, ha fut.",
+      "save": "Indítási beállítások mentése"
+    }
   },
   "matchPage": {
     "recordingClips": "Klipek rögzítése",

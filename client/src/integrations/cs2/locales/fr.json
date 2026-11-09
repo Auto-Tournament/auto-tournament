@@ -2068,7 +2068,12 @@
     "restarts_other": "{{count}} redémarrages en 24 h",
     "offlineFor": "Hors ligne depuis {{time}}",
     "createN_many": "Créer {{count}} serveurs",
-    "restarts_many": "{{count}} redémarrages en 24 h"
+    "restarts_many": "{{count}} redémarrages en 24 h",
+    "launch": {
+      "label": "Options de lancement",
+      "hint": "Arguments de lancement CS2 supplémentaires, séparés par des espaces. L'enregistrement redémarre le serveur s'il tourne.",
+      "save": "Enregistrer les options de lancement"
+    }
   },
   "matchPage": {
     "recordingClips": "Enregistrement des clips",

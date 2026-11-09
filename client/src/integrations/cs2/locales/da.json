@@ -2024,7 +2024,12 @@
     "createN_other": "Opret {{count}} servere",
     "restarts_one": "{{count}} genstart på 24 t",
     "restarts_other": "{{count}} genstarter på 24 t",
-    "offlineFor": "Offline i {{time}}"
+    "offlineFor": "Offline i {{time}}",
+    "launch": {
+      "label": "Startindstillinger",
+      "hint": "Ekstra startindstillinger til CS2, adskilt med mellemrum. Når du gemmer, genstartes serveren, hvis den kører.",
+      "save": "Gem startindstillinger"
+    }
   },
   "matchPage": {
     "recordingClips": "Optager klip",

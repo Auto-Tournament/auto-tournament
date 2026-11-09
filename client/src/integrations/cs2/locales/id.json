@@ -2024,7 +2024,12 @@
     "createN_other": "Buat {{count}} server",
     "restarts_one": "{{count}} restart dalam 24 j",
     "restarts_other": "{{count}} restart dalam 24 j",
-    "offlineFor": "Offline selama {{time}}"
+    "offlineFor": "Offline selama {{time}}",
+    "launch": {
+      "label": "Opsi peluncuran",
+      "hint": "Argumen peluncuran CS2 tambahan, dipisahkan spasi. Menyimpan akan memulai ulang server jika sedang berjalan.",
+      "save": "Simpan opsi peluncuran"
+    }
   },
   "matchPage": {
     "recordingClips": "Merekam klip",

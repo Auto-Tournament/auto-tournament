@@ -2024,7 +2024,12 @@
     "createN_other": "{{count}} sunucu oluştur",
     "restarts_one": "24 saatte {{count}} yeniden başlatma",
     "restarts_other": "24 saatte {{count}} yeniden başlatma",
-    "offlineFor": "{{time}} süredir çevrimdışı"
+    "offlineFor": "{{time}} süredir çevrimdışı",
+    "launch": {
+      "label": "Başlatma seçenekleri",
+      "hint": "Boşlukla ayrılmış ek CS2 başlatma argümanları. Kaydetmek, çalışıyorsa sunucuyu yeniden başlatır.",
+      "save": "Başlatma seçeneklerini kaydet"
+    }
   },
   "matchPage": {
     "recordingClips": "Klipler kaydediliyor",

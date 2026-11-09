@@ -2024,7 +2024,12 @@
     "createN_other": "Luo {{count}} palvelinta",
     "restarts_one": "{{count}} uudelleenkäynnistys 24 tunnissa",
     "restarts_other": "{{count}} uudelleenkäynnistystä 24 tunnissa",
-    "offlineFor": "Offline {{time}}"
+    "offlineFor": "Offline {{time}}",
+    "launch": {
+      "label": "Käynnistysasetukset",
+      "hint": "CS2:n lisäkäynnistysargumentit välilyönnein erotettuina. Tallentaminen käynnistää palvelimen uudelleen, jos se on käynnissä.",
+      "save": "Tallenna käynnistysasetukset"
+    }
   },
   "matchPage": {
     "recordingClips": "Tallennetaan klippejä",

@@ -2024,7 +2024,12 @@
     "createN_other": "建立 {{count}} 臺伺服器",
     "restarts_one": "24 小時內重啟 {{count}} 次",
     "restarts_other": "24 小時內重啟 {{count}} 次",
-    "offlineFor": "已離線 {{time}}"
+    "offlineFor": "已離線 {{time}}",
+    "launch": {
+      "label": "啟動選項",
+      "hint": "額外的 CS2 啟動參數，以空格分隔。儲存後，若伺服器正在執行，會重新啟動。",
+      "save": "儲存啟動選項"
+    }
   },
   "matchPage": {
     "recordingClips": "正在錄製片段",

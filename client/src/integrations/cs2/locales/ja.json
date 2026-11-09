@@ -2024,7 +2024,12 @@
     "createN_other": "{{count}} 台のサーバーを作成",
     "restarts_one": "24時間で {{count}} 回再起動",
     "restarts_other": "24時間で {{count}} 回再起動",
-    "offlineFor": "{{time}} オフライン"
+    "offlineFor": "{{time}} オフライン",
+    "launch": {
+      "label": "起動オプション",
+      "hint": "CS2 の追加起動オプションをスペース区切りで入力します。保存すると、サーバーが起動中なら再起動します。",
+      "save": "起動オプションを保存"
+    }
   },
   "matchPage": {
     "recordingClips": "クリップを録画中",

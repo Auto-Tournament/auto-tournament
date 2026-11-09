@@ -2024,7 +2024,12 @@
     "createN_other": "{{count}} servers maken",
     "restarts_one": "{{count}} herstart in 24 u",
     "restarts_other": "{{count}} herstarts in 24 u",
-    "offlineFor": "Offline sinds {{time}}"
+    "offlineFor": "Offline sinds {{time}}",
+    "launch": {
+      "label": "Startopties",
+      "hint": "Extra startargumenten voor CS2, gescheiden door spaties. Bij opslaan wordt de server herstart als hij draait.",
+      "save": "Startopties opslaan"
+    }
   },
   "matchPage": {
     "recordingClips": "Clips opnemen",

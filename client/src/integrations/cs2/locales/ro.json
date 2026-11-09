@@ -2067,7 +2067,12 @@
     "restarts_other": "{{count}} de reporniri în 24 h",
     "offlineFor": "Offline de {{time}}",
     "createN_few": "Creează {{count}} servere",
-    "restarts_few": "{{count}} reporniri în 24 h"
+    "restarts_few": "{{count}} reporniri în 24 h",
+    "launch": {
+      "label": "Opțiuni de lansare",
+      "hint": "Argumente de lansare CS2 suplimentare, separate prin spații. Salvarea repornește serverul dacă rulează.",
+      "save": "Salvează opțiunile de lansare"
+    }
   },
   "matchPage": {
     "recordingClips": "Se înregistrează clipuri",

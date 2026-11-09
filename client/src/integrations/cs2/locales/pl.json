@@ -2111,7 +2111,12 @@
     "createN_few": "Utwórz {{count}} serwery",
     "createN_many": "Utwórz {{count}} serwerów",
     "restarts_few": "{{count}} restarty w ciągu 24 h",
-    "restarts_many": "{{count}} restartów w ciągu 24 h"
+    "restarts_many": "{{count}} restartów w ciągu 24 h",
+    "launch": {
+      "label": "Opcje uruchamiania",
+      "hint": "Dodatkowe argumenty uruchamiania CS2, oddzielone spacjami. Zapisanie uruchamia serwer ponownie, jeśli jest włączony.",
+      "save": "Zapisz opcje uruchamiania"
+    }
   },
   "matchPage": {
     "recordingClips": "Nagrywanie klipów",
