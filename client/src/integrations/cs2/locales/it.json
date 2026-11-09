@@ -1229,7 +1229,8 @@
       "default": "Predefinito della flotta",
       "none": "Nessuno",
       "tryout": "Prova skin",
-      "movement": "Movimento"
+      "movement": "Movimento",
+      "retakes": "Retakes"
     },
     "plugin": {
       "fleet": "Collegamento flotta",
@@ -1243,7 +1244,8 @@
       "addons": "Estensioni",
       "mapvote": "Voto mappa",
       "community": "Community",
-      "movement": "Movimento"
+      "movement": "Movimento",
+      "retakes": "Retakes"
     },
     "pluginHelp": {
       "essentials": "Admin, cambio mappa, ricarica e riavvio",
@@ -1255,7 +1257,8 @@
       "addons": "Addon del Workshop",
       "mapvote": "Voto delle mappe: .rtv, .nominate, voto a fine mappa",
       "community": "Comandi della community: .rank, .top, .speclist, .kick per gli admin",
-      "movement": "Surf, bhop e kz: cronometro, record e classifiche"
+      "movement": "Surf, bhop e kz: cronometro, record e classifiche",
+      "retakes": "La bomba è piazzata a ogni round: i T tengono il sito, i CT lo riprendono"
     },
     "required": "Sempre attivo",
     "usesDefault": "Usa il predefinito della flotta: {{plugins}}.",

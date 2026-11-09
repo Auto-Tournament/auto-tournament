@@ -1245,7 +1245,8 @@
       "custom": "Vlastní",
       "default": "Výchozí flotily",
       "none": "Žádná",
-      "movement": "Movement"
+      "movement": "Movement",
+      "retakes": "Retakes"
     },
     "plugin": {
       "fleet": "Spojení s flotilou",
@@ -1259,7 +1260,8 @@
       "mapvote": "Hlasování o mapě",
       "community": "Komunita",
       "addons": "Doplňky",
-      "movement": "Movement"
+      "movement": "Movement",
+      "retakes": "Retakes"
     },
     "pluginHelp": {
       "essentials": "Správci, změna mapy, reload a restart",
@@ -1271,7 +1273,8 @@
       "mapvote": "Hlasování o mapě: .rtv, .nominate, hlasování na konci mapy",
       "community": "Komunitní příkazy: .rank, .top, .speclist, pro správce .kick",
       "addons": "Doplňky z Workshopu",
-      "movement": "Surf, bhop a kz: časovač, rekordy a žebříčky"
+      "movement": "Surf, bhop a kz: časovač, rekordy a žebříčky",
+      "retakes": "Bomba je položená každé kolo: T drží místo, CT ho dobývají zpět"
     },
     "required": "Vždy zapnuto",
     "usesDefault": "Používá výchozí flotily: {{plugins}}.",

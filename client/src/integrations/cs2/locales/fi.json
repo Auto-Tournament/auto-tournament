@@ -1213,7 +1213,8 @@
       "custom": "Mukautettu",
       "default": "Laivaston oletus",
       "none": "Ei mitään",
-      "movement": "Liikkuminen"
+      "movement": "Liikkuminen",
+      "retakes": "Retakes"
     },
     "plugin": {
       "fleet": "Laivastoyhteys",
@@ -1227,7 +1228,8 @@
       "mapvote": "Karttaäänestys",
       "community": "Yhteisö",
       "addons": "Lisäosat",
-      "movement": "Liikkuminen"
+      "movement": "Liikkuminen",
+      "retakes": "Retakes"
     },
     "pluginHelp": {
       "essentials": "Ylläpitäjät, kartan vaihto, uudelleenlataus ja -käynnistys",
@@ -1239,7 +1241,8 @@
       "mapvote": "Karttaäänestys: .rtv, .nominate, kartan lopun äänestys",
       "community": "Yhteisökomennot: .rank, .top, .speclist, ylläpitäjän .kick",
       "addons": "Workshop-lisäosat",
-      "movement": "Surf, bhop ja kz: ajanotto, ennätykset ja rankingit"
+      "movement": "Surf, bhop ja kz: ajanotto, ennätykset ja rankingit",
+      "retakes": "Pommi on asetettu joka erässä: T:t pitävät paikan, CT:t valtaavat sen takaisin"
     },
     "required": "Aina päällä",
     "usesDefault": "Käyttää laivaston oletusta: {{plugins}}.",

@@ -1213,7 +1213,8 @@
       "custom": "Egen",
       "default": "Flottans standard",
       "none": "Ingen",
-      "movement": "Movement"
+      "movement": "Movement",
+      "retakes": "Retakes"
     },
     "plugin": {
       "fleet": "Flottlänk",
@@ -1227,7 +1228,8 @@
       "mapvote": "Kartomröstning",
       "community": "Community",
       "addons": "Tillägg",
-      "movement": "Movement"
+      "movement": "Movement",
+      "retakes": "Retakes"
     },
     "pluginHelp": {
       "essentials": "Admins, kartbyte, omladdning och omstart",
@@ -1239,7 +1241,8 @@
       "mapvote": "Kartomröstning: .rtv, .nominate, omröstning vid kartans slut",
       "community": "Communitykommandon: .rank, .top, .speclist, admins .kick",
       "addons": "Workshop-tillägg",
-      "movement": "Surf, bhop och kz: tidtagning, rekord och topplistor"
+      "movement": "Surf, bhop och kz: tidtagning, rekord och topplistor",
+      "retakes": "Bomben är placerad varje runda: T håller platsen, CT tar tillbaka den"
     },
     "required": "Alltid på",
     "usesDefault": "Använder flottans standard: {{plugins}}.",

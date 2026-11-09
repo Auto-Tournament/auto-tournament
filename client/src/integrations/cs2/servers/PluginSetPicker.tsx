@@ -16,7 +16,14 @@ import type {
   PluginSetValue,
 } from './fleetPush.types';
 
-const PRESETS: PluginPresetName[] = ['tournament', 'practice', 'fun', 'tryout', 'movement'];
+const PRESETS: PluginPresetName[] = [
+  'tournament',
+  'practice',
+  'fun',
+  'tryout',
+  'movement',
+  'retakes',
+];
 
 function fetchCatalog(): Promise<PluginCatalogResponse | null> {
   return api.get<PluginCatalogResponse>('/api/fleet/plugins').catch((err: unknown) => {
@@ -118,6 +125,7 @@ export default function PluginSetPicker({
             fun: 'Fun',
             tryout: 'Skin tryout',
             movement: 'Movement',
+            retakes: 'Retakes',
             custom: 'Custom',
           }[p],
         });

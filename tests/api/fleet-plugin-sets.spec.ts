@@ -152,7 +152,7 @@ const FUN_ENABLE = [
   'community',
   'addons',
 ];
-const FUN_DISABLE = ['practice', 'whitelist', 'movement'];
+const FUN_DISABLE = ['practice', 'whitelist', 'retakes', 'movement'];
 
 test.describe.serial('Fleet plugin sets', () => {
   test.beforeEach(async ({ request }) => {
@@ -247,6 +247,7 @@ test.describe.serial('Fleet plugin sets', () => {
           'skins',
           'midas',
           'deathmatch',
+          'retakes',
           'mapvote',
           'community',
           'movement',
@@ -471,7 +472,16 @@ test.describe.serial('Fleet plugin sets', () => {
       // match stays on (not in either list).
       expect((set.payload as { args: unknown }).args).toEqual({
         enable: ['essentials', 'practice', 'addons'],
-        disable: ['whitelist', 'skins', 'midas', 'deathmatch', 'mapvote', 'community', 'movement'],
+        disable: [
+          'whitelist',
+          'skins',
+          'midas',
+          'deathmatch',
+          'retakes',
+          'mapvote',
+          'community',
+          'movement',
+        ],
       });
       client.send(answer(set, 1));
       // Practice is for a practice server: practice mode goes on right after,
@@ -490,7 +500,16 @@ test.describe.serial('Fleet plugin sets', () => {
       const next = await client.next((msg) => isPluginsSet(msg) && msg.id !== set.id);
       expect((next.payload as { args: unknown }).args).toEqual({
         enable: ['match', 'essentials', 'whitelist', 'addons'],
-        disable: ['practice', 'skins', 'midas', 'deathmatch', 'mapvote', 'community', 'movement'],
+        disable: [
+          'practice',
+          'skins',
+          'midas',
+          'deathmatch',
+          'retakes',
+          'mapvote',
+          'community',
+          'movement',
+        ],
       });
       client.send(answer(next, 3));
       expect((await (await changing).json()).command).toMatchObject({ status: 'ok' });

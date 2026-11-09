@@ -1,6 +1,6 @@
 /**
  * Ready Up plugin sets: which plugins a server runs, picked from presets
- * (Tournament, Practice, Fun, Skin tryout, Movement) or ticked one by one, and applied with
+ * (Tournament, Practice, Fun, Skin tryout, Movement, Retakes) or ticked one by one, and applied with
  * `cmd plugins.set` (./controls.ts). Ready Up keeps the choice across
  * restarts (plugins.json).
  *
@@ -41,6 +41,7 @@ export const PLUGIN_CATALOG = [
   'skins',
   'midas',
   'deathmatch',
+  'retakes',
   'mapvote',
   'community',
   'movement',
@@ -77,6 +78,8 @@ export const PLUGIN_PRESETS = {
   // Movement: surf / bhop / kz community server (timer, records, leaderboards); no
   // matches, no practice (its commands would let players skip a run).
   movement: ['movement', 'skins', 'mapvote', 'community', 'essentials'],
+  // Retakes: the bomb is planted every round on CS2's own retake spawns; no matches.
+  retakes: ['retakes', 'skins', 'mapvote', 'essentials'],
 } as const satisfies Record<string, readonly CatalogPlugin[]>;
 
 export type PluginPresetName = keyof typeof PLUGIN_PRESETS;

@@ -1213,7 +1213,8 @@
       "default": "集群默认",
       "none": "无",
       "tryout": "皮肤试用",
-      "movement": "Movement"
+      "movement": "Movement",
+      "retakes": "Retakes"
     },
     "plugin": {
       "fleet": "集群连接",
@@ -1227,7 +1228,8 @@
       "addons": "附加内容",
       "mapvote": "地图投票",
       "community": "社区",
-      "movement": "Movement"
+      "movement": "Movement",
+      "retakes": "Retakes"
     },
     "pluginHelp": {
       "essentials": "管理员、换图、重载和重启",
@@ -1239,7 +1241,8 @@
       "addons": "创意工坊附加内容",
       "mapvote": "地图投票：.rtv、.nominate、地图结束投票",
       "community": "社区命令：.rank、.top、.speclist、管理员 .kick",
-      "movement": "滑翔、连跳和 KZ：计时、记录和排行榜"
+      "movement": "滑翔、连跳和 KZ：计时、记录和排行榜",
+      "retakes": "每回合炸弹都已安放：T 方守住包点，CT 方夺回"
     },
     "required": "始终开启",
     "usesDefault": "使用集群默认：{{plugins}}。",

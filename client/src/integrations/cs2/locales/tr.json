@@ -1213,7 +1213,8 @@
       "custom": "Özel",
       "default": "Filo varsayılanı",
       "none": "Yok",
-      "movement": "Hareket"
+      "movement": "Hareket",
+      "retakes": "Retakes"
     },
     "plugin": {
       "fleet": "Filo bağlantısı",
@@ -1227,7 +1228,8 @@
       "mapvote": "Harita oylaması",
       "community": "Topluluk",
       "addons": "Eklentiler",
-      "movement": "Hareket"
+      "movement": "Hareket",
+      "retakes": "Retakes"
     },
     "pluginHelp": {
       "essentials": "Yöneticiler, harita değişimi, yeniden yükleme ve yeniden başlatma",
@@ -1239,7 +1241,8 @@
       "mapvote": "Harita oylaması: .rtv, .nominate, harita sonu oylaması",
       "community": "Topluluk komutları: .rank, .top, .speclist, yönetici .kick",
       "addons": "Workshop eklentileri",
-      "movement": "Surf, bhop ve kz: koşu sayacı, rekorlar ve sıralamalar"
+      "movement": "Surf, bhop ve kz: koşu sayacı, rekorlar ve sıralamalar",
+      "retakes": "Her raunt bomba kurulu: T'ler bölgeyi tutar, CT'ler geri alır"
     },
     "required": "Her zaman açık",
     "usesDefault": "Filo varsayılanını kullanır: {{plugins}}.",

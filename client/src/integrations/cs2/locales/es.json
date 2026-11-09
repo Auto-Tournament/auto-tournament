@@ -1229,7 +1229,8 @@
       "default": "Predeterminado de la flota",
       "none": "Ninguno",
       "tryout": "Prueba de skins",
-      "movement": "Movement"
+      "movement": "Movement",
+      "retakes": "Retakes"
     },
     "plugin": {
       "fleet": "Enlace de flota",
@@ -1243,7 +1244,8 @@
       "addons": "Complementos",
       "mapvote": "Votación de mapa",
       "community": "Comunidad",
-      "movement": "Movement"
+      "movement": "Movement",
+      "retakes": "Retakes"
     },
     "pluginHelp": {
       "essentials": "Administradores, cambio de mapa, recarga y reinicio",
@@ -1255,7 +1257,8 @@
       "addons": "Complementos del Workshop",
       "mapvote": "Votación de mapas: .rtv, .nominate, votación al final del mapa",
       "community": "Comandos de comunidad: .rank, .top, .speclist, .kick de administrador",
-      "movement": "Surf, bhop y kz: cronómetro, récords y clasificaciones"
+      "movement": "Surf, bhop y kz: cronómetro, récords y clasificaciones",
+      "retakes": "La bomba está plantada cada ronda: los T defienden la zona y los CT la recuperan"
     },
     "required": "Siempre activo",
     "usesDefault": "Usa el predeterminado de la flota: {{plugins}}.",

@@ -1213,7 +1213,8 @@
       "custom": "Tùy chỉnh",
       "default": "Mặc định của cụm",
       "none": "Không có",
-      "movement": "Di chuyển"
+      "movement": "Di chuyển",
+      "retakes": "Retakes"
     },
     "plugin": {
       "fleet": "Kết nối cụm máy chủ",
@@ -1227,7 +1228,8 @@
       "mapvote": "Bình chọn bản đồ",
       "community": "Cộng đồng",
       "addons": "Addon",
-      "movement": "Di chuyển"
+      "movement": "Di chuyển",
+      "retakes": "Retakes"
     },
     "pluginHelp": {
       "essentials": "Quản trị viên, đổi bản đồ, tải lại và khởi động lại",
@@ -1239,7 +1241,8 @@
       "mapvote": "Bình chọn bản đồ: .rtv, .nominate, bình chọn cuối bản đồ",
       "community": "Lệnh cộng đồng: .rank, .top, .speclist, quản trị viên .kick",
       "addons": "Addon Workshop",
-      "movement": "Surf, bhop và kz: đồng hồ, kỷ lục và bảng xếp hạng"
+      "movement": "Surf, bhop và kz: đồng hồ, kỷ lục và bảng xếp hạng",
+      "retakes": "Mỗi ván bom đã được đặt: phe T giữ khu vực, phe CT chiếm lại"
     },
     "required": "Luôn bật",
     "usesDefault": "Dùng mặc định của cụm: {{plugins}}.",

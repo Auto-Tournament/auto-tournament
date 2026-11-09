@@ -1213,7 +1213,8 @@
       "custom": "Egendefinert",
       "default": "Standard for flåten",
       "none": "Ingen",
-      "movement": "Movement"
+      "movement": "Movement",
+      "retakes": "Retakes"
     },
     "plugin": {
       "fleet": "Flåtekobling",
@@ -1227,7 +1228,8 @@
       "mapvote": "Kartavstemning",
       "community": "Fellesskap",
       "addons": "Tillegg",
-      "movement": "Movement"
+      "movement": "Movement",
+      "retakes": "Retakes"
     },
     "pluginHelp": {
       "essentials": "Administratorer, kartbytte, omlasting og omstart",
@@ -1239,7 +1241,8 @@
       "mapvote": "Kartavstemning: .rtv, .nominate og avstemning når kartet er ferdig",
       "community": "Fellesskapskommandoer: .rank, .top, .speclist, admin .kick",
       "addons": "Workshop-tillegg",
-      "movement": "Surf, bhop og kz: timer, rekorder og topplister"
+      "movement": "Surf, bhop og kz: timer, rekorder og topplister",
+      "retakes": "Bomben er plantet hver runde: T-laget holder området, CT-laget tar det tilbake"
     },
     "required": "Alltid på",
     "usesDefault": "Bruker standarden for flåten: {{plugins}}.",

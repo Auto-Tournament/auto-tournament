@@ -1213,7 +1213,8 @@
       "custom": "カスタム",
       "default": "フリートのデフォルト",
       "none": "なし",
-      "movement": "ムーブメント"
+      "movement": "ムーブメント",
+      "retakes": "Retakes"
     },
     "plugin": {
       "fleet": "フリートリンク",
@@ -1227,7 +1228,8 @@
       "mapvote": "マップ投票",
       "community": "コミュニティ",
       "addons": "アドオン",
-      "movement": "ムーブメント"
+      "movement": "ムーブメント",
+      "retakes": "Retakes"
     },
     "pluginHelp": {
       "essentials": "管理者、マップ変更、リロード、再起動",
@@ -1239,7 +1241,8 @@
       "mapvote": "マップ投票:.rtv、.nominate、マップ終了時の投票",
       "community": "コミュニティコマンド:.rank、.top、.speclist、管理者の .kick",
       "addons": "ワークショップのアドオン",
-      "movement": "サーフ、バニーホップ、KZ:タイマー、記録、ランキング"
+      "movement": "サーフ、バニーホップ、KZ:タイマー、記録、ランキング",
+      "retakes": "毎ラウンド爆弾は設置済み: T がサイトを守り、CT が奪還する"
     },
     "required": "常にオン",
     "usesDefault": "フリートのデフォルトを使用:{{plugins}}。",

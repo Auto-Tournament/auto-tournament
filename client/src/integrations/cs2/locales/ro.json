@@ -1229,7 +1229,8 @@
       "custom": "Personalizat",
       "default": "Implicit flotă",
       "none": "Niciunul",
-      "movement": "Mișcare"
+      "movement": "Mișcare",
+      "retakes": "Retakes"
     },
     "plugin": {
       "fleet": "Legătura cu flota",
@@ -1243,7 +1244,8 @@
       "mapvote": "Vot de hartă",
       "community": "Comunitate",
       "addons": "Add-on-uri",
-      "movement": "Mișcare"
+      "movement": "Mișcare",
+      "retakes": "Retakes"
     },
     "pluginHelp": {
       "essentials": "Admini, schimbare de hartă, reîncărcare și repornire",
@@ -1255,7 +1257,8 @@
       "mapvote": "Vot de hartă: .rtv, .nominate, vot la final de hartă",
       "community": "Comenzi pentru comunitate: .rank, .top, .speclist, .kick pentru admini",
       "addons": "Add-on-uri din Workshop",
-      "movement": "Surf, bhop și kz: cronometru, recorduri și clasamente"
+      "movement": "Surf, bhop și kz: cronometru, recorduri și clasamente",
+      "retakes": "Bomba e plantată în fiecare rundă: T țin zona, CT o recuceresc"
     },
     "required": "Mereu pornit",
     "usesDefault": "Folosește implicitul flotei: {{plugins}}.",

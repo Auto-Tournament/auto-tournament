@@ -1213,7 +1213,8 @@
       "default": "Vlootstandaard",
       "none": "Geen",
       "tryout": "Skins uitproberen",
-      "movement": "Movement"
+      "movement": "Movement",
+      "retakes": "Retakes"
     },
     "plugin": {
       "fleet": "Vlootverbinding",
@@ -1227,7 +1228,8 @@
       "addons": "Add-ons",
       "mapvote": "Mapstemming",
       "community": "Community",
-      "movement": "Movement"
+      "movement": "Movement",
+      "retakes": "Retakes"
     },
     "pluginHelp": {
       "essentials": "Admins, map wisselen, herladen en herstarten",
@@ -1239,7 +1241,8 @@
       "addons": "Workshop-addons",
       "mapvote": "Stemmen op maps: .rtv, .nominate, stemming aan het eind van de map",
       "community": "Communitycommando's: .rank, .top, .speclist, .kick voor admins",
-      "movement": "Surf, bhop en kz: timer, records en ranglijsten"
+      "movement": "Surf, bhop en kz: timer, records en ranglijsten",
+      "retakes": "Elke ronde ligt de bom al: T's houden de site, CT's heroveren hem"
     },
     "required": "Altijd aan",
     "usesDefault": "Gebruikt de vlootstandaard: {{plugins}}.",

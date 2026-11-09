@@ -1229,7 +1229,8 @@
       "default": "Predefinição da frota",
       "none": "Nenhum",
       "tryout": "Experimentar skins",
-      "movement": "Movimento"
+      "movement": "Movimento",
+      "retakes": "Retakes"
     },
     "plugin": {
       "fleet": "Ligação à frota",
@@ -1243,7 +1244,8 @@
       "addons": "Extras",
       "mapvote": "Votação de mapas",
       "community": "Comunidade",
-      "movement": "Movimento"
+      "movement": "Movimento",
+      "retakes": "Retakes"
     },
     "pluginHelp": {
       "essentials": "Administradores, mudança de mapa, recarregar e reiniciar",
@@ -1255,7 +1257,8 @@
       "addons": "Extras do Workshop",
       "mapvote": "Votação de mapas: .rtv, .nominate, votação no fim do mapa",
       "community": "Comandos da comunidade: .rank, .top, .speclist, .kick para admins",
-      "movement": "Surf, bhop e kz: cronómetro, recordes e classificações"
+      "movement": "Surf, bhop e kz: cronómetro, recordes e classificações",
+      "retakes": "A bomba está armada em cada ronda: os T seguram o local e os CT recuperam-no"
     },
     "required": "Sempre ativo",
     "usesDefault": "Usa a predefinição da frota: {{plugins}}.",
