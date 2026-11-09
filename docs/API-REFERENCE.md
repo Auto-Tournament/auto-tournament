@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 766 of them, 481 behind auth —
+Every endpoint this API serves — 770 of them, 484 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -907,6 +907,9 @@ Instance-wide settings.
 | `GET` | `/api/settings/api-tokens` | admin |
 | `POST` | `/api/settings/api-tokens` | admin |
 | `DELETE` | `/api/settings/api-tokens/:id` | admin |
+| `GET` | `/api/settings/signup-invites` | admin |
+| `POST` | `/api/settings/signup-invites` | admin |
+| `DELETE` | `/api/settings/signup-invites/:id` | admin |
 | `GET` | `/api/settings` | admin |
 | `PUT` | `/api/settings` | admin |
 
@@ -1434,6 +1437,7 @@ Sign-in flows, admin identity, impersonation.
 | `GET` | `/api/auth/oidc/logo` | public |
 | `GET` | `/api/auth/providers` | public |
 | `GET` | `/api/auth/me` | public |
+| `GET` | `/api/auth/invite/:token` | public |
 | `POST` | `/api/auth/self-register` | public |
 | `GET` | `/api/auth/admin-status` | public |
 | `GET` | `/api/auth/admin/me` | public |

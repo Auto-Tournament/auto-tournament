@@ -1598,6 +1598,30 @@
         ]
       }
     },
+    "/api/auth/invite/{token}": {
+      "get": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Open a sign-up invite link",
+        "description": "A link that still works is kept in a short-lived cookie, and the browser goes to the sign-in page (?invite=ok). Signing in from there makes an account even while self-registration is off, using the link once. A link that no longer works goes to ?invite=invalid.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "token",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "302": {
+            "description": "To the sign-in page"
+          }
+        }
+      }
+    },
     "/api/auth/local/forgot": {
       "post": {
         "tags": [
@@ -15977,6 +16001,109 @@
           },
           "404": {
             "description": "No such active token"
+          }
+        }
+      }
+    },
+    "/api/settings/signup-invites": {
+      "get": {
+        "tags": [
+          "Settings"
+        ],
+        "summary": "Sign-up invite links that still work (never their tokens)",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The links",
+            "newest first": null
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Settings"
+        ],
+        "summary": "Make a sign-up invite link; the link is in this answer only",
+        "description": "Whoever opens the link can make an account while \"Allow anyone to register\" is off. Both limits are optional.",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "maxUses": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 10000,
+                    "nullable": true
+                  },
+                  "expiresInDays": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 365,
+                    "nullable": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The link (path) and its details"
+          },
+          "400": {
+            "description": "A limit out of range"
+          }
+        }
+      }
+    },
+    "/api/settings/signup-invites/{id}": {
+      "delete": {
+        "tags": [
+          "Settings"
+        ],
+        "summary": "Revoke a sign-up invite link",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Revoked"
+          },
+          "404": {
+            "description": "No such link",
+            "or already revoked": null
           }
         }
       }

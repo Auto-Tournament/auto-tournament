@@ -1370,6 +1370,20 @@ export function getSchemaSQL(): string {
 
     CREATE INDEX IF NOT EXISTS idx_commends_to ON commends(to_player_id, created_at);
 
+    -- Sign-up invite links: while self-registration is off, someone who opens one can
+    -- still make an account. Only the token's SHA-256 is kept; max_uses / expires_at
+    -- NULL = no limit.
+    CREATE TABLE IF NOT EXISTS signup_invites (
+      id TEXT PRIMARY KEY,
+      token_hash TEXT NOT NULL UNIQUE,
+      max_uses INTEGER,
+      uses INTEGER NOT NULL DEFAULT 0,
+      expires_at INTEGER,
+      created_by TEXT,
+      created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+      revoked_at INTEGER
+    );
+
     -- Session table for connect-pg-simple (express-session PostgreSQL store)
     -- This table is required for session persistence across API restarts
     CREATE TABLE IF NOT EXISTS session (
