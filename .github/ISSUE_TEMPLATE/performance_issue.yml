@@ -92,7 +92,7 @@ body:
       label: Environment Details
       description: Provide relevant environment information
       placeholder: |
-        - Runtime: Bun 1.0.20
+        - Auto Tournament version: 3.0.8
         - OS: Ubuntu 22.04
         - Database: PostgreSQL 15
         - RAM: 8GB

@@ -67,9 +67,9 @@ body:
       description: What setup do testers need?
       placeholder: |
         - Deployment: Docker (docker compose)
-        - Runtime: Bun 1.0.20+ or Node.js 20+
+        - Auto Tournament version: 3.0.8 or newer
         - OS: Any (Linux/Windows/macOS)
-        - MatchZy Enhanced Version: v2.0.0
+        - CS2 servers: set up with csm, Ready Up 0.2.8 or newer
         - Other: Steam account required for authentication testing
     validations:
       required: true

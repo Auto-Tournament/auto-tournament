@@ -65,11 +65,11 @@ body:
       required: true
 
   - type: input
-    id: runtime
+    id: platform-version
     attributes:
-      label: Runtime Version
-      description: What runtime and version are you using?
-      placeholder: "e.g., Bun 1.0.20, Node.js 20.11.0"
+      label: Auto Tournament version
+      description: Shown at the bottom of the admin page, or under Manage → System
+      placeholder: "e.g., 3.0.8"
     validations:
       required: true
 
@@ -83,11 +83,20 @@ body:
       required: true
 
   - type: input
-    id: plugin-version
+    id: readyup-version
     attributes:
-      label: MatchZy Enhanced version
-      description: What version of the CS2 plugin (MatchZy Enhanced) is on your CS2 servers?
-      placeholder: "e.g., v2.0.0"
+      label: Ready Up version
+      description: Type `ru version` in the CS2 server console. Leave empty if the bug is not on a game server.
+      placeholder: "e.g., Ready Up 0.2.8"
+    validations:
+      required: false
+
+  - type: input
+    id: csm-version
+    attributes:
+      label: csm version
+      description: Shown on the machine under Servers in Auto Tournament. Leave empty if you don't use csm.
+      placeholder: "e.g., csm 1.27.4"
     validations:
       required: false
 
@@ -97,7 +106,7 @@ body:
       label: 📸 Screenshots / Logs
       description: |
         **Required** - Logs or screenshots help us diagnose issues faster.
-        Check browser console (F12), API logs (docker logs), or server console output.
+        Check the browser console (F12), the platform log (`docker logs auto-tournament`), or the game server log (`csm logs <server> 400`).
       placeholder: |
         Paste error logs, stack traces, or screenshots here
         
@@ -106,10 +115,15 @@ body:
         [ERROR] WebSocket connection failed: net::ERR_CONNECTION_REFUSED
         ```
         
-        API Logs (docker logs auto-tournament):
+        Platform log (docker logs auto-tournament):
         ```
         [ERROR] matchAllocationService: No available servers for match-1
         [ERROR] Failed to start tournament: Server allocation failed
+        ```
+        
+        Game server log (csm logs 1 400):
+        ```
+        [ReadyUp] state: mode=match_warmup warmup=1 ct=1+0 t=0+0 ready=0/2
         ```
         
         Or drag & drop screenshots here
@@ -123,7 +137,7 @@ body:
       label: 📎 Additional Context
       description: Any other context about the problem (configuration, recent changes, etc.)
       placeholder: |
-        Example: "This started happening after I upgraded from v1.2.0 to v1.3.0. I have 5 servers configured, all showing 'online' status in the Servers page."
+        Example: "This started happening after I updated from 3.0.6 to 3.0.8. I have 5 servers configured, all showing 'online' status in the Servers page."
     validations:
       required: false
 

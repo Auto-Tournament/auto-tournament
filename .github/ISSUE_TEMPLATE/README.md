@@ -19,7 +19,7 @@ We've migrated from Markdown templates (`.md`) to YAML-based Issue Forms (`.yml`
 ### 🐛 Bug Report (`bug_report.yml`)
 For reporting bugs and unexpected behavior. Includes:
 - **Required:** Bug description, reproduction steps, expected/actual behavior
-- **Required:** Deployment type, runtime, OS
+- **Required:** Deployment type, Auto Tournament version, OS
 - **Required:** Logs or screenshots
 - Pre-submission checklist to reduce duplicates
 
@@ -40,7 +40,7 @@ For usage and configuration questions. Includes:
 ### 🖥️ CS2 Server Setup Help (`server_help.yml`)
 For troubleshooting CS2 server configuration and connectivity. Includes:
 - **Required:** Issue type, problem description, what you've tried
-- **Required:** Server OS, MatchZy Enhanced version, server logs
+- **Required:** Server OS, csm version, server log
 - Network and configuration details
 - Specific to CS2 server issues
 

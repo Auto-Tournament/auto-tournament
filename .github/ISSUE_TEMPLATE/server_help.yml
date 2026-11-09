@@ -1,17 +1,19 @@
 name: 🖥️ CS2 Server Setup Help
-description: Get help setting up or troubleshooting CS2 servers with MatchZy Enhanced
+description: Get help setting up or troubleshooting CS2 servers with csm and Ready Up
 title: "[SERVER HELP] "
 labels: ["question", "server-setup", "help wanted"]
 body:
   - type: markdown
     attributes:
       value: |
-        Need help with CS2 server setup? We'll help you get configured! 
-        
+        Need help with CS2 server setup? We'll help you get configured!
+
         **Quick Resources:**
-        - [Server Setup Guide](https://docs.autotournament.gg/getting-started/connect-server)
-        - [CS2 Server Manager Tool](https://docs.autotournament.gg/cs2/server-manager/install)
-        - [MatchZy Enhanced releases](https://github.com/Auto-Tournament/matchzy-enhanced/releases)
+        - [Install csm](https://docs.autotournament.gg/cs2/server-manager/install)
+        - [Ready Up](https://docs.autotournament.gg/cs2/ready-up)
+        - [Ready Up FAQ](https://docs.autotournament.gg/cs2/ready-up/faq)
+
+        We can only help with servers that csm set up. A server built by hand can differ in too many ways (cvars, configs, ports, versions) to reproduce.
 
   - type: dropdown
     id: server-issue-type
@@ -19,10 +21,10 @@ body:
       label: What do you need help with?
       description: Select the primary issue you're facing
       options:
-        - "Initial server setup (never done this before)"
-        - "Server won't connect to platform"
-        - "Webhook/RCON configuration"
-        - "MatchZy Enhanced not working"
+        - "Installing csm (never done this before)"
+        - "Machine won't link to the platform"
+        - "Create server fails or hangs"
+        - "Ready Up not loading"
         - "Match won't load on server"
         - "Server shows offline in platform"
         - "Performance issues (lag, crashes)"
@@ -37,7 +39,7 @@ body:
       label: 🎯 Describe Your Issue
       description: What's not working or what do you need help with?
       placeholder: |
-        Example: "I've installed CounterStrikeSharp and MatchZy Enhanced v2.0.0 on my Ubuntu server. The server shows up in the platform but status is 'offline'. Matches won't load onto it."
+        Example: "I linked the machine with csm link and created two servers. Both show Online, but when a match starts it stays on 'Waiting for server' and the players never get a connect address."
     validations:
       required: true
 
@@ -48,11 +50,10 @@ body:
       description: What steps have you already taken?
       placeholder: |
         Example:
-        - Verified RCON password is correct
-        - Checked server is online (players can connect)
-        - Restarted CS2 server
-        - Checked MatchZy Enhanced loads (saw in console)
-        - Webhook URL is set (at_remote_log_url in cfg/AutoTournamentCS2/config.cfg)
+        - Ran csm doctor (output below)
+        - Ran sudo csm self-update and csm update-plugins
+        - Restarted the server with csm restart 1
+        - Checked that players can connect to the server
     validations:
       required: true
 
@@ -64,9 +65,8 @@ body:
       options:
         - "Self-hosted (own hardware)"
         - "VPS/Cloud (AWS, DigitalOcean, etc.)"
-        - "Dedicated game server provider"
-        - "Local/development machine"
-        - "Using CS2 Server Manager tool"
+        - "Dedicated server provider"
+        - "Virtual machine on my own hardware"
         - "Other (specify below)"
     validations:
       required: true
@@ -76,47 +76,50 @@ body:
     attributes:
       label: Server Operating System
       description: What OS is your CS2 server running?
-      placeholder: "e.g., Ubuntu 22.04, Windows Server 2022, Debian 12"
+      placeholder: "e.g., Ubuntu 24.04, Debian 12"
     validations:
       required: true
 
   - type: input
-    id: plugin-version
+    id: csm-version
     attributes:
-      label: MatchZy Enhanced version
-      description: What version of the CS2 plugin (MatchZy Enhanced) is installed?
-      placeholder: "e.g., v2.0.0 (check addons/counterstrikesharp/plugins/AutoTournamentCS2/AutoTournamentCS2.dll properties)"
+      label: csm version
+      description: Shown on the machine under Servers in Auto Tournament.
+      placeholder: "e.g., csm 1.27.4"
     validations:
       required: true
 
   - type: input
-    id: css-version
+    id: readyup-version
     attributes:
-      label: CounterStrikeSharp Version
-      description: What version of CounterStrikeSharp (CSS)?
-      placeholder: "e.g., v270 (check 'css_plugins list' in server console)"
+      label: Ready Up version
+      description: Type `ru version` in the CS2 server console.
+      placeholder: "e.g., Ready Up 0.2.8"
+    validations:
+      required: false
+
+  - type: input
+    id: platform-version
+    attributes:
+      label: Auto Tournament version
+      description: Shown at the bottom of the admin page, or under Manage → System
+      placeholder: "e.g., 3.0.8"
     validations:
       required: false
 
   - type: textarea
     id: server-logs
     attributes:
-      label: 📋 Server Console Output
+      label: 📋 Server Log
       description: |
-        **Required** - Paste recent server console output, especially:
-        - Server startup
-        - MatchZy Enhanced loading
-        - Any errors or warnings
-        - When you try to load a match
+        **Required** - Paste the server log from map load until the problem, and the output of `csm doctor`:
+        - `csm logs <server> 400` (e.g. `csm logs 1 400`)
+        - `csm doctor`
       placeholder: |
         Example:
         ```
-        [CounterStrikeSharp] Loading plugin: MatchZy Enhanced v2.0.0
-        [Auto Tournament] Initializing...
-        [Auto Tournament] Webhook URL: http://192.168.1.100:3069/api/webhook/events
-        [Auto Tournament] Plugin loaded successfully
-        
-        [ERROR] Failed to send webhook: Connection refused
+        [ReadyUp] state: mode=match_warmup warmup=1 ct=1+0 t=1+0 spec=0 ready=0/2
+        [ReadyUp] selftest: Ready Up 0.2.8 on CS2 Patchversion 1.41.9.0
         ```
       render: shell
     validations:
@@ -125,15 +128,13 @@ body:
   - type: textarea
     id: platform-config
     attributes:
-      label: ⚙️ Platform Configuration
-      description: How is this server configured in the platform?
+      label: ⚙️ What the Platform Shows
+      description: What does the Servers page show for this machine and server?
       placeholder: |
-        From Settings → Servers page:
-        - Server name: "Server 1"
-        - Host: 192.168.1.50
-        - Port: 27015
-        - RCON password: (configured, not shown here)
-        - Status showing: "offline"
+        From Servers → Machines:
+        - Machine: "CS" (Online, csm 1.27.4)
+        - Server: "server-1" (Online, Ready Up 0.2.8)
+        - Any error on the tile: "csm stopped reporting progress at ..."
     validations:
       required: true
 
@@ -141,31 +142,12 @@ body:
     id: network-info
     attributes:
       label: 🌐 Network Information
-      description: Network setup between platform and CS2 server
+      description: Network setup between the platform, the machine and the players
       placeholder: |
-        - Platform hosted: Same server / Different server / Docker
-        - Can platform reach server IP? (ping test)
-        - Firewall rules: Ports 27015, 27016 open
+        - Platform hosted: Same machine / Different machine / Other network
+        - The machine connects out to the platform over a websocket; can it reach the platform URL? (curl test)
+        - Game ports open for players: 27015 and up (UDP/TCP)
         - Using private network / public IP / NAT
-        - Webhook URL reachable from CS2 server? (curl test)
-    validations:
-      required: false
-
-  - type: textarea
-    id: config-files
-    attributes:
-      label: 📄 Relevant Config Files
-      description: |
-        Optional but helpful - paste relevant config snippets:
-        - cfg/AutoTournamentCS2/config.cfg (webhook URL)
-        - server.cfg
-        - gamemode_competitive.cfg
-      placeholder: |
-        cfg/AutoTournamentCS2/config.cfg:
-        ```
-        at_remote_log_url "http://192.168.1.100:3069/api/webhook/events"
-        ```
-      render: shell
     validations:
       required: false
 
@@ -176,7 +158,7 @@ body:
       options:
         - label: I've checked the server setup documentation
           required: true
-        - label: I've included server console output
+        - label: I've included the server log
           required: true
-        - label: I've verified CS2 server is running and players can connect
+        - label: I've verified the CS2 server is running and players can connect
           required: false

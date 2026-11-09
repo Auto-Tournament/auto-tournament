@@ -48,7 +48,7 @@ body:
       description: What topic is your question about?
       options:
         - Tournament setup and configuration
-        - Server setup and RCON
+        - CS2 servers, csm and Ready Up
         - Veto and map selection
         - Player/team management
         - Authentication and SSO
@@ -67,8 +67,9 @@ body:
       description: Optional - provide environment details if they're relevant to your question
       placeholder: |
         - Deployment: Docker / Local
-        - Runtime: Bun 1.0.20 / Node.js 20.11.0
-        - MatchZy Enhanced Version: v2.0.0
+        - Auto Tournament version: 3.0.8
+        - Ready Up version: 0.2.8 (`ru version` in the server console)
+        - csm version: 1.27.4
     validations:
       required: false
 
