@@ -2024,7 +2024,29 @@
     "createN_other": "Create {{count}} servers",
     "restarts_one": "{{count}} restart in 24 h",
     "restarts_other": "{{count}} restarts in 24 h",
-    "offlineFor": "Offline for {{time}}"
+    "offlineFor": "Offline for {{time}}",
+    "create": {
+      "phase": {
+        "waiting": "Waiting for the download",
+        "prepare": "Preparing the machine",
+        "download": "Downloading CS2",
+        "check": "Checking the files",
+        "install": "Installing CS2",
+        "setup": "Setting up the servers",
+        "readyup": "Installing Ready Up",
+        "start": "Starting the server"
+      },
+      "amount": "{{pct}} % · {{done}} of {{total}} GB",
+      "amountPct": "{{pct}} %",
+      "stage": "Step {{n}} of {{count}}",
+      "waitingNote": "Started when the machine was linked",
+      "progressLabel": "Creating {{name}}",
+      "failed": "Failed",
+      "showLog": "Show log",
+      "logTitle": "What csm said",
+      "close": "Close",
+      "stalledAt": "csm stopped reporting progress at “{{what}}”. Check the machine, then try again."
+    }
   },
   "matchPage": {
     "recordingClips": "Recording clips",

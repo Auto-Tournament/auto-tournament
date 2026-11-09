@@ -2024,7 +2024,29 @@
       "warmup": "Oppvarming",
       "creating": "Lager …"
     },
-    "offlineFor": "Frakoblet i {{time}}"
+    "offlineFor": "Frakoblet i {{time}}",
+    "create": {
+      "phase": {
+        "waiting": "Venter på nedlastingen",
+        "prepare": "Gjør klar maskinen",
+        "download": "Laster ned CS2",
+        "check": "Sjekker filene",
+        "install": "Installerer CS2",
+        "setup": "Setter opp serverne",
+        "readyup": "Installerer Ready Up",
+        "start": "Starter serveren"
+      },
+      "amount": "{{pct}} % · {{done}} av {{total}} GB",
+      "amountPct": "{{pct}} %",
+      "stage": "Steg {{n}} av {{count}}",
+      "waitingNote": "Startet da maskinen ble koblet til",
+      "progressLabel": "Lager {{name}}",
+      "failed": "Mislyktes",
+      "showLog": "Vis loggen",
+      "logTitle": "Det csm skrev",
+      "close": "Lukk",
+      "stalledAt": "csm sluttet å melde om framdrift under «{{what}}». Sjekk maskinen og prøv igjen."
+    }
   },
   "matchPage": {
     "recordingClips": "Tar opp klipp",
