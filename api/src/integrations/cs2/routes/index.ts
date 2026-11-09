@@ -45,6 +45,7 @@ import { fleetAutoscaleRouter } from '../fleet/autoscale/routes';
 import skinsRoutes from '../skins/routes';
 import { integrationHighlightsRouter, momentAdminRouter } from './integrationHighlights';
 import matchPresetRoutes from './matchPresets';
+import serverSetupRoutes from './serverSetups';
 import { integrationPlayerStatsRouter } from './integrationPlayerStats';
 
 export const cs2LegacyRoutes: LegacyRouteMount[] = [
@@ -73,6 +74,14 @@ export const cs2LegacyRoutes: LegacyRouteMount[] = [
     router: matchPresetRoutes,
     title: 'Match setting presets',
     description: "Presets of a tournament's match settings, saved for every admin's setup.",
+  },
+  {
+    // Admin only (requireAuth).
+    prefix: '/api/game/cs2',
+    router: serverSetupRoutes,
+    title: 'Saved setups',
+    description:
+      'Practice and fun setups (a plugin set and a map pool) an admin starts on any free server.',
   },
   {
     // Admin only (requireAuth).

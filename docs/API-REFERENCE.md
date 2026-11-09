@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 770 of them, 484 behind auth —
+Every endpoint this API serves — 773 of them, 487 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -75,6 +75,16 @@ Presets of a tournament's match settings, saved for every admin's setup.
 | `GET` | `/api/game/cs2/match-presets` | admin |
 | `PUT` | `/api/game/cs2/match-presets` | admin |
 | `DELETE` | `/api/game/cs2/match-presets/:id` | admin |
+
+### Saved setups
+
+Practice and fun setups (a plugin set and a map pool) an admin starts on any free server.
+
+| Method | Path | Auth |
+| --- | --- | --- |
+| `GET` | `/api/game/cs2/setups` | admin |
+| `PUT` | `/api/game/cs2/setups` | admin |
+| `DELETE` | `/api/game/cs2/setups/:id` | admin |
 
 ### Highlights backfill
 
