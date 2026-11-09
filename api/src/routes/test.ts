@@ -565,6 +565,19 @@ router.post('/login-player', async (req: Request, res: Response): Promise<void> 
     // call without affecting an existing test player's name.
     const name = rawName && rawName.trim().length > 0 ? rawName.trim() : `Test Player ${steamId}`;
 
+    // `noPlayer`: only the signed cookie, as after a Steam sign-in while registration is off.
+    if ((req.body as { noPlayer?: Untrusted }).noPlayer === true) {
+      res.cookie('player_steam_id', signPlayerSteamId(steamId), {
+        httpOnly: false,
+        secure: false,
+        sameSite: 'lax',
+        path: '/',
+        maxAge: 1000 * 60 * 60 * 24 * 30,
+      });
+      res.json({ success: true, steamId });
+      return;
+    }
+
     await playerService.getOrCreatePlayer(steamId, name);
     await playerService.updatePlayer(steamId, { isAdmin: false });
     await setGamesPromptForTest(steamId, req.body);

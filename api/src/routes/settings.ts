@@ -4,6 +4,7 @@ import { Router } from 'express';
 import { requireAuth, requestActorId, type AuthedRequest } from '../middleware/auth';
 import { apiTokenService, ApiTokenError, type StoredTokenScope } from '../services/apiTokenService';
 import { settingsService } from '../services/settingsService';
+import { signupInviteService } from '../services/signupInviteService';
 import { resolveTournamentId } from '../utils/tournamentRow';
 import { log } from '../utils/logger';
 import { db } from '../config/database';
@@ -170,6 +171,79 @@ router.post('/api-tokens', async (req: Request, res: Response) => {
 router.delete('/api-tokens/:id', async (req: Request, res: Response) => {
   const ok = await apiTokenService.revoke(Number(req.params.id), requestActorId(req));
   if (!ok) return res.status(404).json({ success: false, error: 'No such token' });
+  return res.json({ success: true });
+});
+
+/**
+ * @openapi
+ * /api/settings/signup-invites:
+ *   get:
+ *     tags: [Settings]
+ *     summary: Sign-up invite links that still work (never their tokens)
+ *     security: [{ BearerAuth: [] }]
+ *     responses:
+ *       200: { description: The links, newest first }
+ *   post:
+ *     tags: [Settings]
+ *     summary: Make a sign-up invite link; the link is in this answer only
+ *     description: >-
+ *       Whoever opens the link can make an account while "Allow anyone to register" is off.
+ *       Both limits are optional.
+ *     security: [{ BearerAuth: [] }]
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               maxUses: { type: integer, minimum: 1, maximum: 10000, nullable: true }
+ *               expiresInDays: { type: integer, minimum: 1, maximum: 365, nullable: true }
+ *     responses:
+ *       201: { description: The link (path) and its details }
+ *       400: { description: A limit out of range }
+ */
+router.get('/signup-invites', async (_req: Request, res: Response) => {
+  return res.json({ success: true, invites: await signupInviteService.listUsable() });
+});
+
+router.post('/signup-invites', async (req: Request, res: Response) => {
+  const body = (req.body ?? {}) as { maxUses?: Untrusted; expiresInDays?: Untrusted };
+  const limit = (v: Untrusted, max: number): number | null | undefined => {
+    if (v === undefined || v === null || v === '') return null;
+    return typeof v === 'number' && Number.isInteger(v) && v >= 1 && v <= max ? v : undefined;
+  };
+  const maxUses = limit(body.maxUses, 10000);
+  const expiresInDays = limit(body.expiresInDays, 365);
+  if (maxUses === undefined || expiresInDays === undefined) {
+    return res.status(400).json({
+      success: false,
+      error: 'maxUses must be 1-10000 and expiresInDays 1-365 (or left out)',
+    });
+  }
+  const { invite, token } = await signupInviteService.create({
+    maxUses,
+    expiresInDays,
+    createdBy: requestActorId(req),
+  });
+  return res.status(201).json({ success: true, invite, path: `/api/auth/invite/${token}` });
+});
+
+/**
+ * @openapi
+ * /api/settings/signup-invites/{id}:
+ *   delete:
+ *     tags: [Settings]
+ *     summary: Revoke a sign-up invite link
+ *     security: [{ BearerAuth: [] }]
+ *     parameters:
+ *       - { in: path, name: id, required: true, schema: { type: string } }
+ *     responses:
+ *       200: { description: Revoked }
+ *       404: { description: No such link, or already revoked }
+ */
+router.delete('/signup-invites/:id', async (req: Request, res: Response) => {
+  const ok = await signupInviteService.revoke(String(req.params.id));
+  if (!ok) return res.status(404).json({ success: false, error: 'No such invite link' });
   return res.json({ success: true });
 });
 

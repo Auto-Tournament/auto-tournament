@@ -10,6 +10,7 @@ import { playerService } from '../services/playerService';
 import { presetAccounts } from '../services/gameAccounts';
 import { passport, isStrategyConfigured } from '../config/passport';
 import { settingsService } from '../services/settingsService';
+import { signupInviteService } from '../services/signupInviteService';
 import type { AuthProvider } from '../services/authIdentityService';
 import { authIdentityService } from '../services/authIdentityService';
 import {
@@ -88,6 +89,33 @@ function shouldUseSecureCookie(req: Request): boolean {
   if (req.secure) return true;
   // As a final fallback, respect explicit FRONTEND_BASE_URL scheme.
   return getFrontendBaseUrl(req).startsWith('https://');
+}
+
+const SIGNUP_INVITE_COOKIE = 'signup_invite';
+
+function clearSignupInviteCookie(req: Request, res: Response): void {
+  res.clearCookie(SIGNUP_INVITE_COOKIE, {
+    path: '/',
+    httpOnly: true,
+    secure: shouldUseSecureCookie(req),
+    sameSite: 'lax',
+  });
+}
+
+/**
+ * A sign-in that would make a new account while self-registration is off: true when the
+ * browser carries an invite link that still works, which then uses it once. The cookie
+ * goes either way.
+ */
+async function registrationByInvite(req: Request, res: Response): Promise<boolean> {
+  const token = parseCookies(req.headers.cookie)[SIGNUP_INVITE_COOKIE];
+  if (!token) return false;
+  clearSignupInviteCookie(req, res);
+  const used = await signupInviteService.consume(token);
+  log.info(
+    used ? 'Account made through an invite link' : 'An invite link that no longer works was ignored'
+  );
+  return used;
 }
 
 function setImpersonationCookie(req: Request, res: Response, steamId: string): void {
@@ -544,7 +572,9 @@ router.get('/steam/callback', (req: Request, res: Response, _next) => {
         });
         const selfRegistrationAllowed = await settingsService.isSelfRegistrationAllowed();
         const hasAnyAdmin = await playerService.hasAnyAdmin();
-        const shouldAutoCreate = !existingPlayer && (selfRegistrationAllowed || !hasAnyAdmin);
+        const shouldAutoCreate =
+          !existingPlayer &&
+          (selfRegistrationAllowed || !hasAnyAdmin || (await registrationByInvite(req, res)));
 
         if (shouldAutoCreate) {
           log.info('Steam Passport callback: auto-creating player record', {
@@ -877,7 +907,7 @@ export function ssoCallbackHandler(expectedProvider: AuthProvider) {
       // back to "sign in with Steam to finish" as before.
       const selfRegistrationAllowed = await settingsService.isSelfRegistrationAllowed();
       const hasAnyAdmin = await playerService.hasAnyAdmin();
-      if (selfRegistrationAllowed || !hasAnyAdmin) {
+      if (selfRegistrationAllowed || !hasAnyAdmin || (await registrationByInvite(req, res))) {
         const accountId = `acc_${randomBytes(12).toString('hex')}`;
         const displayName =
           (typeof user.displayName === 'string' && user.displayName) ||
@@ -1594,11 +1624,45 @@ router.get('/me', async (req: Request, res: Response) => {
 });
 
 /**
+ * @openapi
+ * /api/auth/invite/{token}:
+ *   get:
+ *     tags: [Auth]
+ *     summary: Open a sign-up invite link
+ *     description: >-
+ *       A link that still works is kept in a short-lived cookie, and the browser goes to the
+ *       sign-in page (?invite=ok, with &until=<unix seconds> when the link has an end date).
+ *       Signing in from there makes an account even while
+ *       self-registration is off, using the link once. A link that no longer works goes to
+ *       ?invite=invalid.
+ *     parameters:
+ *       - { in: path, name: token, required: true, schema: { type: string } }
+ *     responses:
+ *       302: { description: To the sign-in page }
+ */
+router.get('/invite/:token', async (req: Request, res: Response) => {
+  const token = String(req.params.token ?? '');
+  const login = `${getFrontendBaseUrl(req)}/login`;
+  const invite = await signupInviteService.findUsable(token);
+  if (!invite) return res.redirect(302, `${login}?invite=invalid`);
+  res.cookie(SIGNUP_INVITE_COOKIE, token, {
+    httpOnly: true,
+    secure: shouldUseSecureCookie(req),
+    sameSite: 'lax',
+    path: '/',
+    maxAge: 1000 * 60 * 30,
+  });
+  // `until` (unix seconds) lets the sign-in page say how long the link works.
+  const until = invite.expiresAt === null ? '' : `&until=${invite.expiresAt}`;
+  return res.redirect(302, `${login}?invite=ok${until}`);
+});
+
+/**
  * Self-registration endpoint for players who already have a valid Steam cookie.
  *
  * This is intended to cover the case where:
  * - a user signed in with Steam while self-registration was disabled (so no player row was created)
- * - an admin later enables self-registration
+ * - an admin later enables self-registration, or the browser carries a sign-up invite link
  * - the user refreshes and should be able to "sign up" without re-authenticating
  *
  * POST /api/auth/self-register
@@ -1613,20 +1677,20 @@ router.post('/self-register', async (req: Request, res: Response) => {
       });
     }
 
-    const selfRegistrationAllowed = await settingsService.isSelfRegistrationAllowed();
-    if (!selfRegistrationAllowed) {
-      return res.status(403).json({
-        success: false,
-        error: 'Self-registration is disabled',
-      });
-    }
-
     const existing = await playerService.getPlayerById(steamId);
     if (existing) {
       return res.json({
         success: true,
         created: false,
         player: existing,
+      });
+    }
+
+    const selfRegistrationAllowed = await settingsService.isSelfRegistrationAllowed();
+    if (!selfRegistrationAllowed && !(await registrationByInvite(req, res))) {
+      return res.status(403).json({
+        success: false,
+        error: 'Self-registration is disabled',
       });
     }
 
