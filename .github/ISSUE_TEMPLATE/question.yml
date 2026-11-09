@@ -1,83 +1,54 @@
 name: ❓ Question
-description: Ask a question about usage, configuration, or how things work
-title: "[QUESTION] "
-labels: ["question"]
+description: Ask how something works, or how to set it up
 body:
   - type: markdown
     attributes:
       value: |
-        Have a question? We're here to help! Please check the documentation first, then fill out the details below.
+        Quick questions get answered faster on [Discord](https://discord.gg/n7gHYau7aW). Check the [docs](https://docs.autotournament.gg) first.
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: What is it about?
+      options:
+        - 'Installing or updating Auto Tournament'
+        - 'Tournaments, formats and the veto'
+        - 'Players, teams and sign-in'
+        - 'Servers, CS2 Server Manager (csm) and Ready Up'
+        - 'Demos and highlights'
+        - 'API, webhooks and modules'
+        - 'Licensing'
+        - 'Something else'
 
   - type: textarea
     id: question
     attributes:
-      label: ❓ Your Question
-      description: What would you like to know?
+      label: Your question
       placeholder: |
-        Example: "How do I configure custom veto orders for different tournament formats? I want BO1 to use a different ban sequence than BO3."
+        Can a Bo1 veto use a different ban order than the Bo3 veto?
     validations:
       required: true
 
   - type: textarea
     id: context
     attributes:
-      label: 🎯 Context
-      description: What are you trying to accomplish?
+      label: What you are trying to do
       placeholder: |
-        Example: "I'm setting up a tournament where BO1 matches should have each team ban 2 maps before picking sides, but BO3 matches should use the standard ban-ban-pick-ban-ban-pick-decider format."
+        I run a cup with Bo1 groups and Bo3 playoffs, and I want each team to ban 3 maps in the Bo1 games.
     validations:
       required: true
 
+  - type: input
+    id: versions
+    attributes:
+      label: Versions
+      description: Optional. Auto Tournament, csm and Ready Up, if they matter.
+      placeholder: 'Auto Tournament 3.0.14, csm 1.27.4, Ready Up 0.2.8'
+
   - type: checkboxes
-    id: documentation-checked
+    id: checklist
     attributes:
-      label: 📚 Documentation Checked
-      description: Please confirm you've checked these resources first
+      label: Before you send it
       options:
-        - label: I've checked the README
-          required: false
-        - label: I've checked the documentation at https://docs.autotournament.gg
-          required: false
-        - label: I've searched existing issues and discussions
+        - label: I searched the docs and the existing issues
           required: true
-
-  - type: dropdown
-    id: topic
-    attributes:
-      label: Question Category
-      description: What topic is your question about?
-      options:
-        - Tournament setup and configuration
-        - Server setup and RCON
-        - Veto and map selection
-        - Player/team management
-        - Authentication and SSO
-        - WebSocket and real-time updates
-        - Docker deployment
-        - Local development
-        - API usage
-        - Other / Not sure
-    validations:
-      required: false
-
-  - type: textarea
-    id: environment
-    attributes:
-      label: 🖥️ Environment (if relevant)
-      description: Optional - provide environment details if they're relevant to your question
-      placeholder: |
-        - Deployment: Docker / Local
-        - Runtime: Bun 1.0.20 / Node.js 20.11.0
-        - MatchZy Enhanced Version: v2.0.0
-    validations:
-      required: false
-
-  - type: textarea
-    id: additional-info
-    attributes:
-      label: 📎 Additional Information
-      description: Any other relevant details, screenshots, or configuration snippets
-      placeholder: |
-        Example: "Here's my current tournament settings JSON..."
-    validations:
-      required: false
