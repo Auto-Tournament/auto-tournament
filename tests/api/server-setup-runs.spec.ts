@@ -33,6 +33,8 @@ test(
     test.setTimeout(90_000);
     expect(await signInViaRequest(request)).toBe(true);
     await resetEnrollRateLimit(request);
+    // No bracket matches waiting for a server: the allocator would hand ours one first.
+    await request.delete('/api/tournament', { headers: getAuthHeader() });
     const key = await createFleetKey(request, { name: 'setup-runs-tests' });
     const installId = newInstallId();
     const enrolled = await enroll(request, { key: key.value }, installId);
