@@ -37,6 +37,7 @@ import { serverLimitText, useServerLimit } from '../servers/serverLimit';
 import { useFleet } from '../servers/fleet/useFleet';
 import { useServerMatches } from '../servers/fleet/useServerMatches';
 import { MachineCard } from '../servers/fleet/MachineCard';
+import { SetupsSection } from '../servers/setups/SetupsSection';
 import { ServerSheet } from '../servers/fleet/ServerSheet';
 import { MachineSheet } from '../servers/fleet/MachineSheet';
 import { SideSheet } from '../servers/fleet/SideSheet';
@@ -255,6 +256,14 @@ export default function Servers() {
   }, [linkInline, linkConnected]);
 
   const counts = countServers(hosts, fleet.isDeleting);
+  // A server on this page by its fleet id (a running setup's server).
+  const serverById = (id: string) => {
+    for (const host of hosts) {
+      const server = host.servers.find((s) => s.fleetServer?.id === id);
+      if (server) return { host, server };
+    }
+    return null;
+  };
   const total = hosts.reduce((n, h) => n + h.servers.length, 0);
   const sheetHost = serverOpen ? (hosts.find((h) => h.id === serverOpen.hostId) ?? null) : null;
   const sheetServer = sheetHost?.servers.find((s) => s.name === serverOpen?.name) ?? null;
@@ -366,6 +375,16 @@ export default function Servers() {
                 t('machinesPanel.counts.down', { defaultValue: 'Stopped or offline' }).toLowerCase()
               )}
             </Box>
+          )}
+          {hosts.length > 0 && (
+            <SetupsSection
+              freeCount={counts.free}
+              serverName={(id) => serverById(id)?.server.name ?? id}
+              onOpenServer={(id) => {
+                const found = serverById(id);
+                if (found) setServerOpen({ hostId: found.host.id, name: found.server.name });
+              }}
+            />
           )}
           {[...hosts]
             .sort((a, b) => hostRank(a) - hostRank(b))
