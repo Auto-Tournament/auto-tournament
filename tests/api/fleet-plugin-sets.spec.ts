@@ -178,6 +178,7 @@ test.describe.serial('Fleet plugin sets', () => {
       'skins',
       'midas',
       'deathmatch',
+      'retakes',
       'mapvote',
       'community',
       'movement',
@@ -191,6 +192,14 @@ test.describe.serial('Fleet plugin sets', () => {
       'mapvote',
       'community',
       'movement',
+      'addons',
+    ]);
+    expect(body.presets.retakes).toEqual([
+      'fleet',
+      'essentials',
+      'skins',
+      'retakes',
+      'mapvote',
       'addons',
     ]);
     expect(body.presets.fun).toEqual([
