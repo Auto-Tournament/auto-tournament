@@ -2024,7 +2024,29 @@
     "createN_other": "Създай {{count}} сървъра",
     "restarts_one": "{{count}} рестарт за 24 ч",
     "restarts_other": "{{count}} рестарта за 24 ч",
-    "offlineFor": "Офлайн от {{time}}"
+    "offlineFor": "Офлайн от {{time}}",
+    "create": {
+      "phase": {
+        "waiting": "Изчаква изтеглянето",
+        "prepare": "Подготвя машината",
+        "download": "Изтегля CS2",
+        "check": "Проверява файловете",
+        "install": "Инсталира CS2",
+        "setup": "Настройва сървърите",
+        "readyup": "Инсталира Ready Up",
+        "start": "Стартира сървъра"
+      },
+      "amount": "{{pct}} % · {{done}} от {{total}} GB",
+      "amountPct": "{{pct}} %",
+      "stage": "Стъпка {{n}} от {{count}}",
+      "waitingNote": "Започна при свързването на машината",
+      "progressLabel": "Създаване на {{name}}",
+      "failed": "Неуспешно",
+      "showLog": "Покажи журнала",
+      "logTitle": "Какво каза csm",
+      "close": "Затвори",
+      "stalledAt": "csm спря да съобщава напредък при „{{what}}“. Проверете машината и опитайте отново."
+    }
   },
   "matchPage": {
     "recordingClips": "Записване на клипове",

@@ -15,7 +15,7 @@ import {
 } from '../../../../module-sdk';
 import type { FleetHost, FleetHostCommand, FleetHostCommandType } from '../../cs2.types';
 import { activeCommand, latestProblem, serverState } from '../machineState';
-import { CreatingTile, ServerTile } from './ServerTile';
+import { CreatingTile, FailedCreateTile, ServerTile } from './ServerTile';
 import type { ServerMatch } from './useServerMatches';
 
 const { color } = tokens;
@@ -208,6 +208,8 @@ export function MachineCard({
   const inv = host.inventory;
   const online = host.status === 'enrolled' && host.online;
   const problem = latestProblem(host);
+  // A failed create shows where its tile was, not in the problem line.
+  const failedCreate = problem?.type === 'server.create' ? problem : null;
   const waiting = host.commands.filter(pending).length;
   const ru = readyUpVersion(host);
   const updatingGame = runningOf(host, 'host.update_game');
@@ -427,6 +429,15 @@ export function MachineCard({
               command={creating[0]}
             />
           ))}
+          {failedCreate && (
+            <FailedCreateTile
+              n={host.servers.length + creatingCount + 1}
+              command={failedCreate}
+              message={problemText(failedCreate) || commandLabel(failedCreate)}
+              canRetry={host.online}
+              onRetry={() => onRetry(failedCreate)}
+            />
+          )}
           {online && (
             <ButtonBase
               onClick={onAddServers}
@@ -451,7 +462,7 @@ export function MachineCard({
         </Box>
       )}
 
-      {problem && (
+      {problem && !failedCreate && (
         <Box
           role="status"
           data-testid={`machine-problem-${host.id}`}

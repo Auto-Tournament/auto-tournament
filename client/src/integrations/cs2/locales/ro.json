@@ -2067,7 +2067,29 @@
     "restarts_other": "{{count}} de reporniri în 24 h",
     "offlineFor": "Offline de {{time}}",
     "createN_few": "Creează {{count}} servere",
-    "restarts_few": "{{count}} reporniri în 24 h"
+    "restarts_few": "{{count}} reporniri în 24 h",
+    "create": {
+      "phase": {
+        "waiting": "Așteaptă descărcarea",
+        "prepare": "Pregătește mașina",
+        "download": "Descarcă CS2",
+        "check": "Verifică fișierele",
+        "install": "Instalează CS2",
+        "setup": "Configurează serverele",
+        "readyup": "Instalează Ready Up",
+        "start": "Pornește serverul"
+      },
+      "amount": "{{pct}} % · {{done}} din {{total}} GB",
+      "amountPct": "{{pct}} %",
+      "stage": "Pasul {{n}} din {{count}}",
+      "waitingNote": "A început când mașina a fost conectată",
+      "progressLabel": "Se creează {{name}}",
+      "failed": "Eșuat",
+      "showLog": "Arată jurnalul",
+      "logTitle": "Ce a spus csm",
+      "close": "Închide",
+      "stalledAt": "csm a încetat să raporteze progresul la „{{what}}”. Verifică mașina și încearcă din nou."
+    }
   },
   "matchPage": {
     "recordingClips": "Se înregistrează clipuri",

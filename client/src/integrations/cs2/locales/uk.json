@@ -2111,7 +2111,29 @@
     "createN_few": "Створити {{count}} сервери",
     "createN_many": "Створити {{count}} серверів",
     "restarts_few": "{{count}} перезапуски за 24 год",
-    "restarts_many": "{{count}} перезапусків за 24 год"
+    "restarts_many": "{{count}} перезапусків за 24 год",
+    "create": {
+      "phase": {
+        "waiting": "Очікування завантаження",
+        "prepare": "Підготовка машини",
+        "download": "Завантаження CS2",
+        "check": "Перевірка файлів",
+        "install": "Встановлення CS2",
+        "setup": "Налаштування серверів",
+        "readyup": "Встановлення Ready Up",
+        "start": "Запуск сервера"
+      },
+      "amount": "{{pct}} % · {{done}} з {{total}} ГБ",
+      "amountPct": "{{pct}} %",
+      "stage": "Крок {{n}} з {{count}}",
+      "waitingNote": "Почалося під час під’єднання машини",
+      "progressLabel": "Створення: {{name}}",
+      "failed": "Помилка",
+      "showLog": "Показати журнал",
+      "logTitle": "Що повідомив csm",
+      "close": "Закрити",
+      "stalledAt": "csm перестав повідомляти про перебіг на етапі «{{what}}». Перевірте машину та спробуйте ще раз."
+    }
   },
   "matchPage": {
     "recordingClips": "Запис кліпів",

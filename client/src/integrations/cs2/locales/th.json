@@ -2024,7 +2024,29 @@
     "createN_other": "สร้าง {{count}} เซิร์ฟเวอร์",
     "restarts_one": "รีสตาร์ต {{count}} ครั้งใน 24 ชม.",
     "restarts_other": "รีสตาร์ต {{count}} ครั้งใน 24 ชม.",
-    "offlineFor": "ออฟไลน์มา {{time}}"
+    "offlineFor": "ออฟไลน์มา {{time}}",
+    "create": {
+      "phase": {
+        "waiting": "กำลังรอการดาวน์โหลด",
+        "prepare": "กำลังเตรียมเครื่อง",
+        "download": "กำลังดาวน์โหลด CS2",
+        "check": "กำลังตรวจสอบไฟล์",
+        "install": "กำลังติดตั้ง CS2",
+        "setup": "กำลังตั้งค่าเซิร์ฟเวอร์",
+        "readyup": "กำลังติดตั้ง Ready Up",
+        "start": "กำลังเริ่มเซิร์ฟเวอร์"
+      },
+      "amount": "{{pct}} % · {{done}} จาก {{total}} GB",
+      "amountPct": "{{pct}} %",
+      "stage": "ขั้นตอน {{n}} จาก {{count}}",
+      "waitingNote": "เริ่มเมื่อเชื่อมโยงเครื่อง",
+      "progressLabel": "กำลังสร้าง {{name}}",
+      "failed": "ล้มเหลว",
+      "showLog": "แสดงบันทึก",
+      "logTitle": "สิ่งที่ csm แจ้ง",
+      "close": "ปิด",
+      "stalledAt": "csm หยุดรายงานความคืบหน้าที่ “{{what}}” ตรวจสอบเครื่อง แล้วลองอีกครั้ง"
+    }
   },
   "matchPage": {
     "recordingClips": "กำลังบันทึกคลิป",

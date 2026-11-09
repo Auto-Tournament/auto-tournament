@@ -2024,7 +2024,29 @@
     "createN_other": "Opret {{count}} servere",
     "restarts_one": "{{count}} genstart på 24 t",
     "restarts_other": "{{count}} genstarter på 24 t",
-    "offlineFor": "Offline i {{time}}"
+    "offlineFor": "Offline i {{time}}",
+    "create": {
+      "phase": {
+        "waiting": "Venter på downloadet",
+        "prepare": "Gør maskinen klar",
+        "download": "Downloader CS2",
+        "check": "Tjekker filerne",
+        "install": "Installerer CS2",
+        "setup": "Sætter serverne op",
+        "readyup": "Installerer Ready Up",
+        "start": "Starter serveren"
+      },
+      "amount": "{{pct}} % · {{done}} af {{total}} GB",
+      "amountPct": "{{pct}} %",
+      "stage": "Trin {{n}} af {{count}}",
+      "waitingNote": "Startede da maskinen blev forbundet",
+      "progressLabel": "Opretter {{name}}",
+      "failed": "Mislykkedes",
+      "showLog": "Vis log",
+      "logTitle": "Hvad csm skrev",
+      "close": "Luk",
+      "stalledAt": "csm holdt op med at melde fremskridt ved »{{what}}«. Tjek maskinen, og prøv igen."
+    }
   },
   "matchPage": {
     "recordingClips": "Optager klip",

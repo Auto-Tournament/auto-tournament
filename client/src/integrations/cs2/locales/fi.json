@@ -2024,7 +2024,29 @@
     "createN_other": "Luo {{count}} palvelinta",
     "restarts_one": "{{count}} uudelleenkäynnistys 24 tunnissa",
     "restarts_other": "{{count}} uudelleenkäynnistystä 24 tunnissa",
-    "offlineFor": "Offline {{time}}"
+    "offlineFor": "Offline {{time}}",
+    "create": {
+      "phase": {
+        "waiting": "Odottaa latausta",
+        "prepare": "Valmistelee konetta",
+        "download": "Lataa CS2:ta",
+        "check": "Tarkistaa tiedostoja",
+        "install": "Asentaa CS2:ta",
+        "setup": "Määrittää palvelimia",
+        "readyup": "Asentaa Ready Upia",
+        "start": "Käynnistää palvelinta"
+      },
+      "amount": "{{pct}} % · {{done}}/{{total}} Gt",
+      "amountPct": "{{pct}} %",
+      "stage": "Vaihe {{n}}/{{count}}",
+      "waitingNote": "Alkoi, kun kone yhdistettiin",
+      "progressLabel": "Luodaan {{name}}",
+      "failed": "Epäonnistui",
+      "showLog": "Näytä loki",
+      "logTitle": "Mitä csm kertoi",
+      "close": "Sulje",
+      "stalledAt": "csm lakkasi raportoimasta edistymistä kohdassa ”{{what}}”. Tarkista kone ja yritä uudelleen."
+    }
   },
   "matchPage": {
     "recordingClips": "Tallennetaan klippejä",

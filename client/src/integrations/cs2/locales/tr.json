@@ -2024,7 +2024,29 @@
     "createN_other": "{{count}} sunucu oluştur",
     "restarts_one": "24 saatte {{count}} yeniden başlatma",
     "restarts_other": "24 saatte {{count}} yeniden başlatma",
-    "offlineFor": "{{time}} süredir çevrimdışı"
+    "offlineFor": "{{time}} süredir çevrimdışı",
+    "create": {
+      "phase": {
+        "waiting": "İndirme bekleniyor",
+        "prepare": "Makine hazırlanıyor",
+        "download": "CS2 indiriliyor",
+        "check": "Dosyalar denetleniyor",
+        "install": "CS2 kuruluyor",
+        "setup": "Sunucular ayarlanıyor",
+        "readyup": "Ready Up kuruluyor",
+        "start": "Sunucu başlatılıyor"
+      },
+      "amount": "{{pct}} % · {{done}} / {{total}} GB",
+      "amountPct": "{{pct}} %",
+      "stage": "Adım {{n}} / {{count}}",
+      "waitingNote": "Makine bağlandığında başladı",
+      "progressLabel": "{{name}} oluşturuluyor",
+      "failed": "Başarısız",
+      "showLog": "Günlüğü göster",
+      "logTitle": "csm'in yazdıkları",
+      "close": "Kapat",
+      "stalledAt": "csm, “{{what}}” adımında ilerleme bildirmeyi bıraktı. Makineyi denetleyip yeniden deneyin."
+    }
   },
   "matchPage": {
     "recordingClips": "Klipler kaydediliyor",

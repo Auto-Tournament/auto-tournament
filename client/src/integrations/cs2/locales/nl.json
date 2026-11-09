@@ -2024,7 +2024,29 @@
     "createN_other": "{{count}} servers maken",
     "restarts_one": "{{count}} herstart in 24 u",
     "restarts_other": "{{count}} herstarts in 24 u",
-    "offlineFor": "Offline sinds {{time}}"
+    "offlineFor": "Offline sinds {{time}}",
+    "create": {
+      "phase": {
+        "waiting": "Wacht op de download",
+        "prepare": "Machine voorbereiden",
+        "download": "CS2 downloaden",
+        "check": "Bestanden controleren",
+        "install": "CS2 installeren",
+        "setup": "Servers instellen",
+        "readyup": "Ready Up installeren",
+        "start": "Server starten"
+      },
+      "amount": "{{pct}} % · {{done}} van {{total}} GB",
+      "amountPct": "{{pct}} %",
+      "stage": "Stap {{n}} van {{count}}",
+      "waitingNote": "Gestart toen de machine werd gekoppeld",
+      "progressLabel": "{{name}} aanmaken",
+      "failed": "Mislukt",
+      "showLog": "Log tonen",
+      "logTitle": "Wat csm meldde",
+      "close": "Sluiten",
+      "stalledAt": "csm meldde geen voortgang meer bij ‘{{what}}’. Controleer de machine en probeer het opnieuw."
+    }
   },
   "matchPage": {
     "recordingClips": "Clips opnemen",

@@ -2024,7 +2024,29 @@
     "createN_other": "{{count}} Server erstellen",
     "restarts_one": "{{count}} Neustart in 24 Std.",
     "restarts_other": "{{count}} Neustarts in 24 Std.",
-    "offlineFor": "Offline seit {{time}}"
+    "offlineFor": "Offline seit {{time}}",
+    "create": {
+      "phase": {
+        "waiting": "Wartet auf den Download",
+        "prepare": "Bereitet die Maschine vor",
+        "download": "Lädt CS2 herunter",
+        "check": "Prüft die Dateien",
+        "install": "Installiert CS2",
+        "setup": "Richtet die Server ein",
+        "readyup": "Installiert Ready Up",
+        "start": "Startet den Server"
+      },
+      "amount": "{{pct}} % · {{done}} von {{total}} GB",
+      "amountPct": "{{pct}} %",
+      "stage": "Schritt {{n}} von {{count}}",
+      "waitingNote": "Gestartet, als die Maschine verbunden wurde",
+      "progressLabel": "{{name}} wird erstellt",
+      "failed": "Fehlgeschlagen",
+      "showLog": "Log anzeigen",
+      "logTitle": "Was csm meldete",
+      "close": "Schließen",
+      "stalledAt": "csm hat bei „{{what}}“ aufgehört, Fortschritt zu melden. Prüfe die Maschine und versuche es erneut."
+    }
   },
   "matchPage": {
     "recordingClips": "Clips werden aufgenommen",

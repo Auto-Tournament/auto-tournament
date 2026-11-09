@@ -2024,7 +2024,29 @@
     "createN_other": "Skapa {{count}} servrar",
     "restarts_one": "{{count}} omstart på 24 h",
     "restarts_other": "{{count}} omstarter på 24 h",
-    "offlineFor": "Offline i {{time}}"
+    "offlineFor": "Offline i {{time}}",
+    "create": {
+      "phase": {
+        "waiting": "Väntar på nedladdningen",
+        "prepare": "Förbereder maskinen",
+        "download": "Laddar ned CS2",
+        "check": "Kontrollerar filerna",
+        "install": "Installerar CS2",
+        "setup": "Ställer in servrarna",
+        "readyup": "Installerar Ready Up",
+        "start": "Startar servern"
+      },
+      "amount": "{{pct}} % · {{done}} av {{total}} GB",
+      "amountPct": "{{pct}} %",
+      "stage": "Steg {{n}} av {{count}}",
+      "waitingNote": "Startade när maskinen kopplades",
+      "progressLabel": "Skapar {{name}}",
+      "failed": "Misslyckades",
+      "showLog": "Visa logg",
+      "logTitle": "Vad csm skrev",
+      "close": "Stäng",
+      "stalledAt": "csm slutade rapportera förlopp vid ”{{what}}”. Kontrollera maskinen och försök igen."
+    }
   },
   "matchPage": {
     "recordingClips": "Spelar in klipp",

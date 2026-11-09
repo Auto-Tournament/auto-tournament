@@ -2024,7 +2024,29 @@
     "createN_other": "서버 {{count}}대 만들기",
     "restarts_one": "24시간 동안 {{count}}회 재시작",
     "restarts_other": "24시간 동안 {{count}}회 재시작",
-    "offlineFor": "{{time}} 동안 오프라인"
+    "offlineFor": "{{time}} 동안 오프라인",
+    "create": {
+      "phase": {
+        "waiting": "다운로드 대기 중",
+        "prepare": "머신 준비 중",
+        "download": "CS2 다운로드 중",
+        "check": "파일 확인 중",
+        "install": "CS2 설치 중",
+        "setup": "서버 설정 중",
+        "readyup": "Ready Up 설치 중",
+        "start": "서버 시작 중"
+      },
+      "amount": "{{pct}} % · {{done}} / {{total}} GB",
+      "amountPct": "{{pct}} %",
+      "stage": "{{count}}단계 중 {{n}}단계",
+      "waitingNote": "머신을 연결할 때 시작됨",
+      "progressLabel": "{{name}} 만드는 중",
+      "failed": "실패",
+      "showLog": "로그 보기",
+      "logTitle": "csm 출력",
+      "close": "닫기",
+      "stalledAt": "csm이 '{{what}}'에서 진행 상황 보고를 멈췄습니다. 머신을 확인한 다음 다시 시도하세요."
+    }
   },
   "matchPage": {
     "recordingClips": "클립 녹화 중",

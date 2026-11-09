@@ -2068,7 +2068,29 @@
     "restarts_other": "{{count}} redémarrages en 24 h",
     "offlineFor": "Hors ligne depuis {{time}}",
     "createN_many": "Créer {{count}} serveurs",
-    "restarts_many": "{{count}} redémarrages en 24 h"
+    "restarts_many": "{{count}} redémarrages en 24 h",
+    "create": {
+      "phase": {
+        "waiting": "En attente du téléchargement",
+        "prepare": "Préparation de la machine",
+        "download": "Téléchargement de CS2",
+        "check": "Vérification des fichiers",
+        "install": "Installation de CS2",
+        "setup": "Configuration des serveurs",
+        "readyup": "Installation de Ready Up",
+        "start": "Démarrage du serveur"
+      },
+      "amount": "{{pct}} % · {{done}} sur {{total}} Go",
+      "amountPct": "{{pct}} %",
+      "stage": "Étape {{n}} sur {{count}}",
+      "waitingNote": "Commencé à la liaison de la machine",
+      "progressLabel": "Création de {{name}}",
+      "failed": "Échec",
+      "showLog": "Afficher le journal",
+      "logTitle": "Ce que csm a dit",
+      "close": "Fermer",
+      "stalledAt": "csm a cessé d’indiquer sa progression à « {{what}} ». Vérifiez la machine, puis réessayez."
+    }
   },
   "matchPage": {
     "recordingClips": "Enregistrement des clips",

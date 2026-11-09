@@ -2111,7 +2111,29 @@
     "createN_few": "Создать {{count}} сервера",
     "createN_many": "Создать {{count}} серверов",
     "restarts_few": "{{count}} перезапуска за 24 ч",
-    "restarts_many": "{{count}} перезапусков за 24 ч"
+    "restarts_many": "{{count}} перезапусков за 24 ч",
+    "create": {
+      "phase": {
+        "waiting": "Ожидание загрузки",
+        "prepare": "Подготовка машины",
+        "download": "Загрузка CS2",
+        "check": "Проверка файлов",
+        "install": "Установка CS2",
+        "setup": "Настройка серверов",
+        "readyup": "Установка Ready Up",
+        "start": "Запуск сервера"
+      },
+      "amount": "{{pct}} % · {{done}} из {{total}} ГБ",
+      "amountPct": "{{pct}} %",
+      "stage": "Шаг {{n}} из {{count}}",
+      "waitingNote": "Началось при подключении машины",
+      "progressLabel": "Создание: {{name}}",
+      "failed": "Ошибка",
+      "showLog": "Показать журнал",
+      "logTitle": "Что сообщил csm",
+      "close": "Закрыть",
+      "stalledAt": "csm перестал сообщать о ходе работы на этапе «{{what}}». Проверьте машину и попробуйте снова."
+    }
   },
   "matchPage": {
     "recordingClips": "Запись клипов",

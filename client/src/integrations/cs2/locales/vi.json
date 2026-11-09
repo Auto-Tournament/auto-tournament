@@ -2024,7 +2024,29 @@
     "createN_other": "Tạo {{count}} máy chủ",
     "restarts_one": "{{count}} lần khởi động lại trong 24 giờ",
     "restarts_other": "{{count}} lần khởi động lại trong 24 giờ",
-    "offlineFor": "Ngoại tuyến {{time}}"
+    "offlineFor": "Ngoại tuyến {{time}}",
+    "create": {
+      "phase": {
+        "waiting": "Đang chờ tải xuống",
+        "prepare": "Đang chuẩn bị máy",
+        "download": "Đang tải CS2",
+        "check": "Đang kiểm tra tệp",
+        "install": "Đang cài CS2",
+        "setup": "Đang thiết lập máy chủ",
+        "readyup": "Đang cài Ready Up",
+        "start": "Đang khởi động máy chủ"
+      },
+      "amount": "{{pct}} % · {{done}} / {{total}} GB",
+      "amountPct": "{{pct}} %",
+      "stage": "Bước {{n}} / {{count}}",
+      "waitingNote": "Bắt đầu khi liên kết máy",
+      "progressLabel": "Đang tạo {{name}}",
+      "failed": "Thất bại",
+      "showLog": "Xem nhật ký",
+      "logTitle": "Nội dung csm báo",
+      "close": "Đóng",
+      "stalledAt": "csm ngừng báo tiến độ ở “{{what}}”. Hãy kiểm tra máy rồi thử lại."
+    }
   },
   "matchPage": {
     "recordingClips": "Đang ghi clip",
