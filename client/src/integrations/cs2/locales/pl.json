@@ -2111,7 +2111,29 @@
     "createN_few": "Utwórz {{count}} serwery",
     "createN_many": "Utwórz {{count}} serwerów",
     "restarts_few": "{{count}} restarty w ciągu 24 h",
-    "restarts_many": "{{count}} restartów w ciągu 24 h"
+    "restarts_many": "{{count}} restartów w ciągu 24 h",
+    "create": {
+      "phase": {
+        "waiting": "Oczekiwanie na pobieranie",
+        "prepare": "Przygotowywanie maszyny",
+        "download": "Pobieranie CS2",
+        "check": "Sprawdzanie plików",
+        "install": "Instalowanie CS2",
+        "setup": "Konfigurowanie serwerów",
+        "readyup": "Instalowanie Ready Up",
+        "start": "Uruchamianie serwera"
+      },
+      "amount": "{{pct}} % · {{done}} z {{total}} GB",
+      "amountPct": "{{pct}} %",
+      "stage": "Krok {{n}} z {{count}}",
+      "waitingNote": "Rozpoczęte po połączeniu maszyny",
+      "progressLabel": "Tworzenie: {{name}}",
+      "failed": "Niepowodzenie",
+      "showLog": "Pokaż dziennik",
+      "logTitle": "Co zgłosił csm",
+      "close": "Zamknij",
+      "stalledAt": "csm przestał zgłaszać postęp przy „{{what}}”. Sprawdź maszynę i spróbuj ponownie."
+    }
   },
   "matchPage": {
     "recordingClips": "Nagrywanie klipów",

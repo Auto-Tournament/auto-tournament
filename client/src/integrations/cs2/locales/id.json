@@ -2024,7 +2024,29 @@
     "createN_other": "Buat {{count}} server",
     "restarts_one": "{{count}} restart dalam 24 j",
     "restarts_other": "{{count}} restart dalam 24 j",
-    "offlineFor": "Offline selama {{time}}"
+    "offlineFor": "Offline selama {{time}}",
+    "create": {
+      "phase": {
+        "waiting": "Menunggu unduhan",
+        "prepare": "Menyiapkan mesin",
+        "download": "Mengunduh CS2",
+        "check": "Memeriksa berkas",
+        "install": "Memasang CS2",
+        "setup": "Menyiapkan server",
+        "readyup": "Memasang Ready Up",
+        "start": "Memulai server"
+      },
+      "amount": "{{pct}} % · {{done}} dari {{total}} GB",
+      "amountPct": "{{pct}} %",
+      "stage": "Langkah {{n}} dari {{count}}",
+      "waitingNote": "Dimulai saat mesin ditautkan",
+      "progressLabel": "Membuat {{name}}",
+      "failed": "Gagal",
+      "showLog": "Tampilkan log",
+      "logTitle": "Kata csm",
+      "close": "Tutup",
+      "stalledAt": "csm berhenti melaporkan kemajuan di “{{what}}”. Periksa mesin, lalu coba lagi."
+    }
   },
   "matchPage": {
     "recordingClips": "Merekam klip",

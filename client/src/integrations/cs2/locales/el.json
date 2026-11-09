@@ -2024,7 +2024,29 @@
     "createN_other": "Δημιουργία {{count}} διακομιστών",
     "restarts_one": "{{count}} επανεκκίνηση σε 24 ώρες",
     "restarts_other": "{{count}} επανεκκινήσεις σε 24 ώρες",
-    "offlineFor": "Εκτός σύνδεσης για {{time}}"
+    "offlineFor": "Εκτός σύνδεσης για {{time}}",
+    "create": {
+      "phase": {
+        "waiting": "Αναμονή για τη λήψη",
+        "prepare": "Προετοιμασία του μηχανήματος",
+        "download": "Λήψη του CS2",
+        "check": "Έλεγχος των αρχείων",
+        "install": "Εγκατάσταση του CS2",
+        "setup": "Ρύθμιση των διακομιστών",
+        "readyup": "Εγκατάσταση του Ready Up",
+        "start": "Εκκίνηση του διακομιστή"
+      },
+      "amount": "{{pct}} % · {{done}} από {{total}} GB",
+      "amountPct": "{{pct}} %",
+      "stage": "Βήμα {{n}} από {{count}}",
+      "waitingNote": "Ξεκίνησε όταν συνδέθηκε το μηχάνημα",
+      "progressLabel": "Δημιουργία {{name}}",
+      "failed": "Απέτυχε",
+      "showLog": "Εμφάνιση αρχείου καταγραφής",
+      "logTitle": "Τι ανέφερε το csm",
+      "close": "Κλείσιμο",
+      "stalledAt": "Το csm σταμάτησε να αναφέρει πρόοδο στο «{{what}}». Ελέγξτε το μηχάνημα και δοκιμάστε ξανά."
+    }
   },
   "matchPage": {
     "recordingClips": "Καταγραφή κλιπ",

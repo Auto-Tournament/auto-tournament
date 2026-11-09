@@ -2024,7 +2024,29 @@
     "createN_other": "建立 {{count}} 臺伺服器",
     "restarts_one": "24 小時內重啟 {{count}} 次",
     "restarts_other": "24 小時內重啟 {{count}} 次",
-    "offlineFor": "已離線 {{time}}"
+    "offlineFor": "已離線 {{time}}",
+    "create": {
+      "phase": {
+        "waiting": "正在等待下載",
+        "prepare": "正在準備機器",
+        "download": "正在下載 CS2",
+        "check": "正在檢查檔案",
+        "install": "正在安裝 CS2",
+        "setup": "正在設定伺服器",
+        "readyup": "正在安裝 Ready Up",
+        "start": "正在啟動伺服器"
+      },
+      "amount": "{{pct}} % · {{done}} / {{total}} GB",
+      "amountPct": "{{pct}} %",
+      "stage": "第 {{n}} 步，共 {{count}} 步",
+      "waitingNote": "在連結機器時開始",
+      "progressLabel": "正在建立 {{name}}",
+      "failed": "失敗",
+      "showLog": "顯示記錄",
+      "logTitle": "csm 的輸出",
+      "close": "關閉",
+      "stalledAt": "csm 在「{{what}}」停止回報進度。請檢查機器後再試一次。"
+    }
   },
   "matchPage": {
     "recordingClips": "正在錄製片段",

@@ -2024,7 +2024,29 @@
     "createN_other": "{{count}} szerver létrehozása",
     "restarts_one": "{{count}} újraindulás 24 óra alatt",
     "restarts_other": "{{count}} újraindulás 24 óra alatt",
-    "offlineFor": "Offline ennyi ideje: {{time}}"
+    "offlineFor": "Offline ennyi ideje: {{time}}",
+    "create": {
+      "phase": {
+        "waiting": "Várakozás a letöltésre",
+        "prepare": "A gép előkészítése",
+        "download": "A CS2 letöltése",
+        "check": "A fájlok ellenőrzése",
+        "install": "A CS2 telepítése",
+        "setup": "A szerverek beállítása",
+        "readyup": "A Ready Up telepítése",
+        "start": "A szerver indítása"
+      },
+      "amount": "{{pct}} % · {{done}} / {{total}} GB",
+      "amountPct": "{{pct}} %",
+      "stage": "{{n}}. lépés / {{count}}",
+      "waitingNote": "A gép csatlakoztatásakor indult",
+      "progressLabel": "{{name}} létrehozása",
+      "failed": "Sikertelen",
+      "showLog": "Napló megjelenítése",
+      "logTitle": "Amit a csm jelzett",
+      "close": "Bezárás",
+      "stalledAt": "A csm leállt a haladás jelentésével itt: „{{what}}”. Ellenőrizd a gépet, és próbáld újra."
+    }
   },
   "matchPage": {
     "recordingClips": "Klipek rögzítése",

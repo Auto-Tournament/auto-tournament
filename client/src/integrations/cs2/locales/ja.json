@@ -2024,7 +2024,29 @@
     "createN_other": "{{count}} 台のサーバーを作成",
     "restarts_one": "24時間で {{count}} 回再起動",
     "restarts_other": "24時間で {{count}} 回再起動",
-    "offlineFor": "{{time}} オフライン"
+    "offlineFor": "{{time}} オフライン",
+    "create": {
+      "phase": {
+        "waiting": "ダウンロードを待機中",
+        "prepare": "マシンを準備中",
+        "download": "CS2をダウンロード中",
+        "check": "ファイルを確認中",
+        "install": "CS2をインストール中",
+        "setup": "サーバーを設定中",
+        "readyup": "Ready Upをインストール中",
+        "start": "サーバーを起動中"
+      },
+      "amount": "{{pct}} % · {{done}} / {{total}} GB",
+      "amountPct": "{{pct}} %",
+      "stage": "ステップ {{n}} / {{count}}",
+      "waitingNote": "マシンをリンクした時に開始",
+      "progressLabel": "{{name}}を作成中",
+      "failed": "失敗",
+      "showLog": "ログを表示",
+      "logTitle": "csmの出力",
+      "close": "閉じる",
+      "stalledAt": "csmが「{{what}}」で進行状況の報告を止めました。マシンを確認してから、もう一度お試しください。"
+    }
   },
   "matchPage": {
     "recordingClips": "クリップを録画中",

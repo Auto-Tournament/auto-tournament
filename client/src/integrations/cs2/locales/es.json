@@ -2068,7 +2068,29 @@
     "restarts_other": "{{count}} reinicios en 24 h",
     "offlineFor": "Desconectado desde hace {{time}}",
     "createN_many": "Crear {{count}} servidores",
-    "restarts_many": "{{count}} reinicios en 24 h"
+    "restarts_many": "{{count}} reinicios en 24 h",
+    "create": {
+      "phase": {
+        "waiting": "Esperando la descarga",
+        "prepare": "Preparando la máquina",
+        "download": "Descargando CS2",
+        "check": "Comprobando los archivos",
+        "install": "Instalando CS2",
+        "setup": "Configurando los servidores",
+        "readyup": "Instalando Ready Up",
+        "start": "Iniciando el servidor"
+      },
+      "amount": "{{pct}} % · {{done}} de {{total}} GB",
+      "amountPct": "{{pct}} %",
+      "stage": "Paso {{n}} de {{count}}",
+      "waitingNote": "Empezó al vincular la máquina",
+      "progressLabel": "Creando {{name}}",
+      "failed": "Ha fallado",
+      "showLog": "Ver registro",
+      "logTitle": "Lo que dijo csm",
+      "close": "Cerrar",
+      "stalledAt": "csm dejó de informar del progreso en «{{what}}». Revisa la máquina y vuelve a intentarlo."
+    }
   },
   "matchPage": {
     "recordingClips": "Grabando clips",

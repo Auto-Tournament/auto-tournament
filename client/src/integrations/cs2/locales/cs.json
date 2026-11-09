@@ -2111,7 +2111,29 @@
     "createN_few": "Vytvořit {{count}} servery",
     "createN_many": "Vytvořit {{count}} serverů",
     "restarts_few": "{{count}} restarty za 24 h",
-    "restarts_many": "{{count}} restartů za 24 h"
+    "restarts_many": "{{count}} restartů za 24 h",
+    "create": {
+      "phase": {
+        "waiting": "Čeká na stahování",
+        "prepare": "Připravuje stroj",
+        "download": "Stahuje CS2",
+        "check": "Kontroluje soubory",
+        "install": "Instaluje CS2",
+        "setup": "Nastavuje servery",
+        "readyup": "Instaluje Ready Up",
+        "start": "Spouští server"
+      },
+      "amount": "{{pct}} % · {{done}} z {{total}} GB",
+      "amountPct": "{{pct}} %",
+      "stage": "Krok {{n}} z {{count}}",
+      "waitingNote": "Začalo při propojení stroje",
+      "progressLabel": "Vytváří se {{name}}",
+      "failed": "Selhalo",
+      "showLog": "Zobrazit protokol",
+      "logTitle": "Co hlásilo csm",
+      "close": "Zavřít",
+      "stalledAt": "csm přestalo hlásit průběh u „{{what}}“. Zkontrolujte stroj a zkuste to znovu."
+    }
   },
   "matchPage": {
     "recordingClips": "Nahrávají se klipy",

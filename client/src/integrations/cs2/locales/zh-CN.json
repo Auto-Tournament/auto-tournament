@@ -2024,7 +2024,29 @@
     "createN_other": "创建 {{count}} 台服务器",
     "restarts_one": "24 小时内重启 {{count}} 次",
     "restarts_other": "24 小时内重启 {{count}} 次",
-    "offlineFor": "已离线 {{time}}"
+    "offlineFor": "已离线 {{time}}",
+    "create": {
+      "phase": {
+        "waiting": "正在等待下载",
+        "prepare": "正在准备机器",
+        "download": "正在下载 CS2",
+        "check": "正在检查文件",
+        "install": "正在安装 CS2",
+        "setup": "正在设置服务器",
+        "readyup": "正在安装 Ready Up",
+        "start": "正在启动服务器"
+      },
+      "amount": "{{pct}} % · {{done}} / {{total}} GB",
+      "amountPct": "{{pct}} %",
+      "stage": "第 {{n}} 步，共 {{count}} 步",
+      "waitingNote": "在关联机器时开始",
+      "progressLabel": "正在创建 {{name}}",
+      "failed": "失败",
+      "showLog": "显示日志",
+      "logTitle": "csm 的输出",
+      "close": "关闭",
+      "stalledAt": "csm 在“{{what}}”处停止报告进度。请检查机器后重试。"
+    }
   },
   "matchPage": {
     "recordingClips": "正在录制片段",
