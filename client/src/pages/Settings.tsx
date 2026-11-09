@@ -33,6 +33,7 @@ import {
 } from '../components/settings/ExperimentalCard';
 import { SignInProvidersCard } from '../components/settings/SignInProvidersCard';
 import { SettingsCardHead, SettingsRow } from '../components/settings/SettingsRow';
+import { SignupInvitesRow } from '../components/settings/SignupInvitesRow';
 import { useInstalledIntegrations } from '../integrations/registry';
 import { moduleNavItems, navItemLabel } from '../utils/moduleNavLabels';
 import { tokens, radii } from '../theme/tokens';
@@ -275,6 +276,7 @@ export default function Settings() {
           />
         }
       />
+      <SignupInvitesRow />
       <SettingsRow
         title={t('settingsPage.players.chooseName.toggleLabel')}
         sub={t('settingsPage.players.chooseName.short')}

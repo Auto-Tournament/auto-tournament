@@ -12,7 +12,7 @@ import {
   Stack,
   Typography,
 } from '@mui/material';
-import { Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink, useSearchParams } from 'react-router-dom';
 import { paths } from '../paths';
 import { BookOpenIcon, GithubLogoIcon, GlobeIcon, ScalesIcon } from '@phosphor-icons/react';
 import { useAuth } from '../contexts/AuthContext';
@@ -41,6 +41,7 @@ function readableOn(hex: string): string {
 
 export default function Login() {
   const { t } = useTranslation();
+  const invite = useSearchParams()[0].get('invite');
   const { loginWithSteam } = useAuth();
   const [providers, setProviders] = useState<
     Array<{
@@ -230,6 +231,17 @@ export default function Login() {
                   </Typography>
                 </Box>
               </Stack>
+
+              {invite === 'ok' && (
+                <Alert severity="success" data-testid="login-invite-ok">
+                  {t('login.inviteOk')}
+                </Alert>
+              )}
+              {invite === 'invalid' && (
+                <Alert severity="warning" data-testid="login-invite-invalid">
+                  {t('login.inviteInvalid')}
+                </Alert>
+              )}
 
               {localLogin?.setup && (
                 <Alert severity="info" data-testid="login-setup-notice">

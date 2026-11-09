@@ -305,6 +305,33 @@
       "chooseName": {
         "toggleLabel": "Spillerne velger visningsnavnet sitt",
         "short": "Spillerne blir spurt om navnet sitt og kan endre det én gang per døgn. Av: navnene kommer fra import og administratorer."
+      },
+      "invites": {
+        "title": "Invitasjonslenker",
+        "short": "Med en lenke kan noen lage konto selv om registreringen er av.",
+        "uses": "Maks antall ganger",
+        "usesHelp": "Tomt: ingen grense",
+        "days": "Gyldig i (dager)",
+        "daysHelp": "Tomt: ingen sluttdato",
+        "make": "Lag en lenke",
+        "made": "Laget {{date}}",
+        "usedOf": "Brukt {{uses}} av {{max}}",
+        "usedTimes_zero": "Ikke brukt ennå",
+        "usedTimes_one": "Brukt én gang",
+        "usedTimes_other": "Brukt {{count}} ganger",
+        "until": "til {{date}}",
+        "noEnd": "ingen sluttdato",
+        "none": "Ingen invitasjonslenker.",
+        "madeTitle": "Invitasjonslenken din",
+        "madeHelp": "Kopier den nå: den vises bare én gang. Alle som åpner den, kan lage konto.",
+        "copy": "Kopier lenken",
+        "copied": "Lenken er kopiert",
+        "done": "Ferdig",
+        "revoke": "Trekk tilbake invitasjonslenken",
+        "revoked": "Invitasjonslenken er trukket tilbake",
+        "loadFailed": "Klarte ikke å hente invitasjonslenkene",
+        "makeFailed": "Klarte ikke å lage invitasjonslenken",
+        "revokeFailed": "Klarte ikke å trekke tilbake invitasjonslenken"
       }
     },
     "developer": {

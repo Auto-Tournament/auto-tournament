@@ -305,6 +305,33 @@
       "chooseName": {
         "toggleLabel": "Players choose their display name",
         "short": "Players are asked for their name and can change it once a day. Off: names come from imports and admins."
+      },
+      "invites": {
+        "title": "Invite links",
+        "short": "A link lets someone make an account while registration is off.",
+        "uses": "Max uses",
+        "usesHelp": "Empty: no limit",
+        "days": "Valid for (days)",
+        "daysHelp": "Empty: no end date",
+        "make": "Make a link",
+        "made": "Made {{date}}",
+        "usedOf": "Used {{uses}} of {{max}}",
+        "usedTimes_zero": "Not used yet",
+        "usedTimes_one": "Used once",
+        "usedTimes_other": "Used {{count}} times",
+        "until": "until {{date}}",
+        "noEnd": "no end date",
+        "none": "No invite links.",
+        "madeTitle": "Your invite link",
+        "madeHelp": "Copy it now: it's only shown once. Anyone who opens it can make an account.",
+        "copy": "Copy link",
+        "copied": "Link copied",
+        "done": "Done",
+        "revoke": "Revoke invite link",
+        "revoked": "Invite link revoked",
+        "loadFailed": "Couldn't load the invite links",
+        "makeFailed": "Couldn't make the invite link",
+        "revokeFailed": "Couldn't revoke the invite link"
       }
     },
     "developer": {
