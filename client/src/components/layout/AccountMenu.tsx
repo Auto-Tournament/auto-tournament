@@ -86,7 +86,8 @@ export function AccountMenu({ wide = false }: { wide?: boolean } = {}) {
 
   const handleLogout = () => {
     void logout();
-    navigate('/login');
+    // Signed out, the front door is Tournaments (App.tsx RootRoute).
+    navigate(paths.tournamentList);
   };
 
   const signedIn = Boolean(playerSteamId || isAuthenticated);
