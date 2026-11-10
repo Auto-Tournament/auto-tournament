@@ -2689,5 +2689,16 @@
     "sheetState": "Pengaturan {{name}}",
     "stopSetup": "Hentikan pengaturan",
     "sheetHint": "Menghentikannya mengakhiri permainan pemain, dan server kembali ke turnamen."
+  },
+  "hudHelp": {
+    "menu": "HUD",
+    "title": "Perbarui HUD",
+    "body": "HUD dalam game adalah addon Steam Workshop. CS2 hanya memperbaruinya jika kamu berlangganan.",
+    "step1": "Berlangganan Auto Tournament HUD di Workshop.",
+    "openSteam": "Buka di Steam",
+    "openWeb": "Halaman Workshop",
+    "step2": "Tunggu sampai Steam selesai mengunduhnya.",
+    "step3": "Mulai ulang CS2 dan masuk lagi ke server.",
+    "done": "Selesai"
   }
 }

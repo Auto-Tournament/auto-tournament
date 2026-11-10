@@ -2689,5 +2689,16 @@
     "sheetState": "Asetelma {{name}}",
     "stopSetup": "Pysäytä asetelma",
     "sheetHint": "Pysäyttäminen lopettaa sen pelaajilta, ja palvelin palaa turnauksiin."
+  },
+  "hudHelp": {
+    "menu": "HUD",
+    "title": "Päivitä HUD",
+    "body": "Pelin HUD on Steam Workshopin lisäosa. CS2 pitää sen ajan tasalla vain, jos olet tilannut sen.",
+    "step1": "Tilaa Auto Tournament HUD Workshopista.",
+    "openSteam": "Avaa Steamissa",
+    "openWeb": "Workshop-sivu",
+    "step2": "Odota, että Steam on ladannut sen.",
+    "step3": "Käynnistä CS2 uudelleen ja liity palvelimelle uudelleen.",
+    "done": "Valmis"
   }
 }

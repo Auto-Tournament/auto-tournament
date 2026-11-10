@@ -2689,5 +2689,16 @@
     "sheetState": "{{name}} 預設",
     "stopSetup": "停止預設",
     "sheetHint": "停止後玩家的遊戲結束，伺服器回到比賽。"
+  },
+  "hudHelp": {
+    "menu": "HUD",
+    "title": "更新你的 HUD",
+    "body": "遊戲內的 HUD 是 Steam 工作坊的附加元件。只有訂閱後 CS2 才會自動更新它。",
+    "step1": "在工作坊訂閱 Auto Tournament HUD。",
+    "openSteam": "在 Steam 中開啟",
+    "openWeb": "工作坊頁面",
+    "step2": "等待 Steam 下載完成。",
+    "step3": "重新啟動 CS2，然後重新加入伺服器。",
+    "done": "完成"
   }
 }

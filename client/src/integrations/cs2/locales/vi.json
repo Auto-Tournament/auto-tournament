@@ -2689,5 +2689,16 @@
     "sheetState": "Thiết lập {{name}}",
     "stopSetup": "Dừng thiết lập",
     "sheetHint": "Dừng sẽ kết thúc với người chơi và máy chủ quay lại phục vụ giải đấu."
+  },
+  "hudHelp": {
+    "menu": "HUD",
+    "title": "Cập nhật HUD",
+    "body": "HUD trong game là một addon từ Steam Workshop. CS2 chỉ cập nhật nó nếu bạn đã đăng ký.",
+    "step1": "Đăng ký Auto Tournament HUD trên Workshop.",
+    "openSteam": "Mở trong Steam",
+    "openWeb": "Trang Workshop",
+    "step2": "Chờ Steam tải xong.",
+    "step3": "Khởi động lại CS2 và vào lại máy chủ.",
+    "done": "Xong"
   }
 }

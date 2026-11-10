@@ -2834,5 +2834,16 @@
     "sheetState": "Nastavení {{name}}",
     "stopSetup": "Zastavit nastavení",
     "sheetHint": "Zastavením hra pro hráče skončí a server se vrátí k turnajům."
+  },
+  "hudHelp": {
+    "menu": "HUD",
+    "title": "Aktualizuj HUD",
+    "body": "HUD ve hře je doplněk ze Steam Workshopu. CS2 ho aktualizuje, jen když ho odebíráš.",
+    "step1": "Začni odebírat Auto Tournament HUD ve Workshopu.",
+    "openSteam": "Otevřít ve Steamu",
+    "openWeb": "Stránka Workshopu",
+    "step2": "Počkej, až ho Steam stáhne.",
+    "step3": "Restartuj CS2 a znovu se připoj k serveru.",
+    "done": "Hotovo"
   }
 }

@@ -2689,5 +2689,16 @@
     "sheetState": "{{name}} 설정",
     "stopSetup": "설정 중지",
     "sheetHint": "중지하면 플레이어의 게임이 끝나고 서버는 대회로 돌아갑니다."
+  },
+  "hudHelp": {
+    "menu": "HUD",
+    "title": "HUD 업데이트",
+    "body": "게임 속 HUD는 Steam 창작마당 애드온입니다. CS2는 구독한 경우에만 이를 업데이트합니다.",
+    "step1": "창작마당에서 Auto Tournament HUD를 구독하세요.",
+    "openSteam": "Steam에서 열기",
+    "openWeb": "창작마당 페이지",
+    "step2": "Steam이 다운로드를 마칠 때까지 기다리세요.",
+    "step3": "CS2를 다시 시작하고 서버에 다시 접속하세요.",
+    "done": "완료"
   }
 }

@@ -42,7 +42,8 @@
     "signIn": "Войти",
     "play": "Играть",
     "thirdPartyNotices": "Сторонние лицензии",
-    "needsYou": "Требует внимания"
+    "needsYou": "Требует внимания",
+    "help": "Помощь"
   },
   "layout": {
     "pageTitle": {

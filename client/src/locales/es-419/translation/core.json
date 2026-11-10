@@ -42,7 +42,8 @@
     "signIn": "Iniciar sesión",
     "play": "Jugar",
     "thirdPartyNotices": "Licencias de terceros",
-    "needsYou": "Te necesita"
+    "needsYou": "Te necesita",
+    "help": "Ayuda"
   },
   "layout": {
     "pageTitle": {

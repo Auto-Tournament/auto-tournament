@@ -2760,5 +2760,16 @@
     "sheetState": "Configurația {{name}}",
     "stopSetup": "Oprește configurația",
     "sheetHint": "Oprirea o încheie pentru jucători, iar serverul revine la turnee."
+  },
+  "hudHelp": {
+    "menu": "HUD",
+    "title": "Actualizează HUD-ul",
+    "body": "HUD-ul din joc este un addon din Steam Workshop. CS2 îl ține la zi doar dacă te-ai abonat la el.",
+    "step1": "Abonează-te la Auto Tournament HUD în Workshop.",
+    "openSteam": "Deschide în Steam",
+    "openWeb": "Pagina Workshop",
+    "step2": "Așteaptă până termină Steam descărcarea.",
+    "step3": "Repornește CS2 și conectează-te din nou la server.",
+    "done": "Gata"
   }
 }

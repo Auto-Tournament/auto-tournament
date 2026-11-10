@@ -44,6 +44,7 @@ import { Cs2Overlays } from './global/Cs2Overlays';
 import { Cs2StartConfirm } from './start/Cs2StartConfirm';
 import { Cs2StartPreflight } from './start/Cs2StartPreflight';
 import { Cs2OutdatedServersDialog, parseCs2OutdatedError } from './start/Cs2OutdatedServersDialog';
+import { HudUpdateDialog } from './help/HudUpdateDialog';
 import { Cs2AllocationBanner } from './bracket/Cs2AllocationBanner';
 import { Cs2NextAllocationChip } from './bracket/Cs2NextAllocationChip';
 import {
@@ -171,6 +172,8 @@ export const cs2ClientIntegration: ClientGameIntegration = {
     labelKey: 'skins.admin.drops.rowAction',
     Dialog: GiveDropToPlayer,
   },
+  // The navbar's ? menu: how to update the HUD addon (the in-game pill points here).
+  helpMenuItem: { key: 'hud', labelKey: 'hudHelp.menu', Dialog: HudUpdateDialog },
   // The team page: map strength, and the maps the team bans and picks.
   teamProfileView: Cs2TeamProfileStats,
   // The Play page's party: its members' map strength, Active Duty marked.

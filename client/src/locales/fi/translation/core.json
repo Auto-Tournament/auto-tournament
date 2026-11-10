@@ -42,7 +42,8 @@
     "signIn": "Kirjaudu sisään",
     "play": "Pelaa",
     "thirdPartyNotices": "Kolmansien osapuolten lisenssit",
-    "needsYou": "Tarvitsee sinua"
+    "needsYou": "Tarvitsee sinua",
+    "help": "Ohje"
   },
   "layout": {
     "pageTitle": {

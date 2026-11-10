@@ -42,7 +42,8 @@
     "signIn": "Вход",
     "play": "Играй",
     "thirdPartyNotices": "Лицензи на трети страни",
-    "needsYou": "Чака теб"
+    "needsYou": "Чака теб",
+    "help": "Помощ"
   },
   "layout": {
     "pageTitle": {

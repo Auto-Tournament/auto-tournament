@@ -2689,5 +2689,16 @@
     "sheetState": "{{name}} セットアップ",
     "stopSetup": "セットアップを停止",
     "sheetHint": "停止するとプレイヤーのプレイは終わり、サーバーは大会に戻ります。"
+  },
+  "hudHelp": {
+    "menu": "HUD",
+    "title": "HUDを更新する",
+    "body": "ゲーム内のHUDはSteamワークショップのアドオンです。CS2はサブスクライブしている場合にのみ更新します。",
+    "step1": "ワークショップでAuto Tournament HUDをサブスクライブします。",
+    "openSteam": "Steamで開く",
+    "openWeb": "ワークショップのページ",
+    "step2": "Steamのダウンロードが終わるまで待ちます。",
+    "step3": "CS2を再起動して、もう一度サーバーに接続します。",
+    "done": "完了"
   }
 }

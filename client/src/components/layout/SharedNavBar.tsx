@@ -15,6 +15,7 @@ import { NotificationBell } from '../social/NotificationBell';
 import { AdminNoticeBell } from '../admin/AdminNoticeBell';
 import { useNeedsYouCount } from '../../hooks/useNeedsYouCount';
 import { AccountMenu } from './AccountMenu';
+import { HelpMenu } from './HelpMenu';
 import { SiteSearch } from '../search/SiteSearch';
 import { useModuleAccountMenuItems } from '../../hooks/useModuleAccountMenuItems';
 import { useInstalledIntegrations } from '../../integrations/registry';
@@ -482,6 +483,7 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({ adminArea = false })
             {t('nav.needsYou')}
           </Button>
         )}
+        <HelpMenu />
         {showAdminLinks && <AdminNoticeBell />}
         {playerSteamId && !impersonation && <NotificationBell viewerId={playerSteamId} />}
 

@@ -42,7 +42,8 @@
     "signIn": "Masuk",
     "play": "Main",
     "thirdPartyNotices": "Lisensi pihak ketiga",
-    "needsYou": "Butuh Anda"
+    "needsYou": "Butuh Anda",
+    "help": "Bantuan"
   },
   "layout": {
     "pageTitle": {

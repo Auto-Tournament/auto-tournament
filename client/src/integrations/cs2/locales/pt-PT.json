@@ -2766,5 +2766,16 @@
     "sheetState": "Configuração {{name}}",
     "stopSetup": "Parar a configuração",
     "sheetHint": "Parar termina para os jogadores, e o servidor volta aos torneios."
+  },
+  "hudHelp": {
+    "menu": "HUD",
+    "title": "Atualiza o teu HUD",
+    "body": "O HUD do jogo é um complemento do Workshop do Steam. O CS2 só o mantém atualizado se estiveres subscrito.",
+    "step1": "Subscreve o Auto Tournament HUD no Workshop.",
+    "openSteam": "Abrir no Steam",
+    "openWeb": "Página do Workshop",
+    "step2": "Espera que o Steam termine a transferência.",
+    "step3": "Reinicia o CS2 e volta a ligar-te ao servidor.",
+    "done": "Concluído"
   }
 }
