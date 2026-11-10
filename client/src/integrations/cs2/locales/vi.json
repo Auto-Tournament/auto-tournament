@@ -2690,15 +2690,51 @@
     "stopSetup": "Dừng thiết lập",
     "sheetHint": "Dừng sẽ kết thúc với người chơi và máy chủ quay lại phục vụ giải đấu."
   },
-  "hudHelp": {
-    "menu": "HUD",
-    "title": "Cập nhật HUD",
-    "body": "HUD trong game là một addon từ Steam Workshop. CS2 chỉ cập nhật nó nếu bạn đã đăng ký.",
-    "step1": "Đăng ký Auto Tournament HUD trên Workshop.",
-    "openSteam": "Mở trong Steam",
-    "openWeb": "Trang Workshop",
-    "step2": "Chờ Steam tải xong.",
-    "step3": "Khởi động lại CS2 và vào lại máy chủ.",
-    "done": "Xong"
+  "help": {
+    "done": "Xong",
+    "hud": {
+      "menu": "HUD",
+      "title": "Cập nhật HUD",
+      "body": "HUD trong game là một addon từ Steam Workshop. CS2 chỉ cập nhật nó nếu bạn đã đăng ký.",
+      "step1": "Đăng ký Auto Tournament HUD trên Workshop.",
+      "openSteam": "Mở trong Steam",
+      "openWeb": "Trang Workshop",
+      "step2": "Chờ Steam tải xong.",
+      "step3": "Khởi động lại CS2 và vào lại máy chủ."
+    },
+    "connect": {
+      "menu": "Không kết nối được",
+      "title": "Không kết nối được tới máy chủ",
+      "body": "Kết nối từ phòng trận của bạn: ở đó có đúng địa chỉ và mật khẩu cho bạn.",
+      "step1": "Mở phòng trận của bạn và nhấn “Kết nối máy chủ”.",
+      "openMatch": "Mở trận của tôi",
+      "step2": "Chưa vào được? Nhấn “Kết nối qua LAN” hoặc “Kết nối qua internet” ở đó, cái bạn chưa dùng.",
+      "step3": "Vẫn không được? Nhấn “Sao chép lệnh console” rồi dán vào console của CS2.",
+      "step4": "Kiểm tra CS2 đã cập nhật, khởi động lại rồi thử lại."
+    },
+    "commands": {
+      "menu": "Lệnh trong game",
+      "title": "Lệnh trong game",
+      "body": "Gõ các lệnh này vào chat CS2 trong trận.",
+      "what": {
+        "r": "Sẵn sàng",
+        "ur": "Chưa sẵn sàng",
+        "p": "Tạm dừng trận",
+        "up": "Tiếp tục",
+        "tac": "Hội ý chiến thuật",
+        "stay": "Sau vòng dao: giữ phe (.switch để đổi)",
+        "admin": "Gọi admin",
+        "lang": "Ngôn ngữ của bạn trong game",
+        "help": "Tất cả lệnh"
+      }
+    },
+    "clips": {
+      "menu": "Thiếu thống kê hoặc clip",
+      "title": "Thiếu thống kê hoặc clip",
+      "body": "Thống kê và clip có trong và sau trận, không phải cùng lúc.",
+      "step1": "Thống kê hiện trên trang trận trong lúc chơi và khi mỗi bản đồ kết thúc.",
+      "step2": "Clip được làm từ demo của trận sau bản đồ. Mất vài phút, lâu hơn khi nhiều trận kết thúc cùng lúc.",
+      "step3": "Không có clip nào? Máy chủ không ghi demo hoặc không có bộ ghi nào chạy. Admin có thể xem ở Highlight › Trình ghi hình."
+    }
   }
 }

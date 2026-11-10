@@ -2835,15 +2835,51 @@
     "stopSetup": "Zastavit nastavení",
     "sheetHint": "Zastavením hra pro hráče skončí a server se vrátí k turnajům."
   },
-  "hudHelp": {
-    "menu": "HUD",
-    "title": "Aktualizuj HUD",
-    "body": "HUD ve hře je doplněk ze Steam Workshopu. CS2 ho aktualizuje, jen když ho odebíráš.",
-    "step1": "Začni odebírat Auto Tournament HUD ve Workshopu.",
-    "openSteam": "Otevřít ve Steamu",
-    "openWeb": "Stránka Workshopu",
-    "step2": "Počkej, až ho Steam stáhne.",
-    "step3": "Restartuj CS2 a znovu se připoj k serveru.",
-    "done": "Hotovo"
+  "help": {
+    "done": "Hotovo",
+    "hud": {
+      "menu": "HUD",
+      "title": "Aktualizuj HUD",
+      "body": "HUD ve hře je doplněk ze Steam Workshopu. CS2 ho aktualizuje, jen když ho odebíráš.",
+      "step1": "Začni odebírat Auto Tournament HUD ve Workshopu.",
+      "openSteam": "Otevřít ve Steamu",
+      "openWeb": "Stránka Workshopu",
+      "step2": "Počkej, až ho Steam stáhne.",
+      "step3": "Restartuj CS2 a znovu se připoj k serveru."
+    },
+    "connect": {
+      "menu": "Nejde se připojit",
+      "title": "Nejde se připojit k serveru",
+      "body": "Připoj se ze své místnosti zápasu: najdeš tam správnou adresu a heslo.",
+      "step1": "Otevři místnost svého zápasu a stiskni „Připojit se k serveru“.",
+      "openMatch": "Otevřít můj zápas",
+      "step2": "Nedostal ses dovnitř? Stiskni tam „Připojit přes LAN“ nebo „Připojit přes internet“, to, co jsi nepoužil.",
+      "step3": "Pořád nic? Stiskni „Kopírovat příkaz do konzole“ a vlož ho do konzole CS2.",
+      "step4": "Zkontroluj, že máš aktuální CS2, restartuj ho a zkus to znovu."
+    },
+    "commands": {
+      "menu": "Příkazy ve hře",
+      "title": "Příkazy ve hře",
+      "body": "Piš je během zápasu do chatu v CS2.",
+      "what": {
+        "r": "Připraven",
+        "ur": "Nepřipraven",
+        "p": "Pozastavit zápas",
+        "up": "Pokračovat",
+        "tac": "Taktický time-out",
+        "stay": "Po nožovém kole: ponechat strany (.switch je prohodí)",
+        "admin": "Zavolat admina",
+        "lang": "Tvůj jazyk ve hře",
+        "help": "Všechny příkazy"
+      }
+    },
+    "clips": {
+      "menu": "Chybí statistiky nebo klipy",
+      "title": "Chybí statistiky nebo klipy",
+      "body": "Statistiky a klipy přicházejí během zápasu a po něm, ne všechny najednou.",
+      "step1": "Statistiky se ukazují na stránce zápasu během hry a po skončení každé mapy.",
+      "step2": "Klipy vznikají z dema zápasu po mapě. Trvá to pár minut, déle, když končí hodně zápasů naráz.",
+      "step3": "Žádné klipy? Server nenahrál demo nebo neběžel žádný rekordér. Admin to zkontroluje v Highlighty › Nahrávače."
+    }
   }
 }

@@ -2695,15 +2695,51 @@
     "stopSetup": "Setup stoppen",
     "sheetHint": "Stoppen beendet das Setup für die Spieler, und der Server geht zurück an die Turniere."
   },
-  "hudHelp": {
-    "menu": "HUD",
-    "title": "HUD aktualisieren",
-    "body": "Das HUD im Spiel ist ein Addon aus dem Steam Workshop. CS2 hält es nur aktuell, wenn du es abonniert hast.",
-    "step1": "Abonniere Auto Tournament HUD im Workshop.",
-    "openSteam": "In Steam öffnen",
-    "openWeb": "Workshop-Seite",
-    "step2": "Warte, bis Steam den Download abgeschlossen hat.",
-    "step3": "Starte CS2 neu und verbinde dich wieder mit dem Server.",
-    "done": "Fertig"
+  "help": {
+    "done": "Fertig",
+    "hud": {
+      "menu": "HUD",
+      "title": "HUD aktualisieren",
+      "body": "Das HUD im Spiel ist ein Addon aus dem Steam Workshop. CS2 hält es nur aktuell, wenn du es abonniert hast.",
+      "step1": "Abonniere Auto Tournament HUD im Workshop.",
+      "openSteam": "In Steam öffnen",
+      "openWeb": "Workshop-Seite",
+      "step2": "Warte, bis Steam den Download abgeschlossen hat.",
+      "step3": "Starte CS2 neu und verbinde dich wieder mit dem Server."
+    },
+    "connect": {
+      "menu": "Keine Verbindung",
+      "title": "Keine Verbindung zum Server",
+      "body": "Verbinde dich aus deinem Matchraum: Dort stehen die richtige Adresse und das Passwort für dich.",
+      "step1": "Öffne deinen Matchraum und drücke „Mit Server verbinden“.",
+      "openMatch": "Mein Match öffnen",
+      "step2": "Nicht reingekommen? Drücke dort „Über LAN verbinden“ oder „Über Internet verbinden“, das andere als vorher.",
+      "step3": "Immer noch nicht? Drücke „Konsolenbefehl kopieren“ und füge ihn in die CS2-Konsole ein.",
+      "step4": "Prüfe, ob CS2 aktuell ist, starte es neu und versuch es noch einmal."
+    },
+    "commands": {
+      "menu": "Befehle im Spiel",
+      "title": "Befehle im Spiel",
+      "body": "Tippe sie während eines Matches in den CS2-Chat.",
+      "what": {
+        "r": "Bereit",
+        "ur": "Nicht bereit",
+        "p": "Match pausieren",
+        "up": "Weiterspielen",
+        "tac": "Taktisches Timeout",
+        "stay": "Nach der Messerrunde: Seiten behalten (.switch tauscht)",
+        "admin": "Einen Admin rufen",
+        "lang": "Deine Sprache im Spiel",
+        "help": "Alle Befehle"
+      }
+    },
+    "clips": {
+      "menu": "Statistiken oder Clips fehlen",
+      "title": "Statistiken oder Clips fehlen",
+      "body": "Statistiken und Clips kommen während und nach dem Match, nicht alles auf einmal.",
+      "step1": "Statistiken erscheinen auf der Matchseite, während gespielt wird und wenn eine Map endet.",
+      "step2": "Clips entstehen nach der Map aus der Demo des Matches. Das dauert ein paar Minuten, länger, wenn viele Matches gleichzeitig enden.",
+      "step3": "Gar keine Clips? Der Server hat keine Demo aufgenommen, oder kein Recorder lief. Ein Admin kann unter Highlights › Recorder nachsehen."
+    }
   }
 }

@@ -44,7 +44,7 @@ import { Cs2Overlays } from './global/Cs2Overlays';
 import { Cs2StartConfirm } from './start/Cs2StartConfirm';
 import { Cs2StartPreflight } from './start/Cs2StartPreflight';
 import { Cs2OutdatedServersDialog, parseCs2OutdatedError } from './start/Cs2OutdatedServersDialog';
-import { HudUpdateDialog } from './help/HudUpdateDialog';
+import { ClipsHelp, CommandsHelp, ConnectHelp, HudHelp } from './help/HelpDialogs';
 import { Cs2AllocationBanner } from './bracket/Cs2AllocationBanner';
 import { Cs2NextAllocationChip } from './bracket/Cs2NextAllocationChip';
 import {
@@ -172,8 +172,13 @@ export const cs2ClientIntegration: ClientGameIntegration = {
     labelKey: 'skins.admin.drops.rowAction',
     Dialog: GiveDropToPlayer,
   },
-  // The navbar's ? menu: how to update the HUD addon (the in-game pill points here).
-  helpMenuItem: { key: 'hud', labelKey: 'hudHelp.menu', Dialog: HudUpdateDialog },
+  // The navbar's ? menu. HUD is where the in-game "HUD out of date" pill points.
+  helpMenuItems: [
+    { key: 'hud', labelKey: 'help.hud.menu', Dialog: HudHelp },
+    { key: 'connect', labelKey: 'help.connect.menu', Dialog: ConnectHelp },
+    { key: 'commands', labelKey: 'help.commands.menu', Dialog: CommandsHelp },
+    { key: 'clips', labelKey: 'help.clips.menu', Dialog: ClipsHelp },
+  ],
   // The team page: map strength, and the maps the team bans and picks.
   teamProfileView: Cs2TeamProfileStats,
   // The Play page's party: its members' map strength, Active Duty marked.

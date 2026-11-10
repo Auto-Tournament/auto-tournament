@@ -858,7 +858,7 @@ export interface TournamentStatsViewProps {
  * built-in facts (CS2: aim, utility, impact and map strength). The view
  * fetches its own numbers and renders nothing when there are none.
  */
-/** What a `helpMenuItem` dialog gets (client API 0.2.31). */
+/** What a `helpMenuItems` dialog gets (client API 0.2.31). */
 export interface HelpMenuItemProps {
   onClose: () => void;
 }
@@ -1295,15 +1295,15 @@ export interface ClientGameIntegration {
   };
 
   /**
-   * An entry in the navbar's ? (help) menu, for everyone (client API 0.2.31;
-   * CS2: HUD, how to update the in-game HUD addon). Picking it opens `Dialog`.
-   * `labelKey` is in the module's own namespace.
+   * Entries in the navbar's ? (help) menu, for everyone (client API 0.2.31;
+   * CS2: HUD, can't connect, commands, stats or clips). Picking one opens its
+   * `Dialog`. `labelKey` is in the module's own namespace.
    */
-  helpMenuItem?: {
+  helpMenuItems?: Array<{
     key: string;
     labelKey: string;
     Dialog: ComponentType<HelpMenuItemProps>;
-  };
+  }>;
 
   /**
    * A player's highlight videos from this game (client API 0.2.14): a hook

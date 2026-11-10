@@ -1,27 +1,28 @@
 import React from 'react';
-import { IconButton, Menu, MenuItem } from '@mui/material';
-import { QuestionIcon } from '@phosphor-icons/react';
+import { Box, IconButton, Menu, MenuItem } from '@mui/material';
+import { ArrowSquareOutIcon, QuestionIcon } from '@phosphor-icons/react';
+import { visuallyHidden } from '../common/ExternalLink';
 import { useTranslation } from 'react-i18next';
 import { useInstalledIntegrations } from '../../integrations/registry';
 import type { HelpMenuItemProps } from '../../integrations/types';
 import { tokens } from '../../theme/tokens';
 
 const { color } = tokens;
+const DOCS_URL = 'https://docs.autotournament.gg';
 
 /**
- * The navbar's ? menu: modules' help entries (`helpMenuItem`; CS2: HUD, which
- * the in-game "HUD out of date" pill points to). Nothing when no module has one.
+ * The navbar's ? menu: modules' help entries (`helpMenuItems`; CS2's HUD entry
+ * is where the in-game "HUD out of date" pill points), then the docs.
  */
 export function HelpMenu() {
   const { t } = useTranslation();
   const items = useInstalledIntegrations().flatMap((integration) =>
-    integration.helpMenuItem ? [{ ...integration.helpMenuItem, ns: integration.id }] : []
+    (integration.helpMenuItems ?? []).map((item) => ({ ...item, ns: integration.id }))
   );
   const [anchor, setAnchor] = React.useState<HTMLElement | null>(null);
   const [OpenDialog, setOpenDialog] = React.useState<React.ComponentType<HelpMenuItemProps> | null>(
     null
   );
-  if (items.length === 0) return null;
   return (
     <>
       <IconButton
@@ -63,6 +64,21 @@ export function HelpMenu() {
             {t(item.labelKey, { ns: item.ns })}
           </MenuItem>
         ))}
+        <MenuItem
+          component="a"
+          href={DOCS_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={() => setAnchor(null)}
+          data-testid="nav-help-docs"
+          sx={{ gap: 1 }}
+        >
+          {t('login.documentation')}
+          <ArrowSquareOutIcon size={16} aria-hidden style={{ color: color.ink2 }} />
+          <Box component="span" sx={visuallyHidden}>
+            {t('common.opensInNewTab')}
+          </Box>
+        </MenuItem>
       </Menu>
       {OpenDialog && <OpenDialog onClose={() => setOpenDialog(null)} />}
     </>

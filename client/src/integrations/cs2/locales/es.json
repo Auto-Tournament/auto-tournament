@@ -2766,15 +2766,51 @@
     "stopSetup": "Detener la configuración",
     "sheetHint": "Al detenerla se acaba para los jugadores y el servidor vuelve a los torneos."
   },
-  "hudHelp": {
-    "menu": "HUD",
-    "title": "Actualiza tu HUD",
-    "body": "El HUD del juego es un complemento del Workshop de Steam. CS2 solo lo mantiene actualizado si estás suscrito.",
-    "step1": "Suscríbete a Auto Tournament HUD en el Workshop.",
-    "openSteam": "Abrir en Steam",
-    "openWeb": "Página del Workshop",
-    "step2": "Espera a que Steam termine de descargarlo.",
-    "step3": "Reinicia CS2 y vuelve a conectarte al servidor.",
-    "done": "Listo"
+  "help": {
+    "done": "Listo",
+    "hud": {
+      "menu": "HUD",
+      "title": "Actualiza tu HUD",
+      "body": "El HUD del juego es un complemento del Workshop de Steam. CS2 solo lo mantiene actualizado si estás suscrito.",
+      "step1": "Suscríbete a Auto Tournament HUD en el Workshop.",
+      "openSteam": "Abrir en Steam",
+      "openWeb": "Página del Workshop",
+      "step2": "Espera a que Steam termine de descargarlo.",
+      "step3": "Reinicia CS2 y vuelve a conectarte al servidor."
+    },
+    "connect": {
+      "menu": "No me puedo conectar",
+      "title": "No puedo conectarme al servidor",
+      "body": "Conéctate desde tu sala de partida: tiene la dirección y la contraseña correctas para ti.",
+      "step1": "Abre tu sala de partida y pulsa «Conectar al servidor».",
+      "openMatch": "Abrir mi partida",
+      "step2": "¿No entraste? Pulsa allí «Conectar por LAN» o «Conectar por internet», el que no usaste.",
+      "step3": "¿Sigues sin poder? Pulsa «Copiar comando de consola» y pégalo en la consola de CS2.",
+      "step4": "Comprueba que CS2 está actualizado, reinícialo y vuelve a intentarlo."
+    },
+    "commands": {
+      "menu": "Comandos en el juego",
+      "title": "Comandos en el juego",
+      "body": "Escríbelos en el chat de CS2 durante una partida.",
+      "what": {
+        "r": "Listo",
+        "ur": "No listo",
+        "p": "Pausar la partida",
+        "up": "Reanudar",
+        "tac": "Tiempo muerto táctico",
+        "stay": "Tras la ronda de cuchillos: mantener lados (.switch los cambia)",
+        "admin": "Llamar a un admin",
+        "lang": "Tu idioma en el juego",
+        "help": "Todos los comandos"
+      }
+    },
+    "clips": {
+      "menu": "Faltan estadísticas o clips",
+      "title": "Faltan estadísticas o clips",
+      "body": "Las estadísticas y los clips llegan durante y después de la partida, no todo a la vez.",
+      "step1": "Las estadísticas salen en la página de la partida mientras se juega y al terminar cada mapa.",
+      "step2": "Los clips se hacen con la demo después del mapa. Tarda unos minutos, más cuando terminan muchas partidas a la vez.",
+      "step3": "¿Ningún clip? El servidor no grabó demo o no había ningún grabador en marcha. Un admin puede revisarlo en Highlights › Grabadores."
+    }
   }
 }

@@ -2690,15 +2690,51 @@
     "stopSetup": "Stoppa uppsättningen",
     "sheetHint": "Stoppar du den är det slut för spelarna, och servern går tillbaka till turneringarna."
   },
-  "hudHelp": {
-    "menu": "HUD",
-    "title": "Uppdatera din HUD",
-    "body": "HUD:en i spelet är ett tillägg från Steam Workshop. CS2 håller den bara uppdaterad om du prenumererar på den.",
-    "step1": "Prenumerera på Auto Tournament HUD i Workshop.",
-    "openSteam": "Öppna i Steam",
-    "openWeb": "Workshop-sidan",
-    "step2": "Vänta tills Steam har laddat ned den.",
-    "step3": "Starta om CS2 och anslut till servern igen.",
-    "done": "Klar"
+  "help": {
+    "done": "Klar",
+    "hud": {
+      "menu": "HUD",
+      "title": "Uppdatera din HUD",
+      "body": "HUD:en i spelet är ett tillägg från Steam Workshop. CS2 håller den bara uppdaterad om du prenumererar på den.",
+      "step1": "Prenumerera på Auto Tournament HUD i Workshop.",
+      "openSteam": "Öppna i Steam",
+      "openWeb": "Workshop-sidan",
+      "step2": "Vänta tills Steam har laddat ned den.",
+      "step3": "Starta om CS2 och anslut till servern igen."
+    },
+    "connect": {
+      "menu": "Kan inte ansluta",
+      "title": "Kan inte ansluta till servern",
+      "body": "Anslut från ditt matchrum: där finns rätt adress och lösenord för dig.",
+      "step1": "Öppna ditt matchrum och tryck på ”Anslut till servern”.",
+      "openMatch": "Öppna min match",
+      "step2": "Kom du inte in? Tryck på ”Anslut via LAN” eller ”Anslut via internet” där, den du inte använde.",
+      "step3": "Fortfarande fast? Tryck på ”Kopiera konsolkommando” och klistra in det i CS2-konsolen.",
+      "step4": "Kontrollera att CS2 är uppdaterat, starta om det och försök igen."
+    },
+    "commands": {
+      "menu": "Kommandon i spelet",
+      "title": "Kommandon i spelet",
+      "body": "Skriv dessa i CS2-chatten under en match.",
+      "what": {
+        "r": "Redo",
+        "ur": "Inte redo",
+        "p": "Pausa matchen",
+        "up": "Fortsätt",
+        "tac": "Taktisk timeout",
+        "stay": "Efter knivrundan: behåll sidorna (.switch byter)",
+        "admin": "Kalla på en admin",
+        "lang": "Ditt språk i spelet",
+        "help": "Alla kommandon"
+      }
+    },
+    "clips": {
+      "menu": "Statistik eller klipp saknas",
+      "title": "Statistik eller klipp saknas",
+      "body": "Statistik och klipp kommer under och efter matchen, inte allt på en gång.",
+      "step1": "Statistiken visas på matchsidan medan matchen spelas och när varje karta är slut.",
+      "step2": "Klipp görs från matchens demo efter kartan. Det tar några minuter, längre när många matcher slutar samtidigt.",
+      "step3": "Inga klipp alls? Servern spelade inte in någon demo, eller så körde ingen inspelare. En admin kan kolla Höjdpunkter › Inspelare."
+    }
   }
 }

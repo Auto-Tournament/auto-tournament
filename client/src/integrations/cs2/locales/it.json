@@ -2767,15 +2767,51 @@
     "stopSetup": "Ferma la configurazione",
     "sheetHint": "Fermarla la chiude per i giocatori e il server torna ai tornei."
   },
-  "hudHelp": {
-    "menu": "HUD",
-    "title": "Aggiorna il tuo HUD",
-    "body": "L'HUD di gioco è un addon del Workshop di Steam. CS2 lo tiene aggiornato solo se sei iscritto.",
-    "step1": "Iscriviti ad Auto Tournament HUD nel Workshop.",
-    "openSteam": "Apri in Steam",
-    "openWeb": "Pagina del Workshop",
-    "step2": "Aspetta che Steam finisca di scaricarlo.",
-    "step3": "Riavvia CS2 e ricollegati al server.",
-    "done": "Fatto"
+  "help": {
+    "done": "Fatto",
+    "hud": {
+      "menu": "HUD",
+      "title": "Aggiorna il tuo HUD",
+      "body": "L'HUD di gioco è un addon del Workshop di Steam. CS2 lo tiene aggiornato solo se sei iscritto.",
+      "step1": "Iscriviti ad Auto Tournament HUD nel Workshop.",
+      "openSteam": "Apri in Steam",
+      "openWeb": "Pagina del Workshop",
+      "step2": "Aspetta che Steam finisca di scaricarlo.",
+      "step3": "Riavvia CS2 e ricollegati al server."
+    },
+    "connect": {
+      "menu": "Non riesco a connettermi",
+      "title": "Non riesco a connettermi al server",
+      "body": "Connettiti dalla tua stanza della partita: lì ci sono l'indirizzo e la password giusti per te.",
+      "step1": "Apri la stanza della tua partita e premi «Connettiti al server».",
+      "openMatch": "Apri la mia partita",
+      "step2": "Non sei entrato? Premi lì «Connettiti via LAN» o «Connettiti via internet», quello che non hai usato.",
+      "step3": "Ancora niente? Premi «Copia comando console» e incollalo nella console di CS2.",
+      "step4": "Controlla che CS2 sia aggiornato, riavvialo e riprova."
+    },
+    "commands": {
+      "menu": "Comandi in gioco",
+      "title": "Comandi in gioco",
+      "body": "Scrivili nella chat di CS2 durante una partita.",
+      "what": {
+        "r": "Pronto",
+        "ur": "Non pronto",
+        "p": "Metti in pausa la partita",
+        "up": "Riprendi",
+        "tac": "Timeout tattico",
+        "stay": "Dopo il round a coltelli: tieni i lati (.switch li scambia)",
+        "admin": "Chiama un admin",
+        "lang": "La tua lingua in gioco",
+        "help": "Tutti i comandi"
+      }
+    },
+    "clips": {
+      "menu": "Statistiche o clip mancanti",
+      "title": "Statistiche o clip mancanti",
+      "body": "Statistiche e clip arrivano durante e dopo la partita, non tutto insieme.",
+      "step1": "Le statistiche compaiono nella pagina della partita mentre si gioca e alla fine di ogni mappa.",
+      "step2": "Le clip vengono create dalla demo dopo la mappa. Ci vogliono alcuni minuti, di più quando finiscono tante partite insieme.",
+      "step3": "Nessuna clip? Il server non ha registrato la demo o nessun registratore era attivo. Un admin può controllare in Highlights › Registratori."
+    }
   }
 }

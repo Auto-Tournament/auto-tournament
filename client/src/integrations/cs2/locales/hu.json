@@ -2690,15 +2690,51 @@
     "stopSetup": "Beállítás leállítása",
     "sheetHint": "A leállítással a játékosoknak vége, és a szerver visszamegy a tornákhoz."
   },
-  "hudHelp": {
-    "menu": "HUD",
-    "title": "Frissítsd a HUD-ot",
-    "body": "A játékbeli HUD egy Steam Műhely-kiegészítő. A CS2 csak akkor frissíti, ha feliratkoztál rá.",
-    "step1": "Iratkozz fel az Auto Tournament HUD-ra a Műhelyben.",
-    "openSteam": "Megnyitás a Steamben",
-    "openWeb": "Műhely oldal",
-    "step2": "Várd meg, amíg a Steam letölti.",
-    "step3": "Indítsd újra a CS2-t, és csatlakozz újra a szerverhez.",
-    "done": "Kész"
+  "help": {
+    "done": "Kész",
+    "hud": {
+      "menu": "HUD",
+      "title": "Frissítsd a HUD-ot",
+      "body": "A játékbeli HUD egy Steam Műhely-kiegészítő. A CS2 csak akkor frissíti, ha feliratkoztál rá.",
+      "step1": "Iratkozz fel az Auto Tournament HUD-ra a Műhelyben.",
+      "openSteam": "Megnyitás a Steamben",
+      "openWeb": "Műhely oldal",
+      "step2": "Várd meg, amíg a Steam letölti.",
+      "step3": "Indítsd újra a CS2-t, és csatlakozz újra a szerverhez."
+    },
+    "connect": {
+      "menu": "Nem tudok csatlakozni",
+      "title": "Nem tudok csatlakozni a szerverhez",
+      "body": "A meccsszobádból csatlakozz: ott a neked szóló cím és jelszó.",
+      "step1": "Nyisd meg a meccsszobádat, és nyomd meg: „Csatlakozás a szerverhez”.",
+      "openMatch": "Meccsem megnyitása",
+      "step2": "Nem jutottál be? Nyomd meg ott: „Csatlakozás LAN-on” vagy „Csatlakozás interneten”, amelyiket nem használtad.",
+      "step3": "Még mindig nem megy? Nyomd meg: „Konzolparancs másolása”, és illeszd be a CS2 konzoljába.",
+      "step4": "Ellenőrizd, hogy a CS2 friss-e, indítsd újra, és próbáld meg még egyszer."
+    },
+    "commands": {
+      "menu": "Parancsok a játékban",
+      "title": "Parancsok a játékban",
+      "body": "Meccs közben írd be őket a CS2 chatjébe.",
+      "what": {
+        "r": "Kész",
+        "ur": "Nem vagyok kész",
+        "p": "Meccs szüneteltetése",
+        "up": "Folytatás",
+        "tac": "Taktikai időkérés",
+        "stay": "A késes kör után: oldalak megtartása (.switch cseréli)",
+        "admin": "Admin hívása",
+        "lang": "A nyelved a játékban",
+        "help": "Minden parancs"
+      }
+    },
+    "clips": {
+      "menu": "Hiányzó statisztika vagy klip",
+      "title": "Hiányzó statisztika vagy klip",
+      "body": "A statisztikák és a klipek a meccs alatt és után érkeznek, nem egyszerre.",
+      "step1": "A statisztikák játék közben és minden pálya végén megjelennek a meccs oldalán.",
+      "step2": "A klipek a pálya után készülnek a meccs demójából. Ez pár percig tart, tovább, ha sok meccs ér véget egyszerre.",
+      "step3": "Egyáltalán nincs klip? A szerver nem rögzített demót, vagy nem futott felvevő. Egy admin megnézheti itt: Legjobb pillanatok › Rögzítők."
+    }
   }
 }

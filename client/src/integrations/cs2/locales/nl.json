@@ -2695,15 +2695,51 @@
     "stopSetup": "Setup stoppen",
     "sheetHint": "Stoppen beëindigt de setup voor de spelers, en de server gaat terug naar de toernooien."
   },
-  "hudHelp": {
-    "menu": "HUD",
-    "title": "Werk je HUD bij",
-    "body": "De HUD in het spel is een addon uit de Steam Workshop. CS2 houdt hem alleen bij als je erop geabonneerd bent.",
-    "step1": "Abonneer je op Auto Tournament HUD in de Workshop.",
-    "openSteam": "Openen in Steam",
-    "openWeb": "Workshoppagina",
-    "step2": "Wacht tot Steam klaar is met downloaden.",
-    "step3": "Start CS2 opnieuw en maak weer verbinding met de server.",
-    "done": "Klaar"
+  "help": {
+    "done": "Klaar",
+    "hud": {
+      "menu": "HUD",
+      "title": "Werk je HUD bij",
+      "body": "De HUD in het spel is een addon uit de Steam Workshop. CS2 houdt hem alleen bij als je erop geabonneerd bent.",
+      "step1": "Abonneer je op Auto Tournament HUD in de Workshop.",
+      "openSteam": "Openen in Steam",
+      "openWeb": "Workshoppagina",
+      "step2": "Wacht tot Steam klaar is met downloaden.",
+      "step3": "Start CS2 opnieuw en maak weer verbinding met de server."
+    },
+    "connect": {
+      "menu": "Kan niet verbinden",
+      "title": "Kan niet met de server verbinden",
+      "body": "Verbind vanuit je wedstrijdruimte: daar staan het juiste adres en wachtwoord voor jou.",
+      "step1": "Open je wedstrijdruimte en druk op ‘Verbinden met server’.",
+      "openMatch": "Open mijn wedstrijd",
+      "step2": "Kwam je er niet in? Druk daar op ‘Verbinden via LAN’ of ‘Verbinden via internet’, de andere dan je gebruikte.",
+      "step3": "Lukt het nog steeds niet? Druk op ‘Consoleopdracht kopiëren’ en plak het in de CS2-console.",
+      "step4": "Controleer of CS2 is bijgewerkt, start het opnieuw en probeer het nog eens."
+    },
+    "commands": {
+      "menu": "Commando's in het spel",
+      "title": "Commando's in het spel",
+      "body": "Typ ze tijdens een wedstrijd in de CS2-chat.",
+      "what": {
+        "r": "Klaar",
+        "ur": "Niet klaar",
+        "p": "Wedstrijd pauzeren",
+        "up": "Hervatten",
+        "tac": "Tactische time-out",
+        "stay": "Na de messenronde: kanten houden (.switch wisselt)",
+        "admin": "Een admin roepen",
+        "lang": "Je taal in het spel",
+        "help": "Alle commando's"
+      }
+    },
+    "clips": {
+      "menu": "Statistieken of clips ontbreken",
+      "title": "Statistieken of clips ontbreken",
+      "body": "Statistieken en clips komen tijdens en na de wedstrijd, niet allemaal tegelijk.",
+      "step1": "Statistieken staan op de wedstrijdpagina terwijl er gespeeld wordt en als elke map klaar is.",
+      "step2": "Clips worden na de map gemaakt van de demo. Dat duurt een paar minuten, langer als veel wedstrijden tegelijk eindigen.",
+      "step3": "Helemaal geen clips? De server nam geen demo op, of er draaide geen recorder. Een admin kan kijken bij Highlights › Recorders."
+    }
   }
 }

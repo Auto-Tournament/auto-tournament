@@ -2690,15 +2690,51 @@
     "stopSetup": "Pysäytä asetelma",
     "sheetHint": "Pysäyttäminen lopettaa sen pelaajilta, ja palvelin palaa turnauksiin."
   },
-  "hudHelp": {
-    "menu": "HUD",
-    "title": "Päivitä HUD",
-    "body": "Pelin HUD on Steam Workshopin lisäosa. CS2 pitää sen ajan tasalla vain, jos olet tilannut sen.",
-    "step1": "Tilaa Auto Tournament HUD Workshopista.",
-    "openSteam": "Avaa Steamissa",
-    "openWeb": "Workshop-sivu",
-    "step2": "Odota, että Steam on ladannut sen.",
-    "step3": "Käynnistä CS2 uudelleen ja liity palvelimelle uudelleen.",
-    "done": "Valmis"
+  "help": {
+    "done": "Valmis",
+    "hud": {
+      "menu": "HUD",
+      "title": "Päivitä HUD",
+      "body": "Pelin HUD on Steam Workshopin lisäosa. CS2 pitää sen ajan tasalla vain, jos olet tilannut sen.",
+      "step1": "Tilaa Auto Tournament HUD Workshopista.",
+      "openSteam": "Avaa Steamissa",
+      "openWeb": "Workshop-sivu",
+      "step2": "Odota, että Steam on ladannut sen.",
+      "step3": "Käynnistä CS2 uudelleen ja liity palvelimelle uudelleen."
+    },
+    "connect": {
+      "menu": "En saa yhteyttä",
+      "title": "En saa yhteyttä palvelimeen",
+      "body": "Yhdistä otteluhuoneestasi: siellä on oikea osoite ja salasana sinulle.",
+      "step1": "Avaa otteluhuoneesi ja paina ”Yhdistä palvelimelle”.",
+      "openMatch": "Avaa otteluni",
+      "step2": "Etkö päässyt sisään? Paina siellä ”Yhdistä LANin kautta” tai ”Yhdistä internetin kautta”, sitä jota et käyttänyt.",
+      "step3": "Ei vieläkään? Paina ”Kopioi konsolikomento” ja liitä se CS2:n konsoliin.",
+      "step4": "Tarkista, että CS2 on päivitetty, käynnistä se uudelleen ja yritä taas."
+    },
+    "commands": {
+      "menu": "Pelin komennot",
+      "title": "Pelin komennot",
+      "body": "Kirjoita nämä CS2:n chattiin ottelun aikana.",
+      "what": {
+        "r": "Valmis",
+        "ur": "En ole valmis",
+        "p": "Tauota ottelu",
+        "up": "Jatka",
+        "tac": "Taktinen aikalisä",
+        "stay": "Veitsikierroksen jälkeen: pidä puolet (.switch vaihtaa)",
+        "admin": "Kutsu admin",
+        "lang": "Kielesi pelissä",
+        "help": "Kaikki komennot"
+      }
+    },
+    "clips": {
+      "menu": "Tilastot tai klipit puuttuvat",
+      "title": "Tilastot tai klipit puuttuvat",
+      "body": "Tilastot ja klipit tulevat ottelun aikana ja sen jälkeen, eivät kaikki kerralla.",
+      "step1": "Tilastot näkyvät ottelusivulla pelin aikana ja jokaisen kartan päätyttyä.",
+      "step2": "Klipit tehdään ottelun demosta kartan jälkeen. Siihen menee muutama minuutti, kauemmin kun monta ottelua päättyy yhtä aikaa.",
+      "step3": "Ei klippejä ollenkaan? Palvelin ei tallentanut demoa, tai mikään tallennin ei ollut käynnissä. Admin voi tarkistaa kohdasta Kohokohdat › Tallentajat."
+    }
   }
 }
