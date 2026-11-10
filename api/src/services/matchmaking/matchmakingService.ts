@@ -813,6 +813,7 @@ export class MatchmakingService {
       );
       for (const lobby of expired) await this.resolveTimeout(lobby);
       await this.settleExpiredRematches();
+      await this.closeOrphanedLobbies();
 
       await this.watchPresence();
 
@@ -1558,6 +1559,15 @@ export class MatchmakingService {
     for (const party of silentParties)
       await db.runAsync('DELETE FROM mm_queue_entries WHERE party_id = ?', [party]);
     await this.cancel(lobby.id, 'timeout');
+  }
+
+  /** A ready lobby whose match was deleted or cancelled is over; left open, its room kept opening. */
+  private async closeOrphanedLobbies(): Promise<void> {
+    const orphans = await db.queryAsync<{ id: string }>(
+      `SELECT l.id FROM mm_lobbies l LEFT JOIN matches m ON m.slug = l.match_slug
+        WHERE l.status = 'ready' AND (m.slug IS NULL OR m.status = 'cancelled')`
+    );
+    for (const { id } of orphans) await this.cancel(id, 'match_gone');
   }
 
   private async cancel(lobbyId: string, reason: string): Promise<void> {
