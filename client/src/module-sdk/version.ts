@@ -173,5 +173,7 @@
  * 0.2.29 (additive): `partyView` with `PartyViewProps` (the game's view of a
  *   matchmaking party on the Play page).
  * 0.2.30 (additive): `links.team(teamId)`, a team's public page.
+ * 0.2.31 (additive): `helpMenuItem` with `HelpMenuItemProps` (an entry in the
+ *   navbar's ? menu that opens the module's dialog).
  */
-export const CLIENT_API_VERSION = '0.2.30';
+export const CLIENT_API_VERSION = '0.2.31';

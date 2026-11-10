@@ -42,7 +42,8 @@
     "signIn": "로그인",
     "play": "플레이",
     "thirdPartyNotices": "서드파티 라이선스",
-    "needsYou": "확인 필요"
+    "needsYou": "확인 필요",
+    "help": "도움말"
   },
   "layout": {
     "pageTitle": {

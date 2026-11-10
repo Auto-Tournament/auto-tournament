@@ -42,7 +42,8 @@
     "signIn": "Conectare",
     "play": "Joacă",
     "thirdPartyNotices": "Licențe terțe",
-    "needsYou": "Te așteaptă"
+    "needsYou": "Te așteaptă",
+    "help": "Ajutor"
   },
   "layout": {
     "pageTitle": {

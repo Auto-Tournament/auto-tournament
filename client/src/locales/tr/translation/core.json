@@ -42,7 +42,8 @@
     "signIn": "Giriş yap",
     "play": "Oyna",
     "thirdPartyNotices": "Üçüncü taraf lisansları",
-    "needsYou": "Sana ihtiyaç var"
+    "needsYou": "Sana ihtiyaç var",
+    "help": "Yardım"
   },
   "layout": {
     "pageTitle": {

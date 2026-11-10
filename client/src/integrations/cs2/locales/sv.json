@@ -2689,5 +2689,16 @@
     "sheetState": "Uppsättningen {{name}}",
     "stopSetup": "Stoppa uppsättningen",
     "sheetHint": "Stoppar du den är det slut för spelarna, och servern går tillbaka till turneringarna."
+  },
+  "hudHelp": {
+    "menu": "HUD",
+    "title": "Uppdatera din HUD",
+    "body": "HUD:en i spelet är ett tillägg från Steam Workshop. CS2 håller den bara uppdaterad om du prenumererar på den.",
+    "step1": "Prenumerera på Auto Tournament HUD i Workshop.",
+    "openSteam": "Öppna i Steam",
+    "openWeb": "Workshop-sidan",
+    "step2": "Vänta tills Steam har laddat ned den.",
+    "step3": "Starta om CS2 och anslut till servern igen.",
+    "done": "Klar"
   }
 }

@@ -2689,5 +2689,16 @@
     "sheetState": "{{name}} beállítás",
     "stopSetup": "Beállítás leállítása",
     "sheetHint": "A leállítással a játékosoknak vége, és a szerver visszamegy a tornákhoz."
+  },
+  "hudHelp": {
+    "menu": "HUD",
+    "title": "Frissítsd a HUD-ot",
+    "body": "A játékbeli HUD egy Steam Műhely-kiegészítő. A CS2 csak akkor frissíti, ha feliratkoztál rá.",
+    "step1": "Iratkozz fel az Auto Tournament HUD-ra a Műhelyben.",
+    "openSteam": "Megnyitás a Steamben",
+    "openWeb": "Műhely oldal",
+    "step2": "Várd meg, amíg a Steam letölti.",
+    "step3": "Indítsd újra a CS2-t, és csatlakozz újra a szerverhez.",
+    "done": "Kész"
   }
 }

@@ -2694,5 +2694,16 @@
     "sheetState": "Setup {{name}}",
     "stopSetup": "Setup stoppen",
     "sheetHint": "Stoppen beëindigt de setup voor de spelers, en de server gaat terug naar de toernooien."
+  },
+  "hudHelp": {
+    "menu": "HUD",
+    "title": "Werk je HUD bij",
+    "body": "De HUD in het spel is een addon uit de Steam Workshop. CS2 houdt hem alleen bij als je erop geabonneerd bent.",
+    "step1": "Abonneer je op Auto Tournament HUD in de Workshop.",
+    "openSteam": "Openen in Steam",
+    "openWeb": "Workshoppagina",
+    "step2": "Wacht tot Steam klaar is met downloaden.",
+    "step3": "Start CS2 opnieuw en maak weer verbinding met de server.",
+    "done": "Klaar"
   }
 }

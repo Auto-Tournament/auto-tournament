@@ -2689,5 +2689,16 @@
     "sheetState": "{{name}} kurulumu",
     "stopSetup": "Kurulumu durdur",
     "sheetHint": "Durdurmak oyuncular için oyunu bitirir ve sunucu turnuvalara döner."
+  },
+  "hudHelp": {
+    "menu": "HUD",
+    "title": "HUD'unu güncelle",
+    "body": "Oyundaki HUD bir Steam Atölyesi eklentisidir. CS2 onu yalnızca abone olduysan günceller.",
+    "step1": "Atölye'de Auto Tournament HUD'a abone ol.",
+    "openSteam": "Steam'de aç",
+    "openWeb": "Atölye sayfası",
+    "step2": "Steam'in indirmeyi bitirmesini bekle.",
+    "step3": "CS2'yi yeniden başlat ve sunucuya tekrar bağlan.",
+    "done": "Tamam"
   }
 }

@@ -858,6 +858,11 @@ export interface TournamentStatsViewProps {
  * built-in facts (CS2: aim, utility, impact and map strength). The view
  * fetches its own numbers and renders nothing when there are none.
  */
+/** What a `helpMenuItem` dialog gets (client API 0.2.31). */
+export interface HelpMenuItemProps {
+  onClose: () => void;
+}
+
 /** What an `adminPlayerActions` dialog gets: the player the admin picked on Manage → Players. */
 export interface AdminPlayerActionProps {
   player: { id: string; name: string };
@@ -1287,6 +1292,17 @@ export interface ClientGameIntegration {
     key: string;
     labelKey: string;
     Dialog: ComponentType<AdminPlayerActionProps>;
+  };
+
+  /**
+   * An entry in the navbar's ? (help) menu, for everyone (client API 0.2.31;
+   * CS2: HUD, how to update the in-game HUD addon). Picking it opens `Dialog`.
+   * `labelKey` is in the module's own namespace.
+   */
+  helpMenuItem?: {
+    key: string;
+    labelKey: string;
+    Dialog: ComponentType<HelpMenuItemProps>;
   };
 
   /**

@@ -384,7 +384,7 @@ test.describe.serial('Code modules in the browser', () => {
       );
       const reason = page.getByTestId(`code-module-${CLIENT_INCOMPATIBLE}-reason`);
       await expect(reason).toContainText('^0.3.0');
-      await expect(reason).toContainText('0.2.30');
+      await expect(reason).toContainText('0.2.31');
 
       expect(
         requested.filter((p) => p.startsWith(`/api/modules/${CLIENT_INCOMPATIBLE}/`)),

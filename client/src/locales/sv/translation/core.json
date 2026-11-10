@@ -42,7 +42,8 @@
     "signIn": "Logga in",
     "play": "Spela",
     "thirdPartyNotices": "Tredjepartslicenser",
-    "needsYou": "Behöver dig"
+    "needsYou": "Behöver dig",
+    "help": "Hjälp"
   },
   "layout": {
     "pageTitle": {

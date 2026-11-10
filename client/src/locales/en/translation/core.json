@@ -42,7 +42,8 @@
     "signIn": "Sign in",
     "play": "Play",
     "thirdPartyNotices": "Third-party licenses",
-    "needsYou": "Needs you"
+    "needsYou": "Needs you",
+    "help": "Help"
   },
   "layout": {
     "pageTitle": {

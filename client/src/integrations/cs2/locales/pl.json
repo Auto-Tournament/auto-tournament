@@ -2839,5 +2839,16 @@
     "sheetState": "Zestaw {{name}}",
     "stopSetup": "Zatrzymaj zestaw",
     "sheetHint": "Zatrzymanie kończy grę dla graczy, a serwer wraca do turniejów."
+  },
+  "hudHelp": {
+    "menu": "HUD",
+    "title": "Zaktualizuj HUD",
+    "body": "HUD w grze to dodatek z Warsztatu Steam. CS2 aktualizuje go tylko wtedy, gdy go subskrybujesz.",
+    "step1": "Zasubskrybuj Auto Tournament HUD w Warsztacie.",
+    "openSteam": "Otwórz w Steam",
+    "openWeb": "Strona Warsztatu",
+    "step2": "Poczekaj, aż Steam skończy go pobierać.",
+    "step3": "Uruchom ponownie CS2 i połącz się z serwerem.",
+    "done": "Gotowe"
   }
 }

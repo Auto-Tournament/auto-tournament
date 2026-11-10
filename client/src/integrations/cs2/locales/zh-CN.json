@@ -2694,5 +2694,16 @@
     "sheetState": "{{name}} 预设",
     "stopSetup": "停止预设",
     "sheetHint": "停止后玩家的游戏结束，服务器回到比赛中。"
+  },
+  "hudHelp": {
+    "menu": "HUD",
+    "title": "更新你的 HUD",
+    "body": "游戏内的 HUD 是 Steam 创意工坊的插件。只有订阅后 CS2 才会自动更新它。",
+    "step1": "在创意工坊订阅 Auto Tournament HUD。",
+    "openSteam": "在 Steam 中打开",
+    "openWeb": "创意工坊页面",
+    "step2": "等待 Steam 下载完成。",
+    "step3": "重启 CS2，然后重新加入服务器。",
+    "done": "完成"
   }
 }
