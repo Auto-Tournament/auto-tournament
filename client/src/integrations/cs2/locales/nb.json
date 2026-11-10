@@ -2690,15 +2690,51 @@
     "stopSetup": "Stopp oppsettet",
     "sheetHint": "Når du stopper oppsettet, er det slutt for spillerne, og serveren går tilbake til turneringene."
   },
-  "hudHelp": {
-    "menu": "HUD",
-    "title": "Oppdater HUD-en",
-    "body": "HUD-en i spillet er et tillegg fra Steam Workshop. CS2 holder den bare oppdatert hvis du abonnerer på den.",
-    "step1": "Abonner på Auto Tournament HUD i Workshop.",
-    "openSteam": "Åpne i Steam",
-    "openWeb": "Workshop-siden",
-    "step2": "Vent til Steam er ferdig med å laste den ned.",
-    "step3": "Start CS2 på nytt og koble til serveren igjen.",
-    "done": "Ferdig"
+  "help": {
+    "done": "Ferdig",
+    "hud": {
+      "menu": "HUD",
+      "title": "Oppdater HUD-en",
+      "body": "HUD-en i spillet er et tillegg fra Steam Workshop. CS2 holder den bare oppdatert hvis du abonnerer på den.",
+      "step1": "Abonner på Auto Tournament HUD i Workshop.",
+      "openSteam": "Åpne i Steam",
+      "openWeb": "Workshop-siden",
+      "step2": "Vent til Steam er ferdig med å laste den ned.",
+      "step3": "Start CS2 på nytt og koble til serveren igjen."
+    },
+    "connect": {
+      "menu": "Får ikke koblet til",
+      "title": "Får ikke koblet til serveren",
+      "body": "Koble til fra kamprommet ditt: Der står riktig adresse og passord for deg.",
+      "step1": "Åpne kamprommet ditt og trykk på «Koble til server».",
+      "openMatch": "Åpne kampen min",
+      "step2": "Kom du ikke inn? Trykk på «Koble til via LAN» eller «Koble til via internett» der, den du ikke brukte.",
+      "step3": "Står du fortsatt fast? Trykk på «Kopier konsollkommando» og lim den inn i konsollen i CS2.",
+      "step4": "Sjekk at CS2 er oppdatert, start det på nytt og prøv igjen."
+    },
+    "commands": {
+      "menu": "Kommandoer i spillet",
+      "title": "Kommandoer i spillet",
+      "body": "Skriv disse i chatten i CS2 under en kamp.",
+      "what": {
+        "r": "Klar",
+        "ur": "Ikke klar",
+        "p": "Sett kampen på pause",
+        "up": "Fortsett kampen",
+        "tac": "Taktisk timeout",
+        "stay": "Etter knivrunden: behold sidene (.switch bytter dem)",
+        "admin": "Tilkall en admin",
+        "lang": "Språket ditt i spillet",
+        "help": "Alle kommandoer"
+      }
+    },
+    "clips": {
+      "menu": "Statistikk eller klipp mangler",
+      "title": "Statistikk eller klipp mangler",
+      "body": "Statistikk og klipp kommer under og etter kampen, ikke alt på én gang.",
+      "step1": "Statistikken vises på kampsiden mens kampen spilles og når hvert kart er ferdig.",
+      "step2": "Klipp lages fra kampens demo etter kartet. Det tar noen minutter, lenger når mange kamper slutter samtidig.",
+      "step3": "Ingen klipp i det hele tatt? Serveren tok ikke opp en demo, eller ingen opptaker kjørte. En admin kan sjekke Høydepunkter › Opptakere."
+    }
   }
 }

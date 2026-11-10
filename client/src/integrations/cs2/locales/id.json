@@ -2690,15 +2690,51 @@
     "stopSetup": "Hentikan pengaturan",
     "sheetHint": "Menghentikannya mengakhiri permainan pemain, dan server kembali ke turnamen."
   },
-  "hudHelp": {
-    "menu": "HUD",
-    "title": "Perbarui HUD",
-    "body": "HUD dalam game adalah addon Steam Workshop. CS2 hanya memperbaruinya jika kamu berlangganan.",
-    "step1": "Berlangganan Auto Tournament HUD di Workshop.",
-    "openSteam": "Buka di Steam",
-    "openWeb": "Halaman Workshop",
-    "step2": "Tunggu sampai Steam selesai mengunduhnya.",
-    "step3": "Mulai ulang CS2 dan masuk lagi ke server.",
-    "done": "Selesai"
+  "help": {
+    "done": "Selesai",
+    "hud": {
+      "menu": "HUD",
+      "title": "Perbarui HUD",
+      "body": "HUD dalam game adalah addon Steam Workshop. CS2 hanya memperbaruinya jika kamu berlangganan.",
+      "step1": "Berlangganan Auto Tournament HUD di Workshop.",
+      "openSteam": "Buka di Steam",
+      "openWeb": "Halaman Workshop",
+      "step2": "Tunggu sampai Steam selesai mengunduhnya.",
+      "step3": "Mulai ulang CS2 dan masuk lagi ke server."
+    },
+    "connect": {
+      "menu": "Tidak bisa terhubung",
+      "title": "Tidak bisa terhubung ke server",
+      "body": "Hubungkan dari ruang pertandinganmu: di sana ada alamat dan kata sandi yang benar untukmu.",
+      "step1": "Buka ruang pertandinganmu lalu tekan “Hubungkan ke server”.",
+      "openMatch": "Buka pertandinganku",
+      "step2": "Belum masuk? Tekan “Hubungkan lewat LAN” atau “Hubungkan lewat internet” di sana, yang belum kamu pakai.",
+      "step3": "Masih belum? Tekan “Salin perintah konsol” lalu tempel di konsol CS2.",
+      "step4": "Pastikan CS2 sudah diperbarui, mulai ulang, lalu coba lagi."
+    },
+    "commands": {
+      "menu": "Perintah dalam game",
+      "title": "Perintah dalam game",
+      "body": "Ketik ini di chat CS2 saat pertandingan.",
+      "what": {
+        "r": "Siap",
+        "ur": "Belum siap",
+        "p": "Jeda pertandingan",
+        "up": "Lanjutkan",
+        "tac": "Timeout taktis",
+        "stay": "Setelah ronde pisau: tetap di sisi (.switch menukar)",
+        "admin": "Panggil admin",
+        "lang": "Bahasamu dalam game",
+        "help": "Semua perintah"
+      }
+    },
+    "clips": {
+      "menu": "Statistik atau klip hilang",
+      "title": "Statistik atau klip hilang",
+      "body": "Statistik dan klip datang selama dan setelah pertandingan, tidak sekaligus.",
+      "step1": "Statistik muncul di halaman pertandingan selama dimainkan dan saat tiap peta selesai.",
+      "step2": "Klip dibuat dari demo pertandingan setelah peta. Butuh beberapa menit, lebih lama jika banyak pertandingan selesai bersamaan.",
+      "step3": "Tidak ada klip sama sekali? Server tidak merekam demo atau tidak ada perekam yang berjalan. Admin bisa memeriksanya di Highlight › Perekam."
+    }
   }
 }

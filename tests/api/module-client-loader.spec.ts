@@ -557,6 +557,18 @@ test.describe('Module export validation', () => {
       "routes[0].scope is not 'admin', 'admin-standalone' or 'site'",
     ],
     [
+      'help menu items that are not a list',
+      { default: moduleDef({ helpMenuItems: { key: 'hud' } }) },
+      'badExport',
+      'helpMenuItems is not an array',
+    ],
+    [
+      'a help menu item whose dialog is not a component',
+      { default: moduleDef({ helpMenuItems: [{ key: 'hud', labelKey: 'x', Dialog: 'Hud' }] }) },
+      'badExport',
+      'helpMenuItems[0].Dialog is not a component',
+    ],
+    [
       'a nav item whose icon is not a component',
       { default: moduleDef({ navItems: [{ key: 'x', path: 'x', icon: 'HardDrives' }] }) },
       'badExport',
@@ -614,7 +626,10 @@ test.describe('Module export validation', () => {
     // error boundary, or a new slot would render a code module unguarded.
     const types = readFileSync(join(CLIENT, 'src/integrations/types.ts'), 'utf8');
     const declared = [...types.matchAll(/(\w+)\??:\s*ComponentType</g)].map((m) => m[1]).sort();
-    const listedSlots = COMPONENT_SLOTS.map((path) => path.split('.').pop()!).sort();
+    // helpMenuItems is a list: the validator and the adapter go through each item's Dialog.
+    const listedSlots = [...COMPONENT_SLOTS, 'helpMenuItems.Dialog']
+      .map((path) => path.split('.').pop()!)
+      .sort();
     expect(listedSlots).toEqual(declared);
   });
 });

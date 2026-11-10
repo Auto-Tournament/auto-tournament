@@ -2840,15 +2840,51 @@
     "stopSetup": "Zatrzymaj zestaw",
     "sheetHint": "Zatrzymanie kończy grę dla graczy, a serwer wraca do turniejów."
   },
-  "hudHelp": {
-    "menu": "HUD",
-    "title": "Zaktualizuj HUD",
-    "body": "HUD w grze to dodatek z Warsztatu Steam. CS2 aktualizuje go tylko wtedy, gdy go subskrybujesz.",
-    "step1": "Zasubskrybuj Auto Tournament HUD w Warsztacie.",
-    "openSteam": "Otwórz w Steam",
-    "openWeb": "Strona Warsztatu",
-    "step2": "Poczekaj, aż Steam skończy go pobierać.",
-    "step3": "Uruchom ponownie CS2 i połącz się z serwerem.",
-    "done": "Gotowe"
+  "help": {
+    "done": "Gotowe",
+    "hud": {
+      "menu": "HUD",
+      "title": "Zaktualizuj HUD",
+      "body": "HUD w grze to dodatek z Warsztatu Steam. CS2 aktualizuje go tylko wtedy, gdy go subskrybujesz.",
+      "step1": "Zasubskrybuj Auto Tournament HUD w Warsztacie.",
+      "openSteam": "Otwórz w Steam",
+      "openWeb": "Strona Warsztatu",
+      "step2": "Poczekaj, aż Steam skończy go pobierać.",
+      "step3": "Uruchom ponownie CS2 i połącz się z serwerem."
+    },
+    "connect": {
+      "menu": "Nie mogę się połączyć",
+      "title": "Nie mogę połączyć się z serwerem",
+      "body": "Łącz się z pokoju meczu: są tam właściwy adres i hasło dla ciebie.",
+      "step1": "Otwórz pokój meczu i naciśnij „Połącz z serwerem”.",
+      "openMatch": "Otwórz mój mecz",
+      "step2": "Nie wszedłeś? Naciśnij tam „Połącz przez LAN” lub „Połącz przez internet”, ten, którego nie użyłeś.",
+      "step3": "Dalej nic? Naciśnij „Kopiuj polecenie konsoli” i wklej ją w konsoli CS2.",
+      "step4": "Sprawdź, czy CS2 jest zaktualizowany, uruchom go ponownie i spróbuj jeszcze raz."
+    },
+    "commands": {
+      "menu": "Komendy w grze",
+      "title": "Komendy w grze",
+      "body": "Wpisuj je na czacie CS2 w trakcie meczu.",
+      "what": {
+        "r": "Gotowy",
+        "ur": "Niegotowy",
+        "p": "Zapauzuj mecz",
+        "up": "Wznów",
+        "tac": "Przerwa taktyczna",
+        "stay": "Po rundzie nożowej: zostań na stronach (.switch je zamienia)",
+        "admin": "Wezwij admina",
+        "lang": "Twój język w grze",
+        "help": "Wszystkie komendy"
+      }
+    },
+    "clips": {
+      "menu": "Brak statystyk lub klipów",
+      "title": "Brak statystyk lub klipów",
+      "body": "Statystyki i klipy pojawiają się w trakcie meczu i po nim, nie wszystkie naraz.",
+      "step1": "Statystyki widać na stronie meczu w trakcie gry i po każdej mapie.",
+      "step2": "Klipy powstają z dema meczu po mapie. Trwa to kilka minut, dłużej, gdy wiele meczów kończy się naraz.",
+      "step3": "Żadnych klipów? Serwer nie nagrał dema albo nie działał żaden rejestrator. Admin może to sprawdzić w Highlighty › Rejestratory."
+    }
   }
 }

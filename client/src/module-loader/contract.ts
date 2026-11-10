@@ -158,6 +158,15 @@ function shapeProblem(def: Record<string, Untrusted>): string | null {
     }
   }
 
+  if (def.helpMenuItems !== undefined) {
+    if (!Array.isArray(def.helpMenuItems)) return 'helpMenuItems is not an array';
+    for (const [index, item] of def.helpMenuItems.entries()) {
+      if (!isObject(item) || typeof item.key !== 'string' || typeof item.labelKey !== 'string')
+        return `helpMenuItems[${index}] needs a key and a labelKey`;
+      if (!isComponent(item.Dialog)) return `helpMenuItems[${index}].Dialog is not a component`;
+    }
+  }
+
   if (!Array.isArray(def.routes)) return 'routes is not an array';
   for (const [index, route] of def.routes.entries()) {
     if (!isObject(route) || typeof route.path !== 'string')

@@ -2690,15 +2690,51 @@
     "stopSetup": "Kurulumu durdur",
     "sheetHint": "Durdurmak oyuncular için oyunu bitirir ve sunucu turnuvalara döner."
   },
-  "hudHelp": {
-    "menu": "HUD",
-    "title": "HUD'unu güncelle",
-    "body": "Oyundaki HUD bir Steam Atölyesi eklentisidir. CS2 onu yalnızca abone olduysan günceller.",
-    "step1": "Atölye'de Auto Tournament HUD'a abone ol.",
-    "openSteam": "Steam'de aç",
-    "openWeb": "Atölye sayfası",
-    "step2": "Steam'in indirmeyi bitirmesini bekle.",
-    "step3": "CS2'yi yeniden başlat ve sunucuya tekrar bağlan.",
-    "done": "Tamam"
+  "help": {
+    "done": "Tamam",
+    "hud": {
+      "menu": "HUD",
+      "title": "HUD'unu güncelle",
+      "body": "Oyundaki HUD bir Steam Atölyesi eklentisidir. CS2 onu yalnızca abone olduysan günceller.",
+      "step1": "Atölye'de Auto Tournament HUD'a abone ol.",
+      "openSteam": "Steam'de aç",
+      "openWeb": "Atölye sayfası",
+      "step2": "Steam'in indirmeyi bitirmesini bekle.",
+      "step3": "CS2'yi yeniden başlat ve sunucuya tekrar bağlan."
+    },
+    "connect": {
+      "menu": "Bağlanamıyorum",
+      "title": "Sunucuya bağlanamıyorum",
+      "body": "Maç odandan bağlan: senin için doğru adres ve şifre orada.",
+      "step1": "Maç odanı aç ve “Sunucuya bağlan” düğmesine bas.",
+      "openMatch": "Maçımı aç",
+      "step2": "Giremedin mi? Orada kullanmadığın “LAN üzerinden bağlan” ya da “İnternet üzerinden bağlan” düğmesine bas.",
+      "step3": "Hâlâ olmuyor mu? “Konsol komutunu kopyala” düğmesine bas ve CS2 konsoluna yapıştır.",
+      "step4": "CS2'nin güncel olduğundan emin ol, yeniden başlat ve tekrar dene."
+    },
+    "commands": {
+      "menu": "Oyun içi komutlar",
+      "title": "Oyun içi komutlar",
+      "body": "Maç sırasında bunları CS2 sohbetine yaz.",
+      "what": {
+        "r": "Hazır",
+        "ur": "Hazır değil",
+        "p": "Maçı duraklat",
+        "up": "Devam et",
+        "tac": "Taktik mola",
+        "stay": "Bıçak raundundan sonra: tarafları koru (.switch değiştirir)",
+        "admin": "Admin çağır",
+        "lang": "Oyundaki dilin",
+        "help": "Tüm komutlar"
+      }
+    },
+    "clips": {
+      "menu": "İstatistik veya klip eksik",
+      "title": "İstatistik veya klip eksik",
+      "body": "İstatistikler ve klipler maç sırasında ve sonrasında gelir, hepsi bir anda değil.",
+      "step1": "İstatistikler maç oynanırken ve her harita bittiğinde maç sayfasında görünür.",
+      "step2": "Klipler haritadan sonra maçın demosundan yapılır. Birkaç dakika sürer, aynı anda çok maç bittiğinde daha uzun.",
+      "step3": "Hiç klip yok mu? Sunucu demo kaydetmedi ya da çalışan bir kaydedici yoktu. Bir admin Öne çıkanlar › Kaydediciler bölümünden bakabilir."
+    }
   }
 }

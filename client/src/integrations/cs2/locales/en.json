@@ -2690,15 +2690,51 @@
     "stopSetup": "Stop the setup",
     "sheetHint": "Stopping the setup ends it for the players, and the server goes back to tournaments."
   },
-  "hudHelp": {
-    "menu": "HUD",
-    "title": "Update your HUD",
-    "body": "The in-game HUD is a Steam Workshop addon. CS2 only keeps it up to date if you're subscribed to it.",
-    "step1": "Subscribe to the Auto Tournament HUD in the Workshop.",
-    "openSteam": "Open in Steam",
-    "openWeb": "Workshop page",
-    "step2": "Wait for Steam to finish downloading it.",
-    "step3": "Restart CS2 and join the server again.",
-    "done": "Done"
+  "help": {
+    "done": "Done",
+    "hud": {
+      "menu": "HUD",
+      "title": "Update your HUD",
+      "body": "The in-game HUD is a Steam Workshop addon. CS2 only keeps it up to date if you're subscribed to it.",
+      "step1": "Subscribe to the Auto Tournament HUD in the Workshop.",
+      "openSteam": "Open in Steam",
+      "openWeb": "Workshop page",
+      "step2": "Wait for Steam to finish downloading it.",
+      "step3": "Restart CS2 and join the server again."
+    },
+    "connect": {
+      "menu": "Can't connect",
+      "title": "Can't connect to the server",
+      "body": "Join from your match room: it has the right address and password for you.",
+      "step1": "Open your match room and press “Connect to server”.",
+      "openMatch": "Open my match",
+      "step2": "Didn't get in? Press “Connect via LAN” or “Connect via internet” there, whichever you didn't use.",
+      "step3": "Still stuck? Press “Copy Console Command” and paste it into the CS2 console.",
+      "step4": "Make sure CS2 is up to date, then restart it and try again."
+    },
+    "commands": {
+      "menu": "In-game commands",
+      "title": "In-game commands",
+      "body": "Type these in the CS2 chat during a match.",
+      "what": {
+        "r": "Ready",
+        "ur": "Not ready",
+        "p": "Pause the match",
+        "up": "Unpause",
+        "tac": "Tactical timeout",
+        "stay": "After the knife round: keep sides (.switch swaps them)",
+        "admin": "Call an admin",
+        "lang": "Your language in game",
+        "help": "Every command"
+      }
+    },
+    "clips": {
+      "menu": "Stats or clips missing",
+      "title": "Stats or clips missing",
+      "body": "Stats and clips come in during and after the match, not all at once.",
+      "step1": "Stats show on the match page while the match is played and when each map ends.",
+      "step2": "Clips are made from the match demo after the map. That takes a few minutes, longer when many matches end at once.",
+      "step3": "No clips at all? The server didn't record a demo, or no recorder was running. An admin can check Highlights › Recorders."
+    }
   }
 }

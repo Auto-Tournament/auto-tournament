@@ -2761,15 +2761,51 @@
     "stopSetup": "Oprește configurația",
     "sheetHint": "Oprirea o încheie pentru jucători, iar serverul revine la turnee."
   },
-  "hudHelp": {
-    "menu": "HUD",
-    "title": "Actualizează HUD-ul",
-    "body": "HUD-ul din joc este un addon din Steam Workshop. CS2 îl ține la zi doar dacă te-ai abonat la el.",
-    "step1": "Abonează-te la Auto Tournament HUD în Workshop.",
-    "openSteam": "Deschide în Steam",
-    "openWeb": "Pagina Workshop",
-    "step2": "Așteaptă până termină Steam descărcarea.",
-    "step3": "Repornește CS2 și conectează-te din nou la server.",
-    "done": "Gata"
+  "help": {
+    "done": "Gata",
+    "hud": {
+      "menu": "HUD",
+      "title": "Actualizează HUD-ul",
+      "body": "HUD-ul din joc este un addon din Steam Workshop. CS2 îl ține la zi doar dacă te-ai abonat la el.",
+      "step1": "Abonează-te la Auto Tournament HUD în Workshop.",
+      "openSteam": "Deschide în Steam",
+      "openWeb": "Pagina Workshop",
+      "step2": "Așteaptă până termină Steam descărcarea.",
+      "step3": "Repornește CS2 și conectează-te din nou la server."
+    },
+    "connect": {
+      "menu": "Nu mă pot conecta",
+      "title": "Nu mă pot conecta la server",
+      "body": "Conectează-te din camera meciului: acolo sunt adresa și parola corecte pentru tine.",
+      "step1": "Deschide camera meciului tău și apasă „Conectează-te la server”.",
+      "openMatch": "Deschide meciul meu",
+      "step2": "N-ai intrat? Apasă acolo „Conectează-te prin LAN” sau „Conectează-te prin internet”, pe cel pe care nu l-ai folosit.",
+      "step3": "Tot nu merge? Apasă „Copiază comanda pentru consolă” și lipește în consola CS2.",
+      "step4": "Verifică dacă CS2 e actualizat, repornește-l și încearcă din nou."
+    },
+    "commands": {
+      "menu": "Comenzi în joc",
+      "title": "Comenzi în joc",
+      "body": "Scrie-le în chatul CS2 în timpul meciului.",
+      "what": {
+        "r": "Gata",
+        "ur": "Nu sunt gata",
+        "p": "Pune meciul pe pauză",
+        "up": "Reia meciul",
+        "tac": "Timeout tactic",
+        "stay": "După runda de cuțite: păstrează părțile (.switch le schimbă)",
+        "admin": "Cheamă un admin",
+        "lang": "Limba ta în joc",
+        "help": "Toate comenzile"
+      }
+    },
+    "clips": {
+      "menu": "Lipsesc statistici sau clipuri",
+      "title": "Lipsesc statistici sau clipuri",
+      "body": "Statisticile și clipurile vin în timpul meciului și după, nu toate odată.",
+      "step1": "Statisticile apar pe pagina meciului în timp ce se joacă și la finalul fiecărei hărți.",
+      "step2": "Clipurile se fac din demo-ul meciului după hartă. Durează câteva minute, mai mult când se termină multe meciuri deodată.",
+      "step3": "Niciun clip? Serverul n-a înregistrat demo sau nu rula niciun recorder. Un admin poate verifica în Faze › Înregistratoare."
+    }
   }
 }

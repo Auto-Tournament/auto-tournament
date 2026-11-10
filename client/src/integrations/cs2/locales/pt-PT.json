@@ -2767,15 +2767,51 @@
     "stopSetup": "Parar a configuração",
     "sheetHint": "Parar termina para os jogadores, e o servidor volta aos torneios."
   },
-  "hudHelp": {
-    "menu": "HUD",
-    "title": "Atualiza o teu HUD",
-    "body": "O HUD do jogo é um complemento do Workshop do Steam. O CS2 só o mantém atualizado se estiveres subscrito.",
-    "step1": "Subscreve o Auto Tournament HUD no Workshop.",
-    "openSteam": "Abrir no Steam",
-    "openWeb": "Página do Workshop",
-    "step2": "Espera que o Steam termine a transferência.",
-    "step3": "Reinicia o CS2 e volta a ligar-te ao servidor.",
-    "done": "Concluído"
+  "help": {
+    "done": "Concluído",
+    "hud": {
+      "menu": "HUD",
+      "title": "Atualiza o teu HUD",
+      "body": "O HUD do jogo é um complemento do Workshop do Steam. O CS2 só o mantém atualizado se estiveres subscrito.",
+      "step1": "Subscreve o Auto Tournament HUD no Workshop.",
+      "openSteam": "Abrir no Steam",
+      "openWeb": "Página do Workshop",
+      "step2": "Espera que o Steam termine a transferência.",
+      "step3": "Reinicia o CS2 e volta a ligar-te ao servidor."
+    },
+    "connect": {
+      "menu": "Não consigo ligar",
+      "title": "Não consigo ligar ao servidor",
+      "body": "Liga-te a partir da sala do teu jogo: tem o endereço e a palavra-passe certos para ti.",
+      "step1": "Abre a sala do teu jogo e carrega em «Ligar ao servidor».",
+      "openMatch": "Abrir o meu jogo",
+      "step2": "Não entraste? Carrega lá em «Ligar por LAN» ou «Ligar pela internet», o que não usaste.",
+      "step3": "Continua sem dar? Carrega em «Copiar comando da consola» e cola na consola do CS2.",
+      "step4": "Confirma que o CS2 está atualizado, reinicia-o e tenta outra vez."
+    },
+    "commands": {
+      "menu": "Comandos no jogo",
+      "title": "Comandos no jogo",
+      "body": "Escreve-os no chat do CS2 durante um jogo.",
+      "what": {
+        "r": "Pronto",
+        "ur": "Não pronto",
+        "p": "Pausar o jogo",
+        "up": "Retomar",
+        "tac": "Pausa tática",
+        "stay": "Depois da ronda de facas: manter os lados (.switch troca)",
+        "admin": "Chamar um admin",
+        "lang": "O teu idioma no jogo",
+        "help": "Todos os comandos"
+      }
+    },
+    "clips": {
+      "menu": "Estatísticas ou clipes em falta",
+      "title": "Estatísticas ou clipes em falta",
+      "body": "As estatísticas e os clipes chegam durante e depois do jogo, não tudo de uma vez.",
+      "step1": "As estatísticas aparecem na página do jogo enquanto se joga e quando cada mapa acaba.",
+      "step2": "Os clipes são feitos a partir da demo depois do mapa. Demora uns minutos, mais quando muitos jogos acabam ao mesmo tempo.",
+      "step3": "Nenhum clipe? O servidor não gravou demo ou não havia nenhum gravador a correr. Um admin pode ver em Highlights › Gravadores."
+    }
   }
 }

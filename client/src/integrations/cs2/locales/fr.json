@@ -2766,15 +2766,51 @@
     "stopSetup": "Arrêter la configuration",
     "sheetHint": "L’arrêter y met fin pour les joueurs, et le serveur retourne aux tournois."
   },
-  "hudHelp": {
-    "menu": "HUD",
-    "title": "Mets à jour ton HUD",
-    "body": "Le HUD en jeu est un addon du Workshop Steam. CS2 ne le garde à jour que si tu y es abonné.",
-    "step1": "Abonne-toi à Auto Tournament HUD dans le Workshop.",
-    "openSteam": "Ouvrir dans Steam",
-    "openWeb": "Page du Workshop",
-    "step2": "Attends que Steam ait fini de le télécharger.",
-    "step3": "Redémarre CS2 et reconnecte-toi au serveur.",
-    "done": "Terminé"
+  "help": {
+    "done": "Terminé",
+    "hud": {
+      "menu": "HUD",
+      "title": "Mets à jour ton HUD",
+      "body": "Le HUD en jeu est un addon du Workshop Steam. CS2 ne le garde à jour que si tu y es abonné.",
+      "step1": "Abonne-toi à Auto Tournament HUD dans le Workshop.",
+      "openSteam": "Ouvrir dans Steam",
+      "openWeb": "Page du Workshop",
+      "step2": "Attends que Steam ait fini de le télécharger.",
+      "step3": "Redémarre CS2 et reconnecte-toi au serveur."
+    },
+    "connect": {
+      "menu": "Connexion impossible",
+      "title": "Impossible de se connecter au serveur",
+      "body": "Connecte-toi depuis ta salle de match : elle a la bonne adresse et le bon mot de passe pour toi.",
+      "step1": "Ouvre ta salle de match et appuie sur « Se connecter au serveur ».",
+      "openMatch": "Ouvrir mon match",
+      "step2": "Pas entré ? Appuie là sur « Se connecter via LAN » ou « Se connecter via internet », celui que tu n'as pas utilisé.",
+      "step3": "Toujours bloqué ? Appuie sur « Copier la commande console » et colle-la dans la console de CS2.",
+      "step4": "Vérifie que CS2 est à jour, redémarre-le et réessaie."
+    },
+    "commands": {
+      "menu": "Commandes en jeu",
+      "title": "Commandes en jeu",
+      "body": "Tape-les dans le chat de CS2 pendant un match.",
+      "what": {
+        "r": "Prêt",
+        "ur": "Pas prêt",
+        "p": "Mettre le match en pause",
+        "up": "Reprendre",
+        "tac": "Temps mort tactique",
+        "stay": "Après le round au couteau : garder les côtés (.switch les échange)",
+        "admin": "Appeler un admin",
+        "lang": "Ta langue en jeu",
+        "help": "Toutes les commandes"
+      }
+    },
+    "clips": {
+      "menu": "Stats ou clips manquants",
+      "title": "Stats ou clips manquants",
+      "body": "Les stats et les clips arrivent pendant et après le match, pas tout d'un coup.",
+      "step1": "Les stats s'affichent sur la page du match pendant la partie et à la fin de chaque map.",
+      "step2": "Les clips sont créés à partir de la démo après la map. Ça prend quelques minutes, plus quand beaucoup de matchs finissent en même temps.",
+      "step3": "Aucun clip ? Le serveur n'a pas enregistré de démo, ou aucun enregistreur ne tournait. Un admin peut vérifier dans Highlights › Enregistreurs."
+    }
   }
 }
