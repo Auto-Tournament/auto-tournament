@@ -1312,6 +1312,29 @@ test.describe.serial('matchmaking queue (phase 1)', () => {
     // Too late to answer now.
     expect(await vote(team2[0], lobbyId, true)).toEqual({ status: 'declined' });
   });
+
+  test('a deleted match closes its room, so nobody is sent back to it', TAGS, async () => {
+    await admin.put('/api/matchmaking/admin/settings', { data: { modes: ['5v5', '2v2', '1v1'] } });
+    const players = await Promise.all([player(), player()]);
+    contexts.push(...players.map((p) => p.ctx));
+    for (const p of players)
+      expect((await p.ctx.post('/api/matchmaking/queue', { data: { mode: '1v1' } })).ok()).toBe(
+        true
+      );
+    const { id } = await lobbyOf(players[0].ctx);
+    for (const p of players)
+      expect((await p.ctx.post(`/api/matchmaking/lobbies/${id}/accept`, { data: {} })).ok()).toBe(
+        true
+      );
+    const room = (await (await players[0].ctx.get(`/api/matchmaking/lobbies/${id}`)).json())
+      .lobby as { matchSlug: string };
+    expect((await me(players[1].ctx)).lobby).toMatchObject({ id, status: 'ready' });
+
+    const del = await admin.delete(`/api/matches/${room.matchSlug}`);
+    expect(del.ok(), await del.text()).toBe(true);
+    for (const p of players)
+      await expect.poll(async () => (await me(p.ctx)).lobby, { timeout: 15_000 }).toBeNull();
+  });
 });
 
 test.describe('team captain (pure)', () => {
