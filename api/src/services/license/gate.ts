@@ -32,7 +32,8 @@ export const GRACE_DAYS = 14;
 
 /** What the license server last said about the license (the check-in answer's `license`). */
 export interface ServerLicenseState {
-  status: 'active' | 'past_due' | 'expired' | 'revoked' | 'replaced' | 'in_use_elsewhere';
+  /** ended: the customer cancelled; the versions it paid for stay licensed. */
+  status: 'active' | 'ended' | 'past_due' | 'expired' | 'revoked' | 'replaced' | 'in_use_elsewhere';
   validUntil: string | null;
   stopsOn: string | null;
 }
@@ -134,11 +135,15 @@ export function standingFor(
     };
   }
 
+  // An answer about an earlier period than the lease covers (paid since) doesn't count.
+  const stale = server?.validUntil && server.validUntil < license.updates_until;
+  // The one answer that relaxes the offline rule: cancelled, so it never stops (Commercial License Terms, section 8).
+  if (server?.status === 'ended' && !stale)
+    return { ...base, status: 'active', stopsOn: null, reason: null };
+
   const local = offline(license, today);
   let status: 'active' | 'past_due' | 'expired' = local.status as 'active' | 'past_due' | 'expired';
   let stopsOn = local.stopsOn;
-  // An answer about an earlier period than the lease covers (paid since) doesn't count.
-  const stale = server?.validUntil && server.validUntil < license.updates_until;
   if (server && !stale && (server.status === 'past_due' || server.status === 'expired')) {
     if (rank[server.status] > rank[status]) status = server.status;
     stopsOn = server.stopsOn ?? stopsOn;
