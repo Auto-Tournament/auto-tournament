@@ -444,6 +444,25 @@ test.describe('the paid server limit and late payment (gate)', () => {
     expect(standingFor(yearly, null, '2030-01-01', publicKeys).status).toBe('active');
   });
 
+  test('a cancelled subscription (ended) keeps working after its last paid day, offline too', () => {
+    const ended = { status: 'ended' as const, validUntil: '2026-11-08', stopsOn: null };
+    const st = standingFor(month(), ended, '2027-06-01', publicKeys);
+    expect(st).toMatchObject({
+      status: 'active',
+      paid: true,
+      maxServers: 5,
+      stopsOn: null,
+      reason: null,
+    });
+    expect(() => checkCreate(st, 0, 1)).not.toThrow();
+    // Ended about an earlier period than the key covers doesn't count.
+    const renewed = signToken(
+      payload({ kind: 'month', max_servers: 5, updates_until: '2027-01-08' }),
+      key
+    );
+    expect(standingFor(renewed, ended, '2027-06-01', publicKeys).status).toBe('expired');
+  });
+
   test('the lease carries the current terms; the key itself never changes', () => {
     const lease = signToken(
       payload({
