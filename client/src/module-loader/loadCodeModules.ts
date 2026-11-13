@@ -11,7 +11,8 @@
  */
 
 import type { ClientGameIntegration } from '../integrations/types';
-import { checkClientApi, validateModuleExport } from './contract';
+import { checkClientApi, validateAddonExport, validateModuleExport } from './contract';
+import type { ClientAddon } from './addonSlots';
 import {
   entryProblem,
   errorText,
@@ -25,7 +26,8 @@ import type { Untrusted } from '../utils/untrusted';
 export const IMPORT_TIMEOUT_MS = 10_000;
 
 export type ModuleLoadResult =
-  | { id: string; ok: true; integration: ClientGameIntegration }
+  | { id: string; ok: true; integration: ClientGameIntegration; addon?: undefined }
+  | { id: string; ok: true; addon: ClientAddon; integration?: undefined }
   | { id: string; ok: false; failure: ModuleFailure };
 
 export interface LoadDeps {
@@ -157,6 +159,12 @@ export async function loadCodeModules(
         };
       }
 
+      if (entry.kind === 'addon') {
+        const addon = validateAddonExport(namespace, entry.id);
+        return addon.ok
+          ? { id: entry.id, ok: true, addon: addon.addon }
+          : { id: entry.id, ok: false, failure: addon.failure };
+      }
       const validated = validateModuleExport(namespace, entry.id, deps.takenIds);
       return validated.ok
         ? { id: entry.id, ok: true, integration: validated.integration }

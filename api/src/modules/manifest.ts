@@ -143,9 +143,6 @@ export function parseManifest(raw: Untrusted, folder: string): ManifestResult {
     }
     client = m.client;
   }
-  if (kind === 'addon' && client !== null) {
-    return fail("an add-on can't have a 'client' entry yet");
-  }
 
   return {
     ok: true,

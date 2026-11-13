@@ -9,6 +9,7 @@ import { getMapDisplayName } from '../../constants/maps';
 import { fontDisplay, mono, radii, textSize, tokens } from '../../theme/tokens';
 import { fmtClock } from '../../utils/time';
 import { LivePlayersTable } from './LivePlayersTable';
+import { MatchStageSlot } from '../../module-loader/addonSlots';
 import { SectionTitle, panel } from '../tournament/ui/draftUi';
 import { PlayerChip } from '../player/PlayerChip';
 import type { Untrusted } from '../../utils/untrusted';
@@ -189,135 +190,137 @@ export function SpectatorRoom({
   return (
     <Box data-testid="match-spectator-room" sx={{ display: 'grid', gap: 2.5 }}>
       {/* Where the stream will be (the drafts' match page v2): the match's state, and while
-          it is live with no stream, the score in its place. */}
-      <Box
-        component="section"
-        aria-labelledby="spectator-now"
-        data-testid="match-spectator-hero"
-        data-state={waitsForStart ? 'notStarted' : now}
-        sx={{
-          ...panel,
-          position: 'relative',
-          aspectRatio: { sm: '16 / 9' },
-          minHeight: 220,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: 1.5,
-          px: 3,
-          pt: 7,
-          pb: 3,
-          textAlign: 'center',
-          border: `1px solid ${pause || checkInOpen ? color.warning : now === 'live' ? color.live : color.rule}`,
-        }}
-      >
+          it is live with no stream, the score in its place. An add-on may wrap it. */}
+      <MatchStageSlot matchSlug={match.slug ?? ''} viewerTeamId={null}>
         <Box
-          component="span"
+          component="section"
+          aria-labelledby="spectator-now"
+          data-testid="match-spectator-hero"
+          data-state={waitsForStart ? 'notStarted' : now}
           sx={{
-            position: 'absolute',
-            top: 14,
-            left: 14,
-            px: 1.25,
-            py: 0.5,
-            borderRadius: radii.pill,
-            fontSize: textSize.xs,
-            fontWeight: 700,
-            letterSpacing: '0.06em',
-            textTransform: 'uppercase',
-            bgcolor:
-              pause || checkInOpen ? color.warning : now === 'live' ? color.live : color.paper3,
-            color: pause || checkInOpen || now === 'live' ? color.accentInk : color.ink2,
+            ...panel,
+            position: 'relative',
+            aspectRatio: { sm: '16 / 9' },
+            minHeight: 220,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 1.5,
+            px: 3,
+            pt: 7,
+            pb: 3,
+            textAlign: 'center',
+            border: `1px solid ${pause || checkInOpen ? color.warning : now === 'live' ? color.live : color.rule}`,
           }}
         >
-          {pause
-            ? t('liveMatchesPage.pause.type.unknown')
-            : checkInOpen
-              ? t('matchCheckIn.eyebrowNoTime')
-              : t(`matchPage.spectator.step.${now}`)}
-        </Box>
-        {now === 'live' && live ? (
-          <>
-            <Typography id="spectator-now" component="h2" sx={{ m: 0, color: color.ink2 }}>
-              {[mapOf, mapLabel].filter(Boolean).join(' · ')}
-            </Typography>
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: { xs: 2, sm: 3 },
-                fontFamily: fontDisplay,
-                fontWeight: 800,
-              }}
-            >
-              <Typography component="span" sx={{ fontWeight: 700, color: color.ink2 }}>
-                {teams[0].name}
-              </Typography>
-              <Typography
-                component="span"
-                aria-label={t('matchInfo.spectator.scoreAria', {
-                  a: live.team1Score,
-                  b: live.team2Score,
-                })}
-                sx={{ ...mono, fontSize: { xs: '3rem', sm: '4.5rem' }, lineHeight: 1 }}
-              >
-                {live.team1Score}:{live.team2Score}
-              </Typography>
-              <Typography component="span" sx={{ fontWeight: 700, color: color.ink2 }}>
-                {teams[1].name}
-              </Typography>
-            </Box>
-            {pause && (
-              <Typography data-testid="match-spectator-pause" sx={{ color: color.warning }}>
-                {[
-                  t(`liveMatchesPage.pause.type.${pause.type ?? 'unknown'}`, {
-                    defaultValue: t('liveMatchesPage.pause.type.unknown'),
-                  }),
-                  pausedFor != null ? fmtClock(pausedFor) : null,
-                  pause.by ? t('liveMatchesPage.pause.by', { name: pause.by }) : null,
-                ]
-                  .filter(Boolean)
-                  .join(' · ')}
-              </Typography>
-            )}
-          </>
-        ) : (
-          <Typography
-            id="spectator-now"
-            component="h2"
-            sx={{ m: 0, fontFamily: fontDisplay, fontSize: '1.5rem', fontWeight: 700 }}
+          <Box
+            component="span"
+            sx={{
+              position: 'absolute',
+              top: 14,
+              left: 14,
+              px: 1.25,
+              py: 0.5,
+              borderRadius: radii.pill,
+              fontSize: textSize.xs,
+              fontWeight: 700,
+              letterSpacing: '0.06em',
+              textTransform: 'uppercase',
+              bgcolor:
+                pause || checkInOpen ? color.warning : now === 'live' ? color.live : color.paper3,
+              color: pause || checkInOpen || now === 'live' ? color.accentInk : color.ink2,
+            }}
           >
-            {waitsForStart
-              ? t('matchPage.spectator.notStartedTitle')
-              : now === 'live'
-                ? t('yourMatch.live')
+            {pause
+              ? t('liveMatchesPage.pause.type.unknown')
+              : checkInOpen
+                ? t('matchCheckIn.eyebrowNoTime')
                 : t(`matchPage.spectator.step.${now}`)}
-          </Typography>
-        )}
-        {checkInOpen && (
-          <Box data-testid="match-spectator-checkin" sx={{ display: 'grid', gap: 0.5 }}>
-            {checkIn.teams.map((team) => {
-              const starters = team.players.filter((p) => p.role === 'starter');
-              return (
-                <Typography key={team.teamId} sx={{ color: color.ink2 }}>
-                  <Box component="span" sx={{ fontWeight: 700, color: color.ink }}>
-                    {team.name}
-                  </Box>
-                  {' · '}
-                  {t('matchCheckIn.count', {
-                    in: starters.filter((p) => p.checkedIn).length,
-                    total: starters.length,
-                  })}
-                </Typography>
-              );
-            })}
           </Box>
-        )}
-        <Typography data-testid="match-spectator-server" sx={{ color: color.ink2 }}>
-          {serverText}
-        </Typography>
-      </Box>
+          {now === 'live' && live ? (
+            <>
+              <Typography id="spectator-now" component="h2" sx={{ m: 0, color: color.ink2 }}>
+                {[mapOf, mapLabel].filter(Boolean).join(' · ')}
+              </Typography>
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: { xs: 2, sm: 3 },
+                  fontFamily: fontDisplay,
+                  fontWeight: 800,
+                }}
+              >
+                <Typography component="span" sx={{ fontWeight: 700, color: color.ink2 }}>
+                  {teams[0].name}
+                </Typography>
+                <Typography
+                  component="span"
+                  aria-label={t('matchInfo.spectator.scoreAria', {
+                    a: live.team1Score,
+                    b: live.team2Score,
+                  })}
+                  sx={{ ...mono, fontSize: { xs: '3rem', sm: '4.5rem' }, lineHeight: 1 }}
+                >
+                  {live.team1Score}:{live.team2Score}
+                </Typography>
+                <Typography component="span" sx={{ fontWeight: 700, color: color.ink2 }}>
+                  {teams[1].name}
+                </Typography>
+              </Box>
+              {pause && (
+                <Typography data-testid="match-spectator-pause" sx={{ color: color.warning }}>
+                  {[
+                    t(`liveMatchesPage.pause.type.${pause.type ?? 'unknown'}`, {
+                      defaultValue: t('liveMatchesPage.pause.type.unknown'),
+                    }),
+                    pausedFor != null ? fmtClock(pausedFor) : null,
+                    pause.by ? t('liveMatchesPage.pause.by', { name: pause.by }) : null,
+                  ]
+                    .filter(Boolean)
+                    .join(' · ')}
+                </Typography>
+              )}
+            </>
+          ) : (
+            <Typography
+              id="spectator-now"
+              component="h2"
+              sx={{ m: 0, fontFamily: fontDisplay, fontSize: '1.5rem', fontWeight: 700 }}
+            >
+              {waitsForStart
+                ? t('matchPage.spectator.notStartedTitle')
+                : now === 'live'
+                  ? t('yourMatch.live')
+                  : t(`matchPage.spectator.step.${now}`)}
+            </Typography>
+          )}
+          {checkInOpen && (
+            <Box data-testid="match-spectator-checkin" sx={{ display: 'grid', gap: 0.5 }}>
+              {checkIn.teams.map((team) => {
+                const starters = team.players.filter((p) => p.role === 'starter');
+                return (
+                  <Typography key={team.teamId} sx={{ color: color.ink2 }}>
+                    <Box component="span" sx={{ fontWeight: 700, color: color.ink }}>
+                      {team.name}
+                    </Box>
+                    {' · '}
+                    {t('matchCheckIn.count', {
+                      in: starters.filter((p) => p.checkedIn).length,
+                      total: starters.length,
+                    })}
+                  </Typography>
+                );
+              })}
+            </Box>
+          )}
+          <Typography data-testid="match-spectator-server" sx={{ color: color.ink2 }}>
+            {serverText}
+          </Typography>
+        </Box>
+      </MatchStageSlot>
 
       {/* The game's way to watch it (CS2: GOTV, a little behind the players). */}
       {Watch && now === 'live' && match.slug && <Watch matchSlug={match.slug} />}

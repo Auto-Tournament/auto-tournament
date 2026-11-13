@@ -13516,7 +13516,7 @@
           "Modules"
         ],
         "summary": "The code modules a browser should load (public)",
-        "description": "The public manifest the client loader reads at boot, for every\nvisitor: players and signed-out visitors render module slots too.\nLists only code modules that are enabled, loaded and have a client\nhalf, with exactly `id`, `version`, `clientApi` and `client.entry`.\nNever reasons, disabled, broken or incompatible modules, the server\nAPI or the switch state: those are on the admin-only `GET\n/api/modules`. Built-in modules are compiled into the app and are\nnot listed, so a stock install answers an empty list. Served from\nmemory with an ETag and `Cache-Control: public, no-cache`: a cache\nmay keep it, but revalidates on each page load (a 304 when nothing\nchanged), so enabling or disabling a module shows on the next load.\n",
+        "description": "The public manifest the client loader reads at boot, for every\nvisitor: players and signed-out visitors render module slots too.\nLists only code modules that are enabled, loaded and have a client\nhalf, with exactly `id`, `version`, `clientApi`, `kind` and\n`client.entry`. An add-on (`kind: addon`) is listed only while it is on.\nNever reasons, disabled, broken or incompatible modules, the server\nAPI or the switch state: those are on the admin-only `GET\n/api/modules`. Built-in modules are compiled into the app and are\nnot listed, so a stock install answers an empty list. Served from\nmemory with an ETag and `Cache-Control: public, no-cache`: a cache\nmay keep it, but revalidates on each page load (a 304 when nothing\nchanged), so enabling or disabling a module shows on the next load.\n",
         "responses": {
           "200": {
             "description": "The modules to load",
@@ -13542,6 +13542,13 @@
                           "clientApi": {
                             "type": "string",
                             "description": "The semver range of client APIs the module works with"
+                          },
+                          "kind": {
+                            "type": "string",
+                            "enum": [
+                              "game",
+                              "addon"
+                            ]
                           },
                           "client": {
                             "type": "object",

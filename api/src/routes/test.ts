@@ -2845,7 +2845,7 @@ export default {
 `;
 }
 
-/** A fixture add-on: no client half, and one route that answers while it runs. */
+/** A fixture add-on: an empty match page side slot, and one route that answers while it runs. */
 function addonFixtureFiles(id: string): Record<string, string> {
   return {
     'module.json': JSON.stringify({
@@ -2856,8 +2856,10 @@ function addonFixtureFiles(id: string): Record<string, string> {
       serverApi: '^0.1.0',
       clientApi: '^0.2.0',
       server: 'server/index.js',
+      client: 'client/index.js',
     }),
     'package.json': JSON.stringify({ type: 'module' }),
+    'client/index.js': `export default { id: ${JSON.stringify(id)}, matchSide: () => null };\n`,
     'server/index.js': `export default {
   id: ${JSON.stringify(id)},
   name: ${JSON.stringify(`Fixture ${id}`)},

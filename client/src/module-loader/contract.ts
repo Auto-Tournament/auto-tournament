@@ -19,6 +19,7 @@ import {
   type ModuleFailure,
 } from './manifest';
 import { localesProblem } from './moduleLocales';
+import type { ClientAddon } from './addonSlots';
 import type { Untrusted } from '../utils/untrusted';
 
 /**
@@ -273,4 +274,39 @@ export function validateModuleExport(
   }
   // eslint-disable-next-line no-restricted-syntax -- shapeProblem() above checked every field of the contract
   return { ok: true, integration: def as unknown as ClientGameIntegration };
+}
+
+export type ValidatedAddon =
+  { ok: true; addon: ClientAddon } | { ok: false; failure: ModuleFailure };
+
+/** An add-on's default export, checked as a `ClientAddon` with the id the server listed. */
+export function validateAddonExport(namespace: Untrusted, expectedId: string): ValidatedAddon {
+  const def = isObject(namespace) ? namespace.default : undefined;
+  const bad = (detail: string): ValidatedAddon => ({
+    ok: false,
+    failure: failure('contract', 'badExport', `its default export is not an add-on: ${detail}`, {
+      detail,
+    }),
+  });
+  if (!isObject(def)) return bad('default export is not an object');
+  if (def.id !== expectedId) {
+    const got = typeof def.id === 'string' ? def.id : String(def.id);
+    return {
+      ok: false,
+      failure: failure(
+        'contract',
+        'idMismatch',
+        `its code says it is "${got}", but it is installed as "${expectedId}"`,
+        { id: got, expected: expectedId }
+      ),
+    };
+  }
+  for (const slot of ['matchStage', 'matchSide'] as const) {
+    if (def[slot] !== undefined && !isComponent(def[slot]))
+      return bad(`'${slot}' is not a component`);
+  }
+  const locales = localesProblem(def.locales);
+  if (locales) return bad(locales);
+  // eslint-disable-next-line no-restricted-syntax -- every field of ClientAddon was checked above
+  return { ok: true, addon: def as unknown as ClientAddon };
 }

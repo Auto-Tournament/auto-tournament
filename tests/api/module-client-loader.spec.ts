@@ -5,7 +5,11 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { CLIENT_API_VERSION } from '../../client/src/module-sdk/version';
-import { checkClientApi, validateModuleExport } from '../../client/src/module-loader/contract';
+import {
+  checkClientApi,
+  validateAddonExport,
+  validateModuleExport,
+} from '../../client/src/module-loader/contract';
 import { isValidRange, satisfies } from '../../client/src/module-loader/semverRange';
 import { loadCodeModules, type LoadDeps } from '../../client/src/module-loader/loadCodeModules';
 import {
@@ -100,6 +104,7 @@ function listed(overrides: Partial<LoadableModule> = {}): LoadableModule {
     version: '1.0.0',
     clientApi: '^0.2.0',
     client: { entry: `/api/modules/${id}/client/index.js` },
+    kind: 'game',
     ...overrides,
   };
 }
@@ -118,6 +123,7 @@ function adminRow(overrides: Partial<ModuleListEntry> = {}): ModuleListEntry {
     status: 'ok',
     reason: null,
     client: { entry: `/api/modules/${id}/client/index.js` },
+    kind: 'game',
     ...overrides,
   };
 }
@@ -141,13 +147,13 @@ function deps(overrides: Partial<LoadDeps> = {}): LoadDeps {
 // ---------------------------------------------------------------------------
 
 test.describe('Client API range', () => {
-  test('the platform publishes 0.2.31, which a module built for ^0.2.0 loads on and one built for ^0.1.0 does not', () => {
+  test('the platform publishes 0.2.32, which a module built for ^0.2.0 loads on and one built for ^0.1.0 does not', () => {
     // 0.2.0 reshaped slots to take ids (item 8b): a break, so the minor moved; 0.2.1 only added SDK exports.
     // 0.2.2 added two optional slots, 0.2.3 to 0.2.5 SDK exports, 0.2.6 one optional slot
     // (`rosterMemberStatus`), 0.2.7 the `ExternalLink` SDK export, 0.2.8 the optional Phosphor nav item
-    // icon and `ICON_SIZE`, 0.2.9 the optional `matchPanels.adminMatchView` slot, 0.2.10 the skin slots, 0.2.11 the profile tab, 0.2.12 the map action, 0.2.13 the tournament tab and results section, 0.2.14 isOwn on the profile view, 0.2.15 reel music on the player, 0.2.16 the crowd track and chapter hover, 0.2.17 the public match view, 0.2.18 the Highlights page tab, 0.2.19 links.match, 0.2.20 site nav links, 0.2.21 the leaderboard view, 0.2.22 useTopic, 0.2.23 admin player actions, 0.2.24 the series maps view, 0.2.25 the notification sound, 0.2.26 the prizes view, 0.2.27 the prizes tab and prize line, 0.2.28 pinned notices and the prize pick row, 0.2.30 the party view, 0.2.31 the help menu item: patches, which ^0.2.0
+    // icon and `ICON_SIZE`, 0.2.9 the optional `matchPanels.adminMatchView` slot, 0.2.10 the skin slots, 0.2.11 the profile tab, 0.2.12 the map action, 0.2.13 the tournament tab and results section, 0.2.14 isOwn on the profile view, 0.2.15 reel music on the player, 0.2.16 the crowd track and chapter hover, 0.2.17 the public match view, 0.2.18 the Highlights page tab, 0.2.19 links.match, 0.2.20 site nav links, 0.2.21 the leaderboard view, 0.2.22 useTopic, 0.2.23 admin player actions, 0.2.24 the series maps view, 0.2.25 the notification sound, 0.2.26 the prizes view, 0.2.27 the prizes tab and prize line, 0.2.28 pinned notices and the prize pick row, 0.2.30 the party view, 0.2.31 the help menu item, 0.2.32 add-on slots: patches, which ^0.2.0
     // still matches.
-    expect(CLIENT_API_VERSION).toBe('0.2.31');
+    expect(CLIENT_API_VERSION).toBe('0.2.32');
     expect(checkClientApi('^0.2.0', CLIENT_API_VERSION)).toBeNull();
     expect(checkClientApi('^0.1.0', CLIENT_API_VERSION)?.code).toBe('outOfRange');
     // Re-exported from the SDK barrel, where a module reads it.
@@ -687,7 +693,7 @@ test.describe('Loading code modules', () => {
       failure: {
         stage: 'contract',
         code: 'outOfRange',
-        message: 'built for client API ^0.3.0; this platform provides 0.2.31',
+        message: 'built for client API ^0.3.0; this platform provides 0.2.32',
       },
     });
   });
@@ -941,5 +947,39 @@ test.describe('Shared-package shims', () => {
       g.__AT_SHARED__ = previous;
       rmSync(dir, { recursive: true, force: true });
     }
+  });
+});
+
+test.describe('Add-on client halves', () => {
+  test('an add-on export with its id and component slots passes; anything else is refused', () => {
+    const Slot = () => null;
+    expect(validateAddonExport({ default: { id: 'on-x', matchSide: Slot } }, 'on-x').ok).toBe(true);
+    expect(validateAddonExport({ default: { id: 'on-x' } }, 'on-x').ok).toBe(true);
+    const wrongId = validateAddonExport({ default: { id: 'other' } }, 'on-x');
+    expect(!wrongId.ok && wrongId.failure.code).toBe('idMismatch');
+    const notSlot = validateAddonExport({ default: { id: 'on-x', matchStage: 'x' } }, 'on-x');
+    expect(!notSlot.ok && notSlot.failure.code).toBe('badExport');
+    expect(validateAddonExport({}, 'on-x').ok).toBe(false);
+  });
+
+  test('loadCodeModules hands back an add-on, not an integration, for kind addon', async () => {
+    const [result] = await loadCodeModules(
+      [
+        {
+          id: 'on-x',
+          version: '1.0.0',
+          clientApi: '^0.2.0',
+          client: { entry: '/api/modules/on-x/client/index.js?v=1.0.0' },
+          kind: 'addon',
+        },
+      ],
+      {
+        platformClientApi: CLIENT_API_VERSION,
+        takenIds: [],
+        importModule: async () => ({ default: { id: 'on-x', matchSide: () => null } }),
+      }
+    );
+    expect(result.ok && result.addon?.id).toBe('on-x');
+    expect(result.ok && result.integration).toBeUndefined();
   });
 });

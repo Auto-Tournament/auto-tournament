@@ -59,7 +59,13 @@ import {
   type ModuleManifest,
 } from './manifest';
 import { integrationFromNamespace, integrationProblem } from './validateIntegration';
-import { addonProblem, getAddon, registerAddon, startAddonIfOn } from '../addons/registry';
+import {
+  addonProblem,
+  getAddon,
+  isAddonRunning,
+  registerAddon,
+  startAddonIfOn,
+} from '../addons/registry';
 import type { AddonModule } from '../addons/types';
 import type { Untrusted } from '../utils/untrusted';
 
@@ -686,6 +692,7 @@ export interface PublicModuleListing {
   version: string;
   clientApi: string;
   client: { entry: string };
+  kind: 'game' | 'addon';
 }
 
 /**
@@ -705,11 +712,14 @@ export async function listPublicModules(): Promise<PublicModuleListing[]> {
     const { manifest } = record;
     if (record.status !== 'ok' || !manifest?.client || !manifest.clientApi) continue;
     if (flags.get(record.folder) !== true) continue;
+    // An add-on's client half only while an admin has it on.
+    if (manifest.kind === 'addon' && !isAddonRunning(manifest.id)) continue;
     listed.push({
       id: manifest.id,
       version: manifest.version,
       clientApi: manifest.clientApi,
       client: { entry: clientEntryUrl(manifest.id, manifest.client, manifest.version) },
+      kind: manifest.kind,
     });
   }
   return listed;
