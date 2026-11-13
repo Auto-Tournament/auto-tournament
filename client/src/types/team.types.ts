@@ -174,6 +174,8 @@ export interface MatchLiveStats {
   mapName?: string | null;
   totalMaps: number;
   playerStats?: MatchPlayerStatsSnapshot | null;
+  /** The pause now (not delayed with the rest), or null. */
+  pause?: { type: string | null; by: string | null; since: number | null } | null;
 }
 
 export interface MatchPlayerStatsSnapshot {

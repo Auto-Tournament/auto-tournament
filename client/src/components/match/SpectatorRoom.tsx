@@ -7,6 +7,7 @@ import { useSocket } from '../../hooks/useSocket';
 import type { MatchLiveStats } from '../../types';
 import { getMapDisplayName } from '../../constants/maps';
 import { fontDisplay, mono, radii, textSize, tokens } from '../../theme/tokens';
+import { fmtClock } from '../../utils/time';
 import { LivePlayersTable } from './LivePlayersTable';
 import { SectionTitle, panel } from '../tournament/ui/draftUi';
 import { PlayerChip } from '../player/PlayerChip';
@@ -73,6 +74,48 @@ function useLiveStats(slug: string | undefined, on: boolean): MatchLiveStats | n
   return live;
 }
 
+interface CheckIn {
+  open: boolean;
+  teams: Array<{
+    teamId: string;
+    name: string;
+    players: Array<{ role: string; checkedIn: boolean }>;
+  }>;
+}
+
+/** The match's check-in (`/api/match-check-in`), while the match is not on a server. */
+function useCheckIn(slug: string | undefined, on: boolean): CheckIn | null {
+  const [state, setState] = useState<CheckIn | null>(null);
+  const socket = useSocket();
+  useEffect(() => {
+    if (!slug || !on) return undefined;
+    const load = () =>
+      api
+        .get<{ state: CheckIn | null }>(`/api/match-check-in/${encodeURIComponent(slug)}`)
+        .then((res) => setState(res.state ?? null))
+        .catch(() => setState(null));
+    load();
+    socket.on(`match:update:${slug}`, load);
+    const timer = window.setInterval(load, 15000);
+    return () => {
+      socket.off(`match:update:${slug}`, load);
+      window.clearInterval(timer);
+    };
+  }, [slug, on, socket]);
+  return on ? state : null;
+}
+
+/** Seconds since `since` (unix s), ticking while there is one. */
+function useSince(since: number | null | undefined): number | null {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    if (!since) return undefined;
+    const timer = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(timer);
+  }, [since]);
+  return since ? Math.max(0, Math.floor(now / 1000 - since)) : null;
+}
+
 /**
  * The match room for everyone who does not play in it: a panel where the
  * stream will be with the match's state (veto, server, live score, result),
@@ -100,6 +143,10 @@ export function SpectatorRoom({
   // Before the tournament starts nothing is under way: no step lit (the veto was, before).
   const waitsForStart = match.tournamentStarted === false && match.status === 'pending';
   const live = useLiveStats(match.slug, now === 'live');
+  const pause = now === 'live' ? (live?.pause ?? null) : null;
+  const pausedFor = useSince(pause?.since);
+  const checkIn = useCheckIn(match.slug, now === 'veto' || now === 'server');
+  const checkInOpen = !!checkIn?.open && !waitsForStart;
 
   const serverText = waitsForStart
     ? t('matchPage.spectator.server.notStarted')
@@ -162,7 +209,7 @@ export function SpectatorRoom({
           pt: 7,
           pb: 3,
           textAlign: 'center',
-          border: `1px solid ${now === 'live' ? color.live : color.rule}`,
+          border: `1px solid ${pause || checkInOpen ? color.warning : now === 'live' ? color.live : color.rule}`,
         }}
       >
         <Box
@@ -178,11 +225,16 @@ export function SpectatorRoom({
             fontWeight: 700,
             letterSpacing: '0.06em',
             textTransform: 'uppercase',
-            bgcolor: now === 'live' ? color.live : color.paper3,
-            color: now === 'live' ? color.accentInk : color.ink2,
+            bgcolor:
+              pause || checkInOpen ? color.warning : now === 'live' ? color.live : color.paper3,
+            color: pause || checkInOpen || now === 'live' ? color.accentInk : color.ink2,
           }}
         >
-          {t(`matchPage.spectator.step.${now}`)}
+          {pause
+            ? t('liveMatchesPage.pause.type.unknown')
+            : checkInOpen
+              ? t('matchCheckIn.eyebrowNoTime')
+              : t(`matchPage.spectator.step.${now}`)}
         </Box>
         {now === 'live' && live ? (
           <>
@@ -216,6 +268,19 @@ export function SpectatorRoom({
                 {teams[1].name}
               </Typography>
             </Box>
+            {pause && (
+              <Typography data-testid="match-spectator-pause" sx={{ color: color.warning }}>
+                {[
+                  t(`liveMatchesPage.pause.type.${pause.type ?? 'unknown'}`, {
+                    defaultValue: t('liveMatchesPage.pause.type.unknown'),
+                  }),
+                  pausedFor != null ? fmtClock(pausedFor) : null,
+                  pause.by ? t('liveMatchesPage.pause.by', { name: pause.by }) : null,
+                ]
+                  .filter(Boolean)
+                  .join(' · ')}
+              </Typography>
+            )}
           </>
         ) : (
           <Typography
@@ -229,6 +294,25 @@ export function SpectatorRoom({
                 ? t('yourMatch.live')
                 : t(`matchPage.spectator.step.${now}`)}
           </Typography>
+        )}
+        {checkInOpen && (
+          <Box data-testid="match-spectator-checkin" sx={{ display: 'grid', gap: 0.5 }}>
+            {checkIn.teams.map((team) => {
+              const starters = team.players.filter((p) => p.role === 'starter');
+              return (
+                <Typography key={team.teamId} sx={{ color: color.ink2 }}>
+                  <Box component="span" sx={{ fontWeight: 700, color: color.ink }}>
+                    {team.name}
+                  </Box>
+                  {' · '}
+                  {t('matchCheckIn.count', {
+                    in: starters.filter((p) => p.checkedIn).length,
+                    total: starters.length,
+                  })}
+                </Typography>
+              );
+            })}
+          </Box>
         )}
         <Typography data-testid="match-spectator-server" sx={{ color: color.ink2 }}>
           {serverText}
