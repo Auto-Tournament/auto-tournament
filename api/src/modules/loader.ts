@@ -59,6 +59,8 @@ import {
   type ModuleManifest,
 } from './manifest';
 import { integrationFromNamespace, integrationProblem } from './validateIntegration';
+import { addonProblem, getAddon, registerAddon, startAddonIfOn } from '../addons/registry';
+import type { AddonModule } from '../addons/types';
 import type { Untrusted } from '../utils/untrusted';
 
 export type ModuleStatus = 'ok' | 'incompatible' | 'broken' | 'disabled';
@@ -253,6 +255,52 @@ function legacyMountsOf(integration: GameIntegration): LegacyRouteMount[] {
 interface Evaluation {
   record: DiskModule;
   integration?: GameIntegration;
+  addon?: AddonModule;
+}
+
+/** Refuse a database that already ran migrations this version doesn't declare: a newer version set it up. */
+async function refuseUnknownMigrations(
+  id: string,
+  migrations: ReadonlyArray<{ id: string }> | undefined,
+  version: string
+): Promise<void> {
+  const declared = new Set((migrations ?? []).map((migration) => migration.id));
+  const ledger = await db.queryAsync<{ migration_id: string }>(
+    'SELECT migration_id FROM module_migrations WHERE module_id = ? ORDER BY migration_id',
+    [id]
+  );
+  const unknown = ledger.map((row) => row.migration_id).filter((m) => !declared.has(m));
+  if (unknown.length > 0) {
+    throw new ModuleLoadError(
+      `This database has migrations of '${id}' that version ${version} does not know (${unknown.join(', ')}): ` +
+        'a newer version set it up. Install that version or a newer one.'
+    );
+  }
+}
+
+/** An add-on from disk: the same import, id and migration rules as a game module, then registered. */
+async function loadAddon(dir: string, manifest: ModuleManifest): Promise<AddonModule> {
+  const addon = await importServerEntry(dir, manifest);
+  const problem = addonProblem(addon);
+  if (problem) throw new ModuleLoadError(problem);
+  const loaded = addon as AddonModule;
+  if (loaded.id !== manifest.id) {
+    throw new ModuleLoadError(
+      `The add-on's id is '${loaded.id}' but module.json says '${manifest.id}'.`
+    );
+  }
+  if (getAddon(loaded.id)) {
+    throw new ModuleLoadError(`An add-on with the id '${loaded.id}' is already registered.`);
+  }
+  await refuseUnknownMigrations(loaded.id, loaded.migrations, manifest.version);
+  const migrated = await runModuleMigrations(loaded);
+  if (migrated.status !== 'ok') {
+    throw new ModuleLoadError(
+      `Its database migrations did not apply: ${migrated.reason ?? 'no reason given'}`
+    );
+  }
+  registerAddon(loaded);
+  return loaded;
 }
 
 async function evaluate(folder: string, dir: string): Promise<Evaluation> {
@@ -301,6 +349,14 @@ async function evaluate(folder: string, dir: string): Promise<Evaluation> {
   }
 
   // From here on the module's own code runs.
+  if (manifest.kind === 'addon') {
+    try {
+      const addon = await loadAddon(dir, manifest);
+      return { record: record('ok', null, manifest), addon };
+    } catch (error) {
+      return { record: record('broken', messageOf(error), manifest) };
+    }
+  }
   try {
     const integration = await importServerEntry(dir, manifest);
     const problem = integrationProblem(integration);
@@ -327,20 +383,7 @@ async function evaluate(folder: string, dir: string): Promise<Evaluation> {
     // A database that already ran migrations this version does not declare
     // was set up by a newer version of the module: running this one against
     // that schema is a downgrade by another route. Refused, with the names.
-    const declared = new Set((loaded.migrations ?? []).map((migration) => migration.id));
-    const ledger = await db.queryAsync<{ migration_id: string }>(
-      'SELECT migration_id FROM module_migrations WHERE module_id = ? ORDER BY migration_id',
-      [loaded.id]
-    );
-    const unknown = ledger
-      .map((row) => row.migration_id)
-      .filter((migration) => !declared.has(migration));
-    if (unknown.length > 0) {
-      throw new ModuleLoadError(
-        `This database has migrations of '${loaded.id}' that version ${manifest.version} does not know (${unknown.join(', ')}): ` +
-          'a newer version set it up. Install that version or a newer one.'
-      );
-    }
+    await refuseUnknownMigrations(loaded.id, loaded.migrations, manifest.version);
 
     // CS2 from the catalog: its 2.x tables (servers, maps, map_pools) become
     // cs2_* first, and its first migration is adopted, exactly as boot does
@@ -543,6 +586,9 @@ async function loadOne(id: string): Promise<DiskModuleState | null> {
       // same as a failed start() at boot.
       log.warn(`[MODULES] ${label} loaded, but its start() failed: ${messageOf(error)}`);
     }
+  } else if (evaluation.addon) {
+    log.success(`[MODULES] Loaded add-on ${label} from ${dir} without a restart`);
+    await startAddonIfOn(evaluation.addon.id);
   } else if (status === 'disabled') {
     log.info(`[MODULES] ${label} is disabled`);
   } else {
