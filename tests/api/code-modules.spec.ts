@@ -83,11 +83,17 @@ async function rescan(request: APIRequestContext): Promise<void> {
 }
 
 /** The only fields the public manifest may carry for a module. */
-const PUBLIC_FIELDS = ['client', 'clientApi', 'id', 'version'];
+const PUBLIC_FIELDS = ['client', 'clientApi', 'id', 'kind', 'version'];
 
 interface PublicManifest {
   success: boolean;
-  modules: Array<{ id: string; version: string; clientApi: string; client: { entry: string } }>;
+  modules: Array<{
+    id: string;
+    version: string;
+    clientApi: string;
+    kind: string;
+    client: { entry: string };
+  }>;
 }
 
 /**
@@ -141,7 +147,7 @@ test.describe.serial('Code modules on disk', () => {
     },
     async ({ request }) => {
       const { platform, modules } = await listModules(request);
-      expect(platform).toEqual({ clientApi: '0.2.31', serverApi: '0.1.5' });
+      expect(platform).toEqual({ clientApi: '0.2.32', serverApi: '0.1.5' });
 
       const builtin = modules.find((module) => module.id === 'manual-report');
       expect(builtin).toMatchObject({
@@ -248,12 +254,20 @@ test.describe.serial('Code modules on disk', () => {
         running: false,
       });
       expect((await request.get(`/api/addons/${ADDON}/ping`)).status()).toBe(404);
+      // Its client half isn't in the public manifest while it's off.
+      const listedOff = (await (await request.get('/api/modules/public')).json()) as PublicManifest;
+      expect(listedOff.modules.map((m) => m.id)).not.toContain(ADDON);
 
       const on = await request.put(`/api/addons/${ADDON}`, { data: { enabled: true } });
       expect(on.status(), await on.text()).toBe(200);
       const ping = await request.get(`/api/addons/${ADDON}/ping`);
       expect(ping.status()).toBe(200);
       expect(await ping.json()).toMatchObject({ success: true, addon: ADDON, path: '/ping' });
+      const listedOn = (await (await request.get('/api/modules/public')).json()) as PublicManifest;
+      expect(listedOn.modules.find((m) => m.id === ADDON)).toMatchObject({
+        kind: 'addon',
+        client: { entry: `/api/modules/${ADDON}/client/index.js?v=1.0.0` },
+      });
     }
   );
 
@@ -295,6 +309,7 @@ test.describe.serial('Code modules on disk', () => {
         version: '1.0.0',
         clientApi: '^0.2.0',
         client: { entry: `/api/modules/${VALID}/client/index.js?v=1.0.0` },
+        kind: 'game',
       });
 
       // Built-in modules are compiled into the app: never listed. CS2 is a

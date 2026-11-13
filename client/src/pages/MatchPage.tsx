@@ -32,6 +32,7 @@ import { CaptainsPanel } from '../components/match/CaptainsPanel';
 import { LineupPanel } from '../components/match/LineupPanel';
 import { MatchChatPanel } from '../components/match/MatchChatPanel';
 import { AlsoLive } from '../components/match/AlsoLive';
+import { MatchSideSlots } from '../module-loader/addonSlots';
 import { CommendPanel } from '../components/match/CommendPanel';
 import { MatchCheckInPanel } from '../components/match/MatchCheckInPanel';
 import { MatchFullTeamPanel } from '../components/match/MatchFullTeamPanel';
@@ -584,6 +585,7 @@ export default function MatchPage() {
         </Box>
 
         {showChat && <MatchChatPanel slug={match.slug} myTeam={viewerTeamId} />}
+        <MatchSideSlots matchSlug={match.slug} viewerTeamId={viewerTeamId} />
       </Box>
     </Container>
   );

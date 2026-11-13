@@ -175,5 +175,7 @@
  * 0.2.30 (additive): `links.team(teamId)`, a team's public page.
  * 0.2.31 (additive): `helpMenuItems` with `HelpMenuItemProps` (entries in the
  *   navbar's ? menu, each opening the module's dialog), and `links.matchNow()`.
+ * 0.2.32 (additive): add-ons' client halves (`kind: "addon"`), with the match
+ *   page's `matchStage` and `matchSide` slots.
  */
-export const CLIENT_API_VERSION = '0.2.31';
+export const CLIENT_API_VERSION = '0.2.32';

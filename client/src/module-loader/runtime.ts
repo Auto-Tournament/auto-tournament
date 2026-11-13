@@ -13,6 +13,7 @@ import { recordFailure, recordLoaded } from './moduleState';
 import { provideShared } from './sharedRegistry';
 import { registerModuleLocales } from './moduleLocales';
 import i18n from '../i18n';
+import { registerClientAddon } from './addonSlots';
 
 export async function loadAndRegister(modules: readonly LoadableModule[]): Promise<void> {
   const results = await loadCodeModules(modules, {
@@ -30,6 +31,12 @@ export async function loadAndRegister(modules: readonly LoadableModule[]): Promi
       continue;
     }
     try {
+      if (result.addon) {
+        registerClientAddon(result.addon);
+        registerModuleLocales(i18n, result.id, result.addon.locales);
+        recordLoaded(result.id);
+        continue;
+      }
       registerCodeModule(adaptCodeModule(result.integration));
       // Its strings, once it holds its id, in the same synchronous step: the
       // app renders before modules arrive, but nothing can render between

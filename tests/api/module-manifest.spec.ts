@@ -41,7 +41,7 @@ function manifest(overrides: Record<string, unknown> = {}) {
 test.describe('module.json', () => {
   test('the platform publishes its API versions', { tag: ['@api', '@modules'] }, () => {
     expect(SERVER_API_VERSION).toBe('0.1.5');
-    expect(CLIENT_API_VERSION).toBe('0.2.31');
+    expect(CLIENT_API_VERSION).toBe('0.2.32');
   });
 
   test(
@@ -108,10 +108,11 @@ test.describe('module.json', () => {
     expect(parseManifest(manifest({ migrations: 'migrations' }), 'example').ok).toBe(true);
   });
 
-  test('an add-on says so, and has no client half yet', { tag: ['@api', '@modules'] }, () => {
+  test('an add-on says so, with or without a client half', { tag: ['@api', '@modules'] }, () => {
     const addon = parseManifest(manifest({ kind: 'addon', client: undefined }), 'example');
     expect(addon.ok && addon.manifest.kind).toBe('addon');
-    expect(parseManifest(manifest({ kind: 'addon' }), 'example').ok).toBe(false);
+    const withClient = parseManifest(manifest({ kind: 'addon' }), 'example');
+    expect(withClient.ok && withClient.manifest.client).toBe('client/index.js');
     expect(parseManifest(manifest({ kind: 'theme' }), 'example').ok).toBe(false);
   });
 
