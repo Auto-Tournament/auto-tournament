@@ -790,6 +790,7 @@
       "noRoster": "Noch keine Spieler eingetragen."
     },
     "bracket": "Turnierbaum",
+    "breadcrumb": "Brotkrumennavigation",
     "startsAt": "startet {{time}} · Veto öffnet {{veto}}"
   },
   "report": {

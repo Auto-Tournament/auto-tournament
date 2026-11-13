@@ -809,6 +809,7 @@
       "noRoster": "Ancora nessun giocatore indicato."
     },
     "bracket": "Tabellone",
+    "breadcrumb": "Percorso di navigazione",
     "startsAt": "inizia {{time}} · il veto si apre {{veto}}"
   },
   "report": {

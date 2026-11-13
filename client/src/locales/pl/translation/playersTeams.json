@@ -827,6 +827,7 @@
       "noRoster": "Brak wymienionych graczy."
     },
     "bracket": "Drabinka",
+    "breadcrumb": "Ścieżka nawigacji",
     "startsAt": "start {{time}} · weto otwiera się {{veto}}"
   },
   "report": {

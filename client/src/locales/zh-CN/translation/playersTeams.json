@@ -790,6 +790,7 @@
       "noRoster": "还没有列出玩家。"
     },
     "bracket": "对阵图",
+    "breadcrumb": "面包屑导航",
     "startsAt": "{{time}} 开始 · 禁选于 {{veto}} 开启"
   },
   "report": {

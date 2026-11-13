@@ -789,6 +789,7 @@
       "noRoster": "Pelaajia ei ole vielä listattu."
     },
     "bracket": "Kaavio",
+    "breadcrumb": "Murupolku",
     "startsAt": "alkaa {{time}} · veto avautuu {{veto}}"
   },
   "report": {

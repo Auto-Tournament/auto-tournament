@@ -789,6 +789,7 @@
       "noRoster": "Ingen spillere oppført ennå."
     },
     "bracket": "Turneringstre",
+    "breadcrumb": "Brødsmulesti",
     "startsAt": "starter {{time}} · vetoen åpner {{veto}}"
   },
   "report": {

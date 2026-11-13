@@ -789,6 +789,7 @@
       "noRoster": "Még nincsenek játékosok."
     },
     "bracket": "Ágrajz",
+    "breadcrumb": "Morzsamenü",
     "startsAt": "kezdés: {{time}} · veto nyílik: {{veto}}"
   },
   "report": {

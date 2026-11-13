@@ -808,6 +808,7 @@
       "noRoster": "Nenhum jogador listado ainda."
     },
     "bracket": "Chave",
+    "breadcrumb": "Trilha de navegação",
     "startsAt": "começa {{time}} · veto abre {{veto}}"
   },
   "report": {

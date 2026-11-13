@@ -789,6 +789,7 @@
       "noRoster": "Belum ada pemain yang terdaftar."
     },
     "bracket": "Bracket",
+    "breadcrumb": "Remah roti",
     "startsAt": "mulai {{time}} · veto dibuka {{veto}}"
   },
   "report": {

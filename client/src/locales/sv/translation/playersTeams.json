@@ -789,6 +789,7 @@
       "noRoster": "Inga spelare listade än."
     },
     "bracket": "Bracket",
+    "breadcrumb": "Sökväg",
     "startsAt": "startar {{time}} · vetot öppnar {{veto}}"
   },
   "report": {

@@ -790,6 +790,7 @@
       "noRoster": "Nog geen spelers vermeld."
     },
     "bracket": "Schema",
+    "breadcrumb": "Kruimelpad",
     "startsAt": "begint {{time}} · veto opent {{veto}}"
   },
   "report": {
