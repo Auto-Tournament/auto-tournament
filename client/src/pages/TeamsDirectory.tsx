@@ -180,6 +180,7 @@ export default function TeamsDirectory() {
             {mine.owned.map((team) => (
               <Panel
                 key={team.id}
+                bordered
                 data-testid="teams-directory-owned"
                 sx={{
                   p: 2.5,
@@ -217,6 +218,7 @@ export default function TeamsDirectory() {
             ))}
             {mine.owned.length < mine.ownedMax && (
               <Panel
+                bordered
                 sx={{
                   p: 2.5,
                   display: 'flex',
@@ -252,6 +254,7 @@ export default function TeamsDirectory() {
               </Panel>
             )}
             <Panel
+              bordered
               sx={{
                 p: 2.5,
                 display: 'flex',
