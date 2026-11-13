@@ -177,5 +177,6 @@
  *   navbar's ? menu, each opening the module's dialog), and `links.matchNow()`.
  * 0.2.32 (additive): add-ons' client halves (`kind: "addon"`), with the match
  *   page's `matchStage` and `matchSide` slots.
+ * 0.2.33 (additive): add-ons' `routes` and `navItems`, the shapes game modules use.
  */
-export const CLIENT_API_VERSION = '0.2.32';
+export const CLIENT_API_VERSION = '0.2.33';

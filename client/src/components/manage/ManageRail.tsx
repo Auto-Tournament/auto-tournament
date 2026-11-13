@@ -27,6 +27,7 @@ import { useTranslation } from 'react-i18next';
 import { useShellIntegrations } from '../../hooks/useShellIntegrations';
 import { useIsDevelopment } from '../../hooks/useIsDevelopment';
 import { moduleNavItems, navItemLabel } from '../../utils/moduleNavLabels';
+import { useAddons } from '../../module-loader/addonSlots';
 import { manageTournamentPath, paths } from '../../paths';
 import { useOptionalAdminTournament } from '../../contexts/AdminTournamentContext';
 import { useManageRailCounts } from '../../contexts/ManageRailContext';
@@ -146,6 +147,20 @@ function useRailGroups(pathname: string): RailGroup[] {
       })),
     }));
 
+  // One group per add-on with pages, named by its own `managePage.rail.group`.
+  const addonGroups: RailGroup[] = useAddons()
+    .filter((addon) => (addon.navItems ?? []).length > 0)
+    .map((addon) => ({
+      key: `addon-${addon.id}`,
+      label: t('managePage.rail.group', { ns: addon.id, defaultValue: addon.id }),
+      items: (addon.navItems ?? []).map((item) => ({
+        key: item.key,
+        label: navItemLabel(t, { ...item, moduleId: addon.id }, 'rail'),
+        to: item.path,
+        icon: item.icon,
+      })),
+    }));
+
   const groups: RailGroup[] = [
     {
       key: 'home',
@@ -193,6 +208,7 @@ function useRailGroups(pathname: string): RailGroup[] {
       ],
     },
     ...games,
+    ...addonGroups,
     {
       key: 'history',
       label: t('managePage.rail.groups.history'),
