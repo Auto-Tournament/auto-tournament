@@ -8,6 +8,7 @@ import { ModuleSlotBoundary } from './ModuleSlotBoundary';
 import { isBroken } from './moduleState';
 import { useModuleState } from './useModuleState';
 import type { ModuleLocales } from './moduleLocales';
+import type { IntegrationNavItem, IntegrationRoute } from '../integrations/types';
 
 /** What every match page slot gets. `viewerTeamId` is set when the viewer plays in the match. */
 export interface MatchSlotProps {
@@ -27,6 +28,9 @@ export interface ClientAddon {
   matchStage?: ComponentType<MatchSlotProps & { children: ReactNode }>;
   /** The match page's right column, under the match chat. */
   matchSide?: ComponentType<MatchSlotProps>;
+  /** Pages and rail links, the same shapes a game module uses. */
+  routes?: IntegrationRoute[];
+  navItems?: IntegrationNavItem[];
 }
 
 const addons = new Map<string, ClientAddon>();
@@ -36,10 +40,15 @@ export function registerClientAddon(addon: ClientAddon): void {
   addons.set(addon.id, addon);
 }
 
-/** The loaded, unbroken add-ons, re-rendering the caller when one arrives or breaks. */
-function useAddons(): ClientAddon[] {
-  useModuleState();
+/** The loaded, unbroken add-ons. Not a hook: callers re-render through `useModuleState`. */
+export function listAddons(): ClientAddon[] {
   return [...addons.values()].filter((addon) => !isBroken(addon.id));
+}
+
+/** The loaded, unbroken add-ons, re-rendering the caller when one arrives or breaks. */
+export function useAddons(): ClientAddon[] {
+  useModuleState();
+  return listAddons();
 }
 
 /** Core's panel, or the first add-on's stage wrapped around it. */

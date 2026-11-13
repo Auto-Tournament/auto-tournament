@@ -53,6 +53,7 @@ import { AdminConsentRedirect } from './components/license/AdminConsentRedirect'
 import { LicenseGate } from './components/license/LicenseGate';
 import { ImpersonationBanner } from './components/common/ImpersonationBanner';
 import { listRouteIntegrations } from './integrations/registry';
+import { listAddons } from './module-loader/addonSlots';
 import { useModuleState } from './module-loader/useModuleState';
 import { modulesMayArrive } from './module-loader/moduleState';
 import { ModulePendingRoute } from './components/common/ModuleNotInstalledNotice';
@@ -350,7 +351,10 @@ function AppRoutes() {
   // *links* to these pages follow the game (see `useShellIntegrations`), but
   // the pages themselves stay mounted, so a bookmark, a link in a Discord
   // message or a half-finished setup opens the page instead of a 404.
-  const integrationRoutes = listRouteIntegrations().flatMap((integration) => integration.routes);
+  const integrationRoutes = [
+    ...listRouteIntegrations().flatMap((integration) => integration.routes),
+    ...listAddons().flatMap((addon) => addon.routes ?? []),
+  ];
 
   return (
     <React.Suspense fallback={null}>
