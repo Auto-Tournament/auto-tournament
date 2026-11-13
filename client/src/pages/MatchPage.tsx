@@ -23,9 +23,8 @@ import type { PublicMatch } from '../integrations/types';
 import { fontDisplay, mono, tokens } from '../theme/tokens';
 import { useSocket } from '../hooks/useSocket';
 import { useAuth } from '../contexts/AuthContext';
-import { getStatusLabel } from '../utils/matchUtils';
+import { getBracketMatchLabel, getRoundLabel, getStatusLabel } from '../utils/matchUtils';
 import { manageMatchPath, teamProfilePath, tournamentTabPath } from '../paths';
-import { ArrowLeftIcon } from '@phosphor-icons/react';
 import { YourMatchCard } from '../components/tournament/match/YourMatchCard';
 import { SpectatorRoom, type SpectatorRoomMatch } from '../components/match/SpectatorRoom';
 import { WhatsNextCard } from '../components/tournament/WhatsNextCard';
@@ -49,6 +48,9 @@ type MatchResponse = PublicMatch &
     /** Its start time and when its veto opens (unix s), when it has one. */
     startsAt?: number | null;
     vetoOpensAt?: number | null;
+    round?: number;
+    matchNumber?: number;
+    bracket?: string | null;
   };
 
 /** "de_inferno" → "Inferno". */
@@ -149,6 +151,15 @@ export default function MatchPage() {
   const score1 = maps.length ? won('team1') : (match.team1SeriesScore ?? 0);
   const score2 = maps.length ? won('team2') : (match.team2SeriesScore ?? 0);
   const date = match.completedAt ? fmtDate(match.completedAt) : null;
+  const roundLabel =
+    (match.round ?? 0) > 0
+      ? (getBracketMatchLabel({
+          slug: match.slug,
+          bracket: match.bracket,
+          round: match.round ?? 0,
+          matchNumber: match.matchNumber ?? 0,
+        }) ?? getRoundLabel(match.round ?? 0))
+      : null;
 
   // The score panel every viewer gets (the drafts' match room): both teams'
   // logos and names, the maps won, and what the match is.
@@ -311,108 +322,102 @@ export default function MatchPage() {
       sx={{ py: { xs: 3, md: 5 }, display: 'flex', flexDirection: 'column', gap: 3 }}
       data-testid="match-page"
     >
-      <Box
-        sx={{
-          display: 'flex',
-          flexWrap: 'wrap',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          gap: 1.5,
-        }}
-      >
+      {match.tournamentId && match.tournament && (
         <Box
-          component="div"
+          component="nav"
+          aria-label={t('matchPage.breadcrumb')}
+          data-testid="match-room-tournament"
           sx={{
             display: 'flex',
             flexWrap: 'wrap',
             alignItems: 'center',
             gap: 1,
-            fontSize: '0.8125rem',
-            letterSpacing: '0.06em',
-            textTransform: 'uppercase',
+            fontSize: '0.875rem',
             color: tokens.color.muted,
+            '& a': { color: tokens.color.accent2, textDecoration: 'underline' },
           }}
         >
-          {match.tournamentId && match.tournament && (
-            <Box
-              component={RouterLink}
-              to={tournamentTabPath(match.tournamentId)}
-              sx={{
-                color: 'inherit',
-                textDecoration: 'none',
-                '&:hover': { color: tokens.color.ink },
-              }}
-            >
-              {match.tournament}
-            </Box>
+          <RouterLink to={tournamentTabPath(match.tournamentId)}>{match.tournament}</RouterLink>
+          <span aria-hidden>›</span>
+          <RouterLink to={tournamentTabPath(match.tournamentId, 'bracket')}>
+            {t('matchPage.bracket')}
+          </RouterLink>
+          {roundLabel && (
+            <>
+              <span aria-hidden>›</span>
+              <span>{roundLabel}</span>
+            </>
           )}
-          {date && (
-            <span>
-              ·{' '}
-              {match.status === 'completed' && match.completedAt
-                ? t('liveMatch.finishedAt', { when: fmtDateTime(match.completedAt) })
-                : date}
-            </span>
-          )}
-          {match.status !== 'completed' && (
-            <Box
-              component="span"
-              data-testid="match-page-status"
-              sx={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 0.75,
-                color: live ? tokens.color.live : tokens.color.ink2,
-                fontWeight: 600,
-              }}
-            >
-              {live && (
-                <Box
-                  component="span"
-                  sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: tokens.color.live }}
-                />
-              )}
-              {getStatusLabel(
-                match.status,
-                false,
-                match.vetoCompleted,
-                match.tournamentStarted ?? undefined
-              )}
-            </Box>
-          )}
-          {/* Its start time (Manage › Schedule), until it is on a server. */}
-          {matchIsOn && !live && match.startsAt && match.vetoOpensAt && (
-            <Box
-              component="span"
-              data-testid="match-page-starts"
-              sx={{ color: tokens.color.ink2, fontWeight: 600 }}
-            >
-              ·{' '}
-              {t('matchPage.startsAt', {
-                time: fmtTime(match.startsAt),
-                veto: fmtTime(match.vetoOpensAt),
-              })}
-            </Box>
-          )}
+          <span aria-hidden>›</span>
+          <Box component="span" aria-current="page" sx={{ color: tokens.color.ink }}>
+            {t('search.versus', {
+              team1: match.team1?.name ?? t('matchPage.tbd'),
+              team2: match.team2?.name ?? t('matchPage.tbd'),
+            })}
+          </Box>
         </Box>
-        {match.tournamentId && match.tournament && (
+      )}
+
+      <Box
+        component="div"
+        sx={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          alignItems: 'center',
+          gap: 1,
+          fontSize: '0.8125rem',
+          letterSpacing: '0.06em',
+          textTransform: 'uppercase',
+          color: tokens.color.muted,
+        }}
+      >
+        {!match.tournamentId && match.tournament && <span>{match.tournament}</span>}
+        {date && (
+          <span>
+            ·{' '}
+            {match.status === 'completed' && match.completedAt
+              ? t('liveMatch.finishedAt', { when: fmtDateTime(match.completedAt) })
+              : date}
+          </span>
+        )}
+        {match.status !== 'completed' && (
           <Box
-            data-testid="match-room-tournament"
-            sx={{ display: 'flex', gap: 2, fontSize: '0.875rem' }}
+            component="span"
+            data-testid="match-page-status"
+            sx={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 0.75,
+              color: live ? tokens.color.live : tokens.color.ink2,
+              fontWeight: 600,
+            }}
           >
-            <Box
-              component={RouterLink}
-              to={tournamentTabPath(match.tournamentId)}
-              sx={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 0.75,
-                color: tokens.color.accent,
-              }}
-            >
-              <ArrowLeftIcon size={16} aria-hidden />
-              {t('liveMatch.backToTournament')}
-            </Box>
+            {live && (
+              <Box
+                component="span"
+                sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: tokens.color.live }}
+              />
+            )}
+            {getStatusLabel(
+              match.status,
+              false,
+              match.vetoCompleted,
+              match.tournamentStarted ?? undefined
+            )}
+          </Box>
+        )}
+        {/* Its start time (Manage › Schedule), until it is on a server. */}
+        {matchIsOn && !live && match.startsAt && match.vetoOpensAt && (
+          <Box
+            component="span"
+            data-testid="match-page-starts"
+            sx={{ color: tokens.color.ink2, fontWeight: 600 }}
+          >
+            ·{' '}
+            {t('matchPage.startsAt', {
+              time: fmtTime(match.startsAt),
+              veto: fmtTime(match.vetoOpensAt),
+            })}
           </Box>
         )}
       </Box>

@@ -789,6 +789,7 @@
       "noRoster": "No players listed yet."
     },
     "bracket": "Bracket",
+    "breadcrumb": "Breadcrumb",
     "startsAt": "starts {{time}} · veto opens {{veto}}"
   },
   "report": {

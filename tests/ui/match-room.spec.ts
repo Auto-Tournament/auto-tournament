@@ -68,19 +68,23 @@ test.describe.serial('Match room', () => {
     expect(path).toBe(`/match/${encodeURIComponent(slug)}`);
     await expect(page.getByTestId('match-room-player')).toBeVisible({ timeout: 20000 });
     await expect(page.getByTestId('veto-interface')).toBeVisible({ timeout: 20000 });
-    const back = page.getByTestId('match-room-tournament');
-    // One way back (the drafts' match room): the tournament page.
-    await expect(back.getByRole('link')).toHaveCount(1);
-    await expect(back.getByRole('link').first()).toHaveAttribute('href', /^\/tournament\/\d+/);
+    const crumbs = page.getByTestId('match-room-tournament');
+    // The breadcrumb: the tournament, then its bracket.
+    await expect(crumbs.getByRole('link')).toHaveCount(2);
+    await expect(crumbs.getByRole('link').first()).toHaveAttribute('href', /^\/tournament\/\d+$/);
+    await expect(crumbs.getByRole('link').nth(1)).toHaveAttribute(
+      'href',
+      /^\/tournament\/\d+\/bracket$/
+    );
   });
 
   test('someone not in the match sees the room and the veto, read-only', TAGS, async ({ page }) => {
     await page.goto(`/match/${encodeURIComponent(slug)}`, { waitUntil: 'domcontentloaded' });
     await expect(page.getByTestId('match-page')).toBeVisible({ timeout: 15000 });
     await expect(page.getByTestId('match-room-player')).toHaveCount(0);
-    // The MatchRoom board: steps, the server state and both rosters...
+    // The room: the match's state where the stream will be, and both rosters...
     await expect(page.getByTestId('match-spectator-room')).toBeVisible({ timeout: 15000 });
-    await expect(page.getByTestId('match-step-veto')).toHaveAttribute('aria-current', 'step');
+    await expect(page.getByTestId('match-spectator-hero')).toHaveAttribute('data-state', 'veto');
     // ...and the veto as it happens, never their turn.
     const veto = page.getByTestId('veto-interface');
     await expect(veto).toBeVisible({ timeout: 20000 });

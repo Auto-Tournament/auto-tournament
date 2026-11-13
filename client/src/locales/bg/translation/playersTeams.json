@@ -789,6 +789,7 @@
       "noRoster": "Още няма играчи."
     },
     "bracket": "Схема",
+    "breadcrumb": "Навигация",
     "startsAt": "започва {{time}} · ветото се отваря {{veto}}"
   },
   "report": {

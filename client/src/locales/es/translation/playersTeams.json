@@ -809,6 +809,7 @@
       "noRoster": "Aún no hay jugadores."
     },
     "bracket": "Bracket",
+    "breadcrumb": "Ruta de navegación",
     "startsAt": "empieza {{time}} · el veto se abre {{veto}}"
   },
   "report": {

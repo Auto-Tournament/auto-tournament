@@ -809,6 +809,7 @@
       "noRoster": "Pas encore de joueurs."
     },
     "bracket": "Tableau",
+    "breadcrumb": "Fil d’Ariane",
     "startsAt": "début {{time}} · veto {{veto}}"
   },
   "report": {

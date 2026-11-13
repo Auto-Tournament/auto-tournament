@@ -789,6 +789,7 @@
       "noRoster": "아직 등록된 플레이어가 없어요."
     },
     "bracket": "대진표",
+    "breadcrumb": "탐색 경로",
     "startsAt": "{{time}} 시작 · 밴/픽 시작 {{veto}}"
   },
   "report": {

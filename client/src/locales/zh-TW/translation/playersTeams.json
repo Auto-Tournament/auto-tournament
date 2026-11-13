@@ -789,6 +789,7 @@
       "noRoster": "還沒有列出玩家。"
     },
     "bracket": "賽程表",
+    "breadcrumb": "導覽路徑",
     "startsAt": "{{time}} 開始 · 禁選於 {{veto}} 開啟"
   },
   "report": {

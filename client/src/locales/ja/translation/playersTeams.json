@@ -789,6 +789,7 @@
       "noRoster": "まだプレイヤーが登録されていません。"
     },
     "bracket": "トーナメント表",
+    "breadcrumb": "パンくずリスト",
     "startsAt": "{{time}} 開始 · BAN/ピック開始 {{veto}}"
   },
   "report": {

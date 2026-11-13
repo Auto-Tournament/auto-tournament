@@ -74,10 +74,9 @@ function useLiveStats(slug: string | undefined, on: boolean): MatchLiveStats | n
 }
 
 /**
- * The match room for everyone who does not play in it (the drafts' spectator
- * board): where the match is (veto, server, live, result) as steps, a card
- * with what is on now (connecting is for the two teams), and the players: the
- * live table while a map is played, the rosters before.
+ * The match room for everyone who does not play in it: a panel where the
+ * stream will be with the match's state (veto, server, live score, result),
+ * and the players: the live table while a map is played, the rosters before.
  */
 export function SpectatorRoom({
   match,
@@ -90,9 +89,6 @@ export function SpectatorRoom({
   Watch?: ComponentType<{ matchSlug: string }>;
 }) {
   const { t } = useTranslation();
-  const steps: Step[] = hasVeto
-    ? ['veto', 'server', 'live', 'result']
-    : ['server', 'live', 'result'];
   const now: Step =
     match.status === 'completed' || match.status === 'cancelled'
       ? 'result'
@@ -103,7 +99,6 @@ export function SpectatorRoom({
           : 'server';
   // Before the tournament starts nothing is under way: no step lit (the veto was, before).
   const waitsForStart = match.tournamentStarted === false && match.status === 'pending';
-  const nowIndex = waitsForStart ? -1 : steps.indexOf(now);
   const live = useLiveStats(match.slug, now === 'live');
 
   const serverText = waitsForStart
@@ -146,67 +141,83 @@ export function SpectatorRoom({
 
   return (
     <Box data-testid="match-spectator-room" sx={{ display: 'grid', gap: 2.5 }}>
-      <Box
-        component="ol"
-        aria-label={t('matchPage.spectator.steps')}
-        sx={{
-          listStyle: 'none',
-          m: 0,
-          p: 0,
-          display: 'grid',
-          gap: 1,
-          gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 9rem), 1fr))',
-        }}
-      >
-        {steps.map((step, i) => {
-          const done = i < nowIndex;
-          const current = i === nowIndex;
-          return (
-            <Box
-              component="li"
-              key={step}
-              aria-current={current ? 'step' : undefined}
-              data-testid={`match-step-${step}`}
-              sx={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 0.25,
-                px: 2,
-                py: 1.5,
-                borderRadius: radii.md,
-                bgcolor: current ? color.paper3 : color.paper2,
-                border: `2px solid ${current ? color.live : 'transparent'}`,
-              }}
-            >
-              <Typography
-                component="span"
-                sx={{
-                  fontSize: textSize.sm,
-                  fontWeight: 700,
-                  color: current ? color.live : done ? color.ink2 : color.muted,
-                }}
-              >
-                {done ? '✓' : current ? '●' : '○'} {t(`matchPage.spectator.step.${step}`)}
-              </Typography>
-            </Box>
-          );
-        })}
-      </Box>
-
+      {/* Where the stream will be (the drafts' match page v2): the match's state, and while
+          it is live with no stream, the score in its place. */}
       <Box
         component="section"
         aria-labelledby="spectator-now"
-        sx={{ ...panel, border: `2px solid ${now === 'live' ? color.live : color.rule}` }}
+        data-testid="match-spectator-hero"
+        data-state={waitsForStart ? 'notStarted' : now}
+        sx={{
+          ...panel,
+          position: 'relative',
+          aspectRatio: { sm: '16 / 9' },
+          minHeight: 220,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 1.5,
+          px: 3,
+          pt: 7,
+          pb: 3,
+          textAlign: 'center',
+          border: `1px solid ${now === 'live' ? color.live : color.rule}`,
+        }}
       >
         <Box
+          component="span"
           sx={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            justifyContent: 'space-between',
-            alignItems: 'baseline',
-            gap: 1.5,
+            position: 'absolute',
+            top: 14,
+            left: 14,
+            px: 1.25,
+            py: 0.5,
+            borderRadius: radii.pill,
+            fontSize: textSize.xs,
+            fontWeight: 700,
+            letterSpacing: '0.06em',
+            textTransform: 'uppercase',
+            bgcolor: now === 'live' ? color.live : color.paper3,
+            color: now === 'live' ? color.accentInk : color.ink2,
           }}
         >
+          {t(`matchPage.spectator.step.${now}`)}
+        </Box>
+        {now === 'live' && live ? (
+          <>
+            <Typography id="spectator-now" component="h2" sx={{ m: 0, color: color.ink2 }}>
+              {[mapOf, mapLabel].filter(Boolean).join(' · ')}
+            </Typography>
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: { xs: 2, sm: 3 },
+                fontFamily: fontDisplay,
+                fontWeight: 800,
+              }}
+            >
+              <Typography component="span" sx={{ fontWeight: 700, color: color.ink2 }}>
+                {teams[0].name}
+              </Typography>
+              <Typography
+                component="span"
+                aria-label={t('matchInfo.spectator.scoreAria', {
+                  a: live.team1Score,
+                  b: live.team2Score,
+                })}
+                sx={{ ...mono, fontSize: { xs: '3rem', sm: '4.5rem' }, lineHeight: 1 }}
+              >
+                {live.team1Score}:{live.team2Score}
+              </Typography>
+              <Typography component="span" sx={{ fontWeight: 700, color: color.ink2 }}>
+                {teams[1].name}
+              </Typography>
+            </Box>
+          </>
+        ) : (
           <Typography
             id="spectator-now"
             component="h2"
@@ -215,17 +226,10 @@ export function SpectatorRoom({
             {waitsForStart
               ? t('matchPage.spectator.notStartedTitle')
               : now === 'live'
-                ? [mapOf, mapLabel ? t('liveMatch.isLive', { map: mapLabel }) : t('yourMatch.live')]
-                    .filter(Boolean)
-                    .join(' · ')
+                ? t('yourMatch.live')
                 : t(`matchPage.spectator.step.${now}`)}
           </Typography>
-          {now === 'live' && live && (
-            <Typography component="span" sx={{ ...mono, fontSize: '1.375rem' }}>
-              {live.team1Score} – {live.team2Score}
-            </Typography>
-          )}
-        </Box>
+        )}
         <Typography data-testid="match-spectator-server" sx={{ color: color.ink2 }}>
           {serverText}
         </Typography>

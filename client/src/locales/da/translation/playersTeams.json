@@ -789,6 +789,7 @@
       "noRoster": "Ingen spillere angivet endnu."
     },
     "bracket": "Bracket",
+    "breadcrumb": "Brødkrummesti",
     "startsAt": "starter {{time}} · vetoet åbner {{veto}}"
   },
   "report": {

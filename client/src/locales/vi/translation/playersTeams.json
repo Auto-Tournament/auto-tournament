@@ -789,6 +789,7 @@
       "noRoster": "Chưa có danh sách người chơi."
     },
     "bracket": "Nhánh đấu",
+    "breadcrumb": "Đường dẫn",
     "startsAt": "bắt đầu {{time}} · veto mở {{veto}}"
   },
   "report": {
