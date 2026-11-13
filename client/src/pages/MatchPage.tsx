@@ -31,6 +31,7 @@ import { WhatsNextCard } from '../components/tournament/WhatsNextCard';
 import { CaptainsPanel } from '../components/match/CaptainsPanel';
 import { LineupPanel } from '../components/match/LineupPanel';
 import { MatchChatPanel } from '../components/match/MatchChatPanel';
+import { AlsoLive } from '../components/match/AlsoLive';
 import { CommendPanel } from '../components/match/CommendPanel';
 import { MatchCheckInPanel } from '../components/match/MatchCheckInPanel';
 import { MatchFullTeamPanel } from '../components/match/MatchFullTeamPanel';
@@ -356,6 +357,10 @@ export default function MatchPage() {
             })}
           </Box>
         </Box>
+      )}
+
+      {!match.viewerTeamId && match.tournamentId && (
+        <AlsoLive tournamentId={match.tournamentId} slug={match.slug} />
       )}
 
       <Box

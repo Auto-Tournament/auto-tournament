@@ -15,6 +15,8 @@ import type { DbEventRow } from '../../../types/database.types';
 import { resolveViewerIdentity } from '../../../utils/viewerIdentity';
 import { viewerTeamIdOfMatch } from '../../../services/matchViewer';
 import { gotvHosts, gotvPassword, matchGotvSettings } from '../gotv';
+import { getLiveState } from '../fleet/state';
+import { livePause } from '../routes/liveOverview';
 import type { SqlValue } from '../../../config/database';
 
 const router = Router();
@@ -79,9 +81,12 @@ router.get('/live/:matchSlug', async (req: Request, res: Response) => {
       });
     }
 
+    // shortcut: the pause is not delayed with the stats. Everyone on GOTV sees it too; delay it if that changes.
+    const pause = livePause((await getLiveState(matchSlug))?.state ?? null);
     return res.json({
       success: true,
       ...stats,
+      pause,
       ...(delay > 0 ? { delaySeconds: delay } : {}),
     });
   } catch (error) {
