@@ -55,6 +55,8 @@ export interface ModuleManifest {
   server: string;
   /** Client entry, relative to the module folder and under `client/`, or null. */
   client: string | null;
+  /** A game module (a `GameIntegration`, the default) or an add-on (an `AddonModule`). */
+  kind: 'game' | 'addon';
 }
 
 export type ManifestResult = { ok: true; manifest: ModuleManifest } | { ok: false; reason: string };
@@ -123,6 +125,11 @@ export function parseManifest(raw: Untrusted, folder: string): ManifestResult {
     return fail("'server' must not be under client/: that folder is served to browsers");
   }
 
+  if (m.kind !== undefined && m.kind !== 'game' && m.kind !== 'addon') {
+    return fail("'kind' must be 'game' or 'addon'");
+  }
+  const kind = m.kind === 'addon' ? 'addon' : 'game';
+
   let client: string | null = null;
   if (m.client !== undefined && m.client !== null) {
     if (
@@ -136,6 +143,9 @@ export function parseManifest(raw: Untrusted, folder: string): ManifestResult {
     }
     client = m.client;
   }
+  if (kind === 'addon' && client !== null) {
+    return fail("an add-on can't have a 'client' entry yet");
+  }
 
   return {
     ok: true,
@@ -147,6 +157,7 @@ export function parseManifest(raw: Untrusted, folder: string): ManifestResult {
       clientApi: m.clientApi,
       server: m.server,
       client,
+      kind,
     },
   };
 }

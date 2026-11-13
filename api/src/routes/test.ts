@@ -45,6 +45,7 @@ import { foldCs2TournamentColumns } from '../config/cs2SettingsFold';
 import { playerIdentity } from '../services/playerIdentity';
 import { teamMembers } from '../services/teamMembers';
 import { forgetModuleEnabled, listModules, modulesDir, scanDiskModules } from '../modules/loader';
+import { startAddons } from '../addons';
 import { isValidModuleId } from '../modules/manifest';
 import { registerCatalogTestRoutes } from './testCatalog';
 import { registerWebhookTestRoutes } from './testWebhooks';
@@ -2734,6 +2735,7 @@ const MODULE_FIXTURE_KINDS = [
   'client-incompatible',
   'client-react19',
   'client-render-throws',
+  'addon',
 ] as const;
 type ModuleFixtureKind = (typeof MODULE_FIXTURE_KINDS)[number];
 
@@ -2843,7 +2845,35 @@ export default {
 `;
 }
 
+/** A fixture add-on: no client half, and one route that answers while it runs. */
+function addonFixtureFiles(id: string): Record<string, string> {
+  return {
+    'module.json': JSON.stringify({
+      id,
+      name: `Fixture ${id}`,
+      version: '1.0.0',
+      kind: 'addon',
+      serverApi: '^0.1.0',
+      clientApi: '^0.2.0',
+      server: 'server/index.js',
+    }),
+    'package.json': JSON.stringify({ type: 'module' }),
+    'server/index.js': `export default {
+  id: ${JSON.stringify(id)},
+  name: ${JSON.stringify(`Fixture ${id}`)},
+  description: 'A fixture add-on.',
+  start() {},
+  stop() {},
+  router(req, res) {
+    res.json({ success: true, addon: ${JSON.stringify(id)}, path: req.path });
+  },
+};
+`,
+  };
+}
+
 function moduleFixtureFiles(id: string, kind: ModuleFixtureKind): Record<string, string> {
+  if (kind === 'addon') return addonFixtureFiles(id);
   const manifest = {
     id: kind === 'mismatched-id' ? `../${id}` : id,
     name: `Fixture ${id}`,
@@ -2963,10 +2993,11 @@ router.get(
 router.post('/modules/rescan', requireAuth, async (_req: Request, res: Response): Promise<void> => {
   if (!testHelperEnabled(res)) return;
   try {
-    // What boot does next for a module it loaded: start it.
+    // What boot does next for a module it loaded: start it, then the add-ons that are on.
     for (const integration of await scanDiskModules()) {
       await integration.start?.();
     }
+    await startAddons();
     res.json({ success: true, modules: await listModules() });
   } catch (err) {
     log.error('Error in POST /api/test/modules/rescan', err);
