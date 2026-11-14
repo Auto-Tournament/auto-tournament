@@ -394,12 +394,8 @@ export default function MatchPage() {
         .filter(Boolean)
         .join(' · ')}
       maps={maps.map((m) => {
-        const side =
-          m.winner === 'team1' || m.winner === 'team2'
-            ? m.winner
-            : m.team1Score > m.team2Score
-              ? 'team1'
-              : 'team2';
+        const level = m.team1Score > m.team2Score ? 'team1' : 'team2';
+        const side = m.winner === 'team1' || m.winner === 'team2' ? m.winner : level;
         return {
           mapNumber: m.mapNumber,
           name: `${t('matchPage.mapN', { n: m.mapNumber + 1 })} · ${mapName(m.map, m.mapNumber, t)}`,
