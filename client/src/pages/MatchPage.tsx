@@ -32,7 +32,11 @@ import { CaptainsPanel } from '../components/match/CaptainsPanel';
 import { LineupPanel } from '../components/match/LineupPanel';
 import { MatchChatPanel } from '../components/match/MatchChatPanel';
 import { AlsoLive } from '../components/match/AlsoLive';
-import { MatchSideSlots } from '../module-loader/addonSlots';
+import {
+  MatchSideSlots,
+  StageLayoutProvider,
+  useStageLayoutState,
+} from '../module-loader/addonSlots';
 import { CommendPanel } from '../components/match/CommendPanel';
 import { MatchCheckInPanel } from '../components/match/MatchCheckInPanel';
 import { MatchFullTeamPanel } from '../components/match/MatchFullTeamPanel';
@@ -69,6 +73,7 @@ export default function MatchPage() {
   const { t } = useTranslation();
   // The answer for the slug it was asked for (a new slug shows loading again).
   const [loaded, setLoaded] = useState<{ slug: string; match: MatchResponse | null } | null>(null);
+  const stageLayout = useStageLayoutState();
 
   // A live match moves on (maps, scores, the result): the server says so and
   // the page reads it again.
@@ -330,11 +335,17 @@ export default function MatchPage() {
   // The veto takes the page's width (the drafts' veto board); the chat moves under it.
   const vetoing = matchIsOn && match.status === 'pending' && match.vetoCompleted === false;
 
+  // A stage that shows something big widens the page; theatre takes the full width.
+  const [{ wide, theatre: theatreOn, side: sideOn }] = stageLayout;
+  const theatre = wide && theatreOn;
+  const showSide = !wide || sideOn;
+
   return (
     <Container
-      maxWidth="lg"
+      maxWidth={theatre ? false : wide ? 'xl' : 'lg'}
       sx={{ py: { xs: 3, md: 5 }, display: 'flex', flexDirection: 'column', gap: 3 }}
       data-testid="match-page"
+      data-layout={theatre ? 'theatre' : wide ? 'wide' : 'default'}
     >
       {match.tournamentId && match.tournament && (
         <Box
@@ -493,11 +504,13 @@ export default function MatchPage() {
           )}
 
           {!viewerTeamId && matchIsOn && playsThroughModule && (
-            <SpectatorRoom
-              match={match}
-              hasVeto={integration.capabilities.veto}
-              Watch={integration.spectatorWatch}
-            />
+            <StageLayoutProvider value={stageLayout}>
+              <SpectatorRoom
+                match={match}
+                hasVeto={integration.capabilities.veto}
+                Watch={integration.spectatorWatch}
+              />
+            </StageLayoutProvider>
           )}
 
           {/* Everyone who does not play in it sees the pre-match phase (the veto) as it happens, read-only.
@@ -596,8 +609,8 @@ export default function MatchPage() {
           )}
         </Box>
 
-        {showChat && <MatchChatPanel slug={match.slug} myTeam={viewerTeamId} />}
-        <MatchSideSlots matchSlug={match.slug} viewerTeamId={viewerTeamId} />
+        {showSide && showChat && <MatchChatPanel slug={match.slug} myTeam={viewerTeamId} />}
+        {showSide && <MatchSideSlots matchSlug={match.slug} viewerTeamId={viewerTeamId} />}
       </Box>
     </Container>
   );
