@@ -59,6 +59,7 @@ import * as simulationTimescale from '../utils/simulationTimescale';
 import * as tournamentRow from '../utils/tournamentRow';
 import * as tournamentStarted from '../utils/tournamentStarted';
 import * as viewerIdentity from '../utils/viewerIdentity';
+import * as fleetInbound from '../integrations/cs2/fleet/inbound';
 import { HOST_GLOBAL, HOST_MODULES } from './hostModules';
 import { SERVER_API_VERSION } from './version';
 
@@ -70,6 +71,7 @@ const MODULES: Record<string, object> = {
   'core/allocationQueue': coreAllocationQueue,
   'core/matchLifecycle': coreMatchLifecycle,
   'core/scheduler': coreScheduler,
+  'integrations/cs2/fleet/inbound': fleetInbound,
   'middleware/auth': middlewareAuth,
   'middleware/serverAuth': middlewareServerAuth,
   'services/adminCallService': adminCallService,

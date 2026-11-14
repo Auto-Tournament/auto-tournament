@@ -147,7 +147,7 @@ test.describe.serial('Code modules on disk', () => {
     },
     async ({ request }) => {
       const { platform, modules } = await listModules(request);
-      expect(platform).toEqual({ clientApi: '0.2.34', serverApi: '0.1.5' });
+      expect(platform).toEqual({ clientApi: '0.2.34', serverApi: '0.1.6' });
 
       const builtin = modules.find((module) => module.id === 'manual-report');
       expect(builtin).toMatchObject({
@@ -389,7 +389,7 @@ test.describe.serial('Code modules on disk', () => {
       expect(row.status).toBe('incompatible');
       expect(row.serverApi).toBe('^0.3.0');
       expect(row.reason).toContain('^0.3.0');
-      expect(row.reason).toContain('0.1.5');
+      expect(row.reason).toContain('0.1.6');
 
       // Enabling it does not make it load.
       expect((await request.post(`/api/modules/${INCOMPATIBLE}/enable`)).status()).toBe(200);

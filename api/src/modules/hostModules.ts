@@ -22,6 +22,7 @@ export const HOST_MODULES: readonly string[] = [
   'core/allocationQueue',
   'core/matchLifecycle',
   'core/scheduler',
+  'integrations/cs2/fleet/inbound',
   'middleware/auth',
   'middleware/serverAuth',
   'services/adminCallService',
