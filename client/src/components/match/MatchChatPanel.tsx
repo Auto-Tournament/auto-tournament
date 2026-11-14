@@ -168,6 +168,8 @@ export function MatchChatPanel({
             placeholder={t('liveMatch.messageLabel')}
             sx={{
               flex: 1,
+              // An input's minimum is its default text width; 0 lets the row fit a narrow side column.
+              width: 0,
               minWidth: 0,
               height: 44,
               boxSizing: 'border-box',
