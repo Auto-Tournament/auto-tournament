@@ -14,20 +14,16 @@ import { tokens, fontDisplay } from '../../theme/tokens';
 
 const { color } = tokens;
 
-// Beside a wide stage the chat is as tall as the player: the same sum the player's width comes from.
-const besideStage = (gutter: number) =>
-  `min(calc(100vh - 200px), calc((100vw - ${gutter + 402 + 20}px) * 9 / 16))`;
-
 export function MatchChatPanel({
   slug,
   myTeam,
-  beside,
+  besideHeight,
   onHide,
 }: {
   slug: string;
   myTeam?: string | null;
-  /** Next to a wide stage: the page's side padding in px (both sides together). */
-  beside?: number;
+  /** Next to a wide stage: the stage's height, so the two stay level. */
+  besideHeight?: string;
   onHide?: () => void;
 }) {
   const { t } = useTranslation();
@@ -59,10 +55,11 @@ export function MatchChatPanel({
       aria-labelledby="match-chat"
       data-testid="match-chat"
       sx={{
-        flex: beside === undefined ? '1 1 300px' : { xs: '1 1 100%', md: '0 0 402px' },
+        flex: besideHeight === undefined ? '1 1 300px' : { xs: '1 1 100%', md: '0 0 402px' },
         minWidth: 0,
-        height: beside === undefined ? 'auto' : { xs: 420, md: besideStage(beside) },
-        maxHeight: beside === undefined ? 720 : undefined,
+        height: besideHeight === undefined ? 'auto' : { xs: 420, md: besideHeight },
+        maxHeight: besideHeight === undefined ? 720 : undefined,
+        transition: 'height 0.45s cubic-bezier(0.16, 1, 0.3, 1)',
         display: 'flex',
         flexDirection: 'column',
         boxSizing: 'border-box',

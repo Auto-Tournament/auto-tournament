@@ -403,8 +403,12 @@ export default function MatchPage() {
   const [{ wide, theatre: theatreOn, side: sideOn }] = stageLayout;
   const theatre = wide && theatreOn;
   const showSide = !wide || sideOn;
-  // Side padding beside a wide stage (both sides): the draft's 80 px, 12 px in theatre.
+  // Beside a wide stage: standard caps the page at YouTube's width with the draft's 80 px sides;
+  // theatre takes the window. The stage's height (the chat matches it) leaves room for the title.
   const gutter = theatre ? 24 : 160;
+  const pageWidth = theatre ? '100vw' : '1914px';
+  const stageHeight = `min(calc(100vh - ${theatre ? 130 : 200}px), calc((min(100vw, ${pageWidth}) - ${gutter + 422}px) * 9 / 16))`;
+  const ease = '0.45s cubic-bezier(0.16, 1, 0.3, 1)';
 
   return (
     <Container
@@ -414,7 +418,8 @@ export default function MatchPage() {
         display: 'flex',
         flexDirection: 'column',
         gap: 3,
-        ...(wide && { px: { md: `${gutter / 2}px` } }),
+        transition: `max-width ${ease}, padding ${ease}`,
+        ...(wide && { px: { md: `${gutter / 2}px` }, maxWidth: pageWidth }),
       }}
       data-testid="match-page"
       data-layout={theatre ? 'theatre' : wide ? 'wide' : 'default'}
@@ -687,7 +692,7 @@ export default function MatchPage() {
           <MatchChatPanel
             slug={match.slug}
             myTeam={viewerTeamId}
-            beside={wide ? gutter : undefined}
+            besideHeight={wide ? stageHeight : undefined}
             onHide={wide ? () => stageLayout[1]({ side: false }) : undefined}
           />
         )}
