@@ -25,7 +25,7 @@ const { color } = tokens;
 type Line = MatchPlayerStatsSnapshot['team1'][number];
 
 /** A rating from the line: kills, survival and damage per round, around 1.00. */
-function rating(p: Line, fallbackRounds: number): number {
+export function rating(p: Line, fallbackRounds: number): number {
   const rounds = Math.max(1, p.roundsPlayed || 0, fallbackRounds);
   const kpr = p.kills / rounds;
   const spr = (rounds - p.deaths) / rounds;
