@@ -1689,6 +1689,7 @@
     "messageLabel": "Wiadomość do obu drużyn i adminów",
     "send": "Wyślij",
     "callAdmin": "Wezwij admina",
+    "hideChat": "Ukryj czat",
     "adminCalled": "Admin jest w drodze",
     "joinTitle": "Dołącz do serwera: {{map}}",
     "warmup": "Rozgrzewka · dołącz teraz",

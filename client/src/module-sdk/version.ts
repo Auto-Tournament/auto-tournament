@@ -178,5 +178,6 @@
  * 0.2.32 (additive): add-ons' client halves (`kind: "addon"`), with the match
  *   page's `matchStage` and `matchSide` slots.
  * 0.2.33 (additive): add-ons' `routes` and `navItems`, the shapes game modules use.
+ * 0.2.34 (additive): `matchStage` gets `layout` and `setLayout` (wide, theatre, side).
  */
-export const CLIENT_API_VERSION = '0.2.33';
+export const CLIENT_API_VERSION = '0.2.34';

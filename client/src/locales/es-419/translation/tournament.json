@@ -1643,6 +1643,7 @@
     "messageLabel": "Escribe a los dos equipos y a los administradores",
     "send": "Enviar",
     "callAdmin": "Llamar a un administrador",
+    "hideChat": "Ocultar chat",
     "adminCalled": "Un administrador va de camino",
     "joinTitle": "Entra en el servidor: {{map}}",
     "warmup": "Calentamiento · entra ya",

@@ -5,16 +5,31 @@
  */
 import { useEffect, useRef, useState, type FormEvent, type ChangeEvent } from 'react';
 import { fmtTime } from '../../utils/time';
-import { Box, Button, Typography } from '@mui/material';
+import { Box, Button, IconButton, Typography } from '@mui/material';
+import { XIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import { callAdmin, loadMessages, sendMessage, useChat } from '../chat/chatStore';
 import { systemLineText } from '../chat/systemLine';
-import { tokens, radii, textSize } from '../../theme/tokens';
-import { SectionTitle, panel } from '../tournament/ui/draftUi';
+import { tokens, fontDisplay } from '../../theme/tokens';
 
 const { color } = tokens;
 
-export function MatchChatPanel({ slug, myTeam }: { slug: string; myTeam?: string | null }) {
+// Beside a wide stage the chat is as tall as the player: the same sum the player's width comes from.
+const besideStage = (gutter: number) =>
+  `min(calc(100vh - 200px), calc((100vw - ${gutter + 402 + 20}px) * 9 / 16))`;
+
+export function MatchChatPanel({
+  slug,
+  myTeam,
+  beside,
+  onHide,
+}: {
+  slug: string;
+  myTeam?: string | null;
+  /** Next to a wide stage: the page's side padding in px (both sides together). */
+  beside?: number;
+  onHide?: () => void;
+}) {
   const { t } = useTranslation();
   const channel = `match:${slug}`;
   const state = useChat();
@@ -43,20 +58,63 @@ export function MatchChatPanel({ slug, myTeam }: { slug: string; myTeam?: string
       component="aside"
       aria-labelledby="match-chat"
       data-testid="match-chat"
-      sx={{ ...panel, flex: '1 1 300px' }}
+      sx={{
+        flex: beside === undefined ? '1 1 300px' : { xs: '1 1 100%', md: '0 0 402px' },
+        minWidth: 0,
+        height: beside === undefined ? 'auto' : { xs: 420, md: besideStage(beside) },
+        maxHeight: beside === undefined ? 720 : undefined,
+        display: 'flex',
+        flexDirection: 'column',
+        boxSizing: 'border-box',
+        borderRadius: `${tokens.radius.md}px`,
+        bgcolor: color.paper2,
+        border: `1px solid ${color.rule}`,
+        overflow: 'hidden',
+      }}
     >
-      <SectionTitle id="match-chat" title={t('liveMatch.chat')} />
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          px: 2,
+          py: 1.75,
+          borderBottom: `1px solid ${color.rule}`,
+        }}
+      >
+        <Typography
+          id="match-chat"
+          component="h2"
+          sx={{ m: 0, fontFamily: fontDisplay, fontWeight: 700, fontSize: '1rem' }}
+        >
+          {t('liveMatch.chat')}
+        </Typography>
+        {onHide && (
+          <IconButton
+            onClick={onHide}
+            aria-label={t('liveMatch.hideChat')}
+            size="small"
+            sx={{ color: color.ink2, width: 32, height: 32 }}
+          >
+            <XIcon size={18} aria-hidden />
+          </IconButton>
+        )}
+      </Box>
       <Box
         ref={listRef}
         sx={{
+          flex: 1,
+          minHeight: 0,
+          overflowY: 'auto',
+          px: 2,
+          py: 1.5,
           display: 'flex',
           flexDirection: 'column',
           gap: 1.25,
-          maxHeight: 420,
-          overflowY: 'auto',
         }}
         aria-live="polite"
       >
+        <Box sx={{ flex: 1 }} />
         {(thread?.messages ?? []).map((m) => {
           const tone =
             m.senderKind === 'system'
@@ -67,29 +125,21 @@ export function MatchChatPanel({ slug, myTeam }: { slug: string; myTeam?: string
                   ? color.accent
                   : color.ink2;
           return (
-            <Box
+            <Typography
               key={m.id}
-              sx={{ display: 'flex', flexDirection: 'column', gap: 0.25, fontSize: '0.875rem' }}
+              title={fmtTime(m.createdAt)}
+              sx={{
+                fontSize: '0.875rem',
+                lineHeight: 1.4,
+                color: color.ink,
+                overflowWrap: 'anywhere',
+              }}
             >
-              <Typography
-                component="span"
-                sx={{ fontWeight: 600, color: tone, fontSize: '0.875rem' }}
-              >
-                {m.senderKind === 'system' ? t('liveMatch.system') : m.senderName}{' '}
-                <Box
-                  component="span"
-                  sx={{ fontWeight: 400, color: color.muted, fontSize: textSize.xs }}
-                >
-                  {fmtTime(m.createdAt)}
-                </Box>
-              </Typography>
-              <Typography
-                component="span"
-                sx={{ color: color.ink2, fontSize: '0.875rem', overflowWrap: 'anywhere' }}
-              >
-                {m.senderKind === 'system' ? systemLineText(m.body, t) : m.body}
-              </Typography>
-            </Box>
+              <Box component="span" sx={{ fontWeight: 600, color: tone }}>
+                {m.senderKind === 'system' ? t('liveMatch.system') : m.senderName}
+              </Box>{' '}
+              {m.senderKind === 'system' ? systemLineText(m.body, t) : m.body}
+            </Typography>
           );
         })}
         {thread && thread.messages.length === 0 && (
@@ -103,54 +153,57 @@ export function MatchChatPanel({ slug, myTeam }: { slug: string; myTeam?: string
           </Typography>
         )}
       </Box>
-      <Box
-        component="form"
-        onSubmit={(e: FormEvent) => {
-          e.preventDefault();
-          void send();
-        }}
-        sx={{ display: 'flex', gap: 1 }}
-      >
+      <Box sx={{ p: 1.5, borderTop: `1px solid ${color.rule}`, display: 'grid', gap: 1 }}>
         <Box
-          component="input"
-          type="text"
-          value={draft}
-          onChange={(e: ChangeEvent<HTMLInputElement>) => setDraft(e.target.value)}
-          aria-label={t('liveMatch.messageLabel')}
-          placeholder={t('liveMatch.messageLabel')}
-          sx={{
-            flex: 1,
-            minWidth: 0,
-            minHeight: 44,
-            borderRadius: radii.sm,
-            border: `1px solid ${color.rule}`,
-            bgcolor: color.paper3,
-            color: color.ink,
-            px: 1.5,
-            font: 'inherit',
-            '&:focus-visible': { outline: `2px solid ${color.focus}`, outlineOffset: 1 },
+          component="form"
+          onSubmit={(e: FormEvent) => {
+            e.preventDefault();
+            void send();
           }}
-        />
-        <Button
-          type="submit"
-          variant="outlined"
-          disabled={!draft.trim()}
-          sx={{ minHeight: 44, borderRadius: radii.sm }}
+          sx={{ display: 'flex', gap: 1 }}
         >
-          {t('liveMatch.send')}
+          <Box
+            component="input"
+            type="text"
+            value={draft}
+            onChange={(e: ChangeEvent<HTMLInputElement>) => setDraft(e.target.value)}
+            aria-label={t('liveMatch.messageLabel')}
+            placeholder={t('liveMatch.messageLabel')}
+            sx={{
+              flex: 1,
+              minWidth: 0,
+              height: 44,
+              boxSizing: 'border-box',
+              borderRadius: `${tokens.radius.pill}px`,
+              border: `1px solid ${color.muted}`,
+              bgcolor: color.paper,
+              color: color.ink,
+              px: 1.75,
+              font: 'inherit',
+              '&:focus-visible': { outline: `2px solid ${color.focus}`, outlineOffset: 1 },
+            }}
+          />
+          <Button
+            type="submit"
+            variant="contained"
+            disabled={!draft.trim()}
+            sx={{ height: 44, px: 2, borderRadius: `${tokens.radius.pill}px`, fontWeight: 600 }}
+          >
+            {t('liveMatch.send')}
+          </Button>
+        </Box>
+        <Button
+          variant="text"
+          disabled={called}
+          onClick={async () => {
+            await callAdmin(channel);
+            setCalled(true);
+          }}
+          sx={{ minHeight: 36, alignSelf: 'center', color: color.ink2 }}
+        >
+          {called ? t('liveMatch.adminCalled') : t('liveMatch.callAdmin')}
         </Button>
       </Box>
-      <Button
-        variant="outlined"
-        disabled={called}
-        onClick={async () => {
-          await callAdmin(channel);
-          setCalled(true);
-        }}
-        sx={{ minHeight: 44, borderRadius: radii.pill }}
-      >
-        {called ? t('liveMatch.adminCalled') : t('liveMatch.callAdmin')}
-      </Button>
     </Box>
   );
 }

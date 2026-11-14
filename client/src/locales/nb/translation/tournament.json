@@ -1599,6 +1599,7 @@
     "messageLabel": "Send melding til begge lagene og adminene",
     "send": "Send",
     "callAdmin": "Tilkall en admin",
+    "hideChat": "Skjul chatten",
     "adminCalled": "En admin er på vei",
     "joinTitle": "Bli med på serveren: {{map}}",
     "warmup": "Oppvarming · bli med nå",
