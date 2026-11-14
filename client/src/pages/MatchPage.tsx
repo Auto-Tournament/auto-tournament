@@ -407,7 +407,9 @@ export default function MatchPage() {
   // theatre takes the window. The stage's height (the chat matches it) leaves room for the title.
   const gutter = theatre ? 24 : 160;
   const pageWidth = theatre ? '100vw' : '1914px';
-  const stageHeight = `min(calc(100vh - ${theatre ? 130 : 200}px), calc((min(100vw, ${pageWidth}) - ${gutter + 422}px) * 9 / 16))`;
+  // The stage reads --stage-max-h: theatre fills to the window's bottom, standard keeps the title in view.
+  const stageMaxH = `calc(100vh - ${theatre ? 260 : 330}px)`;
+  const stageHeight = `min(var(--stage-max-h), calc((min(100vw, ${pageWidth}) - ${gutter + 422}px) * 9 / 16))`;
   const ease = '0.45s cubic-bezier(0.16, 1, 0.3, 1)';
 
   return (
@@ -419,7 +421,11 @@ export default function MatchPage() {
         flexDirection: 'column',
         gap: 3,
         transition: `max-width ${ease}, padding ${ease}`,
-        ...(wide && { px: { md: `${gutter / 2}px` }, maxWidth: pageWidth }),
+        ...(wide && {
+          px: { md: `${gutter / 2}px` },
+          maxWidth: pageWidth,
+          '--stage-max-h': stageMaxH,
+        }),
       }}
       data-testid="match-page"
       data-layout={theatre ? 'theatre' : wide ? 'wide' : 'default'}

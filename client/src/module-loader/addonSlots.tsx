@@ -25,7 +25,8 @@ export interface StageLayout {
   side: boolean;
 }
 
-/** What the `matchStage` slot gets on top of `MatchSlotProps`. */
+/** What the `matchStage` slot gets on top of `MatchSlotProps`. While `wide`, the page sets the
+ *  CSS variable `--stage-max-h`: the most height a stage may take and stay on screen. */
 export interface MatchStageProps extends MatchSlotProps {
   children: ReactNode;
   layout: StageLayout;
