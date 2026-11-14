@@ -2061,6 +2061,8 @@
     "rating": "Luokitus",
     "allMaps": "Kaikki kartat",
     "scoreboardMap": "Kartta",
+    "playerOfMatch": "Ottelun pelaaja",
+    "playerOfMatchLine": "{{team}} · arvosana {{rating}}",
     "reelTeam": "Kooste",
     "teamHighlights": "Joukkueen {{team}} kohokohdat"
   },

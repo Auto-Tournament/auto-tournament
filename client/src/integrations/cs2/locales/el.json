@@ -2061,6 +2061,8 @@
     "rating": "Αξιολόγηση",
     "allMaps": "Όλοι οι χάρτες",
     "scoreboardMap": "Χάρτης",
+    "playerOfMatch": "Παίκτης του αγώνα",
+    "playerOfMatchLine": "{{team}} · βαθμολογία {{rating}}",
     "reelTeam": "Σύνοψη",
     "teamHighlights": "Στιγμιότυπα · {{team}}"
   },

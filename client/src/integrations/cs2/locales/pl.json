@@ -2148,6 +2148,8 @@
     "rating": "Rating",
     "allMaps": "Wszystkie mapy",
     "scoreboardMap": "Mapa",
+    "playerOfMatch": "Gracz meczu",
+    "playerOfMatchLine": "{{team}} · ocena {{rating}}",
     "reelTeam": "Reel",
     "teamHighlights": "Highlighty: {{team}}"
   },

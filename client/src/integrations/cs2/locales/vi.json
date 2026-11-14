@@ -2061,6 +2061,8 @@
     "rating": "Điểm đánh giá",
     "allMaps": "Tất cả bản đồ",
     "scoreboardMap": "Bản đồ",
+    "playerOfMatch": "Người chơi xuất sắc nhất trận",
+    "playerOfMatchLine": "{{team}} · điểm {{rating}}",
     "reelTeam": "Reel",
     "teamHighlights": "Highlight của {{team}}"
   },

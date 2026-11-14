@@ -2061,6 +2061,8 @@
     "rating": "Puan",
     "allMaps": "Tüm haritalar",
     "scoreboardMap": "Harita",
+    "playerOfMatch": "Maçın oyuncusu",
+    "playerOfMatchLine": "{{team}} · reyting {{rating}}",
     "reelTeam": "Derleme",
     "teamHighlights": "{{team}} öne çıkanları"
   },

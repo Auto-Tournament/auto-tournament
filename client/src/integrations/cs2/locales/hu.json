@@ -2061,6 +2061,8 @@
     "rating": "Értékelés",
     "allMaps": "Összes pálya",
     "scoreboardMap": "Pálya",
+    "playerOfMatch": "A meccs játékosa",
+    "playerOfMatchLine": "{{team}} · értékelés {{rating}}",
     "reelTeam": "Összeállítás",
     "teamHighlights": "{{team}} legjobb pillanatai"
   },

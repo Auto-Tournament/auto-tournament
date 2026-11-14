@@ -2061,6 +2061,8 @@
     "rating": "Rating",
     "allMaps": "Alle maps",
     "scoreboardMap": "Map",
+    "playerOfMatch": "Speler van de wedstrijd",
+    "playerOfMatchLine": "{{team}} · rating {{rating}}",
     "reelTeam": "Reel",
     "teamHighlights": "Highlights van {{team}}"
   },

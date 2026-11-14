@@ -2061,6 +2061,8 @@
     "rating": "레이팅",
     "allMaps": "모든 맵",
     "scoreboardMap": "맵",
+    "playerOfMatch": "경기 MVP",
+    "playerOfMatchLine": "{{team}} · 레이팅 {{rating}}",
     "reelTeam": "하이라이트 영상",
     "teamHighlights": "{{team}} 하이라이트"
   },

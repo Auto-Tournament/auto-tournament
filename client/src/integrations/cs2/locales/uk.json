@@ -2148,6 +2148,8 @@
     "rating": "Rating",
     "allMaps": "Усі мапи",
     "scoreboardMap": "Мапа",
+    "playerOfMatch": "Гравець матчу",
+    "playerOfMatchLine": "{{team}} · рейтинг {{rating}}",
     "reelTeam": "Нарізка",
     "teamHighlights": "Хайлайти {{team}}"
   },

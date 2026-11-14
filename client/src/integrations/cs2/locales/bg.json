@@ -2061,6 +2061,8 @@
     "rating": "Рейтинг",
     "allMaps": "Всички карти",
     "scoreboardMap": "Карта",
+    "playerOfMatch": "Играч на мача",
+    "playerOfMatchLine": "{{team}} · рейтинг {{rating}}",
     "reelTeam": "Компилация",
     "teamHighlights": "Акценти на {{team}}"
   },
