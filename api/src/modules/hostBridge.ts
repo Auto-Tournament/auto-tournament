@@ -36,6 +36,7 @@ import * as playerConnectionService from '../services/playerConnectionService';
 import * as matchNotices from '../services/matchNotices';
 import * as notificationService from '../services/notificationService';
 import * as adminNoticeService from '../services/adminNoticeService';
+import * as gameEvents from '../services/gameEvents';
 import * as gameReadiness from '../services/gameReadiness';
 import * as settingsService from '../services/settingsService';
 import * as shuffleTournamentService from '../services/shuffleTournamentService';
@@ -59,7 +60,6 @@ import * as simulationTimescale from '../utils/simulationTimescale';
 import * as tournamentRow from '../utils/tournamentRow';
 import * as tournamentStarted from '../utils/tournamentStarted';
 import * as viewerIdentity from '../utils/viewerIdentity';
-import * as fleetInbound from '../integrations/cs2/fleet/inbound';
 import { HOST_GLOBAL, HOST_MODULES } from './hostModules';
 import { SERVER_API_VERSION } from './version';
 
@@ -71,7 +71,6 @@ const MODULES: Record<string, object> = {
   'core/allocationQueue': coreAllocationQueue,
   'core/matchLifecycle': coreMatchLifecycle,
   'core/scheduler': coreScheduler,
-  'integrations/cs2/fleet/inbound': fleetInbound,
   'middleware/auth': middlewareAuth,
   'middleware/serverAuth': middlewareServerAuth,
   'services/adminCallService': adminCallService,
@@ -89,6 +88,7 @@ const MODULES: Record<string, object> = {
   'services/matchNotices': matchNotices,
   'services/notificationService': notificationService,
   'services/adminNoticeService': adminNoticeService,
+  'services/gameEvents': gameEvents,
   'services/gameReadiness': gameReadiness,
   'services/settingsService': settingsService,
   'services/shuffleTournamentService': shuffleTournamentService,

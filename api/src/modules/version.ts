@@ -12,7 +12,7 @@
  * "0.1 only": under semver a `0.x` minor may break.
  */
 
-/** The server API version: the `GameIntegration` and `AddonModule` contracts. 0.1.6: fleet events (`integrations/cs2/fleet/inbound`). */
+/** The server API version: the `GameIntegration` and `AddonModule` contracts. 0.1.6: game events (`services/gameEvents`). */
 export const SERVER_API_VERSION = '0.1.6';
 
 /**
