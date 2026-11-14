@@ -39,10 +39,10 @@ test.describe('Skins: admin equips for a player', () => {
             ).json()
           ).inventory as Array<{ id: number; equipped: boolean; equippedSides: number[] }>
         ).find((s) => s.id === id);
-      // (A first skin in a slot is equipped on both sides when given; CT is set now too.)
+      // A first skin in a slot goes on both sides when given, so CT keeps it on both.
       const equipped = await inv();
       expect(equipped?.equipped).toBe(true);
-      expect(equipped?.equippedSides).toContain(3);
+      expect(equipped?.equippedSides).toEqual([0]);
 
       const empty = await request.delete(`/api/skins/admin/players/${steamId}/equip/knife`, {
         headers,
