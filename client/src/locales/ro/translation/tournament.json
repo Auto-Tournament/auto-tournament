@@ -1643,6 +1643,7 @@
     "messageLabel": "Mesaj pentru ambele echipe și admini",
     "send": "Trimite",
     "callAdmin": "Cheamă un admin",
+    "hideChat": "Ascunde chatul",
     "adminCalled": "Un admin e pe drum",
     "joinTitle": "Intră pe server: {{map}}",
     "warmup": "Încălzire · intră acum",

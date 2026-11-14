@@ -1598,6 +1598,7 @@
     "messageLabel": "Üzenet mindkét csapatnak és az adminoknak",
     "send": "Küldés",
     "callAdmin": "Admin hívása",
+    "hideChat": "Csevegés elrejtése",
     "adminCalled": "Egy admin úton van",
     "joinTitle": "Csatlakozás a szerverhez: {{map}}",
     "warmup": "Bemelegítés · csatlakozz most",

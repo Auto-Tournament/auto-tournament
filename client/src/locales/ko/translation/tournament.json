@@ -1598,6 +1598,7 @@
     "messageLabel": "두 팀과 관리자에게 메시지",
     "send": "보내기",
     "callAdmin": "관리자 호출",
+    "hideChat": "채팅 숨기기",
     "adminCalled": "관리자가 오고 있어요",
     "joinTitle": "서버에 참가: {{map}}",
     "warmup": "워밍업 · 지금 참가",

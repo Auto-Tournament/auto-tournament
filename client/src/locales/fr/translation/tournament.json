@@ -1643,6 +1643,7 @@
     "messageLabel": "Écrire aux deux équipes et aux admins",
     "send": "Envoyer",
     "callAdmin": "Appeler un admin",
+    "hideChat": "Masquer le chat",
     "adminCalled": "Un admin arrive",
     "joinTitle": "Rejoignez le serveur : {{map}}",
     "warmup": "Échauffement · rejoignez maintenant",

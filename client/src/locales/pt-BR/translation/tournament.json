@@ -1643,6 +1643,7 @@
     "messageLabel": "Mensagem para os dois times e os admins",
     "send": "Enviar",
     "callAdmin": "Chamar um admin",
+    "hideChat": "Ocultar chat",
     "adminCalled": "Um admin está a caminho",
     "joinTitle": "Entre no servidor: {{map}}",
     "warmup": "Aquecimento · entre agora",

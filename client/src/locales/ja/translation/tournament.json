@@ -1598,6 +1598,7 @@
     "messageLabel": "両チームと管理者へのメッセージ",
     "send": "送信",
     "callAdmin": "管理者を呼ぶ",
+    "hideChat": "チャットを非表示",
     "adminCalled": "管理者が向かっています",
     "joinTitle": "サーバーに参加:{{map}}",
     "warmup": "ウォームアップ · 今すぐ参加",

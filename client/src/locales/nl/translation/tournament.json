@@ -1599,6 +1599,7 @@
     "messageLabel": "Bericht aan beide teams en de admins",
     "send": "Versturen",
     "callAdmin": "Een admin roepen",
+    "hideChat": "Chat verbergen",
     "adminCalled": "Er komt een admin aan",
     "joinTitle": "Join de server: {{map}}",
     "warmup": "Warming-up · join nu",
