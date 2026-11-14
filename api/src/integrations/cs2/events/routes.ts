@@ -14,7 +14,7 @@ import { matchLiveStatsService } from '../../../services/matchLiveStatsService';
 import type { DbEventRow } from '../../../types/database.types';
 import { resolveViewerIdentity } from '../../../utils/viewerIdentity';
 import { viewerTeamIdOfMatch } from '../../../services/matchViewer';
-import { gotvHosts, gotvPassword, matchGotvSettings } from '../gotv';
+import { gotvHosts, gotvPassword, matchGotvSettings, spectatorDelay } from '../gotv';
 import { getLiveState } from '../fleet/state';
 import { livePause } from '../routes/liveOverview';
 import type { SqlValue } from '../../../config/database';
@@ -97,23 +97,6 @@ router.get('/live/:matchSlug', async (req: Request, res: Response) => {
     });
   }
 });
-
-/** How a viewer sees a match's live table: 0 (live: a player, an admin), the GOTV delay, or 'off'. */
-async function spectatorDelay(req: Request, matchSlug: string): Promise<number | 'off'> {
-  const settings = await matchGotvSettings(matchSlug);
-  if (settings.liveStats === 'live') return 0;
-  const identity = await resolveViewerIdentity(req);
-  if (identity.isRealAdmin) return 0;
-  const match = await db.queryOneAsync<{
-    game: string | null;
-    config: string | null;
-    team1_id: string | null;
-    team2_id: string | null;
-  }>('SELECT game, config, team1_id, team2_id FROM matches WHERE slug = ?', [matchSlug]);
-  if (match && (await viewerTeamIdOfMatch(req, match as Parameters<typeof viewerTeamIdOfMatch>[1])))
-    return 0;
-  return settings.liveStats === 'off' ? 'off' : settings.delay;
-}
 
 /**
  * GET /api/events/watch/:matchSlug

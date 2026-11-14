@@ -47,6 +47,8 @@ type MatchResponse = PublicMatch &
     team2LogoUrl?: string | null;
     team1SeriesScore?: number;
     team2SeriesScore?: number;
+    /** When a result held back for this viewer's GOTV delay is due (unix s). */
+    revealAt?: number | null;
     /** Its start time and when its veto opens (unix s), when it has one. */
     startsAt?: number | null;
     vetoOpensAt?: number | null;
@@ -102,6 +104,16 @@ export default function MatchPage() {
 
   const current = loaded?.slug === slug ? loaded : null;
   const match = current?.match ?? null;
+
+  const revealAt = match?.revealAt ?? null;
+  useEffect(() => {
+    if (revealAt === null) return undefined;
+    const timer = window.setTimeout(
+      () => setVersion((v) => v + 1),
+      Math.max(0, revealAt * 1000 - Date.now()) + 500
+    );
+    return () => window.clearTimeout(timer);
+  }, [revealAt]);
   const failed = !!current && !current.match;
 
   const integration = useIntegrationFor(match ?? { game: null });
