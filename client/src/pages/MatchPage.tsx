@@ -342,8 +342,14 @@ export default function MatchPage() {
 
   return (
     <Container
-      maxWidth={theatre ? false : wide ? 'xl' : 'lg'}
-      sx={{ py: { xs: 3, md: 5 }, display: 'flex', flexDirection: 'column', gap: 3 }}
+      maxWidth={wide ? false : 'lg'}
+      sx={{
+        py: { xs: 3, md: 5 },
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 3,
+        ...(wide && !theatre && { maxWidth: 1920 }),
+      }}
       data-testid="match-page"
       data-layout={theatre ? 'theatre' : wide ? 'wide' : 'default'}
     >
@@ -451,7 +457,7 @@ export default function MatchPage() {
         )}
       </Box>
 
-      {publicHeader}
+      {!wide && publicHeader}
 
       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2.5, alignItems: 'flex-start' }}>
         <Box
@@ -512,6 +518,8 @@ export default function MatchPage() {
               />
             </StageLayoutProvider>
           )}
+          {/* Under a wide stage, as on a video page: the stage first, the score below it. */}
+          {wide && publicHeader}
 
           {/* Everyone who does not play in it sees the pre-match phase (the veto) as it happens, read-only.
               Only while there is one: a shuffle match (no veto) that was already live showed "waiting
@@ -541,7 +549,7 @@ export default function MatchPage() {
                   <Box
                     sx={{
                       display: 'grid',
-                      gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 14rem), 1fr))',
+                      gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 14rem), 1fr))',
                       gap: 1.5,
                     }}
                   >
