@@ -43,6 +43,7 @@ import { MatchFullTeamPanel } from '../components/match/MatchFullTeamPanel';
 import { MapTile, TeamLogo, panel } from '../components/tournament/ui/draftUi';
 import { StageTitle, type StageMapCard } from '../components/match/StageTitle';
 import { ResultCard } from '../components/match/ResultCard';
+import { NextUpCard } from '../components/match/NextUpCard';
 
 type MatchResponse = PublicMatch &
   Omit<SpectatorRoomMatch, 'team1' | 'team2' | 'status'> & {
@@ -60,6 +61,17 @@ type MatchResponse = PublicMatch &
     vetoOpensAt?: number | null;
     round?: number;
     matchNumber?: number;
+    /** A finished bracket match: the match its winner plays next. */
+    next?: {
+      slug: string;
+      round: number;
+      matchNumber: number;
+      bracket: string | null;
+      status: string;
+      startsAt: number | null;
+      team1: string | null;
+      team2: string | null;
+    };
     bracket?: string | null;
   };
 
@@ -409,6 +421,32 @@ export default function MatchPage() {
     />
   ) : null;
 
+  const next = finished ? match.next : undefined;
+  const nextUp = next ? (
+    <NextUpCard
+      title={t('home.quiet.next')}
+      line={[
+        `${
+          getBracketMatchLabel({
+            slug: next.slug,
+            bracket: next.bracket,
+            round: next.round,
+            matchNumber: next.matchNumber,
+          }) ?? getRoundLabel(next.round)
+        }: ${t('matchPage.stage.title', {
+          a: next.team1 ?? t('matchPage.tbd'),
+          b: next.team2 ?? t('matchPage.tbd'),
+        })}`,
+        next.startsAt ? fmtDateTime(next.startsAt) : null,
+      ]
+        .filter(Boolean)
+        .join(' · ')}
+      matchTo={`/match/${encodeURIComponent(next.slug)}`}
+      bracketTo={match.tournamentId ? tournamentTabPath(match.tournamentId, 'bracket') : null}
+      bracketLabel={t('placement.seeBracket')}
+    />
+  ) : null;
+
   const stageTitle = (
     <StageTitle
       team1={
@@ -726,6 +764,7 @@ export default function MatchPage() {
               )}
 
           {Panel && <Panel matchSlug={match.slug} match={match} />}
+          {nextUp}
 
           {isAdmin && (
             <Box>

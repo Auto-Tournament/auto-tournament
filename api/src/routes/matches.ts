@@ -1120,8 +1120,9 @@ router.get('/:slug', async (req: Request, res: Response) => {
       starts_at: number | null;
       tournament_settings: string | null;
       tournament_status: string | null;
+      next_match_id: number | null;
     }>(
-      `SELECT m.team1_id, m.team2_id, m.winner_id, t1.name AS team1_name, t1.tag AS team1_tag,
+      `SELECT m.team1_id, m.team2_id, m.winner_id, m.next_match_id, t1.name AS team1_name, t1.tag AS team1_tag,
               t2.name AS team2_name, t2.tag AS team2_tag, m.played_in, tr.name AS tournament,
               m.tournament_id, m.round, m.starts_at, tr.settings AS tournament_settings,
               tr.status AS tournament_status,
@@ -1169,6 +1170,29 @@ router.get('/:slug', async (req: Request, res: Response) => {
         : null;
     };
 
+    // A finished bracket match: the match its winner plays next (a result held back still reads as live).
+    const next =
+      match.status === 'completed' && row?.next_match_id
+        ? await db.queryOneAsync<{
+            slug: string;
+            round: number | null;
+            match_number: number | null;
+            bracket: string | null;
+            status: string;
+            starts_at: number | null;
+            team1_name: string | null;
+            team2_name: string | null;
+          }>(
+            `SELECT n.slug, n.round, n.match_number, n.bracket, n.status, n.starts_at,
+                    t1.name AS team1_name, t2.name AS team2_name
+               FROM matches n
+               LEFT JOIN teams t1 ON t1.id = n.team1_id
+               LEFT JOIN teams t2 ON t2.id = n.team2_id
+              WHERE n.id = ?`,
+            [row.next_match_id]
+          )
+        : null;
+
     const admin = (await checkAdminAccess(req)).ok;
 
     return res.json({
@@ -1197,6 +1221,20 @@ router.get('/:slug', async (req: Request, res: Response) => {
         mapScores,
         // When a held-back result is due: the page reads the match again then.
         ...(revealAt !== null ? { revealAt } : {}),
+        ...(next
+          ? {
+              next: {
+                slug: next.slug,
+                round: next.round ?? 0,
+                matchNumber: next.match_number ?? 0,
+                bracket: next.bracket,
+                status: next.status,
+                startsAt: next.starts_at,
+                team1: next.team1_name,
+                team2: next.team2_name,
+              },
+            }
+          : {}),
         // The teams' logos (the team page's), when they have one.
         team1LogoUrl: row?.team1_id ? logoUrl(row.team1_id, row.team1_logo) : null,
         team2LogoUrl: row?.team2_id ? logoUrl(row.team2_id, row.team2_logo) : null,
