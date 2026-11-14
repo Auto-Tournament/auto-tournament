@@ -22,7 +22,12 @@ function bo3(completedSecondsAgo: number | null) {
     team2Score: 0,
     mapResults: [
       { team1Score: 13, team2Score: 7, winnerTeam: 'team1' as const, completedAt: at(1000) },
-      { team1Score: 13, team2Score: 9, winnerTeam: 'team1' as const, completedAt: at(completedSecondsAgo ?? 30) },
+      {
+        team1Score: 13,
+        team2Score: 9,
+        winnerTeam: 'team1' as const,
+        completedAt: at(completedSecondsAgo ?? 30),
+      },
     ],
   };
 }
