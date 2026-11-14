@@ -1196,7 +1196,7 @@ router.get('/:slug', async (req: Request, res: Response) => {
                 : null,
         mapScores,
         // When a held-back result is due: the page reads the match again then.
-        revealAt,
+        ...(revealAt !== null ? { revealAt } : {}),
         // The teams' logos (the team page's), when they have one.
         team1LogoUrl: row?.team1_id ? logoUrl(row.team1_id, row.team1_logo) : null,
         team2LogoUrl: row?.team2_id ? logoUrl(row.team2_id, row.team2_logo) : null,
