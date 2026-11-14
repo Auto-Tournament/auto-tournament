@@ -12,8 +12,8 @@
  * "0.1 only": under semver a `0.x` minor may break.
  */
 
-/** The server API version: the `GameIntegration` and `AddonModule` contracts. 0.1.5: add-ons on disk (`kind`). */
-export const SERVER_API_VERSION = '0.1.5';
+/** The server API version: the `GameIntegration` and `AddonModule` contracts. 0.1.6: game events (`services/gameEvents`). */
+export const SERVER_API_VERSION = '0.1.6';
 
 /**
  * The client API version the web client provides. The client owns it

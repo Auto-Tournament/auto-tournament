@@ -66,6 +66,7 @@ import eventGg from './messages/event.gg.json';
 import eventAdminCalled from './messages/event.admin_called.json';
 import eventWalkoverChoice from './messages/event.walkover_choice.json';
 import eventChat from './messages/event.chat.json';
+import eventKill from './messages/event.kill.json';
 import eventError from './messages/event.error.json';
 import demoBegin from './messages/demo.begin.json';
 import demoChunk from './messages/demo.chunk.json';
@@ -137,6 +138,7 @@ export const FLEET_MESSAGE_SCHEMAS: Record<FleetMessageType, AnySchemaObject> = 
   'event.walkover_choice': eventWalkoverChoice,
   // In-game chat to the match's web chat: proposed by the platform (admin chat bridge).
   'event.chat': eventChat,
+  'event.kill': eventKill,
   'event.error': eventError,
   // Demo streaming (FLEET.md §12.2): proposed by Ready Up, received by ../../demoStream.ts.
   'demo.begin': demoBegin,

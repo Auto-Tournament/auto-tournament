@@ -1,0 +1,87 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-tournament.dev/fleet/v1/messages/event.kill.json",
+  "title": "event.kill (server → platform, reliable)",
+  "description": "Match event (FLEET.md §8.1), source: a `killed` line in the server log while the match is live (bots included; they have no SteamID, so the log is the source). Envelope epoch = the assignment's. `rev` / `patch` continue the MatchState stream as for event.chat (a rev bump, no state diff). Sent the moment it happens, before any GOTV delay. There is no answer on the link.",
+  "type": "object",
+  "required": ["match_id", "map_number", "rev", "patch", "data"],
+  "properties": {
+    "match_id": {
+      "$ref": "../match.defs.json#/$defs/matchId"
+    },
+    "map_number": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "round": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "rev": {
+      "$ref": "../match.defs.json#/$defs/rev"
+    },
+    "patch": {
+      "$ref": "../match.defs.json#/$defs/patch"
+    },
+    "data": {
+      "type": "object",
+      "required": ["attacker", "victim", "weapon", "headshot", "at"],
+      "properties": {
+        "attacker": {
+          "$ref": "#/$defs/fighter"
+        },
+        "victim": {
+          "$ref": "#/$defs/fighter"
+        },
+        "weapon": {
+          "type": "string",
+          "maxLength": 64,
+          "description": "as the log names it (ak47, usp_silencer, ...)"
+        },
+        "headshot": {
+          "type": "boolean"
+        },
+        "at": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "unix ms"
+        }
+      }
+    }
+  },
+  "$defs": {
+    "fighter": {
+      "type": "object",
+      "required": ["name", "steamid64", "side", "pos"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "maxLength": 256
+        },
+        "steamid64": {
+          "description": "null for a bot",
+          "oneOf": [
+            {
+              "$ref": "../defs.json#/$defs/u64s"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "side": {
+          "enum": ["ct", "t", "spec"]
+        },
+        "pos": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 3,
+          "maxItems": 3,
+          "description": "world position [x, y, z] when it happened"
+        }
+      }
+    }
+  }
+}

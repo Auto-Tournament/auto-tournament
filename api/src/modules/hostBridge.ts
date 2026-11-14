@@ -36,6 +36,7 @@ import * as playerConnectionService from '../services/playerConnectionService';
 import * as matchNotices from '../services/matchNotices';
 import * as notificationService from '../services/notificationService';
 import * as adminNoticeService from '../services/adminNoticeService';
+import * as gameEvents from '../services/gameEvents';
 import * as gameReadiness from '../services/gameReadiness';
 import * as settingsService from '../services/settingsService';
 import * as shuffleTournamentService from '../services/shuffleTournamentService';
@@ -87,6 +88,7 @@ const MODULES: Record<string, object> = {
   'services/matchNotices': matchNotices,
   'services/notificationService': notificationService,
   'services/adminNoticeService': adminNoticeService,
+  'services/gameEvents': gameEvents,
   'services/gameReadiness': gameReadiness,
   'services/settingsService': settingsService,
   'services/shuffleTournamentService': shuffleTournamentService,
