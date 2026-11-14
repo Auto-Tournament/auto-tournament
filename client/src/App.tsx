@@ -11,6 +11,7 @@ import {
 } from 'react-router-dom';
 import { AtLinkProvider } from '@auto-tournament/ui';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { ReturnAfterLogin } from './utils/returnAfterLogin';
 import { PageHeaderProvider } from './contexts/PageHeaderContext';
 import { SnackbarProvider, useSnackbar } from './contexts/SnackbarContext';
 import { AtIcon } from './components/common/AtIcon';
@@ -776,6 +777,7 @@ export default function App() {
                 {/* Players: link your Discord, or join the server (the Discord add-on). */}
                 <DiscordNotice />
                 {/* Admins choose a license before anything else, on every page. */}
+                <ReturnAfterLogin />
                 <AdminConsentRedirect />
                 <ModuleGlobalOverlays />
                 {/* "What do you play?": redirects to /welcome/games once per

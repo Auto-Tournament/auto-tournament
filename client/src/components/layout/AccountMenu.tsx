@@ -10,7 +10,7 @@ import {
   MenuItem,
 } from '@mui/material';
 import { CaretRightIcon, UserIcon } from '@phosphor-icons/react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
 import { FlagIcon, LanguageMenu, useCurrentLanguage } from '../common/LanguageSwitcher';
@@ -58,6 +58,7 @@ export function AccountMenu({ wide = false }: { wide?: boolean } = {}) {
   } = useAuth();
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const location = useLocation();
   const friendRequests = useSocial(Boolean(playerSteamId) && !impersonation).incoming.length;
   const currentLanguage = useCurrentLanguage();
 
@@ -311,7 +312,7 @@ export function AccountMenu({ wide = false }: { wide?: boolean } = {}) {
           <MenuItem
             onClick={() => {
               handleAvatarMenuClose();
-              navigate(paths.login);
+              navigate(paths.login, { state: { from: location } });
             }}
             data-testid="sign-in-button"
           >
