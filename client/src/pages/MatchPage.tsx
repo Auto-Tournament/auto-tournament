@@ -488,9 +488,11 @@ export default function MatchPage() {
   // Beside a wide stage: standard caps the page at YouTube's width with the draft's 80 px sides;
   // theatre takes the window. The stage's height (the chat matches it) leaves room for the title.
   const gutter = theatre ? 24 : 160;
-  const pageWidth = theatre ? '100vw' : '1914px';
   // The stage reads --stage-max-h: theatre fills to the window's bottom, standard keeps the title in view.
   const stageMaxH = `calc(100vh - ${theatre ? 210 : 300}px)`;
+  // With the side column open, the page shrinks to a height-capped 16:9 stage beside it, so they touch.
+  const fit = `calc(${stageMaxH} * 16 / 9 + ${gutter + 422}px)`;
+  const pageWidth = theatre ? (showSide ? `min(100vw, ${fit})` : '100vw') : `min(1914px, ${fit})`;
   const stageHeight = `min(var(--stage-max-h), calc((min(100vw, ${pageWidth}) - ${gutter + 422}px) * 9 / 16))`;
   const ease = '0.45s cubic-bezier(0.16, 1, 0.3, 1)';
 
