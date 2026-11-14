@@ -817,7 +817,8 @@
       "won": "A câștigat {{team}}",
       "liveNow": "În desfășurare",
       "upNext": "Urmează",
-      "decider": "Decisivă, dacă e nevoie"
+      "decider": "Decisivă, dacă e nevoie",
+      "finished": "Terminat {{when}}"
     }
   },
   "report": {

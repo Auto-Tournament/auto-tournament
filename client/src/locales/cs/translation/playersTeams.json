@@ -836,7 +836,8 @@
       "won": "Vyhrál tým {{team}}",
       "liveNow": "Právě se hraje",
       "upNext": "Další",
-      "decider": "Rozhodující, pokud bude třeba"
+      "decider": "Rozhodující, pokud bude třeba",
+      "finished": "Skončil {{when}}"
     }
   },
   "report": {

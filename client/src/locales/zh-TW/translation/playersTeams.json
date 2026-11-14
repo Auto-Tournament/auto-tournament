@@ -799,7 +799,8 @@
       "won": "{{team}} 獲勝",
       "liveNow": "進行中",
       "upNext": "下一張",
-      "decider": "決勝圖（如有需要）"
+      "decider": "決勝圖（如有需要）",
+      "finished": "{{when}} 結束"
     }
   },
   "report": {

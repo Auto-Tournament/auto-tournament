@@ -799,7 +799,8 @@
       "won": "{{team}} 승리",
       "liveNow": "진행 중",
       "upNext": "다음",
-      "decider": "필요하면 결정전"
+      "decider": "필요하면 결정전",
+      "finished": "{{when}} 종료"
     }
   },
   "report": {

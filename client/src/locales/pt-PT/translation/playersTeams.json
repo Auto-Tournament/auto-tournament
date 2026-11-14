@@ -819,7 +819,8 @@
       "won": "{{team}} venceu",
       "liveNow": "Em direto",
       "upNext": "A seguir",
-      "decider": "Decisivo, se for preciso"
+      "decider": "Decisivo, se for preciso",
+      "finished": "Terminou {{when}}"
     }
   },
   "report": {

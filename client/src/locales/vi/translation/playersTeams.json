@@ -799,7 +799,8 @@
       "won": "{{team}} thắng",
       "liveNow": "Đang thi đấu",
       "upNext": "Tiếp theo",
-      "decider": "Bản đồ quyết định, nếu cần"
+      "decider": "Bản đồ quyết định, nếu cần",
+      "finished": "Đã kết thúc {{when}}"
     }
   },
   "report": {

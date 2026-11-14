@@ -42,6 +42,7 @@ import { MatchCheckInPanel } from '../components/match/MatchCheckInPanel';
 import { MatchFullTeamPanel } from '../components/match/MatchFullTeamPanel';
 import { MapTile, TeamLogo, panel } from '../components/tournament/ui/draftUi';
 import { StageTitle, type StageMapCard } from '../components/match/StageTitle';
+import { ResultCard } from '../components/match/ResultCard';
 
 type MatchResponse = PublicMatch &
   Omit<SpectatorRoomMatch, 'team1' | 'team2' | 'status'> & {
@@ -365,6 +366,49 @@ export default function MatchPage() {
   ]
     .filter(Boolean)
     .join(' · ');
+  // A finished match: the drafts' result card in place of the score panel and map tiles.
+  const finished = match.status === 'completed';
+  const resultCard = finished ? (
+    <ResultCard
+      team1={
+        match.team1?.name
+          ? { ...match.team1, name: match.team1.name, logoUrl: match.team1LogoUrl }
+          : null
+      }
+      team2={
+        match.team2?.name
+          ? { ...match.team2, name: match.team2.name, logoUrl: match.team2LogoUrl }
+          : null
+      }
+      score1={score1}
+      score2={score2}
+      winnerSide={match.winnerSide}
+      winnerLabel={t('matchPage.winner')}
+      title={t('matchPage.stage.title', { a: teamName(1), b: teamName(2) })}
+      line={[
+        planned.length > 1 ? t('matchPage.stage.bestOf', { n: planned.length }) : null,
+        match.completedAt
+          ? t('matchPage.stage.finished', { when: fmtDateTime(match.completedAt) })
+          : null,
+      ]
+        .filter(Boolean)
+        .join(' · ')}
+      maps={maps.map((m) => {
+        const level = m.team1Score > m.team2Score ? 'team1' : 'team2';
+        const side = m.winner === 'team1' || m.winner === 'team2' ? m.winner : level;
+        return {
+          mapNumber: m.mapNumber,
+          name: `${t('matchPage.mapN', { n: m.mapNumber + 1 })} · ${mapName(m.map, m.mapNumber, t)}`,
+          score: `${m.team1Score}:${m.team2Score}`,
+          note:
+            t('matchPage.stage.won', { team: teamName(side === 'team1' ? 1 : 2) }) +
+            (m.team1Score + m.team2Score > 24 ? ` · ${t('matchPage.overtime')}` : ''),
+        };
+      })}
+      action={MapAction ? (n) => <MapAction matchSlug={match.slug} mapNumber={n} /> : undefined}
+    />
+  ) : null;
+
   const stageTitle = (
     <StageTitle
       team1={
@@ -473,8 +517,8 @@ export default function MatchPage() {
       <Box
         component="div"
         sx={{
-          // Beside a wide stage the title row under it carries the state.
-          display: wide ? 'none' : 'flex',
+          // The title row under a wide stage, or a finished match's result card, carries the state.
+          display: wide || finished ? 'none' : 'flex',
           flexWrap: 'wrap',
           alignItems: 'center',
           gap: 1,
@@ -535,7 +579,7 @@ export default function MatchPage() {
         )}
       </Box>
 
-      {!wide && publicHeader}
+      {!wide && !finished && publicHeader}
 
       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2.5, alignItems: 'flex-start' }}>
         <Box
@@ -547,6 +591,8 @@ export default function MatchPage() {
             gap: 2.5,
           }}
         >
+          {resultCard}
+
           {viewerTeamId && (
             <Box data-testid="match-room-player" sx={{ display: 'grid', gap: 2.5 }}>
               {matchIsOn && playsThroughModule && (
@@ -613,8 +659,9 @@ export default function MatchPage() {
           )}
 
           {seriesMaps
-            ? !playerCard && !wide && <Box sx={panel}>{seriesMaps}</Box>
+            ? !playerCard && !wide && !finished && <Box sx={panel}>{seriesMaps}</Box>
             : !wide &&
+              !finished &&
               maps.length > 0 && (
                 <Box component="section" aria-labelledby="match-maps" sx={panel}>
                   <Typography
