@@ -517,8 +517,8 @@ export default function MatchPage() {
       <Box
         component="div"
         sx={{
-          // Beside a wide stage the title row under it carries the state.
-          display: wide ? 'none' : 'flex',
+          // The title row under a wide stage, or a finished match's result card, carries the state.
+          display: wide || finished ? 'none' : 'flex',
           flexWrap: 'wrap',
           alignItems: 'center',
           gap: 1,
