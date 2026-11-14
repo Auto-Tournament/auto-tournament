@@ -790,7 +790,17 @@
     },
     "bracket": "สายการแข่งขัน",
     "breadcrumb": "เส้นทางนำทาง",
-    "startsAt": "เริ่ม {{time}} · วีโต้เปิด {{veto}}"
+    "startsAt": "เริ่ม {{time}} · วีโต้เปิด {{veto}}",
+    "stage": {
+      "title": "{{a}} พบ {{b}}",
+      "bestOf": "Best of {{n}}",
+      "mapNow": "แมพ {{n}}, {{map}} {{a}}:{{b}}",
+      "round": "รอบที่ {{n}}",
+      "won": "{{team}} ชนะ",
+      "liveNow": "กำลังแข่ง",
+      "upNext": "ถัดไป",
+      "decider": "แมพตัดสิน หากจำเป็น"
+    }
   },
   "report": {
     "button": "รายงาน",

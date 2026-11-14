@@ -790,7 +790,17 @@
     },
     "bracket": "Bracket",
     "breadcrumb": "Sökväg",
-    "startsAt": "startar {{time}} · vetot öppnar {{veto}}"
+    "startsAt": "startar {{time}} · vetot öppnar {{veto}}",
+    "stage": {
+      "title": "{{a}} mot {{b}}",
+      "bestOf": "Bäst av {{n}}",
+      "mapNow": "Karta {{n}}, {{map}} {{a}}:{{b}}",
+      "round": "Rond {{n}}",
+      "won": "{{team}} vann",
+      "liveNow": "Spelas nu",
+      "upNext": "Nästa",
+      "decider": "Avgörande karta om det behövs"
+    }
   },
   "report": {
     "button": "Anmäl",

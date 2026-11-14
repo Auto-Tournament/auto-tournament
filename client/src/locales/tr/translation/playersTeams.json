@@ -790,7 +790,17 @@
     },
     "bracket": "Turnuva ağacı",
     "breadcrumb": "İçerik haritası",
-    "startsAt": "başlangıç {{time}} · veto açılışı {{veto}}"
+    "startsAt": "başlangıç {{time}} · veto açılışı {{veto}}",
+    "stage": {
+      "title": "{{a}} - {{b}}",
+      "bestOf": "{{n}} maçta en iyi",
+      "mapNow": "Harita {{n}}, {{map}} {{a}}:{{b}}",
+      "round": "Raunt {{n}}",
+      "won": "{{team}} kazandı",
+      "liveNow": "Şu an oynanıyor",
+      "upNext": "Sıradaki",
+      "decider": "Gerekirse belirleyici harita"
+    }
   },
   "report": {
     "button": "Şikâyet et",

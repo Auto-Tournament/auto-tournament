@@ -790,7 +790,17 @@
     },
     "bracket": "Bracket",
     "breadcrumb": "Brødkrummesti",
-    "startsAt": "starter {{time}} · vetoet åbner {{veto}}"
+    "startsAt": "starter {{time}} · vetoet åbner {{veto}}",
+    "stage": {
+      "title": "{{a}} mod {{b}}",
+      "bestOf": "Bedst af {{n}}",
+      "mapNow": "Bane {{n}}, {{map}} {{a}}:{{b}}",
+      "round": "Runde {{n}}",
+      "won": "{{team}} vandt",
+      "liveNow": "Spilles nu",
+      "upNext": "Næste",
+      "decider": "Afgørende bane, hvis det bliver nødvendigt"
+    }
   },
   "report": {
     "button": "Anmeld",

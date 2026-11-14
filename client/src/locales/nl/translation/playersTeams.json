@@ -791,7 +791,17 @@
     },
     "bracket": "Schema",
     "breadcrumb": "Kruimelpad",
-    "startsAt": "begint {{time}} · veto opent {{veto}}"
+    "startsAt": "begint {{time}} · veto opent {{veto}}",
+    "stage": {
+      "title": "{{a}} tegen {{b}}",
+      "bestOf": "Best of {{n}}",
+      "mapNow": "Map {{n}}, {{map}} {{a}}:{{b}}",
+      "round": "Ronde {{n}}",
+      "won": "{{team}} won",
+      "liveNow": "Nu live",
+      "upNext": "Hierna",
+      "decider": "Beslissende map, als het nodig is"
+    }
   },
   "report": {
     "button": "Melden",

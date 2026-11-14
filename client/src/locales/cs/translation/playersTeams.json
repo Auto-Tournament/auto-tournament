@@ -827,7 +827,17 @@
     },
     "bracket": "Pavouk",
     "breadcrumb": "Drobečková navigace",
-    "startsAt": "začíná {{time}} · veto se otevře {{veto}}"
+    "startsAt": "začíná {{time}} · veto se otevře {{veto}}",
+    "stage": {
+      "title": "{{a}} vs {{b}}",
+      "bestOf": "Best of {{n}}",
+      "mapNow": "Mapa {{n}}, {{map}} {{a}}:{{b}}",
+      "round": "Kolo {{n}}",
+      "won": "Vyhrál tým {{team}}",
+      "liveNow": "Právě se hraje",
+      "upNext": "Další",
+      "decider": "Rozhodující, pokud bude třeba"
+    }
   },
   "report": {
     "button": "Nahlásit",

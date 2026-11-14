@@ -790,7 +790,17 @@
     },
     "bracket": "トーナメント表",
     "breadcrumb": "パンくずリスト",
-    "startsAt": "{{time}} 開始 · BAN/ピック開始 {{veto}}"
+    "startsAt": "{{time}} 開始 · BAN/ピック開始 {{veto}}",
+    "stage": {
+      "title": "{{a}} 対 {{b}}",
+      "bestOf": "{{n}}本先取",
+      "mapNow": "マップ{{n}}、{{map}} {{a}}:{{b}}",
+      "round": "ラウンド{{n}}",
+      "won": "{{team}}の勝利",
+      "liveNow": "ライブ中",
+      "upNext": "次",
+      "decider": "必要なら決着マップ"
+    }
   },
   "report": {
     "button": "通報",

@@ -790,7 +790,17 @@
     },
     "bracket": "賽程表",
     "breadcrumb": "導覽路徑",
-    "startsAt": "{{time}} 開始 · 禁選於 {{veto}} 開啟"
+    "startsAt": "{{time}} 開始 · 禁選於 {{veto}} 開啟",
+    "stage": {
+      "title": "{{a}} 對 {{b}}",
+      "bestOf": "Best of {{n}}",
+      "mapNow": "第 {{n}} 張地圖，{{map}} {{a}}:{{b}}",
+      "round": "第 {{n}} 回合",
+      "won": "{{team}} 獲勝",
+      "liveNow": "進行中",
+      "upNext": "下一張",
+      "decider": "決勝圖（如有需要）"
+    }
   },
   "report": {
     "button": "舉報",

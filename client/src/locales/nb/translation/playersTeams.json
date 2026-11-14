@@ -790,7 +790,17 @@
     },
     "bracket": "Turneringstre",
     "breadcrumb": "Brødsmulesti",
-    "startsAt": "starter {{time}} · vetoen åpner {{veto}}"
+    "startsAt": "starter {{time}} · vetoen åpner {{veto}}",
+    "stage": {
+      "title": "{{a}} mot {{b}}",
+      "bestOf": "Best av {{n}}",
+      "mapNow": "Kart {{n}}, {{map}} {{a}}:{{b}}",
+      "round": "Runde {{n}}",
+      "won": "{{team}} vant",
+      "liveNow": "Spilles nå",
+      "upNext": "Neste",
+      "decider": "Avgjørende kart hvis det trengs"
+    }
   },
   "report": {
     "button": "Rapporter",

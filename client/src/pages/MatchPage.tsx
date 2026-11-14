@@ -41,6 +41,7 @@ import { CommendPanel } from '../components/match/CommendPanel';
 import { MatchCheckInPanel } from '../components/match/MatchCheckInPanel';
 import { MatchFullTeamPanel } from '../components/match/MatchFullTeamPanel';
 import { MapTile, TeamLogo, panel } from '../components/tournament/ui/draftUi';
+import { StageTitle, type StageMapCard } from '../components/match/StageTitle';
 
 type MatchResponse = PublicMatch &
   Omit<SpectatorRoomMatch, 'team1' | 'team2' | 'status'> & {
@@ -321,6 +322,69 @@ export default function MatchPage() {
     </Box>
   );
 
+  // Beside a wide stage: the drafts' title row and a card per map in place of the score panel.
+  const teamName = (n: 1 | 2) => (n === 1 ? match.team1 : match.team2)?.name ?? t('matchPage.tbd');
+  const planned = match.maps ?? [];
+  const playing = match.mapNumber ?? null;
+  const liveNow = match.status === 'live' && playing !== null;
+  const stageMaps: StageMapCard[] = planned.map((name, i) => {
+    const done = maps.find((m) => m.mapNumber === i);
+    const now = liveNow && i === playing && !done;
+    const winner = done && (done.winner ?? (done.team1Score > done.team2Score ? 'team1' : 'team2'));
+    return {
+      key: `${i}-${name}`,
+      name: `${t('matchPage.mapN', { n: i + 1 })} · ${mapName(name, i, t)}`,
+      score: done
+        ? `${done.team1Score}:${done.team2Score}`
+        : now
+          ? `${match.team1MapScore ?? 0}:${match.team2MapScore ?? 0}`
+          : '–',
+      note: done
+        ? t('matchPage.stage.won', { team: teamName(winner === 'team1' ? 1 : 2) })
+        : now
+          ? t('matchPage.stage.liveNow')
+          : i === planned.length - 1 && planned.length > 1
+            ? t('matchPage.stage.decider')
+            : t('matchPage.stage.upNext'),
+      now,
+    };
+  });
+  const a = match.team1MapScore ?? 0;
+  const b = match.team2MapScore ?? 0;
+  const stageLine = [
+    planned.length > 1 ? t('matchPage.stage.bestOf', { n: planned.length }) : null,
+    liveNow
+      ? t('matchPage.stage.mapNow', {
+          n: playing + 1,
+          map: mapName(planned[playing] ?? null, playing, t),
+          a,
+          b,
+        })
+      : null,
+    liveNow ? t('matchPage.stage.round', { n: a + b + 1 }) : null,
+  ]
+    .filter(Boolean)
+    .join(' · ');
+  const stageTitle = (
+    <StageTitle
+      team1={
+        match.team1?.name
+          ? { ...match.team1, name: match.team1.name, logoUrl: match.team1LogoUrl }
+          : null
+      }
+      team2={
+        match.team2?.name
+          ? { ...match.team2, name: match.team2.name, logoUrl: match.team2LogoUrl }
+          : null
+      }
+      score1={score1}
+      score2={score2}
+      title={t('matchPage.stage.title', { a: teamName(1), b: teamName(2) })}
+      line={stageLine}
+      maps={stageMaps}
+    />
+  );
+
   // The viewer plays in this match: their part comes first while it is on.
   const viewerTeamId = match.viewerTeamId ?? null;
   const matchIsOn = match.status !== 'completed' && match.status !== 'cancelled';
@@ -517,11 +581,10 @@ export default function MatchPage() {
                 match={match}
                 hasVeto={integration.capabilities.veto}
                 Watch={integration.spectatorWatch}
+                belowStage={wide ? stageTitle : undefined}
               />
             </StageLayoutProvider>
           )}
-          {/* Under a wide stage, as on a video page: the stage first, the score below it. */}
-          {wide && publicHeader}
 
           {/* Everyone who does not play in it sees the pre-match phase (the veto) as it happens, read-only.
               Only while there is one: a shuffle match (no veto) that was already live showed "waiting
@@ -538,8 +601,9 @@ export default function MatchPage() {
           )}
 
           {seriesMaps
-            ? !playerCard && <Box sx={panel}>{seriesMaps}</Box>
-            : maps.length > 0 && (
+            ? !playerCard && !wide && <Box sx={panel}>{seriesMaps}</Box>
+            : !wide &&
+              maps.length > 0 && (
                 <Box component="section" aria-labelledby="match-maps" sx={panel}>
                   <Typography
                     id="match-maps"

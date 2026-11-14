@@ -790,7 +790,17 @@
     },
     "bracket": "Bracket",
     "breadcrumb": "Remah roti",
-    "startsAt": "mulai {{time}} · veto dibuka {{veto}}"
+    "startsAt": "mulai {{time}} · veto dibuka {{veto}}",
+    "stage": {
+      "title": "{{a}} vs {{b}}",
+      "bestOf": "Best of {{n}}",
+      "mapNow": "Peta {{n}}, {{map}} {{a}}:{{b}}",
+      "round": "Ronde {{n}}",
+      "won": "{{team}} menang",
+      "liveNow": "Sedang berlangsung",
+      "upNext": "Berikutnya",
+      "decider": "Penentu, jika perlu"
+    }
   },
   "report": {
     "button": "Laporkan",
