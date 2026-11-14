@@ -9,7 +9,8 @@ import { getMapDisplayName } from '../../constants/maps';
 import { fontDisplay, mono, radii, textSize, tokens } from '../../theme/tokens';
 import { fmtClock } from '../../utils/time';
 import { LivePlayersTable } from './LivePlayersTable';
-import { MatchStageSlot } from '../../module-loader/addonSlots';
+import { LivePlayerCards } from './LivePlayerCards';
+import { MatchStageSlot, useStageLayout } from '../../module-loader/addonSlots';
 import { SectionTitle, panel } from '../tournament/ui/draftUi';
 import { PlayerChip } from '../player/PlayerChip';
 import type { Untrusted } from '../../utils/untrusted';
@@ -136,6 +137,8 @@ export function SpectatorRoom({
   belowStage?: ReactNode;
 }) {
   const { t } = useTranslation();
+  // Beside a wide stage the players are the draft's cards; otherwise one table.
+  const Players = useStageLayout().wide ? LivePlayerCards : LivePlayersTable;
   const now: Step =
     match.status === 'completed' || match.status === 'cancelled'
       ? 'result'
@@ -330,7 +333,7 @@ export function SpectatorRoom({
       {Watch && now === 'live' && match.slug && <Watch matchSlug={match.slug} />}
 
       {now === 'live' && live?.playerStats ? (
-        <LivePlayersTable
+        <Players
           stats={live.playerStats}
           team1={{
             id: match.team1?.id ?? undefined,

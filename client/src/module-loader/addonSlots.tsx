@@ -70,6 +70,11 @@ const StageLayoutContext = createContext<[StageLayout, (patch: Partial<StageLayo
   () => undefined,
 ]);
 
+/** The match page's stage layout, read by core parts around the stage. */
+export function useStageLayout(): StageLayout {
+  return useContext(StageLayoutContext)[0];
+}
+
 export function StageLayoutProvider({
   value,
   children,
