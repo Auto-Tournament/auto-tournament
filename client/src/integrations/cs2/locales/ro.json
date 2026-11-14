@@ -2104,6 +2104,8 @@
     "rating": "Rating",
     "allMaps": "Toate hărțile",
     "scoreboardMap": "Hartă",
+    "playerOfMatch": "Jucătorul meciului",
+    "playerOfMatchLine": "{{team}} · rating {{rating}}",
     "reelTeam": "Montaj",
     "teamHighlights": "Fazele {{team}}"
   },

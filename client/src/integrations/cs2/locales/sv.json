@@ -2061,6 +2061,8 @@
     "rating": "Rating",
     "allMaps": "Alla kartor",
     "scoreboardMap": "Karta",
+    "playerOfMatch": "Matchens spelare",
+    "playerOfMatchLine": "{{team}} · rating {{rating}}",
     "reelTeam": "Film",
     "teamHighlights": "Höjdpunkter för {{team}}"
   },

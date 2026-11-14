@@ -2148,6 +2148,8 @@
     "rating": "Рейтинг",
     "allMaps": "Все карты",
     "scoreboardMap": "Карта",
+    "playerOfMatch": "Игрок матча",
+    "playerOfMatchLine": "{{team}} · рейтинг {{rating}}",
     "reelTeam": "Нарезка",
     "teamHighlights": "Хайлайты {{team}}"
   },

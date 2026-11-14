@@ -2061,6 +2061,8 @@
     "rating": "Rating",
     "allMaps": "Alle kart",
     "scoreboardMap": "Kart",
+    "playerOfMatch": "Kampens spiller",
+    "playerOfMatchLine": "{{team}} · rating {{rating}}",
     "reelTeam": "Sammendrag",
     "teamHighlights": "Høydepunkter for {{team}}"
   },

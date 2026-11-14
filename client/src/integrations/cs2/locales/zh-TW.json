@@ -2061,6 +2061,8 @@
     "rating": "Rating",
     "allMaps": "所有地圖",
     "scoreboardMap": "地圖",
+    "playerOfMatch": "本場最佳選手",
+    "playerOfMatchLine": "{{team}} · 評分 {{rating}}",
     "reelTeam": "集錦",
     "teamHighlights": "{{team}} 精華"
   },

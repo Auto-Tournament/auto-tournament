@@ -2061,6 +2061,8 @@
     "rating": "เรตติ้ง",
     "allMaps": "ทุกแมพ",
     "scoreboardMap": "แมพ",
+    "playerOfMatch": "ผู้เล่นยอดเยี่ยมของแมตช์",
+    "playerOfMatchLine": "{{team}} · เรตติ้ง {{rating}}",
     "reelTeam": "รีล",
     "teamHighlights": "ไฮไลต์ {{team}}"
   },

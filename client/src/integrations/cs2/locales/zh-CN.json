@@ -2061,6 +2061,8 @@
     "rating": "Rating",
     "allMaps": "所有地图",
     "scoreboardMap": "地图",
+    "playerOfMatch": "本场最佳选手",
+    "playerOfMatchLine": "{{team}} · 评分 {{rating}}",
     "reelTeam": "集锦",
     "teamHighlights": "{{team}} 高光"
   },

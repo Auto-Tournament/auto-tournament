@@ -2105,6 +2105,8 @@
     "rating": "Rating",
     "allMaps": "Todos los mapas",
     "scoreboardMap": "Mapa",
+    "playerOfMatch": "Jugador del partido",
+    "playerOfMatchLine": "{{team}} · rating {{rating}}",
     "reelTeam": "Reel",
     "teamHighlights": "Highlights de {{team}}"
   },

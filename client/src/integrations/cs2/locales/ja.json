@@ -2061,6 +2061,8 @@
     "rating": "レーティング",
     "allMaps": "すべてのマップ",
     "scoreboardMap": "マップ",
+    "playerOfMatch": "マッチMVP",
+    "playerOfMatchLine": "{{team}} · レーティング {{rating}}",
     "reelTeam": "まとめ動画",
     "teamHighlights": "{{team}} のハイライト"
   },

@@ -242,6 +242,16 @@ export function MatchPublicPanel({ matchSlug, match }: MatchPublicPanelProps) {
       0.11
     );
   };
+  // Player of the match: the best rating over the whole match (the drafts' finished page).
+  const potm = board
+    ? ((['team1', 'team2'] as const)
+        .flatMap((side) =>
+          board[side]
+            .filter((l) => l.rounds > 0)
+            .map((line) => ({ side, line, rating: rating(line) }))
+        )
+        .sort((a, b) => b.rating - a.rating)[0] ?? null)
+    : null;
   const shownBoard =
     board && boardMap !== 'all'
       ? (board.maps.find((m) => m.mapNumber === boardMap) ?? board)
@@ -533,6 +543,49 @@ export function MatchPublicPanel({ matchSlug, match }: MatchPublicPanelProps) {
               })}
             />
           ) : undefined
+        )}
+
+      {potm &&
+        section(
+          t('matchPage.playerOfMatch'),
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Box
+              component="span"
+              sx={{
+                width: 64,
+                height: 64,
+                flex: 'none',
+                borderRadius: '50%',
+                overflow: 'hidden',
+                border: `2px solid ${potm.side === 'team1' ? tokens.color.sideCt : tokens.color.sideT}`,
+                bgcolor: tokens.color.paper3,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontWeight: 600,
+                fontSize: 20,
+                color: tokens.color.ink2,
+              }}
+            >
+              {potm.line.avatar ? (
+                <img src={potm.line.avatar} alt="" style={{ width: '100%', height: '100%' }} />
+              ) : (
+                potm.line.name.slice(0, 1).toUpperCase()
+              )}
+            </Box>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.25, minWidth: 0 }}>
+              <Typography sx={{ fontFamily: fontDisplay, fontWeight: 700, fontSize: 20 }}>
+                {potm.line.name}
+              </Typography>
+              <Typography sx={{ color: tokens.color.muted, fontSize: 14 }}>
+                {t('matchPage.playerOfMatchLine', {
+                  team: teamName(potm.side),
+                  rating: fmtNum(potm.rating, 2),
+                })}
+              </Typography>
+            </Box>
+          </Box>,
+          'match-page-player-of-match'
         )}
 
       {(clips.length > 0 || recording) &&

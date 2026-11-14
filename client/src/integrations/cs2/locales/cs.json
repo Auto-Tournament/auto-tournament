@@ -2148,6 +2148,8 @@
     "rating": "Hodnocení",
     "allMaps": "Všechny mapy",
     "scoreboardMap": "Mapa",
+    "playerOfMatch": "Hráč zápasu",
+    "playerOfMatchLine": "{{team}} · hodnocení {{rating}}",
     "reelTeam": "Sestřih",
     "teamHighlights": "Highlighty {{team}}"
   },
