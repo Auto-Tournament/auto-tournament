@@ -34,7 +34,7 @@ function bo3(completedSecondsAgo: number | null) {
 
 test('a match that ended inside the delay still reads as live', () => {
   const match = bo3(20);
-  holdBackResults(match, 105, live, NOW);
+  expect(holdBackResults(match, 105, live, NOW)).toBe(at(20) + 105);
   expect(match.status).toBe('live');
   expect(match.winner).toBeUndefined();
   expect(match.completedAt).toBeNull();
@@ -45,7 +45,7 @@ test('a match that ended inside the delay still reads as live', () => {
 
 test('a match that ended before the delay shows its result', () => {
   const match = bo3(500);
-  holdBackResults(match, 105, live, NOW);
+  expect(holdBackResults(match, 105, live, NOW)).toBeNull();
   expect(match.status).toBe('completed');
   expect(match.winner).toEqual({ id: 'a' });
   expect(match.mapResults).toHaveLength(2);

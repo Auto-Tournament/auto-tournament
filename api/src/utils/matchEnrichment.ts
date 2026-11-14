@@ -213,16 +213,21 @@ type HeldBackMatch = ScoreFieldsTarget & {
 
 /**
  * The match as a spectator `delaySeconds` behind live sees it: maps and the result that came
- * later are held back, so the delayed stream isn't spoiled. Times are unix seconds.
+ * later are held back, so the delayed stream isn't spoiled. Returns when the next held-back
+ * result is due (unix seconds), or null.
  */
 export function holdBackResults(
   match: HeldBackMatch,
   delaySeconds: number,
   liveStats: LiveStatsLike | null,
   nowMs = Date.now()
-): void {
+): number | null {
   const cutoff = Math.floor(nowMs / 1000) - delaySeconds;
   const seen = (at?: number | null) => at == null || at <= cutoff;
+  const held = [
+    ...(match.mapResults ?? []).map((r) => r.completedAt),
+    match.status === 'completed' ? match.completedAt : null,
+  ].filter((at): at is number => !seen(at));
   if (match.mapResults) match.mapResults = match.mapResults.filter((r) => seen(r.completedAt));
   if (match.status === 'completed' && !seen(match.completedAt)) {
     match.status = 'live';
@@ -236,4 +241,5 @@ export function holdBackResults(
     mapResults: match.mapResults,
     liveStats: match.status === 'completed' ? null : liveStats,
   });
+  return held.length ? Math.min(...held) + delaySeconds : null;
 }

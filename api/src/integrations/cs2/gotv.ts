@@ -189,3 +189,17 @@ export async function spectatorDelay(req: Request, matchSlug: string): Promise<n
     return 0;
   return settings.liveStats === 'off' ? 'off' : settings.delay;
 }
+
+/** Maps whose result this viewer may see (finished before their delay), or null for all of them. */
+export async function shownMapNumbers(
+  req: Request,
+  matchSlug: string
+): Promise<Set<number> | null> {
+  const delay = await spectatorDelay(req, matchSlug);
+  if (delay === 0 || delay === 'off') return null;
+  const rows = await db.queryAsync<{ map_number: number }>(
+    'SELECT map_number FROM match_map_results WHERE match_slug = ? AND (completed_at IS NULL OR completed_at <= ?)',
+    [matchSlug, Math.floor(Date.now() / 1000) - delay]
+  );
+  return new Set(rows.map((r) => Number(r.map_number)));
+}

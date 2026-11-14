@@ -12,6 +12,7 @@ import { shownSql } from '../demos/shown';
 import { Router, type Request, type Response } from 'express';
 import { db } from '../../../config/database';
 import { log } from '../../../utils/logger';
+import { shownMapNumbers } from '../gotv';
 
 const router = Router();
 
@@ -87,9 +88,18 @@ function teams(rows: StatRow[]): { team1: ScoreboardLine[]; team2: ScoreboardLin
   return out;
 }
 
+/** Rows of maps a delayed viewer hasn't seen finish yet are left out. */
+async function onlyShownMaps<R extends { map_number: number }>(
+  req: Request,
+  rows: R[]
+): Promise<R[]> {
+  const shown = await shownMapNumbers(req, req.params.slug);
+  return shown ? rows.filter((r) => shown.has(Number(r.map_number))) : rows;
+}
+
 router.get('/matches/:slug/scoreboard', async (req: Request, res: Response) => {
   try {
-    const rows = await db.queryAsync<StatRow>(
+    const all = await db.queryAsync<StatRow>(
       `SELECT s.player_id, s.team, s.map_number, p.name, p.avatar_url, s.rounds_played, s.kills, s.deaths,
               s.assists, s.damage, s.headshot_kills, s.kast_rounds, s.entry_kills, s.multi_3k, s.multi_4k, s.multi_5k
          FROM cs2_player_map_stats s LEFT JOIN players p ON p.id = s.player_id
@@ -97,6 +107,7 @@ router.get('/matches/:slug/scoreboard', async (req: Request, res: Response) => {
         ORDER BY s.map_number`,
       [req.params.slug]
     );
+    const rows = await onlyShownMaps(req, all);
     const maps = [...new Set(rows.map((r) => Number(r.map_number)))].map((mapNumber) => ({
       mapNumber,
       ...teams(rows.filter((r) => Number(r.map_number) === mapNumber)),
@@ -110,7 +121,7 @@ router.get('/matches/:slug/scoreboard', async (req: Request, res: Response) => {
 
 router.get('/matches/:slug/highlights', async (req: Request, res: Response) => {
   try {
-    const rows = await db.queryAsync<{
+    const all = await db.queryAsync<{
       id: number;
       player_id: string;
       name: string | null;
@@ -128,6 +139,7 @@ router.get('/matches/:slug/highlights', async (req: Request, res: Response) => {
         ORDER BY h.map_number, h.start_tick`,
       [req.params.slug]
     );
+    const rows = await onlyShownMaps(req, all);
     // How far the recorders are: the match's chosen moments (not the ones
     // past the clips-per-player setting) and how many of them are clips yet.
     const [count] = await db.queryAsync<{ total: number; done: number; waiting: number }>(
