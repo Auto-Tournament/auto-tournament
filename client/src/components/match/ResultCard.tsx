@@ -136,7 +136,7 @@ export function ResultCard({
           return (
             <Box
               key={m.mapNumber}
-              data-testid="match-result-map"
+              data-testid={`match-page-map-${m.mapNumber}`}
               sx={{
                 display: 'flex',
                 flexDirection: 'column',
