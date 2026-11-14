@@ -4,6 +4,7 @@ import {
   equipTeam,
   loadoutPayload,
   sideOf,
+  slotSides,
 } from '../../api/src/integrations/cs2/skins/skinService';
 import {
   applyStep,
@@ -72,9 +73,9 @@ test.describe('loadout sides (rules)', () => {
 
   test('clicks: equip a side, take it off, split a "both" one', () => {
     let inv = [skin(1, 'knife', null, [0]), skin(2, 'knife')];
-    // Knife 2 for T: knife 1 stays for CT (its "both").
+    // Knife 2 for T: knife 1 stays for CT only.
     inv = applyStep(inv, inv[1], equipStep(inv[1], 2));
-    expect(inv.map((s) => s.equippedSides)).toEqual([[0], [2]]);
+    expect(inv.map((s) => s.equippedSides)).toEqual([[3], [2]]);
     // Knife 2 for both: the slot's other picks go.
     inv = applyStep(inv, inv[1], equipStep(inv[1], 0));
     expect(inv.map((s) => s.equippedSides)).toEqual([[], [0]]);
@@ -85,6 +86,26 @@ test.describe('loadout sides (rules)', () => {
     // And off T: nothing on.
     inv = applyStep(inv, inv[1], equipStep(inv[1], 2));
     expect(inv[1].equipped).toBe(false);
+  });
+
+  test('one knife per side: a "both" knife a side pick covers moves off that side', () => {
+    let inv = [skin(1, 'knife', null, [0]), skin(2, 'knife', null, [3]), skin(3, 'knife')];
+    inv = applyStep(inv, inv[2], equipStep(inv[2], 2));
+    expect(inv.map((s) => s.equippedSides)).toEqual([[], [3], [2]]);
+    // A skin picked for both sides one at a time is "both".
+    inv = applyStep(inv, inv[1], equipStep(inv[1], 2));
+    expect(inv.map((s) => s.equippedSides)).toEqual([[], [0], []]);
+    // The server reads the same rows the same way, old shadowed ones included.
+    const rows = [
+      { skin_id: 46, team: 0 },
+      { skin_id: 40, team: 3 },
+      { skin_id: 1, team: 2 },
+    ];
+    expect([...slotSides(rows)]).toEqual([
+      [1, [2]],
+      [40, [3]],
+    ]);
+    expect([...slotSides([{ skin_id: 5, team: 0 }])]).toEqual([[5, [0]]]);
   });
 
   test('the server message carries each side', () => {
@@ -173,7 +194,7 @@ test.describe.serial('loadout sides (api)', () => {
       expect(
         (await player.post('/api/skins/me/equip', { data: { skinId: second, team: 2 } })).ok()
       ).toBe(true);
-      expect(await sides()).toMatchObject({ [first]: [0], [second]: [2] });
+      expect(await sides()).toMatchObject({ [first]: [3], [second]: [2] });
 
       expect(
         (await player.post('/api/skins/me/equip', { data: { skinId: second, team: 0 } })).ok()
