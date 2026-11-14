@@ -799,7 +799,8 @@
       "won": "{{team}} voitti",
       "liveNow": "Käynnissä nyt",
       "upNext": "Seuraavaksi",
-      "decider": "Ratkaiseva, jos tarvitaan"
+      "decider": "Ratkaiseva, jos tarvitaan",
+      "finished": "Päättyi {{when}}"
     }
   },
   "report": {

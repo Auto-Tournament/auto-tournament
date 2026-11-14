@@ -837,7 +837,8 @@
       "won": "Wygrała drużyna {{team}}",
       "liveNow": "Trwa teraz",
       "upNext": "Następna",
-      "decider": "Decydująca, jeśli będzie potrzebna"
+      "decider": "Decydująca, jeśli będzie potrzebna",
+      "finished": "Zakończony {{when}}"
     }
   },
   "report": {

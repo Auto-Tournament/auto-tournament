@@ -799,7 +799,8 @@
       "won": "{{team}} kazandı",
       "liveNow": "Şu an oynanıyor",
       "upNext": "Sıradaki",
-      "decider": "Gerekirse belirleyici harita"
+      "decider": "Gerekirse belirleyici harita",
+      "finished": "Bitti {{when}}"
     }
   },
   "report": {

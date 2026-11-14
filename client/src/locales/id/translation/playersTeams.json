@@ -799,7 +799,8 @@
       "won": "{{team}} menang",
       "liveNow": "Sedang berlangsung",
       "upNext": "Berikutnya",
-      "decider": "Penentu, jika perlu"
+      "decider": "Penentu, jika perlu",
+      "finished": "Selesai {{when}}"
     }
   },
   "report": {

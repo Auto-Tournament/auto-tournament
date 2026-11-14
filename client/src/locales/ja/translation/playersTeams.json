@@ -799,7 +799,8 @@
       "won": "{{team}}の勝利",
       "liveNow": "ライブ中",
       "upNext": "次",
-      "decider": "必要なら決着マップ"
+      "decider": "必要なら決着マップ",
+      "finished": "{{when}} に終了"
     }
   },
   "report": {

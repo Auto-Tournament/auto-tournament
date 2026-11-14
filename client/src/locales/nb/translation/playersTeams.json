@@ -799,7 +799,8 @@
       "won": "{{team}} vant",
       "liveNow": "Spilles nå",
       "upNext": "Neste",
-      "decider": "Avgjørende kart hvis det trengs"
+      "decider": "Avgjørende kart hvis det trengs",
+      "finished": "Ferdig {{when}}"
     }
   },
   "report": {

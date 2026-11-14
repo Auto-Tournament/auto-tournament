@@ -800,7 +800,8 @@
       "won": "{{team}} won",
       "liveNow": "Nu live",
       "upNext": "Hierna",
-      "decider": "Beslissende map, als het nodig is"
+      "decider": "Beslissende map, als het nodig is",
+      "finished": "Afgelopen {{when}}"
     }
   },
   "report": {

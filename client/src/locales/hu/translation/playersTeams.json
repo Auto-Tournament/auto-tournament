@@ -799,7 +799,8 @@
       "won": "{{team}} nyert",
       "liveNow": "Most zajlik",
       "upNext": "Következik",
-      "decider": "Döntő pálya, ha szükséges"
+      "decider": "Döntő pálya, ha szükséges",
+      "finished": "Véget ért: {{when}}"
     }
   },
   "report": {

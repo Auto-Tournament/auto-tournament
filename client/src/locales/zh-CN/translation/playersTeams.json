@@ -800,7 +800,8 @@
       "won": "{{team}} 获胜",
       "liveNow": "正在进行",
       "upNext": "下一张",
-      "decider": "决胜图（如有需要）"
+      "decider": "决胜图（如有需要）",
+      "finished": "{{when}} 结束"
     }
   },
   "report": {

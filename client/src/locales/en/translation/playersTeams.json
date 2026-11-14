@@ -799,7 +799,8 @@
       "won": "{{team}} won",
       "liveNow": "Live now",
       "upNext": "Up next",
-      "decider": "Decider, if needed"
+      "decider": "Decider, if needed",
+      "finished": "Finished {{when}}"
     }
   },
   "report": {
