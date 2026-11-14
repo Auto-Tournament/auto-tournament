@@ -339,6 +339,8 @@ export default function MatchPage() {
   const [{ wide, theatre: theatreOn, side: sideOn }] = stageLayout;
   const theatre = wide && theatreOn;
   const showSide = !wide || sideOn;
+  // Side padding beside a wide stage (both sides): the draft's 80 px, 12 px in theatre.
+  const gutter = theatre ? 24 : 160;
 
   return (
     <Container
@@ -348,7 +350,7 @@ export default function MatchPage() {
         display: 'flex',
         flexDirection: 'column',
         gap: 3,
-        ...(wide && !theatre && { maxWidth: 1920 }),
+        ...(wide && { px: { md: `${gutter / 2}px` } }),
       }}
       data-testid="match-page"
       data-layout={theatre ? 'theatre' : wide ? 'wide' : 'default'}
@@ -617,7 +619,14 @@ export default function MatchPage() {
           )}
         </Box>
 
-        {showSide && showChat && <MatchChatPanel slug={match.slug} myTeam={viewerTeamId} />}
+        {showSide && showChat && (
+          <MatchChatPanel
+            slug={match.slug}
+            myTeam={viewerTeamId}
+            beside={wide ? gutter : undefined}
+            onHide={wide ? () => stageLayout[1]({ side: false }) : undefined}
+          />
+        )}
         {showSide && <MatchSideSlots matchSlug={match.slug} viewerTeamId={viewerTeamId} />}
       </Box>
     </Container>
