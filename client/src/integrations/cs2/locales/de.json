@@ -1213,7 +1213,8 @@
       "default": "Flotten-Standard",
       "none": "Keine",
       "tryout": "Skin-Test",
-      "movement": "Movement"
+      "movement": "Movement",
+      "retakes": "Retakes"
     },
     "plugin": {
       "fleet": "Flotten-Verbindung",
@@ -1227,7 +1228,8 @@
       "addons": "Addons",
       "mapvote": "Kartenabstimmung",
       "community": "Community",
-      "movement": "Movement"
+      "movement": "Movement",
+      "retakes": "Retakes"
     },
     "pluginHelp": {
       "essentials": "Admins, Kartenwechsel, Neuladen und Neustart",
@@ -1239,7 +1241,8 @@
       "addons": "Workshop-Addons",
       "mapvote": "Kartenabstimmung: .rtv, .nominate, Abstimmung am Kartenende",
       "community": "Community-Befehle: .rank, .top, .speclist, Admin-.kick",
-      "movement": "Surf, Bhop und KZ: Lauf-Timer, Rekorde und Ranglisten"
+      "movement": "Surf, Bhop und KZ: Lauf-Timer, Rekorde und Ranglisten",
+      "retakes": "Die Bombe liegt jede Runde: Ts halten den Bombenplatz, CTs holen ihn zurück"
     },
     "required": "Immer an",
     "usesDefault": "Nutzt den Flotten-Standard: {{plugins}}.",

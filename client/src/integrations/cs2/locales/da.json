@@ -1213,7 +1213,8 @@
       "custom": "Egen",
       "default": "Flådens standard",
       "none": "Ingen",
-      "movement": "Movement"
+      "movement": "Movement",
+      "retakes": "Retakes"
     },
     "plugin": {
       "fleet": "Flådeforbindelse",
@@ -1227,7 +1228,8 @@
       "mapvote": "Baneafstemning",
       "community": "Fællesskab",
       "addons": "Tilføjelser",
-      "movement": "Movement"
+      "movement": "Movement",
+      "retakes": "Retakes"
     },
     "pluginHelp": {
       "essentials": "Admins, baneskift, genindlæsning og genstart",
@@ -1239,7 +1241,8 @@
       "mapvote": "Baneafstemning: .rtv, .nominate, afstemning ved banens slutning",
       "community": "Fællesskabskommandoer: .rank, .top, .speclist, admins .kick",
       "addons": "Workshop-tilføjelser",
-      "movement": "Surf, bhop og kz: tidtagning, rekorder og ranglister"
+      "movement": "Surf, bhop og kz: tidtagning, rekorder og ranglister",
+      "retakes": "Bomben er plantet hver runde: T holder sitet, CT tager det tilbage"
     },
     "required": "Altid til",
     "usesDefault": "Bruger flådens standard: {{plugins}}.",

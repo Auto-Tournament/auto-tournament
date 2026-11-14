@@ -1229,7 +1229,8 @@
       "default": "Défaut de la flotte",
       "none": "Aucun",
       "tryout": "Essai de skins",
-      "movement": "Movement"
+      "movement": "Movement",
+      "retakes": "Retakes"
     },
     "plugin": {
       "fleet": "Liaison flotte",
@@ -1243,7 +1244,8 @@
       "addons": "Addons",
       "mapvote": "Vote de carte",
       "community": "Communauté",
-      "movement": "Movement"
+      "movement": "Movement",
+      "retakes": "Retakes"
     },
     "pluginHelp": {
       "essentials": "Admins, changement de carte, rechargement et redémarrage",
@@ -1255,7 +1257,8 @@
       "addons": "Addons du Workshop",
       "mapvote": "Vote de carte : .rtv, .nominate, vote en fin de carte",
       "community": "Commandes communautaires : .rank, .top, .speclist, .kick admin",
-      "movement": "Surf, bhop et kz : chronomètre, records et classements"
+      "movement": "Surf, bhop et kz : chronomètre, records et classements",
+      "retakes": "La bombe est posée à chaque manche : les T tiennent le site, les CT le reprennent"
     },
     "required": "Toujours actif",
     "usesDefault": "Utilise le défaut de la flotte : {{plugins}}.",

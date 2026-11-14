@@ -1229,7 +1229,8 @@
       "custom": "Personalizado",
       "default": "Padrão da frota",
       "none": "Nenhum",
-      "movement": "Movimentação"
+      "movement": "Movimentação",
+      "retakes": "Retakes"
     },
     "plugin": {
       "fleet": "Link da frota",
@@ -1243,7 +1244,8 @@
       "mapvote": "Votação de mapa",
       "community": "Comunidade",
       "addons": "Addons",
-      "movement": "Movimentação"
+      "movement": "Movimentação",
+      "retakes": "Retakes"
     },
     "pluginHelp": {
       "essentials": "Admins, troca de mapa, recarregar e reiniciar",
@@ -1255,7 +1257,8 @@
       "mapvote": "Votação de mapa: .rtv, .nominate, votação no fim do mapa",
       "community": "Comandos da comunidade: .rank, .top, .speclist, .kick de admin",
       "addons": "Addons da Workshop",
-      "movement": "Surf, bhop e kz: cronômetro, recordes e rankings"
+      "movement": "Surf, bhop e kz: cronômetro, recordes e rankings",
+      "retakes": "A bomba está plantada em toda rodada: TRs seguram o bomb e CTs retomam"
     },
     "required": "Sempre ativado",
     "usesDefault": "Usa o padrão da frota: {{plugins}}.",

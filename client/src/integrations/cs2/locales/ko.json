@@ -1213,7 +1213,8 @@
       "custom": "사용자 지정",
       "default": "플릿 기본값",
       "none": "없음",
-      "movement": "무브먼트"
+      "movement": "무브먼트",
+      "retakes": "Retakes"
     },
     "plugin": {
       "fleet": "플릿 연결",
@@ -1227,7 +1228,8 @@
       "mapvote": "맵 투표",
       "community": "커뮤니티",
       "addons": "애드온",
-      "movement": "무브먼트"
+      "movement": "무브먼트",
+      "retakes": "Retakes"
     },
     "pluginHelp": {
       "essentials": "관리자, 맵 변경, 다시 불러오기, 재시작",
@@ -1239,7 +1241,8 @@
       "mapvote": "맵 투표: .rtv, .nominate, 맵 종료 투표",
       "community": "커뮤니티 명령어: .rank, .top, .speclist, 관리자 .kick",
       "addons": "창작마당 애드온",
-      "movement": "서핑, 버니합, kz: 기록 타이머, 기록, 리더보드"
+      "movement": "서핑, 버니합, kz: 기록 타이머, 기록, 리더보드",
+      "retakes": "매 라운드 폭탄이 설치된 상태: T는 사이트를 지키고 CT는 되찾습니다"
     },
     "required": "항상 켜짐",
     "usesDefault": "플릿 기본값 사용: {{plugins}}.",

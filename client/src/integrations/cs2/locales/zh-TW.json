@@ -1213,7 +1213,8 @@
       "custom": "自訂",
       "default": "叢集預設",
       "none": "無",
-      "movement": "Movement"
+      "movement": "Movement",
+      "retakes": "Retakes"
     },
     "plugin": {
       "fleet": "叢集連線",
@@ -1227,7 +1228,8 @@
       "mapvote": "地圖投票",
       "community": "社群",
       "addons": "附加內容",
-      "movement": "Movement"
+      "movement": "Movement",
+      "retakes": "Retakes"
     },
     "pluginHelp": {
       "essentials": "管理員、換圖、過載和重啟",
@@ -1239,7 +1241,8 @@
       "mapvote": "地圖投票：.rtv、.nominate、地圖結束投票",
       "community": "社群命令：.rank、.top、.speclist、管理員 .kick",
       "addons": "創意工坊附加內容",
-      "movement": "滑翔、連跳和 KZ：計時、記錄和排行榜"
+      "movement": "滑翔、連跳和 KZ：計時、記錄和排行榜",
+      "retakes": "每回合炸彈都已安裝：T 方守住包點，CT 方奪回"
     },
     "required": "始終開啟",
     "usesDefault": "使用叢集預設：{{plugins}}。",

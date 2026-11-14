@@ -1213,7 +1213,8 @@
       "custom": "Custom",
       "default": "Fleet default",
       "none": "None",
-      "movement": "Movement"
+      "movement": "Movement",
+      "retakes": "Retakes"
     },
     "plugin": {
       "fleet": "Fleet link",
@@ -1227,7 +1228,8 @@
       "mapvote": "Map vote",
       "community": "Community",
       "addons": "Addons",
-      "movement": "Movement"
+      "movement": "Movement",
+      "retakes": "Retakes"
     },
     "pluginHelp": {
       "essentials": "Admins, map change, reload and restart",
@@ -1239,7 +1241,8 @@
       "mapvote": "Map voting: .rtv, .nominate, end-of-map vote",
       "community": "Community commands: .rank, .top, .speclist, admin .kick",
       "addons": "Workshop addons",
-      "movement": "Surf, bhop and kz: run timer, records and leaderboards"
+      "movement": "Surf, bhop and kz: run timer, records and leaderboards",
+      "retakes": "The bomb is planted every round: Ts hold the site, CTs retake it"
     },
     "required": "Always on",
     "usesDefault": "Uses the fleet default: {{plugins}}.",

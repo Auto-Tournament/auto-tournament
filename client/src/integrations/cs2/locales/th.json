@@ -1213,7 +1213,8 @@
       "custom": "กำหนดเอง",
       "default": "ค่าเริ่มต้นของฟลีต",
       "none": "ไม่มี",
-      "movement": "Movement"
+      "movement": "Movement",
+      "retakes": "Retakes"
     },
     "plugin": {
       "fleet": "การเชื่อมต่อฟลีต",
@@ -1227,7 +1228,8 @@
       "mapvote": "โหวตแมพ",
       "community": "ชุมชน",
       "addons": "ส่วนเสริม",
-      "movement": "Movement"
+      "movement": "Movement",
+      "retakes": "Retakes"
     },
     "pluginHelp": {
       "essentials": "ผู้ดูแล เปลี่ยนแมพ รีโหลด และรีสตาร์ต",
@@ -1239,7 +1241,8 @@
       "mapvote": "โหวตแมพ: .rtv, .nominate, โหวตเมื่อจบแมพ",
       "community": "คำสั่งชุมชน: .rank, .top, .speclist, .kick ของผู้ดูแล",
       "addons": "ส่วนเสริมจาก Workshop",
-      "movement": "Surf, bhop และ kz: จับเวลา สถิติ และอันดับ"
+      "movement": "Surf, bhop และ kz: จับเวลา สถิติ และอันดับ",
+      "retakes": "วางระเบิดไว้แล้วทุกรอบ: ฝ่าย T ยึดจุด ฝ่าย CT ชิงคืน"
     },
     "required": "เปิดเสมอ",
     "usesDefault": "ใช้ค่าเริ่มต้นของฟลีต: {{plugins}}",

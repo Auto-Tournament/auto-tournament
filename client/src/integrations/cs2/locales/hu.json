@@ -1213,7 +1213,8 @@
       "custom": "Egyéni",
       "default": "Flotta alapértelmezése",
       "none": "Nincs",
-      "movement": "Mozgás"
+      "movement": "Mozgás",
+      "retakes": "Retakes"
     },
     "plugin": {
       "fleet": "Flottakapcsolat",
@@ -1227,7 +1228,8 @@
       "mapvote": "Pályaszavazás",
       "community": "Közösség",
       "addons": "Kiegészítők",
-      "movement": "Mozgás"
+      "movement": "Mozgás",
+      "retakes": "Retakes"
     },
     "pluginHelp": {
       "essentials": "Adminok, pályaváltás, újratöltés és újraindítás",
@@ -1239,7 +1241,8 @@
       "mapvote": "Pályaszavazás: .rtv, .nominate, pálya végi szavazás",
       "community": "Közösségi parancsok: .rank, .top, .speclist, admin .kick",
       "addons": "Workshop-kiegészítők",
-      "movement": "Surf, bhop és kz: futásidőzítő, rekordok és ranglisták"
+      "movement": "Surf, bhop és kz: futásidőzítő, rekordok és ranglisták",
+      "retakes": "Minden körben élesített bomba: a T-k tartják a pontot, a CT-k visszafoglalják"
     },
     "required": "Mindig bekapcsolva",
     "usesDefault": "A flotta alapértelmezését használja: {{plugins}}.",

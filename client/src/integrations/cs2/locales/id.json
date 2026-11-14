@@ -1213,7 +1213,8 @@
       "custom": "Kustom",
       "default": "Bawaan armada",
       "none": "Tidak ada",
-      "movement": "Movement"
+      "movement": "Movement",
+      "retakes": "Retakes"
     },
     "plugin": {
       "fleet": "Koneksi armada",
@@ -1227,7 +1228,8 @@
       "mapvote": "Vote peta",
       "community": "Komunitas",
       "addons": "Addon",
-      "movement": "Movement"
+      "movement": "Movement",
+      "retakes": "Retakes"
     },
     "pluginHelp": {
       "essentials": "Admin, ganti peta, reload, dan restart",
@@ -1239,7 +1241,8 @@
       "mapvote": "Vote peta: .rtv, .nominate, vote akhir peta",
       "community": "Perintah komunitas: .rank, .top, .speclist, admin .kick",
       "addons": "Addon Workshop",
-      "movement": "Surf, bhop, dan kz: timer lari, rekor, dan papan peringkat"
+      "movement": "Surf, bhop, dan kz: timer lari, rekor, dan papan peringkat",
+      "retakes": "Bom terpasang setiap ronde: T menahan area, CT merebutnya kembali"
     },
     "required": "Selalu aktif",
     "usesDefault": "Memakai bawaan armada: {{plugins}}.",
