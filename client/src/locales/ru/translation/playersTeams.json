@@ -827,7 +827,17 @@
     },
     "bracket": "Сетка",
     "breadcrumb": "Навигационная цепочка",
-    "startsAt": "начало {{time}} · вето в {{veto}}"
+    "startsAt": "начало {{time}} · вето в {{veto}}",
+    "stage": {
+      "title": "{{a}} против {{b}}",
+      "bestOf": "Best of {{n}}",
+      "mapNow": "Карта {{n}}, {{map}} {{a}}:{{b}}",
+      "round": "Раунд {{n}}",
+      "won": "Победа: {{team}}",
+      "liveNow": "Идёт сейчас",
+      "upNext": "Далее",
+      "decider": "Решающая, если понадобится"
+    }
   },
   "report": {
     "button": "Пожаловаться",

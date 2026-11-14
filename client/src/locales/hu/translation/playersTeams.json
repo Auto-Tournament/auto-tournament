@@ -790,7 +790,17 @@
     },
     "bracket": "Ágrajz",
     "breadcrumb": "Morzsamenü",
-    "startsAt": "kezdés: {{time}} · veto nyílik: {{veto}}"
+    "startsAt": "kezdés: {{time}} · veto nyílik: {{veto}}",
+    "stage": {
+      "title": "{{a}} – {{b}}",
+      "bestOf": "Best of {{n}}",
+      "mapNow": "{{n}}. pálya, {{map}} {{a}}:{{b}}",
+      "round": "{{n}}. kör",
+      "won": "{{team}} nyert",
+      "liveNow": "Most zajlik",
+      "upNext": "Következik",
+      "decider": "Döntő pálya, ha szükséges"
+    }
   },
   "report": {
     "button": "Jelentés",

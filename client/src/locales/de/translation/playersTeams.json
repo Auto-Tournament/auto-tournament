@@ -791,7 +791,17 @@
     },
     "bracket": "Turnierbaum",
     "breadcrumb": "Brotkrumennavigation",
-    "startsAt": "startet {{time}} · Veto öffnet {{veto}}"
+    "startsAt": "startet {{time}} · Veto öffnet {{veto}}",
+    "stage": {
+      "title": "{{a}} gegen {{b}}",
+      "bestOf": "Best of {{n}}",
+      "mapNow": "Map {{n}}, {{map}} {{a}}:{{b}}",
+      "round": "Runde {{n}}",
+      "won": "{{team}} hat gewonnen",
+      "liveNow": "Läuft gerade",
+      "upNext": "Als Nächstes",
+      "decider": "Entscheidungsmap, falls nötig"
+    }
   },
   "report": {
     "button": "Melden",

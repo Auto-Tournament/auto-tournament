@@ -1,4 +1,4 @@
-import type { ComponentType } from 'react';
+import type { ComponentType, ReactNode } from 'react';
 import { useCallback, useEffect, useState } from 'react';
 import { Box, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
@@ -126,11 +126,14 @@ export function SpectatorRoom({
   match,
   hasVeto,
   Watch,
+  belowStage,
 }: {
   match: SpectatorRoomMatch;
   hasVeto: boolean;
   /** The game's "Watch match" (`ClientGameIntegration.spectatorWatch`; CS2: GOTV). */
   Watch?: ComponentType<{ matchSlug: string }>;
+  /** Right under the stage (the page's title row beside a wide stage). */
+  belowStage?: ReactNode;
 }) {
   const { t } = useTranslation();
   const now: Step =
@@ -321,6 +324,7 @@ export function SpectatorRoom({
           </Typography>
         </Box>
       </MatchStageSlot>
+      {belowStage}
 
       {/* The game's way to watch it (CS2: GOTV, a little behind the players). */}
       {Watch && now === 'live' && match.slug && <Watch matchSlug={match.slug} />}

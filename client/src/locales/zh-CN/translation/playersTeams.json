@@ -791,7 +791,17 @@
     },
     "bracket": "对阵图",
     "breadcrumb": "面包屑导航",
-    "startsAt": "{{time}} 开始 · 禁选于 {{veto}} 开启"
+    "startsAt": "{{time}} 开始 · 禁选于 {{veto}} 开启",
+    "stage": {
+      "title": "{{a}} 对阵 {{b}}",
+      "bestOf": "Best of {{n}}",
+      "mapNow": "第 {{n}} 张地图，{{map}} {{a}}:{{b}}",
+      "round": "第 {{n}} 回合",
+      "won": "{{team}} 获胜",
+      "liveNow": "正在进行",
+      "upNext": "下一张",
+      "decider": "决胜图（如有需要）"
+    }
   },
   "report": {
     "button": "举报",

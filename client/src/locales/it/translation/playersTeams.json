@@ -810,7 +810,17 @@
     },
     "bracket": "Tabellone",
     "breadcrumb": "Percorso di navigazione",
-    "startsAt": "inizia {{time}} · il veto si apre {{veto}}"
+    "startsAt": "inizia {{time}} · il veto si apre {{veto}}",
+    "stage": {
+      "title": "{{a}} contro {{b}}",
+      "bestOf": "Al meglio di {{n}}",
+      "mapNow": "Mappa {{n}}, {{map}} {{a}}:{{b}}",
+      "round": "Round {{n}}",
+      "won": "Ha vinto {{team}}",
+      "liveNow": "In diretta",
+      "upNext": "A seguire",
+      "decider": "Decisiva, se serve"
+    }
   },
   "report": {
     "button": "Segnala",

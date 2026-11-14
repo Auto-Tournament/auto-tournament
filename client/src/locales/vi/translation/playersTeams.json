@@ -790,7 +790,17 @@
     },
     "bracket": "Nhánh đấu",
     "breadcrumb": "Đường dẫn",
-    "startsAt": "bắt đầu {{time}} · veto mở {{veto}}"
+    "startsAt": "bắt đầu {{time}} · veto mở {{veto}}",
+    "stage": {
+      "title": "{{a}} đấu {{b}}",
+      "bestOf": "Best of {{n}}",
+      "mapNow": "Bản đồ {{n}}, {{map}} {{a}}:{{b}}",
+      "round": "Hiệp {{n}}",
+      "won": "{{team}} thắng",
+      "liveNow": "Đang thi đấu",
+      "upNext": "Tiếp theo",
+      "decider": "Bản đồ quyết định, nếu cần"
+    }
   },
   "report": {
     "button": "Báo cáo",

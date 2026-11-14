@@ -41,6 +41,7 @@ import { CommendPanel } from '../components/match/CommendPanel';
 import { MatchCheckInPanel } from '../components/match/MatchCheckInPanel';
 import { MatchFullTeamPanel } from '../components/match/MatchFullTeamPanel';
 import { MapTile, TeamLogo, panel } from '../components/tournament/ui/draftUi';
+import { StageTitle, type StageMapCard } from '../components/match/StageTitle';
 
 type MatchResponse = PublicMatch &
   Omit<SpectatorRoomMatch, 'team1' | 'team2' | 'status'> & {
@@ -321,6 +322,69 @@ export default function MatchPage() {
     </Box>
   );
 
+  // Beside a wide stage: the drafts' title row and a card per map in place of the score panel.
+  const teamName = (n: 1 | 2) => (n === 1 ? match.team1 : match.team2)?.name ?? t('matchPage.tbd');
+  const planned = match.maps ?? [];
+  const playing = match.mapNumber ?? null;
+  const liveNow = match.status === 'live' && playing !== null;
+  const stageMaps: StageMapCard[] = planned.map((name, i) => {
+    const done = maps.find((m) => m.mapNumber === i);
+    const now = liveNow && i === playing && !done;
+    const winner = done && (done.winner ?? (done.team1Score > done.team2Score ? 'team1' : 'team2'));
+    return {
+      key: `${i}-${name}`,
+      name: `${t('matchPage.mapN', { n: i + 1 })} · ${mapName(name, i, t)}`,
+      score: done
+        ? `${done.team1Score}:${done.team2Score}`
+        : now
+          ? `${match.team1MapScore ?? 0}:${match.team2MapScore ?? 0}`
+          : '–',
+      note: done
+        ? t('matchPage.stage.won', { team: teamName(winner === 'team1' ? 1 : 2) })
+        : now
+          ? t('matchPage.stage.liveNow')
+          : i === planned.length - 1 && planned.length > 1
+            ? t('matchPage.stage.decider')
+            : t('matchPage.stage.upNext'),
+      now,
+    };
+  });
+  const a = match.team1MapScore ?? 0;
+  const b = match.team2MapScore ?? 0;
+  const stageLine = [
+    planned.length > 1 ? t('matchPage.stage.bestOf', { n: planned.length }) : null,
+    liveNow
+      ? t('matchPage.stage.mapNow', {
+          n: playing + 1,
+          map: mapName(planned[playing] ?? null, playing, t),
+          a,
+          b,
+        })
+      : null,
+    liveNow ? t('matchPage.stage.round', { n: a + b + 1 }) : null,
+  ]
+    .filter(Boolean)
+    .join(' · ');
+  const stageTitle = (
+    <StageTitle
+      team1={
+        match.team1?.name
+          ? { ...match.team1, name: match.team1.name, logoUrl: match.team1LogoUrl }
+          : null
+      }
+      team2={
+        match.team2?.name
+          ? { ...match.team2, name: match.team2.name, logoUrl: match.team2LogoUrl }
+          : null
+      }
+      score1={score1}
+      score2={score2}
+      title={t('matchPage.stage.title', { a: teamName(1), b: teamName(2) })}
+      line={stageLine}
+      maps={stageMaps}
+    />
+  );
+
   // The viewer plays in this match: their part comes first while it is on.
   const viewerTeamId = match.viewerTeamId ?? null;
   const matchIsOn = match.status !== 'completed' && match.status !== 'cancelled';
@@ -339,18 +403,29 @@ export default function MatchPage() {
   const [{ wide, theatre: theatreOn, side: sideOn }] = stageLayout;
   const theatre = wide && theatreOn;
   const showSide = !wide || sideOn;
-  // Side padding beside a wide stage (both sides): the draft's 80 px, 12 px in theatre.
+  // Beside a wide stage: standard caps the page at YouTube's width with the draft's 80 px sides;
+  // theatre takes the window. The stage's height (the chat matches it) leaves room for the title.
   const gutter = theatre ? 24 : 160;
+  const pageWidth = theatre ? '100vw' : '1914px';
+  // The stage reads --stage-max-h: theatre fills to the window's bottom, standard keeps the title in view.
+  const stageMaxH = `calc(100vh - ${theatre ? 210 : 300}px)`;
+  const stageHeight = `min(var(--stage-max-h), calc((min(100vw, ${pageWidth}) - ${gutter + 422}px) * 9 / 16))`;
+  const ease = '0.45s cubic-bezier(0.16, 1, 0.3, 1)';
 
   return (
     <Container
       maxWidth={wide ? false : 'lg'}
       sx={{
-        py: { xs: 3, md: 5 },
+        py: { xs: 3, md: wide ? 2.5 : 5 },
         display: 'flex',
         flexDirection: 'column',
-        gap: 3,
-        ...(wide && { px: { md: `${gutter / 2}px` } }),
+        gap: wide ? 4 : 3,
+        transition: `max-width ${ease}, padding ${ease}`,
+        ...(wide && {
+          px: { md: `${gutter / 2}px` },
+          maxWidth: pageWidth,
+          '--stage-max-h': stageMaxH,
+        }),
       }}
       data-testid="match-page"
       data-layout={theatre ? 'theatre' : wide ? 'wide' : 'default'}
@@ -398,7 +473,8 @@ export default function MatchPage() {
       <Box
         component="div"
         sx={{
-          display: 'flex',
+          // Beside a wide stage the title row under it carries the state.
+          display: wide ? 'none' : 'flex',
           flexWrap: 'wrap',
           alignItems: 'center',
           gap: 1,
@@ -517,11 +593,10 @@ export default function MatchPage() {
                 match={match}
                 hasVeto={integration.capabilities.veto}
                 Watch={integration.spectatorWatch}
+                belowStage={wide ? stageTitle : undefined}
               />
             </StageLayoutProvider>
           )}
-          {/* Under a wide stage, as on a video page: the stage first, the score below it. */}
-          {wide && publicHeader}
 
           {/* Everyone who does not play in it sees the pre-match phase (the veto) as it happens, read-only.
               Only while there is one: a shuffle match (no veto) that was already live showed "waiting
@@ -538,8 +613,9 @@ export default function MatchPage() {
           )}
 
           {seriesMaps
-            ? !playerCard && <Box sx={panel}>{seriesMaps}</Box>
-            : maps.length > 0 && (
+            ? !playerCard && !wide && <Box sx={panel}>{seriesMaps}</Box>
+            : !wide &&
+              maps.length > 0 && (
                 <Box component="section" aria-labelledby="match-maps" sx={panel}>
                   <Typography
                     id="match-maps"
@@ -623,7 +699,7 @@ export default function MatchPage() {
           <MatchChatPanel
             slug={match.slug}
             myTeam={viewerTeamId}
-            beside={wide ? gutter : undefined}
+            besideHeight={wide ? stageHeight : undefined}
             onHide={wide ? () => stageLayout[1]({ side: false }) : undefined}
           />
         )}

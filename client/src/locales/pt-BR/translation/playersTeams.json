@@ -809,7 +809,17 @@
     },
     "bracket": "Chave",
     "breadcrumb": "Trilha de navegação",
-    "startsAt": "começa {{time}} · veto abre {{veto}}"
+    "startsAt": "começa {{time}} · veto abre {{veto}}",
+    "stage": {
+      "title": "{{a}} contra {{b}}",
+      "bestOf": "Melhor de {{n}}",
+      "mapNow": "Mapa {{n}}, {{map}} {{a}}:{{b}}",
+      "round": "Rodada {{n}}",
+      "won": "{{team}} venceu",
+      "liveNow": "Ao vivo",
+      "upNext": "A seguir",
+      "decider": "Decisivo, se precisar"
+    }
   },
   "report": {
     "button": "Denunciar",

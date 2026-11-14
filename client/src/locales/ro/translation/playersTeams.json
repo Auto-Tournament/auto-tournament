@@ -808,7 +808,17 @@
     },
     "bracket": "Tablou",
     "breadcrumb": "Navigare",
-    "startsAt": "începe {{time}} · veto-ul se deschide {{veto}}"
+    "startsAt": "începe {{time}} · veto-ul se deschide {{veto}}",
+    "stage": {
+      "title": "{{a}} contra {{b}}",
+      "bestOf": "Best of {{n}}",
+      "mapNow": "Harta {{n}}, {{map}} {{a}}:{{b}}",
+      "round": "Runda {{n}}",
+      "won": "A câștigat {{team}}",
+      "liveNow": "În desfășurare",
+      "upNext": "Urmează",
+      "decider": "Decisivă, dacă e nevoie"
+    }
   },
   "report": {
     "button": "Raportează",
