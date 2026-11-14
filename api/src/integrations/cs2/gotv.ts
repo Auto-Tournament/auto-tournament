@@ -19,6 +19,9 @@
  *   (services/matchLiveStatsService delayed snapshots).
  */
 import crypto from 'crypto';
+import type { Request } from 'express';
+import { resolveViewerIdentity } from '../../utils/viewerIdentity';
+import { viewerTeamIdOfMatch } from '../../services/matchViewer';
 import { settingsService } from '../../services/settingsService';
 import { purposeKey } from '../../utils/secretBox';
 import { db } from '../../config/database';
@@ -168,4 +171,21 @@ export async function gotvHosts(
   return row?.host
     ? { port, options: [{ kind: 'server', host: row.host }], recommended: row.host }
     : { port, options: [], recommended: null };
+}
+
+/** How a viewer sees a match's live table: 0 (live: a player, an admin), the GOTV delay, or 'off'. */
+export async function spectatorDelay(req: Request, matchSlug: string): Promise<number | 'off'> {
+  const settings = await matchGotvSettings(matchSlug);
+  if (settings.liveStats === 'live') return 0;
+  const identity = await resolveViewerIdentity(req);
+  if (identity.isRealAdmin) return 0;
+  const match = await db.queryOneAsync<{
+    game: string | null;
+    config: string | null;
+    team1_id: string | null;
+    team2_id: string | null;
+  }>('SELECT game, config, team1_id, team2_id FROM matches WHERE slug = ?', [matchSlug]);
+  if (match && (await viewerTeamIdOfMatch(req, match as Parameters<typeof viewerTeamIdOfMatch>[1])))
+    return 0;
+  return settings.liveStats === 'off' ? 'off' : settings.delay;
 }

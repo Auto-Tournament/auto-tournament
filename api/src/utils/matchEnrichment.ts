@@ -203,3 +203,37 @@ export function applyScoreFields(
     delete match.team2Score;
   }
 }
+
+type HeldBackMatch = ScoreFieldsTarget & {
+  status: string;
+  completedAt?: number | null;
+  winner?: { id: string };
+  mapResults?: (MapResultLike & { completedAt?: number | null })[];
+};
+
+/**
+ * The match as a spectator `delaySeconds` behind live sees it: maps and the result that came
+ * later are held back, so the delayed stream isn't spoiled. Times are unix seconds.
+ */
+export function holdBackResults(
+  match: HeldBackMatch,
+  delaySeconds: number,
+  liveStats: LiveStatsLike | null,
+  nowMs = Date.now()
+): void {
+  const cutoff = Math.floor(nowMs / 1000) - delaySeconds;
+  const seen = (at?: number | null) => at == null || at <= cutoff;
+  if (match.mapResults) match.mapResults = match.mapResults.filter((r) => seen(r.completedAt));
+  if (match.status === 'completed' && !seen(match.completedAt)) {
+    match.status = 'live';
+    match.completedAt = null;
+    delete match.winner;
+    delete match.team1Score;
+    delete match.team2Score;
+  }
+  applyScoreFields(match, {
+    status: match.status,
+    mapResults: match.mapResults,
+    liveStats: match.status === 'completed' ? null : liveStats,
+  });
+}

@@ -24,7 +24,7 @@
  * own server.
  */
 
-import type { Router } from 'express';
+import type { Request, Router } from 'express';
 import type { DbMatchRow } from '../types/database.types';
 import type { SqlValue } from '../config/database';
 import type { TournamentResponse, TournamentSettings } from '../types/tournament.types';
@@ -901,6 +901,11 @@ export interface GameIntegration<D extends IntegrationData = IntegrationData> {
    * twice.
    */
   onMatchReady?(ctx: MatchContext): Promise<void>;
+  /**
+   * How far behind live this viewer sees the match (seconds), or 'off'. The match page holds
+   * back results newer than that, so a delayed stream isn't spoiled. Absent: no delay.
+   */
+  spectatorDelay?(req: Request, matchSlug: string): Promise<number | 'off'>;
   /**
    * Start the pre-match phase, in the background, for every match of the
    * tournament that is waiting on one, and return the slugs started. Called

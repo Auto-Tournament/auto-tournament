@@ -30,6 +30,7 @@ import {
 } from '../utils/serverAttribution';
 import type { DbMatchRow, DbTournamentRow } from '../types/database.types';
 import { DEFAULT_GAME } from '../integrations/types';
+import { integrationForMatch } from '../integrations/registry';
 import { getBaseUrl } from '../utils/urlHelper';
 import { emitMatchUpdate, emitBracketUpdate } from '../services/socketService';
 import {
@@ -38,7 +39,7 @@ import {
   describeMatch,
   describedPlayers,
 } from '../utils/matchIntegration';
-import { applyScoreFields, enrichMatch } from '../utils/matchEnrichment';
+import { applyScoreFields, enrichMatch, holdBackResults } from '../utils/matchEnrichment';
 import { matchLiveStatsService } from '../services/matchLiveStatsService';
 import { teamService } from '../services/teamService';
 import { getMapResults, recordMapResult } from '../services/matchMapResultService';
@@ -1132,15 +1133,27 @@ router.get('/:slug', async (req: Request, res: Response) => {
         WHERE m.slug = ?`,
       [slug]
     );
-    const mapScores = (await getMapResults(slug)).map((r) => ({
-      mapNumber: r.mapNumber,
-      map: r.mapName ?? null,
-      team1Score: r.team1Score,
-      team2Score: r.team2Score,
-      winner: r.winnerTeam,
-      // The map's demo is in (downloadable once the match is over).
-      hasDemo: Boolean(r.demoFilePath),
-    }));
+    // A spectator watching a delayed broadcast sees the results as they stood that long ago.
+    const delay = await integrationForMatch(match).spectatorDelay?.(req, slug);
+    if (delay !== undefined && delay !== 0) {
+      holdBackResults(
+        match,
+        delay === 'off' ? 0 : delay,
+        delay === 'off' ? null : matchLiveStatsService.getStatsDelayed(slug, delay)
+      );
+    }
+    const shownMaps = new Set(match.mapResults?.map((r) => r.mapNumber));
+    const mapScores = (await getMapResults(slug))
+      .filter((r) => shownMaps.has(r.mapNumber))
+      .map((r) => ({
+        mapNumber: r.mapNumber,
+        map: r.mapName ?? null,
+        team1Score: r.team1Score,
+        team2Score: r.team2Score,
+        winner: r.winnerTeam,
+        // The map's demo is in (downloadable once the match is over).
+        hasDemo: Boolean(r.demoFilePath),
+      }));
     const teamOf = (side: 'team1' | 'team2') => {
       const id = row?.[`${side}_id`] ?? null;
       const configTeam = (
@@ -1173,11 +1186,13 @@ router.get('/:slug', async (req: Request, res: Response) => {
         team1: (match as { team1?: Untrusted }).team1 ?? teamOf('team1'),
         team2: (match as { team2?: Untrusted }).team2 ?? teamOf('team2'),
         winnerSide:
-          row?.winner_id && row.winner_id === row.team1_id
-            ? 'team1'
-            : row?.winner_id && row.winner_id === row.team2_id
-              ? 'team2'
-              : null,
+          match.status !== 'completed'
+            ? null
+            : row?.winner_id && row.winner_id === row.team1_id
+              ? 'team1'
+              : row?.winner_id && row.winner_id === row.team2_id
+                ? 'team2'
+                : null,
         mapScores,
         // The teams' logos (the team page's), when they have one.
         team1LogoUrl: row?.team1_id ? logoUrl(row.team1_id, row.team1_logo) : null,
