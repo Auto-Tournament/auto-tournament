@@ -143,9 +143,6 @@ router.get('/watch/:matchSlug', async (req: Request, res: Response) => {
       return res.json({ ...base, state: 'off', reason: 'no_delay' });
     if (!match.server_id || !['loaded', 'live'].includes(match.status))
       return res.json({ ...base, state: 'none' });
-    const live = matchLiveStatsService.getStats(matchSlug);
-    if (match.status !== 'live' && live?.status !== 'live')
-      return res.json({ ...base, state: 'before' });
     const address = await gotvAddress(match.server_id, req);
     if (!address) return res.json({ ...base, state: 'off', reason: 'no_port' });
     const password = await gotvPassword(matchSlug);
@@ -154,7 +151,8 @@ router.get('/watch/:matchSlug', async (req: Request, res: Response) => {
       state: 'live',
       onStage: Number(match.on_stage ?? 0) === 1,
       seats: Number(match.on_stage ?? 0) === 1 ? 128 : settings.seats,
-      connect: `connect ${address}; password ${password}`,
+      // The password must be set before connect, or GOTV refuses it.
+      connect: `password ${password}; connect ${address}`,
       steamUrl: `steam://connect/${address}/${password}`,
     });
   } catch (error) {

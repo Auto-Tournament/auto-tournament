@@ -172,6 +172,8 @@ export function WatchMatchCard({ matchSlug }: { matchSlug: string }) {
         <Button
           component="a"
           href={watch.steamUrl}
+          // Steam's link does nothing on some setups: the command is copied as well.
+          onClick={() => void copy()}
           variant="contained"
           startIcon={<EyeIcon size={18} aria-hidden />}
           data-testid="watch-button"
