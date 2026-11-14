@@ -163,6 +163,14 @@ export interface ErrorPayload {
 
 export type TeamKey = 'team1' | 'team2';
 export type Side = 'ct' | 't';
+
+/** A player in `event.kill`; `steamid64` is null for a bot, `pos` is the world [x, y, z]. */
+export interface KillFighter {
+  name: string;
+  steamid64: U64s | null;
+  side: Side | 'spec';
+  pos: [number, number, number];
+}
 export type MapSides = 'team1_ct' | 'team2_ct' | 'knife';
 export type PlayerRole = 'player' | 'sub' | 'coach';
 export type MatchPhase =
@@ -871,6 +879,14 @@ export interface FleetEventData {
     /** Unix ms. */
     at: number;
   };
+  kill: {
+    attacker: KillFighter;
+    victim: KillFighter;
+    weapon: string;
+    headshot: boolean;
+    /** Unix ms, before the GOTV delay. */
+    at: number;
+  };
   error: { code: string; message: string; fatal: boolean };
 }
 
@@ -902,6 +918,7 @@ export const FLEET_EVENT_NAMES: ReadonlyArray<FleetEventName> = [
   'admin_called',
   'walkover_choice',
   'chat',
+  'kill',
   'error',
 ];
 
@@ -990,6 +1007,7 @@ export interface FleetMessages {
   'event.admin_called': FleetEventPayload<FleetEventData['admin_called']>;
   'event.walkover_choice': FleetEventPayload<FleetEventData['walkover_choice']>;
   'event.chat': FleetEventPayload<FleetEventData['chat']>;
+  'event.kill': FleetEventPayload<FleetEventData['kill']>;
   'event.error': FleetEventPayload<FleetEventData['error']>;
   'demo.begin': DemoBeginPayload;
   'demo.chunk': DemoChunkPayload;
@@ -1073,6 +1091,7 @@ export const FLEET_MESSAGES: Record<FleetMessageType, { direction: Direction; re
     'event.admin_called': S2P_RELIABLE,
     'event.walkover_choice': S2P_RELIABLE,
     'event.chat': S2P_RELIABLE,
+    'event.kill': S2P_RELIABLE,
     'event.error': S2P_RELIABLE,
     'demo.begin': { direction: 'server_to_platform', reliable: false },
     'demo.chunk': { direction: 'server_to_platform', reliable: false },

@@ -34,6 +34,7 @@ export function serverLogLine(
     case 'event.round_start':
     case 'event.backup':
     case 'event.chat':
+    case 'event.kill':
       return null;
     case 'event.error': {
       const d = event.payload.data;
