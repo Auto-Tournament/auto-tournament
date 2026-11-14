@@ -408,7 +408,7 @@ export default function MatchPage() {
   const gutter = theatre ? 24 : 160;
   const pageWidth = theatre ? '100vw' : '1914px';
   // The stage reads --stage-max-h: theatre fills to the window's bottom, standard keeps the title in view.
-  const stageMaxH = `calc(100vh - ${theatre ? 260 : 330}px)`;
+  const stageMaxH = `calc(100vh - ${theatre ? 210 : 300}px)`;
   const stageHeight = `min(var(--stage-max-h), calc((min(100vw, ${pageWidth}) - ${gutter + 422}px) * 9 / 16))`;
   const ease = '0.45s cubic-bezier(0.16, 1, 0.3, 1)';
 
@@ -416,10 +416,10 @@ export default function MatchPage() {
     <Container
       maxWidth={wide ? false : 'lg'}
       sx={{
-        py: { xs: 3, md: 5 },
+        py: { xs: 3, md: wide ? 2.5 : 5 },
         display: 'flex',
         flexDirection: 'column',
-        gap: 3,
+        gap: wide ? 4 : 3,
         transition: `max-width ${ease}, padding ${ease}`,
         ...(wide && {
           px: { md: `${gutter / 2}px` },
@@ -473,7 +473,8 @@ export default function MatchPage() {
       <Box
         component="div"
         sx={{
-          display: 'flex',
+          // Beside a wide stage the title row under it carries the state.
+          display: wide ? 'none' : 'flex',
           flexWrap: 'wrap',
           alignItems: 'center',
           gap: 1,
