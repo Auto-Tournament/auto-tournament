@@ -11,6 +11,11 @@ const { color } = tokens;
 const mono = { fontFamily: '"Geist Mono", ui-monospace, monospace' };
 const TEAM_COLOR = [color.sideCt, color.sideT];
 
+function ratingColor(r: number): string {
+  if (r >= 1.1) return color.live;
+  return r < 0.9 ? color.ban : color.ink;
+}
+
 export function LivePlayerCards({
   stats,
   team1,
@@ -145,7 +150,7 @@ export function LivePlayerCards({
                             fontFamily: fontDisplay,
                             fontWeight: 800,
                             fontSize: 22,
-                            color: r >= 1.1 ? color.live : r < 0.9 ? color.ban : color.ink,
+                            color: ratingColor(r),
                           }}
                         >
                           {fmtNum(r, 2)}
