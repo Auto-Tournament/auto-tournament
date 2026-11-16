@@ -554,7 +554,7 @@ test.describe('fleet pushes: plugin sets', () => {
         'community',
         'addons',
       ],
-      disable: ['practice', 'whitelist', 'movement'],
+      disable: ['practice', 'whitelist', 'retakes', 'movement'],
       preset: 'fun',
     });
     // The lists pass the plugins.set checks.
@@ -614,6 +614,7 @@ test.describe('fleet pushes: plugin sets', () => {
       'skins',
       'midas',
       'deathmatch',
+      'retakes',
       'mapvote',
       'community',
       'movement',

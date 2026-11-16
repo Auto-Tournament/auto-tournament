@@ -609,7 +609,7 @@ test.describe.serial('Fleet autoscale (csm)', () => {
         'community',
         'addons',
       ],
-      disable: ['practice', 'whitelist', 'movement'],
+      disable: ['practice', 'whitelist', 'retakes', 'movement'],
     });
   });
   test('skins on: one Skin tryout server is created, not linked to the match pool', async ({

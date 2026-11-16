@@ -96,7 +96,8 @@ export interface FleetCommandAnswer {
 }
 
 /** Ready Up plugin sets (`/api/fleet/plugins`, fleet/push/pluginSets.ts). */
-export type PluginPresetName = 'tournament' | 'practice' | 'fun' | 'tryout' | 'movement';
+export type PluginPresetName =
+  'tournament' | 'practice' | 'fun' | 'tryout' | 'movement' | 'retakes';
 export type PluginPreset = PluginPresetName | 'custom';
 
 export interface PluginSetValue {
