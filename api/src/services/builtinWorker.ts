@@ -79,7 +79,9 @@ function run(port: number): void {
       return; // not Linux, or already gone
     }
     if (mb !== null && mb > WORKER_MAX_MB && child?.pid === pid) {
-      log.warn(`[WORKER] the built-in demo worker uses ${Math.round(mb)} MB (cap ${WORKER_MAX_MB}); stopping it`);
+      log.warn(
+        `[WORKER] the built-in demo worker uses ${Math.round(mb)} MB (cap ${WORKER_MAX_MB}); stopping it`
+      );
       child?.kill('SIGKILL');
     }
   }, 2_000);
