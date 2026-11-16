@@ -809,7 +809,19 @@
       "noRoster": "Pas encore de joueurs."
     },
     "bracket": "Tableau",
-    "startsAt": "début {{time}} · veto {{veto}}"
+    "breadcrumb": "Fil d’Ariane",
+    "startsAt": "début {{time}} · veto {{veto}}",
+    "stage": {
+      "title": "{{a}} contre {{b}}",
+      "bestOf": "Au meilleur des {{n}}",
+      "mapNow": "Carte {{n}}, {{map}} {{a}}:{{b}}",
+      "round": "Manche {{n}}",
+      "won": "{{team}} a gagné",
+      "liveNow": "En direct",
+      "upNext": "À suivre",
+      "decider": "Décisive, si nécessaire",
+      "finished": "Terminé {{when}}"
+    }
   },
   "report": {
     "button": "Signaler",

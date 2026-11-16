@@ -789,7 +789,19 @@
       "noRoster": "아직 등록된 플레이어가 없어요."
     },
     "bracket": "대진표",
-    "startsAt": "{{time}} 시작 · 밴/픽 시작 {{veto}}"
+    "breadcrumb": "탐색 경로",
+    "startsAt": "{{time}} 시작 · 밴/픽 시작 {{veto}}",
+    "stage": {
+      "title": "{{a}} 대 {{b}}",
+      "bestOf": "{{n}}전제",
+      "mapNow": "맵 {{n}}, {{map}} {{a}}:{{b}}",
+      "round": "{{n}}라운드",
+      "won": "{{team}} 승리",
+      "liveNow": "진행 중",
+      "upNext": "다음",
+      "decider": "필요하면 결정전",
+      "finished": "{{when}} 종료"
+    }
   },
   "report": {
     "button": "신고",

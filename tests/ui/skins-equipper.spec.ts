@@ -60,14 +60,14 @@ test(
       await expect(page.getByTestId('side-picker')).toBeHidden();
       await expect.poll(sides).toEqual([3]);
 
-      // Drag onto the T side's MP7 slot: on both sides now, each its own pick.
+      // Drag onto the T side's MP7 slot: on both sides now, so one "both" pick.
       const tSlot = page
         .getByTestId('loadout-side-t')
         .getByTestId('loadout-slot')
         .filter({ hasText: /MP7/i });
       await expect(tSlot).toHaveCount(1);
       await card.dragTo(tSlot);
-      await expect.poll(sides).toEqual([2, 3]);
+      await expect.poll(sides).toEqual([0]);
     } finally {
       await request.put('/api/skins/admin/config', { headers, data: config });
     }

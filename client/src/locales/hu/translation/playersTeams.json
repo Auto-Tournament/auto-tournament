@@ -789,7 +789,19 @@
       "noRoster": "Még nincsenek játékosok."
     },
     "bracket": "Ágrajz",
-    "startsAt": "kezdés: {{time}} · veto nyílik: {{veto}}"
+    "breadcrumb": "Morzsamenü",
+    "startsAt": "kezdés: {{time}} · veto nyílik: {{veto}}",
+    "stage": {
+      "title": "{{a}} – {{b}}",
+      "bestOf": "Best of {{n}}",
+      "mapNow": "{{n}}. pálya, {{map}} {{a}}:{{b}}",
+      "round": "{{n}}. kör",
+      "won": "{{team}} nyert",
+      "liveNow": "Most zajlik",
+      "upNext": "Következik",
+      "decider": "Döntő pálya, ha szükséges",
+      "finished": "Véget ért: {{when}}"
+    }
   },
   "report": {
     "button": "Jelentés",

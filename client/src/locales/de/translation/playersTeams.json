@@ -790,7 +790,19 @@
       "noRoster": "Noch keine Spieler eingetragen."
     },
     "bracket": "Turnierbaum",
-    "startsAt": "startet {{time}} · Veto öffnet {{veto}}"
+    "breadcrumb": "Brotkrumennavigation",
+    "startsAt": "startet {{time}} · Veto öffnet {{veto}}",
+    "stage": {
+      "title": "{{a}} gegen {{b}}",
+      "bestOf": "Best of {{n}}",
+      "mapNow": "Map {{n}}, {{map}} {{a}}:{{b}}",
+      "round": "Runde {{n}}",
+      "won": "{{team}} hat gewonnen",
+      "liveNow": "Läuft gerade",
+      "upNext": "Als Nächstes",
+      "decider": "Entscheidungsmap, falls nötig",
+      "finished": "Beendet {{when}}"
+    }
   },
   "report": {
     "button": "Melden",

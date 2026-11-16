@@ -42,7 +42,8 @@
     "signIn": "Bejelentkezés",
     "play": "Játék",
     "thirdPartyNotices": "Harmadik féltől származó licencek",
-    "needsYou": "Rád vár"
+    "needsYou": "Rád vár",
+    "help": "Súgó"
   },
   "layout": {
     "pageTitle": {

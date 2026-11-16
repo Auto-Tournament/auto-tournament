@@ -827,7 +827,19 @@
       "noRoster": "Brak wymienionych graczy."
     },
     "bracket": "Drabinka",
-    "startsAt": "start {{time}} · weto otwiera się {{veto}}"
+    "breadcrumb": "Ścieżka nawigacji",
+    "startsAt": "start {{time}} · weto otwiera się {{veto}}",
+    "stage": {
+      "title": "{{a}} kontra {{b}}",
+      "bestOf": "Best of {{n}}",
+      "mapNow": "Mapa {{n}}, {{map}} {{a}}:{{b}}",
+      "round": "Runda {{n}}",
+      "won": "Wygrała drużyna {{team}}",
+      "liveNow": "Trwa teraz",
+      "upNext": "Następna",
+      "decider": "Decydująca, jeśli będzie potrzebna",
+      "finished": "Zakończony {{when}}"
+    }
   },
   "report": {
     "button": "Zgłoś",

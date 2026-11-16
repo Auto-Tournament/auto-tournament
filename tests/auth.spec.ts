@@ -125,8 +125,8 @@ test.describe.serial('Authentication', () => {
       await page.getByTestId('nav-avatar-button').click();
       await page.getByTestId('sign-out-button').click();
 
-      // Should redirect to login
-      await expect(page).toHaveURL(/\/login/);
+      // Signed out, the front door is Tournaments
+      await expect(page).toHaveURL(/\/tournaments/);
     }
   );
 

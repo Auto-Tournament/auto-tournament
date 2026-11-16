@@ -1598,6 +1598,7 @@
     "messageLabel": "Nhắn cho cả hai đội và quản trị viên",
     "send": "Gửi",
     "callAdmin": "Gọi quản trị viên",
+    "hideChat": "Ẩn trò chuyện",
     "adminCalled": "Quản trị viên đang đến",
     "joinTitle": "Vào máy chủ: {{map}}",
     "warmup": "Khởi động · vào ngay",

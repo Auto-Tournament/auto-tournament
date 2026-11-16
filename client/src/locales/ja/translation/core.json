@@ -42,7 +42,8 @@
     "signIn": "サインイン",
     "play": "プレイ",
     "thirdPartyNotices": "サードパーティライセンス",
-    "needsYou": "対応が必要"
+    "needsYou": "対応が必要",
+    "help": "ヘルプ"
   },
   "layout": {
     "pageTitle": {

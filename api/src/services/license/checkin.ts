@@ -270,6 +270,7 @@ export function parseCheckinResponse(value: Untrusted): CheckinResult | null {
 const DAY = /^\d{4}-\d{2}-\d{2}$/;
 const STATES = [
   'active',
+  'ended',
   'past_due',
   'expired',
   'revoked',

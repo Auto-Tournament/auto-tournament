@@ -1688,6 +1688,7 @@
     "messageLabel": "Zpráva pro oba týmy a správce",
     "send": "Odeslat",
     "callAdmin": "Zavolat správce",
+    "hideChat": "Skrýt chat",
     "adminCalled": "Správce je na cestě",
     "joinTitle": "Připoj se na server: {{map}}",
     "warmup": "Rozehřívání · připoj se teď",

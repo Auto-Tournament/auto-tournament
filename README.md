@@ -11,25 +11,26 @@
 
 <br />
 
-> [!CAUTION]
-> **3.0 is in beta.** The 3.0 betas change often. The stable line is 2.4.
-
 You create the tournament. Auto Tournament starts the servers, loads each match, runs the map veto in the browser, follows the score live and moves the bracket on when a match ends. Games come in as modules: the CS2 module is included and drives servers running [Ready Up](https://github.com/Auto-Tournament/ready-up). Formerly MatchZy Auto Tournament.
 
 ## Features
 
 - Single and double elimination, Swiss, round robin and shuffle tournaments
+- Team sign-up and check-in, with an opening time and captains who check in their team
 - Map veto for Bo1, Bo3 and Bo5 in the browser
-- Servers started, stopped and created on your machines through [CS2 Server Manager](https://github.com/Auto-Tournament/cs2-server-manager)
-- Live scores and server status
+- Servers created, started, stopped and updated on your machines through [CS2 Server Manager](https://github.com/Auto-Tournament/cs2-server-manager), with failover to a free server
+- A match room per match: live score, server status and connect info
+- Highlights: clips and reels of every player's best plays, recorded from the demos by recorders you run ([Frame by Frame](https://github.com/Auto-Tournament/frame-by-frame))
+- Demo recording and download, stats and a 2D replay from each demo
+- Skins: players pick weapon paints, knives, gloves and agents on the site, and they show on your servers
 - Player ratings (OpenSkill) and leaderboards
-- Demo recording and download
-- Sign-in with Steam, Discord, Google, GitHub or Twitch, set up in the admin panel
+- Sign-in with Steam, Discord, Google, GitHub, Twitch, Epic or any OpenID Connect provider, set up in the admin panel
 - Public team pages with connect info, no login needed
-- HTTP API with API tokens, webhooks and an OpenAPI spec, plus an example Discord bot
-- Game packs: games without a server integration, with results reported by the captains
+- Modules: CS2 and a Discord bot with private channels per tournament and team; game packs for games without a server integration, with results reported by the captains
+- In 30 languages
+- HTTP API with API tokens, webhooks and an OpenAPI spec; connect Claude or another MCP client and run tournaments by asking
 - Simulation mode for testing a tournament without players
-- Matchmaking (in progress, 3.1)
+- Matchmaking (experimental)
 
 ## Install
 

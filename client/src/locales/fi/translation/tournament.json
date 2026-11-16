@@ -1598,6 +1598,7 @@
     "messageLabel": "Viesti molemmille joukkueille ja ylläpitäjille",
     "send": "Lähetä",
     "callAdmin": "Kutsu ylläpitäjä",
+    "hideChat": "Piilota chat",
     "adminCalled": "Ylläpitäjä on tulossa",
     "joinTitle": "Liity palvelimelle: {{map}}",
     "warmup": "Lämmittely · liity nyt",

@@ -789,7 +789,19 @@
       "noRoster": "No players listed yet."
     },
     "bracket": "Bracket",
-    "startsAt": "starts {{time}} · veto opens {{veto}}"
+    "breadcrumb": "Breadcrumb",
+    "startsAt": "starts {{time}} · veto opens {{veto}}",
+    "stage": {
+      "title": "{{a}} vs {{b}}",
+      "bestOf": "Best of {{n}}",
+      "mapNow": "Map {{n}}, {{map}} {{a}}:{{b}}",
+      "round": "Round {{n}}",
+      "won": "{{team}} won",
+      "liveNow": "Live now",
+      "upNext": "Up next",
+      "decider": "Decider, if needed",
+      "finished": "Finished {{when}}"
+    }
   },
   "report": {
     "button": "Report",

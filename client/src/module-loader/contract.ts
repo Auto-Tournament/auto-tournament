@@ -19,6 +19,7 @@ import {
   type ModuleFailure,
 } from './manifest';
 import { localesProblem } from './moduleLocales';
+import type { ClientAddon } from './addonSlots';
 import type { Untrusted } from '../utils/untrusted';
 
 /**
@@ -158,33 +159,17 @@ function shapeProblem(def: Record<string, Untrusted>): string | null {
     }
   }
 
-  if (!Array.isArray(def.routes)) return 'routes is not an array';
-  for (const [index, route] of def.routes.entries()) {
-    if (!isObject(route) || typeof route.path !== 'string')
-      return `routes[${index}].path is not a string`;
-    if (route.scope !== 'admin' && route.scope !== 'admin-standalone' && route.scope !== 'site') {
-      return `routes[${index}].scope is not 'admin', 'admin-standalone' or 'site'`;
+  if (def.helpMenuItems !== undefined) {
+    if (!Array.isArray(def.helpMenuItems)) return 'helpMenuItems is not an array';
+    for (const [index, item] of def.helpMenuItems.entries()) {
+      if (!isObject(item) || typeof item.key !== 'string' || typeof item.labelKey !== 'string')
+        return `helpMenuItems[${index}] needs a key and a labelKey`;
+      if (!isComponent(item.Dialog)) return `helpMenuItems[${index}].Dialog is not a component`;
     }
-    if (!isElement(route.element)) return `routes[${index}].element is not a React element`;
   }
 
-  if (!Array.isArray(def.navItems)) return 'navItems is not an array';
-  for (const [index, item] of def.navItems.entries()) {
-    if (!isObject(item) || typeof item.key !== 'string' || typeof item.path !== 'string') {
-      return `navItems[${index}] needs a key and a path`;
-    }
-    if (item.icon !== undefined && !isComponent(item.icon)) {
-      return `navItems[${index}].icon is not a component`;
-    }
-    if (item.labels !== undefined) {
-      if (!isObject(item.labels)) return `navItems[${index}].labels is not an object`;
-      for (const [surface, key] of Object.entries(item.labels)) {
-        if (!NAV_LABEL_SURFACES.includes(surface))
-          return `navItems[${index}].labels.${surface} is not a label`;
-        if (typeof key !== 'string') return `navItems[${index}].labels.${surface} is not a string`;
-      }
-    }
-  }
+  const pages = pagesProblem(def);
+  if (pages) return pages;
 
   const locales = localesProblem(def.locales);
   if (locales) return locales;
@@ -264,4 +249,73 @@ export function validateModuleExport(
   }
   // eslint-disable-next-line no-restricted-syntax -- shapeProblem() above checked every field of the contract
   return { ok: true, integration: def as unknown as ClientGameIntegration };
+}
+
+export type ValidatedAddon =
+  { ok: true; addon: ClientAddon } | { ok: false; failure: ModuleFailure };
+
+/** A module's or add-on's `routes` and `navItems`, or null when both are well formed. */
+function pagesProblem(def: Record<string, Untrusted>): string | null {
+  if (!Array.isArray(def.routes)) return 'routes is not an array';
+  for (const [index, route] of def.routes.entries()) {
+    if (!isObject(route) || typeof route.path !== 'string')
+      return `routes[${index}].path is not a string`;
+    if (route.scope !== 'admin' && route.scope !== 'admin-standalone' && route.scope !== 'site') {
+      return `routes[${index}].scope is not 'admin', 'admin-standalone' or 'site'`;
+    }
+    if (!isElement(route.element)) return `routes[${index}].element is not a React element`;
+  }
+
+  if (!Array.isArray(def.navItems)) return 'navItems is not an array';
+  for (const [index, item] of def.navItems.entries()) {
+    if (!isObject(item) || typeof item.key !== 'string' || typeof item.path !== 'string') {
+      return `navItems[${index}] needs a key and a path`;
+    }
+    if (item.icon !== undefined && !isComponent(item.icon)) {
+      return `navItems[${index}].icon is not a component`;
+    }
+    if (item.labels !== undefined) {
+      if (!isObject(item.labels)) return `navItems[${index}].labels is not an object`;
+      for (const [surface, key] of Object.entries(item.labels)) {
+        if (!NAV_LABEL_SURFACES.includes(surface))
+          return `navItems[${index}].labels.${surface} is not a label`;
+        if (typeof key !== 'string') return `navItems[${index}].labels.${surface} is not a string`;
+      }
+    }
+  }
+  return null;
+}
+
+/** An add-on's default export, checked as a `ClientAddon` with the id the server listed. */
+export function validateAddonExport(namespace: Untrusted, expectedId: string): ValidatedAddon {
+  const def = isObject(namespace) ? namespace.default : undefined;
+  const bad = (detail: string): ValidatedAddon => ({
+    ok: false,
+    failure: failure('contract', 'badExport', `its default export is not an add-on: ${detail}`, {
+      detail,
+    }),
+  });
+  if (!isObject(def)) return bad('default export is not an object');
+  if (def.id !== expectedId) {
+    const got = typeof def.id === 'string' ? def.id : String(def.id);
+    return {
+      ok: false,
+      failure: failure(
+        'contract',
+        'idMismatch',
+        `its code says it is "${got}", but it is installed as "${expectedId}"`,
+        { id: got, expected: expectedId }
+      ),
+    };
+  }
+  for (const slot of ['matchStage', 'matchSide'] as const) {
+    if (def[slot] !== undefined && !isComponent(def[slot]))
+      return bad(`'${slot}' is not a component`);
+  }
+  const pages = pagesProblem({ routes: def.routes ?? [], navItems: def.navItems ?? [] });
+  if (pages) return bad(pages);
+  const locales = localesProblem(def.locales);
+  if (locales) return bad(locales);
+  // eslint-disable-next-line no-restricted-syntax -- every field of ClientAddon was checked above
+  return { ok: true, addon: def as unknown as ClientAddon };
 }

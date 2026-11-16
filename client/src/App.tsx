@@ -11,6 +11,7 @@ import {
 } from 'react-router-dom';
 import { AtLinkProvider } from '@auto-tournament/ui';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { ReturnAfterLogin } from './utils/returnAfterLogin';
 import { PageHeaderProvider } from './contexts/PageHeaderContext';
 import { SnackbarProvider, useSnackbar } from './contexts/SnackbarContext';
 import { AtIcon } from './components/common/AtIcon';
@@ -53,6 +54,7 @@ import { AdminConsentRedirect } from './components/license/AdminConsentRedirect'
 import { LicenseGate } from './components/license/LicenseGate';
 import { ImpersonationBanner } from './components/common/ImpersonationBanner';
 import { listRouteIntegrations } from './integrations/registry';
+import { listAddons } from './module-loader/addonSlots';
 import { useModuleState } from './module-loader/useModuleState';
 import { modulesMayArrive } from './module-loader/moduleState';
 import { ModulePendingRoute } from './components/common/ModuleNotInstalledNotice';
@@ -250,7 +252,7 @@ function ProtectedRoute({ children, adminOnly = true }: ProtectedRouteProps) {
  * - A signed-in player (including an admin impersonating one — impersonation
  *   is there to preview the player experience, and this is the player
  *   experience): `Home`.
- * - Signed out: `/login`, same as before.
+ * - Signed out: Tournaments (anything else under "/" is Manage: `/login`).
  *
  * Only "/" changes here. `/player/:steamId` stays reachable (nav avatar menu,
  * direct links) for anyone who wants it; players are just no longer bounced
@@ -313,12 +315,16 @@ function RootRoute() {
     return <Home />;
   }
 
+  // Signed out, "/" opens what anyone can see (2026-11-10): almost every page
+  // is public, so a sign-in wall at the front door hid them.
+  if (location.pathname === paths.root) return <Navigate to={paths.tournamentList} replace />;
   return <Navigate to={paths.login} state={{ from: location }} replace />;
 }
 
 /**
- * Pages about the viewer's own account (/me/*): any signed-in player, admin
- * or not. Anonymous visitors go to login and come back afterwards.
+ * Pages about the viewer's own account (/me/*, Play, Friends, Notifications,
+ * running a team): any signed-in player, admin or not. Anonymous visitors go
+ * to login and come back afterwards. Everything else a player sees is public.
  */
 function RequireSignedIn({ children }: { children: React.ReactNode }) {
   const { playerSteamId, isLoading } = useAuth();
@@ -346,7 +352,10 @@ function AppRoutes() {
   // *links* to these pages follow the game (see `useShellIntegrations`), but
   // the pages themselves stay mounted, so a bookmark, a link in a Discord
   // message or a half-finished setup opens the page instead of a 404.
-  const integrationRoutes = listRouteIntegrations().flatMap((integration) => integration.routes);
+  const integrationRoutes = [
+    ...listRouteIntegrations().flatMap((integration) => integration.routes),
+    ...listAddons().flatMap((addon) => addon.routes ?? []),
+  ];
 
   return (
     <React.Suspense fallback={null}>
@@ -514,17 +523,17 @@ function AppRoutes() {
         <Route
           path={paths.friends}
           element={
-            <ProtectedRoute adminOnly={false}>
+            <RequireSignedIn>
               <Friends />
-            </ProtectedRoute>
+            </RequireSignedIn>
           }
         />
         <Route
           path={paths.notifications}
           element={
-            <ProtectedRoute adminOnly={false}>
+            <RequireSignedIn>
               <Notifications />
-            </ProtectedRoute>
+            </RequireSignedIn>
           }
         />
         <Route
@@ -546,9 +555,9 @@ function AppRoutes() {
         <Route
           path={paths.teamManage}
           element={
-            <ProtectedRoute adminOnly={false}>
+            <RequireSignedIn>
               <TeamManage />
-            </ProtectedRoute>
+            </RequireSignedIn>
           }
         />
         <Route path={paths.teamJoin} element={<TeamJoin />} />
@@ -768,6 +777,7 @@ export default function App() {
                 {/* Players: link your Discord, or join the server (the Discord add-on). */}
                 <DiscordNotice />
                 {/* Admins choose a license before anything else, on every page. */}
+                <ReturnAfterLogin />
                 <AdminConsentRedirect />
                 <ModuleGlobalOverlays />
                 {/* "What do you play?": redirects to /welcome/games once per

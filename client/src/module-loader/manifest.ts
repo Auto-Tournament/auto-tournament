@@ -50,6 +50,8 @@ export interface LoadableModule {
   clientApi: string | null;
   /** Where its client code is served, e.g. `/api/modules/<id>/client/index.js`. */
   client: { entry: string };
+  /** A game module's client half (the default) or an add-on's. */
+  kind: 'game' | 'addon';
 }
 
 /**
@@ -65,7 +67,7 @@ export function parsePublicManifest(body: Untrusted): LoadableModule[] | null {
   const loadable: LoadableModule[] = [];
   for (const entry of modules) {
     if (!entry || typeof entry !== 'object') continue;
-    const { id, version, clientApi, client } = entry as Record<string, Untrusted>;
+    const { id, version, clientApi, client, kind } = entry as Record<string, Untrusted>;
     const url =
       client && typeof client === 'object' ? (client as { entry?: Untrusted }).entry : undefined;
     if (typeof id !== 'string' || typeof url !== 'string') continue;
@@ -74,6 +76,7 @@ export function parsePublicManifest(body: Untrusted): LoadableModule[] | null {
       version: typeof version === 'string' ? version : '',
       clientApi: typeof clientApi === 'string' ? clientApi : null,
       client: { entry: url },
+      kind: kind === 'addon' ? 'addon' : 'game',
     });
   }
   return loadable;

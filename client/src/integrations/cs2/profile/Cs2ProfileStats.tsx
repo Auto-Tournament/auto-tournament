@@ -145,6 +145,7 @@ export function Cs2ProfileStats({ playerId }: PlayerProfileViewProps) {
             (label) => (
               <Panel
                 key={label}
+                bordered
                 sx={{
                   p: 2.5,
                   display: 'flex',
@@ -386,6 +387,7 @@ function DetailRow({ mine, avg }: { mine: Detail | null; avg: Detail | null }) {
         }}
       >
         <Panel
+          bordered={!mine}
           sx={{ p: 2.5, display: 'flex', flexDirection: 'column', gap: 1.5, borderStyle: dashed }}
           data-testid="cs2-profile-rating"
         >
@@ -398,6 +400,7 @@ function DetailRow({ mine, avg }: { mine: Detail | null; avg: Detail | null }) {
           </Small>
         </Panel>
         <Panel
+          bordered={!mine}
           sx={{ p: 2.5, display: 'flex', flexDirection: 'column', gap: 1.5, borderStyle: dashed }}
           data-testid="cs2-profile-sides"
         >
@@ -414,6 +417,7 @@ function DetailRow({ mine, avg }: { mine: Detail | null; avg: Detail | null }) {
           </Box>
         </Panel>
         <Panel
+          bordered={!mine}
           sx={{ p: 2.5, display: 'flex', flexDirection: 'column', gap: 1.5, borderStyle: dashed }}
           data-testid="cs2-profile-openings"
         >
@@ -435,6 +439,7 @@ function DetailRow({ mine, avg }: { mine: Detail | null; avg: Detail | null }) {
           </Box>
         </Panel>
         <Panel
+          bordered={!mine}
           sx={{ p: 2.5, display: 'flex', flexDirection: 'column', gap: 1.5, borderStyle: dashed }}
           data-testid="cs2-profile-flashes"
         >
@@ -516,6 +521,7 @@ function AimRow({ aim, avg }: { aim: Detail['aim']; avg: Detail['aim'] }) {
         {tiles.map((tile) => (
           <Panel
             key={tile.key}
+            bordered={!aim}
             sx={{
               p: 2.5,
               display: 'flex',

@@ -1644,6 +1644,7 @@
     "messageLabel": "Messaggio per entrambe le squadre e gli admin",
     "send": "Invia",
     "callAdmin": "Chiama un admin",
+    "hideChat": "Nascondi chat",
     "adminCalled": "Un admin sta arrivando",
     "joinTitle": "Entra nel server: {{map}}",
     "warmup": "Riscaldamento · entra ora",

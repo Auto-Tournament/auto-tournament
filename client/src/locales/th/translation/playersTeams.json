@@ -789,7 +789,19 @@
       "noRoster": "ยังไม่มีรายชื่อผู้เล่น"
     },
     "bracket": "สายการแข่งขัน",
-    "startsAt": "เริ่ม {{time}} · วีโต้เปิด {{veto}}"
+    "breadcrumb": "เส้นทางนำทาง",
+    "startsAt": "เริ่ม {{time}} · วีโต้เปิด {{veto}}",
+    "stage": {
+      "title": "{{a}} พบ {{b}}",
+      "bestOf": "Best of {{n}}",
+      "mapNow": "แมพ {{n}}, {{map}} {{a}}:{{b}}",
+      "round": "รอบที่ {{n}}",
+      "won": "{{team}} ชนะ",
+      "liveNow": "กำลังแข่ง",
+      "upNext": "ถัดไป",
+      "decider": "แมพตัดสิน หากจำเป็น",
+      "finished": "จบเมื่อ {{when}}"
+    }
   },
   "report": {
     "button": "รายงาน",

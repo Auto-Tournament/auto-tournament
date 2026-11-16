@@ -15,6 +15,7 @@ import { startMasterSweep, stopMasterSweep } from './demos/masterSweep';
 import { startCs2AdminNotices, stopCs2AdminNotices } from './adminNotices';
 import { startGameMessages, stopGameMessages } from './fleet/gameMessages';
 import { startChatBridge, stopChatBridge } from './fleet/chatBridge';
+import { startGameEventFeed, stopGameEventFeed } from './fleet/gameEventFeed';
 import { log } from '../../utils/logger';
 import { startMapAutoSync, stopMapAutoSync } from './maps/autoSync';
 import { mapService } from './maps/mapService';
@@ -96,6 +97,7 @@ export async function startCs2(): Promise<void> {
     );
   // The match chat to and from the game server (event.chat in, say out, admin call notices).
   startChatBridge();
+  startGameEventFeed();
 
   // The Ready Up fleet gateway (/api/fleet/ws) first: it only attaches to the
   // HTTP server, and servers reconnecting after a restart should not wait on
@@ -135,6 +137,7 @@ export function stopCs2(): void {
   stopCs2AdminNotices();
   stopGameMessages();
   stopChatBridge();
+  stopGameEventFeed();
   stopWaitingSweep();
   stopMasterSweep();
   stopMapAutoSync();

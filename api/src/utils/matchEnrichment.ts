@@ -203,3 +203,43 @@ export function applyScoreFields(
     delete match.team2Score;
   }
 }
+
+type HeldBackMatch = ScoreFieldsTarget & {
+  status: string;
+  completedAt?: number | null;
+  winner?: { id: string };
+  mapResults?: (MapResultLike & { completedAt?: number | null })[];
+};
+
+/**
+ * The match as a spectator `delaySeconds` behind live sees it: maps and the result that came
+ * later are held back, so the delayed stream isn't spoiled. Returns when the next held-back
+ * result is due (unix seconds), or null.
+ */
+export function holdBackResults(
+  match: HeldBackMatch,
+  delaySeconds: number,
+  liveStats: LiveStatsLike | null,
+  nowMs = Date.now()
+): number | null {
+  const cutoff = Math.floor(nowMs / 1000) - delaySeconds;
+  const seen = (at?: number | null) => at == null || at <= cutoff;
+  const held = [
+    ...(match.mapResults ?? []).map((r) => r.completedAt),
+    match.status === 'completed' ? match.completedAt : null,
+  ].filter((at): at is number => !seen(at));
+  if (match.mapResults) match.mapResults = match.mapResults.filter((r) => seen(r.completedAt));
+  if (match.status === 'completed' && !seen(match.completedAt)) {
+    match.status = 'live';
+    match.completedAt = null;
+    delete match.winner;
+    delete match.team1Score;
+    delete match.team2Score;
+  }
+  applyScoreFields(match, {
+    status: match.status,
+    mapResults: match.mapResults,
+    liveStats: match.status === 'completed' ? null : liveStats,
+  });
+  return held.length ? Math.min(...held) + delaySeconds : null;
+}

@@ -23,19 +23,27 @@ import type { PublicMatch } from '../integrations/types';
 import { fontDisplay, mono, tokens } from '../theme/tokens';
 import { useSocket } from '../hooks/useSocket';
 import { useAuth } from '../contexts/AuthContext';
-import { getStatusLabel } from '../utils/matchUtils';
+import { getBracketMatchLabel, getRoundLabel, getStatusLabel } from '../utils/matchUtils';
 import { manageMatchPath, teamProfilePath, tournamentTabPath } from '../paths';
-import { ArrowLeftIcon } from '@phosphor-icons/react';
 import { YourMatchCard } from '../components/tournament/match/YourMatchCard';
 import { SpectatorRoom, type SpectatorRoomMatch } from '../components/match/SpectatorRoom';
 import { WhatsNextCard } from '../components/tournament/WhatsNextCard';
 import { CaptainsPanel } from '../components/match/CaptainsPanel';
 import { LineupPanel } from '../components/match/LineupPanel';
 import { MatchChatPanel } from '../components/match/MatchChatPanel';
+import { AlsoLive } from '../components/match/AlsoLive';
+import {
+  MatchSideSlots,
+  StageLayoutProvider,
+  useStageLayoutState,
+} from '../module-loader/addonSlots';
 import { CommendPanel } from '../components/match/CommendPanel';
 import { MatchCheckInPanel } from '../components/match/MatchCheckInPanel';
 import { MatchFullTeamPanel } from '../components/match/MatchFullTeamPanel';
 import { MapTile, TeamLogo, panel } from '../components/tournament/ui/draftUi';
+import { StageTitle, type StageMapCard } from '../components/match/StageTitle';
+import { ResultCard } from '../components/match/ResultCard';
+import { NextUpCard } from '../components/match/NextUpCard';
 
 type MatchResponse = PublicMatch &
   Omit<SpectatorRoomMatch, 'team1' | 'team2' | 'status'> & {
@@ -46,9 +54,25 @@ type MatchResponse = PublicMatch &
     team2LogoUrl?: string | null;
     team1SeriesScore?: number;
     team2SeriesScore?: number;
+    /** When a result held back for this viewer's GOTV delay is due (unix s). */
+    revealAt?: number | null;
     /** Its start time and when its veto opens (unix s), when it has one. */
     startsAt?: number | null;
     vetoOpensAt?: number | null;
+    round?: number;
+    matchNumber?: number;
+    /** A finished bracket match: the match its winner plays next. */
+    next?: {
+      slug: string;
+      round: number;
+      matchNumber: number;
+      bracket: string | null;
+      status: string;
+      startsAt: number | null;
+      team1: string | null;
+      team2: string | null;
+    };
+    bracket?: string | null;
   };
 
 /** "de_inferno" → "Inferno". */
@@ -63,6 +87,7 @@ export default function MatchPage() {
   const { t } = useTranslation();
   // The answer for the slug it was asked for (a new slug shows loading again).
   const [loaded, setLoaded] = useState<{ slug: string; match: MatchResponse | null } | null>(null);
+  const stageLayout = useStageLayoutState();
 
   // A live match moves on (maps, scores, the result): the server says so and
   // the page reads it again.
@@ -98,6 +123,16 @@ export default function MatchPage() {
 
   const current = loaded?.slug === slug ? loaded : null;
   const match = current?.match ?? null;
+
+  const revealAt = match?.revealAt ?? null;
+  useEffect(() => {
+    if (revealAt === null) return undefined;
+    const timer = window.setTimeout(
+      () => setVersion((v) => v + 1),
+      Math.max(0, revealAt * 1000 - Date.now()) + 500
+    );
+    return () => window.clearTimeout(timer);
+  }, [revealAt]);
   const failed = !!current && !current.match;
 
   const integration = useIntegrationFor(match ?? { game: null });
@@ -149,6 +184,15 @@ export default function MatchPage() {
   const score1 = maps.length ? won('team1') : (match.team1SeriesScore ?? 0);
   const score2 = maps.length ? won('team2') : (match.team2SeriesScore ?? 0);
   const date = match.completedAt ? fmtDate(match.completedAt) : null;
+  const roundLabel =
+    (match.round ?? 0) > 0
+      ? (getBracketMatchLabel({
+          slug: match.slug,
+          bracket: match.bracket,
+          round: match.round ?? 0,
+          matchNumber: match.matchNumber ?? 0,
+        }) ?? getRoundLabel(match.round ?? 0))
+      : null;
 
   // The score panel every viewer gets (the drafts' match room): both teams'
   // logos and names, the maps won, and what the match is.
@@ -291,6 +335,138 @@ export default function MatchPage() {
     </Box>
   );
 
+  // Beside a wide stage: the drafts' title row and a card per map in place of the score panel.
+  const teamName = (n: 1 | 2) => (n === 1 ? match.team1 : match.team2)?.name ?? t('matchPage.tbd');
+  const planned = match.maps ?? [];
+  const playing = match.mapNumber ?? null;
+  const liveNow = match.status === 'live' && playing !== null;
+  const stageMaps: StageMapCard[] = planned.map((name, i) => {
+    const done = maps.find((m) => m.mapNumber === i);
+    const now = liveNow && i === playing && !done;
+    const winner = done && (done.winner ?? (done.team1Score > done.team2Score ? 'team1' : 'team2'));
+    return {
+      key: `${i}-${name}`,
+      name: `${t('matchPage.mapN', { n: i + 1 })} · ${mapName(name, i, t)}`,
+      score: done
+        ? `${done.team1Score}:${done.team2Score}`
+        : now
+          ? `${match.team1MapScore ?? 0}:${match.team2MapScore ?? 0}`
+          : '–',
+      note: done
+        ? t('matchPage.stage.won', { team: teamName(winner === 'team1' ? 1 : 2) })
+        : now
+          ? t('matchPage.stage.liveNow')
+          : i === planned.length - 1 && planned.length > 1
+            ? t('matchPage.stage.decider')
+            : t('matchPage.stage.upNext'),
+      now,
+    };
+  });
+  const a = match.team1MapScore ?? 0;
+  const b = match.team2MapScore ?? 0;
+  const stageLine = [
+    planned.length > 1 ? t('matchPage.stage.bestOf', { n: planned.length }) : null,
+    liveNow
+      ? t('matchPage.stage.mapNow', {
+          n: playing + 1,
+          map: mapName(planned[playing] ?? null, playing, t),
+          a,
+          b,
+        })
+      : null,
+    liveNow ? t('matchPage.stage.round', { n: a + b + 1 }) : null,
+  ]
+    .filter(Boolean)
+    .join(' · ');
+  // A finished match: the drafts' result card in place of the score panel and map tiles.
+  const finished = match.status === 'completed';
+  const resultCard = finished ? (
+    <ResultCard
+      team1={
+        match.team1?.name
+          ? { ...match.team1, name: match.team1.name, logoUrl: match.team1LogoUrl }
+          : null
+      }
+      team2={
+        match.team2?.name
+          ? { ...match.team2, name: match.team2.name, logoUrl: match.team2LogoUrl }
+          : null
+      }
+      score1={score1}
+      score2={score2}
+      winnerSide={match.winnerSide}
+      winnerLabel={t('matchPage.winner')}
+      title={t('matchPage.stage.title', { a: teamName(1), b: teamName(2) })}
+      line={[
+        planned.length > 1 ? t('matchPage.stage.bestOf', { n: planned.length }) : null,
+        match.completedAt
+          ? t('matchPage.stage.finished', { when: fmtDateTime(match.completedAt) })
+          : null,
+      ]
+        .filter(Boolean)
+        .join(' · ')}
+      maps={maps.map((m) => {
+        const level = m.team1Score > m.team2Score ? 'team1' : 'team2';
+        const side = m.winner === 'team1' || m.winner === 'team2' ? m.winner : level;
+        return {
+          mapNumber: m.mapNumber,
+          name: `${t('matchPage.mapN', { n: m.mapNumber + 1 })} · ${mapName(m.map, m.mapNumber, t)}`,
+          score: `${m.team1Score}:${m.team2Score}`,
+          note:
+            t('matchPage.stage.won', { team: teamName(side === 'team1' ? 1 : 2) }) +
+            (m.team1Score + m.team2Score > 24 ? ` · ${t('matchPage.overtime')}` : ''),
+        };
+      })}
+      action={MapAction ? (n) => <MapAction matchSlug={match.slug} mapNumber={n} /> : undefined}
+    />
+  ) : null;
+
+  const next = finished ? match.next : undefined;
+  const nextUp = next ? (
+    <NextUpCard
+      title={t('home.quiet.next')}
+      line={[
+        `${
+          getBracketMatchLabel({
+            slug: next.slug,
+            bracket: next.bracket,
+            round: next.round,
+            matchNumber: next.matchNumber,
+          }) ?? getRoundLabel(next.round)
+        }: ${t('matchPage.stage.title', {
+          a: next.team1 ?? t('matchPage.tbd'),
+          b: next.team2 ?? t('matchPage.tbd'),
+        })}`,
+        next.startsAt ? fmtDateTime(next.startsAt) : null,
+      ]
+        .filter(Boolean)
+        .join(' · ')}
+      matchTo={`/match/${encodeURIComponent(next.slug)}`}
+      bracketTo={match.tournamentId ? tournamentTabPath(match.tournamentId, 'bracket') : null}
+      bracketLabel={t('placement.seeBracket')}
+    />
+  ) : null;
+
+  const stageTitle = (
+    <StageTitle
+      team1={
+        match.team1?.name
+          ? { ...match.team1, name: match.team1.name, logoUrl: match.team1LogoUrl }
+          : null
+      }
+      team2={
+        match.team2?.name
+          ? { ...match.team2, name: match.team2.name, logoUrl: match.team2LogoUrl }
+          : null
+      }
+      score1={score1}
+      score2={score2}
+      title={t('matchPage.stage.title', { a: teamName(1), b: teamName(2) })}
+      line={stageLine}
+      maps={stageMaps}
+    />
+  );
+
   // The viewer plays in this match: their part comes first while it is on.
   const viewerTeamId = match.viewerTeamId ?? null;
   const matchIsOn = match.status !== 'completed' && match.status !== 'cancelled';
@@ -305,119 +481,145 @@ export default function MatchPage() {
   // The veto takes the page's width (the drafts' veto board); the chat moves under it.
   const vetoing = matchIsOn && match.status === 'pending' && match.vetoCompleted === false;
 
+  // A stage that shows something big widens the page; theatre takes the full width.
+  const [{ wide, theatre: theatreOn, side: sideOn }] = stageLayout;
+  const theatre = wide && theatreOn;
+  const showSide = !wide || sideOn;
+  // Beside a wide stage: standard caps the page at YouTube's width with the draft's 80 px sides;
+  // theatre takes the window. The stage's height (the chat matches it) leaves room for the title.
+  const gutter = theatre ? 24 : 160;
+  // The stage reads --stage-max-h: theatre fills to the window's bottom, standard keeps the title in view.
+  const stageMaxH = `calc(100vh - ${theatre ? 210 : 300}px)`;
+  // With the side column open, the page shrinks to a height-capped 16:9 stage beside it, so they touch.
+  const fit = `calc(${stageMaxH} * 16 / 9 + ${gutter + 422}px)`;
+  const pageWidth = theatre ? (showSide ? `min(100vw, ${fit})` : '100vw') : `min(1914px, ${fit})`;
+  const stageHeight = `min(var(--stage-max-h), calc((min(100vw, ${pageWidth}) - ${gutter + 422}px) * 9 / 16))`;
+  const ease = '0.45s cubic-bezier(0.16, 1, 0.3, 1)';
+
   return (
     <Container
-      maxWidth="lg"
-      sx={{ py: { xs: 3, md: 5 }, display: 'flex', flexDirection: 'column', gap: 3 }}
+      maxWidth={wide ? false : 'lg'}
+      sx={{
+        py: { xs: 3, md: wide ? 2.5 : 5 },
+        display: 'flex',
+        flexDirection: 'column',
+        gap: wide ? 4 : 3,
+        transition: `max-width ${ease}, padding ${ease}`,
+        ...(wide && {
+          px: { md: `${gutter / 2}px` },
+          maxWidth: pageWidth,
+          '--stage-max-h': stageMaxH,
+        }),
+      }}
       data-testid="match-page"
+      data-layout={theatre ? 'theatre' : wide ? 'wide' : 'default'}
     >
-      <Box
-        sx={{
-          display: 'flex',
-          flexWrap: 'wrap',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          gap: 1.5,
-        }}
-      >
+      {match.tournamentId && match.tournament && (
         <Box
-          component="div"
+          component="nav"
+          aria-label={t('matchPage.breadcrumb')}
+          data-testid="match-room-tournament"
           sx={{
             display: 'flex',
             flexWrap: 'wrap',
             alignItems: 'center',
             gap: 1,
-            fontSize: '0.8125rem',
-            letterSpacing: '0.06em',
-            textTransform: 'uppercase',
+            fontSize: '0.875rem',
             color: tokens.color.muted,
+            '& a': { color: tokens.color.accent2, textDecoration: 'underline' },
           }}
         >
-          {match.tournamentId && match.tournament && (
-            <Box
-              component={RouterLink}
-              to={tournamentTabPath(match.tournamentId)}
-              sx={{
-                color: 'inherit',
-                textDecoration: 'none',
-                '&:hover': { color: tokens.color.ink },
-              }}
-            >
-              {match.tournament}
-            </Box>
+          <RouterLink to={tournamentTabPath(match.tournamentId)}>{match.tournament}</RouterLink>
+          <span aria-hidden>›</span>
+          <RouterLink to={tournamentTabPath(match.tournamentId, 'bracket')}>
+            {t('matchPage.bracket')}
+          </RouterLink>
+          {roundLabel && (
+            <>
+              <span aria-hidden>›</span>
+              <span>{roundLabel}</span>
+            </>
           )}
-          {date && (
-            <span>
-              ·{' '}
-              {match.status === 'completed' && match.completedAt
-                ? t('liveMatch.finishedAt', { when: fmtDateTime(match.completedAt) })
-                : date}
-            </span>
-          )}
-          {match.status !== 'completed' && (
-            <Box
-              component="span"
-              data-testid="match-page-status"
-              sx={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 0.75,
-                color: live ? tokens.color.live : tokens.color.ink2,
-                fontWeight: 600,
-              }}
-            >
-              {live && (
-                <Box
-                  component="span"
-                  sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: tokens.color.live }}
-                />
-              )}
-              {getStatusLabel(
-                match.status,
-                false,
-                match.vetoCompleted,
-                match.tournamentStarted ?? undefined
-              )}
-            </Box>
-          )}
-          {/* Its start time (Manage › Schedule), until it is on a server. */}
-          {matchIsOn && !live && match.startsAt && match.vetoOpensAt && (
-            <Box
-              component="span"
-              data-testid="match-page-starts"
-              sx={{ color: tokens.color.ink2, fontWeight: 600 }}
-            >
-              ·{' '}
-              {t('matchPage.startsAt', {
-                time: fmtTime(match.startsAt),
-                veto: fmtTime(match.vetoOpensAt),
-              })}
-            </Box>
-          )}
+          <span aria-hidden>›</span>
+          <Box component="span" aria-current="page" sx={{ color: tokens.color.ink }}>
+            {t('search.versus', {
+              team1: match.team1?.name ?? t('matchPage.tbd'),
+              team2: match.team2?.name ?? t('matchPage.tbd'),
+            })}
+          </Box>
         </Box>
-        {match.tournamentId && match.tournament && (
+      )}
+
+      {!match.viewerTeamId && match.tournamentId && (
+        <AlsoLive tournamentId={match.tournamentId} slug={match.slug} />
+      )}
+
+      <Box
+        component="div"
+        sx={{
+          // The title row under a wide stage, or a finished match's result card, carries the state.
+          display: wide || finished ? 'none' : 'flex',
+          flexWrap: 'wrap',
+          alignItems: 'center',
+          gap: 1,
+          fontSize: '0.8125rem',
+          letterSpacing: '0.06em',
+          textTransform: 'uppercase',
+          color: tokens.color.muted,
+        }}
+      >
+        {!match.tournamentId && match.tournament && <span>{match.tournament}</span>}
+        {date && (
+          <span>
+            ·{' '}
+            {match.status === 'completed' && match.completedAt
+              ? t('liveMatch.finishedAt', { when: fmtDateTime(match.completedAt) })
+              : date}
+          </span>
+        )}
+        {match.status !== 'completed' && (
           <Box
-            data-testid="match-room-tournament"
-            sx={{ display: 'flex', gap: 2, fontSize: '0.875rem' }}
+            component="span"
+            data-testid="match-page-status"
+            sx={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 0.75,
+              color: live ? tokens.color.live : tokens.color.ink2,
+              fontWeight: 600,
+            }}
           >
-            <Box
-              component={RouterLink}
-              to={tournamentTabPath(match.tournamentId)}
-              sx={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 0.75,
-                color: tokens.color.accent,
-              }}
-            >
-              <ArrowLeftIcon size={16} aria-hidden />
-              {t('liveMatch.backToTournament')}
-            </Box>
+            {live && (
+              <Box
+                component="span"
+                sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: tokens.color.live }}
+              />
+            )}
+            {getStatusLabel(
+              match.status,
+              false,
+              match.vetoCompleted,
+              match.tournamentStarted ?? undefined
+            )}
+          </Box>
+        )}
+        {/* Its start time (Manage › Schedule), until it is on a server. */}
+        {matchIsOn && !live && match.startsAt && match.vetoOpensAt && (
+          <Box
+            component="span"
+            data-testid="match-page-starts"
+            sx={{ color: tokens.color.ink2, fontWeight: 600 }}
+          >
+            ·{' '}
+            {t('matchPage.startsAt', {
+              time: fmtTime(match.startsAt),
+              veto: fmtTime(match.vetoOpensAt),
+            })}
           </Box>
         )}
       </Box>
 
-      {publicHeader}
+      {!wide && !finished && publicHeader}
 
       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2.5, alignItems: 'flex-start' }}>
         <Box
@@ -429,6 +631,8 @@ export default function MatchPage() {
             gap: 2.5,
           }}
         >
+          {resultCard}
+
           {viewerTeamId && (
             <Box data-testid="match-room-player" sx={{ display: 'grid', gap: 2.5 }}>
               {matchIsOn && playsThroughModule && (
@@ -470,11 +674,14 @@ export default function MatchPage() {
           )}
 
           {!viewerTeamId && matchIsOn && playsThroughModule && (
-            <SpectatorRoom
-              match={match}
-              hasVeto={integration.capabilities.veto}
-              Watch={integration.spectatorWatch}
-            />
+            <StageLayoutProvider value={stageLayout}>
+              <SpectatorRoom
+                match={match}
+                hasVeto={integration.capabilities.veto}
+                Watch={integration.spectatorWatch}
+                belowStage={wide ? stageTitle : undefined}
+              />
+            </StageLayoutProvider>
           )}
 
           {/* Everyone who does not play in it sees the pre-match phase (the veto) as it happens, read-only.
@@ -492,8 +699,10 @@ export default function MatchPage() {
           )}
 
           {seriesMaps
-            ? !playerCard && <Box sx={panel}>{seriesMaps}</Box>
-            : maps.length > 0 && (
+            ? !playerCard && !wide && !finished && <Box sx={panel}>{seriesMaps}</Box>
+            : !wide &&
+              !finished &&
+              maps.length > 0 && (
                 <Box component="section" aria-labelledby="match-maps" sx={panel}>
                   <Typography
                     id="match-maps"
@@ -505,7 +714,7 @@ export default function MatchPage() {
                   <Box
                     sx={{
                       display: 'grid',
-                      gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 14rem), 1fr))',
+                      gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 14rem), 1fr))',
                       gap: 1.5,
                     }}
                   >
@@ -557,6 +766,7 @@ export default function MatchPage() {
               )}
 
           {Panel && <Panel matchSlug={match.slug} match={match} />}
+          {nextUp}
 
           {isAdmin && (
             <Box>
@@ -573,7 +783,15 @@ export default function MatchPage() {
           )}
         </Box>
 
-        {showChat && <MatchChatPanel slug={match.slug} myTeam={viewerTeamId} />}
+        {showSide && showChat && (
+          <MatchChatPanel
+            slug={match.slug}
+            myTeam={viewerTeamId}
+            besideHeight={wide ? stageHeight : undefined}
+            onHide={wide ? () => stageLayout[1]({ side: false }) : undefined}
+          />
+        )}
+        {showSide && <MatchSideSlots matchSlug={match.slug} viewerTeamId={viewerTeamId} />}
       </Box>
     </Container>
   );

@@ -1598,6 +1598,7 @@
     "messageLabel": "Besked til begge hold og admins",
     "send": "Send",
     "callAdmin": "Kald på en admin",
+    "hideChat": "Skjul chat",
     "adminCalled": "En admin er på vej",
     "joinTitle": "Forbind til serveren: {{map}}",
     "warmup": "Opvarmning · forbind nu",

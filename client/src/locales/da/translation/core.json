@@ -42,7 +42,8 @@
     "signIn": "Log ind",
     "play": "Spil",
     "thirdPartyNotices": "Tredjepartslicenser",
-    "needsYou": "Har brug for dig"
+    "needsYou": "Har brug for dig",
+    "help": "Hjælp"
   },
   "layout": {
     "pageTitle": {

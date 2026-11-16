@@ -37,6 +37,8 @@ export const links = {
     paths.playerProfile.replace(':steamId', encodeURIComponent(playerId)),
   /** A match's own page: its result, maps, scoreboard and highlights. Client API 0.2.19. */
   match: (slug: string): string => paths.match.replace(':slug', encodeURIComponent(slug)),
+  /** Where the signed-in player's current match lives (sign-in first). Client API 0.2.31. */
+  matchNow: (): string => paths.matchNow,
   /** A team's public page. Client API 0.2.30. */
   team: (teamId: string): string => teamProfilePath(teamId),
   /** A tournament's public page. Client API 0.2.13. */

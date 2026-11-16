@@ -809,7 +809,19 @@
       "noRoster": "Aún no hay jugadores."
     },
     "bracket": "Bracket",
-    "startsAt": "empieza {{time}} · el veto se abre {{veto}}"
+    "breadcrumb": "Ruta de navegación",
+    "startsAt": "empieza {{time}} · el veto se abre {{veto}}",
+    "stage": {
+      "title": "{{a}} contra {{b}}",
+      "bestOf": "Al mejor de {{n}}",
+      "mapNow": "Mapa {{n}}, {{map}} {{a}}:{{b}}",
+      "round": "Ronda {{n}}",
+      "won": "Ganó {{team}}",
+      "liveNow": "En directo",
+      "upNext": "A continuación",
+      "decider": "Decisivo, si hace falta",
+      "finished": "Terminó {{when}}"
+    }
   },
   "report": {
     "button": "Denunciar",

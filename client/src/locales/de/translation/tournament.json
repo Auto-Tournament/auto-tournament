@@ -1599,6 +1599,7 @@
     "messageLabel": "Nachricht an beide Teams und die Admins",
     "send": "Senden",
     "callAdmin": "Admin rufen",
+    "hideChat": "Chat ausblenden",
     "adminCalled": "Ein Admin ist unterwegs",
     "joinTitle": "Dem Server beitreten: {{map}}",
     "warmup": "Warm-up · jetzt beitreten",

@@ -45,12 +45,30 @@ function withSides<T extends SidedSkin>(skin: T, sides: LoadoutTeam[]): T {
 /** Equip `skin` for `wanted`: that side's pick in the slot is replaced; "both" clears the slot's one-side picks. */
 export function applyEquip<T extends SidedSkin>(inventory: T[], skin: T, wanted: LoadoutTeam): T[] {
   const team = teamFor(skin, wanted);
-  return inventory.map((s) => {
+  const out = inventory.map((s) => {
     if (s.slot !== skin.slot) return s;
     // "both" replaces everything in the slot; a side replaces only that side.
     const rest = team === 0 ? [] : s.equippedSides.filter((side) => side !== team);
     const next = s.id === skin.id ? [...(team === 0 ? [] : rest), team] : team === 0 ? [] : rest;
     return withSides(s, next);
+  });
+  return team === 0 ? out : oneEach(out, skin.slot);
+}
+
+/** One skin per side in a slot (as the server keeps it): a shadowed "both" pick moves or goes. */
+function oneEach<T extends SidedSkin>(inventory: T[], slot: string): T[] {
+  const inSlot = inventory.filter((s) => s.slot === slot);
+  const pick = (side: 2 | 3) =>
+    (
+      inSlot.find((s) => s.equippedSides.includes(side)) ??
+      inSlot.find((s) => s.equippedSides.includes(0))
+    )?.id;
+  const t = pick(2);
+  const ct = pick(3);
+  return inventory.map((s) => {
+    if (s.slot !== slot) return s;
+    if (s.id === t && s.id === ct) return withSides(s, [0]);
+    return withSides(s, s.id === t ? [2] : s.id === ct ? [3] : []);
   });
 }
 

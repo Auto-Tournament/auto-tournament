@@ -14,7 +14,8 @@ import {
   Stack,
   Typography,
 } from '@mui/material';
-import { Link as RouterLink, useSearchParams } from 'react-router-dom';
+import { Link as RouterLink, useLocation, useSearchParams } from 'react-router-dom';
+import { rememberReturnPath } from '../utils/returnAfterLogin';
 import { paths } from '../paths';
 import { BookOpenIcon, GithubLogoIcon, GlobeIcon, ScalesIcon } from '@phosphor-icons/react';
 import { useAuth } from '../contexts/AuthContext';
@@ -48,6 +49,10 @@ export default function Login() {
   // An opened invite link sends its end date (unix seconds) along.
   const inviteUntil = Number(params.get('until')) || null;
   const { loginWithSteam } = useAuth();
+  const from = (useLocation().state as { from?: { pathname: string; search?: string } } | null)
+    ?.from;
+  const next = params.get('next') ?? (from ? from.pathname + (from.search ?? '') : null);
+  useEffect(() => rememberReturnPath(next), [next]);
   const [providers, setProviders] = useState<
     Array<{
       id: string;

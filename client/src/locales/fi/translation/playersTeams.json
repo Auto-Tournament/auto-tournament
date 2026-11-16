@@ -789,7 +789,19 @@
       "noRoster": "Pelaajia ei ole vielä listattu."
     },
     "bracket": "Kaavio",
-    "startsAt": "alkaa {{time}} · veto avautuu {{veto}}"
+    "breadcrumb": "Murupolku",
+    "startsAt": "alkaa {{time}} · veto avautuu {{veto}}",
+    "stage": {
+      "title": "{{a}} vastaan {{b}}",
+      "bestOf": "Paras {{n}}:stä",
+      "mapNow": "Kartta {{n}}, {{map}} {{a}}:{{b}}",
+      "round": "Kierros {{n}}",
+      "won": "{{team}} voitti",
+      "liveNow": "Käynnissä nyt",
+      "upNext": "Seuraavaksi",
+      "decider": "Ratkaiseva, jos tarvitaan",
+      "finished": "Päättyi {{when}}"
+    }
   },
   "report": {
     "button": "Ilmianna",

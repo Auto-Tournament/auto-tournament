@@ -1598,6 +1598,7 @@
     "messageLabel": "Kirim pesan ke kedua tim dan admin",
     "send": "Kirim",
     "callAdmin": "Panggil admin",
+    "hideChat": "Sembunyikan chat",
     "adminCalled": "Admin sedang menuju",
     "joinTitle": "Masuk ke server: {{map}}",
     "warmup": "Pemanasan · masuk sekarang",

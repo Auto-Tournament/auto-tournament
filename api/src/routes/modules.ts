@@ -40,7 +40,8 @@ const router = Router();
  *       The public manifest the client loader reads at boot, for every
  *       visitor: players and signed-out visitors render module slots too.
  *       Lists only code modules that are enabled, loaded and have a client
- *       half, with exactly `id`, `version`, `clientApi` and `client.entry`.
+ *       half, with exactly `id`, `version`, `clientApi`, `kind` and
+ *       `client.entry`. An add-on (`kind: addon`) is listed only while it is on.
  *       Never reasons, disabled, broken or incompatible modules, the server
  *       API or the switch state: those are on the admin-only `GET
  *       /api/modules`. Built-in modules are compiled into the app and are
@@ -65,6 +66,7 @@ const router = Router();
  *                       id: { type: string }
  *                       version: { type: string }
  *                       clientApi: { type: string, description: The semver range of client APIs the module works with }
+ *                       kind: { type: string, enum: [game, addon] }
  *                       client:
  *                         type: object
  *                         properties:

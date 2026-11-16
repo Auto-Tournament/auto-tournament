@@ -173,5 +173,11 @@
  * 0.2.29 (additive): `partyView` with `PartyViewProps` (the game's view of a
  *   matchmaking party on the Play page).
  * 0.2.30 (additive): `links.team(teamId)`, a team's public page.
+ * 0.2.31 (additive): `helpMenuItems` with `HelpMenuItemProps` (entries in the
+ *   navbar's ? menu, each opening the module's dialog), and `links.matchNow()`.
+ * 0.2.32 (additive): add-ons' client halves (`kind: "addon"`), with the match
+ *   page's `matchStage` and `matchSide` slots.
+ * 0.2.33 (additive): add-ons' `routes` and `navItems`, the shapes game modules use.
+ * 0.2.34 (additive): `matchStage` gets `layout` and `setLayout` (wide, theatre, side).
  */
-export const CLIENT_API_VERSION = '0.2.30';
+export const CLIENT_API_VERSION = '0.2.34';

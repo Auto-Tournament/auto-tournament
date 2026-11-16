@@ -42,7 +42,8 @@
     "signIn": "Увійти",
     "play": "Грати",
     "thirdPartyNotices": "Ліцензії сторонніх компонентів",
-    "needsYou": "Потребує уваги"
+    "needsYou": "Потребує уваги",
+    "help": "Довідка"
   },
   "layout": {
     "pageTitle": {

@@ -23,8 +23,12 @@ import type { Untrusted } from '../utils/untrusted';
 
 type AnyComponent = ComponentType<Record<string, Untrusted>>;
 
-function withBoundary(moduleId: string, slot: string, Slot: AnyComponent): AnyComponent {
-  function ModuleSlot(props: Record<string, Untrusted>) {
+function withBoundary<P extends object>(
+  moduleId: string,
+  slot: string,
+  Slot: ComponentType<P>
+): ComponentType<P> {
+  function ModuleSlot(props: P) {
     return (
       <ModuleSlotBoundary moduleId={moduleId} slot={slot}>
         <Slot {...props} />
@@ -164,6 +168,10 @@ export function adaptCodeModule(integration: ClientGameIntegration): ClientGameI
           {route.element}
         </ModuleSlotBoundary>
       ),
+    })),
+    helpMenuItems: adapted.helpMenuItems?.map((item) => ({
+      ...item,
+      Dialog: withBoundary(id, `help ${item.key}`, item.Dialog),
     })),
     navItems: adapted.navItems.map((item) =>
       item.icon

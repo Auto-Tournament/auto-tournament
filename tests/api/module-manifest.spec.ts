@@ -40,8 +40,8 @@ function manifest(overrides: Record<string, unknown> = {}) {
 
 test.describe('module.json', () => {
   test('the platform publishes its API versions', { tag: ['@api', '@modules'] }, () => {
-    expect(SERVER_API_VERSION).toBe('0.1.4');
-    expect(CLIENT_API_VERSION).toBe('0.2.30');
+    expect(SERVER_API_VERSION).toBe('0.1.6');
+    expect(CLIENT_API_VERSION).toBe('0.2.34');
   });
 
   test(
@@ -100,12 +100,20 @@ test.describe('module.json', () => {
 
   test('a valid manifest parses', { tag: ['@api', '@modules'] }, () => {
     const result = parseManifest(manifest(), 'example');
-    expect(result).toEqual({ ok: true, manifest: manifest() });
+    expect(result).toEqual({ ok: true, manifest: { ...manifest(), kind: 'game' } });
     // The client half is optional.
     const serverOnly = parseManifest(manifest({ client: undefined }), 'example');
     expect(serverOnly.ok && serverOnly.manifest.client).toBe(null);
     // Keys owned elsewhere (migrations, locales) are not an error.
     expect(parseManifest(manifest({ migrations: 'migrations' }), 'example').ok).toBe(true);
+  });
+
+  test('an add-on says so, with or without a client half', { tag: ['@api', '@modules'] }, () => {
+    const addon = parseManifest(manifest({ kind: 'addon', client: undefined }), 'example');
+    expect(addon.ok && addon.manifest.kind).toBe('addon');
+    const withClient = parseManifest(manifest({ kind: 'addon' }), 'example');
+    expect(withClient.ok && withClient.manifest.client).toBe('client/index.js');
+    expect(parseManifest(manifest({ kind: 'theme' }), 'example').ok).toBe(false);
   });
 
   test('every field is checked strictly', { tag: ['@api', '@modules'] }, () => {

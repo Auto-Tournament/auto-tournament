@@ -1599,6 +1599,7 @@
     "messageLabel": "给双方战队和管理员发消息",
     "send": "发送",
     "callAdmin": "呼叫管理员",
+    "hideChat": "隐藏聊天",
     "adminCalled": "管理员正在赶来",
     "joinTitle": "加入服务器：{{map}}",
     "warmup": "热身 · 立即加入",

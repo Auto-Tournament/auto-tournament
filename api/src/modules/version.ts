@@ -12,8 +12,8 @@
  * "0.1 only": under semver a `0.x` minor may break.
  */
 
-/** The server API version: the `GameIntegration` contract. */
-export const SERVER_API_VERSION = '0.1.4';
+/** The server API version: the `GameIntegration` and `AddonModule` contracts. 0.1.6: game events (`services/gameEvents`). */
+export const SERVER_API_VERSION = '0.1.6';
 
 /**
  * The client API version the web client provides. The client owns it
@@ -22,4 +22,4 @@ export const SERVER_API_VERSION = '0.1.4';
  * a module the browser would refuse is never loaded on the server either.
  * Keep the two equal.
  */
-export const CLIENT_API_VERSION = '0.2.30';
+export const CLIENT_API_VERSION = '0.2.34';

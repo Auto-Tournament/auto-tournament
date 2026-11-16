@@ -63,6 +63,7 @@ import type {
   ResourceActionResult,
 } from '../types';
 import { cs2ShareCards } from './shareCards';
+import { spectatorDelay } from './gotv';
 import {
   CS2_STATS_SCHEMA,
   cs2PlayerStatsColumns,
@@ -173,6 +174,7 @@ export const cs2Integration: GameIntegration<Cs2Data> = {
     appIcon: '/games/counter-strike-2-app-icon.webp',
   },
   accountProvider: 'steam',
+  spectatorDelay,
   capabilities: {
     servers: true,
     veto: true,

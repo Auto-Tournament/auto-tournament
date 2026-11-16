@@ -1598,6 +1598,7 @@
     "messageLabel": "İki takıma ve yöneticilere mesaj",
     "send": "Gönder",
     "callAdmin": "Bir yönetici çağır",
+    "hideChat": "Sohbeti gizle",
     "adminCalled": "Bir yönetici geliyor",
     "joinTitle": "Sunucuya katıl: {{map}}",
     "warmup": "Isınma · şimdi katıl",

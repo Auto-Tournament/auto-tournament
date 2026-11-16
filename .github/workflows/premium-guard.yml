@@ -1,0 +1,44 @@
+name: Premium guard
+
+# The word list is the PREMIUM_DENYLIST secret, so it never sits in this repo.
+# Same rules as the local pre-push hook: added lines, added paths, commit messages.
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Scan the change
+        env:
+          DENYLIST: ${{ secrets.PREMIUM_DENYLIST }}
+          BASE: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+          HEAD: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+        run: |
+          if [ -z "$DENYLIST" ]; then
+            echo "::notice::PREMIUM_DENYLIST is not available here (fork PR?), skipping."
+            exit 0
+          fi
+          printf '%s\n' "$DENYLIST" | grep -vE '^\s*(#|$)' > "$RUNNER_TEMP/deny"
+          # A new branch pushes with an all-zero before; fall back to its first parent.
+          if ! git cat-file -e "$BASE^{commit}" 2>/dev/null; then BASE="$HEAD~1"; fi
+          RANGE="$(git merge-base "$BASE" "$HEAD")..$HEAD"
+          {
+            git diff "$RANGE" | grep -E '^\+[^+]' || true
+            git diff --name-only --diff-filter=A "$RANGE"
+            git log --format=%B "$RANGE"
+          } > "$RUNNER_TEMP/change"
+          if grep -niE -f "$RUNNER_TEMP/deny" "$RUNNER_TEMP/change" > "$RUNNER_TEMP/hits"; then
+            echo "::error::This change matches the premium deny list. Premium code belongs in the private add-on repo."
+            grep -oiE -f "$RUNNER_TEMP/deny" "$RUNNER_TEMP/hits" | sort -fu | sed 's/^/  matched: /'
+            exit 1
+          fi
+          echo "No premium terms in $RANGE."

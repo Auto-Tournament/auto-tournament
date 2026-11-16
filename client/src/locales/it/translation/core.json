@@ -39,7 +39,8 @@
     "community": "Community",
     "backToSite": "Torna al sito",
     "manageHome": "Gestisci",
-    "needsYou": "Serve il tuo intervento"
+    "needsYou": "Serve il tuo intervento",
+    "help": "Aiuto"
   },
   "layout": {
     "pageTitle": {

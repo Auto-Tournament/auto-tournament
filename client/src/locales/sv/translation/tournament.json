@@ -1598,6 +1598,7 @@
     "messageLabel": "Meddelande till båda lagen och admins",
     "send": "Skicka",
     "callAdmin": "Kalla på en admin",
+    "hideChat": "Dölj chatten",
     "adminCalled": "En admin är på väg",
     "joinTitle": "Anslut till servern: {{map}}",
     "warmup": "Uppvärmning · anslut nu",

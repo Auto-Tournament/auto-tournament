@@ -55,6 +55,7 @@ const MISMATCHED = `fixture-mismatched-${RUN}`;
 const MIGRATES = `fixture-migrates-${RUN}`;
 const BAD_MIGRATION = `fixture-badmig-${RUN}`;
 const OFF = `fixture-off-${RUN}`;
+const ADDON = `fixture-addon-${RUN}`;
 
 async function listModules(request: APIRequestContext): Promise<{
   platform: { clientApi: string; serverApi: string };
@@ -82,11 +83,17 @@ async function rescan(request: APIRequestContext): Promise<void> {
 }
 
 /** The only fields the public manifest may carry for a module. */
-const PUBLIC_FIELDS = ['client', 'clientApi', 'id', 'version'];
+const PUBLIC_FIELDS = ['client', 'clientApi', 'id', 'kind', 'version'];
 
 interface PublicManifest {
   success: boolean;
-  modules: Array<{ id: string; version: string; clientApi: string; client: { entry: string } }>;
+  modules: Array<{
+    id: string;
+    version: string;
+    clientApi: string;
+    kind: string;
+    client: { entry: string };
+  }>;
 }
 
 /**
@@ -140,7 +147,7 @@ test.describe.serial('Code modules on disk', () => {
     },
     async ({ request }) => {
       const { platform, modules } = await listModules(request);
-      expect(platform).toEqual({ clientApi: '0.2.30', serverApi: '0.1.4' });
+      expect(platform).toEqual({ clientApi: '0.2.34', serverApi: '0.1.6' });
 
       const builtin = modules.find((module) => module.id === 'manual-report');
       expect(builtin).toMatchObject({
@@ -226,6 +233,45 @@ test.describe.serial('Code modules on disk', () => {
   );
 
   test(
+    'an add-on on disk loads like a module, then runs its routes once turned on',
+    {
+      tag: ['@api', '@modules'],
+    },
+    async ({ request }) => {
+      await writeFixture(request, ADDON, 'addon');
+      expect(await moduleRow(request, ADDON)).toMatchObject({ enabled: false, status: 'disabled' });
+
+      expect((await request.post(`/api/modules/${ADDON}/enable`)).status()).toBe(200);
+      await rescan(request);
+      expect(await moduleRow(request, ADDON)).toMatchObject({ status: 'ok', reason: null });
+
+      // Loaded, but an add-on is off until an admin turns it on.
+      const listed = (await (await request.get('/api/addons')).json()) as {
+        addons: Array<{ id: string; enabled: boolean; running: boolean }>;
+      };
+      expect(listed.addons.find((a) => a.id === ADDON)).toMatchObject({
+        enabled: false,
+        running: false,
+      });
+      expect((await request.get(`/api/addons/${ADDON}/ping`)).status()).toBe(404);
+      // Its client half isn't in the public manifest while it's off.
+      const listedOff = (await (await request.get('/api/modules/public')).json()) as PublicManifest;
+      expect(listedOff.modules.map((m) => m.id)).not.toContain(ADDON);
+
+      const on = await request.put(`/api/addons/${ADDON}`, { data: { enabled: true } });
+      expect(on.status(), await on.text()).toBe(200);
+      const ping = await request.get(`/api/addons/${ADDON}/ping`);
+      expect(ping.status()).toBe(200);
+      expect(await ping.json()).toMatchObject({ success: true, addon: ADDON, path: '/ping' });
+      const listedOn = (await (await request.get('/api/modules/public')).json()) as PublicManifest;
+      expect(listedOn.modules.find((m) => m.id === ADDON)).toMatchObject({
+        kind: 'addon',
+        client: { entry: `/api/modules/${ADDON}/client/index.js?v=1.0.0` },
+      });
+    }
+  );
+
+  test(
     'a stranger gets the public manifest, listing the loaded module with only the public fields',
     {
       tag: ['@api', '@modules'],
@@ -263,6 +309,7 @@ test.describe.serial('Code modules on disk', () => {
         version: '1.0.0',
         clientApi: '^0.2.0',
         client: { entry: `/api/modules/${VALID}/client/index.js?v=1.0.0` },
+        kind: 'game',
       });
 
       // Built-in modules are compiled into the app: never listed. CS2 is a
@@ -342,7 +389,7 @@ test.describe.serial('Code modules on disk', () => {
       expect(row.status).toBe('incompatible');
       expect(row.serverApi).toBe('^0.3.0');
       expect(row.reason).toContain('^0.3.0');
-      expect(row.reason).toContain('0.1.4');
+      expect(row.reason).toContain('0.1.6');
 
       // Enabling it does not make it load.
       expect((await request.post(`/api/modules/${INCOMPATIBLE}/enable`)).status()).toBe(200);

@@ -42,7 +42,8 @@
     "signIn": "Logg inn",
     "play": "Spill",
     "thirdPartyNotices": "Tredjepartslisenser",
-    "needsYou": "Trenger deg"
+    "needsYou": "Trenger deg",
+    "help": "Hjelp"
   },
   "layout": {
     "pageTitle": {

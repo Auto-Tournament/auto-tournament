@@ -42,7 +42,8 @@
     "signIn": "เข้าสู่ระบบ",
     "play": "เล่น",
     "thirdPartyNotices": "สัญญาอนุญาตของบุคคลที่สาม",
-    "needsYou": "รอคุณอยู่"
+    "needsYou": "รอคุณอยู่",
+    "help": "ความช่วยเหลือ"
   },
   "layout": {
     "pageTitle": {

@@ -476,6 +476,24 @@ export function equipTeam(weapon: string, wanted: Untrusted): LoadoutTeam {
   return wanted === 2 || wanted === 3 ? wanted : 0;
 }
 
+export interface LoadoutPick {
+  skin_id: number;
+  team: number;
+}
+
+/** Who each side of one slot wears: its own pick, else the "both" one; one skin on both is "both". */
+export function slotSides(rows: LoadoutPick[]): Map<number, LoadoutTeam[]> {
+  const pick = (side: 2 | 3) =>
+    (rows.find((r) => Number(r.team) === side) ?? rows.find((r) => Number(r.team) === 0))?.skin_id;
+  const t = pick(2);
+  const ct = pick(3);
+  const out = new Map<number, LoadoutTeam[]>();
+  if (t !== undefined && t === ct) return out.set(t, [0]);
+  if (t !== undefined) out.set(t, [2]);
+  if (ct !== undefined) out.set(ct, [3]);
+  return out;
+}
+
 /** The loadout slot a weapon fills: every knife shares one, every glove one. */
 export function slotOf(weapon: string): string {
   if (weapon.startsWith('weapon_knife') || weapon === 'weapon_bayonet') return 'knife';
@@ -1681,13 +1699,13 @@ export const skinService = {
       'SELECT * FROM cs2_player_skins WHERE player_uid = ? ORDER BY created_at DESC, id DESC',
       [playerUid]
     );
-    const equipped = await db.queryAsync<{ skin_id: number; team: number }>(
-      'SELECT skin_id, team FROM cs2_player_loadout WHERE player_uid = ?',
+    const equipped = await db.queryAsync<LoadoutPick & { slot: string }>(
+      'SELECT skin_id, team, slot FROM cs2_player_loadout WHERE player_uid = ?',
       [playerUid]
     );
     const sides = new Map<number, LoadoutTeam[]>();
-    for (const e of equipped) {
-      sides.set(e.skin_id, [...(sides.get(e.skin_id) ?? []), Number(e.team) as LoadoutTeam]);
+    for (const slot of new Set(equipped.map((e) => e.slot))) {
+      for (const [id, s] of slotSides(equipped.filter((e) => e.slot === slot))) sides.set(id, s);
     }
     const priceOf = await this.priceToday();
     return rows.map((row) => ({ ...toRow(row, sides), price: priceOf(row) }));
@@ -1732,6 +1750,22 @@ export const skinService = {
        ON CONFLICT (player_uid, slot, team) DO UPDATE SET skin_id = EXCLUDED.skin_id`,
       [playerUid, slot, skinId, side]
     );
+    if (side === 0) return;
+    // One pick per side: a "both" skin the new pick shadows moves to the other side or goes.
+    const rows = await db.queryAsync<LoadoutPick>(
+      'SELECT skin_id, team FROM cs2_player_loadout WHERE player_uid = ? AND slot = ?',
+      [playerUid, slot]
+    );
+    await db.runAsync('DELETE FROM cs2_player_loadout WHERE player_uid = ? AND slot = ?', [
+      playerUid,
+      slot,
+    ]);
+    for (const [id, teams] of slotSides(rows)) {
+      await db.runAsync(
+        'INSERT INTO cs2_player_loadout (player_uid, slot, skin_id, team) VALUES (?, ?, ?, ?)',
+        [playerUid, slot, id, teams[0]]
+      );
+    }
   },
 
   /** Empties a slot: one side's pick (2, 3), or every side's (no team). */

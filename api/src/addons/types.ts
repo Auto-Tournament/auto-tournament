@@ -8,6 +8,7 @@
  * listeners, timers), and its routes answer 404 while it is off.
  */
 import type { Router } from 'express';
+import type { MigratingModule } from '../config/moduleMigrations';
 
 export interface AddonModule {
   /** Lowercase letters, digits and single hyphens (a URL segment). */
@@ -23,4 +24,6 @@ export interface AddonModule {
   stop(): Promise<void> | void;
   /** Its API, under /api/addons/<id>/. It does its own auth. */
   router?: Router;
+  /** Its own tables (config/moduleMigrations.ts), for an add-on loaded from disk. */
+  migrations?: MigratingModule['migrations'];
 }

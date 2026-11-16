@@ -123,6 +123,22 @@ function pausedBy(state: MatchState, by: string | undefined): string | null {
   return by;
 }
 
+/** The match's pause from its live state, or null when it is not paused. */
+export function livePause(state: MatchState | null): LiveOverviewMatch['pause'] {
+  return state?.pause?.active
+    ? {
+        active: true as const,
+        type: state.pause.type ?? null,
+        by: pausedBy(state, state.pause.by),
+        since: state.pause.started_at ?? null,
+        unpause: {
+          team1: Boolean(state.pause.unpause?.team1),
+          team2: Boolean(state.pause.unpause?.team2),
+        },
+      }
+    : null;
+}
+
 /** The match's config: its team names, and the roster, nobody connected (no live state yet). */
 function fromConfig(row: LiveOverviewRow): Array<{ name: string; players: LiveOverviewPlayer[] }> {
   try {
@@ -167,18 +183,7 @@ export function liveOverviewItem(
       players: state ? playersOf(t) : config.players,
     };
   };
-  const pause = state?.pause?.active
-    ? {
-        active: true as const,
-        type: state.pause.type ?? null,
-        by: pausedBy(state, state.pause.by),
-        since: state.pause.started_at ?? null,
-        unpause: {
-          team1: Boolean(state.pause.unpause?.team1),
-          team2: Boolean(state.pause.unpause?.team2),
-        },
-      }
-    : null;
+  const pause = livePause(state);
   return {
     slug: row.slug,
     status: row.status,

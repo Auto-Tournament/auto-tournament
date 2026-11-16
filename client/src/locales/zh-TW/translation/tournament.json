@@ -1598,6 +1598,7 @@
     "messageLabel": "給雙方戰隊和管理員發訊息",
     "send": "傳送",
     "callAdmin": "呼叫管理員",
+    "hideChat": "隱藏聊天",
     "adminCalled": "管理員正在趕來",
     "joinTitle": "加入伺服器：{{map}}",
     "warmup": "熱身 · 立即加入",

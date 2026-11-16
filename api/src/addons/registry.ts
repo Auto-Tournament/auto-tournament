@@ -9,6 +9,7 @@ import { db } from '../config/database';
 import { isValidModuleId } from '../modules/manifest';
 import { log } from '../utils/logger';
 import type { AddonModule } from './types';
+import type { Untrusted } from '../utils/untrusted';
 
 const addons = new Map<string, AddonModule>();
 const running = new Set<string>();
@@ -103,6 +104,31 @@ export async function setAddonEnabled(
     startErrors.delete(id);
   }
   return (await listAddons()).find((a) => a.id === id);
+}
+
+/** An add-on loaded after boot (from disk): start it now if it is on. */
+export async function startAddonIfOn(id: string): Promise<void> {
+  const addon = addons.get(id);
+  if (addon && (await isOn(addon))) await start(addon);
+}
+
+/** The first reason `value` is not an `AddonModule`, or null when it is one. */
+export function addonProblem(value: Untrusted): string | null {
+  if (!value || typeof value !== 'object')
+    return 'The server entry has no default export object (an add-on).';
+  const a = value as Record<string, Untrusted>;
+  if (typeof a.id !== 'string' || !isValidModuleId(a.id)) return "The add-on has no valid 'id'.";
+  if (typeof a.name !== 'string' || a.name.trim() === '') return "The add-on has no 'name'.";
+  if (typeof a.description !== 'string') return "The add-on has no 'description'.";
+  if (typeof a.start !== 'function' || typeof a.stop !== 'function') {
+    return "The add-on needs 'start' and 'stop' functions.";
+  }
+  if (a.router !== undefined && typeof a.router !== 'function') return "'router' must be a Router.";
+  if (a.defaultOn !== undefined && typeof a.defaultOn !== 'boolean')
+    return "'defaultOn' must be true or false.";
+  if (a.migrations !== undefined && !Array.isArray(a.migrations))
+    return "'migrations' must be an array.";
+  return null;
 }
 
 /** At boot: start every add-on that is on. */
