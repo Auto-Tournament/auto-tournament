@@ -1214,7 +1214,7 @@
       "default": "叢集預設",
       "none": "無",
       "movement": "Movement",
-      "retakes": "Retakes"
+      "retakes": "Retakes (beta)"
     },
     "plugin": {
       "fleet": "叢集連線",
@@ -1229,7 +1229,7 @@
       "community": "社群",
       "addons": "附加內容",
       "movement": "Movement",
-      "retakes": "Retakes"
+      "retakes": "Retakes (beta)"
     },
     "pluginHelp": {
       "essentials": "管理員、換圖、過載和重啟",

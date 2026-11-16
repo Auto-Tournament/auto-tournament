@@ -1214,7 +1214,7 @@
       "none": "Keine",
       "tryout": "Skin-Test",
       "movement": "Movement",
-      "retakes": "Retakes"
+      "retakes": "Retakes (beta)"
     },
     "plugin": {
       "fleet": "Flotten-Verbindung",
@@ -1229,7 +1229,7 @@
       "mapvote": "Kartenabstimmung",
       "community": "Community",
       "movement": "Movement",
-      "retakes": "Retakes"
+      "retakes": "Retakes (beta)"
     },
     "pluginHelp": {
       "essentials": "Admins, Kartenwechsel, Neuladen und Neustart",

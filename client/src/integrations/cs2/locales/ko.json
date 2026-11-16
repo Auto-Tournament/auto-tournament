@@ -1214,7 +1214,7 @@
       "default": "플릿 기본값",
       "none": "없음",
       "movement": "무브먼트",
-      "retakes": "Retakes"
+      "retakes": "Retakes (beta)"
     },
     "plugin": {
       "fleet": "플릿 연결",
@@ -1229,7 +1229,7 @@
       "community": "커뮤니티",
       "addons": "애드온",
       "movement": "무브먼트",
-      "retakes": "Retakes"
+      "retakes": "Retakes (beta)"
     },
     "pluginHelp": {
       "essentials": "관리자, 맵 변경, 다시 불러오기, 재시작",

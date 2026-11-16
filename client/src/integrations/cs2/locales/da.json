@@ -1214,7 +1214,7 @@
       "default": "Flådens standard",
       "none": "Ingen",
       "movement": "Movement",
-      "retakes": "Retakes"
+      "retakes": "Retakes (beta)"
     },
     "plugin": {
       "fleet": "Flådeforbindelse",
@@ -1229,7 +1229,7 @@
       "community": "Fællesskab",
       "addons": "Tilføjelser",
       "movement": "Movement",
-      "retakes": "Retakes"
+      "retakes": "Retakes (beta)"
     },
     "pluginHelp": {
       "essentials": "Admins, baneskift, genindlæsning og genstart",

@@ -1214,7 +1214,7 @@
       "default": "Bawaan armada",
       "none": "Tidak ada",
       "movement": "Movement",
-      "retakes": "Retakes"
+      "retakes": "Retakes (beta)"
     },
     "plugin": {
       "fleet": "Koneksi armada",
@@ -1229,7 +1229,7 @@
       "community": "Komunitas",
       "addons": "Addon",
       "movement": "Movement",
-      "retakes": "Retakes"
+      "retakes": "Retakes (beta)"
     },
     "pluginHelp": {
       "essentials": "Admin, ganti peta, reload, dan restart",

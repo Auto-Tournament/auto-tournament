@@ -1246,7 +1246,7 @@
       "default": "Стандартний для парку",
       "none": "Немає",
       "movement": "Мувмент",
-      "retakes": "Retakes"
+      "retakes": "Retakes (beta)"
     },
     "plugin": {
       "fleet": "Зв’язок із парком",
@@ -1261,7 +1261,7 @@
       "community": "Спільнота",
       "addons": "Аддони",
       "movement": "Мувмент",
-      "retakes": "Retakes"
+      "retakes": "Retakes (beta)"
     },
     "pluginHelp": {
       "essentials": "Адміністратори, зміна мапи, перезавантаження й перезапуск",

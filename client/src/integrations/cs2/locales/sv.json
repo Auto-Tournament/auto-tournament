@@ -1214,7 +1214,7 @@
       "default": "Flottans standard",
       "none": "Ingen",
       "movement": "Movement",
-      "retakes": "Retakes"
+      "retakes": "Retakes (beta)"
     },
     "plugin": {
       "fleet": "Flottlänk",
@@ -1229,7 +1229,7 @@
       "community": "Community",
       "addons": "Tillägg",
       "movement": "Movement",
-      "retakes": "Retakes"
+      "retakes": "Retakes (beta)"
     },
     "pluginHelp": {
       "essentials": "Admins, kartbyte, omladdning och omstart",

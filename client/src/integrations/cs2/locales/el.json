@@ -1214,7 +1214,7 @@
       "default": "Προεπιλογή στόλου",
       "none": "Κανένα",
       "movement": "Κίνηση",
-      "retakes": "Retakes"
+      "retakes": "Retakes (beta)"
     },
     "plugin": {
       "fleet": "Σύνδεση στόλου",
@@ -1229,7 +1229,7 @@
       "community": "Κοινότητα",
       "addons": "Πρόσθετα",
       "movement": "Κίνηση",
-      "retakes": "Retakes"
+      "retakes": "Retakes (beta)"
     },
     "pluginHelp": {
       "essentials": "Διαχειριστές, αλλαγή χάρτη, επαναφόρτωση και επανεκκίνηση",

@@ -1230,7 +1230,7 @@
       "none": "Ninguno",
       "tryout": "Prueba de skins",
       "movement": "Movement",
-      "retakes": "Retakes"
+      "retakes": "Retakes (beta)"
     },
     "plugin": {
       "fleet": "Enlace de flota",
@@ -1245,7 +1245,7 @@
       "mapvote": "Votación de mapa",
       "community": "Comunidad",
       "movement": "Movement",
-      "retakes": "Retakes"
+      "retakes": "Retakes (beta)"
     },
     "pluginHelp": {
       "essentials": "Administradores, cambio de mapa, recarga y reinicio",

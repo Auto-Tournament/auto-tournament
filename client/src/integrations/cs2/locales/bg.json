@@ -1214,7 +1214,7 @@
       "default": "По подразбиране за флота",
       "none": "Няма",
       "movement": "Движение",
-      "retakes": "Retakes"
+      "retakes": "Retakes (beta)"
     },
     "plugin": {
       "fleet": "Връзка с флота",
@@ -1229,7 +1229,7 @@
       "community": "Общност",
       "addons": "Добавки",
       "movement": "Движение",
-      "retakes": "Retakes"
+      "retakes": "Retakes (beta)"
     },
     "pluginHelp": {
       "essentials": "Администратори, смяна на карта, презареждане и рестарт",

@@ -1214,7 +1214,7 @@
       "none": "无",
       "tryout": "皮肤试用",
       "movement": "Movement",
-      "retakes": "Retakes"
+      "retakes": "Retakes (beta)"
     },
     "plugin": {
       "fleet": "集群连接",
@@ -1229,7 +1229,7 @@
       "mapvote": "地图投票",
       "community": "社区",
       "movement": "Movement",
-      "retakes": "Retakes"
+      "retakes": "Retakes (beta)"
     },
     "pluginHelp": {
       "essentials": "管理员、换图、重载和重启",

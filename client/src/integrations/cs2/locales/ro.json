@@ -1230,7 +1230,7 @@
       "default": "Implicit flotă",
       "none": "Niciunul",
       "movement": "Mișcare",
-      "retakes": "Retakes"
+      "retakes": "Retakes (beta)"
     },
     "plugin": {
       "fleet": "Legătura cu flota",
@@ -1245,7 +1245,7 @@
       "community": "Comunitate",
       "addons": "Add-on-uri",
       "movement": "Mișcare",
-      "retakes": "Retakes"
+      "retakes": "Retakes (beta)"
     },
     "pluginHelp": {
       "essentials": "Admini, schimbare de hartă, reîncărcare și repornire",

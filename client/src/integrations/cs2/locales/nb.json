@@ -1214,7 +1214,7 @@
       "default": "Standard for flåten",
       "none": "Ingen",
       "movement": "Movement",
-      "retakes": "Retakes"
+      "retakes": "Retakes (beta)"
     },
     "plugin": {
       "fleet": "Flåtekobling",
@@ -1229,7 +1229,7 @@
       "community": "Fellesskap",
       "addons": "Tillegg",
       "movement": "Movement",
-      "retakes": "Retakes"
+      "retakes": "Retakes (beta)"
     },
     "pluginHelp": {
       "essentials": "Administratorer, kartbytte, omlasting og omstart",

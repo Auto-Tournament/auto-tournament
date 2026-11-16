@@ -1230,7 +1230,7 @@
       "default": "Padrão da frota",
       "none": "Nenhum",
       "movement": "Movimentação",
-      "retakes": "Retakes"
+      "retakes": "Retakes (beta)"
     },
     "plugin": {
       "fleet": "Link da frota",
@@ -1245,7 +1245,7 @@
       "community": "Comunidade",
       "addons": "Addons",
       "movement": "Movimentação",
-      "retakes": "Retakes"
+      "retakes": "Retakes (beta)"
     },
     "pluginHelp": {
       "essentials": "Admins, troca de mapa, recarregar e reiniciar",

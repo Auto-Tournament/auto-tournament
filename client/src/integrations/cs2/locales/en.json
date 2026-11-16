@@ -1214,7 +1214,7 @@
       "default": "Fleet default",
       "none": "None",
       "movement": "Movement",
-      "retakes": "Retakes"
+      "retakes": "Retakes (beta)"
     },
     "plugin": {
       "fleet": "Fleet link",
@@ -1229,7 +1229,7 @@
       "community": "Community",
       "addons": "Addons",
       "movement": "Movement",
-      "retakes": "Retakes"
+      "retakes": "Retakes (beta)"
     },
     "pluginHelp": {
       "essentials": "Admins, map change, reload and restart",

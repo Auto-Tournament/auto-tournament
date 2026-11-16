@@ -1230,7 +1230,7 @@
       "none": "Aucun",
       "tryout": "Essai de skins",
       "movement": "Movement",
-      "retakes": "Retakes"
+      "retakes": "Retakes (beta)"
     },
     "plugin": {
       "fleet": "Liaison flotte",
@@ -1245,7 +1245,7 @@
       "mapvote": "Vote de carte",
       "community": "Communauté",
       "movement": "Movement",
-      "retakes": "Retakes"
+      "retakes": "Retakes (beta)"
     },
     "pluginHelp": {
       "essentials": "Admins, changement de carte, rechargement et redémarrage",

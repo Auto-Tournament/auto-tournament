@@ -1214,7 +1214,7 @@
       "default": "Mặc định của cụm",
       "none": "Không có",
       "movement": "Di chuyển",
-      "retakes": "Retakes"
+      "retakes": "Retakes (beta)"
     },
     "plugin": {
       "fleet": "Kết nối cụm máy chủ",
@@ -1229,7 +1229,7 @@
       "community": "Cộng đồng",
       "addons": "Addon",
       "movement": "Di chuyển",
-      "retakes": "Retakes"
+      "retakes": "Retakes (beta)"
     },
     "pluginHelp": {
       "essentials": "Quản trị viên, đổi bản đồ, tải lại và khởi động lại",

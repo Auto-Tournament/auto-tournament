@@ -1246,7 +1246,7 @@
       "default": "Výchozí flotily",
       "none": "Žádná",
       "movement": "Movement",
-      "retakes": "Retakes"
+      "retakes": "Retakes (beta)"
     },
     "plugin": {
       "fleet": "Spojení s flotilou",
@@ -1261,7 +1261,7 @@
       "community": "Komunita",
       "addons": "Doplňky",
       "movement": "Movement",
-      "retakes": "Retakes"
+      "retakes": "Retakes (beta)"
     },
     "pluginHelp": {
       "essentials": "Správci, změna mapy, reload a restart",

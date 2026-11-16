@@ -1214,7 +1214,7 @@
       "default": "ค่าเริ่มต้นของฟลีต",
       "none": "ไม่มี",
       "movement": "Movement",
-      "retakes": "Retakes"
+      "retakes": "Retakes (beta)"
     },
     "plugin": {
       "fleet": "การเชื่อมต่อฟลีต",
@@ -1229,7 +1229,7 @@
       "community": "ชุมชน",
       "addons": "ส่วนเสริม",
       "movement": "Movement",
-      "retakes": "Retakes"
+      "retakes": "Retakes (beta)"
     },
     "pluginHelp": {
       "essentials": "ผู้ดูแล เปลี่ยนแมพ รีโหลด และรีสตาร์ต",

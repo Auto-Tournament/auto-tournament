@@ -1246,7 +1246,7 @@
       "none": "Brak",
       "tryout": "Przymierzalnia skinów",
       "movement": "Movement",
-      "retakes": "Retakes"
+      "retakes": "Retakes (beta)"
     },
     "plugin": {
       "fleet": "Łącze floty",
@@ -1261,7 +1261,7 @@
       "mapvote": "Głosowanie na mapę",
       "community": "Społeczność",
       "movement": "Movement",
-      "retakes": "Retakes"
+      "retakes": "Retakes (beta)"
     },
     "pluginHelp": {
       "essentials": "Admini, zmiana mapy, przeładowanie i restart",

@@ -1214,7 +1214,7 @@
       "default": "Flotta alapértelmezése",
       "none": "Nincs",
       "movement": "Mozgás",
-      "retakes": "Retakes"
+      "retakes": "Retakes (beta)"
     },
     "plugin": {
       "fleet": "Flottakapcsolat",
@@ -1229,7 +1229,7 @@
       "community": "Közösség",
       "addons": "Kiegészítők",
       "movement": "Mozgás",
-      "retakes": "Retakes"
+      "retakes": "Retakes (beta)"
     },
     "pluginHelp": {
       "essentials": "Adminok, pályaváltás, újratöltés és újraindítás",

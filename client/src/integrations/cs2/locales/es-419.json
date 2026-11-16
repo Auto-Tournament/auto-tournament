@@ -1230,7 +1230,7 @@
       "default": "Predeterminado de la flota",
       "none": "Ninguno",
       "movement": "Movement",
-      "retakes": "Retakes"
+      "retakes": "Retakes (beta)"
     },
     "plugin": {
       "fleet": "Enlace de flota",
@@ -1245,7 +1245,7 @@
       "community": "Comunidad",
       "addons": "Complementos",
       "movement": "Movement",
-      "retakes": "Retakes"
+      "retakes": "Retakes (beta)"
     },
     "pluginHelp": {
       "essentials": "Administradores, cambio de mapa, recarga y reinicio",

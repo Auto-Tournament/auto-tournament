@@ -1214,7 +1214,7 @@
       "default": "Filo varsayılanı",
       "none": "Yok",
       "movement": "Hareket",
-      "retakes": "Retakes"
+      "retakes": "Retakes (beta)"
     },
     "plugin": {
       "fleet": "Filo bağlantısı",
@@ -1229,7 +1229,7 @@
       "community": "Topluluk",
       "addons": "Eklentiler",
       "movement": "Hareket",
-      "retakes": "Retakes"
+      "retakes": "Retakes (beta)"
     },
     "pluginHelp": {
       "essentials": "Yöneticiler, harita değişimi, yeniden yükleme ve yeniden başlatma",

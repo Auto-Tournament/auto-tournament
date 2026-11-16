@@ -1214,7 +1214,7 @@
       "default": "フリートのデフォルト",
       "none": "なし",
       "movement": "ムーブメント",
-      "retakes": "Retakes"
+      "retakes": "Retakes (beta)"
     },
     "plugin": {
       "fleet": "フリートリンク",
@@ -1229,7 +1229,7 @@
       "community": "コミュニティ",
       "addons": "アドオン",
       "movement": "ムーブメント",
-      "retakes": "Retakes"
+      "retakes": "Retakes (beta)"
     },
     "pluginHelp": {
       "essentials": "管理者、マップ変更、リロード、再起動",

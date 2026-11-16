@@ -1214,7 +1214,7 @@
       "none": "Geen",
       "tryout": "Skins uitproberen",
       "movement": "Movement",
-      "retakes": "Retakes"
+      "retakes": "Retakes (beta)"
     },
     "plugin": {
       "fleet": "Vlootverbinding",
@@ -1229,7 +1229,7 @@
       "mapvote": "Mapstemming",
       "community": "Community",
       "movement": "Movement",
-      "retakes": "Retakes"
+      "retakes": "Retakes (beta)"
     },
     "pluginHelp": {
       "essentials": "Admins, map wisselen, herladen en herstarten",

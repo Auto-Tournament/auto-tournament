@@ -1246,7 +1246,7 @@
       "default": "По умолчанию для парка",
       "none": "Нет",
       "movement": "Мувмент",
-      "retakes": "Retakes"
+      "retakes": "Retakes (beta)"
     },
     "plugin": {
       "fleet": "Связь с парком",
@@ -1261,7 +1261,7 @@
       "community": "Сообщество",
       "addons": "Аддоны",
       "movement": "Мувмент",
-      "retakes": "Retakes"
+      "retakes": "Retakes (beta)"
     },
     "pluginHelp": {
       "essentials": "Администраторы, смена карты, перезагрузка и перезапуск",

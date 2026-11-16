@@ -1214,7 +1214,7 @@
       "default": "Laivaston oletus",
       "none": "Ei mitään",
       "movement": "Liikkuminen",
-      "retakes": "Retakes"
+      "retakes": "Retakes (beta)"
     },
     "plugin": {
       "fleet": "Laivastoyhteys",
@@ -1229,7 +1229,7 @@
       "community": "Yhteisö",
       "addons": "Lisäosat",
       "movement": "Liikkuminen",
-      "retakes": "Retakes"
+      "retakes": "Retakes (beta)"
     },
     "pluginHelp": {
       "essentials": "Ylläpitäjät, kartan vaihto, uudelleenlataus ja -käynnistys",
