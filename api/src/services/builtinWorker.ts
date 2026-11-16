@@ -8,6 +8,8 @@
  * exits; stopped with the API.
  *
  * AT_BUILTIN_WORKER=0 turns it off (an install that runs its own workers).
+ * AT_WORKER_MAX_MB (default 8192) caps its memory: past it the worker is
+ * killed, so one bad demo can't take the host's memory from the game servers.
  * AT_CS2_DIR (a CS2 game/csgo folder mounted into the container) gives it the
  * radar images; without it the replay draws the map's outline.
  */
@@ -19,13 +21,22 @@ import { addInternalServiceToken } from '../utils/serviceTokens';
 
 export const BUILTIN_WORKER_BIN = process.env.AT_WORKER_BIN || '/app/bin/at-worker';
 
+export const WORKER_MAX_MB = Number(process.env.AT_WORKER_MAX_MB) || 8192;
+
 let child: ChildProcess | null = null;
+let watch: ReturnType<typeof setInterval> | null = null;
 let stopping = false;
 let restarts = 0;
 let timer: ReturnType<typeof setTimeout> | null = null;
 
 function enabled(): boolean {
   return process.env.AT_BUILTIN_WORKER !== '0' && fs.existsSync(BUILTIN_WORKER_BIN);
+}
+
+/** Resident memory in MB from a /proc/<pid>/status text, or null when it has no VmRSS line. */
+export function rssMb(status: string): number | null {
+  const m = /^VmRSS:\s+(\d+)\s+kB/m.exec(status);
+  return m ? Number(m[1]) / 1024 : null;
 }
 
 function pipeLines(stream: NodeJS.ReadableStream | null, level: 'info' | 'warn'): void {
@@ -47,6 +58,8 @@ function run(port: number): void {
     AT_URL: `http://127.0.0.1:${port}`,
     AT_WORKER_TOKEN: secret,
     AT_WORKER_NAME: process.env.AT_WORKER_NAME || 'built-in',
+    // Go's soft limit: the GC works harder well before the hard cap below.
+    GOMEMLIMIT: process.env.GOMEMLIMIT || `${Math.floor(WORKER_MAX_MB * 0.75)}MiB`,
   };
   for (const key of ['AT_CS2_DIR', 'AT_WORKSHOP_DIRS', 'AT_POLL_SECONDS', 'TZ']) {
     if (process.env[key]) env[key] = process.env[key];
@@ -56,7 +69,25 @@ function run(port: number): void {
   pipeLines(child.stdout, 'info');
   pipeLines(child.stderr, 'info');
   child.on('error', (error) => log.warn(`[WORKER] could not start: ${error.message}`));
+  const pid = child.pid;
+  // Polled because a demo grew it by ~100 MB/s: at 2 s it stops well short of the host's memory.
+  watch = setInterval(() => {
+    let mb: number | null = null;
+    try {
+      mb = rssMb(fs.readFileSync(`/proc/${pid}/status`, 'utf8'));
+    } catch {
+      return; // not Linux, or already gone
+    }
+    if (mb !== null && mb > WORKER_MAX_MB && child?.pid === pid) {
+      log.warn(
+        `[WORKER] the built-in demo worker uses ${Math.round(mb)} MB (cap ${WORKER_MAX_MB}); stopping it`
+      );
+      child?.kill('SIGKILL');
+    }
+  }, 2_000);
   child.on('exit', (code, signal) => {
+    if (watch) clearInterval(watch);
+    watch = null;
     child = null;
     if (stopping) return;
     // A run that lasted a while starts the pauses over.
@@ -82,6 +113,8 @@ export function stopBuiltinWorker(): void {
   stopping = true;
   if (timer) clearTimeout(timer);
   timer = null;
+  if (watch) clearInterval(watch);
+  watch = null;
   child?.kill('SIGTERM');
   child = null;
 }
