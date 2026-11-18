@@ -61,23 +61,20 @@ interface Replay {
   damage?: Array<[number, number, number, number]>;
 }
 
-const LISTS = [
-  'players',
-  'frames',
-  'rounds',
-  'kills',
-  'shots',
-  'grenades',
-  'effects',
-  'blinds',
-  'bomb',
-  'damage',
-] as const;
-
 function arraysOrEmpty(r: Replay): Replay {
-  const out = { ...r };
-  for (const k of LISTS) (out as Record<string, unknown>)[k] = r[k] ?? [];
-  return out;
+  return {
+    ...r,
+    players: r.players ?? [],
+    frames: r.frames ?? [],
+    rounds: r.rounds ?? [],
+    kills: r.kills ?? [],
+    shots: r.shots ?? [],
+    grenades: r.grenades ?? [],
+    effects: r.effects ?? [],
+    blinds: r.blinds ?? [],
+    bomb: r.bomb ?? [],
+    damage: r.damage ?? [],
+  };
 }
 
 interface RadarLevel {
