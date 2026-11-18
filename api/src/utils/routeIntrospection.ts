@@ -26,7 +26,8 @@ export type Guard =
   | 'server token or admin'
   | 'compat ingest token'
   | 'integrator token or admin'
-  | 'recorder key or admin';
+  | 'recorder key or admin'
+  | 'recorder key, csm host or admin';
 
 /** Middleware function names we recognise, and what they mean for a caller. */
 const GUARD_BY_MIDDLEWARE: Record<string, Guard> = {
@@ -38,6 +39,7 @@ const GUARD_BY_MIDDLEWARE: Record<string, Guard> = {
   requireCompatIngestToken: 'compat ingest token',
   requireIntegratorAuth: 'integrator token or admin',
   requireRecorder: 'recorder key or admin',
+  requireUploader: 'recorder key, csm host or admin',
 };
 
 export interface Endpoint {

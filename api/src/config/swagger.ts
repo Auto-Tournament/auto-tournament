@@ -420,6 +420,7 @@ const SECURITY_BY_GUARD: Record<Guard, Array<Record<string, string[]>>> = {
   'integrator token or admin': [{ bearerAuth: [] }, { apiToken: [] }],
   // A recorder key (atr_…) is sent as a bearer token, like an admin's.
   'recorder key or admin': [{ bearerAuth: [] }, { apiToken: [] }],
+  'recorder key, csm host or admin': [{ bearerAuth: [] }, { apiToken: [] }],
 };
 
 interface OperationObject {

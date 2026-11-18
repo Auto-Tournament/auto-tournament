@@ -1,17 +1,18 @@
 /**
- * Map radars for the 2D replay (cs2_map_radars), sent by the worker from a
- * CS2 install's own files (worker/radar.go). Nothing of Valve's is in this
+ * Map radars for the 2D replay (cs2_map_radars), sent by the worker or a csm
+ * host from a CS2 install's own files (worker/radar.go). Nothing of Valve's is in this
  * repository: an instance only has the radars its own game install has.
  *
  *   GET /api/game/cs2/radars                    every map and level with its texture CRC
  *   GET /api/game/cs2/radars/:map               a map's levels: position, scale, altitudes, image URL
  *   GET /api/game/cs2/radars/:map/:level.png    the image
- *   PUT /api/game/cs2/radars/:map/:level        a worker's upload (API token) or a recorder's (its key)
+ *   PUT /api/game/cs2/radars/:map/:level        a worker's upload (API token), a recorder's (its key) or a csm host's (rhs_)
  */
 
-import { Router, type Request, type Response } from 'express';
+import { Router, type NextFunction, type Request, type Response } from 'express';
 import { db } from '../../../config/database';
 import { requireRecorder } from '../demos/recorderKeys';
+import { verifyHostToken } from '../fleet/hosts/registry';
 import { log } from '../../../utils/logger';
 import type { Untrusted } from '../../../utils/untrusted';
 
@@ -76,7 +77,22 @@ router.get('/radars/:map/:file', async (req: Request, res: Response) => {
   return res.send(row.png);
 });
 
-router.put('/radars/:map/:level', requireRecorder, async (req: Request, res: Response) => {
+async function requireUploader(req: Request, res: Response, next: NextFunction): Promise<void> {
+  const auth = req.headers.authorization;
+  const token =
+    typeof auth === 'string' && /^bearer rhs_/i.test(auth) ? auth.slice(7).trim() : null;
+  if (!token) return requireRecorder(req, res, next);
+  try {
+    if ((await verifyHostToken(token)).ok) return next();
+  } catch (error) {
+    log.error('[RADARS] host token check failed', { error });
+    res.status(500).json({ success: false, error: 'Could not check the host token' });
+    return;
+  }
+  res.status(401).json({ success: false, error: 'Invalid or revoked host token' });
+}
+
+router.put('/radars/:map/:level', requireUploader, async (req: Request, res: Response) => {
   const map = req.params.map.toLowerCase();
   const level = req.params.level.toLowerCase();
   const b = req.body ?? {};
