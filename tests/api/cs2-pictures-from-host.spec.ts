@@ -1,6 +1,7 @@
 import { test, expect, type APIRequestContext } from '@playwright/test';
 import { signInViaRequest } from '../helpers/auth';
 import { FakeCsm, createPendingHost, enrollHost, newMachineId } from '../helpers/fleetHost';
+import { SPEC_SKINS } from '../helpers/skinCatalogHost';
 
 /**
  * Map and skin pictures come from a csm host's CS2 install (host.asset): the
@@ -87,33 +88,20 @@ test.describe.serial('CS2 pictures from a csm host', () => {
 
   test('the skin catalogue comes from the host', async ({ request, playwright }) => {
     const { csm, token } = await link(request);
-    const catalog = request.get('/api/skins/admin/catalog?all=1&q=spec finish');
+    const catalog = request.get('/api/skins/admin/catalog?all=1&q=spec finish 2');
     const ask = await csm.nextCommand('host.asset');
     expect(ask.payload).toMatchObject({ set: 'catalog', file: 'skins.json' });
-    const skins = {
-      skins: [
-        {
-          weapon: 'weapon_ak47',
-          weaponName: 'AK-47',
-          paintKit: 9999,
-          paintKitName: 'spec_finish',
-          name: 'Spec Finish',
-          rarity: 'rare',
-          image: 'weapon_ak47_spec_finish.webp',
-        },
-      ],
-    };
     const anon = await playwright.request.newContext({ baseURL: test.info().project.use.baseURL });
     const up = await anon.put(`/api/fleet/host/assets/${ask.id}`, {
       headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-      data: skins,
+      data: SPEC_SKINS,
     });
     expect(up.status(), await up.text()).toBe(204);
     csm.sendReliable('host.result', { status: 'ok', output: 'uploaded' }, { ref: ask.id });
     const res = await catalog;
     expect(res.ok(), await res.text()).toBe(true);
     const found = (await res.json()).skins as Array<{ paintKit: number; name: string }>;
-    expect(found.map((s) => [s.paintKit, s.name])).toEqual([[9999, 'Spec Finish']]);
+    expect(found.map((s) => [s.paintKit, s.name])).toEqual([[9002, 'Spec Finish 2']]);
     await anon.dispose();
     csm.close();
   });
