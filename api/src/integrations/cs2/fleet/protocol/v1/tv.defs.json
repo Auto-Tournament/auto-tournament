@@ -37,7 +37,7 @@
     "broadcastSettings": {
       "type": "object",
       "additionalProperties": false,
-      "description": "cmd tv.set args.settings: like broadcastProfile, null = back to the default (server: tv.cfg; match: the match's rules.broadcast)",
+      "description": "cmd tv.set args.settings: like broadcastProfile, null = back to the default (server: [tv]; match: the match's rules.broadcast)",
       "properties": {
         "delay_seconds": {
           "oneOf": [
@@ -124,7 +124,7 @@
       "properties": {
         "available": {
           "type": "boolean",
-          "description": "false: tv.so is loaded but tv.cfg enabled=0 (it touches nothing)"
+          "description": "false: tv.so is loaded but [tv] enabled=0 (it touches nothing)"
         },
         "port": {
           "type": ["integer", "null"],
