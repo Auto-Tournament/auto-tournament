@@ -5,7 +5,7 @@
  * display name, game mode and images, and Valve's current Active Duty list.
  * With no host (and no copy a host sent before), or with `CATALOG_OFFLINE`
  * set, the copy committed next to this file is used
- * (`bundled-maps.json`, refreshed by `scripts/sync-cs2-maps.mjs`), so an
+ * (`bundled-maps.json`, refreshed by `scripts/sync-cs2-maps.mjs` from a host's maps.json), so an
  * air-gapped install and the specs get the same list without the network.
  *
  * `loadMapCatalog` never throws: it always returns a catalogue, and says where
