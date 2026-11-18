@@ -14,8 +14,13 @@ import { log } from '../../../utils/logger';
 import { loadMapCatalog, type LoadedMapCatalog } from './mapCatalog';
 import { syncCs2Maps, type MapSyncMode, type MapSyncResult } from './mapSync';
 import { mapService } from './mapService';
+import { getHostView } from '../fleet/hosts/registry';
+import { hostEvents } from '../fleet/hosts/service';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
+/** A host that reconnects often syncs the maps at most this often. */
+const HOST_SYNC_EVERY_MS = 60 * 60 * 1000;
+let lastHostSync = 0;
 
 export type MapSyncRun = MapSyncResult & Pick<LoadedMapCatalog, 'source' | 'error'>;
 
@@ -46,17 +51,31 @@ function runInBackground(why: string): void {
   running = runMapSync('auto')
     .then(() => undefined)
     .catch((err) => {
-      log.warn(`[CS2 maps] The ${why} map sync failed: ${err instanceof Error ? err.message : String(err)}`);
+      log.warn(
+        `[CS2 maps] The ${why} map sync failed: ${err instanceof Error ? err.message : String(err)}`
+      );
     })
     .finally(() => {
       running = null;
     });
 }
 
-/** Sync now in the background, then once a day. Never throws, never blocks. */
+// At startup the csm host is usually not connected yet: sync again once one that builds maps.json is.
+async function onHostOnline(hostId: string): Promise<void> {
+  if (Date.now() - lastHostSync < HOST_SYNC_EVERY_MS) return;
+  const host = await getHostView(hostId).catch(() => null);
+  if (!host?.capabilities.includes('catalog.v1')) return;
+  if (running) await running;
+  lastHostSync = Date.now();
+  runInBackground('host');
+}
+const hostOnline = (hostId: string) => void onHostOnline(hostId);
+
+/** Sync now, when a csm host connects, then once a day, in the background. Never throws, never blocks. */
 export function startMapAutoSync(): void {
   stopMapAutoSync();
   runInBackground('startup');
+  hostEvents.on('online', hostOnline);
   timer = setInterval(() => runInBackground('daily'), DAY_MS);
   timer.unref?.();
 }
@@ -64,4 +83,5 @@ export function startMapAutoSync(): void {
 export function stopMapAutoSync(): void {
   if (timer) clearInterval(timer);
   timer = null;
+  hostEvents.off('online', hostOnline);
 }
