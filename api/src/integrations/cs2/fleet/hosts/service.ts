@@ -123,6 +123,10 @@ async function pushLicense(hostId: string, force = false): Promise<void> {
 export { hostEvents, commandTargets, joinInventory };
 export type { HostFleetServerRef, HostServerView };
 
+export function connectedHostIds(): string[] {
+  return gateway.connectedHostIds();
+}
+
 export function isHostOnline(hostId: string): boolean {
   return gateway.session(hostId) !== null;
 }

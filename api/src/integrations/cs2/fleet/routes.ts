@@ -26,7 +26,7 @@
  */
 
 import type { Untrusted } from '../../../utils/untrusted';
-import { Router, type NextFunction, type Request, type Response } from 'express';
+import express, { Router, type NextFunction, type Request, type Response } from 'express';
 import { requireAuth, requestActorId } from '../../../middleware/auth';
 import { log } from '../../../utils/logger';
 import { publicOrigin, publicWsOrigin } from '../../../utils/publicOrigin';
@@ -58,6 +58,7 @@ import { getAssignment, syncMatch } from './driver';
 import { listCommands } from './reliable';
 import { liveStateStore } from './state';
 import { enrollHostHandler } from './hosts/routes';
+import { ASSET_MAX_BYTES, hostAssetUploadHandler } from './hosts/assets';
 import { fleetChangedOnWrite } from './adminTopics';
 
 // ---------------------------------------------------------------------------
@@ -116,6 +117,13 @@ fleetEnrollRouter.get('/install-csm.sh', async (req: Request, res: Response) => 
   res.setHeader('Cache-Control', 'no-store');
   return res.send(installCsmScript(publicOrigin(req)));
 });
+
+/** PUT /api/fleet/host/assets/:id: a csm host's answer to host.asset (hosts/assets.ts). */
+fleetEnrollRouter.put(
+  '/host/assets/:id',
+  express.raw({ type: ['image/png', 'image/jpeg', 'image/svg+xml'], limit: ASSET_MAX_BYTES }),
+  hostAssetUploadHandler
+);
 
 /**
  * POST /api/fleet/enroll

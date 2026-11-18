@@ -102,6 +102,7 @@ test.describe('Fleet host protocol v1', () => {
       },
       'logs.tail': { server: 'server-1', source: 'console', lines: 200, follow: true, max_s: 300 },
       'logs.stop': { stream_id: '01J8ZQ4T8W6N3X0F2R5K7M9P1C' },
+      'host.asset': { set: 'skins-256', file: 'weapon_ak47_cu_ak-47_phantom_disruptor.webp' },
       'host.inventory': inventory('fh_x', [
         inventoryServer('server-1'),
         inventoryServer('server-2', { readyup: { installed: null, health: 'not_running' } }),

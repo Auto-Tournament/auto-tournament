@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-tournament.dev/fleet/host/v1/messages/host.asset.json",
+  "title": "host.asset (platform → host)",
+  "description": "Reads one map or skin picture from the host's CS2 install and uploads it with PUT <platform>/api/fleet/host/assets/<this message's id> (Authorization: Bearer the host token; body: the PNG, JPEG or SVG), then answers. Sets: maps-1280 and maps-480 (map screenshots, JPEG), map-icons (<map>_icon.svg), skins-256 and skins (skin previews, PNG; _medium and _heavy are the worn looks). Hosts that can do this list assets.v1 in hello. Reliable; answered by exactly one host.result (ref = this message's id): ok after the upload, not_found when the install has no such picture. Rejected with `expired` when expires_at is past, and with `stale` when the envelope ts is more than 5 min off the host's clock (a command replayed long after it was sent is not run).",
+  "type": "object",
+  "required": ["set", "file"],
+  "properties": {
+    "set": {
+      "enum": ["maps-1280", "maps-480", "map-icons", "skins-256", "skins"]
+    },
+    "file": {
+      "type": "string",
+      "pattern": "^[a-z0-9_-]{1,150}\\.(webp|png|svg)$"
+    },
+    "expires_at": {
+      "$ref": "../defs.json#/$defs/expiresAt"
+    }
+  }
+}
