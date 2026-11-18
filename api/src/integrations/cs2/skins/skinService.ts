@@ -25,7 +25,6 @@ import {
   onlinePlayerIds,
 } from '../../../services/socketService';
 import { WEAPON_DEFINDEX } from './skinDefindex';
-import { prefetchSkinImages } from '../routes/images';
 import {
   bandOf,
   finishPrice,
@@ -73,7 +72,6 @@ export function skinImageUrl(image: string, float?: number | null): string {
 }
 
 /** The background fetch of every full-size skin picture runs once per process. */
-let prefetchStarted = false;
 
 const CONFIG_KEY = 'skins_config';
 const CATALOG_TTL_MS = 60 * 60 * 1000;
@@ -865,14 +863,6 @@ export const skinService = {
       );
       catalogCache = { at: Date.now(), skins, entries: dropEntries(skins) };
       rememberWearLooks(skins);
-      if (!prefetchStarted) {
-        prefetchStarted = true;
-        void prefetchSkinImages(
-          skins
-            .flatMap((sk) => [sk.image, sk.imageMedium, sk.imageHeavy])
-            .filter((f): f is string => typeof f === 'string' && !/^https?:\/\//.test(f))
-        );
-      }
       return skins;
     } catch (error) {
       log.warn('[Skins] Could not read the skin catalogue', { error: (error as Error).message });

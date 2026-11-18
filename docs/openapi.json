@@ -4119,6 +4119,30 @@
         ]
       }
     },
+    "/api/fleet/host/assets/{id}": {
+      "put": {
+        "tags": [
+          "Fleet enrollment"
+        ],
+        "summary": "PUT /api/fleet/host/assets/:id",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
     "/api/fleet/hosts": {
       "get": {
         "tags": [
@@ -5582,7 +5606,7 @@
           "CS2"
         ],
         "summary": "A map or skin picture (public)",
-        "description": "set is maps-1280, maps-480, map-icons, skins-256 or skins. Served from the CS2 module's bundled pictures, else a disk cache filled from cs2-server-manager once.",
+        "description": "set is maps-1280, maps-480, map-icons, skins-256 or skins. Read from a connected csm host's CS2 install the first time, then from the platform's disk cache.",
         "parameters": [
           {
             "in": "path",
@@ -5603,11 +5627,12 @@
         ],
         "responses": {
           "200": {
-            "description": "The picture (WebP",
+            "description": "The picture (JPEG",
             "PNG or SVG)": null
           },
           "404": {
-            "description": "No such set or picture"
+            "description": "No such set or picture",
+            "or no csm host to read it from": null
           }
         }
       }

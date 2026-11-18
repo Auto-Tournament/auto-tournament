@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 775 of them, 489 behind auth —
+Every endpoint this API serves — 776 of them, 489 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -486,6 +486,7 @@ A Ready Up server trades a one-time code or fleet key for its server token; csm 
 | Method | Path | Auth |
 | --- | --- | --- |
 | `GET` | `/api/fleet/install-csm.sh` | public |
+| `PUT` | `/api/fleet/host/assets/:id` | public |
 | `POST` | `/api/fleet/enroll` | public |
 
 ### Fleet

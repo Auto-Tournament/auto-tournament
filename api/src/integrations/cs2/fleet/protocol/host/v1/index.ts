@@ -41,6 +41,7 @@ import serverSetLaunchArgs from './messages/server.set_launch_args.json';
 import updateGame from './messages/host.update_game.json';
 import updatePlugins from './messages/host.update_plugins.json';
 import updatesHold from './messages/host.updates_hold.json';
+import hostAsset from './messages/host.asset.json';
 import hostLicense from './messages/host.license.json';
 import logsTail from './messages/logs.tail.json';
 import logsStop from './messages/logs.stop.json';
@@ -208,7 +209,11 @@ export interface HostCommands {
     max_s?: number;
   };
   'logs.stop': Expiring & { stream_id: string };
+  /** csm with assets.v1: one picture from its CS2 install, uploaded to PUT /api/fleet/host/assets/<id>. */
+  'host.asset': Expiring & { set: HostAssetSet; file: string };
 }
+
+export type HostAssetSet = 'maps-1280' | 'maps-480' | 'map-icons' | 'skins-256' | 'skins';
 
 export type HostCommandType = keyof HostCommands;
 
@@ -261,6 +266,7 @@ export const HOST_COMMAND_TYPES: ReadonlyArray<HostCommandType> = [
   'host.license',
   'logs.tail',
   'logs.stop',
+  'host.asset',
 ];
 
 /**
@@ -325,6 +331,7 @@ export const HOST_MESSAGE_SCHEMAS: Record<string, AnySchemaObject> = {
   'host.license': hostLicense,
   'logs.tail': logsTail,
   'logs.stop': logsStop,
+  'host.asset': hostAsset,
   'host.inventory': inventory,
   'host.health': health,
   'host.result': result,
