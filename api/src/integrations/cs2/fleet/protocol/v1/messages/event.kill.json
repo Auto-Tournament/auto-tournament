@@ -45,6 +45,11 @@
           "type": "integer",
           "minimum": 0,
           "description": "unix ms"
+        },
+        "game_time": {
+          "type": "number",
+          "minimum": 0,
+          "description": "the server's game time (curtime, seconds) when it happened; left out when the server can't read it"
         }
       }
     }
