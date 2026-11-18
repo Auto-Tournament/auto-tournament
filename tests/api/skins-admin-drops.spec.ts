@@ -1,6 +1,5 @@
 import { test, expect } from '@playwright/test';
 import { getAuthHeader, signInAsPlayerViaRequest, signInViaRequest } from '../helpers/auth';
-import { serveSpecCatalog } from '../helpers/skinCatalogHost';
 
 /**
  * An admin gives drops now: a preview names who gets one, then each player
@@ -16,10 +15,6 @@ test(
   async ({ request, playwright }) => {
     await signInViaRequest(request);
     const headers = getAuthHeader();
-    const host = await serveSpecCatalog(
-      request,
-      process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3069'
-    );
     const config = (await (await request.get('/api/skins/admin/config', { headers })).json())
       .config;
     const steamId = `7656119807${String(Date.now()).slice(-7)}`;
@@ -100,7 +95,6 @@ test(
     } finally {
       await request.put('/api/skins/admin/config', { headers, data: config });
       await player.dispose();
-      host.close();
     }
   }
 );

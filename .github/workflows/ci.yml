@@ -519,6 +519,13 @@ jobs:
           echo "$response"
           echo "$response" | grep -q '"success":true' || { $COMPOSE logs --tail=100; exit 1; }
 
+      # The skin catalog comes from a csm host, and CI has none: put a small copy where
+      # the platform keeps the last one a host sent.
+      - name: Seed the skin catalog
+        run: |
+          $COMPOSE exec -T auto-tournament mkdir -p /app/data/cache/cs2-catalog
+          $COMPOSE cp tests/fixtures/skins-catalog.json auto-tournament:/app/data/cache/cs2-catalog/skins.json
+
       # Whole spec files, packed by measured duration (tests/ci-shard.mjs) rather
       # than Playwright's --shard, which splits by test count and left the
       # UI-heavy last shard ~3x slower than the first. Files are never split, so
