@@ -61,6 +61,22 @@ interface Replay {
   damage?: Array<[number, number, number, number]>;
 }
 
+function arraysOrEmpty(r: Replay): Replay {
+  return {
+    ...r,
+    players: r.players ?? [],
+    frames: r.frames ?? [],
+    rounds: r.rounds ?? [],
+    kills: r.kills ?? [],
+    shots: r.shots ?? [],
+    grenades: r.grenades ?? [],
+    effects: r.effects ?? [],
+    blinds: r.blinds ?? [],
+    bomb: r.bomb ?? [],
+    damage: r.damage ?? [],
+  };
+}
+
 interface RadarLevel {
   level: string;
   posX: number;
@@ -173,8 +189,10 @@ export function ReplayViewer({
       .then((r) =>
         r.ok ? (r.json() as Promise<Replay>) : Promise.reject(new Error(String(r.status)))
       )
-      .then((r) => {
+      .then((raw) => {
         if (cancelled) return;
+        // The worker writes an empty list as null (a nil Go slice), and replays on disk keep it.
+        const r = arraysOrEmpty(raw);
         setReplay(r);
         const start = r.rounds.find((x) => x.number === startRound) ?? r.rounds[0];
         setTick(start?.startTick ?? r.frames[0]?.[0] ?? 0);
