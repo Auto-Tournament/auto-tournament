@@ -21,7 +21,7 @@ async function link(request: APIRequestContext) {
   expect(res.status, JSON.stringify(res.body)).toBe(201);
   const csm = await FakeCsm.connect(res.body.token, res.body.host_id, machineId);
   await csm.handshake({
-    capabilities: ['host.v1', 'assets.v1'],
+    capabilities: ['host.v1', 'assets.v1', 'catalog.v1'],
   });
   return { csm, token: res.body.token as string };
 }
@@ -83,5 +83,38 @@ test.describe.serial('CS2 pictures from a csm host', () => {
     for (const path of ['skins/..%2Fpak01.webp', 'nope/de_dust2.webp', 'skins/A.webp']) {
       expect((await request.get(`/api/game/cs2/img/${path}`)).status()).toBe(404);
     }
+  });
+
+  test('the skin catalogue comes from the host', async ({ request, playwright }) => {
+    const { csm, token } = await link(request);
+    const catalog = request.get('/api/skins/admin/catalog?all=1&q=spec finish');
+    const ask = await csm.nextCommand('host.asset');
+    expect(ask.payload).toMatchObject({ set: 'catalog', file: 'skins.json' });
+    const skins = {
+      skins: [
+        {
+          weapon: 'weapon_ak47',
+          weaponName: 'AK-47',
+          paintKit: 9999,
+          paintKitName: 'spec_finish',
+          name: 'Spec Finish',
+          rarity: 'rare',
+          image: 'weapon_ak47_spec_finish.webp',
+        },
+      ],
+    };
+    const anon = await playwright.request.newContext({ baseURL: test.info().project.use.baseURL });
+    const up = await anon.put(`/api/fleet/host/assets/${ask.id}`, {
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      data: skins,
+    });
+    expect(up.status(), await up.text()).toBe(204);
+    csm.sendReliable('host.result', { status: 'ok', output: 'uploaded' }, { ref: ask.id });
+    const res = await catalog;
+    expect(res.ok(), await res.text()).toBe(true);
+    const found = (await res.json()).skins as Array<{ paintKit: number; name: string }>;
+    expect(found.map((s) => [s.paintKit, s.name])).toEqual([[9999, 'Spec Finish']]);
+    await anon.dispose();
+    csm.close();
   });
 });
