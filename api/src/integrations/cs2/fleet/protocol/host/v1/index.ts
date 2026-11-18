@@ -213,7 +213,8 @@ export interface HostCommands {
   'host.asset': Expiring & { set: HostAssetSet; file: string };
 }
 
-export type HostAssetSet = 'maps-1280' | 'maps-480' | 'map-icons' | 'skins-256' | 'skins';
+export type HostAssetSet =
+  'maps-1280' | 'maps-480' | 'map-icons' | 'skins-256' | 'skins' | 'catalog';
 
 export type HostCommandType = keyof HostCommands;
 

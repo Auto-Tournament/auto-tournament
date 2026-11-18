@@ -13,10 +13,9 @@
  * seed, unless a tournament reward pins them.
  */
 
-/* global AbortController */
 import { notificationService } from '../../../services/notificationService';
 import { randomInt } from 'crypto';
-import fetch from 'node-fetch';
+import { fetchHostCatalog } from '../fleet/hosts/assets';
 import { db } from '../../../config/database';
 import { log } from '../../../utils/logger';
 import {
@@ -40,8 +39,6 @@ import type { Untrusted } from '../../../utils/untrusted';
 
 /** Full-size skin pictures, served by the platform (routes/images.ts). */
 export const SKIN_IMAGES_BASE = '/api/game/cs2/img/skins';
-export const SKINS_JSON_URL =
-  'https://raw.githubusercontent.com/Auto-Tournament/cs2-server-manager/master/skin_images/skins.json';
 
 /** The worn looks per light image (from the catalogue), for skinImageUrl. */
 const wearLooks = new Map<string, { medium?: string; heavy?: string }>();
@@ -831,26 +828,12 @@ export const skinService = {
     return next;
   },
 
-  /** csm's skin catalogue, cached for an hour. Empty when it cannot be read. */
+  /** The skin catalogue from a csm host's install, cached for an hour. Empty when there is none. */
   async catalog(): Promise<CatalogSkin[]> {
     if (catalogCache && Date.now() - catalogCache.at < CATALOG_TTL_MS) return catalogCache.skins;
     try {
-      const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), 8000);
-      let body: { skins?: CatalogSkin[] };
-      try {
-        const response = await fetch(SKINS_JSON_URL, {
-          // node-fetch 2 declares its own AbortSignal type; Node's has the same shape.
-          // eslint-disable-next-line no-restricted-syntax -- node-fetch 2's AbortSignal type does not overlap Node's for tsc
-          signal: controller.signal as unknown as NonNullable<
-            Parameters<typeof fetch>[1]
-          >['signal'],
-        });
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        body = (await response.json()) as { skins?: CatalogSkin[] };
-      } finally {
-        clearTimeout(timer);
-      }
+      const body = (await fetchHostCatalog('skins.json')) as { skins?: CatalogSkin[] } | null;
+      if (!body) throw new Error('no csm host has sent one yet');
       const skins = withPrices(
         (body.skins ?? []).filter(
           (s) =>

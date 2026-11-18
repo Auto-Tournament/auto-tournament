@@ -117,6 +117,9 @@ curl -sf -X POST http://localhost:3069/api/catalog/modules/cs2/install \
   -H "Authorization: Bearer ${API_TOKENS#*:}" -H 'Content-Type: application/json' -d '{}' > /dev/null \
   && echo -e "${GREEN}✅ CS2 installed from the catalog${NC}" \
   || echo -e "${YELLOW}⚠️  CS2 was not installed from the catalog (already installed?)${NC}"
+# No csm host here either: the skin catalog the specs use goes where a host's copy would.
+docker compose --env-file .env -f "${COMPOSE_FILE}" -p "${COMPOSE_PROJECT}" exec -T auto-tournament mkdir -p /app/data/cache/cs2-catalog
+docker compose --env-file .env -f "${COMPOSE_FILE}" -p "${COMPOSE_PROJECT}" cp tests/fixtures/skins-catalog.json auto-tournament:/app/data/cache/cs2-catalog/skins.json
 
 # Step 2: Run Playwright tests
 echo ""

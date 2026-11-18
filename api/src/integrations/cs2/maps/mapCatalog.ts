@@ -1,13 +1,11 @@
 /* global AbortController */
 /**
- * The CS2 map catalogue: `map_thumbnails/maps.json` in cs2-server-manager.
- *
- * `csm extract-map-data` writes it from the game files: every map with its
+ * The CS2 map catalogue: maps.json, built by a connected csm host from its own
+ * CS2 install (fleet/hosts/assets.ts fetchHostCatalog): every map with its
  * display name, game mode and images, and Valve's current Active Duty list.
- * It is fetched raw (no GitHub API, so no rate limit and no token), with a
- * timeout and one retry on a new connection. When that fails, or
- * `CATALOG_OFFLINE` is set, the copy committed next to this file is used
- * (`bundled-maps.json`, refreshed by `scripts/sync-cs2-maps.mjs`), so an
+ * With no host (and no copy a host sent before), or with `CATALOG_OFFLINE`
+ * set, the copy committed next to this file is used
+ * (`bundled-maps.json`, refreshed by `scripts/sync-cs2-maps.mjs` from a host's maps.json), so an
  * air-gapped install and the specs get the same list without the network.
  *
  * `loadMapCatalog` never throws: it always returns a catalogue, and says where
@@ -18,15 +16,12 @@ import http from 'http';
 import https from 'https';
 import fetch from 'node-fetch';
 import { log } from '../../../utils/logger';
+import { fetchHostCatalog } from '../fleet/hosts/assets';
 import bundledMapsJson from './bundled-maps.json';
 import type { Untrusted } from '../../../utils/untrusted';
 
-// Images from the platform itself (routes/images.ts: bundled with the module,
-// or fetched once and cached); the catalogue from GitHub, which has a new
-// maps.json minutes after a push where jsDelivr's copy can be a day old.
+// Images from the platform itself (routes/images.ts, read from a csm host and cached).
 export const MAP_THUMBNAILS_BASE = '/api/game/cs2/img/maps-1280';
-export const MAPS_JSON_URL =
-  'https://raw.githubusercontent.com/Auto-Tournament/cs2-server-manager/master/map_thumbnails/maps.json';
 
 /** One attempt may take this long before it is dropped (and retried once). */
 const ATTEMPT_TIMEOUT_MS = 5000;
@@ -145,21 +140,29 @@ function offline(): boolean {
 }
 
 export interface LoadMapCatalogOptions {
-  /** Where maps.json is (tests point this at a local server or a closed port). */
+  /** Fetch maps.json from this URL instead of asking a csm host (tests: a local server or a closed port). */
   url?: string;
   timeoutMs?: number;
   /** Never fetch. Defaults to `CATALOG_OFFLINE`. */
   offline?: boolean;
 }
 
-/** maps.json from GitHub, or the bundled copy when it cannot be had. Never throws. */
+/** maps.json from a csm host (or options.url), or the bundled copy when it cannot be had. Never throws. */
 export async function loadMapCatalog(
   options: LoadMapCatalogOptions = {}
 ): Promise<LoadedMapCatalog> {
-  const url = options.url ?? MAPS_JSON_URL;
+  const url = options.url;
   let error: string;
   if (options.offline ?? offline()) {
     error = 'CATALOG_OFFLINE is set';
+  } else if (!url) {
+    try {
+      const raw = await fetchHostCatalog('maps.json');
+      if (raw) return { catalog: parseMapCatalog(raw), source: 'remote' };
+      error = 'no csm host has sent maps.json yet';
+    } catch (err) {
+      error = err instanceof Error ? err.message : String(err);
+    }
   } else {
     const timeoutMs = options.timeoutMs ?? ATTEMPT_TIMEOUT_MS;
     try {
@@ -179,7 +182,7 @@ export async function loadMapCatalog(
   }
 
   log.warn(
-    `[CS2 maps] Could not get ${url} (${error}); using the map list bundled with the CS2 module`
+    `[CS2 maps] Could not get maps.json${url ? ` from ${url}` : ''} (${error}); using the map list bundled with the CS2 module`
   );
   return { catalog: bundledMapCatalog(), source: 'bundled', error };
 }
