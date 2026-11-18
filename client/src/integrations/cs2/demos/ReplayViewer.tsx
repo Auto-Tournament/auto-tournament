@@ -61,7 +61,18 @@ interface Replay {
   damage?: Array<[number, number, number, number]>;
 }
 
-const LISTS = ['players', 'frames', 'rounds', 'kills', 'shots', 'grenades', 'effects', 'blinds', 'bomb', 'damage'] as const;
+const LISTS = [
+  'players',
+  'frames',
+  'rounds',
+  'kills',
+  'shots',
+  'grenades',
+  'effects',
+  'blinds',
+  'bomb',
+  'damage',
+] as const;
 
 function arraysOrEmpty(r: Replay): Replay {
   const out = { ...r };
