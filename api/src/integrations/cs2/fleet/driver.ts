@@ -53,6 +53,7 @@ import {
   diffAssignConfig,
   generateMatchPassword,
   withLanguages,
+  withRatings,
 } from './assignConfig';
 import { cs2ServerIdOf, fleetServerIdOf } from './link';
 import { fleetInbound, type FleetEventNotice } from './inbound';
@@ -703,7 +704,10 @@ export async function unassignAll(
  */
 async function withHold(matchSlug: string, config: AssignConfig): Promise<AssignConfig> {
   const hold = await holdOf(matchSlug);
-  const withTimer = await withFullTeam(matchSlug, await withPlayerLanguages(config));
+  const withTimer = await withFullTeam(
+    matchSlug,
+    await withPlayerRatings(matchSlug, await withPlayerLanguages(config))
+  );
   if (!hold?.heldUntil) return withTimer;
   return {
     ...withTimer,
@@ -720,6 +724,26 @@ async function withPlayerLanguages(config: AssignConfig): Promise<AssignConfig> 
     ids
   );
   return withLanguages(config, new Map(rows.map((r) => [r.id, r.language])));
+}
+
+/**
+ * Each rated player's rating in the match's game (services/gameRatings), which
+ * Ready Up shows as the CS Rating on the Tab scoreboard. Unrated players (still
+ * on their seed) get none, so Tab shows no number for them.
+ */
+async function withPlayerRatings(matchSlug: string, config: AssignConfig): Promise<AssignConfig> {
+  const ids = [...config.team1.players, ...config.team2.players].map((p) => p.steamid64);
+  if (ids.length === 0) return config;
+  const { getGameRatings, ratingGame } = await import('../../../services/gameRatings');
+  const match = await db.queryOneAsync<{ game: string | null }>(
+    'SELECT game FROM matches WHERE slug = ?',
+    [matchSlug]
+  );
+  const ratings = await getGameRatings(ids, ratingGame(match?.game)).catch(() => null);
+  if (!ratings) return config;
+  const rated = new Map<string, number>();
+  for (const [id, r] of ratings) if (r.rated) rated.set(id, r.elo);
+  return withRatings(config, rated);
 }
 
 /** The full-team timer and the walkover choice for the server's HUD (`rules.full_team`). */

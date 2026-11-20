@@ -11,6 +11,7 @@ import {
   pausesOnDisconnect,
   rostersFull,
   withLanguages,
+  withRatings,
 } from '../../api/src/integrations/cs2/fleet/assignConfig';
 import { validatePayload } from '../../api/src/integrations/cs2/fleet/protocol/v1';
 import type { MatchConfig } from '../../api/src/types/match.types';
@@ -488,6 +489,50 @@ test.describe('Fleet match.assign config', () => {
     );
     expect(diffAssignConfig(base, joined)).toContainEqual(
       expect.objectContaining({ op: 'add_player', steamid64: STEAM(8), language: 'ja' })
+    );
+    expect(
+      validatePayload('match.update', {
+        match_id: 'r1m1',
+        epoch: 1,
+        base_config_rev: 1,
+        config_rev: 2,
+        ops: diffAssignConfig(base, joined),
+      })
+    ).toEqual({ ok: true, errors: [] });
+  });
+
+  test('player ratings: set where known (whole, 0-99999), sent with a joining player, valid for the schema', () => {
+    const base = buildAssignConfig(tournamentConfig(), 'pw');
+    const config = withRatings(
+      base,
+      new Map([
+        [STEAM(1), 1849.6],
+        [STEAM(3), 123456],
+      ])
+    );
+    expect(config.team1.players.find((p) => p.steamid64 === STEAM(1))?.rating).toBe(1850);
+    expect(config.team2.players.find((p) => p.steamid64 === STEAM(3))?.rating).toBe(99999);
+    expect(config.team1.players.find((p) => p.steamid64 === STEAM(2))).not.toHaveProperty('rating');
+    expect(base.team1.players.some((p) => 'rating' in p)).toBe(false); // the input is not changed
+    expect(
+      validatePayload('match.assign', { match_id: 'r1m1', epoch: 1, config_rev: 1, config })
+    ).toEqual(expect.objectContaining({ ok: true }));
+
+    const joined = withRatings(
+      buildAssignConfig(
+        tournamentConfig({
+          team1: {
+            id: 'team-a',
+            name: 'Alpha',
+            players: { [STEAM(1)]: 'alice', [STEAM(2)]: 'bob', [STEAM(8)]: 'dave' },
+          },
+        }),
+        'pw'
+      ),
+      new Map([[STEAM(8), 2100]])
+    );
+    expect(diffAssignConfig(base, joined)).toContainEqual(
+      expect.objectContaining({ op: 'add_player', steamid64: STEAM(8), rating: 2100 })
     );
     expect(
       validatePayload('match.update', {
