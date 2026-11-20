@@ -385,6 +385,27 @@ export function withLanguages(
   return { ...config, team1: add(config.team1), team2: add(config.team2) };
 }
 
+/** Each rostered player's platform `rating` and `rating_wins` from `ratings` (steamid64 -> both); players without one stay as they are. */
+export function withRatings(
+  config: AssignConfig,
+  ratings: ReadonlyMap<string, { rating: number; wins: number }>
+): AssignConfig {
+  const add = (side: AssignTeam): AssignTeam => ({
+    ...side,
+    players: side.players.map((p) => {
+      const r = ratings.get(p.steamid64);
+      if (!r || !Number.isFinite(r.rating)) return p;
+      const wins = Number.isFinite(r.wins) ? Math.min(999999, Math.max(0, Math.round(r.wins))) : 0;
+      return {
+        ...p,
+        rating: Math.min(99999, Math.max(0, Math.round(r.rating))),
+        rating_wins: wins,
+      };
+    }),
+  });
+  return { ...config, team1: add(config.team1), team2: add(config.team2) };
+}
+
 /** Both sides have five players on the roster (subs and coaches not counted). */
 export function rostersFull(config: Pick<AssignConfig, 'team1' | 'team2'>): boolean {
   return (['team1', 'team2'] as const).every(
@@ -468,6 +489,8 @@ export function diffAssignConfig(
         name: now.player.name,
         ...(now.player.role ? { role: now.player.role } : {}),
         ...(now.player.language ? { language: now.player.language } : {}),
+        ...(now.player.rating !== undefined ? { rating: now.player.rating } : {}),
+        ...(now.player.rating_wins !== undefined ? { rating_wins: now.player.rating_wins } : {}),
       });
     } else if (now.player.language && now.player.language !== was.player.language) {
       // The player saved a new site language (onPlayerLanguageChanged).

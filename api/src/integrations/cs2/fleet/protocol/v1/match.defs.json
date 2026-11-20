@@ -49,6 +49,18 @@
       "maxLength": 16,
       "pattern": "^[a-z]{2,3}(-[A-Za-z0-9]{2,4})?$"
     },
+    "rating": {
+      "description": "The player's platform rating in the match's game (whole number, e.g. 1850). Ready Up shows it as the CS Rating on the Tab scoreboard; no field: no rating shown.",
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 99999
+    },
+    "rating_wins": {
+      "description": "The player's wins in the match's game on the platform, shown with the rating (CS2 Premier's wins). Default 0.",
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 999999
+    },
     "score": {
       "type": "object",
       "required": ["team1", "team2"],
@@ -437,6 +449,12 @@
         },
         "language": {
           "$ref": "#/$defs/language"
+        },
+        "rating": {
+          "$ref": "#/$defs/rating"
+        },
+        "rating_wins": {
+          "$ref": "#/$defs/rating_wins"
         }
       }
     },
