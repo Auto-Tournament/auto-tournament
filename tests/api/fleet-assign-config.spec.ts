@@ -506,11 +506,14 @@ test.describe('Fleet match.assign config', () => {
     const config = withRatings(
       base,
       new Map([
-        [STEAM(1), 1849.6],
-        [STEAM(3), 123456],
+        [STEAM(1), { rating: 1849.6, wins: 12 }],
+        [STEAM(3), { rating: 123456, wins: 0 }],
       ])
     );
-    expect(config.team1.players.find((p) => p.steamid64 === STEAM(1))?.rating).toBe(1850);
+    expect(config.team1.players.find((p) => p.steamid64 === STEAM(1))).toMatchObject({
+      rating: 1850,
+      rating_wins: 12,
+    });
     expect(config.team2.players.find((p) => p.steamid64 === STEAM(3))?.rating).toBe(99999);
     expect(config.team1.players.find((p) => p.steamid64 === STEAM(2))).not.toHaveProperty('rating');
     expect(base.team1.players.some((p) => 'rating' in p)).toBe(false); // the input is not changed
@@ -529,10 +532,15 @@ test.describe('Fleet match.assign config', () => {
         }),
         'pw'
       ),
-      new Map([[STEAM(8), 2100]])
+      new Map([[STEAM(8), { rating: 2100, wins: 3 }]])
     );
     expect(diffAssignConfig(base, joined)).toContainEqual(
-      expect.objectContaining({ op: 'add_player', steamid64: STEAM(8), rating: 2100 })
+      expect.objectContaining({
+        op: 'add_player',
+        steamid64: STEAM(8),
+        rating: 2100,
+        rating_wins: 3,
+      })
     );
     expect(
       validatePayload('match.update', {

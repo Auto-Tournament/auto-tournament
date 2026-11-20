@@ -727,8 +727,9 @@ async function withPlayerLanguages(config: AssignConfig): Promise<AssignConfig> 
 }
 
 /**
- * Each rated player's rating in the match's game (services/gameRatings), which
- * Ready Up shows as the CS Rating on the Tab scoreboard. Unrated players (still
+ * Each rated player's rating in the match's game (services/gameRatings) and
+ * their wins there (player_rating_history, as the leaderboard counts them),
+ * which Ready Up shows as the CS Rating on the Tab scoreboard. Unrated players (still
  * on their seed) get none, so Tab shows no number for them.
  */
 async function withPlayerRatings(matchSlug: string, config: AssignConfig): Promise<AssignConfig> {
@@ -739,10 +740,22 @@ async function withPlayerRatings(matchSlug: string, config: AssignConfig): Promi
     'SELECT game FROM matches WHERE slug = ?',
     [matchSlug]
   );
-  const ratings = await getGameRatings(ids, ratingGame(match?.game)).catch(() => null);
+  const game = ratingGame(match?.game);
+  const ratings = await getGameRatings(ids, game).catch(() => null);
   if (!ratings) return config;
-  const rated = new Map<string, number>();
-  for (const [id, r] of ratings) if (r.rated) rated.set(id, r.elo);
+  const wins = await db
+    .queryAsync<{ player_id: string; wins: number | string }>(
+      `SELECT player_id, COUNT(*) AS wins FROM player_rating_history
+        WHERE match_result = 'win' AND LOWER(TRIM(COALESCE(game, 'cs2'))) = ?
+          AND player_id = ANY(?::text[])
+        GROUP BY player_id`,
+      [game, ids]
+    )
+    .catch(() => []);
+  const winsOf = new Map(wins.map((w) => [w.player_id, Number(w.wins)]));
+  const rated = new Map<string, { rating: number; wins: number }>();
+  for (const [id, r] of ratings)
+    if (r.rated) rated.set(id, { rating: r.elo, wins: winsOf.get(id) ?? 0 });
   return withRatings(config, rated);
 }
 

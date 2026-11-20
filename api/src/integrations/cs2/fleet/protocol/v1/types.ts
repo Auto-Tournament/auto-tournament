@@ -254,6 +254,8 @@ export interface AssignPlayer {
   language?: string;
   /** The player's platform rating in the match's game; Ready Up shows it as the CS Rating in Tab. */
   rating?: number;
+  /** The player's platform wins in that game, shown with the rating. */
+  rating_wins?: number;
 }
 
 export interface AssignTeam {
@@ -503,6 +505,7 @@ export type MatchUpdateOp =
       role?: PlayerRole;
       language?: string;
       rating?: number;
+      rating_wins?: number;
     }
   | { op: 'remove_player'; steamid64: U64s }
   /** Only to a server with the `match.language.v1` capability. */

@@ -55,6 +55,12 @@
       "minimum": 0,
       "maximum": 99999
     },
+    "rating_wins": {
+      "description": "The player's wins in the match's game on the platform, shown with the rating (CS2 Premier's wins). Default 0.",
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 999999
+    },
     "score": {
       "type": "object",
       "required": ["team1", "team2"],
@@ -446,6 +452,9 @@
         },
         "rating": {
           "$ref": "#/$defs/rating"
+        },
+        "rating_wins": {
+          "$ref": "#/$defs/rating_wins"
         }
       }
     },
