@@ -252,6 +252,10 @@ export interface AssignPlayer {
   role?: PlayerRole;
   /** The player's site language (`players.language`, e.g. `nb`); Ready Up speaks English without one. */
   language?: string;
+  /** The player's platform rating in the match's game; Ready Up shows it as the CS Rating in Tab. */
+  rating?: number;
+  /** The player's platform wins in that game, shown with the rating. */
+  rating_wins?: number;
 }
 
 export interface AssignTeam {
@@ -500,6 +504,8 @@ export type MatchUpdateOp =
       name: string;
       role?: PlayerRole;
       language?: string;
+      rating?: number;
+      rating_wins?: number;
     }
   | { op: 'remove_player'; steamid64: U64s }
   /** Only to a server with the `match.language.v1` capability. */

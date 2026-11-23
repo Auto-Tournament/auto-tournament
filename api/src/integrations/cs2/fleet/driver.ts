@@ -53,6 +53,7 @@ import {
   diffAssignConfig,
   generateMatchPassword,
   withLanguages,
+  withRatings,
 } from './assignConfig';
 import { cs2ServerIdOf, fleetServerIdOf } from './link';
 import { fleetInbound, type FleetEventNotice } from './inbound';
@@ -703,7 +704,10 @@ export async function unassignAll(
  */
 async function withHold(matchSlug: string, config: AssignConfig): Promise<AssignConfig> {
   const hold = await holdOf(matchSlug);
-  const withTimer = await withFullTeam(matchSlug, await withPlayerLanguages(config));
+  const withTimer = await withFullTeam(
+    matchSlug,
+    await withPlayerRatings(matchSlug, await withPlayerLanguages(config))
+  );
   if (!hold?.heldUntil) return withTimer;
   return {
     ...withTimer,
@@ -720,6 +724,47 @@ async function withPlayerLanguages(config: AssignConfig): Promise<AssignConfig> 
     ids
   );
   return withLanguages(config, new Map(rows.map((r) => [r.id, r.language])));
+}
+
+/**
+ * Each rated player's rating in the match's game (player_game_ratings) and
+ * their wins there (player_rating_history, as the leaderboard counts them),
+ * which Ready Up shows as the CS Rating on the Tab scoreboard. Unrated players (still
+ * on their seed) get none, so Tab shows no number for them.
+ */
+async function withPlayerRatings(matchSlug: string, config: AssignConfig): Promise<AssignConfig> {
+  const ids = [...config.team1.players, ...config.team2.players].map((p) => p.steamid64);
+  if (ids.length === 0) return config;
+  const match = await db.queryOneAsync<{ game: string | null }>(
+    'SELECT game FROM matches WHERE slug = ?',
+    [matchSlug]
+  );
+  // services/gameRatings' ratingGame and its table, read here directly: the cs2
+  // module reaches core services only through the host bridge (modules/hostBridge.ts).
+  const game = (match?.game ?? '').trim().toLowerCase() || 'cs2';
+  const ratings = await db
+    .queryAsync<{ player_id: string; current_elo: number | string }>(
+      `SELECT player_id, current_elo FROM player_game_ratings
+        WHERE game = ? AND player_id = ANY(?::text[])`,
+      [game, ids]
+    )
+    .catch(() => null);
+  if (!ratings) return config;
+  const wins = await db
+    .queryAsync<{ player_id: string; wins: number | string }>(
+      `SELECT player_id, COUNT(*) AS wins FROM player_rating_history
+        WHERE match_result = 'win' AND LOWER(TRIM(COALESCE(game, 'cs2'))) = ?
+          AND player_id = ANY(?::text[])
+        GROUP BY player_id`,
+      [game, ids]
+    )
+    .catch(() => []);
+  const winsOf = new Map(wins.map((w) => [w.player_id, Number(w.wins)]));
+  const rated = new Map<string, { rating: number; wins: number }>();
+  // A row means a rated match or a rating an admin set; players without one are on their seed.
+  for (const r of ratings)
+    rated.set(r.player_id, { rating: Number(r.current_elo), wins: winsOf.get(r.player_id) ?? 0 });
+  return withRatings(config, rated);
 }
 
 /** The full-team timer and the walkover choice for the server's HUD (`rules.full_team`). */
