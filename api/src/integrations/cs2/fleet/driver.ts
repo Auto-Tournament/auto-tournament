@@ -727,7 +727,7 @@ async function withPlayerLanguages(config: AssignConfig): Promise<AssignConfig> 
 }
 
 /**
- * Each rated player's rating in the match's game (services/gameRatings) and
+ * Each rated player's rating in the match's game (player_game_ratings) and
  * their wins there (player_rating_history, as the leaderboard counts them),
  * which Ready Up shows as the CS Rating on the Tab scoreboard. Unrated players (still
  * on their seed) get none, so Tab shows no number for them.
@@ -735,13 +735,20 @@ async function withPlayerLanguages(config: AssignConfig): Promise<AssignConfig> 
 async function withPlayerRatings(matchSlug: string, config: AssignConfig): Promise<AssignConfig> {
   const ids = [...config.team1.players, ...config.team2.players].map((p) => p.steamid64);
   if (ids.length === 0) return config;
-  const { getGameRatings, ratingGame } = await import('../../../services/gameRatings');
   const match = await db.queryOneAsync<{ game: string | null }>(
     'SELECT game FROM matches WHERE slug = ?',
     [matchSlug]
   );
-  const game = ratingGame(match?.game);
-  const ratings = await getGameRatings(ids, game).catch(() => null);
+  // services/gameRatings' ratingGame and its table, read here directly: the cs2
+  // module reaches core services only through the host bridge (modules/hostBridge.ts).
+  const game = (match?.game ?? '').trim().toLowerCase() || 'cs2';
+  const ratings = await db
+    .queryAsync<{ player_id: string; current_elo: number | string }>(
+      `SELECT player_id, current_elo FROM player_game_ratings
+        WHERE game = ? AND player_id = ANY(?::text[])`,
+      [game, ids]
+    )
+    .catch(() => null);
   if (!ratings) return config;
   const wins = await db
     .queryAsync<{ player_id: string; wins: number | string }>(
@@ -754,8 +761,9 @@ async function withPlayerRatings(matchSlug: string, config: AssignConfig): Promi
     .catch(() => []);
   const winsOf = new Map(wins.map((w) => [w.player_id, Number(w.wins)]));
   const rated = new Map<string, { rating: number; wins: number }>();
-  for (const [id, r] of ratings)
-    if (r.rated) rated.set(id, { rating: r.elo, wins: winsOf.get(id) ?? 0 });
+  // A row means a rated match or a rating an admin set; players without one are on their seed.
+  for (const r of ratings)
+    rated.set(r.player_id, { rating: Number(r.current_elo), wins: winsOf.get(r.player_id) ?? 0 });
   return withRatings(config, rated);
 }
 
