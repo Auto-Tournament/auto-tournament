@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { getAuthHeader, signInViaRequest } from '../helpers/auth';
+import { deleteAllTournaments } from '../helpers/tournaments';
 import {
   FleetTestClient,
   createFleetKey,
@@ -33,8 +34,9 @@ test(
     test.setTimeout(90_000);
     expect(await signInViaRequest(request)).toBe(true);
     await resetEnrollRateLimit(request);
-    // No bracket matches waiting for a server: the allocator would hand ours one first.
-    await request.delete('/api/tournament', { headers: getAuthHeader() });
+    // No bracket matches waiting for a server: the allocator would hand ours one first. Every
+    // tournament, not only the current one: another spec's can still have a match waiting.
+    await deleteAllTournaments(request);
     const key = await createFleetKey(request, { name: 'setup-runs-tests' });
     const installId = newInstallId();
     const enrolled = await enroll(request, { key: key.value }, installId);
