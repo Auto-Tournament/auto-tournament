@@ -37,6 +37,15 @@ test(
     // No bracket matches waiting for a server: the allocator would hand ours one first. Every
     // tournament, not only the current one: another spec's can still have a match waiting.
     await deleteAllTournaments(request);
+    // ...nor a match outside any tournament (another spec's quick match or veto).
+    const waiting = (await (
+      await request.get('/api/matches', { headers: getAuthHeader() })
+    ).json()) as { matches?: Array<{ slug: string; status: string; serverId?: string }> };
+    for (const m of waiting.matches ?? []) {
+      if (['pending', 'ready'].includes(m.status) && !m.serverId) {
+        await request.post(`/api/matches/${m.slug}/force-cancel`, { headers: getAuthHeader() });
+      }
+    }
     const key = await createFleetKey(request, { name: 'setup-runs-tests' });
     const installId = newInstallId();
     const enrolled = await enroll(request, { key: key.value }, installId);
