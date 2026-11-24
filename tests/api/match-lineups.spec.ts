@@ -126,6 +126,18 @@ test.describe('Match lineups', () => {
       });
       expect(fakeAdmin.status()).toBe(403);
 
+      // The owner, but from another site or not as JSON: refused before anything is read.
+      const crossSite = await owner.put(`/api/match-lineups/${slug}/${a.side}`, {
+        headers: { Origin: 'https://elsewhere.example' },
+        data: { players: [mates[2], mates[3]] },
+      });
+      expect(crossSite.status()).toBe(403);
+      const notJson = await owner.put(`/api/match-lineups/${slug}/${a.side}`, {
+        headers: { 'Content-Type': 'text/plain' },
+        data: JSON.stringify({ players: [mates[2], mates[3]] }),
+      });
+      expect(notJson.status()).toBe(415);
+
       // The owner: wrong count and a stranger are rejected; two of the team are saved.
       const tooMany = await owner.put(`/api/match-lineups/${slug}/${a.side}`, {
         data: { players: [mates[1], mates[2], mates[3]] },

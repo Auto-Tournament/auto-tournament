@@ -68,7 +68,12 @@ function parseCookies(cookieHeader: string | undefined): Record<string, string> 
       .filter(Boolean)
       .map((part) => {
         const [name, ...rest] = part.split('=');
-        return [name, decodeURIComponent(rest.join('='))];
+        // A malformed %-escape in any cookie must not throw.
+        try {
+          return [name, decodeURIComponent(rest.join('='))];
+        } catch {
+          return [name, rest.join('=')];
+        }
       })
   );
 }
