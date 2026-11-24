@@ -406,6 +406,16 @@ export function withRatings(
   return { ...config, team1: add(config.team1), team2: add(config.team2) };
 }
 
+/** `hud: false` on the players who chose chat only (players.ingame_hud); the rest send nothing. */
+export function withHud(config: AssignConfig, chatOnly: ReadonlySet<string>): AssignConfig {
+  if (chatOnly.size === 0) return config;
+  const add = (side: AssignTeam): AssignTeam => ({
+    ...side,
+    players: side.players.map((p) => (chatOnly.has(p.steamid64) ? { ...p, hud: false } : p)),
+  });
+  return { ...config, team1: add(config.team1), team2: add(config.team2) };
+}
+
 /** Both sides have five players on the roster (subs and coaches not counted). */
 export function rostersFull(config: Pick<AssignConfig, 'team1' | 'team2'>): boolean {
   return (['team1', 'team2'] as const).every(
@@ -491,6 +501,7 @@ export function diffAssignConfig(
         ...(now.player.language ? { language: now.player.language } : {}),
         ...(now.player.rating !== undefined ? { rating: now.player.rating } : {}),
         ...(now.player.rating_wins !== undefined ? { rating_wins: now.player.rating_wins } : {}),
+        ...(now.player.hud === false ? { hud: false } : {}),
       });
     } else if (now.player.language && now.player.language !== was.player.language) {
       // The player saved a new site language (onPlayerLanguageChanged).

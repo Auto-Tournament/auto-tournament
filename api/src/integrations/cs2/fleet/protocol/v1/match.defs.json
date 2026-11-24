@@ -61,6 +61,10 @@
       "minimum": 0,
       "maximum": 999999
     },
+    "hud": {
+      "description": "The player's in-game HUD choice on the platform: false = no custom HUD, Ready Up uses the chat and the centre panel for them (as `.hud off`). No field or true: the custom HUD.",
+      "type": "boolean"
+    },
     "score": {
       "type": "object",
       "required": ["team1", "team2"],
@@ -455,6 +459,9 @@
         },
         "rating_wins": {
           "$ref": "#/$defs/rating_wins"
+        },
+        "hud": {
+          "$ref": "#/$defs/hud"
         }
       }
     },

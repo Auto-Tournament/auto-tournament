@@ -54,6 +54,7 @@ import {
   generateMatchPassword,
   withLanguages,
   withRatings,
+  withHud,
 } from './assignConfig';
 import { cs2ServerIdOf, fleetServerIdOf } from './link';
 import { fleetInbound, type FleetEventNotice } from './inbound';
@@ -706,7 +707,7 @@ async function withHold(matchSlug: string, config: AssignConfig): Promise<Assign
   const hold = await holdOf(matchSlug);
   const withTimer = await withFullTeam(
     matchSlug,
-    await withPlayerRatings(matchSlug, await withPlayerLanguages(config))
+    await withPlayerRatings(matchSlug, await withPlayerHud(await withPlayerLanguages(config)))
   );
   if (!hold?.heldUntil) return withTimer;
   return {
@@ -724,6 +725,19 @@ async function withPlayerLanguages(config: AssignConfig): Promise<AssignConfig> 
     ids
   );
   return withLanguages(config, new Map(rows.map((r) => [r.id, r.language])));
+}
+
+/** The players who chose chat only on the account page (`players.ingame_hud`): hud:false. */
+async function withPlayerHud(config: AssignConfig): Promise<AssignConfig> {
+  const ids = [...config.team1.players, ...config.team2.players].map((p) => p.steamid64);
+  if (ids.length === 0) return config;
+  const rows = await db
+    .queryAsync<{ id: string }>(
+      `SELECT id FROM players WHERE ingame_hud = FALSE AND id IN (${ids.map(() => '?').join(', ')})`,
+      ids
+    )
+    .catch(() => []);
+  return withHud(config, new Set(rows.map((r) => r.id)));
 }
 
 /**

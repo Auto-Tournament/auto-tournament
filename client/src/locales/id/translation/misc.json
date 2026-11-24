@@ -218,6 +218,20 @@
       "save": "Simpan",
       "saved": "Nama tersimpan. Server game memakainya mulai pertandingan Anda berikutnya.",
       "saveFailed": "Tidak dapat menyimpan nama Anda"
+    },
+    "hud": {
+      "title": "HUD dalam game",
+      "description": "Cara Ready Up menampilkan info di server Auto Tournament: HUD kami di layar, atau hanya chat. Ketik .hud di game untuk mengganti selama sesi itu.",
+      "optionHud": "HUD Auto Tournament",
+      "optionHudHint": "Menu, tombol siap, dan kartu ronde di layar.",
+      "optionChat": "Hanya chat",
+      "optionChatHint": "Semua datang sebagai baris chat. Tidak ada tambahan di layar.",
+      "previewMenu": "Menu pertandingan",
+      "previewReady": "Siap",
+      "previewChatReady": "ketik .r saat siap (4/10 siap)",
+      "previewChatTip": "Butuh jeda, admin, atau menyerah? Ketik .menu di chat.",
+      "saved": "Tersimpan. Berlaku mulai pertandinganmu berikutnya.",
+      "saveFailed": "Gagal menyimpan pengaturan HUD kamu."
     }
   },
   "home": {

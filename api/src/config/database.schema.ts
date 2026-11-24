@@ -373,6 +373,7 @@ export function getSchemaSQL(): string {
       last_sign_in_at INTEGER, -- Epoch of the player's last sign-in (Steam or SSO); NULL = never since this column exists. Admin-only, never in a public response
       last_seen_at INTEGER, -- Epoch the player last closed the site (their last socket left); shown to their friends only
       party_invites_from TEXT NOT NULL DEFAULT 'everyone', -- Who may invite them to a matchmaking party: 'everyone' | 'friends' | 'nobody'
+      ingame_hud BOOLEAN NOT NULL DEFAULT TRUE, -- The in-game HUD on Ready Up servers (account page): FALSE = chat only, sent as hud:false per player in match.assign
       language TEXT, -- The site language the player last used (a code from the language menu, e.g. 'nb'); sent per player to Ready Up in match.assign. NULL = not known yet
       notification_settings TEXT, -- JSON: per kind of notice, 'off' | 'bell' | 'sound' (services/notificationService); NULL = the defaults
       deleted_at INTEGER, -- Epoch an admin deleted the player: a tombstone named "Deleted player" that keeps their match rows; nothing else of theirs is left (services/playerModeration.ts)

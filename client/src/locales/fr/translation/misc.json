@@ -219,6 +219,20 @@
       "save": "Enregistrer",
       "saved": "Nom enregistré. Les serveurs l'utiliseront dès ton prochain match.",
       "saveFailed": "Impossible d'enregistrer ton nom"
+    },
+    "hud": {
+      "title": "HUD en jeu",
+      "description": "Comment Ready Up affiche les choses sur les serveurs Auto Tournament : notre HUD à l'écran, ou le chat seul. Tape .hud en jeu pour changer pendant cette session.",
+      "optionHud": "HUD Auto Tournament",
+      "optionHudHint": "Menus, bouton prêt et cartes de manche à l'écran.",
+      "optionChat": "Chat seul",
+      "optionChatHint": "Tout arrive en lignes de chat. Rien de plus à l'écran.",
+      "previewMenu": "Menu du match",
+      "previewReady": "Prêt",
+      "previewChatReady": "tape .r quand tu es prêt (4/10 prêts)",
+      "previewChatTip": "Besoin d'une pause, d'un admin ou d'abandonner ? Tape .menu dans le chat.",
+      "saved": "Enregistré. Effectif dès ton prochain match.",
+      "saveFailed": "Impossible d'enregistrer ton réglage HUD."
     }
   },
   "home": {
