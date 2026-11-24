@@ -591,6 +591,10 @@ export async function submitReport(input: SubmitInput): Promise<ReportOutcome> {
   if (!REPORTABLE_STATUSES.has(match.status)) {
     return fail(409, `Match is ${match.status}; a finished match has to be reopened first`);
   }
+  // A disputed report waits for an admin; a captain reporting again would supersede the dispute.
+  if (input.actor.role === 'captain' && (await openReport(match.slug))?.status === 'disputed') {
+    return fail(409, 'The other team disputed the report, so an admin decides this match');
+  }
 
   const config = configOf(match);
   const check = validateResult(input.result, {

@@ -571,6 +571,14 @@ test.describe.serial('Manual-report: reporting a tournament to a champion', () =
       expect(parked.winnerId).toBeNull();
       // A disputed report is still the open one, so nothing can be reported over it.
       expect(parked.open?.status).toBe('disputed');
+      // Neither captain can report over it: the dispute waits for an admin.
+      for (const teamId of [match.team1!.id, match.team2!.id]) {
+        const again = await asCaptain(request, teamId, () =>
+          act(request, match.slug, 'report', { as: 'captain', data: { result: sweep(1, 'team1') } })
+        );
+        expect(again.status(), await again.text()).toBe(409);
+      }
+      expect((await reportsOf(request, match.slug)).open?.status).toBe('disputed');
 
       // The admin settles it with a result of their own: a new admin revision,
       // the disputed one superseded, and the series finished.
