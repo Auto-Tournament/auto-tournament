@@ -579,6 +579,12 @@ test.describe.serial('Manual-report: reporting a tournament to a champion', () =
         expect(again.status(), await again.text()).toBe(409);
       }
       expect((await reportsOf(request, match.slug)).open?.status).toBe('disputed');
+      // Each attempt raises the dispute notice again: dispute plus two attempts.
+      const notices = (await (await request.get('/api/admin-notices')).json()).notices as Array<{
+        dedupeKey: string;
+        count: number;
+      }>;
+      expect(notices.find((n) => n.dedupeKey === `report_disputed:${match.slug}`)?.count).toBe(3);
 
       // The admin settles it with a result of their own: a new admin revision,
       // the disputed one superseded, and the series finished.
