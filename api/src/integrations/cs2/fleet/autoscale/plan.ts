@@ -36,7 +36,7 @@ export interface AutoscaleSettings {
 export const DEFAULT_AUTOSCALE_SETTINGS: Readonly<AutoscaleSettings> = Object.freeze({
   enabled: true,
   leadTimeSeconds: 120,
-  cooldownSeconds: 600,
+  cooldownSeconds: 1800,
   maxServersPerHost: 32,
 });
 

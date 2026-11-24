@@ -131,11 +131,11 @@ function plan(over: Partial<PlanInput>) {
 }
 
 test.describe('Autoscale: settings', () => {
-  test('defaults: on, 2 min lead, 10 min cool-down, 32 per machine', () => {
+  test('defaults: on, 2 min lead, 30 min cool-down, 32 per machine', () => {
     expect(normalizeAutoscaleSettings(null)).toEqual({
       enabled: true,
       leadTimeSeconds: 120,
-      cooldownSeconds: 600,
+      cooldownSeconds: 1800,
       maxServersPerHost: 32,
     });
     expect(
