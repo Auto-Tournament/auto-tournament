@@ -591,6 +591,20 @@ export async function submitReport(input: SubmitInput): Promise<ReportOutcome> {
   if (!REPORTABLE_STATUSES.has(match.status)) {
     return fail(409, `Match is ${match.status}; a finished match has to be reopened first`);
   }
+  // A disputed report waits for an admin; a captain reporting again would supersede the dispute.
+  if (input.actor.role === 'captain') {
+    const open = await openReport(match.slug);
+    if (open?.status === 'disputed') {
+      // Logged and the dispute notice raised again (it counts up), so the admin deciding sees it.
+      await recordAction(open, 'report_refused', input.actor, { team: input.actor.team });
+      await adminNoticeService.raise(
+        'report_disputed',
+        { matchSlug: match.slug, reason: open.disputeReason ?? null },
+        `report_disputed:${match.slug}`
+      );
+      return fail(409, 'The other team disputed the report, so an admin decides this match');
+    }
+  }
 
   const config = configOf(match);
   const check = validateResult(input.result, {

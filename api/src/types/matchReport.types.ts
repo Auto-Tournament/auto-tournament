@@ -45,7 +45,8 @@ export type MatchReportAction =
   | 'override'
   | 'reopen'
   | 'timeout_auto_confirm'
-  | 'timeout_escalate';
+  | 'timeout_escalate'
+  | 'report_refused';
 
 /** Who took the action. */
 export type MatchReportActorRole = 'captain' | 'admin' | 'system';
