@@ -148,6 +148,7 @@ export function IngameHudSetting() {
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'stretch',
+                  justifyContent: 'flex-start',
                   textAlign: 'left',
                   gap: 1,
                   p: 1.25,
