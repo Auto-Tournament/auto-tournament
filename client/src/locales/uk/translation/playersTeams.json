@@ -663,7 +663,12 @@
     "colorSaved": "Колір збережено",
     "colorHelp": "Тег показується на цьому кольорі всюди, де в команди немає логотипа, а колір позначає команду в таблицях і сітках.",
     "lineupCount_few": "{{starters}} з {{size}} основних · {{count}} запасні",
-    "lineupCount_many": "{{starters}} з {{size}} основних · {{count}} запасних"
+    "lineupCount_many": "{{starters}} з {{size}} основних · {{count}} запасних",
+    "colorFor": "Колір для {{name}}",
+    "colorOwn": "Свій вибір",
+    "colorPrefers": "Хоче {{color}}",
+    "colorNoPreference": "Без побажань",
+    "colorTaken": "Хоче {{color}}, але він у товариша: вибирає CS2"
   },
   "teamJoin": {
     "title": "Приєднатися до команди",

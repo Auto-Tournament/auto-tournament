@@ -232,6 +232,20 @@
       "previewChatTip": "Cần tạm dừng, gọi admin hay đầu hàng? Gõ .menu trong chat.",
       "saved": "Đã lưu. Áp dụng từ trận tiếp theo của bạn.",
       "saveFailed": "Không lưu được cài đặt HUD của bạn."
+    },
+    "color": {
+      "title": "Màu ưa thích",
+      "description": "Màu bạn muốn có trên radar và bảng điểm của đội trong các trận CS2 trên máy chủ Auto Tournament. Nếu đồng đội đã dùng màu đó, hoặc đội trưởng chọn màu khác cho bạn, bạn sẽ nhận màu đó.",
+      "auto": "CS2 chọn",
+      "names": {
+        "blue": "Xanh dương",
+        "green": "Xanh lá",
+        "yellow": "Vàng",
+        "orange": "Cam",
+        "purple": "Tím"
+      },
+      "saved": "Đã lưu. Áp dụng từ trận tiếp theo của bạn.",
+      "saveFailed": "Không lưu được màu."
     }
   },
   "home": {

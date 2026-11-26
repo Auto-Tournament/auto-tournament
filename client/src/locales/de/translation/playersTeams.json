@@ -630,7 +630,12 @@
     "color": "Teamfarbe",
     "colorN": "Farbe {{n}}",
     "colorSaved": "Farbe gespeichert",
-    "colorHelp": "Dein Kürzel erscheint auf dieser Farbe, wo das Team kein Logo hat, und die Farbe kennzeichnet das Team in Tabellen und im Turnierbaum."
+    "colorHelp": "Dein Kürzel erscheint auf dieser Farbe, wo das Team kein Logo hat, und die Farbe kennzeichnet das Team in Tabellen und im Turnierbaum.",
+    "colorFor": "Farbe für {{name}}",
+    "colorOwn": "Eigener Wunsch",
+    "colorPrefers": "Wünscht {{color}}",
+    "colorNoPreference": "Kein Wunsch",
+    "colorTaken": "Wünscht {{color}}, aber ein Teamkollege hat sie: CS2 wählt"
   },
   "teamJoin": {
     "title": "Einem Team beitreten",

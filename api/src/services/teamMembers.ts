@@ -30,6 +30,8 @@ export interface TeamMember {
   /** The player's job in the team's game (CS2: 'awper'), or null. */
   position: string | null;
   lineup: TeamLineup;
+  /** The teammate colour the owner or a captain set for them in this team's matches, or null. */
+  color: string | null;
   createdAt: number;
 }
 
@@ -42,6 +44,7 @@ interface TeamMemberRow {
   role: string;
   position?: string | null;
   lineup?: string | null;
+  color?: string | null;
   created_at: number;
 }
 
@@ -52,6 +55,7 @@ function toMember(row: TeamMemberRow): TeamMember {
     role: row.role === 'captain' ? 'captain' : 'member',
     position: row.position ?? null,
     lineup: row.lineup === 'sub' ? 'sub' : 'starter',
+    color: row.color ?? null,
     createdAt: Number(row.created_at),
   };
 }
@@ -71,7 +75,7 @@ export const teamMembers = {
   /** Every member of a team, captains first. */
   async list(teamId: string): Promise<TeamMember[]> {
     const rows = await db.queryAsync<TeamMemberRow>(
-      `SELECT team_id, account_uid, role, position, lineup, created_at
+      `SELECT team_id, account_uid, role, position, lineup, color, created_at
          FROM team_members
         WHERE team_id = ?
         ORDER BY (role = 'captain') DESC, created_at, account_uid`,
@@ -83,7 +87,7 @@ export const teamMembers = {
   /** Every team an account belongs to. */
   async listForAccount(accountUid: string): Promise<TeamMember[]> {
     const rows = await db.queryAsync<TeamMemberRow>(
-      `SELECT team_id, account_uid, role, position, lineup, created_at
+      `SELECT team_id, account_uid, role, position, lineup, color, created_at
          FROM team_members
         WHERE account_uid = ?
         ORDER BY created_at, team_id`,
@@ -137,22 +141,25 @@ export const teamMembers = {
   async setPlacement(
     teamId: string,
     accountUid: string,
-    placement: { position?: string | null; lineup?: TeamLineup }
+    placement: { position?: string | null; lineup?: TeamLineup; color?: string | null }
   ): Promise<void> {
     await db.runAsync(
-      `INSERT INTO team_members (team_id, account_uid, position, lineup)
-       VALUES (?, ?, ?, ?)
+      `INSERT INTO team_members (team_id, account_uid, position, lineup, color)
+       VALUES (?, ?, ?, ?, ?)
        ON CONFLICT (team_id, account_uid) DO UPDATE SET
          position = CASE WHEN ? THEN EXCLUDED.position ELSE team_members.position END,
          lineup = CASE WHEN ? THEN EXCLUDED.lineup ELSE team_members.lineup END,
+         color = CASE WHEN ? THEN EXCLUDED.color ELSE team_members.color END,
          updated_at = EXTRACT(EPOCH FROM NOW())::INTEGER`,
       [
         teamId,
         accountUid,
         placement.position ?? null,
         placement.lineup ?? 'starter',
+        placement.color ?? null,
         placement.position !== undefined,
         placement.lineup !== undefined,
+        placement.color !== undefined,
       ]
     );
   },

@@ -1,3 +1,4 @@
+import { MemberColorDots, resolveTeamColors } from '../components/team/MemberColorDots';
 import { useEffect, useRef, useState } from 'react';
 import { Link as RouterLink, useNavigate, useParams } from 'react-router-dom';
 import {
@@ -53,6 +54,8 @@ interface ManageView {
     role: Role;
     position: string | null;
     lineup: 'starter' | 'sub';
+    color?: string | null;
+    ownColor?: string | null;
   }>;
   invites: Array<{ uid: string; steamId: string; name: string; avatar: string | null }>;
   requests: Array<{
@@ -187,6 +190,8 @@ export default function TeamManage() {
   // The game's positions and team size, for the roster's selects and count.
   const integration = useIntegration(game || null);
   const positions = game ? (integration.teamPositions ?? []) : [];
+  // CS2: the teammate colour per member (overrides their own; account page).
+  const colors = integration.id === 'cs2';
 
   if (loadError) {
     return (
@@ -217,6 +222,13 @@ export default function TeamManage() {
     : '';
   const others = view.members.filter((m) => m.role !== 'owner' && m.uid);
   const starters = view.members.filter((m) => m.lineup !== 'sub').length;
+  // CS2 colours: each member's preference and the team's pick for them, resolved as the server does.
+  const colorMembers = view.members.map((m) => ({
+    set: m.color ?? null,
+    own: m.ownColor ?? null,
+    captain: m.role === 'owner' || m.role === 'captain',
+  }));
+  const colorState = resolveTeamColors(colorMembers);
   const subs = view.members.length - starters;
   const teamSize = game ? integration.teamSize : undefined;
   const memberIds = new Set(view.members.map((m) => m.steamId));
@@ -514,7 +526,7 @@ export default function TeamManage() {
                 sx={{ listStyle: 'none', m: 0, p: 1.5, display: 'grid', gap: 1 }}
                 data-testid="team-manage-roster"
               >
-                {view.members.map((m) => (
+                {view.members.map((m, index) => (
                   <Box
                     component="li"
                     key={m.steamId}
@@ -522,7 +534,7 @@ export default function TeamManage() {
                       display: 'grid',
                       gridTemplateColumns: {
                         xs: '40px minmax(0, 1fr) auto',
-                        sm: `40px minmax(0, 1fr) ${positions.length ? 'auto ' : ''}auto auto auto`,
+                        sm: `40px minmax(0, 1fr) ${positions.length ? 'auto ' : ''}${colors ? 'auto ' : ''}auto auto auto`,
                       },
                       gap: 1.5,
                       alignItems: 'center',
@@ -563,6 +575,20 @@ export default function TeamManage() {
                           </MenuItem>
                         ))}
                       </Select>
+                    )}
+                    {colors && m.uid && (
+                      <MemberColorDots
+                        name={m.name}
+                        member={colorMembers[index]}
+                        resolved={colorState[index]}
+                        onChange={(next) =>
+                          act(() =>
+                            api.patch(`${base}/members/${encodeURIComponent(m.uid)}`, {
+                              color: next,
+                            })
+                          )
+                        }
+                      />
                     )}
                     {m.uid && (
                       <Select

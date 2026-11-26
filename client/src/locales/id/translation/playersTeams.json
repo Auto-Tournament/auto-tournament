@@ -630,7 +630,12 @@
     "color": "Warna tim",
     "colorN": "Warna {{n}}",
     "colorSaved": "Warna tersimpan",
-    "colorHelp": "Tag Anda ditampilkan di atas warna ini di mana pun tim tidak punya logo, dan warna ini menandai tim di tabel dan bracket."
+    "colorHelp": "Tag Anda ditampilkan di atas warna ini di mana pun tim tidak punya logo, dan warna ini menandai tim di tabel dan bracket.",
+    "colorFor": "Warna untuk {{name}}",
+    "colorOwn": "Pilihannya sendiri",
+    "colorPrefers": "Memilih {{color}}",
+    "colorNoPreference": "Tanpa pilihan",
+    "colorTaken": "Memilih {{color}}, tetapi dipakai rekan setim: CS2 memilih"
   },
   "teamJoin": {
     "title": "Gabung tim",

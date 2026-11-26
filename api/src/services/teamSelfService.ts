@@ -15,6 +15,7 @@
  * players a running match expects. Admins can still edit it on the Teams page.
  */
 
+import { isTeammateColor } from './teammateColors';
 import { RATING_ELO, ratingGame, ratingJoin } from './gameRatings';
 import { randomBytes } from 'node:crypto';
 import { db } from '../config/database';
@@ -45,6 +46,10 @@ export interface ManagedMember {
   role: TeamRole;
   position: string | null;
   lineup: TeamLineup;
+  /** The teammate colour set for them in this team's matches (teammateColors.ts), or null: their own. */
+  color: string | null;
+  /** The colour they picked themselves on the account page, or null: CS2 picks. */
+  ownColor: string | null;
 }
 
 /** A player the team asked on by name, still to answer. */
@@ -192,14 +197,27 @@ async function requireRosterUnlocked(teamId: string): Promise<void> {
 
 async function accountsBySteamId(
   steamIds: string[]
-): Promise<Map<string, { uid: string; name: string; avatar: string | null }>> {
+): Promise<
+  Map<string, { uid: string; name: string; avatar: string | null; teammateColor: string | null }>
+> {
   const rows = steamIds.length
-    ? await db.queryAsync<{ id: string; uid: string; name: string; avatar: string | null }>(
-        'SELECT id, uid, name, avatar_url AS avatar FROM players WHERE id = ANY(?::text[])',
+    ? await db.queryAsync<{
+        id: string;
+        uid: string;
+        name: string;
+        avatar: string | null;
+        teammate_color: string | null;
+      }>(
+        'SELECT id, uid, name, avatar_url AS avatar, teammate_color FROM players WHERE id = ANY(?::text[])',
         [steamIds]
       )
     : [];
-  return new Map(rows.map((r) => [r.id, { uid: r.uid, name: r.name, avatar: r.avatar }]));
+  return new Map(
+    rows.map((r) => [
+      r.id,
+      { uid: r.uid, name: r.name, avatar: r.avatar, teammateColor: r.teammate_color ?? null },
+    ])
+  );
 }
 
 /** The invited player's notice for one team's invite (answered or taken back by it). */
@@ -237,6 +255,8 @@ export const teamSelfService = {
         role: memberUid && memberUid === team.owner_uid ? 'owner' : (row?.role ?? 'member'),
         position: row?.position ?? null,
         lineup: row?.lineup ?? 'starter',
+        color: row?.color ?? null,
+        ownColor: account?.teammateColor ?? null,
       };
     });
     const invites = await db.queryAsync<{
@@ -325,10 +345,16 @@ export const teamSelfService = {
     teamId: string,
     uid: string,
     memberUid: string,
-    placement: { position?: string | null; lineup?: TeamLineup }
+    placement: { position?: string | null; lineup?: TeamLineup; color?: string | null }
   ): Promise<void> {
     const team = await loadTeam(teamId);
     await requireRole(team, uid, ['owner', 'captain']);
+    if (
+      placement.color !== undefined &&
+      placement.color !== null &&
+      !isTeammateColor(placement.color)
+    )
+      throw new TeamActionError(400, 'That colour is not one CS2 has.');
     if (
       placement.position !== undefined &&
       placement.position !== null &&

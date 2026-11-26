@@ -630,7 +630,12 @@
     "color": "Csapatszín",
     "colorN": "{{n}}. szín",
     "colorSaved": "Szín mentve",
-    "colorHelp": "A címkéd ezen a színen jelenik meg mindenhol, ahol a csapatnak nincs logója, és a szín jelöli a csapatot a táblázatokban és az ágrajzokon."
+    "colorHelp": "A címkéd ezen a színen jelenik meg mindenhol, ahol a csapatnak nincs logója, és a szín jelöli a csapatot a táblázatokban és az ágrajzokon.",
+    "colorFor": "{{name}} színe",
+    "colorOwn": "A saját kívánsága",
+    "colorPrefers": "{{color}} színt szeretne",
+    "colorNoPreference": "Nincs kívánság",
+    "colorTaken": "{{color}} színt szeretne, de egy csapattársé: a CS2 választ"
   },
   "teamJoin": {
     "title": "Csatlakozás egy csapathoz",

@@ -233,6 +233,20 @@
       "previewChatTip": "¿Necesitas una pausa, un admin o rendirte? Escribe .menu en el chat.",
       "saved": "Guardado. Se aplica desde tu próxima partida.",
       "saveFailed": "No se pudo guardar tu ajuste de HUD."
+    },
+    "color": {
+      "title": "Color preferido",
+      "description": "El color que quieres en el radar y el marcador de tu equipo en las partidas de CS2 en servidores de Auto Tournament. Si un compañero ya lo tiene, o el capitán te elige otro, tendrás ese.",
+      "auto": "Lo elige CS2",
+      "names": {
+        "blue": "Azul",
+        "green": "Verde",
+        "yellow": "Amarillo",
+        "orange": "Naranja",
+        "purple": "Morado"
+      },
+      "saved": "Guardado. Se aplica desde tu próxima partida.",
+      "saveFailed": "No se pudo guardar tu color."
     }
   },
   "home": {

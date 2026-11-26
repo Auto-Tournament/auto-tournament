@@ -630,7 +630,12 @@
     "color": "Màu đội",
     "colorN": "Màu {{n}}",
     "colorSaved": "Đã lưu màu",
-    "colorHelp": "Tag của bạn hiện trên màu này ở mọi nơi đội không có logo, và màu này đánh dấu đội trong bảng và nhánh đấu."
+    "colorHelp": "Tag của bạn hiện trên màu này ở mọi nơi đội không có logo, và màu này đánh dấu đội trong bảng và nhánh đấu.",
+    "colorFor": "Màu cho {{name}}",
+    "colorOwn": "Theo ý họ",
+    "colorPrefers": "Thích {{color}}",
+    "colorNoPreference": "Không chọn",
+    "colorTaken": "Thích {{color}}, nhưng đồng đội đã dùng: CS2 chọn"
   },
   "teamJoin": {
     "title": "Tham gia một đội",

@@ -630,7 +630,12 @@
     "color": "팀 색상",
     "colorN": "색상 {{n}}",
     "colorSaved": "색상을 저장했어요",
-    "colorHelp": "로고가 없는 곳에서는 태그가 이 색상 위에 표시되고, 표와 대진표에서도 이 색상으로 팀을 구분해요."
+    "colorHelp": "로고가 없는 곳에서는 태그가 이 색상 위에 표시되고, 표와 대진표에서도 이 색상으로 팀을 구분해요.",
+    "colorFor": "{{name}}의 색상",
+    "colorOwn": "본인 선호",
+    "colorPrefers": "{{color}} 선호",
+    "colorNoPreference": "선호 없음",
+    "colorTaken": "{{color}} 선호, 하지만 팀원이 사용 중: CS2가 선택"
   },
   "teamJoin": {
     "title": "팀 참가",

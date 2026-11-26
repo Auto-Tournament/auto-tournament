@@ -234,6 +234,20 @@
       "previewChatTip": "Potřebuješ pauzu, admina nebo se vzdát? Napiš .menu do chatu.",
       "saved": "Uloženo. Platí od tvého dalšího zápasu.",
       "saveFailed": "Nastavení HUD se nepodařilo uložit."
+    },
+    "color": {
+      "title": "Preferovaná barva",
+      "description": "Barva, kterou chceš mít na radaru a v tabulce týmu v zápasech CS2 na serverech Auto Tournament. Pokud ji už má spoluhráč nebo ti kapitán vybere jinou, dostaneš tu.",
+      "auto": "Vybere CS2",
+      "names": {
+        "blue": "Modrá",
+        "green": "Zelená",
+        "yellow": "Žlutá",
+        "orange": "Oranžová",
+        "purple": "Fialová"
+      },
+      "saved": "Uloženo. Platí od tvého dalšího zápasu.",
+      "saveFailed": "Barvu se nepodařilo uložit."
     }
   },
   "home": {
