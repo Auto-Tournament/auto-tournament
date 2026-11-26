@@ -449,7 +449,8 @@ export function withCaptains(
   const add = (side: AssignTeam, ids: readonly string[] | undefined): AssignTeam => {
     const captain = pickTeamCaptain(side, ids ?? []);
     if (!captain) {
-      const { captain: _drop, ...rest } = side;
+      const rest = { ...side };
+      delete rest.captain;
       return rest;
     }
     return { ...side, captain };
