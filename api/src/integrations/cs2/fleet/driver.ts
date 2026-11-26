@@ -737,7 +737,10 @@ async function withPlayerLanguages(config: AssignConfig): Promise<AssignConfig> 
  * (team_members.color), else their own (players.teammate_color).
  */
 async function withPlayerColors(config: AssignConfig): Promise<AssignConfig> {
-  const { isTeammateColor } = await import('../../../services/teammateColors');
+  // The protocol's colours (match.defs.json $defs/color). The cs2 module reaches core only through
+  // the host bridge, so it checks the names itself rather than importing services/teammateColors.
+  const names: readonly string[] = ['blue', 'green', 'yellow', 'orange', 'purple'];
+  const isTeammateColor = (v: string | null): v is TeammateColorName => v !== null && names.includes(v);
   const ids = [...config.team1.players, ...config.team2.players].map((p) => p.steamid64);
   if (ids.length === 0) return config;
   const own = await db
