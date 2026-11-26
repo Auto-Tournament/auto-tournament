@@ -630,7 +630,9 @@
     "color": "Joukkueen väri",
     "colorN": "Väri {{n}}",
     "colorSaved": "Väri tallennettu",
-    "colorHelp": "Tunnisteesi näkyy tällä värillä kaikkialla, missä joukkueella ei ole logoa, ja väri merkitsee joukkueen taulukoissa ja kaavioissa."
+    "colorHelp": "Tunnisteesi näkyy tällä värillä kaikkialla, missä joukkueella ei ole logoa, ja väri merkitsee joukkueen taulukoissa ja kaavioissa.",
+    "colorFor": "Pelaajan väri: {{name}}",
+    "colorOwn": "Oma väri"
   },
   "teamJoin": {
     "title": "Liity joukkueeseen",

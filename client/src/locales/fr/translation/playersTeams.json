@@ -647,7 +647,9 @@
     "colorN": "Couleur {{n}}",
     "colorSaved": "Couleur enregistrée",
     "colorHelp": "Votre tag s’affiche sur cette couleur partout où l’équipe n’a pas de logo, et la couleur repère l’équipe dans les tableaux.",
-    "lineupCount_many": "{{starters}} titulaires sur {{size}} · {{count}} remplaçants"
+    "lineupCount_many": "{{starters}} titulaires sur {{size}} · {{count}} remplaçants",
+    "colorFor": "Couleur de {{name}}",
+    "colorOwn": "Sa propre couleur"
   },
   "teamJoin": {
     "title": "Rejoindre une équipe",

@@ -15,6 +15,7 @@
  * players a running match expects. Admins can still edit it on the Teams page.
  */
 
+import { isTeammateColor } from './teammateColors';
 import { RATING_ELO, ratingGame, ratingJoin } from './gameRatings';
 import { randomBytes } from 'node:crypto';
 import { db } from '../config/database';
@@ -45,6 +46,8 @@ export interface ManagedMember {
   role: TeamRole;
   position: string | null;
   lineup: TeamLineup;
+  /** The teammate colour set for them in this team's matches (teammateColors.ts), or null: their own. */
+  color: string | null;
 }
 
 /** A player the team asked on by name, still to answer. */
@@ -237,6 +240,7 @@ export const teamSelfService = {
         role: memberUid && memberUid === team.owner_uid ? 'owner' : (row?.role ?? 'member'),
         position: row?.position ?? null,
         lineup: row?.lineup ?? 'starter',
+        color: row?.color ?? null,
       };
     });
     const invites = await db.queryAsync<{
@@ -325,10 +329,16 @@ export const teamSelfService = {
     teamId: string,
     uid: string,
     memberUid: string,
-    placement: { position?: string | null; lineup?: TeamLineup }
+    placement: { position?: string | null; lineup?: TeamLineup; color?: string | null }
   ): Promise<void> {
     const team = await loadTeam(teamId);
     await requireRole(team, uid, ['owner', 'captain']);
+    if (
+      placement.color !== undefined &&
+      placement.color !== null &&
+      !isTeammateColor(placement.color)
+    )
+      throw new TeamActionError(400, 'That colour is not one CS2 has.');
     if (
       placement.position !== undefined &&
       placement.position !== null &&

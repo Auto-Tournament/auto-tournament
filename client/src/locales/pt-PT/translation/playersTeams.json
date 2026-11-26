@@ -647,7 +647,9 @@
     "colorN": "Cor {{n}}",
     "colorSaved": "Cor guardada",
     "colorHelp": "A tua tag aparece sobre esta cor onde a equipa não tem logótipo, e a cor identifica a equipa nas tabelas e brackets.",
-    "lineupCount_many": "{{starters}} de {{size}} titulares · {{count}} suplentes"
+    "lineupCount_many": "{{starters}} de {{size}} titulares · {{count}} suplentes",
+    "colorFor": "Cor de {{name}}",
+    "colorOwn": "A própria cor"
   },
   "teamJoin": {
     "title": "Entrar numa equipa",

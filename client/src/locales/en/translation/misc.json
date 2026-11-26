@@ -232,6 +232,20 @@
       "previewChatTip": "Need a pause, an admin or to forfeit? Type .menu in chat.",
       "saved": "Saved. It applies from your next match.",
       "saveFailed": "Couldn't save your HUD setting."
+    },
+    "color": {
+      "title": "Teammate colour",
+      "description": "Your colour on your team's radar and scoreboard in CS2 matches on Auto Tournament servers. Your team's captain can pick a different one for the team's matches.",
+      "auto": "CS2 picks",
+      "names": {
+        "blue": "Blue",
+        "green": "Green",
+        "yellow": "Yellow",
+        "orange": "Orange",
+        "purple": "Purple"
+      },
+      "saved": "Saved. It applies from your next match.",
+      "saveFailed": "Couldn't save your colour."
     }
   },
   "home": {

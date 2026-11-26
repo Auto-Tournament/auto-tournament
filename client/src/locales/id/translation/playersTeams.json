@@ -630,7 +630,9 @@
     "color": "Warna tim",
     "colorN": "Warna {{n}}",
     "colorSaved": "Warna tersimpan",
-    "colorHelp": "Tag Anda ditampilkan di atas warna ini di mana pun tim tidak punya logo, dan warna ini menandai tim di tabel dan bracket."
+    "colorHelp": "Tag Anda ditampilkan di atas warna ini di mana pun tim tidak punya logo, dan warna ini menandai tim di tabel dan bracket.",
+    "colorFor": "Warna pemain untuk {{name}}",
+    "colorOwn": "Warnanya sendiri"
   },
   "teamJoin": {
     "title": "Gabung tim",

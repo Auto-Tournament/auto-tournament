@@ -232,6 +232,20 @@
       "previewChatTip": "Pause, Admin oder aufgeben? Tippe .menu in den Chat.",
       "saved": "Gespeichert. Gilt ab deinem nächsten Match.",
       "saveFailed": "Deine HUD-Einstellung konnte nicht gespeichert werden."
+    },
+    "color": {
+      "title": "Spielerfarbe",
+      "description": "Deine Farbe auf dem Radar und der Anzeigetafel deines Teams in CS2-Matches auf Auto-Tournament-Servern. Der Kapitän deines Teams kann für die Matches des Teams eine andere wählen.",
+      "auto": "CS2 wählt",
+      "names": {
+        "blue": "Blau",
+        "green": "Grün",
+        "yellow": "Gelb",
+        "orange": "Orange",
+        "purple": "Lila"
+      },
+      "saved": "Gespeichert. Gilt ab deinem nächsten Match.",
+      "saveFailed": "Deine Farbe konnte nicht gespeichert werden."
     }
   },
   "home": {

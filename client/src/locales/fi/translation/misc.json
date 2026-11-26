@@ -232,6 +232,20 @@
       "previewChatTip": "Tarvitsetko tauon, adminin tai luovutuksen? Kirjoita chattiin .menu.",
       "saved": "Tallennettu. Voimassa seuraavasta ottelustasi.",
       "saveFailed": "HUD-asetuksesi tallennus epäonnistui."
+    },
+    "color": {
+      "title": "Pelaajan väri",
+      "description": "Värisi joukkueesi tutkassa ja tulostaulussa CS2-otteluissa Auto Tournamentin palvelimilla. Joukkueen kapteeni voi valita sinulle toisen värin joukkueen otteluihin.",
+      "auto": "CS2 valitsee",
+      "names": {
+        "blue": "Sininen",
+        "green": "Vihreä",
+        "yellow": "Keltainen",
+        "orange": "Oranssi",
+        "purple": "Violetti"
+      },
+      "saved": "Tallennettu. Voimassa seuraavasta ottelustasi.",
+      "saveFailed": "Väriä ei voitu tallentaa."
     }
   },
   "home": {

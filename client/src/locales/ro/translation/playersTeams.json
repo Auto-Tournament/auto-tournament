@@ -646,7 +646,9 @@
     "colorN": "Culoarea {{n}}",
     "colorSaved": "Culoare salvată",
     "colorHelp": "Tag-ul tău apare pe această culoare oriunde echipa nu are logo, iar culoarea marchează echipa în tabele și tablouri.",
-    "lineupCount_few": "Titulari: {{starters}} din {{size}} · {{count}} rezerve"
+    "lineupCount_few": "Titulari: {{starters}} din {{size}} · {{count}} rezerve",
+    "colorFor": "Culoarea lui {{name}}",
+    "colorOwn": "Culoarea proprie"
   },
   "teamJoin": {
     "title": "Intră într-o echipă",

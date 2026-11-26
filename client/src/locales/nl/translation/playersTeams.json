@@ -630,7 +630,9 @@
     "color": "Teamkleur",
     "colorN": "Kleur {{n}}",
     "colorSaved": "Kleur opgeslagen",
-    "colorHelp": "Je tag staat op deze kleur overal waar het team geen logo heeft, en de kleur markeert het team in tabellen en schema's."
+    "colorHelp": "Je tag staat op deze kleur overal waar het team geen logo heeft, en de kleur markeert het team in tabellen en schema's.",
+    "colorFor": "Spelerskleur voor {{name}}",
+    "colorOwn": "Eigen kleur"
   },
   "teamJoin": {
     "title": "Bij een team komen",

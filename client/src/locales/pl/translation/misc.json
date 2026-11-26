@@ -234,6 +234,20 @@
       "previewChatTip": "Potrzebujesz pauzy, admina albo poddania? Wpisz .menu na czacie.",
       "saved": "Zapisano. Obowiązuje od następnego meczu.",
       "saveFailed": "Nie udało się zapisać ustawienia HUD."
+    },
+    "color": {
+      "title": "Kolor gracza",
+      "description": "Twój kolor na radarze i tablicy wyników drużyny w meczach CS2 na serwerach Auto Tournament. Kapitan drużyny może wybrać inny na mecze drużyny.",
+      "auto": "Wybiera CS2",
+      "names": {
+        "blue": "Niebieski",
+        "green": "Zielony",
+        "yellow": "Żółty",
+        "orange": "Pomarańczowy",
+        "purple": "Fioletowy"
+      },
+      "saved": "Zapisano. Obowiązuje od następnego meczu.",
+      "saveFailed": "Nie udało się zapisać koloru."
     }
   },
   "home": {

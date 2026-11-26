@@ -630,7 +630,9 @@
     "color": "Team colour",
     "colorN": "Colour {{n}}",
     "colorSaved": "Colour saved",
-    "colorHelp": "Your tag shows on this colour wherever the team has no logo, and the colour marks the team in tables and brackets."
+    "colorHelp": "Your tag shows on this colour wherever the team has no logo, and the colour marks the team in tables and brackets.",
+    "colorFor": "Teammate colour for {{name}}",
+    "colorOwn": "Their own colour"
   },
   "teamJoin": {
     "title": "Join a team",

@@ -647,7 +647,9 @@
     "colorN": "Color {{n}}",
     "colorSaved": "Color guardado",
     "colorHelp": "Tu etiqueta aparece sobre este color allí donde el equipo no tiene logo, y el color marca al equipo en tablas y brackets.",
-    "lineupCount_many": "{{starters}} de {{size}} titulares · {{count}} suplentes"
+    "lineupCount_many": "{{starters}} de {{size}} titulares · {{count}} suplentes",
+    "colorFor": "Color de {{name}}",
+    "colorOwn": "Su propio color"
   },
   "teamJoin": {
     "title": "Unirse a un equipo",

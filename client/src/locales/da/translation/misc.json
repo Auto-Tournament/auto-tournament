@@ -232,6 +232,20 @@
       "previewChatTip": "Brug for en pause, en admin eller at give op? Skriv .menu i chatten.",
       "saved": "Gemt. Det gælder fra din næste kamp.",
       "saveFailed": "Kunne ikke gemme din HUD-indstilling."
+    },
+    "color": {
+      "title": "Spillerfarve",
+      "description": "Din farve på holdets radar og scoreboard i CS2-kampe på Auto Tournament-servere. Holdets kaptajn kan vælge en anden til holdets kampe.",
+      "auto": "CS2 vælger",
+      "names": {
+        "blue": "Blå",
+        "green": "Grøn",
+        "yellow": "Gul",
+        "orange": "Orange",
+        "purple": "Lilla"
+      },
+      "saved": "Gemt. Gælder fra din næste kamp.",
+      "saveFailed": "Kunne ikke gemme din farve."
     }
   },
   "home": {

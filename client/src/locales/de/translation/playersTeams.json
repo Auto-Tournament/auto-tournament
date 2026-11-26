@@ -630,7 +630,9 @@
     "color": "Teamfarbe",
     "colorN": "Farbe {{n}}",
     "colorSaved": "Farbe gespeichert",
-    "colorHelp": "Dein Kürzel erscheint auf dieser Farbe, wo das Team kein Logo hat, und die Farbe kennzeichnet das Team in Tabellen und im Turnierbaum."
+    "colorHelp": "Dein Kürzel erscheint auf dieser Farbe, wo das Team kein Logo hat, und die Farbe kennzeichnet das Team in Tabellen und im Turnierbaum.",
+    "colorFor": "Spielerfarbe für {{name}}",
+    "colorOwn": "Eigene Farbe"
   },
   "teamJoin": {
     "title": "Einem Team beitreten",

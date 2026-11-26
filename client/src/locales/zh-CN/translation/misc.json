@@ -232,6 +232,20 @@
       "previewChatTip": "需要暂停、管理员或认输？在聊天中输入 .menu。",
       "saved": "已保存。从你的下一场比赛开始生效。",
       "saveFailed": "无法保存你的 HUD 设置。"
+    },
+    "color": {
+      "title": "玩家颜色",
+      "description": "你在 Auto Tournament 服务器的 CS2 比赛中，于队伍雷达和计分板上的颜色。队长可以为队伍的比赛另选一种颜色。",
+      "auto": "由 CS2 分配",
+      "names": {
+        "blue": "蓝色",
+        "green": "绿色",
+        "yellow": "黄色",
+        "orange": "橙色",
+        "purple": "紫色"
+      },
+      "saved": "已保存。从你的下一场比赛开始生效。",
+      "saveFailed": "无法保存你的颜色。"
     }
   },
   "home": {

@@ -232,6 +232,20 @@
       "previewChatTip": "Mola, admin ya da teslim mi gerekiyor? Sohbete .menu yaz.",
       "saved": "Kaydedildi. Bir sonraki maçından itibaren geçerli.",
       "saveFailed": "HUD ayarın kaydedilemedi."
+    },
+    "color": {
+      "title": "Oyuncu rengi",
+      "description": "Auto Tournament sunucularındaki CS2 maçlarında takımının radarında ve skor tablosunda görünen rengin. Takım kaptanı takımın maçları için başka bir renk seçebilir.",
+      "auto": "CS2 seçsin",
+      "names": {
+        "blue": "Mavi",
+        "green": "Yeşil",
+        "yellow": "Sarı",
+        "orange": "Turuncu",
+        "purple": "Mor"
+      },
+      "saved": "Kaydedildi. Bir sonraki maçından itibaren geçerli.",
+      "saveFailed": "Rengin kaydedilemedi."
     }
   },
   "home": {

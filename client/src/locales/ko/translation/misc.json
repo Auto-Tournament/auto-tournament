@@ -232,6 +232,20 @@
       "previewChatTip": "일시정지, 관리자 호출, 항복이 필요하세요? 채팅에 .menu 입력.",
       "saved": "저장했습니다. 다음 매치부터 적용됩니다.",
       "saveFailed": "HUD 설정을 저장하지 못했습니다."
+    },
+    "color": {
+      "title": "플레이어 색상",
+      "description": "Auto Tournament 서버의 CS2 경기에서 팀 레이더와 점수판에 표시되는 내 색상입니다. 팀 주장은 팀 경기용으로 다른 색상을 고를 수 있습니다.",
+      "auto": "CS2가 선택",
+      "names": {
+        "blue": "파랑",
+        "green": "초록",
+        "yellow": "노랑",
+        "orange": "주황",
+        "purple": "보라"
+      },
+      "saved": "저장했습니다. 다음 경기부터 적용됩니다.",
+      "saveFailed": "색상을 저장하지 못했습니다."
     }
   },
   "home": {

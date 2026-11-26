@@ -232,6 +232,20 @@
       "previewChatTip": "Trenger du pause, en admin eller å gi opp? Skriv .menu i chatten.",
       "saved": "Lagret. Gjelder fra neste kamp.",
       "saveFailed": "Kunne ikke lagre HUD-innstillingen din."
+    },
+    "color": {
+      "title": "Spillerfarge",
+      "description": "Fargen din på lagets radar og resultattavle i CS2-kamper på Auto Tournament-servere. Lagkapteinen kan velge en annen for lagets kamper.",
+      "auto": "CS2 velger",
+      "names": {
+        "blue": "Blå",
+        "green": "Grønn",
+        "yellow": "Gul",
+        "orange": "Oransje",
+        "purple": "Lilla"
+      },
+      "saved": "Lagret. Gjelder fra neste kamp.",
+      "saveFailed": "Kunne ikke lagre fargen."
     }
   },
   "home": {

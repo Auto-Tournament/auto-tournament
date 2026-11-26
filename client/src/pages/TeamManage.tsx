@@ -1,3 +1,4 @@
+import { TEAMMATE_COLORS } from '../components/account/teammateColors';
 import { useEffect, useRef, useState } from 'react';
 import { Link as RouterLink, useNavigate, useParams } from 'react-router-dom';
 import {
@@ -53,6 +54,7 @@ interface ManageView {
     role: Role;
     position: string | null;
     lineup: 'starter' | 'sub';
+    color?: string | null;
   }>;
   invites: Array<{ uid: string; steamId: string; name: string; avatar: string | null }>;
   requests: Array<{
@@ -187,6 +189,8 @@ export default function TeamManage() {
   // The game's positions and team size, for the roster's selects and count.
   const integration = useIntegration(game || null);
   const positions = game ? (integration.teamPositions ?? []) : [];
+  // CS2: the teammate colour per member (overrides their own; account page).
+  const colors = integration.id === 'cs2';
 
   if (loadError) {
     return (
@@ -522,7 +526,7 @@ export default function TeamManage() {
                       display: 'grid',
                       gridTemplateColumns: {
                         xs: '40px minmax(0, 1fr) auto',
-                        sm: `40px minmax(0, 1fr) ${positions.length ? 'auto ' : ''}auto auto auto`,
+                        sm: `40px minmax(0, 1fr) ${positions.length ? 'auto ' : ''}${colors ? 'auto ' : ''}auto auto auto`,
                       },
                       gap: 1.5,
                       alignItems: 'center',
@@ -560,6 +564,42 @@ export default function TeamManage() {
                         {positions.map((p) => (
                           <MenuItem key={p} value={p}>
                             {t(`teamPositions.${p}`, { ns: integration.id, defaultValue: p })}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    )}
+                    {colors && m.uid && (
+                      <Select
+                        size="small"
+                        displayEmpty
+                        value={m.color ?? ''}
+                        onChange={(e) =>
+                          act(() =>
+                            api.patch(`${base}/members/${encodeURIComponent(m.uid)}`, {
+                              color: e.target.value || null,
+                            })
+                          )
+                        }
+                        inputProps={{ 'aria-label': t('teamManage.colorFor', { name: m.name }) }}
+                        data-testid="team-manage-color"
+                        sx={{ minWidth: 130, gridColumn: { xs: '2 / -1', sm: 'auto' } }}
+                      >
+                        <MenuItem value="">{t('teamManage.colorOwn')}</MenuItem>
+                        {TEAMMATE_COLORS.map((col) => (
+                          <MenuItem key={col.id} value={col.id}>
+                            <Box
+                              component="span"
+                              aria-hidden
+                              sx={{
+                                display: 'inline-block',
+                                width: 10,
+                                height: 10,
+                                borderRadius: '50%',
+                                bgcolor: col.hex,
+                                mr: 1,
+                              }}
+                            />
+                            {t(`account.color.names.${col.id}`)}
                           </MenuItem>
                         ))}
                       </Select>

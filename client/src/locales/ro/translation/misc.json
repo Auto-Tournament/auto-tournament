@@ -233,6 +233,20 @@
       "previewChatTip": "Ai nevoie de pauză, de un admin sau să renunți? Scrie .menu în chat.",
       "saved": "Salvat. Se aplică de la următorul tău meci.",
       "saveFailed": "Setarea HUD nu a putut fi salvată."
+    },
+    "color": {
+      "title": "Culoarea jucătorului",
+      "description": "Culoarea ta pe radarul și tabela echipei în meciurile CS2 de pe serverele Auto Tournament. Căpitanul echipei poate alege alta pentru meciurile echipei.",
+      "auto": "Alege CS2",
+      "names": {
+        "blue": "Albastru",
+        "green": "Verde",
+        "yellow": "Galben",
+        "orange": "Portocaliu",
+        "purple": "Mov"
+      },
+      "saved": "Salvat. Se aplică de la următorul tău meci.",
+      "saveFailed": "Culoarea nu a putut fi salvată."
     }
   },
   "home": {

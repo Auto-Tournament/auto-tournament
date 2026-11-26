@@ -630,7 +630,9 @@
     "color": "Lagfarge",
     "colorN": "Farge {{n}}",
     "colorSaved": "Fargen er lagret",
-    "colorHelp": "Taggen din vises på denne fargen der laget ikke har logo, og fargen markerer laget i tabeller og turneringstrær."
+    "colorHelp": "Taggen din vises på denne fargen der laget ikke har logo, og fargen markerer laget i tabeller og turneringstrær.",
+    "colorFor": "Spillerfarge for {{name}}",
+    "colorOwn": "Sin egen farge"
   },
   "teamJoin": {
     "title": "Bli med i et lag",

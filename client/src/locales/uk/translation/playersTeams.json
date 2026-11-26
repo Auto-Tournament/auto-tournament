@@ -663,7 +663,9 @@
     "colorSaved": "Колір збережено",
     "colorHelp": "Тег показується на цьому кольорі всюди, де в команди немає логотипа, а колір позначає команду в таблицях і сітках.",
     "lineupCount_few": "{{starters}} з {{size}} основних · {{count}} запасні",
-    "lineupCount_many": "{{starters}} з {{size}} основних · {{count}} запасних"
+    "lineupCount_many": "{{starters}} з {{size}} основних · {{count}} запасних",
+    "colorFor": "Колір гравця {{name}}",
+    "colorOwn": "Власний колір"
   },
   "teamJoin": {
     "title": "Приєднатися до команди",

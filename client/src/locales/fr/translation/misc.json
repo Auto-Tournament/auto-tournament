@@ -233,6 +233,20 @@
       "previewChatTip": "Besoin d'une pause, d'un admin ou d'abandonner ? Tape .menu dans le chat.",
       "saved": "Enregistré. Effectif dès ton prochain match.",
       "saveFailed": "Impossible d'enregistrer ton réglage HUD."
+    },
+    "color": {
+      "title": "Couleur du joueur",
+      "description": "Ta couleur sur le radar et le tableau des scores de ton équipe dans les matchs CS2 sur les serveurs Auto Tournament. Le capitaine de ton équipe peut en choisir une autre pour les matchs de l'équipe.",
+      "auto": "CS2 choisit",
+      "names": {
+        "blue": "Bleu",
+        "green": "Vert",
+        "yellow": "Jaune",
+        "orange": "Orange",
+        "purple": "Violet"
+      },
+      "saved": "Enregistré. Valable dès ton prochain match.",
+      "saveFailed": "Impossible d'enregistrer ta couleur."
     }
   },
   "home": {

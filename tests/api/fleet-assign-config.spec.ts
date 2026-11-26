@@ -10,6 +10,7 @@ import {
   rulesFromMatchConfig,
   pausesOnDisconnect,
   rostersFull,
+  withColors,
   withLanguages,
   withRatings,
 } from '../../api/src/integrations/cs2/fleet/assignConfig';
@@ -499,6 +500,42 @@ test.describe('Fleet match.assign config', () => {
         ops: diffAssignConfig(base, joined),
       })
     ).toEqual({ ok: true, errors: [] });
+  });
+
+  test('teammate colours: the captain-set one first, then their own; a taken colour falls back to CS2', () => {
+    const base = buildAssignConfig(tournamentConfig(), 'pw');
+    // Own picks only.
+    const own = withColors(
+      base,
+      new Map([
+        [STEAM(1), 'purple'],
+        [STEAM(3), 'green'],
+      ])
+    );
+    expect(own.team1.players.find((p) => p.steamid64 === STEAM(1))?.color).toBe('purple');
+    expect(own.team2.players.find((p) => p.steamid64 === STEAM(3))?.color).toBe('green');
+    expect(own.team1.players.find((p) => p.steamid64 === STEAM(2))).not.toHaveProperty('color');
+    // Both want purple: the first on the roster keeps it, the other gets CS2's pick.
+    const clash = withColors(
+      base,
+      new Map([
+        [STEAM(1), 'purple'],
+        [STEAM(2), 'purple'],
+      ])
+    );
+    expect(clash.team1.players.find((p) => p.steamid64 === STEAM(1))?.color).toBe('purple');
+    expect(clash.team1.players.find((p) => p.steamid64 === STEAM(2))).not.toHaveProperty('color');
+    // The team's captain-set colour wins over a player's own: bob is set purple, alice wanted it.
+    const forced = withColors(base, new Map([[STEAM(1), 'purple']]), {
+      team1: new Map([[STEAM(2), 'purple']]),
+    });
+    expect(forced.team1.players.find((p) => p.steamid64 === STEAM(2))?.color).toBe('purple');
+    expect(forced.team1.players.find((p) => p.steamid64 === STEAM(1))).not.toHaveProperty('color');
+    // Coaches never get one; the other team is untouched by team1's colours.
+    expect(forced.team1.players.find((p) => p.steamid64 === STEAM(9))).not.toHaveProperty('color');
+    expect(
+      validatePayload('match.assign', { match_id: 'r1m1', epoch: 1, config_rev: 1, config: own })
+    ).toEqual(expect.objectContaining({ ok: true }));
   });
 
   test('player ratings: set where known (whole, 0-99999), sent with a joining player, valid for the schema', () => {

@@ -232,6 +232,20 @@
       "previewChatTip": "Szünet, admin vagy feladás kell? Írd be a chatbe: .menu.",
       "saved": "Mentve. A következő meccsedtől érvényes.",
       "saveFailed": "Nem sikerült menteni a HUD-beállításodat."
+    },
+    "color": {
+      "title": "Játékosszín",
+      "description": "A színed a csapatod radarján és eredménytábláján a CS2-meccseken az Auto Tournament szerverein. A csapatkapitány a csapat meccseire másikat is választhat.",
+      "auto": "A CS2 választ",
+      "names": {
+        "blue": "Kék",
+        "green": "Zöld",
+        "yellow": "Sárga",
+        "orange": "Narancs",
+        "purple": "Lila"
+      },
+      "saved": "Mentve. A következő meccsedtől érvényes.",
+      "saveFailed": "Nem sikerült menteni a színt."
     }
   },
   "home": {

@@ -23,7 +23,7 @@
  * GET    /invite/:code, POST /invite/:code  the join page; ask to join
  * POST   /:teamId/requests/:uid/accept|decline
  * PATCH  /:teamId/members/:uid              role: captain | member (owner);
- *                                           position, lineup (owner, captains)
+ *                                           position, lineup, color (owner, captains)
  * POST   /:teamId/invites, DELETE /:uid     ask a player on by Steam ID; take it back
  * POST   /:teamId/invites/answer            the invited player: { accept }
  * DELETE /:teamId/members/:uid              remove a member, or leave
@@ -733,19 +733,22 @@ for (const answer of ['accept', 'decline'] as const) {
 router.patch(
   '/:teamId/members/:uid',
   teamAction(async (req, uid) => {
-    const { role, position, lineup } = req.body ?? {};
-    if (role === undefined && position === undefined && lineup === undefined)
+    const { role, position, lineup, color } = req.body ?? {};
+    if (role === undefined && position === undefined && lineup === undefined && color === undefined)
       throw new TeamActionError(400, 'Nothing to change');
+    if (color !== undefined && color !== null && typeof color !== 'string')
+      throw new TeamActionError(400, 'color is a string or null');
     if (role !== undefined && role !== 'captain' && role !== 'member')
       throw new TeamActionError(400, 'role is captain or member');
     if (position !== undefined && position !== null && typeof position !== 'string')
       throw new TeamActionError(400, 'position is a string or null');
     if (lineup !== undefined && lineup !== 'starter' && lineup !== 'sub')
       throw new TeamActionError(400, 'lineup is starter or sub');
-    if (position !== undefined || lineup !== undefined) {
+    if (position !== undefined || lineup !== undefined || color !== undefined) {
       await teamSelfService.setPlacement(req.params.teamId, uid!, req.params.uid, {
         position,
         lineup,
+        color,
       });
     }
     if (role !== undefined)

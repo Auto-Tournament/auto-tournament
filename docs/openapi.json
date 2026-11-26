@@ -13127,6 +13127,66 @@
         ]
       }
     },
+    "/api/me/color": {
+      "get": {
+        "tags": [
+          "Me"
+        ],
+        "summary": "The signed-in player's teammate colour in CS2",
+        "responses": {
+          "200": {
+            "description": "{ color: 'blue' | 'green' | 'yellow' | 'orange' | 'purple' | null }: null = CS2 picks"
+          },
+          "401": {
+            "description": "Not signed in"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Me"
+        ],
+        "summary": "Choose a teammate colour, or null to let CS2 pick",
+        "description": "Ready Up servers get it per player at the next match assign. A team's owner or captain can\nset a colour for the player in that team's matches, which wins.\n",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "color": {
+                    "type": "string",
+                    "nullable": true,
+                    "enum": [
+                      "blue",
+                      "green",
+                      "yellow",
+                      "orange",
+                      "purple"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Saved"
+          },
+          "400": {
+            "description": "Not a colour"
+          },
+          "401": {
+            "description": "Not signed in"
+          },
+          "403": {
+            "description": "Impersonating"
+          }
+        }
+      }
+    },
     "/api/me/connections": {
       "get": {
         "tags": [

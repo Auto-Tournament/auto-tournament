@@ -630,7 +630,9 @@
     "color": "Takım rengi",
     "colorN": "Renk {{n}}",
     "colorSaved": "Renk kaydedildi",
-    "colorHelp": "Takımın logosu olmayan her yerde kısaltman bu rengin üzerinde görünür; renk ayrıca takımı tablolarda ve turnuva ağaçlarında işaretler."
+    "colorHelp": "Takımın logosu olmayan her yerde kısaltman bu rengin üzerinde görünür; renk ayrıca takımı tablolarda ve turnuva ağaçlarında işaretler.",
+    "colorFor": "{{name}} için oyuncu rengi",
+    "colorOwn": "Kendi rengi"
   },
   "teamJoin": {
     "title": "Bir takıma katıl",

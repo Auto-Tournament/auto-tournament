@@ -232,6 +232,20 @@
       "previewChatTip": "Pauze, een admin of opgeven nodig? Typ .menu in de chat.",
       "saved": "Opgeslagen. Geldt vanaf je volgende wedstrijd.",
       "saveFailed": "Je HUD-instelling kon niet worden opgeslagen."
+    },
+    "color": {
+      "title": "Spelerskleur",
+      "description": "Jouw kleur op de radar en het scorebord van je team in CS2-wedstrijden op Auto Tournament-servers. De aanvoerder van je team kan voor de wedstrijden van het team een andere kiezen.",
+      "auto": "CS2 kiest",
+      "names": {
+        "blue": "Blauw",
+        "green": "Groen",
+        "yellow": "Geel",
+        "orange": "Oranje",
+        "purple": "Paars"
+      },
+      "saved": "Opgeslagen. Geldt vanaf je volgende wedstrijd.",
+      "saveFailed": "Je kleur kon niet worden opgeslagen."
     }
   },
   "home": {

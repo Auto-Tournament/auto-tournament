@@ -663,7 +663,9 @@
     "colorSaved": "Kolor zapisany",
     "colorHelp": "Tag pojawia się na tym kolorze wszędzie, gdzie drużyna nie ma logo, a kolor oznacza drużynę w tabelach i drabinkach.",
     "lineupCount_few": "Podstawowi: {{starters}} z {{size}} · rezerwowi: {{count}}",
-    "lineupCount_many": "Podstawowi: {{starters}} z {{size}} · rezerwowi: {{count}}"
+    "lineupCount_many": "Podstawowi: {{starters}} z {{size}} · rezerwowi: {{count}}",
+    "colorFor": "Kolor gracza {{name}}",
+    "colorOwn": "Własny kolor"
   },
   "teamJoin": {
     "title": "Dołącz do drużyny",

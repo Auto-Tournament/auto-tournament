@@ -647,7 +647,9 @@
     "colorN": "Cor {{n}}",
     "colorSaved": "Cor salva",
     "colorHelp": "Sua tag aparece nesta cor onde o time não tem logo, e a cor marca o time nas tabelas e nas chaves.",
-    "lineupCount_many": "{{starters}} de {{size}} titulares · {{count}} reservas"
+    "lineupCount_many": "{{starters}} de {{size}} titulares · {{count}} reservas",
+    "colorFor": "Cor de {{name}}",
+    "colorOwn": "A própria cor"
   },
   "teamJoin": {
     "title": "Entrar em um time",

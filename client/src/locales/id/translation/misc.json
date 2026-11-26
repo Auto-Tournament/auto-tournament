@@ -232,6 +232,20 @@
       "previewChatTip": "Butuh jeda, admin, atau menyerah? Ketik .menu di chat.",
       "saved": "Tersimpan. Berlaku mulai pertandinganmu berikutnya.",
       "saveFailed": "Gagal menyimpan pengaturan HUD kamu."
+    },
+    "color": {
+      "title": "Warna pemain",
+      "description": "Warnamu di radar dan papan skor tim dalam pertandingan CS2 di server Auto Tournament. Kapten timmu bisa memilih warna lain untuk pertandingan tim.",
+      "auto": "Dipilih CS2",
+      "names": {
+        "blue": "Biru",
+        "green": "Hijau",
+        "yellow": "Kuning",
+        "orange": "Oranye",
+        "purple": "Ungu"
+      },
+      "saved": "Tersimpan. Berlaku mulai pertandinganmu berikutnya.",
+      "saveFailed": "Gagal menyimpan warnamu."
     }
   },
   "home": {

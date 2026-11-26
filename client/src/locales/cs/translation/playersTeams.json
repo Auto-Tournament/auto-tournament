@@ -663,7 +663,9 @@
     "colorSaved": "Barva uložena",
     "colorHelp": "Tvůj tag se ukazuje na této barvě všude, kde tým nemá logo, a barva označuje tým v tabulkách a pavoucích.",
     "lineupCount_few": "{{starters}} z {{size}} v základu · {{count}} náhradníci",
-    "lineupCount_many": "{{starters}} z {{size}} v základu · {{count}} náhradníků"
+    "lineupCount_many": "{{starters}} z {{size}} v základu · {{count}} náhradníků",
+    "colorFor": "Barva hráče {{name}}",
+    "colorOwn": "Jeho vlastní barva"
   },
   "teamJoin": {
     "title": "Přidat se k týmu",

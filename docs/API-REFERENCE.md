@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 778 of them, 489 behind auth —
+Every endpoint this API serves — 780 of them, 489 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -1154,6 +1154,8 @@ The signed-in player's own data, e.g. the games they play.
 | `POST` | `/api/me/games/prompt/dismiss` | public |
 | `GET` | `/api/me/name` | public |
 | `PUT` | `/api/me/name` | public |
+| `GET` | `/api/me/color` | public |
+| `PUT` | `/api/me/color` | public |
 | `GET` | `/api/me/hud` | public |
 | `PUT` | `/api/me/hud` | public |
 | `PUT` | `/api/me/language` | public |

@@ -32,6 +32,7 @@ import type {
   AssignConfig,
   AssignPlayer,
   AssignTeam,
+  TeammateColorName,
   MapSides,
   MatchRules,
   MatchUpdateOp,
@@ -416,6 +417,51 @@ export function withHud(config: AssignConfig, chatOnly: ReadonlySet<string>): As
   return { ...config, team1: add(config.team1), team2: add(config.team2) };
 }
 
+/**
+ * Each player's teammate colour. Per team, in this order, a colour already taken on the team is
+ * skipped (that player gets CS2's pick): the colours the team's owner or a captain set (`set`,
+ * team_members.color), then the players' own (`own`, players.teammate_color), the team's captain
+ * first, then roster order. Coaches never get one.
+ */
+export function withColors(
+  config: AssignConfig,
+  own: ReadonlyMap<string, TeammateColorName>,
+  set: {
+    team1?: ReadonlyMap<string, TeammateColorName>;
+    team2?: ReadonlyMap<string, TeammateColorName>;
+  } = {}
+): AssignConfig {
+  const add = (
+    side: AssignTeam,
+    forced: ReadonlyMap<string, TeammateColorName> | undefined
+  ): AssignTeam => {
+    const playing = side.players.filter((p) => roleOf(p) !== 'coach');
+    const order = [
+      ...playing.filter((p) => p.steamid64 === side.captain),
+      ...playing.filter((p) => p.steamid64 !== side.captain),
+    ];
+    const given = new Map<string, TeammateColorName>();
+    const taken = new Set<TeammateColorName>();
+    for (const pass of [forced, own]) {
+      for (const p of order) {
+        const want = pass?.get(p.steamid64);
+        if (!want || given.has(p.steamid64) || taken.has(want)) continue;
+        given.set(p.steamid64, want);
+        taken.add(want);
+      }
+    }
+    if (given.size === 0) return side;
+    return {
+      ...side,
+      players: side.players.map((p) => {
+        const color = given.get(p.steamid64);
+        return color ? { ...p, color } : p;
+      }),
+    };
+  };
+  return { ...config, team1: add(config.team1, set.team1), team2: add(config.team2, set.team2) };
+}
+
 /** Both sides have five players on the roster (subs and coaches not counted). */
 export function rostersFull(config: Pick<AssignConfig, 'team1' | 'team2'>): boolean {
   return (['team1', 'team2'] as const).every(
@@ -501,6 +547,7 @@ export function diffAssignConfig(
         ...(now.player.language ? { language: now.player.language } : {}),
         ...(now.player.rating !== undefined ? { rating: now.player.rating } : {}),
         ...(now.player.rating_wins !== undefined ? { rating_wins: now.player.rating_wins } : {}),
+        ...(now.player.color ? { color: now.player.color } : {}),
         ...(now.player.hud === false ? { hud: false } : {}),
       });
     } else if (now.player.language && now.player.language !== was.player.language) {
