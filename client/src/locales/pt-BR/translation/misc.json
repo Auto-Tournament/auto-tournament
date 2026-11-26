@@ -99,14 +99,17 @@
       "notifyOff": "Sem mais e-mails de torneios",
       "siteCannotSend": "Este site não envia e-mails no momento."
     },
-    "title": "Conexões",
+    "title": "Configurações",
     "subtitle": "Uma conta para todos os torneios deste site.",
     "loadFailed": "Não foi possível carregar sua conta.",
     "impersonating": "Você está vendo esta página enquanto se passa por um jogador. Ela mostra a sua própria conta; pare de se passar pelo jogador para mudá-la.",
     "rail": {
-      "label": "Conta",
-      "profile": "Perfil",
-      "connections": "Conexões"
+      "label": "Configurações",
+      "account": "Conta",
+      "notifications": "Notificações",
+      "games": "Jogos",
+      "cs2Group": "Counter-Strike 2",
+      "cs2": "No jogo"
     },
     "gameAccounts": {
       "title": "Contas de jogo",
@@ -247,6 +250,11 @@
       },
       "saved": "Salvo. Vale a partir da sua próxima partida.",
       "saveFailed": "Não foi possível salvar sua cor."
+    },
+    "viewProfile": "Ver seu perfil",
+    "cs2": {
+      "title": "No jogo",
+      "description": "O que você vê nas partidas de CS2 nos servidores do Auto Tournament. As mudanças valem a partir da sua próxima partida."
     }
   },
   "home": {

@@ -99,14 +99,17 @@
       "notifyOff": "Tidak ada lagi email turnamen",
       "siteCannotSend": "Situs ini sedang tidak mengirim email."
     },
-    "title": "Koneksi",
+    "title": "Pengaturan",
     "subtitle": "Satu akun untuk setiap turnamen di situs ini.",
     "loadFailed": "Tidak dapat memuat akun Anda.",
     "impersonating": "Anda melihat halaman ini sambil meniru pemain. Halaman ini menampilkan akun Anda sendiri; berhenti meniru untuk mengubahnya.",
     "rail": {
-      "label": "Akun",
-      "profile": "Profil",
-      "connections": "Koneksi"
+      "label": "Pengaturan",
+      "account": "Akun",
+      "notifications": "Notifikasi",
+      "games": "Game",
+      "cs2Group": "Counter-Strike 2",
+      "cs2": "Dalam game"
     },
     "gameAccounts": {
       "title": "Akun game",
@@ -246,6 +249,11 @@
       },
       "saved": "Tersimpan. Berlaku mulai pertandinganmu berikutnya.",
       "saveFailed": "Gagal menyimpan warnamu."
+    },
+    "viewProfile": "Lihat profilmu",
+    "cs2": {
+      "title": "Dalam game",
+      "description": "Yang kamu lihat di pertandingan CS2 di server Auto Tournament. Perubahan berlaku mulai pertandingan berikutnya."
     }
   },
   "home": {

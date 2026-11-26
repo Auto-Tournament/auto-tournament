@@ -76,14 +76,17 @@
     }
   },
   "account": {
-    "title": "连接",
+    "title": "设置",
     "subtitle": "一个账户通用于此站点的所有赛事。",
     "loadFailed": "无法加载你的账户。",
     "impersonating": "你正在以其他玩家身份查看此页面。这里显示的是你自己的账户；停止扮演后才能更改。",
     "rail": {
-      "label": "账户",
-      "profile": "资料",
-      "connections": "连接"
+      "label": "设置",
+      "account": "账户",
+      "notifications": "通知",
+      "games": "游戏",
+      "cs2Group": "Counter-Strike 2",
+      "cs2": "游戏内"
     },
     "gameAccounts": {
       "title": "游戏账户",
@@ -246,6 +249,11 @@
       },
       "saved": "已保存。从你的下一场比赛开始生效。",
       "saveFailed": "无法保存你的颜色。"
+    },
+    "viewProfile": "查看你的资料",
+    "cs2": {
+      "title": "游戏内",
+      "description": "你在 Auto Tournament 服务器上的 CS2 比赛中看到的内容。更改从你的下一场比赛开始生效。"
     }
   },
   "home": {

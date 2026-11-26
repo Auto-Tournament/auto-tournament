@@ -99,14 +99,17 @@
       "notifyOff": "Không nhận email giải đấu nữa",
       "siteCannotSend": "Trang này hiện không gửi email."
     },
-    "title": "Kết nối",
+    "title": "Cài đặt",
     "subtitle": "Một tài khoản cho mọi giải đấu trên trang này.",
     "loadFailed": "Không tải được tài khoản của bạn.",
     "impersonating": "Bạn đang xem trang này khi giả danh một người chơi. Trang hiển thị tài khoản của chính bạn; hãy dừng giả danh để thay đổi.",
     "rail": {
-      "label": "Tài khoản",
-      "profile": "Hồ sơ",
-      "connections": "Kết nối"
+      "label": "Cài đặt",
+      "account": "Tài khoản",
+      "notifications": "Thông báo",
+      "games": "Trò chơi",
+      "cs2Group": "Counter-Strike 2",
+      "cs2": "Trong trận"
     },
     "gameAccounts": {
       "title": "Tài khoản game",
@@ -246,6 +249,11 @@
       },
       "saved": "Đã lưu. Áp dụng từ trận tiếp theo của bạn.",
       "saveFailed": "Không lưu được màu."
+    },
+    "viewProfile": "Xem hồ sơ của bạn",
+    "cs2": {
+      "title": "Trong trận",
+      "description": "Những gì bạn thấy trong các trận CS2 trên máy chủ của Auto Tournament. Thay đổi áp dụng từ trận tiếp theo của bạn."
     }
   },
   "home": {

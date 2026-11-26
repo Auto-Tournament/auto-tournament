@@ -99,14 +99,17 @@
       "notifyOff": "Nincs több versenyes e-mail",
       "siteCannotSend": "Ez az oldal jelenleg nem küld e-mailt."
     },
-    "title": "Kapcsolatok",
+    "title": "Beállítások",
     "subtitle": "Egy fiók az oldal összes versenyéhez.",
     "loadFailed": "Nem sikerült betölteni a fiókodat.",
     "impersonating": "Ezt az oldalt egy játékos nevében nézed. A saját fiókodat mutatja; a módosításhoz fejezd be a megszemélyesítést.",
     "rail": {
-      "label": "Fiók",
-      "profile": "Profil",
-      "connections": "Kapcsolatok"
+      "label": "Beállítások",
+      "account": "Fiók",
+      "notifications": "Értesítések",
+      "games": "Játékok",
+      "cs2Group": "Counter-Strike 2",
+      "cs2": "Játékban"
     },
     "gameAccounts": {
       "title": "Játékfiókok",
@@ -246,6 +249,11 @@
       },
       "saved": "Mentve. A következő meccsedtől érvényes.",
       "saveFailed": "Nem sikerült menteni a színt."
+    },
+    "viewProfile": "Profil megtekintése",
+    "cs2": {
+      "title": "Játékban",
+      "description": "Amit a CS2-meccseken látsz az Auto Tournament szerverein. A változások a következő meccsedtől érvényesek."
     }
   },
   "home": {

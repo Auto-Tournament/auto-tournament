@@ -99,14 +99,17 @@
       "notifyOff": "No more tournament emails",
       "siteCannotSend": "This site doesn't send email right now."
     },
-    "title": "Connections",
+    "title": "Settings",
     "subtitle": "One account for every tournament on this site.",
     "loadFailed": "Could not load your account.",
     "impersonating": "You are viewing this page while impersonating a player. It shows your own account; stop impersonating to change it.",
     "rail": {
-      "label": "Account",
-      "profile": "Profile",
-      "connections": "Connections"
+      "label": "Settings",
+      "account": "Account",
+      "notifications": "Notifications",
+      "games": "Games",
+      "cs2Group": "Counter-Strike 2",
+      "cs2": "In-game"
     },
     "gameAccounts": {
       "title": "Game accounts",
@@ -246,6 +249,11 @@
       },
       "saved": "Saved. It applies from your next match.",
       "saveFailed": "Couldn't save your colour."
+    },
+    "viewProfile": "View your profile",
+    "cs2": {
+      "title": "In-game",
+      "description": "What you see in CS2 matches on Auto Tournament servers. Changes apply from your next match."
     }
   },
   "home": {

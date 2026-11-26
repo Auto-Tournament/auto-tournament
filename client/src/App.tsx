@@ -576,14 +576,24 @@ function AppRoutes() {
 
         {/* The signed-in player's own account */}
         <Route path={paths.me} element={<Navigate to={paths.meConnections} replace />} />
-        <Route
-          path={paths.meConnections}
-          element={
-            <RequireSignedIn>
-              <AccountConnections />
-            </RequireSignedIn>
-          }
-        />
+        {(
+          [
+            [paths.meConnections, 'account'],
+            [paths.meNotifications, 'notifications'],
+            [paths.meGames, 'games'],
+            [paths.meCs2, 'cs2'],
+          ] as const
+        ).map(([path, section]) => (
+          <Route
+            key={path}
+            path={path}
+            element={
+              <RequireSignedIn>
+                <AccountConnections section={section} />
+              </RequireSignedIn>
+            }
+          />
+        ))}
 
         {/* "My match": wherever the signed-in player's match lives. */}
         <Route

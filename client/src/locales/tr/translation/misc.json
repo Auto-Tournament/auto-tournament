@@ -99,14 +99,17 @@
       "notifyOff": "Artık turnuva e-postası yok",
       "siteCannotSend": "Bu site şu anda e-posta göndermiyor."
     },
-    "title": "Bağlantılar",
+    "title": "Ayarlar",
     "subtitle": "Bu sitedeki her turnuva için tek bir hesap.",
     "loadFailed": "Hesabın yüklenemedi.",
     "impersonating": "Bu sayfayı bir oyuncunun yerine geçerek görüntülüyorsun. Sayfa kendi hesabını gösteriyor; değiştirmek için oyuncu görünümünden çık.",
     "rail": {
-      "label": "Hesap",
-      "profile": "Profil",
-      "connections": "Bağlantılar"
+      "label": "Ayarlar",
+      "account": "Hesap",
+      "notifications": "Bildirimler",
+      "games": "Oyunlar",
+      "cs2Group": "Counter-Strike 2",
+      "cs2": "Oyun içi"
     },
     "gameAccounts": {
       "title": "Oyun hesapları",
@@ -246,6 +249,11 @@
       },
       "saved": "Kaydedildi. Bir sonraki maçından itibaren geçerli.",
       "saveFailed": "Rengin kaydedilemedi."
+    },
+    "viewProfile": "Profilini gör",
+    "cs2": {
+      "title": "Oyun içi",
+      "description": "Auto Tournament sunucularındaki CS2 maçlarında gördüklerin. Değişiklikler bir sonraki maçından itibaren geçerli olur."
     }
   },
   "home": {

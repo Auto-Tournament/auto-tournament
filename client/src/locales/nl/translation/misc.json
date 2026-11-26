@@ -76,14 +76,17 @@
     }
   },
   "account": {
-    "title": "Koppelingen",
+    "title": "Instellingen",
     "subtitle": "Eén account voor elk toernooi op deze site.",
     "loadFailed": "Kan je account niet laden.",
     "impersonating": "Je bekijkt deze pagina terwijl je je voordoet als een speler. Hij toont je eigen account; stop met voordoen om het te wijzigen.",
     "rail": {
-      "label": "Account",
-      "profile": "Profiel",
-      "connections": "Koppelingen"
+      "label": "Instellingen",
+      "account": "Account",
+      "notifications": "Meldingen",
+      "games": "Games",
+      "cs2Group": "Counter-Strike 2",
+      "cs2": "In-game"
     },
     "gameAccounts": {
       "title": "Gameaccounts",
@@ -246,6 +249,11 @@
       },
       "saved": "Opgeslagen. Geldt vanaf je volgende wedstrijd.",
       "saveFailed": "Je kleur kon niet worden opgeslagen."
+    },
+    "viewProfile": "Bekijk je profiel",
+    "cs2": {
+      "title": "In-game",
+      "description": "Wat je ziet in CS2-wedstrijden op de servers van Auto Tournament. Wijzigingen gelden vanaf je volgende wedstrijd."
     }
   },
   "home": {

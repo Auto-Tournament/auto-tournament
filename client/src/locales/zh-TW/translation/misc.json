@@ -99,14 +99,17 @@
       "notifyOff": "不再接收賽事郵件",
       "siteCannotSend": "此網站目前不傳送郵件。"
     },
-    "title": "連線",
+    "title": "設定",
     "subtitle": "一個帳號通用於此網站的所有賽事。",
     "loadFailed": "無法載入你的帳號。",
     "impersonating": "你正在以其他玩家身分檢視此頁面。這裡顯示的是你自己的帳號；停止扮演後才能更改。",
     "rail": {
-      "label": "帳號",
-      "profile": "資料",
-      "connections": "連線"
+      "label": "設定",
+      "account": "帳號",
+      "notifications": "通知",
+      "games": "遊戲",
+      "cs2Group": "Counter-Strike 2",
+      "cs2": "遊戲內"
     },
     "gameAccounts": {
       "title": "遊戲帳號",
@@ -246,6 +249,11 @@
       },
       "saved": "已儲存。從你的下一場比賽開始生效。",
       "saveFailed": "無法儲存你的顏色。"
+    },
+    "viewProfile": "查看你的個人資料",
+    "cs2": {
+      "title": "遊戲內",
+      "description": "你在 Auto Tournament 伺服器上的 CS2 比賽中看到的內容。變更從你的下一場比賽開始生效。"
     }
   },
   "home": {

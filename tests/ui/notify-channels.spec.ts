@@ -8,10 +8,10 @@ import { signInAsPlayer } from '../helpers/auth';
  * @tag ui
  * @tag notifications
  */
-test('the Notifications section on the account page', { tag: ['@ui'] }, async ({ page }) => {
+test('the Notifications page in settings', { tag: ['@ui'] }, async ({ page }) => {
   const steamId = `7656119804${String(Date.now()).slice(-7)}`;
   expect(await signInAsPlayer(page, steamId, 'Notify Viewer')).toBe(true);
-  await page.goto('/me/connections');
+  await page.goto('/me/notifications');
   const section = page.getByTestId('notify-channels');
   await expect(section).toBeVisible();
   await expect(section).toContainText('Your match is ready');
