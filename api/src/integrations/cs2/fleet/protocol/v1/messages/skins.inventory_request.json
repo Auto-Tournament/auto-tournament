@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-tournament.dev/fleet/v1/messages/skins.inventory_request.json",
+  "title": "skins.inventory_request (server → platform, ephemeral)",
+  "description": "Proposed by Ready Up (the in-game inventory, `.skins`). A connected player opened their inventory: the platform answers with skins.inventory for that player. Only from servers that advertise `skins.v1`. At most one every 2 s per player (Ready Up keeps the last answer meanwhile).",
+  "type": "object",
+  "required": ["steamid64"],
+  "properties": {
+    "steamid64": { "$ref": "../defs.json#/$defs/u64s" }
+  }
+}
