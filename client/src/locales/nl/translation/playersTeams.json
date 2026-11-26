@@ -87,7 +87,9 @@
     "gameSwitchLabel": "Game",
     "yourMatch": "Je wedstrijd",
     "tabs": {
-      "overview": "Overzicht"
+      "overview": "Overzicht",
+      "label": "Profiel",
+      "matches": "Wedstrijden"
     },
     "deletedName": "Verwijderde speler",
     "deletedChip": "Verwijderd",
@@ -97,6 +99,61 @@
     "shownTeam": {
       "label": "Team op je profiel",
       "failed": "Kan het team niet opslaan"
+    },
+    "chart": {
+      "winLabel": "Winst, {{title}}, {{date}}, rating {{rating}}",
+      "lossLabel": "Verlies, {{title}}, {{date}}, rating {{rating}}",
+      "resultsLabel": "Uitslagen, oudste eerst",
+      "kda": "K / D / A",
+      "openMatch": "Wedstrijdruimte openen",
+      "record": "{{wins}} W · {{losses}} V",
+      "hint": "Wijs de grafiek aan om een wedstrijd te zien. Klik om hem open te houden."
+    },
+    "trophies": {
+      "title": "Prijzen",
+      "place1": "Winnaar",
+      "place2": "Tweede plaats",
+      "place3": "Derde plaats",
+      "place4": "Vierde plaats",
+      "teams": "Teams: {{count}}",
+      "titles": "Titels: {{count}}",
+      "finals": "Finales: {{count}}",
+      "podiums": "Podiumplaatsen: {{count}}"
+    },
+    "best": {
+      "title": "Op hun best",
+      "adr": "Beste ADR in een wedstrijd",
+      "kills": "Meeste kills in een wedstrijd",
+      "headshots": "Headshots",
+      "headshotsContext": "{{heads}} van {{kills}} kills",
+      "map": "Beste map",
+      "mapContext": "{{won}} van {{played}} gewonnen"
+    },
+    "months": {
+      "title": "Rating per maand",
+      "peak": "Hoogste ooit {{rating}}, {{month}}",
+      "month": "Maand",
+      "record": "Balans",
+      "start": "Begin",
+      "end": "Eind",
+      "change": "Verandering",
+      "peakColumn": "Hoogste"
+    },
+    "matchList": {
+      "title": "Wedstrijden ({{count}})",
+      "result": "Uitslag",
+      "all": "Alle",
+      "wins": "Winst",
+      "losses": "Verlies",
+      "map": "Map",
+      "allMaps": "Alle maps",
+      "event": "Evenement",
+      "allEvents": "Alle evenementen",
+      "noneMatch": "Geen wedstrijden voor deze filters.",
+      "win": "Winst",
+      "loss": "Verlies",
+      "range": "{{from}}–{{to}} van {{total}}",
+      "pages": "Wedstrijdpagina's"
     }
   },
   "teamPage": {

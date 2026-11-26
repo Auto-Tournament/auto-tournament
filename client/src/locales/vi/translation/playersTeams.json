@@ -92,11 +92,68 @@
     "gameSwitchLabel": "Trò chơi",
     "yourMatch": "Trận của bạn",
     "tabs": {
-      "overview": "Tổng quan"
+      "overview": "Tổng quan",
+      "label": "Hồ sơ",
+      "matches": "Trận đấu"
     },
     "shownTeam": {
       "label": "Đội hiển thị trên hồ sơ của bạn",
       "failed": "Không lưu được đội"
+    },
+    "chart": {
+      "winLabel": "Thắng, {{title}}, {{date}}, điểm {{rating}}",
+      "lossLabel": "Thua, {{title}}, {{date}}, điểm {{rating}}",
+      "resultsLabel": "Kết quả, cũ nhất trước",
+      "kda": "K / D / A",
+      "openMatch": "Mở phòng trận đấu",
+      "record": "{{wins}} T · {{losses}} B",
+      "hint": "Trỏ vào biểu đồ để xem một trận. Bấm để giữ mở."
+    },
+    "trophies": {
+      "title": "Danh hiệu",
+      "place1": "Vô địch",
+      "place2": "Á quân",
+      "place3": "Hạng ba",
+      "place4": "Hạng tư",
+      "teams": "Đội: {{count}}",
+      "titles": "Chức vô địch: {{count}}",
+      "finals": "Chung kết: {{count}}",
+      "podiums": "Lên bục: {{count}}"
+    },
+    "best": {
+      "title": "Lúc phong độ nhất",
+      "adr": "ADR cao nhất trong một trận",
+      "kills": "Nhiều mạng nhất trong một trận",
+      "headshots": "Headshot",
+      "headshotsContext": "{{heads}} trên {{kills}} mạng",
+      "map": "Bản đồ tốt nhất",
+      "mapContext": "Thắng {{won}} trên {{played}}"
+    },
+    "months": {
+      "title": "Điểm theo tháng",
+      "peak": "Cao nhất mọi thời {{rating}}, {{month}}",
+      "month": "Tháng",
+      "record": "Thành tích",
+      "start": "Đầu",
+      "end": "Cuối",
+      "change": "Thay đổi",
+      "peakColumn": "Đỉnh"
+    },
+    "matchList": {
+      "title": "Trận đấu ({{count}})",
+      "result": "Kết quả",
+      "all": "Tất cả",
+      "wins": "Thắng",
+      "losses": "Thua",
+      "map": "Bản đồ",
+      "allMaps": "Mọi bản đồ",
+      "event": "Sự kiện",
+      "allEvents": "Mọi sự kiện",
+      "noneMatch": "Không có trận nào khớp bộ lọc.",
+      "win": "Thắng",
+      "loss": "Thua",
+      "range": "{{from}}–{{to}} trên {{total}}",
+      "pages": "Trang trận đấu"
     }
   },
   "teamPage": {

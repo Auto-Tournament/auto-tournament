@@ -92,11 +92,68 @@
     "gameSwitchLabel": "게임",
     "yourMatch": "내 경기",
     "tabs": {
-      "overview": "개요"
+      "overview": "개요",
+      "label": "프로필",
+      "matches": "경기"
     },
     "shownTeam": {
       "label": "프로필에 표시할 팀",
       "failed": "팀을 저장하지 못했어요"
+    },
+    "chart": {
+      "winLabel": "승리, {{title}}, {{date}}, 레이팅 {{rating}}",
+      "lossLabel": "패배, {{title}}, {{date}}, 레이팅 {{rating}}",
+      "resultsLabel": "결과, 오래된 순",
+      "kda": "K / D / A",
+      "openMatch": "경기 방 열기",
+      "record": "{{wins}}승 · {{losses}}패",
+      "hint": "그래프 위에 마우스를 올리면 경기가 보입니다. 클릭하면 고정됩니다."
+    },
+    "trophies": {
+      "title": "트로피",
+      "place1": "우승",
+      "place2": "준우승",
+      "place3": "3위",
+      "place4": "4위",
+      "teams": "팀: {{count}}",
+      "titles": "우승: {{count}}",
+      "finals": "결승: {{count}}",
+      "podiums": "입상: {{count}}"
+    },
+    "best": {
+      "title": "최고의 순간",
+      "adr": "한 경기 최고 ADR",
+      "kills": "한 경기 최다 킬",
+      "headshots": "헤드샷",
+      "headshotsContext": "{{kills}}킬 중 {{heads}}",
+      "map": "최고의 맵",
+      "mapContext": "{{played}}경기 중 {{won}}승"
+    },
+    "months": {
+      "title": "월별 레이팅",
+      "peak": "역대 최고 {{rating}}, {{month}}",
+      "month": "월",
+      "record": "전적",
+      "start": "시작",
+      "end": "종료",
+      "change": "변동",
+      "peakColumn": "최고"
+    },
+    "matchList": {
+      "title": "경기 ({{count}})",
+      "result": "결과",
+      "all": "전체",
+      "wins": "승리",
+      "losses": "패배",
+      "map": "맵",
+      "allMaps": "모든 맵",
+      "event": "대회",
+      "allEvents": "모든 대회",
+      "noneMatch": "이 필터에 맞는 경기가 없습니다.",
+      "win": "승리",
+      "loss": "패배",
+      "range": "{{total}}개 중 {{from}}–{{to}}",
+      "pages": "경기 페이지"
     }
   },
   "teamPage": {

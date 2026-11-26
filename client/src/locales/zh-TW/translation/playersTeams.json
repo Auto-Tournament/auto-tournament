@@ -92,11 +92,68 @@
     "gameSwitchLabel": "遊戲",
     "yourMatch": "你的比賽",
     "tabs": {
-      "overview": "概覽"
+      "overview": "概覽",
+      "label": "個人檔案",
+      "matches": "比賽"
     },
     "shownTeam": {
       "label": "資料中顯示的戰隊",
       "failed": "無法儲存戰隊"
+    },
+    "chart": {
+      "winLabel": "勝，{{title}}，{{date}}，積分 {{rating}}",
+      "lossLabel": "敗，{{title}}，{{date}}，積分 {{rating}}",
+      "resultsLabel": "結果，從最早開始",
+      "kda": "K / D / A",
+      "openMatch": "開啟比賽房間",
+      "record": "{{wins}} 勝 · {{losses}} 敗",
+      "hint": "將指標移到圖表上查看比賽，點擊可固定。"
+    },
+    "trophies": {
+      "title": "獎盃",
+      "place1": "冠軍",
+      "place2": "亞軍",
+      "place3": "季軍",
+      "place4": "第四名",
+      "teams": "隊伍：{{count}}",
+      "titles": "冠軍：{{count}}",
+      "finals": "決賽：{{count}}",
+      "podiums": "登上頒獎台：{{count}}"
+    },
+    "best": {
+      "title": "巔峰表現",
+      "adr": "單場最高 ADR",
+      "kills": "單場最多擊殺",
+      "headshots": "爆頭",
+      "headshotsContext": "{{kills}} 次擊殺中 {{heads}} 次",
+      "map": "最佳地圖",
+      "mapContext": "{{played}} 場贏 {{won}} 場"
+    },
+    "months": {
+      "title": "每月積分",
+      "peak": "歷史最高 {{rating}}，{{month}}",
+      "month": "月份",
+      "record": "戰績",
+      "start": "開始",
+      "end": "結束",
+      "change": "變化",
+      "peakColumn": "最高"
+    },
+    "matchList": {
+      "title": "比賽（{{count}}）",
+      "result": "結果",
+      "all": "全部",
+      "wins": "勝",
+      "losses": "敗",
+      "map": "地圖",
+      "allMaps": "全部地圖",
+      "event": "賽事",
+      "allEvents": "全部賽事",
+      "noneMatch": "沒有符合篩選條件的比賽。",
+      "win": "勝",
+      "loss": "敗",
+      "range": "共 {{total}} 場中第 {{from}}–{{to}} 場",
+      "pages": "比賽頁面"
     }
   },
   "teamPage": {

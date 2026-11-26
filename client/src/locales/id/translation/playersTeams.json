@@ -92,11 +92,68 @@
     "gameSwitchLabel": "Game",
     "yourMatch": "Pertandingan Anda",
     "tabs": {
-      "overview": "Ringkasan"
+      "overview": "Ringkasan",
+      "label": "Profil",
+      "matches": "Pertandingan"
     },
     "shownTeam": {
       "label": "Tim yang ditampilkan di profil Anda",
       "failed": "Tidak dapat menyimpan tim"
+    },
+    "chart": {
+      "winLabel": "Menang, {{title}}, {{date}}, rating {{rating}}",
+      "lossLabel": "Kalah, {{title}}, {{date}}, rating {{rating}}",
+      "resultsLabel": "Hasil, dari yang terlama",
+      "kda": "K / D / A",
+      "openMatch": "Buka ruang pertandingan",
+      "record": "{{wins}} M · {{losses}} K",
+      "hint": "Arahkan ke grafik untuk melihat pertandingan. Klik agar tetap terbuka."
+    },
+    "trophies": {
+      "title": "Trofi",
+      "place1": "Juara",
+      "place2": "Runner-up",
+      "place3": "Juara ketiga",
+      "place4": "Peringkat keempat",
+      "teams": "Tim: {{count}}",
+      "titles": "Gelar: {{count}}",
+      "finals": "Final: {{count}}",
+      "podiums": "Podium: {{count}}"
+    },
+    "best": {
+      "title": "Saat terbaiknya",
+      "adr": "ADR terbaik dalam satu pertandingan",
+      "kills": "Kill terbanyak dalam satu pertandingan",
+      "headshots": "Headshot",
+      "headshotsContext": "{{heads}} dari {{kills}} kill",
+      "map": "Map terbaik",
+      "mapContext": "Menang {{won}} dari {{played}}"
+    },
+    "months": {
+      "title": "Rating per bulan",
+      "peak": "Puncak sepanjang masa {{rating}}, {{month}}",
+      "month": "Bulan",
+      "record": "Rekor",
+      "start": "Awal",
+      "end": "Akhir",
+      "change": "Perubahan",
+      "peakColumn": "Puncak"
+    },
+    "matchList": {
+      "title": "Pertandingan ({{count}})",
+      "result": "Hasil",
+      "all": "Semua",
+      "wins": "Menang",
+      "losses": "Kalah",
+      "map": "Map",
+      "allMaps": "Semua map",
+      "event": "Acara",
+      "allEvents": "Semua acara",
+      "noneMatch": "Tidak ada pertandingan yang cocok dengan filter ini.",
+      "win": "Menang",
+      "loss": "Kalah",
+      "range": "{{from}}–{{to}} dari {{total}}",
+      "pages": "Halaman pertandingan"
     }
   },
   "teamPage": {

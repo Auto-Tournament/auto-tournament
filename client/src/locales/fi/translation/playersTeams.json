@@ -92,11 +92,68 @@
     "gameSwitchLabel": "Peli",
     "yourMatch": "Ottelusi",
     "tabs": {
-      "overview": "Yleiskatsaus"
+      "overview": "Yleiskatsaus",
+      "label": "Profiili",
+      "matches": "Ottelut"
     },
     "shownTeam": {
       "label": "Profiilissasi näkyvä joukkue",
       "failed": "Joukkuetta ei voitu tallentaa"
+    },
+    "chart": {
+      "winLabel": "Voitto, {{title}}, {{date}}, luokitus {{rating}}",
+      "lossLabel": "Tappio, {{title}}, {{date}}, luokitus {{rating}}",
+      "resultsLabel": "Tulokset, vanhimmat ensin",
+      "kda": "T / K / A",
+      "openMatch": "Avaa ottelun huone",
+      "record": "{{wins}} V · {{losses}} H",
+      "hint": "Osoita kaaviota nähdäksesi ottelun. Napsauta pitääksesi sen auki."
+    },
+    "trophies": {
+      "title": "Palkinnot",
+      "place1": "Voittaja",
+      "place2": "Toinen sija",
+      "place3": "Kolmas sija",
+      "place4": "Neljäs sija",
+      "teams": "Joukkueita: {{count}}",
+      "titles": "Mestaruuksia: {{count}}",
+      "finals": "Finaaleja: {{count}}",
+      "podiums": "Palkintosijoja: {{count}}"
+    },
+    "best": {
+      "title": "Parhaimmillaan",
+      "adr": "Paras ADR ottelussa",
+      "kills": "Eniten tappoja ottelussa",
+      "headshots": "Pääosumat",
+      "headshotsContext": "{{heads}} / {{kills}} tappoa",
+      "map": "Paras kartta",
+      "mapContext": "Voitti {{won}} / {{played}}"
+    },
+    "months": {
+      "title": "Luokitus kuukausittain",
+      "peak": "Kaikkien aikojen huippu {{rating}}, {{month}}",
+      "month": "Kuukausi",
+      "record": "Tilasto",
+      "start": "Alku",
+      "end": "Loppu",
+      "change": "Muutos",
+      "peakColumn": "Huippu"
+    },
+    "matchList": {
+      "title": "Ottelut ({{count}})",
+      "result": "Tulos",
+      "all": "Kaikki",
+      "wins": "Voitot",
+      "losses": "Tappiot",
+      "map": "Kartta",
+      "allMaps": "Kaikki kartat",
+      "event": "Tapahtuma",
+      "allEvents": "Kaikki tapahtumat",
+      "noneMatch": "Mikään ottelu ei vastaa näitä suodattimia.",
+      "win": "Voitto",
+      "loss": "Tappio",
+      "range": "{{from}}–{{to}} / {{total}}",
+      "pages": "Otteluiden sivut"
     }
   },
   "teamPage": {

@@ -92,11 +92,68 @@
     "gameSwitchLabel": "Joc",
     "yourMatch": "Meciul tău",
     "tabs": {
-      "overview": "Prezentare"
+      "overview": "Prezentare",
+      "label": "Profil",
+      "matches": "Meciuri"
     },
     "shownTeam": {
       "label": "Echipa afișată pe profilul tău",
       "failed": "Echipa nu a putut fi salvată"
+    },
+    "chart": {
+      "winLabel": "Victorie, {{title}}, {{date}}, rating {{rating}}",
+      "lossLabel": "Înfrângere, {{title}}, {{date}}, rating {{rating}}",
+      "resultsLabel": "Rezultate, de la cele mai vechi",
+      "kda": "K / D / A",
+      "openMatch": "Deschide camera meciului",
+      "record": "{{wins}} V · {{losses}} Î",
+      "hint": "Indică graficul ca să vezi un meci. Dă clic ca să rămână deschis."
+    },
+    "trophies": {
+      "title": "Trofee",
+      "place1": "Câștigător",
+      "place2": "Locul doi",
+      "place3": "Locul trei",
+      "place4": "Locul patru",
+      "teams": "Echipe: {{count}}",
+      "titles": "Titluri: {{count}}",
+      "finals": "Finale: {{count}}",
+      "podiums": "Podiumuri: {{count}}"
+    },
+    "best": {
+      "title": "În cea mai bună formă",
+      "adr": "Cel mai bun ADR într-un meci",
+      "kills": "Cele mai multe kill-uri într-un meci",
+      "headshots": "Headshot-uri",
+      "headshotsContext": "{{heads}} din {{kills}} kill-uri",
+      "map": "Cea mai bună hartă",
+      "mapContext": "Câștigate {{won}} din {{played}}"
+    },
+    "months": {
+      "title": "Rating pe luni",
+      "peak": "Maxim absolut {{rating}}, {{month}}",
+      "month": "Luna",
+      "record": "Bilanț",
+      "start": "Început",
+      "end": "Sfârșit",
+      "change": "Schimbare",
+      "peakColumn": "Maxim"
+    },
+    "matchList": {
+      "title": "Meciuri ({{count}})",
+      "result": "Rezultat",
+      "all": "Toate",
+      "wins": "Victorii",
+      "losses": "Înfrângeri",
+      "map": "Hartă",
+      "allMaps": "Toate hărțile",
+      "event": "Eveniment",
+      "allEvents": "Toate evenimentele",
+      "noneMatch": "Niciun meci nu se potrivește acestor filtre.",
+      "win": "Victorie",
+      "loss": "Înfrângere",
+      "range": "{{from}}–{{to}} din {{total}}",
+      "pages": "Pagini de meciuri"
     }
   },
   "teamPage": {

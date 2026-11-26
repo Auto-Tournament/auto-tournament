@@ -92,11 +92,68 @@
     "gameSwitchLabel": "Spel",
     "yourMatch": "Din match",
     "tabs": {
-      "overview": "Översikt"
+      "overview": "Översikt",
+      "label": "Profil",
+      "matches": "Matcher"
     },
     "shownTeam": {
       "label": "Lag som visas på din profil",
       "failed": "Laget kunde inte sparas"
+    },
+    "chart": {
+      "winLabel": "Vinst, {{title}}, {{date}}, rating {{rating}}",
+      "lossLabel": "Förlust, {{title}}, {{date}}, rating {{rating}}",
+      "resultsLabel": "Resultat, äldst först",
+      "kda": "K / D / A",
+      "openMatch": "Öppna matchrummet",
+      "record": "{{wins}} V · {{losses}} F",
+      "hint": "Peka på grafen för att se en match. Klicka för att hålla den öppen."
+    },
+    "trophies": {
+      "title": "Troféer",
+      "place1": "Vinnare",
+      "place2": "Andraplats",
+      "place3": "Tredjeplats",
+      "place4": "Fjärdeplats",
+      "teams": "Lag: {{count}}",
+      "titles": "Titlar: {{count}}",
+      "finals": "Finaler: {{count}}",
+      "podiums": "Pallplatser: {{count}}"
+    },
+    "best": {
+      "title": "När de är som bäst",
+      "adr": "Bästa ADR i en match",
+      "kills": "Flest kills i en match",
+      "headshots": "Headshots",
+      "headshotsContext": "{{heads}} av {{kills}} kills",
+      "map": "Bästa karta",
+      "mapContext": "Vann {{won}} av {{played}}"
+    },
+    "months": {
+      "title": "Rating per månad",
+      "peak": "Högsta någonsin {{rating}}, {{month}}",
+      "month": "Månad",
+      "record": "Facit",
+      "start": "Start",
+      "end": "Slut",
+      "change": "Förändring",
+      "peakColumn": "Högsta"
+    },
+    "matchList": {
+      "title": "Matcher ({{count}})",
+      "result": "Resultat",
+      "all": "Alla",
+      "wins": "Vinster",
+      "losses": "Förluster",
+      "map": "Karta",
+      "allMaps": "Alla kartor",
+      "event": "Evenemang",
+      "allEvents": "Alla evenemang",
+      "noneMatch": "Inga matcher passar filtren.",
+      "win": "Vinst",
+      "loss": "Förlust",
+      "range": "{{from}}–{{to}} av {{total}}",
+      "pages": "Matchsidor"
     }
   },
   "teamPage": {

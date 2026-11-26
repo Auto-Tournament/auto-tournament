@@ -92,11 +92,68 @@
     "gameSwitchLabel": "ゲーム",
     "yourMatch": "あなたの試合",
     "tabs": {
-      "overview": "概要"
+      "overview": "概要",
+      "label": "プロフィール",
+      "matches": "試合"
     },
     "shownTeam": {
       "label": "プロフィールに表示するチーム",
       "failed": "チームを保存できませんでした"
+    },
+    "chart": {
+      "winLabel": "勝利、{{title}}、{{date}}、レーティング {{rating}}",
+      "lossLabel": "敗北、{{title}}、{{date}}、レーティング {{rating}}",
+      "resultsLabel": "結果（古い順）",
+      "kda": "K / D / A",
+      "openMatch": "試合ルームを開く",
+      "record": "{{wins}}勝 · {{losses}}敗",
+      "hint": "グラフにカーソルを合わせると試合が表示されます。クリックで固定できます。"
+    },
+    "trophies": {
+      "title": "トロフィー",
+      "place1": "優勝",
+      "place2": "準優勝",
+      "place3": "3位",
+      "place4": "4位",
+      "teams": "チーム数: {{count}}",
+      "titles": "優勝回数: {{count}}",
+      "finals": "決勝進出: {{count}}",
+      "podiums": "表彰台: {{count}}"
+    },
+    "best": {
+      "title": "ベストパフォーマンス",
+      "adr": "1試合の最高ADR",
+      "kills": "1試合の最多キル",
+      "headshots": "ヘッドショット",
+      "headshotsContext": "{{kills}}キル中{{heads}}",
+      "map": "得意マップ",
+      "mapContext": "{{played}}試合中{{won}}勝"
+    },
+    "months": {
+      "title": "月別レーティング",
+      "peak": "自己最高 {{rating}}（{{month}}）",
+      "month": "月",
+      "record": "戦績",
+      "start": "開始",
+      "end": "終了",
+      "change": "変動",
+      "peakColumn": "最高"
+    },
+    "matchList": {
+      "title": "試合（{{count}}）",
+      "result": "結果",
+      "all": "すべて",
+      "wins": "勝利",
+      "losses": "敗北",
+      "map": "マップ",
+      "allMaps": "すべてのマップ",
+      "event": "イベント",
+      "allEvents": "すべてのイベント",
+      "noneMatch": "条件に合う試合はありません。",
+      "win": "勝利",
+      "loss": "敗北",
+      "range": "{{total}}件中 {{from}}–{{to}}",
+      "pages": "試合のページ"
     }
   },
   "teamPage": {

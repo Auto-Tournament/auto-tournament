@@ -166,7 +166,13 @@ export const progressionService = {
   ): Promise<void> {
     for (const { place, steamIds } of placements) {
       for (const id of steamIds) {
-        await addXp(id, `tournament:${tournamentId}`, XP.placement[place - 1], 'placement');
+        await addXp(
+          id,
+          `tournament:${tournamentId}`,
+          XP.placement[place - 1],
+          'placement',
+          `place:${place}`
+        );
       }
     }
   },

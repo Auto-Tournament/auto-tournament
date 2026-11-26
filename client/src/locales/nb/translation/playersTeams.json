@@ -92,11 +92,68 @@
     "gameSwitchLabel": "Spill",
     "yourMatch": "Kampen din",
     "tabs": {
-      "overview": "Oversikt"
+      "overview": "Oversikt",
+      "label": "Profil",
+      "matches": "Kamper"
     },
     "shownTeam": {
       "label": "Lag som vises på profilen",
       "failed": "Kunne ikke lagre laget"
+    },
+    "chart": {
+      "winLabel": "Seier, {{title}}, {{date}}, rating {{rating}}",
+      "lossLabel": "Tap, {{title}}, {{date}}, rating {{rating}}",
+      "resultsLabel": "Resultater, eldste først",
+      "kda": "K / D / A",
+      "openMatch": "Åpne kamprommet",
+      "record": "{{wins}} S · {{losses}} T",
+      "hint": "Pek på grafen for å se en kamp. Klikk for å holde den åpen."
+    },
+    "trophies": {
+      "title": "Trofeer",
+      "place1": "Vinner",
+      "place2": "Andreplass",
+      "place3": "Tredjeplass",
+      "place4": "Fjerdeplass",
+      "teams": "Lag: {{count}}",
+      "titles": "Titler: {{count}}",
+      "finals": "Finaler: {{count}}",
+      "podiums": "Pallplasser: {{count}}"
+    },
+    "best": {
+      "title": "På sitt beste",
+      "adr": "Beste ADR i en kamp",
+      "kills": "Flest kills i en kamp",
+      "headshots": "Headshots",
+      "headshotsContext": "{{heads}} av {{kills}} kills",
+      "map": "Beste kart",
+      "mapContext": "Vant {{won}} av {{played}}"
+    },
+    "months": {
+      "title": "Rating per måned",
+      "peak": "Høyeste noensinne {{rating}}, {{month}}",
+      "month": "Måned",
+      "record": "Resultat",
+      "start": "Start",
+      "end": "Slutt",
+      "change": "Endring",
+      "peakColumn": "Høyeste"
+    },
+    "matchList": {
+      "title": "Kamper ({{count}})",
+      "result": "Resultat",
+      "all": "Alle",
+      "wins": "Seire",
+      "losses": "Tap",
+      "map": "Kart",
+      "allMaps": "Alle kart",
+      "event": "Arrangement",
+      "allEvents": "Alle arrangementer",
+      "noneMatch": "Ingen kamper passer med disse filtrene.",
+      "win": "Seier",
+      "loss": "Tap",
+      "range": "{{from}}–{{to}} av {{total}}",
+      "pages": "Kampsider"
     }
   },
   "teamPage": {
