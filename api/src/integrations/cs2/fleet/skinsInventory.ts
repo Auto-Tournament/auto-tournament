@@ -65,12 +65,14 @@ export function inventoryItem(s: OwnedSkin): SkinsInventoryItem {
 }
 
 async function inventoryOf(steamid64: string): Promise<SkinsInventoryPayload> {
-  if (!(await skinService.config()).enabled) return { steamid64, enabled: false, error: 'Skins are off', items: [] };
+  if (!(await skinService.config()).enabled)
+    return { steamid64, enabled: false, error: 'Skins are off', items: [] };
   try {
     const items = (await skinService.adminInventory(steamid64)).slice(0, 1000).map(inventoryItem);
     return { steamid64, enabled: true, items };
   } catch (error) {
-    if (error instanceof SkinError) return { steamid64, enabled: false, error: error.message.slice(0, 200), items: [] };
+    if (error instanceof SkinError)
+      return { steamid64, enabled: false, error: error.message.slice(0, 200), items: [] };
     throw error;
   }
 }
@@ -81,13 +83,19 @@ async function answer(ctx: InboundContext, steamid64: string, ref: string): Prom
     log.debug(`[FLEET] ${ctx.serverId}: skins.inventory not sent (socket gone)`);
 }
 
-async function onRequest(ctx: InboundContext, env: Envelope<string, SkinsInventoryRequestPayload>): Promise<void> {
+async function onRequest(
+  ctx: InboundContext,
+  env: Envelope<string, SkinsInventoryRequestPayload>
+): Promise<void> {
   const steamid64 = env.payload.steamid64;
   if (tooSoon(steamid64)) return;
   await answer(ctx, steamid64, env.id);
 }
 
-async function onEquip(ctx: InboundContext, env: Envelope<string, SkinsEquipPayload>): Promise<void> {
+async function onEquip(
+  ctx: InboundContext,
+  env: Envelope<string, SkinsEquipPayload>
+): Promise<void> {
   const { steamid64, skin_id: skinId, team, unequip } = env.payload;
   try {
     if (unequip) {

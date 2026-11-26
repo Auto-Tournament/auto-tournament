@@ -34,9 +34,9 @@ const owned = (over: Partial<OwnedSkin> = {}): OwnedSkin => ({
 
 test.describe('fleet skins inventory', { tag: ['@api'] }, () => {
   test('the game picture name is the file stem, or empty', () => {
-    expect(gameImageName('/api/game/cs2/img/skins/weapon_ak47_cu_ak-47_phantom_disruptor_light_png.webp')).toBe(
-      'weapon_ak47_cu_ak-47_phantom_disruptor_light_png'
-    );
+    expect(
+      gameImageName('/api/game/cs2/img/skins/weapon_ak47_cu_ak-47_phantom_disruptor_light_png.webp')
+    ).toBe('weapon_ak47_cu_ak-47_phantom_disruptor_light_png');
     expect(gameImageName('/api/game/cs2/img/skins/weapon_awp_cu_awp_asimov_medium_png.webp')).toBe(
       'weapon_awp_cu_awp_asimov_medium_png'
     );
@@ -56,13 +56,28 @@ test.describe('fleet skins inventory', { tag: ['@api'] }, () => {
       image: 'weapon_awp_cu_awp_asimov_medium_png',
       source: 't50 MVP',
     });
-    const ak = inventoryItem(owned({ id: 77, weapon: 'weapon_ak47', side: 2, equippedSides: [], stattrak: null, sourceLabel: null }));
+    const ak = inventoryItem(
+      owned({
+        id: 77,
+        weapon: 'weapon_ak47',
+        side: 2,
+        equippedSides: [],
+        stattrak: null,
+        sourceLabel: null,
+      })
+    );
     expect(ak.side).toBe(2);
     expect(ak.source).toBeUndefined();
     const payload = { steamid64: '76561198000000001', enabled: true, items: [item, ak] };
     expect(validatePayload('skins.inventory', payload)).toEqual({ ok: true, errors: [] });
-    expect(validatePayload('skins.inventory_request', { steamid64: '76561198000000001' }).ok).toBe(true);
-    expect(validatePayload('skins.equip', { steamid64: '76561198000000001', skin_id: 412, team: 3 }).ok).toBe(true);
-    expect(validatePayload('skins.equip', { steamid64: '76561198000000001', skin_id: 412, team: 1 }).ok).toBe(false);
+    expect(validatePayload('skins.inventory_request', { steamid64: '76561198000000001' }).ok).toBe(
+      true
+    );
+    expect(
+      validatePayload('skins.equip', { steamid64: '76561198000000001', skin_id: 412, team: 3 }).ok
+    ).toBe(true);
+    expect(
+      validatePayload('skins.equip', { steamid64: '76561198000000001', skin_id: 412, team: 1 }).ok
+    ).toBe(false);
   });
 });
