@@ -10,6 +10,8 @@ import {
   rulesFromMatchConfig,
   pausesOnDisconnect,
   rostersFull,
+  pickTeamCaptain,
+  withCaptains,
   withColors,
   withLanguages,
   withRatings,
@@ -500,6 +502,58 @@ test.describe('Fleet match.assign config', () => {
         ops: diffAssignConfig(base, joined),
       })
     ).toEqual({ ok: true, errors: [] });
+  });
+
+  test('every team names a captain: matchmaking, the platform, else the highest rated', () => {
+    // Matchmaking names one (MatchTeam.captainSteamId): kept.
+    const mm = buildAssignConfig(
+      tournamentConfig({
+        team1: {
+          name: 'Team bob',
+          players: { [STEAM(1)]: 'alice', [STEAM(2)]: 'bob' },
+          captainSteamId: STEAM(2),
+        },
+      }),
+      'pw'
+    );
+    expect(mm.team1.captain).toBe(STEAM(2));
+    expect(withCaptains(mm, { team1: [STEAM(1)] }).team1.captain).toBe(STEAM(2));
+    // A named captain who is not on the roster, or a coach, is not sent.
+    expect(
+      buildAssignConfig(
+        tournamentConfig({
+          team1: { name: 'A', players: { [STEAM(1)]: 'alice' }, captainSteamId: STEAM(5) },
+        }),
+        'pw'
+      ).team1
+    ).not.toHaveProperty('captain');
+
+    const base = buildAssignConfig(tournamentConfig(), 'pw');
+    // A tournament team: its captain on the platform, if they are on this roster.
+    expect(withCaptains(base, { team1: [STEAM(6), STEAM(2)] }).team1.captain).toBe(STEAM(2));
+    // A shuffle team (no platform captain): the highest rated; unrated below every rating.
+    const rated = withRatings(base, new Map([[STEAM(2), { rating: 1500, wins: 0 }]]));
+    const shuffled = withCaptains(rated);
+    expect(shuffled.team1.captain).toBe(STEAM(2));
+    expect(shuffled.team2.captain).toBe(STEAM(3)); // the only player
+    // No ratings at all: the first player, never the coach.
+    expect(withCaptains(base).team1.captain).toBe(STEAM(1));
+    expect(
+      pickTeamCaptain({
+        name: 'Coaches',
+        players: [{ steamid64: STEAM(9), name: 'c', role: 'coach' }],
+      })
+    ).toBeUndefined();
+    expect(
+      validatePayload('match.assign', {
+        match_id: 'r1m1',
+        epoch: 1,
+        config_rev: 1,
+        config: shuffled,
+      })
+    ).toEqual(expect.objectContaining({ ok: true }));
+    // A captain is set at the assign: no match.update op for it.
+    expect(diffAssignConfig(base, shuffled)).toEqual([]);
   });
 
   test('teammate colours: the captain-set one first, then their own; a taken colour falls back to CS2', () => {
