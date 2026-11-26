@@ -99,14 +99,17 @@
       "notifyOff": "今後トーナメントのメールは届きません",
       "siteCannotSend": "このサイトは現在メールを送信していません。"
     },
-    "title": "接続",
+    "title": "設定",
     "subtitle": "このサイトのすべてのトーナメントで使える1つのアカウント。",
     "loadFailed": "アカウントを読み込めませんでした。",
     "impersonating": "プレイヤーになりすました状態でこのページを表示しています。表示されているのはあなた自身のアカウントです。変更するにはなりすましを終了してください。",
     "rail": {
-      "label": "アカウント",
-      "profile": "プロフィール",
-      "connections": "接続"
+      "label": "設定",
+      "account": "アカウント",
+      "notifications": "通知",
+      "games": "ゲーム",
+      "cs2Group": "Counter-Strike 2",
+      "cs2": "ゲーム内"
     },
     "gameAccounts": {
       "title": "ゲームアカウント",
@@ -246,6 +249,11 @@
       },
       "saved": "保存しました。次の試合から適用されます。",
       "saveFailed": "色を保存できませんでした。"
+    },
+    "viewProfile": "プロフィールを見る",
+    "cs2": {
+      "title": "ゲーム内",
+      "description": "Auto Tournament のサーバーでの CS2 の試合で表示される内容です。変更は次の試合から反映されます。"
     }
   },
   "home": {

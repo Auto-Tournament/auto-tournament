@@ -99,14 +99,17 @@
       "notifyOff": "Už žádné e-maily o turnajích",
       "siteCannotSend": "Tento web teď e-maily neposílá."
     },
-    "title": "Propojení",
+    "title": "Nastavení",
     "subtitle": "Jeden účet pro všechny turnaje na tomto webu.",
     "loadFailed": "Tvůj účet se nepodařilo načíst.",
     "impersonating": "Díváš se na tuto stránku v roli jiného hráče. Ukazuje tvůj vlastní účet; pro změny ukonči zobrazení jako hráč.",
     "rail": {
-      "label": "Účet",
-      "profile": "Profil",
-      "connections": "Propojení"
+      "label": "Nastavení",
+      "account": "Účet",
+      "notifications": "Oznámení",
+      "games": "Hry",
+      "cs2Group": "Counter-Strike 2",
+      "cs2": "Ve hře"
     },
     "gameAccounts": {
       "title": "Herní účty",
@@ -248,6 +251,11 @@
       },
       "saved": "Uloženo. Platí od tvého dalšího zápasu.",
       "saveFailed": "Barvu se nepodařilo uložit."
+    },
+    "viewProfile": "Zobrazit profil",
+    "cs2": {
+      "title": "Ve hře",
+      "description": "Co vidíte v zápasech CS2 na serverech Auto Tournament. Změny platí od dalšího zápasu."
     }
   },
   "home": {

@@ -76,14 +76,17 @@
     }
   },
   "account": {
-    "title": "Połączenia",
+    "title": "Ustawienia",
     "subtitle": "Jedno konto do każdego turnieju na tej stronie.",
     "loadFailed": "Nie udało się wczytać konta.",
     "impersonating": "Oglądasz tę stronę, podszywając się pod gracza. Pokazuje twoje własne konto; aby je zmienić, przestań się podszywać.",
     "rail": {
-      "label": "Konto",
-      "profile": "Profil",
-      "connections": "Połączenia"
+      "label": "Ustawienia",
+      "account": "Konto",
+      "notifications": "Powiadomienia",
+      "games": "Gry",
+      "cs2Group": "Counter-Strike 2",
+      "cs2": "W grze"
     },
     "gameAccounts": {
       "title": "Konta w grach",
@@ -248,6 +251,11 @@
       },
       "saved": "Zapisano. Obowiązuje od następnego meczu.",
       "saveFailed": "Nie udało się zapisać koloru."
+    },
+    "viewProfile": "Zobacz swój profil",
+    "cs2": {
+      "title": "W grze",
+      "description": "To, co widzisz w meczach CS2 na serwerach Auto Tournament. Zmiany obowiązują od następnego meczu."
     }
   },
   "home": {

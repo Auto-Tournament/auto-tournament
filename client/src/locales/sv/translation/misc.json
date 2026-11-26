@@ -99,14 +99,17 @@
       "notifyOff": "Inga fler turneringsmejl",
       "siteCannotSend": "Webbplatsen skickar inga mejl just nu."
     },
-    "title": "Anslutningar",
+    "title": "Inställningar",
     "subtitle": "Ett konto för alla turneringar på webbplatsen.",
     "loadFailed": "Ditt konto kunde inte laddas.",
     "impersonating": "Du visar sidan medan du imiterar en spelare. Den visar ditt eget konto; sluta imitera för att ändra det.",
     "rail": {
-      "label": "Konto",
-      "profile": "Profil",
-      "connections": "Anslutningar"
+      "label": "Inställningar",
+      "account": "Konto",
+      "notifications": "Aviseringar",
+      "games": "Spel",
+      "cs2Group": "Counter-Strike 2",
+      "cs2": "I spelet"
     },
     "gameAccounts": {
       "title": "Spelkonton",
@@ -246,6 +249,11 @@
       },
       "saved": "Sparat. Gäller från din nästa match.",
       "saveFailed": "Kunde inte spara din färg."
+    },
+    "viewProfile": "Visa din profil",
+    "cs2": {
+      "title": "I spelet",
+      "description": "Det du ser i CS2-matcher på Auto Tournaments servrar. Ändringar gäller från din nästa match."
     }
   },
   "home": {

@@ -120,7 +120,21 @@ export const SITE_SEARCH_INDEX: SiteSearchEntry[] = [
     key: 'connections',
     title: { key: 'nav.accountConnections' },
     to: paths.meConnections,
-    keywords: 'account connections link steam discord faceit email password two step 2fa',
+    keywords: 'settings account connections link steam discord faceit email password two step 2fa',
+    audience: 'player',
+  },
+  {
+    key: 'settingsCs2',
+    title: { key: 'account.cs2.title' },
+    to: paths.meCs2,
+    keywords: 'settings cs2 hud chat only colour color teammate preference in-game',
+    audience: 'player',
+  },
+  {
+    key: 'settingsNotifications',
+    title: { key: 'account.rail.notifications' },
+    to: paths.meNotifications,
+    keywords: 'settings notifications email discord party invites',
     audience: 'player',
   },
   {

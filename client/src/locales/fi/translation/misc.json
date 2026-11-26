@@ -99,14 +99,17 @@
       "notifyOff": "Ei enää turnausviestejä",
       "siteCannotSend": "Tämä sivusto ei lähetä sähköpostia juuri nyt."
     },
-    "title": "Yhteydet",
+    "title": "Asetukset",
     "subtitle": "Yksi tili kaikkiin tämän sivuston turnauksiin.",
     "loadFailed": "Tiliäsi ei voitu ladata.",
     "impersonating": "Katselet tätä sivua esiintyessäsi pelaajana. Se näyttää oman tilisi; lopeta esiintyminen muuttaaksesi sitä.",
     "rail": {
-      "label": "Tili",
-      "profile": "Profiili",
-      "connections": "Yhteydet"
+      "label": "Asetukset",
+      "account": "Tili",
+      "notifications": "Ilmoitukset",
+      "games": "Pelit",
+      "cs2Group": "Counter-Strike 2",
+      "cs2": "Pelissä"
     },
     "gameAccounts": {
       "title": "Pelitilit",
@@ -246,6 +249,11 @@
       },
       "saved": "Tallennettu. Voimassa seuraavasta ottelustasi.",
       "saveFailed": "Väriä ei voitu tallentaa."
+    },
+    "viewProfile": "Näytä profiilisi",
+    "cs2": {
+      "title": "Pelissä",
+      "description": "Mitä näet CS2-otteluissa Auto Tournamentin palvelimilla. Muutokset tulevat voimaan seuraavasta ottelustasi."
     }
   },
   "home": {

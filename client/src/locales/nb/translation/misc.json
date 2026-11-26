@@ -99,14 +99,17 @@
       "notifyOff": "Du får ikke lenger e-post om turneringer",
       "siteCannotSend": "Denne siden sender ikke e-post akkurat nå."
     },
-    "title": "Tilkoblinger",
+    "title": "Innstillinger",
     "subtitle": "Én konto for alle turneringer på denne siden.",
     "loadFailed": "Kunne ikke laste kontoen din.",
     "impersonating": "Du ser denne siden som en annen spiller, men den viser kontoen din, ikke spillerens. Slutt å vise som spiller for å endre den.",
     "rail": {
-      "label": "Konto",
-      "profile": "Profil",
-      "connections": "Tilkoblinger"
+      "label": "Innstillinger",
+      "account": "Konto",
+      "notifications": "Varsler",
+      "games": "Spill",
+      "cs2Group": "Counter-Strike 2",
+      "cs2": "I spillet"
     },
     "gameAccounts": {
       "title": "Spillkontoer",
@@ -246,6 +249,11 @@
       },
       "saved": "Lagret. Gjelder fra neste kamp.",
       "saveFailed": "Kunne ikke lagre fargen."
+    },
+    "viewProfile": "Se profilen din",
+    "cs2": {
+      "title": "I spillet",
+      "description": "Det du ser i CS2-kamper på Auto Tournaments servere. Endringer gjelder fra neste kamp."
     }
   },
   "home": {

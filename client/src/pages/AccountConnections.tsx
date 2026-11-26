@@ -1,6 +1,7 @@
 import { PartyInviteSetting } from '../components/social/PartyInviteSetting';
 import { IngameHudSetting } from '../components/account/IngameHudSetting';
 import { TeammateColorSetting } from '../components/account/TeammateColorSetting';
+import { SettingsRail, type SettingsSection } from '../components/account/SettingsRail';
 import { fmtDate } from '../utils/time';
 import { NotifyChannelsSetting } from '../components/social/NotifyChannelsSetting';
 import { pageTitle } from '../utils/pageTitle';
@@ -19,6 +20,7 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
+  Link,
   Stack,
   TextField,
   Tooltip,
@@ -428,7 +430,7 @@ type ReauthNext =
   | { kind: 'remove'; method: SignInMethod }
   | { kind: 'retry'; run: () => void };
 
-export default function AccountConnections() {
+export default function AccountConnections({ section = 'account' }: { section?: SettingsSection }) {
   const { t } = useTranslation();
   const { showSuccess, showError } = useSnackbar();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -613,21 +615,15 @@ export default function AccountConnections() {
   const readOnly = data?.isImpersonating ?? false;
   const steamGames = data?.gameAccounts.find((a) => a.provider === 'steam')?.games ?? [];
 
-  const railLinks = data
-    ? [
-        { key: 'profile', label: t('account.rail.profile'), to: `/player/${data.account.steamId}` },
-        {
-          key: 'connections',
-          label: t('account.rail.connections'),
-          to: '/me/connections',
-          current: true,
-        },
-      ]
-    : [];
-
   const gamesFirst = !readOnly && games !== null && games.length === 0;
   const gamesSection = games !== null && (
-    <Box sx={{ scrollMarginTop: 96, mt: gamesFirst ? 0 : 6, mb: gamesFirst ? 5 : 0 }}>
+    <Box
+      sx={{
+        scrollMarginTop: 96,
+        mt: gamesFirst || section === 'games' ? 0 : 6,
+        mb: gamesFirst ? 5 : 0,
+      }}
+    >
       <Section
         id="account-games"
         title={t('games.profile.title')}
@@ -692,66 +688,73 @@ export default function AccountConnections() {
               gap: { xs: 3, md: 6 },
             }}
           >
-            <Box
-              component="nav"
-              aria-label={t('account.rail.label')}
-              sx={{
-                display: 'flex',
-                flexDirection: { xs: 'row', md: 'column' },
-                gap: 0.5,
-                alignSelf: 'start',
-                position: { md: 'sticky' },
-                top: { md: 96 },
-                overflowX: { xs: 'auto', md: 'visible' },
-              }}
-            >
-              {railLinks.map((link) => (
-                <Button
-                  key={link.key}
-                  component={RouterLink}
-                  to={link.to}
-                  aria-current={link.current ? 'page' : undefined}
-                  sx={{
-                    justifyContent: 'flex-start',
-                    borderRadius: `${radius.sm}px`,
-                    px: 1.5,
-                    whiteSpace: 'nowrap',
-                    color: link.current ? 'text.primary' : 'text.secondary',
-                    bgcolor: link.current ? color.paper2 : 'transparent',
-                    '&:hover': { bgcolor: color.paper2, color: 'text.primary' },
-                  }}
-                >
-                  {link.label}
-                </Button>
-              ))}
-            </Box>
+            <SettingsRail current={section} />
 
             <Box sx={{ minWidth: 0 }}>
-              <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 5 }}>
-                <PlayerAvatar
-                  id={data.account.steamId}
-                  name={data.account.name}
-                  avatarUrl={data.account.avatar ?? undefined}
-                  size={56}
-                />
-                <Box sx={{ minWidth: 0 }}>
+              {section === 'account' && (
+                <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 5 }}>
+                  <PlayerAvatar
+                    id={data.account.steamId}
+                    name={data.account.name}
+                    avatarUrl={data.account.avatar ?? undefined}
+                    size={56}
+                  />
+                  <Box sx={{ minWidth: 0 }}>
+                    <Typography
+                      component="h2"
+                      variant="h4"
+                      sx={{
+                        fontFamily: fontDisplay,
+                        fontWeight: 700,
+                        fontSize: { xs: '1.5rem', sm: '2rem' },
+                        overflowWrap: 'anywhere',
+                      }}
+                    >
+                      {data.account.name}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {t('account.subtitle')}{' '}
+                      <Link
+                        component={RouterLink}
+                        to={`/player/${data.account.steamId}`}
+                        data-testid="settings-view-profile"
+                      >
+                        {t('account.viewProfile')}
+                      </Link>
+                    </Typography>
+                  </Box>
+                </Stack>
+              )}
+
+              {section === 'cs2' && (
+                <Box sx={{ mb: 5 }}>
                   <Typography
-                    component="h1"
-                    variant="h4"
+                    sx={{
+                      fontSize: '0.8125rem',
+                      fontWeight: 600,
+                      letterSpacing: '0.08em',
+                      textTransform: 'uppercase',
+                      color: color.accent,
+                      mb: 0.75,
+                    }}
+                  >
+                    CS2
+                  </Typography>
+                  <Typography
+                    component="h2"
                     sx={{
                       fontFamily: fontDisplay,
                       fontWeight: 700,
                       fontSize: { xs: '1.5rem', sm: '2rem' },
-                      overflowWrap: 'anywhere',
                     }}
                   >
-                    {data.account.name}
+                    {t('account.cs2.title')}
                   </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {t('account.subtitle')}
+                  <Typography color="text.secondary" sx={{ mt: 1, maxWidth: '62ch' }}>
+                    {t('account.cs2.description')}
                   </Typography>
                 </Box>
-              </Stack>
+              )}
 
               {readOnly && (
                 <Alert severity="info" sx={{ mb: 4 }}>
@@ -759,239 +762,255 @@ export default function AccountConnections() {
                 </Alert>
               )}
 
-              {!readOnly && (
-                <AccountNameSection
-                  onSaved={(name) =>
-                    setData((d) => (d ? { ...d, account: { ...d.account, name } } : d))
-                  }
-                />
+              {section === 'games' && gamesSection}
+
+              {section === 'notifications' && !readOnly && (
+                <>
+                  <NotifyChannelsSetting />
+                  <PartyInviteSetting />
+                </>
               )}
 
-              {/* No games picked yet: the games section comes first, instead of
+              {section === 'cs2' && !readOnly && (
+                <>
+                  <IngameHudSetting />
+                  <TeammateColorSetting />
+                </>
+              )}
+
+              {section === 'account' && (
+                <>
+                  {!readOnly && (
+                    <AccountNameSection
+                      onSaved={(name) =>
+                        setData((d) => (d ? { ...d, account: { ...d.account, name } } : d))
+                      }
+                    />
+                  )}
+
+                  {/* No games picked yet: the games section comes first, instead of
                   a banner at the top pointing at the same section at the
                   bottom (the page used to show both). */}
-              {gamesFirst && gamesSection}
+                  {gamesFirst && gamesSection}
 
-              <Section
-                id="account-game-accounts"
-                title={t('account.gameAccounts.title')}
-                description={t('account.gameAccounts.description')}
-              >
-                <ListPanel label={t('account.gameAccounts.title')}>
-                  {data.gameAccounts.map((acct: GameAccount) => (
-                    <Row
-                      key={acct.provider}
-                      testId={`game-account-${acct.provider}`}
-                      tile={<ProviderTile provider={acct.provider} label={acct.label} />}
-                      title={acct.label}
-                      end={
-                        acct.canConnect && !readOnly ? (
-                          <Button
-                            size="small"
-                            variant="outlined"
-                            onClick={() => connect(acct.provider)}
-                            data-testid={`game-account-connect-${acct.provider}`}
-                          >
-                            {t('account.signIn.connect')}
-                          </Button>
-                        ) : undefined
-                      }
-                      badge={
-                        acct.verified ? (
-                          <Chip
-                            size="small"
-                            label={t('account.gameAccounts.verified')}
-                            sx={{ color: color.live, bgcolor: color.paper3 }}
-                          />
-                        ) : undefined
-                      }
-                    >
-                      {acct.account ? (
-                        <ConnectedAccount
-                          account={acct.account}
-                          idLabel={t('account.signIn.accountId')}
-                        />
-                      ) : acct.externalId ? (
-                        <Typography sx={{ ...muted, overflowWrap: 'anywhere' }}>
-                          {t('account.gameAccounts.id', { id: acct.externalId })}
-                        </Typography>
-                      ) : (
-                        <Typography sx={muted}>
-                          {acct.signInEnabled
-                            ? t('account.gameAccounts.notConnected', { provider: acct.label })
-                            : t('account.gameAccounts.notOffered', { provider: acct.label })}
-                        </Typography>
-                      )}
-                      <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mt: 0.75 }}>
-                        {acct.games.map((g) => (
-                          <Chip key={g.id} size="small" variant="outlined" label={g.name} />
-                        ))}
-                      </Box>
-                    </Row>
-                  ))}
-                </ListPanel>
-                <Box
-                  sx={{
-                    display: 'flex',
-                    gap: 1.5,
-                    alignItems: 'flex-start',
-                    mt: 2,
-                    px: 3,
-                    py: 2,
-                    border: `1px dashed ${color.rule}`,
-                    borderRadius: `${radius.md}px`,
-                    color: color.ink2,
-                    fontSize: '0.875rem',
-                  }}
-                >
-                  <Box component={InfoIcon} size={20} sx={{ color: color.muted, mt: '1px' }} />
-                  <span>{t('account.gameAccounts.more')}</span>
-                </Box>
-              </Section>
-
-              <Section
-                id="account-sign-in"
-                title={t('account.signIn.title')}
-                description={t('account.signIn.description')}
-              >
-                <ListPanel label={t('account.signIn.title')}>
-                  {data.signInMethods.map((method) => {
-                    let detail: string;
-                    if (method.provider === 'local') {
-                      detail = [
-                        t('account.signIn.localDetail', { username: method.username ?? '' }),
-                        data.localLogin
-                          ? data.localLogin.totpEnabled
-                            ? t('account.twoStep.isOn')
-                            : t('account.twoStep.isOff')
-                          : null,
-                      ]
-                        .filter(Boolean)
-                        .join(' · ');
-                      if (!method.signInEnabled) detail += ` · ${t('account.signIn.turnedOff')}`;
-                    } else if (method.primary) {
-                      detail =
-                        steamGames.length > 0
-                          ? t('account.signIn.primaryDetail', {
-                              games: steamGames.map((g) => g.name).join(', '),
-                            })
-                          : t('account.signIn.primaryDetailNoGames');
-                    } else if (method.linked) {
-                      detail = method.linkedAt
-                        ? t('account.signIn.linkedOn', { date: formatDate(method.linkedAt) })
-                        : t('account.signIn.connected');
-                      if (!method.signInEnabled) detail += ` · ${t('account.signIn.turnedOff')}`;
-                    } else {
-                      detail = t('account.signIn.notConnected');
-                    }
-
-                    let end: React.ReactNode = null;
-                    if (method.primary) {
-                      end = <Chip size="small" label={t('account.signIn.primary')} />;
-                    } else if (method.linked && !readOnly) {
-                      const button = (
-                        <span>
-                          <Button
-                            size="small"
-                            color="inherit"
-                            disabled={!method.removable}
-                            onClick={() => setRemoving(method)}
-                            data-testid={`sign-in-remove-${method.provider}`}
-                          >
-                            {t('account.signIn.remove')}
-                          </Button>
-                        </span>
-                      );
-                      end = method.removable ? (
-                        button
-                      ) : (
-                        <Tooltip title={t('account.signIn.lastMethod')}>{button}</Tooltip>
-                      );
-                    } else if (method.canConnect && !readOnly) {
-                      end = (
-                        <Button
-                          size="small"
-                          // Discord is how the Discord bot finds the player (the notice links here).
-                          variant={method.provider === 'discord' ? 'contained' : 'outlined'}
-                          onClick={() => connect(method.provider)}
-                          data-testid={`sign-in-connect-${method.provider}`}
+                  <Section
+                    id="account-game-accounts"
+                    title={t('account.gameAccounts.title')}
+                    description={t('account.gameAccounts.description')}
+                  >
+                    <ListPanel label={t('account.gameAccounts.title')}>
+                      {data.gameAccounts.map((acct: GameAccount) => (
+                        <Row
+                          key={acct.provider}
+                          testId={`game-account-${acct.provider}`}
+                          tile={<ProviderTile provider={acct.provider} label={acct.label} />}
+                          title={acct.label}
+                          end={
+                            acct.canConnect && !readOnly ? (
+                              <Button
+                                size="small"
+                                variant="outlined"
+                                onClick={() => connect(acct.provider)}
+                                data-testid={`game-account-connect-${acct.provider}`}
+                              >
+                                {t('account.signIn.connect')}
+                              </Button>
+                            ) : undefined
+                          }
+                          badge={
+                            acct.verified ? (
+                              <Chip
+                                size="small"
+                                label={t('account.gameAccounts.verified')}
+                                sx={{ color: color.live, bgcolor: color.paper3 }}
+                              />
+                            ) : undefined
+                          }
                         >
-                          {t('account.signIn.connect')}
-                        </Button>
-                      );
-                    }
+                          {acct.account ? (
+                            <ConnectedAccount
+                              account={acct.account}
+                              idLabel={t('account.signIn.accountId')}
+                            />
+                          ) : acct.externalId ? (
+                            <Typography sx={{ ...muted, overflowWrap: 'anywhere' }}>
+                              {t('account.gameAccounts.id', { id: acct.externalId })}
+                            </Typography>
+                          ) : (
+                            <Typography sx={muted}>
+                              {acct.signInEnabled
+                                ? t('account.gameAccounts.notConnected', { provider: acct.label })
+                                : t('account.gameAccounts.notOffered', { provider: acct.label })}
+                            </Typography>
+                          )}
+                          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mt: 0.75 }}>
+                            {acct.games.map((g) => (
+                              <Chip key={g.id} size="small" variant="outlined" label={g.name} />
+                            ))}
+                          </Box>
+                        </Row>
+                      ))}
+                    </ListPanel>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        gap: 1.5,
+                        alignItems: 'flex-start',
+                        mt: 2,
+                        px: 3,
+                        py: 2,
+                        border: `1px dashed ${color.rule}`,
+                        borderRadius: `${radius.md}px`,
+                        color: color.ink2,
+                        fontSize: '0.875rem',
+                      }}
+                    >
+                      <Box component={InfoIcon} size={20} sx={{ color: color.muted, mt: '1px' }} />
+                      <span>{t('account.gameAccounts.more')}</span>
+                    </Box>
+                  </Section>
 
-                    // The password login: its owner can change the password here.
-                    if (
-                      method.provider === 'local' &&
-                      method.linked &&
-                      !readOnly &&
-                      data.localLogin
-                    ) {
-                      end = (
-                        <Stack direction="row" spacing={1} alignItems="center">
-                          <Button
-                            size="small"
-                            variant="outlined"
-                            onClick={() => setChangingPassword(true)}
-                            data-testid="sign-in-change-password"
+                  <Section
+                    id="account-sign-in"
+                    title={t('account.signIn.title')}
+                    description={t('account.signIn.description')}
+                  >
+                    <ListPanel label={t('account.signIn.title')}>
+                      {data.signInMethods.map((method) => {
+                        let detail: string;
+                        if (method.provider === 'local') {
+                          detail = [
+                            t('account.signIn.localDetail', { username: method.username ?? '' }),
+                            data.localLogin
+                              ? data.localLogin.totpEnabled
+                                ? t('account.twoStep.isOn')
+                                : t('account.twoStep.isOff')
+                              : null,
+                          ]
+                            .filter(Boolean)
+                            .join(' · ');
+                          if (!method.signInEnabled)
+                            detail += ` · ${t('account.signIn.turnedOff')}`;
+                        } else if (method.primary) {
+                          detail =
+                            steamGames.length > 0
+                              ? t('account.signIn.primaryDetail', {
+                                  games: steamGames.map((g) => g.name).join(', '),
+                                })
+                              : t('account.signIn.primaryDetailNoGames');
+                        } else if (method.linked) {
+                          detail = method.linkedAt
+                            ? t('account.signIn.linkedOn', { date: formatDate(method.linkedAt) })
+                            : t('account.signIn.connected');
+                          if (!method.signInEnabled)
+                            detail += ` · ${t('account.signIn.turnedOff')}`;
+                        } else {
+                          detail = t('account.signIn.notConnected');
+                        }
+
+                        let end: React.ReactNode = null;
+                        if (method.primary) {
+                          end = <Chip size="small" label={t('account.signIn.primary')} />;
+                        } else if (method.linked && !readOnly) {
+                          const button = (
+                            <span>
+                              <Button
+                                size="small"
+                                color="inherit"
+                                disabled={!method.removable}
+                                onClick={() => setRemoving(method)}
+                                data-testid={`sign-in-remove-${method.provider}`}
+                              >
+                                {t('account.signIn.remove')}
+                              </Button>
+                            </span>
+                          );
+                          end = method.removable ? (
+                            button
+                          ) : (
+                            <Tooltip title={t('account.signIn.lastMethod')}>{button}</Tooltip>
+                          );
+                        } else if (method.canConnect && !readOnly) {
+                          end = (
+                            <Button
+                              size="small"
+                              // Discord is how the Discord bot finds the player (the notice links here).
+                              variant={method.provider === 'discord' ? 'contained' : 'outlined'}
+                              onClick={() => connect(method.provider)}
+                              data-testid={`sign-in-connect-${method.provider}`}
+                            >
+                              {t('account.signIn.connect')}
+                            </Button>
+                          );
+                        }
+
+                        // The password login: its owner can change the password here.
+                        if (
+                          method.provider === 'local' &&
+                          method.linked &&
+                          !readOnly &&
+                          data.localLogin
+                        ) {
+                          end = (
+                            <Stack direction="row" spacing={1} alignItems="center">
+                              <Button
+                                size="small"
+                                variant="outlined"
+                                onClick={() => setChangingPassword(true)}
+                                data-testid="sign-in-change-password"
+                              >
+                                {t('account.changePassword.button')}
+                              </Button>
+                              <Button
+                                size="small"
+                                variant="outlined"
+                                onClick={() =>
+                                  setTwoStep(data.localLogin?.totpEnabled ? 'off' : 'on')
+                                }
+                                data-testid="sign-in-two-step"
+                              >
+                                {data.localLogin.totpEnabled
+                                  ? t('account.twoStep.turnOff')
+                                  : t('account.twoStep.turnOn')}
+                              </Button>
+                              {end}
+                            </Stack>
+                          );
+                        }
+
+                        return (
+                          <Row
+                            key={method.provider}
+                            testId={`sign-in-${method.provider}`}
+                            tile={
+                              <ProviderTile provider={method.provider} label={labelOf(method)} />
+                            }
+                            title={labelOf(method)}
+                            end={end}
                           >
-                            {t('account.changePassword.button')}
-                          </Button>
-                          <Button
-                            size="small"
-                            variant="outlined"
-                            onClick={() => setTwoStep(data.localLogin?.totpEnabled ? 'off' : 'on')}
-                            data-testid="sign-in-two-step"
-                          >
-                            {data.localLogin.totpEnabled
-                              ? t('account.twoStep.turnOff')
-                              : t('account.twoStep.turnOn')}
-                          </Button>
-                          {end}
-                        </Stack>
-                      );
-                    }
+                            {method.linked && method.account && (
+                              <ConnectedAccount
+                                account={method.account}
+                                idLabel={t('account.signIn.accountId')}
+                              />
+                            )}
+                            <Typography sx={muted}>{detail}</Typography>
+                          </Row>
+                        );
+                      })}
+                    </ListPanel>
+                  </Section>
 
-                    return (
-                      <Row
-                        key={method.provider}
-                        testId={`sign-in-${method.provider}`}
-                        tile={<ProviderTile provider={method.provider} label={labelOf(method)} />}
-                        title={labelOf(method)}
-                        end={end}
-                      >
-                        {method.linked && method.account && (
-                          <ConnectedAccount
-                            account={method.account}
-                            idLabel={t('account.signIn.accountId')}
-                          />
-                        )}
-                        <Typography sx={muted}>{detail}</Typography>
-                      </Row>
-                    );
-                  })}
-                </ListPanel>
-              </Section>
+                  {!readOnly && data.localLogin && (
+                    <PasskeysSection
+                      formatDate={formatDate}
+                      requestReauth={(run) => openReauth({ kind: 'retry', run })}
+                    />
+                  )}
 
-              {!readOnly && data.localLogin && (
-                <PasskeysSection
-                  formatDate={formatDate}
-                  requestReauth={(run) => openReauth({ kind: 'retry', run })}
-                />
+                  {!readOnly && <AccountEmailSection />}
+                </>
               )}
-
-              {!readOnly && <AccountEmailSection />}
-
-              {!readOnly && <NotifyChannelsSetting />}
-
-              {!readOnly && <PartyInviteSetting />}
-
-              {!readOnly && <IngameHudSetting />}
-
-              {!readOnly && <TeammateColorSetting />}
-
-              {!gamesFirst && gamesSection}
             </Box>
           </Box>
         )}

@@ -74,7 +74,11 @@ export const paths = {
   /** Every notice the bell showed, with filters. */
   notifications: '/notifications',
   me: '/me',
+  /** Settings: Account (the link flows land here), Notifications, Games, CS2. */
   meConnections: '/me/connections',
+  meNotifications: '/me/notifications',
+  meGames: '/me/games',
+  meCs2: '/me/cs2',
   welcomeGames: '/welcome/games',
   /** Accept the license terms: admin only, required once before the admin UI. */
   licenseConsent: '/welcome/license',

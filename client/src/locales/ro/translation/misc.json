@@ -99,14 +99,17 @@
       "notifyOff": "Fără e-mailuri despre turnee",
       "siteCannotSend": "Acest site nu trimite e-mailuri acum."
     },
-    "title": "Conexiuni",
+    "title": "Setări",
     "subtitle": "Un singur cont pentru toate turneele de pe acest site.",
     "loadFailed": "Contul tău nu a putut fi încărcat.",
     "impersonating": "Vezi această pagină în timp ce impersonezi un jucător. Arată propriul tău cont; oprește impersonarea ca să-l schimbi.",
     "rail": {
-      "label": "Cont",
-      "profile": "Profil",
-      "connections": "Conexiuni"
+      "label": "Setări",
+      "account": "Cont",
+      "notifications": "Notificări",
+      "games": "Jocuri",
+      "cs2Group": "Counter-Strike 2",
+      "cs2": "În joc"
     },
     "gameAccounts": {
       "title": "Conturi de joc",
@@ -247,6 +250,11 @@
       },
       "saved": "Salvat. Se aplică de la următorul tău meci.",
       "saveFailed": "Culoarea nu a putut fi salvată."
+    },
+    "viewProfile": "Vezi-ți profilul",
+    "cs2": {
+      "title": "În joc",
+      "description": "Ce vezi în meciurile CS2 pe serverele Auto Tournament. Modificările se aplică de la următorul tău meci."
     }
   },
   "home": {
