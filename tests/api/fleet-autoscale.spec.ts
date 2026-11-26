@@ -42,7 +42,7 @@ const STEAM = (n: number) => `765611980002${String(n).padStart(5, '0')}`;
 const DEFAULTS = {
   enabled: true,
   leadTimeSeconds: 120,
-  cooldownSeconds: 600,
+  cooldownSeconds: 1800,
   maxServersPerHost: 32,
 };
 
@@ -200,7 +200,7 @@ test.describe.serial('Fleet autoscale (csm)', () => {
     expect(saved.body.settings).toMatchObject({
       enabled: false,
       leadTimeSeconds: 300,
-      cooldownSeconds: 600,
+      cooldownSeconds: 1800,
     });
     expect(saved.body.settings.updatedBy).toBeTruthy();
     // Off: a pass does nothing.
