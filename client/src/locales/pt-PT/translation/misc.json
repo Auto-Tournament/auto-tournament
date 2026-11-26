@@ -219,6 +219,20 @@
       "save": "Guardar",
       "saved": "Nome guardado. Os servidores usam-no a partir do teu próximo jogo.",
       "saveFailed": "Não foi possível guardar o nome"
+    },
+    "hud": {
+      "title": "HUD no jogo",
+      "description": "Como o Ready Up mostra as coisas nos servidores do Auto Tournament: o nosso HUD no ecrã ou só o chat. Escreve .hud no jogo para mudar nessa sessão.",
+      "optionHud": "HUD do Auto Tournament",
+      "optionHudHint": "Menus, o botão de pronto e cartões de ronda no ecrã.",
+      "optionChat": "Só chat",
+      "optionChatHint": "Tudo chega como linhas no chat. Nada a mais no ecrã.",
+      "previewMenu": "Menu da partida",
+      "previewReady": "Pronto",
+      "previewChatReady": "escreve .r quando estiveres pronto (4/10 prontos)",
+      "previewChatTip": "Precisas de pausa, de um admin ou de desistir? Escreve .menu no chat.",
+      "saved": "Guardado. Aplica-se a partir da tua próxima partida.",
+      "saveFailed": "Não foi possível guardar a tua definição de HUD."
     }
   },
   "home": {

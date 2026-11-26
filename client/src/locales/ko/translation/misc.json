@@ -218,6 +218,20 @@
       "save": "저장",
       "saved": "이름을 저장했어요. 다음 경기부터 게임 서버에서 써요.",
       "saveFailed": "이름을 저장하지 못했어요"
+    },
+    "hud": {
+      "title": "게임 내 HUD",
+      "description": "Auto Tournament 서버에서 Ready Up이 정보를 보여주는 방식: 화면의 HUD 또는 채팅만. 게임에서 .hud를 입력하면 그 세션 동안 전환됩니다.",
+      "optionHud": "Auto Tournament HUD",
+      "optionHudHint": "메뉴, 준비 버튼, 라운드 카드를 화면에 표시합니다.",
+      "optionChat": "채팅만",
+      "optionChatHint": "모든 것이 채팅 줄로 옵니다. 화면에 추가되는 것은 없습니다.",
+      "previewMenu": "매치 메뉴",
+      "previewReady": "준비",
+      "previewChatReady": "준비되면 .r 입력 (4/10 준비)",
+      "previewChatTip": "일시정지, 관리자 호출, 항복이 필요하세요? 채팅에 .menu 입력.",
+      "saved": "저장했습니다. 다음 매치부터 적용됩니다.",
+      "saveFailed": "HUD 설정을 저장하지 못했습니다."
     }
   },
   "home": {

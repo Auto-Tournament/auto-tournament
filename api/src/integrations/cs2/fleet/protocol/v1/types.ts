@@ -256,6 +256,8 @@ export interface AssignPlayer {
   rating?: number;
   /** The player's platform wins in that game, shown with the rating. */
   rating_wins?: number;
+  /** false: the player chose chat only (account page); Ready Up turns its custom HUD off for them. */
+  hud?: boolean;
 }
 
 export interface AssignTeam {
@@ -506,6 +508,7 @@ export type MatchUpdateOp =
       language?: string;
       rating?: number;
       rating_wins?: number;
+      hud?: boolean;
     }
   | { op: 'remove_player'; steamid64: U64s }
   /** Only to a server with the `match.language.v1` capability. */

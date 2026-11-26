@@ -218,6 +218,20 @@
       "save": "Gem",
       "saved": "Navnet er gemt. Spilserverne bruger det fra din næste kamp.",
       "saveFailed": "Dit navn kunne ikke gemmes"
+    },
+    "hud": {
+      "title": "HUD i spillet",
+      "description": "Sådan viser Ready Up ting på Auto Tournament-servere: vores HUD på skærmen eller kun chat. Skriv .hud i spillet for at skifte i den session.",
+      "optionHud": "Auto Tournament HUD",
+      "optionHudHint": "Menuer, klar-knappen og rundekort på skærmen.",
+      "optionChat": "Kun chat",
+      "optionChatHint": "Alt kommer som linjer i chatten. Intet ekstra på skærmen.",
+      "previewMenu": "Kampmenu",
+      "previewReady": "Klar",
+      "previewChatReady": "skriv .r når du er klar (4/10 klar)",
+      "previewChatTip": "Brug for en pause, en admin eller at give op? Skriv .menu i chatten.",
+      "saved": "Gemt. Det gælder fra din næste kamp.",
+      "saveFailed": "Kunne ikke gemme din HUD-indstilling."
     }
   },
   "home": {

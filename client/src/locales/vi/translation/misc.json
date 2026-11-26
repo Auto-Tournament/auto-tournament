@@ -218,6 +218,20 @@
       "save": "Lưu",
       "saved": "Đã lưu tên. Máy chủ game sẽ dùng từ trận tiếp theo của bạn.",
       "saveFailed": "Không lưu được tên của bạn"
+    },
+    "hud": {
+      "title": "HUD trong game",
+      "description": "Cách Ready Up hiển thị trên máy chủ Auto Tournament: HUD của chúng tôi trên màn hình, hoặc chỉ chat. Gõ .hud trong game để đổi cho phiên đó.",
+      "optionHud": "HUD Auto Tournament",
+      "optionHudHint": "Menu, nút sẵn sàng và thẻ vòng đấu trên màn hình.",
+      "optionChat": "Chỉ chat",
+      "optionChatHint": "Mọi thứ đến dưới dạng dòng chat. Không thêm gì trên màn hình.",
+      "previewMenu": "Menu trận đấu",
+      "previewReady": "Sẵn sàng",
+      "previewChatReady": "gõ .r khi sẵn sàng (4/10 sẵn sàng)",
+      "previewChatTip": "Cần tạm dừng, gọi admin hay đầu hàng? Gõ .menu trong chat.",
+      "saved": "Đã lưu. Áp dụng từ trận tiếp theo của bạn.",
+      "saveFailed": "Không lưu được cài đặt HUD của bạn."
     }
   },
   "home": {

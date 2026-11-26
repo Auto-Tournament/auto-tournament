@@ -278,6 +278,62 @@ const LANGUAGE_CODE = /^[a-z]{2,3}(-[A-Za-z0-9]{2,4})?$/;
 
 /**
  * @openapi
+ * /api/me/hud:
+ *   get:
+ *     tags: [Me]
+ *     summary: The signed-in player's in-game HUD choice
+ *     responses:
+ *       200: { description: "{ on: boolean }: true = the Auto Tournament HUD, false = chat only" }
+ *       401: { description: Not signed in }
+ *   put:
+ *     tags: [Me]
+ *     summary: Choose the in-game HUD or chat only
+ *     description: |
+ *       Ready Up servers get it per player at the next match assign (hud:false = chat only).
+ *       In game, `.hud` switches it for the session.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema: { type: object, properties: { on: { type: boolean } } }
+ *     responses:
+ *       200: { description: Saved }
+ *       400: { description: on is not a boolean }
+ *       401: { description: Not signed in }
+ *       403: { description: Impersonating }
+ */
+router.get('/hud', async (req: Request, res: Response) => {
+  try {
+    const account = await resolveAccount(req, res, { write: false, what: 'account' });
+    if (!account) return;
+    const row = await db.queryOneAsync<{ ingame_hud: boolean | null }>(
+      'SELECT ingame_hud FROM players WHERE id = ?',
+      [account.steamId]
+    );
+    return res.json({ success: true, on: row?.ingame_hud !== false });
+  } catch (error) {
+    log.error('Error reading own HUD choice', error);
+    return res.status(500).json({ success: false, error: 'Failed to read your HUD choice' });
+  }
+});
+
+router.put('/hud', async (req: Request, res: Response) => {
+  try {
+    const account = await resolveAccount(req, res, { write: true, what: 'account' });
+    if (!account) return;
+    const on = (req.body as { on?: Untrusted })?.on;
+    if (typeof on !== 'boolean')
+      return res.status(400).json({ success: false, error: 'on must be true or false' });
+    await db.runAsync('UPDATE players SET ingame_hud = ? WHERE id = ?', [on, account.steamId]);
+    return res.json({ success: true, on });
+  } catch (error) {
+    log.error('Error saving own HUD choice', error);
+    return res.status(500).json({ success: false, error: 'Failed to save your HUD choice' });
+  }
+});
+
+/**
+ * @openapi
  * /api/me/language:
  *   put:
  *     tags: [Me]

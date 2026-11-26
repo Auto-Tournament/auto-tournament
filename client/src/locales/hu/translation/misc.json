@@ -218,6 +218,20 @@
       "save": "Mentés",
       "saved": "Név mentve. A játékszerverek a következő meccsedtől használják.",
       "saveFailed": "Nem sikerült menteni a nevedet"
+    },
+    "hud": {
+      "title": "Játékbeli HUD",
+      "description": "Így mutatja a Ready Up a dolgokat az Auto Tournament szervereken: a mi HUD-unk a képernyőn, vagy csak chat. Írd be játékban: .hud, hogy arra a menetre átválts.",
+      "optionHud": "Auto Tournament HUD",
+      "optionHudHint": "Menük, a kész gomb és a kör-kártyák a képernyőn.",
+      "optionChat": "Csak chat",
+      "optionChatHint": "Minden chatsorként jön. Semmi plusz a képernyőn.",
+      "previewMenu": "Meccsmenü",
+      "previewReady": "Kész",
+      "previewChatReady": "írd be: .r, ha kész vagy (4/10 kész)",
+      "previewChatTip": "Szünet, admin vagy feladás kell? Írd be a chatbe: .menu.",
+      "saved": "Mentve. A következő meccsedtől érvényes.",
+      "saveFailed": "Nem sikerült menteni a HUD-beállításodat."
     }
   },
   "home": {

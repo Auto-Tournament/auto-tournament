@@ -51,6 +51,12 @@
               },
               "rating_wins": {
                 "$ref": "../match.defs.json#/$defs/rating_wins"
+              },
+              "hud": {
+                "$ref": "../match.defs.json#/$defs/hud"
+              },
+              "color": {
+                "$ref": "../match.defs.json#/$defs/color"
               }
             }
           },

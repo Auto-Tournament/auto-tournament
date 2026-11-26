@@ -220,6 +220,20 @@
       "save": "Uložit",
       "saved": "Jméno uloženo. Herní servery ho použijí od tvého dalšího zápasu.",
       "saveFailed": "Jméno se nepodařilo uložit"
+    },
+    "hud": {
+      "title": "HUD ve hře",
+      "description": "Jak Ready Up zobrazuje věci na serverech Auto Tournament: náš HUD na obrazovce, nebo jen chat. Napiš ve hře .hud a přepneš to pro danou relaci.",
+      "optionHud": "Auto Tournament HUD",
+      "optionHudHint": "Menu, tlačítko připravenosti a karty kol na obrazovce.",
+      "optionChat": "Jen chat",
+      "optionChatHint": "Vše přijde jako řádky v chatu. Nic navíc na obrazovce.",
+      "previewMenu": "Menu zápasu",
+      "previewReady": "Připraven",
+      "previewChatReady": "napiš .r, až budeš připraven (4/10 připraveno)",
+      "previewChatTip": "Potřebuješ pauzu, admina nebo se vzdát? Napiš .menu do chatu.",
+      "saved": "Uloženo. Platí od tvého dalšího zápasu.",
+      "saveFailed": "Nastavení HUD se nepodařilo uložit."
     }
   },
   "home": {

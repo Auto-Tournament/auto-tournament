@@ -219,6 +219,20 @@
       "save": "Salva",
       "saved": "Nome salvato. I server lo useranno dalla tua prossima partita.",
       "saveFailed": "Impossibile salvare il nome"
+    },
+    "hud": {
+      "title": "HUD in gioco",
+      "description": "Come Ready Up mostra le cose sui server Auto Tournament: il nostro HUD a schermo o solo chat. Scrivi .hud in gioco per cambiarlo per quella sessione.",
+      "optionHud": "HUD Auto Tournament",
+      "optionHudHint": "Menu, il pulsante pronto e le schede dei round a schermo.",
+      "optionChat": "Solo chat",
+      "optionChatHint": "Tutto arriva come righe in chat. Niente in più a schermo.",
+      "previewMenu": "Menu della partita",
+      "previewReady": "Pronto",
+      "previewChatReady": "scrivi .r quando sei pronto (4/10 pronti)",
+      "previewChatTip": "Ti serve una pausa, un admin o arrenderti? Scrivi .menu in chat.",
+      "saved": "Salvato. Vale dalla tua prossima partita.",
+      "saveFailed": "Impossibile salvare l'impostazione HUD."
     }
   },
   "home": {

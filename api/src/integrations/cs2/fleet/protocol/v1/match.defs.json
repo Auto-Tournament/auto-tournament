@@ -61,6 +61,10 @@
       "minimum": 0,
       "maximum": 999999
     },
+    "hud": {
+      "description": "The player's in-game HUD choice on the platform: false = no custom HUD, Ready Up uses the chat and the centre panel for them (as `.hud off`). No field or true: the custom HUD.",
+      "type": "boolean"
+    },
     "score": {
       "type": "object",
       "required": ["team1", "team2"],
@@ -368,38 +372,6 @@
           },
           "description": "Anonymous bots fill each side alongside human roster players; real time and human ready-up."
         },
-        "full_team": {
-          "type": "object",
-          "additionalProperties": false,
-          "description": "The platform's full-team timer (docs/FLEET.md §8.1 walkover_choice): each team needs a full team on the server by `deadline_ms`; then, with one team short, `walkover` is the full team's open choice (walkover.h).",
-          "properties": {
-            "deadline_ms": {
-              "type": "integer",
-              "minimum": 0,
-              "description": "Unix ms; 0 = no timer"
-            },
-            "walkover": {
-              "type": ["object", "null"],
-              "description": "the open choice; null in a set_rules patch closes it",
-              "additionalProperties": false,
-              "required": ["short", "expires_ms", "choosers"],
-              "properties": {
-                "short": { "enum": ["team1", "team2"], "description": "the team that is short" },
-                "expires_ms": {
-                  "type": "integer",
-                  "minimum": 0,
-                  "description": "Unix ms: no choice by then and the walkover stands"
-                },
-                "choosers": {
-                  "type": "array",
-                  "maxItems": 32,
-                  "items": { "$ref": "defs.json#/$defs/u64s" },
-                  "description": "the full team's owner and captains: only they may choose"
-                }
-              }
-            }
-          }
-        },
         "broadcast": {
           "type": "object",
           "description": "GOTV, for the tv plugin. Absent: the server's own (the tv_* cvars still apply)",
@@ -429,6 +401,43 @@
               "description": "tv_relayvoice"
             }
           }
+        },
+        "full_team": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "The platform's full-team timer (docs/FLEET.md §8.1 walkover_choice): each team needs a full team on the server by `deadline_ms`; then, with one team short, `walkover` is the full team's open choice (walkover.h).",
+          "properties": {
+            "deadline_ms": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Unix ms; 0 = no timer"
+            },
+            "walkover": {
+              "type": ["object", "null"],
+              "description": "the open choice; null in a set_rules patch closes it",
+              "additionalProperties": false,
+              "required": ["short", "expires_ms", "choosers"],
+              "properties": {
+                "short": {
+                  "enum": ["team1", "team2"],
+                  "description": "the team that is short"
+                },
+                "expires_ms": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "description": "Unix ms: no choice by then and the walkover stands"
+                },
+                "choosers": {
+                  "type": "array",
+                  "maxItems": 32,
+                  "items": {
+                    "$ref": "defs.json#/$defs/u64s"
+                  },
+                  "description": "the full team's owner and captains: only they may choose"
+                }
+              }
+            }
+          }
         }
       },
       "description": "Typed match rules (FLEET.md §7.1). Enforced by Ready Up today: max_rounds, overtime, tiebreak, knife.side_pick_seconds, clinch_series, whitelist (always on), ready.min_per_team (reported). The rest is carried in MatchState.rules for later steps. ruleset + overrides: docs/ESPORTS-MODE.md (enforced)."
@@ -455,6 +464,12 @@
         },
         "rating_wins": {
           "$ref": "#/$defs/rating_wins"
+        },
+        "hud": {
+          "$ref": "#/$defs/hud"
+        },
+        "color": {
+          "$ref": "#/$defs/color"
         }
       }
     },
@@ -1384,6 +1399,10 @@
       "type": "integer",
       "minimum": 1,
       "description": "live_rev after this message. Every state.patch and event.* bumps it by exactly 1: apply when rev == stored_rev + 1, ignore rev <= stored_rev, on a gap send state.request"
+    },
+    "color": {
+      "description": "The player's teammate colour (radar, scoreboard, above their head): chosen on the platform by the player, or set by their team's captain. Ready Up writes it over CS2's own pick; no field: CS2 picks.",
+      "enum": ["yellow", "purple", "green", "blue", "orange"]
     }
   }
 }

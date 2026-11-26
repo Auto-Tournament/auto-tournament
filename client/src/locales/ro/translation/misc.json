@@ -219,6 +219,20 @@
       "save": "Salvează",
       "saved": "Nume salvat. Serverele de joc îl folosesc de la următorul tău meci.",
       "saveFailed": "Numele tău nu a putut fi salvat"
+    },
+    "hud": {
+      "title": "HUD în joc",
+      "description": "Cum afișează Ready Up lucrurile pe serverele Auto Tournament: HUD-ul nostru pe ecran sau doar chat. Scrie .hud în joc ca să schimbi pentru acea sesiune.",
+      "optionHud": "HUD Auto Tournament",
+      "optionHudHint": "Meniuri, butonul de gata și cartonașe de rundă pe ecran.",
+      "optionChat": "Doar chat",
+      "optionChatHint": "Totul vine ca rânduri în chat. Nimic în plus pe ecran.",
+      "previewMenu": "Meniul meciului",
+      "previewReady": "Gata",
+      "previewChatReady": "scrie .r când ești gata (4/10 gata)",
+      "previewChatTip": "Ai nevoie de pauză, de un admin sau să renunți? Scrie .menu în chat.",
+      "saved": "Salvat. Se aplică de la următorul tău meci.",
+      "saveFailed": "Setarea HUD nu a putut fi salvată."
     }
   },
   "home": {
