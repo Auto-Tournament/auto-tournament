@@ -152,6 +152,16 @@ function team(value: MatchTeam | undefined, fallbackName: string): AssignTeam {
   if (tag) out.tag = tag;
   const f = clampText(value?.flag, 8);
   if (f) out.flag = f;
+  // Matchmaking names one (the party leader, else the highest rated: matchmaking/rules.ts
+  // pickCaptain); withCaptains fills in the rest.
+  const captain = typeof value?.captainSteamId === 'string' ? value.captainSteamId : undefined;
+  if (
+    captain &&
+    U64.test(captain) &&
+    roster.some((p) => p.steamid64 === captain && p.role !== 'coach')
+  ) {
+    out.captain = captain;
+  }
   return out;
 }
 
@@ -404,6 +414,51 @@ export function withRatings(
     }),
   });
   return { ...config, team1: add(config.team1), team2: add(config.team2) };
+}
+
+/**
+ * The team's captain for the server (Ready Up: only the captain picks a side after the knife
+ * round): the one the config names (matchmaking), else the first of `platform` on the roster (the
+ * team's captains on the platform), else the highest-rated player (`rating`, from withRatings), else
+ * the first player. Coaches never; a team with no player gets none.
+ */
+export function pickTeamCaptain(
+  side: AssignTeam,
+  platform: readonly string[] = []
+): string | undefined {
+  const playing = side.players.filter((p) => roleOf(p) !== 'coach');
+  const on = (id: string | undefined) => (id ? playing.find((p) => p.steamid64 === id) : undefined);
+  if (on(side.captain)) return side.captain;
+  for (const id of platform) if (on(id)) return id;
+  const players = playing.filter((p) => roleOf(p) === 'player');
+  const pool = players.length ? players : playing;
+  if (pool.length === 0) return undefined;
+  // Highest rated; unrated players count as below every rating; a tie keeps roster order.
+  let best = pool[0];
+  for (const p of pool) {
+    if ((p.rating ?? -1) > (best.rating ?? -1)) best = p;
+  }
+  return best.steamid64;
+}
+
+/** Every team with a player names a captain (pickTeamCaptain). `platform`: each side's captains on the platform. */
+export function withCaptains(
+  config: AssignConfig,
+  platform: { team1?: readonly string[]; team2?: readonly string[] } = {}
+): AssignConfig {
+  const add = (side: AssignTeam, ids: readonly string[] | undefined): AssignTeam => {
+    const captain = pickTeamCaptain(side, ids ?? []);
+    if (!captain) {
+      const { captain: _drop, ...rest } = side;
+      return rest;
+    }
+    return { ...side, captain };
+  };
+  return {
+    ...config,
+    team1: add(config.team1, platform.team1),
+    team2: add(config.team2, platform.team2),
+  };
 }
 
 /** Both sides have five players on the roster (subs and coaches not counted). */

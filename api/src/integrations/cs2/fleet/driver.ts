@@ -52,6 +52,7 @@ import {
   buildAssignConfig,
   diffAssignConfig,
   generateMatchPassword,
+  withCaptains,
   withLanguages,
   withRatings,
 } from './assignConfig';
@@ -706,7 +707,7 @@ async function withHold(matchSlug: string, config: AssignConfig): Promise<Assign
   const hold = await holdOf(matchSlug);
   const withTimer = await withFullTeam(
     matchSlug,
-    await withPlayerRatings(matchSlug, await withPlayerLanguages(config))
+    await withTeamCaptains(await withPlayerRatings(matchSlug, await withPlayerLanguages(config)))
   );
   if (!hold?.heldUntil) return withTimer;
   return {
@@ -765,6 +766,30 @@ async function withPlayerRatings(matchSlug: string, config: AssignConfig): Promi
   for (const r of ratings)
     rated.set(r.player_id, { rating: Number(r.current_elo), wins: winsOf.get(r.player_id) ?? 0 });
   return withRatings(config, rated);
+}
+
+/**
+ * Each team's captain for the server (withCaptains): its captains on the platform (team_members
+ * role `captain`, a tournament team's), else matchmaking's pick, else the highest rated. Shuffle
+ * teams have no platform captains, so their highest-rated player leads.
+ */
+async function withTeamCaptains(config: AssignConfig): Promise<AssignConfig> {
+  const ids = [config.team1.id, config.team2.id].filter((id): id is string => Boolean(id));
+  const rows =
+    ids.length === 0
+      ? []
+      : await db
+          .queryAsync<{ team_id: string; steam_id: string }>(
+            `SELECT tm.team_id, p.id AS steam_id FROM team_members tm
+               JOIN players p ON p.uid = tm.account_uid
+              WHERE tm.team_id = ANY(?::text[]) AND tm.role = 'captain'
+              ORDER BY tm.created_at, tm.account_uid`,
+            [ids]
+          )
+          .catch(() => []);
+  const of = (id: string | undefined) =>
+    id ? rows.filter((r) => r.team_id === id).map((r) => r.steam_id) : [];
+  return withCaptains(config, { team1: of(config.team1.id), team2: of(config.team2.id) });
 }
 
 /** The full-team timer and the walkover choice for the server's HUD (`rules.full_team`). */
