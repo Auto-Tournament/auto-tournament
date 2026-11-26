@@ -37,11 +37,18 @@ function tooSoon(steamid64: string): boolean {
   return false;
 }
 
-/** `/api/game/cs2/img/skins/weapon_ak47_cu_ak47_cobra_light_png.webp` -> `weapon_ak47_cu_ak47_cobra_light_png`. */
+/**
+ * The game's own picture name (panorama/images/econ/default_generated/<name>.vtex) for a catalogue
+ * picture: csm exports `weapon_sg556_so_purple.webp` for the game's
+ * `weapon_sg556_so_purple_light_png`, and a worn look as `…_medium` / `…_heavy`.
+ */
 export function gameImageName(imageUrl: string): string {
   const file = imageUrl.split('/').pop() ?? '';
-  const stem = file.replace(/\.[a-z0-9]+$/i, '');
-  return /^[a-z0-9_-]{1,128}$/.test(stem) ? stem : ''; // the game's own names (ak-47 has a dash)
+  let stem = file.replace(/\.[a-z0-9]+$/i, '');
+  if (!/^[a-z0-9_-]{1,120}$/.test(stem)) return ''; // the game's own names (ak-47 has a dash)
+  if (stem.endsWith('_png')) return stem;
+  if (!/_(light|medium|heavy)$/.test(stem)) stem += '_light';
+  return `${stem}_png`;
 }
 
 /** One OwnedSkin as the HUD needs it. Pure: tested on its own. */

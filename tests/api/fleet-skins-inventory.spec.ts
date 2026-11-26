@@ -14,7 +14,7 @@ const owned = (over: Partial<OwnedSkin> = {}): OwnedSkin => ({
   weaponName: 'AWP',
   name: 'Asiimov',
   rarity: 'ancient' as OwnedSkin['rarity'],
-  imageUrl: '/api/game/cs2/img/skins/weapon_awp_cu_awp_asimov_medium_png.webp',
+  imageUrl: '/api/game/cs2/img/skins/weapon_awp_cu_awp_asimov_medium.webp',
   slot: 'awp',
   float: 0.27,
   pattern: 412,
@@ -33,12 +33,15 @@ const owned = (over: Partial<OwnedSkin> = {}): OwnedSkin => ({
 });
 
 test.describe('fleet skins inventory', { tag: ['@api'] }, () => {
-  test('the game picture name is the file stem, or empty', () => {
+  test('the game picture name: the catalogue file as the game names it, or empty', () => {
+    expect(gameImageName('/api/game/cs2/img/skins/weapon_sg556_so_purple.webp')).toBe(
+      'weapon_sg556_so_purple_light_png'
+    );
     expect(
-      gameImageName('/api/game/cs2/img/skins/weapon_ak47_cu_ak-47_phantom_disruptor_light_png.webp')
-    ).toBe('weapon_ak47_cu_ak-47_phantom_disruptor_light_png');
-    expect(gameImageName('/api/game/cs2/img/skins/weapon_awp_cu_awp_asimov_medium_png.webp')).toBe(
-      'weapon_awp_cu_awp_asimov_medium_png'
+      gameImageName('/api/game/cs2/img/skins/weapon_ak47_cu_ak-47_phantom_disruptor_medium.webp')
+    ).toBe('weapon_ak47_cu_ak-47_phantom_disruptor_medium_png');
+    expect(gameImageName('/api/game/cs2/img/skins/weapon_awp_cu_awp_asimov_heavy_png.webp')).toBe(
+      'weapon_awp_cu_awp_asimov_heavy_png'
     );
     expect(gameImageName('https://cdn.example/x/../evil name.png')).toBe('');
   });
