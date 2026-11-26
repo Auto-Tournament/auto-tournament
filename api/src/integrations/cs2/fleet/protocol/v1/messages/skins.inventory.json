@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-tournament.dev/fleet/v1/messages/skins.inventory.json",
+  "title": "skins.inventory (platform → server, ephemeral)",
+  "description": "Proposed by Ready Up (the in-game inventory). One player's items, newest first, as the platform's inventory shows them: the answer to skins.inventory_request and to skins.equip. `enabled` false: skins are off on this platform, or the player has no account (items empty, error says why). team / side: 2 = T, 3 = CT, 0 = both. `side`: the one side that buys the weapon (null: both). `equipped`: the sides it is equipped for. `image`: the game's picture of the item in its wear (panorama/images/econ/default_generated/<image>.vtex), empty when the platform has none.",
+  "type": "object",
+  "required": ["steamid64", "enabled", "items"],
+  "properties": {
+    "steamid64": { "$ref": "../defs.json#/$defs/u64s" },
+    "enabled": { "type": "boolean" },
+    "error": { "type": "string", "maxLength": 200 },
+    "items": {
+      "type": "array",
+      "maxItems": 1000,
+      "items": {
+        "type": "object",
+        "required": ["id", "weapon", "weapon_name", "name", "rarity", "slot", "equipped"],
+        "properties": {
+          "id": { "type": "integer", "minimum": 1 },
+          "weapon": { "type": "string", "maxLength": 64 },
+          "weapon_name": { "type": "string", "maxLength": 64 },
+          "name": { "type": "string", "maxLength": 96 },
+          "rarity": { "type": "string", "maxLength": 32 },
+          "slot": { "type": "string", "maxLength": 32 },
+          "float": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
+          "pattern": { "type": ["integer", "null"], "minimum": 0 },
+          "stattrak": { "type": ["integer", "null"], "minimum": 0 },
+          "side": { "enum": [2, 3, null] },
+          "equipped": { "type": "array", "maxItems": 3, "items": { "enum": [0, 2, 3] } },
+          "image": { "type": "string", "maxLength": 128 },
+          "source": { "type": "string", "maxLength": 96 }
+        }
+      }
+    }
+  }
+}

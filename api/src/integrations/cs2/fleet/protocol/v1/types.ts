@@ -697,6 +697,46 @@ export interface SkinsStattrakPayload {
   increments: { steamid64: U64s; defindex: number; kills: number }[];
 }
 
+/** Server -> platform (ephemeral): a player opened the in-game inventory (`.skins`). */
+export interface SkinsInventoryRequestPayload {
+  steamid64: U64s;
+}
+
+/** One item of the in-game inventory (skins.inventory). team / side: 2 T, 3 CT, 0 both. */
+export interface SkinsInventoryItem {
+  id: number;
+  weapon: string;
+  weapon_name: string;
+  name: string;
+  rarity: string;
+  slot: string;
+  float?: number | null;
+  pattern?: number | null;
+  stattrak?: number | null;
+  /** The one side that buys the weapon; null when both do. */
+  side?: 2 | 3 | null;
+  equipped: Array<0 | 2 | 3>;
+  /** The game's picture in its wear (econ/default_generated/<image>.vtex); '' when none. */
+  image?: string;
+  source?: string;
+}
+
+/** Platform -> server (ephemeral): one player's items, the answer to the two messages below. */
+export interface SkinsInventoryPayload {
+  steamid64: U64s;
+  enabled: boolean;
+  error?: string;
+  items: SkinsInventoryItem[];
+}
+
+/** Server -> platform (ephemeral): equip (or take off) one item from the in-game inventory. */
+export interface SkinsEquipPayload {
+  steamid64: U64s;
+  skin_id: number;
+  team: 0 | 2 | 3;
+  unequip?: boolean;
+}
+
 /** Server -> platform (reliable): a finished surf / bhop / kz run (Ready Up movement plugin). */
 export interface MovementRecordPayload {
   map: string;
@@ -997,6 +1037,9 @@ export interface FleetMessages {
   'skins.loadout': SkinsLoadoutPayload;
   'skins.invalidate': SkinsInvalidatePayload;
   'skins.stattrak': SkinsStattrakPayload;
+  'skins.inventory_request': SkinsInventoryRequestPayload;
+  'skins.inventory': SkinsInventoryPayload;
+  'skins.equip': SkinsEquipPayload;
   'movement.record': MovementRecordPayload;
   'event.player_connect': FleetEventPayload<FleetEventData['player_connect']>;
   'event.player_disconnect': FleetEventPayload<FleetEventData['player_disconnect']>;
@@ -1081,6 +1124,9 @@ export const FLEET_MESSAGES: Record<FleetMessageType, { direction: Direction; re
     'server.drain': P2S_RELIABLE,
     'server.undrain': P2S_RELIABLE,
     'skins.stattrak': S2P_RELIABLE,
+    'skins.inventory_request': { direction: 'server_to_platform', reliable: false },
+    'skins.inventory': { direction: 'platform_to_server', reliable: false },
+    'skins.equip': { direction: 'server_to_platform', reliable: false },
     'movement.record': S2P_RELIABLE,
     'event.player_connect': S2P_RELIABLE,
     'event.player_disconnect': S2P_RELIABLE,

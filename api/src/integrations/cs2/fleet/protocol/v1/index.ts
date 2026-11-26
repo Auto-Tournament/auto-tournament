@@ -41,6 +41,9 @@ import adminsSet from './messages/admins.set.json';
 import skinsLoadout from './messages/skins.loadout.json';
 import skinsInvalidate from './messages/skins.invalidate.json';
 import skinsStattrak from './messages/skins.stattrak.json';
+import skinsInventoryRequest from './messages/skins.inventory_request.json';
+import skinsInventory from './messages/skins.inventory.json';
+import skinsEquip from './messages/skins.equip.json';
 import movementRecord from './messages/movement.record.json';
 import eventPlayerConnect from './messages/event.player_connect.json';
 import eventPlayerDisconnect from './messages/event.player_disconnect.json';
@@ -112,6 +115,10 @@ export const FLEET_MESSAGE_SCHEMAS: Record<FleetMessageType, AnySchemaObject> = 
   'skins.loadout': skinsLoadout,
   'skins.invalidate': skinsInvalidate,
   'skins.stattrak': skinsStattrak,
+  // The in-game inventory (`.skins`, Ready Up's skins plugin; ../skinsInventory.ts).
+  'skins.inventory_request': skinsInventoryRequest,
+  'skins.inventory': skinsInventory,
+  'skins.equip': skinsEquip,
   'movement.record': movementRecord,
   'event.player_connect': eventPlayerConnect,
   'event.player_disconnect': eventPlayerDisconnect,

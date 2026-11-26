@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-tournament.dev/fleet/v1/messages/skins.equip.json",
+  "title": "skins.equip (server → platform, ephemeral)",
+  "description": "Proposed by Ready Up (the in-game inventory). A connected player equipped one of their items in game, or took it off: `team` 0 = both sides, 2 = T, 3 = CT (a weapon only one side buys is always both); `unequip` true empties that item's slot for `team`. The platform applies it as its own equip does (the same checks: the item must be the player's) and answers with skins.inventory and, when the loadout changed, skins.loadout.",
+  "type": "object",
+  "required": ["steamid64", "skin_id", "team"],
+  "properties": {
+    "steamid64": { "$ref": "../defs.json#/$defs/u64s" },
+    "skin_id": { "type": "integer", "minimum": 1 },
+    "team": { "enum": [0, 2, 3] },
+    "unequip": { "type": "boolean" }
+  }
+}
