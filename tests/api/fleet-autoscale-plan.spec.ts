@@ -131,11 +131,11 @@ function plan(over: Partial<PlanInput>) {
 }
 
 test.describe('Autoscale: settings', () => {
-  test('defaults: on, 2 min lead, 10 min cool-down, 32 per machine', () => {
+  test('defaults: on, 2 min lead, 30 min cool-down, 32 per machine', () => {
     expect(normalizeAutoscaleSettings(null)).toEqual({
       enabled: true,
       leadTimeSeconds: 120,
-      cooldownSeconds: 600,
+      cooldownSeconds: 1800,
       maxServersPerHost: 32,
     });
     expect(
@@ -426,7 +426,7 @@ test.describe('Autoscale: plan', () => {
     // A running practice server, idle long past the cool-down: left running.
     const quiet = plan({
       demand: demand(0),
-      servers: [warmIdle(1, 7200, { practice: true, idle: false }), warmIdle(2, 1200)],
+      servers: [warmIdle(1, 7200, { practice: true, idle: false }), warmIdle(2, 2400)],
     });
     expect(quiet.actions).toEqual([expect.objectContaining({ kind: 'stop', server: 'server-2' })]);
     // A match waiting: the practice server does not count as warm, and a
@@ -448,14 +448,14 @@ test.describe('Autoscale: plan', () => {
   test('stop after the cool-down: surplus idle servers, longest idle first', () => {
     const p = plan({
       demand: demand(0),
-      servers: [warmIdle(1, 700), warmIdle(2, 1200), warmIdle(3, 300)],
+      servers: [warmIdle(1, 1900), warmIdle(2, 2400), warmIdle(3, 300)],
     });
     // No matches: only the failover spare is wanted (it stays warm).
     expect(p.desired).toBe(1);
     expect(p.actions.map((a) => a.kind === 'stop' && a.server)).toEqual(['server-2', 'server-1']);
-    expect(p.actions[0].reason).toMatch(/^Idle 20 min and not needed/);
-    // Nothing idle long enough.
-    expect(plan({ demand: demand(0), servers: [warmIdle(1, 599)] }).actions).toEqual([]);
+    expect(p.actions[0].reason).toMatch(/^Idle 40 min and not needed/);
+    // Nothing idle long enough (the default cool-down is 30 min).
+    expect(plan({ demand: demand(0), servers: [warmIdle(1, 1799)] }).actions).toEqual([]);
     // No matches, two idle servers: one stops, the other is the failover spare and stays warm.
     expect(
       plan({ demand: demand(0), servers: [warmIdle(1, 5000), warmIdle(2, 5000)] }).actions.map(
