@@ -13416,6 +13416,58 @@
         }
       }
     },
+    "/api/me/hud": {
+      "get": {
+        "tags": [
+          "Me"
+        ],
+        "summary": "The signed-in player's in-game HUD choice",
+        "responses": {
+          "200": {
+            "description": "{ on: boolean }: true = the Auto Tournament HUD, false = chat only"
+          },
+          "401": {
+            "description": "Not signed in"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Me"
+        ],
+        "summary": "Choose the in-game HUD or chat only",
+        "description": "Ready Up servers get it per player at the next match assign (hud:false = chat only).\nIn game, `.hud` switches it for the session.\n",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "on": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Saved"
+          },
+          "400": {
+            "description": "on is not a boolean"
+          },
+          "401": {
+            "description": "Not signed in"
+          },
+          "403": {
+            "description": "Impersonating"
+          }
+        }
+      }
+    },
     "/api/me/language": {
       "put": {
         "tags": [
