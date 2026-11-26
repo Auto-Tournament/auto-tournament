@@ -234,8 +234,8 @@
       "saveFailed": "Je HUD-instelling kon niet worden opgeslagen."
     },
     "color": {
-      "title": "Spelerskleur",
-      "description": "Jouw kleur op de radar en het scorebord van je team in CS2-wedstrijden op Auto Tournament-servers. De aanvoerder van je team kan voor de wedstrijden van het team een andere kiezen.",
+      "title": "Kleurvoorkeur",
+      "description": "De kleur die je wilt op de radar en het scorebord van je team in CS2-wedstrijden op Auto Tournament-servers. Heeft een teamgenoot hem al, of kiest de aanvoerder een andere voor je, dan krijg je die.",
       "auto": "CS2 kiest",
       "names": {
         "blue": "Blauw",

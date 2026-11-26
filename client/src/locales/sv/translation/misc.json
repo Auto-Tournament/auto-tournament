@@ -234,8 +234,8 @@
       "saveFailed": "Kunde inte spara din HUD-inställning."
     },
     "color": {
-      "title": "Spelarfärg",
-      "description": "Din färg på lagets radar och resultattavla i CS2-matcher på Auto Tournaments servrar. Lagkaptenen kan välja en annan för lagets matcher.",
+      "title": "Önskad färg",
+      "description": "Färgen du vill ha på lagets radar och resultattavla i CS2-matcher på Auto Tournaments servrar. Har en lagkamrat den redan, eller väljer kaptenen en annan åt dig, får du den i stället.",
       "auto": "CS2 väljer",
       "names": {
         "blue": "Blå",

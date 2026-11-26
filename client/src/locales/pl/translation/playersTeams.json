@@ -664,8 +664,11 @@
     "colorHelp": "Tag pojawia się na tym kolorze wszędzie, gdzie drużyna nie ma logo, a kolor oznacza drużynę w tabelach i drabinkach.",
     "lineupCount_few": "Podstawowi: {{starters}} z {{size}} · rezerwowi: {{count}}",
     "lineupCount_many": "Podstawowi: {{starters}} z {{size}} · rezerwowi: {{count}}",
-    "colorFor": "Kolor gracza {{name}}",
-    "colorOwn": "Własny kolor"
+    "colorFor": "Kolor dla {{name}}",
+    "colorOwn": "Jego preferencja",
+    "colorPrefers": "Preferuje {{color}}",
+    "colorNoPreference": "Bez preferencji",
+    "colorTaken": "Preferuje {{color}}, ale ma go kolega z drużyny: wybiera CS2"
   },
   "teamJoin": {
     "title": "Dołącz do drużyny",

@@ -234,8 +234,8 @@
       "saveFailed": "Không lưu được cài đặt HUD của bạn."
     },
     "color": {
-      "title": "Màu người chơi",
-      "description": "Màu của bạn trên radar và bảng điểm của đội trong các trận CS2 trên máy chủ Auto Tournament. Đội trưởng có thể chọn màu khác cho các trận của đội.",
+      "title": "Màu ưa thích",
+      "description": "Màu bạn muốn có trên radar và bảng điểm của đội trong các trận CS2 trên máy chủ Auto Tournament. Nếu đồng đội đã dùng màu đó, hoặc đội trưởng chọn màu khác cho bạn, bạn sẽ nhận màu đó.",
       "auto": "CS2 chọn",
       "names": {
         "blue": "Xanh dương",

@@ -1,4 +1,4 @@
-import { TEAMMATE_COLORS } from '../components/account/teammateColors';
+import { MemberColorDots, resolveTeamColors } from '../components/team/MemberColorDots';
 import { useEffect, useRef, useState } from 'react';
 import { Link as RouterLink, useNavigate, useParams } from 'react-router-dom';
 import {
@@ -55,6 +55,7 @@ interface ManageView {
     position: string | null;
     lineup: 'starter' | 'sub';
     color?: string | null;
+    ownColor?: string | null;
   }>;
   invites: Array<{ uid: string; steamId: string; name: string; avatar: string | null }>;
   requests: Array<{
@@ -221,6 +222,13 @@ export default function TeamManage() {
     : '';
   const others = view.members.filter((m) => m.role !== 'owner' && m.uid);
   const starters = view.members.filter((m) => m.lineup !== 'sub').length;
+  // CS2 colours: each member's preference and the team's pick for them, resolved as the server does.
+  const colorMembers = view.members.map((m) => ({
+    set: m.color ?? null,
+    own: m.ownColor ?? null,
+    captain: m.role === 'owner' || m.role === 'captain',
+  }));
+  const colorState = resolveTeamColors(colorMembers);
   const subs = view.members.length - starters;
   const teamSize = game ? integration.teamSize : undefined;
   const memberIds = new Set(view.members.map((m) => m.steamId));
@@ -518,7 +526,7 @@ export default function TeamManage() {
                 sx={{ listStyle: 'none', m: 0, p: 1.5, display: 'grid', gap: 1 }}
                 data-testid="team-manage-roster"
               >
-                {view.members.map((m) => (
+                {view.members.map((m, index) => (
                   <Box
                     component="li"
                     key={m.steamId}
@@ -569,40 +577,18 @@ export default function TeamManage() {
                       </Select>
                     )}
                     {colors && m.uid && (
-                      <Select
-                        size="small"
-                        displayEmpty
-                        value={m.color ?? ''}
-                        onChange={(e) =>
+                      <MemberColorDots
+                        name={m.name}
+                        member={colorMembers[index]}
+                        resolved={colorState[index]}
+                        onChange={(next) =>
                           act(() =>
                             api.patch(`${base}/members/${encodeURIComponent(m.uid)}`, {
-                              color: e.target.value || null,
+                              color: next,
                             })
                           )
                         }
-                        inputProps={{ 'aria-label': t('teamManage.colorFor', { name: m.name }) }}
-                        data-testid="team-manage-color"
-                        sx={{ minWidth: 130, gridColumn: { xs: '2 / -1', sm: 'auto' } }}
-                      >
-                        <MenuItem value="">{t('teamManage.colorOwn')}</MenuItem>
-                        {TEAMMATE_COLORS.map((col) => (
-                          <MenuItem key={col.id} value={col.id}>
-                            <Box
-                              component="span"
-                              aria-hidden
-                              sx={{
-                                display: 'inline-block',
-                                width: 10,
-                                height: 10,
-                                borderRadius: '50%',
-                                bgcolor: col.hex,
-                                mr: 1,
-                              }}
-                            />
-                            {t(`account.color.names.${col.id}`)}
-                          </MenuItem>
-                        ))}
-                      </Select>
+                      />
                     )}
                     {m.uid && (
                       <Select

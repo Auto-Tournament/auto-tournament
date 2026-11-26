@@ -234,8 +234,8 @@
       "saveFailed": "Gagal menyimpan pengaturan HUD kamu."
     },
     "color": {
-      "title": "Warna pemain",
-      "description": "Warnamu di radar dan papan skor tim dalam pertandingan CS2 di server Auto Tournament. Kapten timmu bisa memilih warna lain untuk pertandingan tim.",
+      "title": "Warna pilihan",
+      "description": "Warna yang kamu inginkan di radar dan papan skor tim dalam pertandingan CS2 di server Auto Tournament. Jika rekan setim sudah memakainya, atau kapten memilihkan warna lain, kamu mendapat warna itu.",
       "auto": "Dipilih CS2",
       "names": {
         "blue": "Biru",

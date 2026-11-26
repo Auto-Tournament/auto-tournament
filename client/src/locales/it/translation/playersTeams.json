@@ -649,7 +649,10 @@
     "colorHelp": "La tua tag compare su questo colore ovunque la squadra non abbia un logo, e il colore contraddistingue la squadra in tabelle e tabelloni.",
     "lineupCount_many": "{{starters}} titolari su {{size}} · {{count}} riserve",
     "colorFor": "Colore di {{name}}",
-    "colorOwn": "Il suo colore"
+    "colorOwn": "La sua preferenza",
+    "colorPrefers": "Preferisce {{color}}",
+    "colorNoPreference": "Nessuna preferenza",
+    "colorTaken": "Preferisce {{color}}, ma ce l'ha un compagno: sceglie CS2"
   },
   "teamJoin": {
     "title": "Unisciti a una squadra",

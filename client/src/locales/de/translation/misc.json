@@ -234,8 +234,8 @@
       "saveFailed": "Deine HUD-Einstellung konnte nicht gespeichert werden."
     },
     "color": {
-      "title": "Spielerfarbe",
-      "description": "Deine Farbe auf dem Radar und der Anzeigetafel deines Teams in CS2-Matches auf Auto-Tournament-Servern. Der Kapitän deines Teams kann für die Matches des Teams eine andere wählen.",
+      "title": "Farbwunsch",
+      "description": "Die Farbe, die du auf dem Radar und der Anzeigetafel deines Teams in CS2-Matches auf Auto-Tournament-Servern haben möchtest. Hat ein Teamkollege sie schon oder wählt der Kapitän eine andere für dich, bekommst du diese.",
       "auto": "CS2 wählt",
       "names": {
         "blue": "Blau",

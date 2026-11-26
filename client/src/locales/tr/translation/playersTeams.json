@@ -631,8 +631,11 @@
     "colorN": "Renk {{n}}",
     "colorSaved": "Renk kaydedildi",
     "colorHelp": "Takımın logosu olmayan her yerde kısaltman bu rengin üzerinde görünür; renk ayrıca takımı tablolarda ve turnuva ağaçlarında işaretler.",
-    "colorFor": "{{name}} için oyuncu rengi",
-    "colorOwn": "Kendi rengi"
+    "colorFor": "{{name}} için renk",
+    "colorOwn": "Kendi tercihi",
+    "colorPrefers": "{{color}} tercih ediyor",
+    "colorNoPreference": "Tercih yok",
+    "colorTaken": "{{color}} tercih ediyor ama bir takım arkadaşında: CS2 seçer"
   },
   "teamJoin": {
     "title": "Bir takıma katıl",

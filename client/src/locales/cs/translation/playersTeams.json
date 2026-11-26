@@ -664,8 +664,11 @@
     "colorHelp": "Tvůj tag se ukazuje na této barvě všude, kde tým nemá logo, a barva označuje tým v tabulkách a pavoucích.",
     "lineupCount_few": "{{starters}} z {{size}} v základu · {{count}} náhradníci",
     "lineupCount_many": "{{starters}} z {{size}} v základu · {{count}} náhradníků",
-    "colorFor": "Barva hráče {{name}}",
-    "colorOwn": "Jeho vlastní barva"
+    "colorFor": "Barva pro {{name}}",
+    "colorOwn": "Jeho preference",
+    "colorPrefers": "Preferuje {{color}}",
+    "colorNoPreference": "Bez preference",
+    "colorTaken": "Preferuje {{color}}, ale má ji spoluhráč: vybere CS2"
   },
   "teamJoin": {
     "title": "Přidat se k týmu",

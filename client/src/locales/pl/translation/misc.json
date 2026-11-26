@@ -236,8 +236,8 @@
       "saveFailed": "Nie udało się zapisać ustawienia HUD."
     },
     "color": {
-      "title": "Kolor gracza",
-      "description": "Twój kolor na radarze i tablicy wyników drużyny w meczach CS2 na serwerach Auto Tournament. Kapitan drużyny może wybrać inny na mecze drużyny.",
+      "title": "Preferowany kolor",
+      "description": "Kolor, który chcesz mieć na radarze i tablicy wyników drużyny w meczach CS2 na serwerach Auto Tournament. Jeśli ma go już kolega z drużyny albo kapitan wybierze ci inny, dostaniesz ten.",
       "auto": "Wybiera CS2",
       "names": {
         "blue": "Niebieski",

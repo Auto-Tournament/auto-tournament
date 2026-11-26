@@ -236,8 +236,8 @@
       "saveFailed": "Nastavení HUD se nepodařilo uložit."
     },
     "color": {
-      "title": "Barva hráče",
-      "description": "Tvoje barva na radaru a v tabulce týmu v zápasech CS2 na serverech Auto Tournament. Kapitán týmu může pro zápasy týmu vybrat jinou.",
+      "title": "Preferovaná barva",
+      "description": "Barva, kterou chceš mít na radaru a v tabulce týmu v zápasech CS2 na serverech Auto Tournament. Pokud ji už má spoluhráč nebo ti kapitán vybere jinou, dostaneš tu.",
       "auto": "Vybere CS2",
       "names": {
         "blue": "Modrá",

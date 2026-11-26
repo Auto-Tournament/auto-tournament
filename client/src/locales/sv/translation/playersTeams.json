@@ -631,8 +631,11 @@
     "colorN": "Färg {{n}}",
     "colorSaved": "Färgen sparad",
     "colorHelp": "Taggen visas på den här färgen överallt där laget saknar logga, och färgen markerar laget i tabeller och brackets.",
-    "colorFor": "Spelarfärg för {{name}}",
-    "colorOwn": "Egen färg"
+    "colorFor": "Färg för {{name}}",
+    "colorOwn": "Eget önskemål",
+    "colorPrefers": "Vill ha {{color}}",
+    "colorNoPreference": "Inget önskemål",
+    "colorTaken": "Vill ha {{color}}, men en lagkamrat har den: CS2 väljer"
   },
   "teamJoin": {
     "title": "Gå med i ett lag",

@@ -234,8 +234,8 @@
       "saveFailed": "Couldn't save your HUD setting."
     },
     "color": {
-      "title": "Teammate colour",
-      "description": "Your colour on your team's radar and scoreboard in CS2 matches on Auto Tournament servers. Your team's captain can pick a different one for the team's matches.",
+      "title": "Colour preference",
+      "description": "The colour you'd like on your team's radar and scoreboard in CS2 matches on Auto Tournament servers. If a teammate already has it, or your team's captain picks another for you, you get that instead.",
       "auto": "CS2 picks",
       "names": {
         "blue": "Blue",

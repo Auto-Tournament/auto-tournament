@@ -234,8 +234,8 @@
       "saveFailed": "Nem sikerült menteni a HUD-beállításodat."
     },
     "color": {
-      "title": "Játékosszín",
-      "description": "A színed a csapatod radarján és eredménytábláján a CS2-meccseken az Auto Tournament szerverein. A csapatkapitány a csapat meccseire másikat is választhat.",
+      "title": "Kedvenc szín",
+      "description": "A szín, amit a csapatod radarján és eredménytábláján szeretnél a CS2-meccseken az Auto Tournament szerverein. Ha egy csapattársadé már, vagy a kapitány mást választ neked, azt kapod.",
       "auto": "A CS2 választ",
       "names": {
         "blue": "Kék",

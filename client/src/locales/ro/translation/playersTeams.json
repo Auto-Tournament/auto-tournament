@@ -647,8 +647,11 @@
     "colorSaved": "Culoare salvată",
     "colorHelp": "Tag-ul tău apare pe această culoare oriunde echipa nu are logo, iar culoarea marchează echipa în tabele și tablouri.",
     "lineupCount_few": "Titulari: {{starters}} din {{size}} · {{count}} rezerve",
-    "colorFor": "Culoarea lui {{name}}",
-    "colorOwn": "Culoarea proprie"
+    "colorFor": "Culoare pentru {{name}}",
+    "colorOwn": "Preferința sa",
+    "colorPrefers": "Preferă {{color}}",
+    "colorNoPreference": "Fără preferință",
+    "colorTaken": "Preferă {{color}}, dar o are un coechipier: alege CS2"
   },
   "teamJoin": {
     "title": "Intră într-o echipă",

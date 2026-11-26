@@ -649,7 +649,10 @@
     "colorHelp": "Sua tag aparece nesta cor onde o time não tem logo, e a cor marca o time nas tabelas e nas chaves.",
     "lineupCount_many": "{{starters}} de {{size}} titulares · {{count}} reservas",
     "colorFor": "Cor de {{name}}",
-    "colorOwn": "A própria cor"
+    "colorOwn": "A preferência dele",
+    "colorPrefers": "Prefere {{color}}",
+    "colorNoPreference": "Sem preferência",
+    "colorTaken": "Prefere {{color}}, mas um colega já tem: o CS2 escolhe"
   },
   "teamJoin": {
     "title": "Entrar em um time",

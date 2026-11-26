@@ -48,6 +48,8 @@ export interface ManagedMember {
   lineup: TeamLineup;
   /** The teammate colour set for them in this team's matches (teammateColors.ts), or null: their own. */
   color: string | null;
+  /** The colour they picked themselves on the account page, or null: CS2 picks. */
+  ownColor: string | null;
 }
 
 /** A player the team asked on by name, still to answer. */
@@ -195,14 +197,27 @@ async function requireRosterUnlocked(teamId: string): Promise<void> {
 
 async function accountsBySteamId(
   steamIds: string[]
-): Promise<Map<string, { uid: string; name: string; avatar: string | null }>> {
+): Promise<
+  Map<string, { uid: string; name: string; avatar: string | null; teammateColor: string | null }>
+> {
   const rows = steamIds.length
-    ? await db.queryAsync<{ id: string; uid: string; name: string; avatar: string | null }>(
-        'SELECT id, uid, name, avatar_url AS avatar FROM players WHERE id = ANY(?::text[])',
+    ? await db.queryAsync<{
+        id: string;
+        uid: string;
+        name: string;
+        avatar: string | null;
+        teammate_color: string | null;
+      }>(
+        'SELECT id, uid, name, avatar_url AS avatar, teammate_color FROM players WHERE id = ANY(?::text[])',
         [steamIds]
       )
     : [];
-  return new Map(rows.map((r) => [r.id, { uid: r.uid, name: r.name, avatar: r.avatar }]));
+  return new Map(
+    rows.map((r) => [
+      r.id,
+      { uid: r.uid, name: r.name, avatar: r.avatar, teammateColor: r.teammate_color ?? null },
+    ])
+  );
 }
 
 /** The invited player's notice for one team's invite (answered or taken back by it). */
@@ -241,6 +256,7 @@ export const teamSelfService = {
         position: row?.position ?? null,
         lineup: row?.lineup ?? 'starter',
         color: row?.color ?? null,
+        ownColor: account?.teammateColor ?? null,
       };
     });
     const invites = await db.queryAsync<{

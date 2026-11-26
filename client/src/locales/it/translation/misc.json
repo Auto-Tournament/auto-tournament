@@ -235,8 +235,8 @@
       "saveFailed": "Impossibile salvare l'impostazione HUD."
     },
     "color": {
-      "title": "Colore del giocatore",
-      "description": "Il tuo colore sul radar e sul tabellone della tua squadra nelle partite CS2 sui server di Auto Tournament. Il capitano della squadra può sceglierne un altro per le partite della squadra.",
+      "title": "Colore preferito",
+      "description": "Il colore che vuoi sul radar e sul tabellone della tua squadra nelle partite CS2 sui server di Auto Tournament. Se ce l'ha già un compagno, o il capitano te ne sceglie un altro, avrai quello.",
       "auto": "Lo sceglie CS2",
       "names": {
         "blue": "Blu",

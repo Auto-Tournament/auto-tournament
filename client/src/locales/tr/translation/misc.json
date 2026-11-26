@@ -234,8 +234,8 @@
       "saveFailed": "HUD ayarın kaydedilemedi."
     },
     "color": {
-      "title": "Oyuncu rengi",
-      "description": "Auto Tournament sunucularındaki CS2 maçlarında takımının radarında ve skor tablosunda görünen rengin. Takım kaptanı takımın maçları için başka bir renk seçebilir.",
+      "title": "Renk tercihi",
+      "description": "Auto Tournament sunucularındaki CS2 maçlarında takımının radarında ve skor tablosunda olmasını istediğin renk. Bir takım arkadaşında zaten varsa ya da kaptan sana başka bir renk seçerse, o rengi alırsın.",
       "auto": "CS2 seçsin",
       "names": {
         "blue": "Mavi",

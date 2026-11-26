@@ -235,8 +235,8 @@
       "saveFailed": "Não foi possível guardar a tua definição de HUD."
     },
     "color": {
-      "title": "Cor do jogador",
-      "description": "A tua cor no radar e no marcador da tua equipa nos jogos de CS2 nos servidores do Auto Tournament. O capitão da equipa pode escolher outra para os jogos da equipa.",
+      "title": "Cor preferida",
+      "description": "A cor que queres no radar e no marcador da tua equipa nos jogos de CS2 nos servidores do Auto Tournament. Se um colega já a tiver, ou o capitão escolher outra para ti, ficas com essa.",
       "auto": "O CS2 escolhe",
       "names": {
         "blue": "Azul",

@@ -234,8 +234,8 @@
       "saveFailed": "无法保存你的 HUD 设置。"
     },
     "color": {
-      "title": "玩家颜色",
-      "description": "你在 Auto Tournament 服务器的 CS2 比赛中，于队伍雷达和计分板上的颜色。队长可以为队伍的比赛另选一种颜色。",
+      "title": "偏好颜色",
+      "description": "你希望在 Auto Tournament 服务器的 CS2 比赛中，于队伍雷达和计分板上显示的颜色。如果队友已在使用，或队长为你另选了一种，你会得到那个颜色。",
       "auto": "由 CS2 分配",
       "names": {
         "blue": "蓝色",

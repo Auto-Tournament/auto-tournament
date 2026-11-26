@@ -631,8 +631,11 @@
     "colorN": "Farve {{n}}",
     "colorSaved": "Farven er gemt",
     "colorHelp": "Dit tag vises på denne farve overalt, hvor holdet ikke har et logo, og farven markerer holdet i tabeller og brackets.",
-    "colorFor": "Spillerfarve for {{name}}",
-    "colorOwn": "Deres egen farve"
+    "colorFor": "Farve til {{name}}",
+    "colorOwn": "Deres præference",
+    "colorPrefers": "Foretrækker {{color}}",
+    "colorNoPreference": "Ingen præference",
+    "colorTaken": "Foretrækker {{color}}, men en holdkammerat har den: CS2 vælger"
   },
   "teamJoin": {
     "title": "Bliv en del af et hold",

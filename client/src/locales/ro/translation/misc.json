@@ -235,8 +235,8 @@
       "saveFailed": "Setarea HUD nu a putut fi salvată."
     },
     "color": {
-      "title": "Culoarea jucătorului",
-      "description": "Culoarea ta pe radarul și tabela echipei în meciurile CS2 de pe serverele Auto Tournament. Căpitanul echipei poate alege alta pentru meciurile echipei.",
+      "title": "Culoare preferată",
+      "description": "Culoarea pe care o vrei pe radarul și tabela echipei în meciurile CS2 de pe serverele Auto Tournament. Dacă un coechipier o are deja sau căpitanul îți alege alta, o primești pe aceea.",
       "auto": "Alege CS2",
       "names": {
         "blue": "Albastru",

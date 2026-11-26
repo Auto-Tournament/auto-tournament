@@ -234,8 +234,8 @@
       "saveFailed": "Kunne ikke gemme din HUD-indstilling."
     },
     "color": {
-      "title": "Spillerfarve",
-      "description": "Din farve på holdets radar og scoreboard i CS2-kampe på Auto Tournament-servere. Holdets kaptajn kan vælge en anden til holdets kampe.",
+      "title": "Farvepræference",
+      "description": "Den farve, du gerne vil have på holdets radar og scoreboard i CS2-kampe på Auto Tournament-servere. Har en holdkammerat den allerede, eller vælger kaptajnen en anden til dig, får du den i stedet.",
       "auto": "CS2 vælger",
       "names": {
         "blue": "Blå",
