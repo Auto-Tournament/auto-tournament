@@ -630,7 +630,12 @@
     "color": "Joukkueen väri",
     "colorN": "Väri {{n}}",
     "colorSaved": "Väri tallennettu",
-    "colorHelp": "Tunnisteesi näkyy tällä värillä kaikkialla, missä joukkueella ei ole logoa, ja väri merkitsee joukkueen taulukoissa ja kaavioissa."
+    "colorHelp": "Tunnisteesi näkyy tällä värillä kaikkialla, missä joukkueella ei ole logoa, ja väri merkitsee joukkueen taulukoissa ja kaavioissa.",
+    "colorFor": "Väri: {{name}}",
+    "colorOwn": "Oma toive",
+    "colorPrefers": "Toivoo: {{color}}",
+    "colorNoPreference": "Ei toivetta",
+    "colorTaken": "Toivoo: {{color}}, mutta se on joukkuetoverilla: CS2 valitsee"
   },
   "teamJoin": {
     "title": "Liity joukkueeseen",

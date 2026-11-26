@@ -220,6 +220,34 @@
       "save": "Zapisz",
       "saved": "Nazwa zapisana. Serwery użyją jej od twojego następnego meczu.",
       "saveFailed": "Nie udało się zapisać nazwy"
+    },
+    "hud": {
+      "title": "HUD w grze",
+      "description": "Jak Ready Up pokazuje rzeczy na serwerach Auto Tournament: nasz HUD na ekranie albo tylko czat. Wpisz .hud w grze, aby przełączyć na tę sesję.",
+      "optionHud": "HUD Auto Tournament",
+      "optionHudHint": "Menu, przycisk gotowości i karty rund na ekranie.",
+      "optionChat": "Tylko czat",
+      "optionChatHint": "Wszystko przychodzi jako linie czatu. Nic dodatkowego na ekranie.",
+      "previewMenu": "Menu meczu",
+      "previewReady": "Gotowy",
+      "previewChatReady": "wpisz .r, gdy będziesz gotowy (4/10 gotowych)",
+      "previewChatTip": "Potrzebujesz pauzy, admina albo poddania? Wpisz .menu na czacie.",
+      "saved": "Zapisano. Obowiązuje od następnego meczu.",
+      "saveFailed": "Nie udało się zapisać ustawienia HUD."
+    },
+    "color": {
+      "title": "Preferowany kolor",
+      "description": "Kolor, który chcesz mieć na radarze i tablicy wyników drużyny w meczach CS2 na serwerach Auto Tournament. Jeśli ma go już kolega z drużyny albo kapitan wybierze ci inny, dostaniesz ten.",
+      "auto": "Wybiera CS2",
+      "names": {
+        "blue": "Niebieski",
+        "green": "Zielony",
+        "yellow": "Żółty",
+        "orange": "Pomarańczowy",
+        "purple": "Fioletowy"
+      },
+      "saved": "Zapisano. Obowiązuje od następnego meczu.",
+      "saveFailed": "Nie udało się zapisać koloru."
     }
   },
   "home": {

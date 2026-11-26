@@ -218,6 +218,34 @@
       "save": "保存",
       "saved": "名称已保存。游戏服务器将从你的下一场比赛开始使用它。",
       "saveFailed": "无法保存名称"
+    },
+    "hud": {
+      "title": "游戏内 HUD",
+      "description": "Ready Up 在 Auto Tournament 服务器上的显示方式：屏幕上的 HUD，或仅聊天。在游戏中输入 .hud 可在本次会话中切换。",
+      "optionHud": "Auto Tournament HUD",
+      "optionHudHint": "菜单、准备按钮和回合卡片显示在屏幕上。",
+      "optionChat": "仅聊天",
+      "optionChatHint": "所有内容都以聊天消息出现。屏幕上不增加任何东西。",
+      "previewMenu": "比赛菜单",
+      "previewReady": "准备",
+      "previewChatReady": "准备好后输入 .r（4/10 已准备）",
+      "previewChatTip": "需要暂停、管理员或认输？在聊天中输入 .menu。",
+      "saved": "已保存。从你的下一场比赛开始生效。",
+      "saveFailed": "无法保存你的 HUD 设置。"
+    },
+    "color": {
+      "title": "偏好颜色",
+      "description": "你希望在 Auto Tournament 服务器的 CS2 比赛中，于队伍雷达和计分板上显示的颜色。如果队友已在使用，或队长为你另选了一种，你会得到那个颜色。",
+      "auto": "由 CS2 分配",
+      "names": {
+        "blue": "蓝色",
+        "green": "绿色",
+        "yellow": "黄色",
+        "orange": "橙色",
+        "purple": "紫色"
+      },
+      "saved": "已保存。从你的下一场比赛开始生效。",
+      "saveFailed": "无法保存你的颜色。"
     }
   },
   "home": {

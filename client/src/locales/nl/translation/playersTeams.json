@@ -630,7 +630,12 @@
     "color": "Teamkleur",
     "colorN": "Kleur {{n}}",
     "colorSaved": "Kleur opgeslagen",
-    "colorHelp": "Je tag staat op deze kleur overal waar het team geen logo heeft, en de kleur markeert het team in tabellen en schema's."
+    "colorHelp": "Je tag staat op deze kleur overal waar het team geen logo heeft, en de kleur markeert het team in tabellen en schema's.",
+    "colorFor": "Kleur voor {{name}}",
+    "colorOwn": "Eigen voorkeur",
+    "colorPrefers": "Wil {{color}}",
+    "colorNoPreference": "Geen voorkeur",
+    "colorTaken": "Wil {{color}}, maar een teamgenoot heeft hem: CS2 kiest"
   },
   "teamJoin": {
     "title": "Bij een team komen",

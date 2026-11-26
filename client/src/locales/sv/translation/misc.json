@@ -218,6 +218,34 @@
       "save": "Spara",
       "saved": "Namnet sparat. Spelservrarna använder det från din nästa match.",
       "saveFailed": "Ditt namn kunde inte sparas"
+    },
+    "hud": {
+      "title": "HUD i spelet",
+      "description": "Så visar Ready Up saker på Auto Tournament-servrar: vår HUD på skärmen, eller bara chatt. Skriv .hud i spelet för att byta för den sessionen.",
+      "optionHud": "Auto Tournament HUD",
+      "optionHudHint": "Menyer, redo-knappen och rondkort på skärmen.",
+      "optionChat": "Bara chatt",
+      "optionChatHint": "Allt kommer som rader i chatten. Inget extra på skärmen.",
+      "previewMenu": "Matchmeny",
+      "previewReady": "Redo",
+      "previewChatReady": "skriv .r när du är redo (4/10 redo)",
+      "previewChatTip": "Behöver du paus, en admin eller ge upp? Skriv .menu i chatten.",
+      "saved": "Sparat. Gäller från din nästa match.",
+      "saveFailed": "Kunde inte spara din HUD-inställning."
+    },
+    "color": {
+      "title": "Önskad färg",
+      "description": "Färgen du vill ha på lagets radar och resultattavla i CS2-matcher på Auto Tournaments servrar. Har en lagkamrat den redan, eller väljer kaptenen en annan åt dig, får du den i stället.",
+      "auto": "CS2 väljer",
+      "names": {
+        "blue": "Blå",
+        "green": "Grön",
+        "yellow": "Gul",
+        "orange": "Orange",
+        "purple": "Lila"
+      },
+      "saved": "Sparat. Gäller från din nästa match.",
+      "saveFailed": "Kunde inte spara din färg."
     }
   },
   "home": {

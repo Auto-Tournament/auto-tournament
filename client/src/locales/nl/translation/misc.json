@@ -218,6 +218,34 @@
       "save": "Opslaan",
       "saved": "Naam opgeslagen. Gameservers gebruiken hem vanaf je volgende wedstrijd.",
       "saveFailed": "Kon je naam niet opslaan"
+    },
+    "hud": {
+      "title": "HUD in het spel",
+      "description": "Hoe Ready Up dingen toont op Auto Tournament-servers: onze HUD op het scherm, of alleen chat. Typ .hud in het spel om het voor die sessie te wisselen.",
+      "optionHud": "Auto Tournament HUD",
+      "optionHudHint": "Menu's, de klaar-knop en rondekaarten op het scherm.",
+      "optionChat": "Alleen chat",
+      "optionChatHint": "Alles komt als chatregels. Niets extra op het scherm.",
+      "previewMenu": "Wedstrijdmenu",
+      "previewReady": "Klaar",
+      "previewChatReady": "typ .r als je klaar bent (4/10 klaar)",
+      "previewChatTip": "Pauze, een admin of opgeven nodig? Typ .menu in de chat.",
+      "saved": "Opgeslagen. Geldt vanaf je volgende wedstrijd.",
+      "saveFailed": "Je HUD-instelling kon niet worden opgeslagen."
+    },
+    "color": {
+      "title": "Kleurvoorkeur",
+      "description": "De kleur die je wilt op de radar en het scorebord van je team in CS2-wedstrijden op Auto Tournament-servers. Heeft een teamgenoot hem al, of kiest de aanvoerder een andere voor je, dan krijg je die.",
+      "auto": "CS2 kiest",
+      "names": {
+        "blue": "Blauw",
+        "green": "Groen",
+        "yellow": "Geel",
+        "orange": "Oranje",
+        "purple": "Paars"
+      },
+      "saved": "Opgeslagen. Geldt vanaf je volgende wedstrijd.",
+      "saveFailed": "Je kleur kon niet worden opgeslagen."
     }
   },
   "home": {

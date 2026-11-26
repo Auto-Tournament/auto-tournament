@@ -663,7 +663,12 @@
     "colorSaved": "Цвет сохранён",
     "colorHelp": "Где у команды нет логотипа, тег показывается на этом цвете, а цвет отмечает команду в таблицах и сетках.",
     "lineupCount_few": "Основных {{starters}} из {{size}} · {{count}} запасных",
-    "lineupCount_many": "Основных {{starters}} из {{size}} · {{count}} запасных"
+    "lineupCount_many": "Основных {{starters}} из {{size}} · {{count}} запасных",
+    "colorFor": "Цвет для {{name}}",
+    "colorOwn": "Свой выбор",
+    "colorPrefers": "Хочет {{color}}",
+    "colorNoPreference": "Без пожеланий",
+    "colorTaken": "Хочет {{color}}, но он у товарища: выбирает CS2"
   },
   "teamJoin": {
     "title": "Вступить в команду",

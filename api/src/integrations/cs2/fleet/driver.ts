@@ -53,8 +53,10 @@ import {
   diffAssignConfig,
   generateMatchPassword,
   withCaptains,
+  withColors,
   withLanguages,
   withRatings,
+  withHud,
 } from './assignConfig';
 import { cs2ServerIdOf, fleetServerIdOf } from './link';
 import { fleetInbound, type FleetEventNotice } from './inbound';
@@ -78,6 +80,7 @@ import type {
   MatchPhase,
   MatchUpdateOp,
   ResumeBlock,
+  TeammateColorName,
   UnassignReason,
   WelcomePayload,
 } from './protocol/v1';
@@ -707,7 +710,11 @@ async function withHold(matchSlug: string, config: AssignConfig): Promise<Assign
   const hold = await holdOf(matchSlug);
   const withTimer = await withFullTeam(
     matchSlug,
-    await withTeamCaptains(await withPlayerRatings(matchSlug, await withPlayerLanguages(config)))
+    await withPlayerColors(
+      await withTeamCaptains(
+        await withPlayerRatings(matchSlug, await withPlayerHud(await withPlayerLanguages(config)))
+      )
+    )
   );
   if (!hold?.heldUntil) return withTimer;
   return {
@@ -725,6 +732,61 @@ async function withPlayerLanguages(config: AssignConfig): Promise<AssignConfig> 
     ids
   );
   return withLanguages(config, new Map(rows.map((r) => [r.id, r.language])));
+}
+
+/** The players who chose chat only on the account page (`players.ingame_hud`): hud:false. */
+/**
+ * Each player's teammate colour (withColors): what their team's owner or a captain set for them
+ * (team_members.color), else their own (players.teammate_color).
+ */
+async function withPlayerColors(config: AssignConfig): Promise<AssignConfig> {
+  // The protocol's colours (match.defs.json $defs/color). The cs2 module reaches core only through
+  // the host bridge, so it checks the names itself rather than importing services/teammateColors.
+  const names: readonly string[] = ['blue', 'green', 'yellow', 'orange', 'purple'];
+  const isTeammateColor = (v: string | null): v is TeammateColorName =>
+    v !== null && names.includes(v);
+  const ids = [...config.team1.players, ...config.team2.players].map((p) => p.steamid64);
+  if (ids.length === 0) return config;
+  const own = await db
+    .queryAsync<{ id: string; teammate_color: string | null }>(
+      'SELECT id, teammate_color FROM players WHERE teammate_color IS NOT NULL AND id = ANY(?::text[])',
+      [ids]
+    )
+    .catch(() => []);
+  const teams = [config.team1.id, config.team2.id].filter((id): id is string => Boolean(id));
+  const set =
+    teams.length === 0
+      ? []
+      : await db
+          .queryAsync<{ team_id: string; id: string; color: string | null }>(
+            `SELECT tm.team_id, p.id, tm.color FROM team_members tm JOIN players p ON p.uid = tm.account_uid
+              WHERE tm.color IS NOT NULL AND tm.team_id = ANY(?::text[])`,
+            [teams]
+          )
+          .catch(() => []);
+  const ownMap = new Map<string, TeammateColorName>();
+  for (const r of own) if (isTeammateColor(r.teammate_color)) ownMap.set(r.id, r.teammate_color);
+  const setOf = (team: string | undefined) => {
+    const m = new Map<string, TeammateColorName>();
+    for (const r of set) if (r.team_id === team && isTeammateColor(r.color)) m.set(r.id, r.color);
+    return m;
+  };
+  return withColors(config, ownMap, {
+    team1: setOf(config.team1.id),
+    team2: setOf(config.team2.id),
+  });
+}
+
+async function withPlayerHud(config: AssignConfig): Promise<AssignConfig> {
+  const ids = [...config.team1.players, ...config.team2.players].map((p) => p.steamid64);
+  if (ids.length === 0) return config;
+  const rows = await db
+    .queryAsync<{ id: string }>(
+      `SELECT id FROM players WHERE ingame_hud = FALSE AND id IN (${ids.map(() => '?').join(', ')})`,
+      ids
+    )
+    .catch(() => []);
+  return withHud(config, new Set(rows.map((r) => r.id)));
 }
 
 /**

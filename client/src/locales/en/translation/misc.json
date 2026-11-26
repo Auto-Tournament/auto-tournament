@@ -218,6 +218,34 @@
       "save": "Save",
       "saved": "Name saved. Game servers use it from your next match.",
       "saveFailed": "Could not save your name"
+    },
+    "hud": {
+      "title": "In-game HUD",
+      "description": "How Ready Up shows things on Auto Tournament servers: our HUD on screen, or chat only. Type .hud in game to switch for that session.",
+      "optionHud": "Auto Tournament HUD",
+      "optionHudHint": "Menus, the ready button and round cards on screen.",
+      "optionChat": "Chat only",
+      "optionChatHint": "Everything comes as chat lines. Nothing extra on screen.",
+      "previewMenu": "Match menu",
+      "previewReady": "Ready",
+      "previewChatReady": "type .r when ready (4/10 ready)",
+      "previewChatTip": "Need a pause, an admin or to forfeit? Type .menu in chat.",
+      "saved": "Saved. It applies from your next match.",
+      "saveFailed": "Couldn't save your HUD setting."
+    },
+    "color": {
+      "title": "Colour preference",
+      "description": "The colour you'd like on your team's radar and scoreboard in CS2 matches on Auto Tournament servers. If a teammate already has it, or your team's captain picks another for you, you get that instead.",
+      "auto": "CS2 picks",
+      "names": {
+        "blue": "Blue",
+        "green": "Green",
+        "yellow": "Yellow",
+        "orange": "Orange",
+        "purple": "Purple"
+      },
+      "saved": "Saved. It applies from your next match.",
+      "saveFailed": "Couldn't save your colour."
     }
   },
   "home": {

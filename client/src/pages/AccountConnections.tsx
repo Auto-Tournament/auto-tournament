@@ -1,4 +1,6 @@
 import { PartyInviteSetting } from '../components/social/PartyInviteSetting';
+import { IngameHudSetting } from '../components/account/IngameHudSetting';
+import { TeammateColorSetting } from '../components/account/TeammateColorSetting';
 import { fmtDate } from '../utils/time';
 import { NotifyChannelsSetting } from '../components/social/NotifyChannelsSetting';
 import { pageTitle } from '../utils/pageTitle';
@@ -984,6 +986,10 @@ export default function AccountConnections() {
               {!readOnly && <NotifyChannelsSetting />}
 
               {!readOnly && <PartyInviteSetting />}
+
+              {!readOnly && <IngameHudSetting />}
+
+              {!readOnly && <TeammateColorSetting />}
 
               {!gamesFirst && gamesSection}
             </Box>

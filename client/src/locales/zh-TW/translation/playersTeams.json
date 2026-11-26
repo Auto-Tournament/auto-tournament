@@ -630,7 +630,12 @@
     "color": "戰隊顏色",
     "colorN": "顏色 {{n}}",
     "colorSaved": "顏色已儲存",
-    "colorHelp": "在戰隊沒有標誌的地方，你的標籤會顯示在這個顏色上；表格和賽程表中也用這個顏色標記戰隊。"
+    "colorHelp": "在戰隊沒有標誌的地方，你的標籤會顯示在這個顏色上；表格和賽程表中也用這個顏色標記戰隊。",
+    "colorFor": "{{name}} 的顏色",
+    "colorOwn": "本人偏好",
+    "colorPrefers": "偏好{{color}}",
+    "colorNoPreference": "無偏好",
+    "colorTaken": "偏好{{color}}，但已被隊友使用：由 CS2 分配"
   },
   "teamJoin": {
     "title": "加入戰隊",

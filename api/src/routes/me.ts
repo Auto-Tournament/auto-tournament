@@ -8,6 +8,7 @@
  * impersonation should not quietly edit the other player's profile.
  */
 
+import { isTeammateColor } from '../services/teammateColors';
 import { gameAccountProviders } from '../services/gameAccounts';
 import type { Request, Response } from 'express';
 import { Router } from 'express';
@@ -273,8 +274,126 @@ router.put('/name', async (req: Request, res: Response) => {
   }
 });
 
+/**
+ * @openapi
+ * /api/me/color:
+ *   get:
+ *     tags: [Me]
+ *     summary: The signed-in player's teammate colour in CS2
+ *     responses:
+ *       200: { description: "{ color: 'blue' | 'green' | 'yellow' | 'orange' | 'purple' | null }: null = CS2 picks" }
+ *       401: { description: Not signed in }
+ *   put:
+ *     tags: [Me]
+ *     summary: Choose a teammate colour, or null to let CS2 pick
+ *     description: |
+ *       Ready Up servers get it per player at the next match assign. A team's owner or captain can
+ *       set a colour for the player in that team's matches, which wins.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema: { type: object, properties: { color: { type: string, nullable: true, enum: [blue, green, yellow, orange, purple] } } }
+ *     responses:
+ *       200: { description: Saved }
+ *       400: { description: Not a colour }
+ *       401: { description: Not signed in }
+ *       403: { description: Impersonating }
+ */
+router.get('/color', async (req: Request, res: Response) => {
+  try {
+    const account = await resolveAccount(req, res, { write: false, what: 'account' });
+    if (!account) return;
+    const row = await db.queryOneAsync<{ teammate_color: string | null }>(
+      'SELECT teammate_color FROM players WHERE id = ?',
+      [account.steamId]
+    );
+    const color = row?.teammate_color ?? null;
+    return res.json({ success: true, color: isTeammateColor(color) ? color : null });
+  } catch (error) {
+    log.error('Error reading own teammate colour', error);
+    return res.status(500).json({ success: false, error: 'Failed to read your colour' });
+  }
+});
+
+router.put('/color', async (req: Request, res: Response) => {
+  try {
+    const account = await resolveAccount(req, res, { write: true, what: 'account' });
+    if (!account) return;
+    const color = (req.body as { color?: Untrusted })?.color;
+    if (color !== null && !isTeammateColor(color))
+      return res
+        .status(400)
+        .json({ success: false, error: 'color is blue, green, yellow, orange, purple or null' });
+    await db.runAsync('UPDATE players SET teammate_color = ? WHERE id = ?', [
+      color,
+      account.steamId,
+    ]);
+    return res.json({ success: true, color });
+  } catch (error) {
+    log.error('Error saving own teammate colour', error);
+    return res.status(500).json({ success: false, error: 'Failed to save your colour' });
+  }
+});
+
 /** A language-menu code: 'nb', 'pt-BR', 'zh-CN', 'es-419'. Ready Up falls back to English for one it has no table for. */
 const LANGUAGE_CODE = /^[a-z]{2,3}(-[A-Za-z0-9]{2,4})?$/;
+
+/**
+ * @openapi
+ * /api/me/hud:
+ *   get:
+ *     tags: [Me]
+ *     summary: The signed-in player's in-game HUD choice
+ *     responses:
+ *       200: { description: "{ on: boolean }: true = the Auto Tournament HUD, false = chat only" }
+ *       401: { description: Not signed in }
+ *   put:
+ *     tags: [Me]
+ *     summary: Choose the in-game HUD or chat only
+ *     description: |
+ *       Ready Up servers get it per player at the next match assign (hud:false = chat only).
+ *       In game, `.hud` switches it for the session.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema: { type: object, properties: { on: { type: boolean } } }
+ *     responses:
+ *       200: { description: Saved }
+ *       400: { description: on is not a boolean }
+ *       401: { description: Not signed in }
+ *       403: { description: Impersonating }
+ */
+router.get('/hud', async (req: Request, res: Response) => {
+  try {
+    const account = await resolveAccount(req, res, { write: false, what: 'account' });
+    if (!account) return;
+    const row = await db.queryOneAsync<{ ingame_hud: boolean | null }>(
+      'SELECT ingame_hud FROM players WHERE id = ?',
+      [account.steamId]
+    );
+    return res.json({ success: true, on: row?.ingame_hud !== false });
+  } catch (error) {
+    log.error('Error reading own HUD choice', error);
+    return res.status(500).json({ success: false, error: 'Failed to read your HUD choice' });
+  }
+});
+
+router.put('/hud', async (req: Request, res: Response) => {
+  try {
+    const account = await resolveAccount(req, res, { write: true, what: 'account' });
+    if (!account) return;
+    const on = (req.body as { on?: Untrusted })?.on;
+    if (typeof on !== 'boolean')
+      return res.status(400).json({ success: false, error: 'on must be true or false' });
+    await db.runAsync('UPDATE players SET ingame_hud = ? WHERE id = ?', [on, account.steamId]);
+    return res.json({ success: true, on });
+  } catch (error) {
+    log.error('Error saving own HUD choice', error);
+    return res.status(500).json({ success: false, error: 'Failed to save your HUD choice' });
+  }
+});
 
 /**
  * @openapi

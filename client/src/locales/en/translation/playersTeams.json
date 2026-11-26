@@ -630,7 +630,12 @@
     "color": "Team colour",
     "colorN": "Colour {{n}}",
     "colorSaved": "Colour saved",
-    "colorHelp": "Your tag shows on this colour wherever the team has no logo, and the colour marks the team in tables and brackets."
+    "colorHelp": "Your tag shows on this colour wherever the team has no logo, and the colour marks the team in tables and brackets.",
+    "colorFor": "Colour for {{name}}",
+    "colorOwn": "Their preference",
+    "colorPrefers": "Prefers {{color}}",
+    "colorNoPreference": "No preference",
+    "colorTaken": "Prefers {{color}}, but a teammate has it: CS2 picks"
   },
   "teamJoin": {
     "title": "Join a team",

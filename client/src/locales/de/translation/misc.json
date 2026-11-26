@@ -218,6 +218,34 @@
       "save": "Speichern",
       "saved": "Name gespeichert. Gameserver verwenden ihn ab deinem nächsten Match.",
       "saveFailed": "Name konnte nicht gespeichert werden"
+    },
+    "hud": {
+      "title": "HUD im Spiel",
+      "description": "So zeigt Ready Up Dinge auf Auto-Tournament-Servern: unser HUD auf dem Bildschirm oder nur Chat. Tippe im Spiel .hud, um es für diese Sitzung umzuschalten.",
+      "optionHud": "Auto Tournament HUD",
+      "optionHudHint": "Menüs, der Bereit-Knopf und Rundenkarten auf dem Bildschirm.",
+      "optionChat": "Nur Chat",
+      "optionChatHint": "Alles kommt als Chatzeilen. Nichts zusätzlich auf dem Bildschirm.",
+      "previewMenu": "Matchmenü",
+      "previewReady": "Bereit",
+      "previewChatReady": "tippe .r, wenn du bereit bist (4/10 bereit)",
+      "previewChatTip": "Pause, Admin oder aufgeben? Tippe .menu in den Chat.",
+      "saved": "Gespeichert. Gilt ab deinem nächsten Match.",
+      "saveFailed": "Deine HUD-Einstellung konnte nicht gespeichert werden."
+    },
+    "color": {
+      "title": "Farbwunsch",
+      "description": "Die Farbe, die du auf dem Radar und der Anzeigetafel deines Teams in CS2-Matches auf Auto-Tournament-Servern haben möchtest. Hat ein Teamkollege sie schon oder wählt der Kapitän eine andere für dich, bekommst du diese.",
+      "auto": "CS2 wählt",
+      "names": {
+        "blue": "Blau",
+        "green": "Grün",
+        "yellow": "Gelb",
+        "orange": "Orange",
+        "purple": "Lila"
+      },
+      "saved": "Gespeichert. Gilt ab deinem nächsten Match.",
+      "saveFailed": "Deine Farbe konnte nicht gespeichert werden."
     }
   },
   "home": {

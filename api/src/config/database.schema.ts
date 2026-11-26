@@ -373,6 +373,8 @@ export function getSchemaSQL(): string {
       last_sign_in_at INTEGER, -- Epoch of the player's last sign-in (Steam or SSO); NULL = never since this column exists. Admin-only, never in a public response
       last_seen_at INTEGER, -- Epoch the player last closed the site (their last socket left); shown to their friends only
       party_invites_from TEXT NOT NULL DEFAULT 'everyone', -- Who may invite them to a matchmaking party: 'everyone' | 'friends' | 'nobody'
+      teammate_color TEXT, -- The player's teammate colour in CS2 (account page): 'blue' | 'green' | 'yellow' | 'orange' | 'purple', sent per player in match.assign; NULL = CS2 picks
+      ingame_hud BOOLEAN NOT NULL DEFAULT TRUE, -- The in-game HUD on Ready Up servers (account page): FALSE = chat only, sent as hud:false per player in match.assign
       language TEXT, -- The site language the player last used (a code from the language menu, e.g. 'nb'); sent per player to Ready Up in match.assign. NULL = not known yet
       notification_settings TEXT, -- JSON: per kind of notice, 'off' | 'bell' | 'sound' (services/notificationService); NULL = the defaults
       deleted_at INTEGER, -- Epoch an admin deleted the player: a tombstone named "Deleted player" that keeps their match rows; nothing else of theirs is left (services/playerModeration.ts)
@@ -566,6 +568,7 @@ export function getSchemaSQL(): string {
       role TEXT NOT NULL DEFAULT 'member', -- 'captain' | 'member'
       position TEXT, -- the player's job in the team's game (CS2: 'awper', 'igl', ...), or NULL
       lineup TEXT NOT NULL DEFAULT 'starter', -- 'starter' | 'sub'
+      color TEXT, -- the teammate colour the owner or a captain set for this player in this team's matches (overrides players.teammate_color), or NULL
       created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
       updated_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
       PRIMARY KEY (team_id, account_uid)

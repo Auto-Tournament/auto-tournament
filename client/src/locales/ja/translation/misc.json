@@ -218,6 +218,34 @@
       "save": "保存",
       "saved": "名前を保存しました。次の試合からゲームサーバーで使われます。",
       "saveFailed": "名前を保存できませんでした"
+    },
+    "hud": {
+      "title": "ゲーム内HUD",
+      "description": "Auto Tournament サーバーでの Ready Up の表示方法：画面上の HUD か、チャットのみ。ゲーム内で .hud と入力すると、そのセッションだけ切り替えられます。",
+      "optionHud": "Auto Tournament HUD",
+      "optionHudHint": "メニュー、準備完了ボタン、ラウンドカードを画面に表示。",
+      "optionChat": "チャットのみ",
+      "optionChatHint": "すべてチャットの行で届きます。画面には何も追加されません。",
+      "previewMenu": "マッチメニュー",
+      "previewReady": "準備完了",
+      "previewChatReady": "準備ができたら .r と入力 (4/10 準備完了)",
+      "previewChatTip": "ポーズ、管理者、降参が必要？チャットに .menu と入力。",
+      "saved": "保存しました。次のマッチから適用されます。",
+      "saveFailed": "HUD 設定を保存できませんでした。"
+    },
+    "color": {
+      "title": "希望の色",
+      "description": "Auto Tournament サーバーでの CS2 の試合で、チームのレーダーとスコアボードに表示してほしい色です。チームメイトがすでに使っているか、キャプテンが別の色を選んだ場合は、そちらになります。",
+      "auto": "CS2 が選ぶ",
+      "names": {
+        "blue": "青",
+        "green": "緑",
+        "yellow": "黄",
+        "orange": "オレンジ",
+        "purple": "紫"
+      },
+      "saved": "保存しました。次の試合から適用されます。",
+      "saveFailed": "色を保存できませんでした。"
     }
   },
   "home": {

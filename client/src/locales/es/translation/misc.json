@@ -219,6 +219,34 @@
       "save": "Guardar",
       "saved": "Nombre guardado. Los servidores lo usarán desde tu próxima partida.",
       "saveFailed": "No se pudo guardar tu nombre"
+    },
+    "hud": {
+      "title": "HUD en el juego",
+      "description": "Cómo muestra Ready Up las cosas en los servidores de Auto Tournament: nuestro HUD en pantalla o solo chat. Escribe .hud en el juego para cambiarlo en esa sesión.",
+      "optionHud": "HUD de Auto Tournament",
+      "optionHudHint": "Menús, el botón de listo y tarjetas de ronda en pantalla.",
+      "optionChat": "Solo chat",
+      "optionChatHint": "Todo llega como líneas de chat. Nada extra en pantalla.",
+      "previewMenu": "Menú de la partida",
+      "previewReady": "Listo",
+      "previewChatReady": "escribe .r cuando estés listo (4/10 listos)",
+      "previewChatTip": "¿Necesitas una pausa, un admin o rendirte? Escribe .menu en el chat.",
+      "saved": "Guardado. Se aplica desde tu próxima partida.",
+      "saveFailed": "No se pudo guardar tu ajuste de HUD."
+    },
+    "color": {
+      "title": "Color preferido",
+      "description": "El color que quieres en el radar y el marcador de tu equipo en las partidas de CS2 en servidores de Auto Tournament. Si un compañero ya lo tiene, o el capitán te elige otro, tendrás ese.",
+      "auto": "Lo elige CS2",
+      "names": {
+        "blue": "Azul",
+        "green": "Verde",
+        "yellow": "Amarillo",
+        "orange": "Naranja",
+        "purple": "Morado"
+      },
+      "saved": "Guardado. Se aplica desde tu próxima partida.",
+      "saveFailed": "No se pudo guardar tu color."
     }
   },
   "home": {

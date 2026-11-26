@@ -416,51 +416,18 @@ export function withRatings(
   return { ...config, team1: add(config.team1), team2: add(config.team2) };
 }
 
-/**
- * The team's captain for the server (Ready Up: only the captain picks a side after the knife
- * round): the one the config names (matchmaking), else the first of `platform` on the roster (the
- * team's captains on the platform), else the highest-rated player (`rating`, from withRatings), else
- * the first player. Coaches never; a team with no player gets none.
- */
-export function pickTeamCaptain(
-  side: AssignTeam,
-  platform: readonly string[] = []
-): string | undefined {
-  const playing = side.players.filter((p) => roleOf(p) !== 'coach');
-  const on = (id: string | undefined) => (id ? playing.find((p) => p.steamid64 === id) : undefined);
-  if (on(side.captain)) return side.captain;
-  for (const id of platform) if (on(id)) return id;
-  const players = playing.filter((p) => roleOf(p) === 'player');
-  const pool = players.length ? players : playing;
-  if (pool.length === 0) return undefined;
-  // Highest rated; unrated players count as below every rating; a tie keeps roster order.
-  let best = pool[0];
-  for (const p of pool) {
-    if ((p.rating ?? -1) > (best.rating ?? -1)) best = p;
-  }
-  return best.steamid64;
+/** `hud: false` on the players who chose chat only (players.ingame_hud); the rest send nothing. */
+export function withHud(config: AssignConfig, chatOnly: ReadonlySet<string>): AssignConfig {
+  if (chatOnly.size === 0) return config;
+  const add = (side: AssignTeam): AssignTeam => ({
+    ...side,
+    players: side.players.map((p) => (chatOnly.has(p.steamid64) ? { ...p, hud: false } : p)),
+  });
+  return { ...config, team1: add(config.team1), team2: add(config.team2) };
 }
 
-/** Every team with a player names a captain (pickTeamCaptain). `platform`: each side's captains on the platform. */
-export function withCaptains(
-  config: AssignConfig,
-  platform: { team1?: readonly string[]; team2?: readonly string[] } = {}
-): AssignConfig {
-  const add = (side: AssignTeam, ids: readonly string[] | undefined): AssignTeam => {
-    const captain = pickTeamCaptain(side, ids ?? []);
-    if (!captain) {
-      const rest = { ...side };
-      delete rest.captain;
-      return rest;
-    }
-    return { ...side, captain };
-  };
-  return {
-    ...config,
-    team1: add(config.team1, platform.team1),
-    team2: add(config.team2, platform.team2),
-  };
-}
+// The captain and the teammate colours per player (assignPlayers.ts).
+export { pickTeamCaptain, withCaptains, withColors } from './assignPlayers';
 
 /** Both sides have five players on the roster (subs and coaches not counted). */
 export function rostersFull(config: Pick<AssignConfig, 'team1' | 'team2'>): boolean {
@@ -547,6 +514,8 @@ export function diffAssignConfig(
         ...(now.player.language ? { language: now.player.language } : {}),
         ...(now.player.rating !== undefined ? { rating: now.player.rating } : {}),
         ...(now.player.rating_wins !== undefined ? { rating_wins: now.player.rating_wins } : {}),
+        ...(now.player.color ? { color: now.player.color } : {}),
+        ...(now.player.hud === false ? { hud: false } : {}),
       });
     } else if (now.player.language && now.player.language !== was.player.language) {
       // The player saved a new site language (onPlayerLanguageChanged).

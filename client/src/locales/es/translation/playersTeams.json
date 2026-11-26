@@ -647,7 +647,12 @@
     "colorN": "Color {{n}}",
     "colorSaved": "Color guardado",
     "colorHelp": "Tu etiqueta aparece sobre este color allí donde el equipo no tiene logo, y el color marca al equipo en tablas y brackets.",
-    "lineupCount_many": "{{starters}} de {{size}} titulares · {{count}} suplentes"
+    "lineupCount_many": "{{starters}} de {{size}} titulares · {{count}} suplentes",
+    "colorFor": "Color de {{name}}",
+    "colorOwn": "Su preferencia",
+    "colorPrefers": "Prefiere {{color}}",
+    "colorNoPreference": "Sin preferencia",
+    "colorTaken": "Prefiere {{color}}, pero lo tiene un compañero: lo elige CS2"
   },
   "teamJoin": {
     "title": "Unirse a un equipo",

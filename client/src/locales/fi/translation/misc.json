@@ -218,6 +218,34 @@
       "save": "Tallenna",
       "saved": "Nimi tallennettu. Pelipalvelimet käyttävät sitä seuraavasta ottelustasi alkaen.",
       "saveFailed": "Nimeäsi ei voitu tallentaa"
+    },
+    "hud": {
+      "title": "Pelin HUD",
+      "description": "Miten Ready Up näyttää asiat Auto Tournament -palvelimilla: meidän HUD ruudulla tai pelkkä chat. Kirjoita pelissä .hud vaihtaaksesi sen siksi istunnoksi.",
+      "optionHud": "Auto Tournament HUD",
+      "optionHudHint": "Valikot, valmis-painike ja kierroskortit ruudulla.",
+      "optionChat": "Pelkkä chat",
+      "optionChatHint": "Kaikki tulee chat-riveinä. Ei mitään ylimääräistä ruudulla.",
+      "previewMenu": "Ottelun valikko",
+      "previewReady": "Valmis",
+      "previewChatReady": "kirjoita .r kun olet valmis (4/10 valmiina)",
+      "previewChatTip": "Tarvitsetko tauon, adminin tai luovutuksen? Kirjoita chattiin .menu.",
+      "saved": "Tallennettu. Voimassa seuraavasta ottelustasi.",
+      "saveFailed": "HUD-asetuksesi tallennus epäonnistui."
+    },
+    "color": {
+      "title": "Väritoive",
+      "description": "Väri, jonka haluat joukkueesi tutkaan ja tulostauluun CS2-otteluissa Auto Tournamentin palvelimilla. Jos joukkuetoverilla on se jo tai kapteeni valitsee sinulle toisen, saat sen.",
+      "auto": "CS2 valitsee",
+      "names": {
+        "blue": "Sininen",
+        "green": "Vihreä",
+        "yellow": "Keltainen",
+        "orange": "Oranssi",
+        "purple": "Violetti"
+      },
+      "saved": "Tallennettu. Voimassa seuraavasta ottelustasi.",
+      "saveFailed": "Väriä ei voitu tallentaa."
     }
   },
   "home": {

@@ -218,6 +218,34 @@
       "save": "Kaydet",
       "saved": "Ad kaydedildi. Oyun sunucuları bir sonraki maçından itibaren kullanır.",
       "saveFailed": "Adın kaydedilemedi"
+    },
+    "hud": {
+      "title": "Oyun içi HUD",
+      "description": "Ready Up'ın Auto Tournament sunucularında bilgileri nasıl gösterdiği: ekranda bizim HUD'umuz ya da yalnızca sohbet. O oturum için değiştirmek üzere oyunda .hud yaz.",
+      "optionHud": "Auto Tournament HUD",
+      "optionHudHint": "Menüler, hazır düğmesi ve tur kartları ekranda.",
+      "optionChat": "Yalnızca sohbet",
+      "optionChatHint": "Her şey sohbet satırı olarak gelir. Ekranda ek bir şey olmaz.",
+      "previewMenu": "Maç menüsü",
+      "previewReady": "Hazır",
+      "previewChatReady": "hazır olunca .r yaz (4/10 hazır)",
+      "previewChatTip": "Mola, admin ya da teslim mi gerekiyor? Sohbete .menu yaz.",
+      "saved": "Kaydedildi. Bir sonraki maçından itibaren geçerli.",
+      "saveFailed": "HUD ayarın kaydedilemedi."
+    },
+    "color": {
+      "title": "Renk tercihi",
+      "description": "Auto Tournament sunucularındaki CS2 maçlarında takımının radarında ve skor tablosunda olmasını istediğin renk. Bir takım arkadaşında zaten varsa ya da kaptan sana başka bir renk seçerse, o rengi alırsın.",
+      "auto": "CS2 seçsin",
+      "names": {
+        "blue": "Mavi",
+        "green": "Yeşil",
+        "yellow": "Sarı",
+        "orange": "Turuncu",
+        "purple": "Mor"
+      },
+      "saved": "Kaydedildi. Bir sonraki maçından itibaren geçerli.",
+      "saveFailed": "Rengin kaydedilemedi."
     }
   },
   "home": {
