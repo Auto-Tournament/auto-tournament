@@ -23,6 +23,7 @@ import mapRoutes from '../maps/routes';
 import mapPoolRoutes from '../maps/poolRoutes';
 import matchConnectRoutes from './matchConnect';
 import playerProfileRoutes from './playerProfile';
+import playerConfigRoutes from './playerConfig';
 import demoAnalysisRoutes from './demoAnalysis';
 import demoImportRoutes from './demoImport';
 import matchPageRoutes from './matchPage';
@@ -175,6 +176,14 @@ export const cs2LegacyRoutes: LegacyRouteMount[] = [
     title: 'Player profile',
     description:
       "A player's CS2 totals, everyone's totals to compare with, and their results per map.",
+  },
+  {
+    // Public unless the player turned it off; PUT /players/me/config needs a signed-in player.
+    prefix: '/api/game/cs2',
+    router: playerConfigRoutes,
+    title: 'Player config',
+    description:
+      "A player's CS2 config (read in game by Ready Up) and gear, its autoexec.cfg, and their own switch.",
   },
   {
     // The worker's routes take an API token (requireAuth on each); a map's

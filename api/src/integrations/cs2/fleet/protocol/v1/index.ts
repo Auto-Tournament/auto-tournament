@@ -44,6 +44,7 @@ import skinsStattrak from './messages/skins.stattrak.json';
 import skinsInventoryRequest from './messages/skins.inventory_request.json';
 import skinsInventory from './messages/skins.inventory.json';
 import skinsEquip from './messages/skins.equip.json';
+import playerConfig from './messages/player.config.json';
 import movementRecord from './messages/movement.record.json';
 import eventPlayerConnect from './messages/event.player_connect.json';
 import eventPlayerDisconnect from './messages/event.player_disconnect.json';
@@ -119,6 +120,8 @@ export const FLEET_MESSAGE_SCHEMAS: Record<FleetMessageType, AnySchemaObject> = 
   'skins.inventory_request': skinsInventoryRequest,
   'skins.inventory': skinsInventory,
   'skins.equip': skinsEquip,
+  // A player's CS2 config read in game (Ready Up's playersettings plugin; ../playerConfig.ts).
+  'player.config': playerConfig,
   'movement.record': movementRecord,
   'event.player_connect': eventPlayerConnect,
   'event.player_disconnect': eventPlayerDisconnect,

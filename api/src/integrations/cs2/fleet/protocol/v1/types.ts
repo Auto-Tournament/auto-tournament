@@ -737,6 +737,15 @@ export interface SkinsEquipPayload {
   unequip?: boolean;
 }
 
+/** Server -> platform (ephemeral): a player's CS2 config as their game reported it (once per map). */
+export interface PlayerConfigPayload {
+  steamid64: U64s;
+  /** The crosshair share code (CSGO-xxxxx-xxxxx-xxxxx-xxxxx-xxxxx). */
+  crosshair_code?: string;
+  /** Cvar name -> the value the game answered. */
+  cvars: Record<string, string>;
+}
+
 /** Server -> platform (reliable): a finished surf / bhop / kz run (Ready Up movement plugin). */
 export interface MovementRecordPayload {
   map: string;
@@ -1040,6 +1049,7 @@ export interface FleetMessages {
   'skins.inventory_request': SkinsInventoryRequestPayload;
   'skins.inventory': SkinsInventoryPayload;
   'skins.equip': SkinsEquipPayload;
+  'player.config': PlayerConfigPayload;
   'movement.record': MovementRecordPayload;
   'event.player_connect': FleetEventPayload<FleetEventData['player_connect']>;
   'event.player_disconnect': FleetEventPayload<FleetEventData['player_disconnect']>;
@@ -1127,6 +1137,7 @@ export const FLEET_MESSAGES: Record<FleetMessageType, { direction: Direction; re
     'skins.inventory_request': { direction: 'server_to_platform', reliable: false },
     'skins.inventory': { direction: 'platform_to_server', reliable: false },
     'skins.equip': { direction: 'server_to_platform', reliable: false },
+    'player.config': { direction: 'server_to_platform', reliable: false },
     'movement.record': S2P_RELIABLE,
     'event.player_connect': S2P_RELIABLE,
     'event.player_disconnect': S2P_RELIABLE,

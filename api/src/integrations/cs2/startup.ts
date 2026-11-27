@@ -28,6 +28,7 @@ import { startFleetHosts, stopFleetHosts } from './fleet/hosts/service';
 import { recorderLink, startRecorderLink } from './demos/recorderLink';
 import { startServerNotices, stopServerNotices } from './fleet/serverNotices';
 import { startSkinsInventory, stopSkinsInventory } from './fleet/skinsInventory';
+import { startPlayerConfig, stopPlayerConfig } from './fleet/playerConfig';
 import { startTvState, stopTvState } from './fleet/tvState';
 import { startMovementRecords, stopMovementRecords } from './movement/records';
 import { startFleetPush, stopFleetPush } from './fleet/push';
@@ -70,6 +71,7 @@ export async function startCs2(): Promise<void> {
   // server.cs2_update_required / server.selftest from Ready Up servers.
   startServerNotices();
   startSkinsInventory(); // `.skins` in game: inventory and equip over the fleet link
+  startPlayerConfig(); // players' CS2 config read in game, for the profile's Config tab
   // GOTV state from Ready Up's tv plugin (server.tv).
   startTvState();
   // Surf / bhop / kz runs from Ready Up's movement plugin (movement.record).
@@ -154,6 +156,7 @@ export function stopCs2(): void {
   stopFleetFailover();
   stopServerNotices();
   stopSkinsInventory();
+  stopPlayerConfig();
   stopTvState();
   stopMovementRecords();
   stopFleetPush();
