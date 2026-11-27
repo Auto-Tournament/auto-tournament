@@ -99,8 +99,8 @@ export function Spec({ rows }: { rows: Array<{ k: ReactNode; v: ReactNode }> }) 
 export const PREVIEW_BACKGROUNDS = ['#3d3936', '#c9d3db'] as const;
 
 /**
- * The crosshair drawn at its size on a 1080-high screen (one CSS pixel per screen pixel), from the
- * decoded share code: four arms (no top one in T style), the gap, the outline, the centre dot.
+ * The crosshair drawn at three times its size on a 1080-high screen (three CSS pixels per screen
+ * pixel), from the decoded share code: four arms (no top one in T style), the gap, the outline, the centre dot.
  */
 export function CrosshairPreview({
   crosshair,
@@ -111,7 +111,15 @@ export function CrosshairPreview({
   background: string;
   label: string;
 }) {
-  const px = crosshairPixels(crosshair);
+  // Three times its 1080p size (whole pixels, so it stays crisp): at 1:1 a usual crosshair is ~10 px.
+  const zoom = 3;
+  const base = crosshairPixels(crosshair);
+  const px = {
+    length: base.length * zoom,
+    thickness: base.thickness * zoom,
+    gap: base.gap * zoom,
+    outline: base.outline * zoom,
+  };
   const colour = `rgba(${crosshair.red}, ${crosshair.green}, ${crosshair.blue}, ${crosshair.alpha / 255})`;
   const outline =
     px.outline > 0 ? `0 0 0 ${px.outline}px rgba(0, 0, 0, ${crosshair.alpha / 255})` : 'none';
@@ -125,8 +133,9 @@ export function CrosshairPreview({
           position: 'absolute',
           left: `calc(50% + ${left}px)`,
           top: `calc(50% + ${top}px)`,
-          width,
-          height,
+          // Strings: MUI reads a number of 1 or less as a fraction (width: 1 is 100%).
+          width: `${width}px`,
+          height: `${height}px`,
           bgcolor: colour,
           boxShadow: outline,
         }}
