@@ -47,6 +47,10 @@ test.describe('player config', { tag: ['@api'] }, () => {
 
   test('a crosshair code, or null', () => {
     expect(cleanCode(CODE)).toBe(CODE);
+    // Today's CS2 code (csgo-sharecode's documented example).
+    expect(cleanCode('CSvbPubOq37zTGqtsPTP5QTrp5CB4xFXiKRLfzJsm49ZRe')).toBe(
+      'CSvbPubOq37zTGqtsPTP5QTrp5CB4xFXiKRLfzJsm49ZRe'
+    );
     expect(cleanCode('CSGO-short')).toBeNull();
     expect(cleanCode(`${CODE}; quit`)).toBeNull();
     expect(cleanCode(42)).toBeNull();

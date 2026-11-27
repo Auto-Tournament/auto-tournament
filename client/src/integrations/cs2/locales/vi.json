@@ -2781,6 +2781,8 @@
     "saved": "Đã lưu",
     "saveFailed": "Không lưu được",
     "on": "Bật",
-    "off": "Tắt"
+    "off": "Tắt",
+    "previewDark": "Trên tường tối",
+    "previewBright": "Trên nền trời sáng"
   }
 }

@@ -2781,6 +2781,8 @@
     "saved": "Kaydedildi",
     "saveFailed": "Kaydedilemedi",
     "on": "Açık",
-    "off": "Kapalı"
+    "off": "Kapalı",
+    "previewDark": "Koyu bir duvarda",
+    "previewBright": "Parlak bir gökyüzünde"
   }
 }

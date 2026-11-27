@@ -2781,6 +2781,8 @@
     "saved": "Sparat",
     "saveFailed": "Kunde inte spara",
     "on": "På",
-    "off": "Av"
+    "off": "Av",
+    "previewDark": "Mot en mörk vägg",
+    "previewBright": "Mot en ljus himmel"
   }
 }

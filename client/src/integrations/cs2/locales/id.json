@@ -2781,6 +2781,8 @@
     "saved": "Tersimpan",
     "saveFailed": "Gagal menyimpan",
     "on": "Aktif",
-    "off": "Mati"
+    "off": "Mati",
+    "previewDark": "Di dinding gelap",
+    "previewBright": "Di langit terang"
   }
 }

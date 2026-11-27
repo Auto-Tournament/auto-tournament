@@ -2786,6 +2786,8 @@
     "saved": "Opgeslagen",
     "saveFailed": "Kon niet opslaan",
     "on": "Aan",
-    "off": "Uit"
+    "off": "Uit",
+    "previewDark": "Op een donkere muur",
+    "previewBright": "Op een heldere lucht"
   }
 }

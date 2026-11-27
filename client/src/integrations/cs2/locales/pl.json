@@ -2931,6 +2931,8 @@
     "saved": "Zapisano",
     "saveFailed": "Nie udało się zapisać",
     "on": "Wł.",
-    "off": "Wył."
+    "off": "Wył.",
+    "previewDark": "Na ciemnej ścianie",
+    "previewBright": "Na jasnym niebie"
   }
 }

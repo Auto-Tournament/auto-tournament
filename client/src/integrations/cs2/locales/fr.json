@@ -2857,6 +2857,8 @@
     "saved": "Enregistré",
     "saveFailed": "Impossible d'enregistrer",
     "on": "Oui",
-    "off": "Non"
+    "off": "Non",
+    "previewDark": "Sur un mur sombre",
+    "previewBright": "Sur un ciel clair"
   }
 }

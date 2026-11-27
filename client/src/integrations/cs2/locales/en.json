@@ -2781,6 +2781,8 @@
     "saved": "Saved",
     "saveFailed": "Could not save",
     "on": "On",
-    "off": "Off"
+    "off": "Off",
+    "previewDark": "On a dark wall",
+    "previewBright": "On a bright sky"
   }
 }

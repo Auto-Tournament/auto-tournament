@@ -2926,6 +2926,8 @@
     "saved": "Uloženo",
     "saveFailed": "Nepodařilo se uložit",
     "on": "Zap.",
-    "off": "Vyp."
+    "off": "Vyp.",
+    "previewDark": "Na tmavé zdi",
+    "previewBright": "Na světlé obloze"
   }
 }
