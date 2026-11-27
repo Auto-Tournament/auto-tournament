@@ -2781,6 +2781,8 @@
     "saved": "Tallennettu",
     "saveFailed": "Tallennus epäonnistui",
     "on": "Päällä",
-    "off": "Pois"
+    "off": "Pois",
+    "previewDark": "Tummaa seinää vasten",
+    "previewBright": "Kirkasta taivasta vasten"
   }
 }

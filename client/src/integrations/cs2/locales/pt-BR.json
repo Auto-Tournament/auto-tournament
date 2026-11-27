@@ -2853,6 +2853,8 @@
     "saved": "Salvo",
     "saveFailed": "Não foi possível salvar",
     "on": "Ligado",
-    "off": "Desligado"
+    "off": "Desligado",
+    "previewDark": "Em uma parede escura",
+    "previewBright": "Em um céu claro"
   }
 }

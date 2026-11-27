@@ -2852,6 +2852,8 @@
     "saved": "Guardado",
     "saveFailed": "No se pudo guardar",
     "on": "Sí",
-    "off": "No"
+    "off": "No",
+    "previewDark": "Sobre una pared oscura",
+    "previewBright": "Sobre un cielo claro"
   }
 }

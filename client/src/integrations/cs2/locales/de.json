@@ -2786,6 +2786,8 @@
     "saved": "Gespeichert",
     "saveFailed": "Konnte nicht speichern",
     "on": "An",
-    "off": "Aus"
+    "off": "Aus",
+    "previewDark": "Auf einer dunklen Wand",
+    "previewBright": "Vor hellem Himmel"
   }
 }

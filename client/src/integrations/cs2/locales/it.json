@@ -2858,6 +2858,8 @@
     "saved": "Salvato",
     "saveFailed": "Impossibile salvare",
     "on": "Sì",
-    "off": "No"
+    "off": "No",
+    "previewDark": "Su un muro scuro",
+    "previewBright": "Su un cielo chiaro"
   }
 }

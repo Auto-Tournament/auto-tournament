@@ -2852,6 +2852,8 @@
     "saved": "Salvat",
     "saveFailed": "Nu s-a putut salva",
     "on": "Pornit",
-    "off": "Oprit"
+    "off": "Oprit",
+    "previewDark": "Pe un perete întunecat",
+    "previewBright": "Pe un cer luminos"
   }
 }

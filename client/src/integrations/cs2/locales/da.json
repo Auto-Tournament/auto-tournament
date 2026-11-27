@@ -2781,6 +2781,8 @@
     "saved": "Gemt",
     "saveFailed": "Kunne ikke gemme",
     "on": "Til",
-    "off": "Fra"
+    "off": "Fra",
+    "previewDark": "På en mørk væg",
+    "previewBright": "På en lys himmel"
   }
 }

@@ -22,6 +22,13 @@ Their notices are generated when the image is built
 (scripts/third-party-notices.mjs) and ship in it as THIRD_PARTY_NOTICES.md;
 a running instance also serves them at /third-party-notices.txt.
 
+Ported code
+
+The crosshair share-code decoding in
+client/src/integrations/cs2/profile/crosshairCode.ts is ported from
+csgo-sharecode 7.0.1 by AkiVer (https://github.com/akiver/csgo-sharecode),
+MIT License, Copyright (c) AkiVer. The MIT terms below apply to that part.
+
 Third-party software in the worker
 
 The worker (worker/, the at-worker binary) is built with third-party Go

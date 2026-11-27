@@ -21,7 +21,14 @@ import {
 } from '../../../module-sdk';
 import type { PlayerProfileTabProps } from '../../types';
 import { GearForm, GEAR_TEXT, type Gear } from './Cs2ConfigGearForm';
-import { CrosshairColour, GROUPS, Spec } from './Cs2ConfigParts';
+import {
+  CrosshairColour,
+  CrosshairPreview,
+  GROUPS,
+  PREVIEW_BACKGROUNDS,
+  Spec,
+} from './Cs2ConfigParts';
+import { decodeCrosshairCode } from './crosshairCode';
 
 interface ConfigResponse {
   own: boolean;
@@ -82,6 +89,7 @@ export function Cs2ConfigTab({ playerId, isOwn, probe, onAvailability }: PlayerP
   const cvars = config.cvars ?? {};
   const gear = config.gear ?? {};
   const code = config.crosshairCode ?? null;
+  const crosshair = decodeCrosshairCode(code);
   const read = !!code || Object.keys(cvars).length > 0;
   const own = config.own;
   const onOff = (v: string) => {
@@ -187,6 +195,28 @@ export function Cs2ConfigTab({ playerId, isOwn, probe, onAvailability }: PlayerP
           <Typography component="h2" variant="h6" sx={{ fontWeight: 600 }}>
             {t('config.crosshair')}
           </Typography>
+          {crosshair && (
+            <Box
+              sx={{ display: 'flex', gap: 1.5, mt: 2, flexWrap: 'wrap' }}
+              data-testid="cs2-config-crosshair-preview"
+            >
+              {PREVIEW_BACKGROUNDS.map((bg, i) => (
+                <Box key={bg} component="figure" sx={{ m: 0, flex: '1 1 180px', minWidth: 0 }}>
+                  <CrosshairPreview
+                    crosshair={crosshair}
+                    background={bg}
+                    label={t(i === 0 ? 'config.previewDark' : 'config.previewBright')}
+                  />
+                  <Typography
+                    component="figcaption"
+                    sx={{ fontSize: textSize.xs, color: 'text.secondary', mt: 1 }}
+                  >
+                    {t(i === 0 ? 'config.previewDark' : 'config.previewBright')}
+                  </Typography>
+                </Box>
+              ))}
+            </Box>
+          )}
           <Box
             sx={{
               display: 'flex',

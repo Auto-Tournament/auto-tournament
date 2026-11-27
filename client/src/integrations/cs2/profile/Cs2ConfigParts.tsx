@@ -3,6 +3,7 @@
 import type { ReactNode } from 'react';
 import { Box } from '@mui/material';
 import { mono, textSize, tokens } from '../../../module-sdk';
+import { crosshairPixels, type Crosshair } from './crosshairCode';
 
 /** The cvars the tab shows, by section, in the order Ready Up reads them. */
 export const GROUPS: Array<{ key: string; cvars: string[] }> = [
@@ -90,6 +91,64 @@ export function Spec({ rows }: { rows: Array<{ k: ReactNode; v: ReactNode }> }) 
           <dd>{r.v}</dd>
         </Box>
       ))}
+    </Box>
+  );
+}
+
+/** Backgrounds the preview draws the crosshair on: a dark wall and a bright sky (as in game). */
+export const PREVIEW_BACKGROUNDS = ['#3d3936', '#c9d3db'] as const;
+
+/**
+ * The crosshair drawn at its size on a 1080-high screen (one CSS pixel per screen pixel), from the
+ * decoded share code: four arms (no top one in T style), the gap, the outline, the centre dot.
+ */
+export function CrosshairPreview({
+  crosshair,
+  background,
+  label,
+}: {
+  crosshair: Crosshair;
+  background: string;
+  label: string;
+}) {
+  const px = crosshairPixels(crosshair);
+  const colour = `rgba(${crosshair.red}, ${crosshair.green}, ${crosshair.blue}, ${crosshair.alpha / 255})`;
+  const outline =
+    px.outline > 0 ? `0 0 0 ${px.outline}px rgba(0, 0, 0, ${crosshair.alpha / 255})` : 'none';
+  const t = px.thickness;
+  const half = Math.floor(t / 2);
+  const arm = (left: number, top: number, width: number, height: number, key: string) =>
+    width > 0 && height > 0 ? (
+      <Box
+        key={key}
+        sx={{
+          position: 'absolute',
+          left: `calc(50% + ${left}px)`,
+          top: `calc(50% + ${top}px)`,
+          width,
+          height,
+          bgcolor: colour,
+          boxShadow: outline,
+        }}
+      />
+    ) : null;
+  return (
+    <Box
+      role="img"
+      aria-label={label}
+      sx={{
+        position: 'relative',
+        height: 150,
+        borderRadius: '14px',
+        bgcolor: background,
+        overflow: 'hidden',
+      }}
+    >
+      {arm(-px.gap - px.length, -half, px.length, t, 'l')}
+      {arm(px.gap + (t % 2), -half, px.length, t, 'r')}
+      {!crosshair.tStyle && arm(-half, -px.gap - px.length, t, px.length, 'u')}
+      {arm(-half, px.gap + (t % 2), t, px.length, 'd')}
+      {crosshair.centerDot && arm(-half, -half, t, t, 'dot')}
     </Box>
   );
 }

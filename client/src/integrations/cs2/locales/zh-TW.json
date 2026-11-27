@@ -2781,6 +2781,8 @@
     "saved": "已儲存",
     "saveFailed": "儲存失敗",
     "on": "開",
-    "off": "關"
+    "off": "關",
+    "previewDark": "暗色牆面上",
+    "previewBright": "明亮天空下"
   }
 }

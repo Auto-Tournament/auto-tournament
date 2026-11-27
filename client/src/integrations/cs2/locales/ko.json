@@ -2781,6 +2781,8 @@
     "saved": "저장했습니다",
     "saveFailed": "저장하지 못했습니다",
     "on": "켜짐",
-    "off": "꺼짐"
+    "off": "꺼짐",
+    "previewDark": "어두운 벽 위",
+    "previewBright": "밝은 하늘 위"
   }
 }

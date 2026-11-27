@@ -2781,6 +2781,8 @@
     "saved": "保存しました",
     "saveFailed": "保存できませんでした",
     "on": "オン",
-    "off": "オフ"
+    "off": "オフ",
+    "previewDark": "暗い壁の上",
+    "previewBright": "明るい空の上"
   }
 }

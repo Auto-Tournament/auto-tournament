@@ -2781,6 +2781,8 @@
     "saved": "Mentve",
     "saveFailed": "Nem sikerült menteni",
     "on": "Be",
-    "off": "Ki"
+    "off": "Ki",
+    "previewDark": "Sötét falon",
+    "previewBright": "Világos égen"
   }
 }

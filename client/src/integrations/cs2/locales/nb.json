@@ -2781,6 +2781,8 @@
     "saved": "Lagret",
     "saveFailed": "Kunne ikke lagre",
     "on": "På",
-    "off": "Av"
+    "off": "Av",
+    "previewDark": "Mot en mørk vegg",
+    "previewBright": "Mot en lys himmel"
   }
 }

@@ -55,7 +55,8 @@ export type ConfigCvar = (typeof CONFIG_CVARS)[number];
 
 const CVAR_SET = new Set<string>(CONFIG_CVARS);
 const VALUE_RE = /^-?[0-9]{1,6}(\.[0-9]{1,6})?$/;
-const CODE_RE = /^CSGO(-[A-Za-z0-9]{5}){5}$/;
+// Today's CS2 code (CS + 44) and the old container (CSGO-xxxxx-…); both are in the share-code alphabet.
+const CODE_RE = /^(CS[A-Za-z0-9]{44}|CSGO(-[A-Za-z0-9]{5}){5})$/;
 
 /** Only the listed cvars, each a plain number (every one of them is). */
 export function cleanCvars(raw: Untrusted): Partial<Record<ConfigCvar, string>> {
@@ -69,7 +70,7 @@ export function cleanCvars(raw: Untrusted): Partial<Record<ConfigCvar, string>> 
   return out;
 }
 
-/** A crosshair share code (CSGO-xxxxx-xxxxx-xxxxx-xxxxx-xxxxx), or null. */
+/** A crosshair share code (CS2's `CS` + 44, or the old `CSGO-xxxxx-…`), or null. */
 export function cleanCode(raw: Untrusted): string | null {
   return typeof raw === 'string' && CODE_RE.test(raw.trim()) ? raw.trim() : null;
 }
