@@ -166,7 +166,13 @@ interface Expiring {
 export interface HostCommands {
   'host.servers.list': Expiring;
   'server.start': Expiring & { server: string; launch_mode?: 'default' | 'alternate' | 'binary' };
-  'server.stop': Expiring & { server: string; grace_s?: number; force?: HostForce };
+  'server.stop': Expiring & {
+    server: string;
+    grace_s?: number;
+    force?: HostForce;
+    /** Why (the autoscaler's reason): csm writes it into the server's console log. */
+    reason?: string;
+  };
   'server.restart': Expiring & { server: string; reason: string; force?: HostForce };
   'server.create': Expiring & {
     count?: number;

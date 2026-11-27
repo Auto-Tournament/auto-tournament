@@ -558,7 +558,10 @@ async function execute(
       const sent = await sendHostCommand(
         action.hostId,
         action.kind === 'start' ? 'server.start' : 'server.stop',
-        { server: action.server },
+        // A stop says why: csm writes it into the server's console log before the quit.
+        action.kind === 'start'
+          ? { server: action.server }
+          : { server: action.server, reason: reason.slice(0, 256) },
         { issuedBy: AUTOSCALE_ACTOR, meta }
       );
       commandId = sent.command.id;
