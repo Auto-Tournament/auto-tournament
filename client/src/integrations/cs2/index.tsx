@@ -60,6 +60,7 @@ import {
 } from './manage/cs2QueueSummary';
 import { cs2AdminPaths } from './adminPaths';
 import { ProfileLoadout } from './skins/ProfileLoadout';
+import { Cs2ConfigTab } from './profile/Cs2ConfigTab';
 import { MapActions } from './demos/MapActions';
 import { highlightPaths } from './highlights/data';
 import { Cs2Leaderboards } from './profile/Cs2Leaderboards';
@@ -166,6 +167,8 @@ export const cs2ClientIntegration: ClientGameIntegration = {
 
   // The player profile: aim, utility, impact and the map strength radar.
   playerProfileView: Cs2ProfileView,
+  // The profile's Config tab: the player's CS2 config read in game, their gear, an autoexec.cfg.
+  playerProfileTab: { labelKey: 'config.tab', Component: Cs2ConfigTab },
   // Manage → Players: give a player a skin drop from their row.
   adminPlayerAction: {
     key: 'give-drop',

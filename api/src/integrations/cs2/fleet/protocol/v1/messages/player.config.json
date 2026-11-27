@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-tournament.dev/fleet/v1/messages/player.config.json",
+  "title": "player.config (server → platform, ephemeral)",
+  "description": "Proposed by Ready Up (the playersettings plugin). A connected player's CS2 config as their game reported it, read once per map: `crosshair_code` the share code from their controller (CSGO-xxxxx-xxxxx-xxxxx-xxxxx-xxxxx), `cvars` the answers to cvar queries (name → value as the game sent it). The platform keeps it for the player's profile (the Config tab) unless they turned that off, and ignores cvars it does not show.",
+  "type": "object",
+  "required": ["steamid64", "cvars"],
+  "properties": {
+    "steamid64": { "$ref": "../defs.json#/$defs/u64s" },
+    "crosshair_code": { "type": "string", "maxLength": 40 },
+    "cvars": {
+      "type": "object",
+      "maxProperties": 64,
+      "additionalProperties": { "type": "string", "maxLength": 32 }
+    }
+  }
+}

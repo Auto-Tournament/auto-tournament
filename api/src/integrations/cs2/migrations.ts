@@ -1739,4 +1739,21 @@ export const CS2_MIGRATIONS: ReadonlyArray<ModuleMigration> = [
       );
     `,
   },
+  {
+    // A player's CS2 config on their profile (playerConfig.ts): what Ready Up read from the game
+    // (crosshair code, cvars as JSON) and the gear they typed in (JSON). visible: the player's own
+    // switch (off hides it and drops what servers send).
+    id: '067-player-config',
+    up: `
+      CREATE TABLE IF NOT EXISTS cs2_player_config (
+        player_id TEXT PRIMARY KEY, -- players.id (a Steam ID)
+        visible BOOLEAN NOT NULL DEFAULT TRUE,
+        crosshair_code TEXT,
+        cvars TEXT,
+        gear TEXT,
+        read_at INTEGER,
+        updated_at INTEGER NOT NULL
+      );
+    `,
+  },
 ];

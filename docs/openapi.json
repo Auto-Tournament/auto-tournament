@@ -728,6 +728,10 @@
       "description": "A matchmaking party's CS2 results per map (its members' results added up), and the Active Duty maps."
     },
     {
+      "name": "Player config",
+      "description": "A player's CS2 config (read in game by Ready Up) and gear, its autoexec.cfg, and their own switch."
+    },
+    {
       "name": "Player profile",
       "description": "A player's CS2 totals, everyone's totals to compare with, and their results per map."
     },
@@ -6725,6 +6729,20 @@
         }
       }
     },
+    "/api/game/cs2/players/me/config": {
+      "put": {
+        "tags": [
+          "Player config"
+        ],
+        "summary": "PUT /api/game/cs2/players/me/config",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
     "/api/game/cs2/players/me/highlights/favourite": {
       "put": {
         "tags": [
@@ -6759,6 +6777,54 @@
             "description": "Success"
           }
         }
+      }
+    },
+    "/api/game/cs2/players/{playerId}/config": {
+      "get": {
+        "tags": [
+          "Player config"
+        ],
+        "summary": "GET /api/game/cs2/players/:playerId/config",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "playerId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/api/game/cs2/players/{playerId}/config/autoexec.cfg": {
+      "get": {
+        "tags": [
+          "Player config"
+        ],
+        "summary": "GET /api/game/cs2/players/:playerId/config/autoexec.cfg",
+        "description": "Generated from the router. No hand-written `@openapi` block exists for this endpoint yet, so the request and response shapes are not described — read the handler.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "playerId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
       }
     },
     "/api/game/cs2/players/{playerId}/highlights": {
