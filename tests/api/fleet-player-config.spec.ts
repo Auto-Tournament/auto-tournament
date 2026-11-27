@@ -42,6 +42,10 @@ test.describe('player config', { tag: ['@api'] }, () => {
         fps_max: 0, // not a string
       })
     ).toEqual({ sensitivity: '1.25', viewmodel_offset_z: '-1.5', cl_crosshairsize: '2' });
+    // CS2's on/off cvars answer true / false: kept as 1 / 0.
+    expect(
+      cleanCvars({ cl_crosshairdot: 'false', cl_radar_rotate: 'true', cl_crosshair_t: 'TRUE' })
+    ).toEqual({ cl_crosshairdot: '0', cl_radar_rotate: '1', cl_crosshair_t: '1' });
     expect(cleanCvars(null)).toEqual({});
     expect(cleanCvars(['sensitivity'])).toEqual({});
   });
