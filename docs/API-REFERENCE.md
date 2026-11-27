@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 780 of them, 489 behind auth —
+Every endpoint this API serves — 783 of them, 489 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -281,6 +281,16 @@ A player's CS2 totals, everyone's totals to compare with, and their results per 
 | `PUT` | `/api/game/cs2/players/me/role` | public |
 | `GET` | `/api/game/cs2/teams/:teamId/roles` | public |
 | `GET` | `/api/game/cs2/players/:playerId/profile` | public |
+
+### Player config
+
+A player's CS2 config (read in game by Ready Up) and gear, its autoexec.cfg, and their own switch.
+
+| Method | Path | Auth |
+| --- | --- | --- |
+| `GET` | `/api/game/cs2/players/:playerId/config` | public |
+| `GET` | `/api/game/cs2/players/:playerId/config/autoexec.cfg` | public |
+| `PUT` | `/api/game/cs2/players/me/config` | public |
 
 ### Demo analysis
 
