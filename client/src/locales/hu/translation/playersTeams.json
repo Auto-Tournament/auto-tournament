@@ -92,11 +92,68 @@
     "gameSwitchLabel": "Játék",
     "yourMatch": "A meccsed",
     "tabs": {
-      "overview": "Áttekintés"
+      "overview": "Áttekintés",
+      "label": "Profil",
+      "matches": "Meccsek"
     },
     "shownTeam": {
       "label": "A profilodon megjelenő csapat",
       "failed": "Nem sikerült menteni a csapatot"
+    },
+    "chart": {
+      "winLabel": "Győzelem, {{title}}, {{date}}, értékelés {{rating}}",
+      "lossLabel": "Vereség, {{title}}, {{date}}, értékelés {{rating}}",
+      "resultsLabel": "Eredmények, a legrégebbitől",
+      "kda": "K / H / A",
+      "openMatch": "Meccsszoba megnyitása",
+      "record": "{{wins}} Gy · {{losses}} V",
+      "hint": "Mutass a grafikonra egy meccs megtekintéséhez. Kattints, hogy nyitva maradjon."
+    },
+    "trophies": {
+      "title": "Trófeák",
+      "place1": "Győztes",
+      "place2": "Második hely",
+      "place3": "Harmadik hely",
+      "place4": "Negyedik hely",
+      "teams": "Csapatok: {{count}}",
+      "titles": "Címek: {{count}}",
+      "finals": "Döntők: {{count}}",
+      "podiums": "Dobogók: {{count}}"
+    },
+    "best": {
+      "title": "A legjobb formájukban",
+      "adr": "Legjobb ADR egy meccsen",
+      "kills": "Legtöbb ölés egy meccsen",
+      "headshots": "Fejlövések",
+      "headshotsContext": "{{heads}} / {{kills}} ölés",
+      "map": "Legjobb pálya",
+      "mapContext": "{{won}} / {{played}} megnyerve"
+    },
+    "months": {
+      "title": "Értékelés havonta",
+      "peak": "Minden idők csúcsa {{rating}}, {{month}}",
+      "month": "Hónap",
+      "record": "Mérleg",
+      "start": "Kezdet",
+      "end": "Vége",
+      "change": "Változás",
+      "peakColumn": "Csúcs"
+    },
+    "matchList": {
+      "title": "Meccsek ({{count}})",
+      "result": "Eredmény",
+      "all": "Mind",
+      "wins": "Győzelmek",
+      "losses": "Vereségek",
+      "map": "Pálya",
+      "allMaps": "Minden pálya",
+      "event": "Esemény",
+      "allEvents": "Minden esemény",
+      "noneMatch": "Egy meccs sem felel meg a szűrőknek.",
+      "win": "Győzelem",
+      "loss": "Vereség",
+      "range": "{{from}}–{{to}} / {{total}}",
+      "pages": "Meccsoldalak"
     }
   },
   "teamPage": {

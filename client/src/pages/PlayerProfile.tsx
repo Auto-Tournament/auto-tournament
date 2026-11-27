@@ -33,16 +33,22 @@ import { ProfileHeader } from '../components/player/profile/ProfileHeader';
 import { ProfileCommends } from '../components/player/profile/ProfileCommends';
 import { PlayerProgress } from '../components/matchmaking/PlayerProgress';
 import { GameSwitch } from '../components/player/profile/GameSwitch';
-import { FactGrid, Panel, SectionHead, type Fact } from '../components/common/ui';
+import { FactGrid, SectionHead, type Fact } from '../components/common/ui';
 import { useGameCapabilities } from '../hooks/useGameCapabilities';
-import { RatingChart } from '../components/player/profile/RatingChart';
-import { RecentMatches, type RecentMatchEntry } from '../components/player/profile/RecentMatches';
+import { ProfileRatingChart } from '../components/player/profile/ProfileRatingChart';
+import { ProfileTrophies, type ProfileTrophy } from '../components/player/profile/ProfileTrophies';
+import { ProfileBest } from '../components/player/profile/ProfileBest';
+import { ProfileMatchesTab } from '../components/player/profile/ProfileMatchesTab';
+import {
+  mapsAndScore,
+  type ProfileMatch,
+  type StoredMap,
+} from '../components/player/profile/profileMatch';
 import type { PlayerDetail } from '../types/api.types';
 import { useAuth } from '../contexts/AuthContext';
 import { useCurrentMatchStatus } from '../hooks/useCurrentMatchStatus';
 import { useTranslation } from 'react-i18next';
 import { useRoundLabel } from '../hooks/useRoundLabel';
-import { ratingHistoryBaseline } from '../utils/eloProgression';
 import type {
   Team,
   TeamMatchInfo,
@@ -50,7 +56,7 @@ import type {
   MatchMapResult,
   Player as TeamPlayer,
 } from '../types';
-import { textSize, tokens } from '../theme/tokens';
+import { fontDisplay, textSize, tokens } from '../theme/tokens';
 import { paths } from '../paths';
 import { pageTitle } from '../utils/pageTitle';
 import { useInstalledIntegrations, useIntegration } from '../integrations/registry';
@@ -102,6 +108,8 @@ interface MatchHistoryEntry {
   headshots?: number;
   /** The match has a recorded demo to download. */
   hasDemo?: boolean;
+  /** The match's maps, in the stored team1 / team2 order. */
+  maps?: StoredMap[];
 }
 
 function normalizeMatchForPlayerView(rawMatch: TeamMatchInfo, steamId: string): TeamMatchInfo {
@@ -282,6 +290,9 @@ export default function PlayerProfile() {
   // A module's own tab (CS2: Loadout), by module id, and which of them have
   // anything for this player (each tab's probe says).
   const [moduleTabId, setModuleTabId] = useState<string | null>(null);
+  // The profile's own tabs (Overview, Matches); a module's tab replaces them while open.
+  const [profileTab, setProfileTab] = useState<'overview' | 'matches'>('overview');
+  const [trophies, setTrophies] = useState<ProfileTrophy[]>([]);
   const [tabAvailable, setTabAvailable] = useState<Record<string, boolean>>({});
   const reportTab = useCallback(
     (id: string, available: boolean) =>
@@ -400,8 +411,10 @@ export default function PlayerProfile() {
             assists?: number;
             headshots?: number;
             has_demo?: boolean;
+            maps?: StoredMap[];
           }>;
           games?: Array<{ id: string; name: string }>;
+          trophies?: ProfileTrophy[];
         };
 
         // Load aggregated player summary (details + history + matches)
@@ -422,6 +435,7 @@ export default function PlayerProfile() {
         }
 
         setPlayer(summaryResponse.player);
+        setTrophies(summaryResponse.trophies ?? []);
         document.title = pageTitle(
           t('playerPage.pageTitle', { name: summaryResponse.player.name })
         );
@@ -494,6 +508,7 @@ export default function PlayerProfile() {
             assists: m.assists,
             headshots: m.headshots,
             hasDemo: m.has_demo === true,
+            maps: m.maps ?? [],
           }))
         );
 
@@ -1033,69 +1048,77 @@ export default function PlayerProfile() {
       }
     : null;
 
-  // Recent matches: the match history, and the archived rated matches with
-  // the labels their history rows kept, newest first.
-  const recentMatchEntries: RecentMatchEntry[] = [
-    ...gameFilteredMatches.map((m) => {
+  // Every match as the profile shows it (the Matches tab, the rating chart): the
+  // match history, and the archived rated matches with the labels their
+  // history rows kept, newest first.
+  const profileMatches: ProfileMatch[] = [
+    ...gameFilteredMatches.map((m): ProfileMatch => {
       const isTeam1 = m.team === 'team1';
       const opponentName = isTeam1
         ? m.team2Name || t('playerPage.opponent')
         : m.team1Name || t('playerPage.opponent');
       const rating = ratingBySlug.get(m.slug);
+      const { maps, score } = mapsAndScore(m.maps, m.team);
       return {
+        key: m.slug,
+        slug: m.slug,
         at: m.completedAt || rating?.createdAt || 0,
-        entry: {
-          key: m.slug,
-          slug: m.slug,
-          wonMatch: m.wonMatch,
-          title: `${t('teamMatchHistory.vs')} ${opponentName}`,
-          opponent: { id: (isTeam1 ? m.team2Id : m.team1Id) ?? null, name: opponentName },
-          tournament:
-            m.tournamentId && rating?.tournamentName
-              ? { id: m.tournamentId, name: rating.tournamentName }
-              : null,
-          detail:
-            m.tournamentId && rating?.tournamentName
-              ? getRoundLabel(m.round)
-              : [rating?.tournamentName, getRoundLabel(m.round)].filter(Boolean).join(' · '),
-          ratingAfter: rating?.eloAfter,
-          // Only a game that records demos, and only a match that has one: no
-          // download button that leads nowhere.
-          hasDemo: showDemos && m.hasDemo === true,
-          ...(showGameStats ? { kills: m.kills, deaths: m.deaths } : {}),
-        } satisfies RecentMatchEntry,
+        won: m.wonMatch,
+        title: `${t('teamMatchHistory.vs')} ${opponentName}`,
+        opponent: { id: (isTeam1 ? m.team2Id : m.team1Id) ?? null, name: opponentName },
+        tournament:
+          m.tournamentId && rating?.tournamentName
+            ? { id: m.tournamentId, name: rating.tournamentName }
+            : null,
+        detail:
+          m.tournamentId && rating?.tournamentName
+            ? getRoundLabel(m.round)
+            : [rating?.tournamentName, getRoundLabel(m.round)].filter(Boolean).join(' · '),
+        maps,
+        score,
+        ...(showGameStats
+          ? {
+              kills: m.kills,
+              deaths: m.deaths,
+              assists: m.assists,
+              headshots: m.headshots,
+              adr: m.adr,
+            }
+          : {}),
+        eloAfter: rating?.eloAfter,
+        eloChange: rating?.eloChange,
+        // Only a game that records demos, and only a match that has one.
+        hasDemo: showDemos && m.hasDemo === true,
       };
     }),
-    ...archivedMatches.map((entry) => ({
+    ...archivedMatches.map((entry): ProfileMatch => ({
+      key: entry.key,
+      slug: null,
       at: entry.createdAt,
-      entry: {
-        key: entry.key,
-        slug: null,
-        wonMatch: entry.matchResult === 'win',
-        title: entry.matchLabel || t('playerPage.opponent'),
-        detail: entry.tournamentName || '',
-        ratingAfter: entry.eloAfter,
-      } satisfies RecentMatchEntry,
+      won: entry.matchResult === 'win',
+      opponent: null,
+      title: entry.matchLabel || t('playerPage.opponent'),
+      tournament: null,
+      detail: entry.tournamentName || '',
+      maps: [],
+      score: null,
+      eloAfter: entry.eloAfter,
+      eloChange: entry.eloChange,
+      hasDemo: false,
     })),
-  ]
-    .sort((a, b) => b.at - a.at)
-    .map(({ entry }) => entry);
+  ].sort((a, b) => b.at - a.at);
 
-  // The rating trend starts at the player's starting rating, so the first
-  // match already draws a line.
-  const ratingChartHistory =
-    gameRatingHistory.length > 0
-      ? [
-          {
-            eloAfter: ratingHistoryBaseline(player.startingElo),
-            createdAt: Math.min(...gameRatingHistory.map((e) => e.createdAt)) - 1,
-          },
-          ...gameRatingHistory.map((entry) => ({
-            eloAfter: entry.eloAfter,
-            createdAt: entry.createdAt,
-          })),
-        ]
-      : [];
+  // The rating chart: the last rated matches, oldest first.
+  const chartMatches = profileMatches
+    .filter((m) => typeof m.eloAfter === 'number')
+    .slice(0, RATING_CHART_WINDOW)
+    .reverse();
+  const chartChange =
+    chartMatches.length > 0
+      ? (chartMatches[chartMatches.length - 1].eloAfter ?? 0) -
+        ((chartMatches[0].eloAfter ?? 0) - (chartMatches[0].eloChange ?? 0))
+      : 0;
+  const chartWins = chartMatches.filter((m) => m.won).length;
 
   // Sound cues for the player's own current match.
   const playerMatchFormat =
@@ -1136,7 +1159,7 @@ export default function PlayerProfile() {
             joinedAt={player.createdAt}
             team={headerTeam}
             isOwnProfile={isOwnProfile}
-            lastResults={recentMatchEntries.map((m) => m.wonMatch)}
+            lastResults={profileMatches.map((m) => m.won)}
           />
           {isOwnProfile && (
             <ShownTeamPicker
@@ -1171,23 +1194,87 @@ export default function PlayerProfile() {
             </Box>
           )}
 
-          {/* One tab per game the player has played. */}
-          <Box sx={{ mt: 6, mb: 3 }}>
-            <GameSwitch
-              games={games}
-              extraTabs={moduleTabs
-                .filter((tab) => tabAvailable[tab.id])
-                .map((tab) => ({ id: `module:${tab.id}`, name: t(tab.labelKey, { ns: tab.id }) }))}
-              selectedId={activeModuleTab ? `module:${activeModuleTab.id}` : (selectedGameId ?? '')}
-              onSelect={(id) => {
-                if (id.startsWith('module:')) {
-                  setModuleTabId(id.slice('module:'.length));
-                } else {
-                  setModuleTabId(null);
-                  setSelectedGameId(id || null);
-                }
-              }}
-            />
+          {/* The profile's tabs (Overview, Matches, then modules' own: CS2's
+              Loadout), and the game switch when the player has more than one. */}
+          <Box
+            sx={{
+              mt: 6,
+              display: 'flex',
+              alignItems: 'flex-end',
+              justifyContent: 'space-between',
+              gap: 2,
+              flexWrap: 'wrap',
+              borderBottom: `1px solid ${tokens.color.rule}`,
+            }}
+          >
+            <Box
+              role="tablist"
+              aria-label={t('playerPage.tabs.label')}
+              data-testid="profile-tabs"
+              sx={{ display: 'flex', flexWrap: 'wrap' }}
+            >
+              {[
+                { id: 'overview', name: t('playerPage.tabs.overview') },
+                { id: 'matches', name: t('playerPage.tabs.matches') },
+                ...moduleTabs
+                  .filter((tab) => tabAvailable[tab.id])
+                  .map((tab) => ({
+                    id: `module:${tab.id}`,
+                    name: t(tab.labelKey, { ns: tab.id }),
+                  })),
+              ].map((tab) => {
+                const selected = activeModuleTab
+                  ? tab.id === `module:${activeModuleTab.id}`
+                  : tab.id === profileTab;
+                return (
+                  <Box
+                    key={tab.id}
+                    component="button"
+                    type="button"
+                    role="tab"
+                    aria-selected={selected}
+                    data-testid={`profile-tab-${tab.id.replace('module:', '')}`}
+                    onClick={() => {
+                      if (tab.id.startsWith('module:')) {
+                        setModuleTabId(tab.id.slice('module:'.length));
+                      } else {
+                        setModuleTabId(null);
+                        setProfileTab(tab.id as 'overview' | 'matches');
+                      }
+                    }}
+                    sx={{
+                      height: 44,
+                      px: 2,
+                      border: 0,
+                      borderBottom: `2px solid ${selected ? tokens.color.accent : 'transparent'}`,
+                      bgcolor: 'transparent',
+                      color: selected ? 'text.primary' : 'text.secondary',
+                      font: 'inherit',
+                      fontSize: textSize.md,
+                      fontWeight: 500,
+                      cursor: 'pointer',
+                      whiteSpace: 'nowrap',
+                      '&:hover': { color: 'text.primary' },
+                      '&:focus-visible': {
+                        outline: `2px solid ${tokens.color.focus}`,
+                        outlineOffset: -2,
+                      },
+                    }}
+                  >
+                    {tab.name}
+                  </Box>
+                );
+              })}
+            </Box>
+            {games.length > 1 && (
+              <Box sx={{ pb: 1 }}>
+                <GameSwitch
+                  games={games}
+                  selectedId={selectedGameId ?? ''}
+                  onSelect={(id) => setSelectedGameId(id || null)}
+                />
+              </Box>
+            )}
           </Box>
           {/* Each module tab's probe: whether it has anything for this player. */}
           {moduleTabs.map(({ id, Component }) => (
@@ -1201,20 +1288,141 @@ export default function PlayerProfile() {
           ))}
 
           {activeModuleTab ? (
-            <activeModuleTab.Component playerId={player.id} isOwn={playerSteamId === player.id} />
+            <Box sx={{ mt: 4 }}>
+              <activeModuleTab.Component playerId={player.id} isOwn={playerSteamId === player.id} />
+            </Box>
+          ) : profileTab === 'matches' ? (
+            <ProfileMatchesTab
+              matches={profileMatches}
+              ratingHistory={gameRatingHistory}
+              showStats={showGameStats}
+              leaderboardTournamentId={latestTournamentId ?? null}
+            />
           ) : (
             <>
+              {/* The rating story and the trophies first: the Overview shows the player off. */}
+              <Box
+                sx={{ display: 'flex', flexWrap: 'wrap', gap: 5, mt: 5, alignItems: 'flex-start' }}
+              >
+                <Box
+                  component="section"
+                  aria-labelledby="profile-rating"
+                  sx={{ flex: '999 1 560px', minWidth: 0 }}
+                >
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'flex-end',
+                      justifyContent: 'space-between',
+                      gap: 2,
+                      flexWrap: 'wrap',
+                    }}
+                  >
+                    <Box>
+                      <Typography
+                        id="profile-rating"
+                        component="h2"
+                        sx={{ color: 'text.secondary', fontSize: textSize.sm, fontWeight: 500 }}
+                      >
+                        {t('playerPage.ratingChart.sectionTitle')}
+                      </Typography>
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'baseline',
+                          gap: 1.5,
+                          mt: 0.5,
+                          flexWrap: 'wrap',
+                        }}
+                      >
+                        <Box
+                          data-testid="profile-rating-value"
+                          sx={{
+                            fontFamily: fontDisplay,
+                            fontWeight: 700,
+                            fontSize: '3.5rem',
+                            lineHeight: 1,
+                            letterSpacing: '-0.03em',
+                            fontVariantNumeric: 'tabular-nums',
+                          }}
+                        >
+                          {selectedRating}
+                        </Box>
+                        {chartMatches.length > 0 && chartChange !== 0 && (
+                          <Box
+                            component="span"
+                            sx={{
+                              fontWeight: 600,
+                              color: chartChange > 0 ? tokens.color.live : tokens.color.ban,
+                            }}
+                          >
+                            {chartChange > 0 ? '+' : ''}
+                            {chartChange}
+                          </Box>
+                        )}
+                        {chartMatches.length > 0 && (
+                          <Typography
+                            component="span"
+                            sx={{ color: 'text.secondary', fontSize: textSize.sm }}
+                          >
+                            {t('playerPage.ratingChart.window', { count: chartMatches.length })}
+                          </Typography>
+                        )}
+                      </Box>
+                    </Box>
+                    {chartMatches.length > 0 && (
+                      <Typography
+                        sx={{
+                          fontSize: textSize.sm,
+                          color: 'text.secondary',
+                          fontVariantNumeric: 'tabular-nums',
+                        }}
+                      >
+                        {t('playerPage.chart.record', {
+                          wins: chartWins,
+                          losses: chartMatches.length - chartWins,
+                        })}
+                      </Typography>
+                    )}
+                  </Box>
+                  <Box sx={{ mt: 2.5 }}>
+                    {chartMatches.length > 0 ? (
+                      <>
+                        <ProfileRatingChart matches={chartMatches} />
+                        <Typography
+                          sx={{ mt: 1.25, fontSize: textSize.xs, color: 'text.secondary' }}
+                        >
+                          {t('playerPage.chart.hint')}
+                        </Typography>
+                      </>
+                    ) : (
+                      <Typography sx={{ color: 'text.secondary', fontSize: textSize.sm }}>
+                        {t('playerPage.ratingChart.noHistory')}
+                      </Typography>
+                    )}
+                  </Box>
+                </Box>
+                {trophies.some((tr) => tr.place <= 3) && (
+                  <Box sx={{ flex: '1 1 300px', minWidth: 0 }}>
+                    <ProfileTrophies trophies={trophies} />
+                  </Box>
+                )}
+              </Box>
+
               {/* auto-fit: the tiles there are fill the row, with no empty cells
               after them when a game measures fewer than six things. */}
               <FactGrid
                 items={profileStats}
                 aria-label={t('playerPage.stats.label')}
                 data-testid="profile-stats-grid"
-                sx={{ gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 150px), 1fr))' }}
+                sx={{
+                  mt: 5,
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 150px), 1fr))',
+                }}
               />
 
-              {/* What other players commended them for, any game. */}
-              <ProfileCommends playerId={player.id} />
+              {/* The player's standout numbers, from their own matches. */}
+              <ProfileBest matches={profileMatches} />
 
               {/* The player's highlight videos from the open game: core lays them
               out, the game says what there is. */}
@@ -1226,8 +1434,10 @@ export default function PlayerProfile() {
                 />
               )}
 
+              {/* What other players commended them for, any game. */}
+              <ProfileCommends playerId={player.id} />
+
               {/* The game's own numbers (CS2: aim, utility, map strength). */}
-              {/* On the game's own tab (or the only view, with no games yet). */}
               {GameProfileView && showGameStats && (selectedGameId || games.length === 0) && (
                 <GameProfileView playerId={player.id} isOwn={playerSteamId === player.id} />
               )}
@@ -1236,60 +1446,6 @@ export default function PlayerProfile() {
               {profileSections.map(({ id, Section }) => (
                 <Section key={id} playerId={player.id} isOwn={playerSteamId === player.id} />
               ))}
-
-              <Box
-                sx={{
-                  display: 'grid',
-                  gridTemplateColumns: {
-                    xs: 'minmax(0, 1fr)',
-                    md: 'minmax(0, 1.4fr) minmax(0, 1fr)',
-                  },
-                  gap: 4,
-                  mt: 6,
-                  alignItems: 'start',
-                }}
-              >
-                <Box component="section" aria-labelledby="profile-rating">
-                  <SectionHead
-                    id="profile-rating"
-                    title={t('playerPage.ratingChart.sectionTitle')}
-                    action={
-                      <Typography
-                        component="span"
-                        sx={{ color: tokens.color.muted, fontSize: textSize.sm }}
-                      >
-                        {t('playerPage.ratingChart.window', { count: RATING_CHART_WINDOW })}
-                      </Typography>
-                    }
-                  />
-                  <Panel sx={{ p: 3 }}>
-                    <RatingChart history={ratingChartHistory} limit={RATING_CHART_WINDOW} />
-                  </Panel>
-                </Box>
-
-                <Box component="section" aria-labelledby="profile-recent">
-                  <SectionHead
-                    id="profile-recent"
-                    title={t('playerPage.recentMatches.title')}
-                    link={
-                      latestTournamentId
-                        ? {
-                            to: paths.tournamentLeaderboard.replace(
-                              ':id',
-                              String(latestTournamentId)
-                            ),
-                            label: t('playerPage.recentMatches.leaderboard'),
-                            'data-testid': 'profile-tournament-leaderboard',
-                          }
-                        : undefined
-                    }
-                  />
-                  <RecentMatches
-                    matches={recentMatchEntries}
-                    showStatsNote={showGameStats && gameFilteredMatches.length > 0}
-                  />
-                </Box>
-              </Box>
 
               {TournamentStatsView && gameTournamentId !== null && hasAnyMatches && (
                 <Box sx={{ mt: 6 }}>

@@ -92,11 +92,68 @@
     "gameSwitchLabel": "Παιχνίδι",
     "yourMatch": "Ο αγώνας σου",
     "tabs": {
-      "overview": "Επισκόπηση"
+      "overview": "Επισκόπηση",
+      "label": "Προφίλ",
+      "matches": "Αγώνες"
     },
     "shownTeam": {
       "label": "Η ομάδα που φαίνεται στο προφίλ σου",
       "failed": "Δεν ήταν δυνατή η αποθήκευση της ομάδας"
+    },
+    "chart": {
+      "winLabel": "Νίκη, {{title}}, {{date}}, βαθμολογία {{rating}}",
+      "lossLabel": "Ήττα, {{title}}, {{date}}, βαθμολογία {{rating}}",
+      "resultsLabel": "Αποτελέσματα, από τα παλαιότερα",
+      "kda": "Φ / Θ / Β",
+      "openMatch": "Άνοιγμα αίθουσας αγώνα",
+      "record": "{{wins}} Ν · {{losses}} Η",
+      "hint": "Δείξε το γράφημα για να δεις έναν αγώνα. Κάνε κλικ για να μείνει ανοιχτός."
+    },
+    "trophies": {
+      "title": "Τρόπαια",
+      "place1": "Νικητής",
+      "place2": "Δεύτερη θέση",
+      "place3": "Τρίτη θέση",
+      "place4": "Τέταρτη θέση",
+      "teams": "Ομάδες: {{count}}",
+      "titles": "Τίτλοι: {{count}}",
+      "finals": "Τελικοί: {{count}}",
+      "podiums": "Βάθρα: {{count}}"
+    },
+    "best": {
+      "title": "Στα καλύτερά τους",
+      "adr": "Καλύτερο ADR σε αγώνα",
+      "kills": "Περισσότεροι φόνοι σε αγώνα",
+      "headshots": "Headshots",
+      "headshotsContext": "{{heads}} από {{kills}} φόνους",
+      "map": "Καλύτερος χάρτης",
+      "mapContext": "Νίκες {{won}} από {{played}}"
+    },
+    "months": {
+      "title": "Βαθμολογία ανά μήνα",
+      "peak": "Υψηλότερη όλων των εποχών {{rating}}, {{month}}",
+      "month": "Μήνας",
+      "record": "Ρεκόρ",
+      "start": "Αρχή",
+      "end": "Τέλος",
+      "change": "Αλλαγή",
+      "peakColumn": "Κορυφή"
+    },
+    "matchList": {
+      "title": "Αγώνες ({{count}})",
+      "result": "Αποτέλεσμα",
+      "all": "Όλα",
+      "wins": "Νίκες",
+      "losses": "Ήττες",
+      "map": "Χάρτης",
+      "allMaps": "Όλοι οι χάρτες",
+      "event": "Διοργάνωση",
+      "allEvents": "Όλες οι διοργανώσεις",
+      "noneMatch": "Κανένας αγώνας δεν ταιριάζει με αυτά τα φίλτρα.",
+      "win": "Νίκη",
+      "loss": "Ήττα",
+      "range": "{{from}}–{{to}} από {{total}}",
+      "pages": "Σελίδες αγώνων"
     }
   },
   "teamPage": {

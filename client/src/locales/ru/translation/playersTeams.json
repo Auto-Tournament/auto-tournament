@@ -92,11 +92,68 @@
     "gameSwitchLabel": "Игра",
     "yourMatch": "Твой матч",
     "tabs": {
-      "overview": "Обзор"
+      "overview": "Обзор",
+      "label": "Профиль",
+      "matches": "Матчи"
     },
     "shownTeam": {
       "label": "Команда в твоём профиле",
       "failed": "Не удалось сохранить команду"
+    },
+    "chart": {
+      "winLabel": "Победа, {{title}}, {{date}}, рейтинг {{rating}}",
+      "lossLabel": "Поражение, {{title}}, {{date}}, рейтинг {{rating}}",
+      "resultsLabel": "Результаты, сначала старые",
+      "kda": "У / С / П",
+      "openMatch": "Открыть комнату матча",
+      "record": "Победы: {{wins}} · поражения: {{losses}}",
+      "hint": "Наведите на график, чтобы увидеть матч. Нажмите, чтобы закрепить."
+    },
+    "trophies": {
+      "title": "Трофеи",
+      "place1": "Победитель",
+      "place2": "Второе место",
+      "place3": "Третье место",
+      "place4": "Четвёртое место",
+      "teams": "Команд: {{count}}",
+      "titles": "Титулов: {{count}}",
+      "finals": "Финалов: {{count}}",
+      "podiums": "Призовых мест: {{count}}"
+    },
+    "best": {
+      "title": "В лучшей форме",
+      "adr": "Лучший ADR за матч",
+      "kills": "Больше всего убийств за матч",
+      "headshots": "Хедшоты",
+      "headshotsContext": "{{heads}} из {{kills}} убийств",
+      "map": "Лучшая карта",
+      "mapContext": "Побед: {{won}} из {{played}}"
+    },
+    "months": {
+      "title": "Рейтинг по месяцам",
+      "peak": "Рекорд {{rating}}, {{month}}",
+      "month": "Месяц",
+      "record": "Баланс",
+      "start": "Начало",
+      "end": "Конец",
+      "change": "Изменение",
+      "peakColumn": "Пик"
+    },
+    "matchList": {
+      "title": "Матчи ({{count}})",
+      "result": "Результат",
+      "all": "Все",
+      "wins": "Победы",
+      "losses": "Поражения",
+      "map": "Карта",
+      "allMaps": "Все карты",
+      "event": "Событие",
+      "allEvents": "Все события",
+      "noneMatch": "Нет матчей под эти фильтры.",
+      "win": "Победа",
+      "loss": "Поражение",
+      "range": "{{from}}–{{to}} из {{total}}",
+      "pages": "Страницы матчей"
     }
   },
   "teamPage": {

@@ -92,11 +92,68 @@
     "gameSwitchLabel": "Игра",
     "yourMatch": "Твоят мач",
     "tabs": {
-      "overview": "Преглед"
+      "overview": "Преглед",
+      "label": "Профил",
+      "matches": "Мачове"
     },
     "shownTeam": {
       "label": "Отбор, показван в профила ти",
       "failed": "Отборът не можа да бъде запазен"
+    },
+    "chart": {
+      "winLabel": "Победа, {{title}}, {{date}}, рейтинг {{rating}}",
+      "lossLabel": "Загуба, {{title}}, {{date}}, рейтинг {{rating}}",
+      "resultsLabel": "Резултати, от най-старите",
+      "kda": "У / С / А",
+      "openMatch": "Отвори стаята на мача",
+      "record": "{{wins}} П · {{losses}} З",
+      "hint": "Посочи графиката, за да видиш мач. Кликни, за да остане отворен."
+    },
+    "trophies": {
+      "title": "Трофеи",
+      "place1": "Победител",
+      "place2": "Второ място",
+      "place3": "Трето място",
+      "place4": "Четвърто място",
+      "teams": "Отбори: {{count}}",
+      "titles": "Титли: {{count}}",
+      "finals": "Финали: {{count}}",
+      "podiums": "Подиуми: {{count}}"
+    },
+    "best": {
+      "title": "В най-добрата си форма",
+      "adr": "Най-добър ADR в мач",
+      "kills": "Най-много убийства в мач",
+      "headshots": "Хедшоти",
+      "headshotsContext": "{{heads}} от {{kills}} убийства",
+      "map": "Най-добра карта",
+      "mapContext": "Спечелени {{won}} от {{played}}"
+    },
+    "months": {
+      "title": "Рейтинг по месеци",
+      "peak": "Връх за всички времена {{rating}}, {{month}}",
+      "month": "Месец",
+      "record": "Баланс",
+      "start": "Начало",
+      "end": "Край",
+      "change": "Промяна",
+      "peakColumn": "Връх"
+    },
+    "matchList": {
+      "title": "Мачове ({{count}})",
+      "result": "Резултат",
+      "all": "Всички",
+      "wins": "Победи",
+      "losses": "Загуби",
+      "map": "Карта",
+      "allMaps": "Всички карти",
+      "event": "Събитие",
+      "allEvents": "Всички събития",
+      "noneMatch": "Няма мачове по тези филтри.",
+      "win": "Победа",
+      "loss": "Загуба",
+      "range": "{{from}}–{{to}} от {{total}}",
+      "pages": "Страници с мачове"
     }
   },
   "teamPage": {

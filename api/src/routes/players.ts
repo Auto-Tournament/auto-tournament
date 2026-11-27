@@ -35,6 +35,7 @@ import { generateAvatarSvg } from '../generation/avatar';
 import { getEffectiveViewerSteamId, resolveViewerIdentity } from '../utils/viewerIdentity';
 import { getIntegration, integrationForMatch } from '../integrations/registry';
 import { DEFAULT_GAME } from '../integrations/types';
+import { XP } from '../services/matchmaking/progression';
 
 import {
   banPlayer,
@@ -1624,6 +1625,7 @@ router.get('/:playerId/summary', async (req: Request, res: Response) => {
         t1.tag as team1_tag,
         t2.name as team2_name,
         t2.tag as team2_tag,
+        tr.name as tournament_name,
         pms.team,
         pms.won_match,
         pms.adr,
@@ -1639,6 +1641,7 @@ router.get('/:playerId/summary', async (req: Request, res: Response) => {
       JOIN matches m ON pms.match_slug = m.slug
       LEFT JOIN teams t1 ON m.team1_id = t1.id
       LEFT JOIN teams t2 ON m.team2_id = t2.id
+      LEFT JOIN tournament tr ON m.tournament_id = tr.id
       WHERE pms.player_id = ?
     `;
     const params: SqlValue[] = [playerId];
@@ -1669,6 +1672,7 @@ router.get('/:playerId/summary', async (req: Request, res: Response) => {
       team1_tag?: string | null;
       team2_name?: string | null;
       team2_tag?: string | null;
+      tournament_name?: string | null;
       team: 'team1' | 'team2';
       won_match: boolean;
       adr?: number | null;
@@ -1689,7 +1693,104 @@ router.get('/:playerId/summary', async (req: Request, res: Response) => {
         bySlug.set(row.slug, row);
       }
     }
-    const matches = Array.from(bySlug.values());
+    // Each match's maps (name and score, team1 first as stored): the profile's
+    // match list and rating chart show the map and the score.
+    const mapRows =
+      bySlug.size > 0
+        ? await db.queryAsync<{
+            match_slug: string;
+            map_name: string | null;
+            team1_score: number;
+            team2_score: number;
+            winner_team: string | null;
+          }>(
+            `SELECT match_slug, map_name, team1_score, team2_score, winner_team
+               FROM match_map_results WHERE match_slug = ANY(?::text[]) ORDER BY match_slug, map_number`,
+            [Array.from(bySlug.keys())]
+          )
+        : [];
+    const mapsBySlug = new Map<
+      string,
+      Array<{ name: string | null; team1Score: number; team2Score: number; winner: string | null }>
+    >();
+    for (const r of mapRows) {
+      const list = mapsBySlug.get(r.match_slug) ?? [];
+      list.push({
+        name: r.map_name,
+        team1Score: Number(r.team1_score) || 0,
+        team2Score: Number(r.team2_score) || 0,
+        winner: r.winner_team,
+      });
+      mapsBySlug.set(r.match_slug, list);
+    }
+    const matches = Array.from(bySlug.values()).map((m) => ({
+      ...m,
+      maps: mapsBySlug.get(m.slug) ?? [],
+    }));
+
+    // Tournaments this player placed in (1st to 4th): the placement XP every
+    // finished tournament pays its top teams' players is the record. Its note
+    // says the place; older rows only have the amount, which is per place.
+    const placementRows = await db.queryAsync<{
+      match_slug: string | null;
+      amount: number;
+      note: string | null;
+      created_at: number;
+    }>(
+      "SELECT match_slug, amount, note, created_at FROM xp_events WHERE player_id = ? AND reason = 'placement'",
+      [playerId]
+    );
+    const placeOf = (r: { amount: number; note: string | null }): number => {
+      const noted = /^place:(\d)$/.exec(r.note ?? '');
+      if (noted) return Number(noted[1]);
+      const i = (XP.placement as readonly number[]).indexOf(Number(r.amount));
+      return i >= 0 ? i + 1 : 0;
+    };
+    const placed = placementRows
+      .map((r) => ({
+        tournamentId: Number(/^tournament:(\d+)$/.exec(r.match_slug ?? '')?.[1] ?? 0),
+        place: placeOf(r),
+        at: Number(r.created_at) || 0,
+      }))
+      .filter((p) => p.tournamentId > 0 && p.place > 0);
+    const placedTournaments =
+      placed.length > 0
+        ? await db.queryAsync<{
+            id: number;
+            name: string;
+            type: string;
+            team_ids: string | null;
+            team_size: number | null;
+            completed_at: number | null;
+          }>(
+            'SELECT id, name, type, team_ids, team_size, completed_at FROM tournament WHERE id = ANY(?::int[])',
+            [placed.map((p) => p.tournamentId)]
+          )
+        : [];
+    const tournamentById = new Map(placedTournaments.map((t) => [Number(t.id), t]));
+    const trophies = placed
+      .flatMap((p) => {
+        const t = tournamentById.get(p.tournamentId);
+        if (!t) return [];
+        let teams = 0;
+        try {
+          const ids: Untrusted = JSON.parse(t.team_ids ?? '[]');
+          teams = Array.isArray(ids) ? ids.length : 0;
+        } catch {
+          teams = 0;
+        }
+        return [
+          {
+            tournamentId: p.tournamentId,
+            name: t.name,
+            place: p.place,
+            teams,
+            teamSize: t.team_size ?? null,
+            completedAt: Number(t.completed_at) || p.at,
+          },
+        ];
+      })
+      .sort((a, b) => b.completedAt - a.completedAt);
 
     // Derived stats
     const wins = matches.filter((m) => m.won_match).length;
@@ -1775,6 +1876,7 @@ router.get('/:playerId/summary', async (req: Request, res: Response) => {
       ratingHistory,
       matches,
       games,
+      trophies,
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';

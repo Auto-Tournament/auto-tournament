@@ -92,11 +92,68 @@
     "gameSwitchLabel": "เกม",
     "yourMatch": "แมตช์ของคุณ",
     "tabs": {
-      "overview": "ภาพรวม"
+      "overview": "ภาพรวม",
+      "label": "โปรไฟล์",
+      "matches": "แมตช์"
     },
     "shownTeam": {
       "label": "ทีมที่แสดงในโปรไฟล์ของคุณ",
       "failed": "บันทึกทีมไม่ได้"
+    },
+    "chart": {
+      "winLabel": "ชนะ, {{title}}, {{date}}, เรตติ้ง {{rating}}",
+      "lossLabel": "แพ้, {{title}}, {{date}}, เรตติ้ง {{rating}}",
+      "resultsLabel": "ผลการแข่ง เรียงจากเก่าสุด",
+      "kda": "K / D / A",
+      "openMatch": "เปิดห้องแมตช์",
+      "record": "ชนะ {{wins}} · แพ้ {{losses}}",
+      "hint": "ชี้ที่กราฟเพื่อดูแมตช์ คลิกเพื่อให้เปิดค้างไว้"
+    },
+    "trophies": {
+      "title": "ถ้วยรางวัล",
+      "place1": "แชมป์",
+      "place2": "รองแชมป์",
+      "place3": "อันดับสาม",
+      "place4": "อันดับสี่",
+      "teams": "ทีม: {{count}}",
+      "titles": "แชมป์: {{count}}",
+      "finals": "เข้ารอบชิง: {{count}}",
+      "podiums": "ขึ้นโพเดียม: {{count}}"
+    },
+    "best": {
+      "title": "ในวันที่ดีที่สุด",
+      "adr": "ADR สูงสุดในแมตช์เดียว",
+      "kills": "คิลมากที่สุดในแมตช์เดียว",
+      "headshots": "เฮดช็อต",
+      "headshotsContext": "{{heads}} จาก {{kills}} คิล",
+      "map": "แมพที่ดีที่สุด",
+      "mapContext": "ชนะ {{won}} จาก {{played}}"
+    },
+    "months": {
+      "title": "เรตติ้งรายเดือน",
+      "peak": "สูงสุดตลอดกาล {{rating}}, {{month}}",
+      "month": "เดือน",
+      "record": "สถิติ",
+      "start": "เริ่ม",
+      "end": "จบ",
+      "change": "เปลี่ยนแปลง",
+      "peakColumn": "สูงสุด"
+    },
+    "matchList": {
+      "title": "แมตช์ ({{count}})",
+      "result": "ผล",
+      "all": "ทั้งหมด",
+      "wins": "ชนะ",
+      "losses": "แพ้",
+      "map": "แมพ",
+      "allMaps": "ทุกแมพ",
+      "event": "รายการ",
+      "allEvents": "ทุกรายการ",
+      "noneMatch": "ไม่มีแมตช์ที่ตรงกับตัวกรองนี้",
+      "win": "ชนะ",
+      "loss": "แพ้",
+      "range": "{{from}}–{{to}} จาก {{total}}",
+      "pages": "หน้าแมตช์"
     }
   },
   "teamPage": {

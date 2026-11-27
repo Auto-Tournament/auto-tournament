@@ -87,7 +87,9 @@
     "gameSwitchLabel": "游戏",
     "yourMatch": "你的比赛",
     "tabs": {
-      "overview": "概览"
+      "overview": "概览",
+      "label": "个人资料",
+      "matches": "比赛"
     },
     "deletedName": "已删除的玩家",
     "deletedChip": "已删除",
@@ -97,6 +99,61 @@
     "shownTeam": {
       "label": "资料中显示的战队",
       "failed": "无法保存战队"
+    },
+    "chart": {
+      "winLabel": "胜，{{title}}，{{date}}，积分 {{rating}}",
+      "lossLabel": "负，{{title}}，{{date}}，积分 {{rating}}",
+      "resultsLabel": "结果，从最早开始",
+      "kda": "K / D / A",
+      "openMatch": "打开比赛房间",
+      "record": "{{wins}} 胜 · {{losses}} 负",
+      "hint": "将指针移到图表上查看比赛，点击可固定。"
+    },
+    "trophies": {
+      "title": "奖杯",
+      "place1": "冠军",
+      "place2": "亚军",
+      "place3": "季军",
+      "place4": "第四名",
+      "teams": "队伍：{{count}}",
+      "titles": "冠军：{{count}}",
+      "finals": "决赛：{{count}}",
+      "podiums": "登上领奖台：{{count}}"
+    },
+    "best": {
+      "title": "巅峰表现",
+      "adr": "单场最高 ADR",
+      "kills": "单场最多击杀",
+      "headshots": "爆头",
+      "headshotsContext": "{{kills}} 次击杀中 {{heads}} 次",
+      "map": "最佳地图",
+      "mapContext": "{{played}} 场赢 {{won}} 场"
+    },
+    "months": {
+      "title": "每月积分",
+      "peak": "历史最高 {{rating}}，{{month}}",
+      "month": "月份",
+      "record": "战绩",
+      "start": "开始",
+      "end": "结束",
+      "change": "变化",
+      "peakColumn": "最高"
+    },
+    "matchList": {
+      "title": "比赛（{{count}}）",
+      "result": "结果",
+      "all": "全部",
+      "wins": "胜",
+      "losses": "负",
+      "map": "地图",
+      "allMaps": "全部地图",
+      "event": "赛事",
+      "allEvents": "全部赛事",
+      "noneMatch": "没有符合筛选条件的比赛。",
+      "win": "胜",
+      "loss": "负",
+      "range": "共 {{total}} 场中第 {{from}}–{{to}} 场",
+      "pages": "比赛页面"
     }
   },
   "teamPage": {

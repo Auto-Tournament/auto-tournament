@@ -238,6 +238,26 @@
             "has_demo": false,
             "headshots": 20,
             "kills": 37,
+            "maps": [
+              {
+                "name": "de_ancient",
+                "team1Score": 13,
+                "team2Score": 9,
+                "winner": "team1"
+              },
+              {
+                "name": "de_anubis",
+                "team1Score": 11,
+                "team2Score": 13,
+                "winner": "team2"
+              },
+              {
+                "name": "de_nuke",
+                "team1Score": 13,
+                "team2Score": 7,
+                "winner": "team1"
+              }
+            ],
             "match_number": 1,
             "round": 1,
             "slug": "r1m1",
@@ -251,6 +271,7 @@
             "team2_tag": null,
             "total_damage": 4918,
             "tournamentId": 1,
+            "tournament_name": "Golden Replay Tournament",
             "winner_id": "golden-replay-a",
             "won_match": true
           }
@@ -305,6 +326,26 @@
             "has_demo": false,
             "headshots": 20,
             "kills": 37,
+            "maps": [
+              {
+                "name": "de_ancient",
+                "team1Score": 13,
+                "team2Score": 9,
+                "winner": "team1"
+              },
+              {
+                "name": "de_anubis",
+                "team1Score": 11,
+                "team2Score": 13,
+                "winner": "team2"
+              },
+              {
+                "name": "de_nuke",
+                "team1Score": 13,
+                "team2Score": 7,
+                "winner": "team1"
+              }
+            ],
             "match_number": 1,
             "round": 1,
             "slug": "r1m1",
@@ -318,6 +359,7 @@
             "team2_tag": null,
             "total_damage": 4918,
             "tournamentId": 1,
+            "tournament_name": "Golden Replay Tournament",
             "winner_id": "golden-replay-a",
             "won_match": true
           },
@@ -335,6 +377,26 @@
             "has_demo": false,
             "headshots": 20,
             "kills": 37,
+            "maps": [
+              {
+                "name": "de_ancient",
+                "team1Score": 13,
+                "team2Score": 9,
+                "winner": "team1"
+              },
+              {
+                "name": "de_anubis",
+                "team1Score": 11,
+                "team2Score": 13,
+                "winner": "team2"
+              },
+              {
+                "name": "de_nuke",
+                "team1Score": 13,
+                "team2Score": 7,
+                "winner": "team1"
+              }
+            ],
             "match_number": 1,
             "round": 1,
             "slug": "r1m1",
@@ -348,11 +410,22 @@
             "team2_tag": null,
             "total_damage": 4918,
             "tournamentId": 1,
+            "tournament_name": "Golden Replay Tournament",
             "winner_id": "golden-replay-a",
             "won_match": true
           }
         },
-        "success": true
+        "success": true,
+        "trophies": [
+          {
+            "completedAt": "<completedAt>",
+            "name": "Golden Replay Tournament",
+            "place": 1,
+            "teamSize": 5,
+            "teams": 2,
+            "tournamentId": 1
+          }
+        ]
       }
     },
     "76561199000070002": {
@@ -393,6 +466,26 @@
             "has_demo": false,
             "headshots": 15,
             "kills": 41,
+            "maps": [
+              {
+                "name": "de_ancient",
+                "team1Score": 13,
+                "team2Score": 9,
+                "winner": "team1"
+              },
+              {
+                "name": "de_anubis",
+                "team1Score": 11,
+                "team2Score": 13,
+                "winner": "team2"
+              },
+              {
+                "name": "de_nuke",
+                "team1Score": 13,
+                "team2Score": 7,
+                "winner": "team1"
+              }
+            ],
             "match_number": 1,
             "round": 1,
             "slug": "r1m1",
@@ -406,6 +499,7 @@
             "team2_tag": null,
             "total_damage": 4960,
             "tournamentId": 1,
+            "tournament_name": "Golden Replay Tournament",
             "winner_id": "golden-replay-a",
             "won_match": true
           }
@@ -460,6 +554,26 @@
             "has_demo": false,
             "headshots": 15,
             "kills": 41,
+            "maps": [
+              {
+                "name": "de_ancient",
+                "team1Score": 13,
+                "team2Score": 9,
+                "winner": "team1"
+              },
+              {
+                "name": "de_anubis",
+                "team1Score": 11,
+                "team2Score": 13,
+                "winner": "team2"
+              },
+              {
+                "name": "de_nuke",
+                "team1Score": 13,
+                "team2Score": 7,
+                "winner": "team1"
+              }
+            ],
             "match_number": 1,
             "round": 1,
             "slug": "r1m1",
@@ -473,6 +587,7 @@
             "team2_tag": null,
             "total_damage": 4960,
             "tournamentId": 1,
+            "tournament_name": "Golden Replay Tournament",
             "winner_id": "golden-replay-a",
             "won_match": true
           },
@@ -490,6 +605,26 @@
             "has_demo": false,
             "headshots": 15,
             "kills": 41,
+            "maps": [
+              {
+                "name": "de_ancient",
+                "team1Score": 13,
+                "team2Score": 9,
+                "winner": "team1"
+              },
+              {
+                "name": "de_anubis",
+                "team1Score": 11,
+                "team2Score": 13,
+                "winner": "team2"
+              },
+              {
+                "name": "de_nuke",
+                "team1Score": 13,
+                "team2Score": 7,
+                "winner": "team1"
+              }
+            ],
             "match_number": 1,
             "round": 1,
             "slug": "r1m1",
@@ -503,11 +638,22 @@
             "team2_tag": null,
             "total_damage": 4960,
             "tournamentId": 1,
+            "tournament_name": "Golden Replay Tournament",
             "winner_id": "golden-replay-a",
             "won_match": true
           }
         },
-        "success": true
+        "success": true,
+        "trophies": [
+          {
+            "completedAt": "<completedAt>",
+            "name": "Golden Replay Tournament",
+            "place": 1,
+            "teamSize": 5,
+            "teams": 2,
+            "tournamentId": 1
+          }
+        ]
       }
     },
     "76561199000070003": {
@@ -548,6 +694,26 @@
             "has_demo": false,
             "headshots": 31,
             "kills": 63,
+            "maps": [
+              {
+                "name": "de_ancient",
+                "team1Score": 13,
+                "team2Score": 9,
+                "winner": "team1"
+              },
+              {
+                "name": "de_anubis",
+                "team1Score": 11,
+                "team2Score": 13,
+                "winner": "team2"
+              },
+              {
+                "name": "de_nuke",
+                "team1Score": 13,
+                "team2Score": 7,
+                "winner": "team1"
+              }
+            ],
             "match_number": 1,
             "round": 1,
             "slug": "r1m1",
@@ -561,6 +727,7 @@
             "team2_tag": null,
             "total_damage": 7277,
             "tournamentId": 1,
+            "tournament_name": "Golden Replay Tournament",
             "winner_id": "golden-replay-a",
             "won_match": true
           }
@@ -615,6 +782,26 @@
             "has_demo": false,
             "headshots": 31,
             "kills": 63,
+            "maps": [
+              {
+                "name": "de_ancient",
+                "team1Score": 13,
+                "team2Score": 9,
+                "winner": "team1"
+              },
+              {
+                "name": "de_anubis",
+                "team1Score": 11,
+                "team2Score": 13,
+                "winner": "team2"
+              },
+              {
+                "name": "de_nuke",
+                "team1Score": 13,
+                "team2Score": 7,
+                "winner": "team1"
+              }
+            ],
             "match_number": 1,
             "round": 1,
             "slug": "r1m1",
@@ -628,6 +815,7 @@
             "team2_tag": null,
             "total_damage": 7277,
             "tournamentId": 1,
+            "tournament_name": "Golden Replay Tournament",
             "winner_id": "golden-replay-a",
             "won_match": true
           },
@@ -645,6 +833,26 @@
             "has_demo": false,
             "headshots": 31,
             "kills": 63,
+            "maps": [
+              {
+                "name": "de_ancient",
+                "team1Score": 13,
+                "team2Score": 9,
+                "winner": "team1"
+              },
+              {
+                "name": "de_anubis",
+                "team1Score": 11,
+                "team2Score": 13,
+                "winner": "team2"
+              },
+              {
+                "name": "de_nuke",
+                "team1Score": 13,
+                "team2Score": 7,
+                "winner": "team1"
+              }
+            ],
             "match_number": 1,
             "round": 1,
             "slug": "r1m1",
@@ -658,11 +866,22 @@
             "team2_tag": null,
             "total_damage": 7277,
             "tournamentId": 1,
+            "tournament_name": "Golden Replay Tournament",
             "winner_id": "golden-replay-a",
             "won_match": true
           }
         },
-        "success": true
+        "success": true,
+        "trophies": [
+          {
+            "completedAt": "<completedAt>",
+            "name": "Golden Replay Tournament",
+            "place": 1,
+            "teamSize": 5,
+            "teams": 2,
+            "tournamentId": 1
+          }
+        ]
       }
     },
     "76561199000070004": {
@@ -703,6 +922,26 @@
             "has_demo": false,
             "headshots": 31,
             "kills": 58,
+            "maps": [
+              {
+                "name": "de_ancient",
+                "team1Score": 13,
+                "team2Score": 9,
+                "winner": "team1"
+              },
+              {
+                "name": "de_anubis",
+                "team1Score": 11,
+                "team2Score": 13,
+                "winner": "team2"
+              },
+              {
+                "name": "de_nuke",
+                "team1Score": 13,
+                "team2Score": 7,
+                "winner": "team1"
+              }
+            ],
             "match_number": 1,
             "round": 1,
             "slug": "r1m1",
@@ -716,6 +955,7 @@
             "team2_tag": null,
             "total_damage": 6548,
             "tournamentId": 1,
+            "tournament_name": "Golden Replay Tournament",
             "winner_id": "golden-replay-a",
             "won_match": true
           }
@@ -770,6 +1010,26 @@
             "has_demo": false,
             "headshots": 31,
             "kills": 58,
+            "maps": [
+              {
+                "name": "de_ancient",
+                "team1Score": 13,
+                "team2Score": 9,
+                "winner": "team1"
+              },
+              {
+                "name": "de_anubis",
+                "team1Score": 11,
+                "team2Score": 13,
+                "winner": "team2"
+              },
+              {
+                "name": "de_nuke",
+                "team1Score": 13,
+                "team2Score": 7,
+                "winner": "team1"
+              }
+            ],
             "match_number": 1,
             "round": 1,
             "slug": "r1m1",
@@ -783,6 +1043,7 @@
             "team2_tag": null,
             "total_damage": 6548,
             "tournamentId": 1,
+            "tournament_name": "Golden Replay Tournament",
             "winner_id": "golden-replay-a",
             "won_match": true
           },
@@ -800,6 +1061,26 @@
             "has_demo": false,
             "headshots": 31,
             "kills": 58,
+            "maps": [
+              {
+                "name": "de_ancient",
+                "team1Score": 13,
+                "team2Score": 9,
+                "winner": "team1"
+              },
+              {
+                "name": "de_anubis",
+                "team1Score": 11,
+                "team2Score": 13,
+                "winner": "team2"
+              },
+              {
+                "name": "de_nuke",
+                "team1Score": 13,
+                "team2Score": 7,
+                "winner": "team1"
+              }
+            ],
             "match_number": 1,
             "round": 1,
             "slug": "r1m1",
@@ -813,11 +1094,22 @@
             "team2_tag": null,
             "total_damage": 6548,
             "tournamentId": 1,
+            "tournament_name": "Golden Replay Tournament",
             "winner_id": "golden-replay-a",
             "won_match": true
           }
         },
-        "success": true
+        "success": true,
+        "trophies": [
+          {
+            "completedAt": "<completedAt>",
+            "name": "Golden Replay Tournament",
+            "place": 1,
+            "teamSize": 5,
+            "teams": 2,
+            "tournamentId": 1
+          }
+        ]
       }
     },
     "76561199000070005": {
@@ -858,6 +1150,26 @@
             "has_demo": false,
             "headshots": 21,
             "kills": 36,
+            "maps": [
+              {
+                "name": "de_ancient",
+                "team1Score": 13,
+                "team2Score": 9,
+                "winner": "team1"
+              },
+              {
+                "name": "de_anubis",
+                "team1Score": 11,
+                "team2Score": 13,
+                "winner": "team2"
+              },
+              {
+                "name": "de_nuke",
+                "team1Score": 13,
+                "team2Score": 7,
+                "winner": "team1"
+              }
+            ],
             "match_number": 1,
             "round": 1,
             "slug": "r1m1",
@@ -871,6 +1183,7 @@
             "team2_tag": null,
             "total_damage": 4525,
             "tournamentId": 1,
+            "tournament_name": "Golden Replay Tournament",
             "winner_id": "golden-replay-a",
             "won_match": true
           }
@@ -925,6 +1238,26 @@
             "has_demo": false,
             "headshots": 21,
             "kills": 36,
+            "maps": [
+              {
+                "name": "de_ancient",
+                "team1Score": 13,
+                "team2Score": 9,
+                "winner": "team1"
+              },
+              {
+                "name": "de_anubis",
+                "team1Score": 11,
+                "team2Score": 13,
+                "winner": "team2"
+              },
+              {
+                "name": "de_nuke",
+                "team1Score": 13,
+                "team2Score": 7,
+                "winner": "team1"
+              }
+            ],
             "match_number": 1,
             "round": 1,
             "slug": "r1m1",
@@ -938,6 +1271,7 @@
             "team2_tag": null,
             "total_damage": 4525,
             "tournamentId": 1,
+            "tournament_name": "Golden Replay Tournament",
             "winner_id": "golden-replay-a",
             "won_match": true
           },
@@ -955,6 +1289,26 @@
             "has_demo": false,
             "headshots": 21,
             "kills": 36,
+            "maps": [
+              {
+                "name": "de_ancient",
+                "team1Score": 13,
+                "team2Score": 9,
+                "winner": "team1"
+              },
+              {
+                "name": "de_anubis",
+                "team1Score": 11,
+                "team2Score": 13,
+                "winner": "team2"
+              },
+              {
+                "name": "de_nuke",
+                "team1Score": 13,
+                "team2Score": 7,
+                "winner": "team1"
+              }
+            ],
             "match_number": 1,
             "round": 1,
             "slug": "r1m1",
@@ -968,11 +1322,22 @@
             "team2_tag": null,
             "total_damage": 4525,
             "tournamentId": 1,
+            "tournament_name": "Golden Replay Tournament",
             "winner_id": "golden-replay-a",
             "won_match": true
           }
         },
-        "success": true
+        "success": true,
+        "trophies": [
+          {
+            "completedAt": "<completedAt>",
+            "name": "Golden Replay Tournament",
+            "place": 1,
+            "teamSize": 5,
+            "teams": 2,
+            "tournamentId": 1
+          }
+        ]
       }
     },
     "76561199000080001": {
@@ -1013,6 +1378,26 @@
             "has_demo": false,
             "headshots": 18,
             "kills": 38,
+            "maps": [
+              {
+                "name": "de_ancient",
+                "team1Score": 13,
+                "team2Score": 9,
+                "winner": "team1"
+              },
+              {
+                "name": "de_anubis",
+                "team1Score": 11,
+                "team2Score": 13,
+                "winner": "team2"
+              },
+              {
+                "name": "de_nuke",
+                "team1Score": 13,
+                "team2Score": 7,
+                "winner": "team1"
+              }
+            ],
             "match_number": 1,
             "round": 1,
             "slug": "r1m1",
@@ -1026,6 +1411,7 @@
             "team2_tag": null,
             "total_damage": 4856,
             "tournamentId": 1,
+            "tournament_name": "Golden Replay Tournament",
             "winner_id": "golden-replay-a",
             "won_match": false
           }
@@ -1080,6 +1466,26 @@
             "has_demo": false,
             "headshots": 18,
             "kills": 38,
+            "maps": [
+              {
+                "name": "de_ancient",
+                "team1Score": 13,
+                "team2Score": 9,
+                "winner": "team1"
+              },
+              {
+                "name": "de_anubis",
+                "team1Score": 11,
+                "team2Score": 13,
+                "winner": "team2"
+              },
+              {
+                "name": "de_nuke",
+                "team1Score": 13,
+                "team2Score": 7,
+                "winner": "team1"
+              }
+            ],
             "match_number": 1,
             "round": 1,
             "slug": "r1m1",
@@ -1093,6 +1499,7 @@
             "team2_tag": null,
             "total_damage": 4856,
             "tournamentId": 1,
+            "tournament_name": "Golden Replay Tournament",
             "winner_id": "golden-replay-a",
             "won_match": false
           },
@@ -1110,6 +1517,26 @@
             "has_demo": false,
             "headshots": 18,
             "kills": 38,
+            "maps": [
+              {
+                "name": "de_ancient",
+                "team1Score": 13,
+                "team2Score": 9,
+                "winner": "team1"
+              },
+              {
+                "name": "de_anubis",
+                "team1Score": 11,
+                "team2Score": 13,
+                "winner": "team2"
+              },
+              {
+                "name": "de_nuke",
+                "team1Score": 13,
+                "team2Score": 7,
+                "winner": "team1"
+              }
+            ],
             "match_number": 1,
             "round": 1,
             "slug": "r1m1",
@@ -1123,11 +1550,22 @@
             "team2_tag": null,
             "total_damage": 4856,
             "tournamentId": 1,
+            "tournament_name": "Golden Replay Tournament",
             "winner_id": "golden-replay-a",
             "won_match": false
           }
         },
-        "success": true
+        "success": true,
+        "trophies": [
+          {
+            "completedAt": "<completedAt>",
+            "name": "Golden Replay Tournament",
+            "place": 2,
+            "teamSize": 5,
+            "teams": 2,
+            "tournamentId": 1
+          }
+        ]
       }
     },
     "76561199000080002": {
@@ -1168,6 +1606,26 @@
             "has_demo": false,
             "headshots": 22,
             "kills": 45,
+            "maps": [
+              {
+                "name": "de_ancient",
+                "team1Score": 13,
+                "team2Score": 9,
+                "winner": "team1"
+              },
+              {
+                "name": "de_anubis",
+                "team1Score": 11,
+                "team2Score": 13,
+                "winner": "team2"
+              },
+              {
+                "name": "de_nuke",
+                "team1Score": 13,
+                "team2Score": 7,
+                "winner": "team1"
+              }
+            ],
             "match_number": 1,
             "round": 1,
             "slug": "r1m1",
@@ -1181,6 +1639,7 @@
             "team2_tag": null,
             "total_damage": 5515,
             "tournamentId": 1,
+            "tournament_name": "Golden Replay Tournament",
             "winner_id": "golden-replay-a",
             "won_match": false
           }
@@ -1235,6 +1694,26 @@
             "has_demo": false,
             "headshots": 22,
             "kills": 45,
+            "maps": [
+              {
+                "name": "de_ancient",
+                "team1Score": 13,
+                "team2Score": 9,
+                "winner": "team1"
+              },
+              {
+                "name": "de_anubis",
+                "team1Score": 11,
+                "team2Score": 13,
+                "winner": "team2"
+              },
+              {
+                "name": "de_nuke",
+                "team1Score": 13,
+                "team2Score": 7,
+                "winner": "team1"
+              }
+            ],
             "match_number": 1,
             "round": 1,
             "slug": "r1m1",
@@ -1248,6 +1727,7 @@
             "team2_tag": null,
             "total_damage": 5515,
             "tournamentId": 1,
+            "tournament_name": "Golden Replay Tournament",
             "winner_id": "golden-replay-a",
             "won_match": false
           },
@@ -1265,6 +1745,26 @@
             "has_demo": false,
             "headshots": 22,
             "kills": 45,
+            "maps": [
+              {
+                "name": "de_ancient",
+                "team1Score": 13,
+                "team2Score": 9,
+                "winner": "team1"
+              },
+              {
+                "name": "de_anubis",
+                "team1Score": 11,
+                "team2Score": 13,
+                "winner": "team2"
+              },
+              {
+                "name": "de_nuke",
+                "team1Score": 13,
+                "team2Score": 7,
+                "winner": "team1"
+              }
+            ],
             "match_number": 1,
             "round": 1,
             "slug": "r1m1",
@@ -1278,11 +1778,22 @@
             "team2_tag": null,
             "total_damage": 5515,
             "tournamentId": 1,
+            "tournament_name": "Golden Replay Tournament",
             "winner_id": "golden-replay-a",
             "won_match": false
           }
         },
-        "success": true
+        "success": true,
+        "trophies": [
+          {
+            "completedAt": "<completedAt>",
+            "name": "Golden Replay Tournament",
+            "place": 2,
+            "teamSize": 5,
+            "teams": 2,
+            "tournamentId": 1
+          }
+        ]
       }
     },
     "76561199000080003": {
@@ -1323,6 +1834,26 @@
             "has_demo": false,
             "headshots": 20,
             "kills": 42,
+            "maps": [
+              {
+                "name": "de_ancient",
+                "team1Score": 13,
+                "team2Score": 9,
+                "winner": "team1"
+              },
+              {
+                "name": "de_anubis",
+                "team1Score": 11,
+                "team2Score": 13,
+                "winner": "team2"
+              },
+              {
+                "name": "de_nuke",
+                "team1Score": 13,
+                "team2Score": 7,
+                "winner": "team1"
+              }
+            ],
             "match_number": 1,
             "round": 1,
             "slug": "r1m1",
@@ -1336,6 +1867,7 @@
             "team2_tag": null,
             "total_damage": 4987,
             "tournamentId": 1,
+            "tournament_name": "Golden Replay Tournament",
             "winner_id": "golden-replay-a",
             "won_match": false
           }
@@ -1390,6 +1922,26 @@
             "has_demo": false,
             "headshots": 20,
             "kills": 42,
+            "maps": [
+              {
+                "name": "de_ancient",
+                "team1Score": 13,
+                "team2Score": 9,
+                "winner": "team1"
+              },
+              {
+                "name": "de_anubis",
+                "team1Score": 11,
+                "team2Score": 13,
+                "winner": "team2"
+              },
+              {
+                "name": "de_nuke",
+                "team1Score": 13,
+                "team2Score": 7,
+                "winner": "team1"
+              }
+            ],
             "match_number": 1,
             "round": 1,
             "slug": "r1m1",
@@ -1403,6 +1955,7 @@
             "team2_tag": null,
             "total_damage": 4987,
             "tournamentId": 1,
+            "tournament_name": "Golden Replay Tournament",
             "winner_id": "golden-replay-a",
             "won_match": false
           },
@@ -1420,6 +1973,26 @@
             "has_demo": false,
             "headshots": 20,
             "kills": 42,
+            "maps": [
+              {
+                "name": "de_ancient",
+                "team1Score": 13,
+                "team2Score": 9,
+                "winner": "team1"
+              },
+              {
+                "name": "de_anubis",
+                "team1Score": 11,
+                "team2Score": 13,
+                "winner": "team2"
+              },
+              {
+                "name": "de_nuke",
+                "team1Score": 13,
+                "team2Score": 7,
+                "winner": "team1"
+              }
+            ],
             "match_number": 1,
             "round": 1,
             "slug": "r1m1",
@@ -1433,11 +2006,22 @@
             "team2_tag": null,
             "total_damage": 4987,
             "tournamentId": 1,
+            "tournament_name": "Golden Replay Tournament",
             "winner_id": "golden-replay-a",
             "won_match": false
           }
         },
-        "success": true
+        "success": true,
+        "trophies": [
+          {
+            "completedAt": "<completedAt>",
+            "name": "Golden Replay Tournament",
+            "place": 2,
+            "teamSize": 5,
+            "teams": 2,
+            "tournamentId": 1
+          }
+        ]
       }
     },
     "76561199000080004": {
@@ -1478,6 +2062,26 @@
             "has_demo": false,
             "headshots": 24,
             "kills": 44,
+            "maps": [
+              {
+                "name": "de_ancient",
+                "team1Score": 13,
+                "team2Score": 9,
+                "winner": "team1"
+              },
+              {
+                "name": "de_anubis",
+                "team1Score": 11,
+                "team2Score": 13,
+                "winner": "team2"
+              },
+              {
+                "name": "de_nuke",
+                "team1Score": 13,
+                "team2Score": 7,
+                "winner": "team1"
+              }
+            ],
             "match_number": 1,
             "round": 1,
             "slug": "r1m1",
@@ -1491,6 +2095,7 @@
             "team2_tag": null,
             "total_damage": 5326,
             "tournamentId": 1,
+            "tournament_name": "Golden Replay Tournament",
             "winner_id": "golden-replay-a",
             "won_match": false
           }
@@ -1545,6 +2150,26 @@
             "has_demo": false,
             "headshots": 24,
             "kills": 44,
+            "maps": [
+              {
+                "name": "de_ancient",
+                "team1Score": 13,
+                "team2Score": 9,
+                "winner": "team1"
+              },
+              {
+                "name": "de_anubis",
+                "team1Score": 11,
+                "team2Score": 13,
+                "winner": "team2"
+              },
+              {
+                "name": "de_nuke",
+                "team1Score": 13,
+                "team2Score": 7,
+                "winner": "team1"
+              }
+            ],
             "match_number": 1,
             "round": 1,
             "slug": "r1m1",
@@ -1558,6 +2183,7 @@
             "team2_tag": null,
             "total_damage": 5326,
             "tournamentId": 1,
+            "tournament_name": "Golden Replay Tournament",
             "winner_id": "golden-replay-a",
             "won_match": false
           },
@@ -1575,6 +2201,26 @@
             "has_demo": false,
             "headshots": 24,
             "kills": 44,
+            "maps": [
+              {
+                "name": "de_ancient",
+                "team1Score": 13,
+                "team2Score": 9,
+                "winner": "team1"
+              },
+              {
+                "name": "de_anubis",
+                "team1Score": 11,
+                "team2Score": 13,
+                "winner": "team2"
+              },
+              {
+                "name": "de_nuke",
+                "team1Score": 13,
+                "team2Score": 7,
+                "winner": "team1"
+              }
+            ],
             "match_number": 1,
             "round": 1,
             "slug": "r1m1",
@@ -1588,11 +2234,22 @@
             "team2_tag": null,
             "total_damage": 5326,
             "tournamentId": 1,
+            "tournament_name": "Golden Replay Tournament",
             "winner_id": "golden-replay-a",
             "won_match": false
           }
         },
-        "success": true
+        "success": true,
+        "trophies": [
+          {
+            "completedAt": "<completedAt>",
+            "name": "Golden Replay Tournament",
+            "place": 2,
+            "teamSize": 5,
+            "teams": 2,
+            "tournamentId": 1
+          }
+        ]
       }
     },
     "76561199000080005": {
@@ -1633,6 +2290,26 @@
             "has_demo": false,
             "headshots": 22,
             "kills": 44,
+            "maps": [
+              {
+                "name": "de_ancient",
+                "team1Score": 13,
+                "team2Score": 9,
+                "winner": "team1"
+              },
+              {
+                "name": "de_anubis",
+                "team1Score": 11,
+                "team2Score": 13,
+                "winner": "team2"
+              },
+              {
+                "name": "de_nuke",
+                "team1Score": 13,
+                "team2Score": 7,
+                "winner": "team1"
+              }
+            ],
             "match_number": 1,
             "round": 1,
             "slug": "r1m1",
@@ -1646,6 +2323,7 @@
             "team2_tag": null,
             "total_damage": 5203,
             "tournamentId": 1,
+            "tournament_name": "Golden Replay Tournament",
             "winner_id": "golden-replay-a",
             "won_match": false
           }
@@ -1700,6 +2378,26 @@
             "has_demo": false,
             "headshots": 22,
             "kills": 44,
+            "maps": [
+              {
+                "name": "de_ancient",
+                "team1Score": 13,
+                "team2Score": 9,
+                "winner": "team1"
+              },
+              {
+                "name": "de_anubis",
+                "team1Score": 11,
+                "team2Score": 13,
+                "winner": "team2"
+              },
+              {
+                "name": "de_nuke",
+                "team1Score": 13,
+                "team2Score": 7,
+                "winner": "team1"
+              }
+            ],
             "match_number": 1,
             "round": 1,
             "slug": "r1m1",
@@ -1713,6 +2411,7 @@
             "team2_tag": null,
             "total_damage": 5203,
             "tournamentId": 1,
+            "tournament_name": "Golden Replay Tournament",
             "winner_id": "golden-replay-a",
             "won_match": false
           },
@@ -1730,6 +2429,26 @@
             "has_demo": false,
             "headshots": 22,
             "kills": 44,
+            "maps": [
+              {
+                "name": "de_ancient",
+                "team1Score": 13,
+                "team2Score": 9,
+                "winner": "team1"
+              },
+              {
+                "name": "de_anubis",
+                "team1Score": 11,
+                "team2Score": 13,
+                "winner": "team2"
+              },
+              {
+                "name": "de_nuke",
+                "team1Score": 13,
+                "team2Score": 7,
+                "winner": "team1"
+              }
+            ],
             "match_number": 1,
             "round": 1,
             "slug": "r1m1",
@@ -1743,11 +2462,22 @@
             "team2_tag": null,
             "total_damage": 5203,
             "tournamentId": 1,
+            "tournament_name": "Golden Replay Tournament",
             "winner_id": "golden-replay-a",
             "won_match": false
           }
         },
-        "success": true
+        "success": true,
+        "trophies": [
+          {
+            "completedAt": "<completedAt>",
+            "name": "Golden Replay Tournament",
+            "place": 2,
+            "teamSize": 5,
+            "teams": 2,
+            "tournamentId": 1
+          }
+        ]
       }
     }
   }

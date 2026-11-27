@@ -120,10 +120,11 @@ test.describe('Redesigned player profile', () => {
         `${Math.round((won / played) * 100)}%`
       );
 
-      // Recent matches: the just-finished match shows up, W tile and kills/deaths.
-      const recentMatches = page.getByTestId('profile-recent-matches');
-      await expect(recentMatches).toBeVisible();
-      const row = page.getByTestId(`profile-recent-match-${slug}`);
+      // The Matches tab: the just-finished match shows up, W tile and kills/deaths/assists.
+      await page.getByTestId('profile-tab-matches').click();
+      const matchList = page.getByTestId('profile-match-list');
+      await expect(matchList).toBeVisible();
+      const row = page.getByTestId(`profile-match-${slug}`);
       await expect(row).toBeVisible();
       await expect(row).toContainText('20 / 10');
       // The row is a link to the match; the opponent in it, to their team page.
@@ -132,18 +133,19 @@ test.describe('Redesigned player profile', () => {
         `/match/${slug}`
       );
       await expect(row.getByTestId('match-row-opponent')).toHaveAttribute('href', /^\/team\//);
+      // The row says what the player's rating was after the match.
+      await expect(row).toContainText(/\d{3,}/);
 
       // CS2 measures kills and damage, so its profile keeps those tiles. The
       // manually reported game's spec (manual-report-stats-pages.spec.ts)
       // pins the other side: the same page with none of them.
+      await page.getByTestId('profile-tab-overview').click();
       await expect(page.getByTestId('profile-stat-adr')).toBeVisible();
       await expect(page.getByTestId('profile-stat-kd')).toBeVisible();
 
-      // Recent matches is the profile's only match list: the older "Match
-      // History" table and "ELO Progression" chart are gone. Its row says
-      // what the player's rating was after the match.
+      // The Matches tab is the profile's only match list: the older "Match
+      // History" table and "ELO Progression" chart are gone.
       await expect(page.getByTestId('profile-match-history')).toHaveCount(0);
-      await expect(row).toContainText(/rating \d+/);
 
       // Profile header team chip links to that team's public profile page
       // (/team/:teamId).

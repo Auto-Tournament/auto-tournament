@@ -92,11 +92,68 @@
     "gameSwitchLabel": "Hra",
     "yourMatch": "Tvůj zápas",
     "tabs": {
-      "overview": "Přehled"
+      "overview": "Přehled",
+      "label": "Profil",
+      "matches": "Zápasy"
     },
     "shownTeam": {
       "label": "Tým zobrazený na tvém profilu",
       "failed": "Tým se nepodařilo uložit"
+    },
+    "chart": {
+      "winLabel": "Výhra, {{title}}, {{date}}, rating {{rating}}",
+      "lossLabel": "Prohra, {{title}}, {{date}}, rating {{rating}}",
+      "resultsLabel": "Výsledky, od nejstarších",
+      "kda": "Z / S / A",
+      "openMatch": "Otevřít místnost zápasu",
+      "record": "{{wins}} V · {{losses}} P",
+      "hint": "Najeď na graf a uvidíš zápas. Kliknutím ho necháš otevřený."
+    },
+    "trophies": {
+      "title": "Trofeje",
+      "place1": "Vítěz",
+      "place2": "Druhé místo",
+      "place3": "Třetí místo",
+      "place4": "Čtvrté místo",
+      "teams": "Týmy: {{count}}",
+      "titles": "Tituly: {{count}}",
+      "finals": "Finále: {{count}}",
+      "podiums": "Stupně vítězů: {{count}}"
+    },
+    "best": {
+      "title": "V nejlepší formě",
+      "adr": "Nejlepší ADR v zápase",
+      "kills": "Nejvíc zabití v zápase",
+      "headshots": "Headshoty",
+      "headshotsContext": "{{heads}} z {{kills}} zabití",
+      "map": "Nejlepší mapa",
+      "mapContext": "Vyhráno {{won}} z {{played}}"
+    },
+    "months": {
+      "title": "Rating po měsících",
+      "peak": "Historické maximum {{rating}}, {{month}}",
+      "month": "Měsíc",
+      "record": "Bilance",
+      "start": "Začátek",
+      "end": "Konec",
+      "change": "Změna",
+      "peakColumn": "Maximum"
+    },
+    "matchList": {
+      "title": "Zápasy ({{count}})",
+      "result": "Výsledek",
+      "all": "Vše",
+      "wins": "Výhry",
+      "losses": "Prohry",
+      "map": "Mapa",
+      "allMaps": "Všechny mapy",
+      "event": "Akce",
+      "allEvents": "Všechny akce",
+      "noneMatch": "Těmto filtrům neodpovídá žádný zápas.",
+      "win": "Výhra",
+      "loss": "Prohra",
+      "range": "{{from}}–{{to}} z {{total}}",
+      "pages": "Stránky zápasů"
     }
   },
   "teamPage": {

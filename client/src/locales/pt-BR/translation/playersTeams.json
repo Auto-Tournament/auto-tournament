@@ -92,11 +92,68 @@
     "gameSwitchLabel": "Jogo",
     "yourMatch": "Sua partida",
     "tabs": {
-      "overview": "Visão geral"
+      "overview": "Visão geral",
+      "label": "Perfil",
+      "matches": "Partidas"
     },
     "shownTeam": {
       "label": "Time mostrado no seu perfil",
       "failed": "Não foi possível salvar o time"
+    },
+    "chart": {
+      "winLabel": "Vitória, {{title}}, {{date}}, rating {{rating}}",
+      "lossLabel": "Derrota, {{title}}, {{date}}, rating {{rating}}",
+      "resultsLabel": "Resultados, do mais antigo",
+      "kda": "K / D / A",
+      "openMatch": "Abrir a sala da partida",
+      "record": "{{wins}} V · {{losses}} D",
+      "hint": "Passe o mouse no gráfico para ver uma partida. Clique para deixá-la aberta."
+    },
+    "trophies": {
+      "title": "Troféus",
+      "place1": "Campeão",
+      "place2": "Vice-campeão",
+      "place3": "Terceiro lugar",
+      "place4": "Quarto lugar",
+      "teams": "Times: {{count}}",
+      "titles": "Títulos: {{count}}",
+      "finals": "Finais: {{count}}",
+      "podiums": "Pódios: {{count}}"
+    },
+    "best": {
+      "title": "No seu melhor",
+      "adr": "Melhor ADR em uma partida",
+      "kills": "Mais kills em uma partida",
+      "headshots": "Headshots",
+      "headshotsContext": "{{heads}} de {{kills}} kills",
+      "map": "Melhor mapa",
+      "mapContext": "Venceu {{won}} de {{played}}"
+    },
+    "months": {
+      "title": "Rating por mês",
+      "peak": "Recorde {{rating}}, {{month}}",
+      "month": "Mês",
+      "record": "Campanha",
+      "start": "Início",
+      "end": "Fim",
+      "change": "Variação",
+      "peakColumn": "Pico"
+    },
+    "matchList": {
+      "title": "Partidas ({{count}})",
+      "result": "Resultado",
+      "all": "Todas",
+      "wins": "Vitórias",
+      "losses": "Derrotas",
+      "map": "Mapa",
+      "allMaps": "Todos os mapas",
+      "event": "Evento",
+      "allEvents": "Todos os eventos",
+      "noneMatch": "Nenhuma partida corresponde a esses filtros.",
+      "win": "Vitória",
+      "loss": "Derrota",
+      "range": "{{from}}–{{to}} de {{total}}",
+      "pages": "Páginas de partidas"
     }
   },
   "teamPage": {

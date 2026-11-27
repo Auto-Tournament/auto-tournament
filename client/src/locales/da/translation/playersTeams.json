@@ -92,11 +92,68 @@
     "gameSwitchLabel": "Spil",
     "yourMatch": "Din kamp",
     "tabs": {
-      "overview": "Oversigt"
+      "overview": "Oversigt",
+      "label": "Profil",
+      "matches": "Kampe"
     },
     "shownTeam": {
       "label": "Hold vist på din profil",
       "failed": "Holdet kunne ikke gemmes"
+    },
+    "chart": {
+      "winLabel": "Sejr, {{title}}, {{date}}, rating {{rating}}",
+      "lossLabel": "Tab, {{title}}, {{date}}, rating {{rating}}",
+      "resultsLabel": "Resultater, ældste først",
+      "kda": "K / D / A",
+      "openMatch": "Åbn kamprummet",
+      "record": "{{wins}} S · {{losses}} T",
+      "hint": "Peg på grafen for at se en kamp. Klik for at holde den åben."
+    },
+    "trophies": {
+      "title": "Trofæer",
+      "place1": "Vinder",
+      "place2": "Andenplads",
+      "place3": "Tredjeplads",
+      "place4": "Fjerdeplads",
+      "teams": "Hold: {{count}}",
+      "titles": "Titler: {{count}}",
+      "finals": "Finaler: {{count}}",
+      "podiums": "Podieplaceringer: {{count}}"
+    },
+    "best": {
+      "title": "Når de er bedst",
+      "adr": "Bedste ADR i en kamp",
+      "kills": "Flest kills i en kamp",
+      "headshots": "Headshots",
+      "headshotsContext": "{{heads}} af {{kills}} kills",
+      "map": "Bedste bane",
+      "mapContext": "Vundet {{won}} af {{played}}"
+    },
+    "months": {
+      "title": "Rating pr. måned",
+      "peak": "Højeste nogensinde {{rating}}, {{month}}",
+      "month": "Måned",
+      "record": "Resultat",
+      "start": "Start",
+      "end": "Slut",
+      "change": "Ændring",
+      "peakColumn": "Højeste"
+    },
+    "matchList": {
+      "title": "Kampe ({{count}})",
+      "result": "Resultat",
+      "all": "Alle",
+      "wins": "Sejre",
+      "losses": "Tab",
+      "map": "Bane",
+      "allMaps": "Alle baner",
+      "event": "Event",
+      "allEvents": "Alle events",
+      "noneMatch": "Ingen kampe passer til filtrene.",
+      "win": "Sejr",
+      "loss": "Tab",
+      "range": "{{from}}–{{to}} af {{total}}",
+      "pages": "Kampsider"
     }
   },
   "teamPage": {

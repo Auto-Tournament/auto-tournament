@@ -214,27 +214,28 @@ test.describe.serial('Stats pages follow the tournament game', () => {
       // query aliased `tournament_id as tournamentId` unquoted, Postgres
       // returned `tournamentid`, and the page's `m.tournamentId` was
       // undefined for every match, CS2's included.
+      // The match list (the Matches tab) shows the reported match, with no
+      // kills/deaths (the game measures none) and no demo to download.
+      await page.getByTestId('profile-tab-matches').click();
       await expect(page.getByTestId('profile-tournament-leaderboard')).toBeVisible();
-
-      // The match list shows the reported match, with no kills/deaths (the
-      // game measures none) and no demo to download.
-      await expect(page.getByTestId('profile-recent-matches')).toBeVisible();
-      await expect(page.getByTestId('profile-recent-matches')).not.toContainText(' / ');
+      await expect(page.getByTestId('profile-match-list')).toBeVisible();
+      await expect(page.getByTestId('profile-match-list')).not.toContainText(' / ');
       await expect(page.getByRole('link', { name: 'Download demo' })).toHaveCount(0);
       await expect(page.getByRole('button', { name: 'Download demo' })).toHaveCount(0);
 
-      // Stats grid: the tiles that exist, and not the ones that cannot.
+      // Recent matches: the match is listed, with no kills / deaths beside it
+      // and no footnote explaining a column that is not there.
+      const row = page.getByTestId(`profile-match-${match!.slug}`);
+      await expect(row).toBeVisible();
+      await expect(row).not.toContainText('/');
+      await expect(page.getByText('Kills / deaths.', { exact: false })).toHaveCount(0);
+
+      // Stats grid (Overview): the tiles that exist, and not the ones that cannot.
+      await page.getByTestId('profile-tab-overview').click();
       await expect(page.getByTestId('profile-stat-matches')).toContainText('1');
       await expect(page.getByTestId('profile-stat-win-rate')).toContainText('100%');
       await expect(page.getByTestId('profile-stat-adr')).toHaveCount(0);
       await expect(page.getByTestId('profile-stat-kd')).toHaveCount(0);
-
-      // Recent matches: the match is listed, with no kills / deaths beside it
-      // and no footnote explaining a column that is not there.
-      const row = page.getByTestId(`profile-recent-match-${match!.slug}`);
-      await expect(row).toBeVisible();
-      await expect(row).not.toContainText('/');
-      await expect(page.getByText('Kills / deaths.', { exact: false })).toHaveCount(0);
 
       // No ADR highlights: the 3.0 profile has no "Recent form & highlights"
       // section at all (design-conformance chunk 3), for any game.

@@ -87,7 +87,9 @@
     "gameSwitchLabel": "Gioco",
     "yourMatch": "La tua partita",
     "tabs": {
-      "overview": "Panoramica"
+      "overview": "Panoramica",
+      "label": "Profilo",
+      "matches": "Partite"
     },
     "deletedName": "Giocatore eliminato",
     "deletedChip": "Eliminato",
@@ -97,6 +99,61 @@
     "shownTeam": {
       "label": "Squadra mostrata nel tuo profilo",
       "failed": "Impossibile salvare la squadra"
+    },
+    "chart": {
+      "winLabel": "Vittoria, {{title}}, {{date}}, rating {{rating}}",
+      "lossLabel": "Sconfitta, {{title}}, {{date}}, rating {{rating}}",
+      "resultsLabel": "Risultati, dal più vecchio",
+      "kda": "K / D / A",
+      "openMatch": "Apri la stanza della partita",
+      "record": "{{wins}} V · {{losses}} S",
+      "hint": "Passa sul grafico per vedere una partita. Clicca per tenerla aperta."
+    },
+    "trophies": {
+      "title": "Trofei",
+      "place1": "Vincitore",
+      "place2": "Secondo posto",
+      "place3": "Terzo posto",
+      "place4": "Quarto posto",
+      "teams": "Squadre: {{count}}",
+      "titles": "Titoli: {{count}}",
+      "finals": "Finali: {{count}}",
+      "podiums": "Podi: {{count}}"
+    },
+    "best": {
+      "title": "Al loro meglio",
+      "adr": "Miglior ADR in una partita",
+      "kills": "Più kill in una partita",
+      "headshots": "Headshot",
+      "headshotsContext": "{{heads}} su {{kills}} kill",
+      "map": "Mappa migliore",
+      "mapContext": "Vinte {{won}} su {{played}}"
+    },
+    "months": {
+      "title": "Rating per mese",
+      "peak": "Massimo storico {{rating}}, {{month}}",
+      "month": "Mese",
+      "record": "Bilancio",
+      "start": "Inizio",
+      "end": "Fine",
+      "change": "Variazione",
+      "peakColumn": "Massimo"
+    },
+    "matchList": {
+      "title": "Partite ({{count}})",
+      "result": "Risultato",
+      "all": "Tutte",
+      "wins": "Vittorie",
+      "losses": "Sconfitte",
+      "map": "Mappa",
+      "allMaps": "Tutte le mappe",
+      "event": "Evento",
+      "allEvents": "Tutti gli eventi",
+      "noneMatch": "Nessuna partita corrisponde a questi filtri.",
+      "win": "Vittoria",
+      "loss": "Sconfitta",
+      "range": "{{from}}–{{to}} di {{total}}",
+      "pages": "Pagine delle partite"
     }
   },
   "teamPage": {

@@ -92,11 +92,68 @@
     "gameSwitchLabel": "Oyun",
     "yourMatch": "Senin maçın",
     "tabs": {
-      "overview": "Genel bakış"
+      "overview": "Genel bakış",
+      "label": "Profil",
+      "matches": "Maçlar"
     },
     "shownTeam": {
       "label": "Profilinde gösterilen takım",
       "failed": "Takım kaydedilemedi"
+    },
+    "chart": {
+      "winLabel": "Galibiyet, {{title}}, {{date}}, reyting {{rating}}",
+      "lossLabel": "Mağlubiyet, {{title}}, {{date}}, reyting {{rating}}",
+      "resultsLabel": "Sonuçlar, en eskiden",
+      "kda": "K / Ö / A",
+      "openMatch": "Maç odasını aç",
+      "record": "{{wins}} G · {{losses}} M",
+      "hint": "Bir maçı görmek için grafiğin üzerine gel. Açık kalması için tıkla."
+    },
+    "trophies": {
+      "title": "Kupalar",
+      "place1": "Şampiyon",
+      "place2": "İkinci",
+      "place3": "Üçüncü",
+      "place4": "Dördüncü",
+      "teams": "Takımlar: {{count}}",
+      "titles": "Şampiyonluklar: {{count}}",
+      "finals": "Finaller: {{count}}",
+      "podiums": "Kürsüler: {{count}}"
+    },
+    "best": {
+      "title": "En iyi hâlinde",
+      "adr": "Bir maçtaki en iyi ADR",
+      "kills": "Bir maçtaki en çok kill",
+      "headshots": "Headshot",
+      "headshotsContext": "{{kills}} kill'den {{heads}}",
+      "map": "En iyi harita",
+      "mapContext": "{{played}} maçta {{won}} galibiyet"
+    },
+    "months": {
+      "title": "Aylara göre reyting",
+      "peak": "Tüm zamanların zirvesi {{rating}}, {{month}}",
+      "month": "Ay",
+      "record": "Karne",
+      "start": "Başlangıç",
+      "end": "Bitiş",
+      "change": "Değişim",
+      "peakColumn": "Zirve"
+    },
+    "matchList": {
+      "title": "Maçlar ({{count}})",
+      "result": "Sonuç",
+      "all": "Tümü",
+      "wins": "Galibiyetler",
+      "losses": "Mağlubiyetler",
+      "map": "Harita",
+      "allMaps": "Tüm haritalar",
+      "event": "Etkinlik",
+      "allEvents": "Tüm etkinlikler",
+      "noneMatch": "Bu filtrelere uyan maç yok.",
+      "win": "Galibiyet",
+      "loss": "Mağlubiyet",
+      "range": "{{total}} içinden {{from}}–{{to}}",
+      "pages": "Maç sayfaları"
     }
   },
   "teamPage": {

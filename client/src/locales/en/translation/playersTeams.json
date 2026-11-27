@@ -92,11 +92,68 @@
     "gameSwitchLabel": "Game",
     "yourMatch": "Your match",
     "tabs": {
-      "overview": "Overview"
+      "overview": "Overview",
+      "label": "Profile",
+      "matches": "Matches"
     },
     "shownTeam": {
       "label": "Team shown on your profile",
       "failed": "Could not save the team"
+    },
+    "chart": {
+      "winLabel": "Win, {{title}}, {{date}}, rating {{rating}}",
+      "lossLabel": "Loss, {{title}}, {{date}}, rating {{rating}}",
+      "resultsLabel": "Results, oldest first",
+      "kda": "K / D / A",
+      "openMatch": "Open match room",
+      "record": "{{wins}} W · {{losses}} L",
+      "hint": "Point at the chart to see a match. Click to keep it open."
+    },
+    "trophies": {
+      "title": "Trophies",
+      "place1": "Winner",
+      "place2": "Runner-up",
+      "place3": "Third place",
+      "place4": "Fourth place",
+      "teams": "Teams: {{count}}",
+      "titles": "Titles: {{count}}",
+      "finals": "Finals: {{count}}",
+      "podiums": "Podiums: {{count}}"
+    },
+    "best": {
+      "title": "At their best",
+      "adr": "Best ADR in a match",
+      "kills": "Most kills in a match",
+      "headshots": "Headshots",
+      "headshotsContext": "{{heads}} of {{kills}} kills",
+      "map": "Best map",
+      "mapContext": "Won {{won}} of {{played}}"
+    },
+    "months": {
+      "title": "Rating by month",
+      "peak": "All-time peak {{rating}}, {{month}}",
+      "month": "Month",
+      "record": "Record",
+      "start": "Start",
+      "end": "End",
+      "change": "Change",
+      "peakColumn": "Peak"
+    },
+    "matchList": {
+      "title": "Matches ({{count}})",
+      "result": "Result",
+      "all": "All",
+      "wins": "Wins",
+      "losses": "Losses",
+      "map": "Map",
+      "allMaps": "All maps",
+      "event": "Event",
+      "allEvents": "All events",
+      "noneMatch": "No matches fit these filters.",
+      "win": "Win",
+      "loss": "Loss",
+      "range": "{{from}}–{{to}} of {{total}}",
+      "pages": "Match pages"
     }
   },
   "teamPage": {
