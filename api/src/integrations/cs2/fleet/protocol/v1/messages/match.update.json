@@ -55,6 +55,9 @@
               "hud": {
                 "$ref": "../match.defs.json#/$defs/hud"
               },
+              "read_config": {
+                "$ref": "../match.defs.json#/$defs/read_config"
+              },
               "color": {
                 "$ref": "../match.defs.json#/$defs/color"
               }
