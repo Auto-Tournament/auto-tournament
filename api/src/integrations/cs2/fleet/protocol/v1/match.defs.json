@@ -65,6 +65,10 @@
       "description": "The player's in-game HUD choice on the platform: false = no custom HUD, Ready Up uses the chat and the centre panel for them (as `.hud off`). No field or true: the custom HUD.",
       "type": "boolean"
     },
+    "read_config": {
+      "description": "The player's CS2 config switch on the platform (the profile's Config tab): false = they turned it off, so Ready Up does not read their cvars or crosshair code. No field or true: read it.",
+      "type": "boolean"
+    },
     "score": {
       "type": "object",
       "required": ["team1", "team2"],
@@ -467,6 +471,9 @@
         },
         "hud": {
           "$ref": "#/$defs/hud"
+        },
+        "read_config": {
+          "$ref": "#/$defs/read_config"
         },
         "color": {
           "$ref": "#/$defs/color"

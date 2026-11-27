@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { validatePayload } from '../../api/src/integrations/cs2/fleet/protocol/v1';
+import { withConfigOff } from '../../api/src/integrations/cs2/fleet/assignConfig';
 import {
   autoexec,
   cleanCode,
@@ -90,5 +91,19 @@ test.describe('player config', { tag: ['@api'] }, () => {
       "// a quit's CS2 config, from Auto Tournament"
     );
     expect(CONFIG_CVARS).toContain('cl_crosshairsize');
+  });
+
+  test('match.assign: read_config false on the players who turned it off, nothing on the rest', () => {
+    const side = (ids: string[]) => ({
+      name: 'T',
+      players: ids.map((steamid64) => ({ steamid64, name: steamid64 })),
+    });
+    const config = { team1: side(['1', '2']), team2: side(['3']) } as unknown as Parameters<
+      typeof withConfigOff
+    >[0];
+    const out = withConfigOff(config, new Set(['2', '3']));
+    expect(out.team1.players.map((p) => p.read_config)).toEqual([undefined, false]);
+    expect(out.team2.players.map((p) => p.read_config)).toEqual([false]);
+    expect(withConfigOff(config, new Set())).toBe(config);
   });
 });

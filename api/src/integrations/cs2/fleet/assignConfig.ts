@@ -426,6 +426,16 @@ export function withHud(config: AssignConfig, chatOnly: ReadonlySet<string>): As
   return { ...config, team1: add(config.team1), team2: add(config.team2) };
 }
 
+/** `read_config: false` on the players who turned their CS2 config off (cs2_player_config.visible). */
+export function withConfigOff(config: AssignConfig, off: ReadonlySet<string>): AssignConfig {
+  if (off.size === 0) return config;
+  const add = (side: AssignTeam): AssignTeam => ({
+    ...side,
+    players: side.players.map((p) => (off.has(p.steamid64) ? { ...p, read_config: false } : p)),
+  });
+  return { ...config, team1: add(config.team1), team2: add(config.team2) };
+}
+
 // The captain and the teammate colours per player (assignPlayers.ts).
 export { pickTeamCaptain, withCaptains, withColors } from './assignPlayers';
 
@@ -516,6 +526,7 @@ export function diffAssignConfig(
         ...(now.player.rating_wins !== undefined ? { rating_wins: now.player.rating_wins } : {}),
         ...(now.player.color ? { color: now.player.color } : {}),
         ...(now.player.hud === false ? { hud: false } : {}),
+        ...(now.player.read_config === false ? { read_config: false } : {}),
       });
     } else if (now.player.language && now.player.language !== was.player.language) {
       // The player saved a new site language (onPlayerLanguageChanged).

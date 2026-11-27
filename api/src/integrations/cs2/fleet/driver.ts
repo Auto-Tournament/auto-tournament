@@ -56,6 +56,7 @@ import {
   withColors,
   withLanguages,
   withRatings,
+  withConfigOff,
   withHud,
 } from './assignConfig';
 import { cs2ServerIdOf, fleetServerIdOf } from './link';
@@ -712,7 +713,10 @@ async function withHold(matchSlug: string, config: AssignConfig): Promise<Assign
     matchSlug,
     await withPlayerColors(
       await withTeamCaptains(
-        await withPlayerRatings(matchSlug, await withPlayerHud(await withPlayerLanguages(config)))
+        await withPlayerRatings(
+          matchSlug,
+          await withPlayerConfigOff(await withPlayerHud(await withPlayerLanguages(config)))
+        )
       )
     )
   );
@@ -775,6 +779,19 @@ async function withPlayerColors(config: AssignConfig): Promise<AssignConfig> {
     team1: setOf(config.team1.id),
     team2: setOf(config.team2.id),
   });
+}
+
+/** The players who turned their CS2 config off (profile Config tab): read_config:false. */
+async function withPlayerConfigOff(config: AssignConfig): Promise<AssignConfig> {
+  const ids = [...config.team1.players, ...config.team2.players].map((p) => p.steamid64);
+  if (ids.length === 0) return config;
+  const rows = await db
+    .queryAsync<{ player_id: string }>(
+      'SELECT player_id FROM cs2_player_config WHERE visible = FALSE AND player_id = ANY(?::text[])',
+      [ids]
+    )
+    .catch(() => []);
+  return withConfigOff(config, new Set(rows.map((r) => r.player_id)));
 }
 
 async function withPlayerHud(config: AssignConfig): Promise<AssignConfig> {

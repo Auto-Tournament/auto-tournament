@@ -258,6 +258,8 @@ export interface AssignPlayer {
   rating_wins?: number;
   /** false: the player chose chat only (account page); Ready Up turns its custom HUD off for them. */
   hud?: boolean;
+  /** false: the player turned their CS2 config off (profile Config tab); Ready Up does not read it. */
+  read_config?: boolean;
   /** The player's teammate colour (radar, scoreboard); no field: CS2 picks. */
   color?: TeammateColorName;
 }
@@ -514,6 +516,7 @@ export type MatchUpdateOp =
       rating?: number;
       rating_wins?: number;
       hud?: boolean;
+      read_config?: boolean;
       color?: TeammateColorName;
     }
   | { op: 'remove_player'; steamid64: U64s }
