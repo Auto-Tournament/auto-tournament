@@ -58,14 +58,19 @@ const VALUE_RE = /^-?[0-9]{1,6}(\.[0-9]{1,6})?$/;
 // Today's CS2 code (CS + 44) and the old container (CSGO-xxxxx-…); both are in the share-code alphabet.
 const CODE_RE = /^(CS[A-Za-z0-9]{44}|CSGO(-[A-Za-z0-9]{5}){5})$/;
 
-/** Only the listed cvars, each a plain number (every one of them is). */
+/**
+ * Only the listed cvars, each a plain number. CS2 answers its on/off cvars (cl_crosshairdot, the
+ * radar ones) as `true` / `false`: kept as 1 / 0, as a config file writes them.
+ */
 export function cleanCvars(raw: Untrusted): Partial<Record<ConfigCvar, string>> {
   const out: Partial<Record<ConfigCvar, string>> = {};
   if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return out;
   for (const [name, value] of Object.entries(raw as Record<string, Untrusted>)) {
     if (!CVAR_SET.has(name) || typeof value !== 'string') continue;
     const v = value.trim();
-    if (VALUE_RE.test(v)) out[name as ConfigCvar] = v;
+    const bool = v.toLowerCase();
+    if (bool === 'true' || bool === 'false') out[name as ConfigCvar] = bool === 'true' ? '1' : '0';
+    else if (VALUE_RE.test(v)) out[name as ConfigCvar] = v;
   }
   return out;
 }
