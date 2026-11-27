@@ -1774,7 +1774,7 @@ router.get('/:playerId/summary', async (req: Request, res: Response) => {
         if (!t) return [];
         let teams = 0;
         try {
-          const ids = JSON.parse(t.team_ids ?? '[]') as unknown;
+          const ids: Untrusted = JSON.parse(t.team_ids ?? '[]');
           teams = Array.isArray(ids) ? ids.length : 0;
         } catch {
           teams = 0;

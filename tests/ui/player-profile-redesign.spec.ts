@@ -133,6 +133,8 @@ test.describe('Redesigned player profile', () => {
         `/match/${slug}`
       );
       await expect(row.getByTestId('match-row-opponent')).toHaveAttribute('href', /^\/team\//);
+      // The row says what the player's rating was after the match.
+      await expect(row).toContainText(/\d{3,}/);
 
       // CS2 measures kills and damage, so its profile keeps those tiles. The
       // manually reported game's spec (manual-report-stats-pages.spec.ts)
@@ -141,11 +143,9 @@ test.describe('Redesigned player profile', () => {
       await expect(page.getByTestId('profile-stat-adr')).toBeVisible();
       await expect(page.getByTestId('profile-stat-kd')).toBeVisible();
 
-      // Recent matches is the profile's only match list: the older "Match
-      // History" table and "ELO Progression" chart are gone. Its row says
-      // what the player's rating was after the match.
+      // The Matches tab is the profile's only match list: the older "Match
+      // History" table and "ELO Progression" chart are gone.
       await expect(page.getByTestId('profile-match-history')).toHaveCount(0);
-      await expect(row).toContainText(/rating \d+/);
 
       // Profile header team chip links to that team's public profile page
       // (/team/:teamId).
